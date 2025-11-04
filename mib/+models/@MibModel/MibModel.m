@@ -14,18 +14,18 @@ classdef MibModel < handle
         % tooltip starts with the handle of the widget
         id
         % index of the selected dataset
-        gui  
-        % handle to the main GUI, MibController.view.gui
         mibPath 
         % path to MIB installation directory also available in MibController
         preferences
         % a structure with program preferences
         pythonEnv
         % python environment started from MIB
-        Set
+        Sets
         % structure with the set settings
-        % .setId -> index of the selected set
-        % .setNames -> cell array with names of sets
+        % .selectedSet -> index of the selected set
+        % .names -> cell array with names of sets
+        % .selectedDataset -> array of the datasets selected in each set
+        % .datasetsInSet -> number of datasets in one set
         sessionSettings
         % a structure with settings for some tools used during the current session of MIB e.g.:
         % .automaticAlignmentOptions -> a structure used in mibAlignmentController
@@ -33,7 +33,8 @@ classdef MibModel < handle
     end
 
     events
-    
+        ShowErrorDialog % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
+        DatasetsPanelUpdate % update widgets of the Datasets panel
     end
 
     methods
@@ -62,12 +63,15 @@ classdef MibModel < handle
             obj.currentDirectory = '\';   % define working directory
             obj.id = 1;         % index of the current dataset
             obj.mibPath = [];   % path to MIB installation directory
-            obj.gui = [];   % handle to the main GUI, MibController.view.gui
             % define default Set
-            obj.Set.setId = 1;
-            obj.Set.setNames = {'Set 1'};
-            %obj.controller.datasetsSetsOps_Callbacks(obj, hWidget, hData, BatchOptIn)
-            %obj.addSet('Set 1')
+            obj.Sets.selectedSet = [];
+            obj.Sets.names = {}; 
+            obj.Sets.selectedDataset = [];
+            obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
+            
+            % initialize MIB with 10 dummy datasets
+            BatchOpt = struct('Mode', {'Add set'}, 'SetName', 'Set 1');
+            obj.datasetsSetsOps(BatchOpt);
 
             %obj.newDatasetSwitch = 0;
             %obj.showAllMaterials = 1;   % display all materials of the model
@@ -77,9 +81,7 @@ classdef MibModel < handle
             obj.sessionSettings = struct();     % current session settings
             %obj.mibPrevId = 1;     % index of the previous dataset
             
-            for i=1:10  % initialize mibImage 
-                obj.I{i}= core.MibDataset();
-            end
+            
             %obj.U = mibImageUndo();    % create instanse for keeping undo information
             obj.pythonEnv = [];     % Python environment for MIB
             obj.developerMode = true;

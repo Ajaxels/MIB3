@@ -1,13 +1,6 @@
-% showErrorDialog function to show an error dialog
-%
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 23.09.2025
-%
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
-%function showErrorDialog(guiHandle, err, winTitle, options.prefix, options.suffix)
-function showErrorDialog(guiHandle, err, options)
-% show error that is generated in try/catch blocks
+function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffix)
+% function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffix)
+% show error that is generated in try/catch blocks or in any other occasion
 %
 % Parameters:
 % guiHandle: handle to appdesigner window (for example, obj.View.gui)
@@ -16,10 +9,9 @@ function showErrorDialog(guiHandle, err, options)
 %   .identifier - identificator of the error
 %   .message - error message
 %   .cause - MException
-% options: a structure with additional parameters
-% .title: [optional] string with a title for the window
-% .options.prefix: [optional] text string that will be added before the end of the error message
-% .options.suffix: [optional] text string that will be added after the end of the error message
+% winTitle: an optional string with a title for the window
+% optionalPrefix: an optional text string that will be added before the end of the error message
+% optionalSuffix: an optional text string that will be added after the end of the error message
 
 %|
 % @b Examples:
@@ -27,76 +19,39 @@ function showErrorDialog(guiHandle, err, options)
 % try
 % // some code
 % catch err
-%    utils.showErrorDialog(obj.View.gui, err, title='Missing net-variable', );
-%    % or
-%    % utils.showErrorDialog([], err, title='Error title', options.suffix='options.suffix text');
-%    % utils.showErrorDialog([], 'Error text', title='Error title', options.suffix='options.suffix text');
+%    utils.showErrorDialog(obj.view.gui, err, 'Missing net-variable'); //    when called from MibController
 %    return;
 % end
+% @endcode
+% @code
+% ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
+% ErrorDlgOpt.optionalPrefix = sprintf('!!! Warning !!!\n\nThe last set can not be removed!');
+% eventdata = core.ToggleEventData(ErrorDlgOpt);
+% notify(obj, 'ShowErrorDialog', eventdata);
 % @endcode
 
 % Updates
 % 
 
-arguments (Input)
-    % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html
-    guiHandle = []
-    err = []  % should be a structure, defined under
-    options.title   (1,1) string = "MIB Error"
-    options.prefix (1,1) string = ""
-    options.suffix (1,1) string = ""
-end
-
-% If err missing/empty, synthesize one that includes the function help
-if isempty(err)
-    err = struct;
-    err.cause = [];
-    err.identifier = 'Error description';
-    err.message = sprintf(['<pre style="font-family:monospace; font-size:12px; line-height:1.2em;">Use the following syntax:<br>' ...
-                  'try<br>' ...
-                  '&nbsp;&nbsp;&nbsp;&nbsp;// some code<br>' ...
-                  'catch err<br>' ...
-                  '&nbsp;&nbsp;&nbsp;&nbsp;utils.showErrorDialog(obj.View.gui, err, title="Missing net-variable");<br>' ...
-                  'end</pre>']);
-elseif ~isa(err, 'MException') % err is string with the error text
-    errText = err; 
-    err = struct;
-    err.cause = [];
-    err.identifier = 'Error description';
-    err.message = errText;
-end
+if nargin < 5; optionalSuffix = ''; end
+if nargin < 4; optionalPrefix = ''; end
+if nargin < 3; winTitle = 'Error'; end
 
 % generate error string
-if ~isempty(err.cause)
+if isempty(fields(err))
+    errText = sprintf('%s\n%s', optionalPrefix, optionalSuffix);
+elseif ~isempty(err.cause)
     cause = err.cause{1}.message;
-    errText = sprintf('!!! Error !!!\n\n%s\n%s\n\n%s\n\n%s\n\n%s', ...
-        options.prefix, ...
-        err.identifier, ...
-        err.message, ...
-        cause, ...
-        options.suffix);
+    errText = sprintf('!!! Error !!!\n\n%s\n%s\n\n%s\n\n%s\n\n%s', optionalPrefix, err.identifier, err.message, cause, optionalSuffix);
 else
-    errText = sprintf('!!! Error !!!\n\n%s\n%s\n\n%s\n\n%s', ...
-        options.prefix, ...
-        err.identifier, ...
-        err.message, ...
-        options.suffix);
+    errText = sprintf('!!! Error !!!\n\n%s\n%s\n\n%s\n\n%s', optionalPrefix, err.identifier, err.message, optionalSuffix);
 end
 
-% show the window
-if isempty(guiHandle)
-    fig = uifigure('Name', 'MIB Error');
-    uialert(fig, ...
-        errText, ...
-        options.title, 'Icon', 'error', 'Interpreter', 'html', ...
-        'CloseFcn', @(~,~) delete(fig));
-elseif isa(guiHandle, 'matlab.ui.Figure')
-    % guide figure
-    errordlg(errText, options.title);
-else
-    % appdesigner figure
+if isempty(guiHandle) || isa(guiHandle, 'matlab.ui.Figure') % guide figure
+    errordlg(errText, winTitle);
+else                                                        % appdesigner figure
     uialert(guiHandle, ...
         errText, ...
-        options.title, 'Icon', 'error', 'Interpreter', 'html');
+        winTitle, 'Icon', 'error', 'Interpreter', 'html');
 end
-
+end

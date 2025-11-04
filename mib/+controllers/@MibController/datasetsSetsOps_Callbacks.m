@@ -29,7 +29,7 @@ if isempty(mode); mode = hWidget.Tag; end
 % define BatchOpt structure for mibModel callback
 BatchOpt = struct;
 
-noSets = numel(obj.mibModel.Set.setNames); % current number of sets
+noSets = numel(obj.mibModel.Sets.names); % current number of sets
 
 switch mode
     case 'sets'
@@ -49,7 +49,7 @@ switch mode
     case 'setsContextRename'
         BatchOpt.Mode = {'Rename set'};  % define the mode for obj.mibModel.datasetsSetsOps
         % get new name for the set
-        defAns = obj.mibModel.Set.setNames{obj.mibModel.Set.setId};
+        defAns = obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet};
         options.ParentFigure = obj.view.gui;
         options.IconWidth = 48;
         answer = utils.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
@@ -57,23 +57,16 @@ switch mode
         BatchOpt.SetName = answer;
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
     case 'setsContextRemove'
-        htmlContent = '<html><body><h3>Important Message</h3><p>This is a message box with <b>rich text</b> formatting.</p><ul><li>Item 1</li><li>Item 2</li></ul></body></html>';
-        dlgTitle = 'Information';
-        options.MsgBoxOnly = true;
-        options.Title = 'Please Read';
-        options.WindowWidth = 600;
-        options.OkBtnText = 'OK';
-        options.Icon = 'question';
-        options.DoNotShowAgain = true;
-        options.ParentFigure = obj.view.gui;
-        options.DoNotShowAgainText = 'Do not show this again';
-        [answer, selIndex, dontShow] = utils.mibInputUniversalDlg(obj.mibPath, {}, {htmlContent}, dlgTitle, options);
-
-
-        fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
+        selection = uiconfirm(obj.view.gui, ...
+            sprintf('!!! Warning !!!\n\nYou are going to remove "%s" from MIB!\nAll datasets from the set will be closed.\n\nAre you sure?', obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet}), ...
+            'Remove set', 'Icon', 'warning', 'DefaultOption', 2);
+        if strcmp(selection, 'Cancel'); return; end
+        
         BatchOpt.Mode = {'Remove set'}; 
+        % fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
     otherwise
-        error('MibController.datasetsSetsOps_Callbacks: this option (%s) is not implemented!\n', mode)
+        error('MibController.datasetsSetsOps_Callbacks: this option (%s) is not implemented!\n', mode);       
 end
+
 % call method of MibModel class
 obj.mibModel.datasetsSetsOps(BatchOpt);

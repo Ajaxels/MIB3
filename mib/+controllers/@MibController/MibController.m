@@ -61,6 +61,8 @@ classdef MibController < handle
 
         datasetsType_Callbacks(obj, hWidget, hData) % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
 
+        datasetsPanelUpdate(obj, src, evtData) % update widgets of the Datasets panel
+
         dirContentsBioFormats_Callback(obj, hWidget, hData) % 
         
         dirContentsFileFilters_Callback(obj, hWidget, hData) % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
@@ -76,6 +78,8 @@ classdef MibController < handle
         result = exitProgram(obj, target)        % exit mib 
 
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
+
+        listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
 
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
 
@@ -142,7 +146,7 @@ classdef MibController < handle
             obj.mibVersion = mibVersion;
             obj.mibVersionNumeric = utils.getMibVersionNumberic(mibVersion);
             obj.mibWebWindow = []; % handle of underlying web window for MIB (to use in drag-and-drop)
-            fprintf('MIB version: %.4f (%s)\n', obj.mibVersionNumeric, mibVersion);
+            fprintf('MIB version: %s (%.4f)\n', mibVersion, obj.mibVersionNumeric);
 
             obj.childControllers = {};   % initialize child controllers
             obj.childControllersIds = {};
@@ -162,13 +166,19 @@ classdef MibController < handle
             
             obj.view = views.MibView(obj);
             
-            % update listeners
-            %obj.listeners{1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));
-            %obj.listeners{1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);
+            % --------- update listeners
+            obj.listeners{1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
+            obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate(src, evnt));
+            
+            %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));
+            %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);
             %obj.listeners{end+1} = addlistener(obj.model, 'keyPressEvent', @obj.listner2_Callback);
             %obj.listeners{end+1} = addlistener(obj.model, 'newFileCreated', @obj.listner2_Callback);
 
-            obj.mibModel.gui = obj.view.gui; % assing handle to the main gui into a property of MibModel
+            % Update GUI widgets
+            obj.datasetsPanelUpdate(); % update widgets of the Datasets panel
+
+
             % Make the GUI visible
             obj.view.gui.Visible = true;
             if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
@@ -181,7 +191,7 @@ classdef MibController < handle
                 delete(hSplashScreen);
             end
 
-            obj.plotImage();
+            %obj.plotImage();
         end
         
     end

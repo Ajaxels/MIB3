@@ -28,7 +28,8 @@ for i = numel(webWindowsList):-1:1
         obj.controller.mibWebWindow.enableDragAndDropAll;
         % add drag-and-drop filename callback
         obj.controller.mibWebWindow.FileDragDropCallback = @(varargin)obj.controller.dragNdrop_Callback(varargin);
-        fprintf('Drag-and-drop filenames ENABELED for %s\n', obj.controller.mibWebWindow.Title);
+        %fprintf('Drag-and-drop filenames Enabled for %s\n', obj.controller.mibWebWindow.Title);
+        fprintf('Drag-and-drop filenames: Enabled\n');
         break;
     end
 end

@@ -21,7 +21,11 @@ status = false;
 BatchOpt = struct();
 BatchOpt.Mode = {'Select set'};     % default operation
 BatchOpt.Mode{2} = {'Select set', 'Add set', 'Rename set', 'Remove set'};  % only the single option is available for the batch mode so far
-BatchOpt.SetName = obj.Set.setNames{obj.Set.setId}; % current set name
+if isempty(obj.Sets.selectedSet) % initialization of MIB
+    BatchOpt.SetName = 'Set 1';  
+else    
+    BatchOpt.SetName = obj.Sets.names{obj.Sets.selectedSet}; % current set name
+end
 % tooltips that will accompany the BatchOpt
 BatchOpt.mibBatchTooltip.Mode = sprintf('Select required operation with the sets');
 BatchOpt.mibBatchTooltip.SetName = sprintf('Specify the (new) set name');
@@ -47,19 +51,55 @@ if nargin == 2  % batch mode
     end
 end
 
-noSets = numel(obj.Set.setNames); % current number of sets
+noSets = numel(obj.Sets.names); % current number of sets
 switch BatchOpt.Mode{1}
     case 'Select set'
-        fprintf('obj.mibModel.datasetsSetsOps: Select set\n');
+        obj.Sets.selectedSet = find(ismember(obj.Sets.names, BatchOpt.SetName));
+        
+        % update all widgets of the Datasets panel
+        notify(obj, 'DatasetsPanelUpdate');
+
+        fprintf('obj.mibModel.datasetsSetsOps: Select set -> %s\n', BatchOpt.SetName);
     case 'Add set'
+        % get index of the next dataset
+        nextDatasetIndex = numel(obj.Sets.names)*obj.Sets.datasetsInSet + 1;
+        for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
+            obj.I{i} = core.MibDataset();
+        end
+        obj.Sets.names = [obj.Sets.names; BatchOpt.SetName];
+        obj.Sets.selectedSet = numel(obj.Sets.names);
+        obj.Sets.selectedDataset = [obj.Sets.selectedDataset; 1]; % add 1 as the index of the selected dataset for the added set
+        
+        % update all widgets of the Datasets panel
+        notify(obj, 'DatasetsPanelUpdate');
+        
         fprintf('obj.mibModel.datasetsSetsOps: Add set: %s \n', BatchOpt.SetName);
     case 'Rename set'
-        fprintf('obj.mibModel.datasetsSetsOps: Rename set %s -> %s\n', obj.Set.setNames{obj.Set.setId}, BatchOpt.SetName);
+        obj.Sets.names{obj.Sets.selectedSet} = BatchOpt.SetName;
+        % update all widgets of the Datasets panel
+        notify(obj, 'DatasetsPanelUpdate');
+        
+        fprintf('obj.mibModel.datasetsSetsOps: Rename set %s -> %s\n', obj.Sets.names{obj.Sets.selectedSet}, BatchOpt.SetName);
     case 'Remove set'
-        % if noSets == 1
-        %     notify(obj, 'uialert');
-        %     uialert(obj.gui, sprintf('!!! Warning !!!\n\nThe last set can not be removed!'), 'Remove set'); return;
-        % end
+        if noSets == 1 %#ok<ISCL>
+            ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
+            ErrorDlgOpt.optionalPrefix = sprintf('!!! Warning !!!\n\nThe last set can not be removed!');
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
+        end
+        % get the global index of the first dataset
+        firstDatasetIndex = (obj.Sets.selectedSet-1)*obj.Sets.datasetsInSet + 1;
+
+        for i=firstDatasetIndex:firstDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
+            obj.I(i) = [];
+        end
+
+        obj.Sets.names(obj.Sets.selectedSet) = [];
+        obj.Sets.selectedDataset(obj.Sets.selectedSet) = [];
+        obj.Sets.selectedSet = 1;
+        % update all widgets of the Datasets panel
+        notify(obj, 'DatasetsPanelUpdate');
+
         fprintf('obj.mibModel.datasetsSetsOps: Remove set\n');
 end
 
