@@ -1,0 +1,92 @@
+{
+  "majorVersion": 3,
+  "minorVersion": 1,
+  "panelLayout": {
+    "referenceWidth": 1400,
+    "referenceHeight": 837,
+    "centerExpanded": false,
+    "centerCollapsed": false,
+    "left": {
+      "freeDimension": 280,
+      "collapsed": false,
+      "expanded": false,
+      "portion": 0.2,
+      "children": [
+        {
+          "id": "panel1",
+          "collapsed": false
+        },
+        {
+          "id": "panel2",
+          "collapsed": false
+        },
+        {
+          "id": "panel3",
+          "collapsed": false
+        }
+      ],
+      "showingContextSetId": "global"
+    },
+    "bottom": {
+      "freeDimension": 161,
+      "collapsed": false,
+      "expanded": false,
+      "portion": 0.19235364396654719,
+      "children": [
+        {
+          "id": "panel4",
+          "showing": true
+        },
+        {
+          "id": "panel5"
+        }
+      ]
+    }
+  },
+  "documentLayout": {
+    "gridDimensions": {
+      "w": 1,
+      "h": 1
+    },
+    "tileCount": 1,
+    "tileCoverage": 0,
+    "referenceWidth": 1119,
+    "referenceHeight": 675,
+    "columnWeights": 1,
+    "rowWeights": 1,
+    "columnLeft": [
+      0,
+      1119
+    ],
+    "rowTop": [
+      0,
+      675
+    ],
+    "tileOccupancy": {
+      "children": {
+        "showOrder": 0,
+        "id": "imageViewDocGroup_document1",
+        "title": "Image view / Set 1"
+      },
+      "showingChildId": "imageViewDocGroup_document1",
+      "showingChildTitle": "Image view / Set 1"
+    },
+    "emptyTileCount": 0,
+    "selectionOrder": {
+      "imageViewDocGroup_document1": 1
+    },
+    "reserveDocumentSpace": false,
+    "lastSelectedDocumentId": "document1"
+  },
+  "windowBounds": {
+    "x": 260,
+    "y": 350,
+    "w": 1400,
+    "h": 980
+  },
+  "toolstripCollapsed": false,
+  "tools": {
+    "documentPrimaryTools": {},
+    "panelPrimaryTools": {}
+  }
+}
