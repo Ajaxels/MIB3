@@ -1,0 +1,5 @@
+{
+    "ToolboxGroupName" : "controlshared",
+    "FactorySettingsClassName" : "controllib.settings.internal.ControlSharedFactorySettings",
+    "Hidden" : true
+}
