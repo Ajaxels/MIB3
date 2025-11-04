@@ -76,6 +76,7 @@ if isdeployed()
     s.matlab.ui.figure.DockFigureInDeployment.TemporaryValue = true;
 end
 
+
 %try
     model = models.MibModel(cpuParallelLimitMax);     % initialize the model
     controller = controllers.MibController(model, mibVersion);  % initialize controller
