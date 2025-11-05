@@ -45,6 +45,8 @@ classdef MibController < handle
         % declaration of functions in the external files, keep empty line in between for the doc generator
                 
         % LISTENERS CALLBACKS
+        listenerAppStateChanged(obj, src, evtData) % generic listener for change of states in the main GUI
+
         listner1_Standard(obj, model, evnt)    % listener type 1 callbacks
 
         listner2_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure
@@ -61,7 +63,7 @@ classdef MibController < handle
 
         datasetsType_Callbacks(obj, hWidget, hData) % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
 
-        datasetsPanelUpdate(obj, src, evtData) % update widgets of the Datasets panel
+        datasetsPanelUpdate_fromModel(obj, src, evtData) % update widgets of the Datasets panel
 
         dirContentsBioFormats_Callback(obj, hWidget, hData) % 
         
@@ -167,8 +169,9 @@ classdef MibController < handle
             obj.view = views.MibView(obj);
             
             % --------- update listeners
-            obj.listeners{1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
-            obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate(src, evnt));
+            obj.listeners{1} = addlistener(obj.view.gui, 'PropertyChanged', @obj.listenerAppStateChanged); % generic listener for MIB AppContainers state changes
+            obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
+            obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));
             
             %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));
             %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);
@@ -176,7 +179,7 @@ classdef MibController < handle
             %obj.listeners{end+1} = addlistener(obj.model, 'newFileCreated', @obj.listner2_Callback);
 
             % Update GUI widgets
-            obj.datasetsPanelUpdate(); % update widgets of the Datasets panel
+            obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
 
 
             % Make the GUI visible

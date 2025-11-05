@@ -61,6 +61,14 @@ switch BatchOpt.Mode{1}
 
         fprintf('obj.mibModel.datasetsSetsOps: Select set -> %s\n', BatchOpt.SetName);
     case 'Add set'
+        if ismember(BatchOpt.SetName, obj.Sets.names)
+            ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
+            ErrorDlgOpt.optionalPrefix = sprintf('!!! Error !!!\n\nThe sets should have unique names!');
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
+            return;
+        end
+        
         % get index of the next dataset
         nextDatasetIndex = numel(obj.Sets.names)*obj.Sets.datasetsInSet + 1;
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
@@ -90,9 +98,8 @@ switch BatchOpt.Mode{1}
         % get the global index of the first dataset
         firstDatasetIndex = (obj.Sets.selectedSet-1)*obj.Sets.datasetsInSet + 1;
 
-        for i=firstDatasetIndex:firstDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
-            obj.I(i) = [];
-        end
+        datasetIndices = firstDatasetIndex:firstDatasetIndex+obj.Sets.datasetsInSet-1;
+        obj.I(datasetIndices) = [];
 
         obj.Sets.names(obj.Sets.selectedSet) = [];
         obj.Sets.selectedDataset(obj.Sets.selectedSet) = [];

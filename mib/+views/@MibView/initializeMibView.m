@@ -51,19 +51,23 @@ obj.handles.imageViewDocGroup = matlab.ui.internal.FigureDocumentGroup();
 obj.handles.imageViewDocGroup.Tag = 'imageViewDocGroup';
 obj.gui.add(obj.handles.imageViewDocGroup);
 
-% Add the first figure-based document for default set
-figOptions.Title = "Image view / Set 1";
-figOptions.DocumentGroupTag = obj.handles.imageViewDocGroup.Tag;
-obj.handles.setsDoc{1} = matlab.ui.internal.FigureDocument(figOptions);
-obj.handles.setsDoc{1}.EnableDockControls = true;
-obj.handles.setsDoc{1}.Closable = false;
-% obj.handles.setsDoc{1}.CanCloseFcn
+% init default variables
+obj.handles.figureDocs = {}; % cell array of handles for added matlab.ui.internal.FigureDocument
+obj.handles.imView = {}; % cell array of handles for the component of FigureDocument
 
-obj.handles.setsDoc{1}.Figure.AutoResizeChildren = 'off';
-obj.handles.sets{1} = views.components.ImageView('Parent', obj.handles.setsDoc{1}.Figure, ...
-     'Units', 'normalized', 'Position', [0 0 1 1]);
-
-obj.gui.add(obj.handles.setsDoc{1});
+% % Add the first figure-based document for default set
+% figOptions.Title = "Image view / Set 1";
+% figOptions.DocumentGroupTag = obj.handles.imageViewDocGroup.Tag;
+% obj.handles.figureDocs{1} = matlab.ui.internal.FigureDocument(figOptions);
+% obj.handles.figureDocs{1}.EnableDockControls = true;
+% obj.handles.figureDocs{1}.Closable = false;
+% % obj.handles.figureDocs{1}.CanCloseFcn
+% 
+% obj.handles.figureDocs{1}.Figure.AutoResizeChildren = 'off';
+% obj.handles.imView{1} = views.components.ImageView('Parent', obj.handles.figureDocs{1}.Figure, ...
+%      'Units', 'normalized', 'Position', [0 0 1 1]);
+% 
+% obj.gui.add(obj.handles.figureDocs{1});
 
 % ------------ add callbacks ------------
 obj.gui.CanCloseFcn =  @(target)obj.controller.exitProgram(target);

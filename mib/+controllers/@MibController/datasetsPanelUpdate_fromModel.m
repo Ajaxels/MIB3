@@ -1,0 +1,90 @@
+function datasetsPanelUpdate_fromModel(obj, src, evtData)
+% function datasetsPanelUpdate_fromModel(obj, src, evtData)
+% update widgets of the Datasets panel
+% 
+% This function is triggered either as a MibController.listener to
+% MibModel->DatasetsPanelUpdate event or as a method of
+% MibController.datasetsPanelUpdate() to update widgets of the Datasets
+% panel (obj.view.handles.panels.datasets / obj.view.handles.panels.datasets.handles)
+%
+% Parameters:
+% src: handle to MibModel when called as a listener, from MibController it is not provided
+% evtData: event data information, when called as a listener, from MibController it is not provided
+%
+%|
+% @b Examples:
+% @code
+% obj.datasetsPanelUpdate_fromModel(); // call from MibController, update widgets of the Datasets panel using MibModel values
+% @endcode
+% @code
+% notify(obj, 'DatasetsPanelUpdate'); // call from MibModel, update widgets of the Datasets panel using MibModel values
+% @endcode
+
+% arguments
+%     obj controllers.MibController
+%     src models.MibModel
+%     evtData event.EventData
+% end
+
+% find an index of the previously pressed button and the set
+prevSelectedDatasetIndex = mod(obj.mibModel.id-1, obj.mibModel.Sets.datasetsInSet)+1; % without the correction mod(20, 10) == 0, while should be 10
+% get currently selected index
+newSelectedDatasetIndex = obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet);
+% get index of the previously selected set
+prevSelectedSet = ceil(obj.mibModel.id/obj.mibModel.Sets.datasetsInSet);
+
+% update set names and the currently selected set
+obj.view.handles.panels.datasets.handles.sets.Items = obj.mibModel.Sets.names;
+obj.view.handles.panels.datasets.handles.sets.Value = obj.mibModel.Sets.names(obj.mibModel.Sets.selectedSet);
+
+% update the button background, when buttons in the sets are different
+if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
+    prevBufferStringId = sprintf('buffer%d', prevSelectedDatasetIndex);
+    obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+end
+
+%% Modify Figure-Documents
+
+% add a new matlab.ui.internal.FigureDocument to match number of sets
+noSets = numel(obj.mibModel.Sets.names); % get number of sets
+% Check for addition of a new set
+if numel(obj.view.handles.figureDocs) < noSets 
+    % Add a new figure-based document
+    figOptions.Title = sprintf('%s', obj.mibModel.Sets.names{end});
+    figOptions.DocumentGroupTag = obj.view.handles.imageViewDocGroup.Tag;
+    obj.view.handles.figureDocs{noSets} = matlab.ui.internal.FigureDocument(figOptions);
+    obj.view.handles.figureDocs{noSets}.EnableDockControls = true;
+    obj.view.handles.figureDocs{noSets}.Closable = false;
+    % obj.view.handles.figureDocs{noSets}.CanCloseFcn
+
+    obj.view.handles.figureDocs{noSets}.Figure.AutoResizeChildren = 'off';
+    obj.view.handles.imView{noSets} = views.components.ImageView('Parent', obj.view.handles.figureDocs{noSets}.Figure, ...
+        'Units', 'normalized', 'Position', [0 0 1 1]);
+
+    obj.view.gui.add(obj.view.handles.figureDocs{noSets});
+elseif numel(obj.view.handles.figureDocs) > noSets 
+    % the set was removed
+    obj.view.handles.imView(prevSelectedSet) = [];
+    delete(obj.view.handles.figureDocs{prevSelectedSet});
+    obj.view.handles.figureDocs(prevSelectedSet) = [];
+end
+
+% check for renamed set, rename the figure-document tan
+if ~strcmp(obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet}, obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Title)
+    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Title = obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet};
+end
+
+%% Select the Figure-Document
+% select the figure-document if the set was changed
+if prevSelectedSet ~= obj.mibModel.Sets.selectedSet
+    % get titles for the documents
+    titles = cellfun(@(x) char(x.Title), obj.view.handles.figureDocs, 'UniformOutput', false);
+    documentIndex = ismember(titles, obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet});
+    obj.view.handles.figureDocs{documentIndex}.Selected = true;
+end
+
+
+% callback for the buffer button press
+newBufferStringId = sprintf('buffer%d', newSelectedDatasetIndex);
+obj.datasetsBuffers_Callback(obj.view.handles.panels.datasets.handles.(newBufferStringId));
+end

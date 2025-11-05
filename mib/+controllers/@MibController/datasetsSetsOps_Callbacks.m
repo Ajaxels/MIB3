@@ -17,12 +17,14 @@ function datasetsSetsOps_Callbacks(obj, hWidget, hData, mode)
 % 'setsContextRename' -> rename the current set
 % 'setsContextRemove' -> remove the current set
 
-arguments (Input)
-    obj controllers.MibController
-    hWidget {mustBeA(hWidget, {'matlab.ui.container.Menu', 'matlab.ui.control.DropDown', 'matlab.ui.control.Button'})}
-    hData {mustBeA(hData, {'matlab.ui.eventdata.MenuSelectedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ButtonPushedData'})}
-    mode char = ''
-end
+% arguments (Input)
+%     obj controllers.MibController
+%     hWidget {mustBeA(hWidget, {'matlab.ui.container.Menu', 'matlab.ui.control.DropDown', 'matlab.ui.control.Button'})}
+%     hData {mustBeA(hData, {'matlab.ui.eventdata.MenuSelectedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ButtonPushedData'})}
+%     mode char = ''
+% end
+
+if nargin < 4; mode = []; end
 
 if isempty(mode); mode = hWidget.Tag; end
 

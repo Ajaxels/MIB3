@@ -14,7 +14,7 @@ classdef MibDataset < matlab.mixin.Copyable
             %MIBDATASET Construct an instance of this class
             %   Detailed explanation goes here
             
-            files = dir(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\*.png'));
+            files = dir(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\*24px.png'));
             fnIndex = round(rand*numel(files));
 
             obj.img = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
