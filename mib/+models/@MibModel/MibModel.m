@@ -14,6 +14,8 @@ classdef MibModel < handle
         % tooltip starts with the handle of the widget
         id
         % index of the selected dataset
+        matlabVersion
+        % version of Matlab
         mibPath 
         % path to MIB installation directory also available in MibController
         preferences
@@ -59,14 +61,14 @@ classdef MibModel < handle
         end
 
         function initalize(obj)
-            %obj.maxId = 10;  % define maximal number of datasets (equal to number of mibBufferToggle buttons in the Directory contents panel)
             obj.currentDirectory = '\';   % define working directory
             obj.id = 1;         % index of the current dataset
             obj.mibPath = [];   % path to MIB installation directory
+            
             % define default Set
-            obj.Sets.selectedSet = [];
-            obj.Sets.names = {}; 
-            obj.Sets.selectedDataset = [];
+            obj.Sets.selectedSet = [];  % selected set in obj.view.handles.panels.datasets.handles.sets
+            obj.Sets.names = {};        % cell array with names of the sets
+            obj.Sets.selectedDataset = []; % array of the selected datasets in the sets
             obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
             
             % initialize MIB with 10 dummy datasets

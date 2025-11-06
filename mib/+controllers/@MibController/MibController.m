@@ -81,6 +81,8 @@ classdef MibController < handle
 
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
+        initializeMibController(obj)  % initialize the main MibController class
+
         listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
 
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
@@ -144,57 +146,20 @@ classdef MibController < handle
             % mibModel: a handle to mibModel class
             % mibVersion: a string with the current version of MIB
 
+            % define some global variables
+            obj.childControllers = {};   % initialize child controllers
+            obj.childControllersIds = {};
+            obj.listeners = {};
+
             obj.mibModel = mibModel;
             obj.mibVersion = mibVersion;
             obj.mibVersionNumeric = utils.getMibVersionNumberic(mibVersion);
             obj.mibWebWindow = []; % handle of underlying web window for MIB (to use in drag-and-drop)
             fprintf('MIB version: %s (%.4f)\n', mibVersion, obj.mibVersionNumeric);
 
-            obj.childControllers = {};   % initialize child controllers
-            obj.childControllersIds = {};
-            obj.listeners = {};
+            % init the controller parameters
+            obj.initializeMibController();
 
-            % ---- obtain path to MIB
-            obj.mibPath = utils.getInstallationPath('mib3');
-            obj.mibModel.mibPath = obj.mibPath; % send also to mibModel as it is needed to get relative dirs
-            fprintf('MIB installation path: %s\n', obj.mibPath);
-
-            % ---- show splash screen
-            showSplashScreen = false;
-            if showSplashScreen
-                [hSplashScreen, hSplashAxes, hLabel] = obj.showSplashScreen(sprintf('MIB %s', obj.mibVersion), sprintf('Staring MIB\nPlease wait...'));
-                hLabel.String = 'adding something else';
-            end
-            
-            obj.view = views.MibView(obj);
-            
-            % --------- update listeners
-            obj.listeners{1} = addlistener(obj.view.gui, 'PropertyChanged', @obj.listenerAppStateChanged); % generic listener for MIB AppContainers state changes
-            obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
-            obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));
-            
-            %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));
-            %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);
-            %obj.listeners{end+1} = addlistener(obj.model, 'keyPressEvent', @obj.listner2_Callback);
-            %obj.listeners{end+1} = addlistener(obj.model, 'newFileCreated', @obj.listner2_Callback);
-
-            % Update GUI widgets
-            obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
-
-
-            % Make the GUI visible
-            obj.view.gui.Visible = true;
-            if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
-            pause(2);
-            obj.view.doPostInitializationTasks();
-            
-            if showSplashScreen
-                hLabel.String = 'finishing'; drawnow nocallbacks; 
-                % close the splash screen
-                delete(hSplashScreen);
-            end
-
-            %obj.plotImage();
         end
         
     end
