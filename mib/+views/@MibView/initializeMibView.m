@@ -49,6 +49,8 @@ obj.addStatusBar()  % add statusbar to MIB, stored as obj.handles.status
 % documentGroup = matlab.ui.container.internal.appcontainer.DocumentGroup(groupOptions);
 obj.handles.imageViewDocGroup = matlab.ui.internal.FigureDocumentGroup();
 obj.handles.imageViewDocGroup.Tag = 'imageViewDocGroup';
+obj.handles.imageViewDocGroup.EnableDockControls = true;
+obj.handles.imageViewDocGroup.Title = 'ImageView Figures';
 obj.gui.add(obj.handles.imageViewDocGroup);
 
 % init default variables
