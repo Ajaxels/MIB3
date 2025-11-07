@@ -81,7 +81,7 @@ end
     model = models.MibModel(cpuParallelLimitMax);     % initialize the model
     controller = controllers.MibController(model, mibVersion);  % initialize controller
 %catch err
-%    utils.showErrorDialog([], err, title='MIB Error');
+%    utils.dlgs.showErrorDialog([], err, title='MIB Error');
 %end
 
 toc

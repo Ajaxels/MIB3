@@ -12,6 +12,7 @@ function segmentationPanel_Callbacks(obj, hWidget, hData, mode)
 % 'loadModel' -> load model from a file
 % 'addMaterial' -> add material to the model
 % 'removeMaterial' -> remove material from the model
+% 'colorWheel' -> restore default color scheme or generate random colors for 65535+ models
 % 'viewSettings' -> view visualization settings for model/mask visualization
 %
 
@@ -32,6 +33,8 @@ switch mode
     case 'addMaterial'
         fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
     case 'removeMaterial'
+        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+    case 'colorWheel'
         fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
     case 'viewSettings'
         fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);

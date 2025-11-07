@@ -79,6 +79,8 @@ classdef MibController < handle
 
         result = exitProgram(obj, target)        % exit mib 
 
+        id = findChildId(obj, childName)        % find id of a child controller
+
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
         initializeMibController(obj)  % initialize the main MibController class
@@ -91,6 +93,10 @@ classdef MibController < handle
 
         roiPanel_Callbacks(obj, hWidget, hData, mode) % callbacks for widgets of some the ROI panel obj.handles.panels.roi
 
+        filename = saveLayout(obj, mode) % store the current layout of panels
+
+        segmentationColorWheel_Schemes(obj, menuEntry, selectedData) % callbacks for the context menu of the segmentation table widget -> Color schemes entry (obj.handles.panels.segmentation.handles.materialsTableContextScheme)
+        
         segmentationFavTool_Callback(obj, hWidget, hData)  % callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in obj.handles.panels.segmentation panel. Select the current tool as favorite, the favorite tools available upon press of the 'D' key shortkey
         
         segmentationMaterials_Callback(obj, menuEntry, selectedData) % callbacks for the context menu of Segmentation table widget -> Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat) and Menu ribbon -> Models -> Materials (obj.view.handles.model.materials)
@@ -100,8 +106,6 @@ classdef MibController < handle
         segmentationMaterialsTable_moveLayers(obj, menuEntry, selectedData) % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTableContextM2S)
 
         segmentationMaterialsTable_Render(obj, menuEntry, selectedData)  % callbacks for the context menu of the Segmentation table widget -> Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen)
-
-        segmentationMaterialsTable_Schemes(obj, menuEntry, selectedData) % callbacks for the context menu of the segmentation table widget -> Color schemes entry (obj.handles.panels.segmentation.handles.materialsTableContextScheme)
 
         segmentationPanel_Callbacks(obj, hWidget, hData, mode) % callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
 
@@ -133,7 +137,7 @@ classdef MibController < handle
         
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
         
-        filename = saveLayout(obj, mode) % store the current layout of panels
+        startController(obj, controllerName, varargin) % start a child controller using provided name
 
         function obj = MibController(mibModel, mibVersion)
             % function obj = MibController(mibModel, mibVersion)

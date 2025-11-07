@@ -224,12 +224,12 @@ obj.mibModel.sessionSettings.ImageFilters.TestImg = imread(fullfile(obj.mibPath,
 obj.view = views.MibView(obj);
 
 % get the current version of Matlab; keep this variable to be faster and not call ver function
-v = ver('matlab');
+v = ver('matlab'); %#ok<VERMATLAB>
 obj.matlabVersion = str2double(v(1).Version);   % conversion is not correct as version named as 9.8, 9.9, 9.10...
 obj.mibModel.matlabVersion = obj.matlabVersion;
 
 % add icons for buttons
-imageList = {'plus', 'minus', 'settings', 'next', 'step', 'step_and_advance', 'eye', 'shrink', 'bulleted_list', 'color_wheel', 'clear'};
+imageList = {'plus', 'minus', 'settings', 'next', 'step', 'step_and_advance', 'eye', 'shrink', 'bulleted_list', 'clear'};
 for fnId=1:numel(imageList)
     fn = fullfile(obj.mibPath, 'assets', 'fast_access_icons', [imageList{fnId} '.png']);
     [I, map, transparency] = imread(fn);
@@ -242,8 +242,14 @@ end
 obj.view.handles.panels.segmentation.handles.addMaterial.Icon = obj.mibModel.sessionSettings.guiImages.plus;
 obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = obj.mibModel.sessionSettings.guiImages.minus;
 
+% update mibModel parameters
+obj.mibModel.myPath = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
+
+
 % --------- update listeners
-obj.listeners{1} = addlistener(obj.view.gui, 'PropertyChanged', @obj.listenerAppStateChanged); % generic listener for MIB AppContainers state changes
+% generic listener for MIB AppContainers state changes, for example when figure-document is selected; 
+% !!!! NOTE !!!! Should be {1} as it is disabled in MibModel.datasetsSetsOps
+obj.listeners{1} = addlistener(obj.view.gui, 'PropertyChanged', @obj.listenerAppStateChanged); 
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));
 
@@ -264,9 +270,18 @@ obj.view.doPostInitializationTasks();
 
 
 if showSplashScreen
-    hLabel.String = 'finishing'; drawnow nocallbacks;
+    %hLabel.String = 'finishing'; drawnow nocallbacks;
     % close the splash screen
     delete(hSplashScreen);
 end
+
+if obj.mibModel.preferences.Tips.ShowTips == 1
+    try     % on MacOs this gives an error
+        obj.startController('controllers.TipsAppController');
+    catch err
+        obj.mibModel.preferences.Tips.ShowTips = 0;
+    end
+end
+
 
 end

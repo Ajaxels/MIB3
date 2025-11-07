@@ -94,6 +94,7 @@ switch BatchOpt.Mode{1}
             ErrorDlgOpt.optionalPrefix = sprintf('!!! Warning !!!\n\nThe last set can not be removed!');
             eventdata = core.ToggleEventData(ErrorDlgOpt);
             notify(obj, 'ShowErrorDialog', eventdata);
+            return;
         end
         % get the global index of the first dataset
         firstDatasetIndex = (obj.Sets.selectedSet-1)*obj.Sets.datasetsInSet + 1;

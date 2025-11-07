@@ -18,7 +18,7 @@ obj.handles.panels.datasetsPanel.Figure.AutoResizeChildren = 'off';
 obj.handles.panels.datasets = views.components.Datasets('Parent', obj.handles.panels.datasetsPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 % add handle tags to tooltips
-if obj.mibModel.developerMode; utils.overrideDescriptions(obj.handles.panels.datasets.handles, true, 'obj.handles.panels.datasets.handles'); end
+if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles.panels.datasets.handles, true, 'obj.handles.panels.datasets.handles'); end
 
 % ---------------------- ADD CONTEXT MENUs ----------------------
 % ---------------------- Add context menu for buffer buttons ----------------------

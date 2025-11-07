@@ -15,7 +15,7 @@ obj.handles.panels.dirContentsPanel.Figure.AutoResizeChildren = 'off';
 obj.handles.panels.dirContents = views.components.DirectoryContents('Parent', obj.handles.panels.dirContentsPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 % add handle tags to tooltips
-if obj.mibModel.developerMode; utils.overrideDescriptions(obj.handles.panels.dirContents.handles, true, 'obj.handles.panels.dirContents.handles'); end
+if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles.panels.dirContents.handles, true, 'obj.handles.panels.dirContents.handles'); end
 
 % ---------------------- ADD CONTEXT MENUs ----------------------
 % ---------------------- Add context menu for fileList ----------------------

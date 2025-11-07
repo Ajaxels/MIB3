@@ -58,7 +58,7 @@ classdef MibView < handle
 
         globalTabGroup = buildGlobalTabGroup(obj)    % build global tab group
 
-        overrideDescriptions(obj);  % overide description text by adding the widget tag
+        overrideDescriptions(obj);  % override description text by adding the widget tag
 
         recenterGui(obj) % recenter MIB to be on the center of the screen
 
@@ -78,9 +78,8 @@ classdef MibView < handle
 
             obj.initializeMibView(); %  initialize gui
 
-            % add (remove, when developerMode=false) the handle label to the beginning of the Desciption field, 
-            % which is tooltip
-            if obj.mibModel.developerMode; utils.overrideDescriptions(obj.handles, true); end
+            % add (remove, when developerMode=false) the handle label to the beginning of the Description field, which is tooltip
+            if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles, true); end
         end
 
         function outputArg = method1(obj,inputArg)

@@ -19,8 +19,7 @@ obj.handles.panels.selectionPanel.Figure.AutoResizeChildren = 'off';
 obj.handles.panels.selection = views.components.SelectionViewSettings('Parent', obj.handles.panels.selectionPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 % add handle tags to tooltips
-if obj.mibModel.developerMode; utils.overrideDescriptions(obj.handles.panels.selection.handles, true, 'obj.handles.panels.selection.handles'); end
-
+if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles.panels.selection.handles, true, 'obj.handles.panels.selection.handles'); end
 
 % ---------------------- Add CONTEXT Menus ----------------------
 % ---------------------- Add context menu for lutTable ----------------------

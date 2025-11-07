@@ -80,7 +80,10 @@ if prevSelectedSet ~= obj.mibModel.Sets.selectedSet
     % get titles for the documents
     titles = cellfun(@(x) char(x.Title), obj.view.handles.figureDocs, 'UniformOutput', false);
     documentIndex = ismember(titles, obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet});
+    % disable listener upon selection of figure-document to do not trigger again MibController.datasetsSetsOps_Callback
+    obj.listeners{1}.Enabled = false;
     obj.view.handles.figureDocs{documentIndex}.Selected = true;
+    obj.listeners{1}.Enabled = true; % re-enable the listener
 end
 
 

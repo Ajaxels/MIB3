@@ -9,15 +9,14 @@ classdef MibModel < handle
         % current working directory for MIB
         cpuParallelLimitMax
         % max number of parallel workers available
-        developerMode
-        % logical switch to turn on the developer mode, in this mode, the
-        % tooltip starts with the handle of the widget
         id
         % index of the selected dataset
         matlabVersion
         % version of Matlab
         mibPath 
         % path to MIB installation directory also available in MibController
+        myPath
+        % current working directory
         preferences
         % a structure with program preferences
         pythonEnv
@@ -86,7 +85,6 @@ classdef MibModel < handle
             
             %obj.U = mibImageUndo();    % create instanse for keeping undo information
             obj.pythonEnv = [];     % Python environment for MIB
-            obj.developerMode = true;
         end
 
     end

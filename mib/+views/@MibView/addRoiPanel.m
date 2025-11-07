@@ -16,7 +16,7 @@ obj.handles.panels.roi = views.components.Roi('Parent', obj.handles.panels.roiPa
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 
 % add handle tags to tooltips
-if obj.mibModel.developerMode; utils.overrideDescriptions(obj.handles.panels.roi.handles, true, 'obj.handles.panels.roi.handles'); end
+if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles.panels.roi.handles, true, 'obj.handles.panels.roi.handles'); end
 
 
 % ---------------------- Add CALLBACKS to widgets ----------------------

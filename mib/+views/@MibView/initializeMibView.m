@@ -47,6 +47,7 @@ obj.addStatusBar()  % add statusbar to MIB, stored as obj.handles.status
 % ------------ add FigureDocumentGroup ------------
 % alternative to add DocumentGroup(groupOptions);
 % documentGroup = matlab.ui.container.internal.appcontainer.DocumentGroup(groupOptions);
+% selection of the figure-document is listened by MibController.listenerAppStateChanged
 obj.handles.imageViewDocGroup = matlab.ui.internal.FigureDocumentGroup();
 obj.handles.imageViewDocGroup.Tag = 'imageViewDocGroup';
 obj.handles.imageViewDocGroup.EnableDockControls = true;

@@ -44,7 +44,7 @@ switch mode
         defAns = sprintf('Set %d', noSets+1);
         options.ParentFigure = obj.view.gui;
         options.IconWidth = 48;
-        answer = utils.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
+        answer = utils.dlgs.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
         if isempty(answer); return; end
         BatchOpt.SetName = answer;
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
@@ -54,7 +54,7 @@ switch mode
         defAns = obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet};
         options.ParentFigure = obj.view.gui;
         options.IconWidth = 48;
-        answer = utils.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
+        answer = utils.dlgs.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
         if isempty(answer); return; end
         BatchOpt.SetName = answer;
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);

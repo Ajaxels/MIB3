@@ -25,7 +25,7 @@ if ~ismember('Parameter', fieldnames(evnt))
         '                    eventdata = ToggleEventData(notifyEvent);\n' ...
         '                    notify(obj, "modelNotify", eventdata);']);
 
-    utils.showErrorDialog([], errorText, title='Listner error', prefix='listner2_ModelEvent error');
+    utils.dlgs.showErrorDialog([], errorText, title='Listner error', prefix='listner2_ModelEvent error');
     return;
 end
 

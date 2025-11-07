@@ -69,6 +69,8 @@ Prefs.System.Files.BioFormatsExt = sort(BioFormats);
 % bioformats, virtual mode
 Prefs.System.Files.BioFormatsVirtExt = sort([{'am'}, BioFormats]);
 Prefs.System.RenderingEngine = 'Viewer3d, R2022b';   % default rendering engine from R2022b, alternative is "Volshow, R2018b"
+% Developer mode
+Prefs.System.DeveloperMode = true;   % logical switch to turn on the developer mode, in this mode, the tooltip starts with the handle of the widget
 
 %% ----------- COLORS PANEL -----------
 
@@ -472,7 +474,7 @@ Prefs.Deep.SendReports.sendDuringRun = false;
 Prefs.Tips.CurrentTipIndex = 1;
 
 % show or not the tips during startup
-Prefs.Tips.ShowTips = 1;
+Prefs.Tips.ShowTips = false;
 
 % List of files with tips, have to be initiated on the target workstation
 Prefs.Tips.Files = [];
