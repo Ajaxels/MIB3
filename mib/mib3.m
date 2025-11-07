@@ -55,7 +55,7 @@ tic
 % ATTENTION! it is important to have the version number between "ver." and "/" 
 % Release syntax example: "ver. 2025.11 / 04.11.2025"
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2025.11 / 04.11.2025 (alpha)';  
+mibVersion = 'ver. 2025.11 / 07.11.2025 (alpha)';  
 
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs 
 % WHEN COMPILING
