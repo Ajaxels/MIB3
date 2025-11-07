@@ -83,7 +83,7 @@ classdef MibModel < handle
             %obj.mibPrevId = 1;     % index of the previous dataset
             
             
-            %obj.U = mibImageUndo();    % create instanse for keeping undo information
+            %obj.U = mibImageUndo();    % create instance for keeping undo information
             obj.pythonEnv = [];     % Python environment for MIB
         end
 

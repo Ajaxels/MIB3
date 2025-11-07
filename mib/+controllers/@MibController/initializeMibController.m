@@ -246,7 +246,18 @@ obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = obj.mibModel.
 obj.mibModel.myPath = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
 
 
+% Update GUI widgets
+obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
+
+% Make the GUI visible
+obj.view.gui.Visible = true;
+if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
+pause(2);
+% do GUI post-initialization tasks that require GUI to be visible
+obj.view.doPostInitializationTasks();
+
 % --------- update listeners
+% keep here, otherwise at least obj.listeners{1} is triggered when obj.view.gui.Visible = true;
 % generic listener for MIB AppContainers state changes, for example when figure-document is selected; 
 % !!!! NOTE !!!! Should be {1} as it is disabled in MibModel.datasetsSetsOps
 obj.listeners{1} = addlistener(obj.view.gui, 'PropertyChanged', @obj.listenerAppStateChanged); 
@@ -257,16 +268,6 @@ obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, e
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);
 %obj.listeners{end+1} = addlistener(obj.model, 'keyPressEvent', @obj.listner2_Callback);
 %obj.listeners{end+1} = addlistener(obj.model, 'newFileCreated', @obj.listner2_Callback);
-
-% Update GUI widgets
-obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
-
-% Make the GUI visible
-obj.view.gui.Visible = true;
-if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
-pause(2);
-% do GUI post-initialization tasks that require GUI to be visible
-obj.view.doPostInitializationTasks();
 
 
 if showSplashScreen
