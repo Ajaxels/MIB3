@@ -18,6 +18,11 @@ end
 
 % get index of the pressed button
 buttonId = str2double(hWidget.Text);
+
+
+fprintf('obj.controller.datasetsBuffers_ButtonPushedFcn -> button %d pressed\n', buttonId);
+
+
 % generate identifier of the buffer handle
 prevBufferStringId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet));
 newBufferStringId = sprintf('buffer%d', buttonId);
@@ -33,7 +38,6 @@ obj.view.handles.panels.datasets.handles.(newBufferStringId).BackgroundColor = [
 
 obj.plotImage();
 
-fprintf('obj.controller.datasetsBuffers_ButtonPushedFcn -> button %d pressed\n', buttonId);
 end
 
 % Local function that performs the validation

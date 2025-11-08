@@ -44,6 +44,9 @@ if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
 end
 
 %% Modify Figure-Documents
+% disable listener upon selection of figure-document to do not trigger again MibController.datasetsSetsOps_Callback
+% Note! It does not really work unless the call is stopped in a debugger
+obj.listeners{1}.Enabled = false;
 
 % add a new matlab.ui.internal.FigureDocument to match number of sets
 noSets = numel(obj.mibModel.Sets.names); % get number of sets
@@ -76,18 +79,21 @@ end
 
 %% Select the Figure-Document
 % select the figure-document if the set was changed
-if prevSelectedSet ~= obj.mibModel.Sets.selectedSet
+if ~isempty(obj.view.handles.imageViewDocGroup.LastSelected) && ...
+        ~strcmp(obj.view.handles.imageViewDocGroup.LastSelected.title, obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet})
     % get titles for the documents
     titles = cellfun(@(x) char(x.Title), obj.view.handles.figureDocs, 'UniformOutput', false);
     documentIndex = ismember(titles, obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet});
     % disable listener upon selection of figure-document to do not trigger again MibController.datasetsSetsOps_Callback
-    obj.listeners{1}.Enabled = false;
+    %obj.listeners{1}.Enabled = false;
     obj.view.handles.figureDocs{documentIndex}.Selected = true;
-    obj.listeners{1}.Enabled = true; % re-enable the listener
+    %obj.listeners{1}.Enabled = true; % re-enable the listener
 end
 
 
 % callback for the buffer button press
 newBufferStringId = sprintf('buffer%d', newSelectedDatasetIndex);
 obj.datasetsBuffers_Callback(obj.view.handles.panels.datasets.handles.(newBufferStringId));
+
+obj.listeners{1}.Enabled = true;
 end
