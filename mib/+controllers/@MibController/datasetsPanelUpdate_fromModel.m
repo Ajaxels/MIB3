@@ -90,7 +90,6 @@ if ~isempty(obj.view.handles.imageViewDocGroup.LastSelected) && ...
     %obj.listeners{1}.Enabled = true; % re-enable the listener
 end
 
-
 % callback for the buffer button press
 newBufferStringId = sprintf('buffer%d', newSelectedDatasetIndex);
 obj.datasetsBuffers_Callback(obj.view.handles.panels.datasets.handles.(newBufferStringId));

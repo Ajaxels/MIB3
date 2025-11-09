@@ -103,7 +103,7 @@ switch BatchOpt.Mode{1}
 
         obj.Sets.names(obj.Sets.selectedSet) = [];
         obj.Sets.selectedDataset(obj.Sets.selectedSet) = [];
-        obj.Sets.selectedSet = 1;
+        obj.Sets.selectedSet = max([obj.Sets.selectedSet - 1, 1]);
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
 end
