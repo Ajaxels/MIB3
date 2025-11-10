@@ -41,12 +41,12 @@ obj.view.handles.panels.datasets.handles.sets.Value = obj.mibModel.Sets.names(ob
 if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
     prevBufferStringId = sprintf('buffer%d', prevSelectedDatasetIndex);
     obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+
+    % update description of the set tab
+    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', newSelectedDatasetIndex);
 end
 
 %% Modify Figure-Documents
-% disable listener upon selection of figure-document to do not trigger again MibController.datasetsSetsOps_Callback
-% Note! It does not really work unless the call is stopped in a debugger
-obj.listeners{1}.Enabled = false;
 
 % add a new matlab.ui.internal.FigureDocument to match number of sets
 noSets = numel(obj.mibModel.Sets.names); % get number of sets
@@ -65,6 +65,10 @@ if numel(obj.view.handles.figureDocs) < noSets
         'Units', 'normalized', 'Position', [0 0 1 1]);
 
     obj.view.gui.add(obj.view.handles.figureDocs{noSets});
+    
+    % update description of the set tab
+    drawnow;
+    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)); 
 elseif numel(obj.view.handles.figureDocs) > noSets 
     % the set was removed
     obj.view.handles.imView(prevSelectedSet) = [];
@@ -84,15 +88,11 @@ if ~isempty(obj.view.handles.imageViewDocGroup.LastSelected) && ...
     % get titles for the documents
     titles = cellfun(@(x) char(x.Title), obj.view.handles.figureDocs, 'UniformOutput', false);
     documentIndex = ismember(titles, obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet});
-    % disable listener upon selection of figure-document to do not trigger again MibController.datasetsSetsOps_Callback
-    %obj.listeners{1}.Enabled = false;
     obj.view.handles.figureDocs{documentIndex}.Selected = true;
-    %obj.listeners{1}.Enabled = true; % re-enable the listener
 end
 
 % callback for the buffer button press
 newBufferStringId = sprintf('buffer%d', newSelectedDatasetIndex);
 obj.datasetsBuffers_Callback(obj.view.handles.panels.datasets.handles.(newBufferStringId));
 
-obj.listeners{1}.Enabled = true;
 end

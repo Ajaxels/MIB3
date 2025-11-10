@@ -33,6 +33,10 @@ obj.mibModel.id = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets
 % update the background color for the selected buffer
 if ~strcmp(prevBufferStringId, newBufferStringId)
     obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+    
+    % update description of the set tab
+    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', buttonId);
+
 end
 obj.view.handles.panels.datasets.handles.(newBufferStringId).BackgroundColor = [0 1 0];
 

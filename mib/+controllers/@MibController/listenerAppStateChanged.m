@@ -6,12 +6,20 @@ function listenerAppStateChanged(obj, src, evtData)
 
 arguments
     obj controllers.MibController
-    src matlab.ui.container.internal.AppContainer
+    src matlab.ui.internal.FigureDocumentGroup
     evtData matlab.ui.container.internal.appcontainer.PropertyChangedEventData
 end
 
 switch evtData.PropertyName
     case 'LastSelectedDocument' % selection of Figure-Document
+        if ~isempty(obj.view.gui.LastSelectedDocument)
+            selectedDoc = obj.view.gui.getDocument(obj.view.gui.LastSelectedDocument.documentGroupTag, obj.view.gui.LastSelectedDocument.tag);
+            if isprop(selectedDoc, 'Title')
+                obj.view.handles.panels.datasets.handles.sets.Value = selectedDoc.Title;
+                obj.datasetsSetsOps_Callbacks([], [], 'sets');
+            end
+        end
+    case 'LastSelected'
         if ~isempty(obj.view.gui.LastSelectedDocument)
             selectedDoc = obj.view.gui.getDocument(obj.view.gui.LastSelectedDocument.documentGroupTag, obj.view.gui.LastSelectedDocument.tag);
             if isprop(selectedDoc, 'Title')
