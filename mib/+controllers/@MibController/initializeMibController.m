@@ -257,9 +257,8 @@ pause(2);
 obj.view.doPostInitializationTasks();
 
 % --------- update listeners
-% keep here, otherwise at least obj.listeners{1} is triggered when obj.view.gui.Visible = true;
-% generic listener for MIB AppContainers state changes, for example when figure-document is selected; 
-% !!!! NOTE !!!! Should be {1} as it is disabled in MibModel.datasetsSetsOps
+% callback for change of properties in obj.view.handles.imageViewDocGroup,
+% used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));

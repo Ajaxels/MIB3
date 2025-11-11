@@ -4,7 +4,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
     properties
         img
-        model
+        labels
         mask
         selection
     end
@@ -17,13 +17,15 @@ classdef MibDataset < matlab.mixin.Copyable
             files = dir(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\*24px.png'));
             fnIndex = round(rand*numel(files));
 
-            obj.img = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
+            I = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
+
+            obj.img = core.MibBaseImage(I);
         end
 
         function outputArg = getData(obj)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
-            outputArg = obj.img;
+            outputArg = squeeze(obj.img.getData());
         end
     end
 end

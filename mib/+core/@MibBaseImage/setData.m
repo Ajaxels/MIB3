@@ -1,43 +1,45 @@
-function dataset = getData(obj, orient, col_channel, options) % get complete 5D dataset
-% function dataset = getData(obj, type, orient, col_channel, options)
-% Get dataset from MibBaseImage class
+function result = setData(obj, dataset, orient, col_channel, options) 
+% function result = setData(obj, dataset, orient, col_channel, options) 
+% Set dataset to MibBaseImage class
 %
 % Parameters:
+% dataset: matrix with the dataset to update MibBaseImage.img 
 % orient: [@em optional, can be [], default == 3];
-% @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
-% @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
-% @li when @b 3 returns the original dataset to the yx configuration, [y,x,z,c,t]
+% @li when @b 1 updates transposed dataset from the zx configuration, [x,z,y,c,t] -> [y,x,z,c,t]
+% @li when @b 2 updates transposed dataset from the zy configuration, [y,z,x,c,t] -> [y,x,z,c,t]
+% @li when @b 3 updates original dataset from the yx configuration, [y,x,z,c,t]
 % col_channel: [@em optional, default==[] ],
 % @li when obj.type == 'image', @b col_channel is a vector with color numbers to take, when [] take all color channels
 % @li when obj.type == 'labels', @b col_channel is an integer to take material with this specific index (returned with value == 1), when [] - take all materials
 % options: [@em optional], a structure with extra parameters
-% @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
-% @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
-% @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
-% @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
+% @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to set after transpose, can be a single number
+% @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to set after transpose, can be a single number
+% @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to set after transpose, can be a single number
+% @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to set after transpose, can be a single number
 %
 % Return values:
-% dataset: 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
+% result: -> @b 1 - success, @b 0 - error
 
 %|
 % @b Examples:
-% @code dataset = obj.getData(3, []);      // get the complete dataset in the YX orientation @endcode
+% @code obj.setData(dataset, 3, []);      // set the complete dataset in the YX orientation @endcode
 % @code
 % options.x = [100 200];
 % options.y = [100 200];
 % options.z = 100;
 % options.t = 1;
 % col_channel = 2;
-% dataset = obj.getData([], col_channel, options);      // get subvolume = [100:200, 100:200] at slice 100, color channel 1
+% obj.setData(dataset, [], col_channel, options);      //set subvolume = [100:200, 100:200] at slice 100, color channel 1
 % @endcode
 
 
 % Updates
 %
+result = false;
 
-if nargin < 4; options=struct(); end
-if nargin < 3; col_channel = []; end
-if nargin < 2; orient = []; end
+if nargin < 5; options=struct(); end
+if nargin < 4; col_channel = []; end
+if nargin < 3; orient = []; end
 
 if isempty(orient); orient = 3; end
 
@@ -56,21 +58,25 @@ if isfield(options, 'y') || isfield(options, 'x') || isfield(options, 'z') || (i
     blockModeSwitchLocal = 1;
 end
 
+% convert from optional logical
+if islogical(dataset(1)); dataset = uint8(dataset); end
+
 % split the operations for better performance
-if blockModeSwitchLocal == 0  % return the full dataset
-    if strcmp(obj.type, 'image') || isnan(materialIndex)
-        dataset = obj.img{1}(:,:,:,col_channel,:);
-    else % labels type
-        dataset = zeros(size(obj.img{1}), 'uint8');   
-        dataset(obj.img{1} == materialIndex) = 1;
+if blockModeSwitchLocal == 0  % set the full dataset
+    % permute to the target orientation
+    if orient==1    % xz; get permuted dataset
+        dataset = ipermute(dataset, [2 3 1 4 5]);
+    elseif orient==2    % yz; get permuted dataset
+        dataset = ipermute(dataset, [1 3 2 4 5]);
     end
 
-    if orient==1    % xz; get permuted dataset
-        dataset = permute(dataset, [2 3 1 4 5]);
-    elseif orient==2    % yz; get permuted dataset
-        dataset = permute(dataset, [1 3 2 4 5]);
+    if strcmp(obj.type, 'image') || isnan(materialIndex)
+        obj.img{1}(:,:,:,col_channel,:) = dataset;
+    else % labels type
+        obj.img{1}(obj.img{1} == materialIndex) = 0;
+        obj.img{1}(dataset == 1) = materialIndex;
     end
-else  % return a subvolume of the full dataset
+else  % set a part of the dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
     Xlim = [1 obj.width];
     Ylim = [1 obj.height];
@@ -103,15 +109,22 @@ else  % return a subvolume of the full dataset
     Zlim = [max([Zlim(1) 1]) min([Zlim(2) obj.depth])];
     Tlim = [max([Tlim(1) 1]) min([Tlim(2) obj.time])];
 
-    if strcmp(obj.type, 'image')
-        dataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), col_channel, Tlim(1):Tlim(2));
-    else % labels
-        dataset = uint8((obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), col_channel, Tlim(1):Tlim(2)) == materialIndex));
+    % permute to the target orientation
+    if orient==1    % xz; get permuted dataset
+        dataset = ipermute(dataset, [2 3 1 4 5]);
+    elseif orient==2    % yz; get permuted dataset
+        dataset = ipermute(dataset, [1 3 2 4 5]);
     end
 
-    if orient==1     % permute to xz
-        dataset = permute(dataset,[2 3 1 4 5]);
-    elseif orient==2 % permute to yz
-        dataset = permute(dataset,[1 3 2 4 5]);
+    if strcmp(obj.type, 'image') || isnan(materialIndex)
+        obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), col_channel, Tlim(1):Tlim(2)) = dataset;
+    else % labels type, set only specific object
+        currentDataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), col_channel, Tlim(1):Tlim(2));
+        currentDataset(currentDataset == materialIndex) = 0;
+        currentDataset(dataset == 1) = materialIndex;
+
+        obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), col_channel, Tlim(1):Tlim(2)) = currentDataset;
     end
+end
+result = true;
 end

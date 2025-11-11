@@ -9,6 +9,8 @@ classdef MibBaseImage < matlab.mixin.Copyable
         % a char with type of colors: grayscale, multichannel, hsvcolor, indexed
         depth
         % number of stacks in the dataset
+        exist
+        % logical switch indicating whether the obj.img exists or it is empty/dummy place maker
         filename
         % the full filename of the dataset
         height
@@ -35,23 +37,23 @@ classdef MibBaseImage < matlab.mixin.Copyable
         % a cell array of slice filenames that composing the dataset
         time
         % number of time points in the dataset
+        type
+        % type of the dataset: image, labels
         width
         % image width, px
     end
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        dataset = getData(obj, type, orient, col_channel, options, custom_img)        % get dataset
+        dataset = getData(obj, orient, col_channel, options)        % get dataset
 
         varargout = getDatasetDimensions(obj, splitDims, orient)        % Get dimensions of the dataset
 
-        [totalSize, imSize] = getDatasetSizeInBytes(obj)        % Get size of the loaded dataset in bytes
+        initImage(obj, img, meta, type);  % initialize the class using default or provided values
 
-        initImage(obj, img, meta);  % initialize the class using default or provided values
+        result = setData(obj, dataset, orient, col_channel, options)        % update contents of the class
 
-        result = setData(obj, type, dataset, orient, col_channel, options)        % update contents of the class
-
-        function obj = MibBaseImage(img, meta)
+        function obj = MibBaseImage(img, meta, type)
             % obj = MibBaseImage(img, meta)
             % MibBaseImage class constructor
             
@@ -62,13 +64,18 @@ classdef MibBaseImage < matlab.mixin.Copyable
             % img: an 2D-5D image stack
             % meta: a structure with parameters of the dataset, can be @e []
             
+            if nargin < 3; type = 'image'; end
             if nargin < 2; meta = []; end
             if nargin < 1; img = []; end
 
             if isempty(img) 
                 obj.initImage();
             else
-                obj.initImage(img, meta);
+                % permute the 3rd dimension into the 4th dimension
+                if ndims(img)==3 && size(img,3) < 4
+                    img = permute(img, [1 2 4 3]);
+                end
+                obj.initImage(img, meta, type);
             end
         end
 

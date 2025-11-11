@@ -24,7 +24,8 @@ else
     dt = seconds(t - lastTime); % Difference in seconds
 end
 lastTime = t;
-if dt < 0.2; return; end
+if dt < 0.4; return; end
+
 
 % --------------- Batch operation logic ---------------
 % specify default BatchOptIn

@@ -1,5 +1,5 @@
-function initImage(obj, img, meta)
-% function initImage(obj, img, meta)
+function initImage(obj, img, meta, type)
+% function initImage(obj, img, meta, type)
 % initialize the class using default or provided values
 %
 % Parameters:
@@ -16,17 +16,28 @@ function initImage(obj, img, meta)
 %   @li .t - time between the frames for 2D movies
 %   @li .tunits - time units
 %   @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+% type: char with the type of the dataset, 'image', 'model'
 
 
+if nargin < 4; type = 'image'; end
 if nargin < 3; meta = struct(); end
 if nargin < 2; img = []; end
 
 % init img with an empty matrix
 if isempty(img)
-    obj.img{1} = zeros([256 256], 'uint8');  
+    if strcmp(obj.type, 'image')
+        obj.img{1} = zeros([256 256], 'uint8');  
+    else
+        obj.img{1} = NaN;   % default for labels and other types
+    end
+    obj.exist = false; % set switch showing that it is dummy/non-existing dataset
 else
     obj.img{1} = img;
+    obj.exist = true;
 end
+
+% define img type: image or model
+obj.type = type;
 
 % update default properties of the class
 [y, x, z, c, t] = size(obj.img{1});
