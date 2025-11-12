@@ -135,7 +135,7 @@ obj.handles.model.materials.Description = "Model materials operations";
 
 popupList = matlab.ui.internal.toolstrip.PopupList();
 % % Rename material
-obj.handles.model.matRename =  matlab.ui.internal.toolstrip.ListItem('Rename material');
+obj.handles.model.matRename =  matlab.ui.internal.toolstrip.ListItem('Rename material', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_24px.png')));
 obj.handles.model.matRename.Tag = 'matRename';
 obj.handles.model.matRename.ItemPushedFcn =  @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matRename);
@@ -145,19 +145,19 @@ separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 
 % % Add material
-obj.handles.model.matAdd =  matlab.ui.internal.toolstrip.ListItem('Add material');
+obj.handles.model.matAdd =  matlab.ui.internal.toolstrip.ListItem('Add material', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_add_24px.png')));
 obj.handles.model.matAdd.ItemPushedFcn =  @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matAdd);
 % % Insert material
-obj.handles.model.matInsert =  matlab.ui.internal.toolstrip.ListItem('Insert material');
+obj.handles.model.matInsert =  matlab.ui.internal.toolstrip.ListItem('Insert material', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_insert_24px.png')));
 obj.handles.model.matInsert.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matInsert);
 % % Swap materials
-obj.handles.model.matSwap =  matlab.ui.internal.toolstrip.ListItem('Swap materials');
+obj.handles.model.matSwap =  matlab.ui.internal.toolstrip.ListItem('Swap materials', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_swap_24px.png')));
 obj.handles.model.matSwap.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matSwap);
 % % Reorder materials
-obj.handles.model.matReorder =  matlab.ui.internal.toolstrip.ListItem('Reorder materials');
+obj.handles.model.matReorder =  matlab.ui.internal.toolstrip.ListItem('Reorder materials', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_reorder_24px.png')));
 obj.handles.model.matReorder.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matReorder);
 
@@ -166,11 +166,11 @@ separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 
 % % Export material
-obj.handles.model.matExport =  matlab.ui.internal.toolstrip.ListItem('Export material');
+obj.handles.model.matExport =  matlab.ui.internal.toolstrip.ListItem('Export material', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_export_24px.png')));
 obj.handles.model.matExport.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matExport);
 % % Save material to file
-obj.handles.model.matSave =  matlab.ui.internal.toolstrip.ListItem('Save material to file');
+obj.handles.model.matSave =  matlab.ui.internal.toolstrip.ListItem('Save material to file', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_save_24px.png')));
 obj.handles.model.matSave.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matSave);
 
@@ -179,7 +179,7 @@ separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 
 % % Remove materials
-obj.handles.model.matRemove =  matlab.ui.internal.toolstrip.ListItem('Remove materials');
+obj.handles.model.matRemove =  matlab.ui.internal.toolstrip.ListItem('Remove materials', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/model_materials_remove_24px.png')));
 obj.handles.model.matRemove.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
 popupList.add(obj.handles.model.matRemove);
 
