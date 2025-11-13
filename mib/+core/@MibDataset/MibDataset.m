@@ -19,7 +19,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
             I = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
 
-            obj.img = core.MibBaseImage(I);
+            obj.img = core.MibImage(I);
         end
 
         function outputArg = getData(obj)
