@@ -3,29 +3,156 @@ classdef MibDataset < matlab.mixin.Copyable
     %   Detailed explanation goes here
 
     properties
+        % layers
         img
+        % image layer
         labels
+        % label layer for the model
         mask
+        % mask layer 
         selection
+        % selection layer
+        annotations
+        % a handle to class for keeping annotations
+        lines3D
+        % a handle to class for keeping 3D Lines and skeletons
+        measure
+        % a handle to class to keep measurements
+        hROI
+        % handle to ROI class, @b mibRoiRegion
+
+        % other properties
+        axesX
+        % a vector [min, max] with minimal and maximal coordinates of
+        % the axes X of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
+        axesY
+        % a vector [min, max] with minimal and maximal coordinates of
+        % the axes Y of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
+        bioFormatsMemoizerMemoDir
+        % path to directory where BioFormats Memoizer is storing memo files
+        blockModeSwitch
+        % a variable to hold a status of the block mode (mibView.handles.toolbarBlockModeSwitch), 1 - enabled, 0 - disabled
+        current_yxz
+        % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes,
+        % @note dimensions: @code [1 1 1] @endcode
+        dim_yxzct
+        % a matrix with dimensions of the dataset [height, width, depth, colors, time]
+        % equal to size obj.img{1} for non-virtual datasets
+        enableSelection
+        % a switch (0/1) to enable or not the selection, mask, model layers
+        lastSegmSelection
+        % a vector with 2 elements of two previously selected materials for use with the 'e' key shortcut
+        magFactor
+        % magnification factor for the datasets, 1=100%,
+        % 1.5 = 150%; use @code mibModel.getMagFactor() @endcode to read this property
+        maskExist
+        % a switch to indicate presence of the 'Mask' layer. Can be 0 (no mask) or 1 (mask exist)
+        maskStats
+        % Statistics for the 'Mask' layer with the 'PixelList' info returned by 'regionprops' Matlab function
+        modelExist 
+        % a switch to indicate presence of the 'Model' layer. Can be 0 (no model) or 1 (model exist)
+        orientation
+        % Orientation of the currently shown dataset,
+        % @li @b 3 = the 'yz' plane, @b default
+        % @li @b 1 = the 'zx' plane
+        % @li @b 2 = the 'zy' plane
+        pixSize
+        % a structure with diminsions of voxels, @code .x .y .z .t .tunits .units @endcode
+        % the fields are
+        % @li .x - physical width of a pixel
+        % @li .y - physical height of a pixel
+        % @li .z - physical thickness of a pixel
+        % @li .t - time between the frames for 2D movies
+        % @li .tunits - time units
+        % @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+        restrictSelectionToMask
+        % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMask
+        restrictSelectionToMaterial
+        % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMaterial
+        selectedAddToMaterial
+        % index of selected Add to Material, where the Selection layer should be targeted, assigned in the AddTo column of the obj.view.handles.panels.segmentation.handles.materialsTable
+        % @b 1 - Mask; @b 2 - Exterior; @b 3 - first material of the model, @b 4 - second material etc
+        selectedColorChannel
+        % color channel selected in the Color channel dropdown (obj.view.handles.panels.selection.handles.colChannel) of the
+        % Selection panel. 0 - all colors, 1, 2 - 1st, 2nd ...
+        selectedMaterial
+        % index of material selected in obj.view.handles.panels.segmentation.handles.materialsTable: 
+        % @b 1 - Mask; @b 2 - Exterior; @b 3 - first material of the model, @b 4 - second material etc
+        selectedROI
+        % a vector of indices (as stored in mibRoiRegion class) of the
+        % selected ROI in the mibView.handles.mibRoiList table; -1 -> roi is not shown; [1, 3] -> first and third...
+        slices 
+        % coordinates of the shown part of the dataset
+        % @note dimensions are @code ([height, width, color, depth, time],[min max]) @endcode
+        % @li (1,[min max]) - height
+        % @li (2,[min max]) - width
+        % @li (3,[min max]) - z - value
+        % @li (4,[min max]) - colors , array of color channels to show, for example [1, 3, 4]
+        % @li (5,[min max]) - t - time point
+        useLUT
+        % use or not LUT for visualization of image, a number @b 0 - do not use; @b 1 - use a status of obj.view.handles.panels.selection.handles.lutColors
     end
 
     methods
-        function obj = MibDataset()
-            %MIBDATASET Construct an instance of this class
-            %   Detailed explanation goes here
+        % declaration of functions in the external files, keep empty line in between for the doc generator
+        initialize(obj) % init MibDataset class and set all elements of the class to default values
+
+        dataset = getData(obj) % get required dataset 
+
+        function obj = MibDataset(img, meta, datasetType, modelType)
+            % obj = MibDataset(img, meta, datasetType, modelType)
+            % Constructor of MibDataset class
+            %
+            % Parameters:
+            % img: matrix with the image to initialize the class, can be empty
+            % meta: a structure with default settings for the class, can be empty; 
+            % the following fields are used,
+            % .filename -> full path to the dataset
+            % .sliceName -> cell array with slice names, can be empty
+            % .lutColors -> matrix with LUT colors to use (colChannel, R G B) in range 0-1
+            % datasetType: [char, @default 'Std']type of the dataset, one of these
+            %   @li 'Std' - standard image, one that is loaded to memory completely
+            %   @li 'Virtual' - virtual dataset that is loaded upon demand
+            %   @li 'BigData' - big-data compatible dataset
+            % modelType: type of the labels, 
+            % .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
+            % .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
+            % .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
+
+            if nargin < 4; modelType = 'image'; end
+            if nargin < 3; datasetType = 'Std'; end
+            if nargin < 2; meta = []; end
+            if nargin < 1; img = []; end
+
+            %files = dir(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\*24px.png'));
+            %fnIndex = round(rand*numel(files));
+            %I = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
+            %obj.img = core.MibImage(I);
+
+            obj.img = NaN;
+            obj.labels = NaN;
+            obj.mask = NaN;
+            obj.selection = NaN;
+
+            switch datasetType
+                case 'Std'
+                    obj.img = core.MibImage(img, meta, 'image');
+                    switch modelType
+                        case 'imageOnly'
+                            
+                        case 'labels'
+                            obj.labels = core.MibLabels(img, meta, 'labels');
+                        case 'labels63'
+                            obj.labels = core.MibLabels63(img, meta, 'labels63');
+                    end
+                case 'Virtual'
+                    error('core.MibDataset: Virtual - not implemented');
+                case 'BigData'
+                    error('core.MibDataset: BigData - not implemented');
+            end
             
-            files = dir(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\*24px.png'));
-            fnIndex = round(rand*numel(files));
+            obj.initialize();
 
-            I = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
-
-            obj.img = core.MibImage(I);
-        end
-
-        function outputArg = getData(obj)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = squeeze(obj.img.getData());
         end
     end
 end

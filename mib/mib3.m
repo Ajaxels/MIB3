@@ -76,9 +76,11 @@ if isdeployed()
     s.matlab.ui.figure.DockFigureInDeployment.TemporaryValue = true;
 end
 
+mibPath = utils.getInstallationPath('mib3');
+fprintf('MIB installation path: %s\n', mibPath);
 
 %try
-    model = models.MibModel(cpuParallelLimitMax);     % initialize the model
+    model = models.MibModel(cpuParallelLimitMax, mibPath);     % initialize the model
     controller = controllers.MibController(model, mibVersion);  % initialize controller
 %catch err
 %    utils.dlgs.showErrorDialog([], err, title='MIB Error');

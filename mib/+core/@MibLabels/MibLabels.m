@@ -20,10 +20,16 @@ classdef MibLabels < core.MibImage
             % function obj = MibLabels(img, meta, type)
             % constructor of MibLabels class, inherits properties and
             % methods of MibImage
-            
-            if nargin < 3; type = 'labels'; end
+            %
+            % Parameters:
+            % img: an 2D-5D image stack
+            % meta: a structure with parameters of the dataset, can be @e []
+            % type: type of the img, 'model', 'labels', 'labels63'
+
+            if nargin < 3; type = []; end
             if nargin < 2; meta = []; end
             if nargin < 1; img = []; end
+            type = 'labels';
 
             obj = obj@core.MibImage(img, meta, type);  % Call parent constructor
         end

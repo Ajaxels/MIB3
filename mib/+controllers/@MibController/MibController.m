@@ -83,7 +83,7 @@ classdef MibController < handle
 
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
-        initializeMibController(obj)  % initialize the main MibController class
+        initialize(obj)  % initialize the main MibController class
 
         listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
 
@@ -155,14 +155,16 @@ classdef MibController < handle
             obj.childControllersIds = {};
             obj.listeners = {};
 
+            % init mibModel
             obj.mibModel = mibModel;
+            obj.mibPath = obj.mibModel.mibPath;
             obj.mibVersion = mibVersion;
             obj.mibVersionNumeric = utils.getMibVersionNumberic(mibVersion);
             obj.mibWebWindow = []; % handle of underlying web window for MIB (to use in drag-and-drop)
             fprintf('MIB version: %s (%.4f)\n', mibVersion, obj.mibVersionNumeric);
 
             % init the controller parameters
-            obj.initializeMibController();
+            obj.initialize();
 
         end
         

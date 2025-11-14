@@ -84,7 +84,12 @@ switch BatchOpt.Mode{1}
         % get index of the next dataset
         nextDatasetIndex = numel(obj.Sets.names)*obj.Sets.datasetsInSet + 1;
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
-            obj.I{i} = core.MibDataset();
+            fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
+            I = imread(fn);
+            
+            %modelType
+            %datasetType =  obj.view.
+            obj.I{i} = core.MibDataset(I, [], 'labels63');
         end
         obj.Sets.names = [obj.Sets.names; BatchOpt.SetName];
         obj.Sets.selectedSet = numel(obj.Sets.names);

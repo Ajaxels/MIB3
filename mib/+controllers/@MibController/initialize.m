@@ -1,5 +1,5 @@
-function initializeMibController(obj)
-% function initializeMibController(obj)
+function initialize(obj)
+% function initialize(obj)
 % Initialize the main MibController class
 
 arguments (Input)
@@ -8,11 +8,6 @@ end
 
 % tweaks
 showSplashScreen = false;
-
-% ---- obtain path to MIB
-obj.mibPath = utils.getInstallationPath('mib3');
-obj.mibModel.mibPath = obj.mibPath; % send also to mibModel as it is needed to get relative dirs
-fprintf('MIB installation path: %s\n', obj.mibPath);
 
 % ---- show splash screen
 if showSplashScreen

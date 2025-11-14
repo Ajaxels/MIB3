@@ -43,26 +43,28 @@ classdef MibModel < handle
         
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model. Compatible with the batch mode.
 
-        function obj = MibModel(cpuParallelLimitMax)
-            % function obj = MibModel(cpuParallelLimitMax)
+        function obj = MibModel(cpuParallelLimitMax, mibPath)
+            % function obj = MibModel(cpuParallelLimitMax, mibPath)
             % Construct an instance of this class
             %
             % Parameters:
             % cpuParallelLimit: integer, maximal number of possible workers for parallel processing
+            % mibPath: char with the location of MIB3
 
             arguments
                 % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html
                 cpuParallelLimitMax (1,1) double {mustBePositive, mustBeInteger} = 1
+                mibPath (1,:) char = ''
             end
             
             obj.cpuParallelLimitMax = cpuParallelLimitMax;
-            obj.initalize();
+            obj.mibPath = mibPath;
+            obj.initialize();
         end
 
-        function initalize(obj)
+        function initialize(obj)
             obj.currentDirectory = '\';   % define working directory
             obj.id = 1;         % index of the current dataset
-            obj.mibPath = [];   % path to MIB installation directory
             
             % define default Set
             obj.Sets.selectedSet = [];  % selected set in obj.view.handles.panels.datasets.handles.sets
