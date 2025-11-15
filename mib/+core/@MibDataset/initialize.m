@@ -1,6 +1,65 @@
-function initialize(obj)
-% function initialize(obj)
+function initialize(obj, img, meta, datasetType, modelType)
+% function initialize(obj, img, meta, datasetType, modelType)
 % init MibDataset class and set all elements of the class to default values
+%
+% Parameters:
+% img: matrix with the image to initialize the class, can be empty
+% meta: a structure with default settings for the class, can be empty; 
+% the following fields are used,
+% .filename -> full path to the dataset
+% .sliceName -> cell array with slice names, can be empty
+% .lutColors -> matrix with LUT colors to use (colChannel, R G B) in range 0-1
+% .pixSize -> structure with
+%   @li .x - physical width of a pixel
+%   @li .y - physical height of a pixel
+%   @li .z - physical thickness of a pixel
+%   @li .t - time between the frames for 2D movies
+%   @li .tunits - time units
+%   @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+% .viewPort -> structure with viewing parameters:
+%   @li .min - a vector with minimal value for intensity stretching for each color channel
+%   @li .max - a vector with maximal value for intensity stretching for each color channel
+%   @li .gamma a vector with gamma factor for contrast adjustment for each color channel
+% datasetType: [char, @default 'Std']type of the dataset, one of these
+%   @li 'Std' - standard image, one that is loaded to memory completely
+%   @li 'Virtual' - virtual dataset that is loaded upon demand
+%   @li 'BigData' - big-data compatible dataset
+% modelType: type of the labels, 
+% .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
+% .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
+% .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
+
+if nargin < 5; modelType = 'imageOnly'; end
+if nargin < 4; datasetType = 'Std'; end
+if nargin < 3; meta = []; end
+if nargin < 2; img = []; end
+
+% init meta as empty struct
+if isempty(meta); meta = struct(); end
+
+% reset the state of the main layers
+obj.img = NaN;
+obj.labels = NaN;
+obj.mask = NaN;
+obj.selection = NaN;
+
+switch datasetType
+    case 'Std'
+        obj.img = core.MibImage(img, meta);
+        switch modelType
+            case 'imageOnly'
+                % pass
+            case 'labels'
+                obj.labels = core.MibLabels(img, meta);
+            case 'labels63'
+                obj.labels = core.MibLabels63(img, meta);
+        end
+    case 'Virtual'
+        error('core.MibDataset.initialize: Virtual - not implemented');
+    case 'BigData'
+        error('core.MibDataset.initialize: BigData - not implemented');
+end
+
 
 % ---------- main layers ----------
 obj.annotations = core.Annotations; % handle to class for keeping annotations

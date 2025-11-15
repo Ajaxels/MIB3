@@ -95,7 +95,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        initialize(obj) % init MibDataset class and set all elements of the class to default values
+        initialize(obj, img, meta, datasetType, modelType) % init MibDataset class and set all elements of the class to default values
 
         dataset = getData(obj) % get required dataset 
 
@@ -137,37 +137,9 @@ classdef MibDataset < matlab.mixin.Copyable
 
             % init meta as empty struct
             if isempty(meta); meta = struct(); end
-
-            % if isempty(img)
-            %     obj.initialize();
-            % else
-            %     obj.initialize(img, meta);
-            % end
-
-            obj.img = NaN;
-            obj.labels = NaN;
-            obj.mask = NaN;
-            obj.selection = NaN;
-
-            switch datasetType
-                case 'Std'
-                    obj.img = core.MibImage(img, meta);
-                    switch modelType
-                        case 'imageOnly'
-                            % pass
-                        case 'labels'
-                            obj.labels = core.MibLabels(img, meta);
-                        case 'labels63'
-                            obj.labels = core.MibLabels63(img, meta);
-                    end
-                case 'Virtual'
-                    error('core.MibDataset: Virtual - not implemented');
-                case 'BigData'
-                    error('core.MibDataset: BigData - not implemented');
-            end
-
+            
             % initialize default and custom parameters from the supplied img
-            obj.initialize();
+            obj.initialize(img, meta, datasetType, modelType);
 
         end
     end
