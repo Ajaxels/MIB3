@@ -83,6 +83,8 @@ classdef MibController < handle
 
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
+        imViewPanel_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View panel obj.view.handles.imView{setNumber}.handles...
+        
         initialize(obj)  % initialize the main MibController class
 
         listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
