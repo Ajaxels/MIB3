@@ -40,7 +40,7 @@ classdef MibImage < matlab.mixin.Copyable
         time
         % number of time points in the dataset
         type
-        % type of the dataset: image, labels, labels63
+        % type of the dataset: image (MibImage), labels (MibLabels), labels63 (MibLabels63)
         width
         % image width, px
         viewPort    
@@ -60,8 +60,8 @@ classdef MibImage < matlab.mixin.Copyable
 
         result = setData(obj, dataset, orient, col_channel, options)        % update contents of the class
 
-        function obj = MibImage(data, meta, type)
-            % obj = MibImage(data, meta, type)
+        function obj = MibImage(data, meta)
+            % obj = MibImage(data, meta)
             % MibImage class constructor
             
             % Constructor for the MibBaseImage class. 
@@ -72,20 +72,20 @@ classdef MibImage < matlab.mixin.Copyable
             % meta: a structure with parameters of the dataset, can be @e [], see obj.initImage for details
             % type: type of the data, 'image', 'labels' (MibLabels class), 'labels63' (MibLabels63 class)
             
-            if nargin < 3; type = 'image'; end
             if nargin < 2; meta = []; end
             if nargin < 1; data = []; end
             
-            type = 'image';
+            % init meta as empty struct
+            if isempty(meta); meta = struct(); end
 
             if isempty(data) 
                 obj.initialize();
             else
                 % permute the 3rd dimension into the 4th dimension
-                if ndims(data)==3 && size(data,3) < 4
+                if ndims(data)==3 && size(data, 3) < 4
                     data = permute(data, [1 2 4 3]);
                 end
-                obj.initialize(data, meta, type);
+                obj.initialize(data, meta);
             end
         end
 

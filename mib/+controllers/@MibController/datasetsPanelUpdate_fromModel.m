@@ -37,15 +37,6 @@ prevSelectedSet = ceil(obj.mibModel.id/obj.mibModel.Sets.datasetsInSet);
 obj.view.handles.panels.datasets.handles.sets.Items = obj.mibModel.Sets.names;
 obj.view.handles.panels.datasets.handles.sets.Value = obj.mibModel.Sets.names(obj.mibModel.Sets.selectedSet);
 
-% update the button background, when buttons in the sets are different
-if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
-    prevBufferStringId = sprintf('buffer%d', prevSelectedDatasetIndex);
-    obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
-
-    % update description of the set tab
-    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', newSelectedDatasetIndex);
-end
-
 %% Modify Figure-Documents
 
 % add a new matlab.ui.internal.FigureDocument to match number of sets
@@ -74,6 +65,15 @@ elseif numel(obj.view.handles.figureDocs) > noSets
     obj.view.handles.imView(prevSelectedSet) = [];
     delete(obj.view.handles.figureDocs{prevSelectedSet});
     obj.view.handles.figureDocs(prevSelectedSet) = [];
+end
+
+% update the button background, when buttons in the sets are different
+if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
+    prevBufferStringId = sprintf('buffer%d', prevSelectedDatasetIndex);
+    obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+
+    % update description of the set tab
+    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', newSelectedDatasetIndex);
 end
 
 % check for renamed set, rename the figure-document tan

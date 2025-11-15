@@ -4,7 +4,7 @@ classdef MibLabels < core.MibImage
     % The class inherits properties and function of the parent class
     % (core.MibImage). 
     % Constructor requires initialization as 
-    % "obj = obj@core.MibImage(img, meta, type);  % Call parent constructor" 
+    % "obj = obj@core.MibImage(img, meta);  % Call parent constructor" 
 
     properties
         labelsVariable
@@ -16,22 +16,24 @@ classdef MibLabels < core.MibImage
     end
 
     methods
-        function obj = MibLabels(img, meta, type)
-            % function obj = MibLabels(img, meta, type)
+        function obj = MibLabels(img, meta)
+            % function obj = MibLabels(img, meta)
             % constructor of MibLabels class, inherits properties and
             % methods of MibImage
             %
             % Parameters:
             % img: an 2D-5D image stack
             % meta: a structure with parameters of the dataset, can be @e []
-            % type: type of the img, 'model', 'labels', 'labels63'
-
-            if nargin < 3; type = []; end
+            
             if nargin < 2; meta = []; end
             if nargin < 1; img = []; end
-            type = 'labels';
+            
+            % init meta as empty struct
+            if isempty(meta); meta = struct(); end
 
-            obj = obj@core.MibImage(img, meta, type);  % Call parent constructor
+            obj = obj@core.MibImage(img, meta);  % Call parent constructor
+            obj.type = 'labels'; % update type of the class
+
         end
 
         

@@ -74,7 +74,7 @@ classdef MibModel < handle
             obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
             
             % initialize MIB with 10 dummy datasets
-            BatchOpt = struct('Mode', {'Add set'}, 'SetName', 'Set 1');
+            BatchOpt = struct('Mode', {'Add set'}, 'DatasetType', {'Std'}, 'SetName', 'Set 1');
             obj.datasetsSetsOps(BatchOpt);
 
             %obj.newDatasetSwitch = 0;

@@ -96,12 +96,8 @@ switch BatchOpt.Mode{1}
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
             fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
             I = imread(fn);
-            
-            %modelType
-            %datasetType =  obj.view.
-            meta = [];
-            datasetType = 'Std';
-            obj.I{i} = core.MibDataset(I, meta, datasetType, 'labels63');
+            meta = struct();
+            obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'labels63');
         end
                 
         % update all widgets of the Datasets panel

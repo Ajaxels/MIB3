@@ -1,5 +1,5 @@
-function initialize(obj, data, meta, type)
-% function initialize(obj, data, meta, type)
+function initialize(obj, data, meta)
+% function initialize(obj, data, meta)
 % initialize the class using default or provided values
 %
 % Parameters:
@@ -20,17 +20,17 @@ function initialize(obj, data, meta, type)
 %   @li .min - a vector with minimal value for intensity stretching for each color channel
 %   @li .max - a vector with maximal value for intensity stretching for each color channel
 %   @li .gamma a vector with gamma factor for contrast adjustment for each color channel
-% type: char with the type of the dataset, 'image', 'model'
 
-
-if nargin < 4; type = 'image'; end
-if nargin < 3; meta = struct(); end
+if nargin < 3; meta = []; end
 if nargin < 2; data = []; end
+
+% init meta as empty struct
+if isempty(meta); meta = struct(); end
 
 % init data with an empty matrix
 if isempty(data)
     if strcmp(type, 'image')
-        obj.data{1} = zeros([256 256], 'uint8');  
+        obj.data{1} = uint8(randi(255, [256 256]));
         obj.exists = true;
     else
         obj.data{1} = NaN;   % default for labels and other types
@@ -41,8 +41,8 @@ else
     obj.exists = true;
 end
 
-% define data type: image or model
-obj.type = type;
+% define data type: image, the other types: 'labels' used in MibLabels and 'labels63' in MibLabels63
+obj.type = 'image';
 
 % update default properties of the class
 [y, x, z, c, t] = size(obj.data{1});
@@ -63,6 +63,7 @@ if ~isfield(meta, 'filename'); meta.filename = 'none.tif'; end
 if ~isfield(meta, 'sliceName'); meta.sliceName = []; end
 if ~isfield(meta, 'lutColors'); meta.lutColors = utils.defaults.generateLUT(obj.colors); end
 if ~isfield(meta, 'pixSize'); meta.pixSize = struct('x', 1, 'y', 1, 'z', 1, 't', 1, 'units', 'pixels', 'tunits', 's');
+
 if ~isfield(meta, 'viewPort')
     meta.viewPort = struct();
     meta.viewPort.min = zeros([obj.colors, 1]);

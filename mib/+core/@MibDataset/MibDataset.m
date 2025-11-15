@@ -110,6 +110,17 @@ classdef MibDataset < matlab.mixin.Copyable
             % .filename -> full path to the dataset
             % .sliceName -> cell array with slice names, can be empty
             % .lutColors -> matrix with LUT colors to use (colChannel, R G B) in range 0-1
+            % .pixSize -> structure with
+            %   @li .x - physical width of a pixel
+            %   @li .y - physical height of a pixel
+            %   @li .z - physical thickness of a pixel
+            %   @li .t - time between the frames for 2D movies
+            %   @li .tunits - time units
+            %   @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+            % .viewPort -> structure with viewing parameters:
+            %   @li .min - a vector with minimal value for intensity stretching for each color channel
+            %   @li .max - a vector with maximal value for intensity stretching for each color channel
+            %   @li .gamma a vector with gamma factor for contrast adjustment for each color channel
             % datasetType: [char, @default 'Std']type of the dataset, one of these
             %   @li 'Std' - standard image, one that is loaded to memory completely
             %   @li 'Virtual' - virtual dataset that is loaded upon demand
@@ -124,10 +135,14 @@ classdef MibDataset < matlab.mixin.Copyable
             if nargin < 2; meta = []; end
             if nargin < 1; img = []; end
 
-            %files = dir(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\*24px.png'));
-            %fnIndex = round(rand*numel(files));
-            %I = imread(fullfile(fileparts(fileparts(which('mib3'))), 'mib\assets\icons\', files(fnIndex).name));
-            %obj.img = core.MibImage(I);
+            % init meta as empty struct
+            if isempty(meta); meta = struct(); end
+
+            % if isempty(img)
+            %     obj.initialize();
+            % else
+            %     obj.initialize(img, meta);
+            % end
 
             obj.img = NaN;
             obj.labels = NaN;
@@ -139,18 +154,19 @@ classdef MibDataset < matlab.mixin.Copyable
                     obj.img = core.MibImage(img, meta);
                     switch modelType
                         case 'imageOnly'
-                            
+                            % pass
                         case 'labels'
-                            obj.labels = core.MibLabels(img, meta, 'labels');
+                            obj.labels = core.MibLabels(img, meta);
                         case 'labels63'
-                            obj.labels = core.MibLabels63(img, meta, 'labels63');
+                            obj.labels = core.MibLabels63(img, meta);
                     end
                 case 'Virtual'
                     error('core.MibDataset: Virtual - not implemented');
                 case 'BigData'
                     error('core.MibDataset: BigData - not implemented');
             end
-            
+
+            % initialize default and custom parameters from the supplied img
             obj.initialize();
 
         end
