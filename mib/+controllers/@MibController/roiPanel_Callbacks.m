@@ -1,6 +1,6 @@
 function roiPanel_Callbacks(obj, hWidget, hData, mode)
 % function roiPanel_Callbacks(obj, hWidget, hData, mode)
-% callbacks for widgets of some the ROI panel obj.handles.panels.roi
+% callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
 %
 % Parameters:
 % hWidget: handle to the pressed widget
@@ -34,39 +34,57 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.roiPanel_Callbacks: "obj.view.handles.panels.roi.handles.%s"-> pressed/changed\n', mode);
+end
+
+
 switch mode
     case 'roiOptions' % define ROI visualization options
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
     case 'roiList' % list of active ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %s\n', mode, hWidget.Value);
     case 'roiLoad' % load ROI from a file
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
     case 'roiSave' % save ROI to a file
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
     case 'roiAdd' % add ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
     case 'roiRemove' % remove ROI from the list
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
     case 'roiType' % select type of ROI to add
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %s\n', mode, hWidget.Value);
     case 'roiFixAspect' % fix aspect ration when adding a ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
     case 'roiShowLabel' % show the label with ROI name next to the ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
     case 'roiShowROI' % show ROI in the Image View panel
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
     case 'roiManually' % enable manual ROI addition mode based on provided coordinates
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
+        if obj.view.handles.panels.roi.handles.roiManually.Value
+            obj.view.handles.panels.roi.handles.roiX1.Enable = 'on';
+            obj.view.handles.panels.roi.handles.roiY1.Enable = 'on';
+            obj.view.handles.panels.roi.handles.roiWidth.Enable = 'on';
+            obj.view.handles.panels.roi.handles.roiHeight.Enable = 'on';
+        else
+            obj.view.handles.panels.roi.handles.roiX1.Enable = 'off';
+            obj.view.handles.panels.roi.handles.roiY1.Enable = 'off';
+            obj.view.handles.panels.roi.handles.roiWidth.Enable = 'off';
+            obj.view.handles.panels.roi.handles.roiHeight.Enable = 'off';
+        end
+        
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
     case 'roiX1' % define min-X value for addition of ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
     case 'roiY1' % define min-Y value for addition of ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
     case 'roiWidth' % define width of the added ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
     case 'roiHeight' % define height of the added ROI
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
     case 'roiToSelection' % highlight the ROI area using the selection layer
-        fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
 end
 
 end

@@ -27,27 +27,31 @@ arguments (Input)
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('Pressed: controllers.MibController.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+end
+
 switch menuEntry.Tag
     case 'fileListContextCombine'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextLoadPart'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextLoadNth'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+       
     case 'fileListContextInsert'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextColorCombine'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextColorAdd'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextColorAddNth'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextRename'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextDelete'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
     case 'fileListContextProps'
-        fprintf('Pressed: obj.controller.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+        
 end
 
 end

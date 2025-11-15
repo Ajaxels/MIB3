@@ -19,11 +19,15 @@ arguments (Input)
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationMaterialsTable_Render: -> "%s" (%s)\n', menuEntry.Text, menuEntry.Tag);
+end
+
 switch menuEntry.Tag
     case 'materialsTableContextRenMIB'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContextRen -> %s\n', menuEntry.Tag);
+        
     case 'materialsTableContextRenMat'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContextRen -> %s\n', menuEntry.Tag);
+        
     case 'materialsTableContextRenFiji'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContextRen -> %s\n', menuEntry.Tag);
+        
 end

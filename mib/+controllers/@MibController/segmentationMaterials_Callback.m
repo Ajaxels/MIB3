@@ -27,23 +27,27 @@ arguments (Input)
     selectedData {mustBeA(selectedData, {'matlab.ui.eventdata.MenuSelectedData', 'matlab.ui.internal.toolstrip.base.ToolstripEventData'})} 
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationMaterials_Callback: context menu for "obj.view.handles.panels.segmentation.handles.materialsTable"->Materials -> selected "%s"\n', menuEntry.Text);
+end
+
 switch menuEntry.Text
     case 'Rename material'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Add material'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Insert material'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Swap materials'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Reorder materials'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Export material'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Save material to file'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
     case 'Remove materials'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext (or menu) -> %s\n', menuEntry.Text);
+        
 end
 
 end

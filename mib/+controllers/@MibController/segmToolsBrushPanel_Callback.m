@@ -24,13 +24,17 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsBrushPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'brushRadius' % change of the brush size
-        fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'eraserFactor' % change of the eraser magnifier factor
-        fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'interpolationSettings' % set the interpolation settings
-        fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'brushUseClustering' % selection of the clustering mode
         switch hWidget.SelectedObject.Text
             case 'No clusters'
@@ -40,11 +44,11 @@ switch mode
             case 'SLIC'
 
         end
-        fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.SelectedObject.Text);
+        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.SelectedObject.Text);
     case 'clustersPar1' % clustering mode paramter 1: 
-        fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'clustersPar2' % clustering mode parameter 2: 
-        fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
 end
 
 end

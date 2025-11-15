@@ -24,19 +24,23 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsLines3DPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'linesTableView' % open a dialog with tables showing line edges and vertices
-        fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'linesShowLines' % show or hide the 3D lines
-        fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'linesClick' % define the default operation on mouse click
-        fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'linesShiftClick' % define the default operation on Shift+mouse click
-        fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'linesCtrlClick' % define the default operation on Ctrl+mouse click
-        fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'linesAltClick' % define the default operation on Alt+mouse click
-        fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
 end
 
 end

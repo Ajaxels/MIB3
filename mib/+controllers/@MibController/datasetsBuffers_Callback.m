@@ -19,8 +19,9 @@ end
 % get index of the pressed button
 buttonId = str2double(hWidget.Text);
 
-
-fprintf('obj.controller.datasetsBuffers_ButtonPushedFcn -> button %d pressed\n', buttonId);
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.datasetsBuffers_Callback -> button "%d" pressed\n', buttonId);
+end
 
 % generate identifier of the buffer handle
 prevBufferStringId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet));

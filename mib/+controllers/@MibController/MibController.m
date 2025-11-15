@@ -113,6 +113,8 @@ classdef MibController < handle
         
         segmentationRestrictMaterial_Callback(obj, hWidget, hData) % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in obj.handles.panels.segmentation panel. Restrict selection to the selected material in obj.handles.panels.segmentation.handles.materialsTable
         
+        segmentationTool_Callback(obj, hWidget, hData)       % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel. Select segmentation tool
+
         segmToolsAnnotationsPanel_Callback(obj, hWidget, hData, mode) % callbacks for widgets in the Segmentation panel->Annotations tool
         
         segmToolsBrushPanel_Callback(obj, hWidget, hData, mode)  % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool

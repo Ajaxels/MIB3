@@ -22,17 +22,22 @@ arguments (Input)
 end
 
 if isempty(mode); mode = hWidget.Tag; end
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsMembranePanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'membraneScale' % scale parameter for membrane tracking
-        fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'membraneWidth' % width of the membrane
-        fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'membraneStraightLine' % generate straight line instead of tracking
-        fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'membraneBlackSignal' % signal type: black-on-white / white-on-black signal
-        fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'membraneRecenterView' % recenter the view after placing a point
-        fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Membrane click tracker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
 end
 
 end

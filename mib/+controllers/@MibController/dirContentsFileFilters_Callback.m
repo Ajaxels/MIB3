@@ -13,5 +13,8 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
-fprintf('Callback for obj.handles.panels.dirContents.handles.fileFilters, value = "%s"\n', hWidget.Value);
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.dirContentsFileFilters_Callback: selection of "obj.view.handles.panels.dirContents.handles.fileFilters" value = "%s"\n', hWidget.Value);
+end
+
 end

@@ -71,5 +71,9 @@ switch mode
         error('MibController.datasetsSetsOps_Callbacks: this option (%s) is not implemented!\n', mode);       
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.datasetsSetsOps_Callbacks -> %s pressed\n', mode);
+end
+
 % call method of MibModel class
 obj.mibModel.datasetsSetsOps(BatchOpt);

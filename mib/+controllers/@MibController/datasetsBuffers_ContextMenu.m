@@ -1,7 +1,7 @@
 function datasetsBuffers_ContextMenu(obj, menuEntry, selectedData)
-% function datasetsBuffers_ButtonPushedFcn(obj, menuEntry, selectedData)
+% function datasetsBuffers_ContextMenu(obj, menuEntry, selectedData)
 % callbacks for the context menu of the buffers 
-% (obj.handels.panels.datasets.handles.buffer1) buttons
+% (obj.handles.panels.datasets.handles.buffer1) buttons
 
 % Parameters:
 % menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
@@ -25,21 +25,30 @@ arguments (Input)
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
+% get id of the button with the menu
+buttonId = str2double(selectedData.ContextObject.Text);
+% get global id of the dataset
+globalDatasetIndex = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets.datasetsInSet; % NOT obj.mibModel.id as the context menu may be attached to not selected buffer
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.datasetsBuffers_ContextMenu: selected button (obj.view.handles.panels.datasets.handles.%s), dataset: %d -> %s\n', selectedData.ContextObject.Tag, globalDatasetIndex, menuEntry.Tag);
+end
+
 switch menuEntry.Tag
     case 'buffersContextDuplicate' % duplicate the dataset to another MIB container (buffer)
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextDuplicate\n');
+        
     case 'buffersContextSyncXY' % sync the view with another dataset using only XY axes
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextSyncXY\n');
+        
     case 'buffersContextSyncXYZ' % sync the view with another dataset using only XYZ axes
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextSyncXYZ\n');
+        
     case 'buffersContextSyncXYZT' % sync the view with another dataset using only XYZT axes
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextSyncXYZT\n');
+        
     case 'buffersContextLink' % link the view with another dataset
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextLink\n');
+        
     case 'buffersContextClose' % close the current dataset
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextClose\n');
+        
     case 'buffersContextCloseSet' % close all datasets from the current set
-        fprintf('Pressed: obj.controller.datasetsBuffer_ContextMenu -> buffersContextCloseSet\n');
+        
 end
 
 

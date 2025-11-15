@@ -17,17 +17,18 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.datasetsType_Callbacks: selection of "obj.handles.panels.datasets.handles.datasetType" -> "%s"\n',  hWidget.Value);
+end
+
 % update obj.mibModel.Sets.datasetTypes
 obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = hWidget.Value;
 
 switch hWidget.Value % Get the selected dataset type from the dropdown
     case 'Std'
         % Set the standard mode when dataset is loaded into memory
-        fprintf('Callback for selection in obj.handles.panels.datasets.handles.datasetType -> %s\n', hWidget.Value);
     case 'Virtual'
         % Set the virtual mode
-        fprintf('Callback for selection in obj.handles.panels.datasets.handles.datasetType -> %s\n', hWidget.Value);
     case 'BigData'
         % Placeholder for future big data handling
-        fprintf('Callback for selection in obj.handles.panels.datasets.handles.datasetType -> %s\n', hWidget.Value);
 end

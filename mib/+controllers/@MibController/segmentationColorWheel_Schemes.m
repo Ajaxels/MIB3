@@ -2,7 +2,7 @@ function segmentationColorWheel_Schemes(obj, menuEntry, selectedData)
 % function segmentationColorWheel_Schemes(obj, menuEntry, selectedData)
 % callbacks for the context menu of the segmentation table widget -> Color
 % schemes entry
-% (obj.handles.panels.segmentation.handles.colorWheelContextScheme)
+% (obj.view.handles.panels.segmentation.handles.colorWheelContextScheme)
 %
 % Parameters:
 % menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
@@ -36,41 +36,46 @@ arguments (Input)
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationColorWheel_Schemes: context menu for "obj.view.handles.panels.segmentation.handles.colorWheel" -> selected "%s (%s)"\n', menuEntry.Text, menuEntry.Tag);
+end
+
+
 switch menuEntry.Tag
     case 'colorWheelContextSchemeDef'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeDist'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeRandom'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSwap'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeQMC'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeDDD'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeDRK'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeDBG'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeDCB'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSKG'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSCB'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSM'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSAB'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSD'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeMJ'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeMH'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeSetDef'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
     case 'colorWheelContextSchemeUpdate'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.colorWheelContextScheme -> %s\n', menuEntry.Tag);
+        
 end

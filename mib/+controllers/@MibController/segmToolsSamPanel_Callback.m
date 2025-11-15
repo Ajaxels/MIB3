@@ -27,25 +27,35 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsSamPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'samMethod' % method of SAM usage
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        switch hWidget.Value
+            case {'Automatic everything', 'Landmarks'}
+                obj.view.handles.panels.segmentation.handles.samSegment.Enable = 'on';
+            case {'Interactive', 'Interactive 3D'}
+                obj.view.handles.panels.segmentation.handles.samSegment.Enable = 'off';
+        end
     case 'samV2' % use SAM2 instead of SAM1
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'samDataset' % select type of dataset to apply SAM
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'samDestination' % destination layer for SAM results
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'samMode' % SAM mode, add/replace/subtract
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'samSettings' % open SAM settings dialog
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'samList' % show the list of points (annotations) for the landmark mode
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'samClear' % clear the annotation points
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'samSegment' % do SAM segmentation
-        fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s\n', mode);
 end
 
 end

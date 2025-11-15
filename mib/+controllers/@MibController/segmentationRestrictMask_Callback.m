@@ -13,11 +13,15 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationRestrictMask_Callback: change state of "obj.view.handles.panels.segmentation.handles.restrictMask" -> %d\n', hWidget.Value);
+end
+
 switch hWidget.Value
     case true
-        fprintf('mibController.segmentationRestrictMask_Callback: press of obj.handles.panels.segmentation.handles.restrictMask: %d\n', hWidget.Value);
+        
     case false
-        fprintf('mibController.segmentationRestrictMask_Callback: press of obj.handles.panels.segmentation.handles.restrictMask: %d\n', hWidget.Value);
+        
 end
 
 

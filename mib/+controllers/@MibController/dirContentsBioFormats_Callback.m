@@ -12,5 +12,8 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
-fprintf('Double clicked on: obj.handles.panels.dirContents.handles.bioFormats; state=%d\n', hWidget.Value);
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.dirContentsBioFormats_Callback: clicked on "obj.view.handles.panels.dirContents.handles.bioFormats" -> state=%d\n', hWidget.Value);
+end
+
 end

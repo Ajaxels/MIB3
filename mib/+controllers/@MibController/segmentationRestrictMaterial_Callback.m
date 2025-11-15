@@ -14,11 +14,15 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationRestrictMaterial_Callback: change state of "obj.view.handles.panels.segmentation.handles.restrictMaterial" -> %d\n', hWidget.Value);
+end
+
 switch hWidget.Value
     case true
-        fprintf('mibController.segmentationRestrictMaterial_Callback: press of obj.handles.panels.segmentation.handles.restrictMaterial: %d\n', hWidget.Value);
+
     case false
-        fprintf('mibController.segmentationRestrictMaterial_Callback: press of obj.handles.panels.segmentation.handles.restrictMaterial: %d\n', hWidget.Value);
+
 end
 
 end

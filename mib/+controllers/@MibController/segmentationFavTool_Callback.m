@@ -15,11 +15,15 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationFavTool_Callback: change state of "obj.view.handles.panels.segmentation.handles.favoriteTool" -> %d\n', hWidget.Value);
+end
+
 switch hWidget.Value
     case true
-        fprintf('mibController.segmentationFavTool_Callback: press of obj.handles.panels.segmentation.handles.favoriteTool: %d\n', hWidget.Value);
+        
     case false
-        fprintf('mibController.segmentationFavTool_Callback: press of obj.handles.panels.segmentation.handles.favoriteTool: %d\n', hWidget.Value);
+        
 end
 
 

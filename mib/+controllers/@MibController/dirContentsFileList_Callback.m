@@ -12,5 +12,7 @@ arguments (Input)
     hData matlab.ui.eventdata.DoubleClickedData
 end
 
-fprintf('Double clicked on: obj.handles.panels.dirContents.handles.fileList\n');
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.dirContentsFileList_Callback: Double clicked on: obj.handles.panels.dirContents.handles.fileList\n');
+end
 end

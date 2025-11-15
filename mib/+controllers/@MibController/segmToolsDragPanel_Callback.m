@@ -24,19 +24,23 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsDragPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'dragLayer' % select MIB layout to apply the drag-and-drop operation
-        fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'dragValue' % define the value for shifting materials
-        fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'dragUp' % shift the layer towards up-direction
-        fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'dragRight' % shift the layer towards right-direction
-        fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'dragLeft' % shift the layer towards left-direction
-        fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
     case 'dragDown' % shift the layer towards down-direction
-        fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
 end
 
 end

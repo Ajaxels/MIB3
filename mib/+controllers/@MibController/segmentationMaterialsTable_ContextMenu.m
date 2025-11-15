@@ -22,15 +22,19 @@ arguments (Input)
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationMaterialsTable_ContextMenu: context menu for "obj.view.handles.panels.segmentation.handles.materialsTable" -> selected "%s (%s)"\n', menuEntry.Text, menuEntry.Tag);
+end
+
 switch menuEntry.Tag
     case 'materialsTableContextShowSelected'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext -> %s\n', menuEntry.Tag);
+
     case 'materialsTableContextRename'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext -> %s\n', menuEntry.Tag);
+
     case 'materialsTableContextSetColor'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext -> %s\n', menuEntry.Tag);
+
     case 'materialsTableContextQuant'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext -> %s\n', menuEntry.Tag);
+
     case 'materialsTableContextUnlink'
-        fprintf('Pressed: obj.handles.panels.segmentation.handles.materialsTableContext -> %s\n', menuEntry.Tag);
+        
 end

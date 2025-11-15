@@ -24,17 +24,21 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsMagicwandPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'magicMethod' % select the MagicWand or RegionGrowing mode 
-        fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'magicRange1' % define the range 1 parameter
-        fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'magicRange2' % define the range 2 parameter
-        fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'magicRadius' % define effective radius for the MagicWand tool
-        fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'magicConnect' % object connections for making magic wand mask
-        fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.SelectedObject.Text);
+        %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.SelectedObject.Text);
 end
 
 end

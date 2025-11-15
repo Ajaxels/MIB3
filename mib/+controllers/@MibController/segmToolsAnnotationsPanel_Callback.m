@@ -23,19 +23,23 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmToolsAnnotationsPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
 switch mode
     case 'annAnnotationList' % open another window with the annotation list 
-        fprintf('Clicked on a widget of the segmentation panel->Annotations tool (obj.handles.panels.segmentation): %s\n', mode);
+        
     case 'annShowPrompt' % show the annotation prompt when adding a new annotation
-        fprintf('Clicked on a widget of the segmentation panel->Annotations tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        
     case 'annFocusOnValue' % when showing the prompt focus on the value field
-        fprintf('Clicked on a widget of the segmentation panel->Annotations tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        
     case 'annPrecision' % define floating value precision for the annotation value
-        fprintf('Clicked on a widget of the segmentation panel->Annotations tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        
     case 'annDeleteAll' % delete all annotations
-        fprintf('Clicked on a widget of the segmentation panel->Annotations tool (obj.handles.panels.segmentation): %s\n', mode);
+        
     case 'annDisplayAs' % define how annotations should be visualized
-        fprintf('Clicked on a widget of the segmentation panel->Annotations tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        
 end
 
 end

@@ -70,13 +70,14 @@ noSets = numel(obj.Sets.names); % current number of sets
 
 switch BatchOpt.Mode{1}
     case 'Select set'
-        fprintf('obj.mibModel.datasetsSetsOps: Select set -> %s\n', BatchOpt.SetName);
+        %fprintf('models.mibModel.datasetsSetsOps: Select set -> %s\n', BatchOpt.SetName);
         obj.Sets.selectedSet = find(ismember(obj.Sets.names, BatchOpt.SetName));
         
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
     case 'Add set'
-        fprintf('obj.mibModel.datasetsSetsOps: Add set: %s \n', BatchOpt.SetName);
+        %fprintf('models.mibModel.datasetsSetsOps: Add set: %s \n', BatchOpt.SetName);
+
         if ismember(BatchOpt.SetName, obj.Sets.names)
             ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
             ErrorDlgOpt.optionalPrefix = sprintf('!!! Error !!!\n\nThe sets should have unique names!');
@@ -103,12 +104,14 @@ switch BatchOpt.Mode{1}
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
     case 'Rename set'
-        fprintf('obj.mibModel.datasetsSetsOps: Rename set %s -> %s\n', obj.Sets.names{obj.Sets.selectedSet}, BatchOpt.SetName);
+        %fprintf('models.mibModel.datasetsSetsOps: Rename set %s -> %s\n', obj.Sets.names{obj.Sets.selectedSet}, BatchOpt.SetName);
+        
         obj.Sets.names{obj.Sets.selectedSet} = BatchOpt.SetName;
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
     case 'Remove set'
-        fprintf('obj.mibModel.datasetsSetsOps: Remove set\n');
+        %fprintf('models.mibModel.datasetsSetsOps: Remove set\n');
+        
         if noSets == 1 %#ok<ISCL>
             ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
             ErrorDlgOpt.optionalPrefix = sprintf('!!! Warning !!!\n\nThe last set can not be removed!');

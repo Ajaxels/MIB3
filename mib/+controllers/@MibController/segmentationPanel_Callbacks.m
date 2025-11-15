@@ -25,18 +25,22 @@ end
 
 if isempty(mode); mode = hWidget.Tag; end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationPanel_Callbacks: clicked on "obj.view.handles.panels.segmentation.handles.%s"\n', mode);
+end
+
 switch mode
     case 'createModel'
-        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+  
     case 'loadModel'
-        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+        
     case 'addMaterial'
-        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+
     case 'removeMaterial'
-        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+
     case 'colorWheel'
-        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+
     case 'viewSettings'
-        fprintf('Clicked on a widget of the segmentation panel (obj.handles.panels.segmentation): %s\n', mode);
+
 end
 end

@@ -16,10 +16,16 @@ end
 
 switch hWidget.Tag
     case 'dirContentsHelp'
-        fprintf('Clicked on: obj.handles.panels.dirContents.handles.help\n');
+        if obj.mibModel.preferences.System.DeveloperMode
+            fprintf('controllers.MibController.helpButtons_Callback: clicked on "obj.handles.panels.dirContents.handles.help" -> %s\n', hWidget.Tag);
+        end
     case 'segmentationHelp'
-        fprintf('Clicked on: obj.handles.panels.segmentation.handles.help\n');
+        if obj.mibModel.preferences.System.DeveloperMode
+            fprintf('controllers.MibController.helpButtons_Callback: clicked on "obj.handles.panels.segmentation.handles.help" -> %s\n', hWidget.Tag);
+        end
     case 'roiHelp'
-        fprintf('Clicked on: obj.handles.panels.roi.handles.help\n');
+        if obj.mibModel.preferences.System.DeveloperMode
+            fprintf('controllers.MibController.helpButtons_Callback: clicked on "obj.handles.panels.roi.handles.help" -> %s\n', hWidget.Tag);
+        end
 end
 end

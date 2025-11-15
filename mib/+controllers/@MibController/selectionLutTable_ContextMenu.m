@@ -1,7 +1,7 @@
 function selectionLutTable_ContextMenu(obj, menuEntry, selectedData)
 % function selectionLutTable_ContextMenu(obj, menuEntry, selectedData)
 % callbacks for the context menu of the LUT table widget
-% (obj.handles.panels.selection.handles.lutTable)
+% (obj.view.handles.panels.selection.handles.lutTable)
 %
 % Parameters:
 % menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
@@ -25,23 +25,27 @@ arguments (Input)
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.selectionLutTable_ContextMenu: context menu for "obj.view.handles.panels.selection.handles.lutTable" -> %s\n', menuEntry.Tag);
+end
+
 switch menuEntry.Tag
     case 'lutTableContextInsert' % insert an empty color channel
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextCopy' % copy the selected color channel to a new one
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextInvert' % invert the selected color channel
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextRotate' % rotate the selected color channel
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextShift' % shift the selected color channel
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextSwap' % swap two color channels
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextDelete' % delete the selected color channel
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
     case 'lutTableContextSetLUT' % select new color for the selected color channel to show the the LUT mode
-        fprintf('Pressed: obj.handles.panels.selection.handles.lutTableContext -> %s\n', menuEntry.Tag);
+        
 
 end
 

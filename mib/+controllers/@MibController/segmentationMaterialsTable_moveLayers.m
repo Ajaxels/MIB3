@@ -14,6 +14,8 @@ function segmentationMaterialsTable_moveLayers(obj, menuEntry, selectedData)
 % Available menu options available from 'menuEntry.Tag':
 % 
 
-fprintf('segmentationMaterialsTable_moveLayers pressed\n');
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.segmentationMaterialsTable_moveLayers: -> %s\n', menuEntry.Tag);
+end
 
 end

@@ -257,6 +257,8 @@ obj.handles.panels.segmentation.handles.restrictMaterial.ValueChangedFcn = @(src
 obj.handles.panels.segmentation.handles.restrictMask.ValueChangedFcn = @(src, event)obj.controller.segmentationRestrictMask_Callback(src, event);
 obj.handles.panels.segmentation.handles.favoriteTool.ValueChangedFcn = @(src, event)obj.controller.segmentationFavTool_Callback(src, event);
 
+obj.handles.panels.segmentation.handles.segmTool.ValueChangedFcn = @(src, event)obj.controller.segmentationTool_Callback(src, event);
+
 % 3D ball, brush, spot panels
 obj.handles.panels.segmentation.handles.brushRadius.ValueChangedFcn = @(src, event)obj.controller.segmToolsBrushPanel_Callback(src, event);
 obj.handles.panels.segmentation.handles.eraserFactor.ValueChangedFcn = @(src, event)obj.controller.segmToolsBrushPanel_Callback(src, event);

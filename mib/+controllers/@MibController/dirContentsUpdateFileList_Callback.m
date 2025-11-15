@@ -14,5 +14,8 @@ arguments (Input)
     hData matlab.ui.eventdata.ButtonPushedData
 end
 
-fprintf('Clicked on: obj.handles.panels.dirContents.handles.updateFileList\n');
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.dirContentsUpdateFileList_Callback: clicked on: "obj.view.handles.panels.dirContents.handles.updateFileList"\n');
+end
+
 end
