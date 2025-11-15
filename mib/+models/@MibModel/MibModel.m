@@ -69,6 +69,7 @@ classdef MibModel < handle
             % define default Set
             obj.Sets.selectedSet = [];  % selected set in obj.view.handles.panels.datasets.handles.sets
             obj.Sets.names = {};        % cell array with names of the sets
+            obj.Sets.datasetTypes = {};        % cell matrix with datasetTypes in sets, obj.Sets.datasetTypes{setId, datasetId}, where datasetId = 1...10
             obj.Sets.selectedDataset = []; % array of the selected datasets in the sets
             obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
             

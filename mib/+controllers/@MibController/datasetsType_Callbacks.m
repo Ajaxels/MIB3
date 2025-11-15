@@ -17,6 +17,9 @@ arguments (Input)
     hData matlab.ui.eventdata.ValueChangedData
 end
 
+% update obj.mibModel.Sets.datasetTypes
+obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = hWidget.Value;
+
 switch hWidget.Value % Get the selected dataset type from the dropdown
     case 'Std'
         % Set the standard mode when dataset is loaded into memory

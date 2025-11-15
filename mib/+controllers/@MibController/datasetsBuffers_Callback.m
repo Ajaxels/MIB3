@@ -22,7 +22,6 @@ buttonId = str2double(hWidget.Text);
 
 fprintf('obj.controller.datasetsBuffers_ButtonPushedFcn -> button %d pressed\n', buttonId);
 
-
 % generate identifier of the buffer handle
 prevBufferStringId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet));
 newBufferStringId = sprintf('buffer%d', buttonId);
@@ -39,6 +38,9 @@ if ~strcmp(prevBufferStringId, newBufferStringId)
 
 end
 obj.view.handles.panels.datasets.handles.(newBufferStringId).BackgroundColor = [0 1 0];
+
+% update Dataset Type dropdown in the Datasets panel
+obj.view.handles.panels.datasets.handles.datasetType.Value = obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)};
 
 obj.plotImage();
 

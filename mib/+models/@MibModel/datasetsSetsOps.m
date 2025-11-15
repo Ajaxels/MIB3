@@ -32,6 +32,9 @@ if dt < 0.4; return; end
 BatchOpt = struct();
 BatchOpt.Mode = {'Select set'};     % default operation
 BatchOpt.Mode{2} = {'Select set', 'Add set', 'Rename set', 'Remove set'};  % only the single option is available for the batch mode so far
+BatchOpt.DatasetType = {'Std'}; % default dataset type: Std
+BatchOpt.DatasetType{2} = {'Std', 'Virtual', 'BigData'}; % available dataset types
+
 if isempty(obj.Sets.selectedSet) % initialization of MIB
     BatchOpt.SetName = 'Set 1';  
 else    
@@ -39,6 +42,7 @@ else
 end
 % tooltips that will accompany the BatchOpt
 BatchOpt.mibBatchTooltip.Mode = sprintf('Select required operation with the sets');
+BatchOpt.mibBatchTooltip.DatasetType = sprintf('Dataset type');
 BatchOpt.mibBatchTooltip.SetName = sprintf('Specify the (new) set name');
 
 % add section name and action name for the batch tool
@@ -81,8 +85,14 @@ switch BatchOpt.Mode{1}
             return;
         end
         
+        % update obj.Sets
+        obj.Sets.names = [obj.Sets.names; BatchOpt.SetName];
+        obj.Sets.selectedSet = numel(obj.Sets.names);
+        obj.Sets.selectedDataset = [obj.Sets.selectedDataset; 1]; % add 1 as the index of the selected dataset for the added set
+        obj.Sets.datasetTypes = [obj.Sets.datasetTypes; repmat(BatchOpt.DatasetType(1), [1 obj.Sets.datasetsInSet])];
+
         % get index of the next dataset
-        nextDatasetIndex = numel(obj.Sets.names)*obj.Sets.datasetsInSet + 1;
+        nextDatasetIndex = (numel(obj.Sets.names)-1) * obj.Sets.datasetsInSet + 1;
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
             fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
             I = imread(fn);
@@ -93,10 +103,7 @@ switch BatchOpt.Mode{1}
             datasetType = 'Std';
             obj.I{i} = core.MibDataset(I, meta, datasetType, 'labels63');
         end
-        obj.Sets.names = [obj.Sets.names; BatchOpt.SetName];
-        obj.Sets.selectedSet = numel(obj.Sets.names);
-        obj.Sets.selectedDataset = [obj.Sets.selectedDataset; 1]; % add 1 as the index of the selected dataset for the added set
-        
+                
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
     case 'Rename set'
@@ -119,7 +126,9 @@ switch BatchOpt.Mode{1}
         datasetIndices = firstDatasetIndex:firstDatasetIndex+obj.Sets.datasetsInSet-1;
         obj.I(datasetIndices) = [];
 
+        % update obj.Sets structure
         obj.Sets.names(obj.Sets.selectedSet) = [];
+        obj.Sets.datasetTypes(obj.Sets.selectedSet, :) = [];
         obj.Sets.selectedDataset(obj.Sets.selectedSet) = [];
         obj.Sets.selectedSet = max([obj.Sets.selectedSet - 1, 1]);
         % update all widgets of the Datasets panel
