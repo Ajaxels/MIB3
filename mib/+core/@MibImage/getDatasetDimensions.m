@@ -31,7 +31,7 @@ if isempty(orient); orient = 3; end % YX-plane
 % @b Examples:
 % @code [height, width, depth, colors, time] = MibBaseImage.getDatasetDimensions()      // get dimensions of the complete dataset  @endcode
 
-dim_yxzct = size(obj.img{1});
+dim_yxzct = size(obj.data{1});
 if numel(dim_yxzct) < 4; dim_yxzct(4:5) = [1 1]; end
 if numel(dim_yxzct) < 5; dim_yxzct(5) = 1; end
 

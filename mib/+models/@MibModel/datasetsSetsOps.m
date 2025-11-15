@@ -89,7 +89,9 @@ switch BatchOpt.Mode{1}
             
             %modelType
             %datasetType =  obj.view.
-            obj.I{i} = core.MibDataset(I, [], 'labels63');
+            meta = [];
+            datasetType = 'Std';
+            obj.I{i} = core.MibDataset(I, meta, datasetType, 'labels63');
         end
         obj.Sets.names = [obj.Sets.names; BatchOpt.SetName];
         obj.Sets.selectedSet = numel(obj.Sets.names);

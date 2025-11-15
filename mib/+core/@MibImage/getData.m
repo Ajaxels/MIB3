@@ -59,10 +59,10 @@ end
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        dataset = obj.img{1}(:,:,:,colChannel,:);
+        dataset = obj.data{1}(:,:,:,colChannel,:);
     else % labels type
-        dataset = zeros(size(obj.img{1}), 'uint8');   
-        dataset(obj.img{1} == materialIndex) = 1;
+        dataset = zeros(size(obj.data{1}), 'uint8');   
+        dataset(obj.data{1} == materialIndex) = 1;
     end
 
     if orient==1    % xz; get permuted dataset
@@ -104,9 +104,9 @@ else  % return a subvolume of the full dataset
     Tlim = [max([Tlim(1) 1]) min([Tlim(2) obj.time])];
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        dataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+        dataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     else % labels
-        dataset = uint8((obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) == materialIndex));
+        dataset = uint8((obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) == materialIndex));
     end
 
     if orient==1     % permute to xz

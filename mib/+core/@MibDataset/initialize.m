@@ -3,8 +3,8 @@ function initialize(obj)
 % init MibDataset class and set all elements of the class to default values
 
 % ---------- main layers ----------
-obj.annotations = data.Annotations; % handle to class for keeping annotations
-obj.lines3D = data.Lines3D; % handle to class for keeping 3D Lines and skeletons
+obj.annotations = core.Annotations; % handle to class for keeping annotations
+obj.lines3D = core.Lines3D; % handle to class for keeping 3D Lines and skeletons
 obj.measure = []; % handle to class to keep measurements
 obj.hROI = []; % handle to ROI class, @b mibRoiRegion
 
@@ -72,7 +72,7 @@ obj.selectedROI = -1; % a vector of indices (as stored in mibRoiRegion class) of
 obj.slices{1} = [1, 1];
 obj.slices{2} = [1, 1];
 obj.slices{3} = [1, 1];
-obj.slices{4} = 1:size(obj.img{1}, 3);
+obj.slices{4} = 1:obj.img.colors;
 obj.slices{5} = [1 1];
 
 obj.useLUT = false;

@@ -3,7 +3,7 @@ function result = setData(obj, dataset, orient, colChannel, options)
 % Set dataset to MibBaseImage class
 %
 % Parameters:
-% dataset: matrix with the dataset to update MibBaseImage.img 
+% dataset: matrix with the dataset to update MibBaseImage.data 
 % orient: [@em optional, can be [], default == 3];
 % @li when @b 1 updates transposed dataset from the zx configuration, [x,z,y,c,t] -> [y,x,z,c,t]
 % @li when @b 2 updates transposed dataset from the zy configuration, [y,z,x,c,t] -> [y,x,z,c,t]
@@ -71,10 +71,10 @@ if blockModeSwitchLocal == 0  % set the full dataset
     end
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        obj.img{1}(:,:,:,colChannel,:) = dataset;
+        obj.data{1}(:,:,:,colChannel,:) = dataset;
     else % labels type
-        obj.img{1}(obj.img{1} == materialIndex) = 0;
-        obj.img{1}(dataset == 1) = materialIndex;
+        obj.data{1}(obj.data{1} == materialIndex) = 0;
+        obj.data{1}(dataset == 1) = materialIndex;
     end
 else  % set a part of the dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
@@ -117,13 +117,13 @@ else  % set a part of the dataset
     end
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
+        obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
     else % labels type, set only specific object
-        currentDataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+        currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
         currentDataset(currentDataset == materialIndex) = 0;
         currentDataset(dataset == 1) = materialIndex;
 
-        obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
+        obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
     end
 end
 result = true;

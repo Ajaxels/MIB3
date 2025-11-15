@@ -10,17 +10,17 @@ classdef MibImage < matlab.mixin.Copyable
         depth
         % number of stacks in the dataset
         dim_yxzct 
-        % a matrix with dimensions of the dataset [height, width, depth, colors, time] equal to size obj.img{1} 
+        % a matrix with dimensions of the dataset [height, width, depth, colors, time] equal to size obj.data{1} 
         exists
-        % logical switch indicating whether the obj.img exists or it is empty/dummy place maker
+        % logical switch indicating whether the obj.data exists or it is empty/dummy place maker
         filename
         % the full filename of the dataset
         height
         % image height, px
-        img
-        % a cell array to keep the 'Image' layer. The layer img{1} has image in full resolution,
+        data
+        % a cell array to keep the 'Image' layer. The layer data{1} has image in full resolution,
         % @note The 'Image' layer dimensions: @code [1:height, 1:width, 1:depth, 1:colors, 1:time] @endcode
-        imgClass
+        dataClass
         % a char with image class, 'uint8', 'uint16', 'uint32';
         lutColors
         % a matrix with LUT colors [1:colorChannel, R G B], (0-1)
@@ -56,34 +56,36 @@ classdef MibImage < matlab.mixin.Copyable
 
         varargout = getDatasetDimensions(obj, splitDims, orient)        % Get dimensions of the dataset
 
-        initialize(obj, img, meta, type);  % initialize the class using default or provided values
+        initialize(obj, data, meta, type);  % initialize the class using default or provided values
 
         result = setData(obj, dataset, orient, col_channel, options)        % update contents of the class
 
-        function obj = MibImage(img, meta, type)
-            % obj = MibImage(img, meta)
+        function obj = MibImage(data, meta, type)
+            % obj = MibImage(data, meta, type)
             % MibImage class constructor
             
             % Constructor for the MibBaseImage class. 
             % Create a new instance of the class with default parameters
             %
             % Parameters:
-            % img: an 2D-5D image stack
+            % data: an 2D-5D image stack
             % meta: a structure with parameters of the dataset, can be @e [], see obj.initImage for details
-            % type: type of the img, 'image', 'labels', 'labels63'
+            % type: type of the data, 'image', 'labels' (MibLabels class), 'labels63' (MibLabels63 class)
             
             if nargin < 3; type = 'image'; end
             if nargin < 2; meta = []; end
-            if nargin < 1; img = []; end
+            if nargin < 1; data = []; end
+            
+            type = 'image';
 
-            if isempty(img) 
+            if isempty(data) 
                 obj.initialize();
             else
                 % permute the 3rd dimension into the 4th dimension
-                if ndims(img)==3 && size(img,3) < 4
-                    img = permute(img, [1 2 4 3]);
+                if ndims(data)==3 && size(data,3) < 4
+                    data = permute(data, [1 2 4 3]);
                 end
-                obj.initialize(img, meta, type);
+                obj.initialize(data, meta, type);
             end
         end
 

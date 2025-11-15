@@ -5,9 +5,9 @@ classdef MibDataset < matlab.mixin.Copyable
     properties
         % layers
         img
-        % image layer
+        % image layer, instance of core.MibImage
         labels
-        % label layer for the model
+        % label layer for the model, instance of core.MibLabels or core.MibLabels63
         mask
         % mask layer 
         selection
@@ -119,7 +119,7 @@ classdef MibDataset < matlab.mixin.Copyable
             % .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
             % .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
 
-            if nargin < 4; modelType = 'image'; end
+            if nargin < 4; modelType = 'imageOnly'; end
             if nargin < 3; datasetType = 'Std'; end
             if nargin < 2; meta = []; end
             if nargin < 1; img = []; end
@@ -136,7 +136,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
             switch datasetType
                 case 'Std'
-                    obj.img = core.MibImage(img, meta, 'image');
+                    obj.img = core.MibImage(img, meta);
                     switch modelType
                         case 'imageOnly'
                             
