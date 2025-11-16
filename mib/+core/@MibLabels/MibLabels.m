@@ -32,7 +32,6 @@ classdef MibLabels < core.MibImage
             if isempty(meta); meta = struct(); end
 
             obj = obj@core.MibImage(img, meta);  % Call parent constructor
-            obj.type = 'labels'; % update type of the class
 
         end
 

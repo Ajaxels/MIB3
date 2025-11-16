@@ -29,7 +29,7 @@ if isempty(meta); meta = struct(); end
 
 % init data with an empty matrix
 if isempty(data)
-    if strcmp(type, 'image')
+    if strcmp(obj.type, 'image')
         obj.data{1} = uint8(randi(255, [256 256]));
         obj.exists = true;
     else
@@ -42,7 +42,7 @@ else
 end
 
 % define data type: image, the other types: 'labels' used in MibLabels and 'labels63' in MibLabels63
-obj.type = 'image';
+%obj.type = 'image';
 
 % update default properties of the class
 [y, x, z, c, t] = size(obj.data{1});
@@ -62,7 +62,6 @@ obj.dim_yxzct = [obj.height obj.width obj.depth obj.colors obj.time];
 if ~isfield(meta, 'filename'); meta.filename = 'none.tif'; end
 if ~isfield(meta, 'sliceName'); meta.sliceName = []; end
 if ~isfield(meta, 'lutColors'); meta.lutColors = utils.defaults.generateLUT(obj.colors); end
-if ~isfield(meta, 'pixSize'); meta.pixSize = struct('x', 1, 'y', 1, 'z', 1, 't', 1, 'units', 'pixels', 'tunits', 's');
 
 if ~isfield(meta, 'viewPort')
     meta.viewPort = struct();
@@ -79,6 +78,5 @@ end
 obj.filename = meta.filename;
 obj.sliceName = meta.sliceName;
 obj.lutColors = meta.lutColors;
-obj.pixSize = meta.pixSize;
 obj.viewPort = meta.viewPort;
 end

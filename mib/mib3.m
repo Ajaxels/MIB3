@@ -30,7 +30,7 @@ function controller = mib3()
 % open-source software package, which can be used for image processing, analysis, segmentation and
 % visualization of multidimensional datasets.
 %
-% @page install Download and installbination
+% @page install Download and installation
 % Please follow instructions on Microscopy Image Browser web page:
 % http://mib.helsinki.fi
 

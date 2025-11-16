@@ -26,15 +26,6 @@ classdef MibImage < matlab.mixin.Copyable
         % a matrix with LUT colors [1:colorChannel, R G B], (0-1)
         maxInt
         % maximal value that is available in the dataset
-        pixSize
-        % a structure with dimensions of voxels, @code .x .y .z .t .tunits .units @endcode
-        % the fields are
-        % @li .x - physical width of a pixel
-        % @li .y - physical height of a pixel
-        % @li .z - physical thickness of a pixel
-        % @li .t - time between the frames for 2D movies
-        % @li .tunits - time units
-        % @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
         sliceName
         % a cell array of slice filenames that composing the dataset
         time
@@ -75,6 +66,16 @@ classdef MibImage < matlab.mixin.Copyable
             if nargin < 2; meta = []; end
             if nargin < 1; data = []; end
             
+            % update type
+            switch class(obj)
+                case 'core.MibImage'
+                    obj.type = 'image';
+                case 'core.MibLabels'
+                    obj.type = 'labels';
+                case 'core.MibLabels63'
+                    obj.type = 'labels63';
+            end
+
             % init meta as empty struct
             if isempty(meta); meta = struct(); end
 

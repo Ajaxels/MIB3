@@ -37,6 +37,8 @@ if nargin < 2; img = []; end
 % init meta as empty struct
 if isempty(meta); meta = struct(); end
 
+if ~isfield(meta, 'pixSize'); meta.pixSize = struct('x', 1, 'y', 1, 'z', 1, 't', 1, 'units', 'pixels', 'tunits', 's');
+
 % reset the state of the main layers
 obj.img = NaN;
 obj.labels = NaN;
@@ -137,4 +139,7 @@ obj.slices{5} = [1 1];
 obj.useLUT = false;
 % use or not LUT for visualization of image, a number @b false - do not use; @b true - use a status of obj.view.handles.panels.selection.handles.lutColors
 
+% update additional properties
+obj.pixSize = meta.pixSize;
+obj.dim_yxzct = obj.img.dim_yxzct;
 end

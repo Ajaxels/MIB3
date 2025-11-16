@@ -89,6 +89,8 @@ classdef MibController < handle
 
         listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
 
+        listenerUpdateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
 
         plotImage(obj) % plot (show) the current image in the Image View panel

@@ -34,6 +34,17 @@ Prefs.System.Font.FontName = 'Helvetica';
 Prefs.System.Font.FontSize = 12;
 Prefs.System.FontSizeDirView = 12;     
 
+% define GUI scaling settings for guide apps
+Prefs.System.GUI.scaling = 1;   % scaling factor
+Prefs.System.GUI.systemscaling = 1;   % scaling factor for the operating system (on Windows->Screen resolution->Make text and other items larger or smaller->
+Prefs.System.GUI.uipanel = 1;   % scaling uipanel
+Prefs.System.GUI.uibuttongroup = 1;   % scaling uibuttongroup
+Prefs.System.GUI.uitab = 1;   % scaling uitab
+Prefs.System.GUI.uitabgroup = 1;   % scaling uitabgroup
+Prefs.System.GUI.axes = 1;   % scaling axes
+Prefs.System.GUI.uitable = 1;   % scaling uicontrol
+Prefs.System.GUI.uicontrol = 1;   % scaling uicontrol
+
 % last used path from previous session
 Prefs.System.Dirs.LastPath = '';
 

@@ -39,7 +39,6 @@ classdef MibLabels63 < core.MibImage
 
             % init the class using core.MibImage and forcing the type to be labels63
             obj = obj@core.MibImage(img, meta);  % Call parent constructor
-            obj.type = 'labels63'; % update obj.type
 
         end
     end

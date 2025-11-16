@@ -240,29 +240,54 @@ obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = obj.mibModel.
 % update mibModel parameters
 obj.mibModel.myPath = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
 
-
 % Update GUI widgets
 obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
 
-% Make the GUI visible
-obj.view.gui.Visible = true;
-if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
-pause(2);
-% do GUI post-initialization tasks that require GUI to be visible
-obj.view.doPostInitializationTasks();
-
 % --------- update listeners
-% callback for change of properties in obj.view.handles.imageViewDocGroup,
-% used to track selection of panels in the image view panel
+% callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));
+obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(src, evnt) obj.listenerUpdateDatasetAxes(src, evnt));
 
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);
 %obj.listeners{end+1} = addlistener(obj.model, 'keyPressEvent', @obj.listner2_Callback);
 %obj.listeners{end+1} = addlistener(obj.model, 'newFileCreated', @obj.listner2_Callback);
 
+% Make the GUI visible
+obj.view.gui.Visible = true;
+
+% update the initialized datasets using the obtained default settings
+for i=1:numel(obj.mibModel.I)
+    % check whether the selection is enabled or not
+    if obj.mibModel.preferences.System.EnableSelection ~= obj.mibModel.I{i}.enableSelection
+        fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
+        I = imread(fn);
+        obj.mibModel.I{i} = core.MibDataset(I, [], 'Std', 'imageOnly');
+        obj.mibModel.I{i}.enableSelection = false;
+    end
+
+    % update obj.I{i} properties
+    obj.mibModel.I{i}.labels.materialColors = obj.mibModel.preferences.Colors.ModelMaterialColors; % update default model colors
+    % update default LUT colors
+    if obj.mibModel.I{i}.img.colors < size(obj.mibModel.preferences.Colors.LUTColors, 1)
+        obj.mibModel.I{i}.img.lutColors = obj.mibModel.preferences.Colors.LUTColors;
+    end
+
+    % update dataset obj.mibModel.I{i}.axesX/Y and obj.mibModel.I{i}.magFactor 
+    Options.mode = 'resize';
+    Options.index = i;
+    eventdata = core.ToggleEventData(Options);
+    notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+end
+
+
+
+if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
+pause(2);
+% do GUI post-initialization tasks that require GUI to be visible
+obj.view.doPostInitializationTasks();
 
 if showSplashScreen
     %hLabel.String = 'finishing'; drawnow nocallbacks;

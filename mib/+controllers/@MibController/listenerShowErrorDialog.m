@@ -1,6 +1,7 @@
 function listenerShowErrorDialog(obj, src, evtData)
 % listenerShowErrorDialog(obj, src, evtData)
 % Listener callback to show the error dialog
+% executed upon catch of MibModel->"DatasetsPanelUpdate" event
 %
 % Parameters:
 % src: handle to MibModel

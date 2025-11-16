@@ -98,7 +98,34 @@ switch BatchOpt.Mode{1}
             fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
             I = imread(fn);
             meta = struct();
-            obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'labels63');
+
+            % update MibDataset using the default values
+            if ~isempty(obj.preferences) % standard call when obj.preferences is initialized
+                % check whether the selection is enabled or not
+                if obj.preferences.System.EnableSelection
+                    obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'labels63');
+                else
+                    obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'imageOnly');
+                    obj.I{i}.enableSelection = false;
+                end
+
+                % update obj.I{i} properties
+                obj.I{i}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors; % update default model colors
+                % update default LUT colors
+                if obj.I{i}.img.colors < size(obj.preferences.Colors.LUTColors, 1)
+                    obj.I{i}.img.lutColors = obj.preferences.Colors.LUTColors;
+                end
+
+                % update all widgets of the Datasets panel
+                Options.mode = 'resize';
+                Options.index = i;
+                eventdata = core.ToggleEventData(Options);
+                notify(obj, 'UpdateDatasetAxes', eventdata);
+
+                %obj.updateAxesLimits('resize', i); % Updates the obj.mibImage.axesX and obj.mibImage.axesY during fit screen, resize, or new dataset drawing
+            else        % first call when MibModel initialized in MIB, for all other calls obj.preferences will be restored
+                obj.I{i} = core.MibDataset(I, meta, BatchOpt.DatasetType{1}, 'labels63');
+            end
         end
                 
         % update all widgets of the Datasets panel

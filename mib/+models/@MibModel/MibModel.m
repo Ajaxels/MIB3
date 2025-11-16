@@ -34,8 +34,9 @@ classdef MibModel < handle
     end
 
     events
-        ShowErrorDialog % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
+        ShowErrorDialog     % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         DatasetsPanelUpdate % update widgets of the Datasets panel
+        UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
     end
 
     methods

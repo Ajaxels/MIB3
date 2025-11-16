@@ -97,7 +97,11 @@ classdef MibDataset < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         initialize(obj, img, meta, datasetType, modelType) % init MibDataset class and set all elements of the class to default values
 
+        [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
+
         dataset = getData(obj) % get required dataset 
+
+        setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
 
         function obj = MibDataset(img, meta, datasetType, modelType)
             % obj = MibDataset(img, meta, datasetType, modelType)

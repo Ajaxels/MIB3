@@ -1,0 +1,46 @@
+function setAxesLimits(obj, axesX, axesY)
+% function setAxesLimits(obj, axesX, axesY)
+% set axes limits for the dataset
+%
+% Parameters:
+% axesX: a vector [min, max] for the obj.X
+% axesY: a vector [min, max] for the Y
+%
+% Return values:
+% 
+
+%| 
+% @b Examples:
+% @code [axesX, axesY] = obj.mibModel.I{obj.mibModel.id}.setAxesLimits([1 512],  [1, 512]);     // call from mibController: set axes limits for the currently shown dataset @endcode
+% @code [axesX, axesY] = obj.mibModel.I{2}.setAxesLimits([1 512],  [1, 512]);     // call from mibController: set axes limits for dataset 2 @endcode
+
+% Updates
+% 
+
+if nargin < 3
+    errordlg(sprintf('!!! Error !!!\n\nthe axesX, axesY parameters are missing'),'MibDataset.setAxesLimits');
+    return; 
+end
+
+obj.axesX = axesX;
+obj.axesY = axesY;
+
+% update obj.slices
+if obj.orientation == 3    % xy
+    obj.slices{1}(1) = ceil(max([axesY(1) 1]));
+    obj.slices{1}(2) = ceil(min([axesY(2) obj.img.height]));
+    obj.slices{2}(1) = ceil(max([axesX(1) 1]));
+    obj.slices{2}(2) = ceil(min([axesX(2) obj.img.width]));
+elseif obj.orientation == 1     % xz
+    obj.slices{2}(1) = ceil(max([axesY(1) 1]));
+    obj.slices{2}(2) = ceil(min([axesY(2) obj.img.width]));
+    obj.slices{3}(1) = ceil(max([axesX(1) 1]));
+    obj.slices{3}(2) = ceil(min([axesX(2) obj.img.depth]));    
+elseif obj.orientation == 2     % yz
+    obj.slices{1}(1) = ceil(max([axesY(1) 1]));
+    obj.slices{1}(2) = ceil(min([axesY(2) obj.img.height]));
+    obj.slices{3}(1) = ceil(max([axesX(1) 1]));
+    obj.slices{3}(2) = ceil(min([axesX(2) obj.img.depth])); 
+end
+
+end
