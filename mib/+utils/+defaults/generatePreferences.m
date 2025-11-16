@@ -181,6 +181,9 @@ Prefs.SegmTools.Annotations.Color = [1 1 0];
 % Annotations font size
 Prefs.SegmTools.Annotations.FontSize = 2;
 Prefs.SegmTools.Annotations.ShownExtraDepth = 0;    % show annotation of previous and following slices, when above 0
+Prefs.SegmTools.Annotations.FocusOnValue = false;    % focus on value when entering annotations
+Prefs.SegmTools.Annotations.Precision = 0;    % precision of annotation values, an integer from 0 and above
+Prefs.SegmTools.Annotations.DisplayAs = 'Label + Value';    % default visualization of annotations
 
 % ---------- Interpolation ----------
 % Interpolation type

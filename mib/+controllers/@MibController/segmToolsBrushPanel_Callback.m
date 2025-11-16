@@ -11,7 +11,7 @@ function segmToolsBrushPanel_Callback(obj, hWidget, hData, mode)
 % 'eraserFactor' -> change of the eraser magnifier factor
 % 'interpolationSettings' -> set the interpolation settings
 % 'brushUseClustering' -> selection of the clustering mode
-% 'clustersPar1' -> clustering mode paramter 1: 
+% 'clustersPar1' -> clustering mode parameter 1: 
 % 'clustersPar2' -> clustering mode parameter 2: 
 %
 

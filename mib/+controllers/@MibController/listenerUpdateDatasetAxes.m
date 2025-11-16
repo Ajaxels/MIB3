@@ -7,11 +7,11 @@ function listenerUpdateDatasetAxes(obj, src, evtData)
 % src: handle to MibModel
 % evtData: event data, an instance of core.ToggleEventData class with the following fields:
 % .Parameters field containing a structure with the
-%    .evtData.Parameter.mode - update mode,
+%    .evtData.Parameters.mode - update mode,
 %         @li 'resize' -> [@em default] scale to width/height
 %         @li 'zoom' -> scale during the zoom
-%    .evtData.Parameter.index -> [@b optional] index of obj.I to update, when @em [] updates the currently selected dataset
-%    .evtData.Parameter.newMagFactor -> a value of the new magnification factor, only for the 'zoom' mode
+%    .evtData.Parameters.index -> [@b optional] index of obj.I to update, when @em [] updates the currently selected dataset
+%    .evtData.Parameters.newMagFactor -> a value of the new magnification factor, only for the 'zoom' mode
 % .Source -> handle to MibModel
 % .EventName -> string with the event name that triggered the callback
 % see example in MibModel.datasetsSetsOps-> 'Add set'
@@ -41,14 +41,14 @@ function listenerUpdateDatasetAxes(obj, src, evtData)
 % 
 
 % update the missing fields
-if ~isfield(evtData.Parameter, 'mode'); evtData.Parameter.mode = 'resize'; end
-if ~isfield(evtData.Parameter, 'index'); evtData.Parameter.index = obj.mibModel.id; end
-if ~isfield(evtData.Parameter, 'newMagFactor'); evtData.Parameter.newMagFactor = 1; end
+if ~isfield(evtData.Parameters, 'mode'); evtData.Parameters.mode = 'resize'; end
+if ~isfield(evtData.Parameters, 'index'); evtData.Parameters.index = obj.mibModel.id; end
+if ~isfield(evtData.Parameters, 'newMagFactor'); evtData.Parameters.newMagFactor = 1; end
 
 % make local variables
-mode = evtData.Parameter.mode;
-index = evtData.Parameter.index;
-newMagFactor = evtData.Parameter.newMagFactor;
+mode = evtData.Parameters.mode;
+index = evtData.Parameters.index;
+newMagFactor = evtData.Parameters.newMagFactor;
 
 % get the scaling coefficient
 if obj.mibModel.I{index}.orientation == 3     % xy

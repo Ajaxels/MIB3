@@ -43,7 +43,7 @@ obj.view.handles.panels.datasets.handles.(newBufferStringId).BackgroundColor = [
 % update Dataset Type dropdown in the Datasets panel
 obj.view.handles.panels.datasets.handles.datasetType.Value = obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)};
 
-obj.plotImage();
+notify(obj.mibModel, 'RenderImage');
 
 end
 

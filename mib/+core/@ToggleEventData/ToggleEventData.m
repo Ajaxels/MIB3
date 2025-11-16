@@ -18,7 +18,7 @@ classdef (ConstructOnLoad) ToggleEventData < event.EventData
     % a class to pass data together with a notification event
     
     properties
-        Parameter
+        Parameters
     end
     
     methods
@@ -32,7 +32,7 @@ classdef (ConstructOnLoad) ToggleEventData < event.EventData
             % Return values:
             % data: a structure with the provided parameter
             
-            data.Parameter = newParameter;
+            data.Parameters = newParameter;
         end
     end
 end

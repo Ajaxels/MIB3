@@ -9,6 +9,8 @@ classdef MibModel < handle
         % current working directory for MIB
         cpuParallelLimitMax
         % max number of parallel workers available
+        hideImage
+        % define whether or not display the image layer
         id
         % index of the selected dataset
         matlabVersion
@@ -17,6 +19,8 @@ classdef MibModel < handle
         % path to MIB installation directory also available in MibController
         myPath
         % current working directory
+        onFlyImageStretch
+        % enable/disable live stretching of image intensities
         preferences
         % a structure with program preferences
         pythonEnv
@@ -31,11 +35,21 @@ classdef MibModel < handle
         % a structure with settings for some tools used during the current session of MIB e.g.:
         % .automaticAlignmentOptions -> a structure used in mibAlignmentController
         % .guiImages - CData for images to be shown on some buttons
+        showAnnotations
+        % enable/disable live stretching of image intensities
+        showLines3D
+         % enable/disable show of 3D lines
+        showMask
+        % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
+        showModel
+        % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
+
     end
 
     events
         ShowErrorDialog     % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         DatasetsPanelUpdate % update widgets of the Datasets panel
+        RenderImage         % render image in the Image View panel
         UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
     end
 

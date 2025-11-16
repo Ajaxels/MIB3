@@ -17,9 +17,9 @@ arguments (Input)
     evnt (1,1) ToggleEventData
 end
 
-if ~ismember('Parameter', fieldnames(evnt))
+if ~ismember('Parameters', fieldnames(evnt))
     errorText = sprintf(['<b>!!! Listner error !!!</b>\n\n' ...
-        'Parameter field is required!\n\n' ...
+        'Parameters field is required!\n\n' ...
         '                    Example,\n' ...
         '                    notifyEvent.Name = "updateSegmentationTable";\n' ...
         '                    eventdata = ToggleEventData(notifyEvent);\n' ...
@@ -33,7 +33,7 @@ switch evnt.EventName
     case 'modelNotify'
         % generic notification event to make the list of listners smaller,
         % call it as notify(obj, 'modelNotify', eventdata); see in mibModel.renameMaterial
-        switch evnt.Parameter.Name
+        switch evnt.Parameters.Name
             case 'updateSegmentationTable'  % update the segmentation table
                 %obj.updateSegmentationTable();
                 %fprintf('listner2_ModelEvent: new file created!\n');

@@ -240,14 +240,24 @@ obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = obj.mibModel.
 % update mibModel parameters
 obj.mibModel.myPath = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
 
+% update MibModel properties based on GUI settings
+obj.mibModel.hideImage = obj.view.handles.panels.selection.handles.hideImage.Value;   % define whether or not display the image layer
+obj.mibModel.showModel =  obj.view.handles.panels.selection.handles.showModel.Value; % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
+obj.mibModel.showMask = obj.view.handles.panels.selection.handles.showMask.Value; % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
+obj.mibModel.onFlyImageStretch = obj.view.handles.panels.selection.handles.onFly.Value; % enable/disable live stretching of image intensities
+obj.mibModel.showAnnotations = obj.view.handles.panels.selection.handles.showAnnotations.Value;   % enable/disable rendering of annotations
+obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesShowLines.Value;   % enable/disable show of 3D lines
+
 % Update GUI widgets
 obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
+%obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
 
 % --------- update listeners
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));
+obj.listeners{end+1} = addlistener(obj.mibModel, 'RenderImage', @(src, evnt) obj.listenerRenderImage(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(src, evnt) obj.listenerUpdateDatasetAxes(src, evnt));
 
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));

@@ -568,7 +568,7 @@ classdef MultiRenameToolController < handle
             end
 
             % redraw the image if needed
-            % notify(obj.mibModel, 'plotImage');
+            % notify(obj.mibModel, 'RenderImage');
 
             % for batch need to generate an event and send the BatchOptLoc
             % structure with it to the macro recorder / mibBatchController

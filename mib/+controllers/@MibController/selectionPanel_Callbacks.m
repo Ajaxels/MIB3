@@ -82,24 +82,35 @@ switch mode
     case 'difference' % enable the difference mode for the dilate/erode
         %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
     case 'lutColors' % visualize image using LUT colors
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.I{obj.mibModel.id}.useLUT = obj.view.handles.panels.selection.handles.lutColors.Value;
+        % ADD MORE FROM mibLutCheckbox_Callback in MIB2
+        
+        notify(obj.mibModel, 'RenderImage');
     case 'showModel' % show model
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.showModel = obj.view.handles.panels.selection.handles.showModel.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'showMask' % show mask
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.showMask = obj.view.handles.panels.selection.handles.showMask.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'showAnnotations' % show annotations
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.showAnnotations = obj.view.handles.panels.selection.handles.showAnnotations.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'hideImage' % hide image
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.hideImage = obj.view.handles.panels.selection.handles.hideImage.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'display' % start image view settings dialog
         %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s\n', mode);
     case 'onFly' % automatically adjust contrast and brightness
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.onFlyImageStretch = obj.view.handles.panels.selection.handles.onFly.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'modelTransparency' % define model transparency
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %.3f\n', mode, hWidget.Value);
+        obj.mibModel.preferences.Colors.ModelTransparency = obj.view.handles.panels.selection.handles.modelTransparency.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'maskTransparency' % define mask transparency
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %.3f\n', mode, hWidget.Value);
+        obj.mibModel.preferences.Colors.MaskTransparency = obj.view.handles.panels.selection.handles.maskTransparency.Value;
+        notify(obj.mibModel, 'RenderImage');
     case 'selectionTransparency' % define selection transparency
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %.3f\n', mode, hWidget.Value);
+        obj.mibModel.preferences.Colors.SelectionTransparency = obj.view.handles.panels.selection.handles.selectionTransparency.Value;
+        notify(obj.mibModel, 'RenderImage');
 end
 end

@@ -51,6 +51,13 @@ classdef MibController < handle
 
         listner2_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure
 
+        listenerRenderImage(obj, src, evtData) % render (show) the current image in the Image View panel
+
+        listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
+        
+        listenerUpdateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+
+
         % METHODS
 
         devTest_Callback(obj, varargin) % callback for developmental purposes
@@ -87,13 +94,7 @@ classdef MibController < handle
         
         initialize(obj)  % initialize the main MibController class
 
-        listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
-
-        listenerUpdateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
-
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
-
-        plotImage(obj) % plot (show) the current image in the Image View panel
 
         roiPanel_Callbacks(obj, hWidget, hData, mode) % callbacks for widgets of some the ROI panel obj.handles.panels.roi
 
