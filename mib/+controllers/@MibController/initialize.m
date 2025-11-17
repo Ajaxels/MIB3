@@ -250,6 +250,7 @@ obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesSho
 
 % Update GUI widgets
 obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
+obj.selectionLutTableUpdate_fromModel(); % update the LUT table in the Selection and View settings panel
 %obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
 
 % --------- update listeners

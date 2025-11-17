@@ -21,6 +21,9 @@ obj.handles.panels.selection = views.components.SelectionViewSettings('Parent', 
 % add handle tags to tooltips
 if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles.panels.selection.handles, true, 'obj.handles.panels.selection.handles'); end
 
+% remove headers for the LUT table
+obj.handles.panels.selection.handles.lutTable.ColumnName = {};
+
 % ---------------------- Add CONTEXT Menus ----------------------
 % ---------------------- Add context menu for lutTable ----------------------
 obj.handles.panels.selection.handles.lutTableContext = uicontextmenu(obj.handles.panels.selectionPanel.Figure);
@@ -84,7 +87,8 @@ obj.handles.panels.selection.handles.modelTransparency.ValueChangingFcn = @(src,
 obj.handles.panels.selection.handles.maskTransparency.ValueChangingFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
 obj.handles.panels.selection.handles.selectionTransparency.ValueChangingFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
 
-
+obj.handles.panels.selection.handles.lutTable.CellSelectionCallback = @(src, event)obj.controller.selectionPanelLutTable_CellSelection(src, event);
+obj.handles.panels.selection.handles.lutTable.CellEditCallback = @(src, event)obj.controller.selectionPanelLutTable_CellEditCallback(src, event);
 
 % add the panel to GUI
 obj.gui.add(obj.handles.panels.selectionPanel);

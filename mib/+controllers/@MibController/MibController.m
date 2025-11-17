@@ -138,7 +138,13 @@ classdef MibController < handle
         
         segmToolsThresholdingPanel_Callback(obj, hWidget, hData, mode) % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
 
+        selectionLutTableUpdate_fromModel(obj)   % update obj.view.handles.panels.selection.handles.lutTable table and obj.view.handles.panels.selection.handles.colChannel color dropdown
+        
         selectionPanel_Callbacks(obj, hWidget, hData, mode) % callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
+
+        selectionPanelLutTable_CellEditCallback(obj, hWidget, hData, keyModifier)        % callbacks for cell edit in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
+        
+        selectionPanelLutTable_CellSelection(obj, hWidget, hData)        % callbacks for cell selection in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
 
         selectionLutTable_ContextMenu(obj, menuEntry, selectedData) % callbacks for the context menu of the LUT table widget (obj.handles.panels.selection.handles.lutTable)
         
