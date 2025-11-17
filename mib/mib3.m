@@ -1,13 +1,13 @@
 function controller = mib3()
 % @mainpage Microscopy Image Browser
 % @section intro Introduction
-% @b Microscopy @b Image @b Browser is is a high-performance software package for advanced image processing, segmentation and visualization of multidimentional (2D-4D) datasets.
-% Microscopy Image Browser is written in Matlab, but has a user friendly graphical interface that does not requre knowledge of Matlab and can be used by anybody.
+% @b Microscopy @b Image @b Browser is is a high-performance software package for advanced image processing, segmentation and visualization of multidimensional (2D-4D) datasets.
+% Microscopy Image Browser is written in Matlab, but has a user friendly graphical interface that does not require knowledge of Matlab and can be used by anybody.
 % @section features Key Features
 % - Works as a Matlab program under Windows/Linux/MacOS Matlab, or as a standalone application (Windows 64bit);
 % - Open source, no license/fee required;
 % - Extendable with custom plugins;
-% - Generation of multidimentional image stacks;
+% - Generation of multidimensional image stacks;
 % - Alignment of 3D stacks and images within these stacks;
 % - Brightness, contrast, gamma, image mode adjustments, resize, crop functions;
 % - Automatic/manual image segmentation with help of filters and interpolation in XY, XZ, or YZ planes;
@@ -20,7 +20,7 @@ function controller = mib3()
 % @section description Description
 % Recent years witnessed a rapid development of 3D electron microscopy
 % imaging techniques applied for the life science research. In addition to electron tomography
-% (ET) that is effective on a subcellular level, several other alternative methods that extend the
+% (ET) that is effective on a sub cellular level, several other alternative methods that extend the
 % imaging up to the tissue level have been developed. Among these are new scanning electron microscopy (SEM)
 % techniques that allow automated sequential imaging of a freshly cut block face of resin-embedded specimens
 % using a back scatter detector. A fresh block face is created by an ultramicrotome inserted in the imaging

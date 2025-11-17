@@ -21,8 +21,8 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % options: optional struct with fields:
 % .WindowStyle  - 'normal' (default) or 'modal'.
 % .PromptLines  - scalar or array (numel(prompts)) of integers specifying wrapped title line heights for prompts.
-% .Title        - string, text displayed above widgets.
-% .TitleLines   - integer number of lines reserved for Title.
+% .Header        - string, text displayed above widgets.
+% .HeaderLines   - integer number of lines reserved for Header.
 % .WindowWidth  - dialog width in pixels (default 560).
 % .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
 % .Columns      - integer number of columns (default 1).
@@ -55,7 +55,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %     'Are you sure?'
 %     'placeholder, remove text to make empty'
 %     'Long prompt that wraps and occupies multiple lines'
-%     'Multi-line text input (3 lines):'  % <-- This will get a textarea
+%     'Multi-line text input (3 lines):'  % <-- This will get a text area
 %     'Numeric value'
 %     'Iterations (spinner)'
 %   };
@@ -72,8 +72,8 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %   options.PromptLines  = [1 1 1 1 2 3 1 1];  %
 %   dlgTitle = 'multi line input dialog';
 %   options.WindowStyle  = 'normal';
-%   options.Title        = 'My test Input dialog';
-%   options.TitleLines   = 2;
+%   options.Header        = 'My test Input dialog';
+%   options.HeaderLines   = 2;
 %   options.WindowWidth  = 672;
 %   options.WindowHeight = 350;
 %   options.IconWidth    = [];
@@ -91,19 +91,19 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %   options.DoNotShowAgainText    = 'Do not show again';
 %   options.DefaultKey   = 'OK';
 %   options.ParentFigure = gcf;
-%   [answer, selIndex, dontShow] = utils.mibInputUniversalDlg(obj.mibPath, prompts, defAns, dlgTitle, options);
+%   [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, prompts, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
 %
 % Example 2 (message box with HTML content):
 %   htmlContent = '<html><body><h3>Important Message</h3><p>This is a message box with <b>rich text</b> formatting.</p><ul><li>Item 1</li><li>Item 2</li></ul></body></html>';
 %   dlgTitle = 'Information';
 %   options.MsgBoxOnly = true;
-%   options.Title = 'Please Read';
+%   options.Header = 'Please Read';
 %   options.OkBtnText = 'OK';
 %   options.Icon = 'question';
 %   options.DoNotShowAgain = true;
 %   options.DoNotShowAgainText = 'Do not show this again';
-%   [answer, selIndex, dontShow] = utils.mibInputUniversalDlg(obj.mibPath, {}, {htmlContent}, dlgTitle, options);
+%   [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, {}, {htmlContent}, dlgTitle, options);
 
 arguments
     mibPath char = ''
@@ -127,7 +127,7 @@ if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end
 if ~isfield(options, 'HelpUrl'); options.HelpUrl = []; end
 if ~isfield(options, 'MsgBoxOnly'); options.MsgBoxOnly = false; end
 if ~isfield(options, 'PromptLines'); options.PromptLines = ones(numel(prompts),1); end
-if ~isfield(options, 'TitleLines'); options.TitleLines = 1; end
+if ~isfield(options, 'HeaderLines'); options.HeaderLines = 1; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 560; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = []; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
@@ -179,9 +179,9 @@ if isempty(options.WindowHeight)
         itemsPerCol = max(1, ceil(numRegular / options.Columns));
     end
     options.WindowHeight = 100 + (itemsPerCol * 35) + 50;
-    fig.Position(4) = max(200, min(800, options.WindowHeight));
+    fig.Position(4) = max(100, min(800, options.WindowHeight));
 else
-    fig.Position(4) = max(200, options.WindowHeight);
+    fig.Position(4) = max(100, options.WindowHeight);
 end
 
 % Center dialog on parent figure if provided
@@ -279,25 +279,25 @@ if exist(iconPath, 'file')
     end
 end
 
-% Determine if we have a title
-hasTitle = isfield(options,'Title') && ~isempty(options.Title);
+% Determine if we have a header
+hasHeader = isfield(options,'Header') && ~isempty(options.Header);
 
-% Main grid structure
+% Main grid structure: icon column + content columns
 totalCols = 1 + options.Columns;
-mainColWidths = [{options.IconWidth} options.MainColumnWidths];  % Icon column with specified width (numeric)
+mainColWidths = [{options.IconWidth}, options.MainColumnWidths]; % Icon column with specified width (numeric)
 
-if hasTitle
-    % 3 rows: title row, content row, button row
-    mainGrid = uigridlayout(fig, [3 totalCols], ...
+if hasHeader
+    % 3 rows: Header row, content row, button row
+    mainGrid = uigridlayout(fig, [3, totalCols], ...
         'RowHeight', {'fit', '1x', 24}, ...
-        'ColumnWidth', mainColWidths, ...
+        'ColumnWidth', mainColWidths,...
         'Padding', [10 10 10 10], 'RowSpacing', 10, 'ColumnSpacing', 12);
     titleRow = 1;
     contentRow = 2;
     buttonRow = 3;
 else
-    % 2 rows: icon/content row, button row
-    mainGrid = uigridlayout(fig, [2 totalCols], ...
+    % 2 rows: icon&content row, button row
+    mainGrid = uigridlayout(fig, [2, totalCols], ...
         'RowHeight', {'1x', 24}, ...
         'ColumnWidth', mainColWidths, ...
         'Padding', [10 10 10 10], 'RowSpacing', 10, 'ColumnSpacing', 12);
@@ -306,29 +306,37 @@ else
     buttonRow = 2;
 end
 
-% Row 1, Column 1: Icon (always in top row)
+% Row 1, Column 1: Icon
 if ~isempty(iconImg)
     iconUI = uiimage(mainGrid, 'ImageSource', iconImg);
-    iconUI.Layout.Row = titleRow;
+    if hasHeader
+        % Span icon from header row to content row
+        iconUI.Layout.Row = [titleRow contentRow];
+    else
+        iconUI.Layout.Row = titleRow;
+    end
     iconUI.Layout.Column = 1;
     iconUI.VerticalAlignment = 'top';
     iconUI.HorizontalAlignment = 'left';
 else
     emptyIconLbl = uilabel(mainGrid, 'Text', '');
-    emptyIconLbl.Layout.Row = titleRow;
+    if hasHeader
+        emptyIconLbl.Layout.Row = [titleRow contentRow];
+    else
+        emptyIconLbl.Layout.Row = titleRow;
+    end
     emptyIconLbl.Layout.Column = 1;
 end
 
-% Row 1: Title spanning content columns (if title exists)
-if hasTitle
-    titleLbl = uilabel(mainGrid, 'Text', options.Title, 'WordWrap', 'on', 'FontWeight', 'bold');
-    titleLbl.Layout.Row = titleRow;
-    % Span columns 2 to N+1, or just column 2 if only one content column
-    if totalCols > 2
-        titleLbl.Layout.Column = [2 totalCols];
-    else
-        titleLbl.Layout.Column = 2;
-    end
+% Add Header text if specified
+if hasHeader
+    headerLabel = uilabel(mainGrid, 'Text', options.Header, ...
+        'FontSize', 12, 'FontWeight', 'bold', ...
+        'HorizontalAlignment', 'left', ...
+        'VerticalAlignment', 'top', ...
+        'WordWrap', 'on');
+    headerLabel.Layout.Row = titleRow;
+    headerLabel.Layout.Column = 2:totalCols;  % Span all content columns
 end
 
 % Prepare outputs

@@ -87,6 +87,9 @@ switch mode
         
         notify(obj.mibModel, 'RenderImage');
     case 'showModel' % show model
+        
+        
+        
         obj.mibModel.showModel = obj.view.handles.panels.selection.handles.showModel.Value;
         notify(obj.mibModel, 'RenderImage');
     case 'showMask' % show mask
