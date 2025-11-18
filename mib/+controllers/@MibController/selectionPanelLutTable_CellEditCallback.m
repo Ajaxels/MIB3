@@ -12,7 +12,10 @@ function selectionPanelLutTable_CellEditCallback(obj, hWidget, hData, keyModifie
 %   .EventName - 'CellEdit'
 % keyModifier: a pressed key modifier, [], 'control', 'shift'
 
-if nargin < 4; keyModifier = []; end
+if nargin < 4
+    keyModifier = obj.view.handles.panels.selectionPanel.Figure.CurrentModifier; 
+    if ~isempty(keyModifier); keyModifier = keyModifier{1}; end
+end
 
 if isempty(hData.Indices); return; end
 

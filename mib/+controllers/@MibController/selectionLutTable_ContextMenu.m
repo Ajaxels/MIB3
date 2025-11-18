@@ -28,6 +28,7 @@ end
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibController.selectionLutTable_ContextMenu: context menu for "obj.view.handles.panels.selection.handles.lutTable" -> %s\n', menuEntry.Tag);
 end
+selectedRows = obj.view.handles.panels.selection.handles.lutTable.UserData(:,1);
 
 switch menuEntry.Tag
     case 'lutTableContextInsert' % insert an empty color channel
