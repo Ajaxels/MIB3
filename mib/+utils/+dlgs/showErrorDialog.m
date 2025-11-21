@@ -38,7 +38,9 @@ if nargin < 4; optionalPrefix = ''; end
 if nargin < 3; winTitle = 'Error'; end
 
 % generate error string
-if isempty(fields(err))
+if ischar(err)
+    errText = sprintf('%s\n%s\n%s', optionalPrefix, err, optionalSuffix);
+elseif isempty(fields(err))
     errText = sprintf('%s\n%s', optionalPrefix, optionalSuffix);
 elseif ~isempty(err.cause)
     cause = err.cause{1}.message;

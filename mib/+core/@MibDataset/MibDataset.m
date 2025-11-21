@@ -35,6 +35,11 @@ classdef MibDataset < matlab.mixin.Copyable
         current_yxz
         % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes,
         % @note dimensions: @code [1 1 1] @endcode
+        datasetType
+        % [char, @default 'Std'] type of the dataset, one of these
+        %   @li 'Std' - standard image, one that is loaded to memory completely
+        %   @li 'Virtual' - virtual dataset that is loaded upon demand
+        %   @li 'BigData' - big-data compatible dataset
         dim_yxzct
         % a matrix with dimensions of the dataset [height, width, depth, colors, time]
         % equal to size obj.img{1} for non-virtual datasets

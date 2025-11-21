@@ -61,7 +61,8 @@ switch datasetType
     case 'BigData'
         error('core.MibDataset.initialize: BigData - not implemented');
 end
-
+% update the dataset type
+obj.datasetType = datasetType;
 
 % ---------- main layers ----------
 obj.annotations = core.Annotations; % handle to class for keeping annotations

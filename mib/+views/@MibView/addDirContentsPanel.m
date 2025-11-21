@@ -71,8 +71,11 @@ obj.handles.panels.dirContents.handles.fileFilters.ContextMenu = obj.handles.pan
 obj.handles.panels.dirContents.handles.fileList.DoubleClickedFcn = @(src, event)obj.controller.dirContentsFileList_Callback(src, event);
 obj.handles.panels.dirContents.handles.fileFilters.ValueChangedFcn = @(src, event)obj.controller.dirContentsFileFilters_Callback(src, event);
 obj.handles.panels.dirContents.handles.bioFormats.ValueChangedFcn = @(src, event)obj.controller.dirContentsBioFormats_Callback(src, event);
-obj.handles.panels.dirContents.handles.updateFileList.ButtonPushedFcn = @(src, event)obj.controller.dirContentsUpdateFileList_Callback(src, event);
+obj.handles.panels.dirContents.handles.updateFileList.ButtonPushedFcn = @(src, ~)obj.controller.dirContentsUpdateFileList_Callback(src); % drop event parameter
 obj.handles.panels.dirContents.handles.help.ButtonPushedFcn = @(src, event)obj.controller.helpButtons_Callback(src, event);
+
+% ---------------------- Update default UserData for widgets ----------------------
+obj.handles.panels.dirContents.handles.fileFilters.UserData = 'all known';
 
 % add the panel to the gui
 obj.gui.add(obj.handles.panels.dirContentsPanel);

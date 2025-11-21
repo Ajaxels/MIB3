@@ -253,6 +253,8 @@ obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
 obj.selectionLutTableUpdate_fromModel(); % update the LUT table in the Selection and View settings panel
 %obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
 
+
+
 % --------- update listeners
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
