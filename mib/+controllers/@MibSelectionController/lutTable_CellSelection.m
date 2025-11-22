@@ -1,6 +1,6 @@
-function selectionPanelLutTable_CellSelection(obj, hWidget, hData)
-% function selectionPanelLutTable_CellSelection(obj, hWidget, hData)
-% callbacks for cell selection in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
+function lutTable_CellSelection(obj, hWidget, hData)
+% function lutTable_CellSelection(obj, hWidget, hData)
+% callbacks for cell selection in the LUT table (obj.handles.lutTable) of the Selection and Image View panel
 %
 % Parameters:
 % hWidget: handle to the pressed widget (lutTable)
@@ -13,14 +13,14 @@ function selectionPanelLutTable_CellSelection(obj, hWidget, hData)
 if isempty(hData.Indices); return; end
 indices = hData.Indices;
 
-obj.view.handles.panels.selection.handles.lutTable.UserData = indices;   % store selected position
+obj.handles.lutTable.UserData = indices;   % store selected position
 
 if indices(1, 2) == 3 % start color selection dialog
     if obj.mibModel.preferences.System.DeveloperMode
-        fprintf('controllers.MibController.selectionPanelLutTable_CellSelection: "obj.view.handles.panels.selection.handles.lutTable" -> cell selected\n');
+        fprintf('controllers.MibSelectionController.lutTable_CellSelection: "obj.view.handles.panels.selection.handles.lutTable" -> cell selected\n');
     end
     
-    if obj.view.handles.panels.selection.handles.lutColors.Value == 0
+    if obj.handles.lutColors.Value == 0
         uialert(obj.view.gui, ...
             sprintf(['The colors for the color channels may be selected only in the LUT mode!\n\n' ...
                      'To enable the LUT mode please select the LUT checkbox\n' ...
@@ -39,10 +39,10 @@ if indices(1, 2) == 3 % start color selection dialog
     obj.mibModel.I{obj.mibModel.id}.img.lutColors = lutColors;
     
     % redraw the table
-    obj.selectionLutTableUpdate_fromModel();
+    obj.mibController.selectionLutTableUpdate_fromModel();
     
     % Clear the selection to show the true background color
-    obj.view.handles.panels.selection.handles.lutTable.Selection = [];
+    obj.handles.lutTable.Selection = [];
     drawnow;
 
     % redraw image in the im_browser axes

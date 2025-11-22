@@ -33,8 +33,10 @@ arguments (Input)
     %mode char = ''
 end
 
-mode = '';
-if isempty(mode); mode = hWidget.Tag; end
+% mode = '';
+% if isempty(mode); mode = hWidget.Tag; end
+
+mode = hWidget.Tag;
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRoiController.gui_Callbacks: "obj.handles.%s"-> pressed/changed\n', mode);

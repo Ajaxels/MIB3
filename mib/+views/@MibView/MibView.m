@@ -24,11 +24,11 @@ classdef MibView < handle
 
         addDirContentsPanel(obj) % add the Datasets panel, add context menus and callbacks for widgets
 
-        roiHandles = addRoiPanel(obj) % add the ROI panel, add context menus and callbacks for widgets
+        panelHandles = addRoiPanel(obj) % add the ROI panel, add context menus and callbacks for widgets
         
         addSegmentationPanel(obj) % add the Segmentation panel, add context menus and callbacks for widgets
 
-        addSelectionViewSettingsPanel(obj) % add the Selection and View Settings panel, add context menus and callbacks for widgets
+        panelHandles = addSelectionViewSettingsPanel(obj) % add the Selection and View Settings panel, add context menus and callbacks for widgets
 
         addStatusBar(obj)     % add status bar to MIB
 

@@ -1,6 +1,6 @@
-function selectionPanelLutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
-% function selectionPanelLutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
-% callbacks for cell edit in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
+function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
+% function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
+% callbacks for cell edit in the LUT table (obj.handles.lutTable) of the Selection and Image View panel
 %
 % Parameters:
 % hWidget: handle to the pressed widget (lutTable)
@@ -43,11 +43,11 @@ if colIdx == 2
     % Now update model and GUI as before:
     obj.mibModel.I{obj.mibModel.id}.slices{4} = find(cell2mat(data(:,2))==1)';
     if isscalar(obj.mibModel.I{obj.mibModel.id}.slices{4})
-        obj.view.handles.panels.selection.handles.colChannel.Value = sprintf('Ch %d', obj.mibModel.I{obj.mibModel.id}.slices{4});
+        obj.handles.colChannel.Value = sprintf('Ch %d', obj.mibModel.I{obj.mibModel.id}.slices{4});
         obj.mibModel.I{obj.mibModel.id}.selectedColorChannel = obj.mibModel.I{obj.mibModel.id}.slices{4};
     end
 
-    obj.selectionLutTableUpdate_fromModel();
+    obj.mibController.selectionLutTableUpdate_fromModel();
     notify(obj.mibModel, 'RenderImage');
 end
 

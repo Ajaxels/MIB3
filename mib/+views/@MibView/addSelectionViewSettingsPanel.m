@@ -1,6 +1,9 @@
-function addSelectionViewSettingsPanel(obj)
-% function addSelectionViewSettingsPanel(obj)
-% add the Selection and View Setttings panel, add context menus and callbacks for widgets
+function panelHandles = addSelectionViewSettingsPanel(obj)
+% function panelHandles = addSelectionViewSettingsPanel(obj)
+% add the Selection and View Settings panel, add context menus and callbacks for widgets
+% The callbacks are added in the controller of the panel:
+% controllers.MibSelectionController during its creation in
+% MibController.initialize() -> MibController.addGuiControllers()
 
 arguments (Input)
     obj views.MibView
@@ -9,86 +12,50 @@ end
 %% ---------------------- SELECTION AND VIEW SETTINGS PANEL ----------------------
 panelOptions.Title = "Selection and View settings";
 panelOptions.Region = "bottom";
+
 obj.handles.panels.selectionPanel = matlab.ui.internal.FigurePanel(panelOptions);
-%obj.handles.panels.datasetsPanel.PreferredHeight = 100;
-%obj.handles.panels.datasetsPanel.PreferredWidth = 120;
 obj.handles.panels.selectionPanel.WindowBounds(3) = 100;
 obj.handles.panels.selectionPanel.Resizable = false;
-%obj.handles.panels.selectionPanel.Maximizable = false;
 obj.handles.panels.selectionPanel.Figure.AutoResizeChildren = 'off';
-obj.handles.panels.selection = views.components.SelectionViewSettings('Parent', obj.handles.panels.selectionPanel.Figure, ...
-    'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
-% add handle tags to tooltips
-if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles.panels.selection.handles, true, 'obj.handles.panels.selection.handles'); end
+
+panelHandles = views.components.SelectionViewSettings( ...
+    'Parent', obj.handles.panels.selectionPanel.Figure, ...
+    'Units', 'normalized', ...
+    'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
+
+% add handle tags to tooltips when the developer mode is enable
+if obj.mibModel.preferences.System.DeveloperMode 
+    utils.overrideDescriptions(panelHandles.handles, true, 'panelHandles.handles'); 
+end
 
 % remove headers for the LUT table
-obj.handles.panels.selection.handles.lutTable.ColumnName = {};
+panelHandles.handles.lutTable.ColumnName = {};
 
 % ---------------------- Add CONTEXT Menus ----------------------
 % ---------------------- Add context menu for lutTable ----------------------
-obj.handles.panels.selection.handles.lutTableContext = uicontextmenu(obj.handles.panels.selectionPanel.Figure);
+panelHandles.handles.lutTableContext = uicontextmenu(obj.handles.panels.selectionPanel.Figure);
 
-obj.handles.panels.selection.handles.lutTableContextInsert = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Insert empty channel', 'Tag', 'lutTableContextInsert', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextCopy = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Copy channel', 'Tag', 'lutTableContextCopy', 'Separator', 'on', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextInvert = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Invert channel', 'Tag', 'lutTableContextInvert', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextRotate = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Rotate channel', 'Tag', 'lutTableContextRotate', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextShift = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Shift channel', 'Tag', 'lutTableContextShift', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextSwap = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Swap channels', 'Tag', 'lutTableContextSwap', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextDelete = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Delete channel', 'Tag', 'lutTableContextDelete', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
-obj.handles.panels.selection.handles.lutTableContextSetLUT = uimenu(obj.handles.panels.selection.handles.lutTableContext, ...
-    'Text', 'Set LUT color', 'Tag', 'lutTableContextSetLUT', 'Separator', 'on', ...
-    'MenuSelectedFcn', @(src, event)obj.controller.selectionLutTable_ContextMenu(src, event));
+panelHandles.handles.lutTableContextInsert = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Insert empty channel', 'Tag', 'lutTableContextInsert');
+panelHandles.handles.lutTableContextCopy = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Copy channel', 'Tag', 'lutTableContextCopy', 'Separator', 'on');
+panelHandles.handles.lutTableContextInvert = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Invert channel', 'Tag', 'lutTableContextInvert');
+panelHandles.handles.lutTableContextRotate = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Rotate channel', 'Tag', 'lutTableContextRotate');
+panelHandles.handles.lutTableContextShift = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Shift channel', 'Tag', 'lutTableContextShift');
+panelHandles.handles.lutTableContextSwap = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Swap channels', 'Tag', 'lutTableContextSwap');
+panelHandles.handles.lutTableContextDelete = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Delete channel', 'Tag', 'lutTableContextDelete');
+panelHandles.handles.lutTableContextSetLUT = uimenu(panelHandles.handles.lutTableContext, ...
+    'Text', 'Set LUT color', 'Tag', 'lutTableContextSetLUT', 'Separator', 'on');
 
 % Add the context menu to lutTable
-obj.handles.panels.selection.handles.lutTable.ContextMenu = obj.handles.panels.selection.handles.lutTableContext;
+panelHandles.handles.lutTable.ContextMenu = panelHandles.handles.lutTableContext;
 
-
-% ---------------------- Add CALLBACKS to widgets ----------------------
-obj.handles.panels.selection.handles.add.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.subtract.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.replace.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.clear.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.fill.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-
-obj.handles.panels.selection.handles.colChannel.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.apply3D.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.autoFill.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.preset1.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.preset2.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.preset3.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.erode.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.dilate.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.strel.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.difference.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-
-obj.handles.panels.selection.handles.lutColors.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.showModel.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.showMask.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.showAnnotations.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.hideImage.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.display.ButtonPushedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.onFly.ValueChangedFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-
-obj.handles.panels.selection.handles.modelTransparency.ValueChangingFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.maskTransparency.ValueChangingFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-obj.handles.panels.selection.handles.selectionTransparency.ValueChangingFcn = @(src, event)obj.controller.selectionPanel_Callbacks(src, event);
-
-obj.handles.panels.selection.handles.lutTable.CellSelectionCallback = @(src, event)obj.controller.selectionPanelLutTable_CellSelection(src, event);
-obj.handles.panels.selection.handles.lutTable.CellEditCallback = @(src, event)obj.controller.selectionPanelLutTable_CellEditCallback(src, event);
+obj.handles.panels.selection = panelHandles;
 
 % add the panel to GUI
 obj.gui.add(obj.handles.panels.selectionPanel);
