@@ -40,9 +40,9 @@ obj.addDatasetsPanel(); % add the Datasets panel
 obj.addDirContentsPanel(); % add the DirContents panel
 obj.addSegmentationPanel(); % add the Segmentation panel
 obj.addSelectionViewSettingsPanel(); % add the Segmentation panel
-obj.addRoiPanel(); % add the ROI panel
+%roiHandles = obj.addRoiPanel(); % add the ROI panel
 
-obj.addStatusBar()  % add statusbar to MIB, stored as obj.handles.status
+obj.addStatusBar()  % add status bar to MIB, stored as obj.handles.status
 
 % ------------ add FigureDocumentGroup ------------
 % alternative to add DocumentGroup(groupOptions);

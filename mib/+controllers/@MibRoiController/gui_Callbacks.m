@@ -1,10 +1,11 @@
-function roiPanel_Callbacks(obj, hWidget, hData, mode)
-% function roiPanel_Callbacks(obj, hWidget, hData, mode)
-% callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
+function gui_Callbacks(obj, hWidget, hData)
+% function gui_Callbacks(obj, hWidget, hData)
+% callbacks for widgets of some the ROI panel obj.view.handles.panels.roi (obj.cRoi.gui)
 %
 % Parameters:
 % hWidget: handle to the pressed widget
 % hData: handle to supporting data class
+
 % mode: char, optional identifier the widget, used when the same operation
 % is called from menu, when empty or missing hWidget.Tag is used as an
 % identifier
@@ -26,17 +27,17 @@ function roiPanel_Callbacks(obj, hWidget, hData, mode)
 % 'roiToSelection' -> highlight the ROI area using the selection layer
 
 arguments (Input)
-    obj controllers.MibController
+    obj controllers.MibRoiController
     hWidget {mustBeA(hWidget, {'matlab.ui.control.Button', 'matlab.ui.control.CheckBox', 'matlab.ui.control.DropDown', 'matlab.ui.control.EditField', 'matlab.ui.control.ListBox', 'matlab.ui.control.Spinner'})}
     hData {mustBeA(hData, {'matlab.ui.eventdata.ButtonPushedData', 'matlab.ui.eventdata.ValueChangedData'})}
-    mode char = ''
+    %mode char = ''
 end
 
+mode = '';
 if isempty(mode); mode = hWidget.Tag; end
 
-
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibController.roiPanel_Callbacks: "obj.view.handles.panels.roi.handles.%s"-> pressed/changed\n', mode);
+    fprintf('controllers.MibRoiController.gui_Callbacks: "obj.handles.%s"-> pressed/changed\n', mode);
 end
 
 
@@ -62,16 +63,16 @@ switch mode
     case 'roiShowROI' % show ROI in the Image View panel
         %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
     case 'roiManually' % enable manual ROI addition mode based on provided coordinates
-        if obj.view.handles.panels.roi.handles.roiManually.Value
-            obj.view.handles.panels.roi.handles.roiX1.Enable = 'on';
-            obj.view.handles.panels.roi.handles.roiY1.Enable = 'on';
-            obj.view.handles.panels.roi.handles.roiWidth.Enable = 'on';
-            obj.view.handles.panels.roi.handles.roiHeight.Enable = 'on';
+        if obj.handles.roiManually.Value
+            obj.handles.roiX1.Enable = 'on';
+            obj.handles.roiY1.Enable = 'on';
+            obj.handles.roiWidth.Enable = 'on';
+            obj.handles.roiHeight.Enable = 'on';
         else
-            obj.view.handles.panels.roi.handles.roiX1.Enable = 'off';
-            obj.view.handles.panels.roi.handles.roiY1.Enable = 'off';
-            obj.view.handles.panels.roi.handles.roiWidth.Enable = 'off';
-            obj.view.handles.panels.roi.handles.roiHeight.Enable = 'off';
+            obj.handles.roiX1.Enable = 'off';
+            obj.handles.roiY1.Enable = 'off';
+            obj.handles.roiWidth.Enable = 'off';
+            obj.handles.roiHeight.Enable = 'off';
         end
         
         %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);

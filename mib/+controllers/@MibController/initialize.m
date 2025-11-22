@@ -215,8 +215,10 @@ obj.mibModel.sessionSettings = utils.defaults.generateSessionSettings();
 % preload an image used for filter previews
 obj.mibModel.sessionSettings.ImageFilters.TestImg = imread(fullfile(obj.mibPath, 'assets', 'images', 'test_img_for_previews.png'));
 
-% init the view
+% init the main view
 obj.view = views.MibView(obj);
+% --- create controller for panels and add view into them
+obj.addGuiControllers();
 
 % get the current version of Matlab; keep this variable to be faster and not call ver function
 v = ver('matlab'); %#ok<VERMATLAB>

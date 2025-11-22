@@ -2,6 +2,9 @@ classdef MibController < handle
     % % main controller for MIB
 
     properties
+        % GUI controllers for the main MIB GUI panels and ribbons
+        cRoi
+        % ROI controller
         childControllers
         % list of opened subcontrollers
         childControllersIds
@@ -60,6 +63,8 @@ classdef MibController < handle
 
         % METHODS
 
+        addGuiControllers(obj)  % add GUI components to the main view obj.view
+
         devTest_Callback(obj, varargin) % callback for developmental purposes
 
         datasetsBuffers_ContextMenu(obj, menuEntry, selectedData) % callbacks for the context menu of the obj.view.handles.panels.datasets.handles.buffers buttons
@@ -95,8 +100,6 @@ classdef MibController < handle
         initialize(obj)  % initialize the main MibController class
 
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
-
-        roiPanel_Callbacks(obj, hWidget, hData, mode) % callbacks for widgets of some the ROI panel obj.handles.panels.roi
 
         filename = saveLayout(obj, mode) % store the current layout of panels
 
