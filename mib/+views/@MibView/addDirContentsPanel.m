@@ -68,10 +68,17 @@ obj.handles.panels.dirContents.handles.fileFiltersContextUnregister = uimenu(obj
 obj.handles.panels.dirContents.handles.fileFilters.ContextMenu = obj.handles.panels.dirContents.handles.fileFiltersContext;
 
 % ----------------------ADD CALLBACKS TO WIDGETS ----------------------
+% take the controller object to make callback definitions as
+% obj.handles.panels.dirContents.handles.updateFileList.ButtonPushedFcn = @c.dirContentsUpdateFileList_Callback; % drop event parameter
+% alternative solution is to use anonymous wrappers, but that drops performance
+% obj.handles.panels.dirContents.handles.help.ButtonPushedFcn = @(src, event)obj.controller.helpButtons_Callback(src, event);
+% obj.handles.panels.dirContents.handles.help.ButtonPushedFcn = @(src, ~)obj.controller.helpButtons_Callback(src);
+c = obj.controller;  % controller instance (handle class)
+
 obj.handles.panels.dirContents.handles.fileList.DoubleClickedFcn = @(src, event)obj.controller.dirContentsFileList_Callback(src, event);
 obj.handles.panels.dirContents.handles.fileFilters.ValueChangedFcn = @(src, event)obj.controller.dirContentsFileFilters_Callback(src, event);
 obj.handles.panels.dirContents.handles.bioFormats.ValueChangedFcn = @(src, event)obj.controller.dirContentsBioFormats_Callback(src, event);
-obj.handles.panels.dirContents.handles.updateFileList.ButtonPushedFcn = @(src, ~)obj.controller.dirContentsUpdateFileList_Callback(src); % drop event parameter
+obj.handles.panels.dirContents.handles.updateFileList.ButtonPushedFcn = @c.dirContentsUpdateFileList_Callback; 
 obj.handles.panels.dirContents.handles.help.ButtonPushedFcn = @(src, event)obj.controller.helpButtons_Callback(src, event);
 
 % ---------------------- Update default UserData for widgets ----------------------

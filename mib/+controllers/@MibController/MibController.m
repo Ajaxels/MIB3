@@ -82,7 +82,7 @@ classdef MibController < handle
 
         dirContentsFileList_Callback(obj, hWidget, hData) % callback for double click on a filename in obj.handles.panels.dirContents.handles.fileList
         
-        dirContentsUpdateFileList_Callback(obj, hWidget, hData) % callback for click on the obj.handles.panels.dirContents.handles.updateFileList button to update the list of files shown in obj.handles.panels.dirContents.handles.fileList
+        dirContentsUpdateFileList_Callback(obj, hWidget, hData, selectedFilename) % callback for click on the obj.handles.panels.dirContents.handles.updateFileList button to update the list of files shown in obj.handles.panels.dirContents.handles.fileList
 
         result = exitProgram(obj, target)        % exit mib 
 

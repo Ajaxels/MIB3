@@ -1,19 +1,22 @@
-function dirContentsUpdateFileList_Callback(obj, hWidget, selectedFilename)
-% function dirContentsUpdateFileList_Callback(obj, hWidget)
+function dirContentsUpdateFileList_Callback(obj, hWidget, hData, selectedFilename)
+% function dirContentsUpdateFileList_Callback(obj, hWidget, hData)
 % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update
 % the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" 
 % using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 %
 % Parameters:
 % hWidget: handle to the pressed widget
+% hData: 
 % selectedFilename: [@em optional] char with the selected filename to highlight
 
 
-arguments (Input)
-    obj controllers.MibController
-    hWidget matlab.ui.control.Button = obj.view.handles.panels.dirContents.handles.updateFileList
-    selectedFilename char = ''
-end
+% arguments (Input)
+%     obj controllers.MibController
+%     hWidget matlab.ui.control.Button = obj.view.handles.panels.dirContents.handles.updateFileList
+%     hData matlab.ui.eventdata.ButtonPushedData = []
+%     selectedFilename char = ''
+% end
+if nargin < 4; selectedFilename = ''; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibController.dirContentsUpdateFileList_Callback: clicked on: "obj.view.handles.panels.dirContents.handles.updateFileList"\n');
@@ -56,7 +59,6 @@ else
         fnames = {dirs{:}, fnames{:}}; %#ok<CCAT>
     end
 end
-selectedFilename = '[Users]';
 
 % update the list of files
 obj.view.handles.panels.dirContents.handles.fileList.Items = fnames;
@@ -67,6 +69,8 @@ else
     % highlight selected file if it is present
     if ismember(selectedFilename, fnames)
         obj.view.handles.panels.dirContents.handles.fileList.Value = selectedFilename;
+        % Scroll listbox so that this item is visible
+        scroll(obj.view.handles.panels.dirContents.handles.fileList, selectedFilename);
     else
         obj.view.handles.panels.dirContents.handles.fileList.Value = fnames{1};
     end

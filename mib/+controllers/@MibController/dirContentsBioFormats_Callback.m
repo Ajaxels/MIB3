@@ -71,6 +71,6 @@ obj.view.handles.panels.dirContents.handles.fileFilters.Value = selectedFilter;
 % update the file list and 
 % highlight the selected file in it
 [~, fn, ext] = fileparts(obj.mibModel.I{obj.mibModel.id}.img.filename);
-obj.dirContentsUpdateFileList_Callback([], [fn, ext]);
+obj.dirContentsUpdateFileList_Callback([], [], [fn, ext]);
 
 end
