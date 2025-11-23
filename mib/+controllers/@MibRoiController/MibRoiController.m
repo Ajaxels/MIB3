@@ -18,13 +18,16 @@ classdef MibRoiController
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
 
         function obj = MibRoiController(mainCtrl, view, guiHandles, model)
-            obj.mibController = mainCtrl; % handle to the main MIB controller
-            obj.view = view;              % handle to the main MIB view
-            obj.gui = guiHandles;         % handle to the GUI of the ROI panel (views.components.Roi)
-            obj.handles = guiHandles.handles;     % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
-            obj.mibModel = model;            % handle to the main MIB model
+            obj.mibController = mainCtrl;       % handle to the main MIB controller
+            obj.view = view;                    % handle to the main MIB view
+            obj.gui = guiHandles;               % handle to the GUI of the ROI panel (views.components.Roi)
+            obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
+            obj.mibModel = model;               % handle to the main MIB model
             
             % ---------------------- Add CALLBACKS to widgets ----------------------
+            % example call using lambda functions
+            % obj.handles.handleName.ButtonPushedFcn = @(src, event)obj.gui_Callbacks(src, event, customParameter);
+
             obj.handles.roiOptions.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiList.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.roiLoad.ButtonPushedFcn = @obj.gui_Callbacks;
