@@ -86,6 +86,17 @@ if isdir(obj.mibModel.preferences.System.Dirs.LastPath) == 0 %#ok<*ISDIR> isfold
     obj.mibModel.preferences.System.Dirs.LastPath = start_path;
 end
 
+% generate the resource file for icons and images
+assetsDir = fullfile(obj.mibPath, 'assets');
+resourceFile  = fullfile(obj.mibPath, 'assets', 'mib_icons.res');
+if ~isfile(resourceFile)
+    core.MibIconCache.buildResourceFile(assetsDir, resourceFile);
+    % usage example:
+    % imgBrush = core.MibIconCache.get('about_16px');         % loads from the resource class on first call
+    % h.brushButton.Icon = imgBrush;
+end
+
+
 %% Add paths and Java libraries
 %% Update Java libraries
 

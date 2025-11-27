@@ -19,16 +19,25 @@ function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffi
 % try
 % // some code
 % catch err
-%    utils.showErrorDialog(obj.view.gui, err, 'Missing net-variable'); //    when called from MibController
+%    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing net-variable'); //    when called from MibController
 %    return;
 % end
 % @endcode
+%
+% @code
+% errorText = sprintf('!!! Error !!!\n\nSomething went wrong!');
+% suffix = 'some text at the bottom';
+% utils.dlgs.showErrorDialog([], errorText, 'Error', [], suffix);
+% return;
+% @endcode
+%
 % @code
 % ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
 % ErrorDlgOpt.optionalPrefix = sprintf('!!! Warning !!!\n\nThe last set can not be removed!');
 % eventdata = core.ToggleEventData(ErrorDlgOpt);
 % notify(obj, 'ShowErrorDialog', eventdata);
 % @endcode
+
 
 % Updates
 % 

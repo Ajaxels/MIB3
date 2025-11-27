@@ -23,7 +23,7 @@ obj.handles.qab.help.ButtonPushedFcn = @(varargin)disp('obj.handles.qab.help');
 obj.handles.qab.help.Text = 'Open MIB documentation';
 obj.gui.add(obj.handles.qab.help);
 
-obj.handles.qab.camera = matlab.ui.internal.toolstrip.qab.QABPushButton(matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/snapshot_16.png')));
+obj.handles.qab.camera = matlab.ui.internal.toolstrip.qab.QABPushButton(matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/snapshot_16px.png')));
 obj.handles.qab.camera.ButtonPushedFcn = @(varargin)disp('obj.handles.qab.camera');
 obj.handles.qab.camera.Text = 'Make a snapshot';
 obj.gui.add(obj.handles.qab.camera);

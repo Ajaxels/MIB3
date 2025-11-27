@@ -96,7 +96,7 @@ obj.handles.home.deepmib25dLargeSpots.Description = '2.5D DeepLabV3-Resnet18 and
 obj.handles.home.deepmib25dLargeSpots.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib25dLargeSpots pressed');
 category.add(obj.handles.home.deepmib25dLargeSpots);
 % 2D patch-wise synthetic (42 Mb)
-obj.handles.home.deepmib2dPatchWise = matlab.ui.internal.toolstrip.GalleryItem('2D patch-wise synthetic (42 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/patch-wise_24px.png')));
+obj.handles.home.deepmib2dPatchWise = matlab.ui.internal.toolstrip.GalleryItem('2D patch-wise synthetic (42 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/patch_wise_24px.png')));
 obj.handles.home.deepmib2dPatchWise.Description = 'Resnet18 network for detecting patches of large white spots on a black background';
 obj.handles.home.deepmib2dPatchWise.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib2dPatchWise pressed');
 category.add(obj.handles.home.deepmib2dPatchWise);
@@ -237,8 +237,11 @@ obj.handles.home.export.Popup = popupList;
 column.add(obj.handles.home.export);
 
 % % --------- SNAPSHOT ---------
+%icon = core.MibIconCache.get('icons', 'snapshot_16px');
+%snapshot = matlab.ui.internal.toolstrip.Button("Snapshot",  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'snapshot_16px')));
+
 column = section.addColumn(); 
-obj.handles.home.snapshot = matlab.ui.internal.toolstrip.Button("Snapshot",  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/snapshot_16.png')));
+obj.handles.home.snapshot = matlab.ui.internal.toolstrip.Button("Snapshot",  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/snapshot_16px.png')));
 obj.handles.home.snapshot.Description = 'Start the snapshot tool';
 obj.handles.home.snapshot.ButtonPushedFcn = @(varargin)disp('Start the snapshot tool pressed');
 column.add(obj.handles.home.snapshot);
