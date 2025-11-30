@@ -228,6 +228,10 @@ obj.mibModel.sessionSettings.ImageFilters.TestImg = imread(fullfile(obj.mibPath,
 
 % ----------------- INIT THE MAIN VIEW -----------------
 obj.view = views.MibView(obj);
+% ---- add callbacks ----
+% add callback for selection of the
+obj.view.handles.toolbar.global.SelectedTabChangedFcn = @obj.globalTabGroup_SelectionCallback;
+
 % --- create controller for panels and add view into them
 obj.addGuiControllers();
 
@@ -237,19 +241,9 @@ v = ver('matlab'); %#ok<VERMATLAB>
 obj.matlabVersion = str2double(v(1).Version);   % conversion is not correct as version named as 9.8, 9.9, 9.10...
 obj.mibModel.matlabVersion = obj.matlabVersion;
 
-% add icons for buttons
-imageList = {'plus', 'minus', 'settings', 'next', 'step', 'step_and_advance', 'eye', 'shrink', 'bulleted_list', 'clear'};
-for fnId=1:numel(imageList)
-    fn = fullfile(obj.mibPath, 'assets', 'fast_access_icons', [imageList{fnId} '.png']);
-    [I, map, transparency] = imread(fn);
-    transparency = repmat(transparency, [1,1,3]);
-    I = double(I)/255;
-    I(transparency==0) = NaN;
-    obj.mibModel.sessionSettings.guiImages.(imageList{fnId}) = I;
-end
-
-obj.view.handles.panels.segmentation.handles.addMaterial.Icon = obj.mibModel.sessionSettings.guiImages.plus;
-obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = obj.mibModel.sessionSettings.guiImages.minus;
+% this custom icons are RGB doubles with NaNs for transparency areas
+obj.view.handles.panels.segmentation.handles.addMaterial.Icon = core.MibIconCache.get('alpha_cache', 'plus_16px'); %obj.mibModel.sessionSettings.guiImages.plus;
+obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'minus_16px'); %obj.mibModel.sessionSettings.guiImages.minus;
 
 % update mibModel parameters
 obj.mibModel.myPath = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
@@ -266,8 +260,6 @@ obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesSho
 obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
 obj.selectionLutTableUpdate_fromModel(); % update the LUT table in the Selection and View settings panel
 %obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
-
-
 
 % --------- update listeners
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel

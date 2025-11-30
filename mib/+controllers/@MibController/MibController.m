@@ -95,6 +95,8 @@ classdef MibController < handle
 
         id = findChildId(obj, childName)        % find id of a child controller
 
+        globalTabGroup_SelectionCallback(obj, hWidget, hData) % callback for the selection of the tab in the main ribbon, optimization for lazy initialization of ribbon tabs
+
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
         imViewPanel_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View panel obj.view.handles.imView{setNumber}.handles...

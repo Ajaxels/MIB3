@@ -84,7 +84,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %   options.HelpUrl      = 'http://mib.helsinki.fi';
 %   options.LastItemColumns = 1;
 %   options.MsgBoxOnly   = false;
-%   options.Icon         = 'question';
+%   options.Icon         = 'question_48px';
 %   options.OkBtnText    = 'Proceed';
 %   options.HelpBtnText  = 'Help';
 %   options.DoNotShowAgain = true;
@@ -100,7 +100,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %   options.MsgBoxOnly = true;
 %   options.Header = 'Please Read';
 %   options.OkBtnText = 'OK';
-%   options.Icon = 'question';
+%   options.Icon = 'question_48px';
 %   options.DoNotShowAgain = true;
 %   options.DoNotShowAgainText = 'Do not show this again';
 %   [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, {}, {htmlContent}, dlgTitle, options);
@@ -217,74 +217,26 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     end
 end
 
-% Get figure background color for alpha blending
-figBgColor = fig.Color;
-
 % Icon selection and loading
 switch options.Icon
-    case 'warning',   iconFilename = 'mib_warning.png';
-    case 'question',  iconFilename = 'mib_question.png';
-    case 'celebrate', iconFilename = 'mib_celebrate.jpg';
-    case 'call4help', iconFilename = 'mib_call4help.jpg';
-    otherwise,        iconFilename = 'mib_question.png';
+    case 'warning_48px',   iconFilename = 'warning_48px.png';        
+    case 'question_48px',  iconFilename = 'question_48px.png';
+    case 'celebrate', iconFilename = 'celebrate.jpg';
+    case 'call4help', iconFilename = 'call4help.jpg';
+    otherwise,        iconFilename = 'question_48px.png';
 end
 iconPath = fullfile(mibPath, 'assets', 'images', iconFilename);
-iconImg = [];
-
-if exist(iconPath, 'file')
-    try
-        % Read image with alpha channel
-        [img, ~, alpha] = imread(iconPath);
-
-        % Handle alpha channel by compositing with figure background
-        if ~isempty(alpha)
-            % Convert to double for blending
-            img = im2double(img);
-            alpha = im2double(alpha);
-
-            % Get background color from figure
-            bgColor = figBgColor; % RGB triplet from figure
-
-            % Blend image with background using alpha
-            if size(img, 3) == 3
-                % RGB image
-                for k = 1:3
-                    img(:,:,k) = img(:,:,k) .* alpha + bgColor(k) * (1 - alpha);
-                end
-            else
-                % Grayscale image - use average of RGB for gray value
-                bgGray = mean(bgColor);
-                img = img .* alpha + bgGray * (1 - alpha);
-            end
-
-            % Convert back to uint8
-            iconImg = im2uint8(img);
-        else
-            iconImg = img;
-        end
-
-        % resize the icon
-        if ~isempty(options.IconWidth)
-            iconImg = imresize(iconImg, options.IconWidth/size(iconImg, 2), 'lanczos3');
-        else
-            % assign options.IconWidth to the size of icon
-            options.IconWidth = size(iconImg, 2);
-        end
-        % if any(strcmp(options.Icon, {'warning', 'question'}))
-        %     iconImg = imresize(iconImg, options.IconWidth/size(iconImg, 2), 'lanczos3');
-        % end
-    catch
-        iconImg = [];
-        options.IconWidth = 32;
-    end
-end
 
 % Determine if we have a header
 hasHeader = isfield(options,'Header') && ~isempty(options.Header);
 
 % Main grid structure: icon column + content columns
 totalCols = 1 + options.Columns;
-mainColWidths = [{options.IconWidth}, options.MainColumnWidths]; % Icon column with specified width (numeric)
+if isempty(options.IconWidth)
+    mainColWidths = ['fit', options.MainColumnWidths]; % Icon column with specified width (numeric)
+else    
+    mainColWidths = [{options.IconWidth}, options.MainColumnWidths]; % Icon column with specified width (numeric)
+end
 
 if hasHeader
     % 3 rows: Header row, content row, button row
@@ -307,8 +259,8 @@ else
 end
 
 % Row 1, Column 1: Icon
-if ~isempty(iconImg)
-    iconUI = uiimage(mainGrid, 'ImageSource', iconImg);
+if exist(iconPath, 'file')
+    iconUI = uiimage(mainGrid, 'ImageSource', iconPath, 'ScaleMethod', 'fit');
     if hasHeader
         % Span icon from header row to content row
         iconUI.Layout.Row = [titleRow contentRow];

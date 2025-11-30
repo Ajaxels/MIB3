@@ -14,8 +14,8 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   .WindowWidth       - dialog width in pixels (default 400)
 %   .WindowHeight      - dialog height in pixels (default 100)
 %   .WindowStyle - 'normal' (default) or 'modal'
-%   .Icon        - 'question' (default), 'celebrate', 'call4help', 'warning'
-%   .IconWidth   - WindowWidth of icon column in pixels (default 64)
+%   .Icon        - 'question_48px' (default), 'celebrate', 'call4help', 'warning_48px'
+%   .IconWidth   - WindowWidth of icon column in pixels (default 48)
 %
 % Return values:
 % answer: entered value (string for editfield, double for spinner), empty when canceled
@@ -29,8 +29,8 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   options.WindowWidth = 400;
 %   options.WindowHeight = 100;
 %   options.WindowStyle = 'modal';
-%   options.Icon = 'question';
-%   options.IconWidth = 64;
+%   options.Icon = 'question_48px';
+%   options.IconWidth = 48;
 %   answer = utils.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
 %
@@ -43,8 +43,8 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   options.WindowWidth = 400;
 %   options.WindowHeight = 100;
 %   options.WindowStyle = 'modal';
-%   options.Icon = 'question';
-%   options.IconWidth = 64;
+%   options.Icon = 'question_48px';
+%   options.IconWidth = 48;
 %   mibPath = obj.mibPath;
 %   answer = utils.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
@@ -82,58 +82,16 @@ end
 
 % Icon selection and loading
 switch options.Icon
-    case 'warning',   iconFilename = 'mib_warning.png';
-    case 'question',  iconFilename = 'mib_question.png';
-    case 'celebrate', iconFilename = 'mib_celebrate.jpg';
-    case 'call4help', iconFilename = 'mib_call4help.jpg';
-    otherwise,        iconFilename = 'mib_question.png';
+    case 'warning_48px',   iconFilename = 'warning_48px.png';        
+    case 'question_48px',  iconFilename = 'question_48px.png';
+    case 'celebrate', iconFilename = 'celebrate.jpg';
+    case 'call4help', iconFilename = 'call4help.jpg';
+    otherwise,        iconFilename = 'question_48px.png';
 end
+
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
-if exist(iconPath, 'file')
-    try
-        % Read image with alpha channel
-        [img, ~, alpha] = imread(iconPath);
-        
-        % Build figure first to get background color
-        fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'WindowStyle', lower(options.WindowStyle));
-        figBgColor = fig.Color;
-        
-        % Handle alpha channel by compositing with figure background
-        if ~isempty(alpha)
-            img = im2double(img);
-            alpha = im2double(alpha);
-            bgColor = figBgColor;
-            
-            if size(img, 3) == 3
-                for k = 1:3
-                    img(:,:,k) = img(:,:,k) .* alpha + bgColor(k) * (1 - alpha);
-                end
-            else
-                bgGray = mean(bgColor);
-                img = img .* alpha + bgGray * (1 - alpha);
-            end
-            iconImg = im2uint8(img);
-        else
-            iconImg = img;
-        end
-        
-        % Resize icon to fit WindowWidth
-        if ~isempty(options.IconWidth)
-            iconImg = imresize(iconImg, [options.IconWidth, NaN], 'lanczos3');
-        else
-            options.IconWidth = size(iconImg, 2);
-        end
-    catch
-        % Create figure without icon if loading fails
-        fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'WindowStyle', lower(options.WindowStyle));
-        iconImg = [];
-    end
-else
-    % Create figure without icon if file not found
-    fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'WindowStyle', lower(options.WindowStyle));
-    iconImg = [];
-end
+fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'WindowStyle', lower(options.WindowStyle));
 % update figure width/height
 fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.WindowHeight];
 
@@ -147,8 +105,9 @@ mainGrid = uigridlayout(fig, [3 2], ...
     'Padding', [10 10 10 10], 'RowSpacing', 10, 'ColumnSpacing', 12);
 
 % Column 1: Icon (all rows)
-if ~isempty(iconImg)
-    iconUI = uiimage(mainGrid, 'ImageSource', iconImg);
+if exist(iconPath, 'file')
+    iconUI = uiimage(mainGrid, 'ImageSource', iconPath, 'ScaleMethod', 'fit');
+
     iconUI.Layout.Row = [1 3];  % Span all rows
     iconUI.Layout.Column = 1;
     iconUI.VerticalAlignment = 'top';
