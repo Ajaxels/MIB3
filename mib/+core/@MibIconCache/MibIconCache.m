@@ -14,7 +14,7 @@ classdef MibIconCache
     % files = dir('C:\MATLAB\MIB3\mib\assets\icons\*.png');
     % filesNames1 = {files.name};
     % filesNames2 = cellfun(@(f) erase(f, '.png'), filesNames1, 'UniformOutput', false);
-    % 
+    %
     % % Test 1: Cache (returns image arrays)
     % t1 = tic;
     % imgs = cell(numel(filesNames2), 1);
@@ -22,7 +22,7 @@ classdef MibIconCache
     %     imgs{i} = core.MibIconCache.get('icons', filesNames2{i});
     % end
     % timeCache = toc(t1);
-    % 
+    %
     % % Test 2: Direct imread (actually load images)
     % t1 = tic;
     % imgs2 = cell(numel(filesNames1), 1);
@@ -30,14 +30,130 @@ classdef MibIconCache
     %     imgs2{i} = imread(fullfile(obj.controller.mibPath, 'assets/icons', filesNames1{i}));
     % end
     % timeFile = toc(t1);
-    % 
+    %
     % fprintf('Time difference (timeCache/timeFile) = %f\n', timeCache/timeFile);
 
     methods (Static)
+        % function img = get(foldername, name, resourceFilePath, assetsDir)
+        %     % function img = get(foldername, name, resourceFilePath, assetsDir)
+        %     % Return icon/image by name from a MAT-resource file backed
+        %     % cache. In case the cache not yet loaded, it will be loaded as
+        %     % stored in a persistent variable. In case, the resource file
+        %     % is not present it will be automatically generated using
+        %     % obj.buildResourceFile method.
+        %     %
+        %     % Parameters:
+        %     % foldername: char with the folder name
+        %     % @li 'icons' - icons folder
+        %     % @li 'images' - images folder
+        %     % name: name of the icon/image without extension
+        %     % resourceFilePath: full path to the resource file, default
+        %     % location under "MIB3\mib\assets\mib_icons.res"
+        %     % assetsDir: path to the assets directory that contains
+        %     % 'images' and 'icons' folder. Default location "MIB3\mib\assets"
+        %     %
+        %     % Examples:
+        %     % <code>
+        %     % // get image corresponding to "assets/icons/about_24px.png"
+        %     % img = MibIconCache.get('icons', 'about_24px');
+        %     % // get image corresponding to "assets/images/mib_question.png"
+        %     % img = MibIconCache.get('images', 'mib_question');
+        %     % <endcode>
+        %
+        %     % Normalize inputs
+        %     if nargin < 4; assetsDir = []; end
+        %     if nargin < 3; resourceFilePath = []; end
+        %
+        %     persistent iconCache cachePath assetsPath
+        %     % iconCache - a structure with images and icons:
+        %     % iconCache.icons: icons from "assets/icons/"
+        %     % iconCache.images: images from "assets/images/"
+        %
+        %     % ---------------- Fast path: warm cache ----------------
+        %     % If the cache is already loaded and either:
+        %     %  - no new resourceFilePath is requested, or
+        %     %  - the requested resourceFilePath matches the cached one,
+        %     % then try to serve directly from iconCache and return.
+        %     if ~isempty(iconCache)
+        %         if isempty(resourceFilePath) || strcmp(cachePath, resourceFilePath)
+        %             if isfield(iconCache, foldername) && ...
+        %                     isfield(iconCache.(foldername), name)
+        %                 img = iconCache.(foldername).(name);
+        %                 return;
+        %             end
+        %         end
+        %     end
+        %
+        %     % ---------------- Resolve paths (cold or changed) ----------------
+        %     % Resolve assetsPath once and reuse.
+        %     if ~isempty(assetsDir)
+        %         assetsPath = assetsDir;
+        %     elseif isempty(assetsPath)
+        %         assetsPath = core.MibIconCache.getDefaultAssetsDir();
+        %     end
+        %
+        %     % Resolve resourceFilePath, prefer explicit argument if provided.
+        %     if isempty(resourceFilePath)
+        %         if isempty(cachePath)
+        %             resourceFilePath = core.MibIconCache.getDefaultResourcePath();
+        %         else
+        %             resourceFilePath = cachePath;
+        %         end
+        %     end
+        %
+        %     % ---------------- Load or reload MAT resource ----------------
+        %     % Only reload if cache is empty or the resource path changed.
+        %     if isempty(iconCache) || ~strcmp(cachePath, resourceFilePath)
+        %         if ~isfile(resourceFilePath)
+        %             % Resource file missing: build from assetsPath
+        %             core.MibIconCache.buildResourceFile(assetsPath, resourceFilePath);
+        %         end
+        %
+        %         data = load(resourceFilePath, '-mat');
+        %         if ~isfield(data, 'resources')
+        %             error('MibIconCache:InvalidResource', ...
+        %                 'Resource MAT file "%s" does not contain ''resources'' struct.', ...
+        %                 resourceFilePath);
+        %         end
+        %
+        %         iconCache = data.resources;
+        %         cachePath = resourceFilePath;
+        %     end
+        %
+        %     % ---------------- Lookup in freshly loaded cache ----------------
+        %     if ~isfield(iconCache, foldername) || ...
+        %             ~isfield(iconCache.(foldername), name)
+        %
+        %         % Icon not found in cache: rebuild resource and try again
+        %         core.MibIconCache.buildResourceFile(assetsPath, resourceFilePath);
+        %         data = load(resourceFilePath, '-mat');
+        %         if ~isfield(data, 'resources')
+        %             error('MibIconCache:InvalidResource', ...
+        %                 'Resource MAT file "%s" does not contain ''resources'' struct.', ...
+        %                 resourceFilePath);
+        %         end
+        %
+        %         iconCache = data.resources;
+        %         cachePath = resourceFilePath;
+        %     end
+        %
+        %     % Final lookup / error
+        %     if isfield(iconCache, foldername) && ...
+        %             isfield(iconCache.(foldername), name)
+        %         img = iconCache.(foldername).(name);
+        %     else
+        %         error('MibIconCache:IconNotFound', ...
+        %             'MibIconCache: Icon "%s.%s" not found in resource cache (%s).', ...
+        %             foldername, name, resourceFilePath);
+        %     end
+        % end
+        %
+
         function img = get(foldername, name, resourceFilePath, assetsDir)
             % function img = get(foldername, name, resourceFilePath, assetsDir)
             % Return icon/image by name from a MAT-resource file backed
-            % cache. In case the cache not yet loaded, it will be loaded as
+            % cache. 
+            % In case the cache not yet loaded, it will be loaded as
             % stored in a persistent variable. In case, the resource file
             % is not present it will be automatically generated using
             % obj.buildResourceFile method.
@@ -55,7 +171,7 @@ classdef MibIconCache
             % Examples:
             % <code>
             % // get image corresponding to "assets/icons/about_24px.png"
-            % img = MibIconCache.get('icons', 'about_24px'); 
+            % img = MibIconCache.get('icons', 'about_24px');
             % // get image corresponding to "assets/images/mib_question.png"
             % img = MibIconCache.get('images', 'mib_question');
             % <endcode>
@@ -78,7 +194,7 @@ classdef MibIconCache
                 if isempty(resourceFilePath) || strcmp(cachePath, resourceFilePath)
                     if isfield(iconCache, foldername) && ...
                             isfield(iconCache.(foldername), name)
-                        img = iconCache.(foldername).(name);
+                        img = core.MibIconCache.getIconData(iconCache.(foldername).(name));
                         return;
                     end
                 end
@@ -140,14 +256,53 @@ classdef MibIconCache
             % Final lookup / error
             if isfield(iconCache, foldername) && ...
                     isfield(iconCache.(foldername), name)
-                img = iconCache.(foldername).(name);
+                img = core.MibIconCache.getIconData(iconCache.(foldername).(name));
             else
                 error('MibIconCache:IconNotFound', ...
                     'MibIconCache: Icon "%s.%s" not found in resource cache (%s).', ...
                     foldername, name, resourceFilePath);
             end
         end
-    
+
+
+        function img = getIconData(iconData)
+            % function img = getIconData(iconData)
+            % Extract icon image array from cache data and apply transparency
+            %
+            % Parameters:
+            % iconData: a structure with
+            % @li .cdata - matrix ([height, width, col_channel]) with intensity values for the icon
+            % @li .alpha - matrix with the alpha value, can be empty
+
+            if isstruct(iconData)
+                % New format: struct with cdata and alpha
+                if isfield(iconData, 'cdata')
+                    if isfield(iconData, 'alpha') && ~isempty(iconData.alpha)
+                        % Has alpha channel: construct RGBA
+                        if size(iconData.cdata, 3) == 3
+                            % RGB + Alpha -> RGBA (4-channel uint8)
+                            img = cat(3, iconData.cdata, iconData.alpha);
+                        elseif size(iconData.cdata, 3) == 1
+                            % Grayscale + Alpha -> LA (2-channel)
+                            img = cat(3, iconData.cdata, iconData.alpha);
+                        else
+                            % Already has alpha or unknown format
+                            img = iconData.cdata;
+                        end
+                    else
+                        % No alpha channel
+                        img = iconData.cdata;
+                    end
+                else
+                    % Malformed struct, return as-is
+                    img = iconData;
+                end
+            else
+                % Old format: plain array (backward compatibility)
+                img = iconData;
+            end
+        end
+
         % function img = get(foldername, name, resourceFilePath, assetsDir)
         %     %GET  Return icon image by name.
         %     %   img = MibIconCache.get('icons', 'icons.about_24px');
@@ -157,24 +312,24 @@ classdef MibIconCache
         %     %
         %     % If resource MAT or requested icon is missing, regenerates
         %     % the resource from assetsDir and reloads.
-        % 
+        %
         %     if nargin < 4; assetsDir = []; end
         %     if nargin < 3; resourceFilePath = []; end
-        % 
+        %
         %     persistent iconCache cachePath assetsPath
         %     % iconCache - a structure with images and icons:
         %     % iconCache.icons: icons from "assets/icons/"
         %     % iconCache.images: images from "assets/images/"
-        % 
+        %
         %     if isempty(assetsPath) || isempty(assetsDir)
         %         assetsPath = core.MibIconCache.getDefaultAssetsDir();
         %     end
-        % 
+        %
         %     if nargin < 2 || isempty(resourceFilePath)
         %         resourceFilePath = core.MibIconCache.getDefaultResourcePath();
         %     end
-        % 
-        % 
+        %
+        %
         %     % If cache is empty or for a different file, (re)load it
         %     if isempty(iconCache) || ~strcmp(cachePath, resourceFilePath)
         %         if ~isfile(resourceFilePath)
@@ -189,7 +344,7 @@ classdef MibIconCache
         %         iconCache = data.resources;
         %         cachePath = resourceFilePath;
         %     end
-        % 
+        %
         %     if ~isfield(iconCache.(foldername), name)
         %         % Icon not found in cache: rebuild resource and try again
         %         core.MibIconCache.buildResourceFile(assetsPath, resourceFilePath);
@@ -197,14 +352,14 @@ classdef MibIconCache
         %         iconCache = data.resources;
         %         cachePath = resourceFilePath;
         %     end
-        % 
+        %
         %     if isfield(iconCache.(foldername), name)
         %         img = iconCache.(foldername).(name);
         %     else
         %         error('MibIconCache:IconNotFound', ...
         %             'MibIconCache: Icon "%s" not found in resource cache (%s)', name, resourceFilePath);
         %     end
-        % 
+        %
         % end
 
         function buildResourceFile(assetsDir, resourceFilePath)
@@ -249,10 +404,27 @@ classdef MibIconCache
                 files(~arrayfun(@(files) contains(files.name, exts), files)) = []; % filter files
                 noFiles = numel(files);
                 for fileId = 1:noFiles
-                    [~, baseName] = fileparts(files(fileId).name);
+                    [~, baseName, ext] = fileparts(files(fileId).name);
                     imgPath = fullfile(subFolderName, files(fileId).name);
                     try
-                        img = imread(imgPath);
+                        % % Read image WITH alpha channel for PNG files
+                        % if strcmpi(ext, '.png')
+                        %     [img, ~, alpha] = imread(imgPath);
+                        %
+                        %     % Store both image and alpha in a struct
+                        %     iconData.cdata = img;
+                        %     if ~isempty(alpha)
+                        %         iconData.alpha = alpha;
+                        %     else
+                        %         iconData.alpha = [];  % no transparency
+                        %     end
+                        % else
+                        %     img = imread(imgPath);
+                        %     iconData.cdata = img;
+                        %     iconData.alpha = [];
+                        % end
+                        % img = imread(imgPath);
+                        [img.cdata, ~, img.alpha] = imread(imgPath);
                     catch err
                         fprintf('MibIconCache:ReadFailed', ...
                             'MibIconCache:ReadFailed: failed to read icon "%s"\n', imgPath);

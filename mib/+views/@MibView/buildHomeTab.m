@@ -51,17 +51,17 @@ obj.handles.home.importFromClipboard.Description = 'Import from system clipboard
 obj.handles.home.importFromClipboard.ItemPushedFcn  = @(varargin)disp('Import from Clipboard pressed');
 popupList.add(obj.handles.home.importFromClipboard);
 % import from Imaris
-obj.handles.home.importFromImaris = matlab.ui.internal.toolstrip.ListItem('Imaris', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/imaris_24px.png')));
+obj.handles.home.importFromImaris = matlab.ui.internal.toolstrip.ListItem('Imaris', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'imaris_24px')));
 obj.handles.home.importFromImaris.Description = 'Import from Imaris';
 obj.handles.home.importFromImaris.ItemPushedFcn  = @(varargin)disp('Import from Imaris pressed');
 popupList.add(obj.handles.home.importFromImaris);
 % import from OMERO
-obj.handles.home.importFromOmero = matlab.ui.internal.toolstrip.ListItem('Omero', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/omero_24px.png')));
+obj.handles.home.importFromOmero = matlab.ui.internal.toolstrip.ListItem('Omero',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'omero_24px')));
 obj.handles.home.importFromOmero.Description = 'Import dataset from OMERO';
 obj.handles.home.importFromOmero.ItemPushedFcn  = @(varargin)disp('Import from importFromOmero pressed');
 popupList.add(obj.handles.home.importFromOmero);
 % import from URL
-obj.handles.home.importFromURL = matlab.ui.internal.toolstrip.ListItem('URL', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/internet_24px.png')));
+obj.handles.home.importFromURL = matlab.ui.internal.toolstrip.ListItem('URL',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'internet_24px')));
 obj.handles.home.importFromURL.Description = 'Import dataset from URL';
 obj.handles.home.importFromURL.ItemPushedFcn  = @(varargin)disp('Import from URL pressed');
 popupList.add(obj.handles.home.importFromURL);
@@ -81,22 +81,22 @@ popup = matlab.ui.internal.toolstrip.GalleryPopup('GalleryItemTextLineCount', 2,
 % DeepMIB projects
 category = matlab.ui.internal.toolstrip.GalleryCategory('DeepMIB projects');
 % 2D large spots synthetic (62 Mb)
-obj.handles.home.deepmib2dLargeSpots = matlab.ui.internal.toolstrip.GalleryItem('2D large spots synthetic (62 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/large_spots_24px.png')));
+obj.handles.home.deepmib2dLargeSpots = matlab.ui.internal.toolstrip.GalleryItem('2D large spots synthetic (62 Mb)',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'large_spots_24px')));
 obj.handles.home.deepmib2dLargeSpots.Description = 'DeepLabV3-Resnet18 network for detecting large spots on a black background';
 obj.handles.home.deepmib2dLargeSpots.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib2dLargeSpots pressed');
 category.add(obj.handles.home.deepmib2dLargeSpots);
 % 2D small spots synthetic (8 Mb)
-obj.handles.home.deepmib2dSmallSpots = matlab.ui.internal.toolstrip.GalleryItem('2D small spots synthetic (8 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/small_spots_24px.png')));
+obj.handles.home.deepmib2dSmallSpots = matlab.ui.internal.toolstrip.GalleryItem('2D small spots synthetic (8 Mb)',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'small_spots_24px')));
 obj.handles.home.deepmib2dSmallSpots.Description = 'U-net network for detecting small random spots of two colors on a black background';
 obj.handles.home.deepmib2dSmallSpots.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib2dSmallSpots pressed');
 category.add(obj.handles.home.deepmib2dSmallSpots);
 % 2.5D large spots synthetic (121 Mb)
-obj.handles.home.deepmib25dLargeSpots = matlab.ui.internal.toolstrip.GalleryItem('2.5D large spots synthetic (121 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/large_spots_3d_24px.png')));
+obj.handles.home.deepmib25dLargeSpots = matlab.ui.internal.toolstrip.GalleryItem('2.5D large spots synthetic (121 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'large_spots_3d_24px')));
 obj.handles.home.deepmib25dLargeSpots.Description = '2.5D DeepLabV3-Resnet18 and U-net networks for segmenting large 3D spots (ignoring 2D spots)';
 obj.handles.home.deepmib25dLargeSpots.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib25dLargeSpots pressed');
 category.add(obj.handles.home.deepmib25dLargeSpots);
 % 2D patch-wise synthetic (42 Mb)
-obj.handles.home.deepmib2dPatchWise = matlab.ui.internal.toolstrip.GalleryItem('2D patch-wise synthetic (42 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/patch_wise_24px.png')));
+obj.handles.home.deepmib2dPatchWise = matlab.ui.internal.toolstrip.GalleryItem('2D patch-wise synthetic (42 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'patch_wise_24px')));
 obj.handles.home.deepmib2dPatchWise.Description = 'Resnet18 network for detecting patches of large white spots on a black background';
 obj.handles.home.deepmib2dPatchWise.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib2dPatchWise pressed');
 category.add(obj.handles.home.deepmib2dPatchWise);
@@ -104,22 +104,22 @@ category.add(obj.handles.home.deepmib2dPatchWise);
 separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 % 2D EM Membranes (219 Mb)
-obj.handles.home.deepmib2dMembranesEM = matlab.ui.internal.toolstrip.GalleryItem('2D EM Membranes (219 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_membranes_24px.png')));
+obj.handles.home.deepmib2dMembranesEM = matlab.ui.internal.toolstrip.GalleryItem('2D EM Membranes (219 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_membranes_24px')));
 obj.handles.home.deepmib2dMembranesEM.Description = 'Segmentation of membranes from serial-section TEM images';
 obj.handles.home.deepmib2dMembranesEM.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib2dMembranesEM pressed');
 category.add(obj.handles.home.deepmib2dMembranesEM);
 % 2D LM Nuclei (174 Mb)
-obj.handles.home.deepmib2dNucleiLM = matlab.ui.internal.toolstrip.GalleryItem('2D LM Nuclei (174 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_nuclei_24px.png')));
+obj.handles.home.deepmib2dNucleiLM = matlab.ui.internal.toolstrip.GalleryItem('2D LM Nuclei (174 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_nuclei_24px')));
 obj.handles.home.deepmib2dNucleiLM.Description = 'Segmentation of nuclei, boundaries, and touching edges';
 obj.handles.home.deepmib2dNucleiLM.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib2dNucleiLM pressed');
 category.add(obj.handles.home.deepmib2dNucleiLM);
 % 3D EM Mitochondria (256 Mb)
-obj.handles.home.deepmib3dMitoEM = matlab.ui.internal.toolstrip.GalleryItem('3D EM Mitochondria (256 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_mito_24px.png')));
+obj.handles.home.deepmib3dMitoEM = matlab.ui.internal.toolstrip.GalleryItem('3D EM Mitochondria (256 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_mito_24px')));
 obj.handles.home.deepmib3dMitoEM.Description = 'Segmentation of mitochondria using 3D U-net';
 obj.handles.home.deepmib3dMitoEM.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib3dMitoEM pressed');
 category.add(obj.handles.home.deepmib3dMitoEM);
 % 3D LM hair cells (138 Mb)
-obj.handles.home.deepmib3dHairCellsLM = matlab.ui.internal.toolstrip.GalleryItem('3D LM hair cells (138 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_hair_24px.png')));
+obj.handles.home.deepmib3dHairCellsLM = matlab.ui.internal.toolstrip.GalleryItem('3D LM hair cells (138 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_hair_24px')));
 obj.handles.home.deepmib3dHairCellsLM.Description = 'Segmentation of hair cells using anisotropic 3D U-net';
 obj.handles.home.deepmib3dHairCellsLM.ItemPushedFcn = @(varargin)disp('obj.handles.home.deepmib3dHairCellsLM pressed');
 category.add(obj.handles.home.deepmib3dHairCellsLM);
@@ -128,19 +128,19 @@ popup.add(category);
 % Light microscopy datasets
 category = matlab.ui.internal.toolstrip.GalleryCategory('Light microscopy');
 % 3D SIM ER (21 Mb)
-obj.handles.home.lm3dsimER = matlab.ui.internal.toolstrip.GalleryItem('3D SIM ER (21 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_sim_24px.png')));
+obj.handles.home.lm3dsimER = matlab.ui.internal.toolstrip.GalleryItem('3D SIM ER (21 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_sim_24px')));
 obj.handles.home.lm3dsimER.Description = '3D super-resolution structured illumination light microscopy dataset of endoplasmic reticulum';
 obj.handles.home.lm3dsimER.ItemPushedFcn = @(varargin)disp('obj.handles.home.lm3dsimER pressed');
 category.add(obj.handles.home.lm3dsimER);
 popup.add(category);
 % 3D STED (27 Mb)
-obj.handles.home.lm3dsted = matlab.ui.internal.toolstrip.GalleryItem('3D SIM ER (21 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_sted_24px.png')));
+obj.handles.home.lm3dsted = matlab.ui.internal.toolstrip.GalleryItem('3D SIM ER (21 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_sted_24px')));
 obj.handles.home.lm3dsted.Description = '3D super-resolution Stimulated Emission Depletion (STED) microscopy';
 obj.handles.home.lm3dsted.ItemPushedFcn = @(varargin)disp('obj.handles.home.lm3dsted pressed');
 category.add(obj.handles.home.lm3dsted);
 popup.add(category);
 % WF ER Photobleaching (58 Mb)
-obj.handles.home.lmWFbleaching = matlab.ui.internal.toolstrip.GalleryItem('Widefield ER Photobleaching (21 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_wf_24px.png')));
+obj.handles.home.lmWFbleaching = matlab.ui.internal.toolstrip.GalleryItem('Widefield ER Photobleaching (21 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_wf_24px')));
 obj.handles.home.lmWFbleaching.Description = 'Wide-field time-lapse imaging dataset of endoplasmic reticulum with visible photobleaching effect';
 obj.handles.home.lmWFbleaching.ItemPushedFcn = @(varargin)disp('obj.handles.home.lmWFbleaching pressed');
 category.add(obj.handles.home.lmWFbleaching);
@@ -149,12 +149,12 @@ popup.add(category);
 % SBF-SEM
 category = matlab.ui.internal.toolstrip.GalleryCategory('Serial block-face SEM');
 % Huh-7 and model (29 Mb)
-obj.handles.home.sbfsemHuh7 = matlab.ui.internal.toolstrip.GalleryItem('Huh-7 and model (29 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_huh7_24px.png')));
+obj.handles.home.sbfsemHuh7 = matlab.ui.internal.toolstrip.GalleryItem('Huh-7 and model (29 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_huh7_24px')));
 obj.handles.home.sbfsemHuh7.Description = 'Huh-7 cell and a model of nuclei, endoplasmic reticulum, mitochondria, and lipid droplets';
 obj.handles.home.sbfsemHuh7.ItemPushedFcn = @(varargin)disp('obj.handles.home.sbfsemHuh7 pressed');
 category.add(obj.handles.home.sbfsemHuh7);
 % Trypanosoma and model (247 Mb)
-obj.handles.home.sbfsemTrypanosoma = matlab.ui.internal.toolstrip.GalleryItem('Trypanosoma and model (247 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_trypis_24px.png')));
+obj.handles.home.sbfsemTrypanosoma = matlab.ui.internal.toolstrip.GalleryItem('Trypanosoma and model (247 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_trypis_24px')));
 obj.handles.home.sbfsemTrypanosoma.Description = 'Trypanosoma brucei cell and a model of nuclei, endoplasmic reticulum, mitochondria, vesicles, lipid droplets, and cytoplasm';
 obj.handles.home.sbfsemTrypanosoma.ItemPushedFcn = @(varargin)disp('obj.handles.home.sbfsemTrypanosoma pressed');
 category.add(obj.handles.home.sbfsemTrypanosoma);
@@ -163,13 +163,13 @@ popup.add(category);
 % MRI
 category = matlab.ui.internal.toolstrip.GalleryCategory('Magnetic resonance imaging');
 % MATLAB Brain and model (3 Mb)
-obj.handles.home.mriBrain = matlab.ui.internal.toolstrip.GalleryItem('MATLAB Brain and model (3 Mb)', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/examples_mri_24px.png')));
+obj.handles.home.mriBrain = matlab.ui.internal.toolstrip.GalleryItem('MATLAB Brain and model (3 Mb)', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'examples_mri_24px')));
 obj.handles.home.mriBrain.Description = 'Test brain dataset from MATLAB, captured with magnetic resonance imaging (MRI), including a tumor model';
 obj.handles.home.mriBrain.ItemPushedFcn = @(varargin)disp('obj.handles.home.mriBrain pressed');
 category.add(obj.handles.home.mriBrain);
 popup.add(category);
 
-obj.handles.home.examples = matlab.ui.internal.toolstrip.DropDownGalleryButton(popup, 'Examples', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/gallery_24px.png')));
+obj.handles.home.examples = matlab.ui.internal.toolstrip.DropDownGalleryButton(popup, 'Examples', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'gallery_24px')));
 obj.handles.home.examples.Description = 'Example datasets and projects for MIB';
 column.add(obj.handles.home.examples);
 
@@ -225,7 +225,7 @@ obj.handles.home.exportToMatlab.Description = 'Export the current dataset to MAT
 obj.handles.home.exportToMatlab.ItemPushedFcn  = @(varargin)disp('Export the current dataset to MATLAB pressed');
 popupList.add(obj.handles.home.exportToMatlab);
 % Export to Imaris
-obj.handles.home.exportToImaris = matlab.ui.internal.toolstrip.ListItem('Export to Imaris', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/imaris_24px.png')));
+obj.handles.home.exportToImaris = matlab.ui.internal.toolstrip.ListItem('Export to Imaris', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'imaris_24px')));
 obj.handles.home.exportToImaris.Description = 'Export the current dataset to Imaris';
 obj.handles.home.exportToImaris.ItemPushedFcn  = @(varargin)disp('Export the current dataset to Imaris pressed');
 popupList.add(obj.handles.home.exportToImaris);
@@ -241,7 +241,7 @@ column.add(obj.handles.home.export);
 %snapshot = matlab.ui.internal.toolstrip.Button("Snapshot",  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'snapshot_16px')));
 
 column = section.addColumn(); 
-obj.handles.home.snapshot = matlab.ui.internal.toolstrip.Button("Snapshot",  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/snapshot_16px.png')));
+obj.handles.home.snapshot = matlab.ui.internal.toolstrip.Button("Snapshot",  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'snapshot_16px')));
 obj.handles.home.snapshot.Description = 'Start the snapshot tool';
 obj.handles.home.snapshot.ButtonPushedFcn = @(varargin)disp('Start the snapshot tool pressed');
 column.add(obj.handles.home.snapshot);
@@ -249,23 +249,23 @@ column.add(obj.handles.home.snapshot);
 % % --------- MOVIE/RENDER ---------
 column = section.addColumn('Width', 100); 
 % Render movie
-obj.handles.home.movie = matlab.ui.internal.toolstrip.Button("Movie",  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/documentary_16px.png')));
+obj.handles.home.movie = matlab.ui.internal.toolstrip.Button("Movie",  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'documentary_16px')));
 obj.handles.home.movie.Description = 'Start the movie maker tool';
 obj.handles.home.movie.ButtonPushedFcn = @(varargin)disp('Start the movie maker tool pressed');
 column.add(obj.handles.home.movie);
 % Render volume
-obj.handles.home.render =  matlab.ui.internal.toolstrip.SplitButton("Render", matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/volume_rendering_16px.png')));
+obj.handles.home.render =  matlab.ui.internal.toolstrip.SplitButton("Render", matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'volume_rendering_16px')));
 obj.handles.home.render.Description = 'Show the dataset using volume rendering';
 obj.handles.home.render.ButtonPushedFcn = @(varargin)disp('Show the dataset using volume rendering pressed');
 
 popupList = matlab.ui.internal.toolstrip.PopupList();
-obj.handles.home.renderMIB =  matlab.ui.internal.toolstrip.ListItem( 'MIB Rendering',  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/mib_icon_24px.png'))); 
+obj.handles.home.renderMIB =  matlab.ui.internal.toolstrip.ListItem( 'MIB Rendering',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'mib_icon_24px')));
 obj.handles.home.renderMIB.ItemPushedFcn = @(varargin)disp('MIB Rendering pressed');
 popupList.add(obj.handles.home.renderMIB);
 obj.handles.home.renderMatlab =  matlab.ui.internal.toolstrip.ListItem( 'MATLAB Volume Viewer',  matlab.ui.internal.toolstrip.Icon.MATLAB_24);
 obj.handles.home.renderMatlab.ItemPushedFcn = @(varargin)disp('MATLAB Volume Viewer pressed');
 popupList.add(obj.handles.home.renderMatlab);
-obj.handles.home.renderFiji =  matlab.ui.internal.toolstrip.ListItem( '3D viewer in Fiji',  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/fiji_24px.png'))); 
+obj.handles.home.renderFiji =  matlab.ui.internal.toolstrip.ListItem( '3D viewer in Fiji',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'fiji_24px'))); 
 obj.handles.home.renderFiji.ItemPushedFcn = @(varargin)disp('3D viewer in Fiji pressed');
 popupList.add(obj.handles.home.renderFiji);
 obj.handles.home.render.Popup = popupList;
@@ -277,21 +277,21 @@ section = obj.handles.toolbar.home.addSection("I/O Tools");
 
 % % --------- Batch processing ---------
 column = section.addColumn();
-obj.handles.home.batch = matlab.ui.internal.toolstrip.Button(sprintf("Batch\nprocessing"),  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/batch_processing_24px.png')));
+obj.handles.home.batch = matlab.ui.internal.toolstrip.Button(sprintf("Batch\nprocessing"),  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'batch_processing_24px')));
 obj.handles.home.batch.Description = 'Start the batch processing tool';
 obj.handles.home.batch.ButtonPushedFcn = @(varargin)disp('Start the batch processing tool pressed');
 column.add(obj.handles.home.batch);
 
 % % --------- Dataset chunking ---------
 column = section.addColumn();
-obj.handles.home.chunking =  matlab.ui.internal.toolstrip.DropDownButton(sprintf("Dataset\nchunking"), matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/grid_24px.png')));
+obj.handles.home.chunking =  matlab.ui.internal.toolstrip.DropDownButton(sprintf("Dataset\nchunking"), matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'grid_24px')));
 obj.handles.home.chunking.Description = "Split datasets into chunks or stitch them back for efficient processing";
 popupList = matlab.ui.internal.toolstrip.PopupList();
-obj.handles.home.chunk =  matlab.ui.internal.toolstrip.ListItem( 'Chunk dataset', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/split_24px.png')));
+obj.handles.home.chunk =  matlab.ui.internal.toolstrip.ListItem( 'Chunk dataset', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'split_24px')));
 obj.handles.home.chunk.Description = 'Split the image into smaller chunks for block-based processing';
 obj.handles.home.chunk.ItemPushedFcn = @(varargin)disp('Split the image pressed');
 popupList.add(obj.handles.home.chunk);
-obj.handles.home.stitch =  matlab.ui.internal.toolstrip.ListItem( 'Stitch dataset', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/restore_24px.png')));
+obj.handles.home.stitch =  matlab.ui.internal.toolstrip.ListItem( 'Stitch dataset', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'restore_24px')));
 obj.handles.home.stitch.Description = 'Reassemble previously chunked subvolumes back into the full image';
 obj.handles.home.stitch.ItemPushedFcn = @(varargin)disp('Reassemble previously chunked subvolumes pressed');
 popupList.add(obj.handles.home.stitch);
@@ -299,14 +299,14 @@ obj.handles.home.chunking.Popup = popupList;
 column.add(obj.handles.home.chunking);
 % % --------- Image shuffling ---------
 column = section.addColumn('Width', 80);
-obj.handles.home.rename =  matlab.ui.internal.toolstrip.DropDownButton(sprintf("Image\nshuffling"), matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/random_24px.png')));
+obj.handles.home.rename =  matlab.ui.internal.toolstrip.DropDownButton(sprintf("Image\nshuffling"), matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'random_24px')));
 obj.handles.home.rename.Description = "Shuffle or restore image order to reduce processing bias";
 popupList = matlab.ui.internal.toolstrip.PopupList();
-obj.handles.home.shuffle =  matlab.ui.internal.toolstrip.ListItem('Shuffle images', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/random_24px.png')));
+obj.handles.home.shuffle =  matlab.ui.internal.toolstrip.ListItem('Shuffle images', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'random_24px')));
 obj.handles.home.shuffle.Description = 'Randomly reorder and rename images to reduce processing bias';
 obj.handles.home.shuffle.ItemPushedFcn = @(varargin)disp('Shuffling pressed');
 popupList.add(obj.handles.home.shuffle);
-obj.handles.home.reshuffle =  matlab.ui.internal.toolstrip.ListItem('Restore order',  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/shuffle_restore_24px.png')));
+obj.handles.home.reshuffle =  matlab.ui.internal.toolstrip.ListItem('Restore order',  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'shuffle_restore_24px')));
 obj.handles.home.reshuffle.Description = 'Revert images to their original order and filenames';
 obj.handles.home.reshuffle.ItemPushedFcn = @(varargin)disp('Revert images pressed');
 popupList.add(obj.handles.home.reshuffle);
@@ -319,21 +319,21 @@ section = obj.handles.toolbar.home.addSection("PREFERENCES");
 % % --------- LAYOUT ---------
 column = section.addColumn(); 
 % --------- Restore layout ---------
-obj.handles.home.loadLayout =  matlab.ui.internal.toolstrip.SplitButton("Load layout", matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/load_layout_local_16px.png')));
+obj.handles.home.loadLayout =  matlab.ui.internal.toolstrip.SplitButton("Load layout", matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'load_layout_local_16px')));
 obj.handles.home.loadLayout.Description = 'Restore the default layout of panels';
 obj.handles.home.loadLayout.ButtonPushedFcn = @(varargin)obj.controller.loadLayout('localDefault');
 
 prefDir = utils.getPrefDir();
 popupList = matlab.ui.internal.toolstrip.PopupList();
-obj.handles.home.loadLayoutLocalDefault =  matlab.ui.internal.toolstrip.ListItem( 'Load local default layout', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/load_layout_local_24px.png')));
+obj.handles.home.loadLayoutLocalDefault =  matlab.ui.internal.toolstrip.ListItem( 'Load local default layout', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'load_layout_local_24px')));
 obj.handles.home.loadLayoutLocalDefault.Description = sprintf('Load local default layout from %s', fullfile(prefDir, 'mibDefaultLayout.json'));
 obj.handles.home.loadLayoutLocalDefault.ItemPushedFcn = @(varargin)obj.controller.loadLayout('localDefault');
 popupList.add(obj.handles.home.loadLayoutLocalDefault);
-obj.handles.home.loadLayoutCustom =  matlab.ui.internal.toolstrip.ListItem( 'Load custom layout', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/load_layout_custom_24px.png')));
+obj.handles.home.loadLayoutCustom =  matlab.ui.internal.toolstrip.ListItem( 'Load custom layout', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'load_layout_custom_24px')));
 obj.handles.home.loadLayoutCustom.Description = sprintf('Load custom layout from a file, typically stored in %s', prefDir);
 obj.handles.home.loadLayoutCustom.ItemPushedFcn = @(varargin)obj.controller.loadLayout('custom');
 popupList.add(obj.handles.home.loadLayoutCustom);
-obj.handles.home.loadLayoutMibDefault =  matlab.ui.internal.toolstrip.ListItem( 'Load MIB default layout', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/load_layout_global_24px.png')));
+obj.handles.home.loadLayoutMibDefault =  matlab.ui.internal.toolstrip.ListItem( 'Load MIB default layout', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'load_layout_global_24px')));
 obj.handles.home.loadLayoutMibDefault.Description = sprintf('Load default MIB layout from %s', fullfile(obj.controller.mibPath, 'assets', 'mibDefaultLayout.json'));
 obj.handles.home.loadLayoutMibDefault.ItemPushedFcn = @(varargin)obj.controller.loadLayout('globalDefault');
 popupList.add(obj.handles.home.loadLayoutMibDefault);
@@ -341,20 +341,20 @@ obj.handles.home.loadLayout.Popup = popupList;
 column.add(obj.handles.home.loadLayout);
 
 % --------- Store layout ---------
-obj.handles.home.saveLayout =  matlab.ui.internal.toolstrip.SplitButton("Save layout", matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/layout_save_16px.png')));
+obj.handles.home.saveLayout =  matlab.ui.internal.toolstrip.SplitButton("Save layout", matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'layout_save_16px')));
 obj.handles.home.saveLayout.Description = 'Save the current layout of panels as default';
 obj.handles.home.saveLayout.ButtonPushedFcn = @(varargin)obj.controller.saveLayout('localDefault');
 
 popupList = matlab.ui.internal.toolstrip.PopupList();
-obj.handles.home.saveLayoutLocalDefault =  matlab.ui.internal.toolstrip.ListItem( 'Save the current layout as default', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/layout_save_24px.png')));
+obj.handles.home.saveLayoutLocalDefault =  matlab.ui.internal.toolstrip.ListItem( 'Save the current layout as default', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'layout_save_24px')));
 obj.handles.home.saveLayoutLocalDefault.Description = sprintf('Save the current layout as default to %s', fullfile(prefDir, 'mibDefaultLayout.json'));
 obj.handles.home.saveLayoutLocalDefault.ItemPushedFcn = @(varargin)obj.controller.saveLayout('localDefault');
 popupList.add(obj.handles.home.saveLayoutLocalDefault);
-obj.handles.home.saveLayoutCustom =  matlab.ui.internal.toolstrip.ListItem( 'Save the current layout in a custom file', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/save_layout_custom_24px.png')));
+obj.handles.home.saveLayoutCustom =  matlab.ui.internal.toolstrip.ListItem( 'Save the current layout in a custom file', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'save_layout_custom_24px')));
 obj.handles.home.saveLayoutCustom.Description = sprintf('Save the current layout in a custom file, typically stored in %s', prefDir); 
 obj.handles.home.saveLayoutCustom.ItemPushedFcn = @(varargin)obj.controller.saveLayout('custom');
 popupList.add(obj.handles.home.saveLayoutCustom);
-obj.handles.home.saveLayoutMibDefault =  matlab.ui.internal.toolstrip.ListItem( 'Save the current layout as MIB default', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/load_layout_global_24px.png')));
+obj.handles.home.saveLayoutMibDefault =  matlab.ui.internal.toolstrip.ListItem( 'Save the current layout as MIB default', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'load_layout_global_24px')));
 obj.handles.home.saveLayoutMibDefault.Description = sprintf('Save the current layout as MIB default to %s', fullfile(obj.controller.mibPath, 'assets', 'mibDefaultLayout.json'));
 obj.handles.home.saveLayoutMibDefault.ItemPushedFcn = @(varargin)obj.controller.saveLayout('globalDefault');
 popupList.add(obj.handles.home.saveLayoutMibDefault);
@@ -366,7 +366,7 @@ column.addEmptyControl();
 
 % % --------- Preferences ---------
 column = section.addColumn();
-obj.handles.home.preferences = matlab.ui.internal.toolstrip.Button(sprintf("Preferences"),  matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/preferences_24px.png')));
+obj.handles.home.preferences = matlab.ui.internal.toolstrip.Button(sprintf("Preferences"),  matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'preferences_24px')));
 obj.handles.home.preferences.Description = 'Start the batch processing tool';
 obj.handles.home.preferences.ButtonPushedFcn = @(varargin)disp('Preferences pressed');
 column.add(obj.handles.home.preferences);
@@ -390,22 +390,22 @@ obj.handles.home.helpMenu = matlab.ui.internal.toolstrip.ListItem('Open MIB help
 obj.handles.home.helpMenu.ItemPushedFcn  = @(varargin)disp('Open MIB help pressed');
 popupList.add(obj.handles.home.helpMenu);
 % Tip of the day
-obj.handles.home.tipOfDay = matlab.ui.internal.toolstrip.ListItem('Tip of the day', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/bulb_16px.png')));
+obj.handles.home.tipOfDay = matlab.ui.internal.toolstrip.ListItem('Tip of the day', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'bulb_16px')));
 %obj.handles.home.tipOfDay.Description = 'Tip of the day';
 obj.handles.home.tipOfDay.ItemPushedFcn  = @(varargin)disp('Tip of the day pressed');
 popupList.add(obj.handles.home.tipOfDay);
 % Support on forum.image.sc
-obj.handles.home.support = matlab.ui.internal.toolstrip.ListItem('Support on image.sc', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/image_sc_16px.png')));
+obj.handles.home.support = matlab.ui.internal.toolstrip.ListItem('Support on image.sc', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'image_sc_16px')));
 %obj.handles.home.support.Description = 'Get support on forum.image.sc';
 obj.handles.home.support.ItemPushedFcn  = @(varargin)disp('Support on image.sc pressed');
 popupList.add(obj.handles.home.support);
 % Call 4 help support
-obj.handles.home.call4help = matlab.ui.internal.toolstrip.ListItem('Personal support session', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/call4help_16px.png')));
+obj.handles.home.call4help = matlab.ui.internal.toolstrip.ListItem('Personal support session', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'call4help_16px')));
 %obj.handles.home.call4help.Description = 'Book a personal online support session';
 obj.handles.home.call4help.ItemPushedFcn  = @(varargin)disp('Call 4 help pressed');
 popupList.add(obj.handles.home.call4help);
 % Class reference
-obj.handles.home.classReference = matlab.ui.internal.toolstrip.ListItem('API class reference', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/class_reference_16px.png')));
+obj.handles.home.classReference = matlab.ui.internal.toolstrip.ListItem('API class reference', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'class_reference_16px')));
 %obj.handles.home.classReference.Description = 'API class reference';
 obj.handles.home.classReference.ItemPushedFcn  = @(varargin)disp('API class reference pressed');
 popupList.add(obj.handles.home.classReference);
@@ -417,7 +417,7 @@ popupList.add(obj.handles.home.classReference);
 separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 % Check for update
-obj.handles.home.checkUpdate =  matlab.ui.internal.toolstrip.ListItem('Check for update', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/update_check_16px.png')));
+obj.handles.home.checkUpdate =  matlab.ui.internal.toolstrip.ListItem('Check for update', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'update_check_16px')));
 %obj.handles.home.checkUpdate.Description = 'Check for availability of a new version of MIB';
 obj.handles.home.checkUpdate.ItemPushedFcn = @(varargin)disp('Check for update pressed');
 popupList.add(obj.handles.home.checkUpdate);
@@ -429,7 +429,7 @@ popupList.add(obj.handles.home.checkUpdate);
 separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 % Check for update
-obj.handles.home.personalStats =  matlab.ui.internal.toolstrip.ListItem('Your personal stats', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/personal_stats_16px.png')));
+obj.handles.home.personalStats =  matlab.ui.internal.toolstrip.ListItem('Your personal stats', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'personal_stats_16px')));
 %obj.handles.home.personalStats.Description = 'See your personal stats';
 obj.handles.home.personalStats.ItemPushedFcn = @(varargin)disp('Your personal stats pressed');
 popupList.add(obj.handles.home.personalStats);
@@ -441,13 +441,13 @@ popupList.add(obj.handles.home.personalStats);
 separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 % Licenses
-obj.handles.home.licenses =  matlab.ui.internal.toolstrip.ListItem('Licenses', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/licenses_16px.png')));
+obj.handles.home.licenses =  matlab.ui.internal.toolstrip.ListItem('Licenses', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'licenses_16px')));
 %obj.handles.home.licenses.Description = 'See your personal stats';
 obj.handles.home.licenses.ItemPushedFcn = @(varargin)disp('Licenses pressed');
 popupList.add(obj.handles.home.licenses);
 
 % About MIB
-obj.handles.home.about =  matlab.ui.internal.toolstrip.ListItem('About MIB', matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/about_16px.png')));
+obj.handles.home.about =  matlab.ui.internal.toolstrip.ListItem('About MIB', matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'about_16px')));
 %obj.handles.home.about.Description = 'See your personal stats';
 obj.handles.home.about.ItemPushedFcn = @(varargin)disp('About MIB pressed');
 popupList.add(obj.handles.home.about);
