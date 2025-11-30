@@ -194,7 +194,7 @@ classdef MibIconCache
                 if isempty(resourceFilePath) || strcmp(cachePath, resourceFilePath)
                     if isfield(iconCache, foldername) && ...
                             isfield(iconCache.(foldername), name)
-                        img = core.MibIconCache.getIconData(iconCache.(foldername).(name));
+                        img = iconCache.(foldername).(name);
                         return;
                     end
                 end
@@ -256,7 +256,7 @@ classdef MibIconCache
             % Final lookup / error
             if isfield(iconCache, foldername) && ...
                     isfield(iconCache.(foldername), name)
-                img = core.MibIconCache.getIconData(iconCache.(foldername).(name));
+                img = iconCache.(foldername).(name);
             else
                 error('MibIconCache:IconNotFound', ...
                     'MibIconCache: Icon "%s.%s" not found in resource cache (%s).', ...
@@ -404,33 +404,23 @@ classdef MibIconCache
                 files(~arrayfun(@(files) contains(files.name, exts), files)) = []; % filter files
                 noFiles = numel(files);
                 for fileId = 1:noFiles
-                    [~, baseName, ext] = fileparts(files(fileId).name);
+                    [~, baseName] = fileparts(files(fileId).name);
                     imgPath = fullfile(subFolderName, files(fileId).name);
                     try
-                        % % Read image WITH alpha channel for PNG files
-                        % if strcmpi(ext, '.png')
-                        %     [img, ~, alpha] = imread(imgPath);
-                        %
-                        %     % Store both image and alpha in a struct
-                        %     iconData.cdata = img;
-                        %     if ~isempty(alpha)
-                        %         iconData.alpha = alpha;
-                        %     else
-                        %         iconData.alpha = [];  % no transparency
-                        %     end
-                        % else
-                        %     img = imread(imgPath);
-                        %     iconData.cdata = img;
-                        %     iconData.alpha = [];
-                        % end
-                        % img = imread(imgPath);
-                        [img.cdata, ~, img.alpha] = imread(imgPath);
+                       %[iconImg, ~, transparency] = imread(imgPath);
+                       %transparency = repmat(transparency, [1,1,3]);
+                       %iconImg = double(iconImg)/255;
+                       %iconImg(transparency==0) = NaN;
+
+                       [img.cdata, ~, img.alpha] = imread(imgPath);
+                       % generate an image with the alpha channel blended
+                       iconImg = core.MibIconCache.getIconData(img);
                     catch err
                         fprintf('MibIconCache:ReadFailed', ...
                             'MibIconCache:ReadFailed: failed to read icon "%s"\n', imgPath);
                         continue;
                     end
-                    resources.(subFolders{folderId}).(baseName) = img;
+                    resources.(subFolders{folderId}).(baseName) = iconImg;
                     waitbar(fileId/noFiles, wb);
                 end
             end

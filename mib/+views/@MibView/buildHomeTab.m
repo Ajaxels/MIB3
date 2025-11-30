@@ -6,6 +6,8 @@ arguments (Input)
     obj views.MibView
 end
 
+%import matlab.ui.internal.toolstrip.SplitButton;
+
 obj.handles.toolbar.home = matlab.ui.internal.toolstrip.Tab("Home");
 
 %% ============= Make "Import" section =============
