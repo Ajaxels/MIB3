@@ -38,19 +38,19 @@ classdef MibView < handle
 
         buildHomeTab(obj) % build the Home tab group and and add it to obj.handles.toolbar.global 
 
-        buildDatasetTab(obj) % build the Dataset tab group and and add it to obj.handles.toolbar.global 
+        buildDatasetTab(obj, lazyInit) % build the Dataset tab group and and add it to obj.handles.toolbar.global 
 
-        buildImageTab(obj) % build the Image tab group and and add it to obj.handles.toolbar.global 
+        buildImageTab(obj, lazyInit) % build the Image tab group and and add it to obj.handles.toolbar.global 
 
-        buildModelTab(obj) % build the Model tab group and and add it to obj.handles.toolbar.global 
+        buildModelTab(obj, lazyInit) % build the Model tab group and and add it to obj.handles.toolbar.global 
 
-        buildMaskTab(obj) % build the Mask tab group and and add it to obj.handles.toolbar.global 
+        buildMaskTab(obj, lazyInit) % build the Mask tab group and and add it to obj.handles.toolbar.global 
 
-        buildSelectionTab(obj) % build the Selection tab group and and add it to obj.handles.toolbar.global 
+        buildSelectionTab(obj, lazyInit) % build the Selection tab group and and add it to obj.handles.toolbar.global 
 
-        buildToolsTab(obj) % build the Tools tab group and and add it to obj.handles.toolbar.global 
+        buildToolsTab(obj, lazyInit) % build the Tools tab group and and add it to obj.handles.toolbar.global 
         
-        buildPluginsTab(obj) % build the Plugins tab group and and add it to obj.handles.toolbar.global 
+        buildPluginsTab(obj, lazyInit) % build the Plugins tab group and and add it to obj.handles.toolbar.global 
         
         doPostInitializationTasks(obj)  % Do some post-initialization tasks that require that the main GUI window is visible
 

@@ -1,13 +1,30 @@
-function buildPluginsTab(obj)
-% function buildPluginsTab(obj)
+function buildPluginsTab(obj, lazyInit)
+% function buildPluginsTab(obj, lazyInit)
 % build the Plugins tab group (obj.handles.toolbar.plugins)
 % and add it to obj.handles.toolbar.global 
+%
+% Parameters:
+% lazyInit: [@em optional default=false] logical, when true do only
+% place maker initialization of the panel. The full rendering is upon the
+% first call, using
+% "controllers.MibController.globalTabGroup_SelectionCallback" function
+
 arguments (Input)
     obj views.MibView
+    lazyInit logical = false
 end
 
-obj.handles.toolbar.plugins = matlab.ui.internal.toolstrip.Tab("Plugins");
-obj.handles.toolbar.plugins.Tag = 'toolbarPlugins';
+%% Lazy initialization
+if lazyInit
+    % lazy initialization, the real initialization is in controllers.MibController.globalTabGroup_SelectionCallback
+    % Make the tab
+    obj.handles.toolbar.plugins = matlab.ui.internal.toolstrip.Tab("Plugins");
+    obj.handles.toolbar.plugins.Tag = 'toolbarPlugins';
+
+    % Add tab to the tab group
+    obj.handles.toolbar.global.add(obj.handles.toolbar.plugins);
+    return
+end
 
 % get list of plugins groups
 pluginSections = dir(fullfile(obj.controller.mibPath, 'plugins'));
@@ -54,13 +71,9 @@ for sectionId = 1:numel(pluginSections)
     popup.add(category);
 end
 
-
-
 % Create the main gallery and add it to the view column.
-gallery = matlab.ui.internal.toolstrip.Gallery(popup, 'MinColumnCount', 3, 'MaxColumnCount', 5 );
-column.add( gallery )
+obj.handles.plugins.gallery = matlab.ui.internal.toolstrip.Gallery(popup, 'MinColumnCount', 3, 'MaxColumnCount', 5 );
+column.add( obj.handles.plugins.gallery )
 
-%% Add tab to the tab group
-obj.handles.toolbar.global.add(obj.handles.toolbar.plugins);
 
 end
