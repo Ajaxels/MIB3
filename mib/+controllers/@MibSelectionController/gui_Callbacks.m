@@ -4,11 +4,8 @@ function gui_Callbacks(obj, hWidget, hData)
 %
 % Parameters:
 % hWidget: handle to the pressed widget
-% hData: handle to supporting data class
-
-% mode: char, optional identifier the widget, used when the same operation
-% is called from menu, when empty or missing hWidget.Tag is used as an
-% identifier
+% hWidget.tag -> char, identifier the widget, used when the same operation
+% is called from menu
 % 'add' -> add selection to material/mask
 % 'subtract' -> subtract selection from material/mask
 % 'replace' -> replace material/mask using the current selection
@@ -34,16 +31,14 @@ function gui_Callbacks(obj, hWidget, hData)
 % 'modelTransparency' -> define model transparency
 % 'maskTransparency' -> define mask transparency
 % 'selectionTransparency' -> define selection transparency
+%
+% hData: handle to supporting data class
 
 arguments (Input)
     obj controllers.MibSelectionController
     hWidget {mustBeA(hWidget, {'matlab.ui.control.Button', 'matlab.ui.control.CheckBox', 'matlab.ui.control.DropDown', 'matlab.ui.control.EditField', 'matlab.ui.control.Slider'})}
     hData {mustBeA(hData, {'matlab.ui.eventdata.ButtonPushedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ValueChangingData'})}
-    %mode char = ''
 end
-
-% mode = '';
-% if isempty(mode); mode = hWidget.Tag; end
 
 mode = hWidget.Tag;
 

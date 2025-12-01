@@ -6,8 +6,12 @@ arguments (Input)
     obj controllers.MibController
 end
 
-% Create the Selection and View settings panel UI and ROI controller
-panelHandles = obj.view.addSelectionViewSettingsPanel(); % add the Segmentation panel
+% Create the Segmentation panel UI and controller
+panelHandles = obj.view.addSegmentationPanel(); % add the Segmentation panel and return its handles (the handles are also in obj.view.handles.panels.segmentation.handles)
+obj.cSegmentation = controllers.MibSegmentationController(obj, obj.view, panelHandles, obj.mibModel); % start Segmentation controller
+
+% Create the Selection and View settings panel UI and controller
+panelHandles = obj.view.addSelectionViewSettingsPanel(); % add the Selection and View settings panel and return its handles (the handles are also in obj.view.handles.panels.selection.handles)
 obj.cSelection = controllers.MibSelectionController(obj, obj.view, panelHandles, obj.mibModel); % start ROI controller
 
 % Create the ROI panel UI and ROI controller

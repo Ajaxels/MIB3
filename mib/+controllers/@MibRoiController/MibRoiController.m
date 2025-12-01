@@ -44,7 +44,7 @@ classdef MibRoiController
             obj.handles.roiWidth.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.roiHeight.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.roiToSelection.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.help.ButtonPushedFcn = @obj.controller.helpButtons_Callback;
+            obj.handles.help.ButtonPushedFcn = @ @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
         end
         

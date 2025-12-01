@@ -26,7 +26,7 @@ classdef MibView < handle
 
         panelHandles = addRoiPanel(obj) % add the ROI panel, add context menus and callbacks for widgets
         
-        addSegmentationPanel(obj) % add the Segmentation panel, add context menus and callbacks for widgets
+        panelHandles = addSegmentationPanel(obj) % add the Segmentation panel, add context menus and callbacks for widgets
 
         panelHandles = addSelectionViewSettingsPanel(obj) % add the Selection and View Settings panel, add context menus and callbacks for widgets
 
@@ -82,10 +82,6 @@ classdef MibView < handle
             if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(obj.handles, true); end
         end
 
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
-        end
+
     end
 end

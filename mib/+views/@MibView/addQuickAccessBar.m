@@ -106,7 +106,7 @@ obj.handles.qab.zoomFit.ButtonPushedFcn = @(varargin)disp('obj.handles.qab.zoomF
 obj.handles.qab.zoomFit.Text = 'Fit the dataset into the viewing window';
 obj.gui.add(obj.handles.qab.zoomFit);
 
-obj.handles.qab.zoom100 = matlab.ui.internal.toolstrip.qab.QABPushButton(matlab.ui.internal.toolstrip.Icon(core.MibIconCache.get('icons', 'zoom100_16px')));
+obj.handles.qab.zoom100 = QABPushButton(Icon(fullfile(iconPath, 'zoom100_16px.png')));
 obj.handles.qab.zoom100.ButtonPushedFcn = @(varargin)disp('obj.handles.qab.zoom100');
 obj.handles.qab.zoom100.Text = 'Scale the image to 100% magnification';
 obj.gui.add(obj.handles.qab.zoom100);

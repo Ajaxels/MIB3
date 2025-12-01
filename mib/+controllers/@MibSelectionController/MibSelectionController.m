@@ -22,11 +22,11 @@ classdef MibSelectionController
         lutTable_CellSelection(obj, hWidget, hData)        % callbacks for cell selection in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
 
         function obj = MibSelectionController(mainCtrl, view, guiHandles, model)
-            obj.mibController = mainCtrl; % handle to the main MIB controller
-            obj.view = view;              % handle to the main MIB view
-            obj.gui = guiHandles;         % handle to the GUI of the ROI panel (views.components.Roi)
-            obj.handles = guiHandles.handles;     % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
-            obj.mibModel = model;            % handle to the main MIB model
+            obj.mibController = mainCtrl;       % handle to the main MIB controller
+            obj.view = view;                    % handle to the main MIB view
+            obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Roi)
+            obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
+            obj.mibModel = model;               % handle to the main MIB model
 
             % ---------------------- Add CALLBACKS to context menus ----------------------
             obj.handles.lutTableContextInsert.MenuSelectedFcn = @obj.lutTable_ContextMenu;
