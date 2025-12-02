@@ -37,7 +37,7 @@ obj.addQuickAccessBar(); % add quick access buttons
 
 % add panels
 obj.addDatasetsPanel(); % add the Datasets panel
-obj.addDirContentsPanel(); % add the DirContents panel
+% obj.addDirContentsPanel(); % add the DirContents panel
 % obj.addSegmentationPanel(); % add the Segmentation panel
 % roiHandles = obj.addSelectionViewSettingsPanel(); % add the Segmentation panel
 % roiHandles = obj.addRoiPanel(); % add the ROI panel

@@ -1,5 +1,5 @@
-function dirContentsFileList_ContextMenu(obj, menuEntry, selectedData)
-% function dirContentsFileList_ContextMenu(obj, menuEntry, selectedData)
+function fileList_ContextMenu(obj, menuEntry, selectedData)
+% function fileList_ContextMenu(obj, menuEntry, selectedData)
 % callbacks for the context menu of the file list widget 
 % (obj.handles.panels.datasets.handles.fileList)
 %
@@ -22,36 +22,36 @@ function dirContentsFileList_ContextMenu(obj, menuEntry, selectedData)
 % fileListContextProps - get file properties
 
 arguments (Input)
-    obj controllers.MibController
+    obj controllers.MibDirContentsController
     menuEntry matlab.ui.container.Menu
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('Pressed: controllers.MibController.dirContentsFileList_ContextMenu -> %s\n', menuEntry.Tag);
+    fprintf('Pressed: controllers.MibDirContentsController.fileList_ContextMenu -> %s\n', menuEntry.Tag);
 end
 
 switch menuEntry.Tag
     case 'fileListContextCombine'
-        
+
     case 'fileListContextLoadPart'
-        
+
     case 'fileListContextLoadNth'
-       
+
     case 'fileListContextInsert'
-        
+
     case 'fileListContextColorCombine'
-        
+
     case 'fileListContextColorAdd'
-        
+
     case 'fileListContextColorAddNth'
-        
+
     case 'fileListContextRename'
-        
+
     case 'fileListContextDelete'
-        
+
     case 'fileListContextProps'
-        
+
 end
 
 end

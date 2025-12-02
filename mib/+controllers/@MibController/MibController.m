@@ -3,6 +3,8 @@ classdef MibController < handle
 
     properties
         % GUI controllers for the main MIB GUI panels and ribbons
+        cDirContents
+        % Controller for the Dir contents panel
         cSelection
         % Controller for the Selection and View settings panel
         cRoi
@@ -80,18 +82,6 @@ classdef MibController < handle
         datasetsType_Callbacks(obj, hWidget, hData) % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
 
         datasetsPanelUpdate_fromModel(obj, src, evtData) % update widgets of the Datasets panel
-
-        dirContentsBioFormats_Callback(obj, hWidget, hData) % 
-        
-        dirContentsFileFilters_Callback(obj, hWidget, hData) % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
-
-        dirContentsFileFilters_ContextMenu(obj, menuEntry, selectedData) % callbacks for the context menu of the file filters widget (obj.handles.panels.datasets.handles.fileFilters)
-        
-        dirContentsFileList_ContextMenu(obj, menuEntry, selectedData) % callbacks for the context menu of the file list widget (obj.handles.panels.datasets.handles.fileList)
-
-        dirContentsFileList_Callback(obj, hWidget, hData) % callback for double click on a filename in obj.handles.panels.dirContents.handles.fileList
-        
-        dirContentsUpdateFileList_Callback(obj, hWidget, hData, selectedFilename) % callback for click on the obj.handles.panels.dirContents.handles.updateFileList button to update the list of files shown in obj.handles.panels.dirContents.handles.fileList
 
         result = exitProgram(obj, target)        % exit mib 
 

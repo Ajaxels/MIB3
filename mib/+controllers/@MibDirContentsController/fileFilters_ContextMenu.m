@@ -1,5 +1,5 @@
-function dirContentsFileFilters_ContextMenu(obj, menuEntry, selectedData)
-% function dirContentsFileFilters_ContextMenu(obj, menuEntry, selectedData)
+function fileFilters_ContextMenu(obj, menuEntry, selectedData)
+% function fileFilters_ContextMenu(obj, menuEntry, selectedData)
 % callbacks for the context menu of the file filters widget
 % (obj.handles.panels.datasets.handles.fileFilters)
 %
@@ -14,16 +14,16 @@ function dirContentsFileFilters_ContextMenu(obj, menuEntry, selectedData)
 % fileFiltersContextUnregister - remove extension from the list of available filename extensions
 
 arguments (Input)
-    obj controllers.MibController
+    obj controllers.MibDirContentsController
     menuEntry matlab.ui.container.Menu
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
 
 switch menuEntry.Tag
     case 'fileFiltersContextRegister'
-        fprintf('Pressed: obj.controller.dirContentsFileFilters_ContextMenu -> %s\n', menuEntry.Tag);
+        fprintf('Pressed: controllers.MibDirContentsController.fileFilters_ContextMenu -> %s\n', menuEntry.Tag);
     case 'fileFiltersContextUnregister'
-        fprintf('Pressed: obj.controller.dirContentsFileFilters_ContextMenu -> %s\n', menuEntry.Tag);
+        fprintf('Pressed: controllers.MibDirContentsController.fileFilters_ContextMenu -> %s\n', menuEntry.Tag);
 end
 
 end

@@ -1,25 +1,25 @@
-function dirContentsUpdateFileList_Callback(obj, hWidget, hData, selectedFilename)
-% function dirContentsUpdateFileList_Callback(obj, hWidget, hData)
+function updateFileList_Callback(obj, hWidget, hData, selectedFilename)
+% function updateFileList_Callback(obj, hWidget, hData, selectedFilename)
 % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update
-% the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" 
+% the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList"
 % using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 %
 % Parameters:
 % hWidget: handle to the pressed widget
-% hData: 
+% hData:
 % selectedFilename: [@em optional] char with the selected filename to highlight
 
-
 % arguments (Input)
-%     obj controllers.MibController
+%     obj controllers.MibDirContentsController
 %     hWidget matlab.ui.control.Button = obj.view.handles.panels.dirContents.handles.updateFileList
 %     hData matlab.ui.eventdata.ButtonPushedData = []
 %     selectedFilename char = ''
 % end
+
 if nargin < 4; selectedFilename = ''; end
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibController.dirContentsUpdateFileList_Callback: clicked on: "obj.view.handles.panels.dirContents.handles.updateFileList"\n');
+    fprintf('controllers.MibDirContentsController.updateFileList_Callback: clicked on: "obj.view.handles.panels.dirContents.handles.updateFileList"\n');
 end
 
 selectedExtention = obj.view.handles.panels.dirContents.handles.fileFilters.Value;
@@ -39,7 +39,7 @@ else
     dirs = fnames([fileList.isdir]);  % generate list of directories
     fileList = fnames(~[fileList.isdir]);     % generate structure with files
     [~, ~, fileList_ext] = cellfun(@fileparts, fileList, 'UniformOutput', false);   % get extensions
-    
+
     if strcmp(selectedExtention, 'all known')
         % get the list of available extensions
         extensions = strjoin(obj.view.handles.panels.dirContents.handles.fileFilters.Items(2:end)','|');
@@ -51,7 +51,7 @@ else
     end
     fnames = files;
     %fnames = sort(files);
-    
+
     if ~isempty(dirs)
         % add square brackets to indicate directory
         dirs = strcat(repmat({'['}, 1, length(dirs)), dirs, repmat({']'}, 1, length(dirs)));

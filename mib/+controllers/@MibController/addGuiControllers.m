@@ -7,6 +7,10 @@ arguments (Input)
 end
 
 % Create the Segmentation panel UI and controller
+panelHandles = obj.view.addDirContentsPanel(); % add the DirContents panel and return its handles (the handles are also in obj.view.handles.panels.dirContents.handles)
+obj.cDirContents = controllers.MibDirContentsController(obj, obj.view, panelHandles, obj.mibModel); % start dirContents controller
+
+% Create the Segmentation panel UI and controller
 panelHandles = obj.view.addSegmentationPanel(); % add the Segmentation panel and return its handles (the handles are also in obj.view.handles.panels.segmentation.handles)
 obj.cSegmentation = controllers.MibSegmentationController(obj, obj.view, panelHandles, obj.mibModel); % start Segmentation controller
 
