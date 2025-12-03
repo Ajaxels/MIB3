@@ -34,7 +34,7 @@ classdef MibView < handle
 
         addToolbarTabs(obj) % add the global toolbar, obj.handles.toolbar.global
 
-        addQuickAccessBar(obj) % add quick access buttons
+        qab = addQuickAccessBar(obj) % add quick access buttons
 
         buildHomeTab(obj) % build the Home tab group and and add it to obj.handles.toolbar.global 
 

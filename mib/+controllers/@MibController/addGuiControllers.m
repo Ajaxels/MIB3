@@ -6,6 +6,10 @@ arguments (Input)
     obj controllers.MibController
 end
 
+% Create the Quick access bar and controller
+panelHandles = obj.view.addQuickAccessBar(); % add the addQuickAccessBar and return its handles (the handles are also in obj.view.handles.qab.handles)
+obj.cQuickAccessBar = controllers.MibQuickAccessBarController(obj, obj.view, panelHandles, obj.mibModel); % start Quick Access Bar Controller controller
+
 % Create the Datasets panel UI and controller
 panelHandles = obj.view.addDatasetsPanel(); % add the DirContents panel and return its handles (the handles are also in obj.view.handles.panels.datasets.handles)
 obj.cDatasets = controllers.MibDatasetsController(obj, obj.view, panelHandles, obj.mibModel); % start Datasets controller

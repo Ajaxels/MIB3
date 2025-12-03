@@ -7,6 +7,8 @@ classdef MibController < handle
         % Controller for the Datasets panel
         cDirContents
         % Controller for the Dir contents panel
+        cQuickAccessBar
+        % Controller for the Quick Access Bar
         cSelection
         % Controller for the Selection and View settings panel
         cRoi
