@@ -28,8 +28,6 @@ obj.gui.StatusBarSpansFullWidth = true;
 % ------------ add Widgets ------------
 obj.addToolbarTabs();  % add toolbars to MIB, stored as obj.handles.toolbar
 
-obj.addStatusBar()  % add status bar to MIB, stored as obj.handles.status
-
 % ------------ add FigureDocumentGroup ------------
 % alternative to add DocumentGroup(groupOptions);
 % documentGroup = matlab.ui.container.internal.appcontainer.DocumentGroup(groupOptions);

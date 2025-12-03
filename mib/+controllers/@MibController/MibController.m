@@ -15,6 +15,8 @@ classdef MibController < handle
         % Controller for the ROI panel
         cSegmentation
         % Controller for the Segmentation panel
+        cStatus
+        % Controller for the Status bar
         childControllers
         % list of opened subcontrollers
         childControllersIds

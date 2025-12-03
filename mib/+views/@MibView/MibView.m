@@ -30,7 +30,7 @@ classdef MibView < handle
 
         panelHandles = addSelectionViewSettingsPanel(obj) % add the Selection and View Settings panel, add context menus and callbacks for widgets
 
-        addStatusBar(obj)     % add status bar to MIB
+        statusHandles = addStatusBar(obj)     % add status bar to MIB
 
         addToolbarTabs(obj) % add the global toolbar, obj.handles.toolbar.global
 

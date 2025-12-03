@@ -24,12 +24,14 @@ obj.cSegmentation = controllers.MibSegmentation(obj, obj.view, panelHandles, obj
 
 % Create the Selection and View settings panel UI and controller
 panelHandles = obj.view.addSelectionViewSettingsPanel(); % add the Selection and View settings panel and return its handles (the handles are also in obj.view.handles.panels.selection.handles)
-obj.cSelection = controllers.MibSelection(obj, obj.view, panelHandles, obj.mibModel); % start ROI controller
+obj.cSelection = controllers.MibSelection(obj, obj.view, panelHandles, obj.mibModel); % start Selection controller
 
-% Create the ROI panel UI and ROI controller
+% Create the ROI panel UI and controller
 panelHandles = obj.view.addRoiPanel();  % add ROI panel and return its handles (the handles are also in obj.view.handles.panels.roi.handles)
 obj.cRoi = controllers.MibRoi(obj, obj.view, panelHandles, obj.mibModel); % start ROI controller
 
-
+% Create the Status bar UI and controller
+panelHandles = obj.view.addStatusBar();  % add ROI panel and return its handles (the handles are also in obj.view.handles.status)
+obj.cStatus = controllers.MibStatusBar(obj, obj.view, panelHandles, obj.mibModel); % start Status bar controller
 
 end
