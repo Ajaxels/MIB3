@@ -161,7 +161,7 @@ popupList = PopupList();
 % % Rename material
 obj.handles.model.matRename =  ListItem('Rename material', Icon(fullfile(iconPath, 'model_materials_24px.png')));
 obj.handles.model.matRename.Tag = 'matRename';
-obj.handles.model.matRename.ItemPushedFcn =  @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matRename.ItemPushedFcn =  @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matRename);
 
 % separator
@@ -170,19 +170,19 @@ popupList.add(separator);
 
 % % Add material
 obj.handles.model.matAdd =  ListItem('Add material', Icon(fullfile(iconPath, 'model_materials_add_24px.png')));
-obj.handles.model.matAdd.ItemPushedFcn =  @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matAdd.ItemPushedFcn =  @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matAdd);
 % % Insert material
 obj.handles.model.matInsert =  ListItem('Insert material', Icon(fullfile(iconPath, 'model_materials_insert_24px.png')));
-obj.handles.model.matInsert.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matInsert.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matInsert);
 % % Swap materials
 obj.handles.model.matSwap =  ListItem('Swap materials', Icon(fullfile(iconPath, 'model_materials_swap_24px.png')));
-obj.handles.model.matSwap.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matSwap.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matSwap);
 % % Reorder materials
 obj.handles.model.matReorder =  ListItem('Reorder materials', Icon(fullfile(iconPath, 'model_materials_reorder_24px.png')));
-obj.handles.model.matReorder.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matReorder.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matReorder);
 
 % separator
@@ -191,11 +191,11 @@ popupList.add(separator);
 
 % % Export material
 obj.handles.model.matExport =  ListItem('Export material', Icon(fullfile(iconPath, 'model_materials_export_24px.png')));
-obj.handles.model.matExport.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matExport.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matExport);
 % % Save material to file
 obj.handles.model.matSave =  ListItem('Save material to file', Icon(fullfile(iconPath, 'model_materials_save_24px.png')));
-obj.handles.model.matSave.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matSave.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matSave);
 
 % separator
@@ -204,7 +204,7 @@ popupList.add(separator);
 
 % % Remove materials
 obj.handles.model.matRemove =  ListItem('Remove materials', Icon(fullfile(iconPath, 'model_materials_remove_24px.png')));
-obj.handles.model.matRemove.ItemPushedFcn = @(src, event)obj.controller.segmentationMaterials_Callback(src, event);
+obj.handles.model.matRemove.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
 popupList.add(obj.handles.model.matRemove);
 
 % add the popup list to the SplitButton button

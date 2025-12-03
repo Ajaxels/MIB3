@@ -113,19 +113,19 @@ arguments
     options struct = struct
 end
 
-persistent persistentMibPath
+persistent mibDir
 % Initialize persistent variable on first call or update it with input
-if isempty(persistentMibPath) && ~isempty(mibPath)
+if isempty(mibDir) && ~isempty(mibPath)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
-        if ~isempty(toks); persistentMibPath = char(toks{1}); else; persistentMibPath = pwd; end
+        if ~isempty(toks); mibDir = char(toks{1}); else; mibDir = pwd; end
     else
-        persistentMibPath = fileparts(which('mib'));
-        if isempty(persistentMibPath); persistentMibPath = pwd; end
+        mibDir = fileparts(which('mib'));
+        if isempty(mibDir); mibDir = pwd; end
     end
 elseif ~isempty(mibPath)
-    persistentMibPath = mibPath;
+    mibDir = mibPath;
 end
 
 % Defaults
@@ -169,6 +169,7 @@ end
 
 % Build figure (before icon loading to get background color)
 fig = uifigure('Name', dlgTitle, 'Visible', 'off');
+fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
 fig.Tag = 'mibInputUniversalDlg';
 if strcmpi(options.WindowStyle,'modal'); fig.WindowStyle='modal'; else; fig.WindowStyle='normal'; end
 fig.Position(3) = max(420, round(options.WindowWidth));
@@ -228,7 +229,7 @@ switch options.Icon
     case 'call4help', iconFilename = 'call4help.jpg';
     otherwise,        iconFilename = 'question_48px.png';
 end
-iconPath = fullfile(persistentMibPath, 'assets', 'images', iconFilename);
+iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
 % Determine if we have a header
 hasHeader = isfield(options,'Header') && ~isempty(options.Header);

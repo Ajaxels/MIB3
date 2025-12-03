@@ -93,6 +93,7 @@ end
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
 fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'WindowStyle', lower(options.WindowStyle));
+fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
 % update figure width/height
 fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.WindowHeight];
 
