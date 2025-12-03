@@ -62,7 +62,7 @@ classdef MibDatasetsController
             obj.handles.datasetType.ValueChangedFcn = @obj.type_Callback;
 
             %% Add listeners
-            obj.listeners{1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.update_from_model(src, evnt)); % update GUI from the model
+            obj.listeners{1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.update_fromModel(src, evnt)); % update GUI from the model
 
         end
     end

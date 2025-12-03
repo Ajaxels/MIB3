@@ -47,7 +47,7 @@ if colIdx == 2
         obj.mibModel.I{obj.mibModel.id}.selectedColorChannel = obj.mibModel.I{obj.mibModel.id}.slices{4};
     end
 
-    obj.mibController.selectionLutTableUpdate_fromModel();
+    obj.lutTable_update_fromModel();
     notify(obj.mibModel, 'RenderImage');
 end
 

@@ -91,8 +91,6 @@ classdef MibController < handle
 
         filename = saveLayout(obj, mode) % store the current layout of panels
 
-        selectionLutTableUpdate_fromModel(obj)   % update obj.view.handles.panels.selection.handles.lutTable table and obj.view.handles.panels.selection.handles.colChannel color dropdown
-        
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
         
         startController(obj, controllerName, varargin) % start a child controller using provided name

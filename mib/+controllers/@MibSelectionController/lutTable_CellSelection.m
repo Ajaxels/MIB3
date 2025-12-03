@@ -39,7 +39,7 @@ if indices(1, 2) == 3 % start color selection dialog
     obj.mibModel.I{obj.mibModel.id}.img.lutColors = lutColors;
     
     % redraw the table
-    obj.mibController.selectionLutTableUpdate_fromModel();
+    obj.lutTable_update_fromModel();
     
     % Clear the selection to show the true background color
     obj.handles.lutTable.Selection = [];

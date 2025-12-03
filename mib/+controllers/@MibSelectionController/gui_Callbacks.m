@@ -80,7 +80,7 @@ switch mode
     case 'lutColors' % visualize image using LUT colors
         obj.mibModel.I{obj.mibModel.id}.useLUT = obj.handles.lutColors.Value;
         % ADD MORE FROM mibLutCheckbox_Callback in MIB2
-        obj.mibController.selectionLutTableUpdate_fromModel();
+        obj.lutTable_update_fromModel();
         notify(obj.mibModel, 'RenderImage');
     case 'showModel' % show model
         obj.mibModel.showModel = obj.handles.showModel.Value;
