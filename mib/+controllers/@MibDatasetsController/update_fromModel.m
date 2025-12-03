@@ -1,6 +1,6 @@
 function update_fromModel(obj, src, evtData)
 % function update_fromModel(obj, src, evtData)
-% update widgets of the Datasets panel
+% update widgets of the Datasets panel from obj.mibModel
 % 
 % This function is triggered either as a MibDatasetsController.listener to
 % MibModel->DatasetsPanelUpdate event or as a method of

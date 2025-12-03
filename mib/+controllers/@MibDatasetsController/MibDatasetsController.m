@@ -21,6 +21,8 @@ classdef MibDatasetsController
 
         type_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
 
+        update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
+
         function obj = MibDatasetsController(mainCtrl, view, guiHandles, model)
             %% Init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller
