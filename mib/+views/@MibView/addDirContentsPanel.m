@@ -2,7 +2,7 @@ function panelHandles = addDirContentsPanel(obj)
 % function panelHandles = addDirContentsPanel(obj)
 % add the DirContents panel, add context menus and callbacks for widgets
 % The callbacks are added in the controller of the panel:
-% controllers.MibDirContentsController during its creation in
+% controllers.MibDirContents during its creation in
 % MibController.initialize() -> MibController.addGuiControllers()
 
 arguments (Input)

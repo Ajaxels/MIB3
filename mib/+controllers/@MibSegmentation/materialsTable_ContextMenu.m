@@ -1,0 +1,42 @@
+function materialsTable_ContextMenu(obj, menuEntry, selectedData)
+% function materialsTable_ContextMenu(obj, menuEntry, selectedData)
+% callbacks for the context menu of the segmentation table widget
+% (obj.handles.panels.segmentation.handles.materialsTable)
+%
+% Parameters:
+% menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
+% selectedData: handle to the pressed
+% 'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
+% button that has the context menu (selectedData.ContextObject)
+%
+% Available menu options available from 'menuEntry.Tag':
+% materialsTableContextShowSelected -> show only the selected material
+% materialsTableContextRename -> rename the selected material
+% materialsTableContextSetColor -> update color for the selected material
+% materialsTableContextQuant -> quantify the selected material
+% materialsTableContextUnlink -> unlink the selected material from the Add to column
+
+arguments (Input)
+    obj controllers.MibSegmentation
+    menuEntry matlab.ui.container.Menu
+    selectedData matlab.ui.eventdata.MenuSelectedData
+end
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibSegmentation.materialsTable_ContextMenu: context menu for "obj.view.handles.panels.segmentation.handles.materialsTable" -> selected "%s (%s)"\n', menuEntry.Text, menuEntry.Tag);
+end
+
+switch menuEntry.Tag
+    case 'materialsTableContextShowSelected'
+
+    case 'materialsTableContextRename'
+
+    case 'materialsTableContextSetColor'
+
+    case 'materialsTableContextQuant'
+
+    case 'materialsTableContextUnlink'
+
+end
+
+end

@@ -2,7 +2,7 @@ function panelHandles = addSelectionViewSettingsPanel(obj)
 % function panelHandles = addSelectionViewSettingsPanel(obj)
 % add the Selection and View Settings panel, add context menus and callbacks for widgets
 % The callbacks are added in the controller of the panel:
-% controllers.MibSelectionController during its creation in
+% controllers.MibSelection during its creation in
 % MibController.initialize() -> MibController.addGuiControllers()
 
 arguments (Input)

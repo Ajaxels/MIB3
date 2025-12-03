@@ -2,7 +2,7 @@ function panelHandles = addDatasetsPanel(obj)
 % function panelHandles = addDatasetsPanel(obj)
 % add the Datasets panel, add context menus and callbacks for widgets
 % The callbacks are added in the controller of the panel:
-% controllers.MibDatasetsController during its creation in
+% controllers.MibDatasets during its creation in
 % MibController.initialize() -> MibController.addGuiControllers()
 
 arguments (Input)

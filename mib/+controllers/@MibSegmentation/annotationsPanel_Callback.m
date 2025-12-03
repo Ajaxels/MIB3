@@ -1,0 +1,47 @@
+function annotationsPanel_Callback(obj, hWidget, hData)
+% annotationsPanel_Callback(obj, hWidget, hData)
+% Callbacks for widgets in the Segmentation panel->Annotations tool
+%
+% Parameters:
+% hWidget: handle to the pressed widget
+% hWidget.Tag -> identifier the widget, used when the same operation is called from menu
+% 'annAnnotationList' -> open another window with the annotation list
+% 'annShowPrompt' -> show the annotation prompt when adding a new annotation
+% 'annFocusOnValue' -> when showing the prompt focus on the value field
+% 'annPrecision' -> define floating value precision for the annotation value
+% 'annDeleteAll' -> delete all annotations
+% 'annDisplayAs' -> define how annotations should be visualized
+%
+% hData: handle to supporting data class
+
+arguments (Input)
+    obj controllers.MibSegmentation
+    hWidget {mustBeA(hWidget, {'matlab.ui.control.Button', 'matlab.ui.control.CheckBox', 'matlab.ui.control.Spinner', 'matlab.ui.control.DropDown'})}
+    hData {mustBeA(hData, {'matlab.ui.eventdata.ButtonPushedData', 'matlab.ui.eventdata.ValueChangedData'})}
+end
+
+mode = hWidget.Tag;
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibSegmentation.annotationsPanel_Callback: "obj.view.handles.panels.segmentation.handles.%s" -> changed/pressed\n', mode);
+end
+
+switch mode
+    case 'annAnnotationList' % open another window with the annotation list
+
+    case 'annShowPrompt' % show the annotation prompt when adding a new annotation
+
+    case 'annFocusOnValue' % when showing the prompt focus on the value field
+        obj.mibModel.preferences.SegmTools.Annotations.FocusOnValue = obj.view.handles.panels.segmentation.handles.annFocusOnValue.Value;
+        notify(obj.mibModel, 'RenderImage');
+    case 'annPrecision' % define floating value precision for the annotation value
+        obj.mibModel.preferences.SegmTools.Annotations.Precision = obj.view.handles.panels.segmentation.handles.annPrecision.Value;
+        notify(obj.mibModel, 'RenderImage');
+    case 'annDeleteAll' % delete all annotations
+
+    case 'annDisplayAs' % define how annotations should be visualized
+        obj.mibModel.preferences.SegmTools.Annotations.DisplayAs = obj.view.handles.panels.segmentation.handles.annDisplayAs.Value;
+        notify(obj.mibModel, 'RenderImage');
+end
+
+end

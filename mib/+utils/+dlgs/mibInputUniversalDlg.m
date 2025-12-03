@@ -113,6 +113,21 @@ arguments
     options struct = struct
 end
 
+persistent persistentMibPath
+% Initialize persistent variable on first call or update it with input
+if isempty(persistentMibPath) && ~isempty(mibPath)
+    if isdeployed
+        [~, result] = system('path');
+        toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
+        if ~isempty(toks); persistentMibPath = char(toks{1}); else; persistentMibPath = pwd; end
+    else
+        persistentMibPath = fileparts(which('mib'));
+        if isempty(persistentMibPath); persistentMibPath = pwd; end
+    end
+elseif ~isempty(mibPath)
+    persistentMibPath = mibPath;
+end
+
 % Defaults
 if ~isfield(options, 'Icon'); options.Icon = 'question'; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
@@ -150,18 +165,6 @@ end
 % Normalize SectionsColumnWidths (should be 2 * Columns entries: label, widget for each column)
 if numel(options.SectionsColumnWidths) ~= 2 * options.Columns
     options.SectionsColumnWidths = repmat({'fit', '1x'}, 1, options.Columns);
-end
-
-% try to obtain MIB path
-if isempty(mibPath)
-    if isdeployed
-        [~, result] = system('path');
-        toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
-        if ~isempty(toks); mibPath = char(toks{1}); else; mibPath = pwd; end
-    else
-        mibPath = fileparts(which('mib'));
-        if isempty(mibPath); mibPath = pwd; end
-    end
 end
 
 % Build figure (before icon loading to get background color)
@@ -225,7 +228,7 @@ switch options.Icon
     case 'call4help', iconFilename = 'call4help.jpg';
     otherwise,        iconFilename = 'question_48px.png';
 end
-iconPath = fullfile(mibPath, 'assets', 'images', iconFilename);
+iconPath = fullfile(persistentMibPath, 'assets', 'images', iconFilename);
 
 % Determine if we have a header
 hasHeader = isfield(options,'Header') && ~isempty(options.Header);

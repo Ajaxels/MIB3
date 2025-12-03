@@ -315,7 +315,7 @@ end
 
 if obj.mibModel.preferences.Tips.ShowTips == 1
     try     % on MacOs this gives an error
-        obj.startController('controllers.TipsAppController');
+        obj.startController('controllers.WelcomeTips');
     catch err
         obj.mibModel.preferences.Tips.ShowTips = 0;
     end

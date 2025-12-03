@@ -2,7 +2,7 @@ function panelHandles = addSegmentationPanel(obj)
 % function addSegmentationPanel(obj)
 % add the Segmentation panel, add context menus and callbacks for widgets
 % The callbacks are added in the controller of the panel:
-% controllers.MibSegmentationController during its creation in
+% controllers.MibSegmentation during its creation in
 % MibController.initialize() -> MibController.addGuiControllers()
 
 arguments (Input)

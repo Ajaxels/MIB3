@@ -57,17 +57,9 @@ arguments
     options struct = struct()
 end
 
-% Defaults
-if ~isfield(options, 'Type'); options.Type = 'editfield'; end
-if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
-if ~isfield(options, 'WindowHeight'); options.WindowHeight = 100; end
-if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
-if ~isfield(options, 'Icon'); options.Icon = 'question'; end
-if ~isfield(options, 'IconWidth'); options.IconWidth = []; end
-if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-
-% MIB path resolution for icons
-if isempty(mibPath)
+persistent mibDir
+% Initialize persistent variable on first call or update it with input
+if isempty(mibDir) && ~isempty(mibPath)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
@@ -76,9 +68,18 @@ if isempty(mibPath)
         mibDir = fileparts(which('mib'));
         if isempty(mibDir); mibDir = pwd; end
     end
-else
+elseif ~isempty(mibPath)
     mibDir = mibPath;
 end
+
+% Defaults
+if ~isfield(options, 'Type'); options.Type = 'editfield'; end
+if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
+if ~isfield(options, 'WindowHeight'); options.WindowHeight = 100; end
+if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
+if ~isfield(options, 'Icon'); options.Icon = 'question'; end
+if ~isfield(options, 'IconWidth'); options.IconWidth = []; end
+if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 
 % Icon selection and loading
 switch options.Icon

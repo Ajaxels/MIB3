@@ -27,7 +27,6 @@ obj.gui.StatusBarSpansFullWidth = true;
 
 % ------------ add Widgets ------------
 obj.addToolbarTabs();  % add toolbars to MIB, stored as obj.handles.toolbar
-% obj.addQuickAccessBar(); % add quick access buttons
 
 obj.addStatusBar()  % add status bar to MIB, stored as obj.handles.status
 
