@@ -56,14 +56,15 @@ if numel(obj.view.handles.figureDocs) < noSets
         'Units', 'normalized', 'Position', [0 0 1 1]);
     
     % add callbacks
-    obj.view.handles.imView{noSets}.handles.lastSlice.ButtonPushedFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.sliceNumberSlider.ValueChangingFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.firstSlice.ButtonPushedFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.sliceNumber.ValueChangedFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.frameNumber.ValueChangedFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.firstFrame.ButtonPushedFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.frameNumberSlider.ValueChangingFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
-    obj.view.handles.imView{noSets}.handles.lastFrame.ButtonPushedFcn = @(src, event)obj.imViewPanel_Callbacks(src, event);
+    c = obj.mibController;
+    obj.view.handles.imView{noSets}.handles.lastSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.sliceNumberSlider.ValueChangingFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.firstSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.sliceNumber.ValueChangedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.frameNumber.ValueChangedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.firstFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.frameNumberSlider.ValueChangingFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.lastFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
 
     % add component to the figure-document
     obj.view.gui.add(obj.view.handles.figureDocs{noSets});
