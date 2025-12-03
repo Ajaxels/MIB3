@@ -1,5 +1,5 @@
-function datasetsSetsOps_Callbacks(obj, hWidget, hData, mode)
-% function datasetsSetsOps_Callbacks(obj, hWidget, hData, mode)
+function setsOps_Callbacks(obj, hWidget, hData, mode)
+% function setsOps_Callbacks(obj, hWidget, hData, mode)
 % callbacks for press of sets-related widgets in obj.view.handles.panels.datasets.handles
 % Handles the following widgets:
 % - obj.view.handles.panels.datasets.handles.sets -> select set
@@ -18,7 +18,7 @@ function datasetsSetsOps_Callbacks(obj, hWidget, hData, mode)
 % 'setsContextRemove' -> remove the current set
 
 % arguments (Input)
-%     obj controllers.MibController
+%     obj controllers.MibDatasetsController
 %     hWidget {mustBeA(hWidget, {'matlab.ui.container.Menu', 'matlab.ui.control.DropDown', 'matlab.ui.control.Button'})}
 %     hData {mustBeA(hData, {'matlab.ui.eventdata.MenuSelectedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ButtonPushedData'})}
 %     mode char = ''
@@ -45,7 +45,7 @@ switch mode
         defAns = sprintf('Set %d', noSets+1);
         options.ParentFigure = obj.view.gui;
         options.IconWidth = 48;
-        answer = utils.dlgs.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
+        answer = utils.dlgs.mibInputSingleDlg(obj.mibModel.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
         if isempty(answer); return; end
         BatchOpt.SetName = answer;
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
@@ -55,7 +55,7 @@ switch mode
         defAns = obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet};
         options.ParentFigure = obj.view.gui;
         options.IconWidth = 48;
-        answer = utils.dlgs.mibInputSingleDlg(obj.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
+        answer = utils.dlgs.mibInputSingleDlg(obj.mibModel.mibPath, 'Enter a new set name:', defAns, 'Add set', options);
         if isempty(answer); return; end
         BatchOpt.SetName = answer;
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
@@ -64,11 +64,11 @@ switch mode
             sprintf('!!! Warning !!!\n\nYou are going to remove "%s" from MIB!\nAll datasets from the set will be closed.\n\nAre you sure?', obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet}), ...
             'Remove set', 'Icon', 'warning', 'DefaultOption', 2);
         if strcmp(selection, 'Cancel'); return; end
-        
+
         BatchOpt.Mode = {'Remove set'}; 
         % fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
     otherwise
-        error('MibController.datasetsSetsOps_Callbacks: this option (%s) is not implemented!\n', mode);       
+        error('controllers.MibDatasetsController.setsOps_Callbacks: this option (%s) is not implemented!\n', mode);       
 end
 
 if obj.mibModel.preferences.System.DeveloperMode

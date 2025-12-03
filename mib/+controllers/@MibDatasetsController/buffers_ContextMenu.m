@@ -1,6 +1,6 @@
-function datasetsBuffers_ContextMenu(obj, menuEntry, selectedData)
-% function datasetsBuffers_ContextMenu(obj, menuEntry, selectedData)
-% callbacks for the context menu of the buffers 
+function buffers_ContextMenu(obj, menuEntry, selectedData)
+% function buffers_ContextMenu(obj, menuEntry, selectedData)
+% callbacks for the context menu of the buffers
 % (obj.handles.panels.datasets.handles.buffer1) buttons
 
 % Parameters:
@@ -20,7 +20,7 @@ function datasetsBuffers_ContextMenu(obj, menuEntry, selectedData)
 
 
 arguments (Input)
-    obj controllers.MibController
+    obj controllers.MibDatasetsController
     menuEntry matlab.ui.container.Menu
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
@@ -31,24 +31,24 @@ buttonId = str2double(selectedData.ContextObject.Text);
 globalDatasetIndex = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets.datasetsInSet; % NOT obj.mibModel.id as the context menu may be attached to not selected buffer
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibController.datasetsBuffers_ContextMenu: selected button (obj.view.handles.panels.datasets.handles.%s), dataset: %d -> %s\n', selectedData.ContextObject.Tag, globalDatasetIndex, menuEntry.Tag);
+    fprintf('controllers.MibDatasetsController.buffers_ContextMenu: selected button (obj.view.handles.panels.datasets.handles.%s), dataset: %d -> %s\n', selectedData.ContextObject.Tag, globalDatasetIndex, menuEntry.Tag);
 end
 
 switch menuEntry.Tag
     case 'buffersContextDuplicate' % duplicate the dataset to another MIB container (buffer)
-        
+
     case 'buffersContextSyncXY' % sync the view with another dataset using only XY axes
-        
+
     case 'buffersContextSyncXYZ' % sync the view with another dataset using only XYZ axes
-        
+
     case 'buffersContextSyncXYZT' % sync the view with another dataset using only XYZT axes
-        
+
     case 'buffersContextLink' % link the view with another dataset
-        
+
     case 'buffersContextClose' % close the current dataset
-        
+
     case 'buffersContextCloseSet' % close all datasets from the current set
-        
+
 end
 
 

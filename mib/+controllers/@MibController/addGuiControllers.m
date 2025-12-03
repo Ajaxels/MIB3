@@ -6,7 +6,12 @@ arguments (Input)
     obj controllers.MibController
 end
 
-% Create the Segmentation panel UI and controller
+% Create the Datasets panel UI and controller
+panelHandles = obj.view.addDatasetsPanel(); % add the DirContents panel and return its handles (the handles are also in obj.view.handles.panels.datasets.handles)
+obj.cDatasets = controllers.MibDatasetsController(obj, obj.view, panelHandles, obj.mibModel); % start Datasets controller
+
+
+% Create the Directory contents panel UI and controller
 panelHandles = obj.view.addDirContentsPanel(); % add the DirContents panel and return its handles (the handles are also in obj.view.handles.panels.dirContents.handles)
 obj.cDirContents = controllers.MibDirContentsController(obj, obj.view, panelHandles, obj.mibModel); % start dirContents controller
 

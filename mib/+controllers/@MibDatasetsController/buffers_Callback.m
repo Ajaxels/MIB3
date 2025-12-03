@@ -1,6 +1,6 @@
-function datasetsBuffers_Callback(obj, hWidget, hData)
-% datasetsBuffers_Callback(obj, hWidget, hData)
-% callbacks for press oobj.handles.panels.datasets.handles.buffer1 buttons, selects the dataset
+function buffers_Callback(obj, hWidget, hData)
+% buffers_Callback(obj, hWidget, hData)
+% callbacks for press obj.handles.panels.datasets.handles.buffer1 buttons, selects the dataset
 % stored in a buffer defined by the pressed button
 %
 % Handles the following widgets:
@@ -11,8 +11,8 @@ function datasetsBuffers_Callback(obj, hWidget, hData)
 % hData: handle to supporting ButtonPushedData class
 
 arguments (Input)
-    obj controllers.MibController
-    hWidget matlab.ui.control.Button 
+    obj controllers.MibDatasetsController
+    hWidget matlab.ui.control.Button
     hData {mustBeButtonEventOrEmpty} = []
 end
 
@@ -20,7 +20,7 @@ end
 buttonId = str2double(hWidget.Text);
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibController.datasetsBuffers_Callback -> button "%d" pressed\n', buttonId);
+    fprintf('controllers.MibDatasetsController.datasetsBuffers_Callback -> button "%d" pressed\n', buttonId);
 end
 
 % generate identifier of the buffer handle
@@ -28,12 +28,12 @@ prevBufferStringId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(obj.m
 newBufferStringId = sprintf('buffer%d', buttonId);
 
 obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet) = buttonId; % update index of the dataset selected in the current set
-obj.mibModel.id = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets.datasetsInSet; % update the selected dataset in the global index 
+obj.mibModel.id = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets.datasetsInSet; % update the selected dataset in the global index
 
 % update the background color for the selected buffer
 if ~strcmp(prevBufferStringId, newBufferStringId)
     obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
-    
+
     % update description of the set tab
     obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', buttonId);
 
@@ -49,8 +49,8 @@ end
 
 % Local function that performs the validation
 function mustBeButtonEventOrEmpty(a)
-    % This function allows the input 'a' to be empty OR a specific class
-    if ~isempty(a) && ~isa(a, 'matlab.ui.eventdata.ButtonPushedData')
-        error('Input must be a ButtonPushedData object or empty');
-    end
+% This function allows the input 'a' to be empty OR a specific class
+if ~isempty(a) && ~isa(a, 'matlab.ui.eventdata.ButtonPushedData')
+    error('Input must be a ButtonPushedData object or empty');
+end
 end

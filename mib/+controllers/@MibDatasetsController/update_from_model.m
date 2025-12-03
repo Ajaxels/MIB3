@@ -1,11 +1,11 @@
-function datasetsPanelUpdate_fromModel(obj, src, evtData)
-% function datasetsPanelUpdate_fromModel(obj, src, evtData)
+function update_from_model(obj, src, evtData)
+% function update_from_model(obj, src, evtData)
 % update widgets of the Datasets panel
 % 
 % This function is triggered either as a MibController.listener to
 % MibModel->DatasetsPanelUpdate event or as a method of
 % MibController.datasetsPanelUpdate() to update widgets of the Datasets
-% panel (obj.view.handles.panels.datasets / obj.view.handles.panels.datasets.handles)
+% panel (obj.view.handles.panels.datasets / obj.handles)
 %
 % Parameters:
 % src: handle to MibModel when called as a listener, from MibController it is not provided
@@ -34,8 +34,8 @@ newSelectedDatasetIndex = obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.se
 prevSelectedSet = ceil(obj.mibModel.id/obj.mibModel.Sets.datasetsInSet);
 
 % update set names and the currently selected set
-obj.view.handles.panels.datasets.handles.sets.Items = obj.mibModel.Sets.names;
-obj.view.handles.panels.datasets.handles.sets.Value = obj.mibModel.Sets.names(obj.mibModel.Sets.selectedSet);
+obj.handles.sets.Items = obj.mibModel.Sets.names;
+obj.handles.sets.Value = obj.mibModel.Sets.names(obj.mibModel.Sets.selectedSet);
 
 %% Modify Figure-Documents
 
@@ -81,7 +81,7 @@ end
 % update the button background, when buttons in the sets are different
 if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
     prevBufferStringId = sprintf('buffer%d', prevSelectedDatasetIndex);
-    obj.view.handles.panels.datasets.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+    obj.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
 
     % update description of the set tab
     obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d', newSelectedDatasetIndex);
@@ -104,6 +104,6 @@ end
 
 % callback for the buffer button press
 newBufferStringId = sprintf('buffer%d', newSelectedDatasetIndex);
-obj.datasetsBuffers_Callback(obj.view.handles.panels.datasets.handles.(newBufferStringId));
+obj.buffers_Callback(obj.handles.(newBufferStringId));
 
 end

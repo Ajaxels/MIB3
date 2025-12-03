@@ -1,6 +1,6 @@
-function datasetsType_Callbacks(obj, hWidget, hData)
-% function datasetsType_Callbacks(obj, hWidget, hData)
-% callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored 
+function type_Callback(obj, hWidget, hData)
+% function type_Callback(obj, hWidget, hData)
+% callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored
 % in the selected buffer/container.
 % Available options
 % - Std -> standard MIB dataset, loaded completely into memory
@@ -12,13 +12,13 @@ function datasetsType_Callbacks(obj, hWidget, hData)
 % hData: handle to supporting data class
 
 arguments (Input)
-    obj controllers.MibController
+    obj controllers.MibDatasetsController
     hWidget matlab.ui.control.DropDown
     hData matlab.ui.eventdata.ValueChangedData
 end
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibController.datasetsType_Callbacks: selection of "obj.handles.panels.datasets.handles.datasetType" -> "%s"\n',  hWidget.Value);
+    fprintf('controllers.MibDatasetsController.type_Callbacks: selection of "obj.handles.panels.datasets.handles.datasetType" -> "%s"\n',  hWidget.Value);
 end
 
 % update obj.mibModel.Sets.datasetTypes

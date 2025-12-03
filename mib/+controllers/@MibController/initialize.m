@@ -257,7 +257,7 @@ obj.mibModel.showAnnotations = obj.view.handles.panels.selection.handles.showAnn
 obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesShowLines.Value;   % enable/disable show of 3D lines
 
 % Update GUI widgets
-obj.datasetsPanelUpdate_fromModel(); % update widgets of the Datasets panel
+obj.cDatasets.update_from_model(); % update widgets of the Datasets panel from the values of obj.MibModel
 obj.selectionLutTableUpdate_fromModel(); % update the LUT table in the Selection and View settings panel
 %obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
 
@@ -265,7 +265,6 @@ obj.selectionLutTableUpdate_fromModel(); % update the LUT table in the Selection
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
-obj.listeners{end+1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.datasetsPanelUpdate_fromModel(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'RenderImage', @(src, evnt) obj.listenerRenderImage(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(src, evnt) obj.listenerUpdateDatasetAxes(src, evnt));
 

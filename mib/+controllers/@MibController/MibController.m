@@ -3,6 +3,8 @@ classdef MibController < handle
 
     properties
         % GUI controllers for the main MIB GUI panels and ribbons
+        cDatasets
+        % Controller for the Datasets panel
         cDirContents
         % Controller for the Dir contents panel
         cSelection
@@ -72,16 +74,6 @@ classdef MibController < handle
         addGuiControllers(obj)  % add GUI components to the main view obj.view
 
         devTest_Callback(obj, varargin) % callback for developmental purposes
-
-        datasetsBuffers_ContextMenu(obj, menuEntry, selectedData) % callbacks for the context menu of the obj.view.handles.panels.datasets.handles.buffers buttons
-        
-        datasetsBuffers_Callback(obj, hWidget, hData) % callbacks for press of obj.view.handles.panels.datasets.handles.buffers buttons
-
-        datasetsSetsOps_Callbacks(obj, hWidget, hData, mode) % callbacks for press of sets-related widgets in obj.view.handles.panels.datasets.handles
-
-        datasetsType_Callbacks(obj, hWidget, hData) % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
-
-        datasetsPanelUpdate_fromModel(obj, src, evtData) % update widgets of the Datasets panel
 
         result = exitProgram(obj, target)        % exit mib 
 

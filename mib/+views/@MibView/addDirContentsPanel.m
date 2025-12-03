@@ -17,6 +17,7 @@ obj.handles.panels.dirContentsPanel.PreferredHeight = 220;
 obj.handles.panels.dirContentsPanel.Figure.AutoResizeChildren = 'off';
 panelHandles = views.components.DirectoryContents('Parent', obj.handles.panels.dirContentsPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
+
 % add handle tags to tooltips
 if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(panelHandles.handles, true, 'panelHandles.handles'); end
 
