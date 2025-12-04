@@ -24,6 +24,16 @@ classdef MibView < handle
 
         panelHandles = addDirContentsPanel(obj) % add the Datasets panel, add context menus and callbacks for widgets
 
+        [ribbonHandles, ribbonWidgets] = addRibbonTabs(obj)        % Add the global ribbon, which is matlab.ui.internal.toolstrip.TabGroup()
+
+        homeHandles = addRibbonHome(obj)        % build the Home tab group (obj.handles.ribbon.home) and add it to obj.handles.ribbon.global 
+
+        widgetHandles = addRibbonImage(obj, lazyInit)        % build the Image tab group (obj.handles.ribbon.image) and add it to obj.handles.ribbon.global 
+
+        datasetHandles = addRibbonDataset(obj, lazyInit)        % build the Datasets tab group (obj.handles.ribbon.dataset) and add it to obj.handles.ribbon.global 
+
+        widgetHandles = addRibbonModel(obj, lazyInit)        % build the Model tab group (obj.handles.ribbon.model) and add it to obj.handles.ribbon.global 
+        
         panelHandles = addRoiPanel(obj) % add the ROI panel, add context menus and callbacks for widgets
         
         panelHandles = addSegmentationPanel(obj) % add the Segmentation panel, add context menus and callbacks for widgets
@@ -35,14 +45,6 @@ classdef MibView < handle
         addToolbarTabs(obj) % add the global toolbar, obj.handles.toolbar.global
 
         qab = addQuickAccessBar(obj) % add quick access buttons
-
-        buildHomeTab(obj) % build the Home tab group and and add it to obj.handles.toolbar.global 
-
-        buildDatasetTab(obj, lazyInit) % build the Dataset tab group and and add it to obj.handles.toolbar.global 
-
-        buildImageTab(obj, lazyInit) % build the Image tab group and and add it to obj.handles.toolbar.global 
-
-        buildModelTab(obj, lazyInit) % build the Model tab group and and add it to obj.handles.toolbar.global 
 
         buildMaskTab(obj, lazyInit) % build the Mask tab group and and add it to obj.handles.toolbar.global 
 

@@ -11,6 +11,8 @@ classdef MibController < handle
         % Controller for the Quick Access Bar
         cSelection
         % Controller for the Selection and View settings panel
+        cRibbon
+        % Controller for the top ribbon panel
         cRoi
         % Controller for the ROI panel
         cSegmentation

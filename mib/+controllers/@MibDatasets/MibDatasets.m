@@ -12,6 +12,7 @@ classdef MibDatasets
     end
 
     methods
+        % declaration of functions in the external files, keep empty line in between for the doc generator
 
         buffers_Callback(obj, hWidget, hData)        % callbacks for press obj.handles.panels.datasets.handles.buffer1 buttons, selects the dataset stored in a buffer defined by the pressed button
 

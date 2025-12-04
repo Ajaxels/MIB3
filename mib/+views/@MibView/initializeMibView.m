@@ -25,9 +25,6 @@ obj.gui.Icon = fullfile(obj.controller.mibPath, 'assets/icons/mib_icon_32px.png'
 % expand the status bar to the whole width of MIB
 obj.gui.StatusBarSpansFullWidth = true;
 
-% ------------ add Widgets ------------
-obj.addToolbarTabs();  % add toolbars to MIB, stored as obj.handles.toolbar
-
 % ------------ add FigureDocumentGroup ------------
 % alternative to add DocumentGroup(groupOptions);
 % documentGroup = matlab.ui.container.internal.appcontainer.DocumentGroup(groupOptions);

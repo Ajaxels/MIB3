@@ -15,7 +15,7 @@ function outputPath = saveLayout(obj, mode)
 %|
 % @b Examples:
 % @code
-% filename = utils.storeLayout(obj); // call from the main controller class
+% filename = obj.storeLayout(obj); // call from MibController class
 % @endcode
 %
 % Updates

@@ -9,42 +9,52 @@ arguments (Input)
     hData matlab.ui.internal.toolstrip.base.ToolstripEventData
 end
 
-switch obj.view.handles.toolbar.global.SelectedTab.Title
+switch obj.view.handles.ribbon.global.SelectedTab.Title
     case 'Dataset'
-        if isfield(obj.view.handles, 'dataset') % already initialized
+        if isfield(obj.view.handles, 'ribbonDataset') % already initialized
             return;
         end
-        obj.view.buildDatasetTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonDataset = obj.view.addRibbonDataset(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetRibbon();
     case 'Image'
-        if isfield(obj.view.handles, 'image') % already initialized
+        if isfield(obj.view.handles, 'ribbonImage') % already initialized
             return;
         end
-        obj.view.buildImageTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonImage = obj.view.addRibbonImage(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetImage();
     case 'Model'
-        if isfield(obj.view.handles, 'model') % already initialized
+        if isfield(obj.view.handles, 'ribbonModel') % already initialized
             return;
         end
-        obj.view.buildModelTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonModel = obj.view.addRibbonModel(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetModel();
     case 'Mask'
-        if isfield(obj.view.handles, 'mask') % already initialized
+        if isfield(obj.view.handles, 'ribbonMask') % already initialized
             return;
         end
-        obj.view.buildMaskTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonMask = obj.view.addRibbonMask(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetMask();
     case 'Selection'
-        if isfield(obj.view.handles, 'selection') % already initialized
+        if isfield(obj.view.handles, 'ribbonSelection') % already initialized
             return;
         end
-        obj.view.buildSelectionTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonSelection = obj.view.addRibbonSelection(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetSelection();
     case 'Tools'
-        if isfield(obj.view.handles, 'tools') % already initialized
+        if isfield(obj.view.handles, 'ribbonTools') % already initialized
             return;
         end
-        obj.view.buildToolsTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonTools = obj.view.addRibbonTools(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetTools();
     case 'Plugins'
-        if isfield(obj.view.handles, 'plugins') % already initialized
+        if isfield(obj.view.handles, 'ribbonPlugins') % already initialized
             return;
         end
-        obj.view.buildPluginsTab(); % lazily init the ribbon
+        obj.cRibbon.handles.ribbonPlugins = obj.view.addRibbonPlugins(); % lazily init the ribbon
+        obj.cRibbon.addCallbacksToDatasetPlugins();
 end
 
-fprintf('MibController.globalTabGroup_SelectionCallback: selection of a ribbon\n');
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('MibController.globalTabGroup_SelectionCallback: selection of a ribbon\n');
+end
+end

@@ -1,9 +1,9 @@
-function ribbonHandles = addRibbonTabs(obj)
-% function ribbonHandles = addRibbonTabs(obj)
+function [ribbonHandles, ribbonWidgets] = addRibbonTabs(obj)
+% function [ribbonHandles, ribbonWidgets] = addRibbonTabs(obj)
 % Add the global ribbon, which is matlab.ui.internal.toolstrip.TabGroup()
 % stored in 
-% - obj.handles.ribbon.*
-% - obj.handles.ribbon.global
+% - ribbonHandles.*
+% - ribbonHandles.global
 
 arguments (Input)
     obj views.MibView
@@ -15,20 +15,20 @@ obj.handles.ribbon.global.Tag = 'ribbonGlobal';
 
 % add tabs to the global tab group
 lazyInit = true;                    % init the panel lazily only upon the first time show
-obj.buildHomeTab();                 % obj.handles.ribbon.home
-obj.buildDatasetTab(lazyInit);      % obj.handles.ribbon.dataset
-obj.buildImageTab(lazyInit);        % obj.handles.ribbon.image
-obj.buildModelTab(lazyInit);        % obj.handles.ribbon.model
-obj.buildMaskTab(lazyInit);         % obj.handles.ribbon.mask
-obj.buildSelectionTab(lazyInit);    % obj.handles.ribbon.selection
-obj.buildToolsTab(lazyInit);        % obj.handles.ribbon.tools
-obj.buildPluginsTab(lazyInit);      % obj.handles.ribbon.plugins
+ribbonWidgets.ribbonHome = obj.addRibbonHome();                 % obj.handles.ribbonHome
+ribbonWidgets.ribbonDataset = obj.addRibbonDataset(lazyInit);      % obj.handles.ribbonDataset
+ribbonWidgets.ribbonImage = obj.addRibbonImage(lazyInit);        % obj.handles.ribbonImage
+ribbonWidgets.ribbonModel = obj.addRibbonModel(lazyInit);        % obj.handles.ribbonModel
+%obj.buildMaskTab(lazyInit);         % ribbonHandles.mask
+%obj.buildSelectionTab(lazyInit);    % ribbonHandles.selection
+%obj.buildToolsTab(lazyInit);        % ribbonHandles.tools
+%obj.buildPluginsTab(lazyInit);      % ribbonHandles.plugins
 
 % focus on the selected tab
 obj.handles.ribbon.global.SelectedTab = obj.handles.ribbon.home;
 
+ribbonHandles = obj.handles.ribbon;
+
 % add the global tab group to MIB
 obj.gui.add(obj.handles.ribbon.global);
-
-ribbonHandles = obj.handles.ribbon;
 end

@@ -6,8 +6,8 @@ arguments (Input)
     obj controllers.MibController
 end
 
-%ribbonHandles = obj.view.addRibbonTabs();
-%obj.cRibbon = controllers.MibRibbon(obj, obj.view, ribbonHandles, obj.mibModel); % start Ribbon controller
+[ribbonHandles, ribbonWidgets] = obj.view.addRibbonTabs();
+obj.cRibbon = controllers.MibRibbon(obj, obj.view, ribbonHandles, ribbonWidgets, obj.mibModel); % start Ribbon controller
 
 % Create the Quick access bar and controller
 panelHandles = obj.view.addQuickAccessBar(); % add the addQuickAccessBar and return its handles (the handles are also in obj.view.handles.qab.handles)

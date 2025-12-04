@@ -229,12 +229,13 @@ obj.mibModel.sessionSettings.ImageFilters.TestImg = imread(fullfile(obj.mibPath,
 
 %% ----------------- INIT THE MAIN VIEW -----------------
 obj.view = views.MibView(obj);
-% ---- add callbacks ----
-% add callback for selection of the
-obj.view.handles.toolbar.global.SelectedTabChangedFcn = @obj.globalTabGroup_SelectionCallback;
 
 % --- create controller for panels and add view into them
 obj.addGuiControllers();
+
+% ---- add callbacks ----
+% add callback for selection of the
+obj.view.handles.ribbon.global.SelectedTabChangedFcn = @obj.globalTabGroup_SelectionCallback;
 
 % get the current version of Matlab; keep this variable to be faster and not call ver function
 v = ver('matlab'); %#ok<VERMATLAB>
