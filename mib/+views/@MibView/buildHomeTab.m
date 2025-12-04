@@ -2,6 +2,7 @@ function buildHomeTab(obj)
 % function buildHomeTab(obj)
 % build the Home tab group (obj.handles.toolbar.home)
 % and add it to obj.handles.toolbar.global 
+
 arguments (Input)
     obj views.MibView
 end

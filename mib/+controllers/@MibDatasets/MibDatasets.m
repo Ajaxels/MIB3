@@ -27,8 +27,8 @@ classdef MibDatasets
             %% Init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
-            obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)
-            obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
+            obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Datasets)
+            obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.datasets.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
 
             %%  Add CALLBACKS to context menus ----------------------

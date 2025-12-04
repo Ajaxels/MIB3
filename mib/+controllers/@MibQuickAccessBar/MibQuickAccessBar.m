@@ -6,8 +6,7 @@ classdef MibQuickAccessBar
         mibController   % controllers.MibController
         view            % MibView (full app view)
         mibModel        % models.MibModel
-        gui             % handle to the GUI of the panel (views.components.Roi)
-        handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        handles         % struct of QAB panel handles (panel, listbox, buttons, ...)
         listeners       % cell array of listeners
     end
 
@@ -19,8 +18,7 @@ classdef MibQuickAccessBar
             %% Init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
-            obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)
-            obj.handles = guiHandles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
+            obj.handles = guiHandles;           % handles for the panel (equal to obj.view.handles.qab.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
 
             %% ---------------------- ADD CALLBACKS TO BUTTONS ----------------------
