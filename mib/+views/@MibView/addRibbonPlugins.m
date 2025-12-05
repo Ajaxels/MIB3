@@ -1,7 +1,7 @@
-function buildPluginsTab(obj, lazyInit)
-% function buildPluginsTab(obj, lazyInit)
-% build the Plugins tab group (obj.handles.toolbar.plugins)
-% and add it to obj.handles.toolbar.global 
+function widgetHandles = addRibbonPlugins(obj, lazyInit)
+% function widgetHandles = addRibbonPlugins(obj, lazyInit)
+% build the Plugins tab group (obj.handles.ribbon.plugins)
+% and add it to obj.handles.ribbon.global 
 %
 % Parameters:
 % lazyInit: [@em optional default=false] logical, when true do only
@@ -18,11 +18,12 @@ end
 if lazyInit
     % lazy initialization, the real initialization is in controllers.MibController.globalTabGroup_SelectionCallback
     % Make the tab
-    obj.handles.toolbar.plugins = matlab.ui.internal.toolstrip.Tab("Plugins");
-    obj.handles.toolbar.plugins.Tag = 'toolbarPlugins';
+    obj.handles.ribbon.plugins = matlab.ui.internal.toolstrip.Tab("Plugins");
+    obj.handles.ribbon.plugins.Tag = 'toolbarPlugins';
 
     % Add tab to the tab group
-    obj.handles.toolbar.global.add(obj.handles.toolbar.plugins);
+    obj.handles.ribbon.global.add(obj.handles.ribbon.plugins);
+    widgetHandles = [];
     return
 end
 
@@ -33,7 +34,7 @@ names = {pluginSections.name};
 pluginSections = names(isDir & ~ismember(names, {'.', '..'}));
 
 %% ============= Make "Plugins" section =============
-section = obj.handles.toolbar.plugins.addSection("Plugins");
+section = obj.handles.ribbon.plugins.addSection("Plugins");
 column = section.addColumn();
 
 % add popup for the plugins gallery
@@ -72,8 +73,9 @@ for sectionId = 1:numel(pluginSections)
 end
 
 % Create the main gallery and add it to the view column.
-obj.handles.plugins.gallery = matlab.ui.internal.toolstrip.Gallery(popup, 'MinColumnCount', 3, 'MaxColumnCount', 5 );
-column.add( obj.handles.plugins.gallery )
+obj.handles.ribbonPlugins.gallery = matlab.ui.internal.toolstrip.Gallery(popup, 'MinColumnCount', 3, 'MaxColumnCount', 5 );
+column.add( obj.handles.ribbonPlugins.gallery )
 
+widgetHandles = obj.handles.ribbonPlugins;
 
 end

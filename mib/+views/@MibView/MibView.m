@@ -33,6 +33,14 @@ classdef MibView < handle
         datasetHandles = addRibbonDataset(obj, lazyInit)        % build the Datasets tab group (obj.handles.ribbon.dataset) and add it to obj.handles.ribbon.global 
 
         widgetHandles = addRibbonModel(obj, lazyInit)        % build the Model tab group (obj.handles.ribbon.model) and add it to obj.handles.ribbon.global 
+
+        widgetHandles = addRibbonMask(obj, lazyInit)        % build the Mask tab group (obj.handles.ribbon.mask) and add it to obj.handles.ribbon.global 
+
+        widgetHandles = addRibbonSelection(obj, lazyInit)        % build the Selection tab group (obj.handles.ribbon.selection) and add it to obj.handles.ribbon.global
+
+        widgetHandles = addRibbonTools(obj, lazyInit)        % build the Tools tab group (obj.handles.ribbon.tools) and add it to obj.handles.ribbon.global 
+
+        widgetHandles = addRibbonPlugins(obj, lazyInit)        % build the Plugins tab group (obj.handles.ribbon.plugins) and add it to obj.handles.ribbon.global 
         
         panelHandles = addRoiPanel(obj) % add the ROI panel, add context menus and callbacks for widgets
         
@@ -42,18 +50,8 @@ classdef MibView < handle
 
         statusHandles = addStatusBar(obj)     % add status bar to MIB
 
-        addToolbarTabs(obj) % add the global toolbar, obj.handles.toolbar.global
-
         qab = addQuickAccessBar(obj) % add quick access buttons
 
-        buildMaskTab(obj, lazyInit) % build the Mask tab group and and add it to obj.handles.toolbar.global 
-
-        buildSelectionTab(obj, lazyInit) % build the Selection tab group and and add it to obj.handles.toolbar.global 
-
-        buildToolsTab(obj, lazyInit) % build the Tools tab group and and add it to obj.handles.toolbar.global 
-        
-        buildPluginsTab(obj, lazyInit) % build the Plugins tab group and and add it to obj.handles.toolbar.global 
-        
         doPostInitializationTasks(obj)  % Do some post-initialization tasks that require that the main GUI window is visible
 
         initialize(obj)             % initialize the view

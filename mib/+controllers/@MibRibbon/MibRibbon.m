@@ -52,6 +52,14 @@ classdef MibRibbon
 
         imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
 
+        maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
+        
+        maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
+        
+        maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
+        
+        maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
+
         modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
         
         modelConvertType_Callback(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
@@ -65,6 +73,14 @@ classdef MibRibbon
         modelQuantification_Callback(obj, hWidget, hData)        % callback on press of the Quantification button in the Model ribbon
         
         modelRender_Callback(obj, hWidget, hData)        % callback on press of buttons in the Render button of the Model ribbon
+
+        selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
+
+        selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
+
+        toolsMisc_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Misc section of the Tools ribbon
+        
+        toolsSegmentation_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Segmentation section of the Tools ribbon
 
         function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
             %% Init properties
@@ -294,23 +310,106 @@ classdef MibRibbon
             % function addCallbacksToDatasetMask(obj)
             % add callbacks to the Mask ribbon to allow lazy loading
 
+            %% Add Callbacks for the MASK ribbon -> Mask to Selection
+            obj.handles.ribbonMask.maskToSelection2DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection2DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection2DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection3DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection3DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection3DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection4DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection4DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection4DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
+            %% Add Callbacks for the MASK ribbon -> Import section
+            obj.handles.ribbonMask.clear.ButtonPushedFcn = @obj.maskImportSection_Callbacks;
+            obj.handles.ribbonMask.load.ButtonPushedFcn = @obj.maskImportSection_Callbacks;
+            obj.handles.ribbonMask.import.ButtonPushedFcn = @obj.maskImportSection_Callbacks;
+            obj.handles.ribbonMask.importFromMatlab.ItemPushedFcn = @obj.maskImportSection_Callbacks;
+            obj.handles.ribbonMask.importFromMIB.ItemPushedFcn = @obj.maskImportSection_Callbacks;
+            %% Add Callbacks for the MASK ribbon -> Export section
+            obj.handles.ribbonMask.export.ButtonPushedFcn = @obj.maskExportSection_Callbacks;
+            obj.handles.ribbonMask.exportToMatlab.ItemPushedFcn = @obj.maskExportSection_Callbacks;
+            obj.handles.ribbonMask.exportToMIB.ItemPushedFcn = @obj.maskExportSection_Callbacks;
+            obj.handles.ribbonMask.save.ButtonPushedFcn = @obj.maskExportSection_Callbacks;
+            %% Add Callbacks for the MASK ribbon -> Tools and Quantification section
+            obj.handles.ribbonMask.invert.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.invert2D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.invert3D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.invert4D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.replaceImage.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.smooth.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.quantify.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+    
         end
 
         function addCallbacksToDatasetSelection(obj)
             % function addCallbacksToDatasetSelection(obj)
             % add callbacks to the Selection ribbon to allow lazy loading
 
+            %% Add Callbacks for the SELECTION ribbon -> Converts section
+            % Selection to mask
+            obj.handles.ribbonSelection.selectionToMask2DAdd.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask2DRemove.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask2DReplace.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask3DAdd.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask3DRemove.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask3DReplace.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask4DAdd.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask4DRemove.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask4DReplace.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            % Selection to buffer
+            obj.handles.ribbonSelection.copy.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.paste.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.pasteAll.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.clear.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            %% Add Callbacks for the SELECTION ribbon -> Tools section
+            % MorphOps
+            obj.handles.ribbonSelection.branch.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.diag.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.endpoints.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.skeleton.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.spur.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.thin.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.ultErosion.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            % invert
+            obj.handles.ribbonSelection.invert.ButtonPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.invert2D.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.invert3D.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.invert4D.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            % other tools
+            obj.handles.ribbonSelection.expandToMask.ButtonPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.interpolate.ValueChangedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.replaceImage.ButtonPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.smooth.ButtonPushedFcn = @obj.selectionTools_Callbacks;
         end
 
         function addCallbacksToDatasetTools(obj)
             % function addCallbacksToDatasetTools(obj)
             % add callbacks to the Tools ribbon to allow lazy loading
 
-        end
+            %% Add Callbacks for the SELECTION ribbon -> Segmentation section
+            % DeepMIB
+            obj.handles.ribbonTools.deepmib.ButtonPushedFcn = @obj.toolsSegmentation_Callbacks;
+            % Classifiers
+            obj.handles.ribbonTools.membrane.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            obj.handles.ribbonTools.supervoxels.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            % Semi-automatic
+            obj.handles.ribbonTools.globalthres.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            obj.handles.ribbonTools.graphcut.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            obj.handles.ribbonTools.watershed.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            %% Add Callbacks for the SELECTION ribbon -> Misc section
+            % Measure length
+            obj.handles.ribbonTools.measure.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.measureTool.ItemPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.measureLine.ItemPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.measureFreehand.ItemPushedFcn = @obj.toolsMisc_Callbacks;
+            % Object separator
+            obj.handles.ribbonTools.objects.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
+            % Stereology
+            obj.handles.ribbonTools.stereology.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
+            % Wound healing assay
+            obj.handles.ribbonTools.wound.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
 
-        function addCallbacksToDatasetPlugins(obj)
-            % function addCallbacksToDatasetPlugins(obj)
-            % add callbacks to the Plugins ribbon to allow lazy loading
 
         end
 

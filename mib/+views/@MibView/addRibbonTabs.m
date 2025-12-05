@@ -19,10 +19,10 @@ ribbonWidgets.ribbonHome = obj.addRibbonHome();                 % obj.handles.ri
 ribbonWidgets.ribbonDataset = obj.addRibbonDataset(lazyInit);      % obj.handles.ribbonDataset
 ribbonWidgets.ribbonImage = obj.addRibbonImage(lazyInit);        % obj.handles.ribbonImage
 ribbonWidgets.ribbonModel = obj.addRibbonModel(lazyInit);        % obj.handles.ribbonModel
-%obj.buildMaskTab(lazyInit);         % ribbonHandles.mask
-%obj.buildSelectionTab(lazyInit);    % ribbonHandles.selection
-%obj.buildToolsTab(lazyInit);        % ribbonHandles.tools
-%obj.buildPluginsTab(lazyInit);      % ribbonHandles.plugins
+ribbonWidgets.ribbonMask = obj.addRibbonMask(lazyInit);         % obj.handles.ribbonMask
+ribbonWidgets.ribbonSelection = obj.addRibbonSelection(lazyInit);         % obj.handles.ribbonSelection
+ribbonWidgets.ribbonTools = obj.addRibbonTools(lazyInit);         % obj.handles.ribbonTools
+ribbonWidgets.ribbonPlugins = obj.addRibbonPlugins(lazyInit);         % obj.handles.ribbonPlugins
 
 % focus on the selected tab
 obj.handles.ribbon.global.SelectedTab = obj.handles.ribbon.home;
