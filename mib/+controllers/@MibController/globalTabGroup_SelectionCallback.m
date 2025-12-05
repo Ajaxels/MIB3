@@ -51,7 +51,7 @@ switch obj.view.handles.ribbon.global.SelectedTab.Title
             return;
         end
         obj.cRibbon.handles.ribbonPlugins = obj.view.addRibbonPlugins(); % lazily init the ribbon
-        obj.cRibbon.addCallbacksToDatasetPlugins();
+        %obj.cRibbon.addCallbacksToDatasetPlugins();
 end
 
 if obj.mibModel.preferences.System.DeveloperMode

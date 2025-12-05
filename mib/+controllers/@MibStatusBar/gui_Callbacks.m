@@ -25,8 +25,6 @@ switch mode
     case 'Enter the working directory'
     case 'Copy the current working directory to clipboard'
     case 'Open the current working directory in a system file browser'
-    case 'Show the log of actions performed with the dataset'
-    case 'Dataset properties'
     case 'Define the zoom level'
 end
 

@@ -27,8 +27,6 @@ classdef MibStatusBar
             obj.handles.currentDirectory.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.copyPath.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.openBrowser.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.logButton.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.infoButton.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.zoom.ValueChangedFcn = @obj.gui_Callbacks;
         end
     end

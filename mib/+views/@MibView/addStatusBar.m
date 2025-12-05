@@ -72,18 +72,6 @@ statusHandles.bar.add(statusBarGroupProgress);
 %% Create group for the info/log/zoom values
 statusBarGroupInfo = matlab.ui.internal.statusbar.StatusGroup();
 
-statusHandles.logButton = matlab.ui.internal.statusbar.StatusButton();
-%statusHandles.logButton.Text = "Log";
-statusHandles.logButton.Description = "Show the log of actions performed with the dataset";
-statusHandles.logButton.Icon = matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/zoom100_16px.png'));
-statusBarGroupInfo.add(statusHandles.logButton);
-
-statusHandles.infoButton = matlab.ui.internal.statusbar.StatusButton();
-%statusHandles.infoButton.Text = "Info";
-statusHandles.infoButton.Description = "Dataset properties";
-statusHandles.infoButton.Icon = matlab.ui.internal.toolstrip.Icon(fullfile(obj.controller.mibPath, 'assets/icons/zoomFit_16px.png'));
-statusBarGroupInfo.add(statusHandles.infoButton);
-
 sLabel = matlab.ui.internal.statusbar.StatusLabel();
 sLabel.Text = "Zoom:";
 statusBarGroupInfo.add(sLabel);
