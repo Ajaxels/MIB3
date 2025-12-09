@@ -15,6 +15,10 @@ classdef MibModel < handle
         % index of the selected dataset
         matlabVersion
         % version of Matlab
+        mibGUI
+        % handle to the main MIB window, to be used in child controllers to
+        % align them relative to the main window (utils.moveWindowOutside)
+        % place
         mibPath 
         % path to MIB installation directory also available in MibController
         myPath

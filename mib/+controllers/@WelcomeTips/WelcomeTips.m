@@ -57,12 +57,12 @@ classdef WelcomeTips < handle
     end
     
     methods (Static)
-        function ViewListner_Callback(obj, src, evnt)
-            switch evnt.EventName
-                case {'updateGuiWidgets'}
-                    obj.updateWidgets();
-            end
-        end
+        % function ViewListner_Callback(obj, src, evnt)
+        %     switch evnt.EventName
+        %         case {'updateGuiWidgets'}
+        %             obj.updateWidgets();
+        %     end
+        % end
     end
     
     methods
@@ -75,7 +75,9 @@ classdef WelcomeTips < handle
             obj.view.handles.showTipsCheck.Value = obj.mibModel.preferences.Tips.ShowTips;
 
             % move the window to the left hand side of the main window
-            obj.view.gui = utils.moveWindowOutside(obj.view.gui, 'center', 'center');
+            % USE "obj.mibModel.mibGUI.WindowBounds" as the parent window
+            % positions
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'center', 'center');
             
             % update font and size
             % you may need to replace "obj.view.handles.text1" with tag of any text field of your own GUI
@@ -88,7 +90,7 @@ classdef WelcomeTips < handle
             obj.updateWidgets();
 			
 			% add listener to obj.mibModel and call controller function as a callback
-            obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
+            %obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
         end
         
         function closeWindow(obj)

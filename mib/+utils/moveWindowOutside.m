@@ -14,17 +14,19 @@
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi 
 % Date: 25.04.2023
 
-function hObject = moveWindowOutside(hObject, alignH, alignV)
-% function hObject = moveWindowOutside(hObject, alignH, alignV)
+function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
+% function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
 % Determine the position of the dialog - on a side of the main figure
 % if available, else, centered on the main figure
 % Parameters:
-% hObject: a handle of the window to be moved
+% hObject: handle of the window to be moved
+% mibGUI: handle to the main MIB gui, can be obtained from obj.mibModel.mibGUI
 % alignH: an optional string with the preferred horizontal alignment: 'left' (@em default), 'right', 'center'
 % alignV: an optional string with the preferred vertical alignment: 'top' (@em default), 'bottom', 'center'
 
-if nargin < 3; alignV = 'top'; end
-if nargin < 2; alignH = 'left'; end
+if nargin < 4; alignV = 'top'; end
+if nargin < 3; alignH = 'left'; end
+if nargin < 2; mibGUI = []; end
 if isempty(alignH); alignH = 'left'; end
 
 if ismember(alignH, {'left', 'right', 'center'}) == 0
@@ -43,7 +45,7 @@ OldPos = hObject.OuterPosition;
 FigWidth = OldPos(3);   % width of the window to move
 FigHeight = OldPos(4);  % height of the window to move
 
-if isempty(gcbf)    % can't obtain info about parent window
+if isempty(mibGUI)
     ScreenUnits=get(0, 'Units');
     set(0, 'Units', 'pixels');
     ScreenSize = get(0, 'ScreenSize');
@@ -52,27 +54,37 @@ if isempty(gcbf)    % can't obtain info about parent window
     FigPos(1) = 1/2*(ScreenSize(3)-FigWidth);
     FigPos(2) = 2/3*(ScreenSize(4)-FigHeight);
 else
-    GCBFOldUnits = get(gcbf, 'Units');
-    set(gcbf, 'Units', 'pixels');
-    GCBFPos = get(gcbf, 'OuterPosition');   % parent window position
-    set(gcbf, 'Units', GCBFOldUnits);
-    screenSize = get(0, 'ScreenSize');  
+    screenSize = get(0, 'ScreenSize');
+    
+    if isa(mibGUI, 'matlab.ui.container.internal.AppContainer') % modern GUI
+        GCBFPos = mibGUI.WindowBounds; % main MIB window position [top-left-x, top-left-y, width, height]
+        % Convert WindowBounds (top-left origin) to bottom-left origin
+        GCBFPos(2) = screenSize(4) - GCBFPos(2) - GCBFPos(4);
+        % Use innerPosition to account for child window's Position vs OuterPosition difference
+        useInnerPosition = true;
+    else
+        GCBFOldUnits = get(gcbf, 'Units');
+        set(gcbf, 'Units', 'pixels');
+        GCBFPos = get(gcbf, 'OuterPosition'); % parent window position
+        set(gcbf, 'Units', GCBFOldUnits);
+        useInnerPosition = false;
+    end
     
     switch alignH
         case 'left'
-            if GCBFPos(1)-FigWidth > 0 % put figure on the left side of the main figure
-                FigPos(1) = GCBFPos(1)-FigWidth;
-            elseif GCBFPos(1) + GCBFPos(3) + FigWidth < screenSize(3) % put figure on the right side of the main figure
-                FigPos(1) = GCBFPos(1)+GCBFPos(3);
+            if GCBFPos(1)-FigWidth > 0  % put figure on the left side of the main figure
+                FigPos(1) = GCBFPos(1) - FigWidth;
+            elseif GCBFPos(1) + GCBFPos(3) + FigWidth < screenSize(3)  % put figure on the right side of the main figure
+                FigPos(1) = GCBFPos(1) + GCBFPos(3);
             else
                 FigPos(1) = (GCBFPos(1) + GCBFPos(3) / 2) - FigWidth / 2;
                 alignV = 'center';
             end
         case 'right'
-            if GCBFPos(1) + GCBFPos(3) + FigWidth < screenSize(3) % put figure on the right side of the main figure
-                FigPos(1) = GCBFPos(1)+GCBFPos(3);
-            elseif GCBFPos(1)-FigWidth > 0 % put figure on the left side of the main figure
-                FigPos(1) = GCBFPos(1)-FigWidth;
+            if GCBFPos(1) + GCBFPos(3) + FigWidth < screenSize(3)  % put figure on the right side of the main figure
+                FigPos(1) = GCBFPos(1) + GCBFPos(3);
+            elseif GCBFPos(1)-FigWidth > 0  % put figure on the left side of the main figure
+                FigPos(1) = GCBFPos(1) - FigWidth;
             else
                 FigPos(1) = (GCBFPos(1) + GCBFPos(3) / 2) - FigWidth / 2;
                 alignV = 'center';
@@ -85,18 +97,25 @@ else
         case 'top'
             FigPos(2) = GCBFPos(2)+GCBFPos(4)-FigHeight;
         case 'bottom'
-            FigPos(2) = GCBFPos(2); % - FigHeight;
+            FigPos(2) = GCBFPos(2);
         case 'center'
             FigPos(2) = (GCBFPos(2) + GCBFPos(4) / 2) - FigHeight / 2;
     end
 end
+
 FigPos(3:4)=[FigWidth FigHeight];
 
-try
-    hObject.OuterPosition = FigPos;
-catch
-    FigPos(2) = FigPos(2) - 32;
+% Use Position property for App Designer windows to avoid the gap
+if useInnerPosition
     hObject.Position = FigPos;
+else
+    try
+        hObject.OuterPosition = FigPos;
+    catch
+        FigPos(2) = FigPos(2) - 32;
+        hObject.Position = FigPos;
+    end
 end
+
 hObject.Units = OldUnits;
 end

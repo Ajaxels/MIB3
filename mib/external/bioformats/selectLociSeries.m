@@ -172,7 +172,7 @@ if numSeries==1
 end
 
 % move the window
-hObject = moveWindowOutside(hObject, 'center', 'center');
+hObject = moveWindowOutside(hObject, [], 'center', 'center');
 
 % Update handles structure
 guidata(hObject, handles);

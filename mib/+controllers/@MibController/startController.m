@@ -71,13 +71,13 @@ else
 end
 
 % add listener to the closeEvent of the child controller
-addlistener(obj.childControllers{id}, 'closeEvent', @(src, evnt) mibController.purgeControllers(obj, src, evnt));   % static
+addlistener(obj.childControllers{id}, 'closeEvent', @(src, evnt) controllers.MibController.purgeControllers(obj, src, evnt));   % static
 %addlistener(obj.childControllers{id}, 'closeEvent', @(src, evnt) obj.purgeControllers(src, evnt)); % dynamic
 
 p = fieldnames(obj.childControllers{id});
 if ismember('noGui', p)     % close widgets without GUI
     notify(obj.childControllers{id}, 'closeEvent');
-elseif isempty(obj.childControllers{id}.View)   % close widgets with the batch mode
+elseif isempty(obj.childControllers{id}.view)   % close widgets with the batch mode
     notify(obj.childControllers{id}, 'closeEvent');
 end
 

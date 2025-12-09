@@ -35,6 +35,8 @@ switch mode
     case 'Help'                         % obj.handles.ribbonHome.help
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
     case 'Tip of the day'               % obj.handles.ribbonHome.tipOfDay
+        obj.mibModel.preferences.Tips.ShowTips = true;
+        obj.mibController.startController('controllers.WelcomeTips');
     case 'Support on image.sc'          % obj.handles.ribbonHome.support
     case 'Personal support session'     % obj.handles.ribbonHome.call4help
     case 'API class reference'          % obj.handles.ribbonHome.classReference

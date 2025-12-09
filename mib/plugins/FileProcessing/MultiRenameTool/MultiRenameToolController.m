@@ -177,7 +177,7 @@ classdef MultiRenameToolController < handle
             obj.autoPreview = true;
 
 			% move the window to the left hand side of the main window
-            obj.View.gui = moveWindowOutside(obj.View.gui, 'left');
+            obj.View.gui = utils.moveWindowOutside(obj.View.gui, obj.mibModel.mibGUI, 'left');
             
             % resize all elements of the GUI
             % mibRescaleWidgets(obj.View.gui); % this function is not yet

@@ -77,12 +77,12 @@ classdef Preferences < handle
             
             % update current preferences using those taken from dataset
             % logic for disable selection: it is always taken from the
-            % currently shown dataset. The datasets are initialzed during
+            % currently shown dataset. The datasets are initialized during
             % MIB startup with the settings in the preferences
-            obj.preferences.System.EnableSelection = obj.mibModel.I{obj.mibModel.Id}.enableSelection;
+            obj.preferences.System.EnableSelection = obj.mibModel.I{obj.mibModel.id}.enableSelection;
             
             % move the window to the left hand side of the main window
-            obj.View.gui = moveWindowOutside(obj.View.gui, 'center', 'center');
+            obj.View.gui = utils.moveWindowOutside(obj.View.gui, obj.mibModel.mibGUI, 'center', 'center');
             
             % resize all elements of the GUI
             % mibRescaleWidgets(obj.View.gui); % this function is not yet
@@ -160,7 +160,7 @@ classdef Preferences < handle
                     obj.View.handles.AltWithScrollWheel.Value = 'Return to the slice';
                 end
 
-                if obj.mibModel.I{obj.mibModel.Id}.enableSelection == 1
+                if obj.mibModel.I{obj.mibModel.id}.enableSelection == 1
                     obj.View.handles.EnableSelectionDropDown.Value = 'yes';
                 else
                     obj.View.handles.EnableSelectionDropDown.Value = 'no';
@@ -372,29 +372,29 @@ classdef Preferences < handle
             
             % deal with change of selection mode
             if obj.preferences.System.EnableSelection == 1   % turn ON the Selection
-                if obj.mibModel.getImageProperty('modelType') == 255 && isnan(obj.mibModel.I{obj.mibModel.Id}.selection{1}(1))
+                if obj.mibModel.getImageProperty('modelType') == 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection{1}(1))
                     obj.mibModel.getImageMethod('clearSelection');
-                elseif obj.mibModel.getImageProperty('modelType') == 63 && isnan(obj.mibModel.I{obj.mibModel.Id}.model{1}(1))
-                    obj.mibModel.I{obj.mibModel.Id}.model{1} = zeros(...
+                elseif obj.mibModel.getImageProperty('modelType') == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))
+                    obj.mibModel.I{obj.mibModel.id}.model{1} = zeros(...
                         [obj.mibModel.getImageProperty('height'), obj.mibModel.getImageProperty('width'), ...
                         obj.mibModel.getImageProperty('depth'), obj.mibModel.getImageProperty('time')], 'uint8');
                 end
             else         % turn OFF the Selection, Mask, Model
                 if obj.mibModel.getImageProperty('modelType') == 63
-                    obj.mibModel.I{obj.mibModel.Id}.model{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.model{1} = NaN;
                 else
-                    obj.mibModel.I{obj.mibModel.Id}.selection{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection{1} = NaN;
                 end
                 obj.mibModel.setImageProperty('modelExist', 0);
                 obj.mibModel.setImageProperty('maskExist', 0);
                 obj.mibModel.U.clearContents();  % delete backup history
             end
-            obj.mibModel.I{obj.mibModel.Id}.enableSelection = obj.preferences.System.EnableSelection;
+            obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
             
             obj.mibModel.preferences = obj.preferences;
             
-            obj.mibModel.I{obj.mibModel.Id}.modelMaterialColors = obj.preferences.Colors.ModelMaterialColors;
-            obj.mibModel.I{obj.mibModel.Id}.lutColors = obj.preferences.Colors.LUTColors;
+            obj.mibModel.I{obj.mibModel.id}.modelMaterialColors = obj.preferences.Colors.ModelMaterialColors;
+            obj.mibModel.I{obj.mibModel.id}.lutColors = obj.preferences.Colors.LUTColors;
             
             obj.mibController.toolbarInterpolation_ClickedCallback('keepcurrent');     % update the interpolation button icon
             obj.mibController.toolbarResizingMethod_ClickedCallback('keepcurrent');
@@ -440,24 +440,24 @@ classdef Preferences < handle
             end
             
             if obj.preferences.System.EnableSelection == 1
-                if isnan(obj.mibModel.I{obj.mibModel.Id}.selection{1}(1)) && obj.mibModel.I{obj.mibModel.Id}.modelType ~= 63
-                    obj.mibModel.I{obj.mibModel.Id}.clearSelection();
-                elseif obj.mibModel.I{obj.mibModel.Id}.modelType == 63 && isnan(obj.mibModel.I{obj.mibModel.Id}.model{1}(1))
-                    obj.mibModel.I{obj.mibModel.Id}.model{1} = ...
-                        zeros([size(obj.mibModel.I{obj.mibModel.Id}.img{1},1),size(obj.mibModel.I{obj.mibModel.Id}.img{1},2),...
-                        size(obj.mibModel.I{obj.mibModel.Id}.img{1},4),size(obj.mibModel.I{obj.mibModel.Id}.img{1},5)], 'uint8');
+                if isnan(obj.mibModel.I{obj.mibModel.id}.selection{1}(1)) && obj.mibModel.I{obj.mibModel.id}.modelType ~= 63
+                    obj.mibModel.I{obj.mibModel.id}.clearSelection();
+                elseif obj.mibModel.I{obj.mibModel.id}.modelType == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))
+                    obj.mibModel.I{obj.mibModel.id}.model{1} = ...
+                        zeros([size(obj.mibModel.I{obj.mibModel.id}.img{1},1),size(obj.mibModel.I{obj.mibModel.id}.img{1},2),...
+                        size(obj.mibModel.I{obj.mibModel.id}.img{1},4),size(obj.mibModel.I{obj.mibModel.id}.img{1},5)], 'uint8');
                 end
             else
-                if obj.mibModel.I{obj.mibModel.Id}.modelType == 63
-                    obj.mibModel.I{obj.mibModel.Id}.model{1} = NaN;
-                    obj.mibModel.I{obj.mibModel.Id}.modelExist = 0;
-                    obj.mibModel.I{obj.mibModel.Id}.maskExist = 0;
+                if obj.mibModel.I{obj.mibModel.id}.modelType == 63
+                    obj.mibModel.I{obj.mibModel.id}.model{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.modelExist = 0;
+                    obj.mibModel.I{obj.mibModel.id}.maskExist = 0;
                 else
-                    obj.mibModel.I{obj.mibModel.Id}.selection{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection{1} = NaN;
                 end
                 obj.mibModel.U.clearContents();  % delete backup history
             end
-            obj.mibModel.I{obj.mibModel.Id}.enableSelection = obj.preferences.System.EnableSelection;
+            obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
             
             % remove the brush cursor
             obj.mibController.mibSegmentationToolPopup_Callback();
@@ -954,13 +954,13 @@ classdef Preferences < handle
                     fprintf('Colormap export: created variable %s in the Matlab workspace\n', answer{1});
                 case 'LoadFromFileMenu'
                     [fileName, pathName] = mib_uigetfile({'*.cmap';'*.mat';'*.*'}, 'Load colormap',...
-                        fileparts(obj.mibModel.I{obj.mibModel.Id}.meta('Filename')));
+                        fileparts(obj.mibModel.I{obj.mibModel.id}.meta('Filename')));
                     if isequal(fileName, 0); return; end
                     
                     load(fullfile(pathName, fileName{1}), 'cmap', '-mat');
                     obj.preferences.Colors.ModelMaterialColors = cmap; 
                 case 'SaveToFileMenu'
-                    [pathName, fileName] = fileparts(obj.mibModel.I{obj.mibModel.Id}.meta('Filename'));
+                    [pathName, fileName] = fileparts(obj.mibModel.I{obj.mibModel.id}.meta('Filename'));
                     [fileName, pathName] = uiputfile('*.cmap', 'Save colormap', fullfile(pathName, [fileName '.cmap']));
                     if fileName == 0; return; end
                     

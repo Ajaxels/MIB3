@@ -229,7 +229,7 @@ obj.mibModel.sessionSettings.ImageFilters.TestImg = imread(fullfile(obj.mibPath,
 
 %% ----------------- INIT THE MAIN VIEW -----------------
 obj.view = views.MibView(obj);
-
+obj.mibModel.mibGUI = obj.view.gui;
 % --- create controller for panels and add view into them
 obj.addGuiControllers();
 
