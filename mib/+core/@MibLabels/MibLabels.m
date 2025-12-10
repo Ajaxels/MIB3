@@ -13,6 +13,8 @@ classdef MibLabels < core.MibImage
         % a matrix of colors [0-1] for materials of the 'Model', [materialIndex, R G B]
         materialNames
         % an array of strings to define names of materials of Labels
+        maxMaterials = 255;
+        % maximal number of materials available in this model type
     end
 
     methods

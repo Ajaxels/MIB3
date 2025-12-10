@@ -58,7 +58,7 @@ else
     errText = sprintf('!!! Error !!!\n\n%s\n%s\n\n%s\n\n%s', optionalPrefix, err.identifier, err.message, optionalSuffix);
 end
 
-if isempty(guiHandle) || isa(guiHandle, 'matlab.ui.Figure') % guide figure
+if isempty(guiHandle) || ~isa(guiHandle, 'matlab.ui.Figure') % guide figure
     errordlg(errText, winTitle);
 else                                                        % appdesigner figure
     uialert(guiHandle, ...

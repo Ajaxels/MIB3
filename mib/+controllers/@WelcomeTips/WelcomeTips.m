@@ -82,9 +82,10 @@ classdef WelcomeTips < handle
             % update font and size
             % you may need to replace "obj.view.handles.text1" with tag of any text field of your own GUI
             % % this function is not yet
-            if obj.view.handles.showTipsCheck.FontSize ~= obj.mibModel.preferences.System.Font.FontSize ...
-                    || ~strcmp(obj.view.handles.showTipsCheck.FontName, obj.mibModel.preferences.System.Font.FontName)
-                utils.updateFontSize(obj.view.gui, obj.mibModel.preferences.System.Font);
+            Font = obj.mibModel.preferences.System.Font;
+            if obj.view.handles.showTipsCheck.FontSize ~= Font.FontSize ...
+                    || ~strcmp(obj.view.handles.showTipsCheck.FontName, Font.FontName)
+                utils.fontSizeUpdate(obj.view.gui, Font);
             end 
 
             obj.updateWidgets();

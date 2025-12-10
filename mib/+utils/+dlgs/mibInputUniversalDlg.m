@@ -90,7 +90,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %   options.DoNotShowAgain = true;
 %   options.DoNotShowAgainText    = 'Do not show again';
 %   options.DefaultKey   = 'OK';
-%   options.ParentFigure = gcf;
+%   options.ParentFigure = obj.view.gui;
 %   [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, prompts, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
 %
@@ -103,6 +103,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %   options.Icon = 'question_48px';
 %   options.DoNotShowAgain = true;
 %   options.DoNotShowAgainText = 'Do not show this again';
+%   options.ParentFigure = obj.view.gui;
 %   [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, {}, {htmlContent}, dlgTitle, options);
 
 arguments
@@ -192,28 +193,20 @@ end
 if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
         if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
-            % AppContainer window
-            parentPos = options.ParentFigure.WindowBounds;
-        elseif isa(options.ParentFigure, 'matlab.ui.Figure') % standard window
-            parentPos = options.ParentFigure.Position;
+            parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
+        elseif isa(options.ParentFigure, 'matlab.ui.Figure')
+            parentPos = options.ParentFigure.Position;      % [x y w h]
         end
 
-        screenSize = get(0, 'ScreenSize');
-        screenHeight = screenSize(4);
+        % Center in parent's coordinates (bottom-left origin)
+        x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+        y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
 
-        % Center of main GUI (top-left origin)
-        centerX = parentPos(1) + parentPos(3) / 2;
-        centerY = parentPos(2) + parentPos(4) / 2;
+        % Optionally clamp to screen
+        % screenSize = get(0, 'ScreenSize');
+        % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
+        % y1 = max(0, min(y1, screenSize(4) - options.WindowHeight));
 
-        % Convert to MATLAB Position coords (bottom-left origin)
-        x1 = centerX - options.WindowWidth / 2;
-        y1 = screenHeight - centerY - options.WindowHeight / 2;
-
-        % Clamp to screen bounds
-        x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
-        y1 = max(0, min(y1, screenHeight - options.WindowHeight));
-
-        % Set dialog position
         fig.Position(1) = x1;
         fig.Position(2) = y1;
     catch

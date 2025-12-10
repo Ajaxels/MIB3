@@ -16,6 +16,7 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   .WindowStyle - 'normal' (default) or 'modal'
 %   .Icon        - 'question_48px' (default), 'celebrate', 'call4help', 'warning_48px'
 %   .IconWidth   - WindowWidth of icon column in pixels (default 48)
+%   .ParentFigure - handle to the parent window to have the dialog centered
 %
 % Return values:
 % answer: entered value (string for editfield, double for spinner), empty when canceled
@@ -31,7 +32,8 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   options.WindowStyle = 'modal';
 %   options.Icon = 'question_48px';
 %   options.IconWidth = 48;
-%   answer = utils.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
+%   options.ParentFigure = obj.view.gui;
+%   answer = utils.dlgs.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
 %
 % Example 2 (spinner):
@@ -45,9 +47,21 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   options.WindowStyle = 'modal';
 %   options.Icon = 'question_48px';
 %   options.IconWidth = 48;
-%   mibPath = obj.mibPath;
-%   answer = utils.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
+%   options.ParentFigure = obj.view.gui;
+%   answer = utils.dlgs.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
+%
+% Example 3 (minimalistic spinner)
+% options.Type = 'spinner';
+% options.ParentFigure = obj.view.gui;
+% defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, 'Round', true);
+% options.WindowWidth = 320;
+% answer = utils.dlgs.mibInputSingleDlg(obj.mibModel.mibPath, ...
+%    sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
+%    defAns, ...
+%    'Define number of colors', options);
+% if isempty(noColors); return; end
+
 
 arguments
     mibPath char = ''
@@ -77,8 +91,8 @@ if ~isfield(options, 'Type'); options.Type = 'editfield'; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 100; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
-if ~isfield(options, 'Icon'); options.Icon = 'question'; end
-if ~isfield(options, 'IconWidth'); options.IconWidth = []; end
+if ~isfield(options, 'Icon'); options.Icon = 'question_48px'; end
+if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 
 % Icon selection and loading
@@ -100,7 +114,6 @@ fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.W
 % Configure figure
 fig.Tag = 'mibInputSingleDlg';
 
-% Main grid: 3 rows, 2 columns (icon, content)
 mainGrid = uigridlayout(fig, [3 2], ...
     'RowHeight', {'1x', 22, 22}, ...
     'ColumnWidth', {options.IconWidth, '1x'}, ...
@@ -129,14 +142,14 @@ promptLbl.Layout.Column = 2;
 if strcmpi(options.Type, 'spinner')
     % Spinner widget
     if isstruct(defAns)
-        v = 0; lo = 1; hi = 100; step = 1; roundVals = false;
+        v = 0; lo = -Inf; hi = Inf; step = 1; roundVals = true;
         if isfield(defAns, 'Value'); v = defAns.Value; end
         if isfield(defAns, 'Limits'); lo = defAns.Limits(1); hi = defAns.Limits(2); end
         if isfield(defAns, 'Step'); step = defAns.Step; end
         if isfield(defAns,'Round'); roundVals = defAns.Round; end
         inputCtrl = uispinner(mainGrid, 'Limits', [lo hi], 'Value', v, 'Step', step, 'RoundFractionalValues', roundVals);
     else
-        inputCtrl = uispinner(mainGrid, 'Limits', [1 100], 'Value', 1, 'Step', 1);
+        inputCtrl = uispinner(mainGrid, 'Limits', [-Inf Inf], 'Value', 1, 'Step', 1);
     end
 else
     % Text editfield widget
@@ -171,28 +184,20 @@ fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
 if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
         if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
-            % AppContainer window
-            parentPos = options.ParentFigure.WindowBounds;
-        elseif isa(options.ParentFigure, 'matlab.ui.Figure') % standard window
-            parentPos = options.ParentFigure.Position;
+            parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
+        elseif isa(options.ParentFigure, 'matlab.ui.Figure')
+            parentPos = options.ParentFigure.Position;      % [x y w h]
         end
 
-        screenSize = get(0, 'ScreenSize');
-        screenHeight = screenSize(4);
+        % Center in parent's coordinates (bottom-left origin)
+        x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+        y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
 
-        % Center of main GUI (top-left origin)
-        centerX = parentPos(1) + parentPos(3) / 2;
-        centerY = parentPos(2) + parentPos(4) / 2;
+        % Optionally clamp to screen
+        % screenSize = get(0, 'ScreenSize');
+        % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
+        % y1 = max(0, min(y1, screenSize(4) - options.WindowHeight));
 
-        % Convert to MATLAB Position coords (bottom-left origin)
-        x1 = centerX - options.WindowWidth / 2;
-        y1 = screenHeight - centerY - options.WindowHeight / 2;
-
-        % Clamp to screen bounds
-        x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
-        y1 = max(0, min(y1, screenHeight - options.WindowHeight));
-
-        % Set dialog position
         fig.Position(1) = x1;
         fig.Position(2) = y1;
     catch

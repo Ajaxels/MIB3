@@ -1,21 +1,5 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
-function updateFontSize(hFig, Font)
-% function updateFontSize(hFig, fontSize)
+function fontSizeUpdate(hFig, Font)
+% function fontSizeUpdate(hFig, fontSize)
 % Update font size for text widgets
 %
 % Parameters:
@@ -32,12 +16,14 @@ function updateFontSize(hFig, Font)
 
 %| 
 % @b Examples:
-% @code utils.updateFontSize(obj.View.gui, obj.mibModel.preferences.System.Font);     // update the font properties from a child controller  @endcode
+% @code utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);     // update the font properties from a child controller  @endcode
 
 % Updates
 % 
 
 if ~isprop(hFig, 'RunningAppInstance')  % guide type of figure
+    Font.FontSize = Font.FontSize - 4; % it looks that guide app font size is 4 units larger than corresponding appdesigner
+
     tempList = findall(hFig, 'Style', 'text');   % set font to text
     for i=1:numel(tempList)
         set(tempList(i), Font);
@@ -114,7 +100,7 @@ for i=1:numel(children)
     if isprop(children(i), 'FontName')
         children(i).FontName = Font.FontName;
         if isprop(children(i), 'FontSize') && ~strcmp(children(i).Type, 'uitabgroup')  % 'matlab.ui.container.Tab' does not have find size
-            children(i).FontSize = Font.FontSize+4;     % it looks that appdesigner font size is 4 units smaller than corresponding guide app
+            children(i).FontSize = Font.FontSize;  
         end
     end
     if isprop(children(i), 'Children')

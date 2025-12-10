@@ -55,6 +55,7 @@ classdef MibModel < handle
         DatasetsPanelUpdate % update widgets of the Datasets panel
         RenderImage         % render image in the Image View panel
         UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+        updateGuiWidgets    % update all widgets of the main GUI
     end
 
     methods
