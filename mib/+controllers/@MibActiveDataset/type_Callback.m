@@ -12,13 +12,13 @@ function type_Callback(obj, hWidget, hData)
 % hData: handle to supporting data class
 
 arguments (Input)
-    obj controllers.MibDatasets
+    obj controllers.MibActiveDataset
     hWidget matlab.ui.control.DropDown
     hData matlab.ui.eventdata.ValueChangedData
 end
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibDatasets.type_Callbacks: selection of "obj.handles.panels.datasets.handles.datasetType" -> "%s"\n',  hWidget.Value);
+    fprintf('controllers.MibActiveDataset.type_Callbacks: selection of "obj.handles.panels.activeDataset.handles.datasetType" -> "%s"\n',  hWidget.Value);
 end
 
 % update obj.mibModel.Sets.datasetTypes

@@ -25,6 +25,8 @@ classdef MibRibbon
         datasetTools_Callback(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
 
         datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
+
+        homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
         
         homeExamples_Callback(obj, hWidget, hData)   % callback on press of the Examples buttons in the Home ribbon
 
@@ -153,6 +155,7 @@ classdef MibRibbon
             obj.handles.ribbonHome.personalStats.ItemPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.licenses.ItemPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.about.ItemPushedFcn = @obj.homePreferences_Callback;
+            obj.handles.ribbonHome.devMode.ButtonPushedFcn = @obj.homeDevTest_Callback;
 
         end
 

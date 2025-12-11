@@ -1,8 +1,8 @@
-function panelHandles = addDatasetsPanel(obj)
-% function panelHandles = addDatasetsPanel(obj)
+function panelHandles = addActiveDatasetPanel(obj)
+% function panelHandles = addActiveDatasetPanel(obj)
 % add the Datasets panel, add context menus and callbacks for widgets
 % The callbacks are added in the controller of the panel:
-% controllers.MibDatasets during its creation in
+% controllers.MibActiveDataset during its creation in
 % MibController.initialize() -> MibController.addGuiControllers()
 
 arguments (Input)
@@ -19,8 +19,12 @@ obj.handles.panels.datasetsPanel.Resizable = false;
 %obj.handles.panels.datasetsPanel.Maximizable = false;
 obj.handles.panels.datasetsPanel.Figure.AutoResizeChildren = 'off';
 
-panelHandles = views.components.Datasets('Parent', obj.handles.panels.datasetsPanel.Figure, ...
+panelHandles = views.components.ActiveDataset('Parent', obj.handles.panels.datasetsPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
+
+% add handle tags to the panel
+if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(panelHandles, true, 'obj.cActiveDataset.view.handles'); end
+
 
 % ---------------------- ADD CONTEXT MENUs ----------------------
 % ---------------------- Add context menu for buffer buttons ----------------------
@@ -67,7 +71,7 @@ panelHandles.handles.addSet.ContextMenu = panelHandles.handles.setsContext;
 
 panelHandles.handles.datasetType.ValueChangedFcn = @(src, event)obj.controller.datasetsType_Callbacks(src, event);
 
-obj.handles.panels.datasets = panelHandles;
+obj.handles.panels.activeDataset = panelHandles;
 
 % add the panel to GUI
 obj.gui.add(obj.handles.panels.datasetsPanel);

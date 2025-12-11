@@ -5,7 +5,7 @@ function status = datasetsSetsOps(obj, BatchOptIn)
 % Parameters:
 % BatchOptIn: structure with parameters.
 % .Mode - a cell with the following modes
-% -> 'Select set' - select the set in obj.view.handles.panels.datasets.handles.sets dropdown
+% -> 'Select set' - select the set in obj.view.handles.panels.activeDataset.handles.sets dropdown
 % -> 'Add set' - add a new set (10 new datasets) into the model
 % -> 'Rename set' - rename the set
 % -> 'Remove set' - remove the set

@@ -1,11 +1,11 @@
 function setsOps_Callbacks(obj, hWidget, hData, mode)
 % function setsOps_Callbacks(obj, hWidget, hData, mode)
-% callbacks for press of sets-related widgets in obj.view.handles.panels.datasets.handles
+% callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
 % Handles the following widgets:
-% - obj.view.handles.panels.datasets.handles.sets -> select set
-% - obj.view.handles.panels.datasets.handles.setsContextRename -> context menu for sets dropdown, rename the selected set
-% - obj.view.handles.panels.datasets.handles.setsContextAdd -> context menu for sets dropdown, add a new set
-% - obj.view.handles.panels.datasets.handles.setsContextRemove -> context menu for sets dropdown, remove the selected set
+% - obj.view.handles.panels.activeDataset.handles.sets -> select set
+% - obj.view.handles.panels.activeDataset.handles.setsContextRename -> context menu for sets dropdown, rename the selected set
+% - obj.view.handles.panels.activeDataset.handles.setsContextAdd -> context menu for sets dropdown, add a new set
+% - obj.view.handles.panels.activeDataset.handles.setsContextRemove -> context menu for sets dropdown, remove the selected set
 %
 % Parameters:
 % hWidget: handle to the pressed widget: dropdown or button
@@ -18,7 +18,7 @@ function setsOps_Callbacks(obj, hWidget, hData, mode)
 % 'setsContextRemove' -> remove the current set
 
 % arguments (Input)
-%     obj controllers.MibDatasets
+%     obj controllers.MibActiveDataset
 %     hWidget {mustBeA(hWidget, {'matlab.ui.container.Menu', 'matlab.ui.control.DropDown', 'matlab.ui.control.Button'})}
 %     hData {mustBeA(hData, {'matlab.ui.eventdata.MenuSelectedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ButtonPushedData'})}
 %     mode char = ''
@@ -37,7 +37,7 @@ switch mode
     case 'sets'
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
         BatchOpt.Mode = {'Select set'}; 
-        BatchOpt.SetName = obj.view.handles.panels.datasets.handles.sets.Value;
+        BatchOpt.SetName = obj.view.handles.panels.activeDataset.handles.sets.Value;
     case 'setsContextAdd'
         BatchOpt.Mode = {'Add set'}; % define the mode for obj.mibModel.datasetsSetsOps
         BatchOpt.DatasetType = {'Std'}; % standard dataset type
@@ -68,7 +68,7 @@ switch mode
         BatchOpt.Mode = {'Remove set'}; 
         % fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
     otherwise
-        error('controllers.MibDatasets.setsOps_Callbacks: this option (%s) is not implemented!\n', mode);       
+        error('controllers.MibActiveDataset.setsOps_Callbacks: this option (%s) is not implemented!\n', mode);       
 end
 
 if obj.mibModel.preferences.System.DeveloperMode

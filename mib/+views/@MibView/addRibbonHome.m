@@ -387,9 +387,19 @@ popupList.add(homeHandles.about);
 homeHandles.help.Popup = popupList;
 column.add(homeHandles.help);
 
-obj.handles.ribbonHome = homeHandles;
+%% ============= Make "Dev corner" section =============
+section = obj.handles.ribbon.home.addSection("Dev corner");
 
-%% Add the home tab to the global tab group
+% % --------- Batch processing ---------
+column = section.addColumn();
+homeHandles.devMode = Button(sprintf("Development"),  Icon(fullfile(iconPath, 'dev_corner_24px.png')));
+homeHandles.devMode.Description = 'Reserved for developmental purposes';
+column.add(homeHandles.devMode);
+
+%% Finalize
+
+obj.handles.ribbonHome = homeHandles;
+% Add the home tab to the global tab group
 obj.handles.ribbon.global.add(obj.handles.ribbon.home);
 
 end

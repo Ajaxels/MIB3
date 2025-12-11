@@ -258,7 +258,7 @@ obj.mibModel.showAnnotations = obj.view.handles.panels.selection.handles.showAnn
 obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesShowLines.Value;   % enable/disable show of 3D lines
 
 % Update GUI widgets
-obj.cDatasets.update_fromModel(); % update widgets of the Datasets panel from the values of obj.MibModel
+obj.cActiveDataset.update_fromModel(); % update widgets of the Datasets panel from the values of obj.MibModel
 obj.cSelection.lutTable_update_fromModel(); % update the LUT table in the Selection and View settings panel
 %obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
 

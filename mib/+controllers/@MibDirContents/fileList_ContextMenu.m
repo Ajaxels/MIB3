@@ -1,7 +1,7 @@
 function fileList_ContextMenu(obj, menuEntry, selectedData)
 % function fileList_ContextMenu(obj, menuEntry, selectedData)
 % callbacks for the context menu of the file list widget 
-% (obj.handles.panels.datasets.handles.fileList)
+% (obj.handles.panels.activeDataset.handles.fileList)
 %
 % Parameters:
 % menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class

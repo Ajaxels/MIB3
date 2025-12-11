@@ -21,6 +21,11 @@ function fontSizeUpdate(hFig, Font)
 % Updates
 % 
 
+if isa(hFig, 'matlab.ui.container.internal.AppContainer')
+    fprintf('utils.fontSizeUpdate: size and font change for the main window is not yet implemented\n');
+    return;
+end
+
 if ~isprop(hFig, 'RunningAppInstance')  % guide type of figure
     Font.FontSize = Font.FontSize - 4; % it looks that guide app font size is 4 units larger than corresponding appdesigner
 

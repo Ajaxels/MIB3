@@ -14,8 +14,8 @@ panelHandles = obj.view.addQuickAccessBar(); % add the addQuickAccessBar and ret
 obj.cQuickAccessBar = controllers.MibQuickAccessBar(obj, obj.view, panelHandles, obj.mibModel); % start Quick Access Bar controller
 
 % Create the Datasets panel UI and controller
-panelHandles = obj.view.addDatasetsPanel(); % add the DirContents panel and return its handles (the handles are also in obj.view.handles.panels.datasets.handles)
-obj.cDatasets = controllers.MibDatasets(obj, obj.view, panelHandles, obj.mibModel); % start Datasets controller
+panelHandles = obj.view.addActiveDatasetPanel(); % add the Active Dataset panel and return its handles (the handles are also in obj.view.handles.panels.activeDataset.handles)
+obj.cActiveDataset = controllers.MibActiveDataset(obj, obj.view, panelHandles, obj.mibModel); % start Datasets controller
 
 % Create the Directory contents panel UI and controller
 panelHandles = obj.view.addDirContentsPanel(); % add the DirContents panel and return its handles (the handles are also in obj.view.handles.panels.dirContents.handles)

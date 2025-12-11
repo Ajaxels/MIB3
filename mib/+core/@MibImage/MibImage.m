@@ -45,7 +45,7 @@ classdef MibImage < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         dataset = getData(obj, orient, col_channel, options)        % get dataset
 
-        varargout = getDatasetDimensions(obj, splitDims, orient)        % Get dimensions of the dataset
+        varargout = getDatasetDimensions(obj, orient, splitDims)        % Get dimensions of the dataset
 
         initialize(obj, data, meta, type);  % initialize the class using default or provided values
 

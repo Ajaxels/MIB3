@@ -342,13 +342,11 @@ classdef Preferences < handle
             status = 0;
             
             % update font size
-            Font = obj.preferences.System.Font;
-            if obj.mibController.view.handles.mibZoomText.FontSize ~= obj.preferences.System.Font.FontSize || ...
-                    ~strcmp(obj.mibController.mibView.handles.mibZoomText.FontName, obj.preferences.System.Font.FontName)
-                mibUpdateFontSize(obj.mibController.mibView.gui, obj.preferences.System.Font);
-                %mibUpdateFontSize(obj.view.gui, obj.preferences.System.Font);
+            if obj.mibController.cActiveDataset.handles.sets.FontSize ~= obj.preferences.System.Font.FontSize || ...
+                    ~strcmp(obj.mibController.cActiveDataset.handles.sets.FontName, obj.preferences.System.Font.FontName)
+                utils.fontSizeUpdate(obj.mibController.view.gui, obj.preferences.System.Font);
             end
-            obj.mibController.mibView.handles.mibFilesListbox.FontSize = obj.preferences.System.FontSizeDirView;
+            obj.mibController.view.handles.mibFilesListbox.FontSize = obj.preferences.System.FontSizeDirView;
             
             % update key shortcuts
             if numel(obj.duplicateEntries) > 1
@@ -365,7 +363,7 @@ classdef Preferences < handle
             obj.preferences.KeyShortcuts.alt = cell2mat(data(:, 6))';
             
             % deal with change of selection mode
-            if obj.preferences.System.EnableSelection == 1   % turn ON the Selection
+            if obj.preferences.System.EnableSelection   % turn ON the Selection
                 if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection{1}(1))
                     obj.mibModel.getImageMethod('clearSelection');
                 elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))

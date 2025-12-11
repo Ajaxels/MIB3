@@ -20,7 +20,7 @@ classdef MibView < handle
     methods
         %% ------------------------------ EXTERNAL FUNCTIONS DECLARATIONS ------------------------------
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        panelHandles = addDatasetsPanel(obj) % add the Datasets panel, add context menus and callbacks for widgets
+        panelHandles = addActiveDatasetPanel(obj) % add the Datasets panel, add context menus and callbacks for widgets
 
         panelHandles = addDirContentsPanel(obj) % add the Datasets panel, add context menus and callbacks for widgets
 

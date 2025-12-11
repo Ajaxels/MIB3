@@ -31,7 +31,7 @@ switch mode
     case 'Save the current layout as MIB default'               % obj.handles.ribbonHome.saveLayoutMibDefault
         obj.mibController.saveLayout('globalDefault');
     case 'Preferences'                  % obj.handles.ribbonHome.preferences
-        obj.mibController.startController('controllers.Preferences', obj);  % a new appdesigner version
+        obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
     case 'Tip of the day'               % obj.handles.ribbonHome.tipOfDay

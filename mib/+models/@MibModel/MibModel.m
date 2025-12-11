@@ -54,12 +54,16 @@ classdef MibModel < handle
         ShowErrorDialog     % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         DatasetsPanelUpdate % update widgets of the Datasets panel
         RenderImage         % render image in the Image View panel
+        syncBatch           % synchromize structure for batch actions
         UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
         updateGuiWidgets    % update all widgets of the main GUI
+
     end
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
+
+        clearSelection(obj, sel_switch, BatchOptIn) % clear the Selection layer
         
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model. Compatible with the batch mode.
 
@@ -87,7 +91,7 @@ classdef MibModel < handle
             obj.id = 1;         % index of the current dataset
             
             % define default Set
-            obj.Sets.selectedSet = [];  % selected set in obj.view.handles.panels.datasets.handles.sets
+            obj.Sets.selectedSet = [];  % selected set in obj.view.handles.panels.activeDataset.handles.sets
             obj.Sets.names = {};        % cell array with names of the sets
             obj.Sets.datasetTypes = {};        % cell matrix with datasetTypes in sets, obj.Sets.datasetTypes{setId, datasetId}, where datasetId = 1...10
             obj.Sets.selectedDataset = []; % array of the selected datasets in the sets

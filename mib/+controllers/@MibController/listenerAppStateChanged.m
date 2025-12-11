@@ -14,8 +14,8 @@ switch evtData.PropertyName
         if ~isempty(obj.view.gui.LastSelectedDocument)
             selectedDoc = obj.view.gui.getDocument(obj.view.gui.LastSelectedDocument.documentGroupTag, obj.view.gui.LastSelectedDocument.tag);
             if isprop(selectedDoc, 'Title')
-                obj.view.handles.panels.datasets.handles.sets.Value = selectedDoc.Title;
-                obj.cDatasets.setsOps_Callbacks([], [], 'sets');
+                obj.view.handles.panels.activeDataset.handles.sets.Value = selectedDoc.Title;
+                obj.cActiveDataset.setsOps_Callbacks([], [], 'sets');
             end
         end
 end

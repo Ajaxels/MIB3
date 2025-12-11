@@ -106,6 +106,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         dataset = getData(obj) % get required dataset 
 
+        varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
+
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
 
         function obj = MibDataset(img, meta, datasetType, modelType)

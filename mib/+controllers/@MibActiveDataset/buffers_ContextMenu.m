@@ -1,7 +1,7 @@
 function buffers_ContextMenu(obj, menuEntry, selectedData)
 % function buffers_ContextMenu(obj, menuEntry, selectedData)
 % callbacks for the context menu of the buffers
-% (obj.handles.panels.datasets.handles.buffer1) buttons
+% (obj.handles.panels.activeDataset.handles.buffer1) buttons
 
 % Parameters:
 % menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
@@ -20,7 +20,7 @@ function buffers_ContextMenu(obj, menuEntry, selectedData)
 
 
 arguments (Input)
-    obj controllers.MibDatasets
+    obj controllers.MibActiveDataset
     menuEntry matlab.ui.container.Menu
     selectedData matlab.ui.eventdata.MenuSelectedData
 end
@@ -31,7 +31,7 @@ buttonId = str2double(selectedData.ContextObject.Text);
 globalDatasetIndex = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets.datasetsInSet; % NOT obj.mibModel.id as the context menu may be attached to not selected buffer
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibDatasets.buffers_ContextMenu: selected button (obj.view.handles.panels.datasets.handles.%s), dataset: %d -> %s\n', selectedData.ContextObject.Tag, globalDatasetIndex, menuEntry.Tag);
+    fprintf('controllers.MibActiveDataset.buffers_ContextMenu: selected button (obj.view.handles.panels.activeDataset.handles.%s), dataset: %d -> %s\n', selectedData.ContextObject.Tag, globalDatasetIndex, menuEntry.Tag);
 end
 
 switch menuEntry.Tag

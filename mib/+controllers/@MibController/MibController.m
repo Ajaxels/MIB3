@@ -3,7 +3,7 @@ classdef MibController < handle
 
     properties
         % GUI controllers for the main MIB GUI panels and ribbons
-        cDatasets
+        cActiveDataset
         % Controller for the Datasets panel
         cDirContents
         % Controller for the Dir contents panel
@@ -78,8 +78,6 @@ classdef MibController < handle
         % METHODS
 
         addGuiControllers(obj)  % add GUI components to the main view obj.view
-
-        devTest_Callback(obj, varargin) % callback for developmental purposes
 
         result = exitProgram(obj, target)        % exit mib 
 

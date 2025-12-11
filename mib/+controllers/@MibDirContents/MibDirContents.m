@@ -16,9 +16,9 @@ classdef MibDirContents
         
         fileFilters_Callback(obj, hWidget, hData)        % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
         
-        fileFilters_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file filters widget (obj.handles.panels.datasets.handles.fileFilters)
+        fileFilters_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file filters widget (obj.handles.panels.activeDataset.handles.fileFilters)
 
-        fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.datasets.handles.fileList)
+        fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.activeDataset.handles.fileList)
 
         updateFileList_Callback(obj, hWidget, hData, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 
