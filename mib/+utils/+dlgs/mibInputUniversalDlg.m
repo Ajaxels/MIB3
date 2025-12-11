@@ -67,7 +67,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %     ''                                                       % text edit with long label
 %     sprintf('Line 1\nLine 2\nLine 3')                        % multi-line text (3 lines)
 %     3.14                                                     % numeric edit field
-%     struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Step', 1, 'Round', true) % spinner
+%     struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d units') % spinner
 %   };
 %   options.PromptLines  = [1 1 1 1 2 3 1 1];  %
 %   dlgTitle = 'multi line input dialog';
@@ -116,13 +116,13 @@ end
 
 persistent mibDir
 % Initialize persistent variable on first call or update it with input
-if isempty(mibDir) && ~isempty(mibPath)
+if isempty(mibDir) && isempty(mibPath)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
         if ~isempty(toks); mibDir = char(toks{1}); else; mibDir = pwd; end
     else
-        mibDir = fileparts(which('mib'));
+        mibDir = fileparts(which('mib3'));
         if isempty(mibDir); mibDir = pwd; end
     end
 elseif ~isempty(mibPath)
@@ -194,14 +194,25 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
         if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
             parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
+            
+            % Get screen size to convert from top-left to bottom-left origin
+            screenSize = get(0, 'ScreenSize'); % [left bottom width height]
+
+            % Center in parent's coordinates (bottom-left origin)
+            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+            % Convert Y from top-left to bottom-left origin
+            % parentPos(2) is distance from top of screen
+            % Need to convert to distance from bottom of screen
+            y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
         elseif isa(options.ParentFigure, 'matlab.ui.Figure')
             parentPos = options.ParentFigure.Position;      % [x y w h]
+
+            % Center in parent's coordinates (bottom-left origin)
+            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+            y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
+
         end
-
-        % Center in parent's coordinates (bottom-left origin)
-        x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-        y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-
+        
         % Optionally clamp to screen
         % screenSize = get(0, 'ScreenSize');
         % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
@@ -457,12 +468,14 @@ else
 
         elseif isstruct(val) && isfield(val,'Spinner') && val.Spinner
             isSpinner(i) = true;
-            v = 0; lo = -inf; hi = inf; step = 1; roundVals = false;
+            v = 0; lo = -Inf; hi = Inf; step = 1; roundVals = true; valueDisplayFormat = '%.d';
             if isfield(val,'Value'); v = val.Value; end
             if isfield(val,'Limits'); lo = val.Limits(1); hi = val.Limits(2); end
             if isfield(val,'Step'); step = val.Step; end
             if isfield(val,'Round'); roundVals = val.Round; end
-            ctrl = uispinner(wrapperGrid, 'Limits', [lo hi], 'Value', v, 'Step', step, 'RoundFractionalValues', roundVals);
+            if isfield(defAns,'ValueDisplayFormat'); valueDisplayFormat = val.ValueDisplayFormat; end
+            ctrl = uispinner(wrapperGrid, 'Limits', [lo hi], 'Value', v, 'Step', step, ...
+                'RoundFractionalValues', roundVals, 'ValueDisplayFormat', valueDisplayFormat);
         else
             % Check if it's numeric ONLY if non-empty or explicitly a number
             if isnumeric(val) && isscalar(val) && ~isempty(val)

@@ -24,7 +24,7 @@ panelHandles = views.components.Roi( ...
 
 % add handle tags to tooltips
 if obj.mibModel.preferences.System.DeveloperMode
-    utils.overrideDescriptions(panelHandles.handles, true, 'panelHandles.handles'); 
+    utils.overrideDescriptions(panelHandles.handles, true, 'obj.cRoi.view.handles'); 
 end
 
 obj.handles.panels.roi = panelHandles;

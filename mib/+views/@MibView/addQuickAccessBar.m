@@ -121,4 +121,9 @@ obj.gui.add(qab.undo);
 
 obj.handles.qab = qab;
 
+% add handle tags to the status bar
+if obj.mibModel.preferences.System.DeveloperMode
+    utils.overrideDescriptions(qab, true, 'obj.cQuickAccessBar.view.handles');
+end
+
 end

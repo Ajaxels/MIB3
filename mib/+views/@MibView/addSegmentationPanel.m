@@ -21,7 +21,7 @@ panelHandles = views.components.Segmentation('Parent', obj.handles.panels.segmen
 
 % add handle tags to tooltips
 if obj.mibModel.preferences.System.DeveloperMode
-    utils.overrideDescriptions(panelHandles.handles, true, 'panelHandles.handles'); 
+    utils.overrideDescriptions(panelHandles.handles, true, 'obj.cSegmentation.view.handles'); 
 end
 
 % ---------------------- Add CONTEXT Menus ----------------------

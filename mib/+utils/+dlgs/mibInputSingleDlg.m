@@ -7,12 +7,12 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 % mibPath: char with path to MIB installation (default: [])
 % prompt: string with the prompt text for the input field
 % defAns: default value - string for editfield or struct for spinner
-%         For spinner: struct('Value', v, 'Limits', [min max], 'Step', s, 'Round', false/true)
+%         For spinner: struct('Value', v, 'Limits', [min max], 'Step', s, 'Round', false/true, 'ValueDisplayFormat', '%.0f MS/s')
 % dlgTitle: dialog window title string
 % options: struct with fields:
 %   .Type        - 'editfield' (default) or 'spinner'
 %   .WindowWidth       - dialog width in pixels (default 400)
-%   .WindowHeight      - dialog height in pixels (default 100)
+%   .WindowHeight      - dialog height in pixels (default 112)
 %   .WindowStyle - 'normal' (default) or 'modal'
 %   .Icon        - 'question_48px' (default), 'celebrate', 'call4help', 'warning_48px'
 %   .IconWidth   - WindowWidth of icon column in pixels (default 48)
@@ -39,7 +39,7 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 % Example 2 (spinner):
 %   mibPath = obj.mibPath;
 %   prompt = 'Enter iteration count:';
-%   defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, 'Round', false);
+%   defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, 'Round', false, 'ValueDisplayFormat', '%.3f units');
 %   dlgTitle = 'Iterations';
 %   options.Type = 'spinner';
 %   options.WindowWidth = 400;
@@ -54,7 +54,7 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 % Example 3 (minimalistic spinner)
 % options.Type = 'spinner';
 % options.ParentFigure = obj.view.gui;
-% defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, 'Round', true);
+% defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d units');
 % options.WindowWidth = 320;
 % answer = utils.dlgs.mibInputSingleDlg(obj.mibModel.mibPath, ...
 %    sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
@@ -73,13 +73,13 @@ end
 
 persistent mibDir
 % Initialize persistent variable on first call or update it with input
-if isempty(mibDir) && ~isempty(mibPath)
+if isempty(mibDir) && isempty(mibPath)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
         if ~isempty(toks); mibDir = char(toks{1}); else; mibDir = pwd; end
     else
-        mibDir = fileparts(which('mib'));
+        mibDir = fileparts(which('mib3'));
         if isempty(mibDir); mibDir = pwd; end
     end
 elseif ~isempty(mibPath)
@@ -89,7 +89,7 @@ end
 % Defaults
 if ~isfield(options, 'Type'); options.Type = 'editfield'; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
-if ~isfield(options, 'WindowHeight'); options.WindowHeight = 100; end
+if ~isfield(options, 'WindowHeight'); options.WindowHeight = 112; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'question_48px'; end
 if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
@@ -142,12 +142,14 @@ promptLbl.Layout.Column = 2;
 if strcmpi(options.Type, 'spinner')
     % Spinner widget
     if isstruct(defAns)
-        v = 0; lo = -Inf; hi = Inf; step = 1; roundVals = true;
+        v = 0; lo = -Inf; hi = Inf; step = 1; roundVals = true; valueDisplayFormat = '%.d';
         if isfield(defAns, 'Value'); v = defAns.Value; end
         if isfield(defAns, 'Limits'); lo = defAns.Limits(1); hi = defAns.Limits(2); end
         if isfield(defAns, 'Step'); step = defAns.Step; end
         if isfield(defAns,'Round'); roundVals = defAns.Round; end
-        inputCtrl = uispinner(mainGrid, 'Limits', [lo hi], 'Value', v, 'Step', step, 'RoundFractionalValues', roundVals);
+        if isfield(defAns,'ValueDisplayFormat'); valueDisplayFormat = defAns.ValueDisplayFormat; end
+        inputCtrl = uispinner(mainGrid, 'Limits', [lo hi], 'Value', v, 'Step', step, ...
+            'RoundFractionalValues', roundVals, 'ValueDisplayFormat', valueDisplayFormat);
     else
         inputCtrl = uispinner(mainGrid, 'Limits', [-Inf Inf], 'Value', 1, 'Step', 1);
     end
@@ -185,13 +187,24 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
         if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
             parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
+            
+            % Get screen size to convert from top-left to bottom-left origin
+            screenSize = get(0, 'ScreenSize'); % [left bottom width height]
+
+            % Center in parent's coordinates (bottom-left origin)
+            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+            % Convert Y from top-left to bottom-left origin
+            % parentPos(2) is distance from top of screen
+            % Need to convert to distance from bottom of screen
+            y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
         elseif isa(options.ParentFigure, 'matlab.ui.Figure')
             parentPos = options.ParentFigure.Position;      % [x y w h]
-        end
 
-        % Center in parent's coordinates (bottom-left origin)
-        x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-        y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
+            % Center in parent's coordinates (bottom-left origin)
+            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+            y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
+
+        end
 
         % Optionally clamp to screen
         % screenSize = get(0, 'ScreenSize');
@@ -213,6 +226,7 @@ fig.Visible = 'on';
 try
     focus(inputCtrl);
 catch
+
 end
 
 % Initialize output
@@ -222,6 +236,7 @@ answer = [];
 uiwait(fig);
 
 % Callbacks
+% --- Local function (at end of file) ---
     function onOK()
         if strcmpi(options.Type, 'spinner')
             answer = double(inputCtrl.Value);

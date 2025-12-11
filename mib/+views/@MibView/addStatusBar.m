@@ -40,9 +40,6 @@ statusBarGroupWorkingDirectory.add(statusHandles.openBrowser);
 % add group a to the status bar
 statusHandles.bar.add(statusBarGroupWorkingDirectory);
 
-
-
-
 %% Create statusBarGroupPixels to keep information about the current pixel
 statusBarGroupPixels = matlab.ui.internal.statusbar.StatusGroup();
 statusHandles.pixelLabel = matlab.ui.internal.statusbar.StatusLabel();
@@ -89,5 +86,10 @@ obj.handles.status = statusHandles;
 
 % add status bar to MIB
 obj.gui.add(statusHandles.bar);
+
+% add handle tags to the status bar
+if obj.mibModel.preferences.System.DeveloperMode
+    utils.overrideDescriptions(statusHandles, true, 'obj.cStatus.view.handles');
+end
 
 end

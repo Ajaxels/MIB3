@@ -25,7 +25,7 @@ panelHandles = views.components.SelectionViewSettings( ...
 
 % add handle tags to tooltips when the developer mode is enable
 if obj.mibModel.preferences.System.DeveloperMode 
-    utils.overrideDescriptions(panelHandles.handles, true, 'panelHandles.handles'); 
+    utils.overrideDescriptions(panelHandles.handles, true, 'obj.cSelection.view.handles'); 
 end
 
 % remove headers for the LUT table

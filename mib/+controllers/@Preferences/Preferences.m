@@ -52,7 +52,7 @@ classdef Preferences < handle
     end
     
     methods (Static)
-        function ViewListner_Callback(obj, src, evnt)
+        function viewListner_Callback(obj, src, evnt)
             switch evnt.EventName
                 case {'updateGuiWidgets'}
                     obj.updateWidgets();
@@ -98,7 +98,7 @@ classdef Preferences < handle
             obj.updateWidgets();
             
             % add listener to obj.mibModel and call controller function as a callback
-            obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
+            obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.viewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
         end
         
         function closeWindow(obj)
@@ -154,7 +154,7 @@ classdef Preferences < handle
                     obj.view.handles.AltWithScrollWheel.Value = 'Return to the slice';
                 end
 
-                if obj.mibModel.I{obj.mibModel.id}.enableSelection == 1
+                if obj.mibModel.I{obj.mibModel.id}.enableSelection
                     obj.view.handles.EnableSelectionDropDown.Value = 'yes';
                 else
                     obj.view.handles.EnableSelectionDropDown.Value = 'no';
@@ -318,32 +318,32 @@ classdef Preferences < handle
         end
         
         function helpBtnCallback(obj)
-            global mibPath;
             switch obj.view.handles.CategoriesTree.SelectedNodes.Text
                 case 'User interface'
-                    web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-preferences.html#user-interface'), '-browser');
+                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#user-interface'), '-browser');
                 case 'Colors and styles'
-                    web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-preferences.html#colors-and-styles'), '-browser');
+                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#colors-and-styles'), '-browser');
                 case 'Backup and undo'
-                    web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-preferences.html#backup-and-undo'), '-browser');
+                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#backup-and-undo'), '-browser');
                 case 'External directories'
-                    web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-preferences.html#external-directories'), '-browser');
+                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#external-directories'), '-browser');
                 case 'Keyboard shortcuts'
-                    web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-preferences.html#keyboard-shortcuts'), '-browser');
+                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#keyboard-shortcuts'), '-browser');
                 case 'Segmentation tools'
-                    web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-preferences.html#segmentation-tools'), '-browser');
+                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#segmentation-tools'), '-browser');
             end
         end
 
         function status = ApplyButtonPushedCallback(obj)
             % function ApplyButtonPushedCallback(obj)
             % apply preferences to MIB
-            global Font scalingGUI;
+            
+            global scalingGUI;
             status = 0;
             
             % update font size
             Font = obj.preferences.System.Font;
-            if obj.mibController.mibView.handles.mibZoomText.FontSize ~= obj.preferences.System.Font.FontSize || ...
+            if obj.mibController.view.handles.mibZoomText.FontSize ~= obj.preferences.System.Font.FontSize || ...
                     ~strcmp(obj.mibController.mibView.handles.mibZoomText.FontName, obj.preferences.System.Font.FontName)
                 mibUpdateFontSize(obj.mibController.mibView.gui, obj.preferences.System.Font);
                 %mibUpdateFontSize(obj.view.gui, obj.preferences.System.Font);
@@ -410,7 +410,7 @@ classdef Preferences < handle
             global scalingGUI;
             
             scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
-            mibRescaleWidgets(obj.mibController.mibView.gui);   % rescale main GUI
+            mibRescaleWidgets(obj.mibController.view.gui);   % rescale main GUI
             drawnow;
             figure(obj.view.gui);   % set focus to main preference window and move it in front
         end
@@ -422,18 +422,18 @@ classdef Preferences < handle
             status = obj.ApplyButtonPushedCallback();
             if status == 0; return; end
             
-            if obj.preferences.Undo.Enable == 0
-                obj.mibModel.U.clearContents();
-                obj.mibModel.U.enableSwitch = 0;
+            if obj.preferences.Undo.Enable
+                obj.mibModel.U.enableSwitch = true;
             else
-                obj.mibModel.U.enableSwitch = 1;
+                obj.mibModel.U.clearContents();
+                obj.mibModel.U.enableSwitch = false;
             end
             
             if obj.preferences.Undo.Max3dUndoHistory ~= obj.mibModel.U.max3d_steps || obj.preferences.Undo.MaxUndoHistory ~= obj.mibModel.U.max_steps
                 obj.mibModel.U.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
             end
             
-            if obj.preferences.System.EnableSelection == 1
+            if obj.preferences.System.EnableSelection
                 if isnan(obj.mibModel.I{obj.mibModel.id}.selection{1}(1)) && obj.mibModel.I{obj.mibModel.id}.modelType ~= 63
                     obj.mibModel.I{obj.mibModel.id}.clearSelection();
                 elseif obj.mibModel.I{obj.mibModel.id}.modelType == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))
@@ -467,7 +467,6 @@ classdef Preferences < handle
             %
             % Parameters:
             % event: a structure to the GUI element that has triggered callback
-            global mibPath;
             
             switch event.Source.Tag
                 case 'SelectionColorButton'    % update selection color
@@ -817,7 +816,6 @@ classdef Preferences < handle
             obj.view.handles.(ColorTableTag).ColumnWidth = {tableWidth/4.5, tableWidth/4.5, tableWidth/4.5, 30};
         end
         
-        
         function TableCellSelectionCallback(obj, event)
             % function ModelsColorsTableCellSelection(obj, event)
             % callback for selection of a cell in ModelsColorsTable
@@ -862,8 +860,6 @@ classdef Preferences < handle
             % Paramters:
             % event:  a handle to the event structure
             
-            global mibPath;
-            
             position = obj.view.handles.ModelsColorsTable.UserData;   % position = [rowIndex, columnIndex]
             sourceTag = event.Source.Tag;     % get tag to the pressed table
             
@@ -894,16 +890,20 @@ classdef Preferences < handle
                     obj.preferences.Colors.ModelMaterialColors(position(1),:) = rand([1,3]);
                     updateTableOptions.rowId = position(1); 
                 case 'SwapTwoColorsMenu'
-                    answer = mibInputDlg({mibPath}, sprintf('Enter a color number to swap with the selected\nSelected: %d', position(1)), 'Swap with', '1');
-                    if size(answer) == 0; return; end
-                    newIndex = str2double(answer{1});
-                    if newIndex > size(obj.preferences.Colors.ModelMaterialColors,1) || newIndex < 1
-                        errordlg(sprintf('The entered number is too big or too small\nIt should be between 0-%d', size(obj.preferences.Colors.ModelMaterialColors,1)), 'Wrong value');
-                        return;
-                    end
+                    options.Type = 'spinner';
+                    defAns = struct('Value', 1, ...
+                        'Limits', [1 size(obj.preferences.Colors.ModelMaterialColors,1)], ...
+                        'Step', 1, 'Round', true);
+                    options.ParentFigure = obj.view.gui;
+                    newIndex = utils.dlgs.mibInputSingleDlg(obj.mibModel.mibPath, ...
+                        sprintf('Enter a material number to swap with the selected\nSelected: %d', position(1)), ...
+                        defAns, ...
+                        'Swap material colors', options);
+                    if isempty(newIndex); return; end
+
                     selectedColor = obj.preferences.Colors.ModelMaterialColors(position(1),:);
                     obj.preferences.Colors.ModelMaterialColors(position(1),:) = obj.preferences.Colors.ModelMaterialColors(newIndex,:);
-                    obj.preferences.Colors.ModelMaterialColors(str2double(answer{1}),:) = selectedColor;
+                    obj.preferences.Colors.ModelMaterialColors(newIndex,:) = selectedColor;
                     updateTableOptions.rowId = [position(1), newIndex];
                 case 'DeleteColorsMenu'
                     obj.preferences.Colors.ModelMaterialColors(position(:,1),:) = [];
