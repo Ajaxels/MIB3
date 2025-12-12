@@ -98,6 +98,11 @@ classdef MibDataset < matlab.mixin.Copyable
         % use or not LUT for visualization of image, a number @b 0 - do not use; @b 1 - use a status of obj.view.handles.panels.selection.handles.lutColors
     end
 
+    events
+        setData 
+        % when the set data method was used
+    end
+
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
         initialize(obj, img, meta, datasetType, modelType) % init MibDataset class and set all elements of the class to default values
@@ -106,9 +111,17 @@ classdef MibDataset < matlab.mixin.Copyable
 
         slice = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
 
+        dataset = getData3D(obj, type, time, orient, col_channel, options)        % Get the a 3D dataset with colors: height:width:depth:colors
+
+        dataset = getData4D(obj, type, time, orient, col_channel, options)        % Get the a 4D dataset with colors: [height:width:depth:colors:time]
+
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
 
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
+
+        result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset
+
+        result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset
 
         function obj = MibDataset(img, meta, datasetType, modelType)
             % obj = MibDataset(img, meta, datasetType, modelType)

@@ -1,8 +1,14 @@
-function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
-% function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
-% Get the a 2D slice with colors: height:width:colors
+function result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)
+% function result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)
+% set the 2D slice with colors: height:width:colors to the dataset
 %
 % Parameters:
+% slice: 2D image with colors
+%   @li if options.roiId is @b not @b used, @em slice can be either 
+%       a cell for images ({1}[1:height, 1:width, 1:colors]; for all other types: {1}[1:height, 1:width]) or 
+%       a matrix for images ([1:height, 1:width, 1:colors]; for all other types: [1:height, 1:width])
+%   @li if options.roiId is @b used, @em slice should be 
+%       a cell array ({roiId}[1:height, 1:width, 1:colors]; for all other types: {roiId}[1:height, 1:width])
 % type: type of the dataset layer to retrieve
 %   @li 'image' - [@b default] the image layer
 %   @li 'labels' - labels layer with segmentation
@@ -13,19 +19,19 @@ function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
 %   @li when @b [] - get the current slice
 %   @li when @b index - get slice with that index at the current time point (use options to define the time point)
 % orient: [@em optional, can be []]
-%   @li when @b [] returns the transposed dataset to the currently shown orientation
-%   @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
-%   @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
-%   @li when @b 3 returns the original dataset to the yx configuration, [y,x,z,c,t]
-% col_channel: [@em optional, can be [], when [] -> get the currently selected color channels, can be @em NaN]
-%   @li when @b type is 'image', col_channel is a vector with numbers of color channels to get, 
-%       when @b [] [@em default] take color channels selected in the obj.slices{4} variable, 
-%       when @b NaN - take all color channels of the dataset
-%       when @b Index - get color channels with provided index(s)
+%   @li when @b [] updates the transposed dataset to the currently shown orientation
+%   @li when @b 1 updates the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
+%   @li when @b 2 updates the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
+%   @li when @b 3 updates the original dataset to the yx configuration, [y,x,z,c,t]
+% col_channel: [@em optional, can be [], when [] -> update the currently selected color channels, can be @em NaN]
+%   @li when @b type is 'image', col_channel is a vector with numbers of color channels to update, 
+%       when @b [] [@em default] update color channels selected in the obj.slices{4} variable, 
+%       when @b NaN - update all color channels of the dataset
+%       when @b Index - update color channels with provided index(s)
 %   @li when @b type is 'labels' col_channel 
-%       when @b [] [@em default] - to take all materials of the model
-%       when @b NaN - to take all materials of the model
-%       when @b Index - [integer] get specific material, in this case the selected material in @b slice will have index = 1.
+%       when @b [] [@em default] - to update all materials of the model
+%       when @b NaN - to update all materials of the model
+%       when @b Index - [integer] update specific material, in this case the selected material in @b slice will have index = 1.
 % options: [@em optional], a structure with extra parameters
 %   @li .blockModeSwitch -> [@em logical] override the block mode switch obj.blockModeSwitch; 
 %           use or not the block mode (@b false - return full dataset, @b true - return only the shown part)
@@ -38,31 +44,29 @@ function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
 %   @li .fillBg -> filling color for ROI
 %          when @em NaN (@b default) -> crops the dataset as a rectangle; 
 %          when @em a @em number fills the areas out of the ROI area with this intensity number
-%   @li .y -> [@em optional], [ymin, ymax] of the part of the slice to take (sets .blockModeSwitch to 0)
-%   @li .x -> [@em optional], [xmin, xmax] of the part of the slice to take (sets .blockModeSwitch to 0)
-%   @li .t -> [@em optional], [tmin, tmax] indicate the time point to take, 
-%             when missing return the currently selected time point
-%   @li .level -> [@em optional], an index of image level from the image pyramid
+% @li .y -> [@em optional], [ymin, ymax] of the part of the slice to set (sets .blockModeSwitch to 0)
+% @li .x -> [@em optional], [xmin, xmax] of the part of the slice to set (sets .blockModeSwitch to 0)
+% @li .t -> [@em optional], [tmin, tmax] indicate the time point to set, when missing return the currently selected time point
 %
 % Return values:
-% slice: a cell array with 2D image with colors. 
-%       For the 'image' type: {roiId}[1:height, 1:width, 1:colors]; for all other types: {roiId}[1:height, 1:width]
+% result: true-success, false-fail, result of function execution
 
 %| 
 % @b Examples:
-% @code slice = obj.mibModel.I{obj.mibModel.id}.getData2D('image', 5);      // Call from mibController: get the 5-th slice of the current stack orientation  @endcode
-% @code slice = obj.mibModel.I{obj.mibModel.id}.getData2D('image', 5, 3, 2); // Call from mibController:  get the 5-th slice of the XY-orientation, color channel=2 @endcode
+% @code slice = obj.mibModel.I{obj.mibModel.id}.setData2D(slice, 'image', 5);      // Call from mibController: set the 5-th slice of the current stack orientation  @endcode
+% @code slice = obj.mibModel.I{obj.mibModel.id}.setData2D(slice, 'image', 5, 3, 2); // Call from mibController: set the 5-th slice of the XY-orientation, color channel=2 @endcode
 % @attention @b sensitive to the @code obj.cQuickAccessBar.view.handles.blockMode; to override the blockMode use options.blockModeSwitch=false @endcode
 % @attention @b NOT @b sensitive to the shown ROI (obj.cQuickAccessBar.view.handles.roiMode), if areas under ROIs are required use options.roiId and options.fillBg parameters
 
 % Updates
 % 
+result = false;
 
-if nargin < 6; options = struct();   end
-if nargin < 5; col_channel = [];   end
-if nargin < 4; orient = []; end
-if nargin < 3; slice_no = []; end
-if nargin < 2; type = 'image'; end
+if nargin < 7; options = struct();   end
+if nargin < 6; col_channel = [];   end
+if nargin < 5; orient = []; end
+if nargin < 4; slice_no = []; end
+if nargin < 3; type = 'image'; end
 
 if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
@@ -94,8 +98,7 @@ else
     end
 end
 
-% update options .x, .y .z
-if ~isfield(options, 'z'); options.z = [slice_no, slice_no]; end
+options.z = [slice_no slice_no];
 if ~isfield(options, 't'); options.t = [obj.slices{5}(1), obj.slices{5}(2)]; end
 
 if isfield(options, 'blockModeSwitch') && options.blockModeSwitch
@@ -109,7 +112,6 @@ if options.roiId >= 0
     if options.roiId == 0
         [~, options.roiId] = obj.hROI.getNumberOfROI(orient);  % get number of ROI for the selected orientation
     end
-    
     roiId2 = 1;
     for roiId = options.roiId
         mask = obj.hROI.returnMask(roiId);
@@ -117,13 +119,16 @@ if options.roiId >= 0
         options.x = [bb(1), bb(2)];
         options.y = [bb(3), bb(4)];
         
-        sliceTemp = obj.I{options.id}.getData(type, orient, col_channel, options);
         if ~isnan(options.fillBg)
+            result = obj.setData(type, slice{roiId2}, orient, col_channel, options);
+        else
+            % crop mask to its bounding box
             mask = mask(bb(3):bb(4), bb(1):bb(2));
             mask = repmat(mask,[1, 1, numel(col_channel)]);
-            sliceTemp(~mask) = options.fillBg;
+            sliceTemp = obj.getData(type, orient, col_channel, options);     % get current dataset
+            sliceTemp(mask==1) = slice{roiId2}(mask==1);
+            result = obj.setData(type, sliceTemp, orient, col_channel, options);
         end
-        slice{roiId2} = sliceTemp; %#ok<AGROW>
         roiId2 = roiId2 + 1;
     end
 else
@@ -133,10 +138,23 @@ else
         if strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
             utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData2D');
-            slice = [];
             return;
         end
     end
-    slice = {squeeze(obj.(type).getData(orient, col_channel, options))};
+
+    if iscell(slice)
+        obj.(type).setData(slice{1}, orient, col_channel, options);
+    else
+        obj.(type).setData(slice, orient, col_channel, options);
+    end
 end
+
+result = true;
+
+% notify about setData method used
+setDataOpt.type = type;
+setDataOpt.mode = '2D';
+eventdata = ToggleEventData(setDataOpt);
+notify(obj, 'setData', eventdata);
+
 end
