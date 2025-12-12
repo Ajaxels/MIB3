@@ -40,29 +40,22 @@ if ~isfield(options, 'splitDims'); options.splitDims = true; end
 
 if isempty(orient); orient = obj.orientation; end
 if isempty(type); type = 'image'; end
-time = obj.img.time;
+time = obj.image.time;
 
 if options.blockModeSwitch == 0     % get the full size dataset
     if strcmp(type, 'image')
-        [height, width, depth, colors, time] = obj.img.getDatasetDimensions(orient);
+        [height, width, depth, colors, time] = obj.image.getDatasetDimensions(orient);
     elseif isa(obj.labels, 'core.MibLabels63')
         [height, width, depth, colors, time] = obj.labels.getDatasetDimensions(orient);
     else
-        switch type
-            case 'model'
-                [height, width, depth, colors, time] = obj.labels.getDatasetDimensions(orient);
-            case 'mask'
-                [height, width, depth, colors, time] = obj.mask.getDatasetDimensions(orient);
-            case 'selection'
-                [height, width, depth, colors, time] = obj.selection.getDatasetDimensions(orient);
-        end
+        [height, width, depth, colors, time] = obj.(type).getDatasetDimensions(orient);
     end
 else        % get the shown block
     switch orient
         case 3  % yx configuration: [y,x,z,c,t]
             height = obj.slices{1}(2)-obj.slices{1}(1)+1;
             width = obj.slices{2}(2)-obj.slices{2}(1)+1;
-            depth = obj.img.depth;
+            depth = obj.image.depth;
         case 2  % yz configuration: [y,x,z,c,t] -> [y,z,x,c,t]
             height = obj.slices{1}(2)-obj.slices{1}(1)+1;
             width = obj.slices{3}(2)-obj.slices{3}(1)+1;

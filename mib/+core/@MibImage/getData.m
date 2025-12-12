@@ -3,18 +3,18 @@ function dataset = getData(obj, orient, colChannel, options) % get complete 5D d
 % Get dataset from MibImage class
 %
 % Parameters:
-% orient: [@em optional, can be [], default == 3];
-% @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
-% @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
-% @li when @b 3 returns the original dataset to the yx configuration, [y,x,z,c,t]
-% colChannel: [@em optional, default==[] ],
-% @li when obj.type == 'image', @b colChannel is a vector with color numbers to take, when [] take all color channels
-% @li when obj.type == 'labels', @b colChannel is an integer to take material with this specific index (returned with value == 1), when [] - take all materials
+% orient: [@em optional, can be [], when [] orient == 3];
+%   @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
+%   @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
+%   @li when @b 3 returns the original dataset to the yx configuration, [y,x,z,c,t]
+% colChannel: [@em optional, can be [], when [] get all colors/materials],
+%   @li when obj.type == 'image', @b colChannel is a vector with color numbers to take, when [] take all color channels
+%   @li when obj.type == 'labels', @b colChannel is an integer to take material with this specific index (returned with value == 1), when [] - take all materials
 % options: [@em optional], a structure with extra parameters
-% @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
-% @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
-% @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
-% @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
+%   @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
+%   @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
+%   @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
+%   @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
 %
 % Return values:
 % dataset: 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]

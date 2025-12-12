@@ -30,13 +30,13 @@ if indices(1, 2) == 3 % start color selection dialog
     end
 
     figTitle = sprintf('Set color for channel %d', indices(1));
-    lutColors = obj.mibModel.I{obj.mibModel.id}.img.lutColors;
+    lutColors = obj.mibModel.I{obj.mibModel.id}.image.lutColors;
     c = uisetcolor(lutColors(indices(1),:), figTitle);
     if isscalar(c); return; end % cancel
 
     lutColors(indices(1),:) = c;
 
-    obj.mibModel.I{obj.mibModel.id}.img.lutColors = lutColors;
+    obj.mibModel.I{obj.mibModel.id}.image.lutColors = lutColors;
     
     % redraw the table
     obj.lutTable_update_fromModel();

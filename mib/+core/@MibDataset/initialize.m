@@ -40,14 +40,14 @@ if isempty(meta); meta = struct(); end
 if ~isfield(meta, 'pixSize'); meta.pixSize = struct('x', 1, 'y', 1, 'z', 1, 't', 1, 'units', 'pixels', 'tunits', 's');
 
 % reset the state of the main layers
-obj.img = NaN;
+obj.image = NaN;
 obj.labels = NaN;
 obj.mask = NaN;
 obj.selection = NaN;
 
 switch datasetType
     case 'Std'
-        obj.img = core.MibImage(img, meta);
+        obj.image = core.MibImage(img, meta);
         switch modelType
             case 'imageOnly'
                 % pass
@@ -134,7 +134,7 @@ obj.selectedROI = -1; % a vector of indices (as stored in mibRoiRegion class) of
 obj.slices{1} = [1, 1];
 obj.slices{2} = [1, 1];
 obj.slices{3} = [1, 1];
-obj.slices{4} = 1:obj.img.colors;
+obj.slices{4} = 1:obj.image.colors;
 obj.slices{5} = [1 1];
 
 obj.useLUT = false;
@@ -142,5 +142,5 @@ obj.useLUT = false;
 
 % update additional properties
 obj.pixSize = meta.pixSize;
-obj.dim_yxzct = obj.img.dim_yxzct;
+obj.dim_yxzct = obj.image.dim_yxzct;
 end

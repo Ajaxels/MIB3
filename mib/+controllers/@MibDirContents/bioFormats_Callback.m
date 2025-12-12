@@ -70,7 +70,7 @@ obj.view.handles.panels.dirContents.handles.fileFilters.Value = selectedFilter;
 
 % update the file list and
 % highlight the selected file in it
-[~, fn, ext] = fileparts(obj.mibModel.I{obj.mibModel.id}.img.filename);
+[~, fn, ext] = fileparts(obj.mibModel.I{obj.mibModel.id}.image.filename);
 obj.updateFileList_Callback([], [], [fn, ext]);
 
 end

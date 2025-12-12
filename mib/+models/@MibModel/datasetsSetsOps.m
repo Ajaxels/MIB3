@@ -112,8 +112,8 @@ switch BatchOpt.Mode{1}
                 % update obj.I{i} properties
                 obj.I{i}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors; % update default model colors
                 % update default LUT colors
-                if obj.I{i}.img.colors < size(obj.preferences.Colors.LUTColors, 1)
-                    obj.I{i}.img.lutColors = obj.preferences.Colors.LUTColors;
+                if obj.I{i}.image.colors < size(obj.preferences.Colors.LUTColors, 1)
+                    obj.I{i}.image.lutColors = obj.preferences.Colors.LUTColors;
                 end
 
                 % update all widgets of the Datasets panel

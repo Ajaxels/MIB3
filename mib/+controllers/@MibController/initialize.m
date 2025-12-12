@@ -290,8 +290,8 @@ for i=1:numel(obj.mibModel.I)
     % update obj.I{i} properties
     obj.mibModel.I{i}.labels.materialColors = obj.mibModel.preferences.Colors.ModelMaterialColors; % update default model colors
     % update default LUT colors
-    if obj.mibModel.I{i}.img.colors < size(obj.mibModel.preferences.Colors.LUTColors, 1)
-        obj.mibModel.I{i}.img.lutColors = obj.mibModel.preferences.Colors.LUTColors;
+    if obj.mibModel.I{i}.image.colors < size(obj.mibModel.preferences.Colors.LUTColors, 1)
+        obj.mibModel.I{i}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;
     end
 
     % update dataset obj.mibModel.I{i}.axesX/Y and obj.mibModel.I{i}.magFactor 

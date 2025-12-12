@@ -436,8 +436,8 @@ classdef Preferences < handle
                     obj.mibModel.I{obj.mibModel.id}.clearSelection();
                 elseif obj.mibModel.I{obj.mibModel.id}.modelType == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))
                     obj.mibModel.I{obj.mibModel.id}.model{1} = ...
-                        zeros([size(obj.mibModel.I{obj.mibModel.id}.img{1},1),size(obj.mibModel.I{obj.mibModel.id}.img{1},2),...
-                        size(obj.mibModel.I{obj.mibModel.id}.img{1},4),size(obj.mibModel.I{obj.mibModel.id}.img{1},5)], 'uint8');
+                        zeros([size(obj.mibModel.I{obj.mibModel.id}.image{1},1),size(obj.mibModel.I{obj.mibModel.id}.image{1},2),...
+                        size(obj.mibModel.I{obj.mibModel.id}.image{1},4),size(obj.mibModel.I{obj.mibModel.id}.image{1},5)], 'uint8');
                 end
             else
                 if obj.mibModel.I{obj.mibModel.id}.modelType == 63

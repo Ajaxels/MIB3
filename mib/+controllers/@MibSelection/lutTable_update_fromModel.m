@@ -15,9 +15,9 @@ function lutTable_update_fromModel(obj)
 % update color combo box and channel mixer table
 %pause(0.1);
 
-maxColors = obj.mibModel.I{obj.mibModel.id}.img.colors;
+maxColors = obj.mibModel.I{obj.mibModel.id}.image.colors;
 slices = obj.mibModel.I{obj.mibModel.id}.slices;
-lutColors = obj.mibModel.I{obj.mibModel.id}.img.lutColors;
+lutColors = obj.mibModel.I{obj.mibModel.id}.image.lutColors;
 
 % Create channel names
 col_channels = ['All', arrayfun(@(x) sprintf('Ch %d', x), 1:maxColors, 'UniformOutput', false)];

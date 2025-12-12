@@ -1,31 +1,29 @@
-function gui_Callbacks(obj, hWidget, hData)
-% function gui_Callbacks(obj, hWidget, hData)
+function gui_Callbacks(obj, mode)
+% function gui_Callbacks(obj, mode)
 % callbacks for widgets of some the Status bar obj.handles.status
 %
 % Parameters:
 % hWidget: handle to the pressed widget
 % hWidget.tag -> char, identifier the widget
+% 
 %
 % hData: handle to supporting data class
 
 arguments (Input)
     obj controllers.MibStatusBar
-    hWidget {mustBeA(hWidget, {'matlab.ui.internal.toolstrip.base.Action'})}
-    hData {mustBeA(hData, {'matlab.ui.internal.toolstrip.base.ToolstripEventData'})}
+    mode char = ''
 end
-
-mode = hWidget.Description;
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibStatusBar.gui_Callbacks: "obj.view.handles.status -> %s"\n', mode);
 end
 
 switch mode
-    case 'Use the system directory selection dialog to define the working directory'
+    case 'selectWorkingDirectory'
         newPath = uigetdir(obj.handles.currentDirectory.Value, 'Choose Directory');
         if newPath == 0; return; end
 
-    case 'Enter the working directory'
+    case 'currentDirectory'
         % update obj.mibModel.myPath variable
         currentPath = obj.handles.currentDirectory.Value;
         % get fileparts to clip filename from the path keeping only the
@@ -35,9 +33,9 @@ switch mode
             currentPath = filepath; 
         end
 
-    case 'Copy the current working directory to clipboard'
+    case 'copyPath'
         clipboard('copy', obj.handles.currentDirectory.Value);
-    case 'Open the current working directory in a system file browser'
+    case 'openBrowser'
         currentPath = obj.handles.currentDirectory.Value;
         if isdir(currentPath) %#ok<ISDIR>
             if ispc     % for pc
@@ -54,7 +52,7 @@ switch mode
         else
             errordlg(sprintf('Wrong directory!\n\n%s', currentPath));
         end
-    case 'Define the zoom level'
+    case 'zoom'
 end
 
 end

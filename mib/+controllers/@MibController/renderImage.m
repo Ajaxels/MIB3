@@ -28,6 +28,6 @@ function renderImage(obj, resize)
 % obj.renderImage();
 % @endcode
 
-I = obj.mibModel.I{obj.mibModel.id}.getData();
+I = cell2mat(obj.mibModel.I{obj.mibModel.id}.getData2D());
 image(I, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
 end

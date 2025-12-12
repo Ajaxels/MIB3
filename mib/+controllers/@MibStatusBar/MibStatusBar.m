@@ -13,7 +13,7 @@ classdef MibStatusBar
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
 
-        gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the Status bar obj.handles.status
+        gui_Callbacks(obj, mode) % callbacks for widgets of some the Status bar obj.handles.status
 
         function obj = MibStatusBar(mainCtrl, view, guiHandles, model)
             obj.mibController = mainCtrl;       % handle to the main MIB controller
@@ -23,11 +23,11 @@ classdef MibStatusBar
             obj.mibModel = model;               % handle to the main MIB model
 
             % ---------------------- Add CALLBACKS to context menus ----------------------
-            obj.handles.selectWorkingDirectory.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.currentDirectory.ValueChangedFcn = @obj.gui_Callbacks;
-            obj.handles.copyPath.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.openBrowser.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.zoom.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.selectWorkingDirectory.ButtonPushedFcn = @(~,~)obj.gui_Callbacks('selectWorkingDirectory');
+            obj.handles.currentDirectory.ValueChangedFcn = @(~,~)obj.gui_Callbacks('currentDirectory');
+            obj.handles.copyPath.ButtonPushedFcn = @(~,~)obj.gui_Callbacks('copyPath');
+            obj.handles.openBrowser.ButtonPushedFcn = @(~,~)obj.gui_Callbacks('openBrowser');
+            obj.handles.zoom.ValueChangedFcn = @(~,~)obj.gui_Callbacks('zoom');
         end
     end
 end

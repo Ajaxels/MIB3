@@ -4,7 +4,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
     properties
         % layers
-        img
+        image
         % image layer, instance of core.MibImage
         labels
         % label layer for the model, instance of core.MibLabels or core.MibLabels63
@@ -42,7 +42,7 @@ classdef MibDataset < matlab.mixin.Copyable
         %   @li 'BigData' - big-data compatible dataset
         dim_yxzct
         % a matrix with dimensions of the dataset [height, width, depth, colors, time]
-        % equal to size obj.img{1} for non-virtual datasets
+        % equal to size obj.image{1} for non-virtual datasets
         enableSelection
         % a switch (0/1) to enable or not the selection, mask, model layers
         lastSegmSelection
@@ -104,7 +104,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
-        dataset = getData(obj) % get required dataset 
+        slice = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
 
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
 
