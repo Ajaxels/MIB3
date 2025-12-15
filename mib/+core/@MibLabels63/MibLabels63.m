@@ -20,9 +20,9 @@ classdef MibLabels63 < core.MibImage
 
     methods
         % declaration of methods
-        dataset = getData(obj, type, orient, materialIndex, options)        % get dataset
+        dataset = getData63(obj, type, orient, materialIndex, options)        % get dataset
 
-        result = setData(obj, dataset, type, orient, materialIndex, options)        % update contents of the class
+        result = setData63(obj, dataset, type, orient, materialIndex, options)        % update contents of the class
 
         function obj = MibLabels63(img, meta)
             % function obj = MibLabels63(img, meta)

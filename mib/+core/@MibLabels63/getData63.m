@@ -1,4 +1,4 @@
-function dataset = getData(obj, type, orient, materialIndex, options) % get complete 5D dataset
+function dataset = getData63(obj, type, orient, materialIndex, options) % get complete 5D dataset
 % function dataset = getData(obj, type, orient, materialIndex, options)
 % Get dataset from MibLabels63 class
 %
@@ -44,7 +44,7 @@ if nargin < 3; orient = []; end
 if nargin < 2; type = []; end
 
 % MibLabels63 has the color dimension of 1
-col_channel = 1;
+colChannel = 1;
 
 if isempty(type); type = 'labels'; end
 if isempty(orient); orient = 3; end
@@ -60,11 +60,11 @@ end
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
     if orient==3 % yx orientation
-        dataset = obj.img{1}(:,:,:,col_channel,:);
+        dataset = obj.data{1}(:,:,:,colChannel,:);
     elseif orient==1    % xz; get permuted dataset
-        dataset = permute(obj.img{1}(:,:,:,col_channel,:), [2 3 1 4 5]);
+        dataset = permute(obj.data{1}(:,:,:,colChannel,:), [2 3 1 4 5]);
     elseif orient==2    % yz; get permuted dataset
-        dataset = permute(obj.img{1}(:,:,:,col_channel,:), [1 3 2 4 5]);
+        dataset = permute(obj.data{1}(:,:,:,colChannel,:), [1 3 2 4 5]);
     end
 
     % extract required layer
@@ -115,7 +115,7 @@ else  % return a subvolume of the full dataset
     Zlim = [max([Zlim(1) 1]) min([Zlim(2) obj.depth])];
     Tlim = [max([Tlim(1) 1]) min([Tlim(2) obj.time])];
 
-    dataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), col_channel, Tlim(1):Tlim(2));
+    dataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     if orient==1     % permute to xz
         dataset = permute(dataset,[2 3 1 4 5]);
     elseif orient==2 % permute to yz

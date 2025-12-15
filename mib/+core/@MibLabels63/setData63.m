@@ -1,5 +1,5 @@
-function result = setData(obj, dataset, type, orient, materialIndex, options) 
-% function result = setData(obj, dataset, type, orient, colChannel, options) 
+function result = setData63(obj, dataset, type, orient, materialIndex, options) 
+% function result = setData63(obj, dataset, type, orient, materialIndex, options) 
 % Set dataset to MibLabels63 class
 %
 % Parameters:
@@ -25,14 +25,14 @@ function result = setData(obj, dataset, type, orient, materialIndex, options)
 
 %|
 % @b Examples:
-% @code obj.setData(dataset, 3, []);      // set the complete dataset in the YX orientation @endcode
+% @code obj.setData63(dataset, 'labels', 3, []);      // set the complete model in the YX orientation @endcode
 % @code
 % options.x = [100 200];
 % options.y = [100 200];
 % options.z = 100;
 % options.t = 1;
 % colChannel = 2;
-% obj.setData(dataset, [], colChannel, options);      //set subvolume = [100:200, 100:200] at slice 100, color channel 1
+% obj.setData63(dataset, 'labels', [], colChannel, options);      //set subvolume = [100:200, 100:200] at slice 100, color channel 1
 % @endcode
 
 
@@ -40,13 +40,13 @@ function result = setData(obj, dataset, type, orient, materialIndex, options)
 %
 result = false;
 
-if nargin < 6; options=struct(); end
-if nargin < 5; colChannel = []; end
+if nargin < 6; options = struct(); end
+if nargin < 5; materialIndex = []; end
 if nargin < 4; orient = []; end
 if nargin < 3; type = []; end
 
 % MibLabels63 has the color dimension of 1
-col_channel = 1;
+colChannel = 1;
 if isempty(type); type = 'labels'; end
 if isempty(orient); orient = 3; end
 
@@ -73,21 +73,21 @@ if blockModeSwitchLocal == 0  % set the full dataset
     switch type
         case 'labels'
             if ~isempty(materialIndex)      % take only specific material
-                obj.img{1}(bitand(obj.img{1}, 63)==materialIndex) = bitand(obj.img{1}(bitand(obj.img{1}, 63)==materialIndex), 192);  % 192 = 11000000, remove Material from the model
-                obj.img{1}(dataset==1) = bitand(obj.img{1}(dataset==1), 192);    % empty positions for the new material
-                obj.img{1}(dataset==1) = bitor(obj.img{1}(dataset==1), materialIndex);    % update new material
+                obj.data{1}(bitand(obj.data{1}, 63)==materialIndex) = bitand(obj.data{1}(bitand(obj.data{1}, 63)==materialIndex), 192);  % 192 = 11000000, remove Material from the model
+                obj.data{1}(dataset==1) = bitand(obj.data{1}(dataset==1), 192);    % empty positions for the new material
+                obj.data{1}(dataset==1) = bitor(obj.data{1}(dataset==1), materialIndex);    % update new material
             else
-                obj.img{1} = bitand(obj.img{1}, 192); % clear current model
-                obj.img{1} = bitor(obj.img{1}, dataset);
+                obj.data{1} = bitand(obj.data{1}, 192); % clear current model
+                obj.data{1} = bitor(obj.data{1}, dataset);
             end
         case 'mask'
-            obj.img{1} = bitset(obj.img{1}, 7, 0);    % clear current mask
-            obj.img{1} = bitor(obj.img{1}, dataset*64);
+            obj.data{1} = bitset(obj.data{1}, 7, 0);    % clear current mask
+            obj.data{1} = bitor(obj.data{1}, dataset*64);
         case 'selection'
-            obj.img{1} = bitset(obj.img{1}, 8, 0);    % clear existing selection
-            obj.img{1} = bitor(obj.img{1}, dataset*128);
+            obj.data{1} = bitset(obj.data{1}, 8, 0);    % clear existing selection
+            obj.data{1} = bitor(obj.data{1}, dataset*128);
         case 'everything'
-            obj.img{1} = dataset;
+            obj.data{1} = dataset;
     end
 else  % set a part of the dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
@@ -132,28 +132,28 @@ else  % set a part of the dataset
     switch type
         case 'labels'
             if ~isempty(materialIndex)      % take only specific material
-                currentDataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+                currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
                 currentDataset(bitand(currentDataset, 63)==materialIndex) = bitand(currentDataset(bitand(currentDataset, 63)==materialIndex), 192);  % 192 = 11000000, remove Material from the model
                 currentDataset(dataset==1) = bitand(currentDataset(dataset==1), 192);    % empty positions for the new material
                 currentDataset(dataset==1) = bitor(currentDataset(dataset==1), materialIndex);
-                obj.img{1}(Ylim(1):Ylim(2),Xlim(1):Xlim(2),Zlim(1):Zlim(2),Tlim(1):Tlim(2)) = currentDataset;
+                obj.data{1}(Ylim(1):Ylim(2),Xlim(1):Xlim(2),Zlim(1):Zlim(2),Tlim(1):Tlim(2)) = currentDataset;
             else
-                currentDataset = bitand(obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)), 192); % clear current model    
-                obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = bitor(currentDataset, dataset);
+                currentDataset = bitand(obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)), 192); % clear current model    
+                obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = bitor(currentDataset, dataset);
             end
         case 'mask'
-            currentDataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+            currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
             currentDataset = bitset(currentDataset, 7, 0);    % clear mask
             currentDataset = bitor(currentDataset, dataset*64);
-            obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
+            obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
             obj.maskExist = 1;
         case 'selection'
-            currentDataset = obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+            currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
             currentDataset = bitset(currentDataset, 8, 0);    % clear selection
             currentDataset = bitor(currentDataset, dataset*128);
-            obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
+            obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
         case 'everything'
-            obj.img{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
+            obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
     end
 end
 result = true;

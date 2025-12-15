@@ -1,6 +1,6 @@
-function renderImage(obj, resize)
-% renderImage(obj, resize)
-% Render (show) the current image in the Image View panel,
+function showImage(obj, resize)
+% showImage(obj, resize)
+% Show the current image in the Image View panel,
 % MIB2 function plotImage
 %
 % Parameters:
@@ -15,17 +15,17 @@ function renderImage(obj, resize)
 % @b Examples:
 % @code 
 % // standard call to redraw image in the image view panel
-% notify(obj.mibModel, 'RenderImage');
+% notify(obj.mibModel, 'ShowImage');
 % @endcode
 % @code 
 % // custom call to resize and redraw image in the image view panel
 % Options.resize = true;
 % eventdata = core.ToggleEventData(Options);
-% notify(obj, 'RenderImage', eventdata);
+% notify(obj, 'ShowImage', eventdata);
 % @endcode
 % @code 
 % // direct call from controllers.MibController class
-% obj.renderImage();
+% obj.showImage();
 % @endcode
 
 I = cell2mat(obj.mibModel.I{obj.mibModel.id}.getData2D());

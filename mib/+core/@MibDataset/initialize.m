@@ -52,9 +52,9 @@ switch datasetType
             case 'imageOnly'
                 % pass
             case 'labels'
-                obj.labels = core.MibLabels(img, meta);
+                obj.labels = core.MibLabels(zeros(size(img), 'uint8'), meta);
             case 'labels63'
-                obj.labels = core.MibLabels63(img, meta);
+                obj.labels = core.MibLabels63(zeros(size(img), 'uint8'), meta);
         end
     case 'Virtual'
         error('core.MibDataset.initialize: Virtual - not implemented');

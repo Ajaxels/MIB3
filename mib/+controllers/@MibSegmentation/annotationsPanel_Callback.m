@@ -33,15 +33,15 @@ switch mode
 
     case 'annFocusOnValue' % when showing the prompt focus on the value field
         obj.mibModel.preferences.SegmTools.Annotations.FocusOnValue = obj.view.handles.panels.segmentation.handles.annFocusOnValue.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'annPrecision' % define floating value precision for the annotation value
         obj.mibModel.preferences.SegmTools.Annotations.Precision = obj.view.handles.panels.segmentation.handles.annPrecision.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'annDeleteAll' % delete all annotations
 
     case 'annDisplayAs' % define how annotations should be visualized
         obj.mibModel.preferences.SegmTools.Annotations.DisplayAs = obj.view.handles.panels.segmentation.handles.annDisplayAs.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
 end
 
 end

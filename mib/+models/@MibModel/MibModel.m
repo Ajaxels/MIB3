@@ -53,8 +53,8 @@ classdef MibModel < handle
     events
         ShowErrorDialog     % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         DatasetsPanelUpdate % update widgets of the Datasets panel
-        RenderImage         % render image in the Image View panel
-        syncBatch           % synchromize structure for batch actions
+        ShowImage         % render image in the Image View panel
+        SyncBatch           % synchronize structure for batch actions
         UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
         updateGuiWidgets    % update all widgets of the main GUI
 

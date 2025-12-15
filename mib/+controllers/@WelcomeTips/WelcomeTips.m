@@ -34,7 +34,7 @@ classdef WelcomeTips < handle
     % or
     % @code
     % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
+    % // using notify SyncBatch event
     % obj.startController('WelcomeTips', [], NaN);
     % @endcode
     

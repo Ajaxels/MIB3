@@ -8,7 +8,7 @@ function clearSelection(obj, sel_switch, BatchOptIn)
 % @li when @b '3D, Stack' fill holes for the currently shown z-stack
 % @li when @b '4D, Dataset' fill holes for the whole dataset
 % BatchOptIn: [@em optional], a structure with extra parameters or settings for the batch processing mode, when NaN return
-%    a structure with default options via "syncBatch" event
+%    a structure with default options via "SyncBatch" event
 % optional parameters
 % @li .DatasetType -> cell with one of possible parameters: '2D, Slice', '3D, Stack', '4D, Dataset'
 % @li .showWaitbar - logical, show or not the waitbar
@@ -41,10 +41,10 @@ BatchOpt.mibBatchActionName = 'Clear selection';
 if nargin == 3  % batch mode 
     if isstruct(BatchOptIn) == 0
         if isnan(BatchOptIn)     % when varargin{3} == NaN return possible settings
-            % trigger syncBatch event to send BatchOptInOut to mibBatchController 
+            % trigger SyncBatch event to send BatchOptInOut to mibBatchController 
             BatchOpt = rmfield(BatchOpt, 'id');
             eventdata = core.ToggleEventData(BatchOpt);
-            notify(obj, 'syncBatch', eventdata);
+            notify(obj, 'SyncBatch', eventdata);
         else
             errorText = sprintf('obj.mibModel.clearSelection:\nA structure as the 3rd parameter is required!');
             utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'BatchOpt Error');
@@ -62,32 +62,36 @@ getDataOptions.blockModeSwitch = obj.I{BatchOpt.id}.blockModeSwitch;
 
 setDataOptions.id = BatchOpt.id;
 if strcmp(BatchOpt.DatasetType{1} ,'2D, Slice')
-    obj.mibDoBackup('selection', 0, setDataOptions);
+    %obj.mibDoBackup('selection', 0, setDataOptions);
     img = zeros([h, w], 'uint8');
-    obj.setData2D('selection', {img}, NaN, NaN, NaN, setDataOptions);
+    obj.I{obj.id}.setData2D(img, 'selection', [], [], [], setDataOptions);
 else 
     if strcmp(BatchOpt.DatasetType{1} ,'3D, Stack') 
-        obj.mibDoBackup('selection', 1, setDataOptions);
+        %obj.mibDoBackup('selection', 1, setDataOptions);
         t1 = obj.I{BatchOpt.id}.slices{5}(1);
         t2 = obj.I{BatchOpt.id}.slices{5}(2);
-        if BatchOpt.showWaitbar; wb = waitbar(0,'Clearing the Selection layer for a whole Z-stack...','WindowStyle','modal'); end
     else
         t1 = 1;
         t2 = obj.I{BatchOpt.id}.time;
-        if BatchOpt.showWaitbar; wb = waitbar(0,'Clearing the Selection layer for a whole dataset...','WindowStyle','modal'); end
+    end
+
+    if BatchOpt.showWaitbar
+        wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+            'Message', sprintf('Clearing the Selection layer for a whole Z-stack\nPlease wait...'), ...
+            'Title', 'Clear selection', 'Indeterminate', 'on'); 
     end
     
     img = zeros([h, w, d], 'uint8');
     for t=t1:t2
-        obj.setData3D('selection', {img}, t, obj.I{BatchOpt.id}.orientation, NaN, setDataOptions);
+        obj.I{obj.id}.setData3D(img, 'selection', t, obj.I{BatchOpt.id}.orientation, [], setDataOptions);
     end
     if BatchOpt.showWaitbar; delete(wb); end
 end
 
 % notify the batch mode
 BatchOpt = rmfield(BatchOpt, 'id');     % remove id field
-eventdata = ToggleEventData(BatchOpt);
-notify(obj, 'syncBatch', eventdata);
+eventdata = core.ToggleEventData(BatchOpt);
+notify(obj, 'SyncBatch', eventdata);
 
-notify(obj, 'plotImage');
+notify(obj, 'ShowImage');
 end

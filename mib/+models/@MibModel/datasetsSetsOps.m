@@ -52,9 +52,9 @@ BatchOpt.mibBatchActionName = 'Set operations';
 if nargin == 2  % batch mode
     if isstruct(BatchOptIn) == 0
         if isnan(BatchOptIn)     % when varargin{4} == NaN return possible settings
-            % trigger syncBatch event to send BatchOptInOut to mibBatchController
+            % trigger SyncBatch event to send BatchOptInOut to mibBatchController
             eventdata = ToggleEventData(BatchOpt);
-            notify(obj.mibModel, 'syncBatch', eventdata);
+            notify(obj.mibModel, 'SyncBatch', eventdata);
         else
             errordlg(sprintf('A structure as the 2nd parameter is required!'));
         end

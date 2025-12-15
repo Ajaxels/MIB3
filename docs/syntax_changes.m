@@ -11,6 +11,19 @@
 % suffix = 'some text at the bottom';
 % utils.dlgs.showErrorDialog([], errorText, 'Error', [], suffix);
 
-% BatchOpt = updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn) -> BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn)
+% BatchOpt = updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn) -> 
+%   BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn)
 
-obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials
+% obj.modelType ->
+%   obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials
+
+%obj.setData2D('selection', {slice}, layer_id, orientation, 0, getDataOptions);
+%  obj.I{obj.id}.setData2D(slice, 'selection', layer_id, orientation, NaN, getDataOptions);
+
+% wb = waitbar(0,'Clearing the Selection layer for a whole Z-stack...', 'WindowStyle', 'modal'); 
+% wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+%    'Message', sprintf('Clearing the Selection layer for a whole Z-stack\nPlease wait...'), ...
+%    'Title', 'Clear selection', 'Cancelable', 'on'); 
+% wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+%    'Message', sprintf('\nPlease wait...'), ...
+%    'Title', '', 'Indeterminate', 'on'); 

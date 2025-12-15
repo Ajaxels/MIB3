@@ -34,7 +34,7 @@ classdef ImageConverterController < handle
     % or
     % @code
     % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
+    % // using notify SyncBatch event
     % obj.startController('ImageConverterController', [], NaN);
     % @endcode
     
@@ -418,7 +418,7 @@ classdef ImageConverterController < handle
         
         function returnBatchOpt(obj, BatchOptOut)
             % return structure with Batch Options and possible configurations
-            % via the notify 'syncBatch' event
+            % via the notify 'SyncBatch' event
             % Parameters:
             % BatchOptOut: a local structure with Batch Options generated
             % during Continue callback. It may contain more fields than
@@ -427,9 +427,9 @@ classdef ImageConverterController < handle
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             
             if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end  % remove id field
-            % trigger syncBatch event to send BatchOptOut to mibBatchController 
+            % trigger SyncBatch event to send BatchOptOut to mibBatchController 
             eventdata = ToggleEventData(BatchOptOut);
-            notify(obj.mibModel, 'syncBatch', eventdata);
+            notify(obj.mibModel, 'SyncBatch', eventdata);
         end
         
         function selectDirectory(obj, event)

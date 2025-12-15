@@ -81,32 +81,32 @@ switch mode
         obj.mibModel.I{obj.mibModel.id}.useLUT = obj.handles.lutColors.Value;
         % ADD MORE FROM mibLutCheckbox_Callback in MIB2
         obj.lutTable_update_fromModel();
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'showModel' % show model
         obj.mibModel.showModel = obj.handles.showModel.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'showMask' % show mask
         obj.mibModel.showMask = obj.handles.showMask.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'showAnnotations' % show annotations
         obj.mibModel.showAnnotations = obj.handles.showAnnotations.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'hideImage' % hide image
         obj.mibModel.hideImage = obj.handles.hideImage.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'display' % start image view settings dialog
         %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s\n', mode);
     case 'onFly' % automatically adjust contrast and brightness
         obj.mibModel.onFlyImageStretch = obj.handles.onFly.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'modelTransparency' % define model transparency
         obj.mibModel.preferences.Colors.ModelTransparency = obj.handles.modelTransparency.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'maskTransparency' % define mask transparency
         obj.mibModel.preferences.Colors.MaskTransparency = obj.handles.maskTransparency.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
     case 'selectionTransparency' % define selection transparency
         obj.mibModel.preferences.Colors.SelectionTransparency = obj.handles.selectionTransparency.Value;
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
 end
 end

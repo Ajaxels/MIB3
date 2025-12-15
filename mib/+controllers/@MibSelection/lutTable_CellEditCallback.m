@@ -48,7 +48,7 @@ if colIdx == 2
     end
 
     obj.lutTable_update_fromModel();
-    notify(obj.mibModel, 'RenderImage');
+    notify(obj.mibModel, 'ShowImage');
 end
 
 end

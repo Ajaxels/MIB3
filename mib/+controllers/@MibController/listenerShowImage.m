@@ -1,7 +1,7 @@
-function listenerRenderImage(obj, src, evtData)
-% function listenerRenderImage(obj, src, evtData)
+function listenerShowImage(obj, src, evtData)
+% function listenerShowImage(obj, src, evtData)
 % Call for render image in the Image View panel
-% executed upon catch of MibModel->"RenderImage" event, MIB2 is using 'plotImage' event
+% executed upon catch of MibModel->"ShowImage" event, MIB2 is using 'plotImage' event
 %
 % Parameters:
 % src: handle to MibModel
@@ -23,5 +23,5 @@ else
     if ~isfield(settings, 'resize'); settings.resize = false; end
 end
 
-obj.renderImage(settings.resize);
+obj.showImage(settings.resize);
 end

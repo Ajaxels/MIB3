@@ -1,8 +1,11 @@
-function dataset = getData(obj, orient, colChannel, options) % get complete 5D dataset
-% function dataset = getData(obj, orient, colChannel, options)
+function dataset = getData(obj, type, orient, colChannel, options) % get complete 5D dataset
+% function dataset = getData(obj, type, orient, colChannel, options)
 % Get dataset from MibImage class
 %
 % Parameters:
+% type: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
+%   Values are 'labels', 'mask', 'selection', or 'everything' to get all
+%   layers at once, @em default = 'image'
 % orient: [@em optional, can be [], when [] orient == 3];
 %   @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
 %   @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
@@ -28,16 +31,26 @@ function dataset = getData(obj, orient, colChannel, options) % get complete 5D d
 % options.z = 100;
 % options.t = 1;
 % colChannel = 2;
-% dataset = obj.getData([], colChannel, options);      // get subvolume = [100:200, 100:200] at slice 100, color channel 2
+% dataset = obj.getData([], [], colChannel, options);      // get subvolume = [100:200, 100:200] at slice 100, color channel 2
+% dataset = obj.getData([], [], colChannel, options);      // get subvolume = [100:200, 100:200] at slice 100, color channel 2
+% dataset = obj.(type).getData([], [], colChannel, options)); // get subvolume from MibDataset, where type='image', 'label', 'mask', 'selection'
+% dataset = obj.mibModel.I{obj.mibModel.id}.(type).getData([], [], colChannel, options)); // get subvolume from MibController, where type='image', 'label', 'mask', 'selection'
 % @endcode
 
 
 % Updates
 %
 
-if nargin < 4; options=struct(); end
-if nargin < 3; colChannel = []; end
-if nargin < 2; orient = []; end
+if nargin < 5; options=struct(); end
+if nargin < 4; colChannel = []; end
+if nargin < 3; orient = []; end
+if nargin < 2; type = 'image'; end
+
+% for core.MibModel63 use a dedicated function to get the specific layer
+if isa(obj, 'core.MibLabels63') && ~strcmp(type, 'image')
+    dataset = obj.getData63(obj, type, orient, colChannel, options);
+    return;
+end
 
 if isempty(orient); orient = 3; end
 

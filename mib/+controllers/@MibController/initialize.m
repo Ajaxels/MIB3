@@ -266,7 +266,7 @@ obj.cSelection.lutTable_update_fromModel(); % update the LUT table in the Select
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowErrorDialog', @(src, evnt) obj.listenerShowErrorDialog(src, evnt));
-obj.listeners{end+1} = addlistener(obj.mibModel, 'RenderImage', @(src, evnt) obj.listenerRenderImage(src, evnt));
+obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowImage', @(src, evnt) obj.listenerShowImage(src, evnt));
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(src, evnt) obj.listenerUpdateDatasetAxes(src, evnt));
 
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));

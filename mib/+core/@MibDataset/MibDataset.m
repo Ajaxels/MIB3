@@ -99,7 +99,7 @@ classdef MibDataset < matlab.mixin.Copyable
     end
 
     events
-        setData 
+        SetData 
         % when the set data method was used
     end
 
@@ -122,6 +122,8 @@ classdef MibDataset < matlab.mixin.Copyable
         result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset
 
         result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset
+
+        result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
 
         function obj = MibDataset(img, meta, datasetType, modelType)
             % obj = MibDataset(img, meta, datasetType, modelType)

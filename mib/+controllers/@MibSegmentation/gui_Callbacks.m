@@ -57,7 +57,7 @@ switch mode
         if isempty(answer); return; end
 
         obj.mibModel.preferences.Styles.Masks.ShowAsContours = answer{1};  % show masks as contours, when false as filled shapes
-        notify(obj.mibModel, 'RenderImage');
+        notify(obj.mibModel, 'ShowImage');
 end
 
 end

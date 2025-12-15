@@ -46,7 +46,7 @@ if indices(1, 2) == 3 % start color selection dialog
     drawnow;
 
     % redraw image in the im_browser axes
-    notify(obj.mibModel, 'RenderImage');
+    notify(obj.mibModel, 'ShowImage');
 end
 
 end

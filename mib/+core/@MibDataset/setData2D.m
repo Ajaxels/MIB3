@@ -133,29 +133,31 @@ if options.roiId >= 0
     end
 else
     if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
+        % labels -> contains selection, mask, and labels == everything
         if iscell(dataset)
             result = obj.labels.setData(dataset{1}, type, orient, col_channel, options);
         else
             result = obj.labels.setData(dataset, type, orient, col_channel, options);
         end
     else
-        if strcmp(type, 'everything')
+        if obj.labels.maxMaterials ~= 63 && strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
-            utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData2D');
+            utils.dlgs.showErrorDialog([], errorText, 'MibDataset.setData2D');
             return;
         end
         if iscell(dataset)
-            result = obj.(type).setData(dataset{1}, orient, col_channel, options);
+            result = obj.(type).setData(dataset{1}, type, orient, col_channel, options);
         else
-            result = obj.(type).setData(dataset, orient, col_channel, options);
+            result = obj.(type).setData(dataset, type, orient, col_channel, options);
         end
     end
+
 end
 
 % notify about setData method used
 setDataOpt.type = type;
 setDataOpt.mode = '2D';
-eventdata = ToggleEventData(setDataOpt);
-notify(obj, 'setData', eventdata);
+eventdata = core.ToggleEventData(setDataOpt);
+notify(obj, 'SetData', eventdata);
 
 end

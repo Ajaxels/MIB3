@@ -68,7 +68,7 @@ classdef MibController < handle
 
         listner2_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure
 
-        listenerRenderImage(obj, src, evtData) % render (show) the current image in the Image View panel
+        listenerShowImage(obj, src, evtData) % render (show) the current image in the Image View panel
 
         listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
         
@@ -94,6 +94,8 @@ classdef MibController < handle
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
 
         filename = saveLayout(obj, mode) % store the current layout of panels
+        
+        showImage(obj, resize)        % show the current image in the Image View panel
 
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
         

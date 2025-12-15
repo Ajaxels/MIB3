@@ -4,7 +4,7 @@ function varargout = getDatasetDimensions(obj, type, orient, options)
 %
 % Parameters:
 % type:  type of the dataset to retrieve dimensions, 'image' (@b default), 'model', 'mask', 'selection'
-% orient: [@em optional], can be @em [] 
+% orient: [@em optional], can be @em [], when []-return the current orientation 
 % @li when @b 1 returns dimensions of the transposed dataset to the zx configuration: [y,x,z,c,t] -> [x,z,y,c,t]
 % @li when @b 2 returns dimensions of the transposed dataset to the zy configuration: [y,x,z,c,t] -> [y,z,x,c,t]
 % @li when @b 3 returns dimensions of the original dataset to the yx configuration: [y,x,z,c,t]
@@ -24,8 +24,8 @@ function varargout = getDatasetDimensions(obj, type, orient, options)
 
 %| 
 % @b Examples:
-% @code [height width color depth] = obj.mibModel.I{obj.mibModel.id}.getDatasetDimensions('image')      // get dimensions of the complete dataset  @endcode
-% @code [height width color depth] = obj.mibModel.I{obj.mibModel.id}.getDatasetDimensions('image', 1)      // get dimensions of the transposed dataset  @endcode
+% @code [height width depth color time] = obj.mibModel.I{obj.mibModel.id}.getDatasetDimensions('image')      // get dimensions of the complete dataset  @endcode
+% @code [height width depth color time] = obj.mibModel.I{obj.mibModel.id}.getDatasetDimensions('image', 1)      // get dimensions of the transposed dataset  @endcode
 % @attention @b not @b sensitive to the shown ROI
 
 % Updates

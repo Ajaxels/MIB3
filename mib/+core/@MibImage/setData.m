@@ -1,9 +1,12 @@
-function result = setData(obj, dataset, orient, colChannel, options) 
-% function result = setData(obj, dataset, orient, colChannel, options) 
+function result = setData(obj, dataset, type, orient, colChannel, options) 
+% function result = setData(obj, dataset, type, orient, colChannel, options) 
 % Set dataset to MibBaseImage class
 %
 % Parameters:
 % dataset: matrix with the dataset to update MibBaseImage.data 
+% type: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
+%   Values are 'labels', 'mask', 'selection', or 'everything' to get all
+%   layers at once, @em default = 'image'
 % orient: [@em optional, can be [], default == 3];
 % @li when @b 1 updates transposed dataset from the zx configuration, [x,z,y,c,t] -> [y,x,z,c,t]
 % @li when @b 2 updates transposed dataset from the zy configuration, [y,z,x,c,t] -> [y,x,z,c,t]
@@ -22,14 +25,14 @@ function result = setData(obj, dataset, orient, colChannel, options)
 
 %|
 % @b Examples:
-% @code obj.setData(dataset, 3, []);      // set the complete dataset in the YX orientation @endcode
+% @code obj.setData(dataset, [], 3, []);      // set the complete dataset in the YX orientation @endcode
 % @code
 % options.x = [100 200];
 % options.y = [100 200];
 % options.z = 100;
 % options.t = 1;
 % colChannel = 2;
-% obj.setData(dataset, [], colChannel, options);      //set subvolume = [100:200, 100:200] at slice 100, color channel 1
+% obj.setData(dataset, [], [], colChannel, options);      //set subvolume = [100:200, 100:200] at slice 100, color channel 1
 % @endcode
 
 
@@ -37,9 +40,16 @@ function result = setData(obj, dataset, orient, colChannel, options)
 %
 result = false;
 
-if nargin < 5; options=struct(); end
-if nargin < 4; colChannel = []; end
-if nargin < 3; orient = []; end
+if nargin < 6; options = struct(); end
+if nargin < 5; colChannel = []; end
+if nargin < 4; orient = []; end
+if nargin < 3; type = 'image'; end
+
+% for core.MibModel63 use a dedicated function to set the specific layer
+if isa(obj, 'core.MibLabels63') && ~strcmp(type, 'image')
+    result = obj.setData63(dataset, type, orient, colChannel, options);
+    return;
+end
 
 if isempty(orient); orient = 3; end
 
