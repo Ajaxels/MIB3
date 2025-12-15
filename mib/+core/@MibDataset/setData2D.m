@@ -1,5 +1,5 @@
-function result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)
-% function result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)
+function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, options)
+% function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, options)
 % set the 2D slice with colors: height:width:colors to the dataset
 %
 % Parameters:
@@ -53,8 +53,8 @@ function result = setData2D(obj, slice, type, slice_no, orient, col_channel, opt
 
 %| 
 % @b Examples:
-% @code slice = obj.mibModel.I{obj.mibModel.id}.setData2D(slice, 'image', 5);      // Call from mibController: set the 5-th slice of the current stack orientation  @endcode
-% @code slice = obj.mibModel.I{obj.mibModel.id}.setData2D(slice, 'image', 5, 3, 2); // Call from mibController: set the 5-th slice of the XY-orientation, color channel=2 @endcode
+% @code result = obj.mibModel.I{obj.mibModel.id}.setData2D(slice, 'image', 5);      // Call from mibController: set the 5-th slice of the current stack orientation  @endcode
+% @code result = obj.mibModel.I{obj.mibModel.id}.setData2D(slice, 'image', 5, 3, 2); // Call from mibController: set the 5-th slice of the XY-orientation, color channel=2 @endcode
 % @attention @b sensitive to the @code obj.cQuickAccessBar.view.handles.blockMode; to override the blockMode use options.blockModeSwitch=false @endcode
 % @attention @b NOT @b sensitive to the shown ROI (obj.cQuickAccessBar.view.handles.roiMode), if areas under ROIs are required use options.roiId and options.fillBg parameters
 
@@ -120,36 +120,37 @@ if options.roiId >= 0
         options.y = [bb(3), bb(4)];
         
         if ~isnan(options.fillBg)
-            result = obj.setData(type, slice{roiId2}, orient, col_channel, options);
+            result = obj.setData(type, dataset{roiId2}, orient, col_channel, options);
         else
             % crop mask to its bounding box
             mask = mask(bb(3):bb(4), bb(1):bb(2));
             mask = repmat(mask,[1, 1, numel(col_channel)]);
             sliceTemp = obj.getData(type, orient, col_channel, options);     % get current dataset
-            sliceTemp(mask==1) = slice{roiId2}(mask==1);
+            sliceTemp(mask==1) = dataset{roiId2}(mask==1);
             result = obj.setData(type, sliceTemp, orient, col_channel, options);
         end
         roiId2 = roiId2 + 1;
     end
 else
-    if obj.labels.maxMaterials == 63
-        type = 'labels';
+    if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
+        if iscell(dataset)
+            result = obj.labels.setData(dataset{1}, type, orient, col_channel, options);
+        else
+            result = obj.labels.setData(dataset, type, orient, col_channel, options);
+        end
     else
         if strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
             utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData2D');
             return;
         end
-    end
-
-    if iscell(slice)
-        obj.(type).setData(slice{1}, orient, col_channel, options);
-    else
-        obj.(type).setData(slice, orient, col_channel, options);
+        if iscell(dataset)
+            result = obj.(type).setData(dataset{1}, orient, col_channel, options);
+        else
+            result = obj.(type).setData(dataset, orient, col_channel, options);
+        end
     end
 end
-
-result = true;
 
 % notify about setData method used
 setDataOpt.type = type;

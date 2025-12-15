@@ -109,7 +109,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
-        slice = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
+        dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
 
         dataset = getData3D(obj, type, time, orient, col_channel, options)        % Get the a 3D dataset with colors: height:width:depth:colors
 

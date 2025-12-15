@@ -133,8 +133,9 @@ if options.roiId >= 0
         roiId2 = roiId2 + 1;
     end
 else   
-    if obj.labels.maxMaterials == 63
-        type = 'labels';
+    if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
+        % call to MibLabels63 requires type parameter
+        dataset = {obj.labels.getData(type, orient, col_channel, options)};
     else
         if strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
@@ -142,7 +143,7 @@ else
             dataset = [];
             return;
         end
+        dataset = {obj.(type).getData(orient, col_channel, options)};
     end
-    dataset = {obj.(type).getData(orient, col_channel, options)};
 end
 end

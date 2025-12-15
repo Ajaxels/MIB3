@@ -160,20 +160,24 @@ if options.roiId >= 0
         roiId2 = roiId2 + 1;
     end
 else
-    if obj.labels.maxMaterials == 63
-        type = 'labels';
+    if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
+        if iscell(dataset)
+            result = obj.labels.setData(dataset{1}, type, orient, col_channel, options);
+        else
+            result = obj.labels.setData(dataset, type, orient, col_channel, options);
+        end
     else
         if strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
             utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData2D');
             return;
         end
+        if iscell(dataset)
+            result = obj.(type).setData(dataset{1}, orient, col_channel, options);
+        else
+            result = obj.(type).setData(dataset, orient, col_channel, options);
+        end
     end
-
-    if iscell(dataset)
-        obj.(type).setData(dataset{1}, orient, col_channel, options);
-    else
-        obj.(type).setData(dataset, orient, col_channel, options);
-    end
+    
 end
 end

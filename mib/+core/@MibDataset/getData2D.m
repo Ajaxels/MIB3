@@ -1,5 +1,5 @@
-function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
-% function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
+function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
+% function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
 % Get the a 2D slice with colors: height:width:colors
 %
 % Parameters:
@@ -45,7 +45,7 @@ function slice = getData2D(obj, type, slice_no, orient, col_channel, options)
 %   @li .level -> [@em optional], an index of image level from the image pyramid
 %
 % Return values:
-% slice: a cell array with 2D image with colors. 
+% dataset: a cell array with 2D image with colors. 
 %       For the 'image' type: {roiId}[1:height, 1:width, 1:colors]; for all other types: {roiId}[1:height, 1:width]
 
 %| 
@@ -123,20 +123,21 @@ if options.roiId >= 0
             mask = repmat(mask,[1, 1, numel(col_channel)]);
             sliceTemp(~mask) = options.fillBg;
         end
-        slice{roiId2} = sliceTemp; %#ok<AGROW>
+        dataset{roiId2} = sliceTemp; %#ok<AGROW>
         roiId2 = roiId2 + 1;
     end
 else
-    if obj.labels.maxMaterials == 63
-        type = 'labels';
+    if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
+        % call to MibLabels63 requires type parameter
+        dataset = {squeeze(obj.labels.getData(type, orient, col_channel, options))};
     else
         if strcmp(type, 'everything')
             errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
             utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData2D');
-            slice = [];
+            dataset = [];
             return;
         end
+        dataset = {squeeze(obj.(type).getData(orient, col_channel, options))};
     end
-    slice = {squeeze(obj.(type).getData(orient, col_channel, options))};
 end
 end
