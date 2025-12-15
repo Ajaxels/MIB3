@@ -63,8 +63,8 @@ classdef MibModel < handle
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
 
-        clearSelection(obj, sel_switch, BatchOptIn) % clear the Selection layer
-        
+        clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
+
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model. Compatible with the batch mode.
 
         function obj = MibModel(cpuParallelLimitMax, mibPath)

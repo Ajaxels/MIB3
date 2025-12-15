@@ -21,6 +21,7 @@ function clearLayer(obj, y, x, z, t, blockModeSwitch)
 % dataset = obj.(type).clearLayer(); // clear the layer call from MibDataset, where type='image', 'label', 'mask', 'selection'
 % dataset = obj.mibModel.I{obj.mibModel.id}.(type).clearLayer(); // clear the layer call from MibController, where type='image', 'label', 'mask', 'selection'
 
+error('requires implementation of core.MibLabels63 logic! Whenever core.MibLabels63 is used the type of the layer needs to be specified');
 
 % Updates
 % 

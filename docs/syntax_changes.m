@@ -20,6 +20,12 @@
 %obj.setData2D('selection', {slice}, layer_id, orientation, 0, getDataOptions);
 %  obj.I{obj.id}.setData2D(slice, 'selection', layer_id, orientation, NaN, getDataOptions);
 
+% obj.mibModel.I{obj.mibModel.Id}.clearSelection(NaN, NaN, NaN, t);
+%   ->
+% obj.mibModel.I{obj.mibModel.Id}.clearSelection(NaN, NaN, NaN, t);
+%   -> obj.mibModel.I{obj.mibModel.id}.clearLayer([], [], [], t);
+
+
 % wb = waitbar(0,'Clearing the Selection layer for a whole Z-stack...', 'WindowStyle', 'modal'); 
 % wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
 %    'Message', sprintf('Clearing the Selection layer for a whole Z-stack\nPlease wait...'), ...

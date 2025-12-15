@@ -15,6 +15,7 @@ end
 
 % obj.mibController
 
-obj.mibController.mibModel.clearSelection();
+%obj.mibController.mibModel.clearSelection();
+obj.mibController.mibModel.clearLayer('selection');
 
 end
