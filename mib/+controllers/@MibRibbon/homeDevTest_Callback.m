@@ -17,5 +17,6 @@ end
 
 %obj.mibController.mibModel.clearSelection();
 obj.mibController.mibModel.clearLayer('selection');
-
+obj.mibController.mibModel.clearLayer('selection', '2D, Slice');
+obj.mibController.mibModel.I{obj.mibController.mibModel.id}.clearLayer('selection');
 end

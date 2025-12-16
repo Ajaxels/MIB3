@@ -103,7 +103,7 @@ column.add(widgetHandles.selectionToMask);
 column = section.addColumn();
 
 %% -------------- Selection to buffer --------------
-widgetHandles.toBuffer =  DropDownButton(sprintf('Selection\nto buffer'), Icon(fullfile(iconPath, 'selection_to_buffer_24px.png')));
+widgetHandles.toBuffer = DropDownButton(sprintf('Selection\nto buffer'), Icon(fullfile(iconPath, 'selection_to_buffer_24px.png')));
 widgetHandles.toBuffer.Description = "Copy selection to buffer";
 
 popupList = PopupList();
@@ -125,7 +125,7 @@ section = obj.handles.ribbon.selection.addSection("Tools");
 
 column = section.addColumn();
 %% -------------- Morphological 2D/3D operations --------------
-widgetHandles.morphOps =  DropDownButton(sprintf('Morphological\n2D/3D operations'), Icon(fullfile(iconPath, 'selection_morphops_24px.png')));
+widgetHandles.morphOps = DropDownButton(sprintf('Morphological\n2D/3D operations'), Icon(fullfile(iconPath, 'selection_morphops_24px.png')));
 widgetHandles.morphOps.Description = "Copy selection to buffer";
 
 popupList = PopupList();
@@ -182,8 +182,9 @@ column.add(widgetHandles.expandToMask);
 
 % ------------- Interpolate as Shape (I) -------------
 column = section.addColumn();
-widgetHandles.interpolate = matlab.ui.internal.toolstrip.ToggleButton(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, 'selection_shape_24px.png')));
-widgetHandles.interpolate.Description = 'Interpolate the selected areas';
+%widgetHandles.interpolate = matlab.ui.internal.toolstrip.ToggleButton(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, 'selection_shape_24px.png')));
+widgetHandles.interpolate = Button(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, 'selection_shape_24px.png')));
+widgetHandles.interpolate.Description = 'Interpolate the selected areas (i - key shortcut)';
 column.add(widgetHandles.interpolate);
 
 % ------------- Replace selected areas in the image -------------

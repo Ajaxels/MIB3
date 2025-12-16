@@ -1,108 +1,127 @@
-function clearLayer(obj, y, x, z, t, blockModeSwitch)
-% function clearLayer(obj, y, x, z, t, blockModeSwitch)
-% Clear the layer. It is also possible to specify the area where the layer should be cleared.
+function clearLayer(obj, layerName, y, x, z, t)
+% function clearLayer(obj, layerName, y, x, z, t)
+% Clear the layer, use parameters to specify the area where the layer should be cleared.
 %
 % Parameters:
-% y: [@em optional], can be @b [], a vector of Y for example [1:obj.height] or [minY, maxY]; or a string with the mode ('2D', '3D', '4D') 
-% x: [@em optional], can be @b [], a vector of X, for example [1:obj.width] or [minX, maxX]
-% z: [@em optional] a vector of z-values, for example [1:obj.depth] or [minZ, maxZ]
-% t: [@em optional] a vector of t-values, for example [1:obj.time] or [minT, maxT]
-% blockModeSwitch: [@em optional] a switch use (1) or not (0) the blockMode
+% layerName: char with the target layer name, can be []
+% @li [] -> 'selection'
+% @li 'selection' -> clear the selection layer
+% @li 'mask' -> clear the mask layer
+% @li 'labels' -> clear the labels layer
+% @li 'everything' -> clear selection, mask, labels layers for core.MibLabels63 class only
+% @li 'image' -> clear the image layer
+% y: [@em optional], a vector of y-values, can be []
+%       @li when @b [], y = '4D', to clear complete dataset
+%       @li vector of Y-min Y-max values - [minY, maxY]; 
+%       @li char '2D', '3D', '4D' with the mode
+% x: [@em optional], can be @b [], vector of X-min and X-max values [minX, maxX]
+% z: [@em optional] vector of Z-min, Z-max, for example [minZ, maxZ]
+% t: [@em optional] vector of T-min, T-max values, for example [minT, maxT]
 %
 % Return values:
 % 
 
 %| 
 % Examples:
-% @code obj.mibModel.I{obj.mibModel.Id}.clearSelection(); // call from mibController, clear the Selection layer completely @endcode
-% @code obj.mibModel.I{obj.mibModel.Id}.clearSelection(1:imageData.y, 1:imageData.x, 1:3); //  call from mibController, clear the Selection layer only in 3 first slices  @endcode
+% @code obj.mibModel.I{obj.mibModel.Id}.selection.clearLayer(); // call from mibController, clear the Selection layer completely @endcode
+% @code obj.mibModel.I{obj.mibModel.Id}.selection.clearLayer([], 1:imageData.y, 1:imageData.x, 1:3); //  call from mibController, clear the Selection layer only in 3 first slices  @endcode
 
-% @code obj.clearLayer();      // clear the layer, call from the class @endcode
-% dataset = obj.(type).clearLayer(); // clear the layer call from MibDataset, where type='image', 'label', 'mask', 'selection'
-% dataset = obj.mibModel.I{obj.mibModel.id}.(type).clearLayer(); // clear the layer call from MibController, where type='image', 'label', 'mask', 'selection'
-
-error('requires implementation of core.MibLabels63 logic! Whenever core.MibLabels63 is used the type of the layer needs to be specified');
+% @code obj.clearLayer('selection');      // clear the layer, call from the class @endcode
+% @code dataset = obj.clearLayer('everything'); // clear the layer call from MibController, where type='image', 'label', 'mask', 'selection', 'everything'
 
 % Updates
 % 
 
-if nargin < 6; blockModeSwitch = 0; end
-if nargin < 5; t = []; end
-if nargin < 4; z = []; end
-if nargin < 3; x = []; end
-if nargin < 2; y = '4D'; end
+if nargin < 6; t = []; end
+if nargin < 5; z = []; end
+if nargin < 4; x = []; end
+if nargin < 3; y = '4D'; end
+if nargin < 2; layerName = 'selection'; end
+
+if isempty(obj.data{1}); return; end    % selection is disabled
 
 if ischar(y)
-    getDataOptions.blockModeSwitch = blockModeSwitch;
-    [h, w, c, d, t] = obj.getDatasetDimensions('image', [], getDataOptions);
-
-    if blockModeSwitch == 1
-        getDataOptions.x = ceil(obj.axesX);
-        getDataOptions.y = ceil(obj.axesY);
+    [h, w, c, d, t] = obj.getDatasetDimensions([], [], blockModeSwitch);
+    if ~isempty(x) && ~isempty(y)
+        getDataOptions.x = x;
+        getDataOptions.y = y;
+        h = diff(y)+1;
+        w = diff(x)+1;
     end
 
     switch y
         case '2D'
-            img = zeros([h, w, 1, c], 'uint8');
+            img = zeros([h, w, 1, c], obj.dataClass);
             getDataOptions.z = [obj.slices{obj.orientation}(1) obj.slices{obj.orientation}(1)];
             getDataOptions.t = [obj.slices{5}(1) obj.slices{5}(1)];
-            
-            obj.setData(img, 'selection', [], [], getDataOptions);
+
+            obj.setData(img, layerName, [], [], getDataOptions);
         case '3D'
-            img = zeros([h, w, d, c], 'uint8');
+            img = zeros([h, w, d, c], obj.dataClass);
             getDataOptions.t = [obj.slices{5}(1) obj.slices{5}(1)];
-            obj.setData(img, 'selection', [], [], getDataOptions);
+            obj.setData(img, layerName, [], [], getDataOptions);
         case '4D'
-            img = zeros([h, w, d, c, t], 'uint8');
-            obj.setData(img, 'selection');
+            img = zeros([h, w, d, c, t], obj.dataClass);
+            obj.setData(img, layerName);
     end
 else
+    % update time
     if isempty(t)
-        t = 1:obj.time; 
+        getDataOptions.t = [1 obj.time]; 
     elseif numel(t) == 2   % t = [minT, maxT] format
-        t = max([1 t(1)]):min([t(2) obj.time]); 
+        getDataOptions.t = [max([1 t(1)]) min([t(2) obj.time])]; 
     else
-        t = t(1); 
+        getDataOptions.t = [t(1) t(1)]; 
     end
+    dt = diff(getDataOptions.t)+1;
 
+    % update depth
     if isempty(z)
-        z = 1:obj.depth; 
+        getDataOptions.z = [1 obj.depth]; 
     elseif numel(z) == 2    % z = [minZ, maxZ] format
-        z = max([1 z(1)]):min([z(2) obj.depth]); 
+        getDataOptions.z = [max([1 z(1)]) min([z(2) obj.depth])]; 
     else
-        z = z(1);
+        getDataOptions.z = [z(1) z(1)];
     end
-    if isempty(x)
-        x = 1:obj.width; 
-    elseif numel(x) == 2    % x = [minX, maxX] format
-        x = max([1 x(1)]):min([x(2) obj.width]); 
-    else
-        x = x(1);
-    end
+    dz = diff(getDataOptions.z)+1;
 
-    if isempty(y)
-        y = 1:obj.height; 
-    elseif numel(y) == 2  && ~ischar(y)   % y = [minY, maxY] format
-        y = max([1 y(1)]):min([y(2) obj.height]); 
+    % update width
+    if isempty(x)
+        getDataOptions.x = [1 obj.width]; 
+    elseif numel(x) == 2    % x = [minX, maxX] format
+        getDataOptions.x = [max([1 x(1)]) min([x(2) obj.width])]; 
     else
-        y = y(1);
+        getDataOptions.x = [x(1) x(1)];
     end
+    dx = diff(getDataOptions.x)+1;
+
+    % update height
+    if isempty(y)
+        getDataOptions.y = [1 obj.height]; 
+    elseif numel(y) == 2    % y = [minY, maxY] format
+        getDataOptions.y = [max([1 y(1)]) min([y(2) obj.height])]; 
+    else
+        getDataOptions.y = [y(1) y(1)];
+    end
+    dy = diff(getDataOptions.y)+1;
+
+    % define color vector
     c = 1:obj.colors;
 
-    
     if ~isa(obj, 'core.MibLabels63') 
-        if nargin < 2
+        if nargin < 3
             obj.data{1} = zeros([obj.height, obj.width, obj.depth, obj.colors, obj.time], obj.dataClass);
         else
-            obj.data{1}(y, x, z, c, t) = 0;
+            obj.data{1}(getDataOptions.y(1):getDataOptions.y(2), ...
+                        getDataOptions.x(1):getDataOptions.x(2), ...
+                        getDataOptions.z(1):getDataOptions.z(2), ...
+                        c, ...
+                        getDataOptions.t(1):getDataOptions.t(2)) = 0;
         end
     else
-        if isempty(obj.data{1}); return; end    % selection is disabled
-        if nargin < 2
-            obj.data{1} = bitset(obj.data{1}, 8, 0);
-        else
-            obj.data{1}(y, x, z, 1, t) = bitset(obj.data{1}(y, x, z, 1, t), 8, 0);
-        end
+        img = zeros([dy, dx, dz, numel(c), dt], obj.dataClass);
+        obj.setData(img, layerName, [], [], getDataOptions);
     end
 end
+
 end

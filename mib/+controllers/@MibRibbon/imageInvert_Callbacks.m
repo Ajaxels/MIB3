@@ -20,7 +20,7 @@ end
 switch mode
     case 'Shown slice (2D)'         % obj.handles.ribbonImage.invert2D
     case 'Current stack (3D)'       % obj.handles.ribbonImage.invert3D
-    case 'Complete volume (4D)'     % obj.handles.ribbonImage.invert4D
+    case {'Invert', 'Complete volume (4D)'}     % obj.handles.ribbonImage.invert4D
 
 end
 

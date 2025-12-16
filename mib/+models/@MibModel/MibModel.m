@@ -29,6 +29,8 @@ classdef MibModel < handle
         % a structure with program preferences
         pythonEnv
         % python environment started from MIB
+        Undo
+        % variable for Undo history
         Sets
         % structure with the set settings
         % .selectedSet -> index of the selected set
@@ -97,6 +99,8 @@ classdef MibModel < handle
             obj.Sets.selectedDataset = []; % array of the selected datasets in the sets
             obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
             
+            %obj.Undo = 
+
             % initialize MIB with 10 dummy datasets
             BatchOpt = struct('Mode', {'Add set'}, 'DatasetType', {'Std'}, 'SetName', 'Set 1');
             obj.datasetsSetsOps(BatchOpt);
@@ -109,8 +113,7 @@ classdef MibModel < handle
             obj.sessionSettings = struct();     % current session settings
             %obj.mibPrevId = 1;     % index of the previous dataset
             
-            
-            %obj.U = mibImageUndo();    % create instance for keeping undo information
+            obj.Undo = core.MibUndo();    % create instance for keeping undo information
             obj.pythonEnv = [];     % Python environment for MIB
         end
 

@@ -43,13 +43,16 @@ classdef MibImage < matlab.mixin.Copyable
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        dataset = getData(obj, type, orient, colChannel, options)   % Get dataset from MibImage class
+        
+        clearLayer(obj, layerName, y, x, z, t)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
+        
+        dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
 
-        varargout = getDatasetDimensions(obj, orient, splitDims)        % Get dimensions of the dataset
+        varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
 
         initialize(obj, data, meta, type);  % initialize the class using default or provided values
 
-        result = setData(obj, dataset, type, orient, col_channel, options)        % update contents of the class
+        result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
 
         function obj = MibImage(data, meta)
             % obj = MibImage(data, meta)

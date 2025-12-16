@@ -107,6 +107,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         initialize(obj, img, meta, datasetType, modelType) % init MibDataset class and set all elements of the class to default values
 
+        clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
+
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors

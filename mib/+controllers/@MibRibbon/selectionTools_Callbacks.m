@@ -32,7 +32,8 @@ switch mode
     case {'Complete volume (4D)', 'Invert'}        % obj.handles.ribbonSelection.invert4D or obj.handles.ribbonSelection.invert
 
     case sprintf('Expand to\nmask border')        % obj.handles.ribbonSelection.expandToMask
-    case {sprintf('Interpolate as\nshape'), sprintf('Interpolate as\nlines')}        % obj.handles.ribbonSelection.interpolate
+    case {sprintf('Interpolate as\nshape'), sprintf('Interpolate as\nline')}        % obj.handles.ribbonSelection.interpolate
+        obj.mibController.updateInterpolationMode();
     case sprintf('Replace\nselected areas')        % obj.handles.ribbonSelection.replaceImage
     case sprintf('Smooth\nselection')        % obj.handles.ribbonSelection.smooth
 

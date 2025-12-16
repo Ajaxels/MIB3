@@ -141,8 +141,7 @@ column.add(widgetHandles.contrast);
 
 %% -------- INVERT --------
 column = section.addColumn();
-widgetHandles.invert = matlab.ui.internal.toolstrip.SplitButton('Invert',Icon(fullfile(iconPath, 'invert_24px.png')));
-widgetHandles.invert.ButtonPushedFcn  = @(varargin)disp('Invert image pressed');
+widgetHandles.invert = matlab.ui.internal.toolstrip.SplitButton('Invert', Icon(fullfile(iconPath, 'invert_24px.png')));
 widgetHandles.invert.Description = "Invert image";
 
 popupList = PopupList();
@@ -160,6 +159,29 @@ popupList.add(widgetHandles.invert4D);
 % add the popup list to the INVERT button
 widgetHandles.invert.Popup = popupList;
 column.add(widgetHandles.invert);
+
+%% --------- IMAGE RESAMPLE ---------
+column = section.addColumn();
+widgetHandles.visualization = matlab.ui.internal.toolstrip.SplitButton('Visualization',  Icon(fullfile(iconPath, 'image_auto_24px.png')));
+widgetHandles.visualization.Description = 'Type of image interpolation for the visualization';
+
+popupList = PopupList();
+% Bicubic interpolation
+widgetHandles.visBicubic =  ListItem('Bicubic', Icon(fullfile(iconPath, 'image_bicubic_24px.png')));
+widgetHandles.visBicubic.Description = 'Bicubic interpolation to resize images for visualization (best for zooming out)';
+popupList.add(widgetHandles.visBicubic);
+% Nearest interpolation
+widgetHandles.visNearest =  ListItem('Nearest', Icon(fullfile(iconPath, 'image_nearest_24px.png')));
+widgetHandles.visNearest.Description = 'Nearest interpolation to resize images for visualization (best for zooming in)';
+popupList.add(widgetHandles.visNearest);
+% Automatic interpolation
+widgetHandles.visAuto =  ListItem('Automatic', Icon(fullfile(iconPath, 'image_auto_24px.png')));
+widgetHandles.visAuto.Description = 'Nearest for zooming-in and bicubic for zooming-out';
+popupList.add(widgetHandles.visAuto);
+
+% add the popup list to the visualization button
+widgetHandles.visualization.Popup = popupList;
+column.add(widgetHandles.visualization);
 
 %% ============= Make "Dataset tools" section =============
 section = obj.handles.ribbon.image.addSection("Image tools");

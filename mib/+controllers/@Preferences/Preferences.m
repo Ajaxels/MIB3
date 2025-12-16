@@ -338,7 +338,7 @@ classdef Preferences < handle
             % function ApplyButtonPushedCallback(obj)
             % apply preferences to MIB
             
-            global scalingGUI;
+            %global scalingGUI;
             status = 0;
             
             % update font size
@@ -364,31 +364,33 @@ classdef Preferences < handle
             
             % deal with change of selection mode
             if obj.preferences.System.EnableSelection   % turn ON the Selection
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection{1}(1))
-                    obj.mibModel.getImageMethod('clearSelection');
-                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))
-                    obj.mibModel.I{obj.mibModel.id}.model{1} = zeros(...
-                        [obj.mibModel.getImageProperty('height'), obj.mibModel.getImageProperty('width'), ...
-                        obj.mibModel.getImageProperty('depth'), obj.mibModel.getImageProperty('time')], 'uint8');
+                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection.data{1}(1))
+                    obj.mibController.mibModel.clearLayer('selection');
+                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.labels.data{1}(1))
+                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = zeros(...
+                        [obj.mibModel.I{obj.mibModel.id}.dim_yxzct(1), obj.mibModel.I{obj.mibModel.id}.dim_yxzct(2), ...
+                        obj.mibModel.I{obj.mibModel.id}.dim_yxzct(3), 1, obj.mibModel.I{obj.mibModel.id}.dim_yxzct(5)], 'uint8');
                 end
             else         % turn OFF the Selection, Mask, Model
                 if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63
-                    obj.mibModel.I{obj.mibModel.id}.model{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.labels.exists = false;
                 else
-                    obj.mibModel.I{obj.mibModel.id}.selection{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection.exists = false;
+                    obj.mibModel.I{obj.mibModel.id}.mask.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
                 end
-                obj.mibModel.setImageProperty('modelExist', 0);
-                obj.mibModel.setImageProperty('maskExist', 0);
-                obj.mibModel.U.clearContents();  % delete backup history
+                obj.mibModel.Undo.clearContents();  % delete backup history
             end
             obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
             
             obj.mibModel.preferences = obj.preferences;
             
-            obj.mibModel.I{obj.mibModel.id}.modelMaterialColors = obj.preferences.Colors.ModelMaterialColors;
-            obj.mibModel.I{obj.mibModel.id}.lutColors = obj.preferences.Colors.LUTColors;
+            obj.mibModel.I{obj.mibModel.id}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
+            obj.mibModel.I{obj.mibModel.id}.labels.lutColors = obj.preferences.Colors.LUTColors;
             
-            obj.mibController.toolbarInterpolation_ClickedCallback('keepcurrent');     % update the interpolation button icon
+            obj.mibController.updateInterpolationMode(true);  % update the interpolation button icon
             obj.mibController.toolbarResizingMethod_ClickedCallback('keepcurrent');
             
             % update imaris path using IMARISPATH enviromental variable

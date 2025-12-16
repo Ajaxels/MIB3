@@ -101,6 +101,8 @@ classdef MibController < handle
         
         startController(obj, controllerName, varargin) % start a child controller using provided name
 
+        updateInterpolationMode(obj, options)        % Function to set the state of the interpolation button in the Selection ribbon
+
         function obj = MibController(mibModel, mibVersion)
             % function obj = MibController(mibModel, mibVersion)
             % MibController class constructor

@@ -54,6 +54,8 @@ classdef MibRibbon
 
         imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
 
+        imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
+
         maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
         
         maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
@@ -229,9 +231,15 @@ classdef MibRibbon
             obj.handles.ribbonImage.contrastNormZmaskBg.ItemPushedFcn = @obj.imageContrast_Callbacks;
             obj.handles.ribbonImage.contrastNormT.ItemPushedFcn = @obj.imageContrast_Callbacks;
             % invert
+            obj.handles.ribbonImage.invert.ButtonPushedFcn = @obj.imageInvert_Callbacks;
             obj.handles.ribbonImage.invert2D.ItemPushedFcn = @obj.imageInvert_Callbacks;
             obj.handles.ribbonImage.invert3D.ItemPushedFcn = @obj.imageInvert_Callbacks;
             obj.handles.ribbonImage.invert4D.ItemPushedFcn = @obj.imageInvert_Callbacks;
+            % visualization
+            obj.handles.ribbonImage.visualization.ButtonPushedFcn = @obj.imageVisualization_Callbacks;
+            obj.handles.ribbonImage.visBicubic.ItemPushedFcn = @obj.imageVisualization_Callbacks;
+            obj.handles.ribbonImage.visNearest.ItemPushedFcn = @obj.imageVisualization_Callbacks;
+            obj.handles.ribbonImage.visAuto.ItemPushedFcn = @obj.imageVisualization_Callbacks;
 
             %% Add Callbacks for the IMAGE ribbon -> Image Tools
             obj.handles.ribbonImage.filters.ButtonPushedFcn = @obj.image_Callbacks;
@@ -381,7 +389,7 @@ classdef MibRibbon
             obj.handles.ribbonSelection.invert4D.ItemPushedFcn = @obj.selectionTools_Callbacks;
             % other tools
             obj.handles.ribbonSelection.expandToMask.ButtonPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.interpolate.ValueChangedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.interpolate.ButtonPushedFcn = @obj.selectionTools_Callbacks;
             obj.handles.ribbonSelection.replaceImage.ButtonPushedFcn = @obj.selectionTools_Callbacks;
             obj.handles.ribbonSelection.smooth.ButtonPushedFcn = @obj.selectionTools_Callbacks;
         end

@@ -1,10 +1,10 @@
-function result = setData(obj, dataset, type, orient, colChannel, options) 
-% function result = setData(obj, dataset, type, orient, colChannel, options) 
+function result = setData(obj, dataset, layerType, orient, colChannel, options) 
+% function result = setData(obj, dataset, layerType, orient, colChannel, options) 
 % Set dataset to MibBaseImage class
 %
 % Parameters:
 % dataset: matrix with the dataset to update MibBaseImage.data 
-% type: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
+% layerType: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
 %   Values are 'labels', 'mask', 'selection', or 'everything' to get all
 %   layers at once, @em default = 'image'
 % orient: [@em optional, can be [], default == 3];
@@ -43,11 +43,11 @@ result = false;
 if nargin < 6; options = struct(); end
 if nargin < 5; colChannel = []; end
 if nargin < 4; orient = []; end
-if nargin < 3; type = 'image'; end
+if nargin < 3; layerType = 'image'; end
 
 % for core.MibModel63 use a dedicated function to set the specific layer
-if isa(obj, 'core.MibLabels63') && ~strcmp(type, 'image')
-    result = obj.setData63(dataset, type, orient, colChannel, options);
+if isa(obj, 'core.MibLabels63') && ~strcmp(layerType, 'image')
+    result = obj.setData63(dataset, layerType, orient, colChannel, options);
     return;
 end
 

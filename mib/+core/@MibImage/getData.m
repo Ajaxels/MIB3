@@ -1,9 +1,9 @@
-function dataset = getData(obj, type, orient, colChannel, options) % get complete 5D dataset
-% function dataset = getData(obj, type, orient, colChannel, options)
+function dataset = getData(obj, layerType, orient, colChannel, options) % get complete 5D dataset
+% function dataset = getData(obj, layerType, orient, colChannel, options)
 % Get dataset from MibImage class
 %
 % Parameters:
-% type: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
+% layerType: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
 %   Values are 'labels', 'mask', 'selection', or 'everything' to get all
 %   layers at once, @em default = 'image'
 % orient: [@em optional, can be [], when [] orient == 3];
@@ -44,11 +44,11 @@ function dataset = getData(obj, type, orient, colChannel, options) % get complet
 if nargin < 5; options=struct(); end
 if nargin < 4; colChannel = []; end
 if nargin < 3; orient = []; end
-if nargin < 2; type = 'image'; end
+if nargin < 2; layerType = 'image'; end
 
 % for core.MibModel63 use a dedicated function to get the specific layer
-if isa(obj, 'core.MibLabels63') && ~strcmp(type, 'image')
-    dataset = obj.getData63(obj, type, orient, colChannel, options);
+if isa(obj, 'core.MibLabels63') && ~strcmp(layerType, 'image')
+    dataset = obj.getData63(obj, layerType, orient, colChannel, options);
     return;
 end
 
