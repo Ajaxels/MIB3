@@ -247,7 +247,7 @@ obj.view.handles.panels.segmentation.handles.addMaterial.Icon = core.MibIconCach
 obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'minus_16px'); %obj.mibModel.sessionSettings.guiImages.minus;
 
 % update mibModel parameters
-obj.mibModel.myPath = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
+obj.mibModel.currentDirectory = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
 
 % update MibModel properties based on GUI settings
 obj.mibModel.hideImage = obj.view.handles.panels.selection.handles.hideImage.Value;   % define whether or not display the image layer

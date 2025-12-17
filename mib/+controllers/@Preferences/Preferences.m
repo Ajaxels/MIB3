@@ -391,16 +391,16 @@ classdef Preferences < handle
             obj.mibModel.I{obj.mibModel.id}.labels.lutColors = obj.preferences.Colors.LUTColors;
             
             obj.mibController.updateInterpolationMode(true);  % update the interpolation button icon
-            obj.mibController.toolbarResizingMethod_ClickedCallback('keepcurrent');
+            obj.mibController.updateVisualizationMode('keepcurrent');  % update image visualization mode
             
             % update imaris path using IMARISPATH enviromental variable
             if ~isempty(obj.mibModel.preferences.ExternalDirs.ImarisInstallationPath)
                 setenv('IMARISPATH', obj.mibModel.preferences.ExternalDirs.ImarisInstallationPath);
             end
             
-            scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
+            %scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
             
-            notify(obj.mibModel, 'plotImage');
+            notify(obj.mibModel, 'ShowImage');
             status = 1;
         end
         
@@ -423,41 +423,43 @@ classdef Preferences < handle
             if status == 0; return; end
             
             if obj.preferences.Undo.Enable
-                obj.mibModel.U.enableSwitch = true;
+                obj.mibModel.Undo.enableSwitch = true;
             else
-                obj.mibModel.U.clearContents();
-                obj.mibModel.U.enableSwitch = false;
+                obj.mibModel.Undo.clearContents();
+                obj.mibModel.Undo.enableSwitch = false;
             end
             
-            if obj.preferences.Undo.Max3dUndoHistory ~= obj.mibModel.U.max3d_steps || obj.preferences.Undo.MaxUndoHistory ~= obj.mibModel.U.max_steps
-                obj.mibModel.U.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
+            if obj.preferences.Undo.Max3dUndoHistory ~= obj.mibModel.Undo.max3d_steps || obj.preferences.Undo.MaxUndoHistory ~= obj.mibModel.Undo.max_steps
+                obj.mibModel.Undo.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
             end
             
             if obj.preferences.System.EnableSelection
-                if isnan(obj.mibModel.I{obj.mibModel.id}.selection{1}(1)) && obj.mibModel.I{obj.mibModel.id}.modelType ~= 63
-                    obj.mibModel.I{obj.mibModel.id}.clearSelection();
-                elseif obj.mibModel.I{obj.mibModel.id}.modelType == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.model{1}(1))
-                    obj.mibModel.I{obj.mibModel.id}.model{1} = ...
-                        zeros([size(obj.mibModel.I{obj.mibModel.id}.image{1},1),size(obj.mibModel.I{obj.mibModel.id}.image{1},2),...
-                        size(obj.mibModel.I{obj.mibModel.id}.image{1},4),size(obj.mibModel.I{obj.mibModel.id}.image{1},5)], 'uint8');
+                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials >= 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection.data{1}(1))
+                    obj.mibController.mibModel.clearLayer('selection');
+                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.labels.data{1}(1))
+                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = zeros(...
+                        [obj.mibModel.I{obj.mibModel.id}.dim_yxzct(1), obj.mibModel.I{obj.mibModel.id}.dim_yxzct(2), ...
+                        obj.mibModel.I{obj.mibModel.id}.dim_yxzct(3), 1, obj.mibModel.I{obj.mibModel.id}.dim_yxzct(5)], 'uint8');
                 end
-            else
-                if obj.mibModel.I{obj.mibModel.id}.modelType == 63
-                    obj.mibModel.I{obj.mibModel.id}.model{1} = NaN;
-                    obj.mibModel.I{obj.mibModel.id}.modelExist = 0;
-                    obj.mibModel.I{obj.mibModel.id}.maskExist = 0;
+            else         % turn OFF the Selection, Mask, Model
+                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63
+                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.labels.exists = false;
                 else
-                    obj.mibModel.I{obj.mibModel.id}.selection{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection.exists = false;
+                    obj.mibModel.I{obj.mibModel.id}.mask.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
                 end
-                obj.mibModel.U.clearContents();  % delete backup history
+                obj.mibModel.Undo.clearContents();  % delete backup history
             end
             obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
             
             % remove the brush cursor
-            obj.mibController.mibSegmentationToolPopup_Callback();
-            obj.mibController.updateGuiWidgets();
+            % controllers.MibSegmentation.segmentationTool_Callback();
+            % obj.mibController.updateGuiWidgets();
             
-            notify(obj.mibModel, 'plotImage');
+            notify(obj.mibModel, 'ShowImage');
             obj.closeWindow();
         end
         

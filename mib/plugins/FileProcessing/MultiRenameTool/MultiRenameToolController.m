@@ -287,7 +287,7 @@ classdef MultiRenameToolController < handle
                 '*.jpg',  'JPG Files (*.jpg)'; ...
                 '*.png',  'PNG Files (*.png)'; ...
                 '*.tif',  'TIF Files (*.tif)'};
-            [file, path, indx] = mib_uigetfile(fileFilter, 'Select files', obj.mibModel.myPath, 'on');
+            [file, path, indx] = mib_uigetfile(fileFilter, 'Select files', obj.mibModel.currentDirectory, 'on');
             drawnow;
             figure(obj.View.gui);
             if isequal(file, 0); return; end

@@ -200,8 +200,8 @@ classdef ImageConverterController < handle
             % indicates field of the BatchOpt structure that defines value
             % for this widget
             
-            obj.BatchOpt.InputDirectory = obj.mibModel.myPath;
-            obj.BatchOpt.OutputDirectory = fullfile(obj.mibModel.myPath, 'FileConvert');
+            obj.BatchOpt.InputDirectory = obj.mibModel.currentDirectory;
+            obj.BatchOpt.OutputDirectory = fullfile(obj.mibModel.currentDirectory, 'FileConvert');
             registry = imformats();
             obj.BatchOpt.InputImageFormatExtension = {'tif'};
             obj.BatchOpt.InputImageFormatExtension{2} = [registry.ext];

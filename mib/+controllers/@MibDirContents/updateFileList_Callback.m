@@ -23,13 +23,13 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 selectedExtention = obj.view.handles.panels.dirContents.handles.fileFilters.Value;
-mypath = obj.mibModel.myPath;
+currPath = obj.mibModel.currentDirectory;
 
-if mypath(end) == ':'   % change from c: to c:\, because somehow dir('c:') gives wrong result
-    mypath = [mypath '\'];
+if currPath(end) == ':'   % change from c: to c:\, because somehow dir('c:') gives wrong result
+    currPath = [currPath '\'];
 end
 
-fileList = dir(mypath); % get list of files and folders
+fileList = dir(currPath); % get list of files and folders
 fnames = {fileList.name};
 
 if isempty(fnames)

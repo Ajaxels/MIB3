@@ -15,6 +15,7 @@ arguments (Input)
 end
 
 if obj.mibModel.preferences.System.DeveloperMode
+    % obj.mibController.cSegmentation.segmentationTool_Callback
     fprintf('controllers.MibSegmentation.segmentationTool_Callback: -> "%s"\n', hWidget.Value);
 end
 

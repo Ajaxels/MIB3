@@ -22,17 +22,24 @@ switch mode
     case 'selectWorkingDirectory'
         newPath = uigetdir(obj.handles.currentDirectory.Value, 'Choose Directory');
         if newPath == 0; return; end
-
+        obj.mibModel.currentDirectory = newPath;
+        obj.handles.currentDirectory.Value = newPath;
+        obj.mibController.cDirContents.updateFileList_Callback();
     case 'currentDirectory'
-        % update obj.mibModel.myPath variable
-        currentPath = obj.handles.currentDirectory.Value;
+        % update obj.mibModel.currentDirectory variable
+        newPath = obj.handles.currentDirectory.Value;
         % get fileparts to clip filename from the path keeping only the
         % directory name
-        [filepath, ~, fext] = fileparts(currentPath);
+        [filepath, ~, fext] = fileparts(newPath);
         if ~isempty(fext)
-            currentPath = filepath; 
+            newPath = filepath; 
         end
-
+        if ~isdir(newPath) %#ok<ISDIR>
+            obj.handles.currentDirectory.Value = obj.mibModel.currentDirectory;
+            return; 
+        end
+        obj.mibModel.currentDirectory = newPath;
+        obj.mibController.cDirContents.updateFileList_Callback();
     case 'copyPath'
         clipboard('copy', obj.handles.currentDirectory.Value);
     case 'openBrowser'

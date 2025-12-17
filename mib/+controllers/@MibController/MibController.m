@@ -103,6 +103,8 @@ classdef MibController < handle
 
         updateInterpolationMode(obj, options)        % Function to set the state of the interpolation button in the Selection ribbon
 
+        updateVisualizationMode(obj, mode)        % Function to set type of image interpolation for the visualization (from Image Ribbon)
+
         function obj = MibController(mibModel, mibVersion)
             % function obj = MibController(mibModel, mibVersion)
             % MibController class constructor

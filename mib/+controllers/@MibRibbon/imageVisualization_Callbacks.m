@@ -17,6 +17,15 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.imageVisualization_Callbacks: Image ribbon-> %s\n', mode);
 end
 
-
+switch mode
+    case 'Visualization'        % obj.handles.ribbonImage.visualization
+        obj.mibController.updateVisualizationMode();
+    case 'Bicubic'              % obj.handles.ribbonImage.visBicubic
+        obj.mibController.updateVisualizationMode('bicubic');
+    case 'Nearest'              % obj.handles.ribbonImage.visNearest
+        obj.mibController.updateVisualizationMode('nearest');
+    case 'Automatic'            % obj.handles.ribbonImage.visAuto
+        obj.mibController.updateVisualizationMode('auto');
+end
 
 end

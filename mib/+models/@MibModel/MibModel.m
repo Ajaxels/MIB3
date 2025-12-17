@@ -21,8 +21,6 @@ classdef MibModel < handle
         % place
         mibPath 
         % path to MIB installation directory also available in MibController
-        myPath
-        % current working directory
         onFlyImageStretch
         % enable/disable live stretching of image intensities
         preferences
