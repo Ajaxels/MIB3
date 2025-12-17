@@ -20,7 +20,7 @@ classdef MibDirContents
 
         fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.activeDataset.handles.fileList)
 
-        updateFileList_Callback(obj, hWidget, hData, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
+        updateFileList_Callback(obj, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 
         function obj = MibDirContents(mainCtrl, view, guiHandles, model)
             %% Init properties
@@ -57,7 +57,7 @@ classdef MibDirContents
             obj.handles.bioFormats.ValueChangedFcn = @obj.bioFormats_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
-            obj.handles.updateFileList.ButtonPushedFcn = @obj.updateFileList_Callback;
+            obj.handles.updateFileList.ButtonPushedFcn = @(~,~)obj.updateFileList_Callback;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
         end

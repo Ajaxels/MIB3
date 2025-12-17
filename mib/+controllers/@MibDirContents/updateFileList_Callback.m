@@ -1,12 +1,10 @@
-function updateFileList_Callback(obj, hWidget, hData, selectedFilename)
-% function updateFileList_Callback(obj, hWidget, hData, selectedFilename)
+function updateFileList_Callback(obj, selectedFilename)
+% function updateFileList_Callback(obj, selectedFilename)
 % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update
 % the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList"
 % using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 %
 % Parameters:
-% hWidget: handle to the pressed widget
-% hData:
 % selectedFilename: [@em optional] char with the selected filename to highlight
 
 % arguments (Input)
@@ -16,7 +14,7 @@ function updateFileList_Callback(obj, hWidget, hData, selectedFilename)
 %     selectedFilename char = ''
 % end
 
-if nargin < 4; selectedFilename = ''; end
+if nargin < 2; selectedFilename = ''; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDirContents.updateFileList_Callback: clicked on: "obj.view.handles.panels.dirContents.handles.updateFileList"\n');

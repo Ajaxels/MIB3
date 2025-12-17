@@ -261,6 +261,7 @@ obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesSho
 obj.cActiveDataset.update_fromModel(); % update widgets of the Datasets panel from the values of obj.MibModel
 obj.cSelection.lutTable_update_fromModel(); % update the LUT table in the Selection and View settings panel
 %obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
+obj.cDirContents.updateFileList_Callback();
 
 % --------- update listeners
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
@@ -300,8 +301,6 @@ for i=1:numel(obj.mibModel.I)
     eventdata = core.ToggleEventData(Options);
     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 end
-
-
 
 if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
 pause(2);
