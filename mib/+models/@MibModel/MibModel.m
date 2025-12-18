@@ -27,8 +27,12 @@ classdef MibModel < handle
         % a structure with program preferences
         pythonEnv
         % python environment started from MIB
-        Undo
-        % variable for Undo history
+        selectedFileFilter = {'all known', 'all known'};
+        % file filter selected in the Directory contents panel, cell, where
+        % selectedFileFilter{1} - extension for the standard reader
+        % selectedFileFilter{2} - extension for the bio-formats reader
+        selectedFiles
+        % cell array with the selected files in the Directory Contents panel
         Sets
         % structure with the set settings
         % .selectedSet -> index of the selected set
@@ -47,6 +51,10 @@ classdef MibModel < handle
         % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
         showModel
         % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
+        Undo
+        % variable for Undo history
+        useBioFormats = false;
+        % use bio-formats reader
 
     end
 
@@ -66,6 +74,8 @@ classdef MibModel < handle
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
 
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model. Compatible with the batch mode.
+
+        loadImages(obj, parameter, BatchOptIn)        % Load images and arrange them into a stack
 
         function obj = MibModel(cpuParallelLimitMax, mibPath)
             % function obj = MibModel(cpuParallelLimitMax, mibPath)

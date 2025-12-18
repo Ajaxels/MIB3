@@ -17,4 +17,6 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDirContents.fileFilters_Callback: selection of "obj.view.handles.panels.dirContents.handles.fileFilters" value = "%s"\n', hWidget.Value);
 end
 
+obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = obj.view.handles.panels.dirContents.handles.fileFilters.Value;
+obj.updateFileList_Callback();
 end

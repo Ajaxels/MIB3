@@ -53,6 +53,7 @@ classdef MibDirContents
             
             % ----------------------ADD CALLBACKS TO WIDGETS ----------------------
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
+            obj.handles.fileList.ClickedFcn = @obj.fileList_Callback;
             obj.handles.fileFilters.ValueChangedFcn = @obj.fileFilters_Callback;
             obj.handles.bioFormats.ValueChangedFcn = @obj.bioFormats_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;

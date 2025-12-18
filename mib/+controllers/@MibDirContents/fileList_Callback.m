@@ -9,11 +9,19 @@ function fileList_Callback(obj, hWidget, hData)
 arguments (Input)
     obj controllers.MibDirContents
     hWidget matlab.ui.control.ListBox
-    hData matlab.ui.eventdata.DoubleClickedData
+    hData {matlab.ui.eventdata.DoubleClickedData, matlab.ui.eventdata.ClickedData}
 end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDirContents.fileList_Callback: Double clicked on: obj.handles.panels.dirContents.handles.fileList\n');
+end
+
+% single click to select files
+if strcmp(hData.EventName, 'Clicked')
+    % remove [.] and [..]
+    drawnow; % needed, otherwise the Shift+click does not give the list of the selected files
+    obj.mibModel.selectedFiles = hWidget.Value(~ismember(hWidget.Value, {'[.]','[..]'}));
+    return; 
 end
 
 % require the double click to proceed further

@@ -19,10 +19,8 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibDirContents.bioFormats_Callback: clicked on "obj.view.handles.panels.dirContents.handles.bioFormats" -> state=%d\n', hWidget.Value);
 end
 
-selectedFilter = obj.view.handles.panels.dirContents.handles.fileFilters.UserData;     % get previous selectedFilter in the list
-obj.view.handles.panels.dirContents.handles.fileFilters.UserData = obj.view.handles.panels.dirContents.handles.fileFilters.Value; % update selectedFilter in the list
-
-if obj.view.handles.panels.dirContents.handles.bioFormats.Value
+obj.mibModel.useBioFormats = obj.view.handles.panels.dirContents.handles.bioFormats.Value;
+if obj.mibModel.useBioFormats
     % ------------------------- USE BIO-FORMATS READER -------------------------
 
     % check for temp directory for the Memoizer
@@ -52,6 +50,7 @@ if obj.view.handles.panels.dirContents.handles.bioFormats.Value
         case 'B'    % "BigData", not implemented
             error('controllers.MibDirContents.bioFormats_Callback: not implemented');
     end
+
 else
     % ------------------------- USE STANDARD READER -------------------------
 
@@ -66,7 +65,8 @@ else
 
 end
 obj.view.handles.panels.dirContents.handles.fileFilters.Items = extentions;
-obj.view.handles.panels.dirContents.handles.fileFilters.Value = selectedFilter;
+obj.view.handles.panels.dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
+obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = obj.view.handles.panels.dirContents.handles.fileFilters.Value;
 
 % update the file list and
 % highlight the selected file in it

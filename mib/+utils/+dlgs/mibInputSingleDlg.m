@@ -39,7 +39,7 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 % Example 2 (spinner):
 %   mibPath = obj.mibPath;
 %   prompt = 'Enter iteration count:';
-%   defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, 'Round', false, 'ValueDisplayFormat', '%.3f units');
+%   defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, 'Round', false, 'ValueDisplayFormat', '%.3f units'); % requires options.Type = 'spinner';
 %   dlgTitle = 'Iterations';
 %   options.Type = 'spinner';
 %   options.WindowWidth = 400;
