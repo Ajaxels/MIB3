@@ -11,13 +11,13 @@ classdef MibImage < matlab.mixin.Copyable
         % number of stacks in the dataset
         dim_yxzct 
         % a matrix with dimensions of the dataset [height, width, depth, colors, time] equal to size obj.data{1} 
-        exists
+        exists = false
         % logical switch indicating whether the obj.data exists or it is empty/dummy place maker
         filename
         % the full filename of the dataset
         height
         % image height, px
-        data
+        data = []
         % a cell array to keep the 'Image' layer. The layer data{1} has image in full resolution,
         % @note The 'Image' layer dimensions: @code [1:height, 1:width, 1:depth, 1:colors, 1:time] @endcode
         dataClass

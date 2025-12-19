@@ -53,8 +53,10 @@ switch datasetType
                 % pass
             case 'labels'
                 obj.labels = core.MibLabels(zeros(size(img), 'uint8'), meta);
+                obj.labels.exists = false; % set indicator that it is a dummy model
             case 'labels63'
-                obj.labels = core.MibLabels63(zeros(size(img), 'uint8'), meta);
+                obj.labels = core.MibLabels63(zeros([size(img, 1) size(img, 2)], 'uint8'), meta);
+                obj.labels.exists = false; % set indicator that it is a dummy model
         end
     case 'Virtual'
         error('core.MibDataset.initialize: Virtual - not implemented');

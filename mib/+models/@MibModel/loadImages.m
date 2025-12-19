@@ -112,6 +112,7 @@ if nargin == 3  % batch mode
     if strcmp(BatchOpt.DirectoryName{1}, 'Current MIB path')
         BatchOpt.DirectoryName{1} = obj.currentDirectory; 
     end
+
     if ~isfield(BatchOptIn, 'Filenames')
         if ~strcmp(BatchOpt.DirectoryName{1}, 'Selected files in Directory Contents')
             filename = dir(fullfile(BatchOpt.DirectoryName{1}, BatchOpt.FilenameFilter));   % get list of files
@@ -135,6 +136,11 @@ else
     if strcmp(BatchOpt.DirectoryName{1}, 'Current MIB path'); BatchOpt.DirectoryName{1} = obj.currentDirectory; end
     % generate a dataset from the selected files    % generate list of files
     
+    if isempty(obj.selectedFiles)
+        utils.dlgs.showErrorDialog(obj.mibGUI, sprintf('MibModel.loadImages:\nPlease select files to open in the Directory contents panel'), 'Files were not selected');
+        return;
+    end
+
     % handle ome-zarr
     if numel(obj.selectedFiles) == 1 && obj.selectedFiles{1}(1) == '[' %#ok<ISCL> % trying to open a folder
         filename{1} = obj.selectedFiles{1}(2:end-1); % remove '['  and ']'
@@ -192,6 +198,9 @@ if strcmp(BatchOpt.Mode{1}, 'Load each N-th dataset') || strcmp(BatchOpt.Mode{1}
     BatchOpt.Filenames = BatchOpt.Filenames(1:step:end);
 end
 
+% add mibPath to options for io.loadImages
+options.mibPath = obj.mibPath;
+
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
         if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual') && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
@@ -232,7 +241,8 @@ switch BatchOpt.Mode{1}
         end
 
         if obj.I{obj.id}.labels.exists == 1 && nargin < 3
-            dlgText = sprintf('!!! Warning !!!\nYou are going to load a new dataset!\n\nMeanwhile you have an open model\nwould you like to continue?');
+            dlgText = sprintf(['!!! Warning !!!\nYou are going to load a new dataset!\n\nMeanwhile you have an open model\n' ...
+                               'would you like to continue?']);
             selection = uiconfirm(obj.mibGUI, ...
                 dlgText, 'Load dataset', ...
                 'Options', ["Load dataset", "Cancel"], 'DefaultOption', 2, 'CancelOption', 2, ...
@@ -244,13 +254,14 @@ switch BatchOpt.Mode{1}
             options.customSections = 1;     % to load part of the dataset, for AM only
             % check for correct extensions
             [~,~,extList] = fileparts(BatchOpt.Filenames);
-            if sum(~ismember(lower(unique(extList)), {'.tif', '.tiff', '.am'})) > 0 && ~options.mibBioformatsCheck
-                errordlg(sprintf('!!! Error !!!\n\nIt is only possible to load part of the dataset for TIF and AM formats!'), 'Wrong format', 'modal');
+            if sum(~ismember(lower(unique(extList)), {'.tif', '.tiff', '.am'})) > 0 && ~options.UseBioFormats
+                errorText = sprintf('!!! Error !!!\n\nIt is only possible to load part of the dataset for TIF and AM formats!');
+                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong format');
                 notify(obj, 'StopProtocol');
                 return;
             end
         end
-        options.virtual = obj.I{BatchOpt.id}.Virtual.virtual;
+        options.virtual = strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual');
         if ~isempty(BatchOpt.BioFormatsIndices)
             options.BioFormatsIndices = str2num(BatchOpt.BioFormatsIndices);
         else
@@ -263,9 +274,10 @@ switch BatchOpt.Mode{1}
             if options.customSections && isfield(obj.sessionSettings, 'customSections')
                 options.customSectionsSettings = obj.sessionSettings.customSections;
             end
-            [img, img_info, pixSize, files] = mibLoadImages(BatchOpt.Filenames, options);
+            [img, img_info, pixSize, files] = io.loadImages(BatchOpt.Filenames, options);
             if isempty(img)
-                errordlg(sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch or not an image or cancelled?'), 'Wrong file', 'modal');
+                errorText = sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch or not an image or cancelled?');
+                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
                 notify(obj, 'StopProtocol');
                 return;
             end
@@ -295,9 +307,10 @@ switch BatchOpt.Mode{1}
         else
             for colChannelId = 1:numel(BatchOpt.Filenames)
                 if colChannelId==1
-                    [img_temp, img_info, pixSize] = mibLoadImages(BatchOpt.Filenames(colChannelId), options);
+                    [img_temp, img_info, pixSize] = io.loadImages(BatchOpt.Filenames(colChannelId), options);
                     if isempty(img_temp)
-                        errordlg(sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch, perhaps?'), 'Wrong file', 'modal');
+                        errorText = sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch, perhaps?');
+                        utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
                         notify(obj, 'StopProtocol');
                         return;
                     end
@@ -309,19 +322,23 @@ switch BatchOpt.Mode{1}
                         lutColors(1:img_info('Colors'), :) = lutTemp(1:img_info('Colors'));
                     end
                 else
-                    [img_temp, img_info_temp, pixSize] = mibLoadImages(BatchOpt.Filenames(colChannelId), options);
+                    [img_temp, img_info_temp, pixSize] = io.loadImages(BatchOpt.Filenames(colChannelId), options);
                     if isempty(img_temp)
-                        errordlg(sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch, perhaps?'), 'Wrong file', 'modal');
+                        errorText = sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch, perhaps?');
+                        utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
                         notify(obj, 'StopProtocol');
                         return;
                     end
                     
                     if img_info('Height') ~= img_info_temp('Height') || img_info('Width') ~= img_info_temp('Width') || ...
                         img_info('Depth') ~= img_info_temp('Depth') || img_info('Time') ~= img_info_temp('Time')
-                        errordlg(sprintf('!!! Error !!!\n\nDimensions mismatch!\nWhen combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions'),'Dimensions mismatch');
+                        errorText = sprintf(['!!! Error !!!\n\nDimensions mismatch!\n' ...
+                            'When combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions']);
+                        utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Dimensions mismatch');
                         notify(obj, 'StopProtocol');
                         return;
                     end
+
                     img(:,:,colChannelId*img_info('Colors')-img_info('Colors')+1:colChannelId*img_info('Colors'), :, :) = img_temp;
                     if isKey(img_info_temp, 'lutColors')
                         lutTemp = img_info_temp('lutColors');
@@ -329,7 +346,8 @@ switch BatchOpt.Mode{1}
                     end
                 end
             end
-            img_info('ColorType') = 'truecolor';
+            img_info('ColorType') = 'multichannel';
+
             if isKey(img_info, 'lutColors')
                 img_info('lutColors') = lutColors;
             end
@@ -339,7 +357,9 @@ switch BatchOpt.Mode{1}
         % enable fast panning mode for ome-zarr
         if isKey(img_info, 'Pyramid'); obj.mibView.handles.toolbarFastPanMode.State = 'on'; end
 
-        obj.I{BatchOpt.id}.clearContents(img, img_info, obj.preferences.System.EnableSelection);
+        obj.I{BatchOpt.id}.initialize(img, img_info)
+        % obj.I{BatchOpt.id}.clearContents(img, img_info, obj.I{BatchOpt.id}.datasetType);
+
         obj.I{BatchOpt.id}.pixSize = pixSize;
         notify(obj, 'newDataset');   % notify mibController about a new dataset; see function obj.Listner2_Callback for details
         obj.I{obj.id}.lastSegmSelection = [2 1];  % last selected contour for use with the 'e' button
@@ -396,42 +416,6 @@ switch BatchOpt.Mode{1}
         end
         notify(obj, 'newDataset');   % notify mibView about a new dataset; see function obj.mibView.Listner2_Callback for details
         obj.plotImage(1);
-    case 'rename'
-        if numel(BatchOpt.Filenames) ~= 1
-            msgbox('Please select a single file!', 'Rename file', 'warn');
-            return;
-        end
-        %options.Resize='on';
-        %options.WindowStyle='normal';
-        %options.Interpreter='none';
-        [path, filename, ext] = fileparts(BatchOpt.Filenames{1});
-        answer = mibInputDlg({obj.mibPath}, 'Please enter new file name','Rename file',[filename, ext]);
-        if isempty(answer); return; end
-        movefile(BatchOpt.Filenames{1}, fullfile(path, answer{1}));
-        obj.updateFilelist(answer{1});
-    case 'delete'
-        if numel(BatchOpt.Filenames) == 1
-            msg = sprintf('You are going to delete\n%s', BatchOpt.Filenames{1});
-        else
-            msg = sprintf('You are going to delete\n%d files', numel(BatchOpt.Filenames));
-        end
-        button =  questdlg(msg,'Delete file(s)?','Delete','Cancel','Cancel');
-        if strcmp(button, 'Cancel') == 1; return; end
-        for i=1:numel(BatchOpt.Filenames)
-            delete(BatchOpt.Filenames{i});
-        end
-        obj.updateFilelist();
-    case 'file_properties'
-        if ~isfield(BatchOpt, 'Filenames'); return; end
-        properties = dir(BatchOpt.Filenames{1});
-%         msgbox(sprintf('Filename: %s\nDate: %s\nSize: %.3f KB', properties.name, properties.date, properties.bytes/1000),...
-%             'File info');
-        options.Title = sprintf('Filename: %s\nDate: %s\nSize: %.3f KB', properties.name, properties.date, properties.bytes/1000);
-        options.TitleLines = 4;
-        options.msgBoxOnly = true;
-        options.WindowStyle = 'normal';
-        mibInputMultiDlg({mibPath}, {}, {}, 'File info', options);
-        
     case {'Add as new color channel' 'Add each N-th dataset as new color channel'}   % add color channel
         if obj.I{BatchOpt.id}.Virtual.virtual == 1
             toolname = 'The color channels can not be added in the virtual stacking mode.';

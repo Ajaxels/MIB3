@@ -63,9 +63,9 @@ classdef MibModel < handle
         DatasetsPanelUpdate % update widgets of the Datasets panel
         ShowImage         % render image in the Image View panel
         SyncBatch           % synchronize structure for batch actions
+        StopProtocol        % stop batch protocol from execution
         UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
         updateGuiWidgets    % update all widgets of the main GUI
-
     end
 
     methods

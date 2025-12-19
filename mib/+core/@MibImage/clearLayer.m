@@ -63,6 +63,7 @@ if ischar(y)
         case '4D'
             img = zeros([h, w, d, c, t], obj.dataClass);
             obj.setData(img, layerName);
+            obj.exists = false; % set indicator that it is a dummy model
     end
 else
     % update time

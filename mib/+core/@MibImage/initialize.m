@@ -33,9 +33,9 @@ if isempty(data)
         obj.data{1} = uint8(randi(255, [256 256]));
         obj.exists = true;
     else
-        obj.data{1} = NaN;   % default for labels and other types
+        obj.data = [];   % default for labels and other types
+        obj.exists = false;
     end
-    obj.exists = false; % set switch showing that it is dummy/non-existing dataset
 else
     obj.data{1} = data;
     obj.exists = true;

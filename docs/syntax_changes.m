@@ -27,6 +27,7 @@
 
 
 % wb = waitbar(0,'Clearing the Selection layer for a whole Z-stack...', 'WindowStyle', 'modal'); 
+%
 % wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
 %    'Message', sprintf('Clearing the Selection layer for a whole Z-stack\nPlease wait...'), ...
 %    'Title', 'Clear selection', 'Cancelable', 'on'); 
