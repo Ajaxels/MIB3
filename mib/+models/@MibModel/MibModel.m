@@ -9,6 +9,8 @@ classdef MibModel < handle
         % current working directory for MIB
         cpuParallelLimitMax
         % max number of parallel workers available
+        extensionRegistryLoad
+        % class containing registry of filename extensions that can be loaded
         hideImage
         % define whether or not display the image layer
         id
@@ -107,6 +109,8 @@ classdef MibModel < handle
             obj.Sets.selectedDataset = []; % array of the selected datasets in the sets
             obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
             
+            obj.extensionRegistryLoad = io.ExtensionRegistryLoad; % registry of filename extensions
+
             %obj.Undo = 
 
             % initialize MIB with 10 dummy datasets

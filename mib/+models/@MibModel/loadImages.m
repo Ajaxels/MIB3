@@ -201,6 +201,17 @@ end
 % add mibPath to options for io.loadImages
 options.mibPath = obj.mibPath;
 
+% init the extension registry
+%extReg = io.ExtensionRegistryLoad();
+%ext = extReg.getAllowedExtensions('Std', 'BioFormats', true);
+
+reader = 'Default';
+if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
+loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}.datasetType, reader);
+
+[img, img_info, pixSize, files] = ...
+    io.ImageLoaderFactory.loadImages(filenames, options);
+
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
         if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual') && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
@@ -210,6 +221,9 @@ switch BatchOpt.Mode{1}
             notify(obj, 'StopProtocol');
             return;
         end
+
+        [img, img_info, pixSize, files] = ...
+            io.ImageLoaderFactory.loadImages(filenames, options);
         
         % check that Zarr is opened in correct mode
         if isscalar(BatchOpt.Filenames) && isfolder(BatchOpt.Filenames{1})
@@ -261,6 +275,7 @@ switch BatchOpt.Mode{1}
                 return;
             end
         end
+
         options.virtual = strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual');
         if ~isempty(BatchOpt.BioFormatsIndices)
             options.BioFormatsIndices = str2num(BatchOpt.BioFormatsIndices);

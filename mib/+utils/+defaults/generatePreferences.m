@@ -57,28 +57,6 @@ Prefs.System.Update.SinceLastCheck = 0;
 % Recheck period for the update, in days
 Prefs.System.Update.RecheckPeriod = 30; 
 
-% ------ File extensions --------
-BioFormats = {'nii','mov','pic','ics','ids','lei','stk','nd','nd2','sld','pict'...
-    ,'lsm','mdb','psd','img','hdr','svs','dv','r3d','dcm','dicom','fits','liff'...
-    ,'jp2','lif','l2d','mnc','mrc','oib','oif','pgm','zvi','gel','ims','dm3','naf'...
-    ,'seq','xdce','ipl','mrw','mng','nrrd','ome','amiramesh','labels','fli'...
-    ,'arf','al3d','sdt','czi','c01','flex','ipw','raw','ipm','xv','lim','nef','apl','mtb'...
-    ,'tnb','obsep','cxd','vws','xys','xml','dm4','ndpi'};
-StdImgFormats = imformats;  % get readable image formats
-% add video formats
-video_formats = VideoReader.getFileFormats(); % get readable image formats
-% combine all standard formats into a single cell array
-StdImgFormats = [StdImgFormats.ext 'mrc' 'rec' 'am' 'nrrd' 'h5' 'xml' 'st' 'preali' 'mibImg' {video_formats.Extension}];
-% standard image extensions
-Prefs.System.Files.StdExt = sort(StdImgFormats);
-
-% standard image extensions, virtual mode
-Prefs.System.Files.StdVirtExt = sort({'h5','hdf5','xml', 'zarr', 'zarr2', 'zarr3'});
-
-% bioformats
-Prefs.System.Files.BioFormatsExt = sort(BioFormats);
-% bioformats, virtual mode
-Prefs.System.Files.BioFormatsVirtExt = sort([{'am'}, BioFormats]);
 Prefs.System.RenderingEngine = 'Viewer3d, R2022b';   % default rendering engine from R2022b, alternative is "Volshow, R2018b"
 % Developer mode
 Prefs.System.DeveloperMode = true;   % logical switch to turn on the developer mode, in this mode, the tooltip starts with the handle of the widget

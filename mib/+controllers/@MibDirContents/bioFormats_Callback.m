@@ -20,7 +20,9 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 obj.mibModel.useBioFormats = obj.view.handles.panels.dirContents.handles.bioFormats.Value;
+reader = 'Default';
 if obj.mibModel.useBioFormats
+    reader = 'BioFormats';
     % ------------------------- USE BIO-FORMATS READER -------------------------
 
     % check for temp directory for the Memoizer
@@ -41,29 +43,11 @@ if obj.mibModel.useBioFormats
             return;
         end
     end
-
-    switch obj.mibModel.I{obj.mibModel.id}.datasetType(1)
-        case 'S'    % "Std"
-            extentions = ['all known', obj.mibModel.preferences.System.Files.BioFormatsExt];
-        case 'V'    % "Virtual", add amira-mesh for the virtual mode
-            extentions = ['all known', obj.mibModel.preferences.System.Files.BioFormatsVirtExt];
-        case 'B'    % "BigData", not implemented
-            error('controllers.MibDirContents.bioFormats_Callback: not implemented');
-    end
-
-else
-    % ------------------------- USE STANDARD READER -------------------------
-
-    switch obj.mibModel.I{obj.mibModel.id}.datasetType(1)
-        case 'S'    % "Std"
-            extentions = ['all known', obj.mibModel.preferences.System.Files.StdExt];
-        case 'V'    % "Virtual", add amira-mesh for the virtual mode
-            extentions = ['all known', obj.mibModel.preferences.System.Files.StdVirtExt];
-        case 'B'    % "BigData", not implemented
-            error('controllers.MibDirContents.bioFormats_Callback: not implemented');
-    end
-
 end
+
+% get list of extensions
+extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(obj.mibModel.I{obj.mibModel.id}.datasetType, reader)];
+
 obj.view.handles.panels.dirContents.handles.fileFilters.Items = extentions;
 obj.view.handles.panels.dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
 obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = obj.view.handles.panels.dirContents.handles.fileFilters.Value;
