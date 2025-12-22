@@ -190,15 +190,15 @@ classdef ExtensionRegistryLoad < handle
             % id: [char] identifier of the file reader to use
             % 'BioFormatsVirtual' -> use bio-formats reader to load data in the virtual mode
             % 'BioFormatsStd' -> use bio-formats to load data in the standard mode
-            % 'AmiraMesh'
-            % 'imread'
-            % 'mibImg'
-            % 'hdf5-header'
-            % 'hdf5-no-header'
-            % 'OmeZarr'
-            % 'imod'
-            % 'nrrd'
-            % 'VideoReader'
+            % 'AmiraMesh' -> AmiraMesh reader of MIB
+            % 'imread' -> MATLAB standard image reader
+            % 'mibImg' -> custom image format for MIB
+            % 'hdf5-header' -> HDF5 with header for MIB or BigDataViewer in Fiji
+            % 'hdf5-no-header' -> HDF5 without header for Ilastik
+            % 'OmeZarr' -> MIB implementation of Ome-Zarr v2/3 reader
+            % 'imod' -> IMOD reader
+            % 'nrrd' -> NRRD reader
+            % 'VideoReader' -> MATLAB reader for video files
             
             % check
             if reader == "BioFormats"
@@ -229,15 +229,6 @@ classdef ExtensionRegistryLoad < handle
                     id = 'nrrd';
                 case obj.videoExtensions
                     id = 'VideoReader';
-            end
-
-            % Custom reader examples (can be refined later)
-            if any(ext == ["zarr", "zarr2", "zarr3"])
-                id = "CustomZarr";
-            elseif any(ext == ["h5","hdf5","xml"])
-                id = "CustomHDF5";
-            else
-                id = "CustomImage";
             end
         end
     end

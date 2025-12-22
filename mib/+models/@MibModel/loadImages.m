@@ -200,7 +200,7 @@ end
 
 % add mibPath to options for io.loadImages
 options.mibPath = obj.mibPath;
-
+options.parentGUI = obj.mibGUI; % handle to mibGUI window to be a parent for progress dialog
 % init the extension registry
 %extReg = io.ExtensionRegistryLoad();
 %ext = extReg.getAllowedExtensions('Std', 'BioFormats', true);
@@ -209,8 +209,8 @@ reader = 'Default';
 if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
 loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}.datasetType, reader);
 
-[img, img_info, pixSize, files] = ...
-    io.ImageLoaderFactory.loadImages(filenames, options);
+%[img, img_info, pixSize, files] = ...
+%    io.ImageLoaderFactory.loadImages(filenames, options);
 
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
@@ -222,9 +222,15 @@ switch BatchOpt.Mode{1}
             return;
         end
 
-        [img, img_info, pixSize, files] = ...
-            io.ImageLoaderFactory.loadImages(filenames, options);
-        
+        % Create file loader
+        loader = io.LoaderFactory.create(loaderInfo, options);
+
+        % Load metadata
+        [img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
+
+        % Load images
+        [img, img_info] = loader.loadImages(files, img_info, options);
+
         % check that Zarr is opened in correct mode
         if isscalar(BatchOpt.Filenames) && isfolder(BatchOpt.Filenames{1})
             [~, ~, ext] = fileparts(BatchOpt.Filenames{1}); % get extension
