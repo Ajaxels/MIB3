@@ -89,7 +89,7 @@ classdef ImreadLoader
             %   @li .color - [numeric] number of color channels
             %   @li .noLayers - [numeric] number of image frames
             %   @li .time - [numeric] number of time points
-            %   @li .imgClass - [char] image class
+            %   @li .imgClass - [char] image class, 'uint8', 'uint16', 'uint32', 'single'
             %   @li .level - [numeric] pyramid level (for pyramidal TIF)
             %   @li .levelMagScale - [numeric] magnification scale factor
             %   @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
@@ -129,8 +129,8 @@ classdef ImreadLoader
                 "MaxInt" ...
                 "SliceName" ...
                 ];
-            coreValues = repmat({missing}, size(coreKeys));
-            imginfo = dictionary(coreKeys, coreValues);
+            coreImgInfoValues = repmat({[]}, size(coreImgInfoKeys));
+            imginfo = dictionary(coreImgInfoKeys, coreImgInfoValues);
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
@@ -274,7 +274,9 @@ classdef ImreadLoader
                 end
 
                 % Check color type consistency
-                if imginfo("ColorType") ~= missing && ~strcmp(imginfo("ColorType"), info(1).ColorType)
+                % change truecolor->multicolor to match MIB color scheme
+                if strcmp(info(1).ColorType, 'truecolor'); info(1).ColorType='multichannel'; end
+                if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
@@ -284,7 +286,7 @@ classdef ImreadLoader
                 end
 
                 % Determine number of color channels
-                if ismember(info(1).ColorType, {'truecolor', 'YCbCr'})
+                if ismember(info(1).ColorType, {'multichannel', 'YCbCr'})
                     files(fnIndex).color = 3;
                 else
                     files(fnIndex).color = 1;
@@ -293,10 +295,7 @@ classdef ImreadLoader
                 % Update pixel size (only for first file)
                 if fnIndex == 1
                     % Generate imginfo from first image
-                    currKeys = keys(imginfo);
-                    fields_filtered = ~ismember(fields, [{'StripByteCounts', 'StripOffsets', 'UnknownTags'}, currKeys]);
-                    addFieldsIds = find(fields_filtered);
-                    for ind = 1:numel(addFieldsIds)
+                    for ind = 1:numel(fields)
                         imginfo{fields{ind}} = info(1).(fields{ind});
                     end
 
@@ -309,17 +308,23 @@ classdef ImreadLoader
 
                     if ~isempty(bbStart)
                         % Detect pixel size from BoundingBox in ImageDescription
-                        brakePnt = strfind(imginfo{"ImageDescription"}, '|');
-                        if isempty(brakePnt)
-                            brakePnt = strfind(imginfo{"ImageDescription"}, sprintf('\t'));
-                            if isempty(brakePnt)
-                                brakePnt = strfind(imginfo{"ImageDescription"}, sprintf('\n'));
-                            end
-                        end
+                        %brakePnt = strfind(imginfo{"ImageDescription"}, '|');
+                        % if isempty(brakePnt)
+                        %     brakePnt = strfind(imginfo{"ImageDescription"}, sprintf('\t'));
+                        %     if isempty(brakePnt)
+                        %         brakePnt = strfind(imginfo{"ImageDescription"}, sprintf('\n'));
+                        %     end
+                        % end
+                        brakePnt = regexp(imginfo{"ImageDescription"}, '[\|\t\n]', 'once');
+
                         if ~isempty(brakePnt)
-                            brakePnt = brakePnt(1);
+                            % brakePnt = brakePnt(1);
+                            % bbString = imginfo{"ImageDescription"};
+                            % bbcoord = str2num(bbString(bbStart+11:brakePnt-1)); %#ok<ST2NM>
+
                             bbString = imginfo{"ImageDescription"};
-                            bbcoord = str2num(bbString(bbStart+11:brakePnt-1)); %#ok<ST2NM>
+                            bbcoord = sscanf(bbString(bbStart+11:brakePnt-1), '%f');
+                            
                             dx = bbcoord(2) - bbcoord(1);
                             dy = bbcoord(4) - bbcoord(3);
                             dz = bbcoord(6) - bbcoord(5);
@@ -396,9 +401,7 @@ classdef ImreadLoader
 
                 % Update waitbar
                 if options.waitbar
-                    if mod(fnIndex, ceil(noFiles/50)) == 0
-                        waitbar(fnIndex/noFiles, wb);
-                    end
+                    if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
                 end
             end
 
@@ -408,26 +411,39 @@ classdef ImreadLoader
                 maxHeightSeries = max([files.height]);
                 maxDepthSeries = max([files.noLayers]);
 
-                prompts = {sprintf('X min (1-'); sprintf('X max (%d px)', maxWidthSeries); ...
-                    sprintf('Y min (1-'); sprintf('Y max (%d px)', maxHeightSeries); ...
-                    sprintf('Z min (1-'); sprintf('Z max (%d px)', maxDepthSeries); ...
+                prompts = {sprintf('X min'); sprintf('X max (%d px)', maxWidthSeries); ...
+                    sprintf('Y min'); sprintf('Y max (%d px)', maxHeightSeries); ...
+                    sprintf('Z min'); sprintf('Z max (%d px)', maxDepthSeries); ...
                     'XY step (not for BioFormats)'; 'Load each Nth file'};
 
                 if isfield(options, 'customSectionsSettings')
-                    defAns = {num2str(options.customSectionsSettings.xMin), num2str(min(options.customSectionsSettings.xMax, maxWidthSeries)), ...
-                        num2str(options.customSectionsSettings.yMin), num2str(min(options.customSectionsSettings.yMax, maxHeightSeries)), ...
-                        num2str(options.customSectionsSettings.zMin), num2str(min(options.customSectionsSettings.zMax, maxDepthSeries)), ...
-                        num2str(options.customSectionsSettings.xyStep), '1'};
+                    defAns = {
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.xMin, 'Limits', [1 maxWidthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.xMax, 'Limits', [1 maxWidthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.yMin, 'Limits', [1 maxHeightSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.yMax, 'Limits', [1 maxHeightSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.zMin, 'Limits', [1 maxDepthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.zMax, 'Limits', [1 maxDepthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', options.customSectionsSettings.xyStep, 'Limits', [1 Inf], 'Round', true), ...
+                        struct('Spinner', true, 'Value', 1, 'Limits', [1 Inf], 'Round', true)};
                 else
-                    defAns = {'1', num2str(maxWidthSeries), '1', num2str(maxHeightSeries), '1', num2str(maxDepthSeries), '1', '1'};
+                    defAns = {
+                        struct('Spinner', true, 'Value', 1, 'Limits', [1 maxWidthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', maxWidthSeries, 'Limits', [1 maxWidthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', 1, 'Limits', [1 maxHeightSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', maxHeightSeries, 'Limits', [1 maxHeightSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', 1, 'Limits', [1 maxDepthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', maxDepthSeries, 'Limits', [1 maxDepthSeries], 'Round', true), ...
+                        struct('Spinner', true, 'Value', 1, 'Limits', [1 Inf], 'Round', true), ...
+                        struct('Spinner', true, 'Value', 1, 'Limits', [1 Inf], 'Round', true)};
                 end
 
                 dlgTitle = 'Define region to load';
-                options.Title = 'Provide image range to load';
-                options.WindowWidth = 1.2;
+                options.Header = 'Provide image range to load';
                 options.Columns = 2;
-                options.PromptLines = [1 1 1 1 1 1 1 1];
-                answer = mibInputMultiDlg([], prompts, defAns, dlgTitle, options);
+                options.WindowWidth = 640;
+                options.WindowHeight = 220;
+                answer = utils.dlgs.mibInputUniversalDlg(options.mibPath, prompts, defAns, dlgTitle, options);
 
                 if isempty(answer)
                     if options.waitbar; delete(wb); end
@@ -435,14 +451,14 @@ classdef ImreadLoader
                     return;
                 end
 
-                xMin = str2double(answer{1});
-                xMax = str2double(answer{2});
-                yMin = str2double(answer{3});
-                yMax = str2double(answer{4});
-                zMin = str2double(answer{5});
-                zMax = str2double(answer{6});
-                xyStep = str2double(answer{7});
-                fileLoadStep = str2double(answer{8});
+                xMin = answer{1};
+                xMax = answer{2};
+                yMin = answer{3};
+                yMax = answer{4};
+                zMin = answer{5};
+                zMax = answer{6};
+                xyStep = answer{7};
+                fileLoadStep = answer{8};
 
                 % Adjust files if loading every Nth file
                 if fileLoadStep > 1
@@ -471,7 +487,7 @@ classdef ImreadLoader
             end
 
             % Replace CR and LF characters with spaces
-            if isKey(imginfo, "ImageDescription") && ~isempty(imginfo{"ImageDescription"})
+            if ~isempty(imginfo{"ImageDescription"})
                 imginfo{"ImageDescription"} = strrep(strrep(imginfo{"ImageDescription"}, sprintf('\r'), ' '), sprintf('\n'), ' ');
             end
 
@@ -547,7 +563,9 @@ classdef ImreadLoader
 
             % Generate slice names from filenames
             if numel(files) > 1
-                SliceName = cell(sum(arrayfun(@(x) x.noLayers, files)), 1);
+                totalLayers = sum([files.noLayers]);
+                SliceName = cell(totalLayers, 1);
+
                 index = 1;
                 for fileId = 1:numel(files)
                     [~, fnShort, ext] = fileparts(files(fileId).filename);
@@ -563,7 +581,7 @@ classdef ImreadLoader
             if options.waitbar
                 delete(wb);
             end
-
+            imginfo{"Depth"} = sum([files.noLayers]);
             imginfo{"Filename"} = filenames{1};
         end
 

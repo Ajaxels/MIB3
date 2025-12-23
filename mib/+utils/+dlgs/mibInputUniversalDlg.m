@@ -248,13 +248,13 @@ figBgColor = fig.Color;
 % Icon selection and loading
 iconFilename = '';
 switch options.Icon
-    case 'warning_48px',   iconFilename = 'mib_warning_48px.png';
-    case 'question_48px',  iconFilename = 'mib_question_48px.png';
-    case 'celebrate',      iconFilename = 'mib_celebrate.jpg';
-    case 'call4help',      iconFilename = 'mib_call4help.jpg';
-    otherwise,             iconFilename = 'mib_question_48px.png';
+    case 'warning_48px',   iconFilename = 'warning_48px.png';
+    case 'question_48px',  iconFilename = 'question_48px.png';
+    case 'celebrate',      iconFilename = 'celebrate.jpg';
+    case 'call4help',      iconFilename = 'call4help.jpg';
+    otherwise,             iconFilename = 'question_48px.png';
 end
-iconPath = fullfile(mibDir, 'Resources', iconFilename);
+iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 iconImg = [];
 iconImgWidth = 48;  % Default icon width
 if exist(iconPath, 'file')
@@ -611,7 +611,7 @@ else
         elseif isstruct(val) && isfield(val,'Spinner') && val.Spinner
             % Spinner
             isSpinner(i) = true;
-            v = 0; lo = -inf; hi = inf; step = 1;
+            v = 0; lo = -Inf; hi = Inf; step = 1;
             if isfield(val,'Value'); v = val.Value; end
             if isfield(val,'Limits'); lo = val.Limits(1); hi = val.Limits(2); end
             if isfield(val,'Step'); step = val.Step; end
