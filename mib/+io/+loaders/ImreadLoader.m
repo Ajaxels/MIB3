@@ -79,7 +79,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %   @li other format-specific metadata fields
             % files: structure array with file information for each file
             %   @li .filename - [char] full filename
-            %   @li .objecttype - [char] 'image'
+            %   @li .objecttype - [char] type of the image loader 'imread'
             %   @li .extension - [char] file extension, including the leading dot
             %   @li .height - [numeric] image height
             %   @li .width - [numeric] image width
@@ -133,8 +133,10 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             end
 
             % Pre-allocate files structure
-            files(noFiles) = struct('filename', [], 'objecttype', 'imread', 'extension', [], ...
+            files(noFiles) = struct('filename', [], 'objecttype', [], 'extension', [], ...
                 'height', [], 'width', [], 'color', [], 'time', [], 'noLayers', [], 'imgClass', []);
+            % update the objecttype
+            [files.objecttype] = deal('imread');
 
             % Process each file
             for fnIndex = 1:noFiles
@@ -389,6 +391,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             end
 
             % Handle custom sections
+            % use io.BaseImageLoader.handleCustomSections of the parent class
             if options.customSections && strcmpi(ext(2:end), 'tif')
                 [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
                 if cancelled
@@ -480,6 +483,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % end
 
             % Handle dimension mismatches and bounding box
+            % use io.BaseImageLoader.handleDimensionMismatches of the parent class
             imginfo = obj.handleDimensionMismatches(files, imginfo, pixSize);
 
             % if numel(unique([files.width])) > 1 || numel(unique([files.height])) > 1
@@ -541,7 +545,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % end
 
             % Generate slice names from filenames
+            % use io.BaseImageLoader.generateSliceNames of the parent class
             imginfo = obj.generateSliceNames(files, imginfo);
+
             % if numel(files) > 1
             %     totalLayers = sum([files.noLayers]);
             %     SliceName = cell(totalLayers, 1);
@@ -558,7 +564,10 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %     imginfo{"SliceName"} = cellstr(strcat(fnShort, ext));
             % end
 
+            % Finalize image info
+            % use io.BaseImageLoader.finalizeImgInfo of the parent class
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
+
             % % Set imginfo dimensions and metadata
             % switch files(1).imgClass
             %     case {'single', 'double'}
@@ -571,9 +580,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % imginfo{"Depth"} = sum([files.noLayers]);
             % imginfo{"Filename"} = filenames{1};
 
-            if options.waitbar
-                delete(wb);
-            end
+            if options.waitbar; delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -588,17 +595,18 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % Parameters:
             % files: structure array from loadMetadata with file information
             %   @li .filename - [char] full filename
-            %   @li .objecttype - [char] 'image'
+            %   @li .objecttype - [char] type of the image loader 'imread'
+            %   @li .extension - [char] file extension with dot - '.jpg'
             %   @li .height - [numeric] image height
             %   @li .width - [numeric] image width
             %   @li .color - [numeric] number of color channels
-            %   @li .noLayers - [numeric] number of image frames
-            %   @li .imgClass - [char] image class
+            %   @li .noLayers - [numeric] number of image layers/frames
+            %   @li .time - [numeric] number of image frames
+            %   @li .imgClass - [char] image class, 'uint8', 'uint16', 'uint32'
             %   @li .level - [numeric] pyramid level (optional)
             %   @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
             %   @li .zMin, .zMax - [numeric] slice range (optional)
             %   @li .xyStep - [numeric] XY step for binning (optional)
-            %   @li .extension - [char] file extension
             %   @li .backgroundColor - [numeric] background color value (optional)
             % imginfo: dictionary from loadMetadata with image metadata
             % options: [@em struct] options for image loading
@@ -607,7 +615,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %   @li .silentMode - [logical] do not ask user questions, [@b default] = @em false
             %
             % Return values:
-            % img: loaded image dataset [1:height, 1:width, 1:color, 1:depth]
+            % img: loaded image dataset [1:height, 1:width, 1:depth, 1:color, 1:time]
             % imginfo: updated dictionary with final metadata
             %   @li "Height" - final image height
             %   @li "Width" - final image width
@@ -641,30 +649,25 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             time = max([files.time]);
 
             % Calculate total number of slices
-            maxZ = 0;
             if isfield(files, 'zMin')
-                for i = 1:numel(files)
-                    maxZ = maxZ + (files(i).zMax - files(i).zMin + 1);
-                end
+                maxZ = sum([files.zMax] - [files.zMin] + 1);
+                %for i = 1:numel(files)
+                %    maxZ = maxZ + (files(i).zMax - files(i).zMin + 1);
+                %end
             else
-                for i = 1:numel(files)
-                    maxZ = maxZ + files(i).noLayers;
-                end
+                maxZ = sum([files.noLayers]);
             end
-
-            if isempty(maxZ); return; end
+            if maxZ == 0; return; end
 
             % Prepare image class
             imgClass = files(1).imgClass;
-            if strcmp(imgClass, 'int16')
-                imgClass = 'uint16';
-            end
+            if strcmp(imgClass, 'int16'); imgClass = 'uint16'; end
 
             % Pre-allocate image array
             if isfield(files, 'backgroundColor')
-                img = zeros(height, width, color, maxZ, time, imgClass) + files(1).backgroundColor;
+                img = zeros(height, width, maxZ, color, time, imgClass) + files(1).backgroundColor;
             else
-                img = zeros(height, width, color, maxZ, time, imgClass);
+                img = zeros(height, width, maxZ, color, time, imgClass);
             end
 
             % Calculate waitbar update frequency
@@ -675,23 +678,20 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             layerid = 1;
             noFiles = numel(files);
 
-            % Initialize waitbar
+            % Initialize uiprogressdlg
             if options.waitbar
-                drawnow;
-                wb = waitbar(0, sprintf('Loading images... please wait...'), 'Name', 'Loading images...', ...
-                    'CreateCancelBtn', 'setappdata(gcbf,''canceling'',1)');
+                wb = uiprogressdlg(options.parentGUI, 'Title', 'Loading images...',...
+                    'Message', sprintf('Please wait...'), ...
+                    'Cancelable', 'on');
             end
 
             % Process each file
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar
-                    if getappdata(wb, 'canceling')
-                        delete(wb);
-                        img = NaN;
-                        imginfo = dictionary();
-                        return;
-                    end
+                if options.waitbar && wb.CancelRequested
+                    delete(wb);
+                    img = [];
+                    return;
                 end
 
                 % Calculate dimensions for this file
@@ -701,13 +701,16 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 maxT = min(time, files(fnIndex).time);
 
                 % Handle GIF conversion
-                convertGifSwitch = 0;
+                convertGifSwitch = false;
                 if ~isempty(strfind(files(fnIndex).extension, 'gif')) && files(fnIndex).noLayers > 1
-                    choice = questdlg(sprintf('Convert indexed GIF to truecolor?'), 'Image Format Warning!', 'Yes', 'No', 'Yes');
-                    if strcmp(choice, 'Yes')
-                        convertGifSwitch = 1;
-                        imginfo{"ColorType"} = 'truecolor';
-                        imginfo = remove(imginfo, "ColorTable");
+                    selection = uiconfirm(options.parentGUI, ...
+                        'Convert indexed GIF to truecolor?', ...
+                        'Image format warning!', ...
+                        'Icon', 'warning', 'DefaultOption', 1);
+                    if strcmp(selection, 'OK')
+                        convertGifSwitch = true;
+                        imginfo('ColorType') = {'multichannel'};
+                        imginfo = remove(imginfo, 'ColorTable');
                         maxC = max(maxC, 3);
                         files(fnIndex).color = maxC;
                     end
@@ -716,9 +719,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 % Load each layer
                 for subLayer = 1:files(fnIndex).noLayers
                     % Determine imread parameters based on custom sections
-                    if isfield(files, 'xMin')
+                    if ~isfield(files, 'xMin')
                         if files(fnIndex).noLayers == 1
-                            if isfield(files, 'level')
+                            if ~isfield(files, 'level')
                                 I = imread(files(fnIndex).filename);
                             else
                                 I = imread(files(fnIndex).filename, files(fnIndex).level);
@@ -728,7 +731,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                         end
                     else
                         if files(fnIndex).noLayers == 1
-                            if isfield(files, 'level')
+                            if ~isfield(files, 'level')
                                 I = imread(files(fnIndex).filename, ...
                                     'PixelRegion', ...
                                     {[files(fnIndex).yMin files(fnIndex).xyStep files(fnIndex).yMax], ...
@@ -750,29 +753,25 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                         end
                     end
 
-                    % Handle single/uint32 RGB TIFs
-                    if isa(I, 'single') || isa(I, 'uint32')
+                    % Handle single - uint32 RGB TIFs may be this class
+                    if isa(I, 'single') 
                         if isKey(imginfo, "MaxSampleValue")
                             I = bsxfun(@times, I, reshape(imginfo{"MaxSampleValue"}, 1, 1, []));
                         end
-                        % Clamp to valid range
-                        minV = min(I(:));
-                        if minV < 0; minV = 0; end
-                        I = I - minV;
                     end
 
                     % Store slice
-                    img(1:maxY, 1:maxX, 1:size(I,3), layerid) = I(1:maxY, 1:maxX, 1:size(I,3));
+                    img(1:maxY, 1:maxX, layerid, 1:size(I,3)) = permute(I(1:maxY, 1:maxX, 1:size(I,3)), [1 2 4 3]);
 
-                    % Update waitbar
+                    % Update uiprogressdlg
                     if options.waitbar
                         if mod(layerid, waitbarUpdateFrequency) == 0
-                            if getappdata(wb, 'canceling')
-                                img = NaN;
+                            if wb.CancelRequested
                                 delete(wb);
+                                img = [];
                                 return;
                             end
-                            waitbar(layerid / maxZ, wb);
+                            wb.Value = layerid / maxZ;
                         end
                     end
 
@@ -781,81 +780,21 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             end
 
             % Check for cancel after loading large single files
-            if options.waitbar
-                if getappdata(wb, 'canceling')
-                    delete(wb);
-                    img = NaN;
-                    imginfo = dictionary();
-                    return;
-                end
-            end
-
-            % Handle uint32 to uint16 conversion
-            if isa(img, 'uint32') && options.imgStretch
-                maxVal = max(img(:));
-                minVal = min(img(:));
-                prompt = {sprintf('Enter minimal intensity value\\n(this value will be set to 0)'); ...
-                    sprintf('Enter maximal intensity value\\n(this value will be set to 65535)')};
-                defAns = {num2str(minVal), num2str(maxVal)};
-                mibInputMultiDlgOpt.PromptLines = [2, 2];
-                answer = mibInputMultiDlg([], prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
-                if isempty(answer); return; end
-                drawnow;  % prevent crashes
-
-                if isempty(answer)
-                    if options.waitbar; delete(wb); end
-                    img = NaN;
-                    return;
-                end
-
-                minVal = str2double(answer{1});
-                maxVal = str2double(answer{2});
-
-                % Convert to uint16
-                maxVal = mean(maxVal);
-                minVal = mean(minVal);
-                img = img - minVal;
-                img = uint16((img / (maxVal - minVal)) * 65535);
-                imginfo{"MaxInt"} = double(intmax('uint16'));
-                imginfo{"imgClass"} = 'uint16';
+            if options.waitbar && wb.CancelRequested
+                delete(wb);
+                img = [];
+                return;
             end
 
             % Update imginfo with final dimensions
-            imginfo{"Height"} = height;
-            imginfo{"Width"} = width;
-            imginfo{"Depth"} = maxZ;
-            imginfo{"Time"} = maxT;
+            imginfo{'Height'} = height;
+            imginfo{'Width'} = width;
+            imginfo{'Depth'} = maxZ;
+            imginfo{'Time'} = maxT;
 
-            % Set color type
-            if ~isKey(imginfo, "ColorType")
-                if size(img, 3) == 1
-                    imginfo{"ColorType"} = 'grayscale';
-                else
-                    imginfo{"ColorType"} = 'truecolor';
-                end
-            else
-                if strcmp(imginfo{"ColorType"}, 'indexed')
-                    if ~isKey(imginfo, "Colormap")
-                        % Copy ColorTable to Colormap for indexed images
-                        imginfo{"Colormap"} = imginfo{"ColorTable"};
-                    end
-                else
-                    if size(img, 3) == 1
-                        imginfo{"ColorType"} = 'grayscale';
-                    else
-                        imginfo{"ColorType"} = 'truecolor';
-                    end
-                end
-            end
+            [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
 
-            % Ensure ImageDescription exists
-            if ~isKey(imginfo, "ImageDescription")
-                imginfo{"ImageDescription"} = '';
-            end
-
-            if options.waitbar
-                delete(wb);
-            end
+            if options.waitbar; delete(wb); end
         end
     end
 end

@@ -52,7 +52,8 @@ elseif filename(1) == '['
     obj.mibController.cDirContents.updateFileList_Callback();
     obj.mibController.cStatus.handles.currentDirectory.Value = obj.mibModel.currentDirectory;
 else
-    filename
+    obj.mibModel.loadImages('Combine datasets');
+    %filename
 end
 
 

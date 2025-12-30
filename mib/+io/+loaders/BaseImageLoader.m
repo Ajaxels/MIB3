@@ -469,5 +469,91 @@ classdef (Abstract) BaseImageLoader < handle
                 merged.(fields{i}) = opts2.(fields{i});
             end
         end
+
+        function [img, imginfo] = finalizeImageLoading(obj, img, imginfo, options)
+            % function [img, imginfo] = finalizeImageLoading(obj, img, imginfo, options)
+            % finalize image loading by stretching uint32 image (depending
+            % on options.imgStretch and updating imginfo('ColorType')
+            %
+            % img: matrix with the image
+            % imginfo: dictionary with image information, the following fields are updated
+            %   @li "ColorType" -> [char] color type of the image, 'grayscale', 'multichannel', 'indexed'
+            %   @li "Colormap" -> [numeric] colormap for indexed images
+            %  additionally in obj.stretch32bitImage when options.imgStretch == true
+            %   @li "MaxInt" -> [numberic] max possible value
+            %   @li "imgClass" -> [char] image class, "uint16"
+
+            % Handle uint32 to uint16 conversion
+            if isa(img, 'uint32') && options.imgStretch
+                [img, imginfo] = obj.stretch32bitImage(img, imginfo);
+                if isempty(img); return; end
+            end
+
+            % Set color type
+            if ~isKey(imginfo, "ColorType")
+                if size(img, 4) == 1
+                    imginfo{"ColorType"} = 'grayscale';
+                else
+                    imginfo{"ColorType"} = 'multichannel';
+                end
+            else
+                if strcmp(imginfo{"ColorType"}, 'indexed')
+                    if ~isKey(imginfo, "Colormap")
+                        % Copy ColorTable to Colormap for indexed images
+                        imginfo{"Colormap"} = imginfo{"ColorTable"};
+                    end
+                else
+                    if size(img, 4) == 1
+                        imginfo{"ColorType"} = 'grayscale';
+                    else
+                        imginfo{"ColorType"} = 'multichannel';
+                    end
+                end
+            end
+
+            % Ensure ImageDescription exists
+            if ~isKey(imginfo, "ImageDescription")
+                imginfo{"ImageDescription"} = '';
+            end
+        end
+
+        function [img, imginfo] = stretch32bitImage(obj, img, imginfo)
+            % function [img, imginfo] = stretch32bitImage(~, img, imginfo)
+            % stretch uint32 image into uint16 container
+            % 
+            % Parameters:
+            % img: matrix with the image
+            % imginfo: dictionary with image information, the following fields are updated
+            %   @li "MaxInt" -> [numberic] max possible value
+            %   @li "imgClass" -> [char] image class, "uint16"
+           
+
+            minVal = double(min(img(:)));
+            maxVal = double(max(img(:)));
+            
+            prompt = {sprintf('Enter minimal intensity value\n(this value will be set to 0)'); ...
+                      sprintf('Enter maximal intensity value\n(this value will be set to 65535)')};
+            defAns = {struct('Spinner', true, 'Value', minVal, 'Limits', [0 65534], 'Step', 1, 'Round', true); ... 
+                      struct('Spinner', true, 'Value', maxVal, 'Limits', [1 65535], 'Step', 1, 'Round', true)};
+
+            mibInputMultiDlgOpt.ParentFigure = obj.Options.parentGUI;
+            mibInputMultiDlgOpt.WindowWidth = 400;
+            mibInputMultiDlgOpt.WindowHeight = 140;
+            mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 100};
+            answer = utils.dlgs.mibInputUniversalDlg(obj.Options.mibPath, ...
+                prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
+            if isempty(answer); img = []; return; end
+            %drawnow;  % prevent crashes
+
+            minVal = answer{1};
+            maxVal = answer{2};
+
+            % Convert to uint16
+            img = img - minVal;
+            img = uint16((img / (maxVal - minVal)) * 65535);
+            % update imginfo dictionary
+            imginfo{'MaxInt'} = double(intmax('uint16'));
+            imginfo{'imgClass'} = 'uint16';
+        end
     end
 end

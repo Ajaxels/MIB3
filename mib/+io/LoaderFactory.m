@@ -36,7 +36,7 @@ classdef LoaderFactory
             % @code
             % % Basic usage
             % extReg = io.ExtensionRegistryLoad();
-            % loaderInfo = extReg.resolveLoader('image.tif', 'Std', 'Default');
+            % loaderInfo = extReg.resolveLoader('image.tif', 'Std', 'Default'); % loaderInfo = extReg.resolveLoader('image.tif', obj.I{obj.id}.datasetType, 'Default');
             % options.waitbar = true;
             % options.mibPath = 'c:\mib';
             % loader = io.LoaderFactory.create(loaderInfo, options);

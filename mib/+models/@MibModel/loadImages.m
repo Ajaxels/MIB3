@@ -209,9 +209,6 @@ reader = 'Default';
 if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
 loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}.datasetType, reader);
 
-%[img, img_info, pixSize, files] = ...
-%    io.ImageLoaderFactory.loadImages(filenames, options);
-
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
         if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual') && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
@@ -225,11 +222,12 @@ switch BatchOpt.Mode{1}
         % Create file loader
         loader = io.LoaderFactory.create(loaderInfo, options);
 
-        % Load metadata
+        % Load metadata (img_info dictionary) and populate structure array with files information (files)
         [img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
 
         % Load images
         [img, img_info] = loader.loadImages(files, img_info, options);
+        if isempty(img); return; end
 
         % check that Zarr is opened in correct mode
         if isscalar(BatchOpt.Filenames) && isfolder(BatchOpt.Filenames{1})

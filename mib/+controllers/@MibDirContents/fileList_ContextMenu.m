@@ -33,7 +33,7 @@ end
 
 switch menuEntry.Tag
     case 'fileListContextCombine'
-
+        obj.mibModel.loadImages('Combine datasets');
     case 'fileListContextLoadPart'
 
     case 'fileListContextLoadNth'
