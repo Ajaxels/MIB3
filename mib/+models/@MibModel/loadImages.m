@@ -207,6 +207,7 @@ options.parentGUI = obj.mibGUI; % handle to mibGUI window to be a parent for pro
 
 reader = 'Default';
 if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
+% find a loader that should be used for this specific dataset mode, selected reader and filename extension
 loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}.datasetType, reader);
 
 switch BatchOpt.Mode{1}
