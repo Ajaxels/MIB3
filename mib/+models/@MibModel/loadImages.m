@@ -201,6 +201,7 @@ end
 % add mibPath to options for io.loadImages
 options.mibPath = obj.mibPath;
 options.parentGUI = obj.mibGUI; % handle to mibGUI window to be a parent for progress dialog
+%options.Font = obj.preferences.System.Font; % add font to render dialogs
 % init the extension registry
 %extReg = io.ExtensionRegistryLoad();
 %ext = extReg.getAllowedExtensions('Std', 'BioFormats', true);

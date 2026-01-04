@@ -436,6 +436,12 @@ classdef (Abstract) BaseImageLoader < handle
             imginfo{"imgClass"} = files(1).imgClass;
             imginfo{"Depth"} = sum([files.noLayers]);
             imginfo{"Filename"} = filename;
+
+            if isempty(imginfo{"Height"}); imginfo{"Height"} = max([files.height]); end
+            if isempty(imginfo{"Width"}); imginfo{"Width"} = max([files.width]); end
+            if isempty(imginfo{"Depth"}); imginfo{"Depth"} = max([files.noLayers]); end
+            if isempty(imginfo{"Colors"}); imginfo{"Colors"} = max([files.color]); end
+            if isempty(imginfo{"Time"}); imginfo{"Time"} = max([files.time]); end
         end
 
         function merged = mergeOptions(~, opts1, opts2)

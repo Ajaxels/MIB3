@@ -16,7 +16,12 @@ function fontSizeUpdate(hFig, Font)
 
 %| 
 % @b Examples:
-% @code utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);     // update the font properties from a child controller  @endcode
+% @code 
+% if obj.view.handles.UserInterfacePanel.FontSize ~= Font.FontSize ...
+%        || ~strcmp(obj.view.handles.UserInterfacePanel.FontName, Font.FontName)
+%   utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);     // update the font properties from a child controller  
+% end
+% @endcode
 
 % Updates
 % 
@@ -27,7 +32,8 @@ if isa(hFig, 'matlab.ui.container.internal.AppContainer')
 end
 
 if ~isprop(hFig, 'RunningAppInstance')  % guide type of figure
-    Font.FontSize = Font.FontSize - 4; % it looks that guide app font size is 4 units larger than corresponding appdesigner
+    %Font.FontSize = Font.FontSize + 4; % it looks that guide app font size is 4 units larger than corresponding appdesigner
+    Font.FontSize = Font.FontSize; % it looks that guide app font size is 2 units larger than corresponding appdesigner
 
     tempList = findall(hFig, 'Style', 'text');   % set font to text
     for i=1:numel(tempList)

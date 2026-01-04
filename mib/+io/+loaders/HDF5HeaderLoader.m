@@ -36,6 +36,10 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %   loader = io.loaders.HDF5HeaderLoader(options);
             %   @endcode
 
+            % default Options settings
+            obj.Options = struct();
+            obj.Options.Font = struct('Name', 'Helvetica', 'Size', 12);
+
             if nargin < 1; options = struct(); end
             obj.Options = options;
         end

@@ -34,6 +34,10 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % options.mibPath = 'c:\mib';
             % loader = io.loaders.ImreadLoader(options);
             % @endcode
+            
+            % default Options settings
+            obj.Options = struct();
+            obj.Options.Font = struct('Name', 'Helvetica', 'Size', 12);
 
             if nargin < 1; options = struct(); end
             obj.Options = options;
