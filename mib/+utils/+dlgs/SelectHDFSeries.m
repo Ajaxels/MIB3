@@ -54,8 +54,6 @@ classdef SelectHDFSeries < handle
             % RUN logic to block execution and return results
             % Matches original selectHDFSeries output signature
             
-            % Make the view modal
-            utils.moveWindowOutside(obj.view.gui, obj.parentGUI, 'center', 'center');
             %obj.view.gui.WindowStyle = 'modal';
             
             % Block execution until uiresume is called (in onContinue/onCancel)
@@ -89,6 +87,10 @@ classdef SelectHDFSeries < handle
 
     methods (Access = private)
         function initView(obj)
+            % Make the view modal
+            utils.moveWindowOutside(obj.view.gui, obj.parentGUI, 'center', 'center');
+            % add icon
+            obj.view.gui.Icon = 'mib_icon_16px.png';
             % Parse HDF5 and populate the view
             try
                 info = h5info(obj.filename);
