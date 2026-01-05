@@ -349,14 +349,14 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             if strcmp(imgClass, 'int16'); imgClass = 'uint16'; end
 
             % Pre-allocate image array
-             img = zeros(height, width, maxZ, color, time, imgClass);
+            img = zeros(height, width, maxZ, color, time, imgClass);
 
             % Calculate waitbar update frequency
             pixPerSlice = size(img, 1) * size(img, 2);
             waitbarUpdateFrequency = max(1, round(4096^2 / pixPerSlice));
 
             % Initialize layer counter
-            layerid = 1;
+            layerId = 1;
             noFiles = numel(files);
 
              % Initialize uiprogressdlg
@@ -365,7 +365,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
-
+            
             for fnIndex = 1:noFiles
                  % Check for cancel button
                 if options.waitbar && wb.CancelRequested
@@ -382,7 +382,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
                 % Read HDF5
                 try
-                     hdf5image = h5read(files(fnIndex).filename, cell2mat(files(fnIndex).seriesName));
+                     hdf5image = h5read(files(fnIndex).filename, files(fnIndex).seriesName);
                 catch err
                      if options.waitbar; delete(wb); end
                      utils.dlgs.showErrorDialog(options.parentGUI, ...
@@ -396,84 +396,56 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                      if options.waitbar; delete(wb); end
                      assignin('base', 'hdf5image', hdf5image);
                      utils.dlgs.showErrorDialog(options.parentGUI, ...
-                         'Cannot read this dataset! Exported to workspace as "hdf5image".', 'Error');
+                         'Cannot read this dataset! Exported to MATLAB workspace as "hdf5image".', 'Error');
                      img = [];
                      return;
                 end
 
                 % Convert single/double
-                 if isa(hdf5image, 'single') || isa(hdf5image, 'double')
-                     maxVal = max(hdf5image(:));
-                     if maxVal <= 1
-                         hdf5image = uint8(hdf5image * 255);
-                     elseif maxVal <= 255
-                         hdf5image = uint8(hdf5image);
-                     elseif maxVal <= 65535
-                          hdf5image = uint16(hdf5image);
-                     else
-                          hdf5image = uint32(hdf5image);
-                     end
+                if isa(hdf5image, 'single') || isa(hdf5image, 'double')
+                    maxVal = max(hdf5image(:));
+                    if maxVal <= 1
+                        hdf5image = uint8(hdf5image * 255);
+                    elseif maxVal <= 255
+                        hdf5image = uint8(hdf5image);
+                    elseif maxVal <= 65535
+                        hdf5image = uint16(hdf5image);
+                    else
+                        hdf5image = uint32(hdf5image);
+                    end
 
-                     if ~options.silentMode && layerid == 1
-                          % Notify user only once
-                          % In real app, might want to ask or log
-                     end
+                    if ~options.silentMode && layerId == 1
+                        % notify about the data conversion
+                        uialert(options.parentGUI, ...
+                            sprintf('The dataset was converted to %s format!', class(hdf5image)), ...
+                            'io.loaders.HDF5NoHeaderLoader', 'Icon', 'info');
+                    end
 
-                     % Update imgClass if changed
-                      if layerid == 1
-                         img = cast(img, class(hdf5image));
-                         imginfo{"imgClass"} = class(hdf5image);
-                         imginfo{"MaxInt"} = double(intmax(class(hdf5image)));
-                      end
-                 end
+                    % Update imgClass if changed
+                    if layerId == 1
+                        img = cast(img, class(hdf5image));
+                        imginfo{"imgClass"} = class(hdf5image);
+                        imginfo{"MaxInt"} = double(intmax(class(hdf5image)));
+                    end
+                end
 
                  % Permute if needed
-                 if ~isempty(files(fnIndex).transMatrix) && ~isnan(files(fnIndex).transMatrix(1))
+                 if ~isempty(files(fnIndex).transMatrix) && ~isnan(files(fnIndex).transMatrix(1)) 
                      hdf5image = permute(hdf5image, files(fnIndex).transMatrix);
                  end
 
                  % Assign data
-                 % MIB expects [Height, Width, Depth, Color, Time]
-                 % hdf5image dimensions depend on h5read result after permutation
-
-                 % We assume hdf5image is now [Height, Width, Depth, Color, Time] compatible
-                 % But strictly, hdf5image from h5read + permute might match files(fnIndex).dimxyczt (XYCZT)
-                 % Wait, MIB internal is [Y, X, Z, C, T] usually.
-                 % loadMetadata set dimxyczt as [Width, Height, Color, Depth, Time] (standard MIB notation in files struct)
-                 % But files.height = dim(1), width=dim(2)...
-
-                 % Let's follow getImages.m logic:
-                 % hdf5image = permute(hdf5image, files(fnIndex).transMatrix);
-                 % img(1:maxY, 1:maxX, 1:maxC, layerid:..., 1:maxT) = hdf5image;
-                 % Wait, getImages.m: 
-                 % img(1:maxY, 1:maxX, 1:maxC, layerid:..., 1:maxT) = hdf5image;
-                 % This implies hdf5image matches the target img dimensions [Y, X, C, Z, T]??
-                 % Actually getImages.m uses: img(1:maxY, 1:maxX, 1:maxC, layerid) for 4D.
-
-                 % Let's assume the transMatrix provided by selectHDFSeries puts it in [Y, X, C, Z, T] order or similar
-
-                 % For now, direct assignment, reshaping if necessary
-                 try
-                     % Assign to 5D array
-                     % img indices: (y, x, z, c, t)
-                     currentZ = files(fnIndex).noLayers;
-
-                     % Reshape hdf5image to match 5D if possible
-                     % Or just assign:
-                     img(1:maxY, 1:maxX, layerid:layerid+currentZ-1, 1:maxC, 1:maxT) = ...
-                         reshape(hdf5image, maxY, maxX, currentZ, maxC, maxT);
-                 catch err
-                      % Dimension mismatch fallback
-                 end
+                img(1:maxY, 1:maxX, layerId:layerId+files(fnIndex).noLayers-1, 1:maxC, 1:maxT) = hdf5image;
+                clear hdf5image;
 
                  % Update waitbar
                 if options.waitbar
-                    if mod(layerid, waitbarUpdateFrequency) == 0
-                        wb.Value = layerid / maxZ;
+                    if mod(layerId, waitbarUpdateFrequency) == 0
+                        wb.Value = layerId / maxZ;
                     end
                 end
 
-                layerid = layerid + files(fnIndex).noLayers;
+                layerId = layerId + files(fnIndex).noLayers;
             end
 
              if options.waitbar; delete(wb); end
@@ -486,89 +458,5 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
              [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
         end
-
-        % function [seriesName, metadatasw, dimyxzct, transMatrix] = selectHDFSeries(obj, filename, fontOptions)
-        %      % Helper method to select dataset from HDF5 file
-        %      % This mimics selectHDFSeries function
-        % 
-        %      % For now, returning defaults or implementing a simple selection dialog
-        %      % In a full implementation, this would list all datasets in the HDF5
-        %      % and let the user pick one, also defining dimensions mapping.
-        % 
-        %      % Simplified implementation:
-        %      info = h5info(filename);
-        % 
-        %      % Find all datasets
-        %      datasets = {};
-        % 
-        %      % Recursive function to find datasets (simplified)
-        %      function traverse(node, path)
-        %          if isempty(node); return; end
-        %          % Check Groups
-        %          if isfield(node, 'Groups')
-        %              for i=1:numel(node.Groups)
-        %                  traverse(node.Groups(i), [path node.Groups(i).Name]);
-        %              end
-        %          end
-        %          % Check Datasets
-        %          if isfield(node, 'Datasets')
-        %              for i=1:numel(node.Datasets)
-        %                  dName = node.Datasets(i).Name;
-        %                  % Full path
-        %                  if strcmp(path, '/')
-        %                      fullPath = ['/' dName];
-        %                  else
-        %                      fullPath = [path '/' dName];
-        %                  end
-        %                  datasets{end+1} = fullPath;
-        %              end
-        %          end
-        %      end
-        % 
-        %      traverse(info, info.Name);
-        % 
-        %      if isempty(datasets)
-        %          error('No datasets found in HDF5 file');
-        %      end
-        % 
-        %      if numel(datasets) == 1
-        %          seriesName = datasets; % Cell array
-        %          % Determine dimensions
-        %          dInfo = h5info(filename, seriesName{1});
-        %          dims = dInfo.Dataspace.Size;
-        % 
-        %          % Heuristic for dimensions mapping [Y X C Z T]
-        %          % MIB expects Y X
-        %          % HDF5 usually X Y or Y X.
-        %          % Let's assume standard order and user can fix later if needed
-        %          % or implement the full dialog.
-        % 
-        %          dimyxzct = [dims 1 1 1 1 1]; % Pad
-        %          transMatrix = 1:numel(dims); % No permutation
-        %          metadatasw = true;
-        %          return;
-        %      end
-        % 
-        %      % If multiple, ask user (using mibInputDlg or listdlg)
-        %      [indx, tf] = listdlg('ListString', datasets, 'SelectionMode', 'single', ...
-        %          'PromptString', 'Select HDF5 Dataset:', 'Name', 'Select Dataset', ...
-        %          'ListSize', [400 300]);
-        % 
-        %      if tf == 0
-        %          seriesName = 'Cancel';
-        %          metadatasw = false;
-        %          dimyxzct = [];
-        %          transMatrix = [];
-        %          return;
-        %      end
-        % 
-        %      seriesName = datasets(indx);
-        %       % Get dimensions
-        %      dInfo = h5info(filename, seriesName{1});
-        %      dims = dInfo.Dataspace.Size;
-        %      dimyxzct = [dims 1 1 1 1 1];
-        %      transMatrix = 1:numel(dims);
-        %      metadatasw = true;
-        % end
     end
 end
