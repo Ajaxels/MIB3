@@ -835,6 +835,7 @@ for fn_index = 1:no_files
                 if options.waitbar==1; delete(wb); end
                 return;
             end
+            
             if numSeries > 1
                 if ~isfield(options, 'BioFormatsIndices')
                     [filesTemp.seriesIndex, filesTemp.hDataset, metaSwitch, filesTemp.dim_xyczt, filesTemp.seriesRealName] = ...

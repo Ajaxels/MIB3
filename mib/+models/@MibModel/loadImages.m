@@ -226,7 +226,10 @@ switch BatchOpt.Mode{1}
 
         % Load metadata (img_info dictionary) and populate structure array with files information (files)
         [img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
-
+        if img_info.numEntries == 0
+            notify(obj, 'StopProtocol');
+            return;
+        end
         % Load images
         [img, img_info] = loader.loadImages(files, img_info, options);
         if isempty(img); return; end
