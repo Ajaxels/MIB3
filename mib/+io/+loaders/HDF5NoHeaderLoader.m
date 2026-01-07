@@ -367,7 +367,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             end
             
             for fnIndex = 1:noFiles
-                 % Check for cancel button
+                % Check for cancel button
                 if options.waitbar && wb.CancelRequested
                     delete(wb);
                     img = [];

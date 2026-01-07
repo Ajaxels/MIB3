@@ -87,11 +87,10 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
             if ~isfield(options, 'BioFormatsMemoizerMemoDir'); options.BioFormatsMemoizerMemoDir = 'c:\temp'; end
-            if ~isfield(options, 'BioFormatsIndices'); options.BioFormatsIndices = 0; end
+            if ~isfield(options, 'BioFormatsIndices'); options.BioFormatsIndices = []; end
 
             % init the pixel size as pixSize structure
             pixSize = obj.initializePixSize();
-
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
@@ -104,7 +103,8 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % Pre-allocate files structure array
             % We use layerId to track individual series as separate "files"
             layerId = 1;
-            filesTemp(noFiles) = struct();
+            % init the output struct
+            files(noFiles) = struct();
 
             % Process each file
             for fnIndex = 1:noFiles
@@ -123,140 +123,139 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 ext = lower(ext);
 
                 % Initialize Bio-Formats reader with Memoizer
-                try
-                    if fnIndex == 1
-                        % Cache the initialized readers for each file and close the reader
-                        try
-                            % Disable Bio-Formats debug logging
-                            % Logging levels (from most to least verbose):
-                            % 'ALL' - Everything
-                            % 'DEBUG' - Debug messages (default, very verbose)
-                            % 'INFO' - Informational messages
-                            % 'WARN' - Warnings only
-                            % 'ERROR' - Errors only
-                            % 'FATAL' - Fatal errors only
-                            % 'OFF' - No logging
-                            loci.common.DebugTools.setRootLevel('WARN');
+                if fnIndex == 1
+                    % Cache the initialized readers for each file and close the reader
+                    try
+                        % Disable Bio-Formats debug logging
+                        % Logging levels (from most to least verbose):
+                        % 'ALL' - Everything
+                        % 'DEBUG' - Debug messages (default, very verbose)
+                        % 'INFO' - Informational messages
+                        % 'WARN' - Warnings only
+                        % 'ERROR' - Errors only
+                        % 'FATAL' - Fatal errors only
+                        % 'OFF' - No logging
+                        loci.common.DebugTools.setRootLevel('WARN');
 
-                            filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.BioFormatsMemoizerMemoDir));
-                            filesTemp.hDataset.setId(filenames{fnIndex});
-                            numSeries = filesTemp.hDataset.getSeriesCount();
-                        catch err
-                            if options.waitbar==1; delete(wb); end
-                            utils.dlgs.showErrorDialog(options.parentGUI, ...
-                                sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
-                                'BioFormats memoizer');
-                            imginfo = dictionary();
-                            return;
-                        end
+                        filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.BioFormatsMemoizerMemoDir));
+                        filesTemp.hDataset.setId(filenames{fnIndex});
+                        numSeries = filesTemp.hDataset.getSeriesCount();
+                    catch err
+                        if options.waitbar==1; delete(wb); end
+                        utils.dlgs.showErrorDialog(options.parentGUI, ...
+                            sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
+                            'BioFormats memoizer');
+                        imginfo = dictionary();
+                        return;
+                    end
 
-                        % Series selection
-                        if numSeries > 1
-                            if isfield(options, 'BioFormatsIndices') && ~isempty(options.BioFormatsIndices) && options.BioFormatsIndices ~= 0
-                                % Use provided indices
-                                filesTemp(fnIndex).seriesIndex = options.BioFormatsIndices;
-                                metaSwitch = 1;
-                                filesTemp(fnIndex).dimxyczt = zeros(numel(filesTemp(fnIndex).seriesIndex), 5);
-                                filesTemp(fnIndex).seriesRealName = cell(numel(filesTemp(fnIndex).seriesIndex), 1);
-
-                                for i = 1:numel(filesTemp(fnIndex).seriesIndex)
-                                    filesTemp(fnIndex).hDataset.setSeries(filesTemp(fnIndex).seriesIndex(i) - 1);
-                                    filesTemp(fnIndex).dimxyczt(i, 1) = filesTemp(fnIndex).hDataset.getSizeX();
-                                    filesTemp(fnIndex).dimxyczt(i, 2) = filesTemp(fnIndex).hDataset.getSizeY();
-                                    filesTemp(fnIndex).dimxyczt(i, 3) = filesTemp(fnIndex).hDataset.getSizeC();
-                                    filesTemp(fnIndex).dimxyczt(i, 4) = filesTemp(fnIndex).hDataset.getSizeZ();
-                                    filesTemp(fnIndex).dimxyczt(i, 5) = filesTemp(fnIndex).hDataset.getSizeT();
-                                    filesTemp(fnIndex).seriesRealName{i} = char(filesTemp(fnIndex).hDataset.getMetadataStore().getImageName(i-1));
-                                end
-                            else
-                                % User selection via selectLociSeries
-                                controller = utils.dlgs.SelectLociSeriesDlg( ...
-                                    filenames{fnIndex}, filesTemp(fnIndex).hDataset, options.Font, options.parentGUI);
-                                [filesTemp(fnIndex).seriesIndex, filesTemp(fnIndex).hDataset, metaSwitch, ...
-                                    filesTemp(fnIndex).dimxyczt, filesTemp(fnIndex).seriesRealName] = controller.run();
-                                
-                                if strcmp(filesTemp(fnIndex).seriesIndex, 'Cancel')
-                                    if options.waitbar==1; delete(wb); end
-                                    files = struct;
-                                    imginfo = dictionary();
-                                    return;
-                                end
-                            end
+                    % Series selection
+                    if numSeries > 1
+                        if isempty(options.BioFormatsIndices)
+                            % User selection via selectLociSeries
+                            controller = utils.dlgs.SelectLociSeriesDlg( ...
+                                filenames{fnIndex}, filesTemp.hDataset, options.Font, options.parentGUI);
+                            [filesTemp.seriesIndex, filesTemp.hDataset, metaSwitch, ...
+                                filesTemp.dimxyczt, filesTemp.seriesRealName] = controller.run();
                         else
-                            % Single series - no selection needed
-                            filesTemp(fnIndex).seriesIndex = 1;
-                            filesTemp(fnIndex).hDataset.setSeries(filesTemp(fnIndex).seriesIndex - 1);
-                            metaSwitch = 1;
-                            filesTemp(fnIndex).dimxyczt(1, 1) = filesTemp(fnIndex).hDataset.getSizeX();
-                            filesTemp(fnIndex).dimxyczt(1, 2) = filesTemp(fnIndex).hDataset.getSizeY();
-                            filesTemp(fnIndex).dimxyczt(1, 3) = filesTemp(fnIndex).hDataset.getSizeC();
-                            filesTemp(fnIndex).dimxyczt(1, 4) = filesTemp(fnIndex).hDataset.getSizeZ();
-                            filesTemp(fnIndex).dimxyczt(1, 5) = filesTemp(fnIndex).hDataset.getSizeT();
-                            filesTemp(fnIndex).seriesRealName{1} = char(filesTemp(fnIndex).hDataset.getMetadataStore().getImageName(0));
-                        end
-                    end
-                   
+                            if options.BioFormatsIndices == 0
+                                filesTemp.seriesIndex = 1:numSeries;
+                                metaSwitch = true;
+                            else
+                                % index is too large
+                                if options.BioFormatsIndices > numSeries; return; end
+                                filesTemp.seriesIndex = options.BioFormatsIndices;
+                                metaSwitch = true;
+                            end
 
+                            filesTemp.dimxyczt = zeros(numel(filesTemp.seriesIndex), 5);
+                            filesTemp.seriesRealName = cell(numel(filesTemp.seriesIndex), 1);
+
+                            for i = 1:numel(filesTemp.seriesIndex)
+                                filesTemp.hDataset.setSeries(filesTemp.seriesIndex(i) - 1);
+                                filesTemp.dimxyczt(i, 1) = filesTemp.hDataset.getSizeX();
+                                filesTemp.dimxyczt(i, 2) = filesTemp.hDataset.getSizeY();
+                                filesTemp.dimxyczt(i, 3) = filesTemp.hDataset.getSizeC();
+                                filesTemp.dimxyczt(i, 4) = filesTemp.hDataset.getSizeZ();
+                                filesTemp.dimxyczt(i, 5) = filesTemp.hDataset.getSizeT();
+                                filesTemp.seriesRealName{i} = char(filesTemp.hDataset.getMetadataStore().getImageName(i-1));
+                            end
+                        end
+                    else
+                        % Single series - no selection needed
+                        filesTemp.seriesIndex = 1;
+                        filesTemp.hDataset.setSeries(filesTemp.seriesIndex - 1);
+                        metaSwitch = true;
+                        filesTemp.dimxyczt(1, 1) = filesTemp.hDataset.getSizeX();
+                        filesTemp.dimxyczt(1, 2) = filesTemp.hDataset.getSizeY();
+                        filesTemp.dimxyczt(1, 3) = filesTemp.hDataset.getSizeC();
+                        filesTemp.dimxyczt(1, 4) = filesTemp.hDataset.getSizeZ();
+                        filesTemp.dimxyczt(1, 5) = filesTemp.hDataset.getSizeT();
+                        filesTemp.seriesRealName{1} = char(filesTemp.hDataset.getMetadataStore().getImageName(0));
+                    end
                     % Get OME metadata
-                    omeMeta = filesTemp(fnIndex).hDataset.getMetadataStore();
+                    omeMeta = filesTemp.hDataset.getMetadataStore();
+                else % reading second, third, etc file
+                    filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.BioFormatsMemoizerMemoDir));
+                    filesTemp.hDataset.setId(filenames{fnIndex});
+                    filesTemp.hDataset.setSeries(filesTemp.seriesIndex(1)-1);
 
-                    % Get dimension order
-                    filesTemp(fnIndex).DimensionOrder = char(filesTemp(fnIndex).hDataset.getDimensionOrder());
+                    noSeriesTemp = numel(filesTemp.seriesIndex);
 
-                    % Check if selection was cancelled
-                    if strcmp(filesTemp(fnIndex).seriesIndex, 'Cancel')
-                        if options.waitbar; delete(wb); end
-                        imginfo = dictionary();
-                        return;
+                    filesTemp.dimxyczt(1:noSeriesTemp, 1) = filesTemp.hDataset.getSizeX();
+                    filesTemp.dimxyczt(1:noSeriesTemp, 2) = filesTemp.hDataset.getSizeY();
+                    filesTemp.dimxyczt(1:noSeriesTemp, 3) = filesTemp.hDataset.getSizeC();    % number of color layers
+                    filesTemp.dimxyczt(1:noSeriesTemp, 4) = filesTemp.hDataset.getSizeZ();
+                    filesTemp.dimxyczt(1:noSeriesTemp, 5) = filesTemp.hDataset.getSizeT();    % number of time layers
+                    %filesTemp.seriesRealName{1} = char(filesTemp.hDataset.getMetadataStore().getImageName(0));
+                end
+
+                % Get dimension order
+                filesTemp.DimensionOrder = char(filesTemp.hDataset.getDimensionOrder());
+
+                if strcmp(filesTemp.seriesIndex, 'Cancel')
+                    if options.waitbar==1; delete(wb); end
+                    imginfo = dictionary();
+                    return;
+                end
+
+                if ~isfloat(filesTemp.seriesIndex)
+                    % Close readers on error
+                    if ~isempty(filesTemp.hDataset)
+                        filesTemp.hDataset.close();
                     end
-
-                    if isfloat(filesTemp(fnIndex).seriesIndex)
-                        % Close readers on error
-                        if ~isempty(filesTemp(fnIndex).hDataset)
-                            filesTemp(fnIndex).hDataset.close();
-                        end
-                        if options.waitbar; delete(wb); end
-                        imginfo = dictionary();
-                        return;
-                    end
-
-                catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error reading Bio-Formats metadata:\n%s', err.message), 'Bio-Formats Error');
                     imginfo = dictionary();
                     return;
                 end
 
                 % Create individual file entries for each selected series
-                for fileSubIndex = 1:numel(filesTemp(fnIndex).seriesIndex)
+                for fileSubIndex = 1:numel(filesTemp.seriesIndex)
                     files(layerId).filename = cell2mat(filenames(fnIndex));
                     files(layerId).origFilename = files(layerId).filename;
                     files(layerId).objecttype = 'bioformats';
                     files(layerId).extension = ext;
-                    files(layerId).seriesName = filesTemp(fnIndex).seriesIndex(fileSubIndex);
-                    files(layerId).dimxyczt = filesTemp(fnIndex).dimxyczt;
-                    files(layerId).DimensionOrder = filesTemp(fnIndex).DimensionOrder;
+                    files(layerId).seriesName = filesTemp.seriesIndex(fileSubIndex);
+                    files(layerId).dimxyczt = filesTemp.dimxyczt;
+                    files(layerId).DimensionOrder = filesTemp.DimensionOrder;
                     files(layerId).BioFormatsMemoizerMemoDir = options.BioFormatsMemoizerMemoDir;
-                    files(layerId).seriesRealName = filesTemp(fnIndex).seriesRealName{fileSubIndex};
+                    files(layerId).seriesRealName = filesTemp.seriesRealName{fileSubIndex};
 
                     % Dimensions
-                    files(layerId).height = filesTemp(fnIndex).dimxyczt(fileSubIndex, 2);
-                    files(layerId).width = filesTemp(fnIndex).dimxyczt(fileSubIndex, 1);
-
+                    files(layerId).height = filesTemp.dimxyczt(fileSubIndex, 2);
+                    files(layerId).width = filesTemp.dimxyczt(fileSubIndex, 1);
                     % Handle Z and T dimensions
-                    if filesTemp(fnIndex).dimxyczt(fileSubIndex, 4) == 1 && filesTemp(fnIndex).dimxyczt(fileSubIndex, 5) > 1
-                        files(layerId).noLayers = max([filesTemp(fnIndex).dimxyczt(fileSubIndex, 4), filesTemp(fnIndex).dimxyczt(fileSubIndex, 5)]);
+                    if filesTemp.dimxyczt(fileSubIndex, 4) == 1 && filesTemp.dimxyczt(fileSubIndex, 5) > 1
+                        files(layerId).noLayers = max([filesTemp.dimxyczt(fileSubIndex, 4), filesTemp.dimxyczt(fileSubIndex, 5)]);
                         files(layerId).time = 1;
                     else
-                        files(layerId).noLayers = filesTemp(fnIndex).dimxyczt(fileSubIndex, 4);
-                        files(layerId).time = filesTemp(fnIndex).dimxyczt(fileSubIndex, 5);
+                        files(layerId).noLayers = filesTemp.dimxyczt(fileSubIndex, 4);
+                        files(layerId).time = filesTemp.dimxyczt(fileSubIndex, 5);
                     end
-
-                    files(layerId).color = filesTemp(fnIndex).dimxyczt(fileSubIndex, 3);
+                    files(layerId).color = filesTemp.dimxyczt(fileSubIndex, 3);
 
                     % Image class
-                    bpp = filesTemp(fnIndex).hDataset.getBitsPerPixel();
+                    bpp = filesTemp.hDataset.getBitsPerPixel();
                     if bpp == 8
                         files(layerId).imgClass = 'uint8';
                     elseif bpp == 16
@@ -269,39 +268,99 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
                     % Update filename for multi-series
                     [path, name, ext] = fileparts(files(layerId).filename);
-                    if numel(filesTemp(fnIndex).seriesIndex) > 1
-                        files(layerId).filename = fullfile(path, [name, files(layerId).seriesRealName, ext]);
+                    if numel(filesTemp.seriesIndex) > 1
+                        files(layerId).filename = fullfile(path, [name '__' files(layerId).seriesRealName ext]);
                     end
 
                     layerId = layerId + 1;
                 end
 
                 % Close reader
-                filesTemp(fnIndex).hDataset.close();
+                filesTemp.hDataset.close();
 
                 % Update pixel size from OME (first file/series only)
                 if fnIndex == 1
+                    if metaSwitch
+                        try
+                            omeXML = char(omeMeta.dumpXML());    % to xml
+                            omeXML = strrep(omeXML, sprintf('\xB5'), 'u');     % mu, replace utf-8 characters
+                            omeXML = strrep(omeXML, sprintf('\xC5'), 'A');      % Angstrem
+                            omeXML(omeXML==65533) = 'u';      % mu, replace utf-8 characters
+    
+                            dummyXMLFilename = fullfile(dirId, 'delete_me.xml');    % save xml to a file
+                            fid = fopen(dummyXMLFilename, 'w');
+                            if fid == -1
+                                dummyXMLFilename = fullfile(tempdir, 'delete_me.xml');
+                                fid = fopen(dummyXMLFilename, 'w');
+                            end
+                            fprintf(fid, '%s', omeXML);
+                            fclose(fid);
+                            meta = xml2struct(dummyXMLFilename);           % load and convert xml to structure
+                            delete(dummyXMLFilename);           % delete dummy xml file
+                            imginfo{'meta'} = meta.OME;
+                        catch err
+                            continue
+                        end
+                    end
+
                     try
                         xVal = double(omeMeta.getPixelsPhysicalSizeX(filesTemp(fnIndex).seriesIndex(1)-1).value(ome.units.UNITS.MICROMETER));
-                        if ~isempty(xVal)
-                            pixSize.x = xVal;
-                            pixSize.y = double(omeMeta.getPixelsPhysicalSizeY(filesTemp(fnIndex).seriesIndex(1)-1).value(ome.units.UNITS.MICROMETER));
+                        if isempty(xVal)
+                            pixSize.x = 1;   % in um
+                            pixSize.y = 1;   % in um
+                        else
+                            pixSize.x = xVal;   % in um
+                            pixSize.y = double(omeMeta.getPixelsPhysicalSizeY(filesTemp.seriesIndex(fileSubIndex)-1).value(ome.units.UNITS.MICROM));   % in um
                         end
 
                         zVal = omeMeta.getPixelsPhysicalSizeZ(filesTemp(fnIndex).seriesIndex(1)-1);
-                        if ~isempty(zVal)
-                            pixSize.z = double(zVal.value(ome.units.UNITS.MICROMETER));
+                        if isempty(zVal)
+                            pixSize.z = pixSize.y;   % in um
                         else
-                            pixSize.z = pixSize.y;
+                            % pixSize.z = double(omeMeta.getPixelsPhysicalSizeZ(filesTemp.seriesIndex(fileSubIndex)-1).value(ome.units.UNITS.MICROM));   % in um
+                            pixSize.z = double(zVal.value(ome.units.UNITS.MICROMETER));
                         end
 
                         tVal = omeMeta.getPixelsTimeIncrement(filesTemp(fnIndex).seriesIndex(1)-1);
-                        if ~isempty(tVal) && double(tVal.value()) ~= 0
-                            pixSize.t = double(tVal.value());
+                        if ~isempty(tVal)
+                            pixSize.t = double(tVal.value(ome.units.UNITS.SECOND));   % in seconds
                         end
-                    catch
-                        % Use defaults
+
+                        % stage coordinates from the stage center
+                        % stageCenterX = double(omeMeta.getStageLabelX(filesTemp.seriesIndex(fileSubIndex)-1).value(ome.units.UNITS.MICROM));
+                        % from the image center
+                        stageCenterX = double(omeMeta.getPlanePositionX(filesTemp.seriesIndex(fileSubIndex)-1, 0).value(ome.units.UNITS.MICROM));
+                        if isempty(stageCenterX); stageCenterX = 0; end
+                        stageCenterY = double(omeMeta.getPlanePositionY(filesTemp.seriesIndex(fileSubIndex)-1, 0).value(ome.units.UNITS.MICROM));
+                        if isempty(stageCenterY); stageCenterY = 0; end
+                        stageCenterZ = double(omeMeta.getPlanePositionZ(filesTemp.seriesIndex(fileSubIndex)-1, 0).value(ome.units.UNITS.MICROM));
+                        if isempty(stageCenterZ); stageCenterZ = 0; end
+                        % add xMin xMax yMin yMax zMin zMax to use them later for calculation of the bounding box
+                        % files(fnIndex).xMin = stageCenterX - files(fnIndex).dimxyczt(1)/2*pixSize.x;
+                        % files(fnIndex).xMax = stageCenterX + files(fnIndex).dimxyczt(1)/2*pixSize.x;
+                        % files(fnIndex).yMin = stageCenterY - files(fnIndex).dimxyczt(2)/2*pixSize.y;
+                        % files(fnIndex).yMax = stageCenterY + files(fnIndex).dimxyczt(2)/2*pixSize.y;
+                        % files(fnIndex).zMin = stageCenterZ - files(fnIndex).dimxyczt(4)/2*pixSize.z;
+                        % files(fnIndex).zMax = stageCenterZ + files(fnIndex).dimxyczt(4)/2*pixSize.z;
+                        % add ImageDescription
+                        files(fnIndex).boundingBoxVector = [0 0 0 0 0 0];  % [xMin xMax yMin yMax zMin zMax]
+                        files(fnIndex).boundingBoxVector(1) = stageCenterX - files(fnIndex).dimxyczt(1)/2*pixSize.x; % xMin
+                        files(fnIndex).boundingBoxVector(2) = stageCenterX + files(fnIndex).dimxyczt(1)/2*pixSize.x; % xMax
+                        files(fnIndex).boundingBoxVector(3) = stageCenterY - files(fnIndex).dimxyczt(2)/2*pixSize.y; % yMin
+                        files(fnIndex).boundingBoxVector(4) = stageCenterY + files(fnIndex).dimxyczt(2)/2*pixSize.y; % yMax
+                        files(fnIndex).boundingBoxVector(5) = stageCenterZ - files(fnIndex).dimxyczt(4)/2*pixSize.z; % zMin
+                        files(fnIndex).boundingBoxVector(6) = stageCenterZ + files(fnIndex).dimxyczt(4)/2*pixSize.z; % zMax
+                        %bbString = sprintf('BoundingBox %.5f %.5f %.5f %.5f %.5f %.5f ', bb(1), bb(2), bb(3), bb(4), bb(5), bb(6));
+                        %img_info('ImageDescription') = bbString;
+                    catch err
+                        continue
                     end
+                end
+
+                % fix X and Y for dm4
+                if strcmp(ext, '.dm4') && pixSize.x ~= pixSize.y
+                    pixSize.z = pixSize.x;
+                    pixSize.x = pixSize.y;
                 end
 
                 % Update waitbar
@@ -312,11 +371,35 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 end
             end
 
+            % get colors for the color channels
+            colorsVec = [files.color];
+            maxColorChannel = max(colorsVec);
+            indexOfDataset = find(colorsVec==maxColorChannel,1);     % index with largest number of colors
+            indexOfDataset = files(indexOfDataset).seriesName-1;
+            if ~isempty(omeMeta.getChannelColor(indexOfDataset, 0))
+                rgb = zeros(maxColorChannel, 3);
+                for colCh=1:maxColorChannel
+                    if isempty(omeMeta.getChannelColor(indexOfDataset, colCh-1)); continue; end
+                    rgb(colCh, 1) = omeMeta.getChannelColor(indexOfDataset, colCh-1).getRed();
+                    rgb(colCh, 2) = omeMeta.getChannelColor(indexOfDataset, colCh-1).getGreen();
+                    rgb(colCh, 3) = omeMeta.getChannelColor(indexOfDataset, colCh-1).getBlue();
+                end
+                imginfo{'lutColors'} = rgb/255;
+            elseif ~isempty(omeMeta.getChannelExcitationWavelength(indexOfDataset, 0)) && ~isempty(omeMeta.getChannelEmissionWavelength(indexOfDataset, 0))
+                rgb = zeros(maxColorChannel, 3);
+                for colCh=1:maxColorChannel
+                    Wavelength = double(omeMeta.getChannelEmissionWavelength(indexOfDataset, colCh-1).value());
+                    %Wavelength = double(omeMeta.getChannelExcitationWavelength(indexOfDataset, colCh-1).value());
+                    rgb(colCh, :) = io.BioFormats.wavelength2rgb(Wavelength);
+                end
+                imginfo{'lutColors'} = rgb/255;
+            end
+
             % Set metadata for first file
             if ~isempty(files)
                 imginfo{'imgClass'} = files(1).imgClass;
                 if files(1).color > 1
-                    imginfo{'ColorType'} = 'truecolor';
+                    imginfo{'ColorType'} = 'multichannel';
                 else
                     imginfo{'ColorType'} = 'grayscale';
                 end
@@ -379,15 +462,18 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             else
                 maxZ = sum([files.noLayers]);
             end
-
             if maxZ == 0; return; end
 
             % Prepare image class
             imgClass = files(1).imgClass;
             if strcmp(imgClass, 'int16'); imgClass = 'uint16'; end
 
-            % Pre-allocate image array: [Y, X, C, Z, T]
-            img = zeros(height, width, color, maxZ, time, imgClass);
+            % Pre-allocate image array: [Y, X, Z, C, T]
+            if isfield(files, 'backgroundColor')
+                img = zeros([height, width, maxZ, color, time],imgClass)+files(1).backgroundColor;
+            else
+                img = zeros([height, width, maxZ, color, time], imgClass);
+            end
 
             % Calculate waitbar update frequency
             pixPerSlice = size(img, 1) * size(img, 2);
@@ -398,16 +484,16 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar
             if options.waitbar
-                wb = waitbar(0, sprintf('Loading images\nPlease wait...'), 'Name', 'Loading images...', ...
-                    'CreateCancelBtn','setappdata(gcbf, ''canceling'', 1)');
+                wb = uiprogressdlg(options.parentGUI, 'Title', 'Loading images with BioFormats',...
+                    'Message', sprintf('Please wait...'), ...
+                    'Cancelable', 'on');
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && getappdata(wb, 'canceling')
+                if options.waitbar && wb.CancelRequested
                     delete(wb);
                     img = [];
-                    imginfo = dictionary();
                     return;
                 end
 
@@ -439,16 +525,15 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
                 % Load data using bfopen4
                 try
-                    I = bfopen4(files(fnIndex).origFilename, files(fnIndex).seriesName, NaN, bfopenOptions);
-
+                    I = io.BioFormats.bfopen5(files(fnIndex).origFilename, files(fnIndex).seriesName, NaN, bfopenOptions);
                     if isempty(I)
                         img = [];
                         return;
                     end
 
-                    % Assign data (I.img is [Y, X, C, Z, T])
+                    % Assign data (I.img is [Y, X, Z, C, T])
                     for subLayer = 1:files(fnIndex).noLayers
-                        img(1:maxY, 1:maxX, 1:maxC, layerId, 1:maxT) = I.img(1:maxY, 1:maxX, 1:maxC, subLayer, 1:maxT);
+                        img(1:maxY, 1:maxX, layerId, 1:maxC, 1:maxT) = I.img(1:maxY, 1:maxX, subLayer, 1:maxC, 1:maxT);
 
                         % Update metadata from first load
                         if fnIndex == 1 && subLayer == 1
@@ -460,12 +545,12 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
                         % Update waitbar
                         if options.waitbar && mod(layerId, waitbarUpdateFrequency) == 0
-                            if getappdata(wb, 'canceling')
+                            if options.waitbar && wb.CancelRequested
                                 img = [];
                                 delete(wb);
                                 return;
                             end
-                            waitbar(layerId/maxZ, wb);
+                            wb.Value = layerId/maxZ;
                         end
                     end
 

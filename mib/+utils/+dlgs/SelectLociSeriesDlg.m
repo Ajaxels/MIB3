@@ -211,14 +211,14 @@ classdef SelectLociSeriesDlg < handle
             obj.reader.setSeries(rowIndex - 1);
             
             % Get dimensions [x y c z t]
-            obj.selectedDimensions = cell2mat(obj.tableData(rowIndex, 2:6));
-            obj.seriesRealName = obj.tableData(rowIndex, 1);
+            obj.selectedDimensions = cell2mat(obj.tableData(rowIndices, 2:6));
+            obj.seriesRealName = obj.tableData(rowIndices, 1);
             
             % Update slice slider
             obj.view.handles.sliceNumberEdit.Value = 1;
-            obj.view.handles.sliceNumberEdit.Limits = [0, max(1, obj.selectedDimensions(4))];
+            obj.view.handles.sliceNumberEdit.Limits = [0, max([1; obj.selectedDimensions(:,4)])];
             obj.view.handles.sliceNumberSlider.Value = 1;
-            obj.view.handles.sliceNumberSlider.Limits = [0, max(1, obj.selectedDimensions(4))];
+            obj.view.handles.sliceNumberSlider.Limits = [0, max([1; obj.selectedDimensions(:,4)])];
             
             % Get pixel size information
             omeMeta = obj.reader.getMetadataStore();
@@ -237,6 +237,7 @@ classdef SelectLociSeriesDlg < handle
             
             % Update selected series text
             obj.view.handles.selectedSeriesText.Text = obj.seriesRealName;
+            obj.view.handles.selectedSeriesText.Tooltip = obj.seriesRealName;
             obj.view.handles.selectedSeriesText2.Text = sprintf('%d, pixsize, x/y = %f, %f um', ...
                 rowIndex, pixSizeX, pixSizeY);
             

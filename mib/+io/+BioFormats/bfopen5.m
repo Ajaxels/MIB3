@@ -1,4 +1,4 @@
-function [result] = bfopen4(r, seriesNumber, sliceNo, options)
+function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 % A script for opening microscopy images in MATLAB using Bio-Formats.
 % modified from the original bfopen.m by Ilya Belevich
 % 
@@ -27,7 +27,7 @@ function [result] = bfopen4(r, seriesNumber, sliceNo, options)
 %
 % Return values:
 %   result -> Structure with the selected serie
-%       .img -> Image with [heigh width color z-stack] dimensions
+%       .img -> Image with [height width depth color] dimensions
 %       .ColorType -> 'grayscale', 'truecolor', 'indexed'
 %       .ColorMap -> color map for the indexed image
 % Portions of this code were adapted from:
@@ -51,6 +51,7 @@ function [result] = bfopen4(r, seriesNumber, sliceNo, options)
 %
 % 30.01.2019 Ilya Belevich, adaptation for use with Memoizer
 % 13.12.2023 Ilya Belevich, added cancel upon waitbar cancel click
+% 07.01.2026 Ilya Belevich, switched to [Y X Z C T] outputs, renamed .ColorType truecolor->multichannel
 
 if nargin < 4;     options = struct;   end
 if nargin < 3;     sliceNo = NaN;   end
@@ -116,7 +117,7 @@ else
     ImageClassType = 'double';
 end
 
-result.img = zeros([Height, Width, Colors, ZStacks, Time], ImageClassType);
+result.img = zeros([Height, Width, ZStacks, Colors, Time], ImageClassType);
 
 if ~isfield(options, 'x1')
     fprintf('Reading series #%d', seriesNumber);
@@ -181,7 +182,8 @@ for i = startSlice:endSlice
     % save image plane and label into the list
     switch options.DimensionOrder
         case 'XYZCT'
-            result.img(:, :, colorID, sliceID, timeID) = arr;
+            %result.img(:, :, colorID, sliceID, timeID) = arr;
+            result.img(:, :, sliceID, colorID, timeID) = arr;
             sliceID = sliceID + 1;
             if sliceID > ZStacks
                 sliceID = 1;
@@ -192,7 +194,7 @@ for i = startSlice:endSlice
                 timeID = timeID + 1;
             end
         case 'XYCZT'
-            result.img(:, :, colorID, sliceID, timeID) = arr;
+            result.img(:, :, sliceID, colorID, timeID) = arr;
             colorID = colorID + 1;
             if colorID > Colors
                 colorID = 1;
@@ -203,7 +205,7 @@ for i = startSlice:endSlice
                 timeID = timeID + 1;
             end
         otherwise
-            result.img(:, :, colorID, sliceID, timeID) = arr;
+            result.img(:, :, sliceID, colorID, timeID) = arr;
             colorID = colorID + 1;
             colorID = colorID + 1;
             if colorID > Colors
@@ -218,13 +220,13 @@ for i = startSlice:endSlice
 
     % update waitbar
     if ~isempty(options.waitbarHandle) && mod(index, options.waitbarUpdateFrequency)==0
-        if getappdata(options.waitbarHandle, 'canceling')
+        if options.waitbarHandle.CancelRequested
             result = [];
             delete(options.waitbarHandle);
             fprintf('\n');
             return;
         end
-        waitbar(index/noSlices, options.waitbarHandle);
+        options.waitbarHandle.Value = index/noSlices;
     end
 
     index = index + 1;
@@ -235,7 +237,7 @@ if isnan(result.ColorType)
     if Colors == 1
         result.ColorType = 'grayscale';
     else
-        result.ColorType = 'truecolor';
+        result.ColorType = 'multichannel';
     end
 else
     msgbox('Indexed color type, Not really tested!','Warning!','warn');

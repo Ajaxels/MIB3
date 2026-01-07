@@ -68,7 +68,7 @@ else
     end
 end
 
-if strcmp(files(1).object_type,'bioformats')    % adjust number of sections, for bio-formats, when more than one serie was selected
+if strcmp(files(1).object_type,'bioformats')    % adjust number of sections, for bio-formats, when more than one series was selected
     maxZ = maxZ * numel(files(1).seriesName);
 end
 if isempty(maxZ); return; end
