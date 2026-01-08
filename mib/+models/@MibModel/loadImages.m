@@ -210,6 +210,11 @@ reader = 'Default';
 if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
 % find a loader that should be used for this specific dataset mode, selected reader and filename extension
 loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}.datasetType, reader);
+if ischar(loaderInfo)
+    utils.dlgs.showErrorDialog(obj.mibGUI, loaderInfo, 'io:ExtensionRegistryLoad:NotAllowed');
+    notify(obj, 'StopProtocol');
+    return;
+end
 
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
@@ -221,51 +226,9 @@ switch BatchOpt.Mode{1}
             return;
         end
 
-        % Create file loader
-        loader = io.LoaderFactory.create(loaderInfo, options);
-
-        % Load metadata (img_info dictionary) and populate structure array with files information (files)
-        [img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
-        if img_info.numEntries == 0
-            notify(obj, 'StopProtocol');
-            return;
-        end
-        % Load images
-        [img, img_info] = loader.loadImages(files, img_info, options);
-        if isempty(img); return; end
-
-        % check that Zarr is opened in correct mode
-        if isscalar(BatchOpt.Filenames) && isfolder(BatchOpt.Filenames{1})
-            [~, ~, ext] = fileparts(BatchOpt.Filenames{1}); % get extension
-            if ismember(ext, {'.zarr', '.zarr2', '.zarr3'}) 
-                if ~strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual') || BatchOpt.UseBioFormats
-                    errorText = sprintf('!!! Warning !!!\n\n%s\nOpening of Zarr files is only implemented in the virtual mode with Bio-formats reader switched off', 'Open Zarr');
-                    utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Open OME-Zarr');
-                    notify(obj, 'StopProtocol');
-                    return;   
-                end
-
-                % init python environment
-                if isempty(obj.pythonEnv)
-                    try
-                        obj.pythonEnv = pyenv( ...
-                            'Version', obj.preferences.ExternalDirs.PythonInstallationPath, ...
-                            'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
-                    catch err
-                        if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
-                            terminate(pyenv);
-                            obj.pythonEnv = pyenv( ...
-                                'Version', obj.preferences.ExternalDirs.PythonInstallationPath, ...
-                                'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
-                        end
-                    end
-                end
-            end
-        end
-
         if obj.I{obj.id}.labels.exists == 1 && nargin < 3
             dlgText = sprintf(['!!! Warning !!!\nYou are going to load a new dataset!\n\nMeanwhile you have an open model\n' ...
-                               'would you like to continue?']);
+                'would you like to continue?']);
             selection = uiconfirm(obj.mibGUI, ...
                 dlgText, 'Load dataset', ...
                 'Options', ["Load dataset", "Cancel"], 'DefaultOption', 2, 'CancelOption', 2, ...
@@ -274,18 +237,17 @@ switch BatchOpt.Mode{1}
         end
 
         if strcmp(BatchOpt.Mode{1}, 'Load part of dataset')
-            options.customSections = 1;     % to load part of the dataset, for AM only
+            options.customSections = 1;     % to load part of the dataset, for AM, TIF only
             % check for correct extensions
             [~,~,extList] = fileparts(BatchOpt.Filenames);
             if sum(~ismember(lower(unique(extList)), {'.tif', '.tiff', '.am'})) > 0 && ~options.UseBioFormats
-                errorText = sprintf('!!! Error !!!\n\nIt is only possible to load part of the dataset for TIF and AM formats!');
-                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong format');
+                errorText = sprintf('MibModel.loadImages\n\nIt is only possible to load part of the dataset for AM and TIF formats!');
+                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong format!');
                 notify(obj, 'StopProtocol');
                 return;
             end
         end
 
-        options.virtual = strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual');
         if ~isempty(BatchOpt.BioFormatsIndices)
             options.BioFormatsIndices = str2num(BatchOpt.BioFormatsIndices);
         else
@@ -293,18 +255,36 @@ switch BatchOpt.Mode{1}
                 options.BioFormatsIndices = BatchOpt.BioFormatsIndices;
             end
         end
-        
+
+        % Create file loader
+        loader = io.LoaderFactory.create(loaderInfo, options);
+        if isempty(loader); notify(obj, 'StopProtocol'); return; end
+
+        % Load metadata (img_info dictionary) and populate structure array with files information (files)
+        [img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
+        if img_info.numEntries == 0
+            notify(obj, 'StopProtocol');
+            return;
+        end
+
+        % main loader for z-stacks
         if ~strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
             if options.customSections && isfield(obj.sessionSettings, 'customSections')
+                % obj.sessionSettings.customSections - has the previously defined subvolume to load
                 options.customSectionsSettings = obj.sessionSettings.customSections;
             end
-            [img, img_info, pixSize, files] = io.loadImages(BatchOpt.Filenames, options);
+
+            % Load images
+            [img, img_info] = loader.loadImages(files, img_info, options);
             if isempty(img)
-                errorText = sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch or not an image or cancelled?');
+                errorText = sprintf(['MibModel.loadImages\n\nIt is not possible to load the dataset...\n' ...
+                    'Dimensions mismatch or cancelled?']);
                 utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
                 notify(obj, 'StopProtocol');
                 return;
             end
+
+            % store the selection for subvolume to load to reuse next time
             if options.customSections && isfield(files, 'xMin')
                 obj.sessionSettings.customSections.xMin = files(1).xMin;
                 obj.sessionSettings.customSections.xMax = files(1).xMax;
@@ -314,74 +294,101 @@ switch BatchOpt.Mode{1}
                 obj.sessionSettings.customSections.zMax = files(1).zMax;
                 obj.sessionSettings.customSections.xyStep = files(1).xyStep;
             end
-
-            if isKey(img_info, 'lutColors')
-                currColors = img_info('lutColors');
-                lutColors = currColors;
-                index1 = size(lutColors,1);
-                index2 = 1;
-                while size(lutColors,1) < size(img,3)
-                    lutColors(index1+1, :) = currColors(index2,:);
-                    index1 = index1 + 1;
-                    index2 = index2 + 1;
-                    if index2 > size(currColors,1); index2 = 1; end
-                end
-                img_info('lutColors') = lutColors;
-            end
         else
             for colChannelId = 1:numel(BatchOpt.Filenames)
                 if colChannelId==1
-                    [img_temp, img_info, pixSize] = io.loadImages(BatchOpt.Filenames(colChannelId), options);
+                    [img_temp, img_info] = loader.loadImages(files(1), img_info, options);
                     if isempty(img_temp)
-                        errorText = sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch, perhaps?');
+                        errorText = sprintf(['MibModel.loadImages\n\nIt is not possible to load the dataset as color channels...\n' ...
+                                             'Dimensions mismatch or cancelled?']);
                         utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
                         notify(obj, 'StopProtocol');
                         return;
                     end
-                    img = zeros([img_info('Height'), img_info('Width'), img_info('Colors')*numel(BatchOpt.Filenames), img_info('Depth'), img_info('Time')], img_info('imgClass'));
-                    img(:,:,1:img_info('Colors'),:,:) = img_temp;
-                    lutColors = zeros(img_info('Colors')*numel(BatchOpt.Filenames), 3);
+
+                    noColorsInFile = img_info{'Colors'}; % number of color channels in the first file
+                    noColorsInResult = img_info{'Colors'}*numel(BatchOpt.Filenames); % total number of color channels in the combined file
+
+                    img = zeros([img_info{'Height'}, img_info{'Width'}, img_info{'Depth'}, noColorsInResult, img_info{'Time'}], img_info{'imgClass'});
+                    img(:, :, :, 1:noColorsInFile, :) = img_temp;
+                    % correct lutColors
+                    lutColors = zeros(noColorsInResult, 3);
                     if isKey(img_info, 'lutColors')
-                        lutTemp = img_info('lutColors');
-                        lutColors(1:img_info('Colors'), :) = lutTemp(1:img_info('Colors'));
+                        lutTemp = img_info{'lutColors'};
+                        lutColors(1:noColorsInFile, :) = lutTemp(1:noColorsInFile);
                     end
                 else
-                    [img_temp, img_info_temp, pixSize] = io.loadImages(BatchOpt.Filenames(colChannelId), options);
+                    [img_temp, img_info_temp] = loader.loadImages(files(colChannelId), img_info, options);
                     if isempty(img_temp)
-                        errorText = sprintf('!!! Error !!!\n\nIt is not possible to load the dataset...\nDimensions mismatch, perhaps?');
+                        errorText = sprintf(['MibModel.loadImages\n\nIt is not possible to load the dataset as color channels...\n' ...
+                                             'Dimensions mismatch or cancelled?']);
                         utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
                         notify(obj, 'StopProtocol');
                         return;
                     end
-                    
-                    if img_info('Height') ~= img_info_temp('Height') || img_info('Width') ~= img_info_temp('Width') || ...
-                        img_info('Depth') ~= img_info_temp('Depth') || img_info('Time') ~= img_info_temp('Time')
-                        errorText = sprintf(['!!! Error !!!\n\nDimensions mismatch!\n' ...
+
+                    if img_info{'Height'} ~= img_info_temp{'Height'} || img_info{'Width'} ~= img_info_temp{'Width'} || ...
+                            img_info{'Depth'} ~= img_info_temp{'Depth'} || img_info{'Time'} ~= img_info_temp{'Time'}
+                        errorText = sprintf(['MibModel.loadImages\n\nDimensions mismatch!\n' ...
                             'When combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions']);
                         utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Dimensions mismatch');
                         notify(obj, 'StopProtocol');
                         return;
                     end
-
-                    img(:,:,colChannelId*img_info('Colors')-img_info('Colors')+1:colChannelId*img_info('Colors'), :, :) = img_temp;
+                    
+                    img(:, :, :, colChannelId*noColorsInFile-noColorsInFile+1:colChannelId*noColorsInFile,:) = img_temp;
                     if isKey(img_info_temp, 'lutColors')
-                        lutTemp = img_info_temp('lutColors');
-                        lutColors(colChannelId*img_info('Colors')-img_info('Colors')+1:colChannelId*img_info('Colors'), :) = lutTemp(1:img_info('Colors'));
+                        lutTemp = img_info_temp{'lutColors'};
+                        lutColors(colChannelId*noColorsInFile-noColorsInFile+1:colChannelId*noColorsInFile, :) = lutTemp(1:noColorsInFile);
                     end
                 end
             end
-            img_info('ColorType') = 'multichannel';
-
+            
+            % update img_info
+            img_info{'ColorType'} = 'multichannel';
             if isKey(img_info, 'lutColors')
-                img_info('lutColors') = lutColors;
+                img_info{'lutColors'} = lutColors;
             end
-            img_info('Colors') = img_info('Colors')*numel(BatchOpt.Filenames);
+            img_info{'Colors'} = noColorsInResult;
         end
+
+        % % check that Zarr is opened in correct mode
+        % if isscalar(BatchOpt.Filenames) && isfolder(BatchOpt.Filenames{1})
+        %     [~, ~, ext] = fileparts(BatchOpt.Filenames{1}); % get extension
+        %     if ismember(ext, {'.zarr', '.zarr2', '.zarr3'}) 
+        %         % init python environment
+        %         if isempty(obj.pythonEnv)
+        %             try
+        %                 obj.pythonEnv = pyenv( ...
+        %                     'Version', obj.preferences.ExternalDirs.PythonInstallationPath, ...
+        %                     'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
+        %             catch err
+        %                 if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
+        %                     terminate(pyenv);
+        %                     obj.pythonEnv = pyenv( ...
+        %                         'Version', obj.preferences.ExternalDirs.PythonInstallationPath, ...
+        %                         'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
+        %                 end
+        %             end
+        %         end
+        %     end
+        % end
+
+        %options.virtual = strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual');
         
         % enable fast panning mode for ome-zarr
-        if isKey(img_info, 'Pyramid'); obj.mibView.handles.toolbarFastPanMode.State = 'on'; end
+        if isKey(img_info, 'Pyramid')
+            % set the pan mode to the fast-pan
+            Options.button = 'fastpan';
+            Options.state = true;
+            eventdata = core.ToggleEventData(Options);
+            notify(obj, 'UpdateToolbar', eventdata);
+            %obj.mibView.handles.toolbarFastPanMode.State = 'on'; 
+        end
 
-        obj.I{BatchOpt.id}.initialize(img, img_info)
+        error('stopped here, needs to change meta in MibDataset to dictionary');
+
+        obj.I{BatchOpt.id}.initialize(img, img_info);
         % obj.I{BatchOpt.id}.clearContents(img, img_info, obj.I{BatchOpt.id}.datasetType);
 
         obj.I{BatchOpt.id}.pixSize = pixSize;

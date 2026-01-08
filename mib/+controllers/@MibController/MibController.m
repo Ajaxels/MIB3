@@ -74,6 +74,8 @@ classdef MibController < handle
         
         listenerUpdateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
 
+        listenerUpdateToolbar(obj, src, evtData) % update buttons in MIB toolbar "obj.view.handles.qab.handles"
+
 
         % METHODS
 

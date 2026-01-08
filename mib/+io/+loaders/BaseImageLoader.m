@@ -425,6 +425,7 @@ classdef (Abstract) BaseImageLoader < handle
             % Return values:
             %   imginfo: updated dictionary
             
+            % update Max value depending on the class
             switch files(1).imgClass
                 case {'single', 'double'}
                     imginfo{"MaxInt"} = realmax(files(1).imgClass);
@@ -432,6 +433,20 @@ classdef (Abstract) BaseImageLoader < handle
                     imginfo{"MaxInt"} = double(intmax(files(1).imgClass));
             end
 
+            % update the lutColors
+            if isKey(imginfo, 'lutColors')
+                currColors = imginfo{'lutColors'};
+                numColors = size(currColors, 1); % current number of colors in LUT
+                numNeeded = max([files.color]);        % required number of colors in LUT
+                
+                if numNeeded > numColors
+                    % Use modular indexing to repeat the pattern
+                    lutColors = currColors(mod(0:numNeeded-1, numColors) + 1, :);
+                    imginfo{'lutColors'} = lutColors;
+                end
+            end
+
+            % update other fields
             imginfo{"Colors"} = files(1).color;
             imginfo{"imgClass"} = files(1).imgClass;
             imginfo{"Depth"} = sum([files.noLayers]);

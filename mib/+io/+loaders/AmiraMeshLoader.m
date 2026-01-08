@@ -184,9 +184,6 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     end
                 end
 
-                controller = utils.dlgs.AmiraImportDlg(dimxyczt, options.parentGUI, options.Font);
-                result = controller.run();
-
                 % Custom sections for Amira Mesh (binning + partial Z)
                 if options.customSections
                     % start dialog to import part of Amira mesh dataset

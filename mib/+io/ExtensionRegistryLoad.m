@@ -48,16 +48,21 @@ classdef ExtensionRegistryLoad < handle
             
             % get the filename extension
             [~, ~, ext] = fileparts(filename); % get the filename extension with '.'
-            ext = strrep(ext, '.', ''); % remove the dot
+            ext = lower(strrep(ext, '.', '')); % remove the dot
             
             % generate the dictionary key
             key = obj.generateKey(mode, reader);
 
             % check whether the extension is compatible
             if ~ismember(ext, obj.extensionSets{key})
-                loaderInfo = [];
-                error('io:ExtensionRegistryLoad:NotAllowed', ...
-                    'io.ExtensionRegistryLoad.resolveRoute: Extension "%s" not allowed for mode=%s reader=%s', ext, mode, reader);
+                if ismember(ext, {'zarr', 'zarr2','zarr3'})
+                    loaderInfo = sprintf('io.ExtensionRegistryLoad.resolveRoute:\nExtension "%s" not allowed for\nmode="%s" reader="%s"\n\nTo load Zarr format switch to the Virtual mode!', ext, mode, reader);
+                else    
+                    loaderInfo = sprintf('io.ExtensionRegistryLoad.resolveRoute:\nExtension "%s" not allowed for\nmode="%s" reader="%s"', ext, mode, reader);
+                end
+                return;
+                %error('io:ExtensionRegistryLoad:NotAllowed', ...
+                %    'io.ExtensionRegistryLoad.resolveRoute: Extension "%s" not allowed for mode=%s reader=%s', ext, mode, reader);
             end
 
             % Route is just "what family of loader to use"
