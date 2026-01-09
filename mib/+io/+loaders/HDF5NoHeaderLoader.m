@@ -45,8 +45,8 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for HDF5 files
 
             % This method inspects HDF5 files to extract dataset metadata.
@@ -63,14 +63,26 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
             % Return values:
             %   imginfo: dictionary with image metadata
+            %     @li "Height" - image height in pixels
+            %     @li "Width" - image width in pixels
+            %     @li "Colors" - number of color channels
+            %     @li "Depth" - number of z-slices
+            %     @li "Time" - number of time points
+            %     @li "imgClass" - image class (uint8, uint16, etc.)
+            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
+            %     @li "ImageDescription" - description with BoundingBox info
+            %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
+            %     @li "Levels" - number of pyramid levels (for BDV only)
+            %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
+            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
+            %     @li other format-specific metadata fields
             %   files: structure array with file information
-            %   pixSize: structure with voxel dimensions
-
+            
             % Example:
             %   @code
             %   loader = io.loaders.HDF5NoHeaderLoader();
             %   filenames = {'dataset.h5'};
-            %   [imginfo, files, pixSize] = loader.loadMetadata(filenames, options);
+            %   [imginfo, files] = loader.loadMetadata(filenames, options);
             %   @endcode
 
             % Merge constructor options with runtime options
@@ -78,14 +90,12 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
-
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
 
             noFiles = numel(filenames);
 
@@ -99,7 +109,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             % Pre-allocate files structure
             files(noFiles) = struct('filename', [], 'objecttype', [], 'extension', [], ...
                 'height', [], 'width', [], 'color', [], 'time', [], 'noLayers', [], 'imgClass', [], ...
-                'dimxyczt', [], 'seriesName', [], 'transMatrix', []);
+                'dim_xyczt', [], 'seriesName', [], 'transMatrix', []);
 
             metadatasw = true; % switch to read metadata
             dimyxzct = [];
@@ -249,13 +259,13 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                  % NOTE: We need to ensure dimyxzct has enough elements
                  dims = [dim_yxzct(:)', 1, 1, 1, 1, 1]; % Pad with 1s
 
-                 % dim_yxzct was already optiomally transposed
+                 % dim_yxzct was already optionally transposed
                  files(fnIndex).height = max([1 dim_yxzct(1)]);
                  files(fnIndex).width = max([1 dim_yxzct(2)]);
                  files(fnIndex).noLayers = max([1 dim_yxzct(3)]);
                  files(fnIndex).color = max([1 dim_yxzct(4)]);
                  files(fnIndex).time = max([1 dim_yxzct(5)]);
-                 files(fnIndex).dimxyzct = dim_yxzct; % XYZCT order for MIB
+                 files(fnIndex).dim_xyzct = dim_yxzct; % XYZCT order for MIB
 
                  % Check ColorType
                  if files(fnIndex).color > 1
@@ -286,7 +296,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
             % Handle custom sections
             if options.customSections
-                [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+                [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end

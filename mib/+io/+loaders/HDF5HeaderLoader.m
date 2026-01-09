@@ -230,8 +230,8 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             imginfo{"ReturnedLevel"} = 1;  % Default pyramid level
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for HDF5 files with XML headers
 
             % This method parses XML headers to extract HDF5 dataset metadata.
@@ -269,6 +269,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
             %     @li "Levels" - number of pyramid levels (for BDV only)
             %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
+            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
             %     @li other format-specific metadata fields
             %   files: structure array with file information for each file
             %     @li .filename - [char] full filename (XML header)
@@ -280,17 +281,10 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li .noLayers - [numeric] number of z-slices
             %     @li .time - [numeric] number of time points
             %     @li .imgClass - [char] image class
-            %     @li .dimxyzct - [numeric array] dimensions [x,y,z,c,t]
+            %     @li .dim_xyzct - [numeric array] dimensions [x,y,z,c,t]
             %     @li .seriesName - [char] HDF5 dataset path
             %     @li .level - [numeric] pyramid level (for BDV)
-            %   pixSize: structure with voxel dimensions
-            %     @li .x - [numeric] pixel width in units
-            %     @li .y - [numeric] pixel height in units
-            %     @li .z - [numeric] slice thickness in units
-            %     @li .units - [char] physical units ('um', 'nm', etc.)
-            %     @li .t - [numeric] time between frames
-            %     @li .tunits - [char] time units ('s')
-
+            
             % Example:
             %   @code
             %   loader = io.loaders.HDF5HeaderLoader();
@@ -305,15 +299,13 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
             if ~isfield(options, 'mibPath'); options.mibPath = ''; end
-
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
 
             noFiles = numel(filenames);
 
@@ -327,7 +319,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % Pre-allocate files structure
             files(noFiles) = struct('filename', [], 'objecttype', [], 'extension', [], ...
                 'height', [], 'width', [], 'color', [], 'time', [], 'noLayers', [], 'imgClass', [], ...
-                'dimxyzct', [], 'seriesName', []);
+                'dim_xyzct', [], 'seriesName', []);
 
             % Process each file
             for fnIndex = 1:noFiles
@@ -425,7 +417,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         imginfo{"imgClass"} = imgClass;
                     end
                     files(fnIndex).imgClass = imgClass;
-                    files(fnIndex).dimxyzct = [imginfoTemp{"Width"}, imginfoTemp{"Height"}, ...
+                    files(fnIndex).dim_xyzct = [imginfoTemp{"Width"}, imginfoTemp{"Height"}, ...
                         imginfoTemp{"Depth"}, imginfoTemp{"Colors"}, imginfoTemp{"Time"}];
 
                     % Extract pixel size
@@ -500,7 +492,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         imginfo{"imgClass"} = imgClass;
                     end
                     files(fnIndex).imgClass = imgClass;
-                    files(fnIndex).dimxyzct = [imginfoTemp{"Width"}, imginfoTemp{"Height"}, ...
+                    files(fnIndex).dim_xyzct = [imginfoTemp{"Width"}, imginfoTemp{"Height"}, ...
                         imginfoTemp{"Depth"}, imginfoTemp{"Colors"}, imginfoTemp{"Time"}];
 
                 else
@@ -533,9 +525,12 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 end
             end
 
+            % update pixSize
+            imginfo{"pixSize"} = pixSize;
+
             % Handle custom sections
             if options.customSections
-                [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+                [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
@@ -544,7 +539,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             end
 
             % Handle dimension mismatches and bounding box
-            imginfo = obj.handleDimensionMismatches(files, imginfo, pixSize);
+            imginfo = obj.handleDimensionMismatches(files, imginfo);
 
             % Generate slice names from filenames
             imginfo = obj.generateSliceNames(files, imginfo);
@@ -574,7 +569,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li .noLayers - [numeric] number of z-slices
             %     @li .time - [numeric] number of time points
             %     @li .imgClass - [char] image class
-            %     @li .dimxyzct - [numeric array] dimensions
+            %     @li .dim_xyzct - [numeric array] dimensions
             %     @li .seriesName - [char] HDF5 dataset path
             %     @li .transMatrix - [numeric array] permutation matrix (optional)
             %     @li .backgroundColor - [numeric] background color (optional)

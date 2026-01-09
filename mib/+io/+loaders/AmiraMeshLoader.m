@@ -43,8 +43,8 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             obj.Options = obj.mergeOptions(obj.Options, options);
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for Amira Mesh files
             %
             % This method reads the Amira Mesh header and populates:
@@ -61,15 +61,14 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             %     @li .parentGUI - parent figure handle for uiprogressdlg
             %
             % Return values:
-            %   imginfo: dictionary with image metadata
+            %   imginfo: dictionary with image metadata, including pixSize structure
             %   files: structure array with file information
-            %   pixSize: structure with voxel dimensions
             %
             % Example:
             %   @code
             %   loader = io.loaders.AmiraMeshLoader();
             %   filenames = {'dataset.am'};
-            %   [imginfo, files, pixSize] = loader.loadMetadata(filenames, options);
+            %   [imginfo, files] = loader.loadMetadata(filenames, options);
             %   @endcode
 
             % Merge constructor options with runtime options
@@ -77,14 +76,12 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
-
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
 
             noFiles = numel(filenames);
 
@@ -98,7 +95,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             % Pre-allocate files structure
             files(noFiles) = struct('filename', [], 'objecttype', [], 'extension', [], ...
                 'height', [], 'width', [], 'color', [], 'time', [], 'noLayers', [], 'imgClass', [], ...
-                'dimxyczt', [], ...
+                'dim_xyczt', [], ...
                 'depthstart', [], 'depthend', [], 'depthstep', [], 'xystep', [], 'resizeMethod', []);
 
             % Process each file
@@ -134,7 +131,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
                 % Read header
                 try
-                    [par, info, dimxyczt] = io.AmiraMesh.getAmiraMeshHeader(files(fnIndex).filename);
+                    [par, info, dim_xyczt] = io.AmiraMesh.getAmiraMeshHeader(files(fnIndex).filename);
                 catch err
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
@@ -165,8 +162,8 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
                 % Update LUT colors (optional)
                 if isKey(info, 'Channel1Color')
-                    lutColors = zeros(dimxyczt(3), 3);
-                    for colId = 1:dimxyczt(3)
+                    lutColors = zeros(dim_xyczt(3), 3);
+                    for colId = 1:dim_xyczt(3)
                         colChName = sprintf('Channel%dColor', colId);
                         if isKey(info, colChName)
                             tmp = str2num(info(colChName)); %#ok<ST2NM>
@@ -187,7 +184,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 % Custom sections for Amira Mesh (binning + partial Z)
                 if options.customSections
                     % start dialog to import part of Amira mesh dataset
-                    controller = utils.dlgs.AmiraImportDlg(dimxyczt, options.parentGUI, options.Font);
+                    controller = utils.dlgs.AmiraImportDlg(dim_xyczt, options.parentGUI, options.Font);
                     result = controller.run();
                     
                     if ~isstruct(result)
@@ -206,17 +203,17 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     end
                     files(fnIndex).xystep = result.xystep;
                     files(fnIndex).resizeMethod = result.method;
-                    files(fnIndex).height = floor(dimxyczt(2) / result.xystep);
-                    files(fnIndex).width = floor(dimxyczt(1) / result.xystep);
+                    files(fnIndex).height = floor(dim_xyczt(2) / result.xystep);
+                    files(fnIndex).width = floor(dim_xyczt(1) / result.xystep);
                 else
-                    files(fnIndex).noLayers = dimxyczt(4);
-                    files(fnIndex).height = dimxyczt(2);
-                    files(fnIndex).width = dimxyczt(1);
+                    files(fnIndex).noLayers = dim_xyczt(4);
+                    files(fnIndex).height = dim_xyczt(2);
+                    files(fnIndex).width = dim_xyczt(1);
                 end
 
-                files(fnIndex).color = dimxyczt(3);
+                files(fnIndex).color = dim_xyczt(3);
                 files(fnIndex).time = 1;
-                files(fnIndex).dimxyczt = dimxyczt;
+                files(fnIndex).dim_xyczt = dim_xyczt;
 
                 % Image class
                 if isKey(info, 'imgClass')
@@ -266,6 +263,9 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     end
                 end
 
+                % update pixSize
+                imginfo{"pixSize"} = pixSize;
+
                 % Update waitbar
                 if options.waitbar
                     if mod(fnIndex, ceil(noFiles/50)) == 0
@@ -292,7 +292,20 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             %
             % Parameters:
             %   files: structure array from loadMetadata
-            %   imginfo: dictionary from loadMetadata
+            %   imginfo: dictionary with image metadata
+            %     @li "Height" - image height in pixels
+            %     @li "Width" - image width in pixels
+            %     @li "Colors" - number of color channels
+            %     @li "Depth" - number of z-slices
+            %     @li "Time" - number of time points
+            %     @li "imgClass" - image class (uint8, uint16, etc.)
+            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
+            %     @li "ImageDescription" - description with BoundingBox info
+            %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
+            %     @li "Levels" - number of pyramid levels (for BDV only)
+            %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
+            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
+            %     @li other format-specific metadata fields
             %   options: [@em struct] options for image loading
             %
             % Return values:
@@ -302,7 +315,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             % Example:
             %   @code
             %   loader = io.loaders.AmiraMeshLoader();
-            %   [imginfo, files, pixSize] = loader.loadMetadata({'dataset.am'}, options);
+            %   [imginfo, files] = loader.loadMetadata({'dataset.am'}, options);
             %   [img, imginfo] = loader.loadImages(files, imginfo, options);
             %   @endcode
 
@@ -421,7 +434,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                             % BoundingBox: [xmin xmax ymin ymax zmin zmax]
                             zmin = bb(5);
                             zmax = bb(6);
-                            fullZ = files(fnIndex).dimxyczt(4);
+                            fullZ = files(fnIndex).dim_xyczt(4);
 
                             startZShift = (options.depthstart - 1) / fullZ * (zmax - zmin);
                             endZShift = startZShift + options.depthstep / fullZ * (zmax - zmin) * (max([files(fnIndex).noLayers 2]) - 1);

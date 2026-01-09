@@ -43,8 +43,8 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             obj.Options = obj.mergeOptions(obj.Options, options);
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for NRRD files
 
             % This method parses NRRD headers to extract dataset metadata.
@@ -59,14 +59,26 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
 
             % Return values:
             %   imginfo: dictionary with image metadata
+            %     @li "Height" - image height in pixels
+            %     @li "Width" - image width in pixels
+            %     @li "Colors" - number of color channels
+            %     @li "Depth" - number of z-slices
+            %     @li "Time" - number of time points
+            %     @li "imgClass" - image class (uint8, uint16, etc.)
+            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
+            %     @li "ImageDescription" - description with BoundingBox info
+            %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
+            %     @li "Levels" - number of pyramid levels (for BDV only)
+            %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
+            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
+            %     @li other format-specific metadata fields
             %   files: structure array with file information
-            %   pixSize: structure with voxel dimensions
-
+            
             % Example:
             %   @code
             %   loader = io.loaders.NrrdLoader();
             %   filenames = {'dataset.nrrd'};
-            %   [imginfo, files, pixSize] = loader.loadMetadata(filenames, options);
+            %   [imginfo, files] = loader.loadMetadata(filenames, options);
             %   @endcode
 
             % Merge constructor options with runtime options
@@ -74,14 +86,12 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
-
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
 
             noFiles = numel(filenames);
 
@@ -95,7 +105,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             % Pre-allocate files structure
             files(noFiles) = struct('filename', [], 'objecttype', [], 'extension', [], ...
                 'height', [], 'width', [], 'color', [], 'time', [], 'noLayers', [], 'imgClass', [], ...
-                'dimxyczt', [], 'seriesName', [], 'transMatrix', []);
+                'dim_xyczt', [], 'seriesName', [], 'transMatrix', []);
 
             % Process each file
             for fnIndex = 1:noFiles
@@ -133,19 +143,19 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 % NRRD usually stores as [X Y Z] or [C X Y Z]
                 if str2double(meta.dimension) == 4
                     % Color image or stack [C X Y Z]
-                    files(fnIndex).dimxyczt = [dims(2), dims(3), dims(1), dims(4), 1];
+                    files(fnIndex).dim_xyczt = [dims(2), dims(3), dims(1), dims(4), 1];
                     currentColorType = 'multicolor';
                 else
                     % Grayscale image or stack [X Y Z]
-                    files(fnIndex).dimxyczt = [dims(1), dims(2), 1, dims(3), 1];
+                    files(fnIndex).dim_xyczt = [dims(1), dims(2), 1, dims(3), 1];
                     currentColorType = 'grayscale';
                 end
 
                 % Populate file structure
-                files(fnIndex).noLayers = files(fnIndex).dimxyczt(4);
-                files(fnIndex).height = files(fnIndex).dimxyczt(2);
-                files(fnIndex).width = files(fnIndex).dimxyczt(1);
-                files(fnIndex).color = files(fnIndex).dimxyczt(3);
+                files(fnIndex).noLayers = files(fnIndex).dim_xyczt(4);
+                files(fnIndex).height = files(fnIndex).dim_xyczt(2);
+                files(fnIndex).width = files(fnIndex).dim_xyczt(1);
+                files(fnIndex).color = files(fnIndex).dim_xyczt(3);
                 files(fnIndex).time = 1;
                 files(fnIndex).imgClass = datatype;
 
@@ -182,9 +192,9 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
 
                          % Construct ImageDescription
                          labelOut = sprintf('BoundingBox %.5f %.5f %.5f %.5f %.5f %.5f', ...
-                             shiftsXYZ(1), shiftsXYZ(1) + pixSize.y * (max([1 files(fnIndex).dimxyczt(1)])-1), ...
-                             shiftsXYZ(2), shiftsXYZ(2) + pixSize.x * (max([1 files(fnIndex).dimxyczt(2)])-1), ...
-                             shiftsXYZ(3), shiftsXYZ(3) + pixSize.z * (max([1 files(fnIndex).dimxyczt(4)])-1));
+                             shiftsXYZ(1), shiftsXYZ(1) + pixSize.y * (max([1 files(fnIndex).dim_xyczt(1)])-1), ...
+                             shiftsXYZ(2), shiftsXYZ(2) + pixSize.x * (max([1 files(fnIndex).dim_xyczt(2)])-1), ...
+                             shiftsXYZ(3), shiftsXYZ(3) + pixSize.z * (max([1 files(fnIndex).dim_xyczt(4)])-1));
 
                          imginfo{"ImageDescription"} = labelOut;
                     else
@@ -204,9 +214,12 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 end
             end
 
+            % update pixSize
+            imginfo{"pixSize"} = pixSize;
+
             % Handle custom sections
             if options.customSections
-                [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+                [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
@@ -320,7 +333,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 end
 
                 % Permute dimensions to match MIB [Y, X, Z, C, T]
-                if files(fnIndex).dimxyczt(3) == 1 
+                if files(fnIndex).dim_xyczt(3) == 1 
                     % Grayscale stack [X, Y, Z] -> [Y, X, Z]
                     I.data = permute(I.data, [2 1 3]);
                 else

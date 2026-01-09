@@ -43,8 +43,8 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             obj.Options = options;
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for standard image files
             %
             % This method extracts image metadata using imfinfo for standard
@@ -95,20 +95,13 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %   @li .levelMagScale - [numeric] magnification scale factor
             %   @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
             %   @li .xyStep - [numeric] XY step for binning
-            % pixSize: structure with voxel dimensions
-            %   @li .x - [numeric] pixel width in units
-            %   @li .y - [numeric] pixel height in units
-            %   @li .z - [numeric] slice thickness in units
-            %   @li .units - [char] physical units ('um', 'nm', etc.)
-            %   @li .t - [numeric] time between frames
-            %   @li .tunits - [char] time units ('s')
-            %
+            
             % Example:
             % @code
             % loader = io.loaders.ImreadLoader();
             % options.waitbar = true;
             % filenames = {'image1.tif', 'image2.tif'};
-            % [imginfo, files, pixSize] = loader.loadMetadata(filenames, options);
+            % [imginfo, files] = loader.loadMetadata(filenames, options);
             % fprintf('Image size: %d x %d x %d\n', imginfo{"Width"}, imginfo{"Height"}, imginfo{"Depth"});
             % @endcode
 
@@ -117,16 +110,14 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
             if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
-            
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
@@ -389,6 +380,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 end
             end
             
+            % update pixSize
+            imginfo{"pixSize"} = pixSize;
+
             % Replace CR and LF characters with spaces
             if ~isempty(imginfo{"ImageDescription"})
                 imginfo{"ImageDescription"} = strrep(strrep(imginfo{"ImageDescription"}, sprintf('\r'), ' '), sprintf('\n'), ' '); %#ok<SPRINTFN>
@@ -397,7 +391,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % Handle custom sections
             % use io.BaseImageLoader.handleCustomSections of the parent class
             if options.customSections && strcmpi(ext(2:end), 'tif')
-                [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+                [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
@@ -405,184 +399,17 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 end
             end
 
-            % Handle custom sections
-            % if options.customSections && strcmpi(ext(2:end), 'tif')
-            %     maxWidthSeries = max([files.width]);
-            %     maxHeightSeries = max([files.height]);
-            %     maxDepthSeries = max([files.noLayers]);
-            % 
-            %     prompts = {sprintf('X min'); sprintf('X max (%d px)', maxWidthSeries); ...
-            %         sprintf('Y min'); sprintf('Y max (%d px)', maxHeightSeries); ...
-            %         sprintf('Z min'); sprintf('Z max (%d px)', maxDepthSeries); ...
-            %         'XY step (not for BioFormats)'; 'Load each Nth file'};
-            % 
-            %     if isfield(options, 'customSectionsSettings')
-            %         defAns = {
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.xMin, 'Limits', [1 maxWidthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.xMax, 'Limits', [1 maxWidthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.yMin, 'Limits', [1 maxHeightSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.yMax, 'Limits', [1 maxHeightSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.zMin, 'Limits', [1 maxDepthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.zMax, 'Limits', [1 maxDepthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', options.customSectionsSettings.xyStep, 'Limits', [1 Inf], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', 1, 'Limits', [1 Inf], 'Round', true)};
-            %     else
-            %         defAns = {
-            %             struct('Spinner', true, 'Value', 1, 'Limits', [1 maxWidthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', maxWidthSeries, 'Limits', [1 maxWidthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', 1, 'Limits', [1 maxHeightSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', maxHeightSeries, 'Limits', [1 maxHeightSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', 1, 'Limits', [1 maxDepthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', maxDepthSeries, 'Limits', [1 maxDepthSeries], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', 1, 'Limits', [1 Inf], 'Round', true), ...
-            %             struct('Spinner', true, 'Value', 1, 'Limits', [1 Inf], 'Round', true)};
-            %     end
-            % 
-            %     dlgTitle = 'Define region to load';
-            %     options.Header = 'Provide image range to load';
-            %     options.Columns = 2;
-            %     options.WindowWidth = 640;
-            %     options.WindowHeight = 220;
-            %     answer = utils.dlgs.mibInputUniversalDlg(options.mibPath, prompts, defAns, dlgTitle, options);
-            % 
-            %     if isempty(answer)
-            %         if options.waitbar; delete(wb); end
-            %         imginfo = dictionary();
-            %         return;
-            %     end
-            % 
-            %     xMin = answer{1};
-            %     xMax = answer{2};
-            %     yMin = answer{3};
-            %     yMax = answer{4};
-            %     zMin = answer{5};
-            %     zMax = answer{6};
-            %     xyStep = answer{7};
-            %     fileLoadStep = answer{8};
-            % 
-            %     % Adjust files if loading every Nth file
-            %     if fileLoadStep > 1
-            %         files = files(1:fileLoadStep:numel(files));
-            %     end
-            % 
-            %     % Correct pixel size for XY binning
-            %     if xyStep > 1
-            %         pixSize.x = pixSize.x * xyStep;
-            %         pixSize.y = pixSize.y * xyStep;
-            %     end
-            % 
-            %     % Update files structure with custom section parameters
-            %     for i = 1:numel(files)
-            %         files(i).xMin = max(xMin, 1);
-            %         files(i).xMax = min(xMax, maxWidthSeries);
-            %         files(i).yMin = max(yMin, 1);
-            %         files(i).yMax = min(yMax, maxHeightSeries);
-            %         files(i).zMin = max(zMin, 1);
-            %         files(i).zMax = min(zMax, maxDepthSeries);
-            %         files(i).xyStep = xyStep;
-            %         files(i).height = ceil((files(i).yMax - files(i).yMin + 1) / xyStep);
-            %         files(i).width = ceil((files(i).xMax - files(i).xMin + 1) / xyStep);
-            %         files(i).noLayers = files(i).zMax - files(i).zMin + 1;
-            %     end
-            % end
-
             % Handle dimension mismatches and bounding box
             % use io.BaseImageLoader.handleDimensionMismatches of the parent class
-            imginfo = obj.handleDimensionMismatches(files, imginfo, pixSize);
-
-            % if numel(unique([files.width])) > 1 || numel(unique([files.height])) > 1
-            %     if isfield(files, 'xMin')  % custom sections - recalculate bounding box
-            %         bbStart = strfind(imginfo{"ImageDescription"}, 'BoundingBox');
-            %         if ~isempty(bbStart)
-            %             brakePnt = strfind(imginfo{"ImageDescription"}, '|');
-            %             if isempty(brakePnt)
-            %                 brakePnt = numel(imginfo{"ImageDescription"}) + 1;
-            %             end
-            %             try
-            %                 brakePnt = brakePnt(1);
-            %                 bbString = imginfo{"ImageDescription"};
-            %                 bb = str2num(bbString(bbStart+11:brakePnt-1)); %#ok<ST2NM>
-            %             catch err
-            %                 bb = [0 0 0 0 0 0];
-            %             end
-            %         else
-            %             bb = [0 0 0 0 0 0];
-            %         end
-            % 
-            %         if isfield(files, 'xMin')  % custom sections
-            %             bb(1) = bb(1) + (files(1).xMin - 1) * pixSize.x;  % xMin
-            %             bb(2) = bb(1) + (files(1).xMax - files(1).xMin) * pixSize.x;  % xMax
-            %             bb(3) = bb(3) + (files(1).yMin - 1) * pixSize.y;  % yMin
-            %             bb(4) = bb(3) + (files(1).yMax - files(1).yMin) * pixSize.y;  % yMax
-            %             bb(5) = bb(5) + (files(1).zMin - 1) * pixSize.z;  % zMin
-            %             bb(6) = bb(5) + (files(1).zMax - files(1).zMin) * pixSize.z;  % zMax
-            %         else
-            %             bb(2) = max([files.width]) * pixSize.x - bb(1);
-            %             bb(4) = max([files.height]) * pixSize.y - bb(3);
-            %             bb(6) = sum([files.noLayers]) * pixSize.z - bb(5);
-            %         end
-            % 
-            %         str2 = sprintf('BoundingBox %.5f %.5f %.5f %.5f %.5f %.5f ', bb(1), bb(2), bb(3), bb(4), bb(5), bb(6));
-            %         currtext = imginfo{"ImageDescription"};
-            %         bbinfoexist = strfind(currtext, 'BoundingBox');
-            %         if bbinfoexist == 1
-            %             spaces = strfind(currtext, ' ');
-            %             if ~isempty(spaces)
-            %                 imginfo{"ImageDescription"} = [str2 currtext(spaces(1):end)];
-            %             else
-            %                 imginfo{"ImageDescription"} = str2;
-            %             end
-            %         else
-            %             imginfo{"ImageDescription"} = [str2 ' ' currtext];
-            %         end
-            %     end
-            % elseif isfield(files, 'xMin')  % custom sections without dimension mismatch
-            %     bb = [0 0 0 0 0 0];
-            %     bb(1) = bb(1) + (files(1).xMin - 1) * pixSize.x;
-            %     bb(2) = bb(1) + (files(1).xMax - files(1).xMin) * pixSize.x;
-            %     bb(3) = bb(3) + (files(1).yMin - 1) * pixSize.y;
-            %     bb(4) = bb(3) + (files(1).yMax - files(1).yMin) * pixSize.y;
-            %     bb(5) = bb(5) + (files(1).zMin - 1) * pixSize.z;
-            %     bb(6) = bb(5) + (files(1).zMax - files(1).zMin) * pixSize.z;
-            %     bbString = sprintf('BoundingBox %.5f %.5f %.5f %.5f %.5f %.5f ', bb(1), bb(2), bb(3), bb(4), bb(5), bb(6));
-            %     imginfo{"ImageDescription"} = bbString;
-            % end
+            imginfo = obj.handleDimensionMismatches(files, imginfo);
 
             % Generate slice names from filenames
             % use io.BaseImageLoader.generateSliceNames of the parent class
             imginfo = obj.generateSliceNames(files, imginfo);
 
-            % if numel(files) > 1
-            %     totalLayers = sum([files.noLayers]);
-            %     SliceName = cell(totalLayers, 1);
-            % 
-            %     index = 1;
-            %     for fileId = 1:numel(files)
-            %         [~, fnShort, ext] = fileparts(files(fileId).filename);
-            %         SliceName(index:index+files(fileId).noLayers-1) = repmat(cellstr(strcat(fnShort, ext)), files(fileId).noLayers, 1);
-            %         index = index + files(fileId).noLayers;
-            %     end
-            %     imginfo{"SliceName"} = SliceName;
-            % else
-            %     [~, fnShort, ext] = fileparts(files.filename);
-            %     imginfo{"SliceName"} = cellstr(strcat(fnShort, ext));
-            % end
-
             % Finalize image info
             % use io.BaseImageLoader.finalizeImgInfo of the parent class
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
-
-            % % Set imginfo dimensions and metadata
-            % switch files(1).imgClass
-            %     case {'single', 'double'}
-            %         imginfo{"MaxInt"} = realmax(files(1).imgClass);
-            %     otherwise
-            %         imginfo{"MaxInt"} = double(intmax(files(1).imgClass));
-            % end
-            % imginfo{"Colors"} = files(1).color;
-            % imginfo{"imgClass"} = files(1).imgClass;
-            % imginfo{"Depth"} = sum([files.noLayers]);
-            % imginfo{"Filename"} = filenames{1};
 
             if options.waitbar; delete(wb); end
         end

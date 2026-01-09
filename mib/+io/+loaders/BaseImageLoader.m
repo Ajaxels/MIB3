@@ -13,8 +13,8 @@ classdef (Abstract) BaseImageLoader < handle
     end
     
     methods (Abstract)
-        [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-        % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        [imginfo, files] = loadMetadata(obj, filenames, options)
+        % function [imginfo, files] = loadMetadata(obj, filenames, options)
         % Load metadata for image files
         %
         % This abstract method must be implemented by child classes to extract
@@ -25,9 +25,8 @@ classdef (Abstract) BaseImageLoader < handle
         %   options: [@em optional, struct] options for metadata loading
         %
         % Return values:
-        %   imginfo: dictionary with image metadata
+        %   imginfo: dictionary with image metadata, including pixSize structure
         %   files: structure array with file information
-        %   pixSize: structure with voxel dimensions
         
         [img, imginfo] = loadImages(obj, files, imginfo, options)
         % function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -47,92 +46,8 @@ classdef (Abstract) BaseImageLoader < handle
     end
     
     methods (Access = protected)
-
-        function imginfo = initializeImgInfo(~)
-            % function imginfo = initializeImgInfo(~)
-            % Initialize imginfo dictionary with standard keys
-            %
-            % This method creates a dictionary with all standard metadata fields
-            % initialized to empty values. This ensures consistent structure across
-            % all loaders and prevents missing key errors.
-            %
-            % Parameters:
-            %   none
-            %
-            % Return values:
-            %   imginfo: dictionary with standard image metadata keys
-            %       @li "Filename" - [char] source filename
-            %       @li "Height" - [numeric] image height in pixels
-            %       @li "Width" - [numeric] image width in pixels
-            %       @li "Colors" - [numeric] number of color channels
-            %       @li "Depth" - [numeric] number of z-slices
-            %       @li "Time" - [numeric] number of time points
-            %       @li "imgClass" - [char] image class (uint8, uint16, etc.)
-            %       @li "ColorType" - [char] 'grayscale', 'truecolor', or 'indexed'
-            %       @li "ImageDescription" - [char] description with BoundingBox
-            %       @li "MaxInt" - [numeric] maximum intensity value
-            %       @li "SliceName" - [cell] slice names
-            %
-            % Example:
-            %   @code
-            %   imginfo = obj.initializeImgInfo();
-            %   imginfo{"Width"} = 1024;
-            %   imginfo{"Height"} = 768;
-            %   @endcode
-
-            coreImgInfoKeys = [ ...
-                "Filename" ...
-                "Height" ...
-                "Width" ...
-                "Colors" ...
-                "Depth" ...
-                "Time" ...
-                "imgClass" ...
-                "ColorType" ...
-                "ImageDescription" ...
-                "MaxInt" ...
-                "SliceName" ...
-                ];
-            coreImgInfoValues = repmat({[]}, size(coreImgInfoKeys));
-            imginfo = dictionary(coreImgInfoKeys, coreImgInfoValues);
-        end
-
-        function pixSize = initializePixSize(~)
-            % function pixSize = initializePixSize(~)
-            % Initialize pixSize structure with default values
-            %
-            % This method creates a structure with default voxel dimensions.
-            % Physical units default to micrometers and temporal units to seconds.
-            %
-            % Parameters:
-            %   none
-            %
-            % Return values:
-            %   pixSize: structure with voxel dimensions
-            %       @li .x - [numeric] pixel width, default = 1
-            %       @li .y - [numeric] pixel height, default = 1
-            %       @li .z - [numeric] slice thickness, default = 1
-            %       @li .units - [char] physical units, default = 'um'
-            %       @li .t - [numeric] time between frames, default = 1
-            %       @li .tunits - [char] time units, default = 's'
-            %
-            % Example:
-            %   @code
-            %   pixSize = obj.initializePixSize();
-            %   pixSize.x = 0.065;  % 65 nm pixel size
-            %   pixSize.units = 'um';
-            %   @endcode
-
-            pixSize.x = 1;
-            pixSize.y = 1;
-            pixSize.z = 1;
-            pixSize.units = 'um';
-            pixSize.t = 1;
-            pixSize.tunits = 's';
-        end
-
-        function [files, imginfo, pixSize, cancelled] = handleCustomSections(~, files, imginfo, pixSize, options)
-            % function [files, imginfo, pixSize, cancelled] = handleCustomSections(obj, files, imginfo, pixSize, options)
+        function [files, imginfo, cancelled] = handleCustomSections(~, files, imginfo, options)
+            % function [files, imginfo, cancelled] = handleCustomSections(obj, files, imginfo, options)
             % Handle custom section loading dialog and adjustments
             %
             % This method displays a dialog for selecting a custom region to load
@@ -145,12 +60,12 @@ classdef (Abstract) BaseImageLoader < handle
             %       @li .width - [numeric] image width
             %       @li .height - [numeric] image height
             %       @li .noLayers - [numeric] number of image frames
-            %   imginfo: dictionary with image metadata
-            %   pixSize: structure with voxel dimensions
-            %       @li .x - [numeric] pixel width in units
-            %       @li .y - [numeric] pixel height in units
-            %       @li .z - [numeric] slice thickness in units
-            %       @li .units - [char] physical units
+            %   imginfo: dictionary with image metadata, including
+            %       pixSize: structure with voxel dimensions
+            %           @li .x - [numeric] pixel width in units
+            %           @li .y - [numeric] pixel height in units
+            %           @li .z - [numeric] slice thickness in units
+            %           @li .units - [char] physical units
             %   options: [@em struct] options structure
             %       @li .customSections - [logical] load part of the dataset
             %       @li .customSectionsSettings - [struct] custom section settings (optional)
@@ -177,7 +92,7 @@ classdef (Abstract) BaseImageLoader < handle
             %
             % Example:
             %   @code
-            %   [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+            %   [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
             %   if cancelled; return; end
             %   @endcode
             
@@ -237,6 +152,8 @@ classdef (Abstract) BaseImageLoader < handle
                 return;
             end
             
+            pixSize = imginfo("pixSize");
+
             % Extract user selections
             xMin = answer{1};
             xMax = answer{2};
@@ -271,10 +188,12 @@ classdef (Abstract) BaseImageLoader < handle
                 files(i).width = ceil((files(i).xMax - files(i).xMin + 1) / xyStep);
                 files(i).noLayers = files(i).zMax - files(i).zMin + 1;
             end
+            % update pixSize in imginfo dictionary
+            imginfo("pixSize") = pixSize;
         end
         
-        function imginfo = handleDimensionMismatches(~, files, imginfo, pixSize)
-            % function imginfo = handleDimensionMismatches(obj, files, imginfo, pixSize)
+        function imginfo = handleDimensionMismatches(~, files, imginfo)
+            % function imginfo = handleDimensionMismatches(obj, files, imginfo)
             % Handle dimension mismatches and recalculate bounding box
             %
             % This method updates the ImageDescription field with correct bounding
@@ -290,17 +209,20 @@ classdef (Abstract) BaseImageLoader < handle
             %       @li .zMin, .zMax - [numeric] slice range (optional)
             %   imginfo: dictionary with image metadata
             %       @li "ImageDescription" - [char] description with BoundingBox info
-            %   pixSize: structure with voxel dimensions
-            %       @li .x, .y, .z - [numeric] pixel dimensions in units
+            %       @li "pixSize" - structure with voxel dimensions
+            %           @li .x, .y, .z - [numeric] pixel dimensions in units
             %
             % Return values:
             %   imginfo: updated dictionary with recalculated BoundingBox in ImageDescription
             %
             % Example:
             %   @code
-            %   imginfo = obj.handleDimensionMismatches(files, imginfo, pixSize);
+            %   imginfo = obj.handleDimensionMismatches(files, imginfo);
             %   @endcode
             
+            % get pixSize
+            pixSize = imginfo{"pixSize"};
+
             % Check if dimension mismatch exists
             if numel(unique([files.width])) > 1 || numel(unique([files.height])) > 1
                 if isfield(files, 'xMin')  % custom sections - recalculate bounding box

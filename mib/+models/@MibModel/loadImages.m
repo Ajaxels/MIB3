@@ -261,7 +261,7 @@ switch BatchOpt.Mode{1}
         if isempty(loader); notify(obj, 'StopProtocol'); return; end
 
         % Load metadata (img_info dictionary) and populate structure array with files information (files)
-        [img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
+        [img_info, files] = loader.loadMetadata(BatchOpt.Filenames, options);
         if img_info.numEntries == 0
             notify(obj, 'StopProtocol');
             return;
@@ -385,8 +385,6 @@ switch BatchOpt.Mode{1}
             notify(obj, 'UpdateToolbar', eventdata);
             %obj.mibView.handles.toolbarFastPanMode.State = 'on'; 
         end
-
-        error('stopped here, needs to change meta in MibDataset to dictionary');
 
         obj.I{BatchOpt.id}.initialize(img, img_info);
         % obj.I{BatchOpt.id}.clearContents(img, img_info, obj.I{BatchOpt.id}.datasetType);

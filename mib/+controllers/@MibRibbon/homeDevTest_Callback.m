@@ -20,7 +20,7 @@ loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}
 % Create file loader
 loader = io.LoaderFactory.create(loaderInfo, options);
 % Load metadata (img_info dictionary) and populate structure array with files information (files)
-[img_info, files, pixSize] = loader.loadMetadata(BatchOpt.Filenames, options);
+[img_info, files] = loader.loadMetadata(BatchOpt.Filenames, options);
 
 % Load images
 [img, img_info] = loader.loadImages(files, img_info, options);

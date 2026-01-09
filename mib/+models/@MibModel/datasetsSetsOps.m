@@ -97,7 +97,7 @@ switch BatchOpt.Mode{1}
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
             fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
             I = imread(fn);
-            meta = struct();
+            meta = dictionary();
 
             % update MibDataset using the default values
             if ~isempty(obj.preferences) % standard call when obj.preferences is initialized

@@ -47,8 +47,8 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             obj.Options = obj.mergeOptions(obj.Options, options);
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for files using Bio-Formats
             %
             % This method uses loci.formats.Memoizer with bfGetReader to extract
@@ -66,14 +66,26 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             %
             % Return values:
             %   imginfo: dictionary with image metadata
+            %     @li "Height" - image height in pixels
+            %     @li "Width" - image width in pixels
+            %     @li "Colors" - number of color channels
+            %     @li "Depth" - number of z-slices
+            %     @li "Time" - number of time points
+            %     @li "imgClass" - image class (uint8, uint16, etc.)
+            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
+            %     @li "ImageDescription" - description with BoundingBox info
+            %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
+            %     @li "Levels" - number of pyramid levels (for BDV only)
+            %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
+            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
+            %     @li other format-specific metadata fields
             %   files: structure array with file information
-            %   pixSize: structure with voxel dimensions
             %
             % Example:
             %   @code
             %   loader = io.loaders.BioFormatsStdLoader();
             %   filenames = {'image.czi'};
-            %   [imginfo, files, pixSize] = loader.loadMetadata(filenames, options);
+            %   [imginfo, files] = loader.loadMetadata(filenames, options);
             %   @endcode
 
             % Merge constructor options with runtime options
@@ -81,7 +93,8 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
@@ -89,8 +102,6 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             if ~isfield(options, 'BioFormatsMemoizerMemoDir'); options.BioFormatsMemoizerMemoDir = 'c:\temp'; end
             if ~isfield(options, 'BioFormatsIndices'); options.BioFormatsIndices = []; end
 
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
@@ -156,7 +167,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                             controller = utils.dlgs.SelectLociSeriesDlg( ...
                                 filenames{fnIndex}, filesTemp.hDataset, options.Font, options.parentGUI);
                             [filesTemp.seriesIndex, filesTemp.hDataset, metaSwitch, ...
-                                filesTemp.dimxyczt, filesTemp.seriesRealName] = controller.run();
+                                filesTemp.dim_xyczt, filesTemp.seriesRealName] = controller.run();
                         else
                             if options.BioFormatsIndices == 0
                                 filesTemp.seriesIndex = 1:numSeries;
@@ -168,16 +179,16 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                                 metaSwitch = true;
                             end
 
-                            filesTemp.dimxyczt = zeros(numel(filesTemp.seriesIndex), 5);
+                            filesTemp.dim_xyczt = zeros(numel(filesTemp.seriesIndex), 5);
                             filesTemp.seriesRealName = cell(numel(filesTemp.seriesIndex), 1);
 
                             for i = 1:numel(filesTemp.seriesIndex)
                                 filesTemp.hDataset.setSeries(filesTemp.seriesIndex(i) - 1);
-                                filesTemp.dimxyczt(i, 1) = filesTemp.hDataset.getSizeX();
-                                filesTemp.dimxyczt(i, 2) = filesTemp.hDataset.getSizeY();
-                                filesTemp.dimxyczt(i, 3) = filesTemp.hDataset.getSizeC();
-                                filesTemp.dimxyczt(i, 4) = filesTemp.hDataset.getSizeZ();
-                                filesTemp.dimxyczt(i, 5) = filesTemp.hDataset.getSizeT();
+                                filesTemp.dim_xyczt(i, 1) = filesTemp.hDataset.getSizeX();
+                                filesTemp.dim_xyczt(i, 2) = filesTemp.hDataset.getSizeY();
+                                filesTemp.dim_xyczt(i, 3) = filesTemp.hDataset.getSizeC();
+                                filesTemp.dim_xyczt(i, 4) = filesTemp.hDataset.getSizeZ();
+                                filesTemp.dim_xyczt(i, 5) = filesTemp.hDataset.getSizeT();
                                 filesTemp.seriesRealName{i} = char(filesTemp.hDataset.getMetadataStore().getImageName(i-1));
                             end
                         end
@@ -186,11 +197,11 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         filesTemp.seriesIndex = 1;
                         filesTemp.hDataset.setSeries(filesTemp.seriesIndex - 1);
                         metaSwitch = true;
-                        filesTemp.dimxyczt(1, 1) = filesTemp.hDataset.getSizeX();
-                        filesTemp.dimxyczt(1, 2) = filesTemp.hDataset.getSizeY();
-                        filesTemp.dimxyczt(1, 3) = filesTemp.hDataset.getSizeC();
-                        filesTemp.dimxyczt(1, 4) = filesTemp.hDataset.getSizeZ();
-                        filesTemp.dimxyczt(1, 5) = filesTemp.hDataset.getSizeT();
+                        filesTemp.dim_xyczt(1, 1) = filesTemp.hDataset.getSizeX();
+                        filesTemp.dim_xyczt(1, 2) = filesTemp.hDataset.getSizeY();
+                        filesTemp.dim_xyczt(1, 3) = filesTemp.hDataset.getSizeC();
+                        filesTemp.dim_xyczt(1, 4) = filesTemp.hDataset.getSizeZ();
+                        filesTemp.dim_xyczt(1, 5) = filesTemp.hDataset.getSizeT();
                         filesTemp.seriesRealName{1} = char(filesTemp.hDataset.getMetadataStore().getImageName(0));
                     end
                     % Get OME metadata
@@ -202,11 +213,11 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
                     noSeriesTemp = numel(filesTemp.seriesIndex);
 
-                    filesTemp.dimxyczt(1:noSeriesTemp, 1) = filesTemp.hDataset.getSizeX();
-                    filesTemp.dimxyczt(1:noSeriesTemp, 2) = filesTemp.hDataset.getSizeY();
-                    filesTemp.dimxyczt(1:noSeriesTemp, 3) = filesTemp.hDataset.getSizeC();    % number of color layers
-                    filesTemp.dimxyczt(1:noSeriesTemp, 4) = filesTemp.hDataset.getSizeZ();
-                    filesTemp.dimxyczt(1:noSeriesTemp, 5) = filesTemp.hDataset.getSizeT();    % number of time layers
+                    filesTemp.dim_xyczt(1:noSeriesTemp, 1) = filesTemp.hDataset.getSizeX();
+                    filesTemp.dim_xyczt(1:noSeriesTemp, 2) = filesTemp.hDataset.getSizeY();
+                    filesTemp.dim_xyczt(1:noSeriesTemp, 3) = filesTemp.hDataset.getSizeC();    % number of color layers
+                    filesTemp.dim_xyczt(1:noSeriesTemp, 4) = filesTemp.hDataset.getSizeZ();
+                    filesTemp.dim_xyczt(1:noSeriesTemp, 5) = filesTemp.hDataset.getSizeT();    % number of time layers
                     %filesTemp.seriesRealName{1} = char(filesTemp.hDataset.getMetadataStore().getImageName(0));
                 end
 
@@ -236,23 +247,23 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     files(layerId).objecttype = 'bioformats';
                     files(layerId).extension = ext;
                     files(layerId).seriesName = filesTemp.seriesIndex(fileSubIndex);
-                    files(layerId).dimxyczt = filesTemp.dimxyczt;
+                    files(layerId).dim_xyczt = filesTemp.dim_xyczt;
                     files(layerId).DimensionOrder = filesTemp.DimensionOrder;
                     files(layerId).BioFormatsMemoizerMemoDir = options.BioFormatsMemoizerMemoDir;
                     files(layerId).seriesRealName = filesTemp.seriesRealName{fileSubIndex};
 
                     % Dimensions
-                    files(layerId).height = filesTemp.dimxyczt(fileSubIndex, 2);
-                    files(layerId).width = filesTemp.dimxyczt(fileSubIndex, 1);
+                    files(layerId).height = filesTemp.dim_xyczt(fileSubIndex, 2);
+                    files(layerId).width = filesTemp.dim_xyczt(fileSubIndex, 1);
                     % Handle Z and T dimensions
-                    if filesTemp.dimxyczt(fileSubIndex, 4) == 1 && filesTemp.dimxyczt(fileSubIndex, 5) > 1
-                        files(layerId).noLayers = max([filesTemp.dimxyczt(fileSubIndex, 4), filesTemp.dimxyczt(fileSubIndex, 5)]);
+                    if filesTemp.dim_xyczt(fileSubIndex, 4) == 1 && filesTemp.dim_xyczt(fileSubIndex, 5) > 1
+                        files(layerId).noLayers = max([filesTemp.dim_xyczt(fileSubIndex, 4), filesTemp.dim_xyczt(fileSubIndex, 5)]);
                         files(layerId).time = 1;
                     else
-                        files(layerId).noLayers = filesTemp.dimxyczt(fileSubIndex, 4);
-                        files(layerId).time = filesTemp.dimxyczt(fileSubIndex, 5);
+                        files(layerId).noLayers = filesTemp.dim_xyczt(fileSubIndex, 4);
+                        files(layerId).time = filesTemp.dim_xyczt(fileSubIndex, 5);
                     end
-                    files(layerId).color = filesTemp.dimxyczt(fileSubIndex, 3);
+                    files(layerId).color = filesTemp.dim_xyczt(fileSubIndex, 3);
 
                     % Image class
                     bpp = filesTemp.hDataset.getBitsPerPixel();
@@ -336,20 +347,20 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         stageCenterZ = double(omeMeta.getPlanePositionZ(filesTemp.seriesIndex(fileSubIndex)-1, 0).value(ome.units.UNITS.MICROM));
                         if isempty(stageCenterZ); stageCenterZ = 0; end
                         % add xMin xMax yMin yMax zMin zMax to use them later for calculation of the bounding box
-                        % files(fnIndex).xMin = stageCenterX - files(fnIndex).dimxyczt(1)/2*pixSize.x;
-                        % files(fnIndex).xMax = stageCenterX + files(fnIndex).dimxyczt(1)/2*pixSize.x;
-                        % files(fnIndex).yMin = stageCenterY - files(fnIndex).dimxyczt(2)/2*pixSize.y;
-                        % files(fnIndex).yMax = stageCenterY + files(fnIndex).dimxyczt(2)/2*pixSize.y;
-                        % files(fnIndex).zMin = stageCenterZ - files(fnIndex).dimxyczt(4)/2*pixSize.z;
-                        % files(fnIndex).zMax = stageCenterZ + files(fnIndex).dimxyczt(4)/2*pixSize.z;
+                        % files(fnIndex).xMin = stageCenterX - files(fnIndex).dim_xyczt(1)/2*pixSize.x;
+                        % files(fnIndex).xMax = stageCenterX + files(fnIndex).dim_xyczt(1)/2*pixSize.x;
+                        % files(fnIndex).yMin = stageCenterY - files(fnIndex).dim_xyczt(2)/2*pixSize.y;
+                        % files(fnIndex).yMax = stageCenterY + files(fnIndex).dim_xyczt(2)/2*pixSize.y;
+                        % files(fnIndex).zMin = stageCenterZ - files(fnIndex).dim_xyczt(4)/2*pixSize.z;
+                        % files(fnIndex).zMax = stageCenterZ + files(fnIndex).dim_xyczt(4)/2*pixSize.z;
                         % add ImageDescription
                         files(fnIndex).boundingBoxVector = [0 0 0 0 0 0];  % [xMin xMax yMin yMax zMin zMax]
-                        files(fnIndex).boundingBoxVector(1) = stageCenterX - files(fnIndex).dimxyczt(1)/2*pixSize.x; % xMin
-                        files(fnIndex).boundingBoxVector(2) = stageCenterX + files(fnIndex).dimxyczt(1)/2*pixSize.x; % xMax
-                        files(fnIndex).boundingBoxVector(3) = stageCenterY - files(fnIndex).dimxyczt(2)/2*pixSize.y; % yMin
-                        files(fnIndex).boundingBoxVector(4) = stageCenterY + files(fnIndex).dimxyczt(2)/2*pixSize.y; % yMax
-                        files(fnIndex).boundingBoxVector(5) = stageCenterZ - files(fnIndex).dimxyczt(4)/2*pixSize.z; % zMin
-                        files(fnIndex).boundingBoxVector(6) = stageCenterZ + files(fnIndex).dimxyczt(4)/2*pixSize.z; % zMax
+                        files(fnIndex).boundingBoxVector(1) = stageCenterX - files(fnIndex).dim_xyczt(1)/2*pixSize.x; % xMin
+                        files(fnIndex).boundingBoxVector(2) = stageCenterX + files(fnIndex).dim_xyczt(1)/2*pixSize.x; % xMax
+                        files(fnIndex).boundingBoxVector(3) = stageCenterY - files(fnIndex).dim_xyczt(2)/2*pixSize.y; % yMin
+                        files(fnIndex).boundingBoxVector(4) = stageCenterY + files(fnIndex).dim_xyczt(2)/2*pixSize.y; % yMax
+                        files(fnIndex).boundingBoxVector(5) = stageCenterZ - files(fnIndex).dim_xyczt(4)/2*pixSize.z; % zMin
+                        files(fnIndex).boundingBoxVector(6) = stageCenterZ + files(fnIndex).dim_xyczt(4)/2*pixSize.z; % zMax
                         %bbString = sprintf('BoundingBox %.5f %.5f %.5f %.5f %.5f %.5f ', bb(1), bb(2), bb(3), bb(4), bb(5), bb(6));
                         %img_info('ImageDescription') = bbString;
                     catch err
@@ -370,6 +381,9 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     end
                 end
             end
+
+            % update pixSize
+            imginfo{"pixSize"} = pixSize;
 
             % get colors for the color channels
             colorsVec = [files.color];
@@ -407,7 +421,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
             % Handle custom sections
             if options.customSections
-                [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+                [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end

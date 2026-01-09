@@ -39,8 +39,8 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             obj.Options = options;
         end
 
-        function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files, pixSize] = loadMetadata(obj, filenames, options)
+        function [imginfo, files] = loadMetadata(obj, filenames, options)
+            % function [imginfo, files] = loadMetadata(obj, filenames, options)
             % Load metadata for video files
 
             % This method extracts video metadata using VideoReader for
@@ -76,6 +76,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             %     @li "ImageDescription" - description with BoundingBox info
             %     @li "FrameRate" - frames per second
             %     @li "Duration" - video duration in seconds
+            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
             %     @li other format-specific metadata fields
             %   files: structure array with file information for each file
             %     @li .filename - [char] full filename
@@ -89,20 +90,13 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             %     @li .imgClass - [char] image class, 'uint8', 'uint16', 'uint32'
             %     @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
             %     @li .xyStep - [numeric] XY step for binning
-            %   pixSize: structure with voxel dimensions
-            %     @li .x - [numeric] pixel width in units
-            %     @li .y - [numeric] pixel height in units
-            %     @li .z - [numeric] slice thickness in units
-            %     @li .units - [char] physical units ('um', 'nm', etc.)
-            %     @li .t - [numeric] time between frames
-            %     @li .tunits - [char] time units ('s')
-
+            
             % Example:
             %   @code
             %   loader = io.loaders.VideoReaderLoader();
             %   options.waitbar = true;
             %   filenames = {'video1.avi', 'video2.mp4'};
-            %   [imginfo, files, pixSize] = loader.loadMetadata(filenames, options);
+            %   [imginfo, files] = loader.loadMetadata(filenames, options);
             %   fprintf('Video size: %d x %d x %d frames\n', imginfo{"Width"}, imginfo{"Height"}, imginfo{"Depth"});
             %   @endcode
 
@@ -111,15 +105,13 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = obj.initializeImgInfo();
+            imginfo = utils.defaults.initializeImgInfo();
+            pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
             if ~isfield(options, 'mibPath'); options.mibPath = ''; end
-
-            % init the pixel size as pixSize structure
-            pixSize = obj.initializePixSize();
 
             noFiles = numel(filenames);
 
@@ -232,9 +224,12 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 end
             end
 
+            % update pixSize
+            imginfo{"pixSize"} = pixSize;
+
             % Handle custom sections
             if options.customSections
-                [files, imginfo, pixSize, cancelled] = obj.handleCustomSections(files, imginfo, pixSize, options);
+                [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
@@ -243,7 +238,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             end
 
             % Handle dimension mismatches and bounding box
-            imginfo = obj.handleDimensionMismatches(files, imginfo, pixSize);
+            imginfo = obj.handleDimensionMismatches(files, imginfo);
 
             % Generate slice names from filenames
             imginfo = obj.generateSliceNames(files, imginfo);

@@ -41,7 +41,7 @@ classdef LoaderFactory
             % options.waitbar = true;
             % options.mibPath = 'c:\mib';
             % loader = io.LoaderFactory.create(loaderInfo, options);
-            % [imginfo, files, pixSize] = loader.loadMetadata({'image.tif'}, options);
+            % [imginfo, files] = loader.loadMetadata({'image.tif'}, options);
             % [img, imginfo] = loader.loadImages(files, imginfo, options);
             % @endcode
             %
