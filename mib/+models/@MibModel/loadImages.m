@@ -389,10 +389,10 @@ switch BatchOpt.Mode{1}
         obj.I{BatchOpt.id}.initialize(img, img_info);
         % obj.I{BatchOpt.id}.clearContents(img, img_info, obj.I{BatchOpt.id}.datasetType);
 
-        obj.I{BatchOpt.id}.pixSize = pixSize;
+        obj.I{BatchOpt.id}.pixSize = img_info{"pixSize"};
         notify(obj, 'newDataset');   % notify mibController about a new dataset; see function obj.Listner2_Callback for details
         obj.I{obj.id}.lastSegmSelection = [2 1];  % last selected contour for use with the 'e' button
-        obj.plotImage(1);
+        notify(obj, 'ShowImage');
         
         % update list of recent directories
         dirPos = ismember(obj.preferences.System.Dirs.RecentDirs, BatchOpt.DirectoryName{1});

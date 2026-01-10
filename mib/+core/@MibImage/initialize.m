@@ -25,7 +25,7 @@ if nargin < 3; meta = []; end
 if nargin < 2; data = []; end
 
 % init meta as empty dictionary
-if isempty(meta); meta = dictionary(); end
+if isempty(meta); meta = utils.defaults.initializeImgInfo(); end
 
 % init data with an empty matrix
 if isempty(data)
@@ -45,37 +45,31 @@ end
 %obj.type = 'image';
 
 % update default properties of the class
-[y, x, z, c, t] = size(obj.data{1});
-obj.width = x;      % width of the dataset
-obj.height = y;     % height of the dataset
-obj.depth = z;      % depth of the dataset
-obj.colors = c;     % number of colors of the dataset
-obj.time = t;       % number of time points of the dataset
-obj.maxInt = double(intmax(class(obj.data{1})));    % max value that is possible to store in the dataset
-obj.dataClass = class(obj.data{1});                 % image class
-obj.dim_yxzct = [obj.height obj.width obj.depth obj.colors obj.time];
-% a matrix with dimensions of the dataset [height, width, depth, colors, time]
-% equal to size obj.data{1} for non-virtual datasets
+if ~isempty(obj.data)
+    [y, x, z, c, t] = size(obj.data{1});
+    obj.width = x;      % width of the dataset
+    obj.height = y;     % height of the dataset
+    obj.depth = z;      % depth of the dataset
+    obj.colors = c;     % number of colors of the dataset
+    obj.time = t;       % number of time points of the dataset
+    obj.maxInt = double(intmax(class(obj.data{1})));    % max value that is possible to store in the dataset
+    obj.dataClass = class(obj.data{1});                 % image class
+    obj.dim_yxzct = [obj.height obj.width obj.depth obj.colors obj.time];
+    % a matrix with dimensions of the dataset [height, width, depth, colors, time]
+    % equal to size obj.data{1} for non-virtual datasets
 
-% fix the missing properties in the provided meta class
-if ~isKey(meta, 'Filename'); meta{'Filename'} = 'none.tif'; end
-if ~isKey(meta, 'SliceName'); meta{'SliceName'} = []; end
-if ~isKey(meta, 'lutColors'); meta{'lutColors'} = utils.defaults.generateLUT(obj.colors); end
-if ~isKey(meta, 'viewPort')
-    viewPort = struct();
-    viewPort.min = zeros([obj.colors, 1]);
-    viewPort.max = zeros([obj.colors, 1]) + obj.maxInt;
-    viewPort.gamma = zeros([obj.colors, 1]) + 1;
-    if strcmp(obj.dataClass, 'uint32')
-        obj.viewPort.min = zeros([obj.colors, 1]) + double(min(min(min(obj.data{1}(:,:,1,:,1)))));
-        obj.viewPort.max = zeros([obj.colors, 1]) + double(max(max(max(obj.data{1}(:,:,1,:,1)))));
+    % fix the missing properties in the provided meta class
+    if ~isKey(meta, 'Filename'); meta{'Filename'} = 'none.tif'; end
+    if ~isKey(meta, 'SliceName'); meta{'SliceName'} = []; end
+    if ~isKey(meta, 'lutColors'); meta{'lutColors'} = utils.defaults.generateLUT(obj.colors); end
+    if ~isKey(meta, 'viewPort')
+        viewPort = obj.getDefaultViewPort();
+        meta{'viewPort'} = viewPort;
     end
-    meta{'viewPort'} = viewPort;
-end
 
-% update additional properties
-obj.filename = meta{'Filename'};
-obj.sliceName = meta{'SliceName'};
-obj.lutColors = meta{'lutColors'};
-obj.viewPort = meta{'viewPort'};
+    % update additional properties
+    obj.filename = meta{'Filename'};
+    obj.sliceName = meta{'SliceName'};
+    obj.lutColors = meta{'lutColors'};
+end
 end

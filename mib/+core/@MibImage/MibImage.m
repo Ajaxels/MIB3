@@ -50,6 +50,8 @@ classdef MibImage < matlab.mixin.Copyable
 
         varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
 
+        viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
+
         initialize(obj, data, meta, type);  % initialize the class using default or provided values
 
         result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
@@ -66,7 +68,7 @@ classdef MibImage < matlab.mixin.Copyable
             % meta: a structure with parameters of the dataset, can be @e [], see obj.initImage for details
             % type: type of the data, 'image', 'labels' (MibLabels class), 'labels63' (MibLabels63 class)
             
-            if nargin < 2; meta = []; end
+            if nargin < 2; meta = utils.defaults.initializeImgInfo(); end
             if nargin < 1; data = []; end
             
             % update type
@@ -79,11 +81,8 @@ classdef MibImage < matlab.mixin.Copyable
                     obj.type = 'labels63';
             end
 
-            % init meta as empty struct
-            if isempty(meta); meta = struct(); end
-
             if isempty(data) 
-                obj.initialize();
+                obj.initialize(data, meta);
             else
                 % permute the 3rd dimension into the 4th dimension
                 if ndims(data)==3 && size(data, 3) < 4

@@ -27,12 +27,9 @@ classdef MibLabels < core.MibImage
             % img: an 2D-5D image stack
             % meta: a structure with parameters of the dataset, can be @e []
             
-            if nargin < 2; meta = []; end
+            if nargin < 2; meta = utils.defaults.initializeImgInfo(); end
             if nargin < 1; img = []; end
             
-            % init meta as empty struct
-            if isempty(meta); meta = struct(); end
-
             obj = obj@core.MibImage(img, meta);  % Call parent constructor
 
         end

@@ -20,7 +20,7 @@ function initialize(obj, img, meta, datasetType, modelType)
     %           @li .min - a vector with minimal value for intensity stretching for each color channel
     %           @li .max - a vector with maximal value for intensity stretching for each color channel
     %           @li .gamma a vector with gamma factor for contrast adjustment for each color channel
-    % datasetType: [char, @default 'Std']type of the dataset, one of these
+    % datasetType: [char, @default the current datasetType]type of the dataset, one of these
     %       @li 'Std' - standard image, one that is loaded to memory completely
     %       @li 'Virtual' - virtual dataset that is loaded upon demand
     %       @li 'BigData' - big-data compatible dataset
@@ -30,7 +30,7 @@ function initialize(obj, img, meta, datasetType, modelType)
     %       .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
     
     if nargin < 5; modelType = 'imageOnly'; end
-    if nargin < 4; datasetType = 'Std'; end
+    if nargin < 4; datasetType = obj.datasetType; end
     if nargin < 3; meta = []; end
     if nargin < 2; img = []; end
     
@@ -55,13 +55,11 @@ function initialize(obj, img, meta, datasetType, modelType)
             obj.image = core.MibImage(img, meta);
             switch modelType
                 case 'imageOnly'
-                    % pass
+                    obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
                 case 'labels'
                     obj.labels = core.MibLabels(zeros(size(img), 'uint8'), meta);
-                    obj.labels.exists = false;  % set indicator that it is a dummy model
                 case 'labels63'
                     obj.labels = core.MibLabels63(zeros([size(img, 1) size(img, 2)], 'uint8'), meta);
-                    obj.labels.exists = false;  % set indicator that it is a dummy model
             end
         case 'Virtual'
             error('core.MibDataset.initialize: Virtual - not implemented');
@@ -157,6 +155,6 @@ function initialize(obj, img, meta, datasetType, modelType)
     obj.useLUT = false;
                         
     % update additional properties
-    obj.pixSize = meta('pixSize');
+    obj.pixSize = meta{'pixSize'};
     obj.dim_yxzct = obj.image.dim_yxzct;
 end
