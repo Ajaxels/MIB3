@@ -61,6 +61,7 @@ function initialize(obj, img, meta, datasetType, modelType)
                 case 'labels63'
                     obj.labels = core.MibLabels63(zeros([size(img, 1) size(img, 2)], 'uint8'), meta);
             end
+            obj.labels.exists = false; % force the label does not present switch
         case 'Virtual'
             error('core.MibDataset.initialize: Virtual - not implemented');
         case 'BigData'

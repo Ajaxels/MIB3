@@ -24,7 +24,7 @@ function initialize(obj, data, meta)
 if nargin < 3; meta = []; end
 if nargin < 2; data = []; end
 
-% init meta as empty dictionary
+% init meta as empty dictionary or combine with the provided
 if isempty(meta); meta = utils.defaults.initializeImgInfo(); end
 
 % init data with an empty matrix
@@ -59,10 +59,9 @@ if ~isempty(obj.data)
     % equal to size obj.data{1} for non-virtual datasets
 
     % fix the missing properties in the provided meta class
-    if ~isKey(meta, 'Filename'); meta{'Filename'} = 'none.tif'; end
-    if ~isKey(meta, 'SliceName'); meta{'SliceName'} = []; end
+    if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
     if ~isKey(meta, 'lutColors'); meta{'lutColors'} = utils.defaults.generateLUT(obj.colors); end
-    if ~isKey(meta, 'viewPort')
+    if isempty(meta{'Filename'})
         viewPort = obj.getDefaultViewPort();
         meta{'viewPort'} = viewPort;
     end

@@ -13,7 +13,7 @@ classdef MibImage < matlab.mixin.Copyable
         % a matrix with dimensions of the dataset [height, width, depth, colors, time] equal to size obj.data{1} 
         exists = false
         % logical switch indicating whether the obj.data exists or it is empty/dummy place maker
-        filename
+        filename = 'none.tif';
         % the full filename of the dataset
         height
         % image height, px

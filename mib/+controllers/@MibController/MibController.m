@@ -68,6 +68,8 @@ classdef MibController < handle
 
         listner2_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure
 
+        listenerNewDataset(obj, src, evtData) % Update obj.I (MibDataset) by resizing it to fit on the screen executed upon catch of MibModel->"NewDataset" event
+
         listenerShowImage(obj, src, evtData) % render (show) the current image in the Image View panel
 
         listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog

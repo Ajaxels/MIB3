@@ -27,28 +27,38 @@ function listenerUpdateDatasetAxes(obj, src, evtData)
 % Options.newMagFactor = 2;
 % Options.index = 1;
 % eventdata = core.ToggleEventData(Options);
-% notify(obj, 'UpdateDatasetAxes', eventdata);
+% notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 % @endcode 
 %
 % @code
 % // call from controllers.MibController; to fit the screen @endcode
 % Options.mode = 'resize';
 % eventdata = core.ToggleEventData(Options);
-% notify(obj, 'UpdateDatasetAxes', eventdata);
+% notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+% @endcode 
+% @code
+% // update the current dataset using the "resize" mode
+% notify(obj.mibModel, 'UpdateDatasetAxes');
 % @endcode 
 %
 % Updates
 % 
 
 % update the missing fields
-if ~isfield(evtData.Parameters, 'mode'); evtData.Parameters.mode = 'resize'; end
-if ~isfield(evtData.Parameters, 'index'); evtData.Parameters.index = obj.mibModel.id; end
-if ~isfield(evtData.Parameters, 'newMagFactor'); evtData.Parameters.newMagFactor = 1; end
+if ~isprop(evtData, 'Parameters')
+    Parameters = struct; 
+else
+    Parameters = evtData.Parameters;
+end
+
+if ~isfield(Parameters, 'mode'); Parameters.mode = 'resize'; end
+if ~isfield(Parameters, 'index'); Parameters.index = obj.mibModel.id; end
+if ~isfield(Parameters, 'newMagFactor'); Parameters.newMagFactor = 1; end
 
 % make local variables
-mode = evtData.Parameters.mode;
-index = evtData.Parameters.index;
-newMagFactor = evtData.Parameters.newMagFactor;
+mode = Parameters.mode;
+index = Parameters.index;
+newMagFactor = Parameters.newMagFactor; 
 
 % get the scaling coefficient
 if obj.mibModel.I{index}.orientation == 3     % xy

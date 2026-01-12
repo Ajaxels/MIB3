@@ -61,14 +61,15 @@ classdef MibModel < handle
     end
 
     events
-        ShowErrorDialog     % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
-        DatasetsPanelUpdate % update widgets of the Datasets panel
-        ShowImage         % render image in the Image View panel
-        SyncBatch           % synchronize structure for batch actions
-        StopProtocol        % stop batch protocol from execution
-        UpdateDatasetAxes   % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
-        UpdateToolbar       % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)
-        updateGuiWidgets    % update all widgets of the main GUI
+        ShowErrorDialog      % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
+        DatasetsPanelUpdate  % update widgets of the Datasets panel
+        NewDataset           % MibModel loaded a new image, update MibController widgets
+        ShowImage            % render image in the Image View panel
+        SyncBatch            % synchronize structure for batch actions
+        StopProtocol         % stop batch protocol from execution
+        UpdateDatasetAxes    % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+        UpdateToolbar        % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)
+        UpdateGuiWidgets     % update all widgets of the main GUI
     end
 
     methods
@@ -111,8 +112,6 @@ classdef MibModel < handle
             obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
             
             obj.extensionRegistryLoad = io.ExtensionRegistryLoad; % registry of filename extensions
-
-            %obj.Undo = 
 
             % initialize MIB with 10 dummy datasets
             BatchOpt = struct('Mode', {'Add set'}, 'DatasetType', {'Std'}, 'SetName', 'Set 1');
