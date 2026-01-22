@@ -5,12 +5,6 @@ function updateGuiWidgets(obj, updatePanels)
 % define cell array of panels to update, when empty update all panels
 if nargin < 2; updatePanels = {}; end
 
-
-%obj.mibView.updateCursor();  % update size of the cursor
-%obj.mibModel.disableSegmentation = 0;    % re-enable segmentation tools if they were accidentally turned off
-
-%obj.mibModel.I{obj.mibModel.id}.meta
-
 % create a handle for the dataset
 dataset = obj.mibModel.I{obj.mibModel.id};
 
@@ -149,12 +143,78 @@ if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
     end
 end
 
-%if dataset.orientation == 3 && ~obj.cQuickAccessBar.handles.yx_orientation.Value
-%    obj.cQuickAccessBar.handles.yx_orientation.Value = true;
-%end
-%obj.cQuickAccessBar.handles.yx_orientation.Value = true;
+%% ------------ Update the QuickAccessBar TAB ------------
+if isempty(updatePanels) || ismember(updatePanels, 'QuickAccessBar')
+    % update orientation buttons
+    qabHandles = obj.cQuickAccessBar.handles;
+    if dataset.orientation == 3 && ~qabHandles.yx_orientation.Value
+        qabHandles.yx_orientation.Value = true;
+        qabHandles.yz_orientation.Value = false;
+        qabHandles.xz_orientation.Value = false;
+    elseif dataset.orientation == 2 && ~qabHandles.yz_orientation.Value
+        qabHandles.yx_orientation.Value = false;
+        qabHandles.yz_orientation.Value = true;
+        qabHandles.xz_orientation.Value = false;
+    elseif dataset.orientation == 1 && ~oqabHandles.xz_orientation.Value
+        qabHandles.yx_orientation.Value = false;
+        qabHandles.yz_orientation.Value = false;
+        qabHandles.xz_orientation.Value = true;
+    end
+    
+    % define ROI button state
+    if qabHandles.roiMode.Value ~= dataset.roiShow
+        qabHandles.roiMode.Value = dataset.roiShow;
+    end
+
+    % define the blockModeSwitch state
+    if qabHandles.blockMode.Value ~= dataset.blockModeSwitch
+        qabHandles.blockMode.Value = dataset.blockModeSwitch;
+    end
+end
+
+%% Update sliders
 
 
+%% Update panels
+% sliders in the black-and-white thresholding
+if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
+    % get alias to the panel
+    segmHandles = obj.cSegmentation.handles;
+    maxInt = dataset.image.maxInt;
+    
+    if segmHandles.thresholdLow.Value > maxInt-1 || segmHandles.thresholdLowValue.Value > maxInt-1
+        segmHandles.thresholdLow.Value = maxInt-1; 
+        segmHandles.thresholdLowValue.Value = maxInt-1; 
+    end
+    segmHandles.thresholdLow.Limits = [0 maxInt-1];
+    segmHandles.thresholdLowValue.Limits = [0 maxInt-1];
+    
+    if segmHandles.thresholdHigh.Value > maxInt || segmHandles.thresholdHighValue.Value > maxInt
+        segmHandles.thresholdHigh.Value = maxInt; 
+        segmHandles.thresholdHighValue.Value = maxInt;
+    end
+    segmHandles.thresholdHigh.Limits = [1 maxInt];
+    segmHandles.thresholdHighValue.Limits = [1 maxInt];
+    
+    % enable 4D thresholding checkbox
+    if dataset.image.time > 1 && ~segmHandles.threshold4D.Enable
+        segmHandles.threshold4D.Enable = true;
+    elseif dataset.image.time==1 && (segmHandles.threshold4D.Enable || segmHandles.threshold4D.Value)
+        segmHandles.threshold4D.Enable = false;
+        segmHandles.threshold4D.Value = false;
+    end
+end
+
+
+
+
+
+%% TO DO
+%obj.mibView.updateCursor();  % update size of the cursor
+%obj.mibModel.disableSegmentation = 0;    % re-enable segmentation tools if they were accidentally turned off
+%obj.updateInterpolationMode(true);      % update the selection interpolation button
+%obj.updateVisualizationMode('keepcurrent');     % update the image interpolation button icon
+%obj.toolbarVirtualMode_ClickedCallback('keepcurrent');         % update the virtual stack button
 
 
 end

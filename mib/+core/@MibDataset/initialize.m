@@ -122,7 +122,10 @@ function initialize(obj, img, meta, datasetType, modelType)
                         
     % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMaterial
     obj.restrictSelectionToMaterial = false;
-                        
+          
+    % show or not ROI on the image axes
+    obj.roiShow = false;
+
     % index of selected Add to Material, where the Selection layer
     % should be targeted, assigned in the AddTo column of the obj.view.handles.panels.segmentation.handles.materialsTable
     % @b 1 - Mask; @b 2 - Exterior; @b 3 - first material of the model, @b 4 - second material etc

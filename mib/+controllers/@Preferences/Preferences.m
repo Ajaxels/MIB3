@@ -98,7 +98,7 @@ classdef Preferences < handle
             obj.updateWidgets();
             
             % add listener to obj.mibModel and call controller function as a callback
-            obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.viewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
+            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.viewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
         end
         
         function closeWindow(obj)

@@ -74,6 +74,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMask
         restrictSelectionToMaterial
         % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMaterial
+        roiShow
+        % a switch to show or not ROI on the image axes
         selectedAddToMaterial
         % index of selected Add to Material, where the Selection layer should be targeted, assigned in the AddTo column of the obj.view.handles.panels.segmentation.handles.materialsTable
         % @b 1 - Mask; @b 2 - Exterior; @b 3 - first material of the model, @b 4 - second material etc
