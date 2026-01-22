@@ -19,7 +19,7 @@ end
 
 switch mode
     case 'Grayscale'              % obj.handles.ribbonImage.grayscale
-    case 'Multicolor'                 % obj.handles.ribbonImage.multicolor
+    case 'Multi-channel'                 % obj.handles.ribbonImage.multichannel
     case 'HSV color'                 % obj.handles.ribbonImage.hsv
     case 'Indexed'                 % obj.handles.ribbonImage.indexed
     case '8 bit'                 % obj.handles.ribbonImage.bit8

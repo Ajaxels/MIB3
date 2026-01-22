@@ -61,7 +61,7 @@ if ~isempty(obj.data)
     % fix the missing properties in the provided meta class
     if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
     if ~isKey(meta, 'lutColors'); meta{'lutColors'} = utils.defaults.generateLUT(obj.colors); end
-    if isempty(meta{'Filename'})
+    if isempty(meta{'viewPort'})
         viewPort = obj.getDefaultViewPort();
         meta{'viewPort'} = viewPort;
     end
@@ -70,5 +70,16 @@ if ~isempty(obj.data)
     obj.filename = meta{'Filename'};
     obj.sliceName = meta{'SliceName'};
     obj.lutColors = meta{'lutColors'};
+    % update color type
+    if ~isempty(meta{'ColorType'})
+        obj.colorType = meta{'ColorType'};
+    else
+        if size(obj.data,4) == 1
+            obj.colorType = 'grayscale';
+        else
+            obj.colorType = 'multichannel';
+        end
+    end
+    % meta{'ColorType'}
 end
 end

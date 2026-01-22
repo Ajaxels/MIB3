@@ -29,7 +29,7 @@ function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
 
 %| 
 % Examples:
-% @code obj.mibModel.I{obj.mibModel.Id}.clearLayer('selection'); // call from mibController, clear the Selection layer completely @endcode
+% @code obj.mibModel.I{obj.mibModel.id}.clearLayer('selection'); // call from mibController, clear the Selection layer completely @endcode
 
 if nargin < 7; blockModeSwitch = obj.blockModeSwitch; end
 if nargin < 6; t = []; end

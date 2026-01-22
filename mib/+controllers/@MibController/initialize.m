@@ -235,7 +235,7 @@ obj.addGuiControllers();
 
 % ---- add callbacks ----
 % add callback for selection of the
-obj.view.handles.ribbon.global.SelectedTabChangedFcn = @obj.globalTabGroup_SelectionCallback;
+obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 
 % get the current version of Matlab; keep this variable to be faster and not call ver function
 v = ver('matlab'); %#ok<VERMATLAB>

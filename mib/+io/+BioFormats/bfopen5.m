@@ -15,7 +15,7 @@ function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 %   seriesNumber: - number of selected serie starting from 1
 %   sliceNo: - [optional] desired slice number from the series
 %   options: - [optional] a structure with a subset of the image to obtain.
-%       .BioFormatsMemoizerMemoDir - directory to store Memoizer memo files
+%       .bioFormatsMemoizerMemoDir - directory to store Memoizer memo files
 %       .x1 - starting x position
 %       .y1 - starting y position
 %       .z1 - starting z position
@@ -71,8 +71,8 @@ if isa(r, 'loci.formats.Memoizer')  % r is a filename
    filename = [];
 else
     filename = r;
-    if isfield(options, 'BioFormatsMemoizerMemoDir')
-        r = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.BioFormatsMemoizerMemoDir));
+    if isfield(options, 'bioFormatsMemoizerMemoDir')
+        r = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.bioFormatsMemoizerMemoDir));
     else
         r = loci.formats.Memoizer(bfGetReader(), 0);
     end

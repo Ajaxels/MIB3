@@ -87,7 +87,7 @@ classdef MibController < handle
 
         id = findChildId(obj, childName)        % find id of a child controller
 
-        globalTabGroup_SelectionCallback(obj, hWidget, hData) % callback for the selection of the tab in the main ribbon, optimization for lazy initialization of ribbon tabs
+        globalTabGroup_SelectionCallback(obj, hWidget) % callback for the selection of the tab in the main ribbon, optimization for lazy initialization of ribbon tabs
 
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
@@ -104,6 +104,8 @@ classdef MibController < handle
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
         
         startController(obj, controllerName, varargin) % start a child controller using provided name
+
+        updateGuiWidgets(obj, updatePanels)            % update user interface widgets in obj.mibView.gui based on the properties of the opened dataset
 
         updateInterpolationMode(obj, options)        % Function to set the state of the interpolation button in the Selection ribbon
 

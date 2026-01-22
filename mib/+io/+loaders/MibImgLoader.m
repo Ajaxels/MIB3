@@ -186,7 +186,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 if fnIndex == 1
                     imginfo{'imgClass'} = files(fnIndex).imgClass;
                     if files(fnIndex).color > 1
-                        imginfo{'ColorType'} = 'multicolor';
+                        imginfo{'ColorType'} = 'multichannel';
                     else
                         imginfo{'ColorType'} = 'grayscale';
                     end

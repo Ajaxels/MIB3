@@ -118,7 +118,7 @@ classdef MultiRenameToolController < handle
             obj.BatchOpt.AddZerosToNumbers = false;
             obj.BatchOpt.ExcludePrefixes = '';  % when adding leading zero exclude these prefixes with numbers from the conversion
             obj.BatchOpt.showWaitbar = true;
-            %             obj.BatchOpt.id = obj.mibModel.Id;  % optional
+            %             obj.BatchOpt.id = obj.mibModel.id;  % optional
             %
             %             %% part below is only valid for use of the plugin from MIB batch controller
             %             % comment it if intended use not from the batch mode
@@ -226,7 +226,7 @@ classdef MultiRenameToolController < handle
             % updateWidgets normally triggered during change of MIB
             % buffers, make sure that any widgets related changes are
             % correctly propagated into the BatchOpt structure
-            if isfield(obj.BatchOpt, 'id'); obj.BatchOpt.id = obj.mibModel.Id; end
+            if isfield(obj.BatchOpt, 'id'); obj.BatchOpt.id = obj.mibModel.id; end
             
             % when elements GIU needs to be updated, update obj.BatchOpt
             % structure and after that update elements of GUI by the

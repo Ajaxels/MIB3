@@ -124,27 +124,27 @@ Prefs.ExternalDirs.bm3dInstallationPath = [];       % BM3D
 Prefs.ExternalDirs.bm4dInstallationPath = [];       % BM4D
 Prefs.ExternalDirs.DeepMIBDir = tempdir;            % DeepMIB network architectures
 Prefs.ExternalDirs.PythonInstallationPath = [];     % DeepMIB network architectures
-Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = [];  % Bioformats Memoizer
+Prefs.ExternalDirs.bioFormatsMemoizerMemoDir = [];  % Bioformats Memoizer
 % setting up directory for memoizer
-Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = fullfile(tempdir, 'mibVirtual'); 
+Prefs.ExternalDirs.bioFormatsMemoizerMemoDir = fullfile(tempdir, 'mibVirtual'); 
 % override default directory to c:\temp to easier find it later
 if ispc
     if isfolder('c:\temp')
         if ~isfolder('c:\temp\mibVirtual')
             try
                 mkdir('c:\temp\mibVirtual');
-                Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = 'c:\temp\mibVirtual';
+                Prefs.ExternalDirs.bioFormatsMemoizerMemoDir = 'c:\temp\mibVirtual';
             catch
                 
             end
         else
-            Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = 'c:\temp\mibVirtual';
+            Prefs.ExternalDirs.bioFormatsMemoizerMemoDir = 'c:\temp\mibVirtual';
         end
     end
 else
-    Prefs.ExternalDirs.BioFormatsMemoizerMemoDir = fullfile(tempdir, 'mibVirtual');
-    if ~isfolder(Prefs.ExternalDirs.BioFormatsMemoizerMemoDir)
-        mkdir(Prefs.ExternalDirs.BioFormatsMemoizerMemoDir);
+    Prefs.ExternalDirs.bioFormatsMemoizerMemoDir = fullfile(tempdir, 'mibVirtual');
+    if ~isfolder(Prefs.ExternalDirs.bioFormatsMemoizerMemoDir)
+        mkdir(Prefs.ExternalDirs.bioFormatsMemoizerMemoDir);
     end
 end
 

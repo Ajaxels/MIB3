@@ -28,7 +28,7 @@ classdef LoaderFactory
             %   @li .virtual - [logical] virtual stacking mode
             %   @li .customSections - [logical] load custom sections only
             %   @li additional format-specific options
-            %   @li .BioFormatsMemoizerMemoDir - location of MemoizerMemo for bioformats
+            %   @li .bioFormatsMemoizerMemoDir - location of MemoizerMemo for bioformats
             %
             % Return values:
             % loader: loader object implementing loadMetadata and loadImages methods

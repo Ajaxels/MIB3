@@ -82,6 +82,7 @@ obj.gui.add(qab.yz_orientation);
 qab.yx_orientation = QABToggleButton();
 qab.yx_orientation.QuickAccessIcon = Icon(fullfile(iconPath, 'yx_icon_16px.png'));
 qab.yx_orientation.Text = 'Switch dataset to the YX orientation';
+qab.yx_orientation.Value = true; % press the button
 obj.gui.add(qab.yx_orientation);
 
 divider = QABPushButton();

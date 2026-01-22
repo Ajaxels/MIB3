@@ -34,13 +34,18 @@ else
 end
 
 % update the missing fields
-if ~isfield(Parameters, 'index'); Parameters.index = obj.mibModel.id; end % index of the dataset
-
-% resize the dataset to fit the screen
-notify(obj.mibModel, 'UpdateDatasetAxes');
+if ~isfield(Parameters, 'index') 
+    Parameters.index = obj.mibModel.id; 
+    % resize the dataset to fit the screen
+    notify(obj.mibModel, 'UpdateDatasetAxes');
+else  % use provided index of the dataset
+    % resize the dataset with the index to fit the screen
+    eventdata = core.ToggleEventData(Parameters);
+    notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+end 
 
 % update BioFormatsMemoizer directory
-obj.mibModel.I{Parameters.index}.BioFormatsMemoizerMemoDir = obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;
+obj.mibModel.I{Parameters.index}.bioFormatsMemoizerMemoDir = obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;
 
 % uncheck the linked views state
 currentButtonHandle = sprintf('buffer%i', Parameters.index); % handle of the current dataset button

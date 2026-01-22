@@ -144,7 +144,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 if str2double(meta.dimension) == 4
                     % Color image or stack [C X Y Z]
                     files(fnIndex).dim_xyczt = [dims(2), dims(3), dims(1), dims(4), 1];
-                    currentColorType = 'multicolor';
+                    currentColorType = 'multichannel';
                 else
                     % Grayscale image or stack [X Y Z]
                     files(fnIndex).dim_xyczt = [dims(1), dims(2), 1, dims(3), 1];

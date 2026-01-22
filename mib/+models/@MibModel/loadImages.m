@@ -184,7 +184,7 @@ options.UseBioFormats = BatchOpt.UseBioFormats;
 options.waitbar = BatchOpt.showWaitbar;
 options.mibPath = obj.mibPath;
 options.id = BatchOpt.id;   % id of the current dataset
-options.BioFormatsMemoizerMemoDir = obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;  % path to temp folder for Bioformats
+options.bioFormatsMemoizerMemoDir = obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;  % path to temp folder for Bioformats
 options.customSections = false; % load a part from datasets
 if batchModeSwitch == 1    % batch mode is used
     options.BackgroundColorIntensity = str2double(BatchOpt.BackgroundColorIntensity);   % add background color intensity, for cases when size of the combined slices mismatch; see more in mibLoadImages 
@@ -249,7 +249,7 @@ switch BatchOpt.Mode{1}
         end
 
         if ~isempty(BatchOpt.BioFormatsIndices)
-            options.BioFormatsIndices = str2num(BatchOpt.BioFormatsIndices);
+            options.BioFormatsIndices = str2num(BatchOpt.BioFormatsIndices); %#ok<ST2NM>
         else
             if batchModeSwitch == 1    % batch mode is used
                 options.BioFormatsIndices = BatchOpt.BioFormatsIndices;

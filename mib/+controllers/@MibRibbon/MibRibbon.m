@@ -207,7 +207,7 @@ classdef MibRibbon
         
             %% Add Callbacks for the IMAGE ribbon -> Mode
             obj.handles.ribbonImage.grayscale.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.multicolor.ValueChangedFcn = @obj.imageMode_Callback;
+            obj.handles.ribbonImage.multichannel.ValueChangedFcn = @obj.imageMode_Callback;
             obj.handles.ribbonImage.hsv.ValueChangedFcn = @obj.imageMode_Callback;
             obj.handles.ribbonImage.indexed.ValueChangedFcn = @obj.imageMode_Callback;
             obj.handles.ribbonImage.bit8.ValueChangedFcn = @obj.imageMode_Callback;

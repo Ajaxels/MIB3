@@ -23,8 +23,8 @@ function clearLayer(obj, layerName, y, x, z, t)
 
 %| 
 % Examples:
-% @code obj.mibModel.I{obj.mibModel.Id}.selection.clearLayer(); // call from mibController, clear the Selection layer completely @endcode
-% @code obj.mibModel.I{obj.mibModel.Id}.selection.clearLayer([], 1:imageData.y, 1:imageData.x, 1:3); //  call from mibController, clear the Selection layer only in 3 first slices  @endcode
+% @code obj.mibModel.I{obj.mibModel.id}.selection.clearLayer(); // call from mibController, clear the Selection layer completely @endcode
+% @code obj.mibModel.I{obj.mibModel.id}.selection.clearLayer([], 1:imageData.y, 1:imageData.x, 1:3); //  call from mibController, clear the Selection layer only in 3 first slices  @endcode
 
 % @code obj.clearLayer('selection');      // clear the layer, call from the class @endcode
 % @code dataset = obj.clearLayer('everything'); // clear the layer call from MibController, where type='image', 'label', 'mask', 'selection', 'everything'

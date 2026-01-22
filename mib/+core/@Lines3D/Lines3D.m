@@ -41,7 +41,7 @@ classdef Lines3D < matlab.mixin.Copyable
     % Graph.Nodes.Properties.UserData.pixSize.y = .013;
     % Graph.Nodes.Properties.UserData.pixSize.z = .03;
     % Graph.Nodes.Properties.UserData.pixSize.units = 'um';
-    % Graph.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{obj.mibModel.Id}.getBoundingBox(); // required when points are pixels; add bounding box information
+    % Graph.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{obj.mibModel.id}.getBoundingBox(); // required when points are pixels; add bounding box information
     % @endcode
     %
     % @code
@@ -64,9 +64,9 @@ classdef Lines3D < matlab.mixin.Copyable
     % EdgeTable = table([s', t'], 'VariableNames', {'EndNodes'}); // make edges table
     % G = graph(EdgeTable, NodeTable);  // generate the graph
     % G.Nodes.Properties.VariableUnits = {'pixel','string'}; // it is important to indicate "pixel" unit for the PointsXYZ field, when using pixels
-    % G.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{obj.mibModel.Id}.getBoundingBox(); // a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
-    % G.Nodes.Properties.UserData.pixSize = obj.mibModel.I{obj.mibModel.Id}.pixSize;  % add pixel size
-    % obj.mibModel.I{obj.mibModel.Id}.hLines3D.replaceGraph(G);  //  replace the current Lines3D with a new graph
+    % G.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{obj.mibModel.id}.getBoundingBox(); // a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
+    % G.Nodes.Properties.UserData.pixSize = obj.mibModel.I{obj.mibModel.id}.pixSize;  % add pixel size
+    % obj.mibModel.I{obj.mibModel.id}.hLines3D.replaceGraph(G);  //  replace the current Lines3D with a new graph
     %
                 
     properties
@@ -195,7 +195,7 @@ classdef Lines3D < matlab.mixin.Copyable
             
             %|
             % @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.Id}.Lines3D.clearContents(); @endcode
+            % @code obj.mibModel.I{obj.mibModel.id}.Lines3D.clearContents(); @endcode
             
             obj.G = [];   %  a cell array with labels
             obj.noTrees = 0;    % number of trees
@@ -1526,7 +1526,7 @@ classdef Lines3D < matlab.mixin.Copyable
                     s(6,2) = {'NodeId'}; s(6,3) = {'TreeName'}; s(6,4) = {'NodeName'}; s(6,5) = {'X'}; s(6,6) = {'Y'}; s(6,7) = {'Z'};
                     Variables(ismember(Variables, {'PointsXYZ', 'TreeName', 'NodeName'})) = [];
                     s(6,8:8+numel(Variables)-1) = Variables;
-                    %Units = obj.mibModel.I{obj.mibModel.Id}.hLines3D.G.Nodes.Properties.VariableUnits;
+                    %Units = obj.mibModel.I{obj.mibModel.id}.hLines3D.G.Nodes.Properties.VariableUnits;
                     %if ~isempty(Units)
                     %    s(7,2:2+numel(Variables)-1) = Units;
                     %end
@@ -1540,7 +1540,7 @@ classdef Lines3D < matlab.mixin.Copyable
                     s2(6,6) = {'Weight'}; s2(6,7) = {'Length'};
                     Variables(ismember(Variables, {'EndNodes', 'Weight', 'Length', 'Edges'})) = [];
                     s2(6,8:8+numel(Variables)-1) = Variables;
-                    %                 Units = obj.mibModel.I{obj.mibModel.Id}.hLines3D.G.Edges.Properties.VariableUnits;
+                    %                 Units = obj.mibModel.I{obj.mibModel.id}.hLines3D.G.Edges.Properties.VariableUnits;
                     %                 if ~isempty(Units)
                     %                     s2(7,2:2+numel(Variables)-1) = Units;
                     %                 end

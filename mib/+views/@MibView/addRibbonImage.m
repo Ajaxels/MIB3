@@ -45,9 +45,9 @@ popupList = PopupList();
 % % Mode -> grayscale
 widgetHandles.grayscale =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Grayscale', true);
 popupList.add(widgetHandles.grayscale);
-% % Mode -> multicolor
-widgetHandles.multicolor =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Multicolor', false);
-popupList.add(widgetHandles.multicolor);
+% % Mode -> multichannel
+widgetHandles.multichannel =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Multi-channel', false);
+popupList.add(widgetHandles.multichannel);
 % % Mode -> HSV color
 widgetHandles.hsv =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('HSV color', false);
 popupList.add(widgetHandles.hsv);

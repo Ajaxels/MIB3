@@ -26,7 +26,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
             %     @li .parentGUI - handle of the main MIB window to be a parent for uiprogressdlg
-            %     @li .BioFormatsMemoizerMemoDir - [char] path to memo directory
+            %     @li .bioFormatsMemoizerMemoDir - [char] path to memo directory
             %     @li .BioFormatsIndices - [numeric] specific series indices to load (0 for all)
             %
             % Return values:
@@ -35,7 +35,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % Example:
             %   @code
             %   options.waitbar = true;
-            %   options.BioFormatsMemoizerMemoDir = 'c:\temp';
+            %   options.bioFormatsMemoizerMemoDir = 'c:\temp';
             %   loader = io.loaders.BioFormatsStdLoader(options);
             %   @endcode
 
@@ -62,7 +62,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             %     @li .customSections - [logical] load part of the dataset
             %     @li .Font - [struct] font settings for dialogs
             %     @li .BioFormatsIndices - [numeric] specific series to load (0 for all)
-            %     @li .BioFormatsMemoizerMemoDir - [char] memo directory path
+            %     @li .bioFormatsMemoizerMemoDir - [char] memo directory path
             %
             % Return values:
             %   imginfo: dictionary with image metadata
@@ -99,7 +99,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
             if ~isfield(options, 'customSections'); options.customSections = false; end
-            if ~isfield(options, 'BioFormatsMemoizerMemoDir'); options.BioFormatsMemoizerMemoDir = 'c:\temp'; end
+            if ~isfield(options, 'bioFormatsMemoizerMemoDir'); options.bioFormatsMemoizerMemoDir = 'c:\temp'; end
             if ~isfield(options, 'BioFormatsIndices'); options.BioFormatsIndices = []; end
 
             noFiles = numel(filenames);
@@ -148,7 +148,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         % 'OFF' - No logging
                         loci.common.DebugTools.setRootLevel('WARN');
 
-                        filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.BioFormatsMemoizerMemoDir));
+                        filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.bioFormatsMemoizerMemoDir));
                         filesTemp.hDataset.setId(filenames{fnIndex});
                         numSeries = filesTemp.hDataset.getSeriesCount();
                     catch err
@@ -207,7 +207,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     % Get OME metadata
                     omeMeta = filesTemp.hDataset.getMetadataStore();
                 else % reading second, third, etc file
-                    filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.BioFormatsMemoizerMemoDir));
+                    filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.bioFormatsMemoizerMemoDir));
                     filesTemp.hDataset.setId(filenames{fnIndex});
                     filesTemp.hDataset.setSeries(filesTemp.seriesIndex(1)-1);
 
@@ -249,7 +249,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     files(layerId).seriesName = filesTemp.seriesIndex(fileSubIndex);
                     files(layerId).dim_xyczt = filesTemp.dim_xyczt;
                     files(layerId).DimensionOrder = filesTemp.DimensionOrder;
-                    files(layerId).BioFormatsMemoizerMemoDir = options.BioFormatsMemoizerMemoDir;
+                    files(layerId).bioFormatsMemoizerMemoDir = options.bioFormatsMemoizerMemoDir;
                     files(layerId).seriesRealName = filesTemp.seriesRealName{fileSubIndex};
 
                     % Dimensions
@@ -518,7 +518,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
                 % Setup options for bfopen4
                 bfopenOptions = struct();
-                bfopenOptions.BioFormatsMemoizerMemoDir = files(fnIndex).BioFormatsMemoizerMemoDir;
+                bfopenOptions.bioFormatsMemoizerMemoDir = files(fnIndex).bioFormatsMemoizerMemoDir;
                 if options.waitbar
                     bfopenOptions.waitbarHandle = wb;
                     bfopenOptions.waitbarUpdateFrequency = waitbarUpdateFrequency;

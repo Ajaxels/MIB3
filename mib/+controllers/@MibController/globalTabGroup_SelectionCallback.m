@@ -1,15 +1,28 @@
-function globalTabGroup_SelectionCallback(obj, hWidget, hData)
-% function globalTabGroup_SelectionCallback(obj, hWidget, hData)
+function globalTabGroup_SelectionCallback(obj, hWidget)
+% function globalTabGroup_SelectionCallback(obj, hWidget)
 % Callback for selection of a tab in the top ribbon of MIB
 % used to apply lazy loading of the tabs upon the first selection
+%
+% used as a callback upon selection of tabs in the ribbon:
+% obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
+%
+% Parameters:
+% hWidget: [char] indicating the handle of the tab, e.g. 'Dataset',
+% 'Image', 'Model', matching the tab title: obj.view.handles.ribbon.global.SelectedTab.Title
+%
+% Examples:
+% <code>
+% // call from MibController to check/init the Image tab in the ribbon
+% obj.globalTabGroup_SelectionCallback('Image');
+% <endcode>
 
-arguments (Input)
-    obj controllers.MibController
-    hWidget matlab.ui.internal.toolstrip.TabGroup
-    hData matlab.ui.internal.toolstrip.base.ToolstripEventData
+showDevInfo = false;
+if nargin < 2
+    hWidget = obj.view.handles.ribbon.global.SelectedTab.Title; 
+    showDevInfo = true; % show DeveloperMode info at the end of the function
 end
 
-switch obj.view.handles.ribbon.global.SelectedTab.Title
+switch hWidget
     case 'Dataset'
         if isfield(obj.view.handles, 'ribbonDataset') % already initialized
             return;
@@ -72,7 +85,7 @@ switch obj.view.handles.ribbon.global.SelectedTab.Title
         %obj.cRibbon.addCallbacksToDatasetPlugins();
 end
 
-if obj.mibModel.preferences.System.DeveloperMode
+if showDevInfo && obj.mibModel.preferences.System.DeveloperMode
     fprintf('MibController.globalTabGroup_SelectionCallback: selection of a ribbon\n');
 end
 end
