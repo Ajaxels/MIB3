@@ -155,6 +155,8 @@ function initialize(obj, img, meta, datasetType, modelType)
     obj.slices{4} = 1:obj.image.colors;
     obj.slices{5} = [1 1];
     
+    obj.showAllMaterials = true; % show all materials of the model in the image view axes
+
     % use or not LUT for visualization of image, a number @b false - do not use; @b true - use a status of obj.view.handles.panels.selection.handles.lutColors
     obj.useLUT = false;
                         

@@ -12,24 +12,28 @@ classdef MibSegmentation
 
     methods
 
-        annotationsPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Annotations tool
+        annotationsPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Annotations tool
         
-        brushPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
+        brushPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
 
         colorWheel_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the color wheel button (obj.view.handles.panels.segmentation.handles.colorWheel)
 
-        dragPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Drag-and-drop materials tool
+        dragPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Drag-and-drop materials tool
 
         favTool_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in obj.handles.panels.segmentation panel
         
         gui_Callbacks(obj, hWidget, hData)        % callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
 
-        lassoPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Lasso/Object picker tools
+        lassoPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Lasso/Object picker tools
         
-        lines3DPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->3D lines tool
+        lines3DPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->3D lines tool
         
-        magicwandPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Magicwand tool
+        magicwandPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Magicwand tool
 
+       materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
+        
+        materialsTable_CellSelectionCallback(obj, src, event)        % handle cell selection in materials table (obj.handles.materialsTable)
+        
         materialsTable_ContextMenu(obj, menuEntry, selectedData)    % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTable)
 
         materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)      % callbacks for the context menu of 
@@ -40,17 +44,19 @@ classdef MibSegmentation
 
         materialsTable_render(obj, menuEntry, selectedData)  % callbacks for the context menu of the Segmentation table widget -> Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen)
 
-        membranePanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Membrane click tracker tool
+        membranePanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Membrane click tracker tool
 
-        restrictMask_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in obj.handles.panels.segmentation panel. Restrict selection to the mask layer
+        restrictMask_Callback(obj)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in obj.handles.panels.segmentation panel. Restrict selection to the mask layer
         
         restrictMaterial_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in obj.handles.panels.segmentation panel
 
-        samPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->SAM tool
+        samPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->SAM tool
 
         segmentationTool_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
 
-        thresholdingPanel_Callback(obj, hWidget, hData)        % Callbacks for widgets in the Segmentation panel->Black and white thresholding tool
+        thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
+
+        updateMaterialsTable(obj, position)                 % update the segmentation table from model
 
         function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
             %% Init properties
@@ -59,6 +65,9 @@ classdef MibSegmentation
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
+
+            % render the table
+            obj.updateMaterialsTable();
 
             %%  Add CALLBACKS to context menus ----------------------
             %% ---------------------- Color wheel button ----------------------
@@ -145,11 +154,12 @@ classdef MibSegmentation
             obj.handles.addMaterial.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.removeMaterial.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.colorWheel.ButtonPushedFcn = @obj.gui_Callbacks;
+            obj.handles.materialsTable.CellSelectionCallback = @obj.materialsTable_CellSelectionCallback;
             obj.handles.viewSettings.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
-            obj.handles.restrictMaterial.ValueChangedFcn = @obj.restrictMaterial_Callback;
-            obj.handles.restrictMask.ValueChangedFcn = @obj.restrictMask_Callback;
+            obj.handles.restrictMaterial.ValueChangedFcn = @(~,~)obj.restrictMaterial_Callback;
+            obj.handles.restrictMask.ValueChangedFcn = @(~,~)obj.restrictMask_Callback;
             obj.handles.favoriteTool.ValueChangedFcn = @obj.favTool_Callback;
 
             obj.handles.segmTool.ValueChangedFcn = @obj.segmentationTool_Callback;

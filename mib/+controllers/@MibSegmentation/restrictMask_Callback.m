@@ -1,28 +1,40 @@
-function restrictMask_Callback(obj, hWidget, hData)
-% function restrictMask_Callback(obj, hWidget, hData)
-% callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in
+function restrictMask_Callback(obj)
+% function restrictMask_Callback(obj)
+% callbacks for press of obj.handles.restrictMask in
 % obj.handles.panels.segmentation panel. Restrict selection to the mask layer
 %
 % Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
 
 arguments (Input)
     obj controllers.MibSegmentation
-    hWidget matlab.ui.control.CheckBox
-    hData matlab.ui.eventdata.ValueChangedData
 end
+
+% create alias
+hWidget = obj.handles.restrictMask;
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.restrictMask_Callback: change state of "obj.view.handles.panels.segmentation.handles.restrictMask" -> %d\n', hWidget.Value);
 end
 
-switch hWidget.Value
-    case true
+% create a alias for the dataset
+dataset = obj.mibModel.I{obj.mibModel.id};
 
-    case false
-
+if ~dataset.maskExist
+    hWidget.Value = false;
+    hWidget.FontColor = obj.handles.favoriteTool.FontColor;
+    return;
 end
 
+% update dataset restrictSelectionToMask property
+dataset.restrictSelectionToMask = hWidget.Value;
 
+switch hWidget.Value
+    case true       % restrict selection to mask
+        hWidget.FontColor = [0.784 0 1];
+    case false      % do not restrict selection to mask
+        hWidget.FontColor = obj.handles.favoriteTool.FontColor;
+end
+
+% set focus to the widget's figure parent
+focus(ancestor(hWidget, 'figure'));
 end

@@ -5,7 +5,7 @@ function updateGuiWidgets(obj, updatePanels)
 % define cell array of panels to update, when empty update all panels
 if nargin < 2; updatePanels = {}; end
 
-% create a handle for the dataset
+% create a alias for the dataset
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 %% ------------ Update the IMAGE TAB ------------
@@ -173,7 +173,95 @@ if isempty(updatePanels) || ismember(updatePanels, 'QuickAccessBar')
 end
 
 %% Update sliders
+if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
+    % get alias to handles
+    imViewHandles = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles;
+    currentSlice = obj.mibModel.I{obj.mibModel.id}.slices{3}(1);
 
+    if dataset.image.depth > 1 && dataset.image.depth ~= imViewHandles.sliceNumber.Limits(2) - 0.001
+        imViewHandles.sliceNumber.Limits = [1 dataset.image.depth+0.001]; % add small value to make sure that limits are not the same
+        imViewHandles.sliceNumberSlider.Limits = [1 dataset.image.depth+0.001];
+        imViewHandles.sliceNumberSlider.MinorTicks = 1:(dataset.image.depth-1)/10:dataset.image.depth;
+        % show the slider panel
+        if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 30; imViewHandles.mainGridLayout.ColumnWidth{1} = 30; end
+        imViewHandles.sliceNumber.Value = currentSlice;
+        imViewHandles.sliceNumberSlider.Value = currentSlice;
+    elseif dataset.image.depth == 1 && dataset.image.depth ~= imViewHandles.sliceNumber.Limits(2) - 0.001
+        imViewHandles.sliceNumber.Limits = [1 dataset.image.depth+0.001];
+        imViewHandles.sliceNumberSlider.Limits = [1 dataset.image.depth+0.001];
+        % hide the slider panel
+        if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 0; imViewHandles.mainGridLayout.ColumnWidth{1} = 0; end
+        imViewHandles.sliceNumber.Value = currentSlice;
+        imViewHandles.sliceNumberSlider.Value = currentSlice;
+    end
+end
+
+% update time slider
+if isempty(updatePanels) || ismember(updatePanels, 'timeSlider')
+    % get alias to handles
+    imViewHandles = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles;
+    currentTime = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
+
+    if dataset.image.time > 1 && dataset.image.time ~= imViewHandles.frameNumber.Limits(2) - 0.001
+        imViewHandles.frameNumber.Limits = [1 dataset.image.time+0.001]; % add small value to make sure that limits are not the same
+        imViewHandles.frameNumberSlider.Limits = [1 dataset.image.time+0.001];
+        imViewHandles.frameNumberSlider.MinorTicks = 1:(dataset.image.time-1)/10:dataset.image.time;
+        imViewHandles.frameNumber.Value = currentTime;
+        imViewHandles.frameNumberSlider.Value = currentTime;
+        % show the slider panel
+        if imViewHandles.mainGridLayout.RowHeight{2} ~= 20; imViewHandles.mainGridLayout.RowHeight{2} = 20; end
+    elseif dataset.image.time == 1 && dataset.image.time ~= imViewHandles.frameNumber.Limits(2) - 0.001
+        % hide the slider panel
+        if imViewHandles.mainGridLayout.RowHeight{2} ~= 0; imViewHandles.mainGridLayout.RowHeight{2} = 0; end
+        imViewHandles.frameNumber.Value = currentTime;
+        imViewHandles.frameNumberSlider.Value = currentTime;
+        imViewHandles.frameNumber.Limits = [1 dataset.image.time+0.001];
+        imViewHandles.frameNumberSlider.Limits = [1 dataset.image.time+0.001];
+    end
+end
+
+
+%% Update checkboxes
+if isempty(updatePanels) || ismember(updatePanels, 'checkboxes')
+    % create aliases
+    selectionPanelHandles = obj.view.handles.panels.selection.handles;
+    segmentationPanelHandles = obj.view.handles.panels.segmentation.handles;
+    
+    % update show mask checkbox
+    if ~dataset.maskExist
+        if selectionPanelHandles.showMask.Value
+            selectionPanelHandles.showMask.Value = false;
+        end
+        if segmentationPanelHandles.restrictMask.Value
+            segmentationPanelHandles.restrictMask.Value = false;
+            segmentationPanelHandles.restrictMask.FontColor = segmentationPanelHandles.favoriteTool.FontColor;
+        end
+        dataset.restrictSelectionToMask = false;
+        obj.mibModel.showMask = false;
+    end
+
+    % update show model checkbox
+    if selectionPanelHandles.showModel.Value && ~dataset.labels.exists
+        selectionPanelHandles.showModel.Value = false;
+        obj.mibModel.showModel = false;
+        dataset.restrictSelectionToMaterial = false;
+    end
+
+    % update Restrict to Mask status
+    if segmentationPanelHandles.restrictMask.Value ~= dataset.restrictSelectionToMask
+        segmentationPanelHandles.restrictMask.Value = dataset.restrictSelectionToMask;
+        obj.cSegmentation.restrictMask_Callback();
+    end
+
+    % update Restrict to Material status and redraw mibSegmentationTable
+    % using obj.updateSegmentationTable() inside mibSegmSelectedOnlyCheck_Callback
+    segmentationPanelHandles.restrictMaterial.Value = dataset.restrictSelectionToMaterial;
+    obj.mibSegmSelectedOnlyCheck_Callback();
+
+    % update useLUT checkbox
+    %obj.mibView.handles.mibLutCheckbox.Value = obj.mibModel.I{obj.mibModel.id}.useLUT;
+
+end
 
 %% Update panels
 % sliders in the black-and-white thresholding
@@ -181,13 +269,14 @@ if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
     % get alias to the panel
     segmHandles = obj.cSegmentation.handles;
     maxInt = dataset.image.maxInt;
-    
+
     if segmHandles.thresholdLow.Value > maxInt-1 || segmHandles.thresholdLowValue.Value > maxInt-1
         segmHandles.thresholdLow.Value = maxInt-1; 
         segmHandles.thresholdLowValue.Value = maxInt-1; 
     end
     segmHandles.thresholdLow.Limits = [0 maxInt-1];
     segmHandles.thresholdLowValue.Limits = [0 maxInt-1];
+    segmHandles.thresholdLow.MajorTicks = 0:maxInt/4-1:maxInt;
     
     if segmHandles.thresholdHigh.Value > maxInt || segmHandles.thresholdHighValue.Value > maxInt
         segmHandles.thresholdHigh.Value = maxInt; 
@@ -195,6 +284,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
     end
     segmHandles.thresholdHigh.Limits = [1 maxInt];
     segmHandles.thresholdHighValue.Limits = [1 maxInt];
+    segmHandles.thresholdHigh.MajorTicks = 0:maxInt/4-1:maxInt;
     
     % enable 4D thresholding checkbox
     if dataset.image.time > 1 && ~segmHandles.threshold4D.Enable
@@ -216,5 +306,7 @@ end
 %obj.updateVisualizationMode('keepcurrent');     % update the image interpolation button icon
 %obj.toolbarVirtualMode_ClickedCallback('keepcurrent');         % update the virtual stack button
 
+% clear trackerYXZ variable of the membrane clicktracker tool
+% obj.mibView.trackerYXZ = [NaN; NaN; NaN];
 
 end

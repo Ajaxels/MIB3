@@ -13,7 +13,9 @@ function imViewPanel_Callbacks(obj, hWidget, hData, mode)
 % 'sliceNumber' -> edit the current slice number
 % 'frameNumber' -> edit the current time frame
 % 'firstFrame' -> go to the first time frame
+% 'prevFrame' -> go to the previous frame
 % 'frameNumberSlider' -> chenge time frames using a slider
+% 'nextFrame' -> go to the next frame
 % 'lastFrame' -> go to the last frame
 
 arguments (Input)
@@ -27,17 +29,23 @@ if isempty(mode); mode = hWidget.Tag; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     %setNumber =
-    fprintf('controllers.MibController.imViewPanel_Callbacks: "obj.view.handles.imView{%d}.handles.%s" -> changed/pressed\n', obj.mibModel.Sets.selectedSet, mode);
+    fprintf('controllers.MibController.imViewPanel_Callbacks: "obj.view.handles.imView{%d}.handles.%s" -> changed/pressed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet, mode);
 end
 
 switch mode
     case 'lastSlice'
     case 'sliceNumberSlider'
+        % use hData.Value for interactive update
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.sliceNumber.Value = hData.Value;
     case 'firstSlice'
     case 'sliceNumber'
     case 'frameNumber'
     case 'firstFrame'
+    case 'prevFrame'
     case 'frameNumberSlider'
+        % use hData.Value for interactive update
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.frameNumber.Value = hData.Value;
+    case 'nextFrame'
     case 'lastFrame'
 end
 

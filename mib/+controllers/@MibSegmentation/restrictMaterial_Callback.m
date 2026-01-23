@@ -1,28 +1,43 @@
-function restrictMaterial_Callback(obj, hWidget, hData)
-% function restrictMaterial_Callback(obj, hWidget, hData)
+function restrictMaterial_Callback(obj)
+% function restrictMaterial_Callback(obj)
 % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in
 % obj.handles.panels.segmentation panel.
 % Restrict selection to the selected material in obj.handles.panels.segmentation.handles.materialsTable
 %
 % Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% 
 
 arguments (Input)
     obj controllers.MibSegmentation
-    hWidget matlab.ui.control.CheckBox
-    hData matlab.ui.eventdata.ValueChangedData
 end
 
+% create alias
+hWidget = obj.handles.restrictMaterial;
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.restrictMaterial_Callback: change state of "obj.view.handles.panels.segmentation.handles.restrictMaterial" -> %d\n', hWidget.Value);
 end
 
+% create a alias for the dataset
+dataset = obj.mibModel.I{obj.mibModel.id};
+
+dataset.restrictSelectionToMaterial = hWidget.Value;
+
 switch hWidget.Value
-    case true
+    case true % restrict selection to material
+        hWidget.FontColor = 'r';
+    case false % do not restrict selection to material
+        hWidget.FontColor = obj.handles.favoriteTool.FontColor;
+        
+        userData = obj.handles.materialsTable.UserData;
+        if isfield(userData, 'unlink') && ~userData.unlink
+            dataset.selectedAddToMaterial = dataset.selectedMaterial;
+        end
 
-    case false
-
+        obj.handles.materialsTable
 end
 
+% update segmentation table
+obj.updateMaterialsTable();
+
+focus(ancestor(hWidget, 'figure')); % remove focus from hObject
 end

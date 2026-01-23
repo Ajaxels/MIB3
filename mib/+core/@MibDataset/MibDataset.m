@@ -96,6 +96,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % @li (3,[min max]) - z - value
         % @li (4,[min max]) - colors , array of color channels to show, for example [1, 3, 4]
         % @li (5,[min max]) - t - time point
+        showAllMaterials
+        % a switch to show all materials of the model in the image view axes, or only a single one; defined in context menu of obj.cSegmentation.handles.materialsTable
         useLUT
         % use or not LUT for visualization of image, a number @b 0 - do not use; @b 1 - use a status of obj.view.handles.panels.selection.handles.lutColors
     end

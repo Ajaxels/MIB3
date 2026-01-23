@@ -40,7 +40,6 @@ switch mode
             obj.view.handles.panels.segmentation.handles.thresholdType.Enable = 'off';
             obj.view.handles.panels.segmentation.handles.thresholdInvert.Enable = 'off';
         end
-
     case 'thresholdType' % choose the thresholding type
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'thresholdInvert' % invert image for thresholding using the adaptive mode
@@ -49,9 +48,16 @@ switch mode
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'threshold4D' % apply threhsolding in 4D
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+
     case 'thresholdLow' % define the low threshold value using the slider
+        % use hData.Value instead of obj.view.handles.panels.segmentation.handles.thresholdLowValue.Value
+        % to make the update interactive
+        obj.view.handles.panels.segmentation.handles.thresholdLowValue.Value = hData.Value;
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'thresholdHigh' % define the high threshold value using the slider
+        % use hData.Value instead of obj.view.handles.panels.segmentation.handles.thresholdHighValue.Value
+        % to make the update interactive
+        obj.view.handles.panels.segmentation.handles.thresholdHighValue.Value = hData.Value;
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'thresholdLowValue' % define the low threshold value using the numeric edit field
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);

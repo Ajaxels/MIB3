@@ -63,7 +63,9 @@ if numel(obj.view.handles.figureDocs) < noSets
     obj.view.handles.imView{noSets}.handles.sliceNumber.ValueChangedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.frameNumber.ValueChangedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.firstFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.prevFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.frameNumberSlider.ValueChangingFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.nextFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.lastFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
 
     % add component to the figure-document
