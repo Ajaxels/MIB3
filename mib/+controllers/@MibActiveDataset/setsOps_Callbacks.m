@@ -59,6 +59,8 @@ switch mode
         if isempty(answer); return; end
         BatchOpt.SetName = answer;
         %fprintf('obj.controller.datasetsSetsOps_Callbacks -> %s pressed\n', hWidget.Tag);
+    case 'setsContextSort'
+        BatchOpt.Mode = {'Sort sets'};  % define the mode for obj.mibModel.datasetsSetsOps
     case 'setsContextRemove'
         selection = uiconfirm(obj.view.gui, ...
             sprintf('!!! Warning !!!\n\nYou are going to remove "%s" from MIB!\nAll datasets from the set will be closed.\n\nAre you sure?', obj.mibModel.Sets.names{obj.mibModel.Sets.selectedSet}), ...

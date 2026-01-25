@@ -32,8 +32,6 @@ switch hWidget.Value
         if isfield(userData, 'unlink') && ~userData.unlink
             dataset.selectedAddToMaterial = dataset.selectedMaterial;
         end
-
-        obj.handles.materialsTable
 end
 
 % update segmentation table

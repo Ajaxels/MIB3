@@ -19,7 +19,7 @@ obj.gui = matlab.ui.container.internal.AppContainer(appOptions);
 
 obj.gui.EnableTheming = true;
 
-% add MIB icon
+% add MIB and other icons
 obj.gui.Icon = fullfile(obj.controller.mibPath, 'assets/icons/mib_icon_32px.png');
 
 % expand the status bar to the whole width of MIB

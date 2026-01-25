@@ -160,7 +160,7 @@ Prefs.SegmTools.Annotations.Color = [1 1 0];
 Prefs.SegmTools.Annotations.FontSize = 2;
 Prefs.SegmTools.Annotations.ShownExtraDepth = 0;    % show annotation of previous and following slices, when above 0
 Prefs.SegmTools.Annotations.FocusOnValue = false;    % focus on value when entering annotations
-Prefs.SegmTools.Annotations.Precision = 0;    % precision of annotation values, an integer from 0 and above
+Prefs.SegmTools.Annotations.Precision = 3;    % precision of annotation values, an integer from 0 and above
 Prefs.SegmTools.Annotations.DisplayAs = 'Label + Value';    % default visualization of annotations
 
 % ---------- Interpolation ----------
@@ -177,16 +177,16 @@ Prefs.SegmTools.PreviousTool = [3, 4];
 
 % ----------  Brush tool   ----------
 % Brush eraser factor
-Prefs.SegmTools.Brush.EraserRadiusFactor = 1.5;
+Prefs.SegmTools.Brush.EraserRadiusFactor = 1.6;
 
 % ---------- Superpixels preferences ----------
 Prefs.SegmTools.Superpixels.NoWatershed = 15;
 Prefs.SegmTools.Superpixels.InvertWatershed = 1;
-Prefs.SegmTools.Superpixels.NoSLIC = 220;
+Prefs.SegmTools.Superpixels.NoSLIC = 230;
 Prefs.SegmTools.Superpixels.CompactSLIC = 99;
 
 % ---------- Segment-anything preferences ----------
-Prefs.SegmTools.SAM.samVersion = 2; % use SAM1 (when 1) or SAM2 (when 2)
+Prefs.SegmTools.SAM.samVersion = 'SAM 2'; % use "SAM 1" or "SAM 2"
 Prefs.SegmTools.SAM.linksFile = ['assets', filesep, 'sam_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
 Prefs.SegmTools.SAM.backbone = 'vit_b (0.4Gb)';     % 'vit_h (2.5Gb)', 'vit_l (1.2Gb)', 'vit_b (0.4Gb)'
 Prefs.SegmTools.SAM.environment = 'cuda';     % 'cuda', 'cpu'

@@ -14,7 +14,7 @@ classdef MibSegmentation
 
         annotationsPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Annotations tool
         
-        brushPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
+        brushPanel_Callback(obj, hWidget, hData, mode)        % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
 
         colorWheel_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the color wheel button (obj.view.handles.panels.segmentation.handles.colorWheel)
 
@@ -30,7 +30,7 @@ classdef MibSegmentation
         
         magicwandPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Magicwand tool
 
-       materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
+        materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
         
         materialsTable_CellSelectionCallback(obj, src, event)        % handle cell selection in materials table (obj.handles.materialsTable)
         
@@ -57,6 +57,8 @@ classdef MibSegmentation
         thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
 
         updateMaterialsTable(obj, position)                 % update the segmentation table from model
+
+        update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
 
         function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
             %% Init properties
@@ -236,7 +238,7 @@ classdef MibSegmentation
 
             %% SAM panel
             obj.handles.samMethod.ValueChangedFcn = @obj.samPanel_Callback;
-            obj.handles.samV2.ValueChangedFcn = @obj.samPanel_Callback;
+            obj.handles.samVersion.ValueChangedFcn = @obj.samPanel_Callback;
             obj.handles.samDataset.ValueChangedFcn = @obj.samPanel_Callback;
             obj.handles.samDestination.ValueChangedFcn = @obj.samPanel_Callback;
             obj.handles.samMode.ValueChangedFcn = @obj.samPanel_Callback;

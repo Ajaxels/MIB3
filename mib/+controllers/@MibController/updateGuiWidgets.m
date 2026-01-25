@@ -256,14 +256,66 @@ if isempty(updatePanels) || ismember(updatePanels, 'checkboxes')
     % update Restrict to Material status and redraw mibSegmentationTable
     % using obj.updateSegmentationTable() inside mibSegmSelectedOnlyCheck_Callback
     segmentationPanelHandles.restrictMaterial.Value = dataset.restrictSelectionToMaterial;
-    obj.mibSegmSelectedOnlyCheck_Callback();
+    obj.cSegmentation.restrictMaterial_Callback();
 
     % update useLUT checkbox
-    %obj.mibView.handles.mibLutCheckbox.Value = obj.mibModel.I{obj.mibModel.id}.useLUT;
+    obj.view.handles.panels.selection.handles.lutColors.Value = dataset.useLUT;
 
 end
 
 %% Update panels
+if isempty(updatePanels) || ismember(updatePanels, 'imView')
+    % update image view panel
+    % add a label to the image view panel
+    strVal1 = 'Image View    >>>>>    ';
+    [~, fn, ext] = fileparts(dataset.image.filename);
+    strVal1 = sprintf('%s%s%s', strVal1, fn, ext);
+    if ~isempty(dataset.image.sliceName) && ...
+            dataset.image.depth > 1 && dataset.orientation == 3   %'yx'
+    
+        % use getfield to get exact value as suggested by Ian M. Garcia in
+        % http://stackoverflow.com/questions/3627107/how-can-i-index-a-matlab-array-returned-by-a-function-without-first-assigning-it
+        layerName = getfield(dataset.image.sliceName, {min([currentSlice numel(dataset.image.sliceName)])});  %#ok<GFLD>
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Title.String = sprintf('%s    >>>>>    %s', strVal1, layerName{1});
+    else
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Title.String = strVal1;
+    end
+end
+
+% update tooltip for the buffer button
+if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
+    % get alias
+    activeDataset = obj.view.handles.panels.activeDataset;
+
+    % update buffer buttons in the Datasets panel
+    bufferId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet));  % generate handle for the buffer button
+    
+    if strcmp(obj.mibModel.I{obj.mibModel.id}.image.filename, 'none.tif')  % no dataset loaded
+        activeDataset.handles.(bufferId).Tooltip = 'use RMB for a context menu with additional options';
+    else
+        activeDataset.handles.(bufferId).Tooltip = obj.mibModel.I{globalIndex}.image.filename;
+    end
+    activeDataset.handles.(bufferId).BackgroundColor = [0 1 0];
+    
+    % add DeveloperMode tag
+    if obj.mibModel.preferences.System.DeveloperMode
+        activeDataset.handles.(bufferId).Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...
+            bufferId, activeDataset.handles.(bufferId).Tooltip);
+    end
+end
+
+if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
+    % update directory contents panel
+    % get alias
+    dirContents = obj.view.handles.panels.dirContents;
+
+    % get list of extensions
+    extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(obj.mibModel.I{obj.mibModel.id}.datasetType, 'Default')];
+    dirContents.handles.fileFilters.Items = extentions;
+    dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
+    obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = dirContents.handles.fileFilters.Value;
+end
+
 % sliders in the black-and-white thresholding
 if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
     % get alias to the panel
@@ -296,7 +348,45 @@ if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
 end
 
 
-
+%% update ROI stuff
+% % update roi list box
+% % get number of ROIs
+% try
+%     [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI();
+% catch err
+%     err
+% end
+% str2 = cell([number+1 1]);
+% str2(1) = cellstr('All');
+% obj.mibView.handles.mibRoiList.Value = 1;
+% if number > 0
+%     %currVal = obj.mibView.handles.mibRoiList.Value;
+%     currVal = obj.mibModel.I{obj.mibModel.id}.selectedROI;
+%     if currVal > 0; obj.mibView.handles.mibRoiShowCheck.Value = 1; end
+%     for i=1:number
+%         str2(i+1) = obj.mibModel.I{obj.mibModel.id}.hROI.Data(indices(i)).label;
+%     end
+%     if currVal > number+1
+%         currVal = 1;
+%         obj.mibModel.I{obj.mibModel.id}.selectedROI = 0;
+%     else
+%         currVal = currVal+1;
+%     end
+% else
+%     currVal = 1;
+%     obj.mibModel.I{obj.mibModel.id}.selectedROI = 0;
+% end
+% obj.mibView.handles.mibRoiList.String = str2;
+% if numel(currVal) > 1
+%     obj.mibView.handles.mibRoiList.Value = 1;   % All
+% else
+%     targetRoiValue = max([currVal 1]);
+%     if targetRoiValue > numel(str2)
+%         obj.mibView.handles.mibRoiList.Value = 1;
+%         obj.mibModel.I{obj.mibModel.id}.selectedROI = 0;
+%     end
+% end
+% obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
 
 
 %% TO DO

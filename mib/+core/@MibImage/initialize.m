@@ -80,6 +80,6 @@ if ~isempty(obj.data)
             obj.colorType = 'multichannel';
         end
     end
-    % meta{'ColorType'}
+
 end
 end

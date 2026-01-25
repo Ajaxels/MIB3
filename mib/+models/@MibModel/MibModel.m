@@ -11,7 +11,7 @@ classdef MibModel < handle
         % max number of parallel workers available
         extensionRegistryLoad
         % class containing registry of filename extensions that can be loaded
-        hideImage
+        hideImage = false;
         % define whether or not display the image layer
         id
         % index of the selected dataset
@@ -23,7 +23,7 @@ classdef MibModel < handle
         % place
         mibPath 
         % path to MIB installation directory also available in MibController
-        onFlyImageStretch
+        onFlyImageStretch =  false;
         % enable/disable live stretching of image intensities
         preferences
         % a structure with program preferences
@@ -45,13 +45,13 @@ classdef MibModel < handle
         % a structure with settings for some tools used during the current session of MIB e.g.:
         % .automaticAlignmentOptions -> a structure used in mibAlignmentController
         % .guiImages - CData for images to be shown on some buttons
-        showAnnotations
+        showAnnotations = false;
         % enable/disable live stretching of image intensities
-        showLines3D
+        showLines3D = false;
          % enable/disable show of 3D lines
-        showMask
+        showMask = false;
         % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
-        showModel
+        showModel = false;
         % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
         Undo
         % variable for Undo history

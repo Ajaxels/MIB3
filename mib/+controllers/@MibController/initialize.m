@@ -243,24 +243,26 @@ obj.matlabVersion = str2double(v(1).Version);   % conversion is not correct as v
 obj.mibModel.matlabVersion = obj.matlabVersion;
 
 % this custom icons are RGB doubles with NaNs for transparency areas
-obj.view.handles.panels.segmentation.handles.addMaterial.Icon = core.MibIconCache.get('alpha_cache', 'plus_16px'); %obj.mibModel.sessionSettings.guiImages.plus;
-obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'minus_16px'); %obj.mibModel.sessionSettings.guiImages.minus;
+%obj.view.handles.panels.segmentation.handles.addMaterial.Icon = core.MibIconCache.get('alpha_cache', 'plus_16px'); %obj.mibModel.sessionSettings.guiImages.plus;
+%obj.view.handles.panels.segmentation.handles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'minus_16px'); %obj.mibModel.sessionSettings.guiImages.minus;
 
 % update mibModel parameters
 obj.mibModel.currentDirectory = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
 
 % update MibModel properties based on GUI settings
-obj.mibModel.hideImage = obj.view.handles.panels.selection.handles.hideImage.Value;   % define whether or not display the image layer
-obj.mibModel.showModel =  obj.view.handles.panels.selection.handles.showModel.Value; % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
-obj.mibModel.showMask = obj.view.handles.panels.selection.handles.showMask.Value; % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
-obj.mibModel.onFlyImageStretch = obj.view.handles.panels.selection.handles.onFly.Value; % enable/disable live stretching of image intensities
-obj.mibModel.showAnnotations = obj.view.handles.panels.selection.handles.showAnnotations.Value;   % enable/disable rendering of annotations
-obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesShowLines.Value;   % enable/disable show of 3D lines
+% those are defined as defaults in mibModel
+% obj.mibModel.hideImage = obj.view.handles.panels.selection.handles.hideImage.Value;   % define whether or not display the image layer
+%obj.mibModel.showModel =  obj.view.handles.panels.selection.handles.showModel.Value; % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
+% obj.mibModel.showMask = obj.view.handles.panels.selection.handles.showMask.Value; % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
+%obj.mibModel.onFlyImageStretch = obj.view.handles.panels.selection.handles.onFly.Value; % enable/disable live stretching of image intensities
+%obj.mibModel.showAnnotations = obj.view.handles.panels.selection.handles.showAnnotations.Value;   % enable/disable rendering of annotations
+% obj.mibModel.showLines3D = obj.view.handles.panels.segmentation.handles.linesShowLines.Value;   % enable/disable show of 3D lines
 
 % Update GUI widgets
 obj.cActiveDataset.update_fromModel(); % update widgets of the Datasets panel from the values of obj.MibModel
 obj.cSelection.lutTable_update_fromModel(); % update the LUT table in the Selection and View settings panel
-%obj.segmentationPanelUpdate_fromModel(); % update widgets of the Segmentation panel
+obj.cSegmentation.update_fromModel(); % update widgets of the Segmentation panel
+
 obj.cDirContents.updateFileList_Callback();
 
 % --------- update listeners

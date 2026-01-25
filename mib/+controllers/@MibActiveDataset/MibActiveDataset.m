@@ -46,6 +46,7 @@ classdef MibActiveDataset
             %% ---------------------- Add context menu for the Sets dropdown ----------------------
             obj.handles.setsContextAdd.MenuSelectedFcn = @obj.setsOps_Callbacks;
             obj.handles.setsContextRename.MenuSelectedFcn = @obj.setsOps_Callbacks;
+            obj.handles.setsContextSort.MenuSelectedFcn = @obj.setsOps_Callbacks;
             obj.handles.setsContextRemove.MenuSelectedFcn = @obj.setsOps_Callbacks;
             
             %% ---------------------- ADD CALLBACKS TO WIDGETS ----------------------

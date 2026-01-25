@@ -60,8 +60,6 @@ if dataset.labels.exists == 0
     dataset.labels.materialNames = {};
 end
 
-dataset.labels.materialNames = {'aaa','bbb','ccc','aaa','bbb','ccc','aaa','bbb','ccc','aaa','bbb','ccc','aaa','bbb','ccc','aaa','bbb','ccc','aaa','bbb','ccc','aaa','bbb','ccc'};
-
 % Determine max colors and column editability
 if dataset.labels.maxMaterials < 256  % 63 and 255 type models
     maxColor = numel(dataset.labels.materialNames);

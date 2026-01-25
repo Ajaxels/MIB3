@@ -54,7 +54,7 @@ classdef ExtensionRegistryLoad < handle
             key = obj.generateKey(mode, reader);
 
             % check whether the extension is compatible
-            if ~ismember(ext, obj.extensionSets{key})
+            if ~ismember(ext, lower(obj.extensionSets{key}))
                 if ismember(ext, {'zarr', 'zarr2','zarr3'})
                     loaderInfo = sprintf('io.ExtensionRegistryLoad.resolveRoute:\nExtension "%s" not allowed for\nmode="%s" reader="%s"\n\nTo load Zarr format switch to the Virtual mode!', ext, mode, reader);
                 else    

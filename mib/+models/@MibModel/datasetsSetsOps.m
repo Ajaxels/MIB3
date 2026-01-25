@@ -8,6 +8,7 @@ function status = datasetsSetsOps(obj, BatchOptIn)
 % -> 'Select set' - select the set in obj.view.handles.panels.activeDataset.handles.sets dropdown
 % -> 'Add set' - add a new set (10 new datasets) into the model
 % -> 'Rename set' - rename the set
+% -> 'Sort sets' - sort the sets
 % -> 'Remove set' - remove the set
 % .SetName - set name to select, rename, remove; when empty a dialog asking for the set name appears
 %
@@ -71,7 +72,10 @@ noSets = numel(obj.Sets.names); % current number of sets
 switch BatchOpt.Mode{1}
     case 'Select set'
         %fprintf('models.mibModel.datasetsSetsOps: Select set -> %s\n', BatchOpt.SetName);
-        obj.Sets.selectedSet = find(ismember(obj.Sets.names, BatchOpt.SetName));
+        newSelectedSet = find(ismember(obj.Sets.names, BatchOpt.SetName));
+        if obj.Sets.selectedSet == newSelectedSet; return; end
+
+        obj.Sets.selectedSet = newSelectedSet;
         
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
@@ -134,6 +138,16 @@ switch BatchOpt.Mode{1}
         %fprintf('models.mibModel.datasetsSetsOps: Rename set %s -> %s\n', obj.Sets.names{obj.Sets.selectedSet}, BatchOpt.SetName);
         
         obj.Sets.names{obj.Sets.selectedSet} = BatchOpt.SetName;
+        % update all widgets of the Datasets panel
+        notify(obj, 'DatasetsPanelUpdate');
+    case 'Sort sets'
+        [~, ids] = sort(obj.Sets.names);
+        obj.Sets.names = obj.Sets.names(ids);
+        obj.Sets.datasetTypes = obj.Sets.datasetTypes(ids,:);
+        obj.Sets.selectedDataset = obj.Sets.selectedDataset(ids);
+        % update the selected set
+        obj.Sets.selectedSet = find(ids==obj.Sets.selectedSet);
+        
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
     case 'Remove set'

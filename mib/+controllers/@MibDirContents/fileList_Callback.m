@@ -53,7 +53,7 @@ elseif filename(1) == '['
     obj.mibController.cStatus.handles.currentDirectory.Value = obj.mibModel.currentDirectory;
 else
     obj.mibModel.loadImages('Combine datasets');
-    %filename
+    focus(ancestor(obj.view.handles.panels.dirContents, 'figure')); % remove focus from hObject
 end
 
 

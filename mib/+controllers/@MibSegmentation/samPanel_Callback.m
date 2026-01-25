@@ -6,7 +6,7 @@ function samPanel_Callback(obj, hWidget, hData)
 % hWidget: handle to the pressed widget
 % hWidget.Tag - identifier the widget, used when the same operation is called from menu
 % 'samMethod' -> method of SAM usage
-% 'samV2' -> use SAM2 instead of SAM1
+% 'samVersion' -> select version of SAM to use 'SAM 1', 'SAM 2'
 % 'samDataset' -> select type of dataset to apply SAM
 % 'samDestination' -> destination layer for SAM results
 % 'samMode' -> SAM mode, add/replace/subtract
@@ -39,7 +39,8 @@ switch mode
             case {'Interactive', 'Interactive 3D'}
                 obj.view.handles.panels.segmentation.handles.samSegment.Enable = 'off';
         end
-    case 'samV2' % use SAM2 instead of SAM1
+    case 'samVersion' % use SAM2 instead of SAM1
+        obj.mibModel.preferences.SegmTools.SAM.samVersion = hWidget.Value;
         %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'samDataset' % select type of dataset to apply SAM
         %fprintf('Clicked on a widget of the segmentation panel->SAM tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);

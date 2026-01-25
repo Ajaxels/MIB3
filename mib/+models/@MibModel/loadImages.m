@@ -404,11 +404,11 @@ switch BatchOpt.Mode{1}
             % the list
             obj.preferences.System.Dirs.RecentDirs = [obj.preferences.System.Dirs.RecentDirs(dirPos==1) obj.preferences.System.Dirs.RecentDirs(dirPos==0)];
         end
-        obj.mibView.handles.mibRecentDirsPopup.String = obj.preferences.System.Dirs.RecentDirs;
+        %obj.mibView.handles.mibRecentDirsPopup.String = obj.preferences.System.Dirs.RecentDirs;
         
         % count user's points
         obj.preferences.Users.Tiers.numberOfLoadedDatasets = obj.preferences.Users.Tiers.numberOfLoadedDatasets+1;
-        notify(obj, 'updateUserScore');     % update score using default obj.preferences.Users.singleToolScores increase
+        %notify(obj, 'updateUserScore');     % update score using default obj.preferences.Users.singleToolScores increase
     case 'Insert into open dataset'
         if batchModeSwitch == 0
             prompts = {'Dimension:'; ...
@@ -468,5 +468,4 @@ switch BatchOpt.Mode{1}
         obj.plotImage(1);
 end
 
-unFocus(obj.mibcDirContents.handles.fileList);   % remove focus from hObject
 end
