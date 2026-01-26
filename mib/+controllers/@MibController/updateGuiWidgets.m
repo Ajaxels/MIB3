@@ -293,7 +293,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
     if strcmp(obj.mibModel.I{obj.mibModel.id}.image.filename, 'none.tif')  % no dataset loaded
         activeDataset.handles.(bufferId).Tooltip = 'use RMB for a context menu with additional options';
     else
-        activeDataset.handles.(bufferId).Tooltip = obj.mibModel.I{globalIndex}.image.filename;
+        activeDataset.handles.(bufferId).Tooltip = obj.mibModel.I{obj.mibModel.id}.image.filename;
     end
     activeDataset.handles.(bufferId).BackgroundColor = [0 1 0];
     

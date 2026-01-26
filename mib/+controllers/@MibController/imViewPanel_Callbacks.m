@@ -37,6 +37,8 @@ switch mode
     case 'sliceNumberSlider'
         % use hData.Value for interactive update
         obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.sliceNumber.Value = hData.Value;
+        obj.mibModel.I{obj.mibModel.id}.slices{3} = [hData.Value hData.Value];
+        obj.showImage();
     case 'firstSlice'
     case 'sliceNumber'
     case 'frameNumber'

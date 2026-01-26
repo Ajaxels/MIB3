@@ -128,8 +128,8 @@ if nargin == 3  % batch mode
             BatchOpt.Filenames = arrayfun(@(filename) fullfile(obj.currentDirectory, filename), obj.selectedFiles, 'UniformOutput', true);  % generate full paths
         end
     else
-        BatchOpt.Filenames = BatchOptIn.Filenames{1};   % convert from cell with cell array to cell array
-        if ischar(BatchOpt.Filenames); BatchOpt.Filenames = {BatchOpt.Filenames}; end
+        %BatchOpt.Filenames = BatchOptIn.Filenames{1};   % convert from cell with cell array to cell array
+        %if ischar(BatchOpt.Filenames); BatchOpt.Filenames = {BatchOpt.Filenames}; end
     end
     if isfield(BatchOptIn, 'mibBatchTooltip'); batchModeSwitch = 1; end    % indicates that the function is running in the batch mode
 else
@@ -209,7 +209,7 @@ options.parentGUI = obj.mibGUI; % handle to mibGUI window to be a parent for pro
 reader = 'Default';
 if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
 % find a loader that should be used for this specific dataset mode, selected reader and filename extension
-loaderInfo = obj.extensionRegistryLoad.resolveLoader(filenames{1}, obj.I{obj.id}.datasetType, reader);
+loaderInfo = obj.extensionRegistryLoad.resolveLoader(BatchOpt.Filenames{1}, obj.I{obj.id}.datasetType, reader);
 if ischar(loaderInfo)
     utils.dlgs.showErrorDialog(obj.mibGUI, loaderInfo, 'io:ExtensionRegistryLoad:NotAllowed');
     notify(obj, 'StopProtocol');

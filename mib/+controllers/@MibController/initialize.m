@@ -311,6 +311,9 @@ pause(2);
 % do GUI post-initialization tasks that require GUI to be visible
 obj.view.doPostInitializationTasks();
 
+% show image
+obj.showImage();
+
 if showSplashScreen
     %hLabel.String = 'finishing'; drawnow nocallbacks;
     % close the splash screen

@@ -26,13 +26,13 @@ if obj.mibModel.useBioFormats
     % ------------------------- USE BIO-FORMATS READER -------------------------
 
     % check for temp directory for the Memoizer
-    if ~isfield(obj.mibModel.preferences.ExternalDirs, 'bioFormatsMemoizerMemoDir')
-        obj.mibModel.preferences.ExternalDirs.bioFormatsMemoizerMemoDir = 'c:\temp\mibVirtual';
+    if ~isfield(obj.mibModel.preferences.ExternalDirs, 'BioFormatsMemoizerMemoDir')
+        obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir = 'c:\temp\mibVirtual';
     end
 
-    if isdir(obj.mibModel.preferences.ExternalDirs.bioFormatsMemoizerMemoDir) == 0 %#ok<ISDIR>
+    if isdir(obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir) == 0 %#ok<ISDIR>
         try
-            mkdir(obj.mibModel.preferences.ExternalDirs.bioFormatsMemoizerMemoDir);
+            mkdir(obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir);
         catch err
             errorText = sprintf(['<b>!!! Warning !!!</b>\n\n' ...
                 'Use of the BioFormats reader requires a directory to keep Memoizer class temporary files!\n\n' ...

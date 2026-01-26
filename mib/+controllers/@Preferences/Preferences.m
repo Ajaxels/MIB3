@@ -260,7 +260,7 @@ classdef Preferences < handle
                 obj.view.handles.ImarisInstallationPath.Value  = char(obj.preferences.ExternalDirs.ImarisInstallationPath);
                 obj.view.handles.bm3dInstallationPath.Value = char(obj.preferences.ExternalDirs.bm3dInstallationPath);
                 obj.view.handles.bm4dInstallationPath.Value = char(obj.preferences.ExternalDirs.bm4dInstallationPath);
-                obj.view.handles.bioFormatsMemoizerMemoDir.Value = char(obj.preferences.ExternalDirs.bioFormatsMemoizerMemoDir);
+                obj.view.handles.BioFormatsMemoizerMemoDir.Value = char(obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir);
                 obj.view.handles.PythonInstallationPath.Value = char(obj.preferences.ExternalDirs.PythonInstallationPath);
                 obj.view.handles.DeepMIBDir.Value = char(obj.preferences.ExternalDirs.DeepMIBDir);
                 obj.renderedPanels(4) = 1; 
@@ -1047,7 +1047,7 @@ classdef Preferences < handle
                 case 'BM4DDirSelectBtn'
                     field_name = 'bm4dInstallationPath';
                 case 'MemoizerDirSelectBtn'
-                    field_name = 'bioFormatsMemoizerMemoDir';
+                    field_name = 'BioFormatsMemoizerMemoDir';
                 case 'DeepMIBDirSelectBtn'
                     field_name = 'DeepMIBDir';
                 case 'PythonDirSelectBtn'
