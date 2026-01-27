@@ -74,7 +74,7 @@ switch mode
 end
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibController.datasetsSetsOps_Callbacks -> %s pressed\n', mode);
+    fprintf('obj.mibController.cActiveDataset.setsOps_Callbacks (controllers.MibActiveDataset.setsOps_Callbacks) -> %s pressed\n', mode);
 end
 
 % call method of MibModel class

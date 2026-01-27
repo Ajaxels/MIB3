@@ -8,7 +8,8 @@ if nargin < 2; updatePanels = {}; end
 % create a alias for the dataset
 dataset = obj.mibModel.I{obj.mibModel.id};
 
-%% ------------ Update the IMAGE TAB ------------
+%% Update the IMAGE TAB ---------------------------------------------
+% -------------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'ribbonImage')
     % get short handle to ribbonImage
     ribbonImage = obj.cRibbon.handles.ribbonImage;
@@ -70,8 +71,10 @@ if isempty(updatePanels) || ismember(updatePanels, 'ribbonImage')
         ribbonImage.indexed.Value = true;
         ribbonImage.indexed.Enabled = true;
     end
+end
 
-%% ------------ Update the MODEL TAB ------------
+%% Update the MODEL TAB ---------------------------------------------
+% -------------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
     % get short handle to ribbonImage
     ribbonModel = obj.cRibbon.handles.ribbonModel;
@@ -143,7 +146,8 @@ if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
     end
 end
 
-%% ------------ Update the QuickAccessBar TAB ------------
+%% Update the QuickAccessBar TAB ------------------------------------
+% -------------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'QuickAccessBar')
     % update orientation buttons
     qabHandles = obj.cQuickAccessBar.handles;
@@ -172,7 +176,8 @@ if isempty(updatePanels) || ismember(updatePanels, 'QuickAccessBar')
     end
 end
 
-%% Update sliders
+%% Update sliders ---------------------------------------------
+% -------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
     % get alias to handles
     imViewHandles = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles;
@@ -221,7 +226,8 @@ if isempty(updatePanels) || ismember(updatePanels, 'timeSlider')
 end
 
 
-%% Update checkboxes
+%% Update checkboxes ---------------------------------------------
+% ----------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'checkboxes')
     % create aliases
     selectionPanelHandles = obj.view.handles.panels.selection.handles;
@@ -253,17 +259,16 @@ if isempty(updatePanels) || ismember(updatePanels, 'checkboxes')
         obj.cSegmentation.restrictMask_Callback();
     end
 
-    % update Restrict to Material status and redraw mibSegmentationTable
+    % update Restrict to Material status and redraw Materials table
     % using obj.updateSegmentationTable() inside mibSegmSelectedOnlyCheck_Callback
     segmentationPanelHandles.restrictMaterial.Value = dataset.restrictSelectionToMaterial;
     obj.cSegmentation.restrictMaterial_Callback();
 
-    % update useLUT checkbox
-    obj.view.handles.panels.selection.handles.lutColors.Value = dataset.useLUT;
-
+    % update useLUT checkbox, see below selectionPanel
 end
 
-%% Update panels
+%% Update imView panel ---------------------------------------------
+% ------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'imView')
     % update image view panel
     % add a label to the image view panel
@@ -282,6 +287,8 @@ if isempty(updatePanels) || ismember(updatePanels, 'imView')
     end
 end
 
+%% Update activeDataset panel ---------------------------------------------
+% ------------------------------------------------------------
 % update tooltip for the buffer button
 if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
     % get alias
@@ -304,7 +311,9 @@ if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
     end
 end
 
-if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
+%% Update dirContentsDataset panel ---------------------------------------------
+% ------------------------------------------------------------
+if isempty(updatePanels) || ismember(updatePanels, 'dirContentsDataset')
     % update directory contents panel
     % get alias
     dirContents = obj.view.handles.panels.dirContents;
@@ -316,6 +325,8 @@ if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
     obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = dirContents.handles.fileFilters.Value;
 end
 
+%% Update panelThresholding panel ---------------------------------------------
+% ------------------------------------------------------------
 % sliders in the black-and-white thresholding
 if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
     % get alias to the panel
@@ -347,8 +358,20 @@ if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
     end
 end
 
+%% Update selectionPanel panel ---------------------------------------------
+% ------------------------------------------------------------
+if isempty(updatePanels) || ismember(updatePanels, 'selectionPanel')
+    % update selection and view settings panel
+    selectionPanelHandles = obj.view.handles.panels.selection.handles;
 
-%% update ROI stuff
+    selectionPanelHandles.lutColors.Value = dataset.useLUT;
+    % update LUT table and the linked colChannel dropdown
+    obj.cSelection.lutTable_update_fromModel();
+end
+
+%% update ROI stuff ---------------------------------------------
+% ---------------------------------------------------------------
+
 % % update roi list box
 % % get number of ROIs
 % try
@@ -389,7 +412,7 @@ end
 % obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
 
 
-%% TO DO
+%% TO DO 
 %obj.mibView.updateCursor();  % update size of the cursor
 %obj.mibModel.disableSegmentation = 0;    % re-enable segmentation tools if they were accidentally turned off
 %obj.updateInterpolationMode(true);      % update the selection interpolation button
@@ -398,5 +421,11 @@ end
 
 % clear trackerYXZ variable of the membrane clicktracker tool
 % obj.mibView.trackerYXZ = [NaN; NaN; NaN];
+ 
+% %% place callbacks for gui
+% obj.mibView.gui.WindowButtonMotionFcn = (@(hObject, eventdata, handles) obj.mibGUI_WinMouseMotionFcn());   
+% obj.mibView.gui.WindowScrollWheelFcn = (@(hObject, eventdata, handles) obj.mibGUI_ScrollWheelFcn(eventdata));
+% obj.mibView.gui.WindowKeyPressFcn = (@(hObject, eventdata, handles) obj.mibGUI_WindowKeyPressFcn(hObject, eventdata));
+ 
 
 end

@@ -8,7 +8,9 @@ function imViewPanel_Callbacks(obj, hWidget, hData, mode)
 % mode: char, optional identifier the widget, used when the same operation
 % is called from menu, when empty or missing hWidget.Tag is used as an identifier
 % 'lastSlice' -> go to the last slice of the dataset
+% 'nextSlice' -> go to the next slice
 % 'sliceNumberSlider' -> change the slice number using a slider
+% 'prevSlice' -> go to the previous slice
 % 'firstSlice' -> go to the first slice
 % 'sliceNumber' -> edit the current slice number
 % 'frameNumber' -> edit the current time frame
@@ -34,11 +36,14 @@ end
 
 switch mode
     case 'lastSlice'
+    case 'nextSlice'
     case 'sliceNumberSlider'
         % use hData.Value for interactive update
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.sliceNumber.Value = hData.Value;
-        obj.mibModel.I{obj.mibModel.id}.slices{3} = [hData.Value hData.Value];
+        sliceNumber = round(hData.Value); % the slider top limit is a float with +0.001, thus it needs to be rounded
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.sliceNumber.Value = sliceNumber;
+        obj.mibModel.I{obj.mibModel.id}.slices{3} = [sliceNumber sliceNumber];
         obj.showImage();
+    case 'prevSlice'
     case 'firstSlice'
     case 'sliceNumber'
     case 'frameNumber'

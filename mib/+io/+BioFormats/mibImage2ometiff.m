@@ -33,7 +33,7 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %  .Compression: ''none'', ''lzw'', ''packbits''
 %  .showWaitbar: show a progress bar, @b 1 - on, @b 0 - off
 %  .SliceName -  [@em optional] a cell array with filenames without path
-%  .DimensionOrder - order of dimensions in the dataset, default = 'XYCZT';  
+%  .dimensionOrder - order of dimensions in the dataset, default = 'XYCZT';  
 %
 % Return values:
 % result: result of the function: @b 1 - success, @b 0 - fail
@@ -67,7 +67,7 @@ if ~isfield(options, 'overwrite'); options.overwrite = 0; end
 if ~isfield(options, 'DatasetType'); options.DatasetType = 'image'; end
 if ~isfield(options, 'Saving3d'); options.Saving3d = '5D'; end
 if ~isfield(options, 'Compression'); options.Compression = 'none'; end
-if ~isfield(options, 'DimensionOrder'); options.DimensionOrder = 'XYZCT'; end
+if ~isfield(options, 'dimensionOrder'); options.dimensionOrder = 'XYZCT'; end
 
 % define time units for the output
 switch options.pixSize.tunits
@@ -116,7 +116,7 @@ if strcmp(options.Saving3d, '5D')
     % permute image from y,x,c,z,t to y,x,z,c,t
     % imageS = permute(imageS, [1 2 4 3 5]);
     
-    metadata = createMinimalOMEXMLMetadata(imageS, options.DimensionOrder);
+    metadata = createMinimalOMEXMLMetadata(imageS, options.dimensionOrder);
     pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.x), ome.units.UNITS.MICROMETER);
     metadata.setPixelsPhysicalSizeX(pixelSize, 0);
     pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.y), ome.units.UNITS.MICROMETER);

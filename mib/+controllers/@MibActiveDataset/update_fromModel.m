@@ -64,7 +64,9 @@ if numel(obj.view.handles.figureDocs) < noSets
     % add callbacks
     c = obj.mibController;
     obj.view.handles.imView{noSets}.handles.lastSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.prevSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.sliceNumberSlider.ValueChangingFcn = @c.imViewPanel_Callbacks;
+    obj.view.handles.imView{noSets}.handles.nextSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.firstSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.sliceNumber.ValueChangedFcn = @c.imViewPanel_Callbacks;
     obj.view.handles.imView{noSets}.handles.frameNumber.ValueChangedFcn = @c.imViewPanel_Callbacks;

@@ -172,11 +172,11 @@ btnGrid.Layout.Column = 2;
 uilabel(btnGrid, 'Text', '');
 
 % OK button
-okBtn = uibutton(btnGrid, 'Text', 'OK', 'ButtonPushedFcn', @(~,~) onOK());
+okBtn = uibutton(btnGrid, 'Text', 'OK', 'BackgroundColor', [0.15, 0.90, 0.18], 'ButtonPushedFcn', @(~,~) onOK());
 okBtn.Layout.Column = 2;
 
 % Cancel button
-cancelBtn = uibutton(btnGrid, 'Text', 'Cancel', 'ButtonPushedFcn', @(~,~) onCancel());
+cancelBtn = uibutton(btnGrid, 'Text', 'Cancel', 'BackgroundColor', [1.00,0.53,0.10], 'ButtonPushedFcn', @(~,~) onCancel());
 cancelBtn.Layout.Column = 3;
 
 % Key handling (Esc for Cancel, Enter for OK)

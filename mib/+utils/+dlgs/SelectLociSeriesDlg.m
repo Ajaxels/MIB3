@@ -35,6 +35,7 @@ classdef SelectLociSeriesDlg < handle
         % Internal Data State
         tableData       % Cell array storing table content
         reader          % Bio-Formats reader object
+        dimensionOrder  % cell array with the order of dimensions of series within the dataset
         
         % Output State
         selectedSeriesIndex = 'Cancel';     % Selected series index (1-based)
@@ -165,6 +166,7 @@ classdef SelectLociSeriesDlg < handle
             obj.view.handles.seriesTable.CellSelectionCallback = @obj.onTableSelection;
             obj.view.handles.parametersCheckbox.ValueChangedFcn = @obj.onParametersCheck;
             obj.view.handles.previewCheck.ValueChangedFcn = @obj.onPreviewCheck;
+            obj.view.handles.stretchContrast.ValueChangedFcn = @obj.onPreviewCheck;
             obj.view.handles.sliceNumberSlider.ValueChangingFcn = @obj.onSliceSlider;
             obj.view.handles.sliceNumberEdit.ValueChangedFcn = @obj.onSliceEdit;
             obj.view.handles.continueBtn.ButtonPushedFcn = @obj.onContinue;
@@ -185,7 +187,8 @@ classdef SelectLociSeriesDlg < handle
             % Parse Bio-Formats file and extract series information
             numSeries = obj.reader.getSeriesCount();
             obj.tableData = cell(numSeries, 6);  % prepare data for the table
-            
+            obj.dimensionOrder = cell([numSeries 1]);
+
             for seriesIndex = 1:numSeries
                 obj.reader.setSeries(seriesIndex - 1);
                 
@@ -198,6 +201,9 @@ classdef SelectLociSeriesDlg < handle
                 obj.tableData{seriesIndex, 4} = obj.reader.getSizeC();  % color layers
                 obj.tableData{seriesIndex, 5} = obj.reader.getSizeZ();
                 obj.tableData{seriesIndex, 6} = obj.reader.getSizeT();  % time layers
+
+                % update dimension order
+                obj.dimensionOrder{seriesIndex} = char(obj.reader.getDimensionOrder()); % convert from java.lang.String to char
             end
         end
         
@@ -215,10 +221,18 @@ classdef SelectLociSeriesDlg < handle
             obj.seriesRealName = obj.tableData(rowIndices, 1);
             
             % Update slice slider
+            maxZ = max([1; obj.selectedDimensions(:,4)]);
+            obj.view.handles.sliceNumberEdit.Enable = false;
+            obj.view.handles.sliceNumberSlider.Enable = false;
+            % update values and limits
             obj.view.handles.sliceNumberEdit.Value = 1;
-            obj.view.handles.sliceNumberEdit.Limits = [0, max([1; obj.selectedDimensions(:,4)])];
             obj.view.handles.sliceNumberSlider.Value = 1;
-            obj.view.handles.sliceNumberSlider.Limits = [0, max([1; obj.selectedDimensions(:,4)])];
+            if maxZ > 1
+                obj.view.handles.sliceNumberEdit.Enable = true;
+                obj.view.handles.sliceNumberSlider.Enable = true;
+                obj.view.handles.sliceNumberEdit.Limits = [1, maxZ+.001];
+                obj.view.handles.sliceNumberSlider.Limits = [1, maxZ+.001];
+            end
             
             % Get pixel size information
             omeMeta = obj.reader.getMetadataStore();
@@ -255,19 +269,33 @@ classdef SelectLociSeriesDlg < handle
             
             % Load and display preview image
             try
-                templateImage = io.BioFormats.bfopen4(obj.reader, obj.selectedSeriesIndex(1), sliceNumber);
-                templateImage = imresize(templateImage.img, obj.view.handles.imagePreview.Position(3)/size(templateImage.img, 1));
+                bfopenOptions.dimensionOrder = obj.dimensionOrder{obj.selectedSeriesIndex(1)};
+                % returned as [xyczt];
+                templateImage = io.BioFormats.bfopen5(obj.reader, obj.selectedSeriesIndex(1), sliceNumber, bfopenOptions);
+                
+                %templateImage = imresize(templateImage.img, obj.view.handles.imagePreview.Position(3)/size(templateImage.img, 1));
+
+                templateImage = imresize(squeeze(templateImage.img), [obj.view.handles.imagePreview.Position(3) obj.view.handles.imagePreview.Position(4)]);
+                %templateImage = imresize(templateImage.img, [400 400]);
                 
                 % Handle grayscale vs color
-                if size(templateImage, 3) == 1
+                noColors =  size(templateImage, 3);
+                if noColors == 1
                     imagesc(obj.view.handles.imagePreview, templateImage);
                     colormap(obj.view.handles.imagePreview, 'gray');
                 else
-                    templateImage2 = zeros([size(templateImage, 1), size(templateImage, 2), 3], class(templateImage));
-                    for color = 1:min([size(templateImage, 3), 3])
-                        templateImage2(:, :, color) = templateImage(:, :, color);
+                    if noColors == 2
+                        templateImage = cat(3, templateImage, zeros(size(templateImage, 1), size(templateImage, 2)));
+                    elseif noColors > 3
+                        templateImage = templateImage(:,:,1:3);
                     end
-                    imagesc(obj.view.handles.imagePreview, templateImage2);
+                    if obj.view.handles.stretchContrast.Value
+                        templateImage = double(templateImage);
+                        minVec = min(templateImage, [], 1:3);
+                        maxVec = max(templateImage,[],1:3);
+                        templateImage = uint8(((templateImage - minVec) ./ (maxVec - minVec))*255);
+                    end
+                    imagesc(obj.view.handles.imagePreview, templateImage);
                 end
             catch ME
                 % Preview failed - ignore

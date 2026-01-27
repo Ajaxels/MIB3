@@ -222,7 +222,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 end
 
                 % Get dimension order
-                filesTemp.DimensionOrder = char(filesTemp.hDataset.getDimensionOrder());
+                filesTemp.dimensionOrder = char(filesTemp.hDataset.getDimensionOrder());
 
                 if strcmp(filesTemp.seriesIndex, 'Cancel')
                     if options.waitbar==1; delete(wb); end
@@ -248,7 +248,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     files(layerId).extension = ext;
                     files(layerId).seriesName = filesTemp.seriesIndex(fileSubIndex);
                     files(layerId).dim_xyczt = filesTemp.dim_xyczt;
-                    files(layerId).DimensionOrder = filesTemp.DimensionOrder;
+                    files(layerId).dimensionOrder = filesTemp.dimensionOrder;
                     files(layerId).bioFormatsMemoizerMemoDir = options.bioFormatsMemoizerMemoDir;
                     files(layerId).seriesRealName = filesTemp.seriesRealName{fileSubIndex};
 
@@ -516,15 +516,15 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 maxC = min(color, files(fnIndex).color);
                 maxT = min(time, files(fnIndex).time);
 
-                % Setup options for bfopen4
+                % Setup options for bfopen5
                 bfopenOptions = struct();
                 bfopenOptions.bioFormatsMemoizerMemoDir = files(fnIndex).bioFormatsMemoizerMemoDir;
                 if options.waitbar
                     bfopenOptions.waitbarHandle = wb;
                     bfopenOptions.waitbarUpdateFrequency = waitbarUpdateFrequency;
                 end
-                if isfield(files(fnIndex), 'DimensionOrder')
-                    bfopenOptions.DimensionOrder = files(fnIndex).DimensionOrder;
+                if isfield(files(fnIndex), 'dimensionOrder')
+                    bfopenOptions.dimensionOrder = files(fnIndex).dimensionOrder;
                 end
 
                 % Custom sections
@@ -571,7 +571,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error loading Bio-Formats file:\n%s', err.message), 'Bio-Formats Error');
+                        sprintf('io.loaders.BioFormatsStdLoader:\n\nError loading Bio-Formats file\n%s', err.message), 'Bio-Formats Error');
                     img = [];
                     return;
                 end

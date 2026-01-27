@@ -16,6 +16,11 @@ function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 %   sliceNo: - [optional] desired slice number from the series
 %   options: - [optional] a structure with a subset of the image to obtain.
 %       .bioFormatsMemoizerMemoDir - directory to store Memoizer memo files
+%       .dimensionOrder - char with the output order of dimensions,
+%               'XYZCT' - default
+%               'XYCZT'
+%               'XYTZC'
+%               'XYZTC'
 %       .x1 - starting x position
 %       .y1 - starting y position
 %       .z1 - starting z position
@@ -27,7 +32,7 @@ function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 %
 % Return values:
 %   result -> Structure with the selected serie
-%       .img -> Image with [height width depth color] dimensions
+%       .img -> Image with [height width depth color time] dimension, the original dimensions are re-projected to match the output based on options.dimensionOrder
 %       .ColorType -> 'grayscale', 'truecolor', 'indexed'
 %       .ColorMap -> color map for the indexed image
 % Portions of this code were adapted from:
@@ -59,9 +64,8 @@ if nargin < 3;     sliceNo = NaN;   end
 % Disable logging
 bfInitLogging('ERROR');
 
-if ~isfield(options, 'DimensionOrder')
-    options.DimensionOrder = '';
-end
+if ~isfield(options, 'dimensionOrder'); options.dimensionOrder = 'XYZCT'; end
+
 % check whether the waitbar handle is provided
 if ~isfield(options, 'waitbarHandle'); options.waitbarHandle = []; end
 % define update frequency for the waitbar
@@ -96,7 +100,10 @@ if isfield(options, 'dz')
 else
     if isnan(sliceNo)
         if r.getSizeZ() == 1 && r.getSizeT() > 1
+            % swap T and Z
             ZStacks = r.getSizeT();
+            % swap options.dimensionOrder
+            [options.dimensionOrder(options.dimensionOrder=='T'), options.dimensionOrder(options.dimensionOrder=='Z')] = deal('Z', 'T');
         else
             ZStacks = r.getSizeZ();
             Time = r.getSizeT();
@@ -117,6 +124,20 @@ else
     ImageClassType = 'double';
 end
 
+
+% switch options.dimensionOrder
+%     case 'XYZCT'
+%         result.img = zeros([Height, Width, ZStacks, Colors, Time], ImageClassType);
+%     case 'XYZTC'
+%         result.img = zeros([Height, Width, ZStacks, Time, Colors], ImageClassType);
+%     case 'XYCZT'
+%         result.img = zeros([Height, Width, ZStacks, Colors, Time], ImageClassType);
+%     case 'XYTZC'
+%         result.img = zeros([Height, Width, Time, ZStacks, Colors], ImageClassType);
+%     otherwise
+%         fprintf('io.BioFormats.bfopen5: options.dimensionOrder is missing or wrong!\nCancelling!');
+%         return;
+% end
 result.img = zeros([Height, Width, ZStacks, Colors, Time], ImageClassType);
 
 if ~isfield(options, 'x1')
@@ -130,7 +151,7 @@ if isfield(options, 'dz')
     startSlice = options.z1*Colors-(Colors-1);
     endSlice = (options.z1+options.dz-1)*Colors;
     if endSlice > r.getImageCount()
-        sprintf('bfopen4: Wrong slice number!\nCancelling!')
+        fprintf('bfopen4: Wrong slice number!\nCancelling!');
         return;
     end
 else
@@ -141,7 +162,7 @@ else
         startSlice = sliceNo*Colors-(Colors-1);
         endSlice = sliceNo*Colors;
         if endSlice > r.getImageCount()
-            sprintf('bfopen4: Wrong slice number!\nCancelling!')
+            fprintf('io.BioFormats.bfopen5: Wrong slice number!\nCancelling!');
             return;
         end
     end
@@ -157,13 +178,13 @@ noSlices = endSlice-startSlice+1;
 result.ColorType = NaN;
 index = 1;
 for i = startSlice:endSlice
-    % different color channels loaded as a list, so thay have to be
+    % different color channels loaded as a list, so they have to be
     % assigned to the proper z-slices
     if ~isfield(options, 'x1')
         if mod(index+1, 72) == 1
             fprintf('\n    ');
         end
-        if i>1;         fprintf('.');     end
+        if i>1; fprintf('.'); end
     end
 
     if ~isfield(options, 'x1')
@@ -180,9 +201,8 @@ for i = startSlice:endSlice
     end
     
     % save image plane and label into the list
-    switch options.DimensionOrder
+    switch options.dimensionOrder
         case 'XYZCT'
-            %result.img(:, :, colorID, sliceID, timeID) = arr;
             result.img(:, :, sliceID, colorID, timeID) = arr;
             sliceID = sliceID + 1;
             if sliceID > ZStacks
@@ -193,7 +213,19 @@ for i = startSlice:endSlice
                 colorID = 1;
                 timeID = timeID + 1;
             end
+        case 'XYZTC'
+            result.img(:, :, sliceID, timeID, colorID) = arr;
+            sliceID = sliceID + 1;
+            if sliceID > ZStacks
+                sliceID = 1;
+                timeID = timeID + 1;
+            end
+            if timeID > Time
+                timeID = 1;
+                colorID = colorID + 1;
+            end
         case 'XYCZT'
+            % checked
             result.img(:, :, sliceID, colorID, timeID) = arr;
             colorID = colorID + 1;
             if colorID > Colors
@@ -204,19 +236,30 @@ for i = startSlice:endSlice
                 sliceID = 1;
                 timeID = timeID + 1;
             end
-        otherwise
+            % result.img(:, :, colorID, sliceID, timeID) = arr;
+            % colorID = colorID + 1;
+            % if colorID > Colors
+            %     colorID = 1;
+            %     sliceID = sliceID + 1;
+            % end
+            % if sliceID > ZStacks
+            %     sliceID = 1;
+            %     timeID = timeID + 1;
+            % end
+        case 'XYTZC'
+            % checked
             result.img(:, :, sliceID, colorID, timeID) = arr;
-            colorID = colorID + 1;
-            colorID = colorID + 1;
-            if colorID > Colors
-                colorID = 1;
+            timeID = timeID + 1;
+            if timeID > Time
+                timeID = 1;
                 sliceID = sliceID + 1;
             end
             if sliceID > ZStacks
                 sliceID = 1;
-                timeID = timeID + 1;
+                colorID = colorID + 1;
             end
     end
+
 
     % update waitbar
     if ~isempty(options.waitbarHandle) && mod(index, options.waitbarUpdateFrequency)==0

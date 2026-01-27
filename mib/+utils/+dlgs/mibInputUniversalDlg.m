@@ -694,8 +694,8 @@ else
     btnBox = uigridlayout(btnRow, [1 2], 'ColumnWidth', {'fit','fit'}, 'ColumnSpacing', 8, 'Padding', [0 0 0 0]);
     btnBox.Layout.Row = 1;
     btnBox.Layout.Column = 4;
-    okBtn = uibutton(btnBox, 'Text', options.OkBtnText, 'ButtonPushedFcn', @(~,~) onOK());
-    cancelBtn = uibutton(btnBox, 'Text', 'Cancel', 'ButtonPushedFcn', @(~,~) onCancel());
+    okBtn = uibutton(btnBox, 'Text', options.OkBtnText, 'BackgroundColor', [0.15, 0.90, 0.18], 'ButtonPushedFcn', @(~,~) onOK());
+    cancelBtn = uibutton(btnBox, 'Text', 'Cancel', 'BackgroundColor', [1.00,0.53,0.10], 'ButtonPushedFcn', @(~,~) onCancel());
 end
 
 % Key handling

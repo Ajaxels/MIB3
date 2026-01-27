@@ -248,6 +248,7 @@ obj.mibModel.matlabVersion = obj.matlabVersion;
 
 % update mibModel parameters
 obj.mibModel.currentDirectory = obj.mibModel.preferences.System.Dirs.LastPath;  % define current working directory
+obj.cStatus.handles.currentDirectory.Value = obj.mibModel.currentDirectory;     % update path in MIB status bar
 
 % update MibModel properties based on GUI settings
 % those are defined as defaults in mibModel
