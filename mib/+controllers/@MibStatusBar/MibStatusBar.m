@@ -22,6 +22,9 @@ classdef MibStatusBar
             obj.handles = guiHandles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
 
+            % update widgets
+            obj.handles.currentDirectory.Value = obj.mibModel.currentDirectory; % update path in MIB status bar
+
             % ---------------------- Add CALLBACKS to context menus ----------------------
             obj.handles.selectWorkingDirectory.ButtonPushedFcn = @(~,~)obj.gui_Callbacks('selectWorkingDirectory');
             obj.handles.currentDirectory.ValueChangedFcn = @(~,~)obj.gui_Callbacks('currentDirectory');

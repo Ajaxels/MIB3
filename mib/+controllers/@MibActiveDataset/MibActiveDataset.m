@@ -32,6 +32,9 @@ classdef MibActiveDataset
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.activeDataset.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
 
+            %% Update widgets
+            obj.update_fromModel(); % update widgets of the Datasets panel from the values of obj.MibModel
+
             %%  Add CALLBACKS to context menus ----------------------
             %% ---------------------- Add context menu for the Buffer buttons ----------------------
             % obj.handles.datasets

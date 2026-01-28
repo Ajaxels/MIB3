@@ -24,13 +24,17 @@ classdef MibSelection
         lutTable_update_fromModel(obj)        % Update obj.view.handles.panels.selection.handles.lutTable table and obj.view.handles.panels.selection.handles.colChannel color dropdown from obj.mibModel
 
         function obj = MibSelection(mainCtrl, view, guiHandles, model)
+            %% init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Roi)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
 
-            % ---------------------- Add CALLBACKS to context menus ----------------------
+            %% Update widgets
+            obj.lutTable_update_fromModel(); % update the LUT table in the Selection and View settings panel
+
+            %% ---------------------- Add CALLBACKS to context menus ----------------------
             obj.handles.lutTableContextInsert.MenuSelectedFcn = @obj.lutTable_ContextMenu;
             obj.handles.lutTableContextCopy.MenuSelectedFcn = @obj.lutTable_ContextMenu;
             obj.handles.lutTableContextInvert.MenuSelectedFcn = @obj.lutTable_ContextMenu;

@@ -95,6 +95,8 @@ classdef MibController < handle
         
         initialize(obj)  % initialize the main MibController class
 
+        initializeLibraries(obj, initList)            % initialize external libraries and Java paths
+
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
 
         filename = saveLayout(obj, mode) % store the current layout of panels
@@ -127,11 +129,13 @@ classdef MibController < handle
             obj.childControllersIds = {};
             obj.listeners = {};
 
+            obj.mibVersion = mibVersion;
+            obj.mibVersionNumeric = utils.getMibVersionNumberic(mibVersion);
+
             % init mibModel
             obj.mibModel = mibModel;
             obj.mibPath = obj.mibModel.mibPath;
-            obj.mibVersion = mibVersion;
-            obj.mibVersionNumeric = utils.getMibVersionNumberic(mibVersion);
+            
             obj.mibWebWindow = []; % handle of underlying web window for MIB (to use in drag-and-drop)
             fprintf('MIB version: %s (%.4f)\n', mibVersion, obj.mibVersionNumeric);
 

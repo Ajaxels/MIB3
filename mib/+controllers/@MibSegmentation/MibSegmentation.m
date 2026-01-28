@@ -67,7 +67,9 @@ classdef MibSegmentation
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
-
+            
+            %% Update widgets
+            obj.update_fromModel(); % update widgets of the Segmentation panel
             % render the table
             obj.updateMaterialsTable();
 

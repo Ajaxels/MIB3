@@ -23,6 +23,8 @@ classdef MibModel < handle
         % place
         mibPath 
         % path to MIB installation directory also available in MibController
+        mibVersion
+        % char with the current version of MIB
         onFlyImageStretch =  false;
         % enable/disable live stretching of image intensities
         preferences
@@ -77,57 +79,37 @@ classdef MibModel < handle
 
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
 
-        status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model. Compatible with the batch mode.
+        status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model; compatible with the batch mode.
 
-        loadImages(obj, parameter, BatchOptIn)        % Load images and arrange them into a stack
+        loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack
 
-        function obj = MibModel(cpuParallelLimitMax, mibPath)
-            % function obj = MibModel(cpuParallelLimitMax, mibPath)
+        initialize(obj)        % initialize the MibModel class
+
+        initializePreferences(obj)            % initialize and update MIB preferences from a file
+
+        function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
+            % function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             % Construct an instance of this class
             %
             % Parameters:
             % cpuParallelLimit: integer, maximal number of possible workers for parallel processing
             % mibPath: char with the location of MIB3
-
+            % mibVersion: char with the MIB version as
+            %       ATTENTION! it is important to have the version number between "ver." and "/" 
+            %       Release syntax example: "ver. 2025.11 / 04.11.2025"
+            %       Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
+            
             arguments
                 % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html
                 cpuParallelLimitMax (1,1) double {mustBePositive, mustBeInteger} = 1
                 mibPath (1,:) char = ''
+                mibVersion (1,:) char = 'ver. 2025.12 / 05.12.2025 (alpha)'
             end
             
             obj.cpuParallelLimitMax = cpuParallelLimitMax;
             obj.mibPath = mibPath;
+            obj.mibVersion = mibVersion;
             obj.initialize();
         end
-
-        function initialize(obj)
-            obj.currentDirectory = '\';   % define working directory
-            obj.id = 1;         % index of the current dataset
-            
-            % define default Set
-            obj.Sets.selectedSet = [];  % selected set in obj.view.handles.panels.activeDataset.handles.sets
-            obj.Sets.names = {};        % cell array with names of the sets
-            obj.Sets.datasetTypes = {};        % cell matrix with datasetTypes in sets, obj.Sets.datasetTypes{setId, datasetId}, where datasetId = 1...10
-            obj.Sets.selectedDataset = []; % array of the selected datasets in the sets
-            obj.Sets.datasetsInSet = 10; % number of dataset in each set, defined by number of buffer buttons in the Datasets panel
-            
-            obj.extensionRegistryLoad = io.ExtensionRegistryLoad; % registry of filename extensions
-
-            % initialize MIB with 10 dummy datasets
-            BatchOpt = struct('Mode', {'Add set'}, 'DatasetType', {'Std'}, 'SetName', 'Set 1');
-            obj.datasetsSetsOps(BatchOpt);
-
-            %obj.newDatasetSwitch = 0;
-            %obj.showAllMaterials = 1;   % display all materials of the model
-            %obj.disableSegmentation = 0;    % disable segmentation switch
-            %obj.storedSelection = [];   % initialize stored selection
-            %obj.connImaris = [];    % empty connection to Imaris
-            obj.sessionSettings = struct();     % current session settings
-            %obj.mibPrevId = 1;     % index of the previous dataset
-            
-            obj.Undo = core.MibUndo();    % create instance for keeping undo information
-            obj.pythonEnv = [];     % Python environment for MIB
-        end
-
     end
 end

@@ -30,6 +30,13 @@ classdef MibDirContents
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
 
+
+            %% Update widgets
+            % update list of available filters for file formats
+            obj.handles.fileFilters.Items = ['all known', model.extensionRegistryLoad.getAllowedExtensions('Std', 'Default')];
+            % update list of files in obj.handles.fileList
+            obj.updateFileList_Callback();
+
             %%  Add CALLBACKS to context menus ----------------------
             % ---------------------- Add context menu for fileList ----------------------
             % obj.handles.fileListContext
