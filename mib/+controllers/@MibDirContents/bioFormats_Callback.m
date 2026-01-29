@@ -21,6 +21,7 @@ end
 
 obj.mibModel.useBioFormats = obj.view.handles.panels.dirContents.handles.bioFormats.Value;
 reader = 'Default';
+
 if obj.mibModel.useBioFormats
     reader = 'BioFormats';
     % ------------------------- USE BIO-FORMATS READER -------------------------

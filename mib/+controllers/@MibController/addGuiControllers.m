@@ -6,9 +6,6 @@ arguments (Input)
     obj controllers.MibController
 end
 
-[ribbonHandles, ribbonWidgets] = obj.view.addRibbonTabs();
-obj.cRibbon = controllers.MibRibbon(obj, obj.view, ribbonHandles, ribbonWidgets, obj.mibModel); % start Ribbon controller
-
 % Create the Quick access bar and controller
 panelHandles = obj.view.addQuickAccessBar(); % add the addQuickAccessBar and return its handles (the handles are also in obj.view.handles.qab.handles)
 obj.cQuickAccessBar = controllers.MibQuickAccessBar(obj, obj.view, panelHandles, obj.mibModel); % start Quick Access Bar controller
@@ -36,5 +33,9 @@ obj.cRoi = controllers.MibRoi(obj, obj.view, panelHandles, obj.mibModel); % star
 % Create the Status bar UI and controller
 panelHandles = obj.view.addStatusBar();  % add ROI panel and return its handles (the handles are also in obj.view.handles.status)
 obj.cStatus = controllers.MibStatusBar(obj, obj.view, panelHandles, obj.mibModel); % start Status bar controller
+
+% add ribbon last so that it knows about other widgets
+[ribbonHandles, ribbonWidgets] = obj.view.addRibbonTabs();
+obj.cRibbon = controllers.MibRibbon(obj, obj.view, ribbonHandles, ribbonWidgets, obj.mibModel); % start Ribbon controller
 
 end

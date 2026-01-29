@@ -183,7 +183,7 @@ column.add(widgetHandles.expandToMask);
 % ------------- Interpolate as Shape (I) -------------
 column = section.addColumn();
 %widgetHandles.interpolate = matlab.ui.internal.toolstrip.ToggleButton(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, 'selection_shape_24px.png')));
-widgetHandles.interpolate = Button(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, 'selection_shape_24px.png')));
+widgetHandles.interpolate = Button(sprintf('Interpolate as\nshape'),  Icon(fullfile(iconPath, sprintf('selection_%s_24px.png', obj.mibModel.preferences.SegmTools.Interpolation.Type))));
 widgetHandles.interpolate.Description = 'Interpolate the selected areas (i - key shortcut)';
 column.add(widgetHandles.interpolate);
 

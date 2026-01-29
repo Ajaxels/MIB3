@@ -395,16 +395,17 @@ switch BatchOpt.Mode{1}
         % update list of recent directories
         dirPos = ismember(obj.preferences.System.Dirs.RecentDirs, BatchOpt.DirectoryName{1});
         if sum(dirPos) == 0
+            % add directory to the list
             obj.preferences.System.Dirs.RecentDirs = [obj.currentDirectory obj.preferences.System.Dirs.RecentDirs];    % add the new folder to the list of folders
             if numel(obj.preferences.System.Dirs.RecentDirs) > obj.preferences.System.Dirs.RecentDirsNumber    % trim the list
                 obj.preferences.System.Dirs.RecentDirs = obj.preferences.System.Dirs.RecentDirs(1:obj.preferences.System.Dirs.RecentDirsNumber);
             end
-        else
-            % re-sort the list and put the opened folder to the top of
-            % the list
+            notify(obj, 'UpdateRecentDirsList'); % update the list of recent directories under Open Image button
+        elseif dirPos(1) ~= 1
+            % re-sort the list and put the opened folder to the top of the list
             obj.preferences.System.Dirs.RecentDirs = [obj.preferences.System.Dirs.RecentDirs(dirPos==1) obj.preferences.System.Dirs.RecentDirs(dirPos==0)];
+            notify(obj, 'UpdateRecentDirsList'); % update the list of recent directories under Open Image button
         end
-        %obj.mibView.handles.mibRecentDirsPopup.String = obj.preferences.System.Dirs.RecentDirs;
         
         % count user's points
         obj.preferences.Users.Tiers.numberOfLoadedDatasets = obj.preferences.Users.Tiers.numberOfLoadedDatasets+1;

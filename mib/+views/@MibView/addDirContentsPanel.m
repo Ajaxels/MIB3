@@ -19,7 +19,10 @@ panelHandles = views.components.DirectoryContents('Parent', obj.handles.panels.d
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels
 
 % add handle tags to the panel
-if obj.mibModel.preferences.System.DeveloperMode; utils.overrideDescriptions(panelHandles.handles, true, 'obj.cDirContents.view.handles'); end
+if obj.mibModel.preferences.System.DeveloperMode
+    utils.overrideDescriptions(panelHandles.handles, true, 'obj.cDirContents.view.handles'); 
+    panelHandles.handles.fileList.Tooltip = ''; % do not populate tooltip for the file list
+end
 
 % ---------------------- ADD CONTEXT MENUs ----------------------
 % ---------------------- Add context menu for fileList ----------------------

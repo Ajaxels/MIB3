@@ -439,6 +439,9 @@ Prefs.Deep.SegmentationLayerOpt.dicePixelCustom.ExcludeExerior = false;     % ex
 Prefs.Deep.AugOpt2D = utils.deepmib.generateDefaultAugmentations('2D');
 Prefs.Deep.AugOpt3D = utils.deepmib.generateDefaultAugmentations('3D');
 
+Prefs.Deep.ScoreExportOpt.Precision = 8;   % define precision for the output scores, '8' or '16' bit
+Prefs.Deep.ScoreExportOpt.IncludeExterior = true;  % when false scores for exterior material are excluded from file output
+
 Prefs.Deep.DynamicMaskOpt.Method = 'Keep above threshold';  % 'Keep above threshold' or 'Keep below threshold'
 Prefs.Deep.DynamicMaskOpt.ThresholdValue = 0;
 Prefs.Deep.DynamicMaskOpt.InclusionThreshold = 0;     % Inclusion threshold for mask blocks

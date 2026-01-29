@@ -162,7 +162,8 @@ column.add(widgetHandles.invert);
 
 %% --------- IMAGE RESAMPLE ---------
 column = section.addColumn();
-widgetHandles.visualization = matlab.ui.internal.toolstrip.SplitButton('Visualization',  Icon(fullfile(iconPath, 'image_auto_24px.png')));
+widgetHandles.visualization = matlab.ui.internal.toolstrip.SplitButton('Visualization',  ...
+    Icon(fullfile(iconPath, sprintf('image_%s_24px.png', obj.mibModel.preferences.System.ImageResizeMethod))));
 widgetHandles.visualization.Description = 'Type of image interpolation for the visualization';
 
 popupList = PopupList();

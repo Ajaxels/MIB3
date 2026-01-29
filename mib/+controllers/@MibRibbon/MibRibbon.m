@@ -40,6 +40,10 @@ classdef MibRibbon
 
         homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
 
+        homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
+
+        homeUpdateRecentDirsList(obj)        % update the recent directories list
+
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
 
         imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
@@ -97,12 +101,15 @@ classdef MibRibbon
             %  Add CALLBACKS  ----------------------
             %% Add Callbacks for the HOME ribbon
             obj.handles.ribbonHome.loadFile.ButtonPushedFcn = @obj.homeLoad_Callback;
+            obj.homeUpdateRecentDirsList();  % update the list of the recent directories
+
             obj.handles.ribbonHome.import.ButtonPushedFcn = @obj.homeImport_Callback;
             obj.handles.ribbonHome.importFromMatlab.ItemPushedFcn = @obj.homeImport_Callback;
             obj.handles.ribbonHome.importFromClipboard.ItemPushedFcn = @obj.homeImport_Callback;
             obj.handles.ribbonHome.importFromImaris.ItemPushedFcn = @obj.homeImport_Callback;
             obj.handles.ribbonHome.importFromOmero.ItemPushedFcn = @obj.homeImport_Callback;
             obj.handles.ribbonHome.importFromURL.ItemPushedFcn = @obj.homeImport_Callback;
+
             %% Add Callbacks for the HOME ribbon -> Examples
             obj.handles.ribbonHome.deepmib2dLargeSpots.ItemPushedFcn = @obj.homeExamples_Callback;
             obj.handles.ribbonHome.deepmib2dSmallSpots.ItemPushedFcn = @obj.homeExamples_Callback;
@@ -118,6 +125,7 @@ classdef MibRibbon
             obj.handles.ribbonHome.sbfsemHuh7.ItemPushedFcn = @obj.homeExamples_Callback;
             obj.handles.ribbonHome.sbfsemTrypanosoma.ItemPushedFcn = @obj.homeExamples_Callback;
             obj.handles.ribbonHome.mriBrain.ItemPushedFcn = @obj.homeExamples_Callback;
+
             %% Add Callbacks for the HOME ribbon -> Export section 
             obj.handles.ribbonHome.saveFileAs.ButtonPushedFcn = @obj.homeExport_Callback;
             obj.handles.ribbonHome.saveFile.ItemPushedFcn = @obj.homeExport_Callback;
@@ -131,12 +139,14 @@ classdef MibRibbon
             obj.handles.ribbonHome.renderMIB.ItemPushedFcn = @obj.homeExport_Callback;
             obj.handles.ribbonHome.renderMatlab.ItemPushedFcn = @obj.homeExport_Callback;
             obj.handles.ribbonHome.renderFiji.ItemPushedFcn = @obj.homeExport_Callback;
+
             %% Add Callbacks for the HOME ribbon -> I/O Tools
             obj.handles.ribbonHome.batch.ButtonPushedFcn = @obj.homeIOtools_Callback;
             obj.handles.ribbonHome.chunk.ItemPushedFcn = @obj.homeIOtools_Callback;
             obj.handles.ribbonHome.stitch.ItemPushedFcn = @obj.homeIOtools_Callback;
             obj.handles.ribbonHome.shuffle.ItemPushedFcn = @obj.homeIOtools_Callback;
             obj.handles.ribbonHome.reshuffle.ItemPushedFcn = @obj.homeIOtools_Callback;
+
             %% Add Callbacks for the HOME ribbon -> Preferences
             obj.handles.ribbonHome.loadLayout.ButtonPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.loadLayoutLocalDefault.ItemPushedFcn = @obj.homePreferences_Callback;
@@ -158,6 +168,11 @@ classdef MibRibbon
             obj.handles.ribbonHome.licenses.ItemPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.about.ItemPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.devMode.ButtonPushedFcn = @obj.homeDevTest_Callback;
+
+            % --------- update listeners
+            % update list of recent directories
+            obj.listeners{1} = addlistener(obj.mibModel, 'UpdateRecentDirsList', @(src, evnt)obj.homeUpdateRecentDirsList()); 
+
 
         end
 
@@ -313,8 +328,7 @@ classdef MibRibbon
             obj.handles.ribbonModel.renderFiji.ItemPushedFcn = @obj.modelRender_Callback;
             obj.handles.ribbonModel.renderImaris.ItemPushedFcn = @obj.modelRender_Callback;
             % Quantification
-            obj.handles.ribbonModel.quantification.ButtonPushedFcn = @obj.modelQuantification_Callback;
-
+            obj.handles.ribbonModel.quantification.ButtonPushedFcn = @obj.modelQuantification_Callback;            
         end
 
         function addCallbacksToDatasetMask(obj)

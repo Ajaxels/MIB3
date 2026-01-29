@@ -415,8 +415,6 @@ end
 %% TO DO 
 %obj.mibView.updateCursor();  % update size of the cursor
 %obj.mibModel.disableSegmentation = 0;    % re-enable segmentation tools if they were accidentally turned off
-%obj.updateInterpolationMode(true);      % update the selection interpolation button
-%obj.updateVisualizationMode('keepcurrent');     % update the image interpolation button icon
 %obj.toolbarVirtualMode_ClickedCallback('keepcurrent');         % update the virtual stack button
 
 % clear trackerYXZ variable of the membrane clicktracker tool

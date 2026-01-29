@@ -1,5 +1,5 @@
 function stopped = overrideDescriptions(handles, developerMode, fieldPath)
-% function stopped = overrideDescriptions(handles, developerMode, fieldPath)
+% function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclusionList)
 % Override Description property of widgets to add the widget handle name to
 % the beginning of the Description field depending on the developerMode
 % setting.
