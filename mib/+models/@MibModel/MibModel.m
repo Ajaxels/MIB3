@@ -82,6 +82,8 @@ classdef MibModel < handle
 
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model; compatible with the batch mode.
 
+        [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
+
         loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack
 
         initialize(obj)        % initialize the MibModel class

@@ -26,6 +26,16 @@ classdef MibImage < matlab.mixin.Copyable
         % a matrix with LUT colors [1:colorChannel, R G B], (0-1)
         maxInt
         % maximal value that is available in the dataset
+        pyramid
+        % a structure with specifications of the image pyramid downsampling levels, order of dimensions as in MIB
+        % pyramid = struct(); % structure to keep pyramid organization of data, convert axes to MIB order
+        % pyramid.levelNames = meta.levelNames;
+        % pyramid.levelImageSizes = meta.levelImageSizes(:, [2, 3, 1]);
+        % pyramid.levelImageTranslations = meta.levelImageTranslations(:, [2, 3, 1]);
+        % pyramid.levelScaleFactors = meta.levelScaleFactors(:, [2, 3, 1]);
+        % pyramid.levelVoxelSizes = meta.levelVoxelSizes(:, [2, 3, 1]);
+        % pyramid.chunkSizes = meta.chunkSizes(:, [4, 5, 2, 3, 1]);
+        % pyramid.shardSizes = meta.shardSizes(:, [4, 5, 2, 3, 1]);
         sliceName
         % a cell array of slice filenames that composing the dataset
         time

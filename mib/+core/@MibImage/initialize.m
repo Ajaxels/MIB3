@@ -81,5 +81,20 @@ if ~isempty(obj.data)
         end
     end
 
+    % update obj.pyramid
+    obj.pyramid = struct(); % structure to keep pyramid organization of data, convert axes to MIB order
+    obj.pyramid.levelNames = {};
+    obj.pyramid.levelImageSizes = [obj.height, obj.width obj.colors obj.depth obj.time];
+    obj.pyramid.levelImageTranslations = [0 0 0 0 0];
+    obj.pyramid.levelScaleFactors = [1 1 1];
+    obj.pyramid.levelVoxelSizes = [meta{'pixSize'}.y meta{'pixSize'}.x meta{'pixSize'}.z];
+    obj.pyramid.chunkSizes = [];
+    obj.pyramid.shardSizes = [];
+    if isKey(meta, 'Pyramid')
+        obj.pyramid = utils.concatenateStructures(obj.pyramid, meta{'Pyramid'});
+        % Remove Pyramid from obj.meta
+        meta = remove(meta, 'Pyramid'); %#ok<NASGU>
+    end
+    
 end
 end

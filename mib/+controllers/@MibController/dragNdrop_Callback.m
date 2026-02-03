@@ -33,14 +33,14 @@ switch ext
     case '.mask'
     case '.ann'
     otherwise % drag and drop image files to open
-        BatchOpt.Mode = {'Combine datasets'};
-        % sort filenames, otherwise the first file may be the one that was under the focus when drag-n-drop started
-        BatchOpt.Filenames = sort(filenameList);
-        BatchOpt.DirectoryName = {path};
-        obj.mibModel.loadImages([], BatchOpt);
-
-        obj.mibModel.currentDirectory = path;
-        obj.cDirContents.updateFileList_Callback([fn ext]);
+        % BatchOpt.Mode = {'Combine datasets'};
+        % % sort filenames, otherwise the first file may be the one that was under the focus when drag-n-drop started
+        % BatchOpt.Filenames = sort(filenameList);
+        % BatchOpt.DirectoryName = {path};
+        % obj.mibModel.loadImages([], BatchOpt);
+        % 
+        % obj.mibModel.currentDirectory = path;
+        % obj.cDirContents.updateFileList_Callback([fn ext]);
 end
 
 % update the current directory in MIB GUI

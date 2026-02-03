@@ -101,7 +101,7 @@ classdef MibController < handle
 
         filename = saveLayout(obj, mode) % store the current layout of panels
         
-        showImage(obj, resize)        % show the current image in the Image View panel
+        showImage(obj, resize, sImgIn)        % show the current image in the Image View panel
 
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
         
