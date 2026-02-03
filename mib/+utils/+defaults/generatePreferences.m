@@ -102,6 +102,7 @@ Prefs.Styles.Contour.ThicknessModels = 1;  % thickness of contour lines for mate
 Prefs.Styles.Contour.ThicknessMasks = 1;  % thickness of contour lines for masks 
 Prefs.Styles.Contour.ThicknessMethodMasks = 'inwards';  % mode for making the thicker contours, 'inwards' and 'outwards'
 
+Prefs.Styles.Labels.ShowAsContours = false;  % show labels as contours, when false as filled shapes
 Prefs.Styles.Masks.ShowAsContours = true;  % show masks as contours, when false as filled shapes
 
 %% ----------- BACKUP AND UNDO PANEL -----------

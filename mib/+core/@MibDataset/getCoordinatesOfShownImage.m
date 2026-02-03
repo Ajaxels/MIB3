@@ -1,0 +1,81 @@
+function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3)
+% function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3)
+% Return minimal and maximal coordinates (XY) of the image that is
+% currently shown.
+%
+% Parameters:
+% transposeTo3: - [@em optional] when 
+%           true, transpose dataset to the orientation 3, when looking on the XY plane of the dataset
+%           false, do not transpose
+% 
+% Return values:
+% yMin: - minimal Y coordinate
+% yMax: - maximal Y coordinate
+% xMin: - minimal Y coordinate
+% xMax: - maximal Y coordinate
+% zMin: - minimal Z coordinate
+% zMax: - maximal Z coordinate
+%
+% @b Note:
+% it is also possible to get coordinates from .slices field of mibImage class
+
+%| 
+% @b Examples:
+% @code [yMin, yMax, xMin, xMax] = obj.mibModel.I{obj.mibModel.id}.getCoordinatesOfShownImage();  // get coordinates @endcode
+
+% Updates
+
+if nargin < 2; transposeTo3 = 0; end
+
+Xlim = ceil(obj.axesX);
+Ylim = ceil(obj.axesY);
+
+if ~transposeTo3
+    if obj.orientation==1     % xz
+        yMin = max([Ylim(1) 1]);
+        yMax = min([Ylim(2) obj.image.width]);
+        xMin = max([Xlim(1) 1]);
+        xMax = min([Xlim(2) obj.image.depth]);
+        zMin = 1;
+        zMax = obj.image.height;
+    elseif obj.orientation==2 % yz
+        yMin = max([Ylim(1) 1]);
+        yMax = min([Ylim(2) obj.image.height]);
+        xMin = max([Xlim(1) 1]);
+        xMax = min([Xlim(2) obj.image.depth]);
+        zMin = 1;
+        zMax = obj.image.width;
+    elseif obj.orientation==3 % yx
+        yMin = max([Ylim(1) 1]);
+        yMax = min([Ylim(2) obj.image.height]);
+        xMin = max([Xlim(1) 1]);
+        xMax = min([Xlim(2) obj.image.width]);
+        zMin = 1;
+        zMax = obj.image.depth;
+    end
+else    % transpose to XY
+    if obj.orientation==1     % xz
+        xMin = max([Ylim(1) 1]);
+        xMax = min([Ylim(2) obj.image.width]);
+        zMin = max([Xlim(1) 1]);
+        zMax = min([Xlim(2) obj.image.depth]);
+        yMin = 1;
+        yMax = obj.image.height;
+    elseif obj.orientation==2 % yz
+        yMin = max([Ylim(1) 1]);
+        yMax = min([Ylim(2) obj.image.height]);
+        zMin = max([Xlim(1) 1]);
+        zMax = min([Xlim(2) obj.image.depth]);
+        xMin = 1;
+        xMax = obj.image.width;
+    elseif obj.orientation==3 % yx
+        yMin = max([Ylim(1) 1]);
+        yMax = min([Ylim(2) obj.image.height]);
+        xMin = max([Xlim(1) 1]);
+        xMax = min([Xlim(2) obj.image.width]);
+        zMin = 1;
+        zMax = obj.image.depth;
+    end
+end
+
+end

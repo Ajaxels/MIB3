@@ -43,6 +43,9 @@ if nargin < 4; materialIndex = []; end
 if nargin < 3; orient = []; end
 if nargin < 2; type = []; end
 
+% no dataset, return empty
+if ~obj.exists; dataset = []; return; end
+
 % MibLabels63 has the color dimension of 1
 colChannel = 1;
 

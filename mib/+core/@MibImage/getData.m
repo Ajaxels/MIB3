@@ -48,7 +48,7 @@ if nargin < 2; layerType = 'image'; end
 
 % for core.MibModel63 use a dedicated function to get the specific layer
 if isa(obj, 'core.MibLabels63') && ~strcmp(layerType, 'image')
-    dataset = obj.getData63(obj, layerType, orient, colChannel, options);
+    dataset = obj.getData63(layerType, orient, colChannel, options);
     return;
 end
 

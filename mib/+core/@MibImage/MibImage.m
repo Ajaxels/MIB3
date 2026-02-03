@@ -5,6 +5,8 @@ classdef MibImage < matlab.mixin.Copyable
     properties
         colors
         % number of color channels
+        colormap
+        % colormap for indexed images
         colorType 
         % a char with type of colors: grayscale, multichannel, hsvcolor, indexed
         depth
@@ -55,12 +57,14 @@ classdef MibImage < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         
         clearLayer(obj, layerName, y, x, z, t)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
-        
+
         dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
 
         varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
 
         viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
+
+        [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)        % Return image stretching coefficients to be used for imadjust function to stretch contrast of the image
 
         initialize(obj, data, meta, type);  % initialize the class using default or provided values
 

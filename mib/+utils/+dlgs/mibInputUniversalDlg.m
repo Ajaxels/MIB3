@@ -226,17 +226,34 @@ end
 % Center dialog on parent figure if provided
 if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
-        parentPos = options.ParentFigure.Position;
-        dialogWidth = fig.Position(3);
-        dialogHeight = fig.Position(4);
-        
-        % Calculate center position relative to parent
-        centerX = parentPos(1) + (parentPos(3) - dialogWidth) / 2;
-        centerY = parentPos(2) + (parentPos(4) - dialogHeight) / 2;
-        
-        % Set dialog position
-        fig.Position(1) = centerX;
-        fig.Position(2) = centerY;
+        if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
+            parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
+            
+            % Get screen size to convert from top-left to bottom-left origin
+            screenSize = get(0, 'ScreenSize'); % [left bottom width height]
+
+            % Center in parent's coordinates (bottom-left origin)
+            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+            % Convert Y from top-left to bottom-left origin
+            % parentPos(2) is distance from top of screen
+            % Need to convert to distance from bottom of screen
+            y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
+        elseif isa(options.ParentFigure, 'matlab.ui.Figure')
+            parentPos = options.ParentFigure.Position;      % [x y w h]
+
+            % Center in parent's coordinates (bottom-left origin)
+            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
+            y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
+
+        end
+
+        % Optionally clamp to screen
+        % screenSize = get(0, 'ScreenSize');
+        % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
+        % y1 = max(0, min(y1, screenSize(4) - options.WindowHeight));
+
+        fig.Position(1) = x1;
+        fig.Position(2) = y1;
     catch
         % If centering fails, MATLAB will use default position
     end

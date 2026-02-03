@@ -64,6 +64,14 @@ if nargin < 4; orient = []; end
 if nargin < 3; slice_no = []; end
 if nargin < 2; type = 'image'; end
 
+% define datasetVariable for obj.(datasetVariable).getData
+datasetVariable = type;
+if obj.labels.maxMaterials < 255 
+    if ismember(type, {'selection', 'mask', 'everything'}) 
+        datasetVariable = 'labels';
+    end
+end
+
 if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end
@@ -117,7 +125,7 @@ if options.roiId >= 0
         options.x = [bb(1), bb(2)];
         options.y = [bb(3), bb(4)];
         
-        sliceTemp = obj.I{options.id}.getData(type, orient, col_channel, options);
+        sliceTemp = obj.(datasetVariable).getData(type, orient, col_channel, options);
         if ~isnan(options.fillBg)
             mask = mask(bb(3):bb(4), bb(1):bb(2));
             mask = repmat(mask,[1, 1, numel(col_channel)]);
@@ -133,6 +141,6 @@ else
         dataset = [];
         return;
     end
-    dataset = {squeeze(obj.(type).getData(type, orient, col_channel, options))};
+    dataset = {squeeze(obj.(datasetVariable).getData(type, orient, col_channel, options))};
 end
 end

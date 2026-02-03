@@ -38,8 +38,8 @@ function showImage(obj, resizeToMagnification, sImgIn)
 %
 %
 
-I = cell2mat(obj.mibModel.I{obj.mibModel.id}.getData2D());
-image(I, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+%I = cell2mat(obj.mibModel.I{obj.mibModel.id}.getData2D());
+%image(I, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
 
 %% Parse input parameters
 if nargin < 3; sImgIn = []; end
@@ -59,7 +59,10 @@ else
     %obj.mibView.Ishown = obj.mibModel.getRGBimage(rgbOptions, sImgIn);
 end
 
+image(Ishown, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+
 return;
+
 
 %% Calculate aspect ratio coefficient based on orientation
 if obj.mibModel.mibDataset.orientation == 4 % xy

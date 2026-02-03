@@ -63,6 +63,14 @@ if nargin < 4; orient = []; end
 if nargin < 3; time = []; end
 if nargin < 2; type = 'image'; end
 
+% define datasetVariable for obj.(datasetVariable).getData
+datasetVariable = type;
+if obj.labels.maxMaterials < 255 
+    if ismember(type, {'selection', 'mask', 'everything'}) 
+        datasetVariable = 'labels';
+    end
+end
+
 if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end
@@ -139,6 +147,6 @@ else
         dataset = [];
         return;
     end
-    dataset = {obj.(type).getData(type, orient, col_channel, options)};
+    dataset = {obj.(datasetVariable).getData(type, orient, col_channel, options)};
 end
 end

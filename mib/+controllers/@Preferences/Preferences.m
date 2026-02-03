@@ -230,8 +230,8 @@ classdef Preferences < handle
                 obj.view.handles.ContourThicknessModels.Value = obj.preferences.Styles.Contour.ThicknessModels;
                 obj.view.handles.ContourThicknessMasks.Value = obj.preferences.Styles.Contour.ThicknessMasks;
                 obj.view.handles.ContourThicknessMasksMethod.Value = obj.preferences.Styles.Contour.ThicknessMethodMasks;
+                obj.view.handles.LabelsShowAsContours.Value = obj.preferences.Styles.Labels.ShowAsContours;
                 obj.view.handles.MaskShowAsContours.Value = obj.preferences.Styles.Masks.ShowAsContours;
-
             end
             
             % % -------------- BackupAndUndoPanel ----------------
@@ -550,8 +550,11 @@ classdef Preferences < handle
                     obj.preferences.Styles.Contour.ThicknessMasks = obj.view.handles.ContourThicknessMasks.Value;
                 case 'ContourThicknessMasksMethod'
                     obj.preferences.Styles.Contour.ThicknessMethodMasks = obj.view.handles.ContourThicknessMasksMethod.Value;
+                case 'LabelsShowAsContours'
+                    obj.preferences.Styles.Labels.ShowAsContours = obj.view.handles.LabelsShowAsContours.Value;
                 case 'MaskShowAsContours'
                     obj.preferences.Styles.Masks.ShowAsContours = obj.view.handles.MaskShowAsContours.Value;
+
             end
             figure(obj.view.gui);   % set focus to main preference window and move it in front
         end

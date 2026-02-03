@@ -66,6 +66,8 @@ if ~isempty(obj.data)
         meta{'viewPort'} = viewPort;
     end
 
+    obj.colormap =  meta{'Colormap'};
+
     % update additional properties
     obj.filename = meta{'Filename'};
     obj.sliceName = meta{'SliceName'};
@@ -74,7 +76,7 @@ if ~isempty(obj.data)
     if ~isempty(meta{'ColorType'})
         obj.colorType = meta{'ColorType'};
     else
-        if size(obj.data,4) == 1
+        if size(obj.data{1}, 4) == 1
             obj.colorType = 'grayscale';
         else
             obj.colorType = 'multichannel';

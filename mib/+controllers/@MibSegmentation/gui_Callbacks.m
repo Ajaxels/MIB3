@@ -38,25 +38,25 @@ switch mode
     case 'colorWheel'
 
     case 'viewSettings'
-        prompts = {
-            'Show Mask using contours:'
-            };
+        prompts = {'Show Labels using contours:'; 'Show Mask using contours:'};
         defAns = {
-            obj.mibModel.preferences.Styles.Masks.ShowAsContours
+            obj.mibModel.preferences.Styles.Labels.ShowAsContours;
+            obj.mibModel.preferences.Styles.Masks.ShowAsContours;
             };
         dlgTitle = 'Visualization options';
         options.Header        = sprintf('Update visualization settings');
         options.HeaderLines   = 1;
         options.WindowStyle  = 'normal';
-        options.WindowWidth = 300;
-        options.WindowHeight = 110;
+        options.WindowWidth = 340;
+        options.WindowHeight = 180;
         options.IconWidth    = 64;
         options.Icon         = 'question';
         options.ParentFigure = obj.view.gui;
         [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibController.mibPath, prompts, defAns, dlgTitle, options);
         if isempty(answer); return; end
 
-        obj.mibModel.preferences.Styles.Masks.ShowAsContours = answer{1};  % show masks as contours, when false as filled shapes
+        obj.mibModel.preferences.Styles.Labels.ShowAsContours = answer{1};  % show labels as contours, when false as filled shapes
+        obj.mibModel.preferences.Styles.Masks.ShowAsContours = answer{2};  % show masks as contours, when false as filled shapes
         notify(obj.mibModel, 'ShowImage');
 end
 

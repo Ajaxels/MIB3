@@ -42,7 +42,7 @@ if isempty(orient); orient = obj.orientation; end
 if isempty(type); type = 'image'; end
 time = obj.image.time;
 
-if options.blockModeSwitch == 0     % get the full size dataset
+if ~options.blockModeSwitch     % get the full size dataset
     if strcmp(type, 'image')
         [height, width, depth, colors, time] = obj.image.getDatasetDimensions(orient);
     elseif isa(obj.labels, 'core.MibLabels63')

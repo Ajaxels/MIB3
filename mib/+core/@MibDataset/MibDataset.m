@@ -22,6 +22,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % handle to ROI class, @b mibRoiRegion
 
         % other properties
+        actionLog 
+        % log of actions performed with the dataset, cell array
         axesX
         % a vector [min, max] with minimal and maximal coordinates of
         % the axes X of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
@@ -32,6 +34,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % path to directory where BioFormats Memoizer is storing memo files
         blockModeSwitch
         % a variable to hold a status of the block mode (mibView.handles.toolbarBlockModeSwitch), 1 - enabled, 0 - disabled
+        boundingBox
+        % bounding box of the dataset as [xmin, xmax, ymin, ymax, zmin, zmax]
         current_yxz
         % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes,
         % @note dimensions: @code [1 1 1] @endcode
@@ -115,6 +119,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
+        [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
+
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
 
         dataset = getData3D(obj, type, time, orient, col_channel, options)        % Get the a 3D dataset with colors: height:width:depth:colors
@@ -122,6 +128,12 @@ classdef MibDataset < matlab.mixin.Copyable
         dataset = getData4D(obj, type, time, orient, col_channel, options)        % Get the a 4D dataset with colors: [height:width:depth:colors:time]
 
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
+
+        index = getSelectedMaterialIndex(obj)        % return the index of the currently selected material in the mibView.handles.materialsTable
+
+        [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
+
+        [bb, logEntries] = imageDescriptionToBoundingBoxAndLog(obj, imageDescription)   % Extract bounding box and log entries from ImageDescription field
 
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
 

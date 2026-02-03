@@ -163,4 +163,8 @@ function initialize(obj, img, meta, datasetType, modelType)
     % update additional properties
     obj.pixSize = meta{'pixSize'};
     obj.dim_yxzct = obj.image.dim_yxzct;
+
+    % update bounding box
+    [obj.boundingBox, obj.actionLog] = obj.imageDescriptionToBoundingBoxAndLog(meta{'ImageDescription'});
+
 end
