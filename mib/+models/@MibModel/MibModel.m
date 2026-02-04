@@ -5,6 +5,10 @@ classdef MibModel < handle
     properties
         I
         % variable for keeping instances of MibDataset
+        Iraw
+        % raw image source for Ishown
+        Ishown
+        % currently rendered images for visualization
         currentDirectory
         % current working directory for MIB
         cpuParallelLimitMax

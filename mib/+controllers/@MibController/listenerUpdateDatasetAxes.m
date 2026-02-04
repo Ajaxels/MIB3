@@ -80,7 +80,8 @@ selectedSet = obj.mibModel.Sets.selectedSet;
 % of not yet created axes
 if numel(obj.view.handles.imView) < obj.mibModel.Sets.selectedSet; selectedSet = selectedSet - 1; end
 
-axSize = obj.view.handles.imView{selectedSet}.handles.imViewAxes.Position;
+axSize = obj.view.handles.imView{selectedSet}.handles.imViewAxes.InnerPosition;
+
 [axesX, axesY] = obj.mibModel.I{index}.getAxesLimits();
 magFactor = obj.mibModel.I{index}.magFactor;
 if isnan(axesX(1)) || strcmp(mode, 'resize') == 1

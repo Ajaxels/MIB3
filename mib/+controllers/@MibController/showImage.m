@@ -52,113 +52,187 @@ rgbOptions.resizeToMagnification = resizeToMagnification;
 
 if isempty(sImgIn)
     % Generate RGB from dataset
-    [Ishown, Iraw] = obj.mibModel.getRGBimage(rgbOptions);
-    %[obj.mibView.Ishown, obj.mibView.Iraw] = obj.mibModel.getRGBimage(rgbOptions);
+    [obj.mibModel.Ishown, obj.mibModel.Iraw] = obj.mibModel.getRGBimage(rgbOptions);
 else
     % Use provided custom image
-    %obj.mibView.Ishown = obj.mibModel.getRGBimage(rgbOptions, sImgIn);
+    obj.mibModel.Ishown = obj.mibModel.getRGBimage(rgbOptions, sImgIn);
 end
-
-image(Ishown, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
-
-return;
-
 
 %% Calculate aspect ratio coefficient based on orientation
-if obj.mibModel.mibDataset.orientation == 4 % xy
-    coef_z = obj.mibModel.mibDataset.pixSize.x / obj.mibModel.mibDataset.pixSize.y;
-elseif obj.mibModel.mibDataset.orientation == 1 % zx
-    coef_z = obj.mibModel.mibDataset.pixSize.z / obj.mibModel.mibDataset.pixSize.x;
-elseif obj.mibModel.mibDataset.orientation == 2 % zy
-    coef_z = obj.mibModel.mibDataset.pixSize.z / obj.mibModel.mibDataset.pixSize.y;
+if obj.mibModel.I{obj.mibModel.id}.orientation == 3 % xy
+    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.x / obj.mibModel.I{obj.mibModel.id}.pixSize.y;
+elseif obj.mibModel.I{obj.mibModel.id}.orientation == 1 % zx
+    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.z / obj.mibModel.I{obj.mibModel.id}.pixSize.x;
+elseif obj.mibModel.I{obj.mibModel.id}.orientation == 2 % zy
+    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.z / obj.mibModel.I{obj.mibModel.id}.pixSize.y;
 end
+
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = matlab.graphics.primitive.Image('CData', []);
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = image(obj.mibModel.Ishown, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+
+% %% Update image in axes
+% if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData)
+%     % Create new image object
+%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = image(obj.mibModel.Ishown, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+% 
+%     % Configure image object
+%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.HitTest = 'off';
+% else
+%     % Update existing image
+%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = [];
+%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = obj.mibModel.Ishown;
+% 
+%     % Remove old measurements and ROI overlays
+%     lineObj = findobj(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
+%     if ~isempty(lineObj);  delete(lineObj); end
+% end
 
 %% Update image in axes
-if isempty(obj.mibView.imh.CData)
-    % Create new image object
-    obj.mibView.imh = image(obj.mibView.Ishown, 'parent', obj.mibView.handles.mibImageAxes);
+if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData)
+    % Create new image object with stretched XData
+    imgHeight = size(obj.mibModel.Ishown, 1);
+    imgWidth = size(obj.mibModel.Ishown, 2);
+
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = ...
+        image(obj.mibModel.Ishown, ...
+              'XData', [1 imgWidth * coef_z], ...
+              'YData', [1 imgHeight], ...
+              'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+    
+    % Configure image object
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.HitTest = 'off';
 else
     % Update existing image
-    obj.mibView.imh.CData = [];
-    obj.mibView.imh.CData = obj.mibView.Ishown;
-
+    imgHeight = size(obj.mibModel.Ishown, 1);
+    imgWidth = size(obj.mibModel.Ishown, 2);
+    
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = [];
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = obj.mibModel.Ishown;
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.XData = [1 imgWidth * coef_z];
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.YData = [1 imgHeight];
+    
     % Remove old measurements and ROI overlays
-    lineObj = findobj(obj.mibView.handles.mibImageAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
-    if ~isempty(lineObj)
-        delete(lineObj);
-    end
+    lineObj = findobj(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
+    if ~isempty(lineObj); delete(lineObj); end
 end
 
-% Configure image object
-obj.mibView.imh.HitTest = 'off';
 
 %% Configure axes properties
-obj.mibView.handles.mibImageAxes.Box = 'on';
-obj.mibView.handles.mibImageAxes.XTick = [];
-obj.mibView.handles.mibImageAxes.YTick = [];
-obj.mibView.handles.mibImageAxes.Interruptible = 'off';
-obj.mibView.handles.mibImageAxes.BusyAction = 'queue';
-obj.mibView.handles.mibImageAxes.HandleVisibility = 'callback';
+% moved to controllers.MibActiveDataset.update_fromModel
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Box = 'on';
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XTick = [];
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YTick = [];
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Interruptible = 'off';
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.BusyAction = 'queue';
+% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.HandleVisibility = 'callback';
 
 %% Set axes limits and zoom
-if exist('sImgIn', 'var') && resizeToMagnification == 1
+if ~isempty(sImgIn) && resizeToMagnification == 1
     % Custom image provided - fit to screen
-    obj.mibView.handles.mibImageAxes.DataAspectRatioMode = 'manual';
-    obj.mibView.handles.mibImageAxes.PlotBoxAspectRatioMode = 'manual';
-    obj.mibView.handles.mibImageAxes.DataAspectRatio = [1 coef_z 1];
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'manual';
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'manual';
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatio = [1 coef_z 1];
 
-    imPanPos = obj.mibView.handles.mibViewPanel.Position;
-    obj.mibView.handles.mibImageAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
-    obj.mibView.handles.mibImageAxes.YLim = [1 size(obj.mibView.Ishown, 1)];
-    obj.mibView.handles.mibImageAxes.XLim = [1 size(obj.mibView.Ishown, 2)];
+    imPanPos = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.OuterPosition;
+    imPanPos(3) = imPanPos(3) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.RowHeight{2};
+    imPanPos(4) = imPanPos(4) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.ColumnWidth{1};
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = [1 size(obj.mibModel.Ishown, 1)];
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
 else
     % Standard dataset display
-    magFactor = obj.mibModel.getMagFactor();
-    [axesX, axesY] = obj.mibModel.getAxesLimits();
+    magFactor = obj.mibModel.I{obj.mibModel.id}.magFactor;
+    [axesX, axesY] = obj.mibModel.I{obj.mibModel.id}.getAxesLimits();
+
+    % Keep axes in stretch-to-fill mode (auto aspect ratio)
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'auto';
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'auto';
 
     if resizeToMagnification == 1
-        % Resize to fit screen
-        obj.mibView.handles.mibImageAxes.DataAspectRatioMode = 'manual';
-        obj.mibView.handles.mibImageAxes.PlotBoxAspectRatioMode = 'manual';
-        obj.mibView.handles.mibImageAxes.DataAspectRatio = [1 coef_z 1];
-
-        imPanPos = obj.mibView.handles.mibViewPanel.Position;
-        obj.mibView.handles.mibImageAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
-        obj.mibView.handles.mibZoomEdit.String = sprintf('%d %%', round(1/magFactor*100));
-        obj.mibView.handles.mibImageAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
-        obj.mibView.handles.mibImageAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
+        % Resize to fit screen - limits already scaled by coef_z in listenerUpdateDatasetAxes
+        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
     else
-        % Keep current zoom and pan settings
-        obj.mibView.handles.mibImageAxes.Units = 'pixels';
-        obj.mibView.handles.mibZoomEdit.String = sprintf('%d %%', round(1/magFactor*100));
+        % Keep current zoom and pan settings - limits already scaled
+        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
 
         % Calculate X limits
         xl(1) = min([axesX(1)/magFactor 0]);
-        if axesX(2) > size(obj.mibView.Ishown, 2) * magFactor
+        if axesX(2) > size(obj.mibModel.Ishown, 2) * magFactor
             if axesX(1) < 0
                 xl(2) = axesX(2)/magFactor;
             else
                 xl(2) = axesX(2)/magFactor - axesX(1)/magFactor;
             end
         else
-            xl(2) = size(obj.mibView.Ishown, 2);
+            xl(2) = size(obj.mibModel.Ishown, 2) * coef_z;  % CHANGED: multiply by coef_z
         end
 
         % Calculate Y limits
         yl(1) = min([axesY(1)/magFactor 0]);
-        if axesY(2) > size(obj.mibView.Ishown, 1) * magFactor
+        if axesY(2) > size(obj.mibModel.Ishown, 1) * magFactor
             if axesY(1) < 0
                 yl(2) = axesY(2)/magFactor;
             else
                 yl(2) = axesY(2)/magFactor - axesY(1)/magFactor;
             end
         else
-            yl(2) = size(obj.mibView.Ishown, 1);
+            yl(2) = size(obj.mibModel.Ishown, 1);
         end
 
-        obj.mibView.handles.mibImageAxes.YLim = yl;
-        obj.mibView.handles.mibImageAxes.XLim = [xl(1) xl(2)];
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = yl;
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = xl;
     end
+
+    return;
+
+    if resizeToMagnification == 1
+        % Resize to fit screen
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'manual';
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'manual';
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatio = [1 coef_z 1];
+
+        imPanPos = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.OuterPosition;
+        imPanPos(3) = imPanPos(3) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.RowHeight{2};
+        imPanPos(4) = imPanPos(4) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.ColumnWidth{1};
+        %obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
+        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
+    else
+        % Keep current zoom and pan settings
+        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
+
+        % Calculate X limits
+        xl(1) = min([axesX(1)/magFactor 0]);
+        if axesX(2) > size(obj.mibModel.Ishown, 2) * magFactor
+            if axesX(1) < 0
+                xl(2) = axesX(2)/magFactor;
+            else
+                xl(2) = axesX(2)/magFactor - axesX(1)/magFactor;
+            end
+        else
+            xl(2) = size(obj.mibModel.Ishown, 2);
+        end
+
+        % Calculate Y limits
+        yl(1) = min([axesY(1)/magFactor 0]);
+        if axesY(2) > size(obj.mibModel.Ishown, 1) * magFactor
+            if axesY(1) < 0
+                yl(2) = axesY(2)/magFactor;
+            else
+                yl(2) = axesY(2)/magFactor - axesY(1)/magFactor;
+            end
+        else
+            yl(2) = size(obj.mibModel.Ishown, 1);
+        end
+
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = yl;
+        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [xl(1) xl(2)];
+    end
+
+    return;
 
     %% Display center spot marker if enabled
     if obj.mibView.centerSpotHandle.enable
@@ -166,28 +240,28 @@ else
            isvalid(obj.mibView.centerSpotHandle.handle) == 0
             % Create center spot marker
             obj.mibView.centerSpotHandle.handle = drawpoint(...
-                'Position', [mean(obj.mibView.handles.mibImageAxes.XLim) ...
-                            mean(obj.mibView.handles.mibImageAxes.YLim)], ...
+                'Position', [mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim) ...
+                            mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim)], ...
                 'Deletable', false, ...
-                'parent', obj.mibView.handles.mibImageAxes, ...
+                'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, ...
                 'Color', 'y');
         end
         % Update position
         obj.mibView.centerSpotHandle.handle.Position = ...
-            [mean(obj.mibView.handles.mibImageAxes.XLim) ...
-             mean(obj.mibView.handles.mibImageAxes.YLim)];
+            [mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim) ...
+             mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim)];
     end
 
     %% Add ROIs overlay
     if obj.mibView.handles.mibRoiShowCheck.Value
-        obj.mibModel.mibDataset.hROI.addROIsToPlot(obj, 'shown');
+        obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(obj, 'shown');
     end
 
     %% Add measurements/annotations overlay
     if obj.mibModel.mibShowAnnotationsCheck
         obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
-        obj.mibModel.mibDataset.hMeasure.addMeasurementsToPlot(...
-            obj.mibModel, 'shown', obj.mibView.handles.mibImageAxes);
+        obj.mibModel.I{obj.mibModel.id}.hMeasure.addMeasurementsToPlot(...
+            obj.mibModel, 'shown', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
     end
 
     %% Update display
