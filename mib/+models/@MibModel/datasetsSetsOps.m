@@ -89,7 +89,14 @@ switch BatchOpt.Mode{1}
             notify(obj, 'ShowErrorDialog', eventdata);
             return;
         end
-        
+
+        initializationSwitch = false;
+        if isempty(obj.Sets.names)
+            % when true MIB is initialized, skip "notify(obj, 'UpdateDatasetAxes', eventdata);"
+            % will be initialized in "doPostInitializationTasks"
+            initializationSwitch = true;
+        end
+
         % update obj.Sets
         obj.Sets.names = [obj.Sets.names; BatchOpt.SetName];
         obj.Sets.selectedSet = numel(obj.Sets.names);
@@ -121,10 +128,12 @@ switch BatchOpt.Mode{1}
                 end
 
                 % update all widgets of the Datasets panel
-                Options.mode = 'resize';
-                Options.index = i;
-                eventdata = core.ToggleEventData(Options);
-                notify(obj, 'UpdateDatasetAxes', eventdata);
+                if ~initializationSwitch
+                    Options.mode = 'resize';
+                    Options.index = i;
+                    eventdata = core.ToggleEventData(Options);
+                    notify(obj, 'UpdateDatasetAxes', eventdata);
+                end
 
                 %obj.updateAxesLimits('resize', i); % Updates the obj.mibImage.axesX and obj.mibImage.axesY during fit screen, resize, or new dataset drawing
             else        % first call when MibModel initialized in MIB, for all other calls obj.preferences will be restored

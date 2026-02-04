@@ -14,6 +14,14 @@ drawnow nocallbacks;
 % restore the default layout
 status = obj.controller.loadLayout('localDefault');
 
+% update all widgets of the Datasets panel
+for i=1:obj.mibModel.Sets.datasetsInSet
+    Options.mode = 'resize';
+    Options.index = i;
+    eventdata = core.ToggleEventData(Options);
+    notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+end
+
 obj.handles.panels.selectionPanel.Selected = true;
 
 % ------------ add file drag-and-drop functionality callbacks -----------
