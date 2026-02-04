@@ -66,7 +66,7 @@ if nargin < 2; type = 'image'; end
 
 % define datasetVariable for obj.(datasetVariable).getData
 datasetVariable = type;
-if obj.labels.maxMaterials < 255 
+if obj.labels.maxMaterials == 63 
     if ismember(type, {'selection', 'mask', 'everything'}) 
         datasetVariable = 'labels';
     end

@@ -47,10 +47,7 @@ function [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)
 %   options.resizeToMagnification = false;
 %   imgRGB = obj.getRGBimage(options);
 
-% Copyright (C) 2026 Ilya Belevich, University of Helsinki
-% Part of Microscopy Image Browser, http://mib.helsinki.fi
-% This program is free software under GNU General Public License v3
-
+tic
 %% Parse input parameters
 if ~isfield(options, 'blockModeSwitch'); options.blockModeSwitch = false; end
 if ~isfield(options, 'resizeToMagnification'); options.resizeToMagnification = true; end
@@ -583,4 +580,5 @@ if obj.showAnnotations
     end
 end
 
+toc
 end
