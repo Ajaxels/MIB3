@@ -60,32 +60,12 @@ end
 
 %% Calculate aspect ratio coefficient based on orientation
 if obj.mibModel.I{obj.mibModel.id}.orientation == 3 % xy
-    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.x / obj.mibModel.I{obj.mibModel.id}.pixSize.y;
+    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.x / (obj.mibModel.I{obj.mibModel.id}.pixSize.y);
 elseif obj.mibModel.I{obj.mibModel.id}.orientation == 1 % zx
     coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.z / obj.mibModel.I{obj.mibModel.id}.pixSize.x;
 elseif obj.mibModel.I{obj.mibModel.id}.orientation == 2 % zy
     coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.z / obj.mibModel.I{obj.mibModel.id}.pixSize.y;
 end
-
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = matlab.graphics.primitive.Image('CData', []);
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = image(obj.mibModel.Ishown, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
-
-% %% Update image in axes
-% if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData)
-%     % Create new image object
-%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = image(obj.mibModel.Ishown, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
-% 
-%     % Configure image object
-%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.HitTest = 'off';
-% else
-%     % Update existing image
-%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = [];
-%     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = obj.mibModel.Ishown;
-% 
-%     % Remove old measurements and ROI overlays
-%     lineObj = findobj(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
-%     if ~isempty(lineObj);  delete(lineObj); end
-% end
 
 %% Update image in axes
 if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData)
@@ -185,92 +165,49 @@ else
         obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = xl;
     end
 
-    return;
-
-    if resizeToMagnification == 1
-        % Resize to fit screen
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'manual';
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'manual';
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatio = [1 coef_z 1];
-
-        imPanPos = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.OuterPosition;
-        imPanPos(3) = imPanPos(3) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.RowHeight{2};
-        imPanPos(4) = imPanPos(4) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.ColumnWidth{1};
-        %obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
-        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
-    else
-        % Keep current zoom and pan settings
-        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
-
-        % Calculate X limits
-        xl(1) = min([axesX(1)/magFactor 0]);
-        if axesX(2) > size(obj.mibModel.Ishown, 2) * magFactor
-            if axesX(1) < 0
-                xl(2) = axesX(2)/magFactor;
-            else
-                xl(2) = axesX(2)/magFactor - axesX(1)/magFactor;
-            end
-        else
-            xl(2) = size(obj.mibModel.Ishown, 2);
-        end
-
-        % Calculate Y limits
-        yl(1) = min([axesY(1)/magFactor 0]);
-        if axesY(2) > size(obj.mibModel.Ishown, 1) * magFactor
-            if axesY(1) < 0
-                yl(2) = axesY(2)/magFactor;
-            else
-                yl(2) = axesY(2)/magFactor - axesY(1)/magFactor;
-            end
-        else
-            yl(2) = size(obj.mibModel.Ishown, 1);
-        end
-
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = yl;
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [xl(1) xl(2)];
-    end
-
-    return;
-
     %% Display center spot marker if enabled
-    if obj.mibView.centerSpotHandle.enable
-        if isempty(obj.mibView.centerSpotHandle.handle) || ...
-           isvalid(obj.mibView.centerSpotHandle.handle) == 0
-            % Create center spot marker
-            obj.mibView.centerSpotHandle.handle = drawpoint(...
-                'Position', [mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim) ...
-                            mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim)], ...
-                'Deletable', false, ...
-                'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, ...
-                'Color', 'y');
+    if obj.view.handles.qab.target.Value
+        axesHandle = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
+        centerX = mean(axesHandle.XLim);
+        centerY = mean(axesHandle.YLim);
+        
+        if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker) || ...
+                ~isvalid(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker)
+            % create marker
+            obj.cQuickAccessBar.createCentralMarker(centerX, centerY);
+        else
+            % Update position
+            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.XData = centerX;
+            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.YData = centerY;
         end
-        % Update position
-        obj.mibView.centerSpotHandle.handle.Position = ...
-            [mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim) ...
-             mean(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim)];
+    else
+        % Delete old marker if it exists to prevent stacking
+        if isprop(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}, 'centralMarker') && ...
+                ~isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker) && ...
+                isvalid(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker)
+            delete(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker);
+        end
     end
+    
+    % %% Add ROIs overlay
+    % if obj.mibView.handles.mibRoiShowCheck.Value
+    %     obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(obj, 'shown');
+    % end
 
-    %% Add ROIs overlay
-    if obj.mibView.handles.mibRoiShowCheck.Value
-        obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(obj, 'shown');
-    end
-
-    %% Add measurements/annotations overlay
-    if obj.mibModel.mibShowAnnotationsCheck
-        obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
-        obj.mibModel.I{obj.mibModel.id}.hMeasure.addMeasurementsToPlot(...
-            obj.mibModel, 'shown', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
-    end
+    % %% Add measurements/annotations overlay
+    % if obj.mibModel.mibShowAnnotationsCheck
+    %     obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
+    %     obj.mibModel.I{obj.mibModel.id}.hMeasure.addMeasurementsToPlot(...
+    %         obj.mibModel, 'shown', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+    % end
 
     %% Update display
-    if ~verLessThan('matlab', '9.7')
-        drawnow nocallbacks limitrate;
-    end
+    %if ~verLessThan('matlab', '9.7')
+    %    drawnow nocallbacks limitrate;
+    %end
 end
 
 %% Update cursor size
-obj.mibView.updateCursor();
+%obj.mibView.updateCursor();
 
 end

@@ -16,7 +16,7 @@ arguments (Input)
     hData {mustBeA(hData, {'matlab.ui.internal.toolstrip.base.ToolstripEventData'})}
 end
 
-mode = hWidget.Text;
+mode = hWidget.Description;
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibQuickAccessBar.gui_Callbacks: "obj.view.handles.qab.handles->%s" -> changed/pressed\n', mode);
@@ -28,7 +28,20 @@ switch mode
     case 'Save model to a file'
     case 'Enable the blocked mode to process only visible portion of the dataset'
     case 'Enable the ROI mode'
-    case 'Enable the center marker'
+    case 'Enable the center marker'  % obj.view.handles.qab.target
+        % Create or show the center marker
+        axesHandle = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
+        if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker) || ...
+                ~isvalid(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker)
+            centerX = mean(axesHandle.XLim);
+            centerY = mean(axesHandle.YLim);
+            obj.createCentralMarker(centerX, centerY);
+        end
+        if hWidget.Selected
+            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = true;
+        else
+            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = false;
+        end
     case 'Perform a quick measurement'
     case 'Switch dataset to the XZ orientation'
     case 'Switch dataset to the YZ orientation'

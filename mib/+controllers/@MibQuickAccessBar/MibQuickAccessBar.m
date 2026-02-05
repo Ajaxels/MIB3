@@ -12,6 +12,8 @@ classdef MibQuickAccessBar
 
     methods
 
+        createCentralMarker(obj, centerX, centerY, options)        % create a central marker on the image axes
+        
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of the quick access bar of MIB
 
         function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
