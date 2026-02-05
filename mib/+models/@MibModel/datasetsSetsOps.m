@@ -142,7 +142,9 @@ switch BatchOpt.Mode{1}
         end
                 
         % update all widgets of the Datasets panel
-        notify(obj, 'DatasetsPanelUpdate');
+        if ~initializationSwitch
+            notify(obj, 'DatasetsPanelUpdate');
+        end
     case 'Rename set'
         %fprintf('models.mibModel.datasetsSetsOps: Rename set %s -> %s\n', obj.Sets.names{obj.Sets.selectedSet}, BatchOpt.SetName);
         

@@ -17,10 +17,10 @@ function listenerShowImage(obj, src, evtData)
 % 
 
 if ~isprop(evtData, 'Parameters')
-    settings = struct('resize', false);
+    settings = struct('resize', true);
 else
     settings = evtData.Parameters;
-    if ~isfield(settings, 'resize'); settings.resize = false; end
+    if ~isfield(settings, 'resize'); settings.resize = true; end
 end
 
 obj.showImage(settings.resize);

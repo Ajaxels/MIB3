@@ -14,6 +14,8 @@ drawnow nocallbacks;
 % restore the default layout
 status = obj.controller.loadLayout('localDefault');
 
+drawnow nocallbacks;
+
 % update all widgets of the Datasets panel
 for i=1:obj.mibModel.Sets.datasetsInSet
     Options.mode = 'resize';
@@ -23,6 +25,9 @@ for i=1:obj.mibModel.Sets.datasetsInSet
 end
 
 obj.handles.panels.selectionPanel.Selected = true;
+
+% update GUI elements
+%obj.handles.status.zoom.Value = sprintf('%3d %%', 1/obj.controller.mibModel.I{obj.controller.mibModel.id}.magFactor*100);
 
 % ------------ add file drag-and-drop functionality callbacks -----------
 % requires GUI to be visible, otherwise the window is not grabbed correctly

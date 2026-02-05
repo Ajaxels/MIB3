@@ -134,6 +134,8 @@ end
 obj.mibModel.I{index}.setAxesLimits(axesX, axesY);
 obj.mibModel.I{index}.magFactor = magFactor;
 
+%sprintf('axes: %d-%d %d-%d\n', axesX(1), axesX(2), axesY(1), axesY(2))
+
 % notify listeners that the image axes were changed -> mibSnapshotController
 %motifyEvent.Name = 'updteAxesLimits_changed';
 %eventdata = ToggleEventData(motifyEvent);

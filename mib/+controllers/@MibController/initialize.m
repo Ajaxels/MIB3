@@ -57,6 +57,7 @@ obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateToolbar', @(src, evnt) o
 
 % Make the GUI visible
 obj.view.gui.Visible = true;
+drawnow;
 
 % update the initialized datasets using the obtained default settings
 for i=1:numel(obj.mibModel.I)
@@ -89,6 +90,5 @@ if obj.mibModel.preferences.Tips.ShowTips == 1
         obj.mibModel.preferences.Tips.ShowTips = false;
     end
 end
-
 
 end
