@@ -11,6 +11,11 @@ classdef MibView < handle
         % handles to mibController
         handles
         % list of handles for the gui
+        
+        brushCursorShow
+        % logical identifier whether or not to show the brush cursor
+        brushCursorOffset
+        % [x y] offsets for drawing of the brush cursor
     end
 
     events
@@ -52,6 +57,8 @@ classdef MibView < handle
 
         qab = addQuickAccessBar(obj) % add quick access buttons
 
+        mibGUI_WinMouseMotionFcn(obj)         % returns coordinates and image intensities under the mouse cursor
+
         doPostInitializationTasks(obj)  % Do some post-initialization tasks that require that the main GUI window is visible
 
         initialize(obj)             % initialize the view
@@ -61,6 +68,10 @@ classdef MibView < handle
         overrideDescriptions(obj);  % override description text by adding the widget tag
 
         recenterGui(obj) % recenter MIB to be on the center of the screen
+
+        updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)        % update brush cursor
+
+        updateBrushCursorOffset(obj) % update offset for showing the brush cursor, depends on the brush radius in the segmentation panel
 
         function obj = MibView(controller)
            % obj = mibView(controller)

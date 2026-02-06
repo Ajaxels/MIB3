@@ -41,6 +41,13 @@ obj.addGuiControllers();
 % add callback for selection of the
 obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 
+if obj.mibModel.preferences.System.EnableSelection
+    obj.view.brushCursorShow =  true;
+    %obj.view.updateBrushCursor();
+else
+    obj.view.brushCursorShow =  false;
+end
+
 % --------- update listeners
 % callback for change of properties in obj.view.handles.imageViewDocGroup, used to track selection of panels in the image view panel
 obj.listeners{1} = addlistener(obj.view.handles.imageViewDocGroup, 'PropertyChanged', @obj.listenerAppStateChanged);
@@ -58,15 +65,6 @@ obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateToolbar', @(src, evnt) o
 % Make the GUI visible
 obj.view.gui.Visible = true;
 drawnow;
-
-% update the initialized datasets using the obtained default settings
-for i=1:numel(obj.mibModel.I)
-    % update dataset obj.mibModel.I{i}.axesX/Y and obj.mibModel.I{i}.magFactor 
-    Options.mode = 'resize';
-    Options.index = i;
-    eventdata = core.ToggleEventData(Options);
-    notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
-end
 
 if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
 pause(2);
@@ -90,5 +88,37 @@ if obj.mibModel.preferences.Tips.ShowTips == 1
         obj.mibModel.preferences.Tips.ShowTips = false;
     end
 end
+
+% % check for update
+% currentDate = floor(now);
+% if currentDate - obj.mibModel.preferences.System.Update.SinceLastCheck > obj.mibModel.preferences.System.Update.RecheckPeriod
+%     % check for update
+%     obj.mibModel.preferences.System.Update.SinceLastCheck = currentDate;
+%     if isdeployed
+%         if ismac
+%             link = 'http://mib.helsinki.fi/web-update/mib2_mac.txt';
+%         elseif isunix
+%             link = 'http://mib.helsinki.fi/web-update/mib2_linux.txt';
+%         else
+%             link = 'http://mib.helsinki.fi/web-update/mib2_win.txt';
+%         end
+%     else
+%         link = 'http://mib.helsinki.fi/web-update/mib2_matlab.txt';
+%     end
+%     try
+%         urlText = urlread(link, 'Timeout', 4);
+%     catch err
+%         urlText = sprintf('0.305\n<html>\ntest\n</html>\n---Info---\n<html>\n<div style="font-family: arial;">\n<b>The update file has not been detected...</b>\n</html>');
+%     end
+% 
+%     linefeedPos = strfind(urlText, sprintf('\n'));
+%     availableVersion = str2double(urlText(1:linefeedPos(1)));
+%     if availableVersion - obj.mibVersionNumeric > 0
+%         anwser = questdlg(sprintf('A new version %f of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later from Menu->Help->Check for Update', availableVersion),'New version', 'Update now', 'Later', 'Update now');
+%         if strcmp(anwser, 'Update now')
+%             obj.startController('mibUpdateCheckController', obj);
+%         end
+%     end
+% end
 
 end

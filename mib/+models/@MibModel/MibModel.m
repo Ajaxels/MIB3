@@ -88,6 +88,8 @@ classdef MibModel < handle
 
         [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
 
+        magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
+        
         loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack
 
         initialize(obj)        % initialize the MibModel class

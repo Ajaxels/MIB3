@@ -208,6 +208,6 @@ else
 end
 
 %% Update cursor size
-%obj.mibView.updateCursor();
+obj.view.updateBrushCursor();
 
 end

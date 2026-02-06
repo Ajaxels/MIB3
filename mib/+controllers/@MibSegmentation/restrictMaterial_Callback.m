@@ -37,5 +37,5 @@ end
 % update segmentation table
 obj.updateMaterialsTable();
 
-focus(ancestor(hWidget, 'figure')); % remove focus from hObject
+focus(obj.view.handles.panels.segmentationPanel.Figure); % remove focus from hObject
 end

@@ -36,5 +36,5 @@ switch hWidget.Value
 end
 
 % set focus to the widget's figure parent
-focus(ancestor(hWidget, 'figure'));
+focus(obj.view.handles.panels.segmentationPanel.Figure); % remove focus from hObject
 end

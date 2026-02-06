@@ -65,6 +65,11 @@ if numel(obj.view.handles.figureDocs) < noSets
     % get aliases
     c = obj.mibController;
     imViewHandles = obj.view.handles.imView{noSets}.handles;
+    
+    % hold axes once here
+    % Note! requires YDir = 'reverse', defined in ImageView.mlapp
+    hold(imViewHandles.imViewAxes, 'on');
+    
     % add callbacks
     imViewHandles.lastSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     imViewHandles.prevSlice.ButtonPushedFcn = @c.imViewPanel_Callbacks;
@@ -78,6 +83,14 @@ if numel(obj.view.handles.figureDocs) < noSets
     imViewHandles.frameNumberSlider.ValueChangingFcn = @c.imViewPanel_Callbacks;
     imViewHandles.nextFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
     imViewHandles.lastFrame.ButtonPushedFcn = @c.imViewPanel_Callbacks;
+
+    % add mouse movement callbacks
+    % add mouse movement callback
+    % UIFigure identified in inside ImageView.mlapp as 
+    % parentFigure = ancestor(obj.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, 'figure');
+    % obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.mibGUI_WinMouseMotionFcn();
+    
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.mibGUI_WinMouseMotionFcn();
 
     % add component to the figure-document
     obj.view.gui.add(obj.view.handles.figureDocs{noSets});

@@ -411,6 +411,8 @@ end
 % end
 % obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
 
+% update callbacks
+obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.mibGUI_WinMouseMotionFcn();
 
 %% TO DO 
 %obj.mibView.updateCursor();  % update size of the cursor
