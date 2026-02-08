@@ -121,6 +121,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
 
+        slice_no = getCurrentSliceNumber(obj)        % get slice number of the currently shown image
+
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
 
         dataset = getData3D(obj, type, time, orient, col_channel, options)        % Get the a 3D dataset with colors: height:width:depth:colors

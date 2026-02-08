@@ -84,8 +84,12 @@ classdef MibModel < handle
 
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
 
+        [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
+
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model; compatible with the batch mode.
 
+        [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
+        
         [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
 
         magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
