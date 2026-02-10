@@ -16,6 +16,17 @@ classdef MibView < handle
         % logical identifier whether or not to show the brush cursor
         brushCursorOffset
         % [x y] offsets for drawing of the brush cursor
+        brushSizeNumbers
+        % matrix with the font for changing of brush size
+        
+        ctrlPressed = 0
+        % set a variable to deal with the increase of the brush size during the erasing action. Ctrl+left mouse button
+        % obj.ctrlPressed:
+        % obj.ctrlPressed == 0; - indicates the normal brush mode, i.e. when the control button is not pressed
+        % obj.ctrlPressed > 0; - the control button is pressed and handles.ctrlPressed indicates increase of the brush radius
+        % obj.ctrlPressed == -1; - a tweak to deal with Ctrl+Mouse wheel action to change size of the brush. -1 indicates that the brush size change mode was triggered
+        % see in functions:
+        %    imView_WindowKeyPressFcn, imView_WindowKeyReleaseFcn, imView_ScrollWheelFcn        
     end
 
     events
@@ -57,9 +68,11 @@ classdef MibView < handle
 
         qab = addQuickAccessBar(obj) % add quick access buttons
 
-        mibGUI_WinMouseMotionFcn(obj)         % returns coordinates and image intensities under the mouse cursor
-
         doPostInitializationTasks(obj)  % Do some post-initialization tasks that require that the main GUI window is visible
+
+        imView_ScrollWheelFcn(obj, eventdata)         % control callbacks from mouse scroll wheel 
+
+        imView_WinMouseMotionFcn(obj)         % returns coordinates and image intensities under the mouse cursor
 
         initialize(obj)             % initialize the view
 

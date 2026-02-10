@@ -88,9 +88,11 @@ if numel(obj.view.handles.figureDocs) < noSets
     % add mouse movement callback
     % UIFigure identified in inside ImageView.mlapp as 
     % parentFigure = ancestor(obj.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, 'figure');
-    % obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.mibGUI_WinMouseMotionFcn();
+    % obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.imView_WinMouseMotionFcn();
     
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.mibGUI_WinMouseMotionFcn();
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.imView_WinMouseMotionFcn();
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowScrollWheelFcn = @(hObject, eventdata, handles)obj.view.imView_ScrollWheelFcn(eventdata);
+    
 
     % add component to the figure-document
     obj.view.gui.add(obj.view.handles.figureDocs{noSets});

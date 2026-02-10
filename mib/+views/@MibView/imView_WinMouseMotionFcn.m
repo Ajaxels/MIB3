@@ -1,5 +1,5 @@
-function mibGUI_WinMouseMotionFcn(obj)
-% function mibGUI_WinMouseMotionFcn(obj)
+function imView_WinMouseMotionFcn(obj)
+% function imView_WinMouseMotionFcn(obj)
 % Returns coordinates and image intensities under the mouse cursor
 %
 % This function is called on every mouse movement over the figure window.
@@ -121,7 +121,7 @@ try
                 obj.controller.cStatus.handles.pixelLabel.Text = sprintf('%d:%d', xImage, yImage);
             else
                 % Pad colorValues with NaN to always have 4 values
-                colorPadded = [colorValues; NaN(max(0, 4-numel(colorValues)), 1)];
+                colorPadded = [double(colorValues); NaN(max(0, 4-numel(colorValues)), 1)];
 
                 obj.controller.cStatus.handles.pixelLabel.Text = sprintf('%d:%d (%d:%d:%d:%d) / %d', xImage, yImage, ...
                     colorPadded(1), colorPadded(2), colorPadded(3), colorPadded(4), modelValues);

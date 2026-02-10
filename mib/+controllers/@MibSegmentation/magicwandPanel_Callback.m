@@ -28,6 +28,11 @@ end
 switch mode
     case 'magicMethod' % select the MagicWand or RegionGrowing mode
         %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        if strcmp(hWidget.Value, 'Magic Wand')
+            obj.handles.magicRange2.Enable = true;
+        else
+            obj.handles.magicRange2.Enable = false;
+        end
     case 'magicRange1' % define the range 1 parameter
         %fprintf('Clicked on a widget of the segmentation panel->Magicwand tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'magicRange2' % define the range 2 parameter

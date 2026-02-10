@@ -17,6 +17,10 @@ if nargin < 4
     if ~isempty(keyModifier); keyModifier = keyModifier{1}; end
 end
 
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibSelection.lutTable_CellEditCallback\n');
+end
+
 if isempty(hData.Indices); return; end
 
 data = hWidget.Data;
