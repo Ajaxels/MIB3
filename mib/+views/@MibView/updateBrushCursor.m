@@ -1,5 +1,5 @@
-function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
-% function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
+function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes, selectedSet)
+% function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes, selectedSet)
 % Update brush cursor
 %
 % Parameters:
@@ -8,17 +8,19 @@ function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
 %       @li @b ':' (default) - show dashed cursor
 %       @li @b '-' % show solid cursor when painting.
 % isInsideAxes: @b [optional] true if mouse is inside axes (default true)
+% selectedSet: index of the set
 %
 % Return values:
 
+if nargin < 5; selectedSet = []; end
 if nargin < 4; isInsideAxes = true; end
 if nargin < 3; lineStyle = []; end
 if nargin < 2; xyCoordinate = []; end
 
+if isempty(selectedSet); selectedSet = obj.mibModel.Sets.selectedSet; end
 if isempty(lineStyle); lineStyle = ':'; end
 
 % get aliases
-selectedSet = obj.mibModel.Sets.selectedSet;
 imView = obj.handles.imView{selectedSet};
 
 % Determine if cursor should be visible:

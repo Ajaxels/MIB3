@@ -84,7 +84,7 @@ classdef MibView < handle
 
         recenterGui(obj) % recenter MIB to be on the center of the screen
 
-        updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)        % update brush cursor
+        updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes, selectedSet)        % update brush cursor
 
         updateBrushCursorOffset(obj) % update offset for showing the brush cursor, depends on the brush radius in the segmentation panel
 

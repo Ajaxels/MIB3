@@ -20,8 +20,12 @@ for i = 1:numel(obj.mibModel.I)
     eventdata = core.ToggleEventData(Options);
     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 end
-notify(obj.mibModel, 'DatasetsPanelUpdate');
-obj.updateBrushCursor([], [], false);
+%notify(obj.mibModel, 'DatasetsPanelUpdate');
+notify(obj.mibModel, 'ShowImage');
+
+for setId = 1:numel(obj.handles.imView)
+    obj.updateBrushCursor([], [], false, setId);
+end
 
 inCallback = false;
 end
