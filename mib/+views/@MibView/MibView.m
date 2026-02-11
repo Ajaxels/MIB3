@@ -72,6 +72,8 @@ classdef MibView < handle
 
         imView_ScrollWheelFcn(obj, eventdata)         % control callbacks from mouse scroll wheel 
 
+        imView_SizeChangedFcn(obj)        % callback on size change of the Image View panel
+
         imView_WinMouseMotionFcn(obj)         % returns coordinates and image intensities under the mouse cursor
 
         initialize(obj)             % initialize the view

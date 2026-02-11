@@ -92,6 +92,7 @@ if numel(obj.view.handles.figureDocs) < noSets
     
     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.imView_WinMouseMotionFcn();
     obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.WindowScrollWheelFcn = @(hObject, eventdata, handles)obj.view.imView_ScrollWheelFcn(eventdata);
+    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imViewFigure.SizeChangedFcn = @(hObject, eventdata, handles)obj.view.imView_SizeChangedFcn();
     
 
     % add component to the figure-document
