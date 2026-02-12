@@ -78,11 +78,11 @@ function initialize(obj, img, meta, datasetType, modelType)
     
     % ---------- other properties ----------
     % a vector [min, max] with minimal and maximal coordinates of
-    % the axes X of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
+    % the axes X of the 'obj.cImageDoc{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
     obj.axesX = NaN;    
     
     % a vector [min, max] with minimal and maximal coordinates of
-    % the axes Y of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
+    % the axes Y of the 'obj.cImageDoc{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
     obj.axesY = NaN;    
     
     % a variable to hold a status of the block mode (obj.handles.qab.blockMode), true - enabled, false - disabled

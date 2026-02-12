@@ -43,7 +43,6 @@ obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup
 
 if obj.mibModel.preferences.System.EnableSelection
     obj.view.brushCursorShow =  true;
-    %obj.view.updateBrushCursor();
 else
     obj.view.brushCursorShow =  false;
 end

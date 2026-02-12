@@ -26,10 +26,10 @@ classdef MibDataset < matlab.mixin.Copyable
         % log of actions performed with the dataset, cell array
         axesX
         % a vector [min, max] with minimal and maximal coordinates of
-        % the axes X of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
+        % the axes X of the 'obj.mibController.cImageDoc{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
         axesY
         % a vector [min, max] with minimal and maximal coordinates of
-        % the axes Y of the 'obj.view.handles.imView{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
+        % the axes Y of the 'obj.mibController.cImageDoc{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
         bioFormatsMemoizerMemoDir
         % path to directory where BioFormats Memoizer is storing memo files
         blockModeSwitch

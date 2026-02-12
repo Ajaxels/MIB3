@@ -182,7 +182,7 @@ end
 % -------------------------------------------------------------
 if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
     % get alias to handles
-    imViewHandles = obj.view.handles.imView{selectedSet}.handles;
+    imViewHandles = obj.cImageDoc{selectedSet}.handles;
     currentSlice = obj.mibModel.I{obj.mibModel.id}.slices{3}(1);
 
     if dataset.image.depth > 1 && dataset.image.depth ~= imViewHandles.sliceNumber.Limits(2) - 0.001
@@ -206,7 +206,7 @@ end
 % update time slider
 if isempty(updatePanels) || ismember(updatePanels, 'timeSlider')
     % get alias to handles
-    imViewHandles = obj.view.handles.imView{selectedSet}.handles;
+    imViewHandles = obj.cImageDoc{selectedSet}.handles;
     currentTime = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
 
     if dataset.image.time > 1 && dataset.image.time ~= imViewHandles.frameNumber.Limits(2) - 0.001
@@ -283,9 +283,9 @@ if isempty(updatePanels) || ismember(updatePanels, 'imView')
         % use getfield to get exact value as suggested by Ian M. Garcia in
         % http://stackoverflow.com/questions/3627107/how-can-i-index-a-matlab-array-returned-by-a-function-without-first-assigning-it
         layerName = getfield(dataset.image.sliceName, {min([currentSlice numel(dataset.image.sliceName)])});  %#ok<GFLD>
-        obj.view.handles.imView{selectedSet}.handles.imViewAxes.Title.String = sprintf('%s    >>>>>    %s', strVal1, layerName{1});
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.Title.String = sprintf('%s    >>>>>    %s', strVal1, layerName{1});
     else
-        obj.view.handles.imView{selectedSet}.handles.imViewAxes.Title.String = strVal1;
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.Title.String = strVal1;
     end
 end
 
@@ -414,8 +414,8 @@ end
 % obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
 
 % update callbacks
-obj.view.handles.imView{selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.imView_WinMouseMotionFcn();
-obj.view.handles.imView{selectedSet}.imViewFigure.WindowScrollWheelFcn = @(hObject, eventdata, handles)obj.view.imView_ScrollWheelFcn(eventdata);
+obj.cImageDoc{selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.imView_WinMouseMotionFcn();
+obj.cImageDoc{selectedSet}.imViewFigure.WindowScrollWheelFcn = @(hObject, eventdata, handles)obj.view.imView_ScrollWheelFcn(eventdata);
 
 
 %% TO DO 

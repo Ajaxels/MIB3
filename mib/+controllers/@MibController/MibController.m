@@ -7,6 +7,8 @@ classdef MibController < handle
         % Controller for the Datasets panel
         cDirContents
         % Controller for the Dir contents panel
+        cImageDoc = {}        % cell array of controllers.MibImageDocument
+        % Image document controllers (cell array for multiple documents)
         cQuickAccessBar
         % Controller for the Quick Access Bar
         cSelection
@@ -18,6 +20,7 @@ classdef MibController < handle
         cSegmentation
         % Controller for the Segmentation panel
         cStatus
+        
         % Controller for the Status bar
         childControllers
         % list of opened subcontrollers
@@ -83,6 +86,8 @@ classdef MibController < handle
 
         addGuiControllers(obj)  % add GUI components to the main view obj.view
 
+        deleteImageDocument(obj, docIndex)        % Delete an image document and reindex remaining documents
+        
         result = exitProgram(obj, target)        % exit mib 
 
         id = findChildId(obj, childName)        % find id of a child controller
@@ -91,8 +96,6 @@ classdef MibController < handle
 
         helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
 
-        imViewPanel_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View panel obj.view.handles.imView{setNumber}.handles...
-        
         initialize(obj)  % initialize the main MibController class
 
         initializeLibraries(obj, initList)            % initialize external libraries and Java paths

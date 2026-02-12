@@ -1,6 +1,6 @@
-function imViewPanel_Callbacks(obj, hWidget, hData, mode)
-% function imViewPanel_Callbacks(obj, hWidget, hData, mode)
-% callbacks for widgets of the Image View panel obj.view.handles.imView{setNumber}.handles...
+function gui_Callbacks(obj, hWidget, hData, mode)
+% function gui_Callbacks(obj, hWidget, hData, mode)
+% callbacks for widgets of the Image View documents obj.cImageDoc{setId} 
 %
 % Parameters:
 % hWidget: handle to the pressed widget
@@ -21,7 +21,7 @@ function imViewPanel_Callbacks(obj, hWidget, hData, mode)
 % 'lastFrame' -> go to the last frame
 
 arguments (Input)
-    obj controllers.MibController
+    obj controllers.MibImageDocument
     hWidget {mustBeA(hWidget, {'matlab.ui.control.Button', 'matlab.ui.control.NumericEditField', 'matlab.ui.control.Slider'})}
     hData {mustBeA(hData, {'matlab.ui.eventdata.ButtonPushedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ValueChangingData'})}
     mode char = ''
@@ -31,7 +31,7 @@ if isempty(mode); mode = hWidget.Tag; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     %setNumber =
-    fprintf('controllers.MibController.imViewPanel_Callbacks: "obj.view.handles.imView{%d}.handles.%s" -> changed/pressed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet, mode);
+    fprintf('controllers.MibImageDocument.gui_Callbacks: "obj.cImageDoc{%d}.handles.%s" -> changed/pressed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet, mode);
 end
 
 switch mode
@@ -40,9 +40,9 @@ switch mode
     case 'sliceNumberSlider'
         % use hData.Value for interactive update
         sliceNumber = round(hData.Value); % the slider top limit is a float with +0.001, thus it needs to be rounded
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.sliceNumber.Value = sliceNumber;
+        obj.handles.sliceNumber.Value = sliceNumber;
         obj.mibModel.I{obj.mibModel.id}.slices{3} = [sliceNumber sliceNumber];
-        obj.showImage();
+        obj.mibController.showImage();
     case 'prevSlice'
     case 'firstSlice'
     case 'sliceNumber'
@@ -51,7 +51,7 @@ switch mode
     case 'prevFrame'
     case 'frameNumberSlider'
         % use hData.Value for interactive update
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.frameNumber.Value = hData.Value;
+        obj.handles.frameNumber.Value = hData.Value;
     case 'nextFrame'
     case 'lastFrame'
 end

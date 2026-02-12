@@ -70,12 +70,6 @@ classdef MibView < handle
 
         doPostInitializationTasks(obj)  % Do some post-initialization tasks that require that the main GUI window is visible
 
-        imView_ScrollWheelFcn(obj, eventdata)         % control callbacks from mouse scroll wheel 
-
-        imView_SizeChangedFcn(obj)        % callback on size change of the Image View panel
-
-        imView_WinMouseMotionFcn(obj)         % returns coordinates and image intensities under the mouse cursor
-
         initialize(obj)             % initialize the view
 
         globalTabGroup = buildGlobalTabGroup(obj)    % build global tab group
@@ -83,10 +77,6 @@ classdef MibView < handle
         overrideDescriptions(obj);  % override description text by adding the widget tag
 
         recenterGui(obj) % recenter MIB to be on the center of the screen
-
-        updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes, selectedSet)        % update brush cursor
-
-        updateBrushCursorOffset(obj) % update offset for showing the brush cursor, depends on the brush radius in the segmentation panel
 
         function obj = MibView(controller)
            % obj = mibView(controller)

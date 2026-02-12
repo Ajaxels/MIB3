@@ -22,7 +22,7 @@ function createCentralMarker(obj, centerX, centerY, options)
 %
 % Example 1:
 %   % Place default marker at the center of current axes
-%   ax = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
+%   ax = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
 %   centerX = mean(ax.XLim);
 %   centerY = mean(ax.YLim);
 %   obj.createCentralMarker(centerX, centerY);
@@ -56,17 +56,17 @@ end
 
 % Get axes handle for current image view
 selectedSet = obj.mibModel.Sets.selectedSet;
-axesHandle = obj.view.handles.imView{selectedSet}.handles.imViewAxes;
+axesHandle = obj.mibController.cImageDoc{selectedSet}.handles.imViewAxes;
 
 % Delete old marker if it exists to prevent stacking
-if isprop(obj.view.handles.imView{selectedSet}, 'centralMarker') && ...
-        ~isempty(obj.view.handles.imView{selectedSet}.centralMarker) && ...
-        isvalid(obj.view.handles.imView{selectedSet}.centralMarker)
-    delete(obj.view.handles.imView{selectedSet}.centralMarker);
+if isprop(obj.mibController.cImageDoc{selectedSet}, 'centralMarker') && ...
+        ~isempty(obj.mibController.cImageDoc{selectedSet}.centralMarker) && ...
+        isvalid(obj.mibController.cImageDoc{selectedSet}.centralMarker)
+    delete(obj.mibController.cImageDoc{selectedSet}.centralMarker);
 end
 
 % Create marker as line object with no connecting line
-obj.view.handles.imView{selectedSet}.centralMarker = line(...
+obj.mibController.cImageDoc{selectedSet}.centralMarker = line(...
     axesHandle, ...
     centerX, centerY, ...
     'Marker', options.Marker, ...

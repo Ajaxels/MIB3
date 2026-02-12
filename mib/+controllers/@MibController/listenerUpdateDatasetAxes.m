@@ -78,10 +78,10 @@ end
 selectedSet = obj.mibModel.Sets.selectedSet;
 % get axes position from a previous set, as the function obtains position
 % of not yet created axes
-if numel(obj.view.handles.imView) < obj.mibModel.Sets.selectedSet; selectedSet = selectedSet - 1; end
+if numel(obj.cImageDoc) < obj.mibModel.Sets.selectedSet; selectedSet = selectedSet - 1; end
 
 drawnow;
-axSize = obj.view.handles.imView{selectedSet}.handles.imViewAxes.InnerPosition;
+axSize = obj.cImageDoc{selectedSet}.handles.imViewAxes.InnerPosition;
 
 [axesX, axesY] = obj.mibModel.I{index}.getAxesLimits();
 magFactor = obj.mibModel.I{index}.magFactor;

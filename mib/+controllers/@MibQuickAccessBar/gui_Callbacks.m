@@ -30,17 +30,17 @@ switch mode
     case 'Enable the ROI mode'
     case 'Enable the center marker'  % obj.view.handles.qab.target
         % Create or show the center marker
-        axesHandle = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
-        if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker) || ...
-                ~isvalid(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker)
+        axesHandle = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
+        if isempty(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centralMarker) || ...
+                ~isvalid(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centralMarker)
             centerX = mean(axesHandle.XLim);
             centerY = mean(axesHandle.YLim);
             obj.createCentralMarker(centerX, centerY);
         end
         if hWidget.Selected
-            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = true;
+            obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = true;
         else
-            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = false;
+            obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = false;
         end
     case 'Perform a quick measurement'
     case 'Switch dataset to the XZ orientation'

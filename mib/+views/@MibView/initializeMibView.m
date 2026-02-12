@@ -37,7 +37,6 @@ obj.gui.add(obj.handles.imageViewDocGroup);
 
 % init default variables
 obj.handles.figureDocs = {}; % cell array of handles for added matlab.ui.internal.FigureDocument
-obj.handles.imView = {}; % cell array of handles for the component of FigureDocument
 
 % generate obj.brushSizeNumbers dictionary for efficient loading of cursor
 % with the brush size value

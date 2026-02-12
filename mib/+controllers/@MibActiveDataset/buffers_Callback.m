@@ -40,10 +40,8 @@ if ~strcmp(prevBufferStringId, newBufferStringId)
     end
 
     % update description of the set tab
-    obj.view.handles.figureDocs{obj.mibModel.Sets.selectedSet}.Description = sprintf('Buffer %d:\n%s', ...
-        buttonId, ...
-        obj.mibModel.I{obj.mibModel.id}.image.filename);
-
+    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.setDescription(...
+        sprintf('Buffer %d:\n%s', buttonId, obj.mibModel.I{obj.mibModel.id}.image.filename));
 end
 obj.view.handles.panels.activeDataset.handles.(newBufferStringId).BackgroundColor = [0 1 0];
 

@@ -38,12 +38,12 @@ function showImage(obj, resizeToMagnification, sImgIn)
 %
 %
 
-%I = cell2mat(obj.mibModel.I{obj.mibModel.id}.getData2D());
-%image(I, 'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
-
 %% Parse input parameters
 if nargin < 3; sImgIn = []; end
 if nargin < 2; resizeToMagnification = true; end
+
+% get the currently selected set
+selectedSet = obj.mibModel.Sets.selectedSet;
 
 %% Generate RGB image to display
 rgbOptions.blockModeSwitch = true;
@@ -68,71 +68,71 @@ elseif obj.mibModel.I{obj.mibModel.id}.orientation == 2 % zy
 end
 
 %% Update image in axes
-if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData)
+if isempty(obj.cImageDoc{selectedSet}.imageHandle.CData)
     % Create new image object with stretched XData
     imgHeight = size(obj.mibModel.Ishown, 1);
     imgWidth = size(obj.mibModel.Ishown, 2);
 
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle = ...
+    obj.cImageDoc{selectedSet}.imageHandle = ...
         image(obj.mibModel.Ishown, ...
               'XData', [1 imgWidth * coef_z], ...
               'YData', [1 imgHeight], ...
-              'parent', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+              'parent', obj.cImageDoc{selectedSet}.handles.imViewAxes);
     
     % Configure image object
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.HitTest = 'off';
+    obj.cImageDoc{selectedSet}.imageHandle.HitTest = 'off';
 else
     % Update existing image
     imgHeight = size(obj.mibModel.Ishown, 1);
     imgWidth = size(obj.mibModel.Ishown, 2);
     
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = [];
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.CData = obj.mibModel.Ishown;
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.XData = [1 imgWidth * coef_z];
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.imageHandle.YData = [1 imgHeight];
+    obj.cImageDoc{selectedSet}.imageHandle.CData = [];
+    obj.cImageDoc{selectedSet}.imageHandle.CData = obj.mibModel.Ishown;
+    obj.cImageDoc{selectedSet}.imageHandle.XData = [1 imgWidth * coef_z];
+    obj.cImageDoc{selectedSet}.imageHandle.YData = [1 imgHeight];
     
     % Remove old measurements and ROI overlays
-    lineObj = findobj(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
+    lineObj = findobj(obj.cImageDoc{selectedSet}.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
     if ~isempty(lineObj); delete(lineObj); end
 end
 
 
 %% Configure axes properties
 % moved to controllers.MibActiveDataset.update_fromModel
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Box = 'on';
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XTick = [];
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YTick = [];
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Interruptible = 'off';
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.BusyAction = 'queue';
-% obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.HandleVisibility = 'callback';
+% obj.cImageDoc{selectedSet}.handles.imViewAxes.Box = 'on';
+% obj.cImageDoc{selectedSet}.handles.imViewAxes.XTick = [];
+% obj.cImageDoc{selectedSet}.handles.imViewAxes.YTick = [];
+% obj.cImageDoc{selectedSet}.handles.imViewAxes.Interruptible = 'off';
+% obj.cImageDoc{selectedSet}.handles.imViewAxes.BusyAction = 'queue';
+% obj.cImageDoc{selectedSet}.handles.imViewAxes.HandleVisibility = 'callback';
 
 %% Set axes limits and zoom
 if ~isempty(sImgIn) && resizeToMagnification == 1
     % Custom image provided - fit to screen
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'manual';
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'manual';
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatio = [1 coef_z 1];
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'manual';
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'manual';
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatio = [1 coef_z 1];
 
-    imPanPos = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.OuterPosition;
-    imPanPos(3) = imPanPos(3) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.RowHeight{2};
-    imPanPos(4) = imPanPos(4) - obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.mainGridLayout.ColumnWidth{1};
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = [1 size(obj.mibModel.Ishown, 1)];
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
+    imPanPos = obj.cImageDoc{selectedSet}.handles.mainGridLayout.OuterPosition;
+    imPanPos(3) = imPanPos(3) - obj.cImageDoc{selectedSet}.handles.mainGridLayout.RowHeight{2};
+    imPanPos(4) = imPanPos(4) - obj.cImageDoc{selectedSet}.handles.mainGridLayout.ColumnWidth{1};
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [1 size(obj.mibModel.Ishown, 1)];
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
 else
     % Standard dataset display
     magFactor = obj.mibModel.I{obj.mibModel.id}.magFactor;
     [axesX, axesY] = obj.mibModel.I{obj.mibModel.id}.getAxesLimits();
 
     % Keep axes in stretch-to-fill mode (auto aspect ratio)
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'auto';
-    obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'auto';
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'auto';
+    obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'auto';
 
     if resizeToMagnification == 1
         % Resize to fit screen - limits already scaled by coef_z in listenerUpdateDatasetAxes
         obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
     else
         % Keep current zoom and pan settings - limits already scaled
         obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
@@ -161,31 +161,31 @@ else
             yl(2) = size(obj.mibModel.Ishown, 1);
         end
 
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.YLim = yl;
-        obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.XLim = xl;
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = yl;
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = xl;
     end
 
     %% Display center spot marker if enabled
     if obj.view.handles.qab.target.Value
-        axesHandle = obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;
+        axesHandle = obj.cImageDoc{selectedSet}.handles.imViewAxes;
         centerX = mean(axesHandle.XLim);
         centerY = mean(axesHandle.YLim);
         
-        if isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker) || ...
-                ~isvalid(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker)
+        if isempty(obj.cImageDoc{selectedSet}.centralMarker) || ...
+                ~isvalid(obj.cImageDoc{selectedSet}.centralMarker)
             % create marker
             obj.cQuickAccessBar.createCentralMarker(centerX, centerY);
         else
             % Update position
-            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.XData = centerX;
-            obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker.YData = centerY;
+            obj.cImageDoc{selectedSet}.centralMarker.XData = centerX;
+            obj.cImageDoc{selectedSet}.centralMarker.YData = centerY;
         end
     else
         % Delete old marker if it exists to prevent stacking
-        if isprop(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}, 'centralMarker') && ...
-                ~isempty(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker) && ...
-                isvalid(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker)
-            delete(obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.centralMarker);
+        if isprop(obj.cImageDoc{selectedSet}, 'centralMarker') && ...
+                ~isempty(obj.cImageDoc{selectedSet}.centralMarker) && ...
+                isvalid(obj.cImageDoc{selectedSet}.centralMarker)
+            delete(obj.cImageDoc{selectedSet}.centralMarker);
         end
     end
     
@@ -198,7 +198,7 @@ else
     % if obj.mibModel.mibShowAnnotationsCheck
     %     obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
     %     obj.mibModel.I{obj.mibModel.id}.hMeasure.addMeasurementsToPlot(...
-    %         obj.mibModel, 'shown', obj.view.handles.imView{obj.mibModel.Sets.selectedSet}.handles.imViewAxes);
+    %         obj.mibModel, 'shown', obj.cImageDoc{selectedSet}.handles.imViewAxes);
     % end
 
     %% Update display
@@ -208,6 +208,6 @@ else
 end
 
 %% Update cursor size
-obj.view.updateBrushCursor();
+obj.cImageDoc{selectedSet}.updateBrushCursor();
 
 end
