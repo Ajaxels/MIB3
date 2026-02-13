@@ -61,9 +61,20 @@ if numel(obj.mibController.cImageDoc) < noSets
    
     % add component to the figure-document
     obj.view.gui.add(obj.mibController.cImageDoc{noSets}.figureDoc);
-    
-    % update description of the set tab
     drawnow;
+    % Small pause to ensure the layout engine has finished
+    pause(0.5); % add small pause to allow rendering on axes
+    
+    % Explicitly trigger axes update for all datasets in this set with correct dimensions
+    startIndex = (noSets-1)*obj.mibModel.Sets.datasetsInSet + 1;
+    for i=startIndex:startIndex+obj.mibModel.Sets.datasetsInSet-1
+        Options.mode = 'resize';
+        Options.index = i;
+        eventdata = core.ToggleEventData(Options);
+        notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+    end
+
+    % update description of the set tab
     obj.mibController.cImageDoc{noSets}.setDescription( ...
         sprintf('Buffer %d:\n%s', Sets.selectedDataset(selectedSet), obj.mibModel.I{newBufferGlobalIndex}.image.filename)); 
 

@@ -13,6 +13,7 @@ drawnow nocallbacks;
 
 % restore the default layout
 status = obj.controller.loadLayout('localDefault');
+pause(2);
 drawnow nocallbacks;
 
 % update all widgets of the Datasets panel

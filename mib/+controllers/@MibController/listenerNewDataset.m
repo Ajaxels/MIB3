@@ -48,7 +48,7 @@ end
 obj.mibModel.I{Parameters.index}.bioFormatsMemoizerMemoDir = obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;
 
 % uncheck the linked views state
-currentButtonHandle = sprintf('buffer%i', Parameters.index); % handle of the current dataset button
+currentButtonHandle = sprintf('buffer%i', mod(Parameters.index, obj.mibModel.Sets.datasetsInSet)); % handle of the current dataset button
 if obj.cActiveDataset.handles.(currentButtonHandle).UIContextMenu.Children(3).Text(1) == '[' % check for "[Linked ..."
     % exampleStr = '[Linked: 12 <-> 15] press to unlink';
     % get ids of the linked buttons

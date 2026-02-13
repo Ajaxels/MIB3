@@ -413,9 +413,8 @@ end
 % end
 % obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
 
-% update callbacks
-obj.cImageDoc{selectedSet}.imViewFigure.WindowButtonMotionFcn = @(hObject, eventdata, handles)obj.view.imView_WinMouseMotionFcn();
-obj.cImageDoc{selectedSet}.imViewFigure.WindowScrollWheelFcn = @(hObject, eventdata, handles)obj.view.imView_ScrollWheelFcn(eventdata);
+% update callbacks, not needed here most likely
+% obj.cImageDoc{selectedSet}.setupCallbacks();
 
 
 %% TO DO 

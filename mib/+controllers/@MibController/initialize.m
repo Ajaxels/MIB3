@@ -66,7 +66,7 @@ obj.view.gui.Visible = true;
 drawnow;
 
 if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
-pause(2);
+%pause(2);
 
 % do GUI post-initialization tasks that require GUI to be visible
 obj.view.doPostInitializationTasks();
