@@ -7,9 +7,10 @@ function listenerShowImage(obj, src, evtData)
 % src: handle to MibModel
 % evtData: event data, an instance of core.ToggleEventData class with the following fields:
 % .Parameters field containing a structure with the
-%    .evtData.Parameters.resize - logical switch to resize the image in the view
+%    .evtData.Parameters.resizeToMagnification - logical switch to resize the image in the view
 %         @li false -> [@em default]  keep the current vieweing settings
 %         @li true -> resize image to fit the screen
+%    .evtData.Parameters.setOfDatasetsIndex [numerical] - id of the set use for show image, when empty use the current one
 % .Source -> handle to MibModel
 % .EventName -> string with the event name that triggered the callback
 %
@@ -17,11 +18,12 @@ function listenerShowImage(obj, src, evtData)
 % 
 
 if ~isprop(evtData, 'Parameters')
-    settings = struct('resize', true);
+    settings = struct('resizeToMagnification', true, 'setOfDatasetsIndex', []);
 else
     settings = evtData.Parameters;
-    if ~isfield(settings, 'resize'); settings.resize = true; end
+    if ~isfield(settings, 'resizeToMagnification'); settings.resizeToMagnification = true; end
+    if ~isfield(settings, 'setOfDatasetsIndex'); settings.setOfDatasetsIndex = []; end
 end
 
-obj.showImage(settings.resize);
+obj.showImage(settings.resizeToMagnification, settings.setOfDatasetsIndex);
 end

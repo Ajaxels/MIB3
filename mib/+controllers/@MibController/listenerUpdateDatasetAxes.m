@@ -54,11 +54,19 @@ end
 if ~isfield(Parameters, 'mode'); Parameters.mode = 'resize'; end
 if ~isfield(Parameters, 'index'); Parameters.index = obj.mibModel.id; end
 if ~isfield(Parameters, 'newMagFactor'); Parameters.newMagFactor = 1; end
+if ~isfield(Parameters, 'setOfDatasetsIndex'); Parameters.setOfDatasetsIndex = []; end 
 
 % make local variables
 mode = Parameters.mode;
 index = Parameters.index;
 newMagFactor = Parameters.newMagFactor; 
+
+% get the set id from the dataset id OR use provided setOfDatasetsIndex
+if ~isempty(Parameters.setOfDatasetsIndex)
+    selectedSet = Parameters.setOfDatasetsIndex;  % Use explicit setOfDatasetsIndex
+else
+    selectedSet = ceil(index/obj.mibModel.Sets.datasetsInSet);  % Calculate from index
+end
 
 % get the scaling coefficient
 if obj.mibModel.I{index}.orientation == 3     % xy
@@ -75,17 +83,33 @@ elseif obj.mibModel.I{index}.orientation == 2    % ---- yz
     width = obj.mibModel.I{index}.dim_yxzct(3);  % depth
 end
 
-selectedSet = obj.mibModel.Sets.selectedSet;
 % get axes position from a previous set, as the function obtains position
 % of not yet created axes
-if numel(obj.cImageDoc) < obj.mibModel.Sets.selectedSet; selectedSet = selectedSet - 1; end
+if numel(obj.cImageDoc) < selectedSet; selectedSet = selectedSet - 1; end
 
-drawnow;
+%drawnow;
 axSize = obj.cImageDoc{selectedSet}.handles.imViewAxes.InnerPosition;
 
 [axesX, axesY] = obj.mibModel.I{index}.getAxesLimits();
 magFactor = obj.mibModel.I{index}.magFactor;
 if isnan(axesX(1)) || strcmp(mode, 'resize') == 1
+    % imageAR = (width * coef_z) / height;  % Image aspect ratio (physical)
+    % axesAR = axSize(3) / axSize(4);       % Axes aspect ratio
+    % 
+    % if imageAR > axesAR
+    %     % Image wider than axes: fit to width
+    %     magFactor = (width * coef_z) / axSize(3);
+    %     axesX = [1, width];
+    %     axesY = [height/2 - (axSize(4) * magFactor)/2, ...
+    %         height/2 + (axSize(4) * magFactor)/2];
+    % else
+    %     % Image taller/narrower than axes: fit to height
+    %     magFactor = height / axSize(4);
+    %     axesY = [1, height];
+    %     axesX = [width/2 - (axSize(3) * magFactor)/(2 * coef_z), ...
+    %         width/2 + (axSize(3) * magFactor)/(2 * coef_z)];
+    % end
+
     if height < axSize(4) && width*coef_z >= axSize(3)     % scale to width
         magFactor = width*coef_z/axSize(3);
         axesX(1) = 1;

@@ -1,4 +1,4 @@
-function [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)
+function [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)
 % Generate RGB image from all layers for display
 %
 % Generate RGB image by combining image data, segmentation model, mask,
@@ -25,7 +25,8 @@ function [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)
 %       .t - [@em optional] [tmin, tmax] time point to display [default: current]
 %       .y - [@em optional] [ymin, ymax] Y-coordinates of region to extract
 %       .x - [@em optional] [xmin, xmax] X-coordinates of region to extract
-%       .useLut - [@em optional] 0 or 1 to use LUT color table [default: current setting, taken from obj.I{obj.id}.useLUT]
+%       .useLut - [@em optional] 0 or 1 to use LUT color table [default: current setting, taken from obj.I{datasetId}.useLUT]
+%   datasetId: [@em optional] index of the dataset to generate RGB image, when empty or missing, get the RGB of the currently selected dataset
 %   sImgIn: [@em optional] custom 3D image stack to use instead of loading from dataset
 %
 % Return values:
@@ -48,26 +49,32 @@ function [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)
 %   imgRGB = obj.getRGBimage(options);
 
 tic
+
+if nargin < 4; sImgIn = []; end
+if nargin < 3; datasetId = []; end
+
+if isempty(datasetId); datasetId = obj.id; end
+
 %% Parse input parameters
 if ~isfield(options, 'blockModeSwitch'); options.blockModeSwitch = false; end
 if ~isfield(options, 'resizeToMagnification'); options.resizeToMagnification = true; end
 if ~isfield(options, 'markerType'); options.markerType = obj.preferences.SegmTools.Annotations.DisplayAs; end
 if ~isfield(options, 't')
-    options.t = [obj.I{obj.id}.slices{5}(1), obj.I{obj.id}.slices{5}(1)]; 
+    options.t = [obj.I{datasetId}.slices{5}(1), obj.I{datasetId}.slices{5}(1)]; 
 end
 if ~isfield(options, 'useLut')
-    options.useLut = obj.I{obj.id}.useLUT; 
+    options.useLut = obj.I{datasetId}.useLUT; 
 end
 options.roiId = -1; % do not show ROIs in this mode
 
 %% Initialize display parameters
 % Get current slice and orientation info
-slices = obj.I{obj.id}.slices;
-orientation = obj.I{obj.id}.orientation;
+slices = obj.I{datasetId}.slices;
+orientation = obj.I{datasetId}.orientation;
 
 % Calculate magnification factor for resizing
 if options.resizeToMagnification
-    magnificationFactor = obj.I{obj.id}.magFactor; % datasetVoxels / shownVoxels
+    magnificationFactor = obj.I{datasetId}.magFactor; % datasetVoxels / shownVoxels
 else
     magnificationFactor = 1;
 end
@@ -86,7 +93,7 @@ end
 % Handle special cases for pan mode and image pyramids
 panModeException = 0;
 if (options.blockModeSwitch == 0 && magnificationFactor < 1) || ...
-   ~isempty(obj.I{obj.id}.image.pyramid.levelNames)
+   ~isempty(obj.I{datasetId}.image.pyramid.levelNames)
     panModeException = 1;
 end
 
@@ -98,11 +105,11 @@ else
 end
 
 %% Load image data
-if nargin < 3
+if isempty(sImgIn)
     % Load image from dataset
-    sImgIn  = cell2mat(obj.I{obj.id}.getData2D('image', sliceToShowIdx, NaN, NaN, options));
-    colortype = obj.I{obj.id}.image.colorType;
-    currViewPort = obj.I{obj.id}.image.viewPort;
+    sImgIn  = cell2mat(obj.I{datasetId}.getData2D('image', sliceToShowIdx, NaN, NaN, options));
+    colortype = obj.I{datasetId}.image.colorType;
+    currViewPort = obj.I{datasetId}.image.viewPort;
     showModelSwitch = obj.showModel;
     showMaskSwitch = obj.showMask;
 else
@@ -149,13 +156,13 @@ clear sImgIn;
 
 % Store raw image for virtual stacking mode
 imgRAW = [];
-if strcmp(obj.I{obj.id}.datasetType, 'Virtual'); imgRAW = sImg; end
+if strcmp(obj.I{datasetId}.datasetType, 'Virtual'); imgRAW = sImg; end
 
 %% Apply display adjustments to image
 % Hide image if requested
 if obj.hideImage; sImg = zeros(size(sImg), class(sImg)); end
 
-max_int = double(obj.I{obj.id}.image.maxInt);
+max_int = double(obj.I{datasetId}.image.maxInt);
 
 % Apply live stretch if enabled
 if obj.onFlyImageStretch
@@ -175,8 +182,8 @@ if obj.onFlyImageStretch
 end
 
 %% Load segmentation model layer
-if showModelSwitch && obj.I{obj.id}.modelExist && obj.preferences.Colors.ModelTransparency < 1
-    sOver1 = cell2mat(obj.I{obj.id}.getData2D('labels', sliceToShowIdx, NaN, NaN, options));
+if showModelSwitch && obj.I{datasetId}.modelExist && obj.preferences.Colors.ModelTransparency < 1
+    sOver1 = cell2mat(obj.I{datasetId}.getData2D('labels', sliceToShowIdx, NaN, NaN, options));
 
     % Resize model to match image
     if panModeException == 0 && magnificationFactor > 1
@@ -192,8 +199,8 @@ else
 end
 
 %% Load mask layer
-if showMaskSwitch && obj.I{obj.id}.maskExist && obj.preferences.Colors.MaskTransparency < 1
-    sOver2 = cell2mat(obj.I{obj.id}.getData2D('mask', sliceToShowIdx, NaN, NaN, options));
+if showMaskSwitch && obj.I{datasetId}.maskExist && obj.preferences.Colors.MaskTransparency < 1
+    sOver2 = cell2mat(obj.I{datasetId}.getData2D('mask', sliceToShowIdx, NaN, NaN, options));
 
     % Resize mask to match image
     if panModeException == 0 && magnificationFactor > 1
@@ -209,8 +216,8 @@ else
 end
 
 %% Load selection layer
-if obj.I{obj.id}.enableSelection && obj.preferences.Colors.SelectionTransparency < 1
-    selectionLayer = cell2mat(obj.I{obj.id}.getData2D('selection', sliceToShowIdx, NaN, NaN, options));
+if obj.I{datasetId}.enableSelection && obj.preferences.Colors.SelectionTransparency < 1
+    selectionLayer = cell2mat(obj.I{datasetId}.getData2D('selection', sliceToShowIdx, NaN, NaN, options));
     if ~isempty(selectionLayer)
         % Resize selection to match image
         if panModeException == 0 && magnificationFactor > 1
@@ -230,7 +237,7 @@ end
 
 %% Generate RGB channels from image data
 colorScale = max_int;
-selectedColorsLUT = obj.I{obj.id}.image.lutColors(slices{4}, :);
+selectedColorsLUT = obj.I{datasetId}.image.lutColors(slices{4}, :);
 
 switch colortype
     case 'grayscale'
@@ -239,7 +246,7 @@ switch colortype
            (currViewPort.min(1) ~= 0 || currViewPort.max(1) ~= max_int || currViewPort.gamma(1) ~= 1)
 
             if ~isa(sImg, 'uint32')
-                [lowIn, highIn, lowOut, highOut] = obj.I{obj.id}.image.getImAdjustStretchCoef(1);
+                [lowIn, highIn, lowOut, highOut] = obj.I{datasetId}.image.getImAdjustStretchCoef(1);
                 sImg = imadjust(sImg, [lowIn, highIn], [lowOut highOut], currViewPort.gamma(1));
             else
                 sImg = uint8(double((sImg - currViewPort.min)) / ...
@@ -264,7 +271,7 @@ switch colortype
 
     case 'indexed'
         % Convert indexed image to RGB
-        cmap = obj.I{obj.id}.image.colormap;
+        cmap = obj.I{datasetId}.image.colormap;
         sImg = uint8(ind2rgb(sImg, cmap) * 255);
         R = sImg(:,:,1);
         G = sImg(:,:,2);
@@ -294,23 +301,23 @@ switch colortype
             % Standard RGB display
             if numel(slices{4}) > 3
                 % More than 3 channels - use first 3
-                [lowIn, highIn, lowOut, highOut] = obj.I{obj.id}.image.getImAdjustStretchCoef(1:3);
+                [lowIn, highIn, lowOut, highOut] = obj.I{datasetId}.image.getImAdjustStretchCoef(1:3);
                 R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(1));
                 G = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(2));
                 B = imadjust(sImg(:,:,3), [lowIn(3), highIn(3)], [lowOut(3) highOut(3)], currViewPort.gamma(3));
             
             elseif numel(slices{4}) == 3
                 % Exactly 3 channels selected
-                [lowIn, highIn, lowOut, highOut] = obj.I{obj.id}.image.getImAdjustStretchCoef(slices{4});
+                [lowIn, highIn, lowOut, highOut] = obj.I{datasetId}.image.getImAdjustStretchCoef(slices{4});
                 R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
                 G = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(slices{4}(2)));
                 B = imadjust(sImg(:,:,3), [lowIn(3), highIn(3)], [lowOut(3) highOut(3)], currViewPort.gamma(slices{4}(3)));
 
             elseif numel(slices{4}) == 2
                 % Two channels - map to RGB based on selection
-                [lowIn, highIn, lowOut, highOut] = obj.I{obj.id}.image.getImAdjustStretchCoef(slices{4});
+                [lowIn, highIn, lowOut, highOut] = obj.I{datasetId}.image.getImAdjustStretchCoef(slices{4});
 
-                if obj.I{obj.id}.image.colors == 3 || slices{4}(end) < 4
+                if obj.I{datasetId}.image.colors == 3 || slices{4}(end) < 4
                     if slices{4}(1) ~= 1
                         R = zeros(size(sImg,1), size(sImg,2), class(sImg));
                         G = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
@@ -332,7 +339,7 @@ switch colortype
 
             elseif isscalar(slices{4})
                 % Single channel - display as grayscale
-                [lowIn, highIn, lowOut, highOut] = obj.I{obj.id}.image.getImAdjustStretchCoef(slices{4}(1));
+                [lowIn, highIn, lowOut, highOut] = obj.I{datasetId}.image.getImAdjustStretchCoef(slices{4}(1));
                 R = imadjust(sImg(:,:,1), [lowIn, highIn], [lowOut highOut], currViewPort.gamma(slices{4}(1)));
                 G = R;
                 B = R;
@@ -342,16 +349,16 @@ end
 
 %% Overlay segmentation model
 if ~isnan(sOver1(1,1,1))
-    sList = obj.I{obj.id}.labels.materialNames;
+    sList = obj.I{datasetId}.labels.materialNames;
     T = obj.preferences.Colors.ModelTransparency;
 
-    if obj.I{obj.id}.labels.maxMaterials ~= 127 && obj.I{obj.id}.labels.maxMaterials ~= 32767
+    if obj.I{datasetId}.labels.maxMaterials ~= 127 && obj.I{datasetId}.labels.maxMaterials ~= 32767
         M = sOver1;
-        selectedObject = obj.I{obj.id}.getSelectedMaterialIndex;
+        selectedObject = obj.I{datasetId}.getSelectedMaterialIndex;
 
         % Convert to contour if needed
         if obj.preferences.Styles.Labels.ShowAsContours
-            if obj.I{obj.id}.showAllMaterials
+            if obj.I{datasetId}.showAllMaterials
                 if strcmp(obj.preferences.Styles.Contour.ThicknessRendering, 'quality')
                     M2 = zeros(size(M), 'uint8');
                     for ind = 1:numel(sList)
@@ -373,20 +380,20 @@ if ~isnan(sOver1(1,1,1))
         end
 
         % Blend model colors with image
-        if obj.I{obj.id}.showAllMaterials
+        if obj.I{datasetId}.showAllMaterials
             modIndeces = find(M ~= 0);
             if numel(modIndeces) > 0
                 % Generate color lookup for materials
                 switch class(R)
                     case 'uint8'
-                        modColors = uint8(obj.I{obj.id}.labels.materialColors * colorScale);
+                        modColors = uint8(obj.I{datasetId}.labels.materialColors * colorScale);
                     case 'uint16'
-                        modColors = uint16(obj.I{obj.id}.labels.materialColors * colorScale);
+                        modColors = uint16(obj.I{datasetId}.labels.materialColors * colorScale);
                     case 'uint32'
-                        modColors = uint32(obj.I{obj.id}.labels.materialColors * colorScale);
+                        modColors = uint32(obj.I{datasetId}.labels.materialColors * colorScale);
                 end
 
-                if obj.I{obj.id}.labels.maxMaterials <= 65535
+                if obj.I{datasetId}.labels.maxMaterials <= 65535
                     R(modIndeces) = R(modIndeces) * T + modColors(M(modIndeces), 1) * (1 - T);
                     G(modIndeces) = G(modIndeces) * T + modColors(M(modIndeces), 2) * (1 - T);
                     B(modIndeces) = B(modIndeces) * T + modColors(M(modIndeces), 3) * (1 - T);
@@ -401,16 +408,16 @@ if ~isnan(sOver1(1,1,1))
         elseif selectedObject > 0
             i = selectedObject;
             pntlist = find(M == i);
-            if obj.I{obj.id}.labels.maxMaterials > 65535
+            if obj.I{datasetId}.labels.maxMaterials > 65535
                 i = mod(i - 1, 65535) + 1;
             end
             if ~isempty(pntlist)
-                R(pntlist) = R(pntlist) * T + obj.I{obj.id}.labels.materialColors(i, 1) * colorScale * (1 - T);
-                G(pntlist) = G(pntlist) * T + obj.I{obj.id}.labels.materialColors(i, 2) * colorScale * (1 - T);
-                B(pntlist) = B(pntlist) * T + obj.I{obj.id}.labels.materialColors(i, 3) * colorScale * (1 - T);
+                R(pntlist) = R(pntlist) * T + obj.I{datasetId}.labels.materialColors(i, 1) * colorScale * (1 - T);
+                G(pntlist) = G(pntlist) * T + obj.I{datasetId}.labels.materialColors(i, 2) * colorScale * (1 - T);
+                B(pntlist) = B(pntlist) * T + obj.I{datasetId}.labels.materialColors(i, 3) * colorScale * (1 - T);
             end
         end
-    elseif obj.I{obj.id}.modelType == 127 || obj.I{obj.id}.modelType == 32767
+    elseif obj.I{datasetId}.modelType == 127 || obj.I{datasetId}.modelType == 32767
         % Special signed model visualization
         maximum = max(max(sOver1));
         coef = double(1 + 255/maximum * (1 - T));
@@ -470,55 +477,55 @@ if magnificationFactor < 1 && panModeException == 0
 end
 
 %% Add 3D lines overlay
-if obj.showLines3D && obj.I{obj.id}.lines3D.noTrees > 0
+if obj.showLines3D && obj.I{datasetId}.lines3D.noTrees > 0
     pixBox(5:6) = [sliceToShowIdx sliceToShowIdx];
 
     if options.blockModeSwitch == 1
-        [pixBox(3), pixBox(4), pixBox(1), pixBox(2)] = obj.I{obj.id}.getCoordinatesOfShownImage();
+        [pixBox(3), pixBox(4), pixBox(1), pixBox(2)] = obj.I{datasetId}.getCoordinatesOfShownImage();
     else
-        [datasetHeight, datasetWidth] = obj.I{obj.id}.getDatasetDimensions('image', [], options);
+        [datasetHeight, datasetWidth] = obj.I{datasetId}.getDatasetDimensions('image', [], options);
         pixBox(1) = 1;
         pixBox(2) = datasetWidth;
         pixBox(3) = 1;
         pixBox(4) = datasetHeight;
     end
 
-    bb = obj.I{obj.id}.boundingBox; % get bounding box of the dataset
+    bb = obj.I{datasetId}.boundingBox; % get bounding box of the dataset
     BoxOut = pixBox;
 
     % Convert pixel coordinates to physical coordinates
-    if obj.I{obj.id}.orientation == 3 % xy
-        BoxOut(1:2) = pixBox(1:2) * obj.I{obj.id}.pixSize.x + bb(1) - obj.I{obj.id}.pixSize.x;
-        BoxOut(3:4) = pixBox(3:4) * obj.I{obj.id}.pixSize.y + bb(3) - obj.I{obj.id}.pixSize.y;
-        BoxOut(5:6) = pixBox(5:6) * obj.I{obj.id}.pixSize.z + bb(5) - obj.I{obj.id}.pixSize.z;
-    elseif obj.I{obj.id}.orientation == 1 % zx
-        BoxOut(1:2) = pixBox(1:2) * obj.I{obj.id}.pixSize.z + bb(5) - obj.I{obj.id}.pixSize.z;
-        BoxOut(3:4) = pixBox(3:4) * obj.I{obj.id}.pixSize.x + bb(1) - obj.I{obj.id}.pixSize.x;
-        BoxOut(5:6) = pixBox(5:6) * obj.I{obj.id}.pixSize.y + bb(3) - obj.I{obj.id}.pixSize.y;
-    elseif obj.I{obj.id}.orientation == 2 % zy
-        BoxOut(1:2) = pixBox(1:2) * obj.I{obj.id}.pixSize.z + bb(5) - obj.I{obj.id}.pixSize.z;
-        BoxOut(3:4) = pixBox(3:4) * obj.I{obj.id}.pixSize.y + bb(3) - obj.I{obj.id}.pixSize.y;
-        BoxOut(5:6) = pixBox(5:6) * obj.I{obj.id}.pixSize.x + bb(1) - obj.I{obj.id}.pixSize.x;
+    if obj.I{datasetId}.orientation == 3 % xy
+        BoxOut(1:2) = pixBox(1:2) * obj.I{datasetId}.pixSize.x + bb(1) - obj.I{datasetId}.pixSize.x;
+        BoxOut(3:4) = pixBox(3:4) * obj.I{datasetId}.pixSize.y + bb(3) - obj.I{datasetId}.pixSize.y;
+        BoxOut(5:6) = pixBox(5:6) * obj.I{datasetId}.pixSize.z + bb(5) - obj.I{datasetId}.pixSize.z;
+    elseif obj.I{datasetId}.orientation == 1 % zx
+        BoxOut(1:2) = pixBox(1:2) * obj.I{datasetId}.pixSize.z + bb(5) - obj.I{datasetId}.pixSize.z;
+        BoxOut(3:4) = pixBox(3:4) * obj.I{datasetId}.pixSize.x + bb(1) - obj.I{datasetId}.pixSize.x;
+        BoxOut(5:6) = pixBox(5:6) * obj.I{datasetId}.pixSize.y + bb(3) - obj.I{datasetId}.pixSize.y;
+    elseif obj.I{datasetId}.orientation == 2 % zy
+        BoxOut(1:2) = pixBox(1:2) * obj.I{datasetId}.pixSize.z + bb(5) - obj.I{datasetId}.pixSize.z;
+        BoxOut(3:4) = pixBox(3:4) * obj.I{datasetId}.pixSize.y + bb(3) - obj.I{datasetId}.pixSize.y;
+        BoxOut(5:6) = pixBox(5:6) * obj.I{datasetId}.pixSize.x + bb(1) - obj.I{datasetId}.pixSize.x;
     end
 
-    addLinesOptions.orientation = obj.I{obj.id}.orientation;
-    imgRGB = obj.I{obj.id}.lines3D.addLinesToImage(imgRGB, BoxOut, addLinesOptions);
+    addLinesOptions.orientation = obj.I{datasetId}.orientation;
+    imgRGB = obj.I{datasetId}.lines3D.addLinesToImage(imgRGB, BoxOut, addLinesOptions);
 end
 
 %% Add annotations overlay
 if obj.showAnnotations
     Annotations = obj.preferences.SegmTools.Annotations.Precision;
     
-    if obj.I{obj.id}.annotations.getLabelsNumber() >= 1
+    if obj.I{datasetId}.annotations.getLabelsNumber() >= 1
         if ~isfield(options, 'sliceNo')
-            options.sliceNo = obj.I{obj.id}.slices{obj.I{obj.id}.orientation}(1);
+            options.sliceNo = obj.I{datasetId}.slices{obj.I{datasetId}.orientation}(1);
         end
 
         % Define depth range to display annotations
         zSlices = [options.sliceNo - Annotations.ShownExtraDepth, ...
                    options.sliceNo + Annotations.ShownExtraDepth];
 
-        [labelsList, labelValues, labelPos] = obj.I{obj.id}.getSliceLabels(zSlices);
+        [labelsList, labelValues, labelPos] = obj.I{datasetId}.getSliceLabels(zSlices);
         if isempty(labelsList); return; end
 
         % Get coordinate indices based on orientation
@@ -545,7 +552,7 @@ if obj.showAnnotations
             end
         else
             % Block mode - adjust for visible area
-            [axesX, axesY] = obj.I{obj.id}.getAxesLimits();
+            [axesX, axesY] = obj.I{datasetId}.getAxesLimits();
 
             if options.resizeToMagnification
                 pos(:,1) = ceil((labelPos(:, xId) - max([0 floor(axesX(1))])) / magnificationFactor);

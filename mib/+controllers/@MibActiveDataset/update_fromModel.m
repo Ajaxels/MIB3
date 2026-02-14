@@ -132,8 +132,8 @@ if ~isempty(obj.view.handles.imageViewDocGroup.LastSelected) && ...
     
     % Get titles for the documents
     titles = cellfun(@(x) x.getTitle(), obj.mibController.cImageDoc, 'UniformOutput', false);
-    documentIndex = ismember(titles, Sets.names{selectedSet});
-    obj.mibController.cImageDoc{documentIndex}.selectDocument();
+    setOfDatasetsIndex = ismember(titles, Sets.names{selectedSet});
+    obj.mibController.cImageDoc{setOfDatasetsIndex}.selectDocument();
 end
 
 % callback for the buffer button press

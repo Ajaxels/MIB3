@@ -1,4 +1,5 @@
-function showImage(obj, resizeToMagnification, sImgIn)
+function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
+% function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
 % showImage - Display image in the main image axes
 %
 % Main visualization function that renders the RGB image with all layers
@@ -13,6 +14,7 @@ function showImage(obj, resizeToMagnification, sImgIn)
 %   resizeToMagnification: [@em optional, logical] display mode:
 %           true - resize to current magnification [@b default]          
 %           false - return in original 100% resolution
+%   setOfDatasetsIndex: [@em optional, numerical] id of the set use for show image, when empty use the current one
 %   sImgIn: [@em optional] custom 2D RGB image to display (height, width, colors)
 %           When provided with resizeToMagnification=0, shows in same scale/position as current dataset
 %           When provided with resizeToMagnification=1, shows in full resolution
@@ -39,11 +41,17 @@ function showImage(obj, resizeToMagnification, sImgIn)
 %
 
 %% Parse input parameters
-if nargin < 3; sImgIn = []; end
+if nargin < 4; sImgIn = []; end
+if nargin < 3; setOfDatasetsIndex = []; end
 if nargin < 2; resizeToMagnification = true; end
 
 % get the currently selected set
-selectedSet = obj.mibModel.Sets.selectedSet;
+if isempty(setOfDatasetsIndex)
+    selectedSet = obj.mibModel.Sets.selectedSet;
+else
+    selectedSet = setOfDatasetsIndex;
+end
+datasetId = obj.mibModel.Sets.selectedDataset(selectedSet)+(obj.mibModel.Sets.datasetsInSet*(selectedSet-1));
 
 %% Generate RGB image to display
 rgbOptions.blockModeSwitch = true;
@@ -52,19 +60,19 @@ rgbOptions.resizeToMagnification = resizeToMagnification;
 
 if isempty(sImgIn)
     % Generate RGB from dataset
-    [obj.mibModel.Ishown, obj.mibModel.Iraw] = obj.mibModel.getRGBimage(rgbOptions);
+    [obj.mibModel.Ishown, obj.mibModel.Iraw] = obj.mibModel.getRGBimage(rgbOptions, datasetId);
 else
     % Use provided custom image
-    obj.mibModel.Ishown = obj.mibModel.getRGBimage(rgbOptions, sImgIn);
+    obj.mibModel.Ishown = obj.mibModel.getRGBimage(rgbOptions, datasetId, sImgIn);
 end
 
 %% Calculate aspect ratio coefficient based on orientation
-if obj.mibModel.I{obj.mibModel.id}.orientation == 3 % xy
-    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.x / (obj.mibModel.I{obj.mibModel.id}.pixSize.y);
-elseif obj.mibModel.I{obj.mibModel.id}.orientation == 1 % zx
-    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.z / obj.mibModel.I{obj.mibModel.id}.pixSize.x;
-elseif obj.mibModel.I{obj.mibModel.id}.orientation == 2 % zy
-    coef_z = obj.mibModel.I{obj.mibModel.id}.pixSize.z / obj.mibModel.I{obj.mibModel.id}.pixSize.y;
+if obj.mibModel.I{datasetId}.orientation == 3 % xy
+    coef_z = obj.mibModel.I{datasetId}.pixSize.x / (obj.mibModel.I{datasetId}.pixSize.y);
+elseif obj.mibModel.I{datasetId}.orientation == 1 % zx
+    coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.x;
+elseif obj.mibModel.I{datasetId}.orientation == 2 % zy
+    coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.y;
 end
 
 %% Update image in axes
@@ -121,8 +129,8 @@ if ~isempty(sImgIn) && resizeToMagnification == 1
     obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
 else
     % Standard dataset display
-    magFactor = obj.mibModel.I{obj.mibModel.id}.magFactor;
-    [axesX, axesY] = obj.mibModel.I{obj.mibModel.id}.getAxesLimits();
+    magFactor = obj.mibModel.I{datasetId}.magFactor;
+    [axesX, axesY] = obj.mibModel.I{datasetId}.getAxesLimits();
 
     % Keep axes in stretch-to-fill mode (auto aspect ratio)
     obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'auto';
@@ -191,13 +199,13 @@ else
     
     % %% Add ROIs overlay
     % if obj.mibView.handles.mibRoiShowCheck.Value
-    %     obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(obj, 'shown');
+    %     obj.mibModel.I{datasetId}.hROI.addROIsToPlot(obj, 'shown');
     % end
 
     % %% Add measurements/annotations overlay
     % if obj.mibModel.mibShowAnnotationsCheck
     %     obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
-    %     obj.mibModel.I{obj.mibModel.id}.hMeasure.addMeasurementsToPlot(...
+    %     obj.mibModel.I{datasetId}.hMeasure.addMeasurementsToPlot(...
     %         obj.mibModel, 'shown', obj.cImageDoc{selectedSet}.handles.imViewAxes);
     % end
 

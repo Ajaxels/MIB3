@@ -4,7 +4,7 @@ function deleteImageDocument(obj, docIndex)
 %
 % Removes the image document at the specified index, properly cleans up
 % all associated resources (FigureDocument, ImageView, brush cursor),
-% and updates the documentIndex property of all subsequent documents
+% and updates the setOfDatasetsIndex property of all subsequent documents
 % to maintain consistency with their array positions.
 %
 % The method performs these operations:
@@ -56,7 +56,7 @@ obj.cImageDoc(docIndex) = [];
 % Re-index all subsequent documents to maintain consistency
 for i = docIndex:numel(obj.cImageDoc)
     if ~isempty(obj.cImageDoc{i})
-        obj.cImageDoc{i}.documentIndex = i;
+        obj.cImageDoc{i}.setOfDatasetsIndex = i;
     end
 end
 end

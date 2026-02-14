@@ -12,7 +12,6 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
-
 %obj.mibController.mibModel.clearSelection();
 %obj.mibController.mibModel.clearLayer('selection');
 %obj.mibController.mibModel.clearLayer('selection', '2D, Slice');

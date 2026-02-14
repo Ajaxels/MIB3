@@ -26,6 +26,8 @@ classdef MibController < handle
         % list of opened subcontrollers
         childControllersIds
         % a cell array with names of initialized child controllers
+        globalResizeTimer
+        % global timer for proper resizing of panels (used in MibImageDocument.gui_SizeChangedFcn)
         listeners
         % a cell array with handles to listeners
         matlabVersion
@@ -104,7 +106,7 @@ classdef MibController < handle
 
         filename = saveLayout(obj, mode) % store the current layout of panels
         
-        showImage(obj, resize, sImgIn)        % show the current image in the Image View panel
+        showImage(obj, resizeToMagnification, setId, sImgIn)        % show the current image in the Image View panel
 
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
         

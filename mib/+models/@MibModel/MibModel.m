@@ -90,7 +90,7 @@ classdef MibModel < handle
 
         [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
         
-        [imgRGB, imgRAW] = getRGBimage(obj, options, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
+        [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
 
         magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
         

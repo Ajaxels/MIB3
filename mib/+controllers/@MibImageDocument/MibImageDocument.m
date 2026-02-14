@@ -27,9 +27,9 @@ classdef MibImageDocument < handle
         gui                 % views.components.ImageView, the ImageView component
         handles             % struct with ImageView component handles (axes, buttons, etc.)
         UIFigure            % handle to underlying UIFigure
-
+        
         figureDoc           % matlab.ui.internal.FigureDocument, the document container
-        documentIndex       % double, index of this document in the Sets
+        setOfDatasetsIndex            % double, index of this document in the Sets
         brushCursor         % matlab.graphics.chart.primitive.Line, handle to brush cursor plot
         brushCursorOffset   % 2×N double array, [X offsets; Y offsets] for brush cursor circle
         centralMarker       % marker for the center of the axes
@@ -61,7 +61,7 @@ classdef MibImageDocument < handle
 
         updateBrushCursorOffset(obj)        % Update brush cursor offset based on current brush radius and magnification
 
-        function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, docIndex, model)
+        function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
             % Create a new MibImageDocument controller
             %
             % Creates a FigureDocument with an embedded ImageView component,
@@ -73,7 +73,7 @@ classdef MibImageDocument < handle
             %   view: MibView, main MIB view
             %   title: char, title for the document tab
             %   docGroupTag: char, document group tag for MDI grouping
-            %   docIndex: double, index of this document (typically noSets)
+            %   setOfDatasetsIndex: double, index of this document (typically current set number)
             %   model: models.MibModel, main MIB model
             %
             % Return values:
@@ -87,7 +87,7 @@ classdef MibImageDocument < handle
             obj.mibController = mainCtrl;
             obj.view = view;
             obj.mibModel = model;
-            obj.documentIndex = docIndex;
+            obj.setOfDatasetsIndex = setOfDatasetsIndex;
             obj.brushCursor = [];
             obj.brushCursorOffset = [];
 
@@ -139,10 +139,10 @@ classdef MibImageDocument < handle
             %
             % Example:
             %   % Explicit deletion
-            %   delete(obj.mibController.cImageDoc{setIndex});
+            %   delete(obj.mibController.cImageDoc{setOfDatasetsIndex});
             %
             %   % Automatic deletion when removed from array
-            %   obj.mibController.cImageDoc(setIndex) = [];
+            %   obj.mibController.cImageDoc(setOfDatasetsIndex) = [];
 
             try
                 % Delete brush cursor if it exists
