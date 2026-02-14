@@ -79,6 +79,7 @@ switch BatchOpt.Mode{1}
         
         % update all widgets of the Datasets panel
         notify(obj, 'DatasetsPanelUpdate');
+        
         %notify(obj, 'UpdateGuiWidgets');
     case 'Add set'
         %fprintf('models.mibModel.datasetsSetsOps: Add set: %s \n', BatchOpt.SetName);

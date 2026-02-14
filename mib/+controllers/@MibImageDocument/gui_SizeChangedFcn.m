@@ -100,7 +100,6 @@ try
         % Check if document exists and is valid
         if ~isempty(obj.mibController.cImageDoc{setId}) && ...
                 isvalid(obj.mibController.cImageDoc{setId}.gui)
-
             drawnow;
 
             % Update axes for all datasets in this document set
@@ -123,6 +122,7 @@ try
             notify(obj.mibModel, 'ShowImage', eventdataShowImage);
 
             % Update brush cursor to match new axes size
+            obj.mibController.cImageDoc{setId}.brushCursorOffset = []; % clear brush offset to recalculate it
             obj.mibController.cImageDoc{setId}.updateBrushCursor([], [], false);
         end
     end

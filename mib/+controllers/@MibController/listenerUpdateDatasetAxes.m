@@ -93,50 +93,50 @@ axSize = obj.cImageDoc{selectedSet}.handles.imViewAxes.InnerPosition;
 [axesX, axesY] = obj.mibModel.I{index}.getAxesLimits();
 magFactor = obj.mibModel.I{index}.magFactor;
 if isnan(axesX(1)) || strcmp(mode, 'resize') == 1
-    % imageAR = (width * coef_z) / height;  % Image aspect ratio (physical)
-    % axesAR = axSize(3) / axSize(4);       % Axes aspect ratio
-    % 
-    % if imageAR > axesAR
-    %     % Image wider than axes: fit to width
-    %     magFactor = (width * coef_z) / axSize(3);
-    %     axesX = [1, width];
-    %     axesY = [height/2 - (axSize(4) * magFactor)/2, ...
-    %         height/2 + (axSize(4) * magFactor)/2];
-    % else
-    %     % Image taller/narrower than axes: fit to height
-    %     magFactor = height / axSize(4);
-    %     axesY = [1, height];
-    %     axesX = [width/2 - (axSize(3) * magFactor)/(2 * coef_z), ...
-    %         width/2 + (axSize(3) * magFactor)/(2 * coef_z)];
-    % end
+    imageAR = (width * coef_z) / height;  % Image aspect ratio (physical)
+    axesAR = axSize(3) / axSize(4);       % Axes aspect ratio
 
-    if height < axSize(4) && width*coef_z >= axSize(3)     % scale to width
-        magFactor = width*coef_z/axSize(3);
-        axesX(1) = 1;
-        axesX(2) = width;
-        axesY(1) = height/2 - axSize(4)/2*magFactor;
-        axesY(2) = height/2 + axSize(4)/2*magFactor;
-    elseif height >= axSize(4) && width*coef_z < axSize(3)     % scale to height
-        magFactor = height/axSize(4);
-        axesX(1) = width/2 - axSize(3)/2/coef_z*magFactor;
-        axesX(2) = width/2 + axSize(3)/2/coef_z*magFactor;
-        axesY(1) = 1;
-        axesY(2) = height;
-    else        % scale to the width/height
-        if axSize(4)/height < axSize(3)/(width*coef_z)   % scale to height
-            magFactor = height/axSize(4);
-            axesX(1) = width/2 - axSize(3)/coef_z/2*magFactor;
-            axesX(2) = width/2 + axSize(3)/2/coef_z*magFactor;
-            axesY(1) = 1;
-            axesY(2) = height;
-        else % scale to width
-            magFactor = width*coef_z/axSize(3);
-            axesX(1) = 1;
-            axesX(2) = width;
-            axesY(1) = height/2 - axSize(4)/2*magFactor;
-            axesY(2) = height/2 + axSize(4)/2*magFactor;
-        end
+    if imageAR > axesAR
+        % Image wider than axes: fit to width
+        magFactor = (width * coef_z) / axSize(3);
+        axesX = [1, width];
+        axesY = [height/2 - (axSize(4) * magFactor)/2, ...
+            height/2 + (axSize(4) * magFactor)/2];
+    else
+        % Image taller/narrower than axes: fit to height
+        magFactor = height / axSize(4);
+        axesY = [1, height];
+        axesX = [width/2 - (axSize(3) * magFactor)/(2 * coef_z), ...
+            width/2 + (axSize(3) * magFactor)/(2 * coef_z)];
     end
+
+    % if height < axSize(4) && width*coef_z >= axSize(3)     % scale to width
+    %     magFactor = width*coef_z/axSize(3);
+    %     axesX(1) = 1;
+    %     axesX(2) = width;
+    %     axesY(1) = height/2 - axSize(4)/2*magFactor;
+    %     axesY(2) = height/2 + axSize(4)/2*magFactor;
+    % elseif height >= axSize(4) && width*coef_z < axSize(3)     % scale to height
+    %     magFactor = height/axSize(4);
+    %     axesX(1) = width/2 - axSize(3)/2/coef_z*magFactor;
+    %     axesX(2) = width/2 + axSize(3)/2/coef_z*magFactor;
+    %     axesY(1) = 1;
+    %     axesY(2) = height;
+    % else        % scale to the width/height
+    %     if axSize(4)/height < axSize(3)/(width*coef_z)   % scale to height
+    %         magFactor = height/axSize(4);
+    %         axesX(1) = width/2 - axSize(3)/coef_z/2*magFactor;
+    %         axesX(2) = width/2 + axSize(3)/2/coef_z*magFactor;
+    %         axesY(1) = 1;
+    %         axesY(2) = height;
+    %     else % scale to width
+    %         magFactor = width*coef_z/axSize(3);
+    %         axesX(1) = 1;
+    %         axesX(2) = width;
+    %         axesY(1) = height/2 - axSize(4)/2*magFactor;
+    %         axesY(2) = height/2 + axSize(4)/2*magFactor;
+    %     end
+    % end
 elseif strcmp(mode, 'zoom')
     dxHalf = diff(axesX)/2;
     dyHalf = diff(axesY)/2;

@@ -138,13 +138,10 @@ else
 
     if resizeToMagnification == 1
         % Resize to fit screen - limits already scaled by coef_z in listenerUpdateDatasetAxes
-        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
         obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
         obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
     else
         % Keep current zoom and pan settings - limits already scaled
-        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
-
         % Calculate X limits
         xl(1) = min([axesX(1)/magFactor 0]);
         if axesX(2) > size(obj.mibModel.Ishown, 2) * magFactor
@@ -171,6 +168,11 @@ else
 
         obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = yl;
         obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = xl;
+    end
+    
+    % update the zoom value only when image of the currently selected set is updated
+    if obj.mibModel.id == datasetId
+        obj.view.handles.status.zoom.Value = sprintf('%d %%', round(1/magFactor*100));
     end
 
     %% Display center spot marker if enabled
