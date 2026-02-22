@@ -26,6 +26,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % .WindowWidth - dialog width in pixels (default 560).
 % .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
 % .Columns - integer number of columns (default 1).
+% .Icon - 'puffin_question' (default), 'puffin_warning', 'question', 'celebrate', 'call4help', 'warning'.
 % .IconWidth - width of icon column in pixels (default [], i.e. use the size of the image).
 % .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
 % .LabelPosition - 'left' (default, horizontal layout) or 'top' (vertical layout, labels above widgets).
@@ -38,7 +39,6 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % .HelpBtnText - text for Help button (default 'Help').
 % .HelpUrl - string URL or command; if provided, shows Help button.
 % .MsgBoxOnly - logical, show dialog as a message box with only OK button and single html content (default false).
-% .Icon - 'question' (default), 'celebrate', 'call4help', 'warning'.
 % .DoNotShowAgain - logical, show "Do not show again" checkbox (default false).
 % .DoNotShowAgainText - text for the "Do not show again" checkbox (default 'Do not show again').
 % .ParentFigure - handle to parent figure; if provided, dialog is centered on parent window (default: []).
@@ -139,10 +139,10 @@ arguments
 end
 
 % Defaults
-if ~isfield(options, 'Icon'); options.Icon = 'question_48px'; end
+if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
+if ~isfield(options, 'IconWidth'); options.IconWidth = []; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Columns'); options.Columns = 1; end
-if ~isfield(options, 'IconWidth'); options.IconWidth = []; end
 if ~isfield(options, 'MainColumnWidths'); options.MainColumnWidths = repmat({'1x'}, 1, options.Columns); end
 if ~isfield(options, 'LabelPosition'); options.LabelPosition = 'left'; end
 if ~isfield(options, 'SectionsColumnWidths'); options.SectionsColumnWidths = repmat({'fit', '1x'}, 1, options.Columns); end
@@ -263,13 +263,19 @@ end
 figBgColor = fig.Color;
 
 % Icon selection and loading
-iconFilename = '';
 switch options.Icon
     case 'warning_48px',   iconFilename = 'warning_48px.png';
     case 'question_48px',  iconFilename = 'question_48px.png';
     case 'celebrate',      iconFilename = 'celebrate.jpg';
     case 'call4help',      iconFilename = 'call4help.jpg';
-    otherwise,             iconFilename = 'question_48px.png';
+    case 'puffin_warning'
+        % get random icon
+        iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
+        options.IconWidth = 96;
+    otherwise
+        % get random icon
+        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(5));
+        options.IconWidth = 96;
 end
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 iconImg = [];

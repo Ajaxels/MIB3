@@ -5,8 +5,8 @@ function [selection, dontShowAgain] = mibQuestDlg(mibPath, question, varargin)
 % extended with an optional options structure as the last argument.
 %
 % Parameters:
-% mibPath: [char] path to MIB installation folder (use obj.mibPath); may be '' to auto-detect. [file:3]
-% question: [char|string|cell] question text; when cell, lines are joined with '\n'. [file:2]
+% mibPath: [char] path to MIB installation folder (use obj.mibPath); may be '' to auto-detect. 
+% question: [char|string|cell] question text; when cell, lines are joined with '\n'. 
 %
 % Questdlg-compatible syntax:
 % selection = mibQuestDlg(mibPath, question)
@@ -19,21 +19,21 @@ function [selection, dontShowAgain] = mibQuestDlg(mibPath, question, varargin)
 % Extended syntax (optional last argument):
 % [selection, dontShowAgain] = mibQuestDlg(..., options)
 %
-% options: structure with fields (aligned with mibInputSingleDlg/mibInputUniversalDlg style): [file:3][file:2]
+% options: structure with fields (aligned with mibInputSingleDlg/mibInputUniversalDlg style):
 % .WindowWidth         - [numeric] width in pixels (default 420)
 % .WindowHeight        - [numeric] height in pixels (default 180)
-% .WindowStyle         - [char] 'normal' or 'modal' (default 'modal') [file:3]
-% .Icon                - [char] 'question_48px' (default), 'warning_48px', 'celebrate', 'call4help' [file:3]
-% .IconWidth           - [numeric] icon column width (default 48) [file:3]
-% .ParentFigure        - [handle] parent window to center dialog (default []) [file:3]
-% .DefaultKey          - [char] 'default' (default) or 'cancel'; Enter triggers default/cancel [file:2]
+% .WindowStyle         - [char] 'normal' or 'modal' (default 'modal') 
+% .Icon                - [char] 'puffin_question' (default), 'puffin_warning', 'question_48px', 'warning_48px', 'celebrate', 'call4help', 
+% .IconWidth           - [numeric] icon column width (default 48)
+% .ParentFigure        - [handle] parent window to center dialog (default []) 
+% .DefaultKey          - [char] 'default' (default) or 'cancel'; Enter triggers default/cancel
 % .ButtonFontSize      - [numeric] button font size (default 13)
-% .DoNotShowAgain      - [logical] show "Do not show again" checkbox (default false) [file:2]
-% .DoNotShowAgainText  - [char] checkbox label (default 'Do not show again') [file:2]
+% .DoNotShowAgain      - [logical] show "Do not show again" checkbox (default false) 
+% .DoNotShowAgainText  - [char] checkbox label (default 'Do not show again') 
 %
 % Return values:
-% selection: [char] pressed button label; '' when closed/canceled (and no Cancel button exists). [file:2]
-% dontShowAgain: [logical] state of "Do not show again" checkbox (false when disabled/canceled). [file:2]
+% selection: [char] pressed button label; '' when closed/canceled (and no Cancel button exists). 
+% dontShowAgain: [logical] state of "Do not show again" checkbox (false when disabled/canceled). 
 %
 % Usage example:
 % opt = struct();
@@ -59,7 +59,7 @@ end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 420; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 180; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'modal'; end
-if ~isfield(options, 'Icon'); options.Icon = 'question_48px'; end
+if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'default'; end
@@ -159,7 +159,14 @@ switch options.Icon
     case 'question_48px', iconFilename = 'question_48px.png';
     case 'celebrate',     iconFilename = 'celebrate.jpg';
     case 'call4help',     iconFilename = 'call4help.jpg';
-    otherwise,            iconFilename = 'question_48px.png';
+    case 'puffin_warning'
+        % get random icon
+        iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
+        options.IconWidth = 96;
+    otherwise  % 'puffin_question
+        % get random icon
+        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(5));
+        options.IconWidth = 96;
 end
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 

@@ -14,7 +14,7 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   .WindowWidth       - dialog width in pixels (default 400)
 %   .WindowHeight      - dialog height in pixels (default 112)
 %   .WindowStyle - 'normal' (default) or 'modal'
-%   .Icon        - 'question_48px' (default), 'celebrate', 'call4help', 'warning_48px'
+%   .Icon        - 'puffin_question' (default), 'puffin_warning', 'question_48px', 'celebrate', 'call4help', 'warning_48px'
 %   .IconWidth   - WindowWidth of icon column in pixels (default 48)
 %   .ParentFigure - handle to the parent window to have the dialog centered
 %
@@ -91,7 +91,7 @@ if ~isfield(options, 'Type'); options.Type = 'editfield'; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 112; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
-if ~isfield(options, 'Icon'); options.Icon = 'question_48px'; end
+if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 
@@ -101,7 +101,14 @@ switch options.Icon
     case 'question_48px',  iconFilename = 'question_48px.png';
     case 'celebrate', iconFilename = 'celebrate.jpg';
     case 'call4help', iconFilename = 'call4help.jpg';
-    otherwise,        iconFilename = 'question_48px.png';
+    case 'puffin_warning'
+        % get random icon
+        iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
+        options.IconWidth = 96;
+    otherwise
+        % puffin_question
+        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(5));
+        options.IconWidth = 96;
 end
 
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
