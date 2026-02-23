@@ -107,7 +107,7 @@ switch options.Icon
         options.IconWidth = 96;
     otherwise
         % puffin_question
-        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(5));
+        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
         options.IconWidth = 96;
 end
 

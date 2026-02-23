@@ -36,16 +36,22 @@ end
 
 switch mode
     case 'lastSlice'
+        obj.sliceNumber_Callback(0);
     case 'nextSlice'
+        currentSlice = obj.handles.sliceNumber.Value;
+        nextSlice = min([currentSlice+1, round(obj.handles.sliceNumber.Limits(2))]);
+        obj.sliceNumber_Callback(nextSlice);
     case 'sliceNumberSlider'
         % use hData.Value for interactive update
-        sliceNumber = round(hData.Value); % the slider top limit is a float with +0.001, thus it needs to be rounded
-        obj.handles.sliceNumber.Value = sliceNumber;
-        obj.mibModel.I{obj.mibModel.id}.slices{3} = [sliceNumber sliceNumber];
-        obj.mibController.showImage();
+        obj.sliceNumberSlider_Callback(hData.Value);
     case 'prevSlice'
+        currentSlice = obj.handles.sliceNumber.Value;
+        nextSlice = max([currentSlice-1, 1]);
+        obj.sliceNumber_Callback(nextSlice);
     case 'firstSlice'
+        obj.sliceNumber_Callback(1);
     case 'sliceNumber'
+        obj.sliceNumber_Callback(hWidget.Value);
     case 'frameNumber'
     case 'firstFrame'
     case 'prevFrame'

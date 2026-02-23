@@ -40,7 +40,7 @@ switch mode
         BatchOpt.SetName = obj.view.handles.panels.activeDataset.handles.sets.Value;
     case 'setsContextAdd'
         BatchOpt.Mode = {'Add set'}; % define the mode for obj.mibModel.datasetsSetsOps
-        BatchOpt.DatasetType = {'Std'}; % standard dataset type
+        BatchOpt.DatasetType = {'Standard'}; % standard dataset type
         % get the name for a new set
         defAns = sprintf('Set %d', noSets+1);
         options.ParentFigure = obj.view.gui;

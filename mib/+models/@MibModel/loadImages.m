@@ -204,7 +204,7 @@ options.parentGUI = obj.mibGUI; % handle to mibGUI window to be a parent for pro
 %options.Font = obj.preferences.System.Font; % add font to render dialogs
 % init the extension registry
 %extReg = io.ExtensionRegistryLoad();
-%ext = extReg.getAllowedExtensions('Std', 'BioFormats', true);
+%ext = extReg.getAllowedExtensions('Standard', 'BioFormats', true);
 
 reader = 'Default';
 if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
@@ -226,7 +226,7 @@ switch BatchOpt.Mode{1}
             return;
         end
 
-        if obj.I{obj.id}.labels.exists == 1 && nargin < 3
+        if obj.I{obj.id}.modelExist == 1 && nargin < 3
             dlgText = sprintf(['!!! Warning !!!\nYou are going to load a new dataset!\n\nMeanwhile you have an open model\n' ...
                 'would you like to continue?']);
             selection = uiconfirm(obj.mibGUI, ...

@@ -274,7 +274,7 @@ switch options.Icon
         options.IconWidth = 96;
     otherwise
         % get random icon
-        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(5));
+        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
         options.IconWidth = 96;
 end
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);

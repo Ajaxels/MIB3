@@ -33,7 +33,7 @@ classdef MibDirContents
 
             %% Update widgets
             % update list of available filters for file formats
-            obj.handles.fileFilters.Items = ['all known', model.extensionRegistryLoad.getAllowedExtensions('Std', 'Default')];
+            obj.handles.fileFilters.Items = ['all known', model.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default')];
             % update list of files in obj.handles.fileList
             obj.updateFileList_Callback();
 

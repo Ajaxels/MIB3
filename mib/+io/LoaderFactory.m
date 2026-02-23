@@ -17,7 +17,7 @@ classdef LoaderFactory
             % Parameters:
             % loaderInfo: [@em struct] structure returned by ExtensionRegistryLoad.resolveLoader
             %   @li .loaderId - [char] identifier of the file reader to use
-            %   @li .mode - [char] dataset mode ('Std', 'Virtual', 'BigData')
+            %   @li .mode - [char] dataset mode ('Standard', 'Virtual', 'BigData')
             %   @li .reader - [char] reader type ('Default', 'BioFormats')
             %   @li .extension - [char] file extension without leading dot
             %   @li .imageFormatType - [char] format type identifier
@@ -37,7 +37,7 @@ classdef LoaderFactory
             % @code
             % % Basic usage
             % extReg = io.ExtensionRegistryLoad();
-            % loaderInfo = extReg.resolveLoader('image.tif', 'Std', 'Default'); % loaderInfo = extReg.resolveLoader('image.tif', obj.I{obj.id}.datasetType, 'Default');
+            % loaderInfo = extReg.resolveLoader('image.tif', 'Standard', 'Default'); % loaderInfo = extReg.resolveLoader('image.tif', obj.I{obj.id}.datasetType, 'Default');
             % options.waitbar = true;
             % options.mibPath = 'c:\mib';
             % loader = io.LoaderFactory.create(loaderInfo, options);
@@ -47,7 +47,7 @@ classdef LoaderFactory
             %
             % @code
             % % BioFormats example
-            % loaderInfo = extReg.resolveLoader('image.czi', 'Std', 'BioFormats');
+            % loaderInfo = extReg.resolveLoader('image.czi', 'Standard', 'BioFormats');
             % loader = io.LoaderFactory.create(loaderInfo, options);
             % @endcode
 

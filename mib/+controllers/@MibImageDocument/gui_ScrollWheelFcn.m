@@ -115,7 +115,110 @@ if ismember('control', modifier)
     return;
 end
 
-% Note: Other scroll wheel functionality (zoom, slice navigation)
-% is still handled by MibView/MibController methods
-% This can be migrated here later if needed
+% % check whether the mouse cursor within the axes.
+% position = obj.mibView.handles.mibImageAxes.CurrentPoint;
+% axXLim = obj.mibView.handles.mibImageAxes.XLim;
+% axYLim = obj.mibView.handles.mibImageAxes.YLim;
+% x = round(position(1,1));
+% y = round(position(1,2));
+% if x<axXLim(1) || x>axXLim(2) || y<axYLim(1) || y>axYLim(2)
+%     return;
+% end
+
+if obj.mibModel.preferences.System.MouseWheel(1) == 's'  & ...  % scroll
+        ismember('alt', modifier) & obj.mibModel.preferences.System.AltWithScrollWheel               %#ok<OR2,AND2> % change time point with Alt
+
+    % if strcmp(cell2mat(modifier), 'shiftalt')
+    %     shift = obj.mibView.handles.mibChangeTimeSlider.UserData.sliderShiftStep;
+    % else
+    %     shift = 1;
+    % end
+    % new_index = obj.mibModel.I{obj.mibModel.id}.slices{5}(1) - verticalScrollCount*shift;
+    % if new_index < 1;  new_index = 1; end
+    % if new_index > obj.mibModel.I{obj.mibModel.id}.time; new_index = obj.mibModel.I{obj.mibModel.id}.time; end
+    % obj.mibView.handles.mibChangeTimeSlider.Value = new_index;     % update slider value
+    % obj.mibChangeTimeSlider_Callback();
+elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'zoom', zoom in/zoom out with the mouse wheel
+    % % Power law allows for the inverse to work:
+    % %      C^(x) * C^(-x) = 1
+    % % Choose C to get "appropriate" zoom factor
+    % C = 1.10;
+    % %             ch = get(handles.im_browser, 'CurrentCharacter');
+    % %             if ch == '`'    % change size of the brush
+    % %                 brush = str2double(get(handles.segmSpotSizeEdit,'String'));
+    % %                 brush = max([1 brush+verticalScrollCount]);
+    % %                 set(handles.segmSpotSizeEdit,'String',num2str(brush));
+    % %                 set(handles.im_browser, 'CurrentCharacter', '1');
+    % %                 return;
+    % %             end
+    % 
+    % curPt  = mean(obj.mibView.handles.mibImageAxes.CurrentPoint);
+    % curPt = curPt(1:2);  % mouse coordinates
+    % 
+    % % modify curPt with shifts that come from handles.Img{handles.Id}.I.axesX/handles.Img{handles.Id}.I.axesY and magnification factor
+    % magFactor = obj.mibModel.getMagFactor();
+    % [axesX, axesY] = obj.mibModel.getAxesLimits();
+    % curPt(1) = curPt(1)*magFactor + max([0 axesX(1)]);
+    % curPt(2) = curPt(2)*magFactor + max([0 axesY(1)]);
+    % xl = axesX;
+    % yl = axesY;
+    % % zoom will work only when the mouse is above the image
+    % if curPt(1)<xl(1) || curPt(1)>xl(2); return; end
+    % if curPt(2)<yl(1) || curPt(2)>yl(2); return; end
+    % 
+    % midX = mean(xl);
+    % rngXhalf = diff(xl) / 2; % half-width of the shown image
+    % midY = mean(yl);
+    % rngYhalf = diff(yl) / 2; % half-height of the shown image
+    % 
+    % curPt2 = (curPt-[midX, midY]) ./ [rngXhalf, rngYhalf];  % image shift in %%
+    % curPt  = [curPt; curPt];
+    % curPt2 = [-(1+curPt2).*[rngXhalf, rngYhalf];...
+    %     (1-curPt2).*[rngXhalf, rngYhalf]];           % new image half-sizes without zooming
+    % 
+    % r = C^(verticalScrollCount*verticalScrollAmount);
+    % newLimSpan = r * curPt2;
+    % 
+    % % Determine new limits based on r
+    % lims = curPt + newLimSpan;
+    % 
+    % % check out of image bounds conditions
+    % if lims(1,1) < 0 && lims(2,1) < 0; return; end
+    % if lims(1,2) < 0 && lims(2,2) < 0; return; end
+    % if lims(1,1) > obj.mibModel.I{obj.mibModel.id}.width && lims(2,1) > obj.mibModel.I{obj.mibModel.id}.width; return; end
+    % if lims(1,2) > obj.mibModel.I{obj.mibModel.id}.height && lims(2,2) > obj.mibModel.I{obj.mibModel.id}.height; return; end
+    % 
+    % obj.mibModel.setMagFactor(magFactor*r);    % update magFactor
+    % obj.mibModel.setAxesLimits(lims(:,1)', lims(:,2)');    % update axes limits
+    % obj.plotImage(0);
+    % 
+    % % notify listeners that the image axes were changed -> mibSnapshotController
+    % motifyEvent.Name = 'updteAxesLimits_changed';
+    % eventdata = ToggleEventData(motifyEvent);
+    % notify(obj.mibModel, 'modelNotify', eventdata);
+else    % slice change with the mouse wheel
+    % update the slider step
+    if ismember('shift', modifier)
+        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderShiftStep;
+    else
+        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderStep;
+    end
+    
+    %if ~obj.mibModel.preferences.System.AltWithScrollWheel && ismember('alt', modifier)
+        %if obj.mibView.altPressed == 0
+        %    obj.mibView.altPressed = obj.mibModel.I{obj.mibModel.id}.getCurrentSliceNumber();
+        %end
+    %end
+
+    datasetId = obj.mibModel.id;
+    orientation = obj.mibModel.I{datasetId}.orientation;
+    new_index = obj.mibModel.I{datasetId}.slices{orientation}(1) - verticalScrollCount*shift;
+    if new_index < 1;  new_index = 1; end
+    if new_index > obj.mibModel.I{datasetId}.dim_yxzct(orientation)
+        new_index = obj.mibModel.I{datasetId}.dim_yxzct(orientation); 
+    end
+    
+    obj.handles.sliceNumberSlider.Value = new_index;     % update slider value
+    obj.sliceNumberSlider_Callback();
+end
 end

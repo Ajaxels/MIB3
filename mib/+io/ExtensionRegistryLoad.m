@@ -5,10 +5,10 @@ classdef ExtensionRegistryLoad < handle
     properties (Access = private)
         extensionSets dictionary
         % dictionary containing extensions for each mode:
-        % @li Std.Default -> standard dataset loaded to memory, default reader
+        % @li Standard.Default -> standard dataset loaded to memory, default reader
         % @li Virtual.Default  -> virtual dataset, default reader
         % @li BigData.Default -> bigdata dataset, default reader
-        % @li Std.BioFormats  -> standard dataset loaded to memory, bio-formats reader
+        % @li Standard.BioFormats  -> standard dataset loaded to memory, bio-formats reader
         % @li Virtual.BioFormats -> virtual dataset, bio-formats reader
         % @li BigData.BioFormats -> bigdata dataset, bio-formats reader
         imreadExtensions
@@ -33,7 +33,7 @@ classdef ExtensionRegistryLoad < handle
             % Parameters:
             % filename: [char] first filename in the sequence of files to load
             % mode: [char] defining type of MIB dataset,
-            % @li 'Std' -> standard dataset that is loaded into memory
+            % @li 'Standard' -> standard dataset that is loaded into memory
             % @li 'Virtual' -> virtual dataset that is loaded on demand
             % reader: [char] defining the type of file reader
             % @li 'Default' -> matlab imread, custom and other readers 
@@ -79,7 +79,7 @@ classdef ExtensionRegistryLoad < handle
             %
             % Parameters:
             % mode: [char] defining type of MIB dataset,
-            % @li 'Std' -> standard dataset that is loaded into memory
+            % @li 'Standard' -> standard dataset that is loaded into memory
             % @li 'Virtual' -> virtual dataset that is loaded on demand
             % reader: [char] defining the type of file reader
             % @li 'Default' -> matlab imread, custom and other readers 
@@ -96,7 +96,7 @@ classdef ExtensionRegistryLoad < handle
             % the Standard dataset using BioFormats reader and return with
             % leading dots
             % <code> 
-            % ext = extReg.getAllowedExtensions('Std', 'BioFormats', false); 
+            % ext = extReg.getAllowedExtensions('Standard', 'BioFormats', false); 
             % <endcode> 
 
             if nargin < 4; withoutDots = true; end
@@ -111,7 +111,7 @@ classdef ExtensionRegistryLoad < handle
             % 
             % Parameters:
             % mode: [char] defining type of MIB dataset,
-            % @li 'Std' -> standard dataset that is loaded into memory
+            % @li 'Standard' -> standard dataset that is loaded into memory
             % @li 'Virtual' -> virtual dataset that is loaded on demand
             % reader: [char] defining the type of file reader
             % @li 'Default' -> matlab imread, custom and other readers 
@@ -139,7 +139,7 @@ classdef ExtensionRegistryLoad < handle
             % combine all standard formats into a single cell array
             stdImgFormats = [stdImgFormats.ext 'mrc' 'rec' 'am' 'nrrd' 'h5' 'xml' 'st' 'preali' 'mibImg' obj.videoExtensions];
             % standard image extensions
-            obj.extensionSets("Std.Default") = {sort(stdImgFormats)};
+            obj.extensionSets("Standard.Default") = {sort(stdImgFormats)};
             obj.extensionSets("Virtual.Default") = {sort({'h5','hdf5','xml', 'zarr', 'zarr2', 'zarr3'})};
             obj.extensionSets("BigData.Default") = {''};
             
@@ -152,7 +152,7 @@ classdef ExtensionRegistryLoad < handle
                 ,'tnb','obsep','cxd','vws','xys','xml','dm4','ndpi'};
             
             
-            obj.extensionSets("Std.BioFormats") = {sort(bioFormats)};
+            obj.extensionSets("Standard.BioFormats") = {sort(bioFormats)};
             obj.extensionSets("Virtual.BioFormats") = {sort([{'am'}, bioFormats])};
             obj.extensionSets("BigData.BioFormats") = {''};
         end
@@ -163,14 +163,14 @@ classdef ExtensionRegistryLoad < handle
             %
             % Parameters:
             % mode: [char] defining type of MIB dataset,
-            % @li 'Std' -> standard dataset that is loaded into memory
+            % @li 'Standard' -> standard dataset that is loaded into memory
             % @li 'Virtual' -> virtual dataset that is loaded on demand
             % reader: [char] defining the type of file reader
             % @li 'Default' -> matlab imread, custom and other readers 
             % @li 'BioFormats' -> use the BioFormats library to read images
             %
             % Return values:
-            % key: [char] with the key, e.g. "Std.Default"
+            % key: [char] with the key, e.g. "Standard.Default"
 
             mode = string(mode); 
             reader = string(reader);
@@ -184,7 +184,7 @@ classdef ExtensionRegistryLoad < handle
             % 
             % Parameters:
             % mode: [char] defining type of MIB dataset,
-            % @li 'Std' -> standard dataset that is loaded into memory
+            % @li 'Standard' -> standard dataset that is loaded into memory
             % @li 'Virtual' -> virtual dataset that is loaded on demand
             % reader: [char] defining the type of file reader
             % @li 'Default' -> matlab imread, custom and other readers 

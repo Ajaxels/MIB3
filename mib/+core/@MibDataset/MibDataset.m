@@ -40,8 +40,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes,
         % @note dimensions: @code [1 1 1] @endcode
         datasetType
-        % [char, @default 'Std'] type of the dataset, one of these
-        %   @li 'Std' - standard image, one that is loaded to memory completely
+        % [char, @default 'Standard'] type of the dataset, one of these
+        %   @li 'Standard' - standard image, one that is loaded to memory completely
         %   @li 'Virtual' - virtual dataset that is loaded upon demand
         %   @li 'BigData' - big-data compatible dataset
         dim_yxzct
@@ -167,8 +167,8 @@ classdef MibDataset < matlab.mixin.Copyable
             %           @li .min - a vector with minimal value for intensity stretching for each color channel
             %           @li .max - a vector with maximal value for intensity stretching for each color channel
             %           @li .gamma a vector with gamma factor for contrast adjustment for each color channel
-            % datasetType: [char, @default 'Std']type of the dataset, one of these
-            %   @li 'Std' - standard image, one that is loaded to memory completely
+            % datasetType: [char, @default 'Standard']type of the dataset, one of these
+            %   @li 'Standard' - standard image, one that is loaded to memory completely
             %   @li 'Virtual' - virtual dataset that is loaded upon demand
             %   @li 'BigData' - big-data compatible dataset
             % modelType: type of the labels, 
@@ -177,7 +177,7 @@ classdef MibDataset < matlab.mixin.Copyable
             % .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
 
             if nargin < 4; modelType = 'imageOnly'; end
-            if nargin < 3; datasetType = 'Std'; end
+            if nargin < 3; datasetType = 'Standard'; end
             if nargin < 2; meta = []; end
             if nargin < 1; img = []; end
 

@@ -33,8 +33,8 @@ if dt < 0.4; return; end
 BatchOpt = struct();
 BatchOpt.Mode = {'Select set'};     % default operation
 BatchOpt.Mode{2} = {'Select set', 'Add set', 'Rename set', 'Remove set'};  % only the single option is available for the batch mode so far
-BatchOpt.DatasetType = {'Std'}; % default dataset type: Std
-BatchOpt.DatasetType{2} = {'Std', 'Virtual', 'BigData'}; % available dataset types
+BatchOpt.DatasetType = {'Standard'}; % default dataset type: Standard
+BatchOpt.DatasetType{2} = {'Standard', 'Virtual', 'BigData'}; % available dataset types
 
 if isempty(obj.Sets.selectedSet) % initialization of MIB
     BatchOpt.SetName = 'Set 1';  

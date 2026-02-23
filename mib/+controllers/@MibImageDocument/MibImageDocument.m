@@ -19,21 +19,27 @@ classdef MibImageDocument < handle
     %
     %   % Update brush cursor
     %   doc.updateBrushCursor([100, 100], ':', true);
+    %
+    %   % access tothe class
+    %   obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}
+
 
     properties
-        mibController       % controllers.MibController, handle to main controller
-        view                % MibView, handle to the main view
-        mibModel            % models.MibModel, handle to the main model
-        gui                 % views.components.ImageView, the ImageView component
-        handles             % struct with ImageView component handles (axes, buttons, etc.)
-        UIFigure            % handle to underlying UIFigure
+        mibController           % controllers.MibController, handle to main controller
+        view                    % MibView, handle to the main view
+        mibModel                % models.MibModel, handle to the main model
+        gui                     % views.components.ImageView, the ImageView component
+        handles                 % struct with ImageView component handles (axes, buttons, etc.)
+        UIFigure                % handle to underlying UIFigure
         
-        figureDoc           % matlab.ui.internal.FigureDocument, the document container
-        setOfDatasetsIndex            % double, index of this document in the Sets
-        brushCursor         % matlab.graphics.chart.primitive.Line, handle to brush cursor plot
-        brushCursorOffset   % 2×N double array, [X offsets; Y offsets] for brush cursor circle
-        centralMarker       % marker for the center of the axes
+        figureDoc               % matlab.ui.internal.FigureDocument, the document container
+        setOfDatasetsIndex      % double, index of this document in the Sets
+        brushCursor             % matlab.graphics.chart.primitive.Line, handle to brush cursor plot
+        brushCursorOffset       % 2×N double array, [X offsets; Y offsets] for brush cursor circle
+        centralMarker           % marker for the center of the axes
         imageHandle = matlab.graphics.primitive.Image('CData', []); % handle to the rendered image
+        sliderStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
+        sliderShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
     end
 
     methods
@@ -56,6 +62,12 @@ classdef MibImageDocument < handle
         setTitle(obj, title)        % Set the title of this image document
 
         setupCallbacks(obj)        % Setup all callbacks for this image document
+
+        sliceNumber_Callback(obj, parameter, BatchOptIn)        % callback for changing the slices of the 3D dataset by entering a new slice number
+
+        sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of change of slices slider
+
+        sliceNumberSlider_Callback(obj, sliderValue)        % callback for change of slices using the slice number slider 
 
         updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)        % Update brush cursor position and visibility
 
@@ -102,10 +114,15 @@ classdef MibImageDocument < handle
             %% Create ImageView component
             obj.gui = views.components.ImageView('Parent', obj.figureDoc.Figure, ...
                 'Units', 'normalized', 'Position', [0 0 1 1]);
+            
             % populate handles structure
             obj.handles = obj.gui.handles;
             obj.centralMarker = obj.gui.centralMarker;
             obj.UIFigure = obj.gui.imViewFigure; % handle to the underlying figure
+
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.gui.handles, true, 'obj.cImageDoc{obj.mibModel.Sets.selectedSet}'); 
+            end
 
             % Hold axes once (Note: requires YDir = 'reverse' defined in ImageView.mlapp)
             hold(obj.handles.imViewAxes, 'on');
@@ -117,6 +134,19 @@ classdef MibImageDocument < handle
             obj.handles.imViewAxes.Interruptible = 'off';
             obj.handles.imViewAxes.BusyAction = 'queue';
             obj.handles.imViewAxes.HandleVisibility = 'callback';
+
+            %% add context menu to the slider 
+            obj.handles.sliceNumberSliderContext = uicontextmenu(obj.UIFigure);
+            obj.handles.sliceNumberSliderContextDefault = uimenu(obj.handles.sliceNumberSliderContext, ...
+                'Text', 'Default', 'Tag', 'sliceNumberSliderContextDefault');
+            obj.handles.sliceNumberSliderContextSetStep = uimenu(obj.handles.sliceNumberSliderContext, ...
+                'Text', 'Set step...', 'Tag', 'sliceNumberSliderContextSetStep');
+            % Add context menu to buttons
+            obj.handles.sliceNumberSlider.ContextMenu = obj.handles.sliceNumberSliderContext;
+            % Add callbacks
+            obj.handles.sliceNumberSliderContextDefault.MenuSelectedFcn = @obj.sliceNumberSlider_ContextMenu;
+            obj.handles.sliceNumberSliderContextSetStep.MenuSelectedFcn = @obj.sliceNumberSlider_ContextMenu;
+
 
             %% Setup callbacks
             obj.setupCallbacks();

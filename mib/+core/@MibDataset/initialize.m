@@ -21,7 +21,7 @@ function initialize(obj, img, meta, datasetType, modelType)
     %           @li .max - a vector with maximal value for intensity stretching for each color channel
     %           @li .gamma a vector with gamma factor for contrast adjustment for each color channel
     % datasetType: [char, @default the current datasetType]type of the dataset, one of these
-    %       @li 'Std' - standard image, one that is loaded to memory completely
+    %       @li 'Standard' - standard image, one that is loaded to memory completely
     %       @li 'Virtual' - virtual dataset that is loaded upon demand
     %       @li 'BigData' - big-data compatible dataset
     % modelType: type of the labels,
@@ -47,11 +47,11 @@ function initialize(obj, img, meta, datasetType, modelType)
     % reset the state of the main layers
     obj.image = NaN;
     obj.labels = NaN;
-    obj.mask = NaN;
-    obj.selection = NaN;
+    obj.mask = core.MibLabels([], meta);
+    obj.selection =  core.MibLabels([], meta);
     
     switch datasetType
-        case 'Std'
+        case 'Standard'
             obj.image = core.MibImage(img, meta);
             switch modelType
                 case 'imageOnly'
