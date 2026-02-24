@@ -38,12 +38,18 @@ classdef MibImageDocument < handle
         brushCursorOffset       % 2×N double array, [X offsets; Y offsets] for brush cursor circle
         centralMarker           % marker for the center of the axes
         imageHandle = matlab.graphics.primitive.Image('CData', []); % handle to the rendered image
-        sliderStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
-        sliderShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
+        sliderTStep = 1          % t-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
+        sliderTShiftStep = 10    % t-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
+        sliderZStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
+        sliderZShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
     end
 
     methods
         % declaration of methods
+
+        frameNumber_Callback(obj, parameter, BatchOptIn)        % Callback for changing the time points of the dataset by entering a new time value
+        
+        frameNumberSlider_Callback(obj, sliderValue)        % Change the currently displayed frame using the time-number slider
 
         title = getTitle(obj)        % Get the title of this image document
 
@@ -134,19 +140,6 @@ classdef MibImageDocument < handle
             obj.handles.imViewAxes.Interruptible = 'off';
             obj.handles.imViewAxes.BusyAction = 'queue';
             obj.handles.imViewAxes.HandleVisibility = 'callback';
-
-            %% add context menu to the slider 
-            obj.handles.sliceNumberSliderContext = uicontextmenu(obj.UIFigure);
-            obj.handles.sliceNumberSliderContextDefault = uimenu(obj.handles.sliceNumberSliderContext, ...
-                'Text', 'Default', 'Tag', 'sliceNumberSliderContextDefault');
-            obj.handles.sliceNumberSliderContextSetStep = uimenu(obj.handles.sliceNumberSliderContext, ...
-                'Text', 'Set step...', 'Tag', 'sliceNumberSliderContextSetStep');
-            % Add context menu to buttons
-            obj.handles.sliceNumberSlider.ContextMenu = obj.handles.sliceNumberSliderContext;
-            % Add callbacks
-            obj.handles.sliceNumberSliderContextDefault.MenuSelectedFcn = @obj.sliceNumberSlider_ContextMenu;
-            obj.handles.sliceNumberSliderContextSetStep.MenuSelectedFcn = @obj.sliceNumberSlider_ContextMenu;
-
 
             %% Setup callbacks
             obj.setupCallbacks();

@@ -734,6 +734,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         imginfo{"MaxInt"} = double(intmax(class(hdf5image)));
                     end
 
+                    % XML from MIB2, requires permutation
+                    if size(hdf5image,3) == files(fnIndex).color && size(hdf5image, 4) == files(fnIndex).noLayers
+                        hdf5image = permute(hdf5image, [1 2 4 3 5]);
+                    end
+
                     % Reshape dataset if needed (apply transMatrix)
                     if isfield(files(fnIndex), 'transMatrix')
                         hdf5image = permute(hdf5image, files(fnIndex).transMatrix);

@@ -30,7 +30,6 @@ end
 if isempty(mode); mode = hWidget.Tag; end
 
 if obj.mibModel.preferences.System.DeveloperMode
-    %setNumber =
     fprintf('controllers.MibImageDocument.gui_Callbacks: "obj.cImageDoc{%d}.handles.%s" -> changed/pressed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet, mode);
 end
 
@@ -53,13 +52,23 @@ switch mode
     case 'sliceNumber'
         obj.sliceNumber_Callback(hWidget.Value);
     case 'frameNumber'
+        obj.frameNumber_Callback();
     case 'firstFrame'
+        obj.frameNumber_Callback(1);
     case 'prevFrame'
+        currentFrame = obj.handles.frameNumber.Value;
+        nextFrame = max([currentFrame-1, 1]);
+        obj.frameNumber_Callback(nextFrame);
     case 'frameNumberSlider'
         % use hData.Value for interactive update
-        obj.handles.frameNumber.Value = hData.Value;
+        obj.frameNumberSlider_Callback(hData.Value);
+        %obj.handles.frameNumber.Value = hData.Value;
     case 'nextFrame'
+        currentFrame = obj.handles.frameNumber.Value;
+        nextFrame = min([currentFrame+1, round(obj.handles.frameNumber.Limits(2))]);
+        obj.frameNumber_Callback(nextFrame);
     case 'lastFrame'
+        obj.frameNumber_Callback(0);
 end
 
 end

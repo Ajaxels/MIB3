@@ -125,19 +125,23 @@ end
 %     return;
 % end
 
-if obj.mibModel.preferences.System.MouseWheel(1) == 's'  & ...  % scroll
-        ismember('alt', modifier) & obj.mibModel.preferences.System.AltWithScrollWheel               %#ok<OR2,AND2> % change time point with Alt
-
-    % if strcmp(cell2mat(modifier), 'shiftalt')
-    %     shift = obj.mibView.handles.mibChangeTimeSlider.UserData.sliderShiftStep;
-    % else
-    %     shift = 1;
-    % end
-    % new_index = obj.mibModel.I{obj.mibModel.id}.slices{5}(1) - verticalScrollCount*shift;
-    % if new_index < 1;  new_index = 1; end
-    % if new_index > obj.mibModel.I{obj.mibModel.id}.time; new_index = obj.mibModel.I{obj.mibModel.id}.time; end
-    % obj.mibView.handles.mibChangeTimeSlider.Value = new_index;     % update slider value
-    % obj.mibChangeTimeSlider_Callback();
+if obj.mibModel.preferences.System.MouseWheel(1) == 's'  && ...  % scroll
+        ismember('alt', modifier) && obj.mibModel.preferences.System.AltWithScrollWheel 
+    %% change frame number with holding Alt
+    % Note! depends on settings in Preferences->User interface->Hold Alt with scroll wheel
+    
+    if ismember('shift', modifier)
+        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderTShiftStep;
+    else
+        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderTStep;
+    end
+    
+    dataset = obj.mibModel.I{obj.mibModel.id};
+    new_index = dataset.slices{5}(1) - verticalScrollCount*shift;
+    if new_index < 1;  new_index = 1; end
+    if new_index > dataset.image.time; new_index = dataset.image.time; end
+    obj.handles.frameNumberSlider.Value = new_index;     % update slider value
+    obj.frameNumberSlider_Callback();
 elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'zoom', zoom in/zoom out with the mouse wheel
     % % Power law allows for the inverse to work:
     % %      C^(x) * C^(-x) = 1
@@ -199,9 +203,9 @@ elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'z
 else    % slice change with the mouse wheel
     % update the slider step
     if ismember('shift', modifier)
-        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderShiftStep;
+        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderZShiftStep;
     else
-        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderStep;
+        shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderZStep;
     end
     
     %if ~obj.mibModel.preferences.System.AltWithScrollWheel && ismember('alt', modifier)

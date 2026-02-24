@@ -69,8 +69,9 @@ classdef MibModel < handle
     events
         ShowErrorDialog      % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         DatasetsPanelUpdate  % update widgets of the Datasets panel
+        FrameChanged         % change of the current frame of 5D dataset (time)
         NewDataset           % MibModel loaded a new image, update MibController widgets
-        SliceChanged         % Change of slices of the current dataset
+        SliceChanged         % change of slices of the current dataset (depth)
         ShowImage            % render image in the Image View panel
         SyncBatch            % synchronize structure for batch actions
         StopProtocol         % stop batch protocol from execution
