@@ -123,7 +123,8 @@ try
 
             % Update brush cursor to match new axes size
             obj.mibController.cImageDoc{setId}.brushCursorOffset = []; % clear brush offset to recalculate it
-            obj.mibController.cImageDoc{setId}.updateBrushCursor([], [], false);
+            %obj.mibController.cImageDoc{setId}.updateBrushCursor([], [], false);
+            obj.mibController.cImageDoc{setId}.updateBrushCursor();
         end
     end
 

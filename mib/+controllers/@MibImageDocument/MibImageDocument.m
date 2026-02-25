@@ -18,7 +18,7 @@ classdef MibImageDocument < handle
     %   doc.setDescription('Buffer 1: myimage.tif');
     %
     %   % Update brush cursor
-    %   doc.updateBrushCursor([100, 100], ':', true);
+    %   doc.updateBrushCursor([100, 100], ':');
     %
     %   % access tothe class
     %   obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}
@@ -42,6 +42,12 @@ classdef MibImageDocument < handle
         sliderTShiftStep = 10    % t-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
         sliderZStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
         sliderZShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
+
+        % switches that are updated within obj.gui_WinMouseMotionFcn
+        isInsideAxes = false;   % mouse inside image axes
+        wasInsideAxes = [];     % mouse was inside the image axes
+        isInsideImage = false;  % indicating the cursor inside the image frames
+
     end
 
     methods
@@ -75,7 +81,7 @@ classdef MibImageDocument < handle
 
         sliceNumberSlider_Callback(obj, sliderValue)        % callback for change of slices using the slice number slider 
 
-        updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)        % Update brush cursor position and visibility
+        updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)        % Update brush cursor position and visibility
 
         updateBrushCursorOffset(obj)        % Update brush cursor offset based on current brush radius and magnification
 

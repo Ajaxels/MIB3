@@ -108,7 +108,7 @@ switch BatchOpt.Mode{1}
         % get index of the next dataset
         nextDatasetIndex = (numel(obj.Sets.names)-1) * obj.Sets.datasetsInSet + 1;
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
-            fn = fullfile(obj.mibPath, 'assets', 'images', 'default.jpg');
+            fn = fullfile(obj.mibPath, 'assets', 'images', 'default.png');
             I = imread(fn);
             meta = dictionary();
 

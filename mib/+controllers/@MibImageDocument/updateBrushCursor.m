@@ -1,5 +1,5 @@
-function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
-% function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
+function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
+% function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
 % Update brush cursor position and visibility
 %
 % Creates or updates a circular cursor overlay that visualizes
@@ -12,7 +12,7 @@ function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
 %   lineStyle: char, line style for cursor
 %              ':' = dashed (default, hover mode)
 %              '-' = solid (painting mode)
-%   isInsideAxes: logical, true if mouse is inside axes (default true)
+%   resetOffset: logical, when true the cursor offset will be reset, needed when magnification is changed
 %
 % Return values:
 %   none
@@ -21,19 +21,19 @@ function updateBrushCursor(obj, xyCoordinate, lineStyle, isInsideAxes)
 %   % Update cursor at position [100, 150] with dashed style
 %   obj.updateBrushCursor([100, 150], ':', true);
 %
-%   % Hide cursor when mouse leaves axes
-%   obj.updateBrushCursor([], [], false);
 %
 %   % Use solid line during painting
-%   obj.updateBrushCursor([], '-', true);
+%   obj.updateBrushCursor([], '-');
 
-if nargin < 4; isInsideAxes = true; end
+if nargin < 4; resetOffset = false; end
 if nargin < 3; lineStyle = []; end
 if nargin < 2; xyCoordinate = []; end
 if isempty(lineStyle); lineStyle = ':'; end
 
 % Determine visibility: show only when globally enabled AND inside axes
-shouldShow = obj.view.brushCursorShow && isInsideAxes;
+shouldShow = obj.view.brushCursorShow && obj.isInsideImage;
+
+if resetOffset; obj.brushCursorOffset = []; end
 
 if shouldShow
     % Get cursor coordinates

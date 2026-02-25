@@ -17,7 +17,7 @@ function gui_WinMouseMotionFcn(obj)
 % Return values:
 %   none
 
-persistent inCallback lastCallTime wasInside
+persistent inCallback lastCallTime %obj.wasInsideAxes
 currentTime = tic();
 
 % Auto-reset if stuck for more than 100ms (handles debugging breakpoints)
@@ -44,10 +44,10 @@ try
     axYLim = imViewAxes.YLim;
 
     % Check if mouse is within axes boundaries
-    isInsideAxes = xMouse > axXLim(1) && xMouse < axXLim(2) && ...
+    obj.isInsideAxes = xMouse > axXLim(1) && xMouse < axXLim(2) && ...
         yMouse > axYLim(1) && yMouse < axYLim(2);
 
-    if isInsideAxes
+    if obj.isInsideAxes
         obj.gui.imViewFigure.Pointer = 'crosshair';
         sessionSettings = obj.mibModel.sessionSettings;
 
@@ -64,11 +64,11 @@ try
         obj.mibModel.sessionSettings.prevCursorCoordinate = [xMouse, yMouse];
 
         % Check if inside image boundaries
-        isInsideImage = xMouse > 0 && yMouse > 0 && ...
+        obj.isInsideImage = xMouse > 0 && yMouse > 0 && ...
             xMouse <= size(obj.mibModel.Ishown, 2) && ...
             yMouse <= size(obj.mibModel.Ishown, 1);
 
-        if isInsideImage
+        if obj.isInsideImage
             dataset = obj.mibModel.I{obj.mibModel.id};
             orientation = dataset.orientation;
             cImage = dataset.slices{4};
@@ -137,7 +137,7 @@ try
 
             % Update brush cursor position
             if obj.view.brushCursorShow
-                obj.updateBrushCursor([xMouse, yMouse], [], true);
+                obj.updateBrushCursor([xMouse, yMouse]);
             end
         else
             obj.mibController.cStatus.handles.pixelLabel.Text = sprintf('Pixel: %d:%d (RRRRR:GGGGG:BBBBB)', xMouse, yMouse);
@@ -147,13 +147,21 @@ try
         obj.mibController.cStatus.handles.pixelLabel.Text = 'Pixel: XXXXX:XXXXX (RRRRR:GGGGG:BBBBB)';
     end
 
-    % Optimize: only update cursor visibility when crossing axes boundary
-    if isempty(wasInside) || wasInside ~= isInsideAxes
-        if ~isInsideAxes && obj.view.brushCursorShow
-            obj.updateBrushCursor([], [], false);
+    % Optimize: only update cursor visibility when crossing axes/image boundary
+    if isempty(obj.wasInsideAxes) || obj.wasInsideAxes ~= obj.isInsideImage || obj.wasInsideAxes ~= obj.isInsideAxes
+        if (~obj.isInsideImage || ~obj.isInsideAxes) && obj.view.brushCursorShow
+            %obj.updateBrushCursor([], [], false);
+            obj.updateBrushCursor();
         end
-        wasInside = isInsideAxes;
+        obj.wasInsideAxes = obj.isInsideImage;
     end
+    % % Optimize: only update cursor visibility when crossing axes boundary
+    % if isempty(obj.wasInsideAxes) || obj.wasInsideAxes ~= obj.isInsideAxes
+    %     if ~obj.isInsideAxes && obj.view.brushCursorShow
+    %         obj.updateBrushCursor([], [], false);
+    %     end
+    %     obj.wasInsideAxes = obj.isInsideAxes;
+    % end
 
 catch err
     disp(err);

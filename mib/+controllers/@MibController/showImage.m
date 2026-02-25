@@ -136,7 +136,7 @@ else
     obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'auto';
     obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'auto';
 
-    if resizeToMagnification == 1
+    if ~resizeToMagnification 
         % Resize to fit screen - limits already scaled by coef_z in listenerUpdateDatasetAxes
         obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
         obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];

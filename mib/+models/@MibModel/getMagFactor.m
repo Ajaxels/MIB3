@@ -14,9 +14,7 @@ function magFactor = getMagFactor(obj, id)
     % magFactor = obj.mibModel.getMagFactor(2);     % get magFactor for dataset 2 
     % @endcode
     
-    if nargin < 2
-        id = obj.id;
-    end
+    if nargin < 2; id = obj.id; end
     
     magFactor = obj.I{id}.magFactor;
 end

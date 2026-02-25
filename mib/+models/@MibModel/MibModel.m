@@ -102,6 +102,10 @@ classdef MibModel < handle
 
         initializePreferences(obj)            % initialize and update MIB preferences from a file
 
+        setAxesLimits(obj, axesX, axesY, id)        % set axes limits for the currently shown or id dataset
+        
+        setMagFactor(obj, magFactor, id)        % set magnification for the currently shown or id dataset
+
         function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             % function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             % Construct an instance of this class

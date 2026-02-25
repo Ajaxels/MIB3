@@ -3,8 +3,8 @@ function setAxesLimits(obj, axesX, axesY)
 % set axes limits for the dataset
 %
 % Parameters:
-% axesX: a vector [min, max] for the obj.X
-% axesY: a vector [min, max] for the Y
+% axesX: a vector [min, max] for for X
+% axesY: a vector [min, max] for for Y
 %
 % Return values:
 % 
