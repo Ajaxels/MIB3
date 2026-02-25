@@ -1,4 +1,4 @@
-function stopped = overrideDescriptions(handles, developerMode, fieldPath)
+function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclusionList)
 % function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclusionList)
 % Override Description property of widgets to add the widget handle name to
 % the beginning of the Description field depending on the developerMode
@@ -12,6 +12,10 @@ function stopped = overrideDescriptions(handles, developerMode, fieldPath)
 % fieldPath: char, optional string to specify the parent name when
 % generating the handle. This text will be added before the handle tag into
 % the tooltip
+% exclusionList: cell array of char, optional list of field names to skip.
+%   Fields matching any name in this list will not be renamed, and recursion
+%   will not descend into them. Matching is against the bare field name only
+%   (not the full path).
 %
 % Return values:
 % stopped: logical true if function exited early due to no change needed or first update done
@@ -23,11 +27,15 @@ function stopped = overrideDescriptions(handles, developerMode, fieldPath)
 % developerMode = true;
 % utils.overrideDescriptions(obj.handles, developerMode); // add handle label to the tooltip
 % @endcode
+% @code
+% utils.overrideDescriptions(obj.handles, developerMode, 'obj.handles', {'segmentation', 'toolbar'});  // skip two panels
+% @endcode
 
 arguments (Input)
     handles
     developerMode (1,1) logical
     fieldPath char = 'obj.handles'
+    exclusionList cell  = {}
 end
 
 arguments (Output)
@@ -45,13 +53,19 @@ stopped = false;
 
 for i = 1:numel(fields)
     fname = fields{i};
+    
+    % Skip excluded fields
+    if ismember(fname, exclusionList)
+        continue;
+    end
+
     current = handles.(fname);
     currentPath = sprintf('%s.%s', fieldPath, fname);
 
     if isstruct(current)
-        % Recurse into nested struct
-        stopped = utils.overrideDescriptions(current, developerMode, currentPath);
-        if stopped; return; end % stop the function since no change is needed
+        % Recurse into nested struct, passing exclusionList along
+        stopped = utils.overrideDescriptions(current, developerMode, currentPath, exclusionList);
+        if stopped; return; end
     elseif isobject(current)
         % Check if object has 'Description'/'Tooltip'/'Text' property
         updateDescription = false;

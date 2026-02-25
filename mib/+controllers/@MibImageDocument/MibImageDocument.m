@@ -133,7 +133,7 @@ classdef MibImageDocument < handle
             obj.UIFigure = obj.gui.imViewFigure; % handle to the underlying figure
 
             if obj.mibModel.preferences.System.DeveloperMode
-                utils.overrideDescriptions(obj.gui.handles, true, 'obj.cImageDoc{obj.mibModel.Sets.selectedSet}'); 
+                utils.overrideDescriptions(obj.gui.handles, true, 'obj.cImageDoc{obj.mibModel.Sets.selectedSet}', {'mainGridLayout'}); 
             end
 
             % Hold axes once (Note: requires YDir = 'reverse' defined in ImageView.mlapp)

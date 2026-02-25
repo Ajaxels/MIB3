@@ -2,16 +2,30 @@ function gui_ScrollWheelFcn(obj, eventdata)
 % function gui_ScrollWheelFcn(obj, eventdata)
 % Callback for mouse scroll wheel
 %
-% Handles different scroll wheel operations:
-% - Ctrl+Scroll: Change brush/tool size, display size on cursor
-% - Ctrl+Shift+Scroll: Change size in larger steps (5 units)
-% - Regular scroll: Zoom in/out or slice navigation (handled elsewhere)
+% Dispatches scroll events to one of three behaviors based on active
+% modifier keys and the MouseWheel mode preference:
 %
-% Parameters:
-%   eventdata: event data structure with VerticalScrollCount/Amount
+%   Ctrl + Scroll         - Adjust brush/tool size by 1 unit
+%   Ctrl + Shift + Scroll - Adjust brush/tool size by 5 units
+%   Alt + Scroll          - Navigate time frames (scroll mode + AltWithScrollWheel pref)
+%   Scroll (zoom mode)    - Zoom in/out centred on cursor position (power law, C=1.10)
+%   Scroll (scroll mode)  - Navigate Z-slices
 %
-% Return values:
-%   none
+% When adjusting brush size, the cursor is temporarily replaced with a
+% numeric size indicator (capped at display value 99). Brush size is
+% clamped to a minimum of 1.
+%
+% Can be triggered by both the standard figure ScrollWheelFcn event and
+% programmatically via key shortcut callbacks using a ToggleEventData
+% object whose .Parameter struct contains VerticalScrollCount and
+% VerticalScrollAmount.
+%
+% Inputs:
+%   obj       - View controller; holds handles to GUI, mibModel, and
+%               segmentation panel widgets
+%   eventdata - matlab.ui.eventdata.ScrollData  (normal scroll), OR
+%               ToggleEventData with .Parameter.VerticalScrollCount /
+%               .VerticalScrollAmount  (key shortcut call)
 %
 % Example usage:
 %   % This callback is automatically triggered by scroll events
@@ -85,23 +99,18 @@ if ismember('control', modifier)
     end
 
     % Prepare text for custom cursor (max 99)
-    if val < 100
-        text_str = num2str(val);
-    else
-        text_str = '99';
-    end
+    text_str = num2str(min(val, 99));
 
     % Create custom cursor showing the size value
-    colorText = 1;
     valuePointer = zeros([16 16]);
     for i = 1:numel(text_str)
         col_start = i*8 - 7;
         col_end = i*8;
-        valuePointer(:, col_start:col_end) = obj.view.brushSizeNumbers{text_str(i)} * colorText;
+        valuePointer(:, col_start:col_end) = obj.view.brushSizeNumbers{text_str(i)};
     end
     valuePointer(valuePointer==0) = NaN;
-    valuePointer(1:5,3) = colorText;
-    valuePointer(3,1:5) = colorText;
+    valuePointer(1:5,3) = 1;
+    valuePointer(3,1:5) = 1;
 
     obj.gui.imViewFigure.Pointer = 'custom';
     obj.gui.imViewFigure.PointerShapeCData = valuePointer;
@@ -118,6 +127,9 @@ end
 % % check whether the mouse cursor within the axes.
 if ~obj.isInsideAxes; return; end
 
+% get alias to the dataset
+dataset = obj.mibModel.I{obj.mibModel.id};
+
 if obj.mibModel.preferences.System.MouseWheel(1) == 's'  && ...  % scroll
         ismember('alt', modifier) && obj.mibModel.preferences.System.AltWithScrollWheel 
     %% change frame number with holding Alt
@@ -129,10 +141,9 @@ if obj.mibModel.preferences.System.MouseWheel(1) == 's'  && ...  % scroll
         shift = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliderTStep;
     end
     
-    dataset = obj.mibModel.I{obj.mibModel.id};
     new_index = dataset.slices{5}(1) - verticalScrollCount*shift;
-    if new_index < 1;  new_index = 1; end
-    if new_index > dataset.image.time; new_index = dataset.image.time; end
+    new_index = max(1, min(new_index, dataset.image.time));
+    
     obj.handles.frameNumberSlider.Value = new_index;     % update slider value
     obj.frameNumberSlider_Callback();
 elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'zoom', zoom in/zoom out with the mouse wheel
@@ -151,8 +162,6 @@ elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'z
     curPt(2) = curPt(2)*magFactor + max([0 axesY(1)]);
     xl = axesX;
     yl = axesY;
-    % zoom will work only when the mouse is above the image axes
-    if ~obj.isInsideAxes; return; end
 
     midX = mean(xl);
     rngXhalf = diff(xl) / 2; % half-width of the shown image
@@ -173,8 +182,8 @@ elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'z
     % check out of image bounds conditions
     if lims(1,1) < 0 && lims(2,1) < 0; return; end
     if lims(1,2) < 0 && lims(2,2) < 0; return; end
-    if lims(1,1) > obj.mibModel.I{obj.mibModel.id}.image.width && lims(2,1) > obj.mibModel.I{obj.mibModel.id}.image.width; return; end
-    if lims(1,2) > obj.mibModel.I{obj.mibModel.id}.image.height && lims(2,2) > obj.mibModel.I{obj.mibModel.id}.image.height; return; end
+    if lims(1,1) > dataset.image.width && lims(2,1) > dataset.image.width; return; end
+    if lims(1,2) > dataset.image.height && lims(2,2) > dataset.image.height; return; end
     
     obj.mibModel.setMagFactor(magFactor*r);    % update magFactor
     obj.mibModel.setAxesLimits(lims(:,1)', lims(:,2)');    % update axes limits
@@ -199,12 +208,11 @@ else    % slice change with the mouse wheel
         %end
     %end
 
-    datasetId = obj.mibModel.id;
-    orientation = obj.mibModel.I{datasetId}.orientation;
-    new_index = obj.mibModel.I{datasetId}.slices{orientation}(1) - verticalScrollCount*shift;
+    orientation = dataset.orientation;
+    new_index = dataset.slices{orientation}(1) - verticalScrollCount*shift;
     if new_index < 1;  new_index = 1; end
-    if new_index > obj.mibModel.I{datasetId}.dim_yxzct(orientation)
-        new_index = obj.mibModel.I{datasetId}.dim_yxzct(orientation); 
+    if new_index > dataset.dim_yxzct(orientation)
+        new_index = dataset.dim_yxzct(orientation); 
     end
     
     obj.handles.sliceNumberSlider.Value = new_index;     % update slider value
