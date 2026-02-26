@@ -32,7 +32,7 @@ classdef MibSegmentation
 
         materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
         
-        materialsTable_CellSelectionCallback(obj, src, event)        % handle cell selection in materials table (obj.handles.materialsTable)
+        materialsTable_CellSelectionCallback(obj, cellIndices)        % handle cell selection in materials table (obj.handles.materialsTable)
         
         materialsTable_ContextMenu(obj, menuEntry, selectedData)    % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTable)
 
@@ -52,7 +52,7 @@ classdef MibSegmentation
 
         samPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->SAM tool
 
-        segmentationTool_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
+        segmentationTool_Callback(obj, segmToolIndex)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
 
         thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
 
@@ -158,7 +158,7 @@ classdef MibSegmentation
             obj.handles.addMaterial.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.removeMaterial.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.colorWheel.ButtonPushedFcn = @obj.gui_Callbacks;
-            obj.handles.materialsTable.CellSelectionCallback = @obj.materialsTable_CellSelectionCallback;
+            obj.handles.materialsTable.CellSelectionCallback = @(~,~)obj.materialsTable_CellSelectionCallback();
             obj.handles.viewSettings.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
@@ -166,7 +166,7 @@ classdef MibSegmentation
             obj.handles.restrictMask.ValueChangedFcn = @(~,~)obj.restrictMask_Callback;
             obj.handles.favoriteTool.ValueChangedFcn = @obj.favTool_Callback;
 
-            obj.handles.segmTool.ValueChangedFcn = @obj.segmentationTool_Callback;
+            obj.handles.segmTool.ValueChangedFcn = @(~,~)obj.segmentationTool_Callback;
 
             %% 3D ball, brush, spot panels
             obj.handles.brushRadius.ValueChangedFcn = @obj.brushPanel_Callback;

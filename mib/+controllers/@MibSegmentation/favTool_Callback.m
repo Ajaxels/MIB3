@@ -19,12 +19,15 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.favTool_Callback: change state of "obj.view.handles.panels.segmentation.handles.favoriteTool" -> %d\n', hWidget.Value);
 end
 
+% get index of the segmentation tool
+toolIndex = obj.handles.segmTool.ValueIndex;
+
 switch hWidget.Value
     case true
-        
+        obj.mibModel.preferences.SegmTools.FavoriteTools(end+1) = toolIndex;
+        obj.mibModel.preferences.SegmTools.FavoriteTools = sort(unique(obj.mibModel.preferences.SegmTools.FavoriteTools));
     case false
-        
+        obj.mibModel.preferences.SegmTools.FavoriteTools(obj.mibModel.preferences.SegmTools.FavoriteTools==toolIndex) = [];
 end
-
 
 end

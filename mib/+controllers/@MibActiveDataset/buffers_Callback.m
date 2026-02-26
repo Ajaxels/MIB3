@@ -1,4 +1,4 @@
-function buffers_Callback(obj, hWidget, hData)
+function buffers_Callback(obj, hWidget, hData, buttonId)
 % buffers_Callback(obj, hWidget, hData)
 % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset
 % stored in a buffer defined by the pressed button
@@ -7,17 +7,17 @@ function buffers_Callback(obj, hWidget, hData)
 % - obj.handles.panels.activeDataset.handles.bufferN, where N is number 1 to 10,
 %
 % Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting ButtonPushedData class
+% obj: controllers.MibActiveDataset
+% hWidget: handle to the pressed widget (matlab.ui.control.Button)
+% hData: handle to supporting ButtonPushedData class (matlab.ui.eventdata.ButtonPushedData)
+% buttonId: [optional] index of dataset in MibModel (the shown one is
+% obj.mibModel.id), when omitted a generic callback on the buffer button
+% press is executed
 
-arguments (Input)
-    obj controllers.MibActiveDataset
-    hWidget matlab.ui.control.Button
-    hData {mustBeButtonEventOrEmpty} = []
+if nargin < 4
+    % get index of the pressed button
+    buttonId = str2double(hWidget.Text); 
 end
-
-% get index of the pressed button
-buttonId = str2double(hWidget.Text);
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibActiveDataset.buffers_Callback -> button "%d" pressed\n', buttonId);
@@ -26,6 +26,7 @@ end
 % generate identifier of the buffer handle
 prevBufferStringId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet));
 prevDatasetId = obj.mibModel.id; % store the previous dataset index
+obj.mibModel.previouslySelectedDataset = prevDatasetId; % store the previous dataset id
 newBufferStringId = sprintf('buffer%d', buttonId);
 
 obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet) = buttonId; % update index of the dataset selected in the current set
@@ -50,12 +51,4 @@ obj.view.handles.panels.activeDataset.handles.datasetType.Value = obj.mibModel.S
 
 notify(obj.mibModel, 'ShowImage');
 
-end
-
-% Local function that performs the validation
-function mustBeButtonEventOrEmpty(a)
-% This function allows the input 'a' to be empty OR a specific class
-if ~isempty(a) && ~isa(a, 'matlab.ui.eventdata.ButtonPushedData')
-    error('Input must be a ButtonPushedData object or empty');
-end
 end

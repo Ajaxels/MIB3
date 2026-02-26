@@ -3,7 +3,7 @@ function deleteImageDocument(obj, docIndex)
 % Delete an image document and reindex remaining documents
 %
 % Removes the image document at the specified index, properly cleans up
-% all associated resources (FigureDocument, ImageView, brush cursor),
+% all associated resources (FigureDocument, ImageViewDocument, brush cursor),
 % and updates the setOfDatasetsIndex property of all subsequent documents
 % to maintain consistency with their array positions.
 %

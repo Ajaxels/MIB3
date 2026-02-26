@@ -1,64 +1,77 @@
-function segmentationTool_Callback(obj, hWidget, hData)
-% function segmentationTool_Callback(obj, hWidget, hData)
+function segmentationTool_Callback(obj, segmToolIndex)
+% function segmentationTool_Callback(obj, segmToolIndex)
 % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in
 % obj.handles.panels.segmentation panel. 
 % Select segmentation tool
 %
 % Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% segmToolIndex: [optional] index of the segmentation tool to select, when
+% not provided, takes currently selected value in obj.view.handles.panels.segmentation.handles.segmTool.ValueIndex
 
-arguments (Input)
-    obj controllers.MibSegmentation
-    hWidget matlab.ui.control.DropDown
-    hData matlab.ui.eventdata.ValueChangedData
+% get alias
+handles = obj.view.handles.panels.segmentation.handles;
+
+if nargin < 4
+    % get index of the segmentation tool
+    segmToolIndex = handles.segmTool.ValueIndex;
 end
+
+% get name of the segmentation tool
+segmToolName = handles.segmTool.Items{segmToolIndex};
 
 if obj.mibModel.preferences.System.DeveloperMode
     % obj.mibController.cSegmentation.segmentationTool_Callback
-    fprintf('controllers.MibSegmentation.segmentationTool_Callback: -> "%s"\n', hWidget.Value);
+    fprintf('controllers.MibSegmentation.segmentationTool_Callback: -> "%s"\n', segmToolName);
 end
 
-obj.view.handles.panels.segmentation.handles.panelLines3D.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelAnnotations.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelBrush.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelThresholding.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelDrag.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelLasso.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelMagicwand.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelMembrane.Visible = 'off';
-obj.view.handles.panels.segmentation.handles.panelSAM.Visible = 'off';  
 
-switch obj.view.handles.panels.segmentation.handles.segmTool.Value
+handles.panelLines3D.Visible = 'off';
+handles.panelAnnotations.Visible = 'off';
+handles.panelBrush.Visible = 'off';
+handles.panelThresholding.Visible = 'off';
+handles.panelDrag.Visible = 'off';
+handles.panelLasso.Visible = 'off';
+handles.panelMagicwand.Visible = 'off';
+handles.panelMembrane.Visible = 'off';
+handles.panelSAM.Visible = 'off';  
+
+switch segmToolName
     case {'3D ball', 'Spot'}
-        obj.view.handles.panels.segmentation.handles.brushUseClustering.Visible = 'off';
-        obj.view.handles.panels.segmentation.handles.panelBrush.Visible = 'on';
+        handles.brushUseClustering.Visible = 'off';
+        handles.panelBrush.Visible = 'on';
     case '3D lines'
-        obj.view.handles.panels.segmentation.handles.panelLines3D.Visible = 'on';
+        handles.panelLines3D.Visible = 'on';
     case 'Annotations'
-        obj.view.handles.panels.segmentation.handles.panelAnnotations.Visible = 'on';
+        handles.panelAnnotations.Visible = 'on';
     case 'Brush'
-        obj.view.handles.panels.segmentation.handles.brushUseClustering.Visible = 'on';
-        obj.view.handles.panels.segmentation.handles.panelBrush.Visible = 'on';
+        handles.brushUseClustering.Visible = 'on';
+        handles.panelBrush.Visible = 'on';
     case 'BW thresholding'
-        obj.view.handles.panels.segmentation.handles.panelThresholding.Visible = 'on';
+        handles.panelThresholding.Visible = 'on';
     case 'Drag&Drop materials'
-        obj.view.handles.panels.segmentation.handles.panelDrag.Visible = 'on'; 
+        handles.panelDrag.Visible = 'on'; 
     case 'Lasso'
-        obj.view.handles.panels.segmentation.handles.lassoObjectPicker.Visible = 'off';
-        obj.view.handles.panels.segmentation.handles.lassoCustomParameters.Visible = 'on';
-        obj.view.handles.panels.segmentation.handles.panelLasso.Visible = 'on'; 
+        handles.lassoObjectPicker.Visible = 'off';
+        handles.lassoCustomParameters.Visible = 'on';
+        handles.panelLasso.Visible = 'on'; 
     case 'MagicWand/RegionGrowing'
-        obj.view.handles.panels.segmentation.handles.panelMagicwand.Visible = 'on'; 
+        handles.panelMagicwand.Visible = 'on'; 
     case 'Membrane ClickTracker'
-        obj.view.handles.panels.segmentation.handles.panelMembrane.Visible = 'on'; 
+        handles.panelMembrane.Visible = 'on'; 
     case 'Object picker'
-        obj.view.handles.panels.segmentation.handles.lassoCustomParameters.Visible = 'off';
-        obj.view.handles.panels.segmentation.handles.lassoObjectPicker.Visible = 'on';
-        obj.view.handles.panels.segmentation.handles.panelLasso.Visible = 'on'; 
+        handles.lassoCustomParameters.Visible = 'off';
+        handles.lassoObjectPicker.Visible = 'on';
+        handles.panelLasso.Visible = 'on'; 
     case 'Segment-anything model'
-        obj.view.handles.panels.segmentation.handles.panelSAM.Visible = 'on';  
+        handles.panelSAM.Visible = 'on';  
 end
 
+% update the favorite tools checkbox
+toolIndex = handles.segmTool.ValueIndex;
+if ismember(toolIndex, obj.mibModel.preferences.SegmTools.FavoriteTools)
+    handles.favoriteTool.Value = true;
+else
+    handles.favoriteTool.Value = false;
+end
 
 end

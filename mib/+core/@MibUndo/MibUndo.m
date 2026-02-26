@@ -10,7 +10,7 @@ classdef MibUndo < handle
 	% 
 
     properties (SetAccess = public, GetAccess = public)
-        enableSwitch         % Enable/disable undo operation
+        enableSwitch = 1        % Enable/disable undo operation
         % a variable to store whether Undo is available or not:
         % @li @b 1 - enable
         % @li @b 0 - disable

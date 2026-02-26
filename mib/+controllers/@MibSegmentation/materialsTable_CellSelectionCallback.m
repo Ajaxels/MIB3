@@ -1,22 +1,27 @@
-function materialsTable_CellSelectionCallback(obj, src, event)
-% function materialsTable_CellSelectionCallback(obj, src, event)
+function materialsTable_CellSelectionCallback(obj, cellIndices)
+% function materialsTable_CellSelectionCallback(obj, cellIndices)
 % Handle cell selection in materials table (obj.handles.materialsTable)
 
-if isempty(event.Indices); return; end
+% Get aliases
+tableHandle = obj.handles.materialsTable;
+userData = tableHandle.UserData;
+dataset = obj.mibModel.I{obj.mibModel.id};
+
+if nargin < 2
+    cellIndices = tableHandle.Selection; 
+else
+    obj.handles.materialsTable.Selection = cellIndices;
+end
+if isempty(cellIndices); return; end
 
 % handle Ctrl+A press
-if size(event.Indices, 1) > 1 && event.Indices(1, 1) == 1
+if size(cellIndices, 1) > 1 && cellIndices(1, 1) == 1
     obj.updateMaterialsTable([]);
     return;
 end
 
 % get first selected cell
-Indices = event.Indices(1, :);
-
-% Get references
-tableHandle = obj.handles.materialsTable;
-userData = tableHandle.UserData;
-dataset = obj.mibModel.I{obj.mibModel.id};
+Indices = cellIndices(1, :);
 
 % Previous selections
 prevMaterial = dataset.selectedMaterial;
@@ -29,7 +34,7 @@ unlink = userData.unlink;
 isRestricted = dataset.restrictSelectionToMaterial == 1;
 
 % Store all selected indices
-userData.selectedIndices = event.Indices;
+userData.selectedIndices = cellIndices;
 tableHandle.UserData = userData;
 
 % Define colors

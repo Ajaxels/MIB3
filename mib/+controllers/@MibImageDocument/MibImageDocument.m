@@ -1,9 +1,9 @@
 classdef MibImageDocument < handle
     % classdef MibImageDocument
-    % Controller for a single image document (FigureDocument + ImageView component)
+    % Controller for a single image document (FigureDocument + ImageViewDocument component)
     %
     % This class encapsulates a single image document view in MIB, managing
-    % the FigureDocument container, ImageView component, and all associated
+    % the FigureDocument container, ImageViewDocument component, and all associated
     % callbacks including mouse interactions and brush cursor visualization.
     %
     % Example:
@@ -28,8 +28,8 @@ classdef MibImageDocument < handle
         mibController           % controllers.MibController, handle to main controller
         view                    % MibView, handle to the main view
         mibModel                % models.MibModel, handle to the main model
-        gui                     % views.components.ImageView, the ImageView component
-        handles                 % struct with ImageView component handles (axes, buttons, etc.)
+        gui                     % views.components.ImageViewDocument, the ImageViewDocument component
+        handles                 % struct with ImageDocument component handles (axes, buttons, etc.)
         UIFigure                % handle to underlying UIFigure
         
         figureDoc               % matlab.ui.internal.FigureDocument, the document container
@@ -63,10 +63,12 @@ classdef MibImageDocument < handle
 
         gui_ScrollWheelFcn(obj, eventdata)        % Callback for mouse scroll wheel
 
-        gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
-
         gui_SizeChangedFcn(obj)        % Callback when figure size changes
 
+        gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
+
+        gui_WindowKeyPressFcn(obj)        % Callback for a key press in MIB
+        
         selectDocument(obj)        % Select this document in the document group
 
         setDescription(obj, description)        % Update the description text of this document
@@ -88,7 +90,7 @@ classdef MibImageDocument < handle
         function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
             % Create a new MibImageDocument controller
             %
-            % Creates a FigureDocument with an embedded ImageView component,
+            % Creates a FigureDocument with an embedded ImageViewDocument component,
             % configures axes properties, and sets up all necessary callbacks
             % for mouse interactions and navigation controls.
             %
@@ -123,8 +125,8 @@ classdef MibImageDocument < handle
             obj.figureDoc.Closable = false;
             obj.figureDoc.Figure.AutoResizeChildren = 'off';
 
-            %% Create ImageView component
-            obj.gui = views.components.ImageView('Parent', obj.figureDoc.Figure, ...
+            %% Create ImageViewDocument component
+            obj.gui = views.components.ImageViewDocument('Parent', obj.figureDoc.Figure, ...
                 'Units', 'normalized', 'Position', [0 0 1 1]);
             
             % populate handles structure
@@ -136,7 +138,7 @@ classdef MibImageDocument < handle
                 utils.overrideDescriptions(obj.gui.handles, true, 'obj.cImageDoc{obj.mibModel.Sets.selectedSet}', {'mainGridLayout'}); 
             end
 
-            % Hold axes once (Note: requires YDir = 'reverse' defined in ImageView.mlapp)
+            % Hold axes once (Note: requires YDir = 'reverse' defined in ImageViewDocument.mlapp)
             hold(obj.handles.imViewAxes, 'on');
 
             %% Configure axes properties
@@ -157,7 +159,7 @@ classdef MibImageDocument < handle
             % Destructor for MibImageDocument
             %
             % Properly cleans up resources when the document is deleted.
-            % Removes the FigureDocument, brush cursor, and ImageView component.
+            % Removes the FigureDocument, brush cursor, and ImageViewDocument component.
             % This method is automatically called when the object is deleted.
             %
             % Parameters:
@@ -179,7 +181,7 @@ classdef MibImageDocument < handle
                     delete(obj.brushCursor);
                 end
 
-                % Delete the ImageView component
+                % Delete the ImageViewDocument component
                 if ~isempty(obj.gui) && isvalid(obj.gui)
                     delete(obj.gui);
                 end

@@ -41,6 +41,7 @@ obj.addGuiControllers();
 % add callback for selection of the
 obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 
+
 if obj.mibModel.preferences.System.EnableSelection
     obj.view.brushCursorShow =  true;
 else

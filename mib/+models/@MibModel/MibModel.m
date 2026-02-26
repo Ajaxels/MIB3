@@ -33,6 +33,8 @@ classdef MibModel < handle
         % enable/disable live stretching of image intensities
         preferences
         % a structure with program preferences
+        previouslySelectedDataset = 1
+        % index of the previously selected dataset, to be toggled using Ctrl+E shortcut
         pythonEnv
         % python environment started from MIB
         selectedFileFilter = {'all known', 'all known'};
@@ -67,14 +69,15 @@ classdef MibModel < handle
     end
 
     events
-        ShowErrorDialog      % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
+        AddMeasurement       % add a new measurement
         DatasetsPanelUpdate  % update widgets of the Datasets panel
         FrameChanged         % change of the current frame of 5D dataset (time)
         NewDataset           % MibModel loaded a new image, update MibController widgets
-        SliceChanged         % change of slices of the current dataset (depth)
+        ShowErrorDialog      % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         ShowImage            % render image in the Image View panel
-        SyncBatch            % synchronize structure for batch actions
+        SliceChanged         % change of slices of the current dataset (depth)
         StopProtocol         % stop batch protocol from execution
+        SyncBatch            % synchronize structure for batch actions
         UpdateDatasetAxes    % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
         UpdateGuiWidgets     % update all widgets of the main GUI
         UpdateRecentDirsList % update the list of recent directories under Open Image button

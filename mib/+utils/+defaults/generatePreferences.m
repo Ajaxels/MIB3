@@ -174,7 +174,7 @@ Prefs.SegmTools.Interpolation.LineWidth = 4;
 
 % ---------- Previous segmentation tool ----------
 % fast access to the selection type tools with the 'd' shortcut
-Prefs.SegmTools.PreviousTool = [3, 4];
+Prefs.SegmTools.FavoriteTools = [3, 4];
 
 % ----------  Brush tool   ----------
 % Brush eraser factor

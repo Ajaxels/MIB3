@@ -176,13 +176,13 @@ if ~isempty(position)
 end
 
 % Highlight selected material (column 2)
-eventData = struct();
-eventData.Indices = [dataset.selectedMaterial, 2];
-obj.materialsTable_CellSelectionCallback([], eventData);
+%eventData = struct();
+%eventData.Indices = [dataset.selectedMaterial, 2];
+obj.materialsTable_CellSelectionCallback([dataset.selectedMaterial, 2]);
 
 % Highlight selected Add To material (column 3)
-eventData.Indices = [dataset.selectedAddToMaterial, 3];
-obj.materialsTable_CellSelectionCallback([], eventData);
+%eventData.Indices = [dataset.selectedAddToMaterial, 3];
+obj.materialsTable_CellSelectionCallback([dataset.selectedAddToMaterial, 3]);
 
 % Update selected material indices
 if dataset.selectedMaterial > maxColor; dataset.selectedMaterial = 1; end

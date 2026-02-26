@@ -46,8 +46,6 @@ obj.matlabVersion = str2double(v(1).Version);   % conversion is not correct as v
 %obj.storedSelection = [];   % initialize stored selection
 %obj.connImaris = [];    % empty connection to Imaris
 
-%obj.mibPrevId = 1;     % index of the previous dataset
-
 obj.Undo = core.MibUndo();    % create instance for keeping undo information
 obj.pythonEnv = [];     % Python environment for MIB
 

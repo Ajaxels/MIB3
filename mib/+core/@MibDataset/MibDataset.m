@@ -131,7 +131,7 @@ classdef MibDataset < matlab.mixin.Copyable
 
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
 
-        index = getSelectedMaterialIndex(obj)        % return the index of the currently selected material in the mibView.handles.materialsTable
+        index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
 
         [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
 

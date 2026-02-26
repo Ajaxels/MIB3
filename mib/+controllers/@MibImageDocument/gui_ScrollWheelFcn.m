@@ -24,7 +24,7 @@ function gui_ScrollWheelFcn(obj, eventdata)
 %   obj       - View controller; holds handles to GUI, mibModel, and
 %               segmentation panel widgets
 %   eventdata - matlab.ui.eventdata.ScrollData  (normal scroll), OR
-%               ToggleEventData with .Parameter.VerticalScrollCount /
+%               core.ToggleEventData with .Parameter.VerticalScrollCount /
 %               .VerticalScrollAmount  (key shortcut call)
 %
 % Example usage:
@@ -37,12 +37,12 @@ imViewFigure = obj.gui.imViewFigure;
 modifier = imViewFigure.CurrentModifier;
 
 % Get scroll parameters
-if isprop(eventdata, 'Parameter')
+if isprop(eventdata, 'Parameters')
     % Call from key shortcuts using ToggleEventData
-    verticalScrollCount = eventdata.Parameter.VerticalScrollCount;
-    verticalScrollAmount = eventdata.Parameter.VerticalScrollAmount;
+    verticalScrollCount = eventdata.Parameters.VerticalScrollCount;
+    verticalScrollAmount = eventdata.Parameters.VerticalScrollAmount;
     if strcmp(modifier, 'shift')
-        modifier = {'shiftcontrol'};
+        modifier = {'shift', 'control'};
     else
         modifier = {'control'};
     end

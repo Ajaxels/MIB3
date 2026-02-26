@@ -14,7 +14,7 @@ classdef MibActiveDataset
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
 
-        buffers_Callback(obj, hWidget, hData)        % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset stored in a buffer defined by the pressed button
+        buffers_Callback(obj, hWidget, hData, buttonId)        % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset stored in a buffer defined by the pressed button
 
         buffers_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the buffers (obj.handles.panels.activeDataset.handles.buffer1) buttons
 
