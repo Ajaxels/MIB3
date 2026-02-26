@@ -116,9 +116,12 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                         strcmp(obj.mibController.cSegmentation.handles.samDestination.Value, 'selection')
 
                     if I.labels.maxMaterials < 256
-                        utils.dlgs.showErrorDialog(obj.view.gui, sprintf(['!!! Error !!!\n\nThe current settings are not compatible with the "add, +next material" mode!\n\n' ...
+                        errorDlgOpts.mibPath = obj.mibModel.mibPath;
+                        utils.dlgs.showErrorDialog(obj.view.gui, ...
+                            sprintf(['The current settings are not compatible with the "add, +next material" mode!\n\n' ...
                             'Please make sure that:\n' ...
-                            '   - You created or already have a model with type 65535 or larger\n']), 'Error: add, +next material');
+                            '   - You created or already have a model with type 65535 or larger\n']), ...
+                            'Error in gui_WindowKeyPressFcn', 'Error: add, +next material', '', errorDlgOpts);
                         return;
                     end
                     if I.selectedAddToMaterial < 4
@@ -237,9 +240,10 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             
             if actionName(1) == 'L'     % Loop, 'D' shortcut
                 if numel(obj.mibModel.preferences.SegmTools.FavoriteTools) == 0
+                    errorDlgOpts.mibPath = obj.mibModel.mibPath;
                     utils.dlgs.showErrorDialog(obj.view.gui, ...
                         sprintf('The selection tools for the fast access with the "D" shortcut are not defined!\n\nPlease use the "Favotite tool (D)" checkbox in the Segmentation panel to select them!'), ...
-                        'No favorite tools defined!');
+                        'Error in gui_WindowKeyPressFcn', 'No favorite tools defined!', '', errorDlgOpts);
                     return;
                 end
                 toolId = obj.mibController.cSegmentation.handles.segmTool.ValueIndex;
