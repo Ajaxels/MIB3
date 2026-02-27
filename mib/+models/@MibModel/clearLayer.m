@@ -68,8 +68,12 @@ if nargin == 4  % batch mode
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj, 'SyncBatch', eventdata);
         else
-            errorText = sprintf('obj.mibModel.clearSelection:\nA structure as the 3rd parameter is required!');
-            utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'BatchOpt Error');
+            ErrorDlgOpt.winTitle = 'BatchOpt Error';
+            ErrorDlgOpt.optionalPrefix = 'Error in MibModel.clearLayer';
+            ErrorDlgOpt.err = 'A structure as the 3rd parameter is required!';
+            ErrorDlgOpt.WindowHeight = 150;
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
         end
         return;
     else

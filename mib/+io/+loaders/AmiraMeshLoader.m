@@ -106,7 +106,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.AmiraMeshLoader!\n\nThe required file\n%s\nwas not found!', filenames{fnIndex}), ...
-                        'Wrong filename');
+                        'Wrong filename', 'Error in io.loaders.AmiraMeshLoader');
                     return;
                 end
 
@@ -136,7 +136,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error reading Amira Mesh header:\n%s', err.message), 'Amira Mesh Error');
+                        sprintf('Error reading Amira Mesh header:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
                     return;
                 end
 
@@ -155,7 +155,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     if isKey(info, 'ColorType') && ~strcmp(imginfo{'ColorType'}, info('ColorType'))
                         imginfo = dictionary();
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentGUI, 'Files have dissimilar ColorType', 'Mixed colors');
+                        utils.dlgs.showErrorDialog(options.parentGUI, 'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.AmiraMeshLoader');
                         return;
                     end
                 end
@@ -408,7 +408,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error loading Amira Mesh file:\n%s', err.message), 'Amira Mesh Error');
+                        sprintf('Error loading Amira Mesh file:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
                     img = [];
                     return;
                 end

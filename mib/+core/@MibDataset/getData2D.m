@@ -136,7 +136,7 @@ if options.roiId >= 0
     end
 else
     if obj.labels.maxMaterials ~= 63 && strcmp(type, 'everything')
-        errorText = sprintf('!!! Error !!!\n\nType = "everything" available only for the models with 63 materials!');
+        errorText = sprintf('Type = "everything" available only for the models with 63 materials!');
         utils.dlgs.showErrorDialog([], errorText, 'MibDataset.getData2D');
         dataset = [];
         return;

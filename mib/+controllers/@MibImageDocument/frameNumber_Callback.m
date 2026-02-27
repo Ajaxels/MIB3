@@ -83,7 +83,9 @@ if isstruct(BatchOptIn) == 0
         eventdata = core.ToggleEventData(BatchOpt);
         notify(obj.mibModel, 'SyncBatch', eventdata);
     else
-        utils.dlgs.showErrorDialog(obj.view.gui, sprintf('A structure as the 3rd parameter is required!'), 'Error');
+        errorOpts.mibPath = obj.mibModel.mibPath;
+        errorOpts.WindowHeight = 150;
+        utils.dlgs.showErrorDialog(obj.view.gui, sprintf('A structure as the 3rd parameter is required!'), 'Error', 'Error in MibImageDocument.frameNumber_Callback', '', errorOpts);
     end
     return;
 else

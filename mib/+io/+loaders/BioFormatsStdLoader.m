@@ -124,7 +124,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.BioFormatsStdLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -155,7 +155,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         if options.waitbar==1; delete(wb); end
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
-                            'BioFormats memoizer');
+                            'BioFormats memoizer', 'Error in io.loaders.BioFormatsStdLoader');
                         imginfo = dictionary();
                         return;
                     end
@@ -571,7 +571,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('io.loaders.BioFormatsStdLoader:\n\nError loading Bio-Formats file\n%s', err.message), 'Bio-Formats Error');
+                        sprintf('io.loaders.BioFormatsStdLoader:\n\nError loading Bio-Formats file\n%s', err.message), 'Bio-Formats Error', 'Error in io.loaders.BioFormatsStdLoader');
                     img = [];
                     return;
                 end

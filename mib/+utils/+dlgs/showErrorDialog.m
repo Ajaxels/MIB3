@@ -20,7 +20,7 @@ function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffi
 % options: [optional] struct with fields:
 %   .mibPath       - path to MIB installation for icon loading (default: '')
 %   .Icon          - icon name string, one of:
-%                    'error_48px' (default), 'warning_48px', 'puffin_warning',
+%                    'puffin_error' (default), 'warning_48px', 'puffin_warning', 'error_48px'
 %                    'puffin_question', 'question_48px', 'celebrate', 'call4help'
 %   .IconWidth     - icon column width in pixels (default: 48, puffins: 96)
 %   .WindowWidth   - dialog width in pixels (default: 420)
@@ -56,25 +56,30 @@ function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffi
 % opts.Icon         = 'puffin_warning';
 % opts.WindowWidth  = 500;
 % opts.WindowHeight = 300;
-% opts.PrefixHeight = 40;
-% opts.ErrorHeight  = 120;
-% opts.SuffixHeight = 30;
+% opts.PrefixHeight = 'fit';
+% opts.ErrorHeight  = '1x';
+% opts.SuffixHeight = 'fit';
 % utils.dlgs.showErrorDialog(obj.view.gui, err, 'Import Error', ...
 %     'Failed to load file:', 'Please contact support.', opts);
 % @endcode
 %
 % Updates
 %
-
 if nargin < 6; options        = struct(); end
 if nargin < 5; optionalSuffix = ''; end
 if nargin < 4; optionalPrefix = ''; end
 if nargin < 3; winTitle       = 'Error'; end
 
 % --- options defaults ---
-if ~isfield(options, 'mibPath');      options.mibPath      = ''; end
-if ~isfield(options, 'Icon');         options.Icon         = 'puffin_warning'; end
-if ~isfield(options, 'IconWidth');    options.IconWidth    = 48; end
+if ~isfield(options, 'mibPath'); options.mibPath = ''; end
+if ~isfield(options, 'Icon');    options.Icon = 'puffin_error'; end
+if ~isfield(options, 'IconWidth')
+    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error'})
+        options.IconWidth = 96;
+    else
+        options.IconWidth = 48;
+    end
+end
 if ~isfield(options, 'WindowWidth');  options.WindowWidth  = 500; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 220; end
 if ~isfield(options, 'WindowStyle');  options.WindowStyle  = 'modal'; end
@@ -110,7 +115,7 @@ else
 end
 errBody = strtrim(errBody);
 
-% full plain text for clipboard (includes prefix/suffix)
+% full plain text for clipboard (includes title, prefix, body, suffix)
 clipboardText = strjoin(cellfun(@strtrim, ...
     {winTitle, optionalPrefix, errBody, optionalSuffix}, 'UniformOutput', false), newline);
 clipboardText = strtrim(clipboardText);
@@ -123,16 +128,13 @@ end
 
 % --- icon selection ---
 switch options.Icon
-    case 'warning_48px';   iconFilename = 'warning_48px.png';
-    case 'question_48px';  iconFilename = 'question_48px.png';
-    case 'celebrate';      iconFilename = 'celebrate.jpg';
-    case 'call4help';      iconFilename = 'call4help.jpg';
-    case 'puffin_warning'
-        iconFilename      = sprintf('puffin_warning_%d_96px.png', randi(3));
-        options.IconWidth = 96;
-    case 'puffin_question'
-        iconFilename      = sprintf('puffin_quest_%d_96px.png', randi(6));
-        options.IconWidth = 96;
+    case 'warning_48px';     iconFilename = 'warning_48px.png';
+    case 'question_48px';    iconFilename = 'question_48px.png';
+    case 'celebrate';        iconFilename = 'celebrate.jpg';
+    case 'call4help';        iconFilename = 'call4help.jpg';
+    case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
+    case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
+    case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
     otherwise % 'error_48px'
         iconFilename = 'error_48px.png';
 end
@@ -141,26 +143,31 @@ iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 % --- determine which optional rows are needed ---
 hasPrefix = ~isempty(strtrim(optionalPrefix));
 hasSuffix = ~isempty(strtrim(optionalSuffix));
+hasError  = ~isempty(errBody);  % NEW: skip textarea when errBody is empty
 
-% build row heights dynamically — only include prefix/suffix rows if needed
+% build row heights dynamically — only include prefix/error/suffix rows if needed
 rowHeights = {};
 rowMap     = struct();   % maps logical sections to row indices
-
 currentRow = 1;
+
 if hasPrefix
     rowHeights{end+1}  = options.PrefixHeight;
     rowMap.prefix      = currentRow;
     currentRow         = currentRow + 1;
 end
-rowHeights{end+1} = options.ErrorHeight;   % always present
-rowMap.errBody    = currentRow;
-currentRow        = currentRow + 1;
+
+if hasError
+    rowHeights{end+1} = options.ErrorHeight;
+    rowMap.errBody    = currentRow;
+    currentRow        = currentRow + 1;
+end
 
 if hasSuffix
     rowHeights{end+1} = options.SuffixHeight;
     rowMap.suffix     = currentRow;
     currentRow        = currentRow + 1;
 end
+
 rowHeights{end+1} = 26;                    % button row
 rowMap.buttons    = currentRow;
 
@@ -209,17 +216,19 @@ if hasPrefix
     prefixLbl.Layout.Column = 2;
 end
 
-% --- scrollable error textarea ---
-errArea = uitextarea(mainGrid, ...
-    'Value',    errBody, ...
-    'FontName', 'Courier New', ...  % Courier New
-    'FontSize', 12, ...
-    'Editable', 'off', ...
-    'BackgroundColor', [1 1 1]);
-errArea.Layout.Row    = rowMap.errBody;
-errArea.Layout.Column = 2;
+% --- scrollable error textarea (only when errBody is non-empty) ---
+if hasError
+    errArea = uitextarea(mainGrid, ...
+        'Value',    errBody, ...
+        'FontName', 'Courier New', ...
+        'FontSize', 12, ...
+        'Editable', 'off', ...
+        'BackgroundColor', [1 1 1]);
+    errArea.Layout.Row    = rowMap.errBody;
+    errArea.Layout.Column = 2;
+end
 
-% --- suffix label (italic) ---
+% --- suffix label (italic/normal) ---
 if hasSuffix
     suffixLbl = uilabel(mainGrid, ...
         'Text',                sprintf('%s', strtrim(optionalSuffix)), ...

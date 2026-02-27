@@ -168,7 +168,8 @@ switch BatchOpt.Mode{1}
         
         if noSets == 1 %#ok<ISCL>
             ErrorDlgOpt.winTitle = 'Error in MibModel.datasetsSetsOps';
-            ErrorDlgOpt.optionalPrefix = sprintf('!!! Warning !!!\n\nThe last set can not be removed!');
+            ErrorDlgOpt.optionalPrefix = sprintf('!!! Ops !!!\n\nThe last set can not be removed!');
+            ErrorDlgOpt.WindowHeight = 125;
             eventdata = core.ToggleEventData(ErrorDlgOpt);
             notify(obj, 'ShowErrorDialog', eventdata);
             return;

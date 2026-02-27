@@ -531,9 +531,9 @@ classdef Preferences < handle
                             if isempty(noColors); return; end
 
                             if noColors > 255
+                                errorOpts.mibPath = obj.mibModel.mibPath;
                                 utils.dlgs.showErrorDialog(obj.view.gui, ...
-                                    sprintf('!!! Error !!!\n\nNumber of colors should be below 256'), ...
-                                    'Too many colors');
+                                    sprintf('Number of colors should be below 256!'), 'Too many colors', 'Error in Preferences.ColorPanelCallbacks', '', errorOpts);
                                 figure(obj.view.gui);   % set focus to main preference window and move it in front
                                 return;
                             end

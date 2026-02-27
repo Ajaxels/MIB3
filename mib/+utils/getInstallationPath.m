@@ -31,7 +31,7 @@ try
         path = fileparts(which(softwareName));
     end
 catch err
-    utils.dlgs.showErrorDialog([], err, title='Can not identify installation location');
+    utils.dlgs.showErrorDialog([], err, 'Can not identify installation location');
     path = [];
 end
 

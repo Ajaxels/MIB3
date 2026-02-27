@@ -329,7 +329,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.HDF5HeaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.HDF5HeaderLoader');
                     return;
                 end
 
@@ -356,7 +356,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.HDF5HeaderLoader!\n\nCannot parse XML header:\n%s\n\nError: %s', ...
                         filenames{fnIndex}, err.message), ...
-                        'XML parsing error');
+                        'XML parsing error', 'Error in io.loaders.HDF5HeaderLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -377,7 +377,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         if options.waitbar; delete(wb); end
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
-                            'Mixed colors');
+                            'Mixed colors', 'Error in io.loaders.HDF5HeaderLoader');
                         return;
                     end
                 end
@@ -483,7 +483,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                             if options.waitbar; delete(wb); end
                             utils.dlgs.showErrorDialog(options.parentGUI, ...
                                 sprintf('Oops!\n\nPlease check image class "%s" and implement it!', dataType), ...
-                                'Unsupported data type');
+                                'Unsupported data type', 'Error in io.loaders.HDF5HeaderLoader');
                             imginfo = dictionary();
                             return;
                     end
@@ -500,7 +500,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('!!! Error !!!\n\nCannot detect the HDF5 format!'), ...
-                        'Unknown format');
+                        'Unknown format', 'Error in io.loaders.HDF5HeaderLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -674,7 +674,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('Error loading BigDataViewer HDF5:\n%s\n\nError: %s', ...
                             imginfo{"Filename"}, err.message), ...
-                            'HDF5 loading error');
+                            'HDF5 loading error', 'Error in io.loaders.HDF5HeaderLoader');
                         img = [];
                         return;
                     end
@@ -693,7 +693,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('Error loading MATLAB HDF5:\n%s\n\nError: %s', ...
                             files(fnIndex).filename, err.message), ...
-                            'HDF5 loading error');
+                            'HDF5 loading error', 'Error in io.loaders.HDF5HeaderLoader');
                         img = [];
                         return;
                     end
@@ -704,7 +704,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         assignin('base', 'hdf5image', hdf5image);
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('mibGetImages: cannot read this dataset!\n\nIt was exported as ''hdf5image'' to the main MATLAB workspace.'), ...
-                            'Error!');
+                            'Error!', 'Error in io.loaders.HDF5HeaderLoader');
                         img = [];
                         return;
                     end

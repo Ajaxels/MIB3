@@ -114,7 +114,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.ImodLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.ImodLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -204,7 +204,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error reading IMOD file:\n%s', err.message), 'IMOD Error');
+                        sprintf('Error reading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -381,7 +381,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error loading IMOD file:\n%s', err.message), 'IMOD Error');
+                        sprintf('Error loading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     img = [];
                     return;
                 end

@@ -90,6 +90,9 @@ BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not the waitbar');
 
 batchModeSwitch = 0;    % indicates that the function is running in the gui mode
 
+% define defaults for ErrorDlgOpt
+ErrorDlgOpt = struct('optionalPrefix', 'Error in MibModel.loadImages', 'WindowHeight', 160);
+
 %% Batch mode check actions
 if nargin == 3  % batch mode 
     if isstruct(BatchOptIn) == 0
@@ -99,8 +102,10 @@ if nargin == 3  % batch mode
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj, 'SyncBatch', eventdata);
         else
-            errorText = sprintf('A structure as the 3rd parameter is required!');
-            utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'BatchOpt Error');
+            ErrorDlgOpt.winTitle = 'BatchOpt Error';
+            ErrorDlgOpt.err = 'A structure as the 3rd parameter is required!';
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
         end
         return;
     else
@@ -121,8 +126,10 @@ if nargin == 3  % batch mode
             BatchOpt.Filenames = filename2(notDirsIndices);     % generate full path file names
         else
             if isempty(obj.selectedFiles)
-                errorText = sprintf('!!! Error !!!\n\nPlease select files in the Directory contents panel and try again!');
-                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'No files selected!');
+                ErrorDlgOpt.winTitle = 'No files selected!';
+                ErrorDlgOpt.err = 'Please select files in the Directory contents panel and try again!';
+                eventdata = core.ToggleEventData(ErrorDlgOpt);
+                notify(obj, 'ShowErrorDialog', eventdata);
                 return;
             end
             BatchOpt.Filenames = arrayfun(@(filename) fullfile(obj.currentDirectory, filename), obj.selectedFiles, 'UniformOutput', true);  % generate full paths
@@ -137,7 +144,10 @@ else
     % generate a dataset from the selected files    % generate list of files
     
     if isempty(obj.selectedFiles)
-        utils.dlgs.showErrorDialog(obj.mibGUI, sprintf('MibModel.loadImages:\nPlease select files to open in the Directory contents panel'), 'Files were not selected');
+        ErrorDlgOpt.winTitle = 'Files were not selected!';
+        ErrorDlgOpt.err = 'Please select files to open in the Directory contents panel!';
+        eventdata = core.ToggleEventData(ErrorDlgOpt);
+        notify(obj, 'ShowErrorDialog', eventdata);
         return;
     end
 
@@ -150,8 +160,10 @@ else
         filenames = obj.selectedFiles(~contains(obj.selectedFiles, '['));
         
         if isempty(filenames)
-            errorText = sprintf('!!! Error !!!\n\nPlease select files in the Directory contents panel and try again!');
-            utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'No files selected!');
+            ErrorDlgOpt.winTitle = 'No files selected!';
+            ErrorDlgOpt.err = 'Please select files in the Directory contents panel and try again!';
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
             return; 
         end
         BatchOpt.Filenames = arrayfun(@(filename) fullfile(BatchOpt.DirectoryName{1}, cell2mat(filename)), filenames, 'UniformOutput', false);  % generate full paths
@@ -173,8 +185,10 @@ else
 end
 
 if numel(BatchOpt.Filenames) < 1
-    errorText = sprintf('No files were selected!!!\nPlease select desired files and try again!\nYou can use Ctrl and Shift for the selection.');
-    utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong selection!');
+    ErrorDlgOpt.winTitle = 'Wrong selection!';
+    ErrorDlgOpt.err = sprintf('No files were selected!!!\nPlease select desired files and try again!\nYou can use Ctrl and Shift for the selection.');
+    eventdata = core.ToggleEventData(ErrorDlgOpt);
+    notify(obj, 'ShowErrorDialog', eventdata);
     notify(obj, 'StopProtocol');
     return; 
 end
@@ -211,7 +225,10 @@ if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
 % find a loader that should be used for this specific dataset mode, selected reader and filename extension
 loaderInfo = obj.extensionRegistryLoad.resolveLoader(BatchOpt.Filenames{1}, obj.I{obj.id}.datasetType, reader);
 if ischar(loaderInfo)
-    utils.dlgs.showErrorDialog(obj.mibGUI, loaderInfo, 'io:ExtensionRegistryLoad:NotAllowed');
+    ErrorDlgOpt.winTitle = 'io:ExtensionRegistryLoad:NotAllowed';
+    ErrorDlgOpt.err = loaderInfo;
+    eventdata = core.ToggleEventData(ErrorDlgOpt);
+    notify(obj, 'ShowErrorDialog', eventdata);
     notify(obj, 'StopProtocol');
     return;
 end
@@ -219,9 +236,12 @@ end
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
         if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual') && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
+            ErrorDlgOpt.winTitle = 'Not implemented!';
+            ErrorDlgOpt.WindowHeight = 170;
             toolname = 'The colors can not be combined in the virtual stacking mode.';
-            errorText = sprintf('!!! Warning !!!\n\n%s\nPlease switch to the memory-resident mode and try again', toolname);
-            utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Not implemented');
+            ErrorDlgOpt.err = sprintf('%s\nPlease switch to the memory-resident mode and try again', toolname);
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
             notify(obj, 'StopProtocol');
             return;
         end
@@ -241,8 +261,11 @@ switch BatchOpt.Mode{1}
             % check for correct extensions
             [~,~,extList] = fileparts(BatchOpt.Filenames);
             if sum(~ismember(lower(unique(extList)), {'.tif', '.tiff', '.am'})) > 0 && ~options.UseBioFormats
-                errorText = sprintf('MibModel.loadImages\n\nIt is only possible to load part of the dataset for AM and TIF formats!');
-                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong format!');
+                ErrorDlgOpt.winTitle = 'Wrong format!';
+                ErrorDlgOpt.err = 'It is only possible to load part of the dataset for AM and TIF formats!';
+                eventdata = core.ToggleEventData(ErrorDlgOpt);
+                notify(obj, 'ShowErrorDialog', eventdata);
+
                 notify(obj, 'StopProtocol');
                 return;
             end
@@ -277,9 +300,11 @@ switch BatchOpt.Mode{1}
             % Load images
             [img, img_info] = loader.loadImages(files, img_info, options);
             if isempty(img)
-                errorText = sprintf(['MibModel.loadImages\n\nIt is not possible to load the dataset...\n' ...
-                    'Dimensions mismatch or cancelled?']);
-                utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
+                ErrorDlgOpt.winTitle = 'Wrong file!';
+                ErrorDlgOpt.err = sprintf('It is not possible to load the dataset...\nDimensions mismatch or cancelled?');
+                eventdata = core.ToggleEventData(ErrorDlgOpt);
+                notify(obj, 'ShowErrorDialog', eventdata);
+                
                 notify(obj, 'StopProtocol');
                 return;
             end
@@ -299,9 +324,10 @@ switch BatchOpt.Mode{1}
                 if colChannelId==1
                     [img_temp, img_info] = loader.loadImages(files(1), img_info, options);
                     if isempty(img_temp)
-                        errorText = sprintf(['MibModel.loadImages\n\nIt is not possible to load the dataset as color channels...\n' ...
-                                             'Dimensions mismatch or cancelled?']);
-                        utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
+                        ErrorDlgOpt.winTitle = 'Wrong file!';
+                        ErrorDlgOpt.err = sprintf('It is not possible to load the dataset as color channels...\nDimensions mismatch or cancelled?');;
+                        eventdata = core.ToggleEventData(ErrorDlgOpt);
+                        notify(obj, 'ShowErrorDialog', eventdata);
                         notify(obj, 'StopProtocol');
                         return;
                     end
@@ -320,18 +346,22 @@ switch BatchOpt.Mode{1}
                 else
                     [img_temp, img_info_temp] = loader.loadImages(files(colChannelId), img_info, options);
                     if isempty(img_temp)
-                        errorText = sprintf(['MibModel.loadImages\n\nIt is not possible to load the dataset as color channels...\n' ...
-                                             'Dimensions mismatch or cancelled?']);
-                        utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Wrong file');
+                        ErrorDlgOpt.winTitle = 'Wrong file!';
+                        ErrorDlgOpt.err = sprintf('It is not possible to load the dataset as color channels...\nDimensions mismatch or cancelled?');
+                        eventdata = core.ToggleEventData(ErrorDlgOpt);
+                        notify(obj, 'ShowErrorDialog', eventdata);
                         notify(obj, 'StopProtocol');
                         return;
                     end
 
                     if img_info{'Height'} ~= img_info_temp{'Height'} || img_info{'Width'} ~= img_info_temp{'Width'} || ...
                             img_info{'Depth'} ~= img_info_temp{'Depth'} || img_info{'Time'} ~= img_info_temp{'Time'}
-                        errorText = sprintf(['MibModel.loadImages\n\nDimensions mismatch!\n' ...
-                            'When combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions']);
-                        utils.dlgs.showErrorDialog(obj.mibGUI, errorText, 'Dimensions mismatch');
+                        
+                        ErrorDlgOpt.winTitle = 'Dimensions mismatch!';
+                        ErrorDlgOpt.err = sprintf('Dimensions mismatch!\nWhen combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions');
+                        eventdata = core.ToggleEventData(ErrorDlgOpt);
+                        notify(obj, 'ShowErrorDialog', eventdata);
+
                         notify(obj, 'StopProtocol');
                         return;
                     end

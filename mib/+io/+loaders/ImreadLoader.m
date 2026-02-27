@@ -141,7 +141,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.ImreadLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.ImreadLoader');
                     return;
                 end
 
@@ -256,7 +256,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
-                        'Mixed colors');
+                        'Mixed colors', 'Error in io.loaders.ImreadLoader');
                     return;
                 end
 

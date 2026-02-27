@@ -111,7 +111,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.MibImgLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.MibImgLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -148,7 +148,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                         if options.waitbar; delete(wb); end
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('Error in io.loaders.MibImgLoader!\n\nInvalid mibImg file:\n%s\n\nmissing options structure', files(fnIndex).filename), ...
-                            'Missing options field');
+                            'Missing options field', 'Error in io.loaders.MibImgLoader');
                         imginfo = dictionary();
                         return;
                     end
@@ -177,7 +177,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error reading mibImg file:\n%s', err.message), 'mibImg Error');
+                        sprintf('Error reading mibImg file:\n%s', err.message), 'mibImg Error', 'Error in io.loaders.MibImgLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -326,7 +326,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                      utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error loading mibImg file:\n%s', err.message), 'mibImg Error');
+                        sprintf('Error loading mibImg file:\n%s', err.message), 'mibImg Error', 'Error in io.loaders.MibImgLoader');
                     img = [];
                     return;
                 end

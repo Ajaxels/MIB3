@@ -122,7 +122,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.HDF5NoHeaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.HDF5NoHeaderLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -171,7 +171,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error getting HDF5 info:\n%s', err.message), 'HDF5 Error');
+                        sprintf('Error getting HDF5 info:\n%s', err.message), 'HDF5 Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -279,7 +279,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                  elseif ~strcmp(imginfo{"ColorType"}, currentColorType)
                       if options.waitbar; delete(wb); end
                       utils.dlgs.showErrorDialog(options.parentGUI, ...
-                          'Files have dissimilar ColorType', 'Mixed colors');
+                          'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.HDF5NoHeaderLoader');
                       imginfo = dictionary();
                       return;
                  end
@@ -396,7 +396,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 catch err
                      if options.waitbar; delete(wb); end
                      utils.dlgs.showErrorDialog(options.parentGUI, ...
-                         sprintf('Error loading HDF5 file:\n%s', err.message), 'HDF5 Error');
+                         sprintf('Error loading HDF5 file:\n%s', err.message), 'HDF5 Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                      img = [];
                      return;
                 end
@@ -406,7 +406,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                      if options.waitbar; delete(wb); end
                      assignin('base', 'hdf5image', hdf5image);
                      utils.dlgs.showErrorDialog(options.parentGUI, ...
-                         'Cannot read this dataset! Exported to MATLAB workspace as "hdf5image".', 'Error');
+                         'Cannot read this dataset! Exported to MATLAB workspace as "hdf5image".', 'Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                      img = [];
                      return;
                 end

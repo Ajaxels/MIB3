@@ -83,7 +83,7 @@ fprintf('MIB installation path: %s\n', mibPath);
     model = models.MibModel(cpuParallelLimitMax, mibPath, mibVersion);     % initialize the model
     controller = controllers.MibController(model, mibVersion);  % initialize controller
 %catch err
-%    utils.dlgs.showErrorDialog([], err, title='MIB Error');
+%    utils.dlgs.showErrorDialog([], err, 'MIB Error');
 %end
 
 toc

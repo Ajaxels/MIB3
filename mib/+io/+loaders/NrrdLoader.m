@@ -114,7 +114,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.NrrdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.NrrdLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -203,7 +203,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 elseif ~strcmp(imginfo{"ColorType"}, currentColorType)
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        'Files have dissimilar ColorType', 'Mixed colors');
+                        'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.NrrdLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -327,7 +327,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 catch err
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
-                        sprintf('Error loading NRRD file:\n%s', err.message), 'NRRD Error');
+                        sprintf('Error loading NRRD file:\n%s', err.message), 'NRRD Error', 'Error in io.loaders.NrrdLoader');
                     img = [];
                     return;
                 end

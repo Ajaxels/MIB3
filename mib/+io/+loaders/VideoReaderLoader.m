@@ -137,7 +137,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     if options.waitbar; delete(wb); end
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.VideoReaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
-                        'File does not exists');
+                        'File does not exists', 'Error in io.loaders.VideoReaderLoader');
                     return;
                 end
 
@@ -166,7 +166,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error in io.loaders.VideoReaderLoader!\n\nCannot open video file:\n%s\n\nError: %s', ...
                         filenames{fnIndex}, err.message), ...
-                        'Video reading error');
+                        'Video reading error', 'Error in io.loaders.VideoReaderLoader');
                     imginfo = dictionary();
                     return;
                 end
@@ -213,7 +213,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                         if options.waitbar; delete(wb); end
                         utils.dlgs.showErrorDialog(options.parentGUI, ...
                             sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
-                            'Mixed colors');
+                            'Mixed colors', 'Error in io.loaders.VideoReaderLoader');
                         return;
                     end
                 end
@@ -369,7 +369,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     utils.dlgs.showErrorDialog(options.parentGUI, ...
                         sprintf('Error loading video file:\n%s\n\nError: %s', ...
                         files(fnIndex).filename, err.message), ...
-                        'Video loading error');
+                        'Video loading error', 'Error in io.loaders.VideoReaderLoader');
                     img = [];
                     return;
                 end

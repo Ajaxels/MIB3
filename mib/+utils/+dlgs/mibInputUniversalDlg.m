@@ -26,7 +26,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % .WindowWidth - dialog width in pixels (default 560).
 % .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
 % .Columns - integer number of columns (default 1).
-% .Icon - 'puffin_question' (default), 'puffin_warning', 'question', 'celebrate', 'call4help', 'warning'.
+% .Icon - 'puffin_question' (default), 'puffin_warning', 'puffin_error', 'question', 'celebrate', 'call4help', 'warning'.
 % .IconWidth - width of icon column in pixels (default [], i.e. use the size of the image).
 % .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
 % .LabelPosition - 'left' (default, horizontal layout) or 'top' (vertical layout, labels above widgets).
@@ -140,7 +140,13 @@ end
 
 % Defaults
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
-if ~isfield(options, 'IconWidth'); options.IconWidth = []; end
+if ~isfield(options, 'IconWidth')
+    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error'})
+        options.IconWidth = 96; 
+    else
+        options.IconWidth = 48; 
+    end
+end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Columns'); options.Columns = 1; end
 if ~isfield(options, 'MainColumnWidths'); options.MainColumnWidths = repmat({'1x'}, 1, options.Columns); end
@@ -264,14 +270,13 @@ figBgColor = fig.Color;
 
 % Icon selection and loading
 switch options.Icon
-    case 'warning_48px',   iconFilename = 'warning_48px.png';
-    case 'question_48px',  iconFilename = 'question_48px.png';
-    case 'celebrate',      iconFilename = 'celebrate.jpg';
-    case 'call4help',      iconFilename = 'call4help.jpg';
-    case 'puffin_warning'
-        % get random icon
-        iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
-        options.IconWidth = 96;
+    case 'warning_48px';     iconFilename = 'warning_48px.png';
+    case 'question_48px';    iconFilename = 'question_48px.png';
+    case 'celebrate';        iconFilename = 'celebrate.jpg';
+    case 'call4help';        iconFilename = 'call4help.jpg';
+    case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
+    case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
+    case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
     otherwise
         % get random icon
         iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));

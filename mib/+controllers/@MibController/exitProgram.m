@@ -49,8 +49,10 @@ try
     Tiers = obj.mibModel.preferences.Users.Tiers;
     save(fullfile(prefdir, 'mib_user.mat'), 'Tiers');
 catch err
-    utils.dlgs.showErrorDialog([], err, 'Save preferences error ', ...
-        [], sprintf('There is a problem with saving preferences to\n%s\n%s', fullfile(prefdir, 'mib3.mat')));
+    errorOpts.mibPath = obj.mibModel.mibPath;
+    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Save preferences error ', ...
+        '', sprintf('There is a problem with saving preferences to\n%s\n%s', fullfile(prefdir, 'mib3.mat')), ...
+        errorOpts);
 end
 
 result = true;
