@@ -48,9 +48,17 @@ switch mode
     case 'Switch dataset to the YX orientation'
     case 'Enable the fast-panning mode for quicker image navigation'
     case 'Zoom out operation'
+        BatchOpt.Mode = 'Zoom out';
+        obj.mibController.cStatus.zoomEdit_Callback(BatchOpt);
     case 'Fit the dataset into the viewing window'
+        BatchOpt.Mode = 'Fit to screen';
+        obj.mibController.cStatus.zoomEdit_Callback(BatchOpt);
     case 'Scale the image to 100% magnification'
+        BatchOpt.Mode = '100%';
+        obj.mibController.cStatus.zoomEdit_Callback(BatchOpt);
     case 'Zoom in operation'
+        BatchOpt.Mode = 'Zoom in';
+        obj.mibController.cStatus.zoomEdit_Callback(BatchOpt);
     case 'Redo the undo operation'
     case 'Undo the last operation'
 end

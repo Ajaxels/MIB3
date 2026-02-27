@@ -27,6 +27,9 @@ if strcmp(char, 'alt'); return; end %#ok<STCI>
 
 % find a shortcut action
 KeyShortcuts = obj.mibModel.preferences.KeyShortcuts;
+dataset = obj.mibModel.I{obj.mibModel.id};
+cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+cSegmentation = obj.mibController.cSegmentation;
 
 % cancel if button is not registered as a shortcut
 keyMask = strcmp(KeyShortcuts.Key, char);
@@ -56,8 +59,6 @@ xyString = obj.mibController.cStatus.handles.pixelLabel.Text;
 xy = sscanf(xyString, '%f:%f', 2);
 
 if ~isempty(ActionId) % find in the list of existing shortcuts
-    I = obj.mibModel.I{obj.mibModel.id};  % make alias
-
     % compute layer scope from modifier combination (used by several cases)
     modCount = sum([altPressed, shiftPressed]);
     scopeList = {'2D, Slice', '3D, Stack', '4D, Dataset'};
@@ -67,37 +68,37 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Add measurement (Measure tool)'   % add measurement, works with Measure Tool, default 'm'
             notify(obj.mibModel, 'AddMeasurement', eventdata);
         case 'Switch dataset to XY orientation'         % default 'Alt + 1'
-            if I.orientation == 3 || isnan(obj.isInsideImage) || strcmp(I.datasetType, 'Virtual'); return; end
-            if I.orientation == 1
-                I.current_yxz(2) = xy(2);
-                I.current_yxz(3) = xy(1);
-            elseif I.orientation == 2
-                I.current_yxz(1) = xy(2);
-                I.current_yxz(3) = xy(1);
+            if dataset.orientation == 3 || isnan(obj.isInsideImage) || strcmp(dataset.datasetType, 'Virtual'); return; end
+            if dataset.orientation == 1
+                dataset.current_yxz(2) = xy(2);
+                dataset.current_yxz(3) = xy(1);
+            elseif dataset.orientation == 2
+                dataset.current_yxz(1) = xy(2);
+                dataset.current_yxz(3) = xy(1);
             end
             error('MISSING IMPLEMENTATION: obj.mibToolbarPlaneToggle(obj.mibView.handles.xyPlaneToggle, 1);')
         case 'Switch dataset to ZX orientation'         % default 'Alt + 2'
-            if I.orientation == 1 || isnan(obj.isInsideImage) || strcmp(I.datasetType, 'Virtual'); return; end
-            if I.orientation == 2
-                I.current_yxz(1) = xy(2);
-                I.current_yxz(2) = I.slices{2}(1);
-                I.current_yxz(3) = xy(1);
-            elseif I.orientation == 3
-                I.current_yxz(1) = xy(2);
-                I.current_yxz(2) = xy(1);
-                I.current_yxz(3) = I.slices{3}(1);
+            if dataset.orientation == 1 || isnan(obj.isInsideImage) || strcmp(dataset.datasetType, 'Virtual'); return; end
+            if dataset.orientation == 2
+                dataset.current_yxz(1) = xy(2);
+                dataset.current_yxz(2) = dataset.slices{2}(1);
+                dataset.current_yxz(3) = xy(1);
+            elseif dataset.orientation == 3
+                dataset.current_yxz(1) = xy(2);
+                dataset.current_yxz(2) = xy(1);
+                dataset.current_yxz(3) = dataset.slices{3}(1);
             end
             error('MISSING IMPLEMENTATION: obj.mibToolbarPlaneToggle(obj.mibView.handles.zxPlaneToggle, 1);')
         case 'Switch dataset to ZY orientation'         % default 'Alt + 3'
-            if I.orientation == 2 || isnan(obj.isInsideImage) || strcmp(I.datasetType, 'Virtual'); return; end
-            if I.orientation == 1
-                I.current_yxz(1) = I.slices{1}(1);
-                I.current_yxz(2) = xy(2);
-                I.current_yxz(3) = xy(1);
-            elseif I.orientation == 3
-                I.current_yxz(1) = xy(2);
-                I.current_yxz(2) = xy(1);
-                I.current_yxz(3) = I.slices{3}(1);
+            if dataset.orientation == 2 || isnan(obj.isInsideImage) || strcmp(dataset.datasetType, 'Virtual'); return; end
+            if dataset.orientation == 1
+                dataset.current_yxz(1) = dataset.slices{1}(1);
+                dataset.current_yxz(2) = xy(2);
+                dataset.current_yxz(3) = xy(1);
+            elseif dataset.orientation == 3
+                dataset.current_yxz(1) = xy(2);
+                dataset.current_yxz(2) = xy(1);
+                dataset.current_yxz(3) = dataset.slices{3}(1);
             end
             error('MISSING IMPLEMENTATION: obj.mibToolbarPlaneToggle(obj.mibView.handles.zyPlaneToggle, 1);');
         case 'Interpolate selection'            % default 'i'
@@ -106,16 +107,16 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             error("MISSING IMPLEMENTATION: obj.menuImageInvert_Callback('4D');");
         case {'Add to selection to material', 'Subtract from material', 'Replace material with current selection'}
             % default 'a'/'Shift+a', 's'/'Shift+s', 'r'/'Shift+r'
-            if I.enableSelection == 0; return; end
+            if dataset.enableSelection == 0; return; end
 
             % special SAM tweak — only for 'Add to selection to material'
             if strcmp(KeyShortcuts.Action{ActionId}, 'Add to selection to material')
-                selectedSegmentationTool = obj.mibController.cSegmentation.handles.segmTool.Value;
+                selectedSegmentationTool = cSegmentation.handles.segmTool.Value;
                 if strcmp(selectedSegmentationTool, 'Segment-anything model') && ...
-                        strcmp(obj.mibController.cSegmentation.handles.samMode.Value, 'add, +next material') && ...
-                        strcmp(obj.mibController.cSegmentation.handles.samDestination.Value, 'selection')
+                        strcmp(cSegmentation.handles.samMode.Value, 'add, +next material') && ...
+                        strcmp(cSegmentation.handles.samDestination.Value, 'selection')
 
-                    if I.labels.maxMaterials < 256
+                    if dataset.labels.maxMaterials < 256
                        errorDlgOpts.mibPath = obj.mibModel.mibPath;
                        utils.dlgs.showErrorDialog(obj.view.gui, ...
                             sprintf(['The current settings are not compatible with the "add, +next material" mode!\n\n' ...
@@ -124,20 +125,20 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                             'Error in gui_WindowKeyPressFcn', 'Error: add, +next material', '', errorDlgOpts);
                         return;
                     end
-                    if I.selectedAddToMaterial < 4
-                        I.lastSegmSelection = [3 4];
-                        I.selectedAddToMaterial = 4;
-                        obj.mibController.cSegmentation.materialsTable_CellSelectionCallback([3, 2]);
+                    if dataset.selectedAddToMaterial < 4
+                        dataset.lastSegmSelection = [3 4];
+                        dataset.selectedAddToMaterial = 4;
+                        cSegmentation.materialsTable_CellSelectionCallback([3, 2]);
                     end
                     obj.mibModel.moveLayers('selection', 'model', '2D, Slice', 'add');
                     obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = [];
-                    selMaterialIndex = I.getSelectedMaterialIndex('AddTo');
-                    I.labels.materialNames = {num2str(selMaterialIndex), num2str(selMaterialIndex+1)};
-                    if size(I.labels.materialColors, 1) < selMaterialIndex+1
-                        I.labels.materialColors(selMaterialIndex+1, :) = rand(1,3);
+                    selMaterialIndex = dataset.getSelectedMaterialIndex('AddTo');
+                    dataset.labels.materialNames = {num2str(selMaterialIndex), num2str(selMaterialIndex+1)};
+                    if size(dataset.labels.materialColors, 1) < selMaterialIndex+1
+                        dataset.labels.materialColors(selMaterialIndex+1, :) = rand(1,3);
                     end
-                    obj.mibController.cSegmentation.updateMaterialsTable();
-                    obj.mibController.cSegmentation.materialsTable_CellSelectionCallback([I.selectedAddToMaterial, 3]);
+                    cSegmentation.updateMaterialsTable();
+                    cSegmentation.materialsTable_CellSelectionCallback([dataset.selectedAddToMaterial, 3]);
                     return;
                 end
             end
@@ -148,7 +149,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 ["add",                          "remove",                  "replace"]);
             operation = opMap(KeyShortcuts.Action{ActionId});
             selectionTo = 'model';
-            if I.getSelectedMaterialIndex('AddTo') == -1; selectionTo = 'mask'; end
+            if dataset.getSelectedMaterialIndex('AddTo') == -1; selectionTo = 'mask'; end
             obj.mibModel.moveLayers('selection', selectionTo, layerScope, operation);
 
         case 'Clear selection'                          % default 'c'/'Shift+c'
@@ -156,7 +157,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 
         case {'Fill the holes in the Selection layer', 'Erode the Selection layer', 'Dilate the Selection layer'}
             % default 'f'/'Shift+f', 'z'/'Shift+z', 'x'/'Shift+x'
-            if I.enableSelection == 0; return; end
+            if dataset.enableSelection == 0; return; end
 
             switch KeyShortcuts.Action{ActionId}
                 case 'Fill the holes in the Selection layer';  error('MISSING IMPLEMENTATION: obj.mibSelectionFillBtn_Callback();')
@@ -176,19 +177,19 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 
             if changeSliceSwitch
                 if altPressed   % change time
-                    if I.image.time == 1; return; end
-                    new_index = max(1, min(I.image.time, I.slices{5}(1) + direction));
-                    I.slices{5} = [new_index, new_index];
-                    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.frameNumberSlider.Value = new_index;
-                    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumberSlider_Callback();
+                    if dataset.image.time == 1; return; end
+                    new_index = max(1, min(dataset.image.time, dataset.slices{5}(1) + direction));
+                    dataset.slices{5} = [new_index, new_index];
+                    cImageDoc.handles.frameNumberSlider.Value = new_index;
+                    cImageDoc.frameNumberSlider_Callback();
                 else            % change Z
-                    if I.image.depth == 1; return; end
+                    if dataset.image.depth == 1; return; end
                     shift = obj.sliderZStep;
                     if shiftPressed; shift = obj.sliderZShiftStep; end
-                    new_index = max(1, min(I.dim_yxzct(I.orientation), I.slices{I.orientation}(1) + direction*shift));
-                    I.slices{I.orientation} = [new_index, new_index];
-                    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.sliceNumberSlider.Value = new_index;
-                    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.sliceNumberSlider_Callback();
+                    new_index = max(1, min(dataset.dim_yxzct(dataset.orientation), dataset.slices{dataset.orientation}(1) + direction*shift));
+                    dataset.slices{dataset.orientation} = [new_index, new_index];
+                    cImageDoc.handles.sliceNumberSlider.Value = new_index;
+                    cImageDoc.sliceNumberSlider_Callback();
                 end
             else
                 if isNext
@@ -199,7 +200,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             end
 
         case 'Rename material'                          % default F2
-            if I.getSelectedMaterialIndex() > 0
+            if dataset.getSelectedMaterialIndex() > 0
                 error("MISSING IMPLEMENTATION: obj.mibModel.renameMaterial();")
             end
 
@@ -212,8 +213,8 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             error("MISSING IMPLEMENTATION: obj.mibMaskShowCheck_Callback();")
 
         case 'Fix selection to material'
-            obj.mibController.cSegmentation.handles.restrictMaterial.Value = abs(obj.mibController.cSegmentation.handles.restrictMaterial.Value - 1);
-            obj.mibController.cSegmentation.restrictMaterial_Callback();
+            cSegmentation.handles.restrictMaterial.Value = abs(cSegmentation.handles.restrictMaterial.Value - 1);
+            cSegmentation.restrictMaterial_Callback();
             
         case 'Save image as...'                         % default 'Ctrl + s'
             error("MISSING IMPLEMENTATION: obj.menuFileSaveImageAs_Callback();")
@@ -228,15 +229,15 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             error("MISSING IMPLEMENTATION: obj.menuSelectionBuffer_Callback('pasteall');")
 
         case 'Toggle between the selected material and exterior' % default 'e'
-            obj.mibController.cSegmentation.materialsTable_CellSelectionCallback([I.lastSegmSelection(1), 2]);
-            I.lastSegmSelection = fliplr(I.lastSegmSelection);
+            cSegmentation.materialsTable_CellSelectionCallback([dataset.lastSegmSelection(1), 2]);
+            dataset.lastSegmSelection = fliplr(dataset.lastSegmSelection);
             
         case 'Toggle current and previous buffer'   % default ctrl+e, toggle buffer buttons
             obj.mibController.cActiveDataset.buffers_Callback([],[], obj.mibModel.previouslySelectedDataset);
             
         case {'Loop through the list of favourite segmentation tools', 'Favorite tool A', 'Favorite tool B'}  % default 'd', Shift+D, Ctrl+D
             actionName = KeyShortcuts.Action{ActionId};
-            toolList = obj.mibController.cSegmentation.handles.segmTool.Items;
+            toolList = cSegmentation.handles.segmTool.Items;
             
             if actionName(1) == 'L'     % Loop, 'D' shortcut
                 if numel(obj.mibModel.preferences.SegmTools.FavoriteTools) == 0
@@ -246,7 +247,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                         'Error in gui_WindowKeyPressFcn', 'No favorite tools defined!', '', errorDlgOpts);
                     return;
                 end
-                toolId = obj.mibController.cSegmentation.handles.segmTool.ValueIndex;
+                toolId = cSegmentation.handles.segmTool.ValueIndex;
                 nextTool = obj.mibModel.preferences.SegmTools.FavoriteTools(find(obj.mibModel.preferences.SegmTools.FavoriteTools > toolId, 1));
 
                 if isempty(nextTool); nextTool = obj.mibModel.preferences.SegmTools.FavoriteTools(1); end
@@ -272,8 +273,8 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 'Position', [lblX lblY lblW lblH]);
             pause(.4);
 
-            obj.mibController.cSegmentation.handles.segmTool.ValueIndex = nextTool;
-            obj.mibController.cSegmentation.segmentationTool_Callback();
+            cSegmentation.handles.segmTool.ValueIndex = nextTool;
+            cSegmentation.segmentationTool_Callback();
             delete(fittext);
 
         case 'Undo/Redo last action'                    % default 'Ctrl + z'
@@ -285,18 +286,18 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             error("MISSING IMPLEMENTATION: obj.mibFindMaterialUnderCursor();")
 
         case {'Previous time point', 'Next time point'} % default leftarrow / rightarrow
-            if I.image.time == 1; return; end
+            if dataset.image.time == 1; return; end
             direction = 2*strcmp(KeyShortcuts.Action{ActionId}, 'Next time point') - 1;  % +1 or -1
-            new_index = max(1, min(I.image.time, I.slices{5}(1) + direction));
-            obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.frameNumberSlider.Value = new_index;
-            obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumberSlider_Callback();
+            new_index = max(1, min(dataset.image.time, dataset.slices{5}(1) + direction));
+            cImageDoc.handles.frameNumberSlider.Value = new_index;
+            cImageDoc.frameNumberSlider_Callback();
 
         case 'Increse active material index by 1 for models with 65535 materials'  % default 'n' shortcut
-            if I.labels.maxMaterials > 255
-                contIndex = I.selectedMaterial - 2;
+            if dataset.labels.maxMaterials > 255
+                contIndex = dataset.selectedMaterial - 2;
                 if contIndex < 1; return; end
-                I.labels.materialNames{contIndex} = num2str(str2double(I.labels.materialNames{contIndex}) + 1);
-                obj.mibController.cSegmentation.updateMaterialsTable();
+                dataset.labels.materialNames{contIndex} = num2str(str2double(dataset.labels.materialNames{contIndex}) + 1);
+                cSegmentation.updateMaterialsTable();
             end
 
         case {'Preset 1 use for the selected segmentation tool', ...
@@ -326,38 +327,38 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 else    % all other possible shortcuts
     switch char
         case 'escape'
-            % detect escape when modifying the measurements, see Measure.drawROI method
-            if ~isempty(obj.mibModel.I{obj.mibModel.id}.hMeasure.roi.imroi)
-                if isvalid(obj.mibModel.I{obj.mibModel.id}.hMeasure.roi.imroi)
-                    obj.mibModel.I{obj.mibModel.id}.hMeasure.roi.imroi.setColor('r');
-                    resume(obj.mibModel.I{obj.mibModel.id}.hMeasure.roi.imroi);
-                end
-            end
-            % detect escape when modifying the ROIs, see mibRoiRegion.drawROI method
-            if ~isempty(obj.mibModel.I{obj.mibModel.id}.hROI.roi.imroi)
-                if isvalid(obj.mibModel.I{obj.mibModel.id}.hROI.roi.imroi)
-                    obj.mibModel.I{obj.mibModel.id}.hROI.roi.imroi.setColor('r');
-                    resume(obj.mibModel.I{obj.mibModel.id}.hROI.roi.imroi);
-                end
-            end
+            % % detect escape when modifying the measurements, see Measure.drawROI method
+            % if ~isempty(dataset.hMeasure.roi.imroi)
+            %     if isvalid(dataset.hMeasure.roi.imroi)
+            %         dataset.hMeasure.roi.imroi.setColor('r');
+            %         resume(dataset.hMeasure.roi.imroi);
+            %     end
+            % end
+            % % detect escape when modifying the ROIs, see mibRoiRegion.drawROI method
+            % if ~isempty(dataset.hROI.roi.imroi)
+            %     if isvalid(dataset.hROI.roi.imroi)
+            %         dataset.hROI.roi.imroi.setColor('r');
+            %         resume(dataset.hROI.roi.imroi);
+            %     end
+            % end
         case 'a'    % Select the Mask or Material (when mask is not shown) layer
             if strcmp(modifier, 'control') | strcmp(modifier, 'alt') %#ok<OR2>
-                if obj.mibModel.I{obj.mibModel.id}.modelType ~= 128
+                if dataset.labels.maxMaterials ~= 128
                     if strcmp(modifier, 'alt')
-                        if obj.mibModel.I{obj.mibModel.id}.selectedMaterial == 1
-                            obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace');
-                        elseif obj.mibModel.I{obj.mibModel.id}.labels.exists
-                            obj.mibModel.moveLayers('labels', 'selection', '3D, Stack', 'replace');
+                        if dataset.selectedMaterial == 1
+                            %obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace');
+                        elseif dataset.labels.exists
+                            %obj.mibModel.moveLayers('labels', 'selection', '3D, Stack', 'replace');
                         end
                     else
-                        if obj.mibModel.I{obj.mibModel.id}.selectedMaterial == 1
-                            obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'replace');
-                        elseif obj.mibModel.I{obj.mibModel.id}.labels.exists
-                            obj.mibModel.moveLayers('labels', 'selection', '2D, Slice', 'replace');
+                        if dataset.selectedMaterial == 1
+                            %obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'replace');
+                        elseif dataset.labels.exists
+                            %obj.mibModel.moveLayers('labels', 'selection', '2D, Slice', 'replace');
                         end
                     end
                 end
-                obj.plotImage(0);
+                obj.mibController.showImage();
             end
         case 'control'  % increase the radius of the brush for the erase tool
             %if strcmp(modifier{1}, 'control') && obj.mibView.ctrlPressed == 0

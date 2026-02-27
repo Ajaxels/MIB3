@@ -15,6 +15,8 @@ classdef MibStatusBar
 
         gui_Callbacks(obj, mode) % callbacks for widgets of some the Status bar obj.handles.status
 
+        zoomEdit_Callback(obj, BatchOptIn)        % Callback for the mibZoomEdit control to change image magnification
+
         function obj = MibStatusBar(mainCtrl, view, guiHandles, model)
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view

@@ -153,10 +153,13 @@ elseif strcmp(mode, 'zoom')
     if yLim(2) < 1 || yLim(1) > height
         yLim = yLim - yLim(1);
     end
+    axesX = xLim;
+    axesY = yLim;
 end
 % update axes limits and magnification factor
 obj.mibModel.I{index}.setAxesLimits(axesX, axesY);
 obj.mibModel.I{index}.magFactor = magFactor;
+obj.cImageDoc{selectedSet}.brushCursorOffset = []; 
 
 %sprintf('axes: %d-%d %d-%d\n', axesX(1), axesX(2), axesY(1), axesY(2))
 
