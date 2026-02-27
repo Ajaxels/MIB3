@@ -193,9 +193,13 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 end
             else
                 if isNext
-                    error("MISSING IMPLEMENTATION: obj.mibToolbar_ZoomBtn_ClickedCallback('zoominPush', 1);")
+                    BatchOpt.Mode = 'Zoom in';
+                    recenterSwitch = true;
+                    obj.mibController.cStatus.zoomEdit_Callback(recenterSwitch, BatchOpt);
                 else
-                    error("MISSING IMPLEMENTATION: obj.mibToolbar_ZoomBtn_ClickedCallback('zoomoutPush', 1);")
+                    BatchOpt.Mode = 'Zoom out';
+                    recenterSwitch = true;
+                    obj.mibController.cStatus.zoomEdit_Callback(recenterSwitch, BatchOpt);
                 end
             end
 

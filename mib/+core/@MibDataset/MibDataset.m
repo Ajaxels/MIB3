@@ -137,6 +137,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [bb, logEntries] = imageDescriptionToBoundingBoxAndLog(obj, imageDescription)   % Extract bounding box and log entries from ImageDescription field
 
+        moveView(obj, x, y, orient)        % Center the image view at the provided coordinates: x, y
+        
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
 
         result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset

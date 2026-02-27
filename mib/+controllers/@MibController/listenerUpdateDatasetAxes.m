@@ -155,6 +155,7 @@ elseif strcmp(mode, 'zoom')
     end
     axesX = xLim;
     axesY = yLim;
+    magFactor = newMagFactor;
 end
 % update axes limits and magnification factor
 obj.mibModel.I{index}.setAxesLimits(axesX, axesY);

@@ -105,8 +105,8 @@ qab.fastpan.Description = 'Enable the fast-panning mode for quicker image naviga
 obj.gui.add(qab.fastpan);
 
 qab.zoomOut = QABPushButton(Icon(fullfile(iconPath, 'zoomOut_16px.png')));
-qab.zoomOut.Text = 'Zoom out operation';
-qab.zoomOut.Description = 'Zoom out operation';
+qab.zoomOut.Text = 'Zoom out';
+qab.zoomOut.Description = 'Zoom out';
 obj.gui.add(qab.zoomOut);
 
 qab.zoomFit = QABPushButton(Icon(fullfile(iconPath, 'zoomFit_16px.png')));
@@ -120,8 +120,8 @@ qab.zoom100.Description = 'Scale the image to 100% magnification';
 obj.gui.add(qab.zoom100);
 
 qab.zoomIn = QABPushButton(Icon(fullfile(iconPath, 'zoomIn_16px.png')));
-qab.zoomIn.Text = 'Zoom in operation';
-qab.zoomIn.Description = 'Zoom in operation';
+qab.zoomIn.Text = 'Zoom in';
+qab.zoomIn.Description = 'Zoom in';
 obj.gui.add(qab.zoomIn);
 
 divider = QABPushButton();
