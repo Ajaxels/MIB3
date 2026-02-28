@@ -26,6 +26,8 @@ classdef MibController < handle
         % list of opened subcontrollers
         childControllersIds
         % a cell array with names of initialized child controllers
+        fastPanningMode = false
+        % use the fast panning mode, defined in qab by pressing on obj.view.handles.qab.fastpan
         globalResizeTimer
         % global timer for proper resizing of panels (used in MibImageDocument.gui_SizeChangedFcn)
         listeners

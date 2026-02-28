@@ -47,6 +47,8 @@ switch mode
     case 'Switch dataset to the YZ orientation'
     case 'Switch dataset to the YX orientation'
     case 'Enable the fast-panning mode for quicker image navigation'
+        obj.mibController.fastPanningMode = hWidget.Selected;
+        obj.mibController.fastPanningMode
     case 'Zoom out'
         BatchOpt.Mode = 'Zoom out';
         obj.mibController.cStatus.zoomEdit_Callback([], BatchOpt);

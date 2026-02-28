@@ -62,6 +62,7 @@ obj.UIFigure.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 obj.UIFigure.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
 obj.UIFigure.SizeChangedFcn = @(~, ~)obj.gui_SizeChangedFcn();
 obj.UIFigure.WindowKeyPressFcn = @(~, ~)obj.gui_WindowKeyPressFcn();
+obj.UIFigure.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 
 % obj.figureDoc.CanCloseFcn
 end

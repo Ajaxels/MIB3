@@ -645,7 +645,7 @@ classdef Preferences < handle
                         obj.preferences.System.MouseWheel = 'scroll';
                     end
                 case 'LeftMouseActionDropDown'
-                    if strcmp(obj.view.handles.MouseWheelActionDropDown.Value, 'Pan image')
+                    if strcmp(obj.view.handles.LeftMouseActionDropDown.Value, 'Pan image')
                         obj.preferences.System.LeftMouseButton = 'pan';   % zoom or scroll
                     else    % Selection/drawing
                         obj.preferences.System.LeftMouseButton = 'select';

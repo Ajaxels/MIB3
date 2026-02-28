@@ -65,6 +65,8 @@ classdef MibImageDocument < handle
 
         gui_SizeChangedFcn(obj)        % Callback when figure size changes
 
+        gui_WindowButtonDownFcn(obj)        % Callback for mouse button press in the image view.
+        
         gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
 
         gui_WindowKeyPressFcn(obj)        % Callback for a key press in MIB
