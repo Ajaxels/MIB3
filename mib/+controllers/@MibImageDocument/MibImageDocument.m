@@ -36,6 +36,25 @@ classdef MibImageDocument < handle
         setOfDatasetsIndex      % double, index of this document in the Sets
         brushCursor             % matlab.graphics.chart.primitive.Line, handle to brush cursor plot
         brushCursorOffset       % 2×N double array, [X offsets; Y offsets] for brush cursor circle
+        brushPrevXY             % coordinates of the previous pixel for the @em Brush tool,
+                                % @note dimensions: [x, y] or []
+        brushSelection = []     % selection layer during the brush tool movement, @code {1:2}[1:height,1:width] or NaN @endcode
+                                % brushSelection{1} 
+                                %   .selection - contains brush selection during drawing
+                                %   .travelPathInPixels - distance of brush travelled during painting
+                                % brushSelection{2} - contains labels of the supervoxels and some additional information
+                                %   .slic - a label image with superpixels
+                                %   .selectedSlic - a bitmap image of the selected with the Brush tool superpixels 
+                                %   .selectedSlicIndices - indices of the selected Slic superpixels
+                                %   .selectedSlicIndicesNew - a list of freshly selected Slic indices when moving the brush, used for the undo with Ctrl+Z
+                                %   .CData - a copy of the shown in the imageAxes image, to be used for the undo
+                                % brushSelection{3} - a structure that contains information for
+                                % the adaptive mode:
+                                %   .meanVals - array of mean intensity values for each superpixels
+                                %   .mean - mean intensity value for the initial selection
+                                %   .std - standard deviation of intensities for the initial selection
+                                %   .factor - factor that defines variation of STD variation
+                                % @note the 'brushSelection' is modified with respect to @code magFactor @endcode and crop of the image within the viewing window
         centralMarker           % marker for the center of the axes
         imageHandle = matlab.graphics.primitive.Image('CData', []); % handle to the rendered image
         sliderTStep = 1          % t-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
@@ -59,6 +78,8 @@ classdef MibImageDocument < handle
 
         title = getTitle(obj)        % Get the title of this image document
 
+        gui_panAxesFcn(obj, xy, imgWidth, imgHeight)        % Moves the image in obj.handles.imViewAxes during a pan gesture.
+
         gui_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View documents obj.cImageDoc{setId}
 
         gui_ScrollWheelFcn(obj, eventdata)        % Callback for mouse scroll wheel
@@ -66,6 +87,8 @@ classdef MibImageDocument < handle
         gui_SizeChangedFcn(obj)        % Callback when figure size changes
 
         gui_WindowButtonDownFcn(obj)        % Callback for mouse button press in the image view.
+
+        gui_WindowButtonUpFcn(obj, brush_switch)        % Callback for release of the mouse button.
         
         gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
 

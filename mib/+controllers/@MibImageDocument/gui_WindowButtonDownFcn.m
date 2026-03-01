@@ -129,8 +129,18 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
         xy2 = zeros([2,1]);  % converted coordinates
 
         if magFactor < 1    % the image is not rescaled if magFactor less than 1
+            datasetId = obj.mibModel.id;
+            switch obj.mibModel.I{datasetId}.orientation
+                case 3;  coef_z = obj.mibModel.I{datasetId}.pixSize.x / obj.mibModel.I{datasetId}.pixSize.y;
+                case 1;  coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.x;
+                otherwise; coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.y;
+            end
+            obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
+            obj.imageHandle.YData = [1, size(imgRGB, 1)];
+
             obj.handles.imViewAxes.XLim = axesX;
             obj.handles.imViewAxes.YLim = axesY;
+
             % modify xy with respect to the magFactor and shifts of the axes
             xy2(1) = xy(1,1)*magFactor + max([axesX(1) 0]);
             xy2(2) = xy(1,2)*magFactor + max([axesY(1) 0]);
@@ -142,8 +152,8 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             xy2(2) = xy(1,2)+max([axesY(1)/magFactor 0]);
         end
 
-        imgWidth = size(imgRGB, 2);
-        imgHeight = size(imgRGB, 1);
+        imgWidth = obj.imageHandle.XData(2);   % data-coord of right image edge (coef_z-aware)
+        imgHeight = obj.imageHandle.YData(2);
 
         % if roiShow
         %     obj.mibModel.I{obj.mibModel.id}.hROI.updateROIScreenPosition('full');
