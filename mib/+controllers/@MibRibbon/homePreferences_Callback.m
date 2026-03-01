@@ -42,6 +42,9 @@ switch mode
     case 'API class reference'          % obj.handles.ribbonHome.classReference
     case 'Check for update'             % obj.handles.ribbonHome.checkUpdate
     case 'Your personal stats'          % obj.handles.ribbonHome.personalStats
+        utils.dlgs.showMilestoneDialog(obj.mibModel.mibPath, ...
+            obj.mibModel.preferences.Users, ...
+            'currentStats', struct('ParentFigure', obj.mibController.view.gui, 'WindowStyle', 'normal'));
     case 'Licenses'                     % obj.handles.ribbonHome.licenses
     case 'About MIB'                    % obj.handles.ribbonHome.about
 end

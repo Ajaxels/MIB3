@@ -153,6 +153,8 @@ if obj.mibModel.preferences.Users.Tiers.collectedPoints > ...
 end
 
 if showCongratulations
-    obj.mibShowMilestoneDialog();
-end
+    pause(0.5);
+    utils.dlgs.showMilestoneDialog(obj.mibModel.mibPath, obj.mibModel.preferences.Users, ...
+        'milestoneReached', struct('ParentFigure', obj.mibController.view.gui));
+
 end

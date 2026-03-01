@@ -1,16 +1,19 @@
-function gui_panAxesFcn(obj, xy, imgWidth, imgHeight)
-% function gui_panAxesFcn(obj, xy, imgWidth, imgHeight)
+function gui_panAxesFcn(obj, xy, imgXLim, imgYLim)
+% function gui_panAxesFcn(obj, xy, imgXLim, imgYLim)
 % Moves the image in obj.handles.imViewAxes during a pan gesture.
 %
 % This is the WindowButtonMotionFcn callback active while the mouse button
 % is held during panning. It is installed by obj.gui_WindowButtonDownFcn:
-%   hFig.WindowButtonMotionFcn = @(~,~)obj.gui_panAxesFcn(xy2, imgWidth, imgHeight);
+%   hFig.WindowButtonMotionFcn = @(~,~)obj.gui_panAxesFcn(xy2, imgXLim, imgYLim);
 %
 % Parameters:
-% xy:        [1×2] double - axes data-unit coordinates of the mouse at the
-%            moment the button was first pressed (captured in gui_WindowButtonDownFcn)
-% imgWidth:  double - width of the currently displayed image in pixels
-% imgHeight: double - height of the currently displayed image in pixels
+% xy:       [1×2] double - axes data-unit coordinates of the mouse at the
+%           moment the button was first pressed (captured in gui_WindowButtonDownFcn)
+% imgXLim:  [1×2] double - [xMin, xMax] data-coord boundaries of the
+%           displayed image (left and right edges). For the full image this
+%           is [1, imgWidth]; for a padded region it is [paddedX(1), paddedX(2)].
+% imgYLim:  [1×2] double - [yMin, yMax] data-coord boundaries of the
+%           displayed image (top and bottom edges).
 %
 % Return values:
 %   (none)
@@ -33,8 +36,8 @@ newYLim = Ylim + (xy(2) - (pt(1,2)+pt(2,2))/2);
 
 % check for out of image shifts: skip update when view would leave the image entirely
 outSwitch = false;
-if newXLim(2) < 1 || newXLim(1) > imgWidth;  outSwitch = true; end
-if newYLim(2) < 1 || newYLim(1) > imgHeight; outSwitch = true; end
+if newXLim(2) < imgXLim(1) || newXLim(1) > imgXLim(2); outSwitch = true; end
+if newYLim(2) < imgYLim(1) || newYLim(1) > imgYLim(2); outSwitch = true; end
 
 if ~outSwitch
     magFactor = obj.mibModel.getMagFactor();

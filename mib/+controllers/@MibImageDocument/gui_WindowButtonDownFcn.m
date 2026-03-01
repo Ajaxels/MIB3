@@ -31,6 +31,9 @@ switch3d = obj.mibController.cSelection.handles.apply3D.Value;
 %fprintf('seltype: %s modifier: "%s" char: "%s"\n', seltype, cell2mat(modifier), character)
 %fprintf('seltype: %s modifier: "%s"\n', seltype, cell2mat(modifier))
 
+% check for the mouse inside the image axes
+if ~obj.isInsideAxes; return; end
+
 % define operation depending on the state of obj.mibModel.preferences.System.LeftMouseButton = 'select' or 'pan'
 if obj.mibModel.preferences.System.LeftMouseButton(1) == 's'  % the selection mode, options: 'select' or 'pan'
     switch seltype
@@ -74,12 +77,12 @@ else
     end
 end
 
+% get dataset alias
+dataset = obj.mibModel.I{obj.mibModel.id};
+
 % handle the mouse click
 if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     %%     % Start the pan mode
-
-    % check for the mouse inside the image axes
-    if ~obj.isInsideAxes; return; end
 
     % Disable conflicting callbacks during pan gesture
     hFig.WindowKeyPressFcn = [];     % turn off callback for the keys during the panning
@@ -94,49 +97,40 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     % Decide whether "fast pan" mode is enabled.
     % In fast-pan we do not force full-res redraw here; otherwise we fetch
     % full RGB and re-plot annotations/ROIs for smooth panning.
-    if ~obj.mibController.fastPanningMode % full image mode
-        rgbOptions.blockModeSwitch = 0;     % get full image
-        imgRGB = obj.mibModel.getRGBimage(rgbOptions);
-        % render image
-        obj.imageHandle.CData = [];
-        obj.imageHandle.CData = imgRGB;
+    magFactor = obj.mibModel.getMagFactor();
+    [axesX, axesY] = obj.mibModel.getAxesLimits();
+    xy2 = zeros([2,1]);  % converted coordinates
 
-        % % delete shown measurements
-        % lineObj = findobj(obj.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
-        % if ~isempty(lineObj); delete(lineObj); end     % keep it within if, because it is faster
-        % % show measurements
-        % if obj.mibModel.showAnnotations
-        %     obj.mibModel.I{obj.mibModel.id}.hMeasure.addMeasurementsToPlot(obj.mibModel, 'full', obj.handles.imViewAxes);
-        % end
+    if ~obj.mibController.fastPanningMode % full image / padded mode
+        switch dataset.orientation
+            case 3;  coef_z = dataset.pixSize.x / dataset.pixSize.y;
+            case 1;  coef_z = dataset.pixSize.z / dataset.pixSize.x;
+            otherwise; coef_z = dataset.pixSize.z / dataset.pixSize.y;
+        end
 
-        % % show ROIs (checkbox location differs between MIB2/MIB3; best-effort)
-        % roiShow = false;
-        % try
-        %     roiShow = logical(obj.mibController.cSelection.handles.roiShow.Value);
-        % catch
-        %     try
-        %         roiShow = logical(obj.view.handles.mibRoiShowCheck.Value);
-        %     catch
-        %         roiShow = false;
-        %     end
-        % end
-        % if roiShow
-        %     obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(obj, 'full');
-        % end
+        if magFactor < 1    % zoomed in: load padded region only (avoids fetching the full large image)
+            % Extend the current viewport by one viewport-size on each side so the
+            % user can pan freely without reloading, while skipping the cost of
+            % fetching the entire dataset.  Region is clamped to image boundaries.
+            imgFullWidth  = dataset.image.width;
+            imgFullHeight = dataset.image.height;
+            viewportW = axesX(2) - axesX(1);
+            viewportH = axesY(2) - axesY(1);
+            paddedX = [max(1, floor(axesX(1) - viewportW)), min(imgFullWidth,  ceil(axesX(2) + viewportW))];
+            paddedY = [max(1, floor(axesY(1) - viewportH)), min(imgFullHeight, ceil(axesY(2) + viewportH))];
 
-        magFactor = obj.mibModel.getMagFactor();
-        [axesX, axesY] = obj.mibModel.getAxesLimits();
-        xy2 = zeros([2,1]);  % converted coordinates
+            % Load padded region at 1:1 pixel resolution (no up/downscale)
+            obj.mibModel.setAxesLimits(paddedX, paddedY);   % temporarily widen the model view
+            rgbOptions.blockModeSwitch = 1;
+            rgbOptions.resizeToMagnification = false;
+            imgRGB = obj.mibModel.getRGBimage(rgbOptions);
+            obj.mibModel.setAxesLimits(axesX, axesY);       % restore the real viewport
 
-        if magFactor < 1    % the image is not rescaled if magFactor less than 1
-            datasetId = obj.mibModel.id;
-            switch obj.mibModel.I{datasetId}.orientation
-                case 3;  coef_z = obj.mibModel.I{datasetId}.pixSize.x / obj.mibModel.I{datasetId}.pixSize.y;
-                case 1;  coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.x;
-                otherwise; coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.y;
-            end
-            obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
-            obj.imageHandle.YData = [1, size(imgRGB, 1)];
+            obj.imageHandle.CData = [];
+            obj.imageHandle.CData = imgRGB;
+            % Map padded image: first pixel → paddedX(1), one data-unit per pixel
+            obj.imageHandle.XData = [paddedX(1), paddedX(1) + (size(imgRGB, 2) - 1) * coef_z];
+            obj.imageHandle.YData = [paddedY(1), paddedY(1) + size(imgRGB, 1) - 1];
 
             obj.handles.imViewAxes.XLim = axesX;
             obj.handles.imViewAxes.YLim = axesY;
@@ -144,34 +138,33 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             % modify xy with respect to the magFactor and shifts of the axes
             xy2(1) = xy(1,1)*magFactor + max([axesX(1) 0]);
             xy2(2) = xy(1,2)*magFactor + max([axesY(1) 0]);
-        else
+
+            imgXLim = double(paddedX);
+            imgYLim = double(paddedY);
+        else    % zoomed out: full image fits in viewport, load it entirely
+            rgbOptions.blockModeSwitch = 0;
+            imgRGB = obj.mibModel.getRGBimage(rgbOptions);
+            obj.imageHandle.CData = [];
+            obj.imageHandle.CData = imgRGB;
+
             obj.handles.imViewAxes.XLim = axesX/magFactor;
             obj.handles.imViewAxes.YLim = axesY/magFactor;
             % modify xy with respect to the magFactor and shifts of the axes
             xy2(1) = xy(1,1)+max([axesX(1)/magFactor 0]);
             xy2(2) = xy(1,2)+max([axesY(1)/magFactor 0]);
+
+            imgXLim = [1, obj.imageHandle.XData(2)];
+            imgYLim = [1, obj.imageHandle.YData(2)];
         end
-
-        imgWidth = obj.imageHandle.XData(2);   % data-coord of right image edge (coef_z-aware)
-        imgHeight = obj.imageHandle.YData(2);
-
-        % if roiShow
-        %     obj.mibModel.I{obj.mibModel.id}.hROI.updateROIScreenPosition('full');
-        % end
-
-        % % update ROI of the Measure tool
-        % if ~isempty(obj.mibModel.I{obj.mibModel.id}.hMeasure.roi.type)
-        %     obj.mibModel.I{obj.mibModel.id}.hMeasure.updateROIScreenPosition('full');
-        % end
     else   % --------  fast pan mode: use currently shown image extents
-        imgWidth = obj.imageHandle.XData(2);
-        imgHeight = obj.imageHandle.YData(2);
         xy2(1) = xy(1,1);
         xy2(2) = xy(1,2);
+        imgXLim = [obj.imageHandle.XData(1), obj.imageHandle.XData(2)];
+        imgYLim = [obj.imageHandle.YData(1), obj.imageHandle.YData(2)];
     end
- 
+
     % Attach panning motion callback
-    hFig.WindowButtonMotionFcn = @(~, ~)obj.gui_panAxesFcn(xy2, imgWidth, imgHeight);
+    hFig.WindowButtonMotionFcn = @(~, ~)obj.gui_panAxesFcn(xy2, imgXLim, imgYLim);
 
     % update mouse cursor
     obj.UIFigure.Pointer = 'fleur';
@@ -182,8 +175,6 @@ elseif strcmp(operation, 'select')
     %% Start segmentation mode
     %y = round(xy(1,2));
     %x = round(xy(1,1));
-
-    dataset = obj.mibModel.I{obj.mibModel.id};
 
     if dataset.enableSelection == 0 && ~ismember(tool, {'Annotations', '3D lines'})
         return;
