@@ -121,7 +121,7 @@ hFig.WindowButtonUpFcn = [];
 hFig.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 
 % turn ON callback for the keys
-hFig.WindowKeyPressFcn = @(~, ~)obj.mibController.gui_WindowKeyPressFcn();
+hFig.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
 % Restore scroll wheel callback (moved from plotImage)
 hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
