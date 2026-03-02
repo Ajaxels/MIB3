@@ -9,6 +9,7 @@ classdef MibActiveDataset
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
         listeners       % cell array of listeners
+        UIFigure        % handle to underlying UIFigure
     end
 
     methods
@@ -31,6 +32,7 @@ classdef MibActiveDataset
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Datasets)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.activeDataset.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
+            obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
 
             %% Update widgets
             obj.update_fromModel(); % update widgets of the Datasets panel from the values of obj.MibModel
@@ -67,6 +69,9 @@ classdef MibActiveDataset
             obj.handles.sets.ValueChangedFcn = @obj.setsOps_Callbacks;
             obj.handles.addSet.ButtonPushedFcn = @(src, event)obj.setsOps_Callbacks(src, event, 'setsContextAdd');
             obj.handles.datasetType.ValueChangedFcn = @obj.type_Callback;
+
+            % ---------------------- Key press callback ----------------------
+            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
             %% Add listeners
             obj.listeners{1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.update_fromModel(src, evnt)); % update GUI from the model

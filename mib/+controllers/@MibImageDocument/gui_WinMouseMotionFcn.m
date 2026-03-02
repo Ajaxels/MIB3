@@ -48,7 +48,7 @@ try
         yMouse > axYLim(1) && yMouse < axYLim(2);
 
     if obj.isInsideAxes
-        obj.gui.imViewFigure.Pointer = 'crosshair';
+        obj.UIFigure.Pointer = 'crosshair';
         sessionSettings = obj.mibModel.sessionSettings;
 
         % Calculate mouse travel distance
@@ -144,7 +144,7 @@ try
             obj.mibController.cStatus.handles.pixelLabel.Text = sprintf('Pixel: %d:%d (RRRRR:GGGGG:BBBBB)', xMouse, yMouse);
         end
     else
-        obj.gui.imViewFigure.Pointer = 'arrow';
+        obj.UIFigure.Pointer = 'arrow';
         obj.mibController.cStatus.handles.pixelLabel.Text = 'Pixel: XXXXX:XXXXX (RRRRR:GGGGG:BBBBB)';
     end
 

@@ -8,6 +8,7 @@ classdef MibDirContents
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        UIFigure        % handle to underlying UIFigure
     end
 
     methods
@@ -29,7 +30,7 @@ classdef MibDirContents
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
-
+            obj.UIFigure = ancestor(obj.gui, 'figure'); % handle to underlying UIFigure
 
             %% Update widgets
             % update list of available filters for file formats
@@ -58,7 +59,7 @@ classdef MibDirContents
             obj.handles.fileFiltersContextRegister.MenuSelectedFcn = @obj.fileFilters_ContextMenu;
             obj.handles.fileFiltersContextUnregister.MenuSelectedFcn = @obj.fileFilters_ContextMenu;
             
-            % ----------------------ADD CALLBACKS TO WIDGETS ----------------------
+            % ---------------------- ADD CALLBACKS TO WIDGETS ----------------------
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.ClickedFcn = @obj.fileList_Callback;
             obj.handles.fileFilters.ValueChangedFcn = @obj.fileFilters_Callback;
@@ -67,6 +68,9 @@ classdef MibDirContents
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.updateFileList.ButtonPushedFcn = @(~,~)obj.updateFileList_Callback;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
+
+            % ---------------------- Key press callback ----------------------
+            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
         end
 

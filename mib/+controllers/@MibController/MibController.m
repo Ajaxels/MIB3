@@ -104,6 +104,8 @@ classdef MibController < handle
 
         initializeLibraries(obj, initList)            % initialize external libraries and Java paths
 
+        gui_WindowKeyPressFcn(obj, hWidget, hData)        % Callback for a key press in MIB
+
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
 
         filename = saveLayout(obj, mode) % store the current layout of panels

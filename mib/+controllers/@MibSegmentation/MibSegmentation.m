@@ -8,6 +8,7 @@ classdef MibSegmentation
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        UIFigure        % handle to underlying UIFigure
     end
 
     methods
@@ -67,6 +68,7 @@ classdef MibSegmentation
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.segmentation.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
+            obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
             
             %% Update widgets
             obj.update_fromModel(); % update widgets of the Segmentation panel
@@ -167,6 +169,9 @@ classdef MibSegmentation
             obj.handles.favoriteTool.ValueChangedFcn = @obj.favTool_Callback;
 
             obj.handles.segmTool.ValueChangedFcn = @(~,~)obj.segmentationTool_Callback;
+
+            % ---------------------- Key press callback ----------------------
+            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
             %% 3D ball, brush, spot panels
             obj.handles.brushRadius.ValueChangedFcn = @obj.brushPanel_Callback;

@@ -33,7 +33,7 @@ function gui_ScrollWheelFcn(obj, eventdata)
 %   % - Ctrl+Scroll Up: Increase brush size by 1
 %   % - Ctrl+Shift+Scroll Down: Decrease brush size by 5
 
-imViewFigure = obj.gui.imViewFigure;
+imViewFigure = obj.UIFigure;
 modifier = imViewFigure.CurrentModifier;
 
 % Get scroll parameters
@@ -112,8 +112,8 @@ if ismember('control', modifier)
     valuePointer(1:5,3) = 1;
     valuePointer(3,1:5) = 1;
 
-    obj.gui.imViewFigure.Pointer = 'custom';
-    obj.gui.imViewFigure.PointerShapeCData = valuePointer;
+    obj.UIFigure.Pointer = 'custom';
+    obj.UIFigure.PointerShapeCData = valuePointer;
 
     % Update widget value
     h1.Value = val;

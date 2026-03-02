@@ -8,6 +8,7 @@ classdef MibRoi
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        UIFigure        % handle to underlying UIFigure
     end
 
 
@@ -23,6 +24,7 @@ classdef MibRoi
             obj.gui = guiHandles;               % handle to the GUI of the ROI panel (views.components.Roi)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
+            obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
             
             % ---------------------- Add CALLBACKS to widgets ----------------------
             % example call using lambda functions
@@ -45,6 +47,9 @@ classdef MibRoi
             obj.handles.roiHeight.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.roiToSelection.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
+
+            % ---------------------- Key press callback ----------------------
+            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
         end
         

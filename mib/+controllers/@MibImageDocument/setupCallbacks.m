@@ -56,12 +56,10 @@ obj.handles.nextFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.lastFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 
 %% Mouse and window callbacks
-% Note: UIFigure (imViewFigure) is identified inside ImageViewDocument.mlapp as
-% parentFigure = ancestor(obj.handles.imViewAxes, 'figure')
 obj.UIFigure.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 obj.UIFigure.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
 obj.UIFigure.SizeChangedFcn = @(~, ~)obj.gui_SizeChangedFcn();
-obj.UIFigure.WindowKeyPressFcn = @(~, ~)obj.gui_WindowKeyPressFcn();
+obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 obj.UIFigure.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 
 % obj.figureDoc.CanCloseFcn

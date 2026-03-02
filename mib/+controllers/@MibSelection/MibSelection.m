@@ -8,6 +8,7 @@ classdef MibSelection
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        UIFigure        % handle to underlying UIFigure
     end
 
     methods
@@ -30,6 +31,7 @@ classdef MibSelection
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Roi)
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
+            obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
 
             %% Update widgets
             obj.lutTable_update_fromModel(); % update the LUT table in the Selection and View settings panel
@@ -78,7 +80,10 @@ classdef MibSelection
             obj.handles.selectionTransparency.ValueChangingFcn = @obj.gui_Callbacks;
 
             obj.handles.lutTable.CellSelectionCallback = @obj.lutTable_CellSelection;
-            obj.handles.lutTable.CellEditCallback = @obj.lutTable_CellEditCallback;
+            obj.handles.lutTable.CellEditCallback = @(src, event)obj.lutTable_CellEditCallback(src, event);
+
+            % ---------------------- Key press callback ----------------------
+            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
         end
 
 

@@ -1,4 +1,4 @@
-function gui_WindowKeyPressFcn(obj)
+function gui_WindowKeyPressFcn(obj, hWidget, hData)
 % function gui_WindowKeyPressFcn(obj)
 % Callback for a key press in MIB
 % Linked via: obj.UIFigure.WindowKeyPressFcn = @(~, ~)obj.gui_WindowKeyPressFcn();
@@ -10,16 +10,17 @@ function gui_WindowKeyPressFcn(obj)
 %
 
 % Get key info directly from the UIFigure current key data
-hFigure = obj.UIFigure;
+hFigure = obj.cImageDoc{obj.mibModel.Sets.selectedSet}.UIFigure;
 char = lower(hFigure.CurrentKey);
 modifier = hFigure.CurrentModifier;  % cell array of modifier strings
 
-% Skip if the focused component is an edit field or list box
-focusedComp = hFigure.CurrentObject;
-if ~isempty(focusedComp)
-    if isprop(focusedComp, 'Type') && ismember(focusedComp.Type, {'uinumericeditfield'})
-        return;
-    end
+% Skip if the focused component is an edit field or text area.
+% Use hWidget (the figure that fired the event), NOT hFigure (the image
+% document panel) — CurrentObject is only set on the event-source figure.
+focusedComp = hWidget.CurrentObject;
+if ~isempty(focusedComp) && isprop(focusedComp, 'Type') && ...
+        ismember(focusedComp.Type, {'uieditfield', 'uinumericeditfield', 'uitextarea', 'uispinner'})
+    return;
 end
 
 % return when Alt is pressed
@@ -28,8 +29,8 @@ if strcmp(char, 'alt'); return; end %#ok<STCI>
 % find a shortcut action
 KeyShortcuts = obj.mibModel.preferences.KeyShortcuts;
 dataset = obj.mibModel.I{obj.mibModel.id};
-cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
-cSegmentation = obj.mibController.cSegmentation;
+cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
+cSegmentation = obj.cSegmentation;
 
 % cancel if button is not registered as a shortcut
 keyMask = strcmp(KeyShortcuts.Key, char);
@@ -55,14 +56,14 @@ ActionId = find(keyMask & ...
     (KeyShortcuts.control == controlSw) & (KeyShortcuts.shift   == shiftSw)& (KeyShortcuts.alt     == altSw));
 
 % get image coordinates under the mouse cursor
-xyString = obj.mibController.cStatus.handles.pixelLabel.Text;
+xyString = obj.cStatus.handles.pixelLabel.Text;
 xy = sscanf(xyString, '%f:%f', 2);
 
 if ~isempty(ActionId) % find in the list of existing shortcuts
     % compute layer scope from modifier combination (used by several cases)
     modCount = sum([altPressed, shiftPressed]);
     scopeList = {'2D, Slice', '3D, Stack', '4D, Dataset'};
-    layerScope = scopeList{min(modCount, 2) + 1}; % one of the scopeList options 
+    layerScope = scopeList{min(modCount, 2) + 1}; % one of the scopeList options
 
     switch KeyShortcuts.Action{ActionId}
         case 'Add measurement (Measure tool)'   % add measurement, works with Measure Tool, default 'm'
@@ -117,8 +118,8 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                         strcmp(cSegmentation.handles.samDestination.Value, 'selection')
 
                     if dataset.labels.maxMaterials < 256
-                       errorDlgOpts.mibPath = obj.mibModel.mibPath;
-                       utils.dlgs.showErrorDialog(obj.view.gui, ...
+                        errorDlgOpts.mibPath = obj.mibModel.mibPath;
+                        utils.dlgs.showErrorDialog(obj.view.gui, ...
                             sprintf(['The current settings are not compatible with the "add, +next material" mode!\n\n' ...
                             'Please make sure that:\n' ...
                             '   - You created or already have a model with type 65535 or larger']), ...
@@ -195,11 +196,11 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 if isNext
                     BatchOpt.Mode = 'Zoom in';
                     recenterSwitch = true;
-                    obj.mibController.cStatus.zoomEdit_Callback(recenterSwitch, BatchOpt);
+                    obj.cStatus.zoomEdit_Callback(recenterSwitch, BatchOpt);
                 else
                     BatchOpt.Mode = 'Zoom out';
                     recenterSwitch = true;
-                    obj.mibController.cStatus.zoomEdit_Callback(recenterSwitch, BatchOpt);
+                    obj.cStatus.zoomEdit_Callback(recenterSwitch, BatchOpt);
                 end
             end
 
@@ -209,17 +210,17 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             end
 
         case 'Show/hide the Model layer'                % default 'space'
-            obj.mibController.cSelection.handles.showModel.Value = abs(obj.mibController.cSelection.handles.showModel.Value - 1);
+            obj.cSelection.handles.showModel.Value = abs(obj.cSelection.handles.showModel.Value - 1);
             error("MISSING IMPLEMENTATION: obj.mibModelShowCheck_Callback();")
 
         case 'Show/hide the Mask layer'                 % default 'Ctrl + space'
-            obj.mibController.cSelection.handles.showMask.Value = abs(obj.mibController.cSelection.handles.showMask.Value - 1);
+            obj.cSelection.handles.showMask.Value = abs(obj.cSelection.handles.showMask.Value - 1);
             error("MISSING IMPLEMENTATION: obj.mibMaskShowCheck_Callback();")
 
         case 'Fix selection to material'
             cSegmentation.handles.restrictMaterial.Value = abs(cSegmentation.handles.restrictMaterial.Value - 1);
             cSegmentation.restrictMaterial_Callback();
-            
+
         case 'Save image as...'                         % default 'Ctrl + s'
             error("MISSING IMPLEMENTATION: obj.menuFileSaveImageAs_Callback();")
 
@@ -235,14 +236,14 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Toggle between the selected material and exterior' % default 'e'
             cSegmentation.materialsTable_CellSelectionCallback([dataset.lastSegmSelection(1), 2]);
             dataset.lastSegmSelection = fliplr(dataset.lastSegmSelection);
-            
+
         case 'Toggle current and previous buffer'   % default ctrl+e, toggle buffer buttons
-            obj.mibController.cActiveDataset.buffers_Callback([],[], obj.mibModel.previouslySelectedDataset);
-            
+            obj.cActiveDataset.buffers_Callback([],[], obj.mibModel.previouslySelectedDataset);
+
         case {'Loop through the list of favourite segmentation tools', 'Favorite tool A', 'Favorite tool B'}  % default 'd', Shift+D, Ctrl+D
             actionName = KeyShortcuts.Action{ActionId};
             toolList = cSegmentation.handles.segmTool.Items;
-            
+
             if actionName(1) == 'L'     % Loop, 'D' shortcut
                 if numel(obj.mibModel.preferences.SegmTools.FavoriteTools) == 0
                     errorDlgOpts.mibPath = obj.mibModel.mibPath;
@@ -260,7 +261,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             else % 'B'  % favorite tool B, 'Ctrl+D' shortcut
                 nextTool = find(strcmp(toolList, obj.mibModel.preferences.SegmTools.FavoriteToolB), 1);
             end
-            
+
             % show information text
             axPos  = getpixelposition(obj.handles.imViewAxes, true);  % [x y w h] in figure pixels
             % axPos(1) = left edge of axes
@@ -305,13 +306,13 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             end
 
         case {'Preset 1 use for the selected segmentation tool', ...
-              'Preset 2 use for the selected segmentation tool', ...
-              'Preset 3 use for the selected segmentation tool'}         % default 1, 2, 3
+                'Preset 2 use for the selected segmentation tool', ...
+                'Preset 3 use for the selected segmentation tool'}         % default 1, 2, 3
             error("MISSING IMPLEMENTATION: obj.mibUpdateSegmentationSettingsFromPreset(str2double(KeyShortcuts.Action{ActionId}(8)));")
 
         case {'Preset 1 update from the selected segmentation tool', ...
-              'Preset 2 update from the selected segmentation tool', ...
-              'Preset 3 update from the selected segmentation tool'}     % default Shift+1, Shift+2, Shift+3
+                'Preset 2 update from the selected segmentation tool', ...
+                'Preset 3 update from the selected segmentation tool'}     % default Shift+1, Shift+2, Shift+3
             error("MISSING IMPLEMENTATION: obj.mibUpdatePresetFromSegmentationSettings(str2double(KeyShortcuts.Action{ActionId}(8)));")
 
         case 'Zoom to 100% view'  % should be define in Preferences
@@ -362,15 +363,15 @@ else    % all other possible shortcuts
                         end
                     end
                 end
-                obj.mibController.showImage();
+                obj.showImage();
             end
         case 'control'  % increase the radius of the brush for the erase tool
             %if strcmp(modifier{1}, 'control') && obj.mibView.ctrlPressed == 0
-                % if obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor == 1; return; end
-                % radius = str2double(obj.mibView.handles.mibSegmSpotSizeEdit.String);
-                % obj.mibView.ctrlPressed = max([floor(radius*obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor - radius) 1]);
-                % obj.mibView.handles.mibSegmSpotSizeEdit.String = num2str(radius+obj.mibView.ctrlPressed);
-                % obj.mibView.updateBrushCursor('solid');
+            % if obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor == 1; return; end
+            % radius = str2double(obj.mibView.handles.mibSegmSpotSizeEdit.String);
+            % obj.mibView.ctrlPressed = max([floor(radius*obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor - radius) 1]);
+            % obj.mibView.handles.mibSegmSpotSizeEdit.String = num2str(radius+obj.mibView.ctrlPressed);
+            % obj.mibView.updateBrushCursor('solid');
             %end
     end
 end

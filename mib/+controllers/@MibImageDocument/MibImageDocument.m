@@ -92,8 +92,6 @@ classdef MibImageDocument < handle
         
         gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
 
-        gui_WindowKeyPressFcn(obj)        % Callback for a key press in MIB
-        
         selectDocument(obj)        % Select this document in the document group
         
         setDescription(obj, description)        % Update the description text of this document
@@ -159,7 +157,7 @@ classdef MibImageDocument < handle
             % populate handles structure
             obj.handles = obj.gui.handles;
             obj.centralMarker = obj.gui.centralMarker;
-            obj.UIFigure = obj.gui.imViewFigure; % handle to the underlying figure
+            obj.UIFigure = ancestor(obj.gui, 'figure'); % handle to underlying UIFigure
 
             if obj.mibModel.preferences.System.DeveloperMode
                 utils.overrideDescriptions(obj.gui.handles, true, 'obj.cImageDoc{obj.mibModel.Sets.selectedSet}', {'mainGridLayout'}); 
