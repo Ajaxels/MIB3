@@ -43,7 +43,7 @@ function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
 
 arguments
     obj controllers.MibStatusBar
-    recenterSwitch logical = false
+    recenterSwitch logical = []
     BatchOptIn {mustBeA(BatchOptIn, ["struct", "double"])} = struct()
 end
 
@@ -51,7 +51,7 @@ end
 if isempty(fieldnames(BatchOptIn))
     focus(obj.view.handles.panels.dirContentsPanel.Figure); % remove focus from hObject
 end
-recenterSwitch = true;
+if isempty(recenterSwitch); recenterSwitch = false; end
 
 if recenterSwitch
     xy = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.CurrentPoint;
@@ -91,7 +91,6 @@ end
 % Merge provided BatchOptIn fields into the default BatchOpt
 BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
 
-recenterSwitch = true;
 if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     obj.mibModel.I{obj.mibModel.id}.moveView(xy2(1), xy2(2));
 

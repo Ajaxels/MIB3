@@ -205,7 +205,8 @@ GREETING_H   = 80;    % fixed height for the bold greeting label
 
 %% Pre-read left-panel dimensions for top-aligned layout
 videoFile    = fullfile(mibDir, 'assets', 'videos', 'celebration.mp4');
-cheersFile   = fullfile(mibDir, 'assets', 'images', 'puffin_cheering_220px.png');
+
+cheersFile   = fullfile(mibDir, 'assets', 'images', sprintf('puffin_cheering_%d_220px.png', randi(2)));
 celebImgFile = fullfile(mibDir, 'assets', 'images', 'celebrate.jpg');
 videoRowH = VIDEO_COL_W;  % default: assume square, updated after probe
 

@@ -134,7 +134,7 @@ switch options.Icon
     case 'call4help';        iconFilename = 'call4help.jpg';
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
-    case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
+    case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
     otherwise % 'error_48px'
         iconFilename = 'error_48px.png';
 end

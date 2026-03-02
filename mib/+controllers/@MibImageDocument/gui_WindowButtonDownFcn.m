@@ -146,6 +146,12 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             imgRGB = obj.mibModel.getRGBimage(rgbOptions);
             obj.imageHandle.CData = [];
             obj.imageHandle.CData = imgRGB;
+            % getRGBimage downsamples the image when magFactor>1, so the
+            % returned size differs from the previous showImage() render.
+            % Update XData/YData to match the newly loaded image so the
+            % axes display it at the correct scale and position.
+            obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
+            obj.imageHandle.YData = [1, size(imgRGB, 1)];
 
             obj.handles.imViewAxes.XLim = axesX/magFactor;
             obj.handles.imViewAxes.YLim = axesY/magFactor;
