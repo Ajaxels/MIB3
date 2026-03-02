@@ -118,10 +118,10 @@ if selectedSet ~= prevSelectedSet
     end
 end
 
-% check for renamed set, rename the figure-document tan
+% check for renamed set, rename the figure-document tab
 if ~strcmp(Sets.names{selectedSet}, obj.mibController.cImageDoc{selectedSet}.getTitle())
     for setId=1:numel(obj.mibController.cImageDoc)
-        obj.mibController.cImageDoc{selectedSet}.setTitle(Sets.names{setId});
+        obj.mibController.cImageDoc{setId}.setTitle(Sets.names{setId});
     end
 end
 

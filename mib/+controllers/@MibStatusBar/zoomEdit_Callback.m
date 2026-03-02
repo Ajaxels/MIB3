@@ -123,7 +123,7 @@ end
 %% Execute the selected magnification mode
 switch BatchOpt.Mode{1}
     case 'Fit to screen'
-        Options.mode = 'resize';
+        Options.mode = 'fitToScreen';
         eventdata = core.ToggleEventData(Options);
         notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
         notify(obj.mibModel, 'ShowImage');

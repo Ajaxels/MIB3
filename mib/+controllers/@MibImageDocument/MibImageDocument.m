@@ -95,7 +95,7 @@ classdef MibImageDocument < handle
         gui_WindowKeyPressFcn(obj)        % Callback for a key press in MIB
         
         selectDocument(obj)        % Select this document in the document group
-
+        
         setDescription(obj, description)        % Update the description text of this document
 
         setTitle(obj, title)        % Set the title of this image document
@@ -107,6 +107,8 @@ classdef MibImageDocument < handle
         sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of change of slices slider
 
         sliceNumberSlider_Callback(obj, sliderValue)        % callback for change of slices using the slice number slider 
+
+        changed = syncActiveSet(obj)        % Lightweight sync of mibModel's active set to this document's setOfDatasetsIndex.
 
         updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)        % Update brush cursor position and visibility
 

@@ -69,6 +69,7 @@ try
             yMouse <= size(obj.mibModel.Ishown, 1);
 
         if obj.isInsideImage
+            obj.syncActiveSet();  % lightweight: keep mibModel.id/selectedSet in sync for split-panel mode
             dataset = obj.mibModel.I{obj.mibModel.id};
             orientation = dataset.orientation;
             cImage = dataset.slices{4};

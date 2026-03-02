@@ -95,14 +95,17 @@ end
 inCallback = true;
 
 try
-    % Loop through all document sets and update each visible one
+    % Process all pending layout updates ONCE before reading InnerPosition,
+    % so all documents in a split-panel view have current dimensions.
+    drawnow;
+
+    % Loop through all document sets and update each one
     for setId = 1:numel(obj.mibController.cImageDoc)
         % Check if document exists and is valid
         if ~isempty(obj.mibController.cImageDoc{setId}) && ...
                 isvalid(obj.mibController.cImageDoc{setId}.gui)
-            drawnow;
 
-            % Update axes for all datasets in this document set
+            % Update axes for all datasets in this document set (cheap math only)
             globalFirstIndex = 1 + ((setId-1) * obj.mibModel.Sets.datasetsInSet);
 
             for i = globalFirstIndex:globalFirstIndex+obj.mibModel.Sets.datasetsInSet-1
@@ -116,7 +119,9 @@ try
                 end
             end
 
-            % Trigger image redraw for this document set
+            % Trigger image redraw for this document set.
+            % All valid documents need ShowImage — in split-panel view multiple
+            % documents are visible simultaneously and all need re-rendering.
             OptionsShowImage.setOfDatasetsIndex = setId;
             eventdataShowImage = core.ToggleEventData(OptionsShowImage);
             notify(obj.mibModel, 'ShowImage', eventdataShowImage);

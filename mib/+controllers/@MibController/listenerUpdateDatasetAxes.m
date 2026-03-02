@@ -8,7 +8,8 @@ function listenerUpdateDatasetAxes(obj, src, evtData)
 % evtData: event data, an instance of core.ToggleEventData class with the following fields:
 % .Parameters field containing a structure with the
 %    .evtData.Parameters.mode - update mode,
-%         @li 'resize' -> [@em default] scale to width/height
+%         @li 'resize' -> [@em default] keep current magFactor, adjust FOV to fill new axes size (panel resize)
+%         @li 'fitToScreen' -> fit entire image to axes (explicit "Fit to screen" request or first load)
 %         @li 'zoom' -> scale during the zoom
 %    .evtData.Parameters.index -> [@b optional] index of obj.I to update, when @em [] updates the currently selected dataset
 %    .evtData.Parameters.newMagFactor -> a value of the new magnification factor, only for the 'zoom' mode
@@ -92,7 +93,9 @@ axSize = obj.cImageDoc{selectedSet}.handles.imViewAxes.InnerPosition;
 
 [axesX, axesY] = obj.mibModel.I{index}.getAxesLimits();
 magFactor = obj.mibModel.I{index}.magFactor;
-if isnan(axesX(1)) || strcmp(mode, 'resize') == 1
+if isnan(axesX(1)) || strcmp(mode, 'fitToScreen')
+    % First load (NaN axes) OR explicit "Fit to screen" request:
+    % scale image to fill the axes, adjusting magFactor accordingly.
     imageAR = (width * coef_z) / height;  % Image aspect ratio (physical)
     axesAR = axSize(3) / axSize(4);       % Axes aspect ratio
 
@@ -109,6 +112,17 @@ if isnan(axesX(1)) || strcmp(mode, 'resize') == 1
         axesX = [width/2 - (axSize(3) * magFactor)/(2 * coef_z), ...
             width/2 + (axSize(3) * magFactor)/(2 * coef_z)];
     end
+elseif strcmp(mode, 'resize')
+    % Window/panel resize with an already-initialized dataset:
+    % keep the current zoom level (magFactor unchanged) and expand/contract
+    % the displayed field-of-view to fill the new axes pixel dimensions.
+    xCenter = (axesX(1) + axesX(2)) / 2;
+    yCenter = (axesY(1) + axesY(2)) / 2;
+    halfW   = axSize(3) * magFactor / (2 * coef_z);
+    halfH   = axSize(4) * magFactor / 2;
+    axesX   = [xCenter - halfW, xCenter + halfW];
+    axesY   = [yCenter - halfH, yCenter + halfH];
+    % magFactor is intentionally left unchanged
 
     % if height < axSize(4) && width*coef_z >= axSize(3)     % scale to width
     %     magFactor = width*coef_z/axSize(3);

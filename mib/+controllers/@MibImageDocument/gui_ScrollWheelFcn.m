@@ -128,6 +128,12 @@ end
 if ~obj.isInsideAxes; return; end
 
 % get alias to the dataset
+% Split-panel guard: sync model to this document's set if needed
+if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex
+    setName = obj.mibModel.Sets.names{obj.setOfDatasetsIndex};
+    obj.mibController.view.handles.panels.activeDataset.handles.sets.Value = setName;
+    obj.mibController.cActiveDataset.setsOps_Callbacks([], [], 'sets');
+end
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 if obj.mibModel.preferences.System.MouseWheel(1) == 's'  && ...  % scroll
