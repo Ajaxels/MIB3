@@ -7,10 +7,10 @@
     "centerExpanded": false,
     "centerCollapsed": false,
     "left": {
-      "freeDimension": 280,
+      "freeDimension": 350,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.2,
+      "portion": 0.25,
       "children": [
         {
           "id": "panel1",
@@ -28,10 +28,10 @@
       "showingContextSetId": "global"
     },
     "bottom": {
-      "freeDimension": 161,
+      "freeDimension": 162,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.19235364396654719,
+      "portion": 0.19354838709677419,
       "children": [
         {
           "id": "panel4",
@@ -50,37 +50,37 @@
     },
     "tileCount": 1,
     "tileCoverage": 0,
-    "referenceWidth": 1119,
-    "referenceHeight": 675,
+    "referenceWidth": 1049,
+    "referenceHeight": 674,
     "columnWeights": 1,
     "rowWeights": 1,
     "columnLeft": [
       0,
-      1119
+      1049
     ],
     "rowTop": [
       0,
-      675
+      674
     ],
     "tileOccupancy": {
       "children": {
         "showOrder": 0,
         "id": "imageViewDocGroup_document1",
-        "title": "Image view / Set 1"
+        "title": "Set 1"
       },
       "showingChildId": "imageViewDocGroup_document1",
-      "showingChildTitle": "Image view / Set 1"
+      "showingChildTitle": "Set 1"
     },
     "emptyTileCount": 0,
     "selectionOrder": {
-      "imageViewDocGroup_document1": 1
+      "imageViewDocGroup_document1": 0
     },
     "reserveDocumentSpace": false,
     "lastSelectedDocumentId": "document1"
   },
   "windowBounds": {
-    "x": 260,
-    "y": 350,
+    "x": 1020,
+    "y": 230,
     "w": 1400,
     "h": 980
   },

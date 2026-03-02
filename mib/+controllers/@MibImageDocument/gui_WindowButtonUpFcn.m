@@ -138,7 +138,8 @@ end
 obj.mibController.showImage();
 
 % Update the dashed brush cursor outline for the next stroke
-obj.updateBrushCursor('dashed');
+% Pass [] so the position is read from CurrentPoint (not treated as xy)
+obj.updateBrushCursor([], ':');
 
 % ---- Gamification: check for tier-level milestone ----
 %obj.mibModel.preferences.Users.Tiers.brushTravelDistance
