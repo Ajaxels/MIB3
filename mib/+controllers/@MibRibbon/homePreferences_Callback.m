@@ -39,6 +39,36 @@ switch mode
         obj.mibController.startController('controllers.WelcomeTips');
     case 'Support on image.sc'          % obj.handles.ribbonHome.support
     case 'Personal support session'     % obj.handles.ribbonHome.call4help
+        link = 'http://mib.helsinki.fi/web-update/call4help.json';
+        try
+            urlText = urlread(link, 'Timeout', 4);
+            call4help = jsondecode(urlText);
+
+            fieldNames = fieldnames(call4help);
+            infoText = '<html><body>';
+            for i=1:numel(fieldNames)
+                infoText = sprintf('%s<h3>%s</h3>%s', infoText, fieldNames{i}, call4help.(fieldNames{i}));
+            end
+            infoText = [infoText '</body></html>'];
+        catch err
+            infoText = sprintf('<html>If you need help please join a personal zoom support sessions<br><br>Reservation calendar is available on the main page of <a href="https://mib.helsinki.fi">mib.helsinki.fi</a><br>Under the Call4Help section on the right-hand side</html>');
+            call4help.Link = 'http:\\mib.helsinki.fi';
+        end
+
+        options = struct();
+        dlgTitle = 'MIB Call4Help';
+        options.Icon = 'call4help';
+        options.WindowWidth = 700;
+        options.WindowHeight = 300;
+        options.MsgBoxOnly = true;
+        options.ParentFigure = obj.view.gui;
+        options.OkBtnText = 'Copy';
+        options.HelpBtnText = 'Calendar';
+        options.HelpUrl = 'https://outlook.office365.com/owa/calendar/MIBcall4help@HelsinkiFI.onmicrosoft.com/bookings/s/olBBIX11aEqP-UndmR2Emg2';
+        utils.dlgs.mibInputUniversalDlg(obj.mibModel.mibPath, {infoText}, {infoText}, dlgTitle, options);
+        clipboard('copy', call4help.Link);
+
+
     case 'API class reference'          % obj.handles.ribbonHome.classReference
     case 'Check for update'             % obj.handles.ribbonHome.checkUpdate
     case 'Your personal stats'          % obj.handles.ribbonHome.personalStats

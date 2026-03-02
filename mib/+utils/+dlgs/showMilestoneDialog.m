@@ -207,7 +207,6 @@ GREETING_H   = 80;    % fixed height for the bold greeting label
 videoFile    = fullfile(mibDir, 'assets', 'videos', 'celebration.mp4');
 
 cheersFile   = fullfile(mibDir, 'assets', 'images', sprintf('puffin_cheering_%d_220px.png', randi(2)));
-celebImgFile = fullfile(mibDir, 'assets', 'images', 'celebrate.jpg');
 videoRowH = VIDEO_COL_W;  % default: assume square, updated after probe
 
 if strcmp(mode, 'milestoneReached') && exist(videoFile, 'file')
@@ -317,11 +316,8 @@ if strcmp(mode, 'milestoneReached') && exist(videoFile, 'file')
         warning('showMilestoneDialog: could not load video: %s', ME.message);
     end
 else
-    % currentStats: show puffin_cheering image; fallback to celebrate.jpg
     if strcmp(mode, 'currentStats') && exist(cheersFile, 'file')
         mediaFile = cheersFile;
-    elseif exist(celebImgFile, 'file')
-        mediaFile = celebImgFile;
     else
         mediaFile = '';
     end

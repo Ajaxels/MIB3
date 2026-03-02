@@ -130,7 +130,7 @@ end
 switch options.Icon
     case 'warning_48px';     iconFilename = 'warning_48px.png';
     case 'question_48px';    iconFilename = 'question_48px.png';
-    case 'celebrate';        iconFilename = 'celebrate.jpg';
+    case 'celebrate';        iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
     case 'call4help';        iconFilename = 'call4help.jpg';
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));

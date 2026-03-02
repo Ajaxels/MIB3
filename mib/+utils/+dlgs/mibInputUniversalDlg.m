@@ -138,6 +138,23 @@ arguments
     options struct = struct
 end
 
+% Normalize options field names (case-insensitive) so callers can pass
+% e.g. 'msgBoxOnly' or 'msgboxonly' and have it match 'MsgBoxOnly'.
+knownOptionFields = {'Icon','IconWidth','WindowStyle','Columns','MainColumnWidths', ...
+    'LabelPosition','SectionsColumnWidths','Focus','LastItemColumns', ...
+    'OkBtnText','HelpBtnText','HelpUrl','MsgBoxOnly','PromptLines', ...
+    'HeaderLines','Header','WindowWidth','WindowHeight','DoNotShowAgain', ...
+    'DoNotShowAgainText','ParentFigure','DefaultKey'};
+for fi_ = fieldnames(options)'
+    fi_ = fi_{1};
+    idx_ = find(strcmpi(knownOptionFields, fi_), 1);
+    if ~isempty(idx_) && ~strcmp(fi_, knownOptionFields{idx_})
+        options.(knownOptionFields{idx_}) = options.(fi_);
+        options = rmfield(options, fi_);
+    end
+end
+clear fi_ idx_ knownOptionFields
+
 % Defaults
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth')
@@ -272,8 +289,8 @@ figBgColor = fig.Color;
 switch options.Icon
     case 'warning_48px';     iconFilename = 'warning_48px.png';
     case 'question_48px';    iconFilename = 'question_48px.png';
-    case 'celebrate';        iconFilename = 'celebrate.jpg';
-    case 'call4help';        iconFilename = 'call4help.jpg';
+    case 'celebrate';        iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2)); options.IconWidth = 220;
+    case 'call4help';        iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3)); options.IconWidth = 220;
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
     case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
