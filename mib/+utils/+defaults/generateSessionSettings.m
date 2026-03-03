@@ -436,4 +436,7 @@ sessionSettings.CLAHE.Alpha = 0.4;
 pixelsPerInch = get(0, 'ScreenPixelsPerInch');
 sessionSettings.metersPerPixel = 0.0254/pixelsPerInch;
 
+% structure to keep list of dialogs that should not be shown again
+sessionSettings.DoNotShowDialogs = struct;
+
 end

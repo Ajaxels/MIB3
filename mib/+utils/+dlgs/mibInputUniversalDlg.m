@@ -26,7 +26,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % .WindowWidth - dialog width in pixels (default 560).
 % .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
 % .Columns - integer number of columns (default 1).
-% .Icon - 'puffin_question' (default), 'puffin_warning', 'puffin_error', 'question', 'celebrate', 'call4help', 'warning'.
+% .Icon - 'puffin_question' (default), 'puffin_warning', 'puffin_error', 'puffin_measure', 'question', 'celebrate', 'call4help', 'warning'.
 % .IconWidth - width of icon column in pixels (default [], i.e. use the size of the image).
 % .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
 % .LabelPosition - 'left' (default, horizontal layout) or 'top' (vertical layout, labels above widgets).
@@ -128,6 +128,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % options.Icon = 'question_48px';
 % options.DoNotShowAgain = true;
 % options.DoNotShowAgainText = 'Do not show this again';
+% options.ParentFigure = obj.view.gui;
 % [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, {htmlContent}, {htmlContent}, dlgTitle, options);
 
 arguments
@@ -294,6 +295,7 @@ switch options.Icon
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
     case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
+    case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(4));
     otherwise
         % get random icon
         iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));

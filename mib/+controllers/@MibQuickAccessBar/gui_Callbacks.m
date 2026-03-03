@@ -43,6 +43,7 @@ switch mode
             obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centralMarker.Visible = false;
         end
     case 'Perform a quick measurement'
+        obj.mibController.measureLength('line');
     case 'Switch dataset to the XZ orientation'
         obj.orientationChange(hWidget);
     case 'Switch dataset to the YZ orientation'

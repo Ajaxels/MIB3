@@ -110,6 +110,8 @@ classdef MibController < handle
 
         filename = saveLayout(obj, mode) % store the current layout of panels
         
+        measureLength(obj, type)                % quick line or freehand path length measurement
+
         showImage(obj, resizeToMagnification, setId, sImgIn)        % show the current image in the Image View panel
 
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen

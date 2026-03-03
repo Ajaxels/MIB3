@@ -101,7 +101,6 @@ end
 if isdir(obj.preferences.System.Dirs.LastPath) == 0 %#ok<*ISDIR> isfolder is not compatible with empty strings: isfolder([])
     obj.preferences.System.Dirs.LastPath = start_path;
 end
-
 % preload an image used for filter previews
 % move preloading to the first call of the image filters dialog
 obj.sessionSettings.ImageFilters.TestImg = []; %imread(fullfile(obj.mibPath, 'assets', 'images', 'test_img_for_previews.png'));
