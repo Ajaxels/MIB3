@@ -69,7 +69,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Add measurement (Measure tool)'   % add measurement, works with Measure Tool, default 'm'
             notify(obj.mibModel, 'AddMeasurement', eventdata);
         case 'Switch dataset to XY orientation'         % default 'Alt + 1'
-            if dataset.orientation == 3 || isnan(obj.isInsideImage) || strcmp(dataset.datasetType, 'Virtual'); return; end
+            if dataset.orientation == 3 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || strcmp(dataset.datasetType, 'Virtual'); return; end
             if dataset.orientation == 1
                 dataset.current_yxz(2) = xy(2);
                 dataset.current_yxz(3) = xy(1);
@@ -77,21 +77,9 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 dataset.current_yxz(1) = xy(2);
                 dataset.current_yxz(3) = xy(1);
             end
-            error('MISSING IMPLEMENTATION: obj.mibToolbarPlaneToggle(obj.mibView.handles.xyPlaneToggle, 1);')
-        case 'Switch dataset to ZX orientation'         % default 'Alt + 2'
-            if dataset.orientation == 1 || isnan(obj.isInsideImage) || strcmp(dataset.datasetType, 'Virtual'); return; end
-            if dataset.orientation == 2
-                dataset.current_yxz(1) = xy(2);
-                dataset.current_yxz(2) = dataset.slices{2}(1);
-                dataset.current_yxz(3) = xy(1);
-            elseif dataset.orientation == 3
-                dataset.current_yxz(1) = xy(2);
-                dataset.current_yxz(2) = xy(1);
-                dataset.current_yxz(3) = dataset.slices{3}(1);
-            end
-            error('MISSING IMPLEMENTATION: obj.mibToolbarPlaneToggle(obj.mibView.handles.zxPlaneToggle, 1);')
-        case 'Switch dataset to ZY orientation'         % default 'Alt + 3'
-            if dataset.orientation == 2 || isnan(obj.isInsideImage) || strcmp(dataset.datasetType, 'Virtual'); return; end
+            obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.yx_orientation, true);
+        case 'Switch dataset to ZY orientation'         % default 'Alt + 2'
+            if dataset.orientation == 2 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || strcmp(dataset.datasetType, 'Virtual'); return; end
             if dataset.orientation == 1
                 dataset.current_yxz(1) = dataset.slices{1}(1);
                 dataset.current_yxz(2) = xy(2);
@@ -101,7 +89,19 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 dataset.current_yxz(2) = xy(1);
                 dataset.current_yxz(3) = dataset.slices{3}(1);
             end
-            error('MISSING IMPLEMENTATION: obj.mibToolbarPlaneToggle(obj.mibView.handles.zyPlaneToggle, 1);');
+            obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.yz_orientation, true);
+        case 'Switch dataset to ZX orientation'         % default 'Alt + 3'
+            if dataset.orientation == 1 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || strcmp(dataset.datasetType, 'Virtual'); return; end
+            if dataset.orientation == 2
+                dataset.current_yxz(1) = xy(2);
+                dataset.current_yxz(2) = dataset.slices{2}(1);
+                dataset.current_yxz(3) = xy(1);
+            elseif dataset.orientation == 3
+                dataset.current_yxz(1) = xy(2);
+                dataset.current_yxz(2) = xy(1);
+                dataset.current_yxz(3) = dataset.slices{3}(1);
+            end
+            obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.xz_orientation, true);
         case 'Interpolate selection'            % default 'i'
             error('MISSING IMPLEMENTATION: obj.menuSelectionInterpolate();');
         case 'Invert image'                     % default 'Ctrl + i'
@@ -168,7 +168,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 
         case {'Zoom out/Previous slice', 'Previous slice', 'Zoom in/Next slice', 'Next slice'}
             % default 'q'/'downarrow', 'w'/'uparrow'
-            if (strcmp(char, 'leftarrow') || strcmp(char, 'downarrow')) && ~obj.isInsideAxes; return; end
+            if (strcmp(char, 'leftarrow') || strcmp(char, 'downarrow')) && ~cImageDoc.isInsideAxes; return; end
 
             isNext = contains(KeyShortcuts.Action{ActionId}, 'Next');
             direction = 2*isNext - 1;   % +1 for next, -1 for previous

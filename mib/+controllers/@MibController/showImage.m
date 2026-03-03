@@ -137,24 +137,29 @@ else
     obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'auto';
 
     if ~resizeToMagnification 
-        % Resize to fit screen - limits already scaled by coef_z in listenerUpdateDatasetAxes
+        % Full-resolution mode: axesX/axesY are in data-pixel coords.
+        % XLim must be in physical (XData) coords: multiply X by coef_z.
+        % Y has no aspect-ratio correction.
         obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
-        obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [axesX(1)/magFactor axesX(2)/magFactor];
+        obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [axesX(1)*coef_z/magFactor axesX(2)*coef_z/magFactor];
     else
-        % Keep current zoom and pan settings - limits already scaled
+        % Standard mode: XData = [1, imgWidth*coef_z], so XLim must be in
+        % the same physical space: axesX (data pixels) * coef_z / magFactor.
+        % Y is unscaled (YData = [1, imgHeight], coef_z applies to X only).
+
         % Calculate X limits
-        xl(1) = min([axesX(1)/magFactor 0]);
+        xl(1) = min([axesX(1)*coef_z/magFactor, 0]);
         if axesX(2) > size(obj.mibModel.Ishown, 2) * magFactor
             if axesX(1) < 0
-                xl(2) = axesX(2)/magFactor;
+                xl(2) = axesX(2)*coef_z/magFactor;
             else
-                xl(2) = axesX(2)/magFactor - axesX(1)/magFactor;
+                xl(2) = (axesX(2) - axesX(1))*coef_z/magFactor;
             end
         else
-            xl(2) = size(obj.mibModel.Ishown, 2) * coef_z;  % CHANGED: multiply by coef_z
+            xl(2) = size(obj.mibModel.Ishown, 2) * coef_z;
         end
 
-        % Calculate Y limits
+        % Calculate Y limits (no coef_z for Y axis)
         yl(1) = min([axesY(1)/magFactor 0]);
         if axesY(2) > size(obj.mibModel.Ishown, 1) * magFactor
             if axesY(1) < 0

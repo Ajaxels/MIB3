@@ -161,13 +161,18 @@ elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'z
     curPt = obj.handles.imViewAxes.CurrentPoint;
     curPt = curPt(1, 1:2);  % mouse coordinates
     
-    % modify curPt with shifts that come from handles.Img{handles.Id}.I.axesX/handles.Img{handles.Id}.I.axesY and magnification factor
+    % Convert cursor from physical (XData) space to data-pixel coordinates.
+    % Uses the same logic as convertMouseToDataCoordinates('shown').
     magFactor = obj.mibModel.getMagFactor();
     [axesX, axesY] = obj.mibModel.getAxesLimits();
-    curPt(1) = curPt(1)*magFactor + max([0 axesX(1)]);
-    curPt(2) = curPt(2)*magFactor + max([0 axesY(1)]);
+    [curPt(1), curPt(2)] = obj.mibModel.convertMouseToDataCoordinates(curPt(1), curPt(2), 'shown');
     xl = axesX;
     yl = axesY;
+
+    % Image dimensions in the displayed axis coordinate system
+    % (X→depth for orientation 1/2; Y→height or width depending on orientation)
+    getDimsOpts.blockModeSwitch = false;
+    [imgAxesH, imgAxesW] = dataset.getDatasetDimensions('image', [], getDimsOpts);
 
     midX = mean(xl);
     rngXhalf = diff(xl) / 2; % half-width of the shown image
@@ -188,8 +193,8 @@ elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'z
     % check out of image bounds conditions
     if lims(1,1) < 0 && lims(2,1) < 0; return; end
     if lims(1,2) < 0 && lims(2,2) < 0; return; end
-    if lims(1,1) > dataset.image.width && lims(2,1) > dataset.image.width; return; end
-    if lims(1,2) > dataset.image.height && lims(2,2) > dataset.image.height; return; end
+    if lims(1,1) > imgAxesW && lims(2,1) > imgAxesW; return; end
+    if lims(1,2) > imgAxesH && lims(2,2) > imgAxesH; return; end
     
     obj.mibModel.setMagFactor(magFactor*r);    % update magFactor
     obj.mibModel.setAxesLimits(lims(:,1)', lims(:,2)');    % update axes limits

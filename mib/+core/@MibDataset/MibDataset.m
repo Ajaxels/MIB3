@@ -141,6 +141,8 @@ classdef MibDataset < matlab.mixin.Copyable
         
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
 
+        transpose(obj, new_orient)        % Change orientation of the image to the YX, XZ, or YZ plane
+
         result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset
 
         result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset

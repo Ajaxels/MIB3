@@ -16,6 +16,8 @@ classdef MibQuickAccessBar
         
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of the quick access bar of MIB
 
+        orientationChange(obj, hWidget, moveMouseSw)  % switch viewing plane to YX/XZ/YZ orientation
+
         function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
             %% Init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller

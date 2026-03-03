@@ -123,8 +123,10 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             % Extend the current viewport by one viewport-size on each side so the
             % user can pan freely without reloading, while skipping the cost of
             % fetching the entire dataset.  Region is clamped to image boundaries.
-            imgFullWidth  = dataset.image.width;
-            imgFullHeight = dataset.image.height;
+            % Use orientation-aware dimensions: axesX/Y span depth/width/height
+            % depending on orientation (not always image.width/height).
+            getDimsOpts.blockModeSwitch = false;
+            [imgFullHeight, imgFullWidth] = dataset.getDatasetDimensions('image', [], getDimsOpts);
             viewportW = axesX(2) - axesX(1);
             viewportH = axesY(2) - axesY(1);
             paddedX = [max(1, floor(axesX(1) - viewportW)), min(imgFullWidth,  ceil(axesX(2) + viewportW))];
@@ -143,15 +145,20 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             obj.imageHandle.XData = [paddedX(1), paddedX(1) + (size(imgRGB, 2) - 1) * coef_z];
             obj.imageHandle.YData = [paddedY(1), paddedY(1) + size(imgRGB, 1) - 1];
 
-            obj.handles.imViewAxes.XLim = axesX;
-            obj.handles.imViewAxes.YLim = axesY;
+            % Set XLim in physical (XData) space so coordinate systems are
+            % consistent with showImage and gui_panAxesFcn.
+            % XData maps: data pixel p → paddedX(1) + (p - paddedX(1)) * coef_z
+            obj.handles.imViewAxes.XLim = paddedX(1) + (axesX - paddedX(1)) * coef_z;
+            obj.handles.imViewAxes.YLim = axesY;  % Y: coef_z == 1
 
-            % modify xy with respect to the magFactor and shifts of the axes
-            xy2(1) = xy(1,1)*magFactor + max([axesX(1) 0]);
-            xy2(2) = xy(1,2)*magFactor + max([axesY(1) 0]);
+            % Re-read CurrentPoint after XLim change so xy2 is in the new
+            % coordinate system (avoids manual coordinate conversion).
+            pt2 = obj.handles.imViewAxes.CurrentPoint;
+            xy2(1) = pt2(1,1);
+            xy2(2) = pt2(1,2);
 
-            imgXLim = double(paddedX);
-            imgYLim = double(paddedY);
+            imgXLim = [obj.imageHandle.XData(1), obj.imageHandle.XData(2)];  % physical space
+            imgYLim = [obj.imageHandle.YData(1), obj.imageHandle.YData(2)];
         else    % zoomed out: full image fits in viewport, load it entirely
             rgbOptions.blockModeSwitch = 0;
             imgRGB = obj.mibModel.getRGBimage(rgbOptions);
@@ -164,11 +171,16 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
             obj.imageHandle.YData = [1, size(imgRGB, 1)];
 
-            obj.handles.imViewAxes.XLim = axesX/magFactor;
+            % Set XLim in physical (XData) space: axesX*coef_z/magFactor.
+            % This matches showImage's XLim formula, keeping coordinate
+            % systems consistent with gui_panAxesFcn.
+            obj.handles.imViewAxes.XLim = axesX * coef_z / magFactor;
             obj.handles.imViewAxes.YLim = axesY/magFactor;
-            % modify xy with respect to the magFactor and shifts of the axes
-            xy2(1) = xy(1,1)+max([axesX(1)/magFactor 0]);
-            xy2(2) = xy(1,2)+max([axesY(1)/magFactor 0]);
+            % Re-read CurrentPoint after XLim change so xy2 is in the new
+            % coordinate system (avoids manual coordinate conversion).
+            pt2 = obj.handles.imViewAxes.CurrentPoint;
+            xy2(1) = pt2(1,1);
+            xy2(2) = pt2(1,2);
 
             imgXLim = [1, obj.imageHandle.XData(2)];
             imgYLim = [1, obj.imageHandle.YData(2)];

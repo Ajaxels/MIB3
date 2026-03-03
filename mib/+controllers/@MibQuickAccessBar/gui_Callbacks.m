@@ -44,8 +44,11 @@ switch mode
         end
     case 'Perform a quick measurement'
     case 'Switch dataset to the XZ orientation'
+        obj.orientationChange(hWidget);
     case 'Switch dataset to the YZ orientation'
+        obj.orientationChange(hWidget);
     case 'Switch dataset to the YX orientation'
+        obj.orientationChange(hWidget);
     case 'Enable the fast-panning mode for quicker image navigation'
         obj.mibController.fastPanningMode = hWidget.Selected;
         obj.mibController.fastPanningMode

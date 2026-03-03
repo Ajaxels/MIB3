@@ -63,10 +63,17 @@ try
         end
         obj.mibModel.sessionSettings.prevCursorCoordinate = [xMouse, yMouse];
 
-        % Check if inside image boundaries
-        obj.isInsideImage = xMouse > 0 && yMouse > 0 && ...
-            xMouse <= size(obj.mibModel.Ishown, 2) && ...
-            yMouse <= size(obj.mibModel.Ishown, 1);
+        % Check if inside image boundaries.
+        % xMouse/yMouse are in XData/YData (physical) coordinates where the X axis
+        % is stretched by coef_z. Use imageHandle.XData(2)/YData(2) as boundaries
+        % since those already incorporate the coef_z scaling set in showImage.
+        if ~isempty(obj.imageHandle) && isvalid(obj.imageHandle)
+            obj.isInsideImage = xMouse > 0 && yMouse > 0 && ...
+                xMouse <= obj.imageHandle.XData(2) && ...
+                yMouse <= obj.imageHandle.YData(2);
+        else
+            obj.isInsideImage = false;
+        end
 
         if obj.isInsideImage
             obj.syncActiveSet();  % lightweight: keep mibModel.id/selectedSet in sync for split-panel mode

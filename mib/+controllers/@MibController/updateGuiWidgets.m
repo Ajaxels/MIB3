@@ -161,7 +161,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'QuickAccessBar')
         qabHandles.yx_orientation.Value = false;
         qabHandles.yz_orientation.Value = true;
         qabHandles.xz_orientation.Value = false;
-    elseif dataset.orientation == 1 && ~oqabHandles.xz_orientation.Value
+    elseif dataset.orientation == 1 && ~qabHandles.xz_orientation.Value
         qabHandles.yx_orientation.Value = false;
         qabHandles.yz_orientation.Value = false;
         qabHandles.xz_orientation.Value = true;
@@ -183,19 +183,20 @@ end
 if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
-    currentSlice = obj.mibModel.I{obj.mibModel.id}.slices{3}(1);
+    currentSlice = obj.mibModel.I{obj.mibModel.id}.slices{obj.mibModel.I{obj.mibModel.id}.orientation}(1);
+    max_slice = obj.mibModel.I{obj.mibModel.id}.dim_yxzct(obj.mibModel.I{obj.mibModel.id}.orientation);
 
-    if dataset.image.depth > 1 && dataset.image.depth ~= imViewHandles.sliceNumber.Limits(2) - 0.001
-        imViewHandles.sliceNumber.Limits = [1 dataset.image.depth+0.001]; % add small value to make sure that limits are not the same
-        imViewHandles.sliceNumberSlider.Limits = [1 dataset.image.depth+0.001];
-        imViewHandles.sliceNumberSlider.MinorTicks = 1:(dataset.image.depth-1)/10:dataset.image.depth;
+    if max_slice > 1 && max_slice ~= imViewHandles.sliceNumber.Limits(2) - 0.001
+        imViewHandles.sliceNumber.Limits = [1 max_slice+0.001]; % add small value to make sure that limits are not the same
+        imViewHandles.sliceNumberSlider.Limits = [1 max_slice+0.001];
+        imViewHandles.sliceNumberSlider.MinorTicks = 1:(max_slice-1)/10:max_slice;
         % show the slider panel
         if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 30; imViewHandles.mainGridLayout.ColumnWidth{1} = 30; end
         imViewHandles.sliceNumber.Value = currentSlice;
         imViewHandles.sliceNumberSlider.Value = currentSlice;
-    elseif dataset.image.depth == 1 && dataset.image.depth ~= imViewHandles.sliceNumber.Limits(2) - 0.001
-        imViewHandles.sliceNumber.Limits = [1 dataset.image.depth+0.001];
-        imViewHandles.sliceNumberSlider.Limits = [1 dataset.image.depth+0.001];
+    elseif max_slice == 1 && max_slice ~= imViewHandles.sliceNumber.Limits(2) - 0.001
+        imViewHandles.sliceNumber.Limits = [1 max_slice+0.001];
+        imViewHandles.sliceNumberSlider.Limits = [1 max_slice+0.001];
         % hide the slider panel
         if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 0; imViewHandles.mainGridLayout.ColumnWidth{1} = 0; end
         imViewHandles.sliceNumber.Value = currentSlice;

@@ -37,9 +37,26 @@ magFactor = obj.getMagFactor();
 [axesX, axesY] = obj.getAxesLimits();
 
 if mode(1) == 's' % shown
-    % used in im_browser_winMouseMotionFcn, toolbar_zoomBtn
-    xOut = x*magFactor + max([0 floor(axesX(1))]);
-    yOut = y*magFactor + max([0 floor(axesY(1))]);
+    % XData is in physical space: 1 data pixel = coef_z XData units for X.
+    % Compute coef_z from the current orientation.
+    ds = obj.I{obj.id};
+    switch ds.orientation
+        case 3;  coef_z = ds.pixSize.x / ds.pixSize.y;
+        case 1;  coef_z = ds.pixSize.z / ds.pixSize.x;
+        otherwise; coef_z = ds.pixSize.z / ds.pixSize.y;
+    end
+
+    if magFactor >= 1
+        % Full-image mode (zoomed out): XLim = axesX*coef_z/magFactor.
+        % x already encodes absolute data position; no axesX offset needed.
+        xOut = x * magFactor / coef_z;
+        yOut = y * magFactor;
+    else
+        % Block mode (zoomed in): XLim starts near 0 (relative to viewport).
+        % Add axesX(1) to convert from viewport-relative to absolute coords.
+        xOut = x * magFactor / coef_z + max([0 floor(axesX(1))]);
+        yOut = y * magFactor                + max([0 floor(axesY(1))]);
+    end
 elseif mode(1) == 'b' % blockmode
     xOut = x*magFactor;
     yOut = y*magFactor;
