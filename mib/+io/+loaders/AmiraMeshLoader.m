@@ -96,7 +96,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             files(noFiles) = struct('filename', [], 'objecttype', [], 'extension', [], ...
                 'height', [], 'width', [], 'color', [], 'time', [], 'noLayers', [], 'imgClass', [], ...
                 'dim_xyczt', [], ...
-                'depthstart', [], 'depthend', [], 'depthstep', [], 'xystep', [], 'resizeMethod', []);
+                'depth_start', [], 'depth_end', [], 'depth_step', [], 'xy_step', [], 'resizeMethod', []);
 
             % Process each file
             for fnIndex = 1:noFiles
@@ -194,17 +194,17 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     end
 
                     files(fnIndex).noLayers = numel(result.startIndex:result.zstep:result.endIndex);
-                    files(fnIndex).depthstart = result.startIndex;
-                    files(fnIndex).depthend = result.endIndex;
+                    files(fnIndex).depth_start = result.startIndex;
+                    files(fnIndex).depth_end = result.endIndex;
                     if files(fnIndex).noLayers == 1
-                        files(fnIndex).depthstep = 1;
+                        files(fnIndex).depth_step = 1;
                     else
-                        files(fnIndex).depthstep = result.zstep;
+                        files(fnIndex).depth_step = result.zstep;
                     end
-                    files(fnIndex).xystep = result.xystep;
+                    files(fnIndex).xy_step = result.xy_step;
                     files(fnIndex).resizeMethod = result.method;
-                    files(fnIndex).height = floor(dim_xyczt(2) / result.xystep);
-                    files(fnIndex).width = floor(dim_xyczt(1) / result.xystep);
+                    files(fnIndex).height = floor(dim_xyczt(2) / result.xy_step);
+                    files(fnIndex).width = floor(dim_xyczt(1) / result.xy_step);
                 else
                     files(fnIndex).noLayers = dim_xyczt(4);
                     files(fnIndex).height = dim_xyczt(2);
@@ -388,17 +388,17 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 end
 
                 % Send custom Amira options
-                if isfield(files(fnIndex), 'depthstart') && ~isempty(files(fnIndex).depthstart)
-                    options.depthstart = files(fnIndex).depthstart;
-                    options.depthend = files(fnIndex).depthend;
-                    options.depthstep = files(fnIndex).depthstep;
-                    options.xystep = files(fnIndex).xystep;
+                if isfield(files(fnIndex), 'depth_start') && ~isempty(files(fnIndex).depth_start)
+                    options.depth_start = files(fnIndex).depth_start;
+                    options.depth_end = files(fnIndex).depth_end;
+                    options.depth_step = files(fnIndex).depth_step;
+                    options.xy_step = files(fnIndex).xy_step;
                     options.resizeMethod = files(fnIndex).resizeMethod;
                 else
-                    if isfield(options, 'depthstart'); options = rmfield(options, 'depthstart'); end
-                    if isfield(options, 'depthend'); options = rmfield(options, 'depthend'); end
-                    if isfield(options, 'depthstep'); options = rmfield(options, 'depthstep'); end
-                    if isfield(options, 'xystep'); options = rmfield(options, 'xystep'); end
+                    if isfield(options, 'depth_start'); options = rmfield(options, 'depth_start'); end
+                    if isfield(options, 'depth_end'); options = rmfield(options, 'depth_end'); end
+                    if isfield(options, 'depth_step'); options = rmfield(options, 'depth_step'); end
+                    if isfield(options, 'xy_step'); options = rmfield(options, 'xy_step'); end
                     if isfield(options, 'resizeMethod'); options = rmfield(options, 'resizeMethod'); end
                 end
 
@@ -417,7 +417,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     imgIn(1:maxY, 1:maxX, 1:files(fnIndex).noLayers, 1:maxC);
 
                 % Fix BoundingBox info for Amira Mesh binned dataset (legacy behavior)
-                if isfield(options, 'depthstart') && isKey(imginfo, 'ImageDescription')
+                if isfield(options, 'depth_start') && isKey(imginfo, 'ImageDescription')
                     currtext = imginfo{'ImageDescription'};
                     bbinfoexist = strfind(currtext, 'BoundingBox');
                     if ~isempty(bbinfoexist)
@@ -436,8 +436,8 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                             zmax = bb(6);
                             fullZ = files(fnIndex).dim_xyczt(4);
 
-                            startZShift = (options.depthstart - 1) / fullZ * (zmax - zmin);
-                            endZShift = startZShift + options.depthstep / fullZ * (zmax - zmin) * (max([files(fnIndex).noLayers 2]) - 1);
+                            startZShift = (options.depth_start - 1) / fullZ * (zmax - zmin);
+                            endZShift = startZShift + options.depth_step / fullZ * (zmax - zmin) * (max([files(fnIndex).noLayers 2]) - 1);
 
                             bb(6) = zmin + endZShift;
                             bb(5) = zmin + startZShift;

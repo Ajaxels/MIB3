@@ -14,7 +14,7 @@ classdef AmiraImportDlg < handle
     %   % result.startIndex
     %   % result.endIndex
     %   % result.zstep
-    %   % result.xystep
+    %   % result.xy_step
     %   % result.method
     
     % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
@@ -129,7 +129,7 @@ classdef AmiraImportDlg < handle
             res.startIndex = obj.view.handles.startSliceSlice.Value;
             res.endIndex = obj.view.handles.endSliceSpinner.Value;
             res.zstep = obj.view.handles.zStepSpinner.Value;
-            res.xystep = obj.view.handles.binXYSpinner.Value;
+            res.xy_step = obj.view.handles.binXYSpinner.Value;
             
             % Handle Popup/Dropdown
             res.method = obj.view.handles.resizeDropdown.Value;

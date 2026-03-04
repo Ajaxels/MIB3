@@ -31,15 +31,19 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('Pressed: controllers.MibDirContents.fileList_ContextMenu -> %s\n', menuEntry.Tag);
 end
 
+% override selected files since Ctrl+A is not detected
+obj.mibModel.selectedFiles = obj.mibController.cDirContents.handles.fileList.Value;
+obj.mibModel.selectedFiles(ismember(obj.mibModel.selectedFiles, {'[.]','[..]'})) = []; % remove [.] and [..]
+
 switch menuEntry.Tag
     case 'fileListContextCombine'
         obj.mibModel.loadImages('Combine datasets');
     case 'fileListContextLoadPart'
-
+        obj.mibModel.loadImages('Load part of dataset');
     case 'fileListContextLoadNth'
-
+        obj.mibModel.loadImages('Load each N-th dataset');
     case 'fileListContextInsert'
-
+        obj.mibModel.loadImages('Insert into open dataset');
     case 'fileListContextColorCombine'
         obj.mibModel.loadImages('Combine files as color channels');
     case 'fileListContextColorAdd'

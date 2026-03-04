@@ -17,9 +17,10 @@ function updateMeasureText(obj, pos)
 
 if isempty(obj.quickMeasure); return; end
 
-% Handle stale handles gracefully
-if ~isvalid(obj.quickMeasure.roi) || ~isvalid(obj.quickMeasure.textH)
-    obj.quickMeasure = [];
+% Handle stale handles gracefully (also covers the 'pending' placeholder
+% set before drawline/drawfreehand returns).
+if isempty(obj.quickMeasure.roi) || ~isvalid(obj.quickMeasure.roi) || ...
+        isempty(obj.quickMeasure.textH) || ~isvalid(obj.quickMeasure.textH)
     return;
 end
 

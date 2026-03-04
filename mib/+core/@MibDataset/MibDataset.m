@@ -115,6 +115,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         initialize(obj, img, meta, datasetType, modelType) % init MibDataset class and set all elements of the class to default values
 
+        insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
+
         clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset

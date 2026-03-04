@@ -139,6 +139,9 @@ arguments
     options struct = struct
 end
 
+persistent mibDirPersistent;       % cached MIB installation path
+persistent parentFigurePersistent; % cached handle to the main GUI window
+
 % Normalize options field names (case-insensitive) so callers can pass
 % e.g. 'msgBoxOnly' or 'msgboxonly' and have it match 'MsgBoxOnly'.
 knownOptionFields = {'Icon','IconWidth','WindowStyle','Columns','MainColumnWidths', ...
@@ -183,6 +186,12 @@ if ~isfield(options, 'WindowHeight'); options.WindowHeight = []; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
+% use cached parent figure when caller does not supply one
+if isempty(options.ParentFigure) && ~isempty(parentFigurePersistent) && isvalid(parentFigurePersistent)
+    options.ParentFigure = parentFigurePersistent;
+elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
+    parentFigurePersistent = options.ParentFigure;   % cache for future calls
+end
 if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'OK'; end
 
 % Normalize PromptLines
@@ -205,19 +214,22 @@ if strcmpi(options.LabelPosition, 'left')
     end
 end
 
-% MIB path resolution for icons
-if isempty(mibPath)
+% MIB path resolution for icons — update cache when mibPath is supplied
+if ~isempty(mibPath)
+    mibDirPersistent = mibPath;   % caller provided a fresh path; cache it
+end
+
+if isempty(mibDirPersistent)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
-        if ~isempty(toks); mibDir = char(toks{1}); else; mibDir = pwd; end
+        if ~isempty(toks); mibDirPersistent = char(toks{1}); else; mibDirPersistent = pwd; end
     else
-        mibDir = fileparts(which('mib'));
-        if isempty(mibDir); mibDir = pwd; end
+        mibDirPersistent = fileparts(which('mib3'));
+        if isempty(mibDirPersistent); mibDirPersistent = pwd; end
     end
-else
-    mibDir = mibPath;
 end
+mibDir = mibDirPersistent;
 
 % Build figure (before icon loading to get background color)
 fig = uifigure('Name', dlgTitle, 'Visible', 'off');
@@ -356,8 +368,9 @@ mainColWidths = [{iconImgWidth} options.MainColumnWidths];  % Icon column with s
 
 if hasHeader
     % 3 rows: header row, content row, button row
+    headerRowHeight = options.HeaderLines * 22;  % ~22px per line
     mainGrid = uigridlayout(fig, [3 totalCols], ...
-        'RowHeight', {'fit', '1x', 24}, ...
+        'RowHeight', {headerRowHeight, '1x', 24}, ...
         'ColumnWidth', mainColWidths, ...
         'Padding', [10 10 10 10], 'RowSpacing', 10, 'ColumnSpacing', 12);
     headerRow = 1;
@@ -374,10 +387,14 @@ else
     buttonRow = 2;
 end
 
-% Row 1, Column 1: Icon (always in top row)
+% Column 1: Icon — spans header+content rows when header present so it isn't clipped
 if ~isempty(iconImg)
     iconUI = uiimage(mainGrid, 'ImageSource', iconImg);
-    iconUI.Layout.Row = headerRow;
+    if hasHeader
+        iconUI.Layout.Row = [headerRow contentRow];  % span header and content rows
+    else
+        iconUI.Layout.Row = contentRow;
+    end
     iconUI.Layout.Column = 1;
     iconUI.VerticalAlignment = 'top';
     iconUI.HorizontalAlignment = 'left';

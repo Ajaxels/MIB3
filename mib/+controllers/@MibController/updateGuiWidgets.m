@@ -110,7 +110,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
     
     % update buttons of the segmentation panel if needed
     segmHandles = obj.view.handles.panels.segmentation.handles;
-    if dataset.labels.maxMaterials < 256 && segmHandles.colorWheel.Visible
+    if dataset.labels.maxMaterials < 256 && (segmHandles.colorWheel.Visible || isempty(segmHandles.addMaterial.Icon))
         % update the buttons in the panel to match the model type with less than 256 materials
 
         % update the add material button
@@ -120,7 +120,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.addMaterial:\n%s', segmHandles.addMaterial.Tooltip);
         end
         % update the remove material button
-        segmHandles.removeMaterial = core.MibIconCache.get('alpha_cache', 'minus_16px');
+        segmHandles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'minus_16px');
         segmHandles.removeMaterial.Tooltip = 'Remove selected material from the model';
         if obj.mibModel.preferences.System.DeveloperMode
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.removeMaterial:\n%s', segmHandles.removeMaterial.Tooltip);

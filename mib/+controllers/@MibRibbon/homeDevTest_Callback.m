@@ -12,14 +12,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
-errorOpts.mibPath = obj.mibModel.mibPath;
-errorOpts.WindowWidth  = 500;
-errorOpts.WindowHeight = 330;
-errorOpts.PrefixHeight = 'fit';
-errorOpts.ErrorHeight  = '1x';
-errorOpts.SuffixHeight = 'fit';
-utils.dlgs.showErrorDialog(obj.view.gui, 'Error text', 'Import Error', ...
-    'Failed to load file:', 'Please contact support', errorOpts);
+obj.mibController.cDirContents.handles.fileList.Value
 
 %obj.mibController.mibModel.clearSelection();
 %obj.mibController.mibModel.clearLayer('selection');

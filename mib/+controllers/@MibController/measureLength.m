@@ -25,15 +25,18 @@ switch type
         return;
     case 'line'
         cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
-        % Only one measurement ROI per document at a time
-        if ~isempty(cImageDoc.quickMeasure) && isvalid(cImageDoc.quickMeasure.roi); return; end
+        % Only one measurement ROI per document at a time.
+        % Placeholder set BEFORE drawline so a second button press while
+        % drawline is blocking (waiting for point placement) is ignored.
+        if ~isempty(cImageDoc.quickMeasure); return; end
+        cImageDoc.quickMeasure = struct('roi',[],'textH',[],'pending',true);
         savedWBDF = cImageDoc.UIFigure.WindowButtonDownFcn;
         cImageDoc.UIFigure.WindowButtonDownFcn = [];
         roi = drawline(cImageDoc.handles.imViewAxes);
     case 'freehand'
         cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
-        % Only one measurement ROI per document at a time
-        if ~isempty(cImageDoc.quickMeasure) && isvalid(cImageDoc.quickMeasure.roi); return; end
+        if ~isempty(cImageDoc.quickMeasure); return; end
+        cImageDoc.quickMeasure = struct('roi',[],'textH',[],'pending',true);
         savedWBDF = cImageDoc.UIFigure.WindowButtonDownFcn;
         cImageDoc.UIFigure.WindowButtonDownFcn = [];
         roi = drawfreehand(cImageDoc.handles.imViewAxes, 'Closed', false);
@@ -42,6 +45,13 @@ end
 % Restore WindowButtonDownFcn immediately so pan/zoom work during
 % interactive adjustment (vertex dragging before finalisation).
 cImageDoc.UIFigure.WindowButtonDownFcn = savedWBDF;
+
+% If the ROI was cancelled during initial placement (Escape before placing
+% points), drawline/drawfreehand returns an invalid handle — clean up and bail.
+if ~isvalid(roi)
+    cImageDoc.quickMeasure = [];
+    return;
+end
 
 % Create a live text label at the ROI midpoint
 datasetId = obj.mibModel.id;

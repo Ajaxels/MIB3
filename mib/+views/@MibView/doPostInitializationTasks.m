@@ -28,6 +28,11 @@ obj.handles.panels.selectionPanel.Selected = true;
 
 % update GUI elements
 %obj.handles.status.zoom.Value = sprintf('%3d %%', 1/obj.controller.mibModel.I{obj.controller.mibModel.id}.magFactor*100);
+segmHandles = obj.handles.panels.segmentation.handles;
+segmHandles.addMaterial.Icon = core.MibIconCache.get('alpha_cache', 'plus_16px');
+segmHandles.addMaterial.Tooltip = 'Add a new material to the model';
+segmHandles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'minus_16px');
+segmHandles.removeMaterial.Tooltip = 'Remove selected material from the model';
 
 % ------------ add file drag-and-drop functionality callbacks -----------
 % requires GUI to be visible, otherwise the window is not grabbed correctly

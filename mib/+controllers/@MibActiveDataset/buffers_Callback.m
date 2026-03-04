@@ -49,6 +49,7 @@ obj.view.handles.panels.activeDataset.handles.(newBufferStringId).BackgroundColo
 % update Dataset Type dropdown in the Datasets panel
 obj.view.handles.panels.activeDataset.handles.datasetType.Value = obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)};
 
+notify(obj.mibModel, 'UpdateGuiWidgets');
 notify(obj.mibModel, 'ShowImage');
 
 end

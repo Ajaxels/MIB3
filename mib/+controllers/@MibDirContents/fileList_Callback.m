@@ -18,6 +18,8 @@ end
 
 % single click to select files
 if strcmp(hData.EventName, 'Clicked')
+    % Note! This does not handle Ctrl+A selection of all files; that case
+    % is handled in MibDirContents.fileList_ContextMenu
     % remove [.] and [..]
     drawnow; % needed, otherwise the Shift+click does not give the list of the selected files
     obj.mibModel.selectedFiles = hWidget.Value(~ismember(hWidget.Value, {'[.]','[..]'}));

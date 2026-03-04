@@ -19,8 +19,11 @@ end
 
 switch mode
     case {sprintf('Measure\nlength'), 'Line measure'}   % obj.handles.ribbonTools.measure or obj.handles.ribbonTools.measureLine
+        obj.mibController.measureLength('line');
     case 'Measure tool'                                 % obj.handles.ribbonTools.measureTool
+        obj.mibController.measureLength('tool');
     case 'Free hand measure'                            % measureFreehand
+        obj.mibController.measureLength('freehand');
     case sprintf('Object\nseparation')                  % obj.handles.ribbonTools.objects
     case 'Stereology'                                   % obj.handles.ribbonTools.stereology
     case sprintf('Wound healing\nassey')                % obj.handles.ribbonTools.wound

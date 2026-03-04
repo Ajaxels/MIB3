@@ -174,7 +174,7 @@ else
         % get the name for a new set
         options.ParentFigure = obj.mibGUI;
         options.Type = 'spinner';
-        options.WindowHeight = 150;
+        options.WindowHeight = 170;
         defAns = struct('Value', 2, 'Limits', [1 Inf], 'ValueDisplayFormat', '%d');
         dlgText = sprintf('There are %d file selected; please enter the loading step:\n\nFor example when step is 2 \nMIB loads each second dataset', numel(BatchOpt.Filenames));
         answer = utils.dlgs.mibInputSingleDlg(obj.mibPath, dlgText, defAns, 'Enter the step', options);
@@ -235,7 +235,7 @@ end
 
 switch BatchOpt.Mode{1}
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
-        if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual') && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
+        if obj.I{BatchOpt.id}.datasetType(1) == 'V' && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
             ErrorDlgOpt.winTitle = 'Not implemented!';
             ErrorDlgOpt.WindowHeight = 170;
             toolname = 'The colors can not be combined in the virtual stacking mode.';
@@ -441,31 +441,35 @@ switch BatchOpt.Mode{1}
         obj.preferences.Users.Tiers.numberOfLoadedDatasets = obj.preferences.Users.Tiers.numberOfLoadedDatasets+1;
         %notify(obj, 'updateUserScore');     % update score using default obj.preferences.Users.singleToolScores increase
     case 'Insert into open dataset'
+        virtualMode = obj.I{BatchOpt.id}.datasetType(1) == 'V';
         if batchModeSwitch == 0
+            dlgOptions = struct;
+            dlgOptions.Header = 'Where the new dataset should be inserted?';
+            dlgOptions.HeaderLines = 1;
             prompts = {'Dimension:'; ...
                 sprintf('Position\n1 - beginning of the open dataset\n0 - end of the open dataset\nor type any number to define position')};
-            if obj.I{BatchOpt.id}.Virtual.virtual == 0
-                defAns = {{'depth', 'time', 1}; '0'};
-            else
-                defAns = {{'depth', 1}; '0'};    
-            end
-            options.PromptLines = [1, 4];
-            dlgtitle = 'Insert dataset';
-            options.Title = 'Where the new dataset should be inserted?';
-            options.TitleLines = 1;
-            options.Focus = 2;
-            output = mibInputMultiDlg([], prompts, defAns, dlgtitle, options);
-            if isempty(output); return; end
-            insertPosition = str2double(output{2});
-            options.dim = output{1};
+            defAns = {{'depth', 'time', 1}; struct('Spinner', true, 'Value', 0, 'Limits', [0 obj.I{obj.id}.dim_yxzct(3)], 'Step', 1, 'Round', true)};
+            dlgOptions.LabelPosition = 'top';
+            dlgOptions.WindowHeight = 230;
+            [answer, selIndex] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, ...
+                prompts, defAns, 'Insert dataset', dlgOptions);
+            if isempty(answer); return; end
+            options.dim = answer{1};
+            insertPosition = answer{2};
         else
             insertPosition = str2double(BatchOpt.InsertDatasetPosition);
             options.dim = BatchOpt.InsertDatasetDimension{1};
             options.bgColor = str2double(BatchOpt.InsertDatasetPosition);
         end
-        options.virtual = obj.I{BatchOpt.id}.Virtual.virtual;
-        [img, img_info, ~] = mibLoadImages(BatchOpt.Filenames, options);
-        obj.I{BatchOpt.id}.insertSlice(img, insertPosition, img_info, options);
+        
+        % Create file loader
+        loader = io.LoaderFactory.create(loaderInfo, options);
+        if isempty(loader); notify(obj, 'StopProtocol'); return; end
+        % options.virtual = virtualMode;
+        [img_info, files] = loader.loadMetadata(BatchOpt.Filenames, options);
+        [img, img_info] = loader.loadImages(files, img_info, options);
+        options.ParentFigure = obj.mibGUI;
+        obj.I{obj.id}.insertSlice(img, insertPosition, img_info, options);
         
         if obj.mibView.handles.mibLutCheckbox.Value == 1
             obj.I{BatchOpt.id}.slices{3} = 1:obj.I{BatchOpt.id}.meta('Colors');
