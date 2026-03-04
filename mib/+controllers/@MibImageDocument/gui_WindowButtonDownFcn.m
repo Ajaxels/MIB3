@@ -18,6 +18,7 @@ function gui_WindowButtonDownFcn(obj)
 
 % ---- Get figure handle + input state ----
 hFig = obj.UIFigure;
+obj.syncActiveSet();   % ensure selectedSet and mibModel.id reflect this document
 seltype = hFig.SelectionType;          % 'normal','alt','extend','open'
 modifier = hFig.CurrentModifier;       % cell array: {'shift','control',...}
 % Get mouse coordinates in axes space (data units)
@@ -276,6 +277,7 @@ elseif strcmp(operation, 'select')
                 hFig.WindowKeyPressFcn = [];    % turn off callback for the keys during the brush selection
             catch
             end
+            return;
             obj.mibSegmentationBrush(y, x, modifier);
             return;
 

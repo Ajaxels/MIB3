@@ -62,5 +62,12 @@ obj.UIFigure.SizeChangedFcn = @(~, ~)obj.gui_SizeChangedFcn();
 obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 obj.UIFigure.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 
+%% Model listeners
+% Update (or clear on dataset change) the quick-measurement text label.
+% Both events are needed: UpdateDatasetAxes covers zoom/pan/resize;
+% ShowImage covers buffer/dataset switches that don't fire UpdateDatasetAxes.
+obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(~,~) obj.updateMeasureText());
+obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowImage',         @(~,~) obj.updateMeasureText());
+
 % obj.figureDoc.CanCloseFcn
 end

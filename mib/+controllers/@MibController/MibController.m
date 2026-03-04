@@ -45,7 +45,6 @@ classdef MibController < handle
         mibWebWindow
         % handle of the underlying matlab.internal.webwindow class window (used for drag-and-drop of files
         view
-        % handle to the view
     end
 
     methods (Static)

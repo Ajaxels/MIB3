@@ -69,6 +69,8 @@ qab.target.Description = 'Enable the center marker';
 obj.gui.add(qab.target);
 
 qab.measurements = QABPushButton(Icon(fullfile(iconPath, 'measurement_tool_16px.png')));
+%qab.measurements = QABToggleButton();
+%qab.measurements.QuickAccessIcon = Icon(fullfile(iconPath, 'measurement_tool_16px.png'));
 qab.measurements.Text = 'Perform a quick measurement';
 qab.measurements.Description = 'Perform a quick measurement';
 obj.gui.add(qab.measurements);

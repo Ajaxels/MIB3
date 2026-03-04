@@ -120,8 +120,14 @@ hFig.WindowButtonUpFcn = [];
 % Restore the button-down callback
 hFig.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 
-% turn ON callback for the keys
-hFig.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+% turn ON callback for the keys; if a quick measurement is active, restore
+% its key handler (panning clears it) rather than the standard one.
+if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'measureKPF') && ...
+        ~isempty(obj.quickMeasure.measureKPF)
+    hFig.WindowKeyPressFcn = obj.quickMeasure.measureKPF;
+else
+    hFig.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+end
 
 % Restore scroll wheel callback (moved from plotImage)
 hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);

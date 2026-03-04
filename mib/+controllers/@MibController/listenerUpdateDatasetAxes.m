@@ -174,7 +174,7 @@ end
 % update axes limits and magnification factor
 obj.mibModel.I{index}.setAxesLimits(axesX, axesY);
 obj.mibModel.I{index}.magFactor = magFactor;
-obj.cImageDoc{selectedSet}.brushCursorOffset = []; 
+obj.cImageDoc{selectedSet}.brushCursorOffset = [];
 
 %sprintf('axes: %d-%d %d-%d\n', axesX(1), axesX(2), axesY(1), axesY(2))
 

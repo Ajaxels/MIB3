@@ -57,6 +57,8 @@ classdef MibImageDocument < handle
                                 % @note the 'brushSelection' is modified with respect to @code magFactor @endcode and crop of the image within the viewing window
         centralMarker           % marker for the center of the axes
         imageHandle = matlab.graphics.primitive.Image('CData', []); % handle to the rendered image
+        listeners = {}          % cell array with handles to listeners
+        quickMeasure = []       % struct with active quick measurement: .roi .textH .datasetId .lastPos; or []
         sliderTStep = 1          % t-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
         sliderTShiftStep = 10    % t-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
         sliderZStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
@@ -71,6 +73,8 @@ classdef MibImageDocument < handle
 
     methods
         % declaration of methods
+
+        clearQuickMeasure(obj)        % Silently remove the active quick-measurement ROI and text label
 
         frameNumber_Callback(obj, parameter, BatchOptIn)        % Callback for changing the time points of the dataset by entering a new time value
         
@@ -111,6 +115,8 @@ classdef MibImageDocument < handle
         updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)        % Update brush cursor position and visibility
 
         updateBrushCursorOffset(obj)        % Update brush cursor offset based on current brush radius and magnification
+
+        updateMeasureText(obj, pos)        % Refresh the quick-measurement text label (called on zoom/pan/drag/dataset-change)
 
         function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
             % Create a new MibImageDocument controller
