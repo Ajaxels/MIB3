@@ -61,20 +61,20 @@ switch mode
         options.WindowWidth = 700;
         options.WindowHeight = 300;
         options.MsgBoxOnly = true;
-        options.ParentFigure = obj.view.gui;
         options.OkBtnText = 'Copy';
         options.HelpBtnText = 'Calendar';
         options.HelpUrl = 'https://outlook.office365.com/owa/calendar/MIBcall4help@HelsinkiFI.onmicrosoft.com/bookings/s/olBBIX11aEqP-UndmR2Emg2';
-        utils.dlgs.mibInputUniversalDlg(obj.mibModel.mibPath, {infoText}, {infoText}, dlgTitle, options);
+        options.mibPath = obj.mibModel.mibPath;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, {infoText}, {infoText}, dlgTitle, options);
         clipboard('copy', call4help.Link);
 
 
     case 'API class reference'          % obj.handles.ribbonHome.classReference
     case 'Check for update'             % obj.handles.ribbonHome.checkUpdate
     case 'Your personal stats'          % obj.handles.ribbonHome.personalStats
-        utils.dlgs.showMilestoneDialog(obj.mibModel.mibPath, ...
+        utils.dlgs.showMilestoneDialog(obj.mibController.view.gui, ...
             obj.mibModel.preferences.Users, ...
-            'currentStats', struct('ParentFigure', obj.mibController.view.gui, 'WindowStyle', 'normal'));
+            'currentStats', struct('mibPath', obj.mibModel.mibPath, 'WindowStyle', 'normal'));
     case 'Licenses'                     % obj.handles.ribbonHome.licenses
     case 'About MIB'                    % obj.handles.ribbonHome.about
 end

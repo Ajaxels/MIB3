@@ -174,10 +174,10 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
         options.Icon           = 'puffin_measure';
         options.IconWidth      = 96;
         options.WindowHeight   = 146;
-        options.ParentFigure   = obj.view.gui;
+        options.mibPath        = obj.mibPath;
         options.DoNotShowAgain = true;
         [~, ~, obj.mibModel.sessionSettings.DoNotShowDialogs.MeasureLength] = ...
-            utils.dlgs.mibInputUniversalDlg(obj.mibPath, {htmlContent}, {htmlContent}, dlgTitle, options);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {htmlContent}, {htmlContent}, dlgTitle, options);
     end
 
     disp(str2);

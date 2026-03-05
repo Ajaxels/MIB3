@@ -1,5 +1,5 @@
-function initialize(obj, img, meta, datasetType, modelType)
-    % function initialize(obj, img, meta, datasetType, modelType)
+function initialize(obj, img, meta, datasetType, modelType, enableSelection)
+    % function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     % init MibDataset class and set all elements of the class to default values
     %
     % Parameters:
@@ -28,7 +28,9 @@ function initialize(obj, img, meta, datasetType, modelType)
     %       .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
     %       .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
     %       .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
+    % enableSelection: a logical (true/false) switch to enable/disable selection layer
     
+    if nargin < 6; enableSelection = true; end
     if nargin < 5; modelType = 'imageOnly'; end
     if nargin < 4; datasetType = obj.datasetType; end
     if nargin < 3; meta = []; end
@@ -43,6 +45,8 @@ function initialize(obj, img, meta, datasetType, modelType)
         meta = utils.concatenateDictionaries(metaDefault, meta);
     end
     
+    % close open bio-format readers, otherwise the files locked 
+    if ~isempty(obj.datasetType) && obj.datasetType(1)=='V'; obj.closeVirtualDataset();  end  
 
     % reset the state of the main layers
     obj.image = NaN;
@@ -62,7 +66,9 @@ function initialize(obj, img, meta, datasetType, modelType)
                     obj.labels = core.MibLabels63(zeros([size(img, 1) size(img, 2)], 'uint8'), meta);
             end
         case 'Virtual'
-            error('core.MibDataset.initialize: Virtual - not implemented');
+            obj.image = core.MibVirtualImage(img, meta);
+            obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
+
         case 'BigData'
             error('core.MibDataset.initialize: BigData - not implemented');
     end
@@ -93,7 +99,7 @@ function initialize(obj, img, meta, datasetType, modelType)
     obj.current_yxz = [1 1 1];  
 
     % switch (0/1) to enable or not the selection, mask, model layers
-    obj.enableSelection = true;
+    obj.enableSelection = enableSelection;
                         
     % a vector with 2 elements of two previously selected materials for use with the 'e' key shortcut
     obj.lastSegmSelection = [2 1];

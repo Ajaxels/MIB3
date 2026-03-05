@@ -21,7 +21,7 @@ classdef MibActiveDataset
 
         setsOps_Callbacks(obj, hWidget, hData, mode)        % callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
 
-        type_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
+        datasetTypeChange_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
 
         update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
 
@@ -68,7 +68,7 @@ classdef MibActiveDataset
             
             obj.handles.sets.ValueChangedFcn = @obj.setsOps_Callbacks;
             obj.handles.addSet.ButtonPushedFcn = @(src, event)obj.setsOps_Callbacks(src, event, 'setsContextAdd');
-            obj.handles.datasetType.ValueChangedFcn = @obj.type_Callback;
+            obj.handles.datasetType.ValueChangedFcn = @obj.datasetTypeChange_Callback;
 
             % ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);

@@ -25,7 +25,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentGUI - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
 
             % Return values:
             %   obj: instance of the HDF5NoHeaderLoader class
@@ -101,7 +101,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentGUI, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading HDF5 metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -120,7 +120,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error in io.loaders.HDF5NoHeaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.HDF5NoHeaderLoader');
                     imginfo = dictionary();
@@ -147,7 +147,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 % We need a helper method to select the dataset inside the HDF5 file
                 % This corresponds to selectHDFSeries in original code
                 
-                controller = utils.dlgs.SelectHDFSeries(cellstr(files(fnIndex).filename), obj.Options.parentGUI, obj.Options.Font);
+                controller = utils.dlgs.SelectHDFSeries(cellstr(files(fnIndex).filename), obj.Options.parentFigure, obj.Options.Font);
                 [files(fnIndex).seriesName, metadatasw, dim_yxzct, transMatrix] = controller.run();
                 if strcmp(files(fnIndex).seriesName, 'Cancel')
                     imginfo = dictionary();
@@ -170,7 +170,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                    infoHDF5 = h5info(files(fnIndex).filename, files(fnIndex).seriesName);
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error getting HDF5 info:\n%s', err.message), 'HDF5 Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                     imginfo = dictionary();
                     return;
@@ -278,7 +278,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                      imginfo{"ColorType"} = currentColorType;
                  elseif ~strcmp(imginfo{"ColorType"}, currentColorType)
                       if options.waitbar; delete(wb); end
-                      utils.dlgs.showErrorDialog(options.parentGUI, ...
+                      utils.dlgs.showErrorDialog(options.parentFigure, ...
                           'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.HDF5NoHeaderLoader');
                       imginfo = dictionary();
                       return;
@@ -371,7 +371,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
              % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentGUI, 'Title', 'Loading HDF5 images...',...
+                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading HDF5 images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -395,7 +395,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                      hdf5image = h5read(files(fnIndex).filename, files(fnIndex).seriesName);
                 catch err
                      if options.waitbar; delete(wb); end
-                     utils.dlgs.showErrorDialog(options.parentGUI, ...
+                     utils.dlgs.showErrorDialog(options.parentFigure, ...
                          sprintf('Error loading HDF5 file:\n%s', err.message), 'HDF5 Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                      img = [];
                      return;
@@ -405,7 +405,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 if iscell(hdf5image)
                      if options.waitbar; delete(wb); end
                      assignin('base', 'hdf5image', hdf5image);
-                     utils.dlgs.showErrorDialog(options.parentGUI, ...
+                     utils.dlgs.showErrorDialog(options.parentFigure, ...
                          'Cannot read this dataset! Exported to MATLAB workspace as "hdf5image".', 'Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                      img = [];
                      return;
@@ -426,7 +426,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
                     if ~options.silentMode && layerId == 1
                         % notify about the data conversion
-                        uialert(options.parentGUI, ...
+                        uialert(options.parentFigure, ...
                             sprintf('The dataset was converted to %s format!', class(hdf5image)), ...
                             'io.loaders.HDF5NoHeaderLoader', 'Icon', 'info');
                     end

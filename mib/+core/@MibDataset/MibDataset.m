@@ -113,11 +113,13 @@ classdef MibDataset < matlab.mixin.Copyable
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        initialize(obj, img, meta, datasetType, modelType) % init MibDataset class and set all elements of the class to default values
+        initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
 
         insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
 
         clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
+
+        closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
@@ -142,6 +144,8 @@ classdef MibDataset < matlab.mixin.Copyable
         moveView(obj, x, y, orient)        % Center the image view at the provided coordinates: x, y
         
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
+
+        newMode = switchDatasetMode(obj, newMode, enableSelection, initWithImage)  % Function to switch between loading datasets to different modes, defined in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
 
         transpose(obj, new_orient)        % Change orientation of the image to the YX, XZ, or YZ plane
 

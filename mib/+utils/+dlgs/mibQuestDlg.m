@@ -1,25 +1,28 @@
-function [selection, dontShowAgain] = mibQuestDlg(mibPath, question, varargin)
-% function [selection, dontShowAgain] = mibQuestDlg(mibPath, question, varargin)
+function [selection, dontShowAgain] = mibQuestDlg(parentFigure, question, varargin)
+% function [selection, dontShowAgain] = mibQuestDlg(parentFigure, question, varargin)
 %
 % Custom MIB question dialog with the same call syntax as MATLAB questdlg,
 % extended with an optional options structure as the last argument.
 %
 % Parameters:
-% mibPath: [char] path to MIB installation folder (use obj.mibPath); may be '' to auto-detect. 
+% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+%   used to center the dialog. Pass [] to use the cached handle from a prior call.
+%   To supply the MIB installation path use options.mibPath.
 % question: [char|string|cell] question text; when cell, lines are joined with '\n'. 
 %
 % Questdlg-compatible syntax:
-% selection = mibQuestDlg(mibPath, question)
-% selection = mibQuestDlg(mibPath, question, dlgTitle)
-% selection = mibQuestDlg(mibPath, question, dlgTitle, btn1, btn2)
-% selection = mibQuestDlg(mibPath, question, dlgTitle, btn1, btn2, btn3)
-% selection = mibQuestDlg(mibPath, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
-% selection = mibQuestDlg(mibPath, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
+% selection = mibQuestDlg(parentFigure, question)
+% selection = mibQuestDlg(parentFigure, question, dlgTitle)
+% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2)
+% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2, btn3)
+% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
+% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
 %
 % Extended syntax (optional last argument):
 % [selection, dontShowAgain] = mibQuestDlg(..., options)
 %
-% options: structure with fields (aligned with mibInputSingleDlg/mibInputUniversalDlg style):
+% options: structure with fields:
+% .mibPath             - [char] path to MIB installation folder (default: '')
 % .WindowWidth         - [numeric] width in pixels (default 420)
 % .WindowHeight        - [numeric] height in pixels (default 180)
 % .WindowStyle         - [char] 'normal' or 'modal' (default 'modal') 
@@ -40,9 +43,8 @@ function [selection, dontShowAgain] = mibQuestDlg(mibPath, question, varargin)
 % opt.WindowStyle = 'modal';
 % opt.Icon = 'warning_48px';
 % opt.DoNotShowAgain = true;
-% opt.ParentFigure = obj.mibGUI;
 % opt.WindowHeight = 250;
-% [answer, dontShow] = utils.dlgs.mibQuestDlg(obj.mibPath, ...
+% [answer, dontShow] = utils.dlgs.mibQuestDlg(obj.view.gui, ...
 %     'Overwrite existing file?', 'Overwrite', 'Yes', 'No', 'No', opt);
 % if strcmp(answer, 'Yes')
 %     % overwrite
@@ -56,6 +58,7 @@ if ~isempty(varargin) && isstruct(varargin{end})
 end
 
 % Defaults
+if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 420; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 180; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'modal'; end
@@ -69,7 +72,17 @@ if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not
 
 % ---------- Resolve mibDir ----------
 persistent mibDir
-if isempty(mibDir) && isempty(mibPath)
+persistent parentFigureHandle   % cached handle to the main GUI window
+
+% parentFigure param takes priority; update cache
+if ~isempty(parentFigure) && ishandle(parentFigure)
+    parentFigureHandle = parentFigure;
+end
+
+% Resolve mibDir — update cache when options.mibPath is supplied
+if ~isempty(options.mibPath)
+    mibDir = options.mibPath;
+elseif isempty(mibDir)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
@@ -78,8 +91,15 @@ if isempty(mibDir) && isempty(mibPath)
         mibDir = fileparts(which('mib3'));
         if isempty(mibDir); mibDir = pwd; end
     end
-elseif ~isempty(mibPath)
-    mibDir = mibPath;
+end
+
+% Resolve options.ParentFigure from param or cache
+if ~isempty(parentFigure) && ishandle(parentFigure)
+    options.ParentFigure = parentFigure;
+elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && ishandle(parentFigureHandle)
+    options.ParentFigure = parentFigureHandle;
+elseif ~isempty(options.ParentFigure) && ishandle(options.ParentFigure)
+    parentFigureHandle = options.ParentFigure;
 end
 
 % ---------- Normalize question ----------

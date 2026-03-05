@@ -1,15 +1,18 @@
-function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
-% function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
+function answer = inputSingleDlg(parentFigure, prompt, defAns, dlgTitle, options)
+% function answer = inputSingleDlg(parentFigure, prompt, defAns, dlgTitle, options)
 % Efficient single-input dialog with uifigure and icon support offering
 % access to uieditfield for texts or uispinner for values
 %
 % Parameters:
-% mibPath: char with path to MIB installation (default: [])
+% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+%   used to center the dialog. Pass [] to use the cached handle from a prior call.
+%   To supply the MIB installation path use options.mibPath.
 % prompt: string with the prompt text for the input field
 % defAns: default value - string for editfield or struct for spinner
 %         For spinner: struct('Value', v, 'Limits', [min max], 'Step', s, 'Round', false/true, 'ValueDisplayFormat', '%.0f MS/s')
 % dlgTitle: dialog window title string
 % options: struct with fields:
+%   .mibPath     - char with path to MIB installation (default: '')
 %   .Type        - 'editfield' (default) or 'spinner'
 %   .WindowWidth       - dialog width in pixels (default 400)
 %   .WindowHeight      - dialog height in pixels (default 112)
@@ -22,7 +25,6 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 % answer: entered value (string for editfield, double for spinner), empty when canceled
 %
 % Example 1 (editfield):
-%   mibPath = obj.mibPath;
 %   prompt = 'Enter file name:';
 %   defAns = 'myfile.txt';
 %   dlgTitle = 'File Name';
@@ -32,12 +34,11 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   options.WindowStyle = 'modal';
 %   options.Icon = 'question_48px';
 %   options.IconWidth = 48;
-%   options.ParentFigure = obj.view.gui;
-%   answer = utils.dlgs.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
+%   options.mibPath = obj.mibModel.mibPath;
+%   answer = utils.dlgs.inputSingleDlg(obj.view.gui, prompt, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
 %
 % Example 2 (spinner):
-%   mibPath = obj.mibPath;
 %   prompt = 'Enter iteration count:';
 %   defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, 'Round', false, 'ValueDisplayFormat', '%.3f units'); % requires options.Type = 'spinner';
 %   dlgTitle = 'Iterations';
@@ -47,16 +48,15 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 %   options.WindowStyle = 'modal';
 %   options.Icon = 'question_48px';
 %   options.IconWidth = 48;
-%   options.ParentFigure = obj.view.gui;
-%   answer = utils.dlgs.mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options);
+%   options.mibPath = obj.mibModel.mibPath;
+%   answer = utils.dlgs.inputSingleDlg(obj.view.gui, prompt, defAns, dlgTitle, options);
 %   if isempty(answer); return; end
 %
 % Example 3 (minimalistic spinner)
 % options.Type = 'spinner';
-% options.ParentFigure = obj.view.gui;
 % defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d units');
 % options.WindowWidth = 320;
-% answer = utils.dlgs.mibInputSingleDlg(obj.mibModel.mibPath, ...
+% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
 %    sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
 %    defAns, ...
 %    'Define number of colors', options);
@@ -64,7 +64,7 @@ function answer = mibInputSingleDlg(mibPath, prompt, defAns, dlgTitle, options)
 
 
 arguments
-    mibPath char = ''
+    parentFigure = []
     prompt char = 'Enter value:'
     defAns = ''
     dlgTitle char = 'Input'
@@ -72,8 +72,19 @@ arguments
 end
 
 persistent mibDir
-% Initialize persistent variable on first call or update it with input
-if isempty(mibDir) && isempty(mibPath)
+persistent parentFigureHandle  % cached handle to the main GUI window
+
+if ~isfield(options, 'mibPath'); options.mibPath = ''; end
+
+% parentFigure param takes priority; update cache
+if ~isempty(parentFigure) && isvalid(parentFigure)
+    parentFigureHandle = parentFigure;
+end
+
+% Resolve mibDir — update cache when options.mibPath is supplied
+if ~isempty(options.mibPath)
+    mibDir = options.mibPath;
+elseif isempty(mibDir)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
@@ -82,8 +93,6 @@ if isempty(mibDir) && isempty(mibPath)
         mibDir = fileparts(which('mib3'));
         if isempty(mibDir); mibDir = pwd; end
     end
-elseif ~isempty(mibPath)
-    mibDir = mibPath;
 end
 
 % Defaults
@@ -100,6 +109,14 @@ if ~isfield(options, 'IconWidth')
     end
 end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
+% use parentFigure param first, then options.ParentFigure, then cached handle
+if ~isempty(parentFigure) && isvalid(parentFigure)
+    options.ParentFigure = parentFigure;
+elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
+    options.ParentFigure = parentFigureHandle;
+elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
+    parentFigureHandle = options.ParentFigure;
+end
 
 % Icon selection and loading
 switch options.Icon
@@ -124,7 +141,7 @@ fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
 fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.WindowHeight];
 
 % Configure figure
-fig.Tag = 'mibInputSingleDlg';
+fig.Tag = 'inputSingleDlg';
 
 mainGrid = uigridlayout(fig, [3 2], ...
     'RowHeight', {'1x', 22, 22}, ...

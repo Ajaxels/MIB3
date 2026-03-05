@@ -14,18 +14,21 @@
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi
 % Date: 25.04.2023
 
-function showMilestoneDialog(mibPath, userPrefs, mode, options)
-% function showMilestoneDialog(mibPath, userPrefs, mode, options)
+function showMilestoneDialog(parentFigure, userPrefs, mode, options)
+% function showMilestoneDialog(parentFigure, userPrefs, mode, options)
 % Show a gamification milestone / current-stats dialog with a celebration
 % video and user performance statistics.
 %
 % Parameters:
-% mibPath:   char   - path to MIB installation directory
+% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+%   used to center the dialog. Pass [] to use the cached handle from a prior call.
+%   To supply the MIB installation path use options.mibPath.
 % userPrefs: struct - mibModel.preferences.Users (provides tier data and stats)
 % mode:      char   - display mode:
 %            'milestoneReached' - congratulations on reaching a new tier (default)
 %            'currentStats'     - show current score/progress
 % options:   struct (optional) with fields:
+%   .mibPath      - char, path to MIB installation directory (default: '')
 %   .WindowStyle  - 'modal' (default for milestoneReached) or 'normal'
 %   .ParentFigure - uifigure / AppContainer handle for centering
 %
@@ -33,25 +36,37 @@ function showMilestoneDialog(mibPath, userPrefs, mode, options)
 %   (none)  - dialog blocks until dismissed
 %
 % Example (milestone):
-%   utils.dlgs.showMilestoneDialog(obj.mibModel.mibPath, ...
+%   utils.dlgs.showMilestoneDialog(obj.view.gui, ...
 %       obj.mibModel.preferences.Users, ...
-%       'milestoneReached', struct('ParentFigure', obj.mibController.view.gui));
+%       'milestoneReached');
 %
 % Example (current stats):
-%   utils.dlgs.showMilestoneDialog(obj.mibModel.mibPath, ...
+%   utils.dlgs.showMilestoneDialog(obj.view.gui, ...
 %       obj.mibModel.preferences.Users, ...
-%       'currentStats', struct('ParentFigure', obj.mibController.view.gui));
+%       'currentStats');
 
 arguments
-    mibPath   char   = ''
+    parentFigure = []
     userPrefs struct = struct()
     mode      char   = 'milestoneReached'
     options   struct = struct()
 end
 
-%% Resolve mibPath (mirrors pattern used in other +utils/+dlgs functions)
+%% Resolve mibDir and parentFigure (mirrors pattern used in other +utils/+dlgs functions)
 persistent mibDir
-if isempty(mibDir) && isempty(mibPath)
+persistent parentFigureHandle   % cached handle to the main GUI window
+
+if ~isfield(options, 'mibPath'); options.mibPath = ''; end
+
+% parentFigure param takes priority; update cache
+if ~isempty(parentFigure) && isvalid(parentFigure)
+    parentFigureHandle = parentFigure;
+end
+
+% Resolve mibDir — update cache when options.mibPath is supplied
+if ~isempty(options.mibPath)
+    mibDir = options.mibPath;
+elseif isempty(mibDir)
     if isdeployed
         [~, result] = system('path');
         toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
@@ -60,12 +75,18 @@ if isempty(mibDir) && isempty(mibPath)
         mibDir = fileparts(which('mib3'));
         if isempty(mibDir); mibDir = pwd; end
     end
-elseif ~isempty(mibPath)
-    mibDir = mibPath;
 end
 
 %% Defaults
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
+% use parentFigure param first, then options.ParentFigure, then cached handle
+if ~isempty(parentFigure) && isvalid(parentFigure)
+    options.ParentFigure = parentFigure;
+elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
+    options.ParentFigure = parentFigureHandle;
+elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
+    parentFigureHandle = options.ParentFigure;
+end
 
 %% Build stats text block (shared by both modes)
 if ~isempty(fieldnames(userPrefs)) && isfield(userPrefs, 'Tiers')

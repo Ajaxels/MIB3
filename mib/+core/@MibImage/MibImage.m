@@ -43,7 +43,7 @@ classdef MibImage < matlab.mixin.Copyable
         time
         % number of time points in the dataset
         type
-        % type of the dataset: image (MibImage), labels (MibLabels), labels63 (MibLabels63)
+        % type of the dataset: image (MibImage), labels (MibLabels), labels63 (MibLabels63), virtual (MibVirtualImage)
         width
         % image width, px
         viewPort    
@@ -57,6 +57,8 @@ classdef MibImage < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         
         clearLayer(obj, layerName, y, x, z, t)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
+
+        insertSlice(obj, img, insertPosition, dim, BackgroundColorIntensity)    % Low-level insert of img into obj.data{1} along depth or time
 
         dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
 
@@ -89,6 +91,8 @@ classdef MibImage < matlab.mixin.Copyable
             switch class(obj)
                 case 'core.MibImage'
                     obj.type = 'image';
+                case 'core.MibVirtualImage'
+                    obj.type = 'virtual';
                 case 'core.MibLabels'
                     obj.type = 'labels';
                 case 'core.MibLabels63'

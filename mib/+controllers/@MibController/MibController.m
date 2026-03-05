@@ -23,7 +23,7 @@ classdef MibController < handle
         
         % Controller for the Status bar
         childControllers
-        % list of opened subcontrollers
+        % list of opened sub-controllers
         childControllersIds
         % a cell array with names of initialized child controllers
         fastPanningMode = false

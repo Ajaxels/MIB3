@@ -51,8 +51,8 @@ switch mode
         options.WindowHeight = 180;
         options.IconWidth    = 64;
         options.Icon         = 'question';
-        options.ParentFigure = obj.view.gui;
-        [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibController.mibPath, prompts, defAns, dlgTitle, options);
+        options.mibPath = obj.mibController.mibPath;
+        [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
         if isempty(answer); return; end
 
         obj.mibModel.preferences.Styles.Labels.ShowAsContours = answer{1};  % show labels as contours, when false as filled shapes

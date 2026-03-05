@@ -25,7 +25,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentGUI - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
             %
             % Return values:
             %   obj: instance of the ImodLoader class
@@ -98,7 +98,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentGUI, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading IMOD metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -112,7 +112,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error in io.loaders.ImodLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.ImodLoader');
                     imginfo = dictionary();
@@ -203,7 +203,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
 
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error reading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     imginfo = dictionary();
                     return;
@@ -312,7 +312,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentGUI, 'Title', 'Loading IMOD images...',...
+                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading IMOD images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -342,7 +342,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                         [minInt, maxInt] = getMinAndMaxDensity(mrcFile);
 
                         if minInt < 0 && ~options.silentMode
-                            selection = uiconfirm(options.parentGUI, ...
+                            selection = uiconfirm(options.parentFigure, ...
                                 'The dataset will be converted to unsigned integer class.', ...
                                 'Convert image', ...
                                 'Icon', 'warning', 'DefaultOption', 1);
@@ -380,7 +380,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                     close(mrcFile);
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error loading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     img = [];
                     return;

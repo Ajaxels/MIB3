@@ -139,6 +139,15 @@ hFig.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 if ~isempty(obj.centralMarker)
     obj.centralMarker.Visible = true;
 end
+% Re-show quick measure ROI and label now that axes limits are stable
+if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'roi') && ...
+        ~isempty(obj.quickMeasure.roi) && isvalid(obj.quickMeasure.roi)
+    obj.quickMeasure.roi.Visible = true;
+end
+if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'textH') && ...
+        ~isempty(obj.quickMeasure.textH) && isvalid(obj.quickMeasure.textH)
+    obj.quickMeasure.textH.Visible = true;
+end
 
 % Refresh the full image display
 obj.mibController.showImage();
@@ -161,7 +170,7 @@ end
 
 if showCongratulations
     pause(0.5);
-    utils.dlgs.showMilestoneDialog(obj.mibModel.mibPath, obj.mibModel.preferences.Users, ...
-        'milestoneReached', struct('ParentFigure', obj.mibController.view.gui));
+    utils.dlgs.showMilestoneDialog(obj.mibController.view.gui, obj.mibModel.preferences.Users, ...
+        'milestoneReached', struct('mibPath', obj.mibModel.mibPath));
 
 end

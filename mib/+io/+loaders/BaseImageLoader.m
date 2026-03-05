@@ -77,7 +77,7 @@ classdef (Abstract) BaseImageLoader < handle
             %           @li .zMax - [numeric] max Z coordinate
             %           @li .xyStep - [numeric] XY binning step
             %       @li .mibPath - [char] path to MIB directory
-            %       @li .parentGUI - handle to the parent window
+            %       @li .parentFigure - handle to the parent window
             %       @li .waitbar - [logical] show or not the waitbar
             %
             % Return values:
@@ -142,9 +142,9 @@ classdef (Abstract) BaseImageLoader < handle
             dlgOptions.Columns = 2;
             dlgOptions.WindowWidth = 640;
             dlgOptions.WindowHeight = 220;
-            dlgOptions.ParentFigure = options.parentGUI;
+            dlgOptions.ParentFigure = options.mibPath;
             
-            answer = utils.dlgs.mibInputUniversalDlg(options.mibPath, prompts, defAns, dlgTitle, dlgOptions);
+            answer = utils.dlgs.inputUniversalDlg(options.parentFigure, prompts, defAns, dlgTitle, dlgOptions);
             
             if isempty(answer)
                 if options.waitbar; delete(options.waitbar); end
@@ -479,11 +479,11 @@ classdef (Abstract) BaseImageLoader < handle
             defAns = {struct('Spinner', true, 'Value', minVal, 'Limits', [0 65534], 'Step', 1, 'Round', true); ... 
                       struct('Spinner', true, 'Value', maxVal, 'Limits', [1 65535], 'Step', 1, 'Round', true)};
 
-            mibInputMultiDlgOpt.ParentFigure = obj.Options.parentGUI;
             mibInputMultiDlgOpt.WindowWidth = 400;
             mibInputMultiDlgOpt.WindowHeight = 140;
             mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 100};
-            answer = utils.dlgs.mibInputUniversalDlg(obj.Options.mibPath, ...
+            mibInputMultiDlgOpt.mibPath = obj.Options.mibPath;
+            answer = utils.dlgs.inputUniversalDlg(obj.Options.parentFigure, ...
                 prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
             if isempty(answer); img = []; return; end
             %drawnow;  % prevent crashes

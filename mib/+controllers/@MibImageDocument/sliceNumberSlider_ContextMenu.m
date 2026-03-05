@@ -41,7 +41,8 @@ switch menuEntry.Tag
         mibInputMultiDlgOpt.PromptLines = [1, 1];
         mibInputMultiDlgOpt.WindowHeight = 120;
         mibInputMultiDlgOpt.ParentFigure = obj.view.gui;
-        answer = utils.dlgs.mibInputUniversalDlg(obj.mibModel.mibPath, prompt, defAns, 'Set step...', mibInputMultiDlgOpt);
+        mibInputMultiDlgOpt.mibPath  = .obj.mibModel.mibPath;
+        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompt, defAns, 'Set step...', mibInputMultiDlgOpt);
         if isempty(answer); return; end
 
         obj.(sliderStep) = round(answer{1});     % parameters for slider movement

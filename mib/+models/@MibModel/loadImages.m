@@ -170,14 +170,13 @@ else
     end
 
     if strcmp(BatchOpt.Mode{1}, 'Load each N-th dataset') || strcmp(BatchOpt.Mode{1}, 'Add each N-th dataset as new color channel')
-
         % get the name for a new set
-        options.ParentFigure = obj.mibGUI;
         options.Type = 'spinner';
         options.WindowHeight = 170;
+        options.mibPath = obj.mibPath;
         defAns = struct('Value', 2, 'Limits', [1 Inf], 'ValueDisplayFormat', '%d');
         dlgText = sprintf('There are %d file selected; please enter the loading step:\n\nFor example when step is 2 \nMIB loads each second dataset', numel(BatchOpt.Filenames));
-        answer = utils.dlgs.mibInputSingleDlg(obj.mibPath, dlgText, defAns, 'Enter the step', options);
+        answer = utils.dlgs.inputSingleDlg(obj.mibGUI, dlgText, defAns, 'Enter the step', options);
         if isempty(answer); return; end
 
         BatchOpt.EachNthStep = num2str(answer);
@@ -214,7 +213,7 @@ end
 
 % add mibPath to options for io.loadImages
 options.mibPath = obj.mibPath;
-options.parentGUI = obj.mibGUI; % handle to mibGUI window to be a parent for progress dialog
+options.parentFigure = obj.mibGUI; % handle to mibGUI window to be a parent for progress dialog
 %options.Font = obj.preferences.System.Font; % add font to render dialogs
 % init the extension registry
 %extReg = io.ExtensionRegistryLoad();
@@ -451,8 +450,9 @@ switch BatchOpt.Mode{1}
             defAns = {{'depth', 'time', 1}; struct('Spinner', true, 'Value', 0, 'Limits', [0 obj.I{obj.id}.dim_yxzct(3)], 'Step', 1, 'Round', true)};
             dlgOptions.LabelPosition = 'top';
             dlgOptions.WindowHeight = 230;
-            [answer, selIndex] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, ...
-                prompts, defAns, 'Insert dataset', dlgOptions);
+            dlgOptions.mibPath = obj.mibPath;
+            answer = utils.dlgs.inputUniversalDlg(options.parentFigure, ...
+                            prompts, defAns, 'Insert dataset', dlgOptions);
             if isempty(answer); return; end
             options.dim = answer{1};
             insertPosition = answer{2};
@@ -468,16 +468,14 @@ switch BatchOpt.Mode{1}
         % options.virtual = virtualMode;
         [img_info, files] = loader.loadMetadata(BatchOpt.Filenames, options);
         [img, img_info] = loader.loadImages(files, img_info, options);
-        options.ParentFigure = obj.mibGUI;
         obj.I{obj.id}.insertSlice(img, insertPosition, img_info, options);
         
-        if obj.mibView.handles.mibLutCheckbox.Value == 1
-            obj.I{BatchOpt.id}.slices{3} = 1:obj.I{BatchOpt.id}.meta('Colors');
+        if obj.I{BatchOpt.id}.useLUT
+            obj.I{BatchOpt.id}.slices{4} = 1:obj.I{BatchOpt.id}.image.colors;
         else
-            obj.I{BatchOpt.id}.slices{3} = 1:min([obj.I{BatchOpt.id}.meta('Colors') 3]);
+            obj.I{BatchOpt.id}.slices{4} = 1:min([obj.I{BatchOpt.id}.image.colors 3]);
         end
-        notify(obj, 'newDataset');   % notify mibView about a new dataset; see function obj.mibView.Listner2_Callback for details
-        obj.plotImage(1);
+        notify(obj, 'NewDataset');   % notify MibController about a new dataset; see function MibController.listenerNewDataset for details
     case {'Add as new color channel' 'Add each N-th dataset as new color channel'}   % add color channel
         if obj.I{BatchOpt.id}.Virtual.virtual == 1
             toolname = 'The color channels can not be added in the virtual stacking mode.';

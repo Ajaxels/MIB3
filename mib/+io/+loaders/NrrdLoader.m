@@ -25,7 +25,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentGUI - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
 
             % Return values:
             %   obj: instance of the NrrdLoader class
@@ -97,7 +97,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentGUI, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading NRRD metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -112,7 +112,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error in io.loaders.NrrdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.NrrdLoader');
                     imginfo = dictionary();
@@ -202,7 +202,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                     end
                 elseif ~strcmp(imginfo{"ColorType"}, currentColorType)
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.NrrdLoader');
                     imginfo = dictionary();
                     return;
@@ -297,7 +297,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentGUI, 'Title', 'Loading NRRD images...',...
+                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading NRRD images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -326,7 +326,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                     end
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentGUI, ...
+                    utils.dlgs.showErrorDialog(options.parentFigure, ...
                         sprintf('Error loading NRRD file:\n%s', err.message), 'NRRD Error', 'Error in io.loaders.NrrdLoader');
                     img = [];
                     return;

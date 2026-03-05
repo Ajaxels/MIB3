@@ -105,6 +105,15 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     if ~isempty(obj.centralMarker); obj.centralMarker.Visible = false; end
     % Hide brush/segmentation cursor if it exists
     if ~isempty(obj.brushCursor); obj.brushCursor.Visible = false; end
+    % Hide quick measure ROI and label during pan to avoid mis-positioned rendering
+    if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'roi') && ...
+            ~isempty(obj.quickMeasure.roi) && isvalid(obj.quickMeasure.roi)
+        obj.quickMeasure.roi.Visible = false;
+    end
+    if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'textH') && ...
+            ~isempty(obj.quickMeasure.textH) && isvalid(obj.quickMeasure.textH)
+        obj.quickMeasure.textH.Visible = false;
+    end
 
     % Decide whether "fast pan" mode is enabled.
     % In fast-pan we do not force full-res redraw here; otherwise we fetch

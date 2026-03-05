@@ -1,10 +1,11 @@
-function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath, prompts, defAns, dlgTitle, options)
-% [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath, prompts, defAns, dlgTitle, options)
+function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(parentFigure, prompts, defAns, dlgTitle, options)
+% [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(parentFigure, prompts, defAns, dlgTitle, options)
 % uifigure + uigridlayout version of mibInputMultiDlg with extra widget types
 %
 % Parameters:
-% mibPath: [optional] a char with a path to MIB installation, use
-% MibContrller.mibPath or MibModel.mibPath to get it, or just an empty cell: [].
+% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+%   used to center the dialog. Pass [] to use the cached handle from a prior call.
+%   To supply the MIB installation path use options.mibPath.
 % prompts: a cell array {n x 1} with the prompts for each input field of the dialog.
 % defaultAns: a cell array {n x 1} with default values for each entry.
 % The following types are supported per element
@@ -34,7 +35,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %                         used only when LabelPosition='left'. E.g., for 2 main columns: {'1x', '2x', '1x', '2x'} means
 %                         col1 has label:widget = 1x:2x, col2 has label:widget = 1x:2x (default: all 'fit' and '1x').
 % .LastItemColumns - 1 to force last entry to span all columns, 0 otherwise (default 0).
-% .Focus - 1-based index of widget to focus on open (default 1).
+% .Focus - 1-based index of widget to focus on open; 0 = focus OK button (default 0).
 % .OkBtnText - text for OK button (default 'OK').
 % .HelpBtnText - text for Help button (default 'Help').
 % .HelpUrl - string URL or command; if provided, shows Help button.
@@ -93,7 +94,7 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % options.DoNotShowAgainText    = 'Do not show again';
 % options.DefaultKey   = 'OK';
 % options.ParentFigure = obj.view.gui;
-% [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, prompts, defAns, dlgTitle, options);
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
 % if isempty(answer); return; end
 %
 % Example 2 (input dialog with vertical layout - label on top):
@@ -110,18 +111,20 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 %     3.14                                                     % numeric edit field
 % };
 % dlgTitle = 'Vertical layout dialog';
+% options.mibPath = obj.mibModel.mibPath;
 % options.WindowStyle  = 'normal';
 % options.Header       = 'Vertical Layout Example';
 % options.WindowWidth  = 400;
 % options.LabelPosition = 'top';
 % options.Columns      = 1;
 % options.Icon         = 'question_48px';
-% [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, prompts, defAns, dlgTitle, options);
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
 % if isempty(answer); return; end
 %
 % Example 3 (message box with HTML content):
 % htmlContent = '<html><body><h3>Important Message</h3><p>This is a message box with <b>rich text</b> formatting.</p><ul><li>Item 1</li><li>Item 2</li></ul></body></html>';
 % dlgTitle = 'Information';
+% options.mibPath = obj.mibModel.mibPath;
 % options.MsgBoxOnly = true;
 % options.Header = 'Please Read';
 % options.OkBtnText = 'OK';
@@ -129,10 +132,10 @@ function [answer, selectedIndices, dontShowAgain] = mibInputUniversalDlg(mibPath
 % options.DoNotShowAgain = true;
 % options.DoNotShowAgainText = 'Do not show this again';
 % options.ParentFigure = obj.view.gui;
-% [answer, selIndex, dontShow] = utils.dlgs.mibInputUniversalDlg(obj.mibPath, {htmlContent}, {htmlContent}, dlgTitle, options);
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, {htmlContent}, {htmlContent}, dlgTitle, options);
 
 arguments
-    mibPath char = ''
+    parentFigure = []
     prompts cell = {'Enter a text:'}
     defAns cell = {[]}
     dlgTitle char = 'MultiEdit dialog'
@@ -173,7 +176,7 @@ if ~isfield(options, 'Columns'); options.Columns = 1; end
 if ~isfield(options, 'MainColumnWidths'); options.MainColumnWidths = repmat({'1x'}, 1, options.Columns); end
 if ~isfield(options, 'LabelPosition'); options.LabelPosition = 'left'; end
 if ~isfield(options, 'SectionsColumnWidths'); options.SectionsColumnWidths = repmat({'fit', '1x'}, 1, options.Columns); end
-if ~isfield(options, 'Focus'); options.Focus = 1; end
+if ~isfield(options, 'Focus'); options.Focus = 0; end
 if ~isfield(options, 'LastItemColumns'); options.LastItemColumns = 0; end
 if ~isfield(options, 'OkBtnText'); options.OkBtnText = 'OK'; end
 if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end
@@ -185,9 +188,13 @@ if ~isfield(options, 'WindowWidth'); options.WindowWidth = 560; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = []; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
+if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-% use cached parent figure when caller does not supply one
-if isempty(options.ParentFigure) && ~isempty(parentFigurePersistent) && isvalid(parentFigurePersistent)
+% parentFigure first-param takes priority; update cache and options.ParentFigure
+if ~isempty(parentFigure) && isvalid(parentFigure)
+    parentFigurePersistent = parentFigure;
+    options.ParentFigure = parentFigure;
+elseif isempty(options.ParentFigure) && ~isempty(parentFigurePersistent) && isvalid(parentFigurePersistent)
     options.ParentFigure = parentFigurePersistent;
 elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     parentFigurePersistent = options.ParentFigure;   % cache for future calls
@@ -214,9 +221,9 @@ if strcmpi(options.LabelPosition, 'left')
     end
 end
 
-% MIB path resolution for icons — update cache when mibPath is supplied
-if ~isempty(mibPath)
-    mibDirPersistent = mibPath;   % caller provided a fresh path; cache it
+% MIB path resolution for icons — update cache when options.mibPath is supplied
+if ~isempty(options.mibPath)
+    mibDirPersistent = options.mibPath;   % caller provided a fresh path; cache it
 end
 
 if isempty(mibDirPersistent)
@@ -233,7 +240,7 @@ mibDir = mibDirPersistent;
 
 % Build figure (before icon loading to get background color)
 fig = uifigure('Name', dlgTitle, 'Visible', 'off');
-fig.Tag = 'mibInputUniversalDlg';
+fig.Tag = 'inputUniversalDlg';
 fig.AutoResizeChildren = 'off';  % Disable auto-resize
 if strcmpi(options.WindowStyle,'modal'); fig.WindowStyle='modal'; else; fig.WindowStyle='normal'; end
 fig.Position(3) = options.WindowWidth;
@@ -771,14 +778,14 @@ drawnow;
 fig.Visible = 'on';
 
 % Set focus after figure is visible
-if options.MsgBoxOnly
-    % In message box mode, focus on OK button to enable Enter key
+if options.MsgBoxOnly || options.Focus == 0
+    % Default: focus on OK button to enable Enter key
     try
         focus(okBtn);
     catch
     end
 else
-    % In normal mode, focus on specified widget
+    % Explicit Focus index: focus on specified widget
     if numel(widgets) >= options.Focus
         tgt = widgets(options.Focus);
         if ~isempty(tgt) && isvalid(tgt) && tgt ~= 0
@@ -845,7 +852,7 @@ uiwait(fig);
             elseif isNumericEdit(k)
                 out{k} = double(w.Value);
             elseif isprop(w, 'Value')
-                % Generic widget with Value property
+                % Generic widget with Value property (includes text uieditfield)
                 out{k} = char(w.Value);
             else
                 out{k} = [];
@@ -881,11 +888,26 @@ uiwait(fig);
             end
         end
         if isequal(CurrentKey, 'return')
-            % Check which button to trigger based on DefaultKey option
-            if strcmpi(options.DefaultKey, 'Cancel') && ~isempty(cancelBtn) && isvalid(cancelBtn)
-                onCancel();
+            % Move focus away from the current widget so it can commit its
+            % pending value (e.g. typed text in a uispinner or uieditfield).
+            % WindowKeyPressFcn fires before the widget's own commit logic,
+            % so we defer the actual close to the next event-loop cycle via
+            % a one-shot timer — by then w.Value is up-to-date.
+            try; focus(okBtn); catch; end
+            doOK = ~(strcmpi(options.DefaultKey, 'Cancel') && ~isempty(cancelBtn) && isvalid(cancelBtn));
+            t = timer('StartDelay', 0.05, 'ExecutionMode', 'singleShot', ...
+                      'TimerFcn', @(th,~) deferredClose(th, doOK));
+            start(t);
+        end
+    end
+
+    function deferredClose(th, doOK)
+        try; stop(th); delete(th); catch; end
+        if ~isempty(fig) && isvalid(fig)
+            if doOK
+                onOK();
             else
-                onOK();  % Default to OK
+                onCancel();
             end
         end
     end

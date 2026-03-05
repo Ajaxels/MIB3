@@ -1,11 +1,11 @@
-function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffix, options)
-% function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffix, options)
+function showErrorDialog(parentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
+% function showErrorDialog(parentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
 % Show an error dialog generated in try/catch blocks or any other occasion.
 % Supports custom icons, HTML formatting, scrollable error text, clipboard
 % copy button, and is resizable.
 %
 % Parameters:
-% guiHandle: handle to the parent window (AppContainer, uifigure, or [])
+% parentFigure: handle to the parent window (AppContainer, uifigure, or [])
 %   When empty or a legacy GUIDE figure, falls back to errordlg()
 % err: error source, one of:
 %   - char/string: plain error message text
@@ -120,8 +120,8 @@ clipboardText = strjoin(cellfun(@strtrim, ...
     {winTitle, optionalPrefix, errBody, optionalSuffix}, 'UniformOutput', false), newline);
 clipboardText = strtrim(clipboardText);
 
-% --- fallback for legacy / empty guiHandle ---
-if isempty(guiHandle) || isa(guiHandle, 'matlab.ui.Figure')
+% --- fallback for legacy / empty parentFigure ---
+if isempty(parentFigure) || isa(parentFigure, 'matlab.ui.Figure')
     errordlg(clipboardText, winTitle);
     return;
 end
@@ -266,13 +266,13 @@ fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
 
 % --- center on parent ---
 try
-    if isa(guiHandle, 'matlab.ui.container.internal.AppContainer')
-        parentPos  = guiHandle.WindowBounds;
+    if isa(parentFigure, 'matlab.ui.container.internal.AppContainer')
+        parentPos  = parentFigure.WindowBounds;
         screenSize = get(0, 'ScreenSize');
         x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
         y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
-    elseif isa(guiHandle, 'matlab.ui.Figure')
-        parentPos = guiHandle.Position;
+    elseif isa(parentFigure, 'matlab.ui.Figure')
+        parentPos = parentFigure.Position;
         x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
         y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
     end

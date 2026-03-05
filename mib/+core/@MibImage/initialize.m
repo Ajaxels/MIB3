@@ -32,6 +32,9 @@ if isempty(data)
     if strcmp(obj.type, 'image')
         obj.data{1} = uint8(randi(255, [256 256]));
         obj.exists = true;
+    elseif strcmp(obj.type, 'virtual')
+        obj.data{1} = uint8(1);  % 1x1 placeholder; replaced by MibVirtualImage.initialize
+        obj.exists = false;
     else
         obj.data = [];      % default for labels and other types
         obj.exists = false;
