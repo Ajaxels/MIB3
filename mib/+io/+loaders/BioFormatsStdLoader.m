@@ -174,7 +174,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                                 metaSwitch = true;
                             else
                                 % index is too large
-                                if options.BioFormatsIndices > numSeries; return; end
+                                if max(options.BioFormatsIndices) > numSeries; return; end
                                 filesTemp.seriesIndex = options.BioFormatsIndices;
                                 metaSwitch = true;
                             end
