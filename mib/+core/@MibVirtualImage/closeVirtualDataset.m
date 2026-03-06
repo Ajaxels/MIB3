@@ -1,15 +1,26 @@
 function closeVirtualDataset(obj)
 % function closeVirtualDataset(obj)
-% Close opened virtual dataset readers to release file locks.
+% Close open virtual readers and loader objects to release file handles.
 %
-% Currently handles BioFormats Memoizer readers stored in obj.data{}.
-% Call this before re-initialising or destroying the virtual image.
+% Closes any BioFormatsVirtualLoader readers held in obj.loaders, then
+% clears the loaders cache.  Also handles the legacy case where BioFormats
+% Memoizer handles were stored directly in obj.data{}.
 %
 % Parameters:
 %
 % Return values:
 %% Updates
 %
+
+% --- close cached loader objects ------------------------------------------
+for i = 1:numel(obj.loaders)
+    if ~isempty(obj.loaders{i}) && isa(obj.loaders{i}, 'io.loaders.BioFormatsVirtualLoader')
+        obj.loaders{i}.close();
+    end
+end
+obj.loaders = {};
+
+% --- legacy: readers stored directly in obj.data (old approach) -----------
 if iscell(obj.data) && ~isempty(obj.data) && isa(obj.data{1}, 'loci.formats.Memoizer')
     for imgId = 1:numel(obj.data)
         try

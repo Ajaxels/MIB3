@@ -85,25 +85,27 @@ try
             % Handle Virtual mode
             if dataset.datasetType(1) == 'V'
                 if dataset.magFactor < 1
-                    [xImg, yImg] = ceil(obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'blockmode'));
+                    [xImage, yImage] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'blockmode');
+                    xImage = ceil(xImage);
+                    yImage = ceil(yImage);
                 else
-                    xImg = ceil(xMouse);
-                    yImg = ceil(yMouse);
+                    xImage = ceil(xMouse);
+                    yImage = ceil(yMouse);
                 end
+            else
+                % Convert mouse coordinates to dataset coordinates
+                [xImage, yImage, sliceNo] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
+                xImage = ceil(xImage);
+                yImage = ceil(yImage);
+
+                % Get image dimensions in the current orientation
+                getDimsOptions.blockModeSwitch = false;
+                [imgHeight, imgWidth, imgDepth] = dataset.getDatasetDimensions('image', [], getDimsOptions);
+
+                yImage = min([yImage, imgHeight]);
+                xImage = min([xImage, imgWidth]);
+                sliceNo = min([sliceNo, imgDepth]);
             end
-
-            % Convert mouse coordinates to dataset coordinates
-            [xImage, yImage, sliceNo] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
-            xImage = ceil(xImage);
-            yImage = ceil(yImage);
-
-            % Get image dimensions in the current orientation
-            getDimsOptions.blockModeSwitch = false;
-            [imgHeight, imgWidth, imgDepth] = dataset.getDatasetDimensions('image', [], getDimsOptions);
-
-            yImage = min([yImage, imgHeight]);
-            xImage = min([xImage, imgWidth]);
-            sliceNo = min([sliceNo, imgDepth]);
 
             colorValues = [];
             modelValues = NaN;
@@ -118,7 +120,7 @@ try
                 else  % Virtual stacking mode
                     colorValues = 0;
                     if ~isempty(obj.mibModel.Iraw)
-                        colorValues = obj.mibModel.Iraw(yImg, xImg, :);
+                        colorValues = obj.mibModel.Iraw(yImage, xImage, :);
                     end
                 end
             elseif orientation == 1 && dataset.datasetType(1) ~= 'V'  % ZX orientation

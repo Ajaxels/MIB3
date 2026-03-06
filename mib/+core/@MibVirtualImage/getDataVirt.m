@@ -8,6 +8,8 @@ function dataset = getDataVirt(obj, type, orient, colChannel, options)
 %   - YX orientation is 3 (MIB3) not 4 (MIB2)
 %   - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
 %   - colChannel [] means all channels (MIB3) instead of NaN (MIB2)
+%   - Reading delegated to io.loaders.HDF5VirtualLoader /
+%     io.loaders.BioFormatsVirtualLoader (created lazily, cached in obj.loaders)
 %
 % Parameters:
 % type: type of layer to retrieve — only 'image' is supported
@@ -101,94 +103,69 @@ if strcmp(type, 'image')
     readerId = obj.Virtual.readerId(Zlim(1):Zlim(2));
 
     % mixing reader types within one request is not supported
-    if numel(readerId) > 1
-        if numel(unique(obj.Virtual.objectType(readerId))) > 1
-            errordlg('Image files were selected using multiple readers; combining such files is not yet possible.', 'Multiple readers');
-            dataset = [];
-            return;
-        end
+    if numel(readerId) > 1 && numel(unique(obj.Virtual.objectType(readerId))) > 1
+        errordlg('Image files were selected using multiple readers; combining such files is not yet possible.', 'Multiple readers');
+        dataset = [];
+        return;
     end
+
+    % Allocate output in MIB3 order [y, x, z, c, t]
+    nY  = Ylim(2) - Ylim(1) + 1;
+    nX  = Xlim(2) - Xlim(1) + 1;
+    nZ  = Zlim(2) - Zlim(1) + 1;
+    nC  = numel(colChannel);
+    nT  = Tlim(2) - Tlim(1) + 1;
+    dataset = zeros([nY, nX, nZ, nC, nT], obj.dataClass);
 
     switch obj.Virtual.objectType{readerId(1)}
 
         case {'matlab.hdf5', 'hdf5_image'}
-            % allocate in MIB2 order [y, x, c, z, t] — h5read returns [y,x,c,z,t]
-            dataset = zeros([Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, Zlim(2)-Zlim(1)+1, obj.colors, Tlim(2)-Tlim(1)+1], obj.dataClass);
+            % Group consecutive slices that belong to the same source file
+            % and read each group as a single h5read call.
+            [uniqueFileIds, uniquePos, ~] = unique(readerId, 'stable');
+            uniquePos(end+1) = nZ + 1;   % sentinel for range calculation
 
-            [uniqueVal, uniquePos, ~] = unique(readerId);
-            uniquePos(end+1) = Zlim(2) - Zlim(1) + 2;
-            readerId = uniqueVal;
+            for gi = 1:numel(uniqueFileIds)
+                fileIdx = uniqueFileIds(gi);
 
-            for indexVal = 1:numel(uniqueVal)
-                z2Out = uniquePos(indexVal + 1) - 1;
-                z1Out = z2Out - (uniquePos(indexVal + 1) - uniquePos(indexVal)) + 1;
+                % output z-range for this group (1-based within the request)
+                z1Out = uniquePos(gi);
+                z2Out = uniquePos(gi + 1) - 1;
 
-                if indexVal == 1
-                    z1In = Zlim(1) - sum(obj.Virtual.slicesPerFile(1:readerId(indexVal) - 1));
+                % input z-range within the source file (1-based within the file)
+                if gi == 1
+                    z1In = Zlim(1) - sum(obj.Virtual.slicesPerFile(1:fileIdx - 1));
                 else
                     z1In = 1;
                 end
-                zIn_noPoints = z2Out - z1Out + 1;
+                zCount = z2Out - z1Out + 1;
 
-                % get the order of axes
-                info = h5info(obj.data{readerId(indexVal)});
-                parsed = jsondecode(info.Datasets.Attributes.Value);
-                % Extract axis order as a string, e.g. "tczxy" and flip it to match MIB order
-                axisOrder = flip(strjoin({parsed.axes.key}, ''));
-                zDimension = strfind(axisOrder, 'z');
-                if zDimension == 3
-                    % for MIB3
-                    dataset(:, :, z1Out:z2Out, :, :) = h5read( ...
-                        obj.data{readerId(indexVal)}, ...
-                        obj.Virtual.seriesName{readerId(indexVal)}, ...
-                        [Ylim(1)            Xlim(1)            z1In         1           Tlim(1)], ...
-                        [Ylim(2)-Ylim(1)+1  Xlim(2)-Xlim(1)+1  zIn_noPoints obj.colors  Tlim(2)-Tlim(1)+1]);
-                elseif zDimension == 4
-                    % old version for MIB2
-                    datasetDummy = h5read( ...
-                        obj.data{readerId(indexVal)}, ...
-                        obj.Virtual.seriesName{readerId(indexVal)}, ...
-                        [Ylim(1)            Xlim(1)            1           z1In         Tlim(1)], ...
-                        [Ylim(2)-Ylim(1)+1  Xlim(2)-Xlim(1)+1  obj.colors  zIn_noPoints  Tlim(2)-Tlim(1)+1]);
-                    dataset(:, :, z1Out:z2Out, :, :) = permute(datasetDummy, [1 2 4 3 5]);
-                end
+                loader = obj.getOrCreateLoader(fileIdx);
+                % readRegion returns [nY, nX, zCount, obj.colors, nT] in [y,x,z,c,t]
+                block = loader.readRegion(Ylim, Xlim, z1In, zCount, obj.colors, Tlim, obj.dataClass);
+                dataset(:, :, z1Out:z2Out, :, :) = block(:, :, :, colChannel, :);
             end
-            dataset = dataset(:, :, :, colChannel, :);
 
         case 'bioformats'
-            % allocate in MIB2 order [y, x, c, z, t]
-            dataset = zeros([Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, Zlim(2)-Zlim(1)+1, numel(colChannel), Tlim(2)-Tlim(1)+1], obj.dataClass);
-
-            maxT = Tlim(2) - Tlim(1) + 1;
+            % BioFormats reads one XY plane at a time.
+            % Readers are opened lazily and kept open across calls (see
+            % BioFormatsVirtualLoader) to avoid re-opening for every slice.
+            maxT = nT;
             for t = 1:maxT
-                timepoint = Tlim(1) + t - 2;
-                for z = 1:Zlim(2) - Zlim(1) + 1
-                    r = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(obj.BioFormatsMemoizerMemoDir));
-                    r.setId(obj.data{readerId(z)});
-                    r.setSeries(obj.Virtual.seriesName{readerId(z)} - 1);
+                timepoint = Tlim(1) + t - 2;   % 0-based for BioFormats getIndex
+                for z = 1:nZ
+                    fileIdx = readerId(z);
+                    planeId = Zlim(1) + z - 1 - sum(obj.Virtual.slicesPerFile(1:fileIdx - 1));
 
-                    planeId = Zlim(1) + z - 1 - sum(obj.Virtual.slicesPerFile(1:readerId(z) - 1));
-
-                    for colCh = 1:numel(colChannel)
-                        iPlane = r.getIndex(planeId - 1, colChannel(colCh) - 1, timepoint) + 1;
-                        cPlane = bfGetPlane(r, iPlane, Xlim(1), Ylim(1), Xlim(2)-Xlim(1)+1, Ylim(2)-Ylim(1)+1);
-                        if isa(cPlane(1), 'int8')
-                            cPlane = int16(cPlane);
-                            cPlane(cPlane < 0) = cPlane(cPlane < 0) + 256;
-                            dataset(:, :, colCh, z, t) = cPlane;
-                        else
-                            dataset(:, :, colCh, z, t) = cPlane;
-                        end
-                    end
+                    loader = obj.getOrCreateLoader(fileIdx);
+                    % readPlane returns [nY, nX, nC] for the requested channels
+                    dataset(:, :, z, :, t) = loader.readPlane( ...
+                        Ylim, Xlim, planeId, colChannel, timepoint, obj.dataClass);
                 end
                 if showWaitbar; waitbar(t / maxT, wb); end
-                r.close();
             end
 
     end
-
-    % --- convert MIB2 dim order [y,x,c,z,t] -> MIB3 [y,x,z,c,t] ---------
-    dataset = permute(dataset, [1 2 4 3 5]);
 
 else
     % non-image layers are not stored in virtual mode
@@ -196,12 +173,12 @@ else
 end
 
 % --- apply orientation permutation ----------------------------------------
+% dataset is in MIB3 order [y, x, z, c, t] at this point
 if orient == 1       % xz: [y,x,z,c,t] -> [x,z,y,c,t]
     dataset = permute(dataset, [2 3 1 4 5]);
 elseif orient == 2   % yz: [y,x,z,c,t] -> [y,z,x,c,t]
     dataset = permute(dataset, [1 3 2 4 5]);
 % orient == 3 (yx): no permutation needed
-
 end
 
 if showWaitbar; delete(wb); end

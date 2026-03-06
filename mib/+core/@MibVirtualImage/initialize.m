@@ -28,10 +28,11 @@ if nargin < 2; data = []; end
 
 if isempty(meta); meta = utils.defaults.initializeImgInfo(); end
 
-% --- close any previously open virtual readers ---------------------------
+% --- close any previously open virtual readers and loader objects --------
 if iscell(obj.data) && ~isempty(obj.data)
     obj.closeVirtualDataset();
 end
+obj.loaders = {};
 
 % --- set up data storage and dimensions ----------------------------------
 if isempty(data)

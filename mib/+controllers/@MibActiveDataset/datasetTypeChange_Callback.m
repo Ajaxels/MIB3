@@ -52,4 +52,8 @@ if updatedMode~=newMode; return; end
 % update obj.mibModel.Sets.datasetTypes
 obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = hWidget.Value;
 
+% new dataset and update widgets
 notify(obj.mibModel, 'NewDataset');
+
+% update the list of files
+obj.mibController.cDirContents.updateFileList_Callback();

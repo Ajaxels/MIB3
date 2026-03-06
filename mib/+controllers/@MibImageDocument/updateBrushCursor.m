@@ -31,7 +31,8 @@ if nargin < 2; xyCoordinate = []; end
 if isempty(lineStyle); lineStyle = ':'; end
 
 % Determine visibility: show only when globally enabled AND inside axes
-shouldShow = obj.view.brushCursorShow && obj.isInsideImage;
+% if Virtual mode, do not show cursor
+shouldShow = obj.view.brushCursorShow && obj.isInsideImage && obj.mibModel.I{obj.mibModel.id}.datasetType(1) ~= 'V'; 
 
 if resetOffset; obj.brushCursorOffset = []; end
 

@@ -23,9 +23,19 @@ classdef MibVirtualImage < core.MibImage
         % @li .readerId        - [1 x depth] index into obj.data{} for each slice
         % @li .objectType      - {1 x nReaders} cell of reader type strings:
         %                        'bioformats', 'matlab.hdf5', 'hdf5_image'
-        % @li .seriesName      - {1 x nReaders} series name / HDF5 dataset path per reader
+        % @li .seriesName      - {1 x nReaders} series name / HDF5 dataset path per reader;
+        %                        for 'bioformats' this is a 1-based numeric series index
         % @li .slicesPerFile   - [1 x nReaders] number of z-slices contributed by each file
         % @li .filenames       - {1 x nReaders} full file paths
+        bioFormatsMemoizerMemoDir = ''
+        % [char] path to the directory used by the BioFormats Memoizer for memo files.
+        % Mirrors MibDataset.bioFormatsMemoizerMemoDir — set from there when a
+        % virtual dataset is initialised so that getOrCreateLoader can access it.
+        loaders = {}
+        % {1 x nReaders} cell array of virtual loader objects, one per source file.
+        % Each element is either an io.loaders.HDF5VirtualLoader or an
+        % io.loaders.BioFormatsVirtualLoader, created lazily on first access
+        % by getOrCreateLoader() and cleared by initialize() / closeVirtualDataset().
     end
 
     methods
@@ -39,7 +49,9 @@ classdef MibVirtualImage < core.MibImage
 
         dataset = getDataVirt(obj, type, orient, colChannel, options)        % Read a virtual dataset (BioFormats or HDF5) from disk on demand.
 
-        closeVirtualDataset(obj)             % Close open virtual readers (BioFormats Memoizer handles)
+        loader = getOrCreateLoader(obj, fileIdx)   % Return (or lazily create) the virtual loader for file index fileIdx.
+
+        closeVirtualDataset(obj)             % Close open virtual readers and loader objects.
 
         function obj = MibVirtualImage(data, meta)
             % obj = MibVirtualImage(data, meta)

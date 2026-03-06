@@ -372,6 +372,14 @@ if isempty(updatePanels) || ismember(updatePanels, 'selectionPanel')
     obj.cSelection.lutTable_update_fromModel();
 end
 
+% update additional settings depending on the type of the loaded dataset
+if obj.mibModel.I{obj.mibModel.id}.datasetType(1) == 'V'  % virtual dataset
+    obj.view.brushCursorShow = false;
+else
+    obj.view.brushCursorShow = true;
+    obj.view.brushCursorOffset = []; % reset offset to re-render cursor
+end
+
 %% update ROI stuff ---------------------------------------------
 % ---------------------------------------------------------------
 
