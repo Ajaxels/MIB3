@@ -113,7 +113,7 @@ if strcmp(type, 'image')
 
         case {'matlab.hdf5', 'hdf5_image'}
             % allocate in MIB2 order [y, x, c, z, t] — h5read returns [y,x,c,z,t]
-            dataset = zeros([Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, obj.colors, Zlim(2)-Zlim(1)+1, Tlim(2)-Tlim(1)+1], obj.dataClass);
+            dataset = zeros([Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, Zlim(2)-Zlim(1)+1, obj.colors, Tlim(2)-Tlim(1)+1], obj.dataClass);
 
             [uniqueVal, uniquePos, ~] = unique(readerId);
             uniquePos(end+1) = Zlim(2) - Zlim(1) + 2;
@@ -130,18 +130,34 @@ if strcmp(type, 'image')
                 end
                 zIn_noPoints = z2Out - z1Out + 1;
 
-                % h5read returns [y, x, c, z, t]
-                dataset(:, :, :, z1Out:z2Out, :) = h5read( ...
-                    obj.data{readerId(indexVal)}, ...
-                    obj.Virtual.seriesName{readerId(indexVal)}, ...
-                    [Ylim(1)            Xlim(1)            1           z1In         Tlim(1)], ...
-                    [Ylim(2)-Ylim(1)+1  Xlim(2)-Xlim(1)+1  obj.colors  zIn_noPoints  Tlim(2)-Tlim(1)+1]);
+                % get the order of axes
+                info = h5info(obj.data{readerId(indexVal)});
+                parsed = jsondecode(info.Datasets.Attributes.Value);
+                % Extract axis order as a string, e.g. "tczxy" and flip it to match MIB order
+                axisOrder = flip(strjoin({parsed.axes.key}, ''));
+                zDimension = strfind(axisOrder, 'z');
+                if zDimension == 3
+                    % for MIB3
+                    dataset(:, :, z1Out:z2Out, :, :) = h5read( ...
+                        obj.data{readerId(indexVal)}, ...
+                        obj.Virtual.seriesName{readerId(indexVal)}, ...
+                        [Ylim(1)            Xlim(1)            z1In         1           Tlim(1)], ...
+                        [Ylim(2)-Ylim(1)+1  Xlim(2)-Xlim(1)+1  zIn_noPoints obj.colors  Tlim(2)-Tlim(1)+1]);
+                elseif zDimension == 4
+                    % old version for MIB2
+                    datasetDummy = h5read( ...
+                        obj.data{readerId(indexVal)}, ...
+                        obj.Virtual.seriesName{readerId(indexVal)}, ...
+                        [Ylim(1)            Xlim(1)            1           z1In         Tlim(1)], ...
+                        [Ylim(2)-Ylim(1)+1  Xlim(2)-Xlim(1)+1  obj.colors  zIn_noPoints  Tlim(2)-Tlim(1)+1]);
+                    dataset(:, :, z1Out:z2Out, :, :) = permute(datasetDummy, [1 2 4 3 5]);
+                end
             end
-            dataset = dataset(:, :, colChannel, :, :);
+            dataset = dataset(:, :, :, colChannel, :);
 
         case 'bioformats'
             % allocate in MIB2 order [y, x, c, z, t]
-            dataset = zeros([Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, numel(colChannel), Zlim(2)-Zlim(1)+1, Tlim(2)-Tlim(1)+1], obj.dataClass);
+            dataset = zeros([Ylim(2)-Ylim(1)+1, Xlim(2)-Xlim(1)+1, Zlim(2)-Zlim(1)+1, numel(colChannel), Tlim(2)-Tlim(1)+1], obj.dataClass);
 
             maxT = Tlim(2) - Tlim(1) + 1;
             for t = 1:maxT

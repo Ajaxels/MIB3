@@ -30,7 +30,7 @@ if isempty(meta); meta = utils.defaults.initializeImgInfo(); end
 % init data with an empty matrix
 if isempty(data)
     if strcmp(obj.type, 'image')
-        obj.data{1} = uint8(randi(255, [256 256]));
+        obj.data{1} = uint8(randi(255, [512 512]));
         obj.exists = true;
     elseif strcmp(obj.type, 'virtual')
         obj.data{1} = uint8(1);  % 1x1 placeholder; replaced by MibVirtualImage.initialize
@@ -68,6 +68,7 @@ if ~isempty(obj.data)
         viewPort = obj.getDefaultViewPort();
         meta{'viewPort'} = viewPort;
     end
+    obj.viewPort = meta{'viewPort'};
 
     obj.colormap =  meta{'Colormap'};
 

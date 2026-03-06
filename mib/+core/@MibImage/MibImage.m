@@ -26,6 +26,8 @@ classdef MibImage < matlab.mixin.Copyable
         % a char with image class, 'uint8', 'uint16', 'uint32';
         lutColors
         % a matrix with LUT colors [1:colorChannel, R G B], (0-1)
+        maskFilename = 'Mask_none.tif'
+        % default filename for the mask, when MibLabels63 is used both mask and model are within the same class, thus additional property is needed
         maxInt
         % maximal value that is available in the dataset
         pyramid

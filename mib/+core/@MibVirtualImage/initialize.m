@@ -81,22 +81,30 @@ obj.maxInt      = double(intmax(imgClass));
 obj.dim_yxzct   = [obj.height, obj.width, obj.depth, obj.colors, obj.time];
 
 if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
+obj.filename = meta{'Filename'};
+
 if ~isKey(meta, 'lutColors')
     meta{'lutColors'} = utils.defaults.generateLUT(obj.colors);
 end
+obj.lutColors = meta{'lutColors'};
+
 if isempty(meta{'viewPort'})
     meta{'viewPort'} = obj.getDefaultViewPort();
 end
+obj.viewPort = meta{'viewPort'};
 
+% update other parameters
 obj.colormap  = meta{'Colormap'};
-obj.filename  = meta{'Filename'};
 obj.sliceName = meta{'SliceName'};
-obj.lutColors = meta{'lutColors'};
 
 if ~isempty(meta{'ColorType'})
     obj.colorType = meta{'ColorType'};
 else
-    obj.colorType = 'grayscale';
+    if obj.colors == 1
+        obj.colorType = 'grayscale';
+    else
+        obj.colorType = 'multichannel';
+    end
 end
 
 % --- pyramid (virtual datasets may carry full pyramid via meta) ----------

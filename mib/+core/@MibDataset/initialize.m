@@ -24,18 +24,20 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     %       @li 'Standard' - standard image, one that is loaded to memory completely
     %       @li 'Virtual' - virtual dataset that is loaded upon demand
     %       @li 'BigData' - big-data compatible dataset
-    % modelType: type of the labels,
+    % modelType: type of the labels, when empty, 'imageOnly' is used
     %       .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
     %       .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
     %       .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
     % enableSelection: a logical (true/false) switch to enable/disable selection layer
     
     if nargin < 6; enableSelection = true; end
-    if nargin < 5; modelType = 'imageOnly'; end
+    if nargin < 5; modelType = []; end
     if nargin < 4; datasetType = obj.datasetType; end
     if nargin < 3; meta = []; end
     if nargin < 2; img = []; end
     
+    if isempty(modelType); modelType = 'imageOnly'; end
+
     % init meta as empty dictionary
     if isempty(meta)
         meta = utils.defaults.initializeImgInfo(); 
