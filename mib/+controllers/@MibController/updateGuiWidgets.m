@@ -380,6 +380,19 @@ else
     obj.view.brushCursorOffset = []; % reset offset to re-render cursor
 end
 
+%% update mouse and key callbacks for MibImageDocuments --------------------------------------------
+% --------------------------------------------------------------------------------------------------
+for docId = 1:numel(obj.cImageDoc)
+    cImageDoc = obj.cImageDoc{docId};
+    UIFigure = cImageDoc.UIFigure;
+    UIFigure.WindowButtonMotionFcn = @(~, ~)cImageDoc.gui_WinMouseMotionFcn();
+    UIFigure.WindowScrollWheelFcn = @(~, eventdata)cImageDoc.gui_ScrollWheelFcn(eventdata);
+    UIFigure.SizeChangedFcn = @(~, ~)cImageDoc.gui_SizeChangedFcn();
+    UIFigure.WindowKeyPressFcn = @(hWidget, hData)cImageDoc.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+    UIFigure.WindowButtonDownFcn = @(~, ~)cImageDoc.gui_WindowButtonDownFcn();
+end
+
+
 %% update ROI stuff ---------------------------------------------
 % ---------------------------------------------------------------
 

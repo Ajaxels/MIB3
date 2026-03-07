@@ -215,6 +215,19 @@ classdef ExtensionRegistryLoad < handle
                 return;
             end
 
+            % Virtual/BigData HDF5: use setup loaders that return file paths
+            % instead of loading pixels, so MibVirtualImage can be initialised
+            if mode == "Virtual" || mode == "BigData"
+                switch lower(ext)
+                    case 'xml'
+                        id = 'hdf5-header-virtual';
+                        return;
+                    case {'hdf5', 'h5'}
+                        id = 'hdf5-no-header-virtual';
+                        return;
+                end
+            end
+
             switch lower(ext)
                 case 'am'
                     id = 'AmiraMesh';

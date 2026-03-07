@@ -416,10 +416,16 @@ switch BatchOpt.Mode{1}
         end
 
         obj.I{BatchOpt.id}.initialize(img, img_info);
+
+        % Pass BioFormats memoizer path to virtual image so BioFormatsVirtualLoader
+        % can open readers without access to MibDataset.bioFormatsMemoizerMemoDir
+        if obj.I{BatchOpt.id}.datasetType(1) == 'V'
+            obj.I{BatchOpt.id}.image.bioFormatsMemoizerMemoDir = options.bioFormatsMemoizerMemoDir;
+        end
+
         notify(obj, 'NewDataset');   % notify mibController about a new dataset; see function obj.Listner2_Callback for details
         
         obj.I{obj.id}.lastSegmSelection = [2 1];  % last selected contour for use with the 'e' button
-        notify(obj, 'ShowImage');
         
         % update list of recent directories
         dirPos = ismember(obj.preferences.System.Dirs.RecentDirs, BatchOpt.DirectoryName{1});

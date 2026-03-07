@@ -84,14 +84,22 @@ try
 
             % Handle Virtual mode
             if dataset.datasetType(1) == 'V'
-                if dataset.magFactor < 1
-                    [xImage, yImage] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'blockmode');
-                    xImage = ceil(xImage);
-                    yImage = ceil(yImage);
-                else
-                    xImage = ceil(xMouse);
-                    yImage = ceil(yMouse);
+                % xImage/yImage: 1-based indices into Iraw (the rendered viewport image)
+                % xStatus/yStatus: dataset-absolute coordinates for the status bar
+                xImage = ceil(xMouse);
+                yImage = ceil(yMouse);
+
+                % Clamp Iraw indices to actual rendered image size
+                if ~isempty(obj.mibModel.Iraw)
+                    xImage = max(1, min(xImage, size(obj.mibModel.Iraw, 2)));
+                    yImage = max(1, min(yImage, size(obj.mibModel.Iraw, 1)));
                 end
+
+                % Dataset-absolute coordinates for display — accounts for
+                % magFactor scaling and axesX/axesY pan offset
+                [xStatus, yStatus] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
+                xStatus = ceil(xStatus);
+                yStatus = ceil(yStatus);
             else
                 % Convert mouse coordinates to dataset coordinates
                 [xImage, yImage, sliceNo] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
@@ -105,6 +113,9 @@ try
                 yImage = min([yImage, imgHeight]);
                 xImage = min([xImage, imgWidth]);
                 sliceNo = min([sliceNo, imgDepth]);
+
+                xStatus = xImage;
+                yStatus = yImage;
             end
 
             colorValues = [];
@@ -120,7 +131,10 @@ try
                 else  % Virtual stacking mode
                     colorValues = 0;
                     if ~isempty(obj.mibModel.Iraw)
-                        colorValues = obj.mibModel.Iraw(yImage, xImage, :);
+                        % Iraw is [viewportH, viewportW, allChannels].
+                        % Index only the selected channels and squeeze to a
+                        % column vector so the downstream concatenation works.
+                        colorValues = squeeze(obj.mibModel.Iraw(yImage, xImage, cImage));
                     end
                 end
             elseif orientation == 1 && dataset.datasetType(1) ~= 'V'  % ZX orientation
@@ -136,13 +150,14 @@ try
             end
 
             % Update status label with pixel coordinates and values
+            % xStatus/yStatus are dataset-absolute; xImage/yImage index into Iraw
             if numel(colorValues) == 0
-                obj.mibController.cStatus.handles.pixelLabel.Text = sprintf('%d:%d', xImage, yImage);
+                obj.mibController.cStatus.handles.pixelLabel.Text = sprintf('%d:%d', xStatus, yStatus);
             else
                 % Pad colorValues with NaN to always show 4 channels
                 colorPadded = [double(colorValues); NaN(max(0, 4-numel(colorValues)), 1)];
                 obj.mibController.cStatus.handles.pixelLabel.Text = sprintf('%d:%d (%d:%d:%d:%d) / %d', ...
-                    xImage, yImage, colorPadded(1), colorPadded(2), colorPadded(3), colorPadded(4), modelValues);
+                    xStatus, yStatus, colorPadded(1), colorPadded(2), colorPadded(3), colorPadded(4), modelValues);
             end
 
             % Update brush cursor position

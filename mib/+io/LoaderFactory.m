@@ -82,9 +82,17 @@ classdef LoaderFactory
                     % HDF5 with XML header (MIB format or BigDataViewer)
                     loader = io.loaders.HDF5HeaderLoader(options);
 
+                case "hdf5-header-virtual"
+                    % XML+H5 in virtual stacking mode — metadata from XML, pixels on demand
+                    loader = io.loaders.HDF5VirtualSetupLoader(options, true);
+
                 case "hdf5-no-header"
                     % HDF5 without header (Ilastik format, raw HDF5)
                     loader = io.loaders.HDF5NoHeaderLoader(options);
+
+                case "hdf5-no-header-virtual"
+                    % Bare H5 in virtual stacking mode — pixels on demand
+                    loader = io.loaders.HDF5VirtualSetupLoader(options, false);
 
                 case "mibImg"
                     % MIB's custom MATLAB-based image format

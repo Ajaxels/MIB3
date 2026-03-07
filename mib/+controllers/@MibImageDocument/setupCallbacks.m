@@ -55,7 +55,7 @@ obj.handles.frameNumberSlider.ValueChangingFcn = @obj.gui_Callbacks;
 obj.handles.nextFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.lastFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 
-%% Mouse and window callbacks
+%% Mouse and key callbacks
 obj.UIFigure.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 obj.UIFigure.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
 obj.UIFigure.SizeChangedFcn = @(~, ~)obj.gui_SizeChangedFcn();

@@ -26,7 +26,14 @@ filename   = obj.data{fileIdx};
 
 switch objectType
     case {'matlab.hdf5', 'hdf5_image'}
-        loader = io.loaders.HDF5VirtualLoader(filename, obj.Virtual.seriesName{fileIdx});
+        % Pass transMatrix so resolveAxisOrder uses the correct native axis
+        % order (set by the user in the SelectHDFSeries dialog) instead of
+        % guessing from JSON attributes or falling back to 'yxzct'.
+        tm = [];
+        if isfield(obj.Virtual, 'transMatrix') && fileIdx <= numel(obj.Virtual.transMatrix)
+            tm = obj.Virtual.transMatrix{fileIdx};
+        end
+        loader = io.loaders.HDF5VirtualLoader(filename, obj.Virtual.seriesName{fileIdx}, tm);
 
     case 'bioformats'
         % seriesName stores a 1-based series number for BioFormats;

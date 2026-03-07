@@ -65,5 +65,7 @@ obj.updateGuiWidgets();
 % clear undo history
 if strcmp(evtData.EventName, 'NewDataset'); obj.mibModel.Undo.clearContents(); end
 
+% show the new image
+obj.showImage();
 
 end

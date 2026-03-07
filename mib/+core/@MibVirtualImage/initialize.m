@@ -121,4 +121,21 @@ if isKey(meta, 'Pyramid')
     obj.pyramid = utils.concatenateStructures(obj.pyramid, meta{'Pyramid'});
     meta = remove(meta, 'Pyramid'); %#ok<NASGU>
 end
+
+% Apply Virtual struct populated by HDF5VirtualSetupLoader.loadImages
+% (mirrors the Pyramid pattern above)
+if isKey(meta, "Virtual")
+    virtualInfo = meta{"Virtual"};
+    obj.Virtual.objectType    = virtualInfo.objectType;
+    obj.Virtual.seriesName    = virtualInfo.seriesName;
+    obj.Virtual.slicesPerFile = virtualInfo.slicesPerFile;
+    obj.Virtual.filenames     = virtualInfo.filenames;
+    obj.Virtual.readerId      = virtualInfo.readerId;
+    if isfield(virtualInfo, 'transMatrix')
+        obj.Virtual.transMatrix = virtualInfo.transMatrix;
+    else
+        obj.Virtual.transMatrix = cell(1, numel(virtualInfo.filenames));
+    end
+    meta = remove(meta, "Virtual"); %#ok<NASGU>
+end
 end

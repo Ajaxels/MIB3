@@ -14,6 +14,28 @@ classdef HDF5VirtualLoader < handle
     % implement BaseImageLoader — it is stateful and designed for repeated
     % sub-region reads rather than single full-dataset loads.
     %
+    % --- Relationship to HDF5VirtualSetupLoader ------------------------------
+    %
+    % These two classes serve different phases of the virtual dataset lifecycle
+    % and should not be confused:
+    %
+    %   HDF5VirtualSetupLoader  — runs ONCE when the user opens a file.
+    %     Phase   : dataset initialisation (MibModel.loadImages)
+    %     Job     : parse metadata, build the Virtual struct, return H5 paths.
+    %     Reads pixels? No.
+    %     Lifetime: discarded immediately after open; implements BaseImageLoader.
+    %     Created by: LoaderFactory
+    %
+    %   HDF5VirtualLoader  — runs on EVERY slice request during the session.
+    %     Phase   : on-demand pixel reading (MibVirtualImage.getDataVirt)
+    %     Job     : call h5read for the requested sub-region; cache axis order.
+    %     Reads pixels? Yes — one h5read call per z-group per getDataVirt call.
+    %     Lifetime: cached in MibVirtualImage.loaders{} for the session; does
+    %               NOT implement BaseImageLoader.
+    %     Created by: MibVirtualImage.getOrCreateLoader (lazily, per file)
+    %
+    % -------------------------------------------------------------------------
+    %
     % Usage example:
     % @code
     % loader = io.loaders.HDF5VirtualLoader('/data/stack.h5', '/MIB/images');
@@ -26,28 +48,44 @@ classdef HDF5VirtualLoader < handle
         % [char] full path to the HDF5 file
         datasetPath
         % [char] internal HDF5 dataset path (Virtual.seriesName{fileIdx})
+        transMatrix
+        % [1 x 5] permutation from SelectHDFSeries dialog (may be [] or NaN).
+        % transMatrix(k) = native HDF5 dimension position for MIB axis k
+        % where MIB axes are ordered [y, x, z, c, t].
+        % Passed in from Virtual.transMatrix{fileIdx} by getOrCreateLoader.
+        % When non-empty and not NaN, takes priority over axis-tag parsing.
         axisOrder
-        % [char] MATLAB dimension order resolved from the HDF5 JSON attribute,
-        % e.g. 'yxzct' means h5read returns [y, x, z, c, t].
+        % [char] MATLAB dimension order resolved from transMatrix or the HDF5
+        % JSON/axistags attribute, e.g. 'yxczt' means h5read returns
+        % [y, x, c, z, t] in native order.
         % Empty ([]) until resolveAxisOrder() is called on the first readRegion.
         toMIB3perm
-        % [1 x nDims] permutation vector: permute(raw, toMIB3perm) gives [y,x,z,c,t].
+        % [1 x 5] permutation vector: permute(raw, toMIB3perm) gives [y,x,z,c,t].
+        % Entries for axes absent from the native HDF5 dims are assigned
+        % trailing singleton positions so MATLAB auto-extends correctly.
         % Precomputed once alongside axisOrder.
     end
 
     methods
-        function obj = HDF5VirtualLoader(filename, datasetPath)
-            % obj = HDF5VirtualLoader(filename, datasetPath)
+        function obj = HDF5VirtualLoader(filename, datasetPath, transMatrix)
+            % obj = HDF5VirtualLoader(filename, datasetPath, transMatrix)
             % Constructor
             %
             % Parameters:
             % filename    : [char] full path to the HDF5 file
             % datasetPath : [char] internal HDF5 dataset path
+            % transMatrix : [@em optional] [1 x 5] permutation from
+            %               SelectHDFSeries dialog; [] or NaN = not available
 
             obj.filename    = filename;
             obj.datasetPath = datasetPath;
             obj.axisOrder   = [];
             obj.toMIB3perm  = [];
+            if nargin >= 3 && ~isempty(transMatrix) && isnumeric(transMatrix) && ~isnan(transMatrix(1))
+                obj.transMatrix = transMatrix;
+            else
+                obj.transMatrix = [];
+            end
         end
 
         function block = readRegion(obj, Ylim, Xlim, z1In, zCount, nColors, Tlim, dataClass)
@@ -98,40 +136,108 @@ classdef HDF5VirtualLoader < handle
     methods (Access = private)
         function resolveAxisOrder(obj)
             % resolveAxisOrder(obj)
-            % Read h5info once to determine the full axis order.
-            % Precomputes obj.toMIB3perm so readRegion never calls h5info again.
+            % Resolve the native HDF5 axis order and precompute toMIB3perm.
+            % Called once on the first readRegion; results are cached.
             %
-            % The JSON attribute stores axes outermost-first (HDF5/C order);
-            % flip() converts to MATLAB innermost-first (column-major) order.
-            % Example: HDF5 stores (t,c,z,x,y) -> axisOrder = 'yxzct'
+            % Priority order:
+            %   1. transMatrix from SelectHDFSeries dialog (most reliable for
+            %      bare HDF5 files where axis order was set by the user)
+            %   2. 'axistags' JSON attribute on the dataset (Ilastik style)
+            %   3. JSON attribute on the HDF5 root (MIB/OMEZARR style)
+            %   4. Fallback: first nDims characters of 'yxzct', where nDims is
+            %      the actual rank of the dataset from h5info.
+            %
+            % For axes present in the native HDF5:
+            %   toMIB3perm(k) = native dimension index for MIB axis k
+            % For axes absent from the native HDF5 (singletons not stored):
+            %   toMIB3perm(k) = nDims + offset  (MATLAB auto-extends to singleton)
+            %   These extra dimensions evaluate to size 1 after permute().
+            %
+            % Example: native 'yxczt' (5 dims, Y=372,X=521,C=75,Z=1,T=1)
+            %   transMatrix = [1,2,4,3,5]
+            %   axisOrder   = 'yxczt'
+            %   toMIB3perm  = [1,2,4,3,5]
+            %   permute(raw_yxczt,[1,2,4,3,5]) -> [y,x,z,c,t] ✓
+            %
+            % Example: native 'yxz' (3 dims, no c/t stored)
+            %   axisOrder  = 'yxz'
+            %   toMIB3perm = [1,2,3,4,5]   (c,t get auto-singleton positions 4,5)
+            %   permute(raw_3D,[1,2,3,4,5]) -> [y,x,z,1,1] ✓
 
-            try
-                info   = h5info(obj.filename);
-                parsed = jsondecode(info.Datasets.Attributes.Value);
-                obj.axisOrder = lower(flip(strjoin({parsed.axes.key}, '')));
-            catch
-                obj.axisOrder = 'yxzct';    % fallback: MIB3 native order
-            end
-
-            if isempty(obj.axisOrder)
-                obj.axisOrder = 'yxzct';
-            end
-
-            % Precompute permutation: native axis order -> MIB3 [y, x, z, c, t]
-            % toMIB3perm(k) = position of the k-th MIB3 axis in the native order.
-            % e.g. if axisOrder='yxczt': z is at position 4, c at 3
-            %   -> toMIB3perm = [1, 2, 4, 3, 5]
-            %   -> permute(raw_yxczt, [1,2,4,3,5]) gives [y,x,z,c,t] ✓
             mib3axes = 'yxzct';
-            obj.toMIB3perm = zeros(1, numel(mib3axes));
-            for k = 1:numel(mib3axes)
-                pos = strfind(obj.axisOrder, mib3axes(k));
-                if isempty(pos)
-                    error('io:HDF5VirtualLoader:missingAxis', ...
-                        'HDF5VirtualLoader: axis "%s" not found in "%s" (%s)', ...
-                        mib3axes(k), obj.axisOrder, obj.filename);
+
+            % --- get actual HDF5 dataset rank --------------------------------
+            nDims = 5;  % conservative fallback
+            try
+                dsInfo = h5info(obj.filename, obj.datasetPath);
+                nDims  = numel(dsInfo.Dataspace.Size);
+            catch
+            end
+
+            % --- Case 1: transMatrix provided from SelectHDFSeries -----------
+            if ~isempty(obj.transMatrix)
+                % transMatrix(k) = native dim position for MIB axis k.
+                % Positions > nDims indicate axes not stored in the HDF5 file.
+                axisArr     = blanks(nDims);
+                obj.toMIB3perm = zeros(1, 5);
+                nextMissing = nDims + 1;
+                for k = 1:5
+                    pos = obj.transMatrix(k);
+                    if pos <= nDims
+                        axisArr(pos)       = mib3axes(k);
+                        obj.toMIB3perm(k)  = pos;
+                    else
+                        % Axis not stored — assign a trailing singleton slot
+                        obj.toMIB3perm(k) = nextMissing;
+                        nextMissing        = nextMissing + 1;
+                    end
                 end
-                obj.toMIB3perm(k) = pos;
+                obj.axisOrder = axisArr;
+                return;
+            end
+
+            % --- Case 2: 'axistags' attribute on the dataset (Ilastik) -------
+            try
+                attrNames = {dsInfo.Attributes.Name};
+                attrIdx   = find(strcmp(attrNames, 'axistags'), 1);
+                if ~isempty(attrIdx)
+                    val = dsInfo.Attributes(attrIdx).Value;
+                    if iscell(val); val = val{1}; end
+                    jsonStruct    = jsondecode(val);
+                    obj.axisOrder = lower(fliplr(strjoin({jsonStruct.axes.key}, '')));
+                end
+            catch
+            end
+
+            % --- Case 3: JSON attribute on the HDF5 root (MIB/OMEZARR) ------
+            if isempty(obj.axisOrder)
+                try
+                    rootInfo      = h5info(obj.filename);
+                    parsed        = jsondecode(rootInfo.Datasets.Attributes.Value);
+                    obj.axisOrder = lower(flip(strjoin({parsed.axes.key}, '')));
+                catch
+                end
+            end
+
+            % --- Case 4: fallback — assume dims map in order y,x,z,c,t ------
+            if isempty(obj.axisOrder)
+                obj.axisOrder = mib3axes(1:min(nDims, 5));
+            end
+
+            % --- Precompute toMIB3perm ---------------------------------------
+            % For axes present in axisOrder: use their 1-based position.
+            % For axes absent (not stored in HDF5): assign trailing singleton slots
+            % so that permute() auto-extends correctly.
+            obj.toMIB3perm = zeros(1, 5);
+            nextMissing    = numel(obj.axisOrder) + 1;
+            for k = 1:5
+                pos = strfind(obj.axisOrder, mib3axes(k));
+                if ~isempty(pos)
+                    obj.toMIB3perm(k) = pos(1);
+                else
+                    obj.toMIB3perm(k) = nextMissing;
+                    nextMissing        = nextMissing + 1;
+                end
             end
         end
     end
