@@ -84,10 +84,20 @@ try
 
             % Handle Virtual mode
             if dataset.datasetType(1) == 'V'
-                % xImage/yImage: 1-based indices into Iraw (the rendered viewport image)
-                % xStatus/yStatus: dataset-absolute coordinates for the status bar
-                xImage = ceil(xMouse);
-                yImage = ceil(yMouse);
+                % Iraw is the raw image displayed on screen.
+                % When zoomed in (magFactor < 1): Iraw is a full-res crop of the
+                % dataset — use 'blockmode' to get position within that crop.
+                % When zoomed out (magFactor >= 1): Iraw is at screen resolution —
+                % axes coordinates index directly into it.
+                magFactor = obj.mibModel.getMagFactor();
+                if magFactor < 1
+                    [xImage, yImage] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'blockmode');
+                else
+                    xImage = xMouse;
+                    yImage = yMouse;
+                end
+                xImage = ceil(xImage);
+                yImage = ceil(yImage);
 
                 % Clamp Iraw indices to actual rendered image size
                 if ~isempty(obj.mibModel.Iraw)
@@ -95,8 +105,7 @@ try
                     yImage = max(1, min(yImage, size(obj.mibModel.Iraw, 1)));
                 end
 
-                % Dataset-absolute coordinates for display — accounts for
-                % magFactor scaling and axesX/axesY pan offset
+                % Dataset-absolute coordinates for the status bar
                 [xStatus, yStatus] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
                 xStatus = ceil(xStatus);
                 yStatus = ceil(yStatus);

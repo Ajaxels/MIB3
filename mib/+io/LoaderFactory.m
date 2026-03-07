@@ -68,7 +68,7 @@ classdef LoaderFactory
 
                 case "BioFormatsVirtual"
                     % BioFormats reader for virtual stacking mode
-                    loader = io.loaders.BioFormatsVirtualLoader(options);
+                    loader = io.loaders.BioFormatsVirtualSetupLoader(options);
 
                 case "OmeZarr"
                     % OME-Zarr format (v2/v3)
