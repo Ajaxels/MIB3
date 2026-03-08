@@ -51,10 +51,59 @@ switch menuEntry.Tag
     case 'fileListContextColorAddNth'
         obj.mibModel.loadImages('Add each N-th dataset as new color channel');
     case 'fileListContextRename'
+        if numel(obj.mibModel.selectedFiles) ~= 1
+            dlgOpts.Header = 'Please select a single file!';
+            dlgOpts.MsgBoxOnly = true;
+            dlgOpts.WindowStyle = 'normal';
+            dlgOpts.WindowHeight = 150';
+            dlgOpts.Icon = 'puffin_warning';
+            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Rename file', dlgOpts);
+            return;
+        end
+        [filePath, filename, ext] = fileparts(fullfile(obj.mibModel.currentDirectory, obj.mibModel.selectedFiles{1}));
+        dlgOpts.mibPath = obj.mibModel.mibPath;
+        answer = utils.dlgs.inputSingleDlg(obj.mibModel.mibGUI, 'Please enter new file name', [filename, ext], 'Rename file', dlgOpts);
+        if isempty(answer); return; end
+        movefile(fullfile(filePath, [filename, ext]), fullfile(filePath, answer));
+        obj.updateFileList_Callback(answer);
 
     case 'fileListContextDelete'
+        filenames = cellfun(@(f) fullfile(obj.mibModel.currentDirectory, f), obj.mibModel.selectedFiles, 'UniformOutput', false);
+        if numel(filenames) == 1 %#ok<ISCL>
+            msg = sprintf('You are going to delete\n%s', filenames{1});
+        else
+            msg = sprintf('You are going to delete\n%d files', numel(filenames));
+        end
+        selection = uiconfirm(obj.mibModel.mibGUI, msg, 'Delete file(s)?', ...
+            'Options', {'Delete', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
+        if strcmp(selection, 'Cancel'); return; end
+        
+        % convert warning into an error
+        s = warning('error', 'MATLAB:DELETE:Permission');
+        cleanupObj = onCleanup(@() warning(s));
+
+        try
+            for i = 1:numel(filenames)
+                delete(filenames{i});
+            end
+        catch err
+            utils.dlgs.showErrorDialog(obj.view.gui, sprintf('%s:\n%s\n\nThe file is probably open in another application, or MATLAB lacks permission', err.message, filenames{i}), ...
+                'Delete failed', 'Cannot delete file!', '');
+        end
+        obj.updateFileList_Callback();
 
     case 'fileListContextProps'
+        if isempty(obj.mibModel.selectedFiles); return; end
+        fileInfo = dir(fullfile(obj.mibModel.currentDirectory, obj.mibModel.selectedFiles{1}));
+        dlgOpts.Header = sprintf('Filename: %s\nDate: %s\nSize: %.3f KB', fileInfo.name, fileInfo.date, fileInfo.bytes/1000);
+        dlgOpts.HeaderLines = 4;
+        dlgOpts.MsgBoxOnly = true;
+        dlgOpts.WindowHeight = 150';
+        dlgOpts.WindowWidth = 400';
+        dlgOpts.WindowStyle = 'normal';
+        dlgOpts.Icon = 'puffin_measure';
+        dlgOpts.IconWidth = 96;
+        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'File info', dlgOpts);
 
 end
 
