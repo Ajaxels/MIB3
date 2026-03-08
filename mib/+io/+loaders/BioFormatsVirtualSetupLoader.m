@@ -98,12 +98,12 @@ classdef BioFormatsVirtualSetupLoader < io.loaders.BaseImageLoader
             % imginfo : updated dictionary with imginfo{"Virtual"} added
 
             nFiles = numel(files);
-            img = cell(1, nFiles);
+            img = cell([nFiles 1]);
 
-            Virtual.objectType    = cell(1, nFiles);
-            Virtual.seriesName    = cell(1, nFiles);
-            Virtual.slicesPerFile = zeros(1, nFiles);
-            Virtual.filenames     = cell(1, nFiles);
+            Virtual.objectType    = cell([nFiles 1]);
+            Virtual.seriesName    = cell([nFiles 1]);
+            Virtual.slicesPerFile = zeros([nFiles 1]);
+            Virtual.filenames     = cell([nFiles 1]);
 
             for i = 1:nFiles
                 img{i}                   = files(i).origFilename;
@@ -115,7 +115,7 @@ classdef BioFormatsVirtualSetupLoader < io.loaders.BaseImageLoader
 
             % Build readerId: maps each global z-slice index to its source file index
             totalSlices      = sum(Virtual.slicesPerFile);
-            Virtual.readerId = zeros(1, totalSlices);
+            Virtual.readerId = zeros([totalSlices, 1]);
             idx = 1;
             for i = 1:nFiles
                 n = Virtual.slicesPerFile(i);

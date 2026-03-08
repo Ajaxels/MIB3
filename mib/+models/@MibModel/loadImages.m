@@ -443,6 +443,15 @@ switch BatchOpt.Mode{1}
             obj.I{BatchOpt.id}.image.bioFormatsMemoizerMemoDir = options.bioFormatsMemoizerMemoDir;
         end
 
+        % explicitly sync slices{4} to the new image color count before
+        % notifying, so that getRGBimage never indexes lutColors out of bounds
+        % when the previously loaded dataset had more color channels
+        if obj.I{BatchOpt.id}.useLUT
+            obj.I{BatchOpt.id}.slices{4} = 1:obj.I{BatchOpt.id}.image.colors;
+        else
+            obj.I{BatchOpt.id}.slices{4} = 1:min([obj.I{BatchOpt.id}.image.colors 3]);
+        end
+
         notify(obj, 'NewDataset');   % notify mibController about a new dataset; see function obj.Listner2_Callback for details
         
         obj.I{obj.id}.lastSegmSelection = [2 1];  % last selected contour for use with the 'e' button
@@ -504,30 +513,44 @@ switch BatchOpt.Mode{1}
             obj.I{BatchOpt.id}.slices{4} = 1:min([obj.I{BatchOpt.id}.image.colors 3]);
         end
         notify(obj, 'NewDataset');   % notify MibController about a new dataset; see function MibController.listenerNewDataset for details
-    case {'Add as new color channel' 'Add each N-th dataset as new color channel'}   % add color channel
+    case {'Add as new color channel', 'Add each N-th dataset as new color channel'}
         %% Add as new color channel / Add each N-th dataset as new color channel
-        if obj.I{BatchOpt.id}.Virtual.virtual == 1
-            toolname = 'The color channels can not be added in the virtual stacking mode.';
-            warndlg(sprintf('!!! Warning !!!\n\n%s\nPlease switch to the memory-resident mode and try again', ...
-                toolname), 'Not implemented');
+        if obj.I{BatchOpt.id}.datasetType(1) == 'V'
+            ErrorDlgOpt.winTitle = 'Not implemented!';
+            ErrorDlgOpt.WindowHeight = 170;
+            ErrorDlgOpt.err = sprintf('The color channels can not be added in the virtual stacking mode.\nPlease switch to the memory-resident mode and try again');
+            eventdata = core.ToggleEventData(ErrorDlgOpt);
+            notify(obj, 'ShowErrorDialog', eventdata);
             notify(obj, 'StopProtocol');
             return;
         end
 
-        [img, img_info, ~] = mibLoadImages(BatchOpt.Filenames, options);
-        if isempty(img(1)); notify(obj, 'StopProtocol'); return; end
-        
+        % Create file loader and load images
+        loader = io.LoaderFactory.create(loaderInfo, options);
+        if isempty(loader); notify(obj, 'StopProtocol'); return; end
+        [img_info, files] = loader.loadMetadata(BatchOpt.Filenames, options);
+        if img_info.numEntries == 0; notify(obj, 'StopProtocol'); return; end
+        [img, img_info] = loader.loadImages(files, img_info, options);
+        if isempty(img); notify(obj, 'StopProtocol'); return; end
+
+        lutColors = NaN;
         if isKey(img_info, 'lutColors')
-            lutColors = img_info('lutColors');
-            lutColors = lutColors(1:size(img,3),:);
-        else
-            lutColors = NaN;
+            lutTemp = img_info{'lutColors'};
+            lutColors = lutTemp(1:img_info{'Colors'}, :);
         end
-        
-        result = obj.I{BatchOpt.id}.addColorChannel(img, NaN, lutColors);
+
+        addOpts.parentFigure = options.parentFigure;
+        addOpts.showWaitbar  = options.waitbar;
+        result = obj.I{BatchOpt.id}.image.addColorChannel(img, NaN, lutColors, addOpts);
         if result == 0; notify(obj, 'StopProtocol'); return; end
-        notify(obj, 'newDataset');   % notify mibView about a new dataset; see function obj.mibView.Listner2_Callback for details
-        obj.plotImage(1);
+
+        % update displayed color channels
+        if obj.I{BatchOpt.id}.useLUT
+            obj.I{BatchOpt.id}.slices{4} = 1:obj.I{BatchOpt.id}.image.colors;
+        else
+            obj.I{BatchOpt.id}.slices{4} = 1:min([obj.I{BatchOpt.id}.image.colors 3]);
+        end
+        notify(obj, 'NewDataset');
 end
 
 end

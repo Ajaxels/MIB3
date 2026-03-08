@@ -119,13 +119,13 @@ classdef HDF5VirtualSetupLoader < io.loaders.BaseImageLoader
             % imginfo : updated dictionary with imginfo{"Virtual"} added
 
             nFiles = numel(files);
-            img = cell(1, nFiles);
+            img = cell([nFiles 1]);
 
-            Virtual.objectType    = cell(1, nFiles);
-            Virtual.seriesName    = cell(1, nFiles);
-            Virtual.slicesPerFile = zeros(1, nFiles);
-            Virtual.filenames     = cell(1, nFiles);
-            Virtual.transMatrix   = cell(1, nFiles);  % [] when not set (bare H5 without axis reorder)
+            Virtual.objectType    = cell([nFiles 1]);
+            Virtual.seriesName    = cell([nFiles 1]);
+            Virtual.slicesPerFile = zeros([nFiles 1]);
+            Virtual.filenames     = cell([nFiles 1]);
+            Virtual.transMatrix   = cell([nFiles 1]);  % [] when not set (bare H5 without axis reorder)
 
             for i = 1:nFiles
                 img{i}                   = files(i).filename;   % H5 path (resolved by inner loader)
@@ -155,7 +155,7 @@ classdef HDF5VirtualSetupLoader < io.loaders.BaseImageLoader
 
             % Build readerId: maps each global z-slice index to its source file index
             totalSlices      = sum(Virtual.slicesPerFile);
-            Virtual.readerId = zeros(1, totalSlices);
+            Virtual.readerId = zeros([totalSlices, 1]);
             idx = 1;
             for i = 1:nFiles
                 n = Virtual.slicesPerFile(i);

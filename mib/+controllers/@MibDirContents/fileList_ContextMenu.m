@@ -47,9 +47,9 @@ switch menuEntry.Tag
     case 'fileListContextColorCombine'
         obj.mibModel.loadImages('Combine files as color channels');
     case 'fileListContextColorAdd'
-
+        obj.mibModel.loadImages('Add as new color channel');
     case 'fileListContextColorAddNth'
-
+        obj.mibModel.loadImages('Add each N-th dataset as new color channel');
     case 'fileListContextRename'
 
     case 'fileListContextDelete'

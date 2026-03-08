@@ -70,7 +70,7 @@ elseif dataset.orientation == 3     %'YX'
         layerNameNext = ...
             dataset.image.sliceName{min([sliceNumber noSliceNames])};
 
-        if strcmp(layerNamePrevious, layerNameNext) % update label
+        if ~strcmp(layerNamePrevious, layerNameNext) % update label
             strVal1 = 'Image View    >>>>>    ';
             [~, fn, ext] = fileparts(dataset.image.filename);
             strVal2 = sprintf('%s%s    >>>>>    %s', fn, ext, layerNameNext);

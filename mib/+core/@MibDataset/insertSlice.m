@@ -3,9 +3,10 @@ function insertSlice(obj, img, insertPosition, meta, options)
 % Insert a slice or a dataset into the existing volume
 %
 % This is the interactive wrapper: it handles user dialogs, a waitbar and
-% annotation / slice-name bookkeeping, then delegates the actual array
-% manipulation to core.MibImage.insertSlice for each layer
-% (image, labels, mask, selection).
+% annotation bookkeeping, then delegates the actual array manipulation to
+% core.MibImage.insertSlice (standard) or core.MibVirtualImage.insertSlice
+% (virtual) for the image layer, and to MibImage.insertSlice for each
+% auxiliary layer (labels, mask, selection).
 %
 % Parameters:
 % img: new 2D-5D image stack to insert, dimensions [height, width, depth, colors, time]
@@ -43,17 +44,24 @@ if ~isfield(options, 'showWaitbar');               options.showWaitbar = true;  
 if ~isfield(options, 'BackgroundColorIntensity');  options.BackgroundColorIntensity = 0; end
 if ~isfield(options, 'silentMode');                options.silentMode = false;  end
 if ~isfield(options, 'parentFigure');              options.parentFigure = [];   end
-if ~isfield(options, 'mibPath');                   options.mibPath = [];   end
+if ~isfield(options, 'mibPath');                   options.mibPath = [];        end
 
 % ensure img is 5D [height, width, depth, colors, time]
-switch ndims(img)
-    case 2; img = reshape(img, [size(img,1), size(img,2), 1, 1, 1]);
-    case 3; img = reshape(img, [size(img,1), size(img,2), size(img,3), 1, 1]);
-    case 4; img = reshape(img, [size(img,1), size(img,2), size(img,3), size(img,4), 1]);
+if obj.datasetType(1) ~= 'V'
+    switch ndims(img)
+        case 2; img = reshape(img, [size(img,1), size(img,2), 1, 1, 1]);
+        case 3; img = reshape(img, [size(img,1), size(img,2), size(img,3), 1, 1]);
+        case 4; img = reshape(img, [size(img,1), size(img,2), size(img,3), size(img,4), 1]);
+    end
+    % inserted dataset dimensions
+    [D2_y, D2_x, D2_z, D2_c, D2_t] = size(img);
+else
+    D2_y = meta{'Height'};
+    D2_x = meta{'Width'};
+    D2_c = meta{'Colors'};
+    D2_z = meta{'Depth'};
+    D2_t = meta{'Time'};
 end
-
-% inserted dataset dimensions
-[D2_y, D2_x, D2_z, D2_c, D2_t] = size(img);
 
 % existing dataset dimensions
 D1_y = obj.image.height;
@@ -96,66 +104,49 @@ end
 
 if options.showWaitbar
     wb = uiprogressdlg(options.parentFigure, 'Title', 'Insert dataset...', ...
-        'Message', sprintf('Insert dataset to position: %d\nPlease wait...', insertPosition)); %, ...
-        %'Indeterminate', 'on');
+        'Message', sprintf('Insert dataset to position: %d\nPlease wait...', insertPosition));
+end
+
+% ---- extract slice names from meta (used by image.insertSlice) ----
+sliceNames = {};
+if ~isempty(meta) && isa(meta, 'dictionary') && isKey(meta, 'SliceName')
+    sliceNames = meta{'SliceName'};
 end
 
 % -----------------------------------------------------------------------
 if strcmp(options.dim, 'depth')
 % -----------------------------------------------------------------------
-    if obj.datasetType(1) == 'V'
-        % Virtual stack insertion — not yet implemented in MIB3.
-        % Kept as a placeholder mirroring MIB2 logic for future use.
-        %
-        % if insertPosition == 1
-        %     obj.img = [img; obj.img];
-        %     obj.Virtual.filenames    = [meta('Virtual_filenames');    obj.Virtual.filenames];
-        %     obj.Virtual.objectType   = [meta('Virtual_objectType');   obj.Virtual.objectType];
-        %     obj.Virtual.readerId     = [meta('Virtual_readerId');     obj.Virtual.readerId+max(meta('Virtual_readerId'))];
-        %     obj.Virtual.seriesName   = [meta('Virtual_seriesName');   obj.Virtual.seriesName];
-        %     obj.Virtual.slicesPerFile = [meta('Virtual_slicesPerFile'); obj.Virtual.slicesPerFile];
-        % elseif insertPosition == D1_z+1
-        %     obj.img = [obj.img; img];
-        %     obj.Virtual.filenames    = [obj.Virtual.filenames;    meta('Virtual_filenames')];
-        %     obj.Virtual.objectType   = [obj.Virtual.objectType;   meta('Virtual_objectType')];
-        %     obj.Virtual.readerId     = [obj.Virtual.readerId;     meta('Virtual_readerId')+max(obj.Virtual.readerId)];
-        %     obj.Virtual.seriesName   = [obj.Virtual.seriesName;   meta('Virtual_seriesName')];
-        %     obj.Virtual.slicesPerFile = [obj.Virtual.slicesPerFile; meta('Virtual_slicesPerFile')];
-        % else
-        %     obj.img = [obj.img(1:insertPosition-1); img; obj.img(insertPosition:end)];
-        %     obj.Virtual.filenames    = [obj.Virtual.filenames(1:insertPosition-1);    meta('Virtual_filenames');    obj.Virtual.filenames(insertPosition:end)];
-        %     obj.Virtual.objectType   = [obj.Virtual.objectType(1:insertPosition-1);   meta('Virtual_objectType');   obj.Virtual.objectType(insertPosition:end)];
-        %     obj.Virtual.readerId     = [obj.Virtual.readerId(1:insertPosition-1); ...
-        %                                  meta('Virtual_readerId')+max(obj.Virtual.readerId(1:insertPosition-1)); ...
-        %                                  obj.Virtual.readerId(insertPosition:end)+max(meta('Virtual_readerId'))];
-        %     obj.Virtual.seriesName   = [obj.Virtual.seriesName(1:insertPosition-1);   meta('Virtual_seriesName');   obj.Virtual.seriesName(insertPosition:end)];
-        %     obj.Virtual.slicesPerFile = [obj.Virtual.slicesPerFile(1:insertPosition-1); meta('Virtual_slicesPerFile'); obj.Virtual.slicesPerFile(insertPosition:end)];
-        % end
-    else
-        % ---- image layer ----
-        obj.image.insertSlice(img, insertPosition, 'depth', BackgroundColorIntensity);
-        if options.showWaitbar; wb.Value = 0.3; end
+    imgOpts.BackgroundColorIntensity = BackgroundColorIntensity;
+    imgOpts.sliceNames               = sliceNames;
 
+    if obj.datasetType(1) == 'V'
+        obj.image.insertSlice(img, insertPosition, 'depth', meta{'Virtual'}, imgOpts);
+    else
+        obj.image.insertSlice(img, insertPosition, 'depth', imgOpts);
+    end
+    if options.showWaitbar; wb.Value = 0.3; end
+
+    if obj.datasetType(1) ~= 'V'
         % ---- label layers (insert zeros at the same position) ----
         if obj.labels.maxMaterials < 255   % labels63: model+mask+selection packed together
             if obj.modelExist
                 emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
-                obj.labels.insertSlice(emptyLayer, insertPosition, 'depth', 0);
+                obj.labels.insertSlice(emptyLayer, insertPosition, 'depth');
             end
         else   % separate model / mask / selection layers
             if obj.modelExist
                 emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], obj.labels.dataClass);
-                obj.labels.insertSlice(emptyLayer, insertPosition, 'depth', 0);
+                obj.labels.insertSlice(emptyLayer, insertPosition, 'depth');
             end
             if options.showWaitbar; wb.Value = 0.6; end
             if obj.maskExist
                 emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
-                obj.mask.insertSlice(emptyLayer, insertPosition, 'depth', 0);
+                obj.mask.insertSlice(emptyLayer, insertPosition, 'depth');
             end
             if options.showWaitbar; wb.Value = 0.8; end
             if obj.selection.exists
                 emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
-                obj.selection.insertSlice(emptyLayer, insertPosition, 'depth', 0);
+                obj.selection.insertSlice(emptyLayer, insertPosition, 'depth');
             end
         end
         if options.showWaitbar; wb.Value = 0.85; end
@@ -167,58 +158,36 @@ if strcmp(options.dim, 'depth')
             labelPositions(shift, 1) = labelPositions(shift, 1) + D2_z;
             obj.annotations.replaceLabels(labelsList, labelPositions, labelValues);
         end
-
-        % ---- update SliceNames ----
-        if ~isempty(obj.image.sliceName)
-            sliceNames = obj.image.sliceName;
-            if numel(sliceNames) == 1; sliceNames = repmat(sliceNames, [D1_z 1]); end %#ok<*ISCL>
-
-            sliceNamesNew = {''};
-            if ~isempty(meta)
-                if isa(meta, 'dictionary') && isKey(meta, 'SliceName')
-                    sliceNamesNew = meta{'SliceName'};
-                end
-            end
-            if numel(sliceNamesNew) == 1; sliceNamesNew = repmat(sliceNamesNew, [D2_z 1]); end
-
-            if insertPosition == D1_z+1
-                sliceNames = [sliceNames; sliceNamesNew];
-            elseif insertPosition == 1
-                sliceNames = [sliceNamesNew; sliceNames];
-            else
-                sliceNames = [sliceNames(1:insertPosition-1); sliceNamesNew; sliceNames(insertPosition:end)];
-            end
-            obj.image.sliceName = sliceNames;
-        end
     end
 
 % -----------------------------------------------------------------------
 else  % insert a new time point
 % -----------------------------------------------------------------------
-    % ---- image layer ----
-    obj.image.insertSlice(img, insertPosition, 'time', BackgroundColorIntensity);
+    imgOpts.BackgroundColorIntensity = BackgroundColorIntensity;
+
+    obj.image.insertSlice(img, insertPosition, 'time', imgOpts);
     if options.showWaitbar; wb.Value = 0.3; end
 
     % ---- label layers ----
     if obj.labels.maxMaterials < 255   % labels63
         if obj.modelExist
             emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
-            obj.labels.insertSlice(emptyLayer, insertPosition, 'time', 0);
+            obj.labels.insertSlice(emptyLayer, insertPosition, 'time');
         end
     else
         if obj.modelExist
             emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], obj.labels.dataClass);
-            obj.labels.insertSlice(emptyLayer, insertPosition, 'time', 0);
+            obj.labels.insertSlice(emptyLayer, insertPosition, 'time');
         end
         if options.showWaitbar; wb.Value = 0.6; end
         if obj.maskExist
             emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
-            obj.mask.insertSlice(emptyLayer, insertPosition, 'time', 0);
+            obj.mask.insertSlice(emptyLayer, insertPosition, 'time');
         end
         if options.showWaitbar; wb.Value = 0.8; end
         if obj.selection.exists
             emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
-            obj.selection.insertSlice(emptyLayer, insertPosition, 'time', 0);
+            obj.selection.insertSlice(emptyLayer, insertPosition, 'time');
         end
     end
     if options.showWaitbar; wb.Value = 0.85; end

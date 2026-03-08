@@ -1,5 +1,5 @@
-function insertSlice(obj, img, insertPosition, dim, BackgroundColorIntensity)
-% function insertSlice(obj, img, insertPosition, dim, BackgroundColorIntensity)
+function insertSlice(obj, img, insertPosition, dim, options)
+% function insertSlice(obj, img, insertPosition, dim, options)
 % Low-level insert of img into obj.data{1} along the depth (z) or time (t) dimension.
 %
 % This is the pure data-manipulation layer: no dialogs, no waitbars, no
@@ -13,32 +13,39 @@ function insertSlice(obj, img, insertPosition, dim, BackgroundColorIntensity)
 %   by the caller). 0 or NaN means append to the end.
 % dim: 'depth' (default) inserts along dimension 3 (z);
 %      'time' inserts along dimension 5 (t)
-% BackgroundColorIntensity: scalar fill value used when the spatial extents
-%   of img exceed those of the current data (default 0)
+% options: [@em optional] struct with fields:
+%   @li .BackgroundColorIntensity - scalar fill value for dimension mismatches (default 0)
+%   @li .sliceNames - cell array of names for the inserted depth slices (default {})
 %
 % Return values:
 %   none
 %
 % After the call the following properties are updated:
 %   obj.data{1}, obj.height, obj.width, obj.depth, obj.colors, obj.time,
-%   obj.dim_yxzct
+%   obj.dim_yxzct, obj.sliceName (when applicable)
 
 %|
 % @b Examples:
-% @code obj.image.insertSlice(img5D, 5, 'depth', 0); @endcode
-% @code obj.labels.insertSlice(zeros([H W D 1 T],'uint8'), 5, 'depth', 0); @endcode
+% @code obj.image.insertSlice(img5D, 5, 'depth'); @endcode
+% @code obj.labels.insertSlice(zeros([H W D 1 T],'uint8'), 5, 'depth'); @endcode
+% @code opts.BackgroundColorIntensity = 255; opts.sliceNames = {'slice1','slice2'}; @endcode
+% @code obj.image.insertSlice(img5D, 5, 'depth', opts); @endcode
 
 % Updates
 %
 
-if nargin < 5; BackgroundColorIntensity = 0; end
+if nargin < 5; options = struct; end
 if nargin < 4; dim = 'depth'; end
+if ~isfield(options, 'BackgroundColorIntensity'); options.BackgroundColorIntensity = 0; end
+if ~isfield(options, 'sliceNames');               options.sliceNames = {};             end
+
+BackgroundColorIntensity = options.BackgroundColorIntensity;
 
 [D2_y, D2_x, D2_z, D2_c, D2_t] = size(img);
-D1_y = obj.height;  
-D1_x = obj.width;  
+D1_y = obj.height;
+D1_x = obj.width;
 D1_z = obj.depth;
-D1_c = obj.colors;  
+D1_c = obj.colors;
 D1_t = obj.time;
 
 % clamp insertPosition
@@ -55,7 +62,6 @@ tMax = max([D1_t, D2_t]);
 % -----------------------------------------------------------------------
 if strcmp(dim, 'depth')
 % -----------------------------------------------------------------------
-    insertPosition
     if insertPosition == 1
         Z1_part1 = [D2_z+1, D2_z+D1_z];  Z1_part2 = [];  Z2_part1 = [1, D2_z];
     elseif insertPosition == D1_z+1
@@ -65,8 +71,6 @@ if strcmp(dim, 'depth')
         Z1_part2 = [insertPosition+D2_z, D2_z+D1_z];
         Z2_part1 = [insertPosition, insertPosition+D2_z-1];
     end
-    
-    Z1_part2
 
     if BackgroundColorIntensity ~= 0
         imgOut = zeros([yMax, xMax, D1_z+D2_z, cMax, tMax], obj.dataClass) + BackgroundColorIntensity;
@@ -82,6 +86,25 @@ if strcmp(dim, 'depth')
     end
     obj.data{1} = imgOut;
     obj.depth = D1_z + D2_z;
+
+    % ---- update sliceName ----
+    if ~isempty(obj.sliceName)
+        sliceNames = obj.sliceName;
+        if numel(sliceNames) == 1; sliceNames = repmat(sliceNames, [D1_z 1]); end
+
+        sliceNamesNew = options.sliceNames;
+        if isempty(sliceNamesNew); sliceNamesNew = {''}; end
+        if numel(sliceNamesNew) == 1; sliceNamesNew = repmat(sliceNamesNew, [D2_z 1]); end
+
+        if insertPosition == D1_z+1
+            sliceNames = [sliceNames; sliceNamesNew];
+        elseif insertPosition == 1
+            sliceNames = [sliceNamesNew; sliceNames];
+        else
+            sliceNames = [sliceNames(1:insertPosition-1); sliceNamesNew; sliceNames(insertPosition:end)];
+        end
+        obj.sliceName = sliceNames;
+    end
 
 % -----------------------------------------------------------------------
 else  % time

@@ -53,6 +53,8 @@ classdef MibVirtualImage < core.MibImage
 
         closeVirtualDataset(obj)             % Close open virtual readers and loader objects.
 
+        insertSlice(obj, img, insertPosition, dim, virtMeta, options)    % Insert virtual file references along depth; updates Virtual struct and sliceName
+
         function obj = MibVirtualImage(data, meta)
             % obj = MibVirtualImage(data, meta)
             % Constructor — delegates to MibImage then initialises Virtual struct.
