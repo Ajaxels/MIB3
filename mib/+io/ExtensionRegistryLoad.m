@@ -73,8 +73,8 @@ classdef ExtensionRegistryLoad < handle
                 'loaderId', obj.defaultLoaderId(mode, reader, ext));
         end
 
-        function ext = getAllowedExtensions(obj, mode, reader, withoutDots)
-            % function ext = getAllowedExtensions(obj, mode, reader, withoutDots)
+        function ext = getAllowedExtensions(obj, mode, reader, withDot)
+            % function ext = getAllowedExtensions(obj, mode, reader, withDot)
             % get registered extensions for the specified mode and reader
             %
             % Parameters:
@@ -99,9 +99,9 @@ classdef ExtensionRegistryLoad < handle
             % ext = extReg.getAllowedExtensions('Standard', 'BioFormats', false); 
             % <endcode> 
 
-            if nargin < 4; withoutDots = true; end
+            if nargin < 4; withDot = true; end
             ext = obj.extensionSets{obj.generateKey(mode, reader)};
-            if withoutDots; ext = strcat('.', ext); end
+            if withDot; ext = strcat('.', ext); end
         end
 
         function setAllowedExtensions(obj, mode, reader, extensionList)
@@ -116,8 +116,12 @@ classdef ExtensionRegistryLoad < handle
             % reader: [char] defining the type of file reader
             % @li 'Default' -> matlab imread, custom and other readers 
             % @li 'BioFormats' -> use the BioFormats library to read images
-            % extensionList: cell array with a new list of extensions
+            % extensionList: cell array with a new list of extensions, with or
+            % without leading dots (e.g. '.tif' and 'tif' are both accepted)
 
+            % Ensure extensions are stored without leading dots to keep
+            % internal storage consistent with getAllowedExtensions behavior
+            extensionList = regexprep(extensionList, '^\.', '');
             obj.extensionSets{obj.generateKey(mode, reader)} = sort(extensionList);
         end
 

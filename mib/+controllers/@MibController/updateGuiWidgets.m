@@ -320,9 +320,12 @@ if isempty(updatePanels) || ismember(updatePanels, 'dirContentsDataset')
     % update directory contents panel
     % get alias
     dirContents = obj.view.handles.panels.dirContents;
-
+    
+    reader = 'Default';
+    if obj.mibModel.useBioFormats; reader = 'BioFormats'; end
+    
     % get list of extensions
-    extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(obj.mibModel.I{obj.mibModel.id}.datasetType, 'Default')];
+    extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(obj.mibModel.I{obj.mibModel.id}.datasetType, reader)];
     dirContents.handles.fileFilters.Items = extentions;
     dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
     obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = dirContents.handles.fileFilters.Value;

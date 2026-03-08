@@ -58,7 +58,7 @@ panelHandles.handles.fileFiltersContext = uicontextmenu(obj.handles.panels.dirCo
 panelHandles.handles.fileFiltersContextRegister = uimenu(panelHandles.handles.fileFiltersContext, ...
     'Text', 'Register extension', 'Tag', 'fileFiltersContextRegister');
 panelHandles.handles.fileFiltersContextUnregister = uimenu(panelHandles.handles.fileFiltersContext, ...
-    'Text', 'Register extension', 'Tag', 'fileFiltersContextUnregister');
+    'Text', 'Remove selected extension', 'Tag', 'fileFiltersContextUnregister');
 % Add the context menu to fileFilters
 panelHandles.handles.fileFilters.ContextMenu = panelHandles.handles.fileFiltersContext;
 

@@ -13,7 +13,7 @@ classdef MibDirContents
 
     methods
     
-        bioFormats_Callback(obj, hWidget, hData)        % callback for selection of the bio-formats reader by press on obj.view.handles.panels.dirContents.handles.bioFormats, updates the contents of obj.view.handles.panels.dirContents.handles.fileFilters and refresh the list of files in obj.view.handles.panels.dirContents.handles.fileList
+        bioFormats_Callback(obj)        % callback for selection of the bio-formats reader by press on obj.view.handles.panels.dirContents.handles.bioFormats, updates the contents of obj.view.handles.panels.dirContents.handles.fileFilters and refresh the list of files in obj.view.handles.panels.dirContents.handles.fileList
         
         fileFilters_Callback(obj, hWidget, hData)        % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
         
@@ -63,7 +63,7 @@ classdef MibDirContents
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.ClickedFcn = @obj.fileList_Callback;
             obj.handles.fileFilters.ValueChangedFcn = @obj.fileFilters_Callback;
-            obj.handles.bioFormats.ValueChangedFcn = @obj.bioFormats_Callback;
+            obj.handles.bioFormats.ValueChangedFcn = @(~,~)obj.bioFormats_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.updateFileList.ButtonPushedFcn = @(~,~)obj.updateFileList_Callback;

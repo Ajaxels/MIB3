@@ -192,7 +192,7 @@ if numel(BatchOpt.Filenames) < 1
     return; 
 end
 
-%%
+%% Define additional options
 options.UseBioFormats = BatchOpt.UseBioFormats;
 options.waitbar = BatchOpt.showWaitbar;
 options.mibPath = obj.mibPath;
@@ -232,7 +232,10 @@ if ischar(loaderInfo)
     return;
 end
 
+%% Main loading loop -------------
+
 switch BatchOpt.Mode{1}
+    %% 'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'
     case {'Combine datasets', 'Load each N-th dataset', 'Load part of dataset', 'Combine files as color channels'}
         if obj.I{BatchOpt.id}.datasetType(1) == 'V' && strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
             ErrorDlgOpt.winTitle = 'Not implemented!';
@@ -256,6 +259,7 @@ switch BatchOpt.Mode{1}
         end
 
         if strcmp(BatchOpt.Mode{1}, 'Load part of dataset')
+            %% 'Load part of dataset' -------------
             options.customSections = 1;     % to load part of the dataset, for AM, TIF only
             % check for correct extensions
             [~,~,extList] = fileparts(BatchOpt.Filenames);
@@ -290,7 +294,84 @@ switch BatchOpt.Mode{1}
         end
 
         % main loader for z-stacks
-        if ~strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
+        if strcmp(BatchOpt.Mode{1}, 'Combine files as color channels')
+            %% Combine files as color channels ----------------------------
+            nFiles = numel(BatchOpt.Filenames);
+            [img_temp, img_info] = loader.loadImages(files(1), img_info, options);
+            if isempty(img_temp)
+                ErrorDlgOpt.winTitle = 'Wrong file!';
+                ErrorDlgOpt.err = sprintf('It is not possible to load the dataset as color channels...\nDimensions mismatch or cancelled?');
+                eventdata = core.ToggleEventData(ErrorDlgOpt);
+                notify(obj, 'ShowErrorDialog', eventdata);
+                notify(obj, 'StopProtocol');
+                return;
+            end
+
+            noColorsInFile = img_info{'Colors'}; % number of color channels in the first file
+            noColorsInResult = img_info{'Colors'}*numel(BatchOpt.Filenames); % total number of color channels in the combined file
+
+            img = zeros([img_info{'Height'}, img_info{'Width'}, img_info{'Depth'}, noColorsInResult, img_info{'Time'}], img_info{'imgClass'});
+            img(:, :, :, 1:noColorsInFile, :) = img_temp;
+
+            % correct lutColors
+            lutColors = zeros(noColorsInResult, 3);
+            if isKey(img_info, 'lutColors')
+                lutTemp = img_info{'lutColors'};
+                lutColors(1:noColorsInFile, :) = lutTemp(1:noColorsInFile);
+            end
+            % grab view port
+            viewPort = struct();
+            viewPort.min(1:noColorsInFile) = img_info{"viewPort"}.min;
+            viewPort.max(1:noColorsInFile) = img_info{"viewPort"}.max;
+            viewPort.gamma(1:noColorsInFile) = img_info{"viewPort"}.gamma; %#ok<STRNU>
+
+            % loop other color channels
+            for colChannelId = 2:nFiles
+                [img_temp, img_info_temp] = loader.loadImages(files(colChannelId), img_info, options);
+                if isempty(img_temp)
+                    ErrorDlgOpt.winTitle = 'Wrong file!';
+                    ErrorDlgOpt.err = sprintf('It is not possible to load the dataset as color channels...\nDimensions mismatch or cancelled?');
+                    eventdata = core.ToggleEventData(ErrorDlgOpt);
+                    notify(obj, 'ShowErrorDialog', eventdata);
+                    notify(obj, 'StopProtocol');
+                    return;
+                end
+
+                if img_info{'Height'} ~= img_info_temp{'Height'} || img_info{'Width'} ~= img_info_temp{'Width'} || ...
+                        img_info{'Depth'} ~= img_info_temp{'Depth'} || img_info{'Time'} ~= img_info_temp{'Time'}
+
+                    ErrorDlgOpt.winTitle = 'Dimensions mismatch!';
+                    ErrorDlgOpt.err = sprintf('Dimensions mismatch!\nWhen combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions');
+                    eventdata = core.ToggleEventData(ErrorDlgOpt);
+                    notify(obj, 'ShowErrorDialog', eventdata);
+
+                    notify(obj, 'StopProtocol');
+                    return;
+                end
+
+                startChannel = (colChannelId - 1) * noColorsInFile + 1;
+                endChannel   = colChannelId * noColorsInFile;
+
+                img(:, :, :, startChannel:endChannel,:) = img_temp;
+                if isKey(img_info_temp, 'lutColors')
+                    lutTemp = img_info_temp{'lutColors'};
+                    lutColors(startChannel:endChannel, :) = lutTemp(1:noColorsInFile);
+                end
+                % update viewport
+                viewPort.min(startChannel:endChannel) = img_info{"viewPort"}.min;
+                viewPort.max(startChannel:endChannel) = img_info{"viewPort"}.max;
+                viewPort.gamma(startChannel:endChannel) = img_info{"viewPort"}.gamma; %#ok<STRNU>
+            end
+
+            % update img_info
+            img_info{'ColorType'} = 'multichannel';
+            if isKey(img_info, 'lutColors')
+                img_info{'lutColors'} = lutColors;
+            end
+            img_info{'Colors'} = noColorsInResult;
+            img_info{'viewPort'} = viewPort;
+        else
+            %% Combine datasets
             if options.customSections && isfield(obj.sessionSettings, 'customSections')
                 % obj.sessionSettings.customSections - has the previously defined subvolume to load
                 options.customSectionsSettings = obj.sessionSettings.customSections;
@@ -318,67 +399,6 @@ switch BatchOpt.Mode{1}
                 obj.sessionSettings.customSections.zMax = files(1).zMax;
                 obj.sessionSettings.customSections.xyStep = files(1).xyStep;
             end
-        else
-            for colChannelId = 1:numel(BatchOpt.Filenames)
-                if colChannelId==1
-                    [img_temp, img_info] = loader.loadImages(files(1), img_info, options);
-                    if isempty(img_temp)
-                        ErrorDlgOpt.winTitle = 'Wrong file!';
-                        ErrorDlgOpt.err = sprintf('It is not possible to load the dataset as color channels...\nDimensions mismatch or cancelled?');;
-                        eventdata = core.ToggleEventData(ErrorDlgOpt);
-                        notify(obj, 'ShowErrorDialog', eventdata);
-                        notify(obj, 'StopProtocol');
-                        return;
-                    end
-
-                    noColorsInFile = img_info{'Colors'}; % number of color channels in the first file
-                    noColorsInResult = img_info{'Colors'}*numel(BatchOpt.Filenames); % total number of color channels in the combined file
-
-                    img = zeros([img_info{'Height'}, img_info{'Width'}, img_info{'Depth'}, noColorsInResult, img_info{'Time'}], img_info{'imgClass'});
-                    img(:, :, :, 1:noColorsInFile, :) = img_temp;
-                    % correct lutColors
-                    lutColors = zeros(noColorsInResult, 3);
-                    if isKey(img_info, 'lutColors')
-                        lutTemp = img_info{'lutColors'};
-                        lutColors(1:noColorsInFile, :) = lutTemp(1:noColorsInFile);
-                    end
-                else
-                    [img_temp, img_info_temp] = loader.loadImages(files(colChannelId), img_info, options);
-                    if isempty(img_temp)
-                        ErrorDlgOpt.winTitle = 'Wrong file!';
-                        ErrorDlgOpt.err = sprintf('It is not possible to load the dataset as color channels...\nDimensions mismatch or cancelled?');
-                        eventdata = core.ToggleEventData(ErrorDlgOpt);
-                        notify(obj, 'ShowErrorDialog', eventdata);
-                        notify(obj, 'StopProtocol');
-                        return;
-                    end
-
-                    if img_info{'Height'} ~= img_info_temp{'Height'} || img_info{'Width'} ~= img_info_temp{'Width'} || ...
-                            img_info{'Depth'} ~= img_info_temp{'Depth'} || img_info{'Time'} ~= img_info_temp{'Time'}
-                        
-                        ErrorDlgOpt.winTitle = 'Dimensions mismatch!';
-                        ErrorDlgOpt.err = sprintf('Dimensions mismatch!\nWhen combining colors please make sure that your images have the same Height, Width, Depth and Time dimensions');
-                        eventdata = core.ToggleEventData(ErrorDlgOpt);
-                        notify(obj, 'ShowErrorDialog', eventdata);
-
-                        notify(obj, 'StopProtocol');
-                        return;
-                    end
-                    
-                    img(:, :, :, colChannelId*noColorsInFile-noColorsInFile+1:colChannelId*noColorsInFile,:) = img_temp;
-                    if isKey(img_info_temp, 'lutColors')
-                        lutTemp = img_info_temp{'lutColors'};
-                        lutColors(colChannelId*noColorsInFile-noColorsInFile+1:colChannelId*noColorsInFile, :) = lutTemp(1:noColorsInFile);
-                    end
-                end
-            end
-            
-            % update img_info
-            img_info{'ColorType'} = 'multichannel';
-            if isKey(img_info, 'lutColors')
-                img_info{'lutColors'} = lutColors;
-            end
-            img_info{'Colors'} = noColorsInResult;
         end
 
         % % check that Zarr is opened in correct mode
@@ -446,6 +466,7 @@ switch BatchOpt.Mode{1}
         obj.preferences.Users.Tiers.numberOfLoadedDatasets = obj.preferences.Users.Tiers.numberOfLoadedDatasets+1;
         %notify(obj, 'updateUserScore');     % update score using default obj.preferences.Users.singleToolScores increase
     case 'Insert into open dataset'
+        %% Insert into open dataset -------------
         virtualMode = obj.I{BatchOpt.id}.datasetType(1) == 'V';
         if batchModeSwitch == 0
             dlgOptions = struct;
@@ -457,6 +478,7 @@ switch BatchOpt.Mode{1}
             dlgOptions.LabelPosition = 'top';
             dlgOptions.WindowHeight = 230;
             dlgOptions.mibPath = obj.mibPath;
+            dlgOptions.Focus = 2; % focus on the edit field
             answer = utils.dlgs.inputUniversalDlg(options.parentFigure, ...
                             prompts, defAns, 'Insert dataset', dlgOptions);
             if isempty(answer); return; end
@@ -483,6 +505,7 @@ switch BatchOpt.Mode{1}
         end
         notify(obj, 'NewDataset');   % notify MibController about a new dataset; see function MibController.listenerNewDataset for details
     case {'Add as new color channel' 'Add each N-th dataset as new color channel'}   % add color channel
+        %% Add as new color channel / Add each N-th dataset as new color channel
         if obj.I{BatchOpt.id}.Virtual.virtual == 1
             toolname = 'The color channels can not be added in the virtual stacking mode.';
             warndlg(sprintf('!!! Warning !!!\n\n%s\nPlease switch to the memory-resident mode and try again', ...
