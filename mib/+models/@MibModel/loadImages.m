@@ -213,7 +213,7 @@ end
 
 % add mibPath to options for io.loadImages
 options.mibPath = obj.mibPath;
-options.parentFigure = obj.mibGUI; % handle to mibGUI window to be a parent for progress dialog
+options.ParentFigure = obj.mibGUI; % handle to mibGUI window to be a parent for progress dialog
 %options.Font = obj.preferences.System.Font; % add font to render dialogs
 % init the extension registry
 %extReg = io.ExtensionRegistryLoad();
@@ -488,7 +488,7 @@ switch BatchOpt.Mode{1}
             dlgOptions.WindowHeight = 230;
             dlgOptions.mibPath = obj.mibPath;
             dlgOptions.Focus = 2; % focus on the edit field
-            answer = utils.dlgs.inputUniversalDlg(options.parentFigure, ...
+            answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, ...
                             prompts, defAns, 'Insert dataset', dlgOptions);
             if isempty(answer); return; end
             options.dim = answer{1};
@@ -539,7 +539,7 @@ switch BatchOpt.Mode{1}
             lutColors = lutTemp(1:img_info{'Colors'}, :);
         end
 
-        addOpts.parentFigure = options.parentFigure;
+        addOpts.ParentFigure = options.ParentFigure;
         addOpts.showWaitbar  = options.waitbar;
         result = obj.I{BatchOpt.id}.image.addColorChannel(img, NaN, lutColors, addOpts);
         if result == 0; notify(obj, 'StopProtocol'); return; end

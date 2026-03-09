@@ -19,7 +19,7 @@ function insertSlice(obj, img, insertPosition, meta, options)
 %   @li .BackgroundColorIntensity - background fill value for dimension mismatches
 %   @li .silentMode - logical; when @b true no dialogs are shown
 %   @li .showWaitbar - logical; @b true (default) shows a progress waitbar
-%   @li .parentFigure - handle to parent figure for dialog centering (default: [])
+%   @li .ParentFigure - handle to parent figure for dialog centering (default: [])
 %   @lo .mibPath - path to MIB installation directory
 %
 % Return values:
@@ -43,7 +43,7 @@ if ~isfield(options, 'dim');                       options.dim = 'depth';       
 if ~isfield(options, 'showWaitbar');               options.showWaitbar = true;  end
 if ~isfield(options, 'BackgroundColorIntensity');  options.BackgroundColorIntensity = 0; end
 if ~isfield(options, 'silentMode');                options.silentMode = false;  end
-if ~isfield(options, 'parentFigure');              options.parentFigure = [];   end
+if ~isfield(options, 'ParentFigure');              options.ParentFigure = [];   end
 if ~isfield(options, 'mibPath');                   options.mibPath = [];        end
 
 % ensure img is 5D [height, width, depth, colors, time]
@@ -75,7 +75,7 @@ BackgroundColorIntensity = options.BackgroundColorIntensity;
 % ---- dimension mismatch check + optional user dialog ----
 if D1_y ~= D2_y || D1_x ~= D2_x || D1_c ~= D2_c
     if obj.datasetType(1) == 'V'
-        utils.dlgs.showErrorDialog(options.parentFigure, 'Image dimensions mismatch!', 'MibDataset.insertSlice');
+        utils.dlgs.showErrorDialog(options.ParentFigure, 'Image dimensions mismatch!', 'MibDataset.insertSlice');
         return;
     end
     if ~options.silentMode
@@ -84,7 +84,7 @@ if D1_y ~= D2_y || D1_x ~= D2_x || D1_c ~= D2_c
         dlgOpts.HeaderLines   = 2;
         dlgOpts.OkBtnText     = 'Try to insert';
         dlgOpts.WindowHeight  = 160;
-        dlgOpts.parentFigure  = options.parentFigure;
+        dlgOpts.ParentFigure  = options.ParentFigure;
         answer = utils.dlgs.inputUniversalDlg([], ...
             {sprintf('Background color (0-%d):', obj.image.maxInt)}, ...
             {struct('Spinner', true, 'Value', obj.image.maxInt, ...
@@ -103,7 +103,7 @@ else
 end
 
 if options.showWaitbar
-    wb = uiprogressdlg(options.parentFigure, 'Title', 'Insert dataset...', ...
+    wb = uiprogressdlg(options.ParentFigure, 'Title', 'Insert dataset...', ...
         'Message', sprintf('Insert dataset to position: %d\nPlease wait...', insertPosition));
 end
 

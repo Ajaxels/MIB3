@@ -21,7 +21,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
             %
             % Return values:
             %   obj: instance of the MibImgLoader class
@@ -94,7 +94,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading mibImg metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -109,7 +109,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.MibImgLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.MibImgLoader');
                     imginfo = dictionary();
@@ -146,7 +146,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                     fileOpts = resObj.options; 
                     if isempty(fileOpts)
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error in io.loaders.MibImgLoader!\n\nInvalid mibImg file:\n%s\n\nmissing options structure', files(fnIndex).filename), ...
                             'Missing options field', 'Error in io.loaders.MibImgLoader');
                         imginfo = dictionary();
@@ -176,7 +176,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                     files(fnIndex).imgClass = class(resObj.(resObj.imgVariable));
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error reading mibImg file:\n%s', err.message), 'mibImg Error', 'Error in io.loaders.MibImgLoader');
                     imginfo = dictionary();
                     return;
@@ -278,7 +278,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading mibImg images...',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading mibImg images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -325,7 +325,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
 
                 catch err
                     if options.waitbar; delete(wb); end
-                     utils.dlgs.showErrorDialog(options.parentFigure, ...
+                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading mibImg file:\n%s', err.message), 'mibImg Error', 'Error in io.loaders.MibImgLoader');
                     img = [];
                     return;

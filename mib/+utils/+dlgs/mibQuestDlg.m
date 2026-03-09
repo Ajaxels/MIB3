@@ -1,22 +1,22 @@
-function [selection, dontShowAgain] = mibQuestDlg(parentFigure, question, varargin)
-% function [selection, dontShowAgain] = mibQuestDlg(parentFigure, question, varargin)
+function [selection, dontShowAgain] = mibQuestDlg(ParentFigure, question, varargin)
+% function [selection, dontShowAgain] = mibQuestDlg(ParentFigure, question, varargin)
 %
 % Custom MIB question dialog with the same call syntax as MATLAB questdlg,
 % extended with an optional options structure as the last argument.
 %
 % Parameters:
-% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
 %   used to center the dialog. Pass [] to use the cached handle from a prior call.
 %   To supply the MIB installation path use options.mibPath.
 % question: [char|string|cell] question text; when cell, lines are joined with '\n'. 
 %
 % Questdlg-compatible syntax:
-% selection = mibQuestDlg(parentFigure, question)
-% selection = mibQuestDlg(parentFigure, question, dlgTitle)
-% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2)
-% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2, btn3)
-% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
-% selection = mibQuestDlg(parentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
+% selection = mibQuestDlg(ParentFigure, question)
+% selection = mibQuestDlg(ParentFigure, question, dlgTitle)
+% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2)
+% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3)
+% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
+% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
 %
 % Extended syntax (optional last argument):
 % [selection, dontShowAgain] = mibQuestDlg(..., options)
@@ -74,9 +74,9 @@ if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not
 persistent mibDir
 persistent parentFigureHandle   % cached handle to the main GUI window
 
-% parentFigure param takes priority; update cache
-if ~isempty(parentFigure) && ishandle(parentFigure)
-    parentFigureHandle = parentFigure;
+% ParentFigure param takes priority; update cache
+if ~isempty(ParentFigure) && ishandle(ParentFigure)
+    parentFigureHandle = ParentFigure;
 end
 
 % Resolve mibDir — update cache when options.mibPath is supplied
@@ -94,8 +94,8 @@ elseif isempty(mibDir)
 end
 
 % Resolve options.ParentFigure from param or cache
-if ~isempty(parentFigure) && ishandle(parentFigure)
-    options.ParentFigure = parentFigure;
+if ~isempty(ParentFigure) && ishandle(ParentFigure)
+    options.ParentFigure = ParentFigure;
 elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && ishandle(parentFigureHandle)
     options.ParentFigure = parentFigureHandle;
 elseif ~isempty(options.ParentFigure) && ishandle(options.ParentFigure)

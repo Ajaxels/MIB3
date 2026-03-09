@@ -77,7 +77,7 @@ classdef (Abstract) BaseImageLoader < handle
             %           @li .zMax - [numeric] max Z coordinate
             %           @li .xyStep - [numeric] XY binning step
             %       @li .mibPath - [char] path to MIB directory
-            %       @li .parentFigure - handle to the parent window
+            %       @li .ParentFigure - handle to the parent window
             %       @li .waitbar - [logical] show or not the waitbar
             %
             % Return values:
@@ -144,7 +144,7 @@ classdef (Abstract) BaseImageLoader < handle
             dlgOptions.WindowHeight = 220;
             dlgOptions.ParentFigure = options.mibPath;
             
-            answer = utils.dlgs.inputUniversalDlg(options.parentFigure, prompts, defAns, dlgTitle, dlgOptions);
+            answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, prompts, defAns, dlgTitle, dlgOptions);
             
             if isempty(answer)
                 if options.waitbar; delete(options.waitbar); end
@@ -483,7 +483,7 @@ classdef (Abstract) BaseImageLoader < handle
             mibInputMultiDlgOpt.WindowHeight = 140;
             mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 100};
             mibInputMultiDlgOpt.mibPath = obj.Options.mibPath;
-            answer = utils.dlgs.inputUniversalDlg(obj.Options.parentFigure, ...
+            answer = utils.dlgs.inputUniversalDlg(obj.Options.ParentFigure, ...
                 prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
             if isempty(answer); img = []; return; end
             %drawnow;  % prevent crashes

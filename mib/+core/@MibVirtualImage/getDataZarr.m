@@ -108,46 +108,59 @@ Yidx = [max([Yidx(1) 1]),  min([Yidx(2), obj.pyramid.levelImageSizes(levelIdx, o
 Zidx = [max([Zidx(1) 1]),  min([Zidx(2), obj.pyramid.levelImageSizes(levelIdx, outDimZind)])];
 Tidx = [max([Tidx(1) 1]),  min([Tidx(2), obj.time])];
 
-% convert to 0-based indices for Python
-Xlim = Xidx - 1;
-Ylim = Yidx - 1;
-Zlim = Zidx - 1;
-Tlim = Tidx - 1;
+% --- lazy-create / retrieve cached Zarr3VirtualLoader --------------------
+if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
+        ~isa(obj.loaders{1}, 'io.loaders.Zarr3VirtualLoader')
+    axOrder = 'tczyx';
+    if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
+        axOrder = obj.pyramid.axisOrder;
+    end
+    obj.loaders{1} = io.loaders.Zarr3VirtualLoader(obj.data{1}, axOrder);
+end
 
-% --- colour selection (0-based for Python) --------------------------------
+% --- colour selection (1-based inclusive for Zarr3VirtualLoader) ----------
 if strcmp(type, 'image')
     if isempty(colChannel)
-        Clim = (1:obj.colors) - 1;    % all channels
+        Clim = [1, obj.colors];
     else
-        Clim = colChannel - 1;
+        Clim = [colChannel(1), colChannel(end)];
     end
 end
 
-% --- zarr path for this level --------------------------------------------
-zarrPathLevel = sprintf('%s/%s', obj.data{1}, obj.pyramid.levelNames{levelIdx});
-
-% --- read subvolume from zarr via Python ---------------------------------
-% zarr stores as [t, c, z, y, x]; Python slicing is 0-based half-open
-sliceStr = sprintf('%d:%d, %d:%d, %d:%d, %d:%d, %d:%d', ...
-    Tlim(1), Tlim(end)+1, Clim(1), Clim(end)+1, ...
-    Zlim(1), Zlim(end)+1, Ylim(1), Ylim(end)+1, Xlim(1), Xlim(end)+1);
-
-block = pyrun({ ...
-    sprintf("z = zarr.open('%s')", zarrPathLevel), ...
-    sprintf("a = np.array(z[%s], dtype=z.dtype)", sliceStr) ...
-    }, "a");
-
-% --- convert to MATLAB class and permute to MIB3 [y, x, z, c, t] --------
-% zarr block arrives as [t, c, z, y, x] (dims 1..5 in MATLAB after cast)
-dataset = cast(block, obj.dataClass);
-
+% --- remap screen-coordinate Idx variables to physical Y/X/Z ranges ------
+% After the coordinate math above, Xidx/Yidx/Zidx hold SCREEN-axis ranges
+% (what slice of each pyramid dimension to show on each screen axis).
+% readRegion always expects PHYSICAL dimension ranges.
+%
+%   orient=1 (xz): outDimXind=1=Y, outDimYind=3=Z, outDimZind=2=X
+%     => Xidx=Z_phys, Yidx=X_phys, Zidx=Y_phys
+%     => physY=Zidx,  physX=Yidx,  physZ=Xidx
+%
+%   orient=2 (yz) and orient=3 (yx): Idx variables are already physical
+%     => physY=Yidx, physX=Xidx, physZ=Zidx
 switch orient
-    case 1  % xz: [t,c,z,y,x] -> [x, z, y, c, t]
-        dataset = permute(dataset, [5 3 4 2 1]);
-    case 2  % yz: [t,c,z,y,x] -> [y, z, x, c, t]
-        dataset = permute(dataset, [4 3 5 2 1]);
-    case 3  % yx: [t,c,z,y,x] -> [y, x, z, c, t]
-        dataset = permute(dataset, [4 5 3 2 1]);
+    case 1  % xz
+        physYlim = Zidx; physXlim = Yidx; physZlim = Xidx;
+    otherwise  % yz and yx
+        physYlim = Yidx; physXlim = Xidx; physZlim = Zidx;
+end
+
+% --- zarr path for this level --------------------------------------------
+levelPath = obj.pyramid.levelNames{levelIdx};
+
+% --- read subvolume via Zarr3VirtualLoader --------------------------------
+% block arrives as MIB3 [y, x, z, c, t]
+block = obj.loaders{1}.readRegion(levelPath, physYlim, physXlim, physZlim, ...
+    Clim, Tidx, obj.dataClass);
+
+% --- permute [y,x,z,c,t] to the requested screen orientation -------------
+switch orient
+    case 1  % xz: [y,x,z,c,t] -> [x, z, y, c, t]
+        dataset = permute(block, [2, 3, 1, 4, 5]);
+    case 2  % yz: [y,x,z,c,t] -> [y, z, x, c, t]
+        dataset = permute(block, [1, 3, 2, 4, 5]);
+    case 3  % yx: [y,x,z,c,t] — already in MIB3 order
+        dataset = block;
 end
 
 % --- resize to match requested magFactor (when not using explicit level) --

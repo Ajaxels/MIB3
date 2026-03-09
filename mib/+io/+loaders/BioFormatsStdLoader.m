@@ -25,7 +25,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
             %     @li .bioFormatsMemoizerMemoDir - [char] path to memo directory
             %     @li .BioFormatsIndices - [numeric] specific series indices to load (0 for all)
             %
@@ -106,7 +106,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading Bio-Formats metadata\nPlease wait...'), ...
                     'Cancelable', 'off');
             end
@@ -122,7 +122,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.BioFormatsStdLoader');
                     imginfo = dictionary();
@@ -153,7 +153,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         numSeries = filesTemp.hDataset.getSeriesCount();
                     catch err
                         if options.waitbar==1; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
                             'BioFormats memoizer', 'Error in io.loaders.BioFormatsStdLoader');
                         imginfo = dictionary();
@@ -165,7 +165,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         if isempty(options.BioFormatsIndices)
                             % User selection via selectLociSeries
                             controller = utils.dlgs.SelectLociSeriesDlg( ...
-                                filenames{fnIndex}, filesTemp.hDataset, options.Font, options.parentFigure);
+                                filenames{fnIndex}, filesTemp.hDataset, options.Font, options.ParentFigure);
                             [filesTemp.seriesIndex, filesTemp.hDataset, metaSwitch, ...
                                 filesTemp.dim_xyczt, filesTemp.seriesRealName] = controller.run();
                         else
@@ -498,7 +498,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading images with BioFormats',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading images with BioFormats',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -570,7 +570,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('io.loaders.BioFormatsStdLoader:\n\nError loading Bio-Formats file\n%s', err.message), 'Bio-Formats Error', 'Error in io.loaders.BioFormatsStdLoader');
                     img = [];
                     return;

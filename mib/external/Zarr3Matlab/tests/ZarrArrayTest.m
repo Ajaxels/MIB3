@@ -1,0 +1,603 @@
+classdef ZarrArrayTest < matlab.unittest.TestCase
+
+    properties (Access = private)
+        TempDir
+    end
+
+    methods (TestClassSetup)
+        function addParentToPath(~)
+            parentDir = fileparts(fileparts(mfilename('fullpath')));
+            addpath(parentDir);
+        end
+    end
+
+    methods (TestMethodSetup)
+        function setupTempDir(testCase)
+            testCase.TempDir = fullfile(tempdir, 'zarr_matlab_test');
+            if isfolder(testCase.TempDir)
+                rmdir(testCase.TempDir, 's');
+            end
+            mkdir(testCase.TempDir);
+        end
+    end
+
+    methods (TestMethodTeardown)
+        function removeTempDir(testCase)
+            if isfolder(testCase.TempDir)
+                rmdir(testCase.TempDir, 's');
+            end
+        end
+    end
+
+    methods (Test)
+        function testCreate(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_create');
+
+            arr = ZarrArray.create(arrayPath, [100, 100, 100], 'uint16', 'chunkShape', [32, 32, 32]);
+
+            testCase.verifyTrue(isfile(fullfile(arrayPath, 'zarr.json')));
+
+            info = arr.info();
+            testCase.verifyEqual(info.shape, [100, 100, 100]);
+            testCase.verifyEqual(info.dataType, 'uint16');
+            testCase.verifyEqual(info.chunkShape, [32, 32, 32]);
+        end
+
+        function testCreate1DArray(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_1d');
+
+            arr = ZarrArray.create(arrayPath, [1000], 'float64', 'chunkShape', [100]);
+
+            testCase.verifyTrue(isfile(fullfile(arrayPath, 'zarr.json')));
+
+            info = arr.info();
+            testCase.verifyEqual(info.shape, [1000]);
+            testCase.verifyEqual(info.dataType, 'float64');
+            testCase.verifyEqual(info.chunkShape, [100]);
+
+            % Write data (use column vector to match 1D array orientation)
+            testData = rand(200, 1);
+            bbox = [1, 201];
+            arr.write(testData, bbox);
+
+            % Read data back
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+
+            % Read entire array (1D arrays are returned as column vectors)
+            allData = arr.read();
+            testCase.verifyEqual(size(allData), [1000, 1]);
+        end
+
+        function testCreate2DArray(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_2d');
+
+            arr = ZarrArray.create(arrayPath, [200, 300], 'uint16', 'chunkShape', [64, 64]);
+
+            testCase.verifyTrue(isfile(fullfile(arrayPath, 'zarr.json')));
+
+            info = arr.info();
+            testCase.verifyEqual(info.shape, [200, 300]);
+            testCase.verifyEqual(info.dataType, 'uint16');
+            testCase.verifyEqual(info.chunkShape, [64, 64]);
+
+            % Write data to a region
+            testData = uint16(randi(65535, [50, 80]));
+            bbox = [10, 60; 20, 100];
+            arr.write(testData, bbox);
+
+            % Read data back
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+
+            % Write at origin without bbox
+            originData = uint16(randi(65535, [30, 40]));
+            arr.write(originData);
+
+            % Read back data written at origin
+            readOrigin = arr.read([1, 31; 1, 41]);
+            testCase.verifyEqual(readOrigin, originData);
+
+            % Read entire array
+            allData = arr.read();
+            testCase.verifyEqual(size(allData), [200, 300]);
+        end
+
+        function testCreateWithDefaultChunkShape(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'default_chunk');
+
+            % Create without specifying chunkShape - should default to min(shape, 100)
+            arr = ZarrArray.create(arrayPath, [200, 50, 150], 'uint8');
+
+            info = arr.info();
+            testCase.verifyEqual(info.chunkShape, [100, 50, 100]);
+        end
+
+        function testCreateFromDataWithDefaultChunkShape(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'from_data_default_chunk');
+
+            data = uint32(randi(1000, [80, 120, 60]));
+            arr = ZarrArray.createFromData(arrayPath, data);
+
+            info = arr.info();
+            testCase.verifyEqual(info.chunkShape, [80, 100, 60]);
+            testCase.verifyEqual(arr.shape(), [80, 120, 60]);
+        end
+
+        function testCreateBoolArray(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_bool');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'bool', 'chunkShape', [32, 32, 32]);
+
+            testData = logical(randi([0, 1], [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testCreateFromDataLogical(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'from_data_logical');
+            testData = logical(randi([0, 1], [32, 32, 32]));
+
+            arr = ZarrArray.createFromData(arrayPath, testData, 'chunkShape', [16, 16, 16]);
+
+            info = arr.info();
+            testCase.verifyEqual(info.dataType, 'bool');
+
+            bbox = [1, 33; 1, 33; 1, 33];
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testShape(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_shape');
+            arr = ZarrArray.create(arrayPath, [100, 100, 100], 'uint16', 'chunkShape', [32, 32, 32]);
+
+            testCase.verifyEqual(arr.shape(), [100, 100, 100]);
+        end
+
+        function testDataType(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_datatype');
+            arr = ZarrArray.create(arrayPath, [32, 32, 32], 'float32', 'chunkShape', [16, 16, 16]);
+
+            testCase.verifyEqual(arr.dataType(), 'float32');
+        end
+
+        function testResize(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_resize');
+            arr = ZarrArray.create(arrayPath, [100, 100, 100], 'uint16', 'chunkShape', [32, 32, 32]);
+
+            arr.resize([150, 120, 100]);
+
+            testCase.verifyEqual(arr.shape(), [150, 120, 100]);
+        end
+
+        function testWriteRead(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_write_read');
+            arr = ZarrArray.create(arrayPath, [100, 100, 100], 'uint16', 'chunkShape', [32, 32, 32]);
+
+            testData = uint16(reshape(1:1000, [10, 10, 10]));
+            bbox = [1, 11; 1, 11; 1, 11];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testReadEntireArray(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_read_all');
+            testData = uint8(randi(255, [20, 30, 40]));
+
+            arr = ZarrArray.createFromData(arrayPath, testData, 'chunkShape', [10, 10, 10]);
+
+            % Read entire array without specifying bbox
+            readData = arr.read();
+
+            testCase.verifyEqual(size(readData), [20, 30, 40]);
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWriteWithoutBbox(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_write_no_bbox');
+            arr = ZarrArray.create(arrayPath, [50, 50, 50], 'uint16', 'chunkShape', [25, 25, 25]);
+
+            testData = uint16(randi(65535, [20, 30, 40]));
+
+            % Write without specifying bbox (writes at origin)
+            arr.write(testData);
+
+            % Read back the data
+            bbox = [1, 21; 1, 31; 1, 41];
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWriteWithAllowResize(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_write_resize');
+            arr = ZarrArray.create(arrayPath, [20, 20, 20], 'uint8', 'chunkShape', [10, 10, 10]);
+
+            testCase.verifyEqual(arr.shape(), [20, 20, 20]);
+
+            % Write data that exceeds array bounds with allowResize
+            testData = uint8(randi(255, [15, 15, 15]));
+            bbox = [10, 25; 10, 25; 10, 25];  % Exceeds [20, 20, 20]
+
+            arr.write(testData, bbox, 'allowResize', true);
+
+            % Verify array was resized
+            testCase.verifyEqual(arr.shape(), [24, 24, 24]);
+
+            % Verify data was written correctly
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWriteWithAllowResizeAtOrigin(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_write_resize_origin');
+            arr = ZarrArray.create(arrayPath, [10, 10, 10], 'uint16', 'chunkShape', [10, 10, 10]);
+
+            % Write data larger than array at origin with allowResize
+            testData = uint16(randi(65535, [20, 25, 30]));
+
+            arr.write(testData, 'allowResize', true);
+
+            % Verify array was resized
+            testCase.verifyEqual(arr.shape(), [20, 25, 30]);
+
+            % Verify data was written correctly
+            readData = arr.read();
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testOpenExisting(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_open');
+            ZarrArray.create(arrayPath, [100, 100, 100], 'uint16', 'chunkShape', [32, 32, 32]);
+
+            arr = ZarrArray(arrayPath);
+
+            testCase.verifyEqual(arr.shape(), [100, 100, 100]);
+        end
+
+        function testWithDoubleQuotedStrings(testCase)
+            % Test using double-quoted strings (MATLAB string scalars)
+            arrayPath = string(fullfile(testCase.TempDir, "class_double_quote"));
+
+            % Create array with double-quoted strings
+            arr = ZarrArray.create(arrayPath, [50, 50, 50], "uint8", ...
+                "chunkShape", [25, 25, 25], "compressors", "zstd");
+
+            testData = uint8(randi(255, [25, 25, 25]));
+            bbox = [1, 26; 1, 26; 1, 26];
+
+            arr.write(testData, bbox);
+
+            % Open with double-quoted path
+            arr2 = ZarrArray(arrayPath);
+            readData = arr2.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithSharding(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_sharding');
+
+            arr = ZarrArray.create(arrayPath, [128, 128, 128], 'float32', ...
+                'chunkShape', [32, 32, 32], 'shardShape', [64, 64, 64]);
+
+            info = arr.info();
+            testCase.verifyEqual(info.dataType, 'float32');
+            testCase.verifyEqual(info.chunkShape, [32, 32, 32]);
+            testCase.verifyEqual(info.shardShape, [64, 64, 64]);
+        end
+
+        function testWithZstdCompressor(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_zstd');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint8', ...
+                'chunkShape', [32, 32, 32], 'compressors', 'zstd');
+
+            testData = uint8(randi(255, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithZstdCompressorConfigured(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_zstd_cfg');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'int32', ...
+                'chunkShape', [32, 32, 32], 'compressors', struct('name', 'zstd', 'configuration', struct('level', 10)));
+
+            testData = int32(randi(1000000, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithGzipCompressor(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_gzip');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'float64', ...
+                'chunkShape', [32, 32, 32], 'compressors', struct('name', 'gzip', 'configuration', struct('level', 6)));
+
+            testData = rand(32, 32, 32);
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithBloscCompressor(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_blosc');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint16', ...
+                'chunkShape', [32, 32, 32], 'compressors', 'blosc');
+
+            testData = uint16(randi(65535, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithBloscCompressorConfigured(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_blosc_cfg');
+            % typesize is omitted - it will be inferred from the data type (float32 = 4 bytes)
+            bloscConfig = struct('cname', 'zstd', 'clevel', 9, 'shuffle', 'shuffle', 'blocksize', 0);
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'float32', ...
+                'chunkShape', [32, 32, 32], 'compressors', struct('name', 'blosc', 'configuration', bloscConfig));
+
+            testData = single(rand(32, 32, 32));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithShardingAndZstd(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_shard_zstd');
+            arr = ZarrArray.create(arrayPath, [128, 128, 128], 'uint16', ...
+                'chunkShape', [16, 16, 16], 'shardShape', [64, 64, 64], 'compressors', 'zstd');
+
+            testData = uint16(randi(65535, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithNoCompression(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_no_compress');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint8', ...
+                'chunkShape', [32, 32, 32], 'compressors', 'none');
+
+            testData = uint8(randi(255, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithNoFilters(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_no_filters');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint16', ...
+                'chunkShape', [32, 32, 32], 'filters', 'none');
+
+            testData = uint16(randi(65535, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithNoFiltersAndNoCompression(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_no_filters_no_compress');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'int32', ...
+                'chunkShape', [32, 32, 32], 'filters', 'none', 'compressors', 'none');
+
+            testData = int32(randi(1000000, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithCompressorSequence(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_compress_seq');
+            % Test with a cell array of compressors (sequence)
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint8', ...
+                'chunkShape', [32, 32, 32], 'compressors', {'zstd', 'gzip'});
+
+            testData = uint8(randi(255, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithCustomFillValue(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_fillvalue');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint16', ...
+                'chunkShape', [32, 32, 32], 'fillValue', 42);
+
+            % Read from unwritten region - should return fill value
+            bbox = [1, 33; 1, 33; 1, 33];
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, uint16(ones(32, 32, 32) * 42));
+        end
+
+        function testWithChunkKeyEncodingDotSeparator(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_chunk_key_dot');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint8', ...
+                'chunkShape', [32, 32, 32], 'chunkKeyEncoding', '.');
+
+            testData = uint8(randi(255, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testWithChunkKeyEncodingV2(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'class_chunk_key_v2');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint16', ...
+                'chunkShape', [32, 32, 32], ...
+                'chunkKeyEncoding', struct('name', 'v2', 'separator', '.'));
+
+            testData = uint16(randi(65535, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            arr.write(testData, bbox);
+            readData = arr.read(bbox);
+
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testCreateFromData(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'from_data');
+            testData = uint16(randi(65535, [50, 40, 30]));
+
+            arr = ZarrArray.createFromData(arrayPath, testData, 'chunkShape', [16, 16, 16]);
+
+            testCase.verifyEqual(arr.shape(), [50, 40, 30]);
+            info = arr.info();
+            testCase.verifyEqual(info.dataType, 'uint16');
+
+            bbox = [1, 51; 1, 41; 1, 31];
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testCreateFromDataWithCompressor(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'from_data_zstd');
+            testData = single(rand(32, 32, 32));
+
+            arr = ZarrArray.createFromData(arrayPath, testData, 'chunkShape', [16, 16, 16], 'compressors', 'zstd');
+
+            info = arr.info();
+            testCase.verifyEqual(info.dataType, 'float32');
+
+            bbox = [1, 33; 1, 33; 1, 33];
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+        end
+
+        function testCreateFromDataDouble(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'from_data_double');
+            testData = rand(20, 20, 20);  % double by default
+
+            arr = ZarrArray.createFromData(arrayPath, testData, 'chunkShape', [10, 10, 10]);
+
+            info = arr.info();
+            testCase.verifyEqual(info.dataType, 'float64');
+
+            bbox = [1, 21; 1, 21; 1, 21];
+            readData = arr.read(bbox);
+            testCase.verifyEqual(readData, testData);
+        end
+
+        % Attribute Tests
+
+        function testGetAttributesEmpty(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'array_attrs_empty');
+            arr = ZarrArray.create(arrayPath, [32, 32, 32], 'uint8', 'chunkShape', [16, 16, 16]);
+
+            attrs = arr.getAttributes();
+
+            testCase.verifyTrue(isstruct(attrs));
+            testCase.verifyEmpty(fieldnames(attrs));
+        end
+
+        function testSetAndGetAttributes(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'array_attrs');
+            arr = ZarrArray.create(arrayPath, [32, 32, 32], 'uint16', 'chunkShape', [16, 16, 16]);
+
+            attrs = struct('description', 'test array', 'scale', 2.5, 'offset', [10, 20, 30]);
+            arr.setAttributes(attrs);
+
+            readAttrs = arr.getAttributes();
+
+            testCase.verifyEqual(readAttrs.description, 'test array');
+            testCase.verifyEqual(readAttrs.scale, 2.5);
+            testCase.verifyEqual(readAttrs.offset', [10, 20, 30]);
+        end
+
+        function testSetAndGetSingleAttribute(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'array_single_attr');
+            arr = ZarrArray.create(arrayPath, [32, 32, 32], 'float32', 'chunkShape', [16, 16, 16]);
+
+            arr.setAttribute('voxel_size', [1.0, 1.0, 2.0]);
+            arr.setAttribute('unit', 'um');
+
+            testCase.verifyEqual(arr.getAttribute('voxel_size')', [1.0, 1.0, 2.0]);
+            testCase.verifyEqual(arr.getAttribute('unit'), 'um');
+        end
+
+        function testGetNonExistentAttribute(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'array_no_attr');
+            arr = ZarrArray.create(arrayPath, [32, 32, 32], 'uint8', 'chunkShape', [16, 16, 16]);
+
+            testCase.verifyError(@() arr.getAttribute('missing'), 'zarr:error');
+        end
+
+        function testAttributesPersist(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'array_attrs_persist');
+            arr = ZarrArray.create(arrayPath, [32, 32, 32], 'int16', 'chunkShape', [16, 16, 16]);
+            arr.setAttribute('key', 'value');
+
+            % Reopen the array
+            arr2 = ZarrArray(arrayPath);
+
+            testCase.verifyEqual(arr2.getAttribute('key'), 'value');
+        end
+
+        % Error Tests
+
+        function testWriteWithWrongDataType(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'error_wrong_dtype');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint16', 'chunkShape', [32, 32, 32]);
+
+            % Try to write uint8 data to a uint16 array
+            wrongData = uint8(randi(255, [32, 32, 32]));
+            bbox = [1, 33; 1, 33; 1, 33];
+
+            testCase.verifyError(@() arr.write(wrongData, bbox), 'zarr:error');
+        end
+
+        function testWriteOutOfBounds(testCase)
+            arrayPath = fullfile(testCase.TempDir, 'error_out_of_bounds');
+            arr = ZarrArray.create(arrayPath, [64, 64, 64], 'uint32', 'chunkShape', [32, 32, 32]);
+
+            data = uint32(ones(32, 32, 32));
+            % Bounding box extends beyond array shape
+            bbox = [50, 82; 1, 33; 1, 33];
+
+            testCase.verifyError(@() arr.write(data, bbox), 'zarr:error');
+        end
+    end
+end

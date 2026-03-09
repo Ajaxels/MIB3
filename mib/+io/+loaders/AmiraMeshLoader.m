@@ -25,7 +25,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentFigure - handle of the main MIB window (parent for uiprogressdlg)
+            %     @li .ParentFigure - handle of the main MIB window (parent for uiprogressdlg)
             %
             % Return values:
             %   obj: instance of the AmiraMeshLoader class
@@ -58,7 +58,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             %     @li .waitbar - [logical] show or not the waitbar
             %     @li .customSections - [logical] load part of the dataset
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentFigure - parent figure handle for uiprogressdlg
+            %     @li .ParentFigure - parent figure handle for uiprogressdlg
             %
             % Return values:
             %   imginfo: dictionary with image metadata, including pixSize structure
@@ -87,7 +87,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading AmiraMesh metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -104,7 +104,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.AmiraMeshLoader!\n\nThe required file\n%s\nwas not found!', filenames{fnIndex}), ...
                         'Wrong filename', 'Error in io.loaders.AmiraMeshLoader');
                     return;
@@ -135,7 +135,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 catch err
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error reading Amira Mesh header:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
                     return;
                 end
@@ -155,7 +155,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     if isKey(info, 'ColorType') && ~strcmp(imginfo{'ColorType'}, info('ColorType'))
                         imginfo = dictionary();
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, 'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.AmiraMeshLoader');
+                        utils.dlgs.showErrorDialog(options.ParentFigure, 'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.AmiraMeshLoader');
                         return;
                     end
                 end
@@ -184,7 +184,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 % Custom sections for Amira Mesh (binning + partial Z)
                 if options.customSections
                     % start dialog to import part of Amira mesh dataset
-                    controller = utils.dlgs.AmiraImportDlg(dim_xyczt, options.parentFigure, options.Font);
+                    controller = utils.dlgs.AmiraImportDlg(dim_xyczt, options.ParentFigure, options.Font);
                     result = controller.run();
                     
                     if ~isstruct(result)
@@ -362,7 +362,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading Amira Mesh images...',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading Amira Mesh images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -407,7 +407,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     imgIn = io.AmiraMesh.amiraMesh2bitmap(files(fnIndex).filename, options);
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading Amira Mesh file:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
                     img = [];
                     return;

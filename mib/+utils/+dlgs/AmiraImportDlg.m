@@ -6,7 +6,7 @@ classdef AmiraImportDlg < handle
     %
     % Examples:
     %   % Initialize controller
-    %   controller = utils.dlgs.AmiraImportDlg(dimxyczt, parentFigure, options.Font);
+    %   controller = utils.dlgs.AmiraImportDlg(dimxyczt, ParentFigure, options.Font);
     %   %   % Run dialog
     %   result = controller.run();
     %
@@ -23,7 +23,7 @@ classdef AmiraImportDlg < handle
     
     properties (Access = private)
         view        % Handle to the App Designer view
-        parentFigure   % Handle to the parent GUI
+        ParentFigure   % Handle to the parent GUI
         dim_xyczt   % Dimensions of the Amira Mesh dataset
         
         % Output State
@@ -31,14 +31,14 @@ classdef AmiraImportDlg < handle
     end
     
     methods
-        function obj = AmiraImportDlg(dimxyczt, parentFigure, Font)
+        function obj = AmiraImportDlg(dimxyczt, ParentFigure, Font)
             % Constructor
             % dimxyczt: vector containing dimensions
-            % parentFigure: handle to the parent figure/app
+            % ParentFigure: handle to the parent figure/app
             % Font: structure with FontName and FontSize
             
             obj.dim_xyczt = dimxyczt;
-            obj.parentFigure = parentFigure;
+            obj.ParentFigure = ParentFigure;
             
             % Initialize the App Designer view
             % Assuming the view class is named views.AmiraImportGUI
@@ -83,7 +83,7 @@ classdef AmiraImportDlg < handle
             % Initialize view components and callbacks
 
             % Center the window relative to parent
-            utils.moveWindowOutside(obj.view.gui, obj.parentFigure, 'center', 'center');
+            utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
 
             % add icon
             obj.view.gui.Icon = 'mib_icon_16px.png';

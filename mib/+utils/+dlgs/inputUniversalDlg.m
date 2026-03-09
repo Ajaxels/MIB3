@@ -1,9 +1,9 @@
-function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(parentFigure, prompts, defAns, dlgTitle, options)
-% [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(parentFigure, prompts, defAns, dlgTitle, options)
+function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, prompts, defAns, dlgTitle, options)
+% [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, prompts, defAns, dlgTitle, options)
 % uifigure + uigridlayout version of mibInputMultiDlg with extra widget types
 %
 % Parameters:
-% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
 %   used to center the dialog. Pass [] to use the cached handle from a prior call.
 %   To supply the MIB installation path use options.mibPath.
 % prompts: a cell array {n x 1} with the prompts for each input field of the dialog.
@@ -131,11 +131,10 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(parentFigu
 % options.Icon = 'question_48px';
 % options.DoNotShowAgain = true;
 % options.DoNotShowAgainText = 'Do not show this again';
-% options.ParentFigure = obj.view.gui;
 % [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, {htmlContent}, {htmlContent}, dlgTitle, options);
 
 arguments
-    parentFigure = []
+    ParentFigure = []
     prompts cell = {'Enter a text:'}
     defAns cell = {[]}
     dlgTitle char = 'MultiEdit dialog'
@@ -190,10 +189,10 @@ if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-% parentFigure first-param takes priority; update cache and options.ParentFigure
-if ~isempty(parentFigure) && isvalid(parentFigure)
-    parentFigurePersistent = parentFigure;
-    options.ParentFigure = parentFigure;
+% ParentFigure first-param takes priority; update cache and options.ParentFigure
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
+    parentFigurePersistent = ParentFigure;
+    options.ParentFigure = ParentFigure;
 elseif isempty(options.ParentFigure) && ~isempty(parentFigurePersistent) && isvalid(parentFigurePersistent)
     options.ParentFigure = parentFigurePersistent;
 elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)

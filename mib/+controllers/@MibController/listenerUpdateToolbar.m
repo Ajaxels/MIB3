@@ -32,6 +32,7 @@ function listenerUpdateToolbar(obj, src, evtData)
 switch evtData.Parameters.button
     case 'fastpan'
         obj.cQuickAccessBar.handles.fastpan.Value = evtData.Parameters.state;
+        obj.fastPanningMode = evtData.Parameters.state;
     case 'roiMode'
         obj.cQuickAccessBar.handles.roiMode.Value = evtData.Parameters.state;
     case 'blockMode'

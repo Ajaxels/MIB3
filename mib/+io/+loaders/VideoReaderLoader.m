@@ -23,7 +23,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
 
             % Return values:
             %   obj: instance of the VideoReaderLoader class
@@ -61,7 +61,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             %     @li .zMax - [numeric] max Z coordinate (frame)
             %     @li .xyStep - [numeric] XY binning step
             %     @li .mibPath - [char] path to MIB directory
-            %     @li .parentFigure - handle to the parent window to show progress dialog
+            %     @li .ParentFigure - handle to the parent window to show progress dialog
             %     @li .Font - [struct] font settings for dialogs
 
             % Return values:
@@ -117,7 +117,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -135,7 +135,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.VideoReaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.VideoReaderLoader');
                     return;
@@ -163,7 +163,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     xyloObj = VideoReader(files(fnIndex).filename);
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.VideoReaderLoader!\n\nCannot open video file:\n%s\n\nError: %s', ...
                         filenames{fnIndex}, err.message), ...
                         'Video reading error', 'Error in io.loaders.VideoReaderLoader');
@@ -211,7 +211,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, currentColorType)
                         imginfo = dictionary();
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                             'Mixed colors', 'Error in io.loaders.VideoReaderLoader');
                         return;
@@ -341,7 +341,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading video frames...',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading video frames...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -366,7 +366,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     xyloObj = VideoReader(files(fnIndex).filename);
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading video file:\n%s\n\nError: %s', ...
                         files(fnIndex).filename, err.message), ...
                         'Video loading error', 'Error in io.loaders.VideoReaderLoader');

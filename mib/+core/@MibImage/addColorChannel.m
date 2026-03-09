@@ -9,7 +9,7 @@ function output = addColorChannel(obj, img, channelId, lutColors, options)
 % lutColors: [@em optional] matrix [nNewChannels x 3] with LUT colors in
 %   the range 0-1. Pass NaN (default) to auto-assign random colors.
 % options: [@em optional] struct with fields:
-%   @li .parentFigure - handle to parent figure for dialogs (default [])
+%   @li .ParentFigure - handle to parent figure for dialogs (default [])
 %   @li .showWaitbar  - logical; show progress bar (default true)
 %
 % Return values:
@@ -27,7 +27,7 @@ output = 0;
 if nargin < 5; options   = struct; end
 if nargin < 4; lutColors = NaN;    end
 if nargin < 3; channelId = NaN;    end
-if ~isfield(options, 'parentFigure'); options.parentFigure = []; end
+if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 if ~isfield(options, 'showWaitbar');  options.showWaitbar  = true; end
 
 % ---- dimension mismatch check ----------------------------------------
@@ -35,8 +35,8 @@ if ~isfield(options, 'showWaitbar');  options.showWaitbar  = true; end
 if size(obj.data{1}, 1) ~= size(img, 1) || ...
    size(obj.data{1}, 2) ~= size(img, 2) || ...
    size(obj.data{1}, 5) ~= size(img, 5)
-    if ~isempty(options.parentFigure)
-        selection = uiconfirm(options.parentFigure, ...
+    if ~isempty(options.ParentFigure)
+        selection = uiconfirm(options.ParentFigure, ...
             sprintf('Some of the image dimensions mismatch.\nContinue anyway?'), ...
             'Dimensions mismatch!', ...
             'Options', ["Continue", "Cancel"], ...
@@ -46,7 +46,7 @@ if size(obj.data{1}, 1) ~= size(img, 1) || ...
 end
 
 if options.showWaitbar
-    wb = uiprogressdlg(options.parentFigure, 'Title', 'Add color channel...', ...
+    wb = uiprogressdlg(options.ParentFigure, 'Title', 'Add color channel...', ...
         'Message', 'Please wait...', 'Value', 0);
 end
 

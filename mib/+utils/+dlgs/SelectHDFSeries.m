@@ -4,14 +4,14 @@ classdef SelectHDFSeries < handle
     %
     %   Usage:
     %       % init the controller for the dialog using hdf5 file and handle to the parent GUI
-    %       controller = SelectHDFSeries('myfile.h5', parentFigure);
+    %       controller = SelectHDFSeries('myfile.h5', ParentFigure);
     %       % run the controller to acquire the user input
     %       [dataset, metaFlag, dims, transMat] = controller.run();
 
     properties (Access = private)
         view            % handle to the App Designer view
         filename        % path to HDF5 file
-        parentFigure       % handle to the parent GUI
+        ParentFigure       % handle to the parent GUI
         
         % Internal Data State
         tableData       % Cell array storing table content
@@ -25,12 +25,12 @@ classdef SelectHDFSeries < handle
     end
 
     methods
-        function obj = SelectHDFSeries(filename, parentFigure, Font)
+        function obj = SelectHDFSeries(filename, ParentFigure, Font)
             % Constructor
             % viewObj: Instance of the App Designer app
             % filename: String path to the HDF5 file
             
-            obj.parentFigure = parentFigure;
+            obj.ParentFigure = ParentFigure;
             obj.view = views.SelectHDFSeriesGUI;
             % update font size
             if obj.view.handles.selectdatasettoloadLabel.FontSize ~= Font.FontSize ...
@@ -88,7 +88,7 @@ classdef SelectHDFSeries < handle
     methods (Access = private)
         function initView(obj)
             % Make the view modal
-            utils.moveWindowOutside(obj.view.gui, obj.parentFigure, 'center', 'center');
+            utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
             % add icon
             obj.view.gui.Icon = 'mib_icon_16px.png';
             % Parse HDF5 and populate the view

@@ -23,7 +23,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %   @li .silentMode - [logical] do not ask user questions
             %   @li .verbose - [logical] show timing information
             %   @li .Font - [struct] font settings for dialogs
-            %   @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %   @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
             %
             % Return values:
             % obj: instance of the ImreadLoader class
@@ -66,7 +66,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %       @li .zMax - [numeric] max Z coordinate (slice)
             %       @li .xyStep - [numeric] XY binning step
             %   @li .mibPath - [char] path to MIB directory
-            %   @li .parentFigure - handle to the parent window to show progress dialog
+            %   @li .ParentFigure - handle to the parent window to show progress dialog
             %   @li .Font - [struct] font settings for dialogs
             %   @li .BioFormatsIndices - [numeric] level index for pyramidal TIF
             %
@@ -122,7 +122,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -139,7 +139,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.ImreadLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.ImreadLoader');
                     return;
@@ -184,7 +184,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                 prompt = {sprintf('This is pyramidal TIF that has %d sub-images\nPlease choose the one to get:', numel(info))};
                                 dlgOptions.LabelPosition = 'top';
                                 dlgOptions.mibPath = options.mibPath;
-                                [answer, selectedIndex] = utils.dlgs.inputUniversalDlg(options.parentFigure, prompt, {defAns}, 'title', dlgOptions);
+                                [answer, selectedIndex] = utils.dlgs.inputUniversalDlg(options.ParentFigure, prompt, {defAns}, 'title', dlgOptions);
                                 if isempty(answer)
                                     if options.waitbar; delete(wb); end
                                     return;
@@ -254,7 +254,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                         'Mixed colors', 'Error in io.loaders.ImreadLoader');
                     return;
@@ -511,7 +511,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading images...',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -534,7 +534,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 % Handle GIF conversion
                 convertGifSwitch = false;
                 if ~isempty(strfind(files(fnIndex).extension, 'gif')) && files(fnIndex).noLayers > 1
-                    selection = uiconfirm(options.parentFigure, ...
+                    selection = uiconfirm(options.ParentFigure, ...
                         'Convert indexed GIF to truecolor?', ...
                         'Image format warning!', ...
                         'Icon', 'warning', 'DefaultOption', 1);

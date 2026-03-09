@@ -1,10 +1,10 @@
-function answer = inputSingleDlg(parentFigure, prompt, defAns, dlgTitle, options)
-% function answer = inputSingleDlg(parentFigure, prompt, defAns, dlgTitle, options)
+function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
+% function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
 % Efficient single-input dialog with uifigure and icon support offering
 % access to uieditfield for texts or uispinner for values
 %
 % Parameters:
-% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
 %   used to center the dialog. Pass [] to use the cached handle from a prior call.
 %   To supply the MIB installation path use options.mibPath.
 % prompt: string with the prompt text for the input field
@@ -64,7 +64,7 @@ function answer = inputSingleDlg(parentFigure, prompt, defAns, dlgTitle, options
 
 
 arguments
-    parentFigure = []
+    ParentFigure = []
     prompt char = 'Enter value:'
     defAns = ''
     dlgTitle char = 'Input'
@@ -76,9 +76,9 @@ persistent parentFigureHandle  % cached handle to the main GUI window
 
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
-% parentFigure param takes priority; update cache
-if ~isempty(parentFigure) && isvalid(parentFigure)
-    parentFigureHandle = parentFigure;
+% ParentFigure param takes priority; update cache
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
+    parentFigureHandle = ParentFigure;
 end
 
 % Resolve mibDir — update cache when options.mibPath is supplied
@@ -109,9 +109,9 @@ if ~isfield(options, 'IconWidth')
     end
 end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-% use parentFigure param first, then options.ParentFigure, then cached handle
-if ~isempty(parentFigure) && isvalid(parentFigure)
-    options.ParentFigure = parentFigure;
+% use ParentFigure param first, then options.ParentFigure, then cached handle
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
+    options.ParentFigure = ParentFigure;
 elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
     options.ParentFigure = parentFigureHandle;
 elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)

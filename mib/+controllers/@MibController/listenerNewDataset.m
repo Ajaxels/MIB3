@@ -34,15 +34,20 @@ else
 end
 
 % update the missing fields
-if ~isfield(Parameters, 'index') 
-    Parameters.index = obj.mibModel.id; 
-    % resize the dataset to fit the screen
-    notify(obj.mibModel, 'UpdateDatasetAxes');
+if ~isfield(Parameters, 'index')
+    Parameters.index = obj.mibModel.id;
+    % fit the new dataset to screen — drawnow ensures the axes panel has a
+    % valid InnerPosition before listenerUpdateDatasetAxes reads axSize
+    drawnow limitrate;
+    fitOpt = Parameters;
+    fitOpt.mode = 'fitToScreen';
+    eventdata = core.ToggleEventData(fitOpt);
+    notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 else  % use provided index of the dataset
     % resize the dataset with the index to fit the screen
     eventdata = core.ToggleEventData(Parameters);
     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
-end 
+end
 
 % update BioFormatsMemoizer directory
 obj.mibModel.I{Parameters.index}.bioFormatsMemoizerMemoDir = obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir;

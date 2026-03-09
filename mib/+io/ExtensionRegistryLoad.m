@@ -55,8 +55,8 @@ classdef ExtensionRegistryLoad < handle
 
             % check whether the extension is compatible
             if ~ismember(ext, lower(obj.extensionSets{key}))
-                if ismember(ext, {'zarr', 'zarr2','zarr3'})
-                    loaderInfo = sprintf('io.ExtensionRegistryLoad.resolveRoute:\nExtension "%s" not allowed for\nmode="%s" reader="%s"\n\nTo load Zarr format switch to the Virtual mode!', ext, mode, reader);
+                if ismember(ext, {'zarr', 'zarr3'})
+                    loaderInfo = sprintf('io.ExtensionRegistryLoad.resolveRoute:\nExtension "%s" not allowed for\nmode="%s" reader="%s"\n\nTo load Zarr v3 format switch to the Virtual mode!', ext, mode, reader);
                 else    
                     loaderInfo = sprintf('io.ExtensionRegistryLoad.resolveRoute:\nExtension "%s" not allowed for\nmode="%s" reader="%s"', ext, mode, reader);
                 end
@@ -141,11 +141,12 @@ classdef ExtensionRegistryLoad < handle
             obj.videoExtensions = {video_formats.Extension};
 
             % combine all standard formats into a single cell array
-            stdImgFormats = [stdImgFormats.ext 'mrc' 'rec' 'am' 'nrrd' 'h5' 'xml' 'st' 'preali' 'mibImg' obj.videoExtensions];
+            stdImgFormats = [stdImgFormats.ext 'mrc' 'rec' 'am' 'nrrd' 'h5' 'xml' 'st' 'preali' 'mibImg' 'zarr3' obj.videoExtensions];
             % standard image extensions
             obj.extensionSets("Standard.Default") = {sort(stdImgFormats)};
-            obj.extensionSets("Virtual.Default") = {sort({'h5','hdf5','xml', 'zarr', 'zarr2', 'zarr3'})};
-            obj.extensionSets("BigData.Default") = {''};
+            % zarr2 removed: Zarr3Matlab library only supports zarr v3
+            obj.extensionSets("Virtual.Default") = {sort({'h5','hdf5','xml', 'zarr', 'zarr3'})};
+            obj.extensionSets("BigData.Default") = {sort({'zarr3'})};
             
             % list of compatible Bio-Formats
             bioFormats = {'nii','mov','pic','ics','ids','lei','stk','nd','nd2','sld','pict'...
@@ -204,7 +205,7 @@ classdef ExtensionRegistryLoad < handle
             % 'mibImg' -> custom image format for MIB
             % 'hdf5-header' -> HDF5 with header for MIB or BigDataViewer in Fiji
             % 'hdf5-no-header' -> HDF5 without header for Ilastik
-            % 'OmeZarr' -> MIB implementation of Ome-Zarr v2/3 reader
+            % 'OmeZarr' -> MIB implementation of OME-Zarr v3 reader (Zarr3VirtualSetupLoader)
             % 'imod' -> IMOD reader
             % 'nrrd' -> NRRD reader
             % 'VideoReader' -> MATLAB reader for video files
@@ -243,7 +244,7 @@ classdef ExtensionRegistryLoad < handle
                     id = 'hdf5-header';
                 case {'hdf5', 'h5'}
                     id = 'hdf5-no-header';
-                case {'zarr', 'zarr2', 'zarr3'}
+                case {'zarr', 'zarr3'}
                     id = 'OmeZarr';
                 case {'rec', 'mrc', 'st', 'pre', 'ali'}
                     id = 'imod';

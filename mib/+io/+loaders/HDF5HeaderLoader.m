@@ -24,7 +24,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li .silentMode - [logical] do not ask user questions
             %     @li .verbose - [logical] show timing information
             %     @li .Font - [struct] font settings for dialogs
-            %     @li .parentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %     @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
 
             % Return values:
             %   obj: instance of the HDF5HeaderLoader class
@@ -253,7 +253,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li .zMax - [numeric] max Z coordinate (slice)
             %     @li .xyStep - [numeric] XY binning step
             %     @li .mibPath - [char] path to MIB directory
-            %     @li .parentFigure - handle to the parent window to show progress dialog
+            %     @li .ParentFigure - handle to the parent window to show progress dialog
             %     @li .Font - [struct] font settings for dialogs
 
             % Return values:
@@ -311,7 +311,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
             % Initialize waitbar if requested
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Metadata import',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
                     'Message', sprintf('Loading HDF5 metadata\n(press Cancel when metadata is the same for all files)'), ...
                     'Cancelable', 'on');
             end
@@ -327,7 +327,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.HDF5HeaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.HDF5HeaderLoader');
                     return;
@@ -353,7 +353,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     imginfoTemp = obj.parseXMLHeader(filenames{fnIndex});
                 catch err
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.HDF5HeaderLoader!\n\nCannot parse XML header:\n%s\n\nError: %s', ...
                         filenames{fnIndex}, err.message), ...
                         'XML parsing error', 'Error in io.loaders.HDF5HeaderLoader');
@@ -375,7 +375,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     if ~strcmp(imginfo{"ColorType"}, imginfoTemp{"ColorType"})
                         imginfo = dictionary();
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                             'Mixed colors', 'Error in io.loaders.HDF5HeaderLoader');
                         return;
@@ -453,7 +453,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                             dlgOptions.WindowHeight = 140;
                             dlgOptions.mibPath = obj.Options.mibPath;
                             defAns = struct('Value', 1, 'Limits', [1 noLevels], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d');
-                            level = utils.dlgs.inputSingleDlg(obj.Options.parentFigure, prompt, defAns, 'Select image', dlgOptions);
+                            level = utils.dlgs.inputSingleDlg(obj.Options.ParentFigure, prompt, defAns, 'Select image', dlgOptions);
                             if isempty(level)
                                 if options.waitbar; delete(wb); end
                                 imginfo = dictionary();
@@ -481,7 +481,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                             imgClass = 'uint8';
                         otherwise
                             if options.waitbar; delete(wb); end
-                            utils.dlgs.showErrorDialog(options.parentFigure, ...
+                            utils.dlgs.showErrorDialog(options.ParentFigure, ...
                                 sprintf('Oops!\n\nPlease check image class "%s" and implement it!', dataType), ...
                                 'Unsupported data type', 'Error in io.loaders.HDF5HeaderLoader');
                             imginfo = dictionary();
@@ -498,7 +498,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 else
                     % Unknown format
                     if options.waitbar; delete(wb); end
-                    utils.dlgs.showErrorDialog(options.parentFigure, ...
+                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('!!! Error !!!\n\nCannot detect the HDF5 format!'), ...
                         'Unknown format', 'Error in io.loaders.HDF5HeaderLoader');
                     imginfo = dictionary();
@@ -642,7 +642,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
             % Initialize uiprogressdlg
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading HDF5 images...',...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading HDF5 images...',...
                     'Message', sprintf('Please wait...'), ...
                     'Cancelable', 'on');
             end
@@ -666,12 +666,12 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 if strcmp(files(fnIndex).objecttype, 'bdv.hdf5')
                     % BigDataViewer format
                     opt.level = imginfo{"ReturnedLevel"};
-                    opt.parentFigure = obj.Options.parentFigure;
+                    opt.ParentFigure = obj.Options.ParentFigure;
                     try
                         imgIn = obj.loadBigDataViewerFormat(files(fnIndex).filename, opt, imginfo);
                     catch err
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error loading BigDataViewer HDF5:\n%s\n\nError: %s', ...
                             imginfo{"Filename"}, err.message), ...
                             'HDF5 loading error', 'Error in io.loaders.HDF5HeaderLoader');
@@ -690,7 +690,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         hdf5image = h5read(files(fnIndex).filename, files(fnIndex).seriesName);
                     catch err
                         if options.waitbar; delete(wb); end
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error loading MATLAB HDF5:\n%s\n\nError: %s', ...
                             files(fnIndex).filename, err.message), ...
                             'HDF5 loading error', 'Error in io.loaders.HDF5HeaderLoader');
@@ -702,7 +702,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     if iscell(hdf5image)
                         if options.waitbar; delete(wb); end
                         assignin('base', 'hdf5image', hdf5image);
-                        utils.dlgs.showErrorDialog(options.parentFigure, ...
+                        utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('mibGetImages: cannot read this dataset!\n\nIt was exported as ''hdf5image'' to the main MATLAB workspace.'), ...
                             'Error!', 'Error in io.loaders.HDF5HeaderLoader');
                         img = [];
@@ -727,7 +727,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         end
 
                         if ~options.silentMode
-                            uiconfirm(options.parentFigure, ...
+                            uiconfirm(options.ParentFigure, ...
                                 sprintf('mibGetImages: the dataset was converted to %s format!', class(hdf5image)), ...
                                 'Warning!', 'Icon', 'warning');
                         end
@@ -804,7 +804,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li .t - [numeric array] [tmin, tmax] time range to load
             %     @li .level - [numeric] magnification level (1 for unbinned)
             %     @li .waitbar - [logical] show waitbar (default = true)
-            %     @li .parentFigure - handle to parent window for dialogs
+            %     @li .ParentFigure - handle to parent window for dialogs
             %   imginfo: [@em dictionary] metadata from XML file (optional)
 
             % Return values:
@@ -841,11 +841,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
             img = [];
             if ~isfield(options, 'waitbar'); options.waitbar = true; end
-            if ~isfield(options, 'parentFigure'); options.parentFigure = []; end
+            if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 
             % Initialize progress dialog
             if options.waitbar
-                wb = uiprogressdlg(options.parentFigure, 'Title', 'Loading HDF5...', ...
+                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading HDF5...', ...
                     'Message', sprintf('Loading HDF5 file structure\nPlease wait...'), ...
                     'Indeterminate', 'on');
             end
@@ -905,7 +905,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     dlgOptions.WindowHeight = 140;
                     dlgOptions.mibPath = obj.Options.mibPath;
                     defAns = struct('Value', 1, 'Limits', [1 noLevels], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d');
-                    level = utils.dlgs.inputSingleDlg(obj.Options.parentFigure, prompt, defAns, 'Select image', dlgOptions);
+                    level = utils.dlgs.inputSingleDlg(obj.Options.ParentFigure, prompt, defAns, 'Select image', dlgOptions);
                     if isempty(level)
                         if options.waitbar; delete(wb); end
                         return;

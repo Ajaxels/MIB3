@@ -112,6 +112,19 @@ if isfield(options, 'blockModeSwitch') && options.blockModeSwitch
     options.y = ceil(axesY);
 end
 
+% Pass current magnification factor so pyramid-based virtual images (zarr3)
+% can select the correct pyramid level and pre-resize the returned slice to
+% match the display resolution.  For non-pyramid datasets this is ignored.
+% When resizeToMagnification=false the caller wants pixel-for-pixel data
+% (e.g. padded pan mode), so pass magFactor=1 to suppress pyramid resizing.
+if ~isfield(options, 'magFactor')
+    if isfield(options, 'resizeToMagnification') && ~options.resizeToMagnification
+        options.magFactor = 1;
+    else
+        options.magFactor = obj.magFactor;
+    end
+end
+
 if options.roiId >= 0
     % get indices of ROI
     if options.roiId == 0

@@ -14,13 +14,13 @@
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi
 % Date: 25.04.2023
 
-function showMilestoneDialog(parentFigure, userPrefs, mode, options)
-% function showMilestoneDialog(parentFigure, userPrefs, mode, options)
+function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
+% function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
 % Show a gamification milestone / current-stats dialog with a celebration
 % video and user performance statistics.
 %
 % Parameters:
-% parentFigure: handle to the parent window (AppContainer, uifigure, or []);
+% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
 %   used to center the dialog. Pass [] to use the cached handle from a prior call.
 %   To supply the MIB installation path use options.mibPath.
 % userPrefs: struct - mibModel.preferences.Users (provides tier data and stats)
@@ -46,21 +46,21 @@ function showMilestoneDialog(parentFigure, userPrefs, mode, options)
 %       'currentStats');
 
 arguments
-    parentFigure = []
+    ParentFigure = []
     userPrefs struct = struct()
     mode      char   = 'milestoneReached'
     options   struct = struct()
 end
 
-%% Resolve mibDir and parentFigure (mirrors pattern used in other +utils/+dlgs functions)
+%% Resolve mibDir and ParentFigure (mirrors pattern used in other +utils/+dlgs functions)
 persistent mibDir
 persistent parentFigureHandle   % cached handle to the main GUI window
 
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
-% parentFigure param takes priority; update cache
-if ~isempty(parentFigure) && isvalid(parentFigure)
-    parentFigureHandle = parentFigure;
+% ParentFigure param takes priority; update cache
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
+    parentFigureHandle = ParentFigure;
 end
 
 % Resolve mibDir — update cache when options.mibPath is supplied
@@ -79,9 +79,9 @@ end
 
 %% Defaults
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-% use parentFigure param first, then options.ParentFigure, then cached handle
-if ~isempty(parentFigure) && isvalid(parentFigure)
-    options.ParentFigure = parentFigure;
+% use ParentFigure param first, then options.ParentFigure, then cached handle
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
+    options.ParentFigure = ParentFigure;
 elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
     options.ParentFigure = parentFigureHandle;
 elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)

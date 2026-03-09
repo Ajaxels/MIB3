@@ -7,7 +7,7 @@ classdef SelectLociSeriesDlg < handle
     %
     % Usage:
     %   % Initialize the controller for the dialog
-    %   controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, parentFigure);
+    %   controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure);
     %   
     %   % Run the controller to acquire user input
     %   [seriesIndex, hDataset, metaSwitch, dimxyczt, seriesRealName] = controller.run();
@@ -15,12 +15,12 @@ classdef SelectLociSeriesDlg < handle
     % Examples:
     %   % Example with new reader
     %   filename = 'sample_image.czi';
-    %   controller = utils.dlgs.SelectLociSeriesDlg(filename, [], options.Font, parentFigure);
+    %   controller = utils.dlgs.SelectLociSeriesDlg(filename, [], options.Font, ParentFigure);
     %   [seriesIdx, reader, readMeta, dims, name] = controller.run();
     %   
     %   % Example with existing Bio-Formats reader
     %   reader = bfGetReader('sample_image.czi');
-    %   controller = utils.dlgs.SelectLociSeriesDlg('sample_image.czi', reader, Font, parentFigure);
+    %   controller = utils.dlgs.SelectLociSeriesDlg('sample_image.czi', reader, Font, ParentFigure);
     %   [seriesIdx, reader, readMeta, dims, name] = controller.run();
     
     % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
@@ -30,7 +30,7 @@ classdef SelectLociSeriesDlg < handle
     properties (Access = private)
         view            % Handle to the App Designer view
         filename        % Path to the Bio-Formats file
-        parentFigure       % Handle to the parent GUI
+        ParentFigure       % Handle to the parent GUI
         
         % Internal Data State
         tableData       % Cell array storing table content
@@ -46,18 +46,18 @@ classdef SelectLociSeriesDlg < handle
     end
     
     methods
-        function obj = SelectLociSeriesDlg(filename, hDataset, Font, parentFigure)
+        function obj = SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
             % Constructor
             %
             % Parameters:
             %   filename: String path to the Bio-Formats file
             %   hDataset: Optional Bio-Formats reader object (pass [] to create new)
             %   Font: Structure with FontName and FontSize fields
-            %   parentFigure: Handle to the parent GUI figure
+            %   ParentFigure: Handle to the parent GUI figure
             
             obj.filename = filename;
             if iscell(obj.filename); obj.filename = obj.filename{1}; end
-            obj.parentFigure = parentFigure;
+            obj.ParentFigure = ParentFigure;
             
             % Load Bio-Formats library
             obj.loadBioFormatsLibrary();
@@ -106,7 +106,7 @@ classdef SelectLociSeriesDlg < handle
             end
             
             % Center window and make modal
-            utils.moveWindowOutside(obj.view.gui, obj.parentFigure, 'center', 'center');
+            utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
             
             % Block execution until user responds
             uiwait(obj.view.gui);
@@ -149,7 +149,7 @@ classdef SelectLociSeriesDlg < handle
             obj.view.handles.imagePreview.YTick = [];
             
             % Center the window relative to parent
-            utils.moveWindowOutside(obj.view.gui, obj.parentFigure, 'center', 'center');
+            utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
 
             % Parse Bio-Formats file and populate table
             try

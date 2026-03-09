@@ -71,8 +71,12 @@ classdef LoaderFactory
                     loader = io.loaders.BioFormatsVirtualSetupLoader(options);
 
                 case "OmeZarr"
-                    % OME-Zarr format (v2/v3)
-                    loader = io.loaders.OmeZarrLoader(options);
+                    % OME-Zarr v3 format — setup loader for all dataset modes.
+                    % Pass the dataset mode so Zarr3VirtualSetupLoader can decide
+                    % whether to load pixels (Standard) or return path only (Virtual/BigData).
+                    opts = options;
+                    opts.datasetMode = char(loaderInfo.mode);
+                    loader = io.loaders.Zarr3VirtualSetupLoader(opts);
 
                 case "AmiraMesh"
                     % Amira Mesh format (.am)
@@ -163,8 +167,8 @@ classdef LoaderFactory
             idx = idx + 1;
 
             loaderList(idx).loaderId = 'OmeZarr';
-            loaderList(idx).description = 'OME-Zarr format';
-            loaderList(idx).extensions = {'zarr', 'zarr2', 'zarr3'};
+            loaderList(idx).description = 'OME-Zarr v3 format';
+            loaderList(idx).extensions = {'zarr', 'zarr3'};
             idx = idx + 1;
 
             loaderList(idx).loaderId = 'AmiraMesh';
