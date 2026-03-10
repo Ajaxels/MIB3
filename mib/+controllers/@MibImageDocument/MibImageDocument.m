@@ -63,6 +63,7 @@ classdef MibImageDocument < handle
         sliderTShiftStep = 10    % t-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
         sliderZStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
         sliderZShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
+        sliderDebounceTimer = [] % timer used to debounce rapid slider dragging (slice and frame sliders);
 
         % switches that are updated within obj.gui_WinMouseMotionFcn
         isInsideAxes = false;   % mouse inside image axes
