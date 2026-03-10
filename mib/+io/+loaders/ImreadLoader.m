@@ -250,7 +250,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
                 % Check color type consistency
                 % change truecolor->multichannel to match MIB color scheme
-                if strcmp(info(1).ColorType, 'truecolor'); info(1).ColorType='multichannel'; end
+                if strcmp(info(1).ColorType, 'truecolor'); imginfo{"ColorType"} = 'multichannel'; info(1).ColorType='multichannel'; end
                 if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
                     imginfo = dictionary();
                     if options.waitbar; delete(wb); end

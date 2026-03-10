@@ -64,7 +64,7 @@ if ~isempty(obj.data)
     % fix the missing properties in the provided meta class
     if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
     if ~isKey(meta, 'lutColors'); meta{'lutColors'} = utils.defaults.generateLUT(obj.colors); end
-    if isempty(meta{'viewPort'})
+    if isempty(meta{'viewPort'}) || numel(meta{'viewPort'}.min) ~= meta{'Colors'}
         viewPort = obj.getDefaultViewPort();
         meta{'viewPort'} = viewPort;
     end
