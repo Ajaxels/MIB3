@@ -46,16 +46,20 @@ if mode(1) == 's' % shown
         otherwise; coef_z = ds.pixSize.z / ds.pixSize.y;
     end
 
-    if magFactor >= 1
-        % Full-image mode (zoomed out): XLim = axesX*coef_z/magFactor.
-        % x already encodes absolute data position; no axesX offset needed.
+    if magFactor >= 1 && axesX(1) <= 1
+        % Full-image mode (zoomed out, view at dataset origin):
+        % XLim starts near 0 and x directly encodes absolute data position.
         xOut = x * magFactor / coef_z;
         yOut = y * magFactor;
     else
-        % Block mode (zoomed in): XLim starts near 0 (relative to viewport).
-        % Add axesX(1) to convert from viewport-relative to absolute coords.
+        % Block/crop mode: view is panned away from the dataset origin
+        % (axesX(1) > 1) OR zoomed in (magFactor < 1).
+        % XLim starts near 0 (relative to the crop), so axesX(1) must be
+        % added to convert from viewport-relative to absolute dataset coords.
+        % This also covers Zarr pyramid datasets, which always load a crop
+        % even at magFactor >= 1 (e.g. 100% view of a large dataset).
         xOut = x * magFactor / coef_z + max([0 floor(axesX(1))]);
-        yOut = y * magFactor                + max([0 floor(axesY(1))]);
+        yOut = y * magFactor           + max([0 floor(axesY(1))]);
     end
 elseif mode(1) == 'b' % blockmode
     xOut = x*magFactor;
