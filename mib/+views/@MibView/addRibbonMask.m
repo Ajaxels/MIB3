@@ -33,9 +33,11 @@ iconPath = fullfile(obj.controller.mibPath, 'assets', 'icons');
 import matlab.ui.internal.toolstrip.Icon
 import matlab.ui.internal.toolstrip.SplitButton
 import matlab.ui.internal.toolstrip.PopupList
+import matlab.ui.internal.toolstrip.PopupListHeader
 import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
+
 
 %% ============= Make "Mask Convert" section =============
 section = obj.handles.ribbon.mask.addSection("Convert");
@@ -45,6 +47,8 @@ column = section.addColumn();
 widgetHandles.maskToSelection =  DropDownButton('Mask->Selection', Icon(fullfile(iconPath, 'mask_convert_24px.png')));
 widgetHandles.maskToSelection.Description = "Convert Mask to Selection";
 popupList = PopupList();
+header1 = PopupListHeader('Convert Mask to Selection');
+popupList.add(header1);
 % % Mask->Selection -> Shown slice (2D)
 widgetHandles.maskToSelection2D =  matlab.ui.internal.toolstrip.ListItemWithPopup('Shown slice (2D)', Icon(fullfile(iconPath, 'dataset2d_24px.png')));
 
@@ -117,6 +121,8 @@ widgetHandles.import =  SplitButton('Import', Icon(fullfile(iconPath, 'mask_impo
 widgetHandles.import.Description = 'Import mask';
 
 popupList = PopupList();
+header1 = PopupListHeader('Import mask');
+popupList.add(header1);
 widgetHandles.importFromMatlab =  ListItem( 'Import mask from MATLAB',  Icon.MATLAB_24); 
 popupList.add(widgetHandles.importFromMatlab);
 widgetHandles.importFromMIB =  ListItem( 'Import mask from another MIB dataset',  Icon(fullfile(iconPath, 'mib_icon_24px.png'))); 
@@ -132,6 +138,8 @@ widgetHandles.export =  SplitButton('Export', Icon(fullfile(iconPath, 'mask_expo
 widgetHandles.export.Description = 'Export mask';
 
 popupList = PopupList();
+header1 = PopupListHeader('Export mask');
+popupList.add(header1);
 widgetHandles.exportToMatlab =  ListItem( 'Export mask to MATLAB', Icon.MATLAB_24); 
 popupList.add(widgetHandles.exportToMatlab);
 widgetHandles.exportToMIB =  ListItem( 'Export mask to another MIB dataset',  Icon(fullfile(iconPath, 'mib_icon_24px.png'))); 
@@ -154,6 +162,9 @@ widgetHandles.invert = SplitButton('Invert',Icon(fullfile(iconPath, 'mask_invert
 widgetHandles.invert.Description = "Invert mask";
 
 popupList = PopupList();
+header1 = PopupListHeader('Invert mask');
+popupList.add(header1);
+% popupList.add(header1);
 % % Invert mask -> Shown slice (2D)
 widgetHandles.invert2D =  ListItem('Shown slice (2D)', Icon(fullfile(iconPath, 'dataset2d_24px.png')));
 popupList.add(widgetHandles.invert2D);

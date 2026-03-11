@@ -170,25 +170,27 @@ section = obj.handles.ribbon.home.addSection("Export image");
 
 % % --------- SAVE ---------
 column = section.addColumn();
-homeHandles.saveFileAs = SplitButton("Save", Icon.SAVE_COPY_AS_24); 
-homeHandles.saveFileAs.Description = "Save current image to a new file";
+homeHandles.saveFileAs = Button("Save as",  Icon.SAVE_COPY_AS_24);
+homeHandles.snapshot.Description = 'Save current dataset to a file';
 
-% make a popup list for the dropdown button
-popupList = PopupList();
-% add header
-header1 = PopupListHeader('Import dataset from');
-popupList.add(header1);
-% Save
-homeHandles.saveFile = ListItem('Save', Icon.SAVE_DIRTY_24);
-homeHandles.saveFile.Description = 'Save and overwrite the current image';
-popupList.add(homeHandles.saveFile);
-% Save as... the default operation by pressing the split button
-homeHandles.saveFileAs2 = ListItem('Save as', Icon.SAVE_COPY_AS_24);
-homeHandles.saveFileAs2.Description = 'Save current image to a new file';
-popupList.add(homeHandles.saveFileAs2);
-
-% add the popup list to the SplitButton button
-homeHandles.saveFileAs.Popup = popupList;
+% % split button with two options
+% homeHandles.saveFileAs = SplitButton("Save", Icon.SAVE_COPY_AS_24); 
+% homeHandles.saveFileAs.Description = "Save current image to a new file";
+% % make a popup list for the dropdown button
+% popupList = PopupList();
+% % add header
+% header1 = PopupListHeader('Import dataset from');
+% popupList.add(header1);
+% % Save
+% homeHandles.saveFile = ListItem('Save', Icon.SAVE_DIRTY_24);
+% homeHandles.saveFile.Description = 'Save and overwrite the current image';
+% popupList.add(homeHandles.saveFile);
+% % Save as... the default operation by pressing the split button
+% homeHandles.saveFileAs2 = ListItem('Save as', Icon.SAVE_COPY_AS_24);
+% homeHandles.saveFileAs2.Description = 'Save current image to a new file';
+% popupList.add(homeHandles.saveFileAs2);
+% % add the popup list to the SplitButton button
+% homeHandles.saveFileAs.Popup = popupList;
 
 % add the dropdown button to the column
 column.add(homeHandles.saveFileAs);
@@ -238,6 +240,8 @@ homeHandles.render = SplitButton("Render", Icon(fullfile(iconPath, 'volume_rende
 homeHandles.render.Description = 'Show the dataset using volume rendering';
 
 popupList = PopupList();
+header1 = PopupListHeader('3D rendering engines');
+popupList.add(header1);
 homeHandles.renderMIB = ListItem( 'MIB Rendering',  Icon(fullfile(iconPath, 'mib_icon_24px.png'))); 
 popupList.add(homeHandles.renderMIB);
 homeHandles.renderMatlab = ListItem( 'MATLAB Volume Viewer',  Icon.MATLAB_24);
@@ -263,6 +267,8 @@ column = section.addColumn();
 homeHandles.chunking = DropDownButton(sprintf("Dataset\nchunking"), Icon(fullfile(iconPath, 'grid_24px.png')));
 homeHandles.chunking.Description = "Split datasets into chunks or stitch them back for efficient processing";
 popupList = PopupList();
+header1 = PopupListHeader('Split to subvolumes');
+popupList.add(header1);
 homeHandles.chunk = ListItem( 'Chunk dataset', Icon(fullfile(iconPath, 'split_24px.png')));
 homeHandles.chunk.Description = 'Split the image into smaller chunks for block-based processing';
 popupList.add(homeHandles.chunk);
@@ -276,6 +282,8 @@ column = section.addColumn('Width', 80);
 homeHandles.rename =  DropDownButton(sprintf("Image\nshuffling"), Icon(fullfile(iconPath, 'random_24px.png')));
 homeHandles.rename.Description = "Shuffle or restore image order to reduce processing bias";
 popupList = PopupList();
+header1 = PopupListHeader('Image Anonymization');
+popupList.add(header1);
 homeHandles.shuffle =  ListItem('Shuffle images', Icon(fullfile(iconPath, 'random_24px.png')));
 homeHandles.shuffle.Description = 'Randomly reorder and rename images to reduce processing bias';
 popupList.add(homeHandles.shuffle);
@@ -296,6 +304,8 @@ homeHandles.loadLayout.Description = 'Restore the default layout of panels';
 
 prefDir = utils.getPrefDir();
 popupList = PopupList();
+header1 = PopupListHeader('Update the current GIU layout');
+popupList.add(header1);
 homeHandles.loadLayoutLocalDefault =  ListItem( 'Load local default layout', Icon(fullfile(iconPath, 'load_layout_local_24px.png')));
 homeHandles.loadLayoutLocalDefault.Description = sprintf('Load local default layout from %s', fullfile(prefDir, 'mibDefaultLayout.json'));
 popupList.add(homeHandles.loadLayoutLocalDefault);
@@ -313,6 +323,8 @@ homeHandles.saveLayout =  SplitButton("Save layout", Icon(fullfile(iconPath, 'la
 homeHandles.saveLayout.Description = 'Save the current layout of panels as default';
 
 popupList = PopupList();
+header1 = PopupListHeader('Save current GUI layout');
+popupList.add(header1);
 homeHandles.saveLayoutLocalDefault =  ListItem( 'Save the current layout as default', Icon(fullfile(iconPath, 'layout_save_24px.png')));
 homeHandles.saveLayoutLocalDefault.Description = sprintf('Save the current layout as default to %s', fullfile(prefDir, 'mibDefaultLayout.json'));
 popupList.add(homeHandles.saveLayoutLocalDefault);
@@ -343,6 +355,8 @@ homeHandles.help.Description = "Open MIB help";
 
 % make a popup list for the dropdown button
 popupList = PopupList();
+header1 = PopupListHeader('Help hotline');
+popupList.add(header1);
 % MIB help
 homeHandles.helpMenu = ListItem('Open MIB help', Icon.HELP_16);
 popupList.add(homeHandles.helpMenu);

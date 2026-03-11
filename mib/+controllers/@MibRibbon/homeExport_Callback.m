@@ -18,8 +18,8 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
-    case 'Save'     % obj.handles.ribbonHome.saveFileAs & obj.handles.ribbonHome.saveFile
-    case 'Save as'     % obj.handles.ribbonHome.saveFileAs2
+    case 'Save as'     % obj.handles.ribbonHome.saveFileAs — save image with dialog
+        obj.mibModel.saveImage('image');
     case {'Export', 'Export to MATLAB'}     % obj.handles.ribbonHome.export & obj.handles.ribbonHome.exportToMatlab
     case 'Export to Imaris'     % obj.handles.ribbonHome.exportToImaris
     case 'Snapshot'     % obj.handles.ribbonHome.snapshot

@@ -1,0 +1,187 @@
+function fnOut = save(obj, filename, options)
+% function fnOut = save(obj, filename, options)
+% Save image data from a MibImage object to a file.
+%
+% This is the LOWEST-LEVEL save entry point.  It works completely
+% standalone: no MibDataset or MibModel is required.  Useful for
+% scripted pipelines that create or modify a MibImage object directly
+% without loading it through the full MIB application.
+%
+% The method:
+%   1. Derives the output format from options.Format (or from the file
+%      extension if options.Format is absent).
+%   2. Assembles a metadata struct from the object's own properties.
+%   3. Calls io.SaverFactory.create(format) to get the right saver.
+%   4. Delegates the actual I/O to saver.save(data, metadata, filename, options).
+%
+% NOTE ON pixSize:
+%   MibImage does NOT store pixel/voxel size — that information lives at
+%   the MibDataset level.  If you need physically correct metadata in the
+%   output file (e.g. for Amira, NRRD, or OME-TIFF), supply
+%   options.pixSize explicitly:
+%       opts.pixSize = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%   When options.pixSize is absent a default of 1×1×1 µm is used.
+%
+% Parameters:
+%   obj      — MibImage instance
+%   filename — (char) full output path INCLUDING extension, e.g.
+%              '/data/out/myStack.tif'  or  'C:\data\output.h5'
+%              The directory must already exist (created automatically if
+%              missing).
+%              When filename has no path component the current directory
+%              is used.
+%   options  — (struct, optional) saving options:
+%     .Format         — (char) format descriptor as listed in
+%                       io.SaverFactory.getFormats('image'), e.g.
+%                       'TIF format uncompressed (*.tif)'
+%                       When absent the format is inferred from the
+%                       file extension.
+%     .Saving3DPolicy — (char) '3D stack' | '2D sequence', default '3D stack'
+%     .showWaitbar    — (logical) display progress bar, default true
+%     .silent         — (logical) suppress all dialogs, default false
+%     .overwrite      — (logical) silently overwrite existing files, default true
+%     .Compression    — (char) 'none' | 'lzw' | 'packbits' (for TIF)
+%                             'lossy' | 'lossless'           (for JPG)
+%     .Quality        — (double 0-100) JPEG quality, default 90
+%     .FilenameGenerator — (char) 'Use original filename' |
+%                                  'Use sequential filename'
+%     .pixSize        — (struct) voxel size {.x .y .z .t .units .tunits};
+%                       injected by MibDataset.save() automatically when
+%                       calling through that layer
+%
+% Return values:
+%   fnOut — (char or cell of char) path(s) of saved file(s).
+%           Returns [] on failure or cancellation.
+%
+% USAGE EXAMPLES
+%   @code
+%   %% 1. Simplest case — save existing MibImage to TIF
+%   img = core.MibImage(uint8(rand(256,256,50,1,1)*255));
+%   img.filename = '/data/input.tif';
+%
+%   % get the list of possible formats for images: "formats = io.SaverFactory.getFormats('image')"
+%   opts.Format         = 'TIF format uncompressed (*.tif)';
+%   opts.Saving3DPolicy = '3D stack';
+%   opts.showWaitbar    = false;
+%   opts.silent         = true;
+%   opts.overwrite      = true;
+%   opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%
+%   fnOut = img.save('/output/stack.tif', opts);
+%   fprintf('Saved to: %s\n', fnOut);
+%   @endcode
+%
+%   @code
+%   %% 2. Save as LZW-compressed TIF, 2D sequence
+%   opts.Format            = 'TIF format LZW compression (*.tif)';
+%   opts.Saving3DPolicy    = '2D sequence';
+%   opts.FilenameGenerator = 'Use sequential filename';
+%   opts.showWaitbar       = true;
+%   opts.silent            = true;
+%   opts.overwrite         = true;
+%   opts.pixSize           = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
+%
+%   fnOut = img.save('/output/slice.tif', opts);
+%   % Produces: /output/slice_001.tif, /output/slice_002.tif, ...
+%   @endcode
+%
+%   @code
+%   %% 3. Save as PNG without explicit Format (inferred from extension)
+%   opts.showWaitbar = false;
+%   opts.silent      = true;
+%   opts.overwrite   = true;
+%   fnOut = img.save('/output/slice.png', opts);
+%   @endcode
+%
+%   @code
+%   %% 4. Save 16-bit EM data as HDF5 with voxel metadata
+%   imgEM = core.MibImage(uint16(rand(1024,1024,200,1,1)*65535));
+%   imgEM.filename = 'em_volume.h5';
+%
+%   opts.Format      = 'Hierarchical Data Format (*.h5)';
+%   opts.showWaitbar = true;
+%   opts.silent      = true;
+%   opts.overwrite   = true;
+%   opts.pixSize     = struct('x',0.004,'y',0.004,'z',0.03,'units','um','t',1,'tunits','s');
+%
+%   fnOut = imgEM.save('/output/em_volume.h5', opts);
+%   @endcode
+%
+% SEE ALSO
+%   core.MibLabels.save, core.MibDataset.saveImage, models.MibModel.saveImage,
+%   io.SaverFactory, io.savers.BaseSaver
+
+fnOut = [];
+
+if nargin < 3; options = struct(); end
+if nargin < 2 || isempty(filename)
+    error('MibImage:save:missingFilename', ...
+        'A filename must be provided to MibImage.save().');
+end
+
+% --- apply defaults ---
+if ~isfield(options,'showWaitbar');    options.showWaitbar    = true;    end
+if ~isfield(options,'silent');         options.silent         = false;   end
+if ~isfield(options,'overwrite');      options.overwrite      = true;    end
+if ~isfield(options,'Saving3DPolicy'); options.Saving3DPolicy = '3D stack'; end
+
+% --- ensure filename has a full path ---
+[pathStr, ~, ext] = fileparts(filename);
+if isempty(pathStr)
+    filename = fullfile(pwd, filename);
+    [pathStr, ~, ext] = fileparts(filename);
+end
+if exist(pathStr,'dir') ~= 7; mkdir(pathStr); end
+ext = lower(ext);
+
+% fileparts('file.ome.tiff') returns '.tiff'; detect compound extension
+if strcmp(ext, '.tiff') && endsWith(lower(filename), '.ome.tiff')
+    ext = '.ome.tiff';
+end
+
+% --- determine output format ---
+if ~isfield(options,'Format') || isempty(options.Format)
+    options.Format = io.SaverFactory.getDefaultFormat('image', ext);
+end
+
+% --- default pixSize when not provided ---
+if ~isfield(options,'pixSize') || isempty(options.pixSize)
+    options.pixSize = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
+end
+
+% --- assemble metadata from object properties ---
+metadata.filename   = obj.filename;
+metadata.colorType  = obj.colorType;
+metadata.lutColors  = obj.lutColors;
+metadata.dataClass  = obj.dataClass;
+metadata.maxInt     = obj.maxInt;
+metadata.pixSize    = options.pixSize;
+
+% per-slice source filenames
+if ~isempty(obj.sliceName)
+    metadata.sliceName = obj.sliceName;
+else
+    metadata.sliceName = {};
+end
+
+% resolution for PNG/TIF Resolution tags — pixels per inch
+resolution = utils.calculateResolution(options.pixSize);
+metadata.xResolution = resolution(1);
+metadata.yResolution = resolution(2);
+
+% image description tag
+metadata.imageDescription = '';
+
+% colormap for indexed images
+if isfield(obj,'colormap') && ~isempty(obj.colormap)
+    metadata.colormap = obj.colormap;
+end
+
+% --- get full 5-D data [H, W, D, C, T] ---
+data = obj.getData('image', 3, []);
+
+% --- dispatch to appropriate saver ---
+saver = io.SaverFactory.create(options.Format, options);
+fnOut = saver.save(data, metadata, filename, options);
+end
+

@@ -30,6 +30,8 @@ end
 iconPath = fullfile(obj.controller.mibPath, 'assets', 'icons');
 import matlab.ui.internal.toolstrip.Icon
 import matlab.ui.internal.toolstrip.PopupList
+import matlab.ui.internal.toolstrip.PopupListHeader
+import matlab.ui.internal.toolstrip.PopupListSeparator
 import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
@@ -62,6 +64,8 @@ widgetHandles.transform =  DropDownButton('Transform', Icon(fullfile(iconPath, '
 widgetHandles.transform.Description = "Transform the dataset";
 
 popupList = PopupList();
+header1 = PopupListHeader('Transform orientation');
+popupList.add(header1);
 % % ADD FRAME
 widgetHandles.addframe = matlab.ui.internal.toolstrip.ListItemWithPopup('Add frame...', Icon(fullfile(iconPath, 'add_frame_24px.png')));
 popupList2 = PopupList();
@@ -139,6 +143,8 @@ widgetHandles.slice =  DropDownButton('Slices', Icon(fullfile(iconPath, 'slices_
 widgetHandles.slice.Description = "Operations with slices";
 % % COPY SLICE
 popupList = PopupList();
+header1 = PopupListHeader('Operations with slices/frames');
+popupList.add(header1);
 widgetHandles.sliceCopy =  ListItem('Copy slice...', Icon(fullfile(iconPath, 'slices_copy_24px.png')));
 popupList.add(widgetHandles.sliceCopy);
 % % INSERT EMPTY SLICE
@@ -151,7 +157,7 @@ popupList.add(widgetHandles.sliceInterval);
 widgetHandles.sliceSwap =  ListItem('Swap slices...', Icon(fullfile(iconPath, 'slices_swap_24px.png')));
 popupList.add(widgetHandles.sliceSwap);
 % % SEPARATOR
-separator = matlab.ui.internal.toolstrip.PopupListSeparator();
+separator = PopupListSeparator();
 popupList.add(separator);
 % % DELETE SLICES
 widgetHandles.sliceDelete =  ListItem('Delete slice(s)...', Icon(fullfile(iconPath, 'slices_delete_24px.png')));

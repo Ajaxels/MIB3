@@ -33,6 +33,7 @@ import matlab.ui.internal.toolstrip.PopupList
 import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
+import matlab.ui.internal.toolstrip.PopupListHeader
 
 %% ============= Make "Dataset tools" section =============
 section = obj.handles.ribbon.image.addSection("Convert");
@@ -42,6 +43,8 @@ widgetHandles.mode =  DropDownButton('Mode', Icon(fullfile(iconPath, 'mode_24px.
 widgetHandles.mode.Description = "Transform the dataset";
 
 popupList = PopupList();
+header1 = PopupListHeader('Image mode change');
+popupList.add(header1);
 % % Mode -> grayscale
 widgetHandles.grayscale =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Grayscale', true);
 popupList.add(widgetHandles.grayscale);
@@ -87,6 +90,9 @@ widgetHandles.colors =  DropDownButton('Color channels', Icon(fullfile(iconPath,
 widgetHandles.colors.Description = "Color channels";
 
 popupList = PopupList();
+header1 = PopupListHeader('Operations with color channels');
+popupList.add(header1);
+
 % % Insert empty channel
 widgetHandles.colorsInsert =  ListItem('Insert empty channel...', Icon(fullfile(iconPath, 'colors_insert_24px.png')));
 popupList.add(widgetHandles.colorsInsert);
@@ -119,6 +125,9 @@ widgetHandles.contrast =  DropDownButton('Contrast', Icon(fullfile(iconPath, 'co
 widgetHandles.contrast.Description = "Adjust contrast or normalize image intensities";
 
 popupList = PopupList();
+header1 = PopupListHeader('Adjust or normalize contrast');
+popupList.add(header1);
+
 % % CLAHE
 widgetHandles.contrastCLAHE =  ListItem('Contrast-limited adaptive histogram equalization', Icon(fullfile(iconPath, 'contrast_clahe_24px.png')));
 popupList.add(widgetHandles.contrastCLAHE);
@@ -145,6 +154,9 @@ widgetHandles.invert = matlab.ui.internal.toolstrip.SplitButton('Invert', Icon(f
 widgetHandles.invert.Description = "Invert image";
 
 popupList = PopupList();
+header1 = PopupListHeader('Invert image intersity');
+popupList.add(header1);
+
 % % Invert image -> Shown slice (2D)
 widgetHandles.invert2D =  ListItem('Shown slice (2D)', Icon(fullfile(iconPath, 'dataset2d_24px.png')));
 popupList.add(widgetHandles.invert2D);
@@ -167,6 +179,9 @@ widgetHandles.visualization = matlab.ui.internal.toolstrip.SplitButton('Visualiz
 widgetHandles.visualization.Description = 'Type of image interpolation for the visualization';
 
 popupList = PopupList();
+header1 = PopupListHeader('Image interpolation for visualization');
+popupList.add(header1);
+
 % Bicubic interpolation
 widgetHandles.visBicubic =  ListItem('Bicubic', Icon(fullfile(iconPath, 'image_bicubic_24px.png')));
 widgetHandles.visBicubic.Description = 'Bicubic interpolation to resize images for visualization (best for zooming out)';
@@ -199,6 +214,8 @@ widgetHandles.tools =  DropDownButton('Image tools', Icon(fullfile(iconPath, 'im
 widgetHandles.tools.Description = "Tools for images";
 
 popupList = PopupList();
+header1 = PopupListHeader('Collection of image tools');
+popupList.add(header1);
 % % Contrnt-aware fill
 widgetHandles.contentAware =  ListItem('Content-aware fill', Icon(fullfile(iconPath, 'content_fill_24px.png')));
 popupList.add(widgetHandles.contentAware);
@@ -228,6 +245,9 @@ widgetHandles.morphops =  DropDownButton('MorphOps', Icon(fullfile(iconPath, 'mo
 widgetHandles.morphops.Description = "Morphological operations";
 
 popupList = PopupList();
+header1 = PopupListHeader('Morphological operations');
+popupList.add(header1);
+
 % % Bottom-hat filtering
 widgetHandles.botHat =  ListItem('Bottom-hat filtering', Icon(fullfile(iconPath, 'botHat_24px.png')));
 popupList.add(widgetHandles.botHat);
@@ -269,6 +289,9 @@ widgetHandles.profile =  DropDownButton('Intensity profile', Icon(fullfile(iconP
 widgetHandles.profile.Description = "Intensity profile";
 
 popupList = PopupList();
+header1 = PopupListHeader('Measure length');
+popupList.add(header1);
+
 % % Line intensity profile
 widgetHandles.profileLine =  ListItem('Line intensity profile', Icon(fullfile(iconPath, 'profileLine_24px.png')));
 popupList.add(widgetHandles.profileLine);

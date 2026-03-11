@@ -75,7 +75,7 @@ end
 if exist('mib_pars', 'var') && isfield(mib_pars, 'mibVersion')  %#ok<NODEF>
     if mib_pars.mibVersion < mibVersionNumeric
         % Version mismatch: merge old preferences with new defaults
-        obj.preferences = mibConcatenateStructures(obj.preferences, mib_pars.preferences);
+        obj.preferences = utils.concatenateStructures(obj.preferences, mib_pars.preferences);
     elseif mib_pars.mibVersion == mibVersionNumeric
         % Same version: restore preferences but reinitialize Users.Tiers
         % Users.Tiers is not stored and must be reinitialized each session

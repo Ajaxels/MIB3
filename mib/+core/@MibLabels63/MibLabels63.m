@@ -38,6 +38,8 @@ classdef MibLabels63 < core.MibImage
 
             % init the class using core.MibImage and forcing the type to be labels63
             obj = obj@core.MibImage(img, meta);  % Call parent constructor
+            obj.filename = 'Labels_none.model';
+            obj.maskFilename = 'Mask_none.mask';
         end
     end
 end

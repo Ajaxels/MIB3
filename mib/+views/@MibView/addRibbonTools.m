@@ -31,6 +31,7 @@ end
 iconPath = fullfile(obj.controller.mibPath, 'assets', 'icons');
 import matlab.ui.internal.toolstrip.Icon
 import matlab.ui.internal.toolstrip.PopupList
+import matlab.ui.internal.toolstrip.PopupListHeader
 import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
@@ -50,6 +51,8 @@ widgetHandles.classifiers =  DropDownButton('Classifiers', Icon(fullfile(iconPat
 widgetHandles.classifiers.Description = "Pixel classifiers";
 
 popupList = PopupList();
+header1 = PopupListHeader('Pixel classifiers');
+popupList.add(header1);
 % Membrane detector
 widgetHandles.membrane =  ListItem( 'Membrane detector', Icon(fullfile(iconPath, 'classification_membrane_24px.png'))); 
 popupList.add(widgetHandles.membrane);
@@ -66,6 +69,8 @@ widgetHandles.semiauto =  DropDownButton(sprintf('Semi-automatic\nsegmentation')
 widgetHandles.semiauto.Description = "Semi-automatic segmentation";
 
 popupList = PopupList();
+header1 = PopupListHeader('Semi-automatic segmentation');
+popupList.add(header1);
 % Global thresholding
 widgetHandles.globalthres =  ListItem(sprintf('Global\nthresholding'), Icon(fullfile(iconPath, 'global_tresholding_24px.png')));
 popupList.add(widgetHandles.globalthres);
@@ -87,6 +92,8 @@ widgetHandles.measure =  matlab.ui.internal.toolstrip.SplitButton(sprintf('Measu
 widgetHandles.measure.Description = "Start Measure tool for interactive measurements";
 
 popupList = PopupList();
+header1 = PopupListHeader('Measure length');
+popupList.add(header1);
 % Measure tool
 widgetHandles.measureTool =  ListItem('Measure tool',  Icon(fullfile(iconPath, 'measure_24px.png')));
 popupList.add(widgetHandles.measureTool);

@@ -35,6 +35,7 @@ import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
 import matlab.ui.internal.toolstrip.PopupListSeparator
+import matlab.ui.internal.toolstrip.PopupListHeader
 
 %% ============= Make "Model tools" section =============
 section = obj.handles.ribbon.model.addSection("Convert");
@@ -44,6 +45,8 @@ widgetHandles.convert =  DropDownButton(sprintf('Convert\ntype'), Icon(fullfile(
 widgetHandles.convert.Description = "Convert the model type";
 
 popupList = PopupList();
+header1 = PopupListHeader('Convert the model type');
+popupList.add(header1);
 % % Convert to 63 materials
 widgetHandles.mat63 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('63 materials', true);
 popupList.add(widgetHandles.mat63);
@@ -56,6 +59,9 @@ popupList.add(widgetHandles.mat65535);
 % % Convert to 4294967295 materials
 widgetHandles.mat4294967295 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('4294967295 materials', false);
 popupList.add(widgetHandles.mat4294967295);
+% separator
+separator = PopupListSeparator();
+popupList.add(separator);
 % % Indexed objects
 widgetHandles.indexed = matlab.ui.internal.toolstrip.ListItemWithPopup('Indexed objects');
 
@@ -143,6 +149,8 @@ widgetHandles.materials =  DropDownButton('Materials', Icon(fullfile(iconPath, '
 widgetHandles.materials.Description = "Model materials operations";
 
 popupList = PopupList();
+header1 = PopupListHeader('Operations with materials of the model');
+popupList.add(header1);
 % % Rename material
 widgetHandles.matRename =  ListItem('Rename material', Icon(fullfile(iconPath, 'model_materials_24px.png')));
 widgetHandles.matRename.Tag = 'matRename';
@@ -196,6 +204,8 @@ widgetHandles.annotations =  SplitButton(sprintf('List of\nannotations'), Icon(f
 widgetHandles.annotations.Description = "Open list of annotations";
 
 popupList = PopupList();
+header1 = PopupListHeader('Operations with annotations');
+popupList.add(header1);
 % % List of annotations
 widgetHandles.annotationsList =  ListItem('List of annotations', Icon(fullfile(iconPath, 'annotation_list_24px.png')));
 popupList.add(widgetHandles.annotationsList);
@@ -221,6 +231,9 @@ widgetHandles.render =  SplitButton('Render', Icon(fullfile(iconPath, 'model_ren
 widgetHandles.render.Description = "Render the model";
 
 popupList = PopupList();
+header1 = PopupListHeader('3D rendering of models');
+popupList.add(header1);
+
 % % MIB rendering
 widgetHandles.renderMIB =  ListItem('MIB rendering', Icon(fullfile(iconPath, 'mib_icon_24px.png')));
 popupList.add(widgetHandles.renderMIB);

@@ -1,7 +1,3 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
 % function primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
 % update fields of  primaryStruct using the fields of secondaryStruct
@@ -31,7 +27,7 @@ for fieldId = 1:length(secFieldsList)
         elseif isfield(primaryStruct, secFieldsList{fieldId})
             if isstruct(secondaryStruct.(secFieldsList{fieldId}))
                 primaryStruct.(secFieldsList{fieldId}) = ...
-                    mibConcatenateStructures(primaryStruct.(secFieldsList{fieldId}), secondaryStruct.(secFieldsList{fieldId}));
+                    utils.concatenateStructures(primaryStruct.(secFieldsList{fieldId}), secondaryStruct.(secFieldsList{fieldId}));
             end
         else
             primaryStruct.(secFieldsList{fieldId}) = secondaryStruct.(secFieldsList{fieldId});

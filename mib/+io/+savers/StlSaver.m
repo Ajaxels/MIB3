@@ -1,0 +1,326 @@
+classdef StlSaver < io.savers.BaseSaver
+    % classdef StlSaver < io.savers.BaseSaver
+    % Saver for binary STL (Stereolithography) isosurface mesh output.
+    %
+    % Handles one format:
+    %   'Isosurface as binary STL (*.stl)' — one binary STL file per
+    %       material, e.g. 'Labels_stack_Nucleus.stl', 'Labels_stack_ER.stl'
+    %
+    % This saver is labels-only.  It extracts a triangular isosurface mesh
+    % for each segmentation material using mibRenderModel(), optionally
+    % reducing (isosurface decimation) and smoothing the mesh, then writes
+    % each surface to a separate binary STL file using stlwrite().
+    %
+    % The result is a set of STL files suitable for visualisation in Blender,
+    % Paraview, or 3-D printing pipelines.
+    %
+    % The saver delegates mesh generation to the legacy helper mibRenderModel(),
+    % which is ported from MIB2.
+    %
+    % DATA DIMENSIONS
+    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
+    %   mibRenderModel() expects [H, W, D] — squeezed from data(:,:,:,1,1).
+    %
+    % OUTPUT FILENAMES
+    %   Each material is written to:
+    %     <fnBase>_<materialName>.stl
+    %   where fnBase is the output path without extension, e.g.:
+    %     /output/Labels_myStack_Nucleus.stl
+    %     /output/Labels_myStack_ER.stl
+    %
+    % MESH GENERATION OPTIONS (passed inside savingOptions to mibRenderModel)
+    %   savingOptions.reduce    — face-count reduction target (0 = no reduction;
+    %                             default 500 if image width > 500, else 0)
+    %   savingOptions.smooth    — number of Laplacian smoothing iterations
+    %                             (default 5)
+    %   savingOptions.maxFaces  — maximum face count per surface (default 300000)
+    %   savingOptions.slice     — (logical) 0 = full 3-D surface (default)
+    %
+    % MATERIAL SELECTION
+    %   options.MaterialIndex   — [] = all materials (default)
+    %                             scalar = index of a single material to export
+    %
+    % TODO: port mibRenderModel from
+    %   MIB2_RENAMED_FOR_MIB3/Tools/mibRenderModel.m
+    %   to mib/+utils/mibRenderModel.m
+    %
+    % USAGE EXAMPLES
+    %   @code
+    %   %% 1. Export all materials as STL for Blender / 3-D printing
+    %   saver = io.SaverFactory.create('Isosurface as binary STL (*.stl)');
+    %
+    %   opts.Format         = 'Isosurface as binary STL (*.stl)';
+    %   opts.showWaitbar    = false;
+    %   opts.silent         = true;
+    %   opts.overwrite      = true;
+    %   opts.layerType      = 'labels';
+    %   opts.MaterialIndex  = [];     % [] = export all materials
+    %   opts.reduce         = 500;    % decimate to 500 faces
+    %   opts.smooth         = 5;      % 5 smoothing iterations
+    %   opts.maxFaces       = 300000;
+    %   opts.slice          = 0;
+    %
+    %   meta.filename       = 'source_stack.tif';
+    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
+    %                                'units','um','t',1,'tunits','s');
+    %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
+    %   meta.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
+    %   meta.materialColors = [0 0 1; 0 1 0; 1 0 0];
+    %
+    %   labels = uint8(rand(512,512,50,1,1)*3);  % [H W D C T]
+    %   fnOut = saver.save(labels, meta, '/output/Labels_myStack.stl', opts);
+    %   % Creates: /output/Labels_myStack_Nucleus.stl
+    %   %          /output/Labels_myStack_ER.stl
+    %   %          /output/Labels_myStack_Mitochondria.stl
+    %   @endcode
+    %
+    %   @code
+    %   %% 2. Export only the second material (index 2)
+    %   opts.MaterialIndex = 2;
+    %   fnOut = saver.save(labels, meta, '/output/Labels_myStack.stl', opts);
+    %   % Creates: /output/Labels_myStack_ER.stl
+    %   @endcode
+    %
+    %   @code
+    %   %% 3. Via MibModel batch
+    %   BatchOpt.LayerType       = {'labels'};
+    %   BatchOpt.Format          = {'Isosurface as binary STL (*.stl)'};
+    %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
+    %   BatchOpt.DestinationDirectory  = '/output/stl';
+    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
+    %   BatchOpt.showWaitbar     = false;
+    %   BatchOpt.mibBatchTooltip.LayerType = '';
+    %   model.save('labels', [], BatchOpt);
+    %   @endcode
+    %
+    % SEE ALSO
+    %   io.SaverFactory, io.savers.BaseSaver, io.savers.MrcSaver,
+    %   core.MibDataset.save, models.MibModel.save
+
+    methods
+
+        function obj = StlSaver(options)
+            % function obj = StlSaver(options)
+            % Constructor — accepts an optional options struct.
+            %
+            % Parameters:
+            %   options — (struct, optional) saver-level options (usually empty;
+            %             per-save options are passed to save() instead)
+            if nargin < 1; options = struct(); end
+            obj.Options = options;
+        end
+
+        function formats = getSupportedFormats(~)
+            % function formats = getSupportedFormats(~)
+            % Return format strings handled by StlSaver.
+            formats = {'Isosurface as binary STL (*.stl)'};
+        end
+
+        function fnOut = save(obj, data, metadata, filename, options)
+            % function fnOut = save(obj, data, metadata, filename, options)
+            % Write labels data as binary STL isosurface mesh files.
+            %
+            % One STL file is produced per material (or one file if
+            % options.MaterialIndex is a scalar).  File names follow the
+            % pattern: <fnBase>_<materialName>.stl
+            %
+            % Parameters:
+            %   data     — [H, W, D, C, T] numeric label array.
+            %              Only the first channel (C=1) and first time point
+            %              (T=1) are processed.
+            %   metadata — struct; used fields:
+            %     .pixSize        — struct {.x .y .z .units .t .tunits}
+            %     .boundingBox    — [xmin xmax ymin ymax zmin zmax]
+            %     .materialNames  — cell array of material name strings
+            %     .materialColors — [M x 3] material RGB colours (0..1)
+            %   filename — full output path template, e.g.
+            %              '/out/Labels_myStack.stl'
+            %   options  — struct; used fields:
+            %     .Format         — format string
+            %     .layerType      — expected 'labels'; warning if not
+            %     .MaterialIndex  — [] = all materials (default),
+            %                       scalar = index of specific material
+            %     .reduce         — (double) face reduction target;
+            %                       default 500 if width > 500 else 0
+            %     .smooth         — (integer) smoothing iterations (default 5)
+            %     .maxFaces       — (integer) max faces per mesh (default 300000)
+            %     .slice          — (logical) 0 = full 3-D mesh (default 0)
+            %     .showWaitbar    — logical
+            %     .silent         — logical, suppress dialogs
+            %     .overwrite      — logical
+            %
+            % Return values:
+            %   fnOut — (cell of char) paths of all saved .stl files,
+            %           or single char when only one material is exported.
+            %           Returns [] on failure.
+            %
+            % Example — see class-level documentation above.
+
+            fnOut = [];
+
+            % --- defaults ---
+            if ~isfield(options, 'showWaitbar');   options.showWaitbar  = true;   end
+            if ~isfield(options, 'silent');        options.silent       = false;  end
+            if ~isfield(options, 'overwrite');     options.overwrite    = true;   end
+            if ~isfield(options, 'layerType');     options.layerType    = 'labels'; end
+            if ~isfield(options, 'MaterialIndex'); options.MaterialIndex = [];    end
+            if ~isfield(options, 'smooth');        options.smooth       = 5;      end
+            if ~isfield(options, 'maxFaces');      options.maxFaces     = 300000; end
+            if ~isfield(options, 'slice');         options.slice        = 0;      end
+
+            % Warn if caller has incorrectly specified an image layer
+            if ~strcmpi(options.layerType, 'labels') && ~strcmpi(options.layerType, 'mask')
+                warning('StlSaver:wrongLayerType', ...
+                    'StlSaver is designed for labels/mask layers; got ''%s''.', ...
+                    options.layerType);
+            end
+
+            % --- decompose filename ---
+            [pathStr, baseName, ext] = obj.splitFilename(filename);
+            if isempty(ext); ext = '.stl'; end
+            if isempty(pathStr); pathStr = pwd; end
+            if exist(pathStr, 'dir') ~= 7; mkdir(pathStr); end
+            fnBase = fullfile(pathStr, baseName);
+
+            % --- default reduce: 500 if image width > 500, else 0 ---
+            nW = size(data, 2);
+            if ~isfield(options, 'reduce')
+                if nW > 500
+                    options.reduce = 500;
+                else
+                    options.reduce = 0;
+                end
+            end
+
+            % Squeeze to [H, W, D]
+            model_hwd = squeeze(data(:, :, :, 1, 1));
+
+            % --- pixel size and bounding box ---
+            if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
+                pixSize = metadata.pixSize;
+            else
+                pixSize = struct('x',1,'y',1,'z',1,'units','um','t',1,'tunits','s');
+            end
+
+            if isfield(metadata, 'boundingBox') && ~isempty(metadata.boundingBox)
+                boundingBox = metadata.boundingBox;
+            else
+                boundingBox = zeros(1, 6);
+            end
+
+            % --- material list ---
+            if isfield(metadata, 'materialColors') && ~isempty(metadata.materialColors)
+                materialColors = metadata.materialColors;
+            else
+                materialColors = rand(double(max(model_hwd(:))), 3);
+            end
+
+            if isfield(metadata, 'materialNames') && ~isempty(metadata.materialNames)
+                materialNames = metadata.materialNames;
+            else
+                materialNames = arrayfun(@(i) sprintf('Material %d', i), ...
+                    1:size(materialColors,1), 'UniformOutput', false);
+            end
+
+            % --- determine which materials to export ---
+            nMaterials = numel(materialNames);
+            if isempty(options.MaterialIndex)
+                materialIndices = 1:nMaterials;
+            else
+                materialIndices = options.MaterialIndex(:)';
+            end
+
+            % --- mesh saving options struct ---
+            savingOptions.reduce   = options.reduce;
+            savingOptions.smooth   = options.smooth;
+            savingOptions.maxFaces = options.maxFaces;
+            savingOptions.slice    = options.slice;
+
+            % --- waitbar ---
+            wb = [];
+            if options.showWaitbar && numel(materialIndices) > 1
+                wb = waitbar(0, 'Rendering and saving STL meshes...', ...
+                    'Name', 'Saving STL...', 'WindowStyle', 'modal');
+            end
+
+            allFn = {};
+
+            try
+                for k = 1:numel(materialIndices)
+                    matIdx = materialIndices(k);
+
+                    if matIdx < 1 || matIdx > nMaterials
+                        warning('StlSaver:invalidMaterialIndex', ...
+                            'Material index %d is out of range [1..%d]; skipping.', ...
+                            matIdx, nMaterials);
+                        continue;
+                    end
+
+                    matName  = materialNames{matIdx};
+                    matColor = materialColors(matIdx, :);  % [1 x 3], values 0..1
+
+                    % Build output filename for this material
+                    % Sanitise material name for use in a filename
+                    safeName = regexprep(matName, '[^a-zA-Z0-9_\-]', '_');
+                    stlFile  = sprintf('%s_%s%s', fnBase, safeName, ext);
+
+                    % --- call legacy mibRenderModel to get isosurface ---
+                    % mibRenderModel(model, selMaterial, pixSize, boundingBox,
+                    %                materialColors, NaN, savingOptions)
+                    % Returns: fv struct with .faces and .vertices
+                    %
+                    % TODO: port mibRenderModel from
+                    %   MIB2_RENAMED_FOR_MIB3/Tools/mibRenderModel.m
+                    %   to mib/+utils/mibRenderModel.m
+                    try
+                        fv = utils.mibRenderModel(model_hwd, matIdx, pixSize, ...
+                            boundingBox, materialColors, NaN, savingOptions);
+                    catch ME
+                        error('StlSaver:missingHelper', ...
+                            ['mibRenderModel() is not yet available.\n' ...
+                             'Please port it from:\n' ...
+                             '  MIB2_RENAMED_FOR_MIB3/Tools/mibRenderModel.m\n' ...
+                             'to:\n' ...
+                             '  mib/+utils/mibRenderModel.m\n\n' ...
+                             'Original error: %s'], ME.message);
+                    end
+
+                    % Skip empty surfaces
+                    if isempty(fv) || isempty(fv.faces) || isempty(fv.vertices)
+                        warning('StlSaver:emptyMesh', ...
+                            'Material ''%s'' produced an empty mesh; skipping.', matName);
+                        continue;
+                    end
+
+                    % Write binary STL; colour is stored as uint8 RGB [0..255]
+                    stlwrite(stlFile, fv, 'FaceColor', matColor * 255);
+
+                    allFn{end+1} = stlFile; %#ok<AGROW>
+                    fprintf('StlSaver:  material ''%s'' → %s\n', matName, stlFile);
+
+                    if ~isempty(wb)
+                        waitbar(k / numel(materialIndices), wb, ...
+                            sprintf('Saving %s (%d/%d)...', matName, k, numel(materialIndices)));
+                    end
+                end
+            catch ME
+                if ~isempty(wb); delete(wb); end
+                rethrow(ME);
+            end
+            if ~isempty(wb); delete(wb); end
+
+            if isempty(allFn)
+                warning('StlSaver:nothingSaved', 'No STL files were produced.');
+                return;
+            end
+
+            fprintf('StlSaver: saved %d file(s) → %s\n', numel(allFn), pathStr);
+            if isscalar(allFn)
+                fnOut = allFn{1};
+            else
+                fnOut = allFn(:);
+            end
+        end
+
+    end
+end

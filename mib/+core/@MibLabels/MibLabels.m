@@ -18,6 +18,9 @@ classdef MibLabels < core.MibImage
     end
 
     methods
+        
+        fnOut = save(obj, filename, options)        % Override of MibImage.save(); adds materialNames/materialColors/labelsVariable to metadata before dispatching to io.SaverFactory
+
         function obj = MibLabels(img, meta)
             % function obj = MibLabels(img, meta)
             % constructor of MibLabels class, inherits properties and
@@ -31,9 +34,7 @@ classdef MibLabels < core.MibImage
             if nargin < 1; img = []; end
             
             obj = obj@core.MibImage(img, meta);  % Call parent constructor
-
+            obj.filename = 'Labels_none.model';
         end
-
-        
     end
 end

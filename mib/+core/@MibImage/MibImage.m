@@ -76,6 +76,8 @@ classdef MibImage < matlab.mixin.Copyable
 
         result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
 
+        fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
+
         function obj = MibImage(data, meta)
             % obj = MibImage(data, meta)
             % MibImage class constructor

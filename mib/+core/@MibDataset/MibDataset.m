@@ -155,6 +155,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
 
+        fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
+
         function obj = MibDataset(img, meta, datasetType, modelType)
             % obj = MibDataset(img, meta, datasetType, modelType)
             % Constructor of MibDataset class

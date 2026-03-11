@@ -132,6 +132,17 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % options.DoNotShowAgain = true;
 % options.DoNotShowAgainText = 'Do not show this again';
 % [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, {htmlContent}, {htmlContent}, dlgTitle, options);
+%
+% Example 4 (minimalist warning):
+% dlgTitle = 'Warning';
+% options.mibPath = obj.mibModel.mibPath;
+% options.MsgBoxOnly = true;
+% options.Header = sprintf('!!! Warning !!!\n\nThe output format was not selected!');
+% options.OkBtnText = 'OK';
+% options.Icon = 'puffin_warning';
+% options.WindowHeight = 150;
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, dlgTitle, options);
+
 
 arguments
     ParentFigure = []

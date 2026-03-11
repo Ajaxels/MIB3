@@ -128,8 +128,8 @@ classdef MibRibbon
 
             %% Add Callbacks for the HOME ribbon -> Export section 
             obj.handles.ribbonHome.saveFileAs.ButtonPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.saveFile.ItemPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.saveFileAs2.ItemPushedFcn = @obj.homeExport_Callback;
+            %obj.handles.ribbonHome.saveFile.ItemPushedFcn = @obj.homeExport_Callback;
+            %obj.handles.ribbonHome.saveFileAs2.ItemPushedFcn = @obj.homeExport_Callback;
             obj.handles.ribbonHome.export.ButtonPushedFcn = @obj.homeExport_Callback;
             obj.handles.ribbonHome.exportToMatlab.ItemPushedFcn = @obj.homeExport_Callback;
             obj.handles.ribbonHome.exportToImaris.ItemPushedFcn = @obj.homeExport_Callback;

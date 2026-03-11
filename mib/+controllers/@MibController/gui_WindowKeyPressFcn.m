@@ -222,7 +222,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             cSegmentation.restrictMaterial_Callback();
 
         case 'Save image as...'                         % default 'Ctrl + s'
-            error("MISSING IMPLEMENTATION: obj.menuFileSaveImageAs_Callback();")
+            obj.mibModel.saveImage('image');
 
         case 'Copy to buffer selection from the current slice'  % default 'Ctrl + c'
             error("MISSING IMPLEMENTATION: obj.menuSelectionBuffer_Callback('copy');")

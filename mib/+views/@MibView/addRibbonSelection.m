@@ -31,6 +31,8 @@ end
 iconPath = fullfile(obj.controller.mibPath, 'assets', 'icons');
 import matlab.ui.internal.toolstrip.Icon
 import matlab.ui.internal.toolstrip.PopupList
+import matlab.ui.internal.toolstrip.PopupListHeader
+import matlab.ui.internal.toolstrip.PopupListSeparator
 import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
@@ -49,6 +51,8 @@ popupList = PopupList();
 widgetHandles.selection2mask2D =  matlab.ui.internal.toolstrip.ListItemWithPopup('Shown slice (2D)', Icon(fullfile(iconPath, 'dataset2d_24px.png')));
 
 popupList2 = PopupList();
+header1 = PopupListHeader('Convert Selection to Mask');
+popupList.add(header1);
 % % Selection to Mask -> Shown slice (2D) -> Add
 widgetHandles.selectionToMask2DAdd =  ListItem('Add, 2D', Icon(fullfile(iconPath, 'add_24px.png')));
 popupList2.add(widgetHandles.selectionToMask2DAdd);
@@ -107,12 +111,16 @@ widgetHandles.toBuffer = DropDownButton(sprintf('Selection\nto buffer'), Icon(fu
 widgetHandles.toBuffer.Description = "Copy selection to buffer";
 
 popupList = PopupList();
+header1 = PopupListHeader('Copy selection to buffer');
+popupList.add(header1);
 widgetHandles.copy =  ListItem( 'Copy (Ctrl+C)', Icon.COPY_24); 
 popupList.add(widgetHandles.copy);
 widgetHandles.paste =  ListItem( 'Paste (Ctrl+V)', Icon.PASTE_24); 
 popupList.add(widgetHandles.paste);
 widgetHandles.pasteAll =  ListItem( 'Paste to all slices (Ctrl+Shift+V)',  Icon(fullfile(iconPath, 'selection_pasteAll_24px.png')));
 popupList.add(widgetHandles.pasteAll);
+separator = PopupListSeparator();
+popupList.add(separator);
 widgetHandles.clear =  ListItem( 'Clear', Icon(fullfile(iconPath, 'selection_clear_24px.png')));
 popupList.add(widgetHandles.clear);
 
@@ -126,9 +134,11 @@ section = obj.handles.ribbon.selection.addSection("Tools");
 column = section.addColumn();
 %% -------------- Morphological 2D/3D operations --------------
 widgetHandles.morphOps = DropDownButton(sprintf('Morphological\n2D/3D operations'), Icon(fullfile(iconPath, 'selection_morphops_24px.png')));
-widgetHandles.morphOps.Description = "Copy selection to buffer";
+widgetHandles.morphOps.Description = "Morphological operations";
 
 popupList = PopupList();
+header1 = PopupListHeader('Morphological operations');
+popupList.add(header1);
 % Branch points
 widgetHandles.branch =  ListItem('Branch points', Icon(fullfile(iconPath, 'selection_branch_24px.png')));
 popupList.add(widgetHandles.branch);
@@ -156,10 +166,12 @@ column.add(widgetHandles.morphOps);
 
 %% -------- INVERT --------
 column = section.addColumn();
-widgetHandles.invert = matlab.ui.internal.toolstrip.SplitButton('Invert',Icon(fullfile(iconPath, 'selection_invert_24px.png')));
-widgetHandles.invert.Description = "Invert selection";
+widgetHandles.invert = matlab.ui.internal.toolstrip.SplitButton('Invert', Icon(fullfile(iconPath, 'selection_invert_24px.png')));
+widgetHandles.invert.Description = 'Invert selection';
 
 popupList = PopupList();
+header1 = PopupListHeader('Invert selection');
+popupList.add(header1);
 % % Invert selection -> Shown slice (2D)
 widgetHandles.invert2D =  ListItem('Shown slice (2D)', Icon(fullfile(iconPath, 'dataset2d_24px.png')));
 popupList.add(widgetHandles.invert2D);

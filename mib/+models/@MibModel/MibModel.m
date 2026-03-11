@@ -93,6 +93,8 @@ classdef MibModel < handle
 
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model; compatible with the batch mode.
 
+        fnOut = save(obj, layerType, filename, BatchOptIn)        % Unified BatchOpt-compatible save: writes 'image', 'mask', or 'labels' layer. Handles directory/filename policies, [F] template expansion, SyncBatch event, and StopProtocol notification. See models.MibModel.save for full documentation and usage examples.
+
         [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
         
         [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
@@ -104,6 +106,8 @@ classdef MibModel < handle
         initialize(obj)        % initialize the MibModel class
 
         initializePreferences(obj)            % initialize and update MIB preferences from a file
+
+        fnOut = saveImage(obj, layerType, filename, BatchOptIn)        % Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
 
         setAxesLimits(obj, axesX, axesY, id)        % set axes limits for the currently shown or id dataset
         
