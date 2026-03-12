@@ -108,6 +108,7 @@ classdef StlSaver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -239,8 +240,7 @@ classdef StlSaver < io.savers.BaseSaver
             % --- waitbar ---
             wb = [];
             if options.showWaitbar && numel(materialIndices) > 1
-                wb = waitbar(0, 'Rendering and saving STL meshes...', ...
-                    'Name', 'Saving STL...', 'WindowStyle', 'modal');
+                wb = obj.createProgressDialog('Saving images...', 'Rendering and saving STL meshes...', false);
             end
 
             allFn = {};
@@ -298,10 +298,7 @@ classdef StlSaver < io.savers.BaseSaver
                     allFn{end+1} = stlFile; %#ok<AGROW>
                     fprintf('StlSaver:  material ''%s'' → %s\n', matName, stlFile);
 
-                    if ~isempty(wb)
-                        waitbar(k / numel(materialIndices), wb, ...
-                            sprintf('Saving %s (%d/%d)...', matName, k, numel(materialIndices)));
-                    end
+                    if ~isempty(wb); wb.Value = k/numel(materialIndices); end
                 end
             catch ME
                 if ~isempty(wb); delete(wb); end

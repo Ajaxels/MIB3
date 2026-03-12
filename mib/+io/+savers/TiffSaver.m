@@ -92,6 +92,7 @@ classdef TiffSaver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -194,8 +195,7 @@ classdef TiffSaver < io.savers.BaseSaver
             % --- outer waitbar for time series ---
             wbOuter = [];
             if options.showWaitbar && nT > 1
-                wbOuter = waitbar(0, 'Saving TIFF series…', ...
-                    'Name', 'Saving images…', 'WindowStyle', 'modal');
+                wbOuter = obj.createProgressDialog('Saving images...', 'Saving TIFF series...', false);
             end
 
             allFn = cell(nT, 1);
@@ -239,8 +239,7 @@ classdef TiffSaver < io.savers.BaseSaver
                         % Inner waitbar (for Z slices)
                         wbInner = [];
                         if options.showWaitbar && isempty(wbOuter)
-                            wbInner = waitbar(0, sprintf('Saving TIFF — %s', baseName), ...
-                                'Name', 'Saving images…', 'WindowStyle', 'modal');
+                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF — %s', baseName), false);
                         end
 
                         for z = 1:nD
@@ -256,13 +255,13 @@ classdef TiffSaver < io.savers.BaseSaver
                                     'Description', imgDescArr{z}, ...
                                     'Resolution',  resolution);
                             end
-                            if ~isempty(wbInner); waitbar(z/nD, wbInner); end
+                            if ~isempty(wbInner); wbInner.Value = z/nD; end
                         end
                         if ~isempty(wbInner); delete(wbInner); end
                         allFn{t} = sliceNames;
                     end
 
-                    if ~isempty(wbOuter); waitbar(t/nT, wbOuter); end
+                    if ~isempty(wbOuter); wbOuter.Value = t/nT; end
                 end
 
             catch ME
@@ -287,7 +286,7 @@ classdef TiffSaver < io.savers.BaseSaver
     % ------------------------------------------------------------------ %
     methods (Access = private)
 
-        function writeTiffStack(~, outPath, slice4D, cmap, imgDescArr, ...
+        function writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...
                 compression, resolution, options)
             % function writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...)
             % Write a multi-frame TIFF where slice4D is [H, W, C, D].
@@ -308,9 +307,7 @@ classdef TiffSaver < io.savers.BaseSaver
             nD = size(slice4D, 4);
             wb = [];
             if options.showWaitbar
-                wb = waitbar(0, sprintf('Writing %s', outPath), ...
-                    'Name', 'Saving TIFF…', 'WindowStyle', 'modal');
-                set(findall(wb,'type','text'),'Interpreter','none');
+                wb = obj.createProgressDialog('Saving TIFF...', sprintf('Writing %s', outPath), false);
             end
 
             for z = 1:nD
@@ -331,7 +328,7 @@ classdef TiffSaver < io.savers.BaseSaver
                         'Description', imgDescArr{z}, ...
                         'Resolution',  resolution);
                 end
-                if ~isempty(wb); waitbar(z/nD, wb); end
+                if ~isempty(wb); wb.Value = z/nD; end
             end
             if ~isempty(wb); delete(wb); end
         end

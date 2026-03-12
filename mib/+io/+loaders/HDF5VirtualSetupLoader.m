@@ -70,6 +70,7 @@ classdef HDF5VirtualSetupLoader < io.loaders.BaseImageLoader
             if nargin < 2; hasHeader = true; end
 
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
 
             if hasHeader
                 obj.innerLoader = io.loaders.HDF5HeaderLoader(options);

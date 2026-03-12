@@ -94,6 +94,7 @@ classdef NrrdSaver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -173,10 +174,11 @@ classdef NrrdSaver < io.savers.BaseSaver
             end
 
             % --- build savingOptions for bitmap2nrrd ---
-            savingOptions.showWaitbar = options.showWaitbar;
-            savingOptions.overwrite   = options.overwrite;
-            savingOptions.layerType   = options.layerType;
-            savingOptions.Format      = options.Format;
+            savingOptions.showWaitbar   = options.showWaitbar;
+            savingOptions.overwrite     = options.overwrite;
+            savingOptions.layerType     = options.layerType;
+            savingOptions.Format        = options.Format;
+            savingOptions.ParentFigure  = obj.ParentFigure;
 
             if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
                 savingOptions.pixSize = metadata.pixSize;

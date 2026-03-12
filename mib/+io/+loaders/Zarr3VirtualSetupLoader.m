@@ -74,6 +74,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
 
             if nargin >= 1 && isstruct(options)
                 obj.Options = obj.mergeOptions(obj.Options, options);
+                obj.initBaseProps(options);
             end
         end
 

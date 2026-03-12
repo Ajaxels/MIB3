@@ -87,6 +87,7 @@ classdef ImodContourSaver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -160,6 +161,7 @@ classdef ImodContourSaver < io.savers.BaseSaver
             savingOptions.xyScaleFactor       = options.xyScaleFactor;
             savingOptions.zScaleFactor        = options.zScaleFactor;
             savingOptions.generateSelectionSw = options.generateSelectionSw;
+            savingOptions.ParentFigure        = obj.ParentFigure;
 
             if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
                 savingOptions.pixSize = metadata.pixSize;

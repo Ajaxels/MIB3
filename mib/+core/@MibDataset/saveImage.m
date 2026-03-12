@@ -44,6 +44,14 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %     .MaterialIndex  — (double|[]) for labels: [] = all, int = single material
 %     .Compression    — (char) compression type (TIF/JPG)
 %     .Quality        — (double) JPEG quality 0–100
+%     .ParentFigure   — handle to the main MIB application window; injected
+%                       automatically by MibModel.saveImage() when called
+%                       from the GUI.  Passed through to the saver so that
+%                       uiprogressdlg dialogs are properly parented.
+%                       Omit (or leave []) for standalone/scripted use.
+%     .mibPath        — (char) path to MIB installation directory; used by
+%                       savers for resource and icon lookup.  Injected
+%                       automatically by MibModel.saveImage().
 %     [mask-specific:]
 %     .MaskColor      — [1x3] mask overlay RGB colour (0..1), default [1 0 1]
 %     [labels-specific:]
@@ -61,7 +69,9 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   opts.showWaitbar    = false;
 %   opts.silent         = true;
 %   opts.overwrite      = true;
-%   fnOut = dataset.saveImage('image', '/output/stack.tif', opts);
+%   opts.ParentFigure   = obj.mibGUI;
+%   opts.mibPath        = obj.mibPath;
+%   fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('image', '/output/stack.tif', opts);
 %   fprintf('Saved: %s\n', fnOut);
 %   @endcode
 %
@@ -71,7 +81,9 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   opts.showWaitbar = false;
 %   opts.silent      = true;
 %   opts.overwrite   = true;
-%   fnOut = dataset.saveImage('labels', '/output/Labels_stack.model', opts);
+%   opts.ParentFigure   = obj.mibGUI;
+%   opts.mibPath        = obj.mibPath;
+%   fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_stack.model', opts);
 %   @endcode
 %
 %   @code
@@ -83,7 +95,9 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   opts.showWaitbar       = false;
 %   opts.silent            = true;
 %   opts.overwrite         = true;
-%   fnOut = dataset.saveImage('mask', '/output/Mask_slice.tif', opts);
+%   opts.ParentFigure   = obj.mibGUI;
+%   opts.mibPath        = obj.mibPath;
+%   fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('mask', '/output/Mask_slice.tif', opts);
 %   @endcode
 %
 %   @code
@@ -93,7 +107,9 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   opts.showWaitbar   = false;
 %   opts.silent        = true;
 %   opts.overwrite     = true;
-%   fnOut = dataset.saveImage('labels', '/output/Labels_mat2.tif', opts);
+%   opts.ParentFigure   = obj.mibGUI;
+%   opts.mibPath        = obj.mibPath;
+%   fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_mat2.tif', opts);
 %   @endcode
 %
 %   @code
@@ -104,14 +120,16 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   opts.annotations.labelPosition = lPos;
 %   opts.Format    = 'Matlab format (*.model)';
 %   opts.overwrite = true;
-%   fnOut = dataset.saveImage('labels', '/output/Labels_annotated.model', opts);
+%   opts.ParentFigure   = obj.mibGUI;
+%   opts.mibPath        = obj.mibPath;
+%   fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_annotated.model', opts);
 %   @endcode
 %
 %   @code
 %   %% 6. Fall back on dataset filename when none provided
 %   opts.Format    = 'Matlab format (*.mask)';
 %   opts.overwrite = true;
-%   fnOut = dataset.saveImage('mask', '', opts);
+%   fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('mask', '', opts);
 %   % Uses dataset.image.maskFilename or generates 'Mask_<imageName>.mask'
 %   @endcode
 %

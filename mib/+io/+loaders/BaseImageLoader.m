@@ -10,6 +10,14 @@ classdef (Abstract) BaseImageLoader < handle
     
     properties
         Options struct  % Options structure passed during construction
+        mibPath  (1,:) char = ''
+        % Path to MIB installation directory.
+        % Used for resource lookup and dialog icons.
+        % Set from options.mibPath at construction time; empty in standalone use.
+        ParentFigure = []
+        % Handle to the main MIB application window.
+        % Required as parent for uiprogressdlg progress bars.
+        % Set from options.ParentFigure at construction time; empty in standalone use.
     end
     
     methods (Abstract)
@@ -46,6 +54,64 @@ classdef (Abstract) BaseImageLoader < handle
     end
     
     methods (Access = protected)
+        function initBaseProps(obj, options)
+            % function initBaseProps(obj, options)
+            % Extract mibPath and ParentFigure from an options struct into
+            % the corresponding properties.  Call this at the end of every
+            % concrete loader constructor after obj.Options has been set.
+            %
+            % Parameters:
+            %   options — struct; recognised fields:
+            %     .mibPath      — (char) path to MIB installation directory
+            %     .ParentFigure — handle to main MIB window for uiprogressdlg
+            %
+            % Both fields are optional; absent or empty values are silently ignored.
+            if nargin < 2 || isempty(options); return; end
+            if isfield(options, 'mibPath') && ~isempty(options.mibPath)
+                obj.mibPath = options.mibPath;
+            end
+            if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+                obj.ParentFigure = options.ParentFigure;
+            end
+        end
+
+        function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            % function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            % Create a uiprogressdlg attached to obj.ParentFigure, or return []
+            % when no valid parent is available (standalone / headless use).
+            %
+            % Parameters:
+            %   title         — (char) dialog title bar text
+            %   message       — (char) dialog body message
+            %   cancelable    — (logical, default false) show Cancel button
+            %   indeterminate — (logical, default false) indeterminate spinner mode
+            %
+            % Return values:
+            %   wb — matlab.ui.dialog.ProgressDialog handle, or [] when no
+            %        parent figure is available.  Callers must guard all
+            %        wb access with  if ~isempty(wb) ... end.
+            if nargin < 4; cancelable    = false; end
+            if nargin < 5; indeterminate = false; end
+
+            wb = [];
+            if isempty(obj.ParentFigure); return; end
+            try
+                if ~isvalid(obj.ParentFigure); return; end
+            catch; return; end
+
+            try
+                args = {'Title', title, 'Message', message};
+                if indeterminate
+                    args = [args, {'Indeterminate', 'on'}];
+                elseif cancelable
+                    args = [args, {'Cancelable', 'on'}];
+                end
+                wb = uiprogressdlg(obj.ParentFigure, args{:});
+            catch
+                wb = [];
+            end
+        end
+
         function [files, imginfo, cancelled] = handleCustomSections(~, files, imginfo, options)
             % function [files, imginfo, cancelled] = handleCustomSections(obj, files, imginfo, options)
             % Handle custom section loading dialog and adjustments
@@ -142,9 +208,13 @@ classdef (Abstract) BaseImageLoader < handle
             dlgOptions.Columns = 2;
             dlgOptions.WindowWidth = 640;
             dlgOptions.WindowHeight = 220;
-            dlgOptions.ParentFigure = options.mibPath;
-            
-            answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, prompts, defAns, dlgTitle, dlgOptions);
+            dlgOptions.mibPath = obj.mibPath;
+
+            parentFig = obj.ParentFigure;
+            if isempty(parentFig) && isfield(options, 'ParentFigure')
+                parentFig = options.ParentFigure;
+            end
+            answer = utils.dlgs.inputUniversalDlg(parentFig, prompts, defAns, dlgTitle, dlgOptions);
             
             if isempty(answer)
                 if options.waitbar; delete(options.waitbar); end
@@ -482,8 +552,8 @@ classdef (Abstract) BaseImageLoader < handle
             mibInputMultiDlgOpt.WindowWidth = 400;
             mibInputMultiDlgOpt.WindowHeight = 140;
             mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 100};
-            mibInputMultiDlgOpt.mibPath = obj.Options.mibPath;
-            answer = utils.dlgs.inputUniversalDlg(obj.Options.ParentFigure, ...
+            mibInputMultiDlgOpt.mibPath = obj.mibPath;
+            answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, ...
                 prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
             if isempty(answer); img = []; return; end
             %drawnow;  % prevent crashes

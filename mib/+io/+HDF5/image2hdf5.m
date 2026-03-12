@@ -10,6 +10,11 @@ function result = image2hdf5(filename, imageS, options)
 %  - .Deflate - a number 0-9, defines gzip compression level (0-9)
 %  - .overwrite, if @b 1 do not check whether file with provided filename already exists
 %  - .showWaitbar, @b 1 - show the progress bar, @b 0 - do not show
+%  - .ParentFigure - [@em optional] handle to the main MIB application window.
+%                    When provided, the progress bar is rendered as a
+%                    uiprogressdlg attached to that window (recommended for
+%                    GUI use).  When absent or empty the legacy waitbar is
+%                    used as a fallback.
 %  - .lutColors, - not yet implemented
 %  - .pixSize, - not yet implemented
 %  - .ImageDescription, - a cell string with dataset description
@@ -33,8 +38,21 @@ function result = image2hdf5(filename, imageS, options)
 % Updates
 % 06.04.2016, IB heavily updated
 
-% example:
-%   io.HDF5.image2hdf5('saveme.h5', image_var, options);
+% Example:
+%   @code
+%   %% Standalone / scripted use (no GUI parent):
+%   opts.showWaitbar = false;
+%   opts.overwrite   = 1;
+%   io.HDF5.image2hdf5('saveme.h5', image_var, opts);
+%   @endcode
+%
+%   @code
+%   %% GUI use — attach progress dialog to the MIB window:
+%   opts.showWaitbar  = true;
+%   opts.overwrite    = 1;
+%   opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%   io.HDF5.image2hdf5('saveme.h5', image_var, opts);
+%   @endcode
 
 result = 0;
 if nargin < 3; options = struct(); end
@@ -80,12 +98,18 @@ end
 %     imageS = reshape(imageS, size(imageS,1), size(imageS,2), 1, size(imageS,3),size(imageS,4));
 % end
 
+wb = [];
 if options.showWaitbar
-    %warning('off','MATLAB:gui:latexsup:UnableToInterpretTeXString');    % switch off warnings for latex
-    curInt = get(0, 'DefaulttextInterpreter');
-    set(0, 'DefaulttextInterpreter', 'none');
-    wb = waitbar(0,sprintf('%s\nPlease wait...',filename),'Name','Saving images as hdf5...','WindowStyle','modal');
-    waitbar(0, wb);
+    if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+        try
+            wb = uiprogressdlg(options.ParentFigure, 'Title', 'Saving images as hdf5...', ...
+                'Message', sprintf('%s\nPlease wait...', filename));
+        catch; wb = []; end
+    else
+        curInt = get(0, 'DefaulttextInterpreter');
+        set(0, 'DefaulttextInterpreter', 'none');
+        wb = waitbar(0, sprintf('%s\nPlease wait...', filename), 'Name', 'Saving images as hdf5...', 'WindowStyle', 'modal');
+    end
 end
 
 if exist(filename,'file') && options.t == 1  % for overwrite
@@ -99,13 +123,13 @@ end
 
 % create dataset
 if options.t == 1
-    if options.showWaitbar; waitbar(.05,wb,sprintf('%s\nCreate file container...',filename)); end
+    if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.05; wb.Message=sprintf('%s\nCreate file container...',filename); else; waitbar(0.05,wb,sprintf('%s\nCreate file container...',filename)); end; end
     h5create(filename, options.DatasetName, [options.height, options.width, options.colors, options.depth, options.time], ...
             'Datatype', options.DatasetClass, 'Deflate', options.Deflate, ...
             'ChunkSize', [options.ChunkSize(1) options.ChunkSize(2) 1 options.ChunkSize(3) 1]);
 end
 
-if options.showWaitbar; waitbar(.1,wb,sprintf('%s\nSaving images...',filename)); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.1; wb.Message=sprintf('%s\nSaving images...',filename); else; waitbar(0.1,wb,sprintf('%s\nSaving images...',filename)); end; end
 getDataOpt.showWaitbar = 0;     % do not show waitbar in getDataVirt
 maxIndex = options.time*ceil(options.depth/options.ChunkSize(3));
 
@@ -125,7 +149,7 @@ if isfield(options, 'mibImage')     % tweak to save HDF5 in the virtual mode, wi
                         [size(img2,1), size(img2,2), size(img2,3), size(img2,4),size(img2,5)]);
                 end
             end
-            if options.showWaitbar; waitbar(counterIndex/maxIndex, wb); end
+            if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=counterIndex/maxIndex; else; waitbar(counterIndex/maxIndex,wb); end; end
             counterIndex = counterIndex + 1;
         end
     end
@@ -135,7 +159,7 @@ else
         [size(imageS,1), size(imageS,2), size(imageS,3), size(imageS,4),size(imageS,5)]);
 end
 
-if options.showWaitbar; waitbar(.9,wb,sprintf('%s\nSaving metadata...',filename)); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.9; wb.Message=sprintf('%s\nSaving metadata...',filename); else; waitbar(0.9,wb,sprintf('%s\nSaving metadata...',filename)); end; end
 
 % generate axistags to be compatible with Ilastik
 % see more here:
@@ -172,8 +196,11 @@ h5writeatt(filename, options.DatasetName, 'axistags', axistags);
 %     h5writeatt(filename,ImageDescription('DatasetName'), metaFields{index}, ImageDescription(metaFields{index}));
 % end
 
-if options.showWaitbar; waitbar(1, wb); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=1; else; waitbar(1,wb); end; end
 disp(['image2hdf5: ' filename ' was created!']);
-if options.showWaitbar; delete(wb); set(0, 'DefaulttextInterpreter', curInt); end
+if ~isempty(wb)
+    if ~isa(wb, 'matlab.ui.dialog.ProgressDialog'); set(0, 'DefaulttextInterpreter', curInt); end
+    delete(wb);
+end
 result = 1;
 end

@@ -9,7 +9,7 @@ function [par, img_info, dim_xyczt, materialNames] = getAmiraMeshHeader(filename
 % par: a structure with parameters in format:
 %   .Name -> parameter name
 %   .Value -> parameter value
-% img_info: -> in the format compatible with imageData.img_info containers.Map
+% img_info: -> MATLAB dictionary (configureDictionary("string","cell")); access values with {} indexing
 % dim_xyczt: -> dimensions of the dataset
 % materialNames: -> detected material names
 
@@ -18,7 +18,7 @@ function [par, img_info, dim_xyczt, materialNames] = getAmiraMeshHeader(filename
 % 30.01.2019, IB updated to be compatible with version 3
 
 par = [];
-img_info = containers.Map;
+img_info = configureDictionary("string","cell");  % string keys, cell-wrapped values (MIB3 standard)
 dim_xyczt = [];
 materialNames = {};
 
@@ -199,7 +199,7 @@ for p=1:numel(par)
         fieldName = strrep(fieldName,':','_');
         fieldName = strrep(fieldName,'.','_');
         fieldName = strrep(fieldName,'-','_');
-        img_info(fieldName) = par(p).Value;
+        img_info{string(fieldName)} = par(p).Value;
 
         % get material names
         if strcmp(par(p).Name, 'Materials')
@@ -218,42 +218,40 @@ for p=1:numel(par)
 end
 
 warning(warning_state);     % Switch warning back to initial settings
-img_info('imgClass') = classType{1};
+img_info{"imgClass"} = classType{1};
 if max(colorChannels) > 1
-    img_info('ColorType') = 'truecolor';
+    img_info{"ColorType"} = 'truecolor';
 else
-    img_info('ColorType') = 'grayscale';
+    img_info{"ColorType"} = 'grayscale';
 end
 
-if isKey(img_info, 'ImageDescription')
-    curr_text = img_info('ImageDescription');
+if isKey(img_info, "ImageDescription")
+    curr_text = img_info{"ImageDescription"};
     bb_info_exist = strfind(curr_text, 'BoundingBox');
     if bb_info_exist == 1
         spaces = strfind(curr_text,' ');
         if numel(spaces) < 7; spaces(7) = numel(curr_text); end
         tab_pos = strfind(curr_text,sprintf('\t'));
         if isempty(tab_pos); tab_pos = strfind(curr_text,sprintf('|')); end
-        % 12    14    21    23    28    30
         pos = min([spaces(7) tab_pos]);
-        img_info('ImageDescription') = ['BoundingBox ' bb curr_text(pos:end)];
+        img_info{"ImageDescription"} = ['BoundingBox ' bb curr_text(pos:end)];
     elseif bb_info_exist > 1 % a case when MIB TIF was saved as AM from Fiji
         curr_text = curr_text(bb_info_exist:end);
         spaces = strfind(curr_text,' ');
         if numel(spaces) < 7; spaces(7) = numel(curr_text); end
         tab_pos = strfind(curr_text,sprintf('\t'));
         if isempty(tab_pos); tab_pos = strfind(curr_text,sprintf('|')); end
-        % 12    14    21    23    28    30
         pos = min([spaces(7) tab_pos]);
         bb = curr_text(1:pos);
-        img_info('ImageDescription') = ['BoundingBox ' bb curr_text(pos:end)];
+        img_info{"ImageDescription"} = ['BoundingBox ' bb curr_text(pos:end)];
     else
-        img_info('ImageDescription') = ['BoundingBox ' bb curr_text];
+        img_info{"ImageDescription"} = ['BoundingBox ' bb curr_text];
     end
 else
     if exist('bb','var')
-        img_info('ImageDescription') = ['BoundingBox ' bb];
+        img_info{"ImageDescription"} = ['BoundingBox ' bb];
     else
-        img_info('ImageDescription') = '';
+        img_info{"ImageDescription"} = '';
     end
 end
 if HxMultiChannelField3_sw == 0 && max(colorChannels) == 4  % RGBA

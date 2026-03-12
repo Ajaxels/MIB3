@@ -41,6 +41,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
@@ -96,10 +97,10 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
-                    'Message', sprintf('Loading NRRD metadata\n(press Cancel when metadata is the same for all files)'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Metadata import', ...
+                    sprintf('Loading NRRD metadata\n(press Cancel when metadata is the same for all files)'), true);
             end
 
             % Pre-allocate files structure
@@ -111,7 +112,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.NrrdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.NrrdLoader');
@@ -120,7 +121,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};
@@ -201,7 +202,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                          shiftsXYZ = [0 0 0];
                     end
                 elseif ~strcmp(imginfo{"ColorType"}, currentColorType)
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.NrrdLoader');
                     imginfo = dictionary();
@@ -209,7 +210,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
                 end
             end
@@ -222,7 +223,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                 end
             end
@@ -233,7 +234,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -296,15 +297,15 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
             % Initialize uiprogressdlg
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading NRRD images...',...
-                    'Message', sprintf('Please wait...'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Loading NRRD images...', ...
+                    sprintf('Please wait...'), true);
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     delete(wb);
                     img = [];
                     return;
@@ -325,7 +326,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                         I = nhdr_nrrd_read(files(fnIndex).filename, 1);
                     end
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading NRRD file:\n%s', err.message), 'NRRD Error', 'Error in io.loaders.NrrdLoader');
                     img = [];
@@ -344,7 +345,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 img(1:maxY,1:maxX, layerId:layerId+files(fnIndex).noLayers-1, 1:maxC) = I.data;
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(layerId, waitbarUpdateFrequency) == 0
                         wb.Value = layerId / maxZ;
                     end
@@ -352,7 +353,7 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 layerId = layerId + files(fnIndex).noLayers;
             end
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
 
             % Finalize
             imginfo{'Height'} = height;

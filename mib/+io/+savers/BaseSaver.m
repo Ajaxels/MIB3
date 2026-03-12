@@ -53,6 +53,13 @@ classdef (Abstract) BaseSaver < handle
 
     properties
         Options struct   % Options struct passed during construction (may be empty)
+        mibPath  (1,:) char = ''
+        % Path to MIB installation directory; used by dialogs.
+        % Set from options.mibPath at construction time; empty in standalone use.
+        ParentFigure = []
+        % Handle to the main MIB application window.
+        % Required as parent for uiprogressdlg progress bars.
+        % Set from options.ParentFigure at construction time; empty in standalone use.
     end
 
     % ------------------------------------------------------------------ %
@@ -137,46 +144,41 @@ classdef (Abstract) BaseSaver < handle
     % ------------------------------------------------------------------ %
     methods (Access = protected)
 
-        function fn = generateSequentialFilename(~, baseName, idx, total, ext)
-            % function fn = generateSequentialFilename(~, baseName, idx, total, ext)
-            % Build a zero-padded sequential filename such as 'stack_003.tif'.
-            %
-            % The number of padding digits is chosen automatically based on
-            % the total file count so that alphabetical and numerical order
-            % match (important for downstream tools that sort by filename).
-            %
-            % Parameters:
-            %   baseName — (char) filename stem WITHOUT extension,
-            %              e.g. 'myStack' or '/output/dir/myStack'
-            %   idx      — (integer) 1-based sequential index of this file
-            %   total    — (integer) total number of files in the series
-            %   ext      — (char) extension INCLUDING leading dot, e.g. '.tif'
-            %
-            % Return values:
-            %   fn — (char) generated filename, e.g. 'myStack_003.tif'
-            %
-            % Example:
-            %   @code
-            %   % For a 50-slice series, generates 'out_07.tif'
-            %   fn = obj.generateSequentialFilename('out', 7, 50, '.tif');
-            %   % fn == 'out_07.tif'
-            %
-            %   % For a 1000-slice series, generates 'out_007.tif'
-            %   fn = obj.generateSequentialFilename('out', 7, 1000, '.tif');
-            %   % fn == 'out_007.tif'
-            %   @endcode
-            if total == 1
-                fn = [baseName ext];
-            elseif total < 100
-                fn = sprintf('%s_%02d%s', baseName, idx, ext);
-            elseif total < 1000
-                fn = sprintf('%s_%03d%s', baseName, idx, ext);
-            elseif total < 10000
-                fn = sprintf('%s_%04d%s', baseName, idx, ext);
-            elseif total < 100000
-                fn = sprintf('%s_%05d%s', baseName, idx, ext);
-            else
-                fn = sprintf('%s_%06d%s', baseName, idx, ext);
+        function initBaseProps(obj, options)
+            % function initBaseProps(obj, options)
+            % Extract mibPath and ParentFigure from options into dedicated
+            % properties.  Call at the end of every concrete saver constructor.
+            if nargin < 2 || isempty(options); return; end
+            if isfield(options, 'mibPath') && ~isempty(options.mibPath)
+                obj.mibPath = options.mibPath;
+            end
+            if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+                obj.ParentFigure = options.ParentFigure;
+            end
+        end
+
+        function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            % function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            % Create a uiprogressdlg attached to obj.ParentFigure, or return []
+            % when no valid parent is available (standalone / headless use).
+            % All wb access by callers must be guarded with  if ~isempty(wb).
+            if nargin < 4; cancelable    = false; end
+            if nargin < 5; indeterminate = false; end
+            wb = [];
+            if isempty(obj.ParentFigure); return; end
+            try
+                if ~isvalid(obj.ParentFigure); return; end
+            catch; return; end
+            try
+                args = {'Title', title, 'Message', message};
+                if indeterminate
+                    args = [args, {'Indeterminate', 'on'}];
+                elseif cancelable
+                    args = [args, {'Cancelable', 'on'}];
+                end
+                wb = uiprogressdlg(obj.ParentFigure, args{:});
+            catch
+                wb = [];
             end
         end
 
@@ -293,7 +295,7 @@ classdef (Abstract) BaseSaver < handle
             else
                 for z = 1:depth
                     sliceNames{z} = fullfile(pathStr, ...
-                        obj.generateSequentialFilename(baseName, z, depth, ext));
+                        utils.generateSequentialFilename(baseName, z, depth, ext));
                 end
             end
         end

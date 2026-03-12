@@ -20,7 +20,7 @@ classdef MibUndo < handle
         % a structure to store the list of the actions for undo
         % @li @b .type - type of the data: ''image'', ''model'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
         % @li @b .data - a field to store a cell with 3D dataset or 2D slice
-        % @li @b .meta - meta containers.Map , for the ''image'' type
+        % @li @b .meta - meta dictionary , for the ''image'' type
         % @li @b .options - a substructure with all additional parameters,
         % as for example the following list
         % @li @b .orient - orientation of the slice, @b 1 - xz, @b 2 - yz, @b 4 - yx
@@ -109,7 +109,7 @@ classdef MibUndo < handle
             % 'lines3d', 'mibImage'
             % data: a cell/cell array with actual 3D or 2D dataset to store, 
             %       or with a structure for labels or with Lines3D class for lines3d object
-            % meta: [@em optional] a imageData.meta containers.Map, not required for ''model'', ''selection'', ''mask'', ''everything'', can be @em NaN
+            % meta: [@em optional] a imageData.meta dictionary, not required for ''model'', ''selection'', ''mask'', ''everything'', can be @em NaN
             % options: a structure with fields:
             % @li .orient -> [@em optional], a number with the orientation of the dataset
             % @li .y -> [@em optional], [roiId][ymin, ymax] of the part of the dataset to store
@@ -233,12 +233,12 @@ classdef MibUndo < handle
             obj.undoList(obj.undoIndex-1).options = options;
             
 
-            % containers.Map is a class and should be reinitialized,
-            % the plain copy (obj.undoList(obj.undoIndex-1).meta = meta) results in just a new copy of its handle
+            % MATLAB dictionary has value semantics — simple assignment creates
+            % an independent deep copy, so no explicit reconstruction needed.
             if isa(meta, 'double')
                 obj.undoList(obj.undoIndex-1).meta = NaN;
             else
-                obj.undoList(obj.undoIndex-1).meta = containers.Map(meta.keys, meta.values);
+                obj.undoList(obj.undoIndex-1).meta = meta;
             end
             
             obj.undoList(obj.undoIndex).type = NaN;
@@ -261,7 +261,7 @@ classdef MibUndo < handle
             % Return values:
             % type: a string that defines the type of the stored data: ''image'', ''model'', ''selection'', ''mask'', ''everything'' (for imageData.model_type==''uint6'' only)
             % data: a variable where to retrieve the dataset
-            % meta: [@em optional, NaN for 2D] a imageData.meta containers.Map, not required for ''model'', ''selection'', ''mask'', ''everything''
+            % meta: [@em optional, NaN for 2D] a imageData.meta dictionary, not required for ''model'', ''selection'', ''mask'', ''everything''
             % options: a structure with fields:
             % @li .orient -> [@em optional], a number with the orientation of the dataset, for 2D slices; or NaN for 3D
             % @li .y -> [ymin, ymax] coordinates of the stored of the part of the dataset
@@ -291,9 +291,9 @@ classdef MibUndo < handle
             if isa(obj.undoList(index).meta, 'double')  % means NaN
                 meta = NaN;
             else
-                % containers.Map is a class and should be reinitialized,
-                % the plain copy (obj.undoList(obj.undoIndex-1).meta = meta) results in just a new copy of its handle
-                meta = containers.Map(obj.undoList(index).meta.keys, obj.undoList(index).meta.values);
+                % MATLAB dictionary has value semantics — simple assignment
+                % returns an independent deep copy of the stored dictionary.
+                meta = obj.undoList(index).meta;
             end
             options = obj.undoList(index).options;
             obj.undoIndex = index;
@@ -327,7 +327,7 @@ classdef MibUndo < handle
             % ''image'', ''model'', ''selection'', ''mask'', ''everything''
             % (for imageData.model_type==''uint6'' only), or ''mibImage''
             % data: a variable with the new dataset to store
-            % meta: [@em optional] imageData.meta containers.Map, not required for ''model'', ''selection'', ''mask'', ''everything'', can be @em NaN
+            % meta: [@em optional] imageData.meta dictionary, not required for ''model'', ''selection'', ''mask'', ''everything'', can be @em NaN
             % options: a structure with fields:
             % @li .orient -> [@em optional], a number with the orientation of the dataset
             % @li .y -> [@em optional], [ymin, ymax] of the part of the dataset to store

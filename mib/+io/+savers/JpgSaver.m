@@ -83,6 +83,7 @@ classdef JpgSaver < io.savers.BaseSaver
         function obj = JpgSaver(options)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -146,8 +147,7 @@ classdef JpgSaver < io.savers.BaseSaver
             % --- progress ---
             wb = [];
             if options.showWaitbar
-                wb = waitbar(0, sprintf('Saving JPEG — %s', baseName), ...
-                    'Name', 'Saving images…', 'WindowStyle', 'modal');
+                wb = obj.createProgressDialog('Saving images...', sprintf('Saving JPEG — %s', baseName), false);
             end
 
             allFn = {};
@@ -173,7 +173,7 @@ classdef JpgSaver < io.savers.BaseSaver
 
                         allFn{end+1} = outName; %#ok<AGROW>
                         done = done + 1;
-                        if ~isempty(wb); waitbar(done/total, wb); end
+                        if ~isempty(wb); wb.Value = done/total; end
                     end
                 end
             catch ME

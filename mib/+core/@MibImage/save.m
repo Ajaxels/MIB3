@@ -48,6 +48,14 @@ function fnOut = save(obj, filename, options)
 %     .pixSize        — (struct) voxel size {.x .y .z .t .units .tunits};
 %                       injected by MibDataset.save() automatically when
 %                       calling through that layer
+%     .ParentFigure   — handle to the main MIB application window; passed
+%                       to io.SaverFactory.create() so the saver and any
+%                       helper functions (e.g. bitmap2amiraMesh) can create
+%                       uiprogressdlg dialogs properly parented to the GUI.
+%                       Injected by MibModel.saveImage(); omit for standalone use.
+%     .mibPath        — (char) path to MIB installation directory; forwarded
+%                       to the saver for resource/icon lookup.
+%                       Injected by MibModel.saveImage(); omit for standalone use.
 %
 % Return values:
 %   fnOut — (char or cell of char) path(s) of saved file(s).
@@ -105,6 +113,21 @@ function fnOut = save(obj, filename, options)
 %   opts.pixSize     = struct('x',0.004,'y',0.004,'z',0.03,'units','um','t',1,'tunits','s');
 %
 %   fnOut = imgEM.save('/output/em_volume.h5', opts);
+%   @endcode
+%
+%   @code
+%   %% 5. Save from inside a controller that has access to the MIB GUI
+%   %   (ParentFigure and mibPath enable uiprogressdlg + icon lookup)
+%   opts.Format         = 'Amira Mesh binary (*.am)';
+%   opts.Saving3DPolicy = '3D stack';
+%   opts.showWaitbar    = true;
+%   opts.silent         = true;
+%   opts.overwrite      = true;
+%   opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%   opts.ParentFigure   = obj.mibModel.mibGUI;   % enables uiprogressdlg
+%   opts.mibPath        = obj.mibModel.mibPath;  % enables icon lookup
+%
+%   fnOut = img.save('/output/stack.am', opts);
 %   @endcode
 %
 % SEE ALSO

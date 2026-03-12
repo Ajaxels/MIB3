@@ -110,6 +110,7 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -183,6 +184,7 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             savingOptions.overwrite      = options.overwrite;
             savingOptions.DatasetType    = options.layerType;
             savingOptions.showWaitbar    = options.showWaitbar;
+            savingOptions.ParentFigure   = obj.ParentFigure;
 
             if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
                 savingOptions.pixSize = metadata.pixSize;

@@ -16,24 +16,40 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 %           'ImageDescription'     — (char) optional description string
 %           'TransformationMatrix' — optional transform (char or numeric)
 % options: a structure with optional parameters:
-% - .overwrite    — if 1, do not check whether file already exists
-% - .showWaitbar  — if 1, show the progress bar
-% - .colors       — [optional] [C x 3] colour matrix (0..1) for multichannel;
-%                   overrides img_info lutColors
-% - .Saving3d     — 'multi'    : save all z-slices in a single file (default)
-%                   'sequence' : save one file per z-slice
-% - .SliceName    — [optional] cell array with per-slice filenames (no path)
-% - .verbose      — [optional] logical (default: true)
+% - .overwrite      — if 1, do not check whether file already exists
+% - .showWaitbar    — if 1, show the progress bar
+% - .ParentFigure   — [@em optional] handle to the main MIB application window.
+%                     When provided, the progress bar is rendered as a
+%                     uiprogressdlg attached to that window (recommended for
+%                     GUI use).  When absent or empty the legacy waitbar is
+%                     used as a fallback.
+% - .colors         — [optional] [C x 3] colour matrix (0..1) for multichannel;
+%                     overrides img_info lutColors
+% - .Saving3d       — 'multi'    : save all z-slices in a single file (default)
+%                     'sequence' : save one file per z-slice
+% - .SliceName      — [optional] cell array with per-slice filenames (no path)
+% - .verbose        — [optional] logical (default: true)
 %
 % Return values:
 % result: 1 - success, 0 - fail
 %
 % Example:
 %   @code
+%   %% Standalone / scripted use (no GUI parent):
 %   opts.overwrite   = 1;
 %   opts.showWaitbar = false;
 %   opts.Saving3d    = 'multi';
-%   opts.colors      = obj.lutColors;
+%   opts.colors      = lutColors;
+%   io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
+%   @endcode
+%
+%   @code
+%   %% GUI use — attach progress dialog to the MIB window:
+%   opts.overwrite      = 1;
+%   opts.showWaitbar    = true;
+%   opts.Saving3d       = 'multi';
+%   opts.colors         = lutColors;
+%   opts.ParentFigure   = obj.mibModel.mibGUI;   % uiprogressdlg parent
 %   io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
 %   @endcode
 
@@ -48,9 +64,7 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 %            img_info changed from containers.Map to MATLAB dictionary
 
 result = 0;
-if nargin < 2
-    error('Please provide filename, and bitmap matrix!');
-end
+if nargin < 2; error('Please provide filename, and bitmap matrix!'); end
 if nargin < 3; img_info = []; end
 if isempty(img_info)
     img_info = configureDictionary("string", "cell");
@@ -60,10 +74,11 @@ if nargin < 4
     options = struct();
     options.parameters.CoordType = '"uniform"';
 end
-if ~isfield(options, 'overwrite');   options.overwrite   = 0;      end
-if ~isfield(options, 'showWaitbar'); options.showWaitbar = 1;      end
-if ~isfield(options, 'Saving3d');    options.Saving3d    = 'multi'; end
-if ~isfield(options, 'verbose');     options.verbose     = true;   end
+if ~isfield(options, 'overwrite');    options.overwrite    = 0;      end
+if ~isfield(options, 'showWaitbar');  options.showWaitbar  = 1;      end
+if ~isfield(options, 'Saving3d');     options.Saving3d     = 'multi'; end
+if ~isfield(options, 'verbose');      options.verbose      = true;   end
+if ~isfield(options, 'ParentFigure'); options.ParentFigure = [];   end
 
 % overwrite lutColors in img_info if colours provided in options
 if isfield(options, 'colors')
@@ -72,24 +87,31 @@ end
 
 if options.overwrite == 0
     if exist(filename, 'file') == 2
-        choice = questdlg('File exists! Overwrite?', 'Warning!', ...
-            'Continue', 'Cancel', 'No thank you');
-        if ~strcmp(choice, 'Continue')
-            disp('Canceled, nothing was saved!');
-            return;
+        if ~isempty(options.ParentFigure) 
+            choice = uiconfirm(options.ParentFigure, ...
+                sprintf('File exists!\n%s\n\nOverwrite?', filename), 'Overwrite?',  'Icon', 'warning', ...
+                'Options', {'Continue', 'Cancel'}, 'DefaultOption', 2);
+        else
+            choice = questdlg('File exists! Overwrite?', 'Warning!', ...
+                'Continue', 'Cancel', 'Cancel');
         end
+        if strcmp(choice, 'Cancel'); disp('Canceled, nothing was saved!'); return; end
     end
 end
 
+wb = [];
 if options.showWaitbar
-    curInt = get(0, 'DefaulttextInterpreter');
-    set(0, 'DefaulttextInterpreter', 'none');
-    wb = waitbar(0, sprintf('%s\nPlease wait...', filename), ...
-        'Name', 'Saving images as Amira Mesh...', 'WindowStyle', 'modal');
-    set(findall(wb, 'type', 'text'), 'Interpreter', 'none');
-    waitbar(0, wb);
-else
-    wb = [];
+    if ~isempty(options.ParentFigure)
+        try
+            wb = uiprogressdlg(options.ParentFigure, 'Title', 'Saving images as Amira Mesh...', ...
+                'Message', sprintf('%s\nPlease wait...', filename));
+        catch
+            wb = [];
+        end
+    else
+        wb = waitbar(0, sprintf('%s\nPlease wait...', filename), ...
+            'Name', 'Saving images as Amira Mesh...', 'WindowStyle', 'modal');
+    end
 end
 
 nD = size(bitmap, 3);   % depth (number of z-slices)
@@ -100,7 +122,7 @@ else
     [saveDir, saveFn, saveExt] = fileparts(filename);
     if ~isfield(options, 'SliceName') || numel(options.SliceName) ~= nD
         options.SliceName = arrayfun( ...
-            @(i) generateSequentialFilename(saveFn, i, nD, saveExt), ...
+            @(i) utils.generateSequentialFilename(saveFn, i, nD, saveExt), ...
             1:nD, 'UniformOutput', false)';
     end
     for fnId = 1:nD
@@ -111,20 +133,7 @@ end
 
 if options.verbose; disp(['bitmap2amiraMesh: ' filename ' was created!']); end
 result = 1;
-if options.showWaitbar; set(0, 'DefaulttextInterpreter', curInt); delete(wb); end
-end
-
-
-% ------------------------------------------------------------------ %
-function fn = generateSequentialFilename(name, num, files_no, ext)
-if     files_no == 1;       fn = [name ext];
-elseif files_no < 100;      fn = [name '_' sprintf('%02i', num) ext];
-elseif files_no < 1000;     fn = [name '_' sprintf('%03i', num) ext];
-elseif files_no < 10000;    fn = [name '_' sprintf('%04i', num) ext];
-elseif files_no < 100000;   fn = [name '_' sprintf('%05i', num) ext];
-elseif files_no < 1000000;  fn = [name '_' sprintf('%06i', num) ext];
-else;                       fn = [name '_' sprintf('%07i', num) ext];
-end
+if ~isempty(wb); delete(wb); end
 end
 
 
@@ -157,7 +166,8 @@ for fieldIdx = 1:numel(fields)
     currKey = strrep(currKey, sprintf('\xB5'), 'u');
     currKey = char(currKey);
 
-    val = img_info(fields(fieldIdx)){1};    % unwrap cell
+    valCell = img_info(fields(fieldIdx));
+    val = valCell{1};    % unwrap cell
 
     if isstruct(val)
         extraFields = fieldnames(val);
@@ -195,17 +205,20 @@ if HxMultiChannelField3
         fprintf(fid, '\tChannel%d {\n', ch);
         dataWindowKey = sprintf('Channel%d_DataWindow', ch);
         if isKey(img_info, dataWindowKey)
-            fprintf(fid, '\t\tDataWindow %s,\n', char(img_info(dataWindowKey){1}));
+            dwCell = img_info(dataWindowKey);
+            fprintf(fid, '\t\tDataWindow %s,\n', char(dwCell{1}));
         else
             chData = bitmap(:,:,:,ch,1);
             fprintf(fid, '\t\tDataWindow %d %d,\n', min(chData(:)), max(chData(:)));
         end
         colorKey = sprintf('Channel%d_Color', ch);
         if isKey(img_info, "lutColors")
-            lutColors = img_info("lutColors"){1};
+            lutColorsCell = img_info("lutColors");
+            lutColors = lutColorsCell{1};
             fprintf(fid, '\t\tColor %f %f %f\n', lutColors(ch,1), lutColors(ch,2), lutColors(ch,3));
         elseif isKey(img_info, colorKey)
-            fprintf(fid, '\t\tColor %s\n', char(img_info(colorKey){1}));
+            colorCell = img_info(colorKey);
+            fprintf(fid, '\t\tColor %s\n', char(colorCell{1}));
         else
             if isfield(options, 'colors')
                 fprintf(fid, '\t\tColor %f %f %f\n', options.colors(ch,1), options.colors(ch,2), options.colors(ch,3));
@@ -225,7 +238,8 @@ end
 % BoundingBox: try ImageDescription first, fall back to pixel extents
 bb = [0 max([size(bitmap,2) 2])-1  0 max([size(bitmap,1) 2])-1  0 max([nD 2])-1];
 if isKey(img_info, "ImageDescription")
-    curr_text = char(img_info("ImageDescription"){1});
+    imgDescCell = img_info("ImageDescription");
+    curr_text = char(imgDescCell{1});
     bb_info_exist = strfind(curr_text, 'BoundingBox');
     if bb_info_exist == 1
         spaces  = strfind(curr_text, ' ');
@@ -238,14 +252,15 @@ end
 fprintf(fid, '\tBoundingBox %f %f %f %f %f %f,\n', bb(1), bb(2), bb(3), bb(4), bb(5), bb(6));
 fprintf(fid, '\tCoordType "uniform"');
 if isKey(img_info, "TransformationMatrix")
-    fprintf(fid, '\tTransformationMatrix %s\n', num2str(img_info("TransformationMatrix"){1}));
+    tmCell = img_info("TransformationMatrix");
+    fprintf(fid, '\tTransformationMatrix %s\n', num2str(tmCell{1}));
 else
     fprintf(fid, '\n');
 end
 fprintf(fid, '}\n\n');
 
 imgClass = mibAmiraClass(bitmap);
-if options.showWaitbar; waitbar(.05, wb); end
+if ~isempty(wb); if isa(wb, 'matlab.ui.dialog.ProgressDialog'); wb.Value = 0.05; else; waitbar(0.05, wb); end; end
 
 if nC == 1  % grayscale
     fprintf(fid, 'Lattice { %s Data } @1\n\n', imgClass);
@@ -255,8 +270,8 @@ if nC == 1  % grayscale
         img = bitmap(:,:,zIndex,1,1);
         img = reshape(permute(img, [3 2 1]), 1, [])';
         fwrite(fid, img, class(img), 0, 'ieee-le');
-        if options.showWaitbar && mod(zIndex, ceil(nD/20)) == 0
-            waitbar(zIndex/nD, wb);
+        if ~isempty(wb) && mod(zIndex, ceil(nD/20)) == 0
+            if isa(wb, 'matlab.ui.dialog.ProgressDialog'); wb.Value = zIndex/nD; else; waitbar(zIndex/nD, wb); end
         end
     end
 else  % multichannel
@@ -274,8 +289,8 @@ else  % multichannel
             img = bitmap(:,:,zIndex,ch,1);
             img = reshape(permute(img, [3 2 1]), 1, [])';
             fwrite(fid, img, class(img), 0, 'ieee-le');
-            if options.showWaitbar && mod(index, ceil(maxIndex/20)) == 0
-                waitbar(index/maxIndex, wb);
+            if ~isempty(wb) && mod(index, ceil(maxIndex/20)) == 0
+                if isa(wb, 'matlab.ui.dialog.ProgressDialog'); wb.Value = index/maxIndex; else; waitbar(index/maxIndex, wb); end
             end
             index = index + 1;
         end

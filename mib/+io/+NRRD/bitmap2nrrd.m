@@ -10,17 +10,32 @@ function result = bitmap2nrrd(filename, bitmap, bb, options)
 % bitmap: a dataset, [1:height, 1:width, 1:colors, 1:no_stacks]
 % bb: bounding box information, a vector [minX, maxX, minY, maxY, minZ, maxZ]
 % options: a structure with some optional parameters
-% - .overwrite - if @b 1 do not check whether file with provided filename already exists
-% - .showWaitbar - if @b 1 - show the wait bar, if @b 0 - do not show
+% - .overwrite      — if @b 1 do not check whether file with provided filename already exists
+% - .showWaitbar    — if @b 1 - show the wait bar, if @b 0 - do not show
+% - .ParentFigure   — [@em optional] handle to the main MIB application window.
+%                     When provided, the progress bar is rendered as a
+%                     uiprogressdlg attached to that window (recommended for
+%                     GUI use).  When absent or empty the legacy waitbar is
+%                     used as a fallback.
 %
 % Return values:
 % result: result of the function run, @b 1 - success, @b 0 - fail
 %
 % Example:
 %   @code
+%   %% Standalone / scripted use (no GUI parent):
 %   bb = dataset.boundingBox;  % [xmin xmax ymin ymax zmin zmax]
 %   opts.overwrite   = 1;
 %   opts.showWaitbar = false;
+%   io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
+%   @endcode
+%
+%   @code
+%   %% GUI use — attach progress dialog to the MIB window:
+%   bb = dataset.boundingBox;
+%   opts.overwrite    = 1;
+%   opts.showWaitbar  = true;
+%   opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
 %   io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
 %   @endcode
 
@@ -50,12 +65,19 @@ if options.overwrite == 0
     end
 end
 
+wb = [];
 if options.showWaitbar
-  curInt = get(0, 'DefaulttextInterpreter');
-  set(0, 'DefaulttextInterpreter', 'none');
-  wb = waitbar(0,sprintf('%s\nPlease wait...',filename),'Name','Saving images in the nrrd format...','WindowStyle','modal');
-  set(findall(wb,'type','text'),'Interpreter','none');
-  waitbar(0, wb);
+    if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+        try
+            wb = uiprogressdlg(options.ParentFigure, 'Title', 'Saving images in the nrrd format...', ...
+                'Message', sprintf('%s\nPlease wait...', filename));
+        catch; wb = []; end
+    else
+        curInt = get(0, 'DefaulttextInterpreter');
+        set(0, 'DefaulttextInterpreter', 'none');
+        wb = waitbar(0, sprintf('%s\nPlease wait...', filename), 'Name', 'Saving images in the nrrd format...', 'WindowStyle', 'modal');
+        set(findall(wb,'type','text'), 'Interpreter', 'none');
+    end
 end
 
 width = size(bitmap, 2);
@@ -109,7 +131,7 @@ fprintf(fid, 'encoding: raw\n');
 fprintf(fid, 'endian: little\n');
 fprintf(fid, 'space origin: (%f,%f,%f)\n', -bb(1), -bb(3), bb(5));
 fprintf(fid, '\n');
-if options.showWaitbar; waitbar(.05,wb); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.05; else; waitbar(0.05,wb); end; end
 
 if colors == 1  % greyscale
     if ndims(bitmap) == 4
@@ -121,9 +143,12 @@ else
     bitmap = reshape(permute(bitmap,[3 2 1 4]),1,[])';
 end
 fwrite(fid, bitmap, class(bitmap), 0, 'ieee-le');
-if options.showWaitbar; waitbar(1, wb); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=1; else; waitbar(1,wb); end; end
 fclose(fid);
 disp(['bitmap2nrrd: ' filename ' was created!']);
 result = 1;
-if options.showWaitbar; delete(wb); set(0, 'DefaulttextInterpreter', curInt); end
+if ~isempty(wb)
+    if ~isa(wb, 'matlab.ui.dialog.ProgressDialog'); set(0, 'DefaulttextInterpreter', curInt); end
+    delete(wb);
+end
 end

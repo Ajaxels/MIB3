@@ -41,6 +41,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
@@ -86,10 +87,10 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
-                    'Message', sprintf('Loading AmiraMesh metadata\n(press Cancel when metadata is the same for all files)'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Metadata import', ...
+                    sprintf('Loading AmiraMesh metadata\n(press Cancel when metadata is the same for all files)'), true);
             end
 
             % Pre-allocate files structure
@@ -103,7 +104,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.AmiraMeshLoader!\n\nThe required file\n%s\nwas not found!', filenames{fnIndex}), ...
                         'Wrong filename', 'Error in io.loaders.AmiraMeshLoader');
@@ -111,7 +112,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};
@@ -134,7 +135,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     [par, info, dim_xyczt] = io.AmiraMesh.getAmiraMeshHeader(files(fnIndex).filename);
                 catch err
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error reading Amira Mesh header:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
                     return;
@@ -142,31 +143,31 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
                 if isempty(par)
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                 end
 
                 % Consistency check for color type
                 if fnIndex == 1
-                    if isKey(info, 'ColorType')
-                        imginfo{'ColorType'} = info('ColorType');
+                    if isKey(info, "ColorType")
+                        imginfo{'ColorType'} = info{"ColorType"};
                     end
                 else
-                    if isKey(info, 'ColorType') && ~strcmp(imginfo{'ColorType'}, info('ColorType'))
+                    if isKey(info, "ColorType") && ~strcmp(imginfo{'ColorType'}, info{"ColorType"})
                         imginfo = dictionary();
-                        if options.waitbar; delete(wb); end
+                        if ~isempty(wb); delete(wb); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, 'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.AmiraMeshLoader');
                         return;
                     end
                 end
 
                 % Update LUT colors (optional)
-                if isKey(info, 'Channel1Color')
+                if isKey(info, "Channel1Color")
                     lutColors = zeros(dim_xyczt(3), 3);
                     for colId = 1:dim_xyczt(3)
                         colChName = sprintf('Channel%dColor', colId);
-                        if isKey(info, colChName)
-                            tmp = str2num(info(colChName)); %#ok<ST2NM>
+                        if isKey(info, string(colChName))
+                            tmp = str2num(info{string(colChName)}); %#ok<ST2NM>
                             if numel(tmp) == 3
                                 lutColors(colId, :) = tmp;
                             end
@@ -189,7 +190,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     
                     if ~isstruct(result)
                         imginfo = dictionary();
-                        if options.waitbar; delete(wb); end
+                        if ~isempty(wb); delete(wb); end
                         return;
                     end
 
@@ -216,22 +217,22 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 files(fnIndex).dim_xyczt = dim_xyczt;
 
                 % Image class
-                if isKey(info, 'imgClass')
-                    files(fnIndex).imgClass = info('imgClass');
+                if isKey(info, "imgClass")
+                    files(fnIndex).imgClass = info{"imgClass"};
                 else
                     files(fnIndex).imgClass = 'uint8';
                 end
 
                 % Update pixel size only for the first file
                 if fnIndex == 1
-                    bbStart = strfind(info('ImageDescription'), 'BoundingBox');
+                    bbStart = strfind(info{"ImageDescription"}, 'BoundingBox');
                     if ~isempty(bbStart)
-                        info('ImageDescription') = strrep(info('ImageDescription'), sprintf('\t'), '|');    % replace tabs (from old MIB versions) with |
-                        brakePnt = strfind(info('ImageDescription'), '|');
-                        if isempty(brakePnt); brakePnt = numel(info('ImageDescription'))+1; end
+                        info{"ImageDescription"} = strrep(info{"ImageDescription"}, sprintf('\t'), '|');    % replace tabs (from old MIB versions) with |
+                        brakePnt = strfind(info{"ImageDescription"}, '|');
+                        if isempty(brakePnt); brakePnt = numel(info{"ImageDescription"})+1; end
                         try
                             brakePnt = brakePnt(1);
-                            bbString = info('ImageDescription');
+                            bbString = info{"ImageDescription"};
                             bb_coord = str2num(bbString(bbStart+11:brakePnt-1)); %#ok<ST2NM>
                             dx = bb_coord(2)-bb_coord(1);
                             dy = bb_coord(4)-bb_coord(3);
@@ -250,14 +251,15 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     pixSize.units = 'um';
     
                     % update img_info
-                    info('Filename') = files(fnIndex).filename;
-                    fields = sort(keys(info));
+                    info{"Filename"} = files(fnIndex).filename;
+                    fields = sort(keys(info));   % string array
                     for ind = 1:numel(fields)
-                        if ~strcmp(fields{ind}, 'lutColors')
-                            imginfo{fields{ind}} = info(fields{ind});
+                        fk = fields(ind);        % string scalar key
+                        if ~strcmp(fk, "lutColors")
+                            imginfo{char(fk)} = info{fk};
                         else
-                            if ischar(info(fields{ind}))
-                                imginfo{fields{ind}} = str2num(info(fields{ind})); %#ok<ST2NM>
+                            if ischar(info{fk})
+                                imginfo{char(fk)} = str2num(info{fk}); %#ok<ST2NM>
                             end
                         end
                     end
@@ -267,7 +269,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 imginfo{"pixSize"} = pixSize;
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/50)) == 0
                         wb.Value = fnIndex / noFiles;
                     end
@@ -280,7 +282,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -361,15 +363,15 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
             % Initialize uiprogressdlg
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading Amira Mesh images...',...
-                    'Message', sprintf('Please wait...'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Loading Amira Mesh images...', ...
+                    sprintf('Please wait...'), true);
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     delete(wb);
                     img = [];
                     return;
@@ -380,7 +382,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 maxC = min(color, files(fnIndex).color);
 
                 % Pass waitbar handle to amiraMesh2bitmap
-                if options.waitbar
+                if ~isempty(wb)
                     options.hWaitbar = wb;
                     options.maxZ = maxZ;
                 else
@@ -406,7 +408,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 try
                     imgIn = io.AmiraMesh.amiraMesh2bitmap(files(fnIndex).filename, options);
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading Amira Mesh file:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
                     img = [];
@@ -451,7 +453,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(layerId, waitbarUpdateFrequency) == 0
                         wb.Value = layerId / maxZ;
                     end
@@ -460,7 +462,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                 layerId = layerId + files(fnIndex).noLayers;
             end
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
 
             % Finalize
             imginfo{'Height'} = height;

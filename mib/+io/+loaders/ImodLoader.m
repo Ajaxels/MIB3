@@ -42,6 +42,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
@@ -97,10 +98,10 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
-                    'Message', sprintf('Loading IMOD metadata\n(press Cancel when metadata is the same for all files)'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Metadata import', ...
+                    sprintf('Loading IMOD metadata\n(press Cancel when metadata is the same for all files)'), true);
             end
 
             % Pre-allocate files structure
@@ -111,7 +112,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.ImodLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.ImodLoader');
@@ -120,7 +121,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};
@@ -202,7 +203,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                     close(mrcFile);
 
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error reading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     imginfo = dictionary();
@@ -221,7 +222,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/50)) == 0
                         wb.Value = fnIndex/noFiles;
                     end
@@ -236,7 +237,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                 end
             end
@@ -247,7 +248,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -311,15 +312,15 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
             % Initialize uiprogressdlg
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading IMOD images...',...
-                    'Message', sprintf('Please wait...'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Loading IMOD images...', ...
+                    sprintf('Please wait...'), true);
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     delete(wb);
                     img = [];
                     return;
@@ -347,7 +348,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                                 'Convert image', ...
                                 'Icon', 'warning', 'DefaultOption', 1);
                             if strcmp(selection, 'Cancel')
-                                if options.waitbar; delete(wb); end
+                                if ~isempty(wb); delete(wb); end
                                 img = [];
                                 return;
                             end
@@ -379,7 +380,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
 
                     close(mrcFile);
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     img = [];
@@ -387,7 +388,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(layerId, waitbarUpdateFrequency) == 0
                         wb.Value = layerId / maxZ;
                     end
@@ -396,7 +397,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 layerId = layerId + files(fnIndex).noLayers;
             end
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
 
             % Finalize
             imginfo{'Height'} = height;

@@ -18,19 +18,35 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 % modelMaterialNames: [@em optional], cell array with names of the materials, can be empty
 % overwrite: [@em optional], if @b 1 do not check whether file already exists
 % showWaitbar: [@em optional], if @b 1 - show the wait bar, if @b 0 - do not show
-% extraOptions: [@em optional], a structure with additional parameters
+% extraOptions: [@em optional], a structure with additional parameters:
 % .TransformationMatrix - a string with the transformation matrix
+% .ParentFigure   — handle to the main MIB application window.  When
+%                   provided, the progress bar is rendered as a
+%                   uiprogressdlg attached to that window (recommended for
+%                   GUI use).  When absent or empty the legacy waitbar is
+%                   used as a fallback.
 %
 % Return values:
 % result: result of the function run, @b 1 - success, @b 0 - fail
 %
 % Example:
 %   @code
+%   %% Standalone / scripted use (no GUI parent):
 %   pixStr = dataset.pixSize;
 %   pixStr.minx = boundingBox(1);
 %   pixStr.miny = boundingBox(3);
 %   pixStr.minz = boundingBox(5);
 %   io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, false, struct());
+%   @endcode
+%
+%   @code
+%   %% GUI use — attach progress dialog to the MIB window:
+%   pixStr = dataset.pixSize;
+%   pixStr.minx = boundingBox(1);
+%   pixStr.miny = boundingBox(3);
+%   pixStr.minz = boundingBox(5);
+%   extraOpts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%   io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, true, extraOpts);
 %   @endcode
 
 % Updates
@@ -42,9 +58,6 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 % 11.12.2018 - added auto remove of spaces in material names
 
 result = 0;
-curInt = get(0, 'DefaulttextInterpreter');
-set(0, 'DefaulttextInterpreter', 'none');
-
 minValRLE = 1;
 if nargin < 2
     error('Please provide filename, and bitmap matrix!');
@@ -110,10 +123,16 @@ if overwrite == 0
         if strcmp(button, 'Cancel'); return; end
     end
 end
+wb = [];
 if showWaitbar
-    wb = waitbar(0,sprintf('%s\nPlease wait...',filename),'Name',sprintf('Saving Amira Mesh [%s]...', format));
-    set(findall(wb,'type','text'),'Interpreter','none');
-    waitbar(0, wb);
+    if nargin >= 9 && isstruct(extraOptions) && isfield(extraOptions,'ParentFigure') && ~isempty(extraOptions.ParentFigure)
+        try
+            wb = uiprogressdlg(extraOptions.ParentFigure, 'Title', sprintf('Saving Amira Mesh [%s]...', format), ...
+                'Message', sprintf('%s\nPlease wait...', filename));
+        catch; wb = []; end
+    else
+        wb = waitbar(0, sprintf('%s\nPlease wait...', filename), 'Name', sprintf('Saving Amira Mesh [%s]...', format));
+    end
 end
 
 fid = fopen(filename, 'w');
@@ -172,7 +191,7 @@ end
 
 fprintf(fid,'}\n\n');
 bitmap = reshape(permute(bitmap,[2 1 3]),1,[])';
-if showWaitbar; waitbar(.1, wb); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.1; else; waitbar(0.1,wb); end; end
 
 if strcmp(format,'binary')
     fprintf(fid,'Lattice { %s Labels } @1\n\n', classText);
@@ -186,7 +205,7 @@ elseif strcmp(format,'ascii')
     maxVal = numel(bitmap);
     waitbarScale = round(maxVal/10);
     for ind = 1:maxVal
-        if showWaitbar && mod(ind, waitbarScale)==1; waitbar(ind/maxVal, wb); end
+        if ~isempty(wb) && mod(ind, waitbarScale)==1; if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=ind/maxVal; else; waitbar(ind/maxVal,wb); end; end
         fprintf(fid,'%d \n',bitmap(ind));
     end
 elseif strcmp(format,'binaryRLE')
@@ -194,7 +213,7 @@ elseif strcmp(format,'binaryRLE')
     indexBlockStart = 1;
     lastCharacter = NaN;
     bytesCounter = 0;
-    if showWaitbar;         waitbar(.2, wb); end
+    if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.2; else; waitbar(0.2,wb); end; end
 
     while indexBlockStart < maxVal
         blockOut = zeros([127 1])*NaN;
@@ -261,7 +280,7 @@ elseif strcmp(format,'binaryRLE')
     fprintf(fid,'Lattice { %s Labels } @1(HxByteRLE,%d)\n\n', classText, bytesCounter);
     fprintf(fid,'# Data section follows\n');
     fprintf(fid,'@1\n');
-    if showWaitbar; waitbar(.8, wb); end
+    if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.8; else; waitbar(0.8,wb); end; end
     switch class(bitmap)
         case 'uint8'
             fwrite(fid, bitmap(1:bytesCounter), '*uint8', 0, 'ieee-le');
@@ -273,8 +292,7 @@ elseif strcmp(format,'binaryRLE')
 end
 fprintf(fid,'\n');
 fclose(fid);
-if showWaitbar; delete(wb); end
-set(0, 'DefaulttextInterpreter', curInt);
+if ~isempty(wb); delete(wb); end
 disp(['bitmap2amiraLabels: ' filename ' was created!']);
 result = 1;
 end

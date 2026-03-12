@@ -41,6 +41,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
@@ -121,10 +122,10 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
-                    'Message', sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Metadata import', ...
+                    sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), true);
             end
 
             % Pre-allocate files structure
@@ -138,7 +139,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.ImreadLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.ImreadLoader');
@@ -146,7 +147,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};                % update filenames
@@ -165,7 +166,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 try
                     info = imfinfo(files(fnIndex).filename);
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                     %rethrow(err);
                 end
@@ -186,7 +187,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                 dlgOptions.mibPath = options.mibPath;
                                 [answer, selectedIndex] = utils.dlgs.inputUniversalDlg(options.ParentFigure, prompt, {defAns}, 'title', dlgOptions);
                                 if isempty(answer)
-                                    if options.waitbar; delete(wb); end
+                                    if ~isempty(wb); delete(wb); end
                                     return;
                                 end
                                 files(fnIndex).level = selectedIndex;
@@ -253,7 +254,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 if strcmp(info(1).ColorType, 'truecolor'); imginfo{"ColorType"} = 'multichannel'; info(1).ColorType='multichannel'; end
                 if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                         'Mixed colors', 'Error in io.loaders.ImreadLoader');
@@ -366,7 +367,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                         pixSize.units(1) = 'u';
                                     end
                                 catch err
-                                    if options.waitbar; delete(wb); end
+                                    if ~isempty(wb); delete(wb); end
                                     rethrow(err);
                                 end
                             end
@@ -375,11 +376,11 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
                 end
             end
-            
+
             % update pixSize
             imginfo{"pixSize"} = pixSize;
 
@@ -394,7 +395,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return; 
                 end
             end
@@ -411,7 +412,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % use io.BaseImageLoader.finalizeImgInfo of the parent class
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -510,16 +511,16 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
             % Initialize uiprogressdlg
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading images...',...
-                    'Message', sprintf('Please wait...'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Loading images...', ...
+                    sprintf('Please wait...'), true);
             end
 
             % Process each file
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     delete(wb);
                     img = [];
                     return;
@@ -595,7 +596,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                     img(1:maxY, 1:maxX, layerid, 1:size(I,3)) = permute(I(1:maxY, 1:maxX, 1:size(I,3)), [1 2 4 3]);
 
                     % Update uiprogressdlg
-                    if options.waitbar
+                    if ~isempty(wb)
                         if mod(layerid, waitbarUpdateFrequency) == 0
                             if wb.CancelRequested
                                 delete(wb);
@@ -611,7 +612,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             end
 
             % Check for cancel after loading large single files
-            if options.waitbar && wb.CancelRequested
+            if ~isempty(wb) && wb.CancelRequested
                 delete(wb);
                 img = [];
                 return;
@@ -625,7 +626,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
             [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
     end
 end

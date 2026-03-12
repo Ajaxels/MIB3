@@ -45,6 +45,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
@@ -105,10 +106,10 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
-                    'Message', sprintf('Loading Bio-Formats metadata\nPlease wait...'), ...
-                    'Cancelable', 'off');
+                wb = obj.createProgressDialog('Metadata import', ...
+                    sprintf('Loading Bio-Formats metadata\nPlease wait...'), false);
             end
 
             % Pre-allocate files structure array
@@ -121,7 +122,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.BioFormatsStdLoader');
@@ -152,7 +153,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         filesTemp.hDataset.setId(filenames{fnIndex});
                         numSeries = filesTemp.hDataset.getSeriesCount();
                     catch err
-                        if options.waitbar==1; delete(wb); end
+                        if ~isempty(wb); delete(wb); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
                             'BioFormats memoizer', 'Error in io.loaders.BioFormatsStdLoader');
@@ -225,7 +226,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 filesTemp.dimensionOrder = char(filesTemp.hDataset.getDimensionOrder());
 
                 if strcmp(filesTemp.seriesIndex, 'Cancel')
-                    if options.waitbar==1; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     imginfo = dictionary();
                     return;
                 end
@@ -235,7 +236,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     if ~isempty(filesTemp.hDataset)
                         filesTemp.hDataset.close();
                     end
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     imginfo = dictionary();
                     return;
                 end
@@ -375,7 +376,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/50)) == 0
                         wb.Value = fnIndex/noFiles;
                     end
@@ -424,7 +425,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                 end
             end
@@ -435,7 +436,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -497,15 +498,15 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
             % Initialize waitbar
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading images with BioFormats',...
-                    'Message', sprintf('Please wait...'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Loading images with BioFormats', ...
+                    sprintf('Please wait...'), true);
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     delete(wb);
                     img = [];
                     return;
@@ -519,7 +520,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 % Setup options for bfopen5
                 bfopenOptions = struct();
                 bfopenOptions.bioFormatsMemoizerMemoDir = files(fnIndex).bioFormatsMemoizerMemoDir;
-                if options.waitbar
+                if ~isempty(wb)
                     bfopenOptions.waitbarHandle = wb;
                     bfopenOptions.waitbarUpdateFrequency = waitbarUpdateFrequency;
                 end
@@ -558,8 +559,8 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         layerId = layerId + 1;
 
                         % Update waitbar
-                        if options.waitbar && mod(layerId, waitbarUpdateFrequency) == 0
-                            if options.waitbar && wb.CancelRequested
+                        if ~isempty(wb) && mod(layerId, waitbarUpdateFrequency) == 0
+                            if ~isempty(wb) && wb.CancelRequested
                                 img = [];
                                 delete(wb);
                                 return;
@@ -569,7 +570,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     end
 
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('io.loaders.BioFormatsStdLoader:\n\nError loading Bio-Formats file\n%s', err.message), 'Bio-Formats Error', 'Error in io.loaders.BioFormatsStdLoader');
                     img = [];
@@ -577,7 +578,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 end
             end
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
 
             % Finalize
             imginfo{'Height'} = height;

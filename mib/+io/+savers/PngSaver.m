@@ -77,6 +77,7 @@ classdef PngSaver < io.savers.BaseSaver
             % Constructor.
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -155,8 +156,7 @@ classdef PngSaver < io.savers.BaseSaver
             % --- progress bar ---
             wb = [];
             if options.showWaitbar
-                wb = waitbar(0, sprintf('Saving PNG — %s', baseName), ...
-                    'Name', 'Saving images…', 'WindowStyle', 'modal');
+                wb = obj.createProgressDialog('Saving images...', sprintf('Saving PNG — %s', baseName), false);
             end
 
             allFn = {};
@@ -192,7 +192,7 @@ classdef PngSaver < io.savers.BaseSaver
 
                         allFn{end+1} = outName; %#ok<AGROW>
                         done = done + 1;
-                        if ~isempty(wb); waitbar(done/total, wb); end
+                        if ~isempty(wb); wb.Value = done/total; end
                     end
                 end
             catch ME

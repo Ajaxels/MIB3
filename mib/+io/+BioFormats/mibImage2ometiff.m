@@ -22,18 +22,23 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 % filename: filename for the output file
 % imageS: dataset to save [1:height, 1:width, 1:color_channels, 1:no_stacks, 1:time] or [1:height, 1:width, 1:no_stacks, 1:time]
 % options: a structure with optional parameters
-%  .pixSize - a MIB structure with pixel size (.x, .y, .z, .t, .units, .tunints)
-%  .lutColors - a matrix with LUT colors
-%  .ImageDescription - a cell string with description of the dataset
-%  .DatasetType - a string with type of the dataset ('image' or 'model')
-%  .Saving3d: ''5D'' - save all stacks into a single file
-%              ''2D'' - generate a sequence of files
-%              @em NaN -> type will be asked
-%  .overwrite, if @b 1 do not check whether file with provided filename already exists
-%  .Compression: ''none'', ''lzw'', ''packbits''
-%  .showWaitbar: show a progress bar, @b 1 - on, @b 0 - off
-%  .SliceName -  [@em optional] a cell array with filenames without path
-%  .dimensionOrder - order of dimensions in the dataset, default = 'XYCZT';  
+%  .pixSize        — a MIB structure with pixel size (.x, .y, .z, .t, .units, .tunits)
+%  .lutColors      — a matrix with LUT colors
+%  .ImageDescription — a cell string with description of the dataset
+%  .DatasetType    — a string with type of the dataset ('image' or 'model')
+%  .Saving3d       — '5D' : save all stacks into a single file
+%                    '2D' : generate a sequence of files
+%                    @em NaN -> type will be asked
+%  .overwrite      — if @b 1 do not check whether file already exists
+%  .Compression    — 'none', 'lzw', 'packbits'
+%  .showWaitbar    — show a progress bar, @b 1 - on, @b 0 - off
+%  .ParentFigure   — [@em optional] handle to the main MIB application window.
+%                    When provided, the progress bar is rendered as a
+%                    uiprogressdlg attached to that window (recommended for
+%                    GUI use).  When absent or empty the legacy waitbar is
+%                    used as a fallback.
+%  .SliceName      — [@em optional] a cell array with filenames without path
+%  .dimensionOrder — order of dimensions in the dataset, default = 'XYCZT'
 %
 % Return values:
 % result: result of the function: @b 1 - success, @b 0 - fail
@@ -43,10 +48,29 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 % https://imagej.net/SCIFIO
 
 % Updates
-% 
+%
 
-% example:
-%   mibImage2ometiff(file_name, image_var, options);
+% Example:
+%   @code
+%   %% Standalone / scripted use (no GUI parent):
+%   opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
+%   opts.Saving3d    = '5D';
+%   opts.Compression = 'lzw';
+%   opts.showWaitbar = false;
+%   opts.overwrite   = 1;
+%   mibImage2ometiff('/output/stack.ome.tiff', imageData, opts);
+%   @endcode
+%
+%   @code
+%   %% GUI use — attach progress dialog to the MIB window:
+%   opts.pixSize      = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
+%   opts.Saving3d     = '5D';
+%   opts.Compression  = 'lzw';
+%   opts.showWaitbar  = true;
+%   opts.overwrite    = 1;
+%   opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%   mibImage2ometiff('/output/stack.ome.tiff', imageData, opts);
+%   @endcode
 
 result = 0;
 if nargin < 3; options = struct(); end
@@ -85,14 +109,20 @@ if options.overwrite == 0
         if strcmp(reply, 'Cancel'); return; end
     end
 end
-curInt = get(0, 'DefaulttextInterpreter'); 
-set(0, 'DefaulttextInterpreter', 'none'); 
-
 files_no = size(imageS, 4);
+wb = [];
 if options.showWaitbar
-    wb = waitbar(0, sprintf('%s\nPlease wait...',filename), 'Name', 'Saving images', 'WindowStyle', 'modal');
-    set(findall(wb,'type','text'), 'Interpreter', 'none');
-    waitbar(0, wb);
+    if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+        try
+            wb = uiprogressdlg(options.ParentFigure, 'Title', 'Saving images', ...
+                'Message', sprintf('%s\nPlease wait...', filename));
+        catch; wb = []; end
+    else
+        curInt = get(0, 'DefaulttextInterpreter');
+        set(0, 'DefaulttextInterpreter', 'none');
+        wb = waitbar(0, sprintf('%s\nPlease wait...', filename), 'Name', 'Saving images', 'WindowStyle', 'modal');
+        set(findall(wb,'type','text'), 'Interpreter', 'none');
+    end
 end
 
 % scale pixel size to um
@@ -148,7 +178,7 @@ elseif strcmp(options.Saving3d, '2D')
         switch choice
             case 'Cancel'
                 disp('Cancelled!')
-                if options.showWaitbar; delete(wb); end
+                if ~isempty(wb); delete(wb); end
                 return;
             case 'Original'
                 sequentialFn = 0;
@@ -160,7 +190,7 @@ elseif strcmp(options.Saving3d, '2D')
     [pathstr, name] = fileparts(filename);
     if sequentialFn     % generate sequential filenames
         for i = 1:files_no
-            options.SliceName{i} = fullfile(pathstr, generateSequentialFilename(name, i, files_no));
+            options.SliceName{i} = fullfile(pathstr, utils.generateSequentialFilename(name, i, files_no, '.ome.tiff'));
         end
     else                % use original filenames
         % remove existing extension
@@ -175,7 +205,7 @@ elseif strcmp(options.Saving3d, '2D')
             duplicatesNo = sum(cell2mat((strfind(options.SliceName(:), options.SliceName{i}))));
             if duplicatesNo > 1   % unique filename is found
                 for j=i:i+duplicatesNo-1
-                    options.SliceName{j} = generateSequentialFilename(options.SliceName{j}, j-i+1, duplicatesNo);
+                    options.SliceName{j} = utils.generateSequentialFilename(options.SliceName{j}, j-i+1, duplicatesNo, '.ome.tiff');
                 end
                 i = i + duplicatesNo;
             else
@@ -197,37 +227,18 @@ elseif strcmp(options.Saving3d, '2D')
         else            % indexed image
             imwrite(imageS(:,:,:,num),options.cmap,options.SliceName{num},'tif','Compression',options.Compression,'Description',cell2mat(ImageDescription(num)),'Resolution',options.Resolution);
         end
-        if options.showWaitbar; waitbar(num/files_no,wb); end
+        if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=num/files_no; else; waitbar(num/files_no,wb); end; end
     end
 else
     error('Error: wrong saving type, use ''5D'' or ''2D''');
 end
 
-if options.showWaitbar; waitbar(1); end
+if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=1; else; waitbar(1,wb); end; end
 disp(['image2tiff: ' options.SliceName{1} ' was/were created!']);
-if options.showWaitbar; delete(wb); end
-set(0, 'DefaulttextInterpreter', curInt); 
+if ~isempty(wb)
+    if ~isa(wb, 'matlab.ui.dialog.ProgressDialog'); set(0, 'DefaulttextInterpreter', curInt); end
+    delete(wb);
+end
 result = 1;
 end
 
-% supporting function to generate sequential filenames
-function fn = generateSequentialFilename(name, num, files_no)
-% name - a filename template
-% num - sequential number to generate
-% files_no - total number of files in sequence
-if files_no == 1
-    fn = [name '.ome.tiff'];
-elseif files_no < 100
-    fn = [name '_' sprintf('%02i',num) '.ome.tiff'];
-elseif files_no < 1000
-    fn = [name '_' sprintf('%03i',num) '.ome.tiff'];
-elseif files_no < 10000
-    fn = [name '_' sprintf('%04i',num) '.ome.tiff'];
-elseif files_no < 100000
-    fn = [name '_' sprintf('%05i',num) '.ome.tiff'];
-elseif files_no < 1000000
-    fn = [name '_' sprintf('%06i',num) '.ome.tiff'];
-elseif files_no < 10000000
-    fn = [name '_' sprintf('%07i',num) '.ome.tiff'];    
-end
-end

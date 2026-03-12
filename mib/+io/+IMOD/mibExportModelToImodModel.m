@@ -34,7 +34,12 @@ function [Model, selection] = mibExportModelToImodModel(O, Options)
 %  - .colorList -  a matrix with colors for the materials as [materialId][Red, Green, Blue], (0-1)
 %  - .ModelMaterialNames - a cell array with names of materials
 %  - .generateSelectionSw - when @b 1 generate the 'Selection layer' with contour points
-%  - .showWaitbar - if @b 1 - show the wait bar, if @b 0 - do not show
+%  - .showWaitbar   — if @b 1 - show the wait bar, if @b 0 - do not show
+%  - .ParentFigure  — [@em optional] handle to the main MIB application window.
+%                     When provided, the progress bar is rendered as a
+%                     uiprogressdlg attached to that window (recommended for
+%                     GUI use).  When absent or empty the legacy waitbar is
+%                     used as a fallback.
 %
 % Return values:
 % Model: -> IMOD model object
@@ -42,14 +47,29 @@ function [Model, selection] = mibExportModelToImodModel(O, Options)
 %
 % Example:
 %   @code
-%   savingOptions.modelFilename      = '/output/Labels.mod';
-%   savingOptions.pixSize            = dataset.pixSize;
-%   savingOptions.xyScaleFactor      = 5;
-%   savingOptions.zScaleFactor       = 1;
-%   savingOptions.colorList          = labels.materialColors;
-%   savingOptions.ModelMaterialNames = labels.materialNames;
+%   %% Standalone / scripted use (no GUI parent):
+%   savingOptions.modelFilename       = '/output/Labels.mod';
+%   savingOptions.pixSize             = dataset.pixSize;
+%   savingOptions.xyScaleFactor       = 5;
+%   savingOptions.zScaleFactor        = 1;
+%   savingOptions.colorList           = labels.materialColors;
+%   savingOptions.ModelMaterialNames  = labels.materialNames;
 %   savingOptions.generateSelectionSw = false;
-%   savingOptions.showWaitbar        = false;
+%   savingOptions.showWaitbar         = false;
+%   io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
+%   @endcode
+%
+%   @code
+%   %% GUI use — attach progress dialog to the MIB window:
+%   savingOptions.modelFilename       = '/output/Labels.mod';
+%   savingOptions.pixSize             = dataset.pixSize;
+%   savingOptions.xyScaleFactor       = 5;
+%   savingOptions.zScaleFactor        = 1;
+%   savingOptions.colorList           = labels.materialColors;
+%   savingOptions.ModelMaterialNames  = labels.materialNames;
+%   savingOptions.generateSelectionSw = false;
+%   savingOptions.showWaitbar         = true;
+%   savingOptions.ParentFigure        = obj.mibModel.mibGUI;   % uiprogressdlg parent
 %   io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
 %   @endcode
 
@@ -79,12 +99,19 @@ Model = setZScale(Model, Options.pixSize.z/Options.pixSize.x);
 Objects = unique(O);
 Objects(Objects==0) = [];
 noObjects = numel(Objects);
+wb = [];
 if Options.showWaitbar
-    curInt = get(0, 'DefaulttextInterpreter');
-    set(0, 'DefaulttextInterpreter', 'none');
-    wb = waitbar(0,sprintf('%s\nPlease wait...',modelFilename),'Name','Saving contours to IMOD model...','WindowStyle','modal');
-    set(findall(wb,'type','text'),'Interpreter','none');
-    waitbar(0, wb);
+    if isfield(Options, 'ParentFigure') && ~isempty(Options.ParentFigure)
+        try
+            wb = uiprogressdlg(Options.ParentFigure, 'Title', 'Saving contours to IMOD model...', ...
+                'Message', sprintf('%s\nPlease wait...', modelFilename));
+        catch; wb = []; end
+    else
+        curInt = get(0, 'DefaulttextInterpreter');
+        set(0, 'DefaulttextInterpreter', 'none');
+        wb = waitbar(0, sprintf('%s\nPlease wait...', modelFilename), 'Name', 'Saving contours to IMOD model...', 'WindowStyle', 'modal');
+        set(findall(wb,'type','text'), 'Interpreter', 'none');
+    end
 end
 
 noOfProvidedColor = size(Options.colorList, 1);
@@ -140,12 +167,12 @@ for objectLoop=1:noObjects
         end
     end
     Model = appendObject(Model, imodObject);
-    if Options.showWaitbar; waitbar(objectLoop/noObjects,wb); end
+    if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=objectLoop/noObjects; else; waitbar(objectLoop/noObjects,wb); end; end
 end
 write(Model, Options.modelFilename);
 selection = permute(selection, [2 1 3]);
-if Options.showWaitbar
+if ~isempty(wb)
+    if ~isa(wb, 'matlab.ui.dialog.ProgressDialog'); set(0, 'DefaulttextInterpreter', curInt); end
     delete(wb);
-    set(0, 'DefaulttextInterpreter', curInt);
 end
 end

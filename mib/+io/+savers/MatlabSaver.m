@@ -118,6 +118,7 @@ classdef MatlabSaver < io.savers.BaseSaver
         function obj = MatlabSaver(options)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -178,15 +179,13 @@ classdef MatlabSaver < io.savers.BaseSaver
             fnOut = [];
             wb = [];
             if options.showWaitbar
-                wb = waitbar(0, filename, 'Name', 'Saving mask', 'WindowStyle', 'modal');
-                wb.Children.Title.Interpreter = 'none';
-                drawnow;
+                wb = obj.createProgressDialog('Saving mask', filename, false);
             end
             % Pack into struct so save('-struct') writes top-level variable
             vars.maskImg = logical(squeeze(data(:,:,:,1,1)));
-            if ~isempty(wb); waitbar(0.4, wb); end
+            if ~isempty(wb); wb.Value = 0.4; end
             save(filename, '-struct', 'vars', '-v7.3');
-            if ~isempty(wb); waitbar(1, wb); delete(wb); end
+            if ~isempty(wb); wb.Value = 1; delete(wb); end
             fnOut = filename;
             fprintf('MatlabSaver: mask saved → %s\n', filename);
         end
@@ -211,10 +210,7 @@ classdef MatlabSaver < io.savers.BaseSaver
             wb = [];
             if options.showWaitbar
                 [~, fn, ex] = fileparts(filename);
-                wb = waitbar(0, sprintf('%s\n%s', fileparts(filename), [fn ex]), ...
-                    'Name', 'Saving model', 'WindowStyle', 'modal');
-                wb.Children.Title.Interpreter = 'none';
-                drawnow;
+                wb = obj.createProgressDialog('Saving model', sprintf('%s\n%s', fileparts(filename), [fn ex]), false);
             end
 
             % Build a struct whose fields become top-level MAT variables
@@ -225,7 +221,7 @@ classdef MatlabSaver < io.savers.BaseSaver
             vars.modelVariable          = labVar;
             vars.modelType              = obj.getModelType(metadata);
 
-            if ~isempty(wb); waitbar(0.4, wb); end
+            if ~isempty(wb); wb.Value = 0.4; end
 
             if isfield(metadata,'annotations') && ~isempty(metadata.annotations)
                 ann = metadata.annotations;
@@ -235,7 +231,7 @@ classdef MatlabSaver < io.savers.BaseSaver
             end
             save(filename, '-struct', 'vars', '-mat', '-v7.3');
 
-            if ~isempty(wb); waitbar(1, wb); delete(wb); end
+            if ~isempty(wb); wb.Value = 1; delete(wb); end
             fnOut = filename;
             fprintf('MatlabSaver: model saved → %s\n', filename);
         end
@@ -271,16 +267,14 @@ classdef MatlabSaver < io.savers.BaseSaver
 
             wb = [];
             if options.showWaitbar
-                wb = waitbar(0, 'Saving 2D model sequence…', ...
-                    'Name', 'Saving model', 'WindowStyle', 'modal');
-                wb.Children.Title.Interpreter = 'none';
+                wb = obj.createProgressDialog('Saving model', 'Saving 2D model sequence...', false);
             end
 
             for z = 1:nZ
                 vars          = sharedVars;
                 vars.(labVar) = squeeze(data(:,:,z,1,1));
                 save(sliceNames{z}, '-struct', 'vars', '-mat', '-v7.3');
-                if ~isempty(wb); waitbar(z/nZ, wb); end
+                if ~isempty(wb); wb.Value = z/nZ; end
             end
             if ~isempty(wb); delete(wb); end
             fnOut = sliceNames;
@@ -357,8 +351,7 @@ classdef MatlabSaver < io.savers.BaseSaver
 
                 wb = [];
                 if options.showWaitbar
-                    wb = waitbar(0, 'Saving categorical sequence…', ...
-                        'Name', 'Saving model', 'WindowStyle', 'modal');
+                    wb = obj.createProgressDialog('Saving model', 'Saving categorical sequence...', false);
                 end
                 for z = 1:nZ
                     vars.imgOut      = categorical(squeeze(data(:,:,z,1,1)), ...
@@ -366,7 +359,7 @@ classdef MatlabSaver < io.savers.BaseSaver
                     vars.imgVariable = 'imgOut';
                     vars.catOptions  = catOptions;
                     save(sliceNames{z}, '-struct', 'vars', '-mat', '-v7.3');
-                    if ~isempty(wb); waitbar(z/nZ, wb); end
+                    if ~isempty(wb); wb.Value = z/nZ; end
                 end
                 if ~isempty(wb); delete(wb); end
                 fnOut = sliceNames;

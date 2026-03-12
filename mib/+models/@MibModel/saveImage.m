@@ -242,9 +242,11 @@ else
         if isfield(BatchOptIn,'Format')
             saveOpts.Format = BatchOptIn.Format;
         end
-        saveOpts.silent      = false;
-        saveOpts.showWaitbar = true;
-        saveOpts.overwrite   = true;
+        saveOpts.silent       = false;
+        saveOpts.showWaitbar  = true;
+        saveOpts.overwrite    = true;
+        saveOpts.ParentFigure = obj.mibGUI;
+        saveOpts.mibPath      = obj.mibPath;
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
     else
         % No filename → show a save-file dialog so the user can choose
@@ -281,10 +283,12 @@ else
         end
 
         filename = fullfile(fpath, fname);
-        saveOpts.Format      = io.SaverFactory.getDefaultFormat(layerType, filename);
-        saveOpts.silent      = false;
-        saveOpts.showWaitbar = true;
-        saveOpts.overwrite   = true;
+        saveOpts.Format       = io.SaverFactory.getDefaultFormat(layerType, filename);
+        saveOpts.silent       = false;
+        saveOpts.showWaitbar  = true;
+        saveOpts.overwrite    = true;
+        saveOpts.ParentFigure = obj.mibGUI;
+        saveOpts.mibPath      = obj.mibPath;
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
     end
     return;
@@ -300,6 +304,8 @@ if ~isfield(BatchOptIn, 'mibBatchTooltip')
     saveOpts.Format       = BatchOpt.Format{1};
     saveOpts.showWaitbar  = BatchOpt.showWaitbar;
     saveOpts.overwrite    = true;
+    saveOpts.ParentFigure = obj.mibGUI;
+    saveOpts.mibPath      = obj.mibPath;
     if isfield(BatchOpt,'MaterialIndex') && ~isempty(BatchOpt.MaterialIndex)
         materialIndex = str2double(BatchOpt.MaterialIndex);
         if ~isnan(materialIndex); saveOpts.MaterialIndex = materialIndex; end
@@ -372,6 +378,8 @@ saveOpts.FilenamePolicy    = BatchOpt.FilenamePolicy{1};
 saveOpts.showWaitbar       = BatchOpt.showWaitbar;
 saveOpts.silent            = true;   % batch mode → no interactive dialogs
 saveOpts.overwrite         = true;
+saveOpts.ParentFigure      = obj.mibGUI;
+saveOpts.mibPath           = obj.mibPath;
 
 % Parse MaterialIndex from string (batch controller stores it as char)
 if isfield(BatchOpt,'MaterialIndex') && ~isempty(BatchOpt.MaterialIndex)

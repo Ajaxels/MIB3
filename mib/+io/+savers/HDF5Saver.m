@@ -112,6 +112,7 @@ classdef HDF5Saver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -211,6 +212,7 @@ classdef HDF5Saver < io.savers.BaseSaver
             HDFoptions.showWaitbar  = options.showWaitbar;
             HDFoptions.overwrite    = options.overwrite;
             HDFoptions.layerType    = options.layerType;
+            HDFoptions.ParentFigure = obj.ParentFigure;
 
             % Pixel size
             if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)

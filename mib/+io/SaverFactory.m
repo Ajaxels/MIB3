@@ -28,6 +28,12 @@ classdef SaverFactory
     %   saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
     %   fnOut = saver.save(data, metadata, '/tmp/out.tif', options);
     %
+    %   % Direct factory use from GUI context — pass ParentFigure/mibPath
+    %   % so that uiprogressdlg attaches to the MIB window:
+    %   ctorOpts.ParentFigure = obj.mibModel.mibGUI;
+    %   ctorOpts.mibPath      = obj.mibModel.mibPath;
+    %   saver = io.SaverFactory.create('Amira Mesh binary (*.am)', ctorOpts);
+    %
     %   % List all formats available for a given layer type:
     %   imageFormats  = io.SaverFactory.getFormats('image');
     %   maskFormats   = io.SaverFactory.getFormats('mask');
@@ -50,9 +56,17 @@ classdef SaverFactory
             %               'Amira mesh binary (*.am)'
             %               'Matlab format (*.model)'
             %               See getFormats() for the complete list.
-            %   options   — (struct, optional) passed to the saver constructor.
-            %               Typically empty; saver-specific options are passed
-            %               at save() time instead.
+            %   options   — (struct, optional) passed to the saver constructor
+            %               via BaseSaver.initBaseProps().  The two most
+            %               important fields to include when calling from a
+            %               GUI context are:
+            %     .ParentFigure — handle to the main MIB window; enables
+            %                     uiprogressdlg dialogs attached to the GUI
+            %                     (set from obj.mibGUI in MibModel).
+            %                     Leave empty or omit for standalone/scripted use.
+            %     .mibPath      — (char) MIB installation directory; used for
+            %                     resource and icon lookup by dialogs.
+            %               All other options are typically passed at save() time.
             %
             % Return values:
             %   saver — concrete BaseSaver subclass instance
@@ -62,7 +76,7 @@ classdef SaverFactory
             %
             % Example:
             %   @code
-            %   % Create a TIFF saver and use it directly
+            %   %% 1. Standalone scripted use — no GUI parent needed
             %   saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
             %   opts.Format         = 'TIF format uncompressed (*.tif)';
             %   opts.Saving3DPolicy = '3D stack';
@@ -82,7 +96,33 @@ classdef SaverFactory
             %   @endcode
             %
             %   @code
-            %   % Save a segmentation model in native MIB format
+            %   %% 2. GUI context — pass ParentFigure and mibPath so that
+            %   %      progress dialogs attach to the MIB window and icons
+            %   %      load correctly.  Typically called from a controller:
+            %   ctorOpts.ParentFigure = obj.mibModel.mibGUI;
+            %   ctorOpts.mibPath      = obj.mibModel.mibPath;
+            %   saver = io.SaverFactory.create('Amira Mesh binary (*.am)', ctorOpts);
+            %
+            %   opts.Format         = 'Amira Mesh binary (*.am)';
+            %   opts.Saving3DPolicy = '3D stack';
+            %   opts.showWaitbar    = true;
+            %   opts.silent         = true;
+            %   opts.overwrite      = true;
+            %   opts.ParentFigure   = obj.mibModel.mibGUI;
+            %   opts.mibPath        = obj.mibModel.mibPath;
+            %   opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+            %   meta.filename  = 'source.tif';
+            %   meta.colorType = 'grayscale';
+            %   meta.lutColors = [1 0 0];
+            %   meta.dataClass = 'uint8';
+            %   meta.maxInt    = 255;
+            %   meta.sliceName = {};
+            %   data = uint8(rand(128,128,20,1,1)*255);
+            %   fnOut = saver.save(data, meta, '/tmp/stack.am', opts);
+            %   @endcode
+            %
+            %   @code
+            %   %% 3. Save a segmentation model in native MIB format
             %   saver = io.SaverFactory.create('Matlab format (*.model)');
             %   opts.Format      = 'Matlab format (*.model)';
             %   opts.showWaitbar = false;
@@ -103,14 +143,14 @@ classdef SaverFactory
             % Build the registry once and look up the saver class name
             registry = io.SaverFactory.buildRegistry();
 
-            if ~isKey(registry, formatStr)
+            if ~isKey(registry, string(formatStr))
                 error('io:SaverFactory:UnknownFormat', ...
                     ['Unknown format: "%s".\n' ...
                     'Call io.SaverFactory.getFormats() to see valid options.'], ...
                     formatStr);
             end
 
-            saverClass = registry(formatStr);
+            saverClass = char(registry(string(formatStr)));
 
             % Instantiate by class name string
             saver = feval(saverClass, options);
@@ -342,67 +382,67 @@ classdef SaverFactory
 
         function registry = buildRegistry()
             % function registry = buildRegistry()
-            % Build the format-string → saver-class-name map.
+            % Build the format-string → saver-class-name dictionary.
             %
-            % The registry is a containers.Map.  Using class-name strings
-            % (rather than class handles) avoids loading every saver class
-            % at start-up.
+            % The registry is a MATLAB dictionary (string→string).
+            % Using class-name strings (rather than class handles) avoids
+            % loading every saver class at start-up.
             %
             % To add a new saver:
             %   1. Create mib/+io/+savers/MyFormatSaver.m
             %   2. Add an entry here:
-            %      registry('My format (*.xyz)') = 'io.savers.MyFormatSaver';
+            %      registry("My format (*.xyz)") = "io.savers.MyFormatSaver";
             %   3. Add the format string to getFormats() above.
 
-            registry = containers.Map('KeyType','char','ValueType','char');
+            registry = configureDictionary("string", "string");
 
             % ---- TIFF -------------------------------------------------- %
-            registry('TIF format uncompressed (*.tif)')   = 'io.savers.TiffSaver';
-            registry('TIF format LZW compression (*.tif)') = 'io.savers.TiffSaver';
-            registry('TIF format (*.tif)')                = 'io.savers.TiffSaver'; % mask/labels variant
+            registry("TIF format uncompressed (*.tif)")    = "io.savers.TiffSaver";
+            registry("TIF format LZW compression (*.tif)") = "io.savers.TiffSaver";
+            registry("TIF format (*.tif)")                 = "io.savers.TiffSaver"; % mask/labels variant
 
             % ---- PNG --------------------------------------------------- %
-            registry('Portable Network Graphics (*.png)') = 'io.savers.PngSaver';
-            registry('PNG format (*.png)')                = 'io.savers.PngSaver';  % mask/labels variant
+            registry("Portable Network Graphics (*.png)") = "io.savers.PngSaver";
+            registry("PNG format (*.png)")                = "io.savers.PngSaver";  % mask/labels variant
 
             % ---- JPEG -------------------------------------------------- %
-            registry('Joint Photographic Experts Group (*.jpg)') = 'io.savers.JpgSaver';
+            registry("Joint Photographic Experts Group (*.jpg)") = "io.savers.JpgSaver";
 
             % ---- Matlab native formats ---------------------------------- %
-            registry('Matlab format (*.model)')            = 'io.savers.MatlabSaver';
-            registry('Matlab format 2D sequence (*.model)') = 'io.savers.MatlabSaver';
-            registry('Matlab format for MIB ver. 1 (*.mat)') = 'io.savers.MatlabSaver';
-            registry('Matlab categorical format (*.mibCat)') = 'io.savers.MatlabSaver';
-            registry('Matlab format (*.mask)')             = 'io.savers.MatlabSaver';
+            registry("Matlab format (*.model)")             = "io.savers.MatlabSaver";
+            registry("Matlab format 2D sequence (*.model)") = "io.savers.MatlabSaver";
+            registry("Matlab format for MIB ver. 1 (*.mat)") = "io.savers.MatlabSaver";
+            registry("Matlab categorical format (*.mibCat)") = "io.savers.MatlabSaver";
+            registry("Matlab format (*.mask)")              = "io.savers.MatlabSaver";
 
             % ---- HDF5 -------------------------------------------------- %
-            registry('Hierarchical Data Format (*.h5)')              = 'io.savers.HDF5Saver';
-            registry('Hierarchical Data Format with XML header (*.xml)') = 'io.savers.HDF5Saver';
+            registry("Hierarchical Data Format (*.h5)")               = "io.savers.HDF5Saver";
+            registry("Hierarchical Data Format with XML header (*.xml)") = "io.savers.HDF5Saver";
 
             % ---- Amira Mesh -------------------------------------------- %
-            registry('Amira Mesh binary (*.am)')                        = 'io.savers.AmiraMeshSaver';
-            registry('Amira Mesh binary file sequence (*.am)')          = 'io.savers.AmiraMeshSaver';
-            registry('Amira mesh binary (*.am)')                        = 'io.savers.AmiraMeshSaver';
-            registry('Amira mesh binary RLE compression SLOW (*.am)')   = 'io.savers.AmiraMeshSaver';
-            registry('Amira mesh ascii (*.am)')                         = 'io.savers.AmiraMeshSaver';
+            registry("Amira Mesh binary (*.am)")                       = "io.savers.AmiraMeshSaver";
+            registry("Amira Mesh binary file sequence (*.am)")         = "io.savers.AmiraMeshSaver";
+            registry("Amira mesh binary (*.am)")                       = "io.savers.AmiraMeshSaver";
+            registry("Amira mesh binary RLE compression SLOW (*.am)")  = "io.savers.AmiraMeshSaver";
+            registry("Amira mesh ascii (*.am)")                        = "io.savers.AmiraMeshSaver";
 
             % ---- NRRD -------------------------------------------------- %
-            registry('NRRD Data Format (*.nrrd)')  = 'io.savers.NrrdSaver';
-            registry('NRRD for 3D Slicer (*.nrrd)') = 'io.savers.NrrdSaver';
+            registry("NRRD Data Format (*.nrrd)")   = "io.savers.NrrdSaver";
+            registry("NRRD for 3D Slicer (*.nrrd)") = "io.savers.NrrdSaver";
 
             % ---- IMOD MRC ---------------------------------------------- %
-            registry('MRC format for IMOD (*.mrc)') = 'io.savers.MrcSaver';
-            registry('Volume for IMOD (*.mrc)')      = 'io.savers.MrcSaver';
+            registry("MRC format for IMOD (*.mrc)") = "io.savers.MrcSaver";
+            registry("Volume for IMOD (*.mrc)")      = "io.savers.MrcSaver";
 
             % ---- OME-TIFF ---------------------------------------------- %
-            registry('OME-TIFF 5D (*.ome.tiff)')          = 'io.savers.OmeTiffSaver';
-            registry('OME-TIFF 2D sequence (*.ome.tiff)') = 'io.savers.OmeTiffSaver';
+            registry("OME-TIFF 5D (*.ome.tiff)")          = "io.savers.OmeTiffSaver";
+            registry("OME-TIFF 2D sequence (*.ome.tiff)") = "io.savers.OmeTiffSaver";
 
             % ---- IMOD Contours ----------------------------------------- %
-            registry('Contours for IMOD (*.mod)') = 'io.savers.ImodContourSaver';
+            registry("Contours for IMOD (*.mod)") = "io.savers.ImodContourSaver";
 
             % ---- STL isosurface ---------------------------------------- %
-            registry('Isosurface as binary STL (*.stl)') = 'io.savers.StlSaver';
+            registry("Isosurface as binary STL (*.stl)") = "io.savers.StlSaver";
         end
 
     end  % private static methods

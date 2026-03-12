@@ -58,6 +58,7 @@ classdef BioFormatsVirtualSetupLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
             obj.innerLoader = io.loaders.BioFormatsStdLoader(options);
         end
 

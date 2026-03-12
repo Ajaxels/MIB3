@@ -119,3 +119,9 @@ Factory pattern for image loading:
 - `.asv` files are MATLAB autosave backups — ignore them.
 - Pixel/voxel size is stored in `MibDataset.pixSize` struct with fields `.x .y .z .t .units .tunits`.
 - Image orientation: `3` = XY plane (default), `1` = ZX plane, `2` = ZY plane.
+
+## MATLAB Coding Rules
+- Always use `dictionary` instead of `containers.Map` for key-value storage.
+  - Use `dictionary(keys, values)` syntax for initialization.
+  - Use `isKey(d, key)` and `d(key)` for lookups.
+  - `dictionary` is the modern replacement (R2022b+) and supports type inference.

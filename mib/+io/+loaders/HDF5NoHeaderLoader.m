@@ -42,6 +42,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
             if nargin < 1; options = struct(); end
             obj.Options = obj.mergeOptions(obj.Options, options);
+            obj.initBaseProps(options);
 
         end
 
@@ -100,10 +101,10 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Metadata import',...
-                    'Message', sprintf('Loading HDF5 metadata\n(press Cancel when metadata is the same for all files)'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Metadata import', ...
+                    sprintf('Loading HDF5 metadata\n(press Cancel when metadata is the same for all files)'), true);
             end
 
             % Pre-allocate files structure
@@ -119,7 +120,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.HDF5NoHeaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.HDF5NoHeaderLoader');
@@ -128,7 +129,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};
@@ -151,7 +152,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 [files(fnIndex).seriesName, metadatasw, dim_yxzct, transMatrix] = controller.run();
                 if strcmp(files(fnIndex).seriesName, 'Cancel')
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                 end
                 pause(0.1);
@@ -169,7 +170,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 try
                    infoHDF5 = h5info(files(fnIndex).filename, files(fnIndex).seriesName);
                 catch err
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error getting HDF5 info:\n%s', err.message), 'HDF5 Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                     imginfo = dictionary();
@@ -277,7 +278,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                  if fnIndex == 1
                      imginfo{"ColorType"} = currentColorType;
                  elseif ~strcmp(imginfo{"ColorType"}, currentColorType)
-                      if options.waitbar; delete(wb); end
+                      if ~isempty(wb); delete(wb); end
                       utils.dlgs.showErrorDialog(options.ParentFigure, ...
                           'Files have dissimilar ColorType', 'Mixed colors', 'Error in io.loaders.HDF5NoHeaderLoader');
                       imginfo = dictionary();
@@ -289,7 +290,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                  end
 
                  % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/5)) == 0; wb.Value = fnIndex/noFiles; end
                 end
             end
@@ -299,7 +300,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if options.waitbar; delete(wb); end
+                    if ~isempty(wb); delete(wb); end
                     return;
                 end
             end
@@ -310,7 +311,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if options.waitbar; delete(wb); end
+            if ~isempty(wb); delete(wb); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -370,15 +371,15 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
              % Initialize uiprogressdlg
+            wb = [];
             if options.waitbar
-                wb = uiprogressdlg(options.ParentFigure, 'Title', 'Loading HDF5 images...',...
-                    'Message', sprintf('Please wait...'), ...
-                    'Cancelable', 'on');
+                wb = obj.createProgressDialog('Loading HDF5 images...', ...
+                    sprintf('Please wait...'), true);
             end
-            
+
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if options.waitbar && wb.CancelRequested
+                if ~isempty(wb) && wb.CancelRequested
                     delete(wb);
                     img = [];
                     return;
@@ -394,7 +395,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 try
                      hdf5image = h5read(files(fnIndex).filename, files(fnIndex).seriesName);
                 catch err
-                     if options.waitbar; delete(wb); end
+                     if ~isempty(wb); delete(wb); end
                      utils.dlgs.showErrorDialog(options.ParentFigure, ...
                          sprintf('Error loading HDF5 file:\n%s', err.message), 'HDF5 Error', 'Error in io.loaders.HDF5NoHeaderLoader');
                      img = [];
@@ -403,7 +404,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
                 % Check numerical
                 if iscell(hdf5image)
-                     if options.waitbar; delete(wb); end
+                     if ~isempty(wb); delete(wb); end
                      assignin('base', 'hdf5image', hdf5image);
                      utils.dlgs.showErrorDialog(options.ParentFigure, ...
                          'Cannot read this dataset! Exported to MATLAB workspace as "hdf5image".', 'Error', 'Error in io.loaders.HDF5NoHeaderLoader');
@@ -449,7 +450,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 clear hdf5image;
 
                  % Update waitbar
-                if options.waitbar
+                if ~isempty(wb)
                     if mod(layerId, waitbarUpdateFrequency) == 0
                         wb.Value = layerId / maxZ;
                     end
@@ -458,7 +459,7 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 layerId = layerId + files(fnIndex).noLayers;
             end
 
-             if options.waitbar; delete(wb); end
+             if ~isempty(wb); delete(wb); end
 
              % Finalize
              imginfo{'Height'} = height;

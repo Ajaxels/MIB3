@@ -123,6 +123,7 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             %             per-save options are passed to save() instead)
             if nargin < 1; options = struct(); end
             obj.Options = options;
+            obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
@@ -175,7 +176,7 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             if ~isfield(options, 'Format');      options.Format      = 'Amira Mesh binary (*.am)'; end
 
             % --- decompose filename ---
-            [pathStr, baseName, ext] = obj.splitFilename(filename);
+            [pathStr, baseName, ext] = obj.splitFilename(filename); % split the filename and make lower(extension)
             if isempty(ext); ext = '.am'; end
             if isempty(pathStr); pathStr = pwd; end
             if exist(pathStr, 'dir') ~= 7; mkdir(pathStr); end
@@ -204,10 +205,11 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                     metaMap("lutColors") = {metadata.lutColors};
                 end
 
-                savingOptions.overwrite   = options.overwrite;
-                savingOptions.showWaitbar = options.showWaitbar;
-                savingOptions.compression = compressionStr;
-                savingOptions.Saving3d    = 'multi';
+                savingOptions.overwrite     = options.overwrite;
+                savingOptions.showWaitbar   = options.showWaitbar;
+                savingOptions.compression   = compressionStr;
+                savingOptions.Saving3d      = 'multi';
+                savingOptions.ParentFigure  = obj.ParentFigure;
                 if contains(options.Format, 'sequence', 'IgnoreCase', true)
                     savingOptions.Saving3d = 'sequence';
                 end
@@ -249,8 +251,9 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                     materialNames = {'Material 1'};
                 end
 
-                extraOptions.overwrite   = options.overwrite;
-                extraOptions.silent      = options.silent;
+                extraOptions.overwrite      = options.overwrite;
+                extraOptions.silent         = options.silent;
+                extraOptions.ParentFigure   = obj.ParentFigure;
 
                 % TODO: port bitmap2amiraLabels from
                 %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraLabels.m
@@ -271,7 +274,7 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             end
 
             fnOut = fullFilepath;
-            fprintf('AmiraMeshSaver: saved → %s\n', fullFilepath);
+            %fprintf('AmiraMeshSaver: saved → %s\n', fullFilepath);
         end
 
     end
