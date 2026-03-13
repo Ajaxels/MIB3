@@ -40,14 +40,14 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
 
     % init meta as empty dictionary
     if isempty(meta)
-        meta = utils.defaults.initializeImgInfo(); 
+        meta = core.MibImage.initializeImgInfo();
     else
-        % update meta dictionary
-        metaDefault = utils.defaults.initializeImgInfo(); 
+        % update meta dictionary, filling any missing keys with defaults
+        metaDefault = core.MibImage.initializeImgInfo();
         meta = utils.concatenateDictionaries(metaDefault, meta);
     end
-    
-    % close open bio-format readers, otherwise the files locked 
+
+    % close open bio-format readers, otherwise the files locked
     if ~isempty(obj.datasetType) && obj.datasetType(1)=='V'; obj.closeVirtualDataset();  end  
 
     % reset the state of the main layers
@@ -168,10 +168,10 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     obj.useLUT = false;
                         
     % update additional properties
-    obj.pixSize = meta{'pixSize'};
-    obj.dim_yxzct = obj.image.dim_yxzct;
-
-    % update bounding box
-    [obj.boundingBox, obj.actionLog] = obj.imageDescriptionToBoundingBoxAndLog(meta{'ImageDescription'});
+    obj.pixSize    = meta{'pixSize'};
+    obj.dim_yxzct  = obj.image.dim_yxzct;
+    % boundingBox and actionLog are owned by obj.image (core.MibImage).
+    % They are parsed from meta{'ImageDescription'} inside MibImage.initialize()
+    % and accessed here as obj.image.boundingBox / obj.image.actionLog.
 
 end

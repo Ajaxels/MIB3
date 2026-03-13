@@ -192,8 +192,11 @@ resolution = utils.calculateResolution(options.pixSize);
 metadata.xResolution = resolution(1);
 metadata.yResolution = resolution(2);
 
-% image description tag
-metadata.imageDescription = '';
+% Reconstruct the full ImageDescription tag (BoundingBox + action log)
+% and expose the bounding box as a separate numeric field so that savers
+% that need it (AmiraMesh, HDF5, NRRD, …) do not have to re-parse the string.
+metadata.imageDescription = core.MibImage.buildImageDescription(obj.boundingBox, obj.actionLog);
+metadata.boundingBox      = obj.boundingBox;
 
 % colormap for indexed images
 if isfield(obj,'colormap') && ~isempty(obj.colormap)

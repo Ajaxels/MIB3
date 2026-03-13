@@ -18,9 +18,10 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
-    case 'Copy slice...'              % obj.handles.ribbonDataset.scalebar
-    case 'Insert empty slice(s)...'                 % obj.handles.ribbonDataset.boundingbox
-    case 'Interval slicing...'              % obj.handles.ribbonDataset.voxels
+    case 'scalebar'              % obj.handles.ribbonDataset.scalebar
+    case 'boundingbox'           % obj.handles.ribbonDataset.boundingbox
+    case 'Voxels'                % obj.handles.ribbonDataset.voxels
+        obj.updateVoxelSizes();
 end
 
 

@@ -190,19 +190,56 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 
             if isImageMode
                 % Build metadata dictionary for bitmap2amiraMesh.
-                % Data is passed in MIB3 native order [H, W, D, C, T], first T only.
+                % All fields end up in the im_browser {} section of the AM header,
+                % making the file self-describing (matches MIB2 output format).
+                % Data is in MIB3 native order [H, W, D, C, T]; only first T is written.
+                [nH, nW, nD, nC, nT] = size(data);
                 metaMap = configureDictionary("string", "cell");
+
+                % --- physical metadata ---
                 if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
                     metaMap("pixSize") = {metadata.pixSize};
                 end
                 if isfield(metadata, 'boundingBox') && ~isempty(metadata.boundingBox)
                     metaMap("BoundingBox") = {metadata.boundingBox};
                 end
+
+                % --- full ImageDescription (BoundingBox prefix + action log) ---
+                if isfield(metadata, 'imageDescription')
+                    metaMap("ImageDescription") = {metadata.imageDescription};
+                end
+
+                % --- image properties ---
                 if isfield(metadata, 'colorType')
-                    metaMap("colorType") = {metadata.colorType};
+                    metaMap("ColorType") = {metadata.colorType};
                 end
                 if isfield(metadata, 'lutColors')
                     metaMap("lutColors") = {metadata.lutColors};
+                end
+                if isfield(metadata, 'maxInt')
+                    metaMap("MaxInt") = {metadata.maxInt};
+                end
+                if isfield(metadata, 'dataClass') && ~isempty(metadata.dataClass)
+                    metaMap("imgClass") = {metadata.dataClass};
+                end
+
+                % --- dimensions ---
+                metaMap("Height") = {nH};
+                metaMap("Width")  = {nW};
+                metaMap("Depth")  = {nD};
+                metaMap("Colors") = {nC};
+                metaMap("Time")   = {nT};
+
+                % --- file origin ---
+                if isfield(metadata, 'filename') && ~isempty(metadata.filename)
+                    metaMap("Filename") = {metadata.filename};
+                end
+
+                % --- resolution tags (from pixSize, as stored in TIFF XResolution) ---
+                if isfield(metadata, 'xResolution') && ~isempty(metadata.xResolution)
+                    metaMap("XResolution")   = {metadata.xResolution};
+                    metaMap("YResolution")   = {metadata.yResolution};
+                    metaMap("ResolutionUnit") = {"Inch"};
                 end
 
                 savingOptions.overwrite     = options.overwrite;

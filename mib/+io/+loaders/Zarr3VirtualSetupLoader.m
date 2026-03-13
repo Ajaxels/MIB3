@@ -103,7 +103,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
             %     info{"Height"}, info{"Width"}, info{"Depth"});
             % @endcode
 
-            imginfo  = utils.defaults.initializeImgInfo();
+            imginfo  = core.MibImage.initializeImgInfo();
             rootPath = filenames{1};
 
             % ---- zarr v2 detection (local paths only) --------------------

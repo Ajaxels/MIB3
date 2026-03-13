@@ -283,13 +283,39 @@ else
         end
 
         filename = fullfile(fpath, fname);
-        saveOpts.Format       = io.SaverFactory.getDefaultFormat(layerType, filename);
+        saveOpts.Format       = filterSpec{filterIndex,2};
         saveOpts.silent       = false;
         saveOpts.showWaitbar  = true;
         saveOpts.overwrite    = true;
         saveOpts.ParentFigure = obj.mibGUI;
         saveOpts.mibPath      = obj.mibPath;
+
+        % When saving image data: prompt the user to review / update voxel sizes
+        % before the file is written (equivalent to MIB2 saveImageAsDialog ->
+        % updatePixSizeResolution() call).
+        if strcmpi(layerType, 'image')
+            ds = obj.I{BatchOpt.id};
+            dlgOpts.showDialog   = true;
+            dlgOpts.ParentFigure = obj.mibGUI;
+            dlgOpts.mibPath      = obj.mibPath;
+            dlgOpts.HelpUrl      = fullfile(obj.mibPath, ...
+                'techdoc', 'html', 'user-interface', 'menu', 'dataset', 'index.html#parameters');
+            [~, updatedPixSize, pixDlgResult] = utils.updatePixSizeAndResolution([], ds.pixSize, dlgOpts);
+            if pixDlgResult == 0; return; end   % user cancelled the voxel-size dialog
+
+            % Apply updated pixSize to the dataset and recalculate bounding box
+            ds.pixSize = updatedPixSize;
+            ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.pixSize.x;
+            ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.pixSize.y;
+            ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.pixSize.z;
+        end
+
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
+        
+        % update the list of files
+        UpdateFilelist.filename = fname;
+        eventdata = core.ToggleEventData(UpdateFilelist);
+        notify(obj, 'UpdateFileList', eventdata);
     end
     return;
 end
@@ -388,8 +414,12 @@ if isfield(BatchOpt,'MaterialIndex') && ~isempty(BatchOpt.MaterialIndex)
 end
 
 fnOut = obj.I{BatchOpt.id}.saveImage(layerType, outputFilename, saveOpts);
-
 if isempty(fnOut); notify(obj, 'StopProtocol'); end
+
+% update the list of files
+UpdateFilelist.filename = fname;
+eventdata = core.ToggleEventData(UpdateFilelist);
+notify(obj, 'UpdateFileList', eventdata);
 end
 
 % ------------------------------------------------------------------   %

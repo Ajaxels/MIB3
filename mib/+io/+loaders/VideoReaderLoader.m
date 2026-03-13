@@ -106,7 +106,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = utils.defaults.initializeImgInfo();
+            imginfo = core.MibImage.initializeImgInfo();
             pixSize = imginfo{"pixSize"}; % get default pixel size
 
             % Initialize default options

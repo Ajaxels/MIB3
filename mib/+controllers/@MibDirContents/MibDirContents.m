@@ -8,6 +8,7 @@ classdef MibDirContents
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        listeners       % cell array of listeners
         UIFigure        % handle to underlying UIFigure
     end
 
@@ -20,6 +21,8 @@ classdef MibDirContents
         fileFilters_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file filters widget (obj.handles.panels.activeDataset.handles.fileFilters)
 
         fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.activeDataset.handles.fileList)
+
+        listenerUpdateFileList(obj, src, evtData)        % Update list of files in "obj.view.handles.panels.dirContents.handles.fileList" executed upon catch of MibModel->"UpdateFilelist" event
 
         updateFileList_Callback(obj, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 
@@ -69,9 +72,12 @@ classdef MibDirContents
             obj.handles.updateFileList.ButtonPushedFcn = @(~,~)obj.updateFileList_Callback;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
+            %% Add listeners
+            obj.listeners{1} = addlistener(obj.mibModel, 'UpdateFileList', @(src, evnt) obj.listenerUpdateFileList(src, evnt)); % update GUI from the model
+
             % ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
-
+            
         end
 
     end

@@ -24,7 +24,7 @@ function result = bitmap2nrrd(filename, bitmap, bb, options)
 % Example:
 %   @code
 %   %% Standalone / scripted use (no GUI parent):
-%   bb = dataset.boundingBox;  % [xmin xmax ymin ymax zmin zmax]
+%   bb = dataset.image.boundingBox;  % [xmin xmax ymin ymax zmin zmax]
 %   opts.overwrite   = 1;
 %   opts.showWaitbar = false;
 %   io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
@@ -32,7 +32,7 @@ function result = bitmap2nrrd(filename, bitmap, bb, options)
 %
 %   @code
 %   %% GUI use — attach progress dialog to the MIB window:
-%   bb = dataset.boundingBox;
+%   bb = dataset.image.boundingBox;
 %   opts.overwrite    = 1;
 %   opts.showWaitbar  = true;
 %   opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent

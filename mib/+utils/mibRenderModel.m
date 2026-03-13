@@ -48,7 +48,7 @@ function p = mibRenderModel(Volume, Index, pixSize, boundingBox, color_list, Ima
 %   opts.smooth   = 5;
 %   opts.maxFaces = 300000;
 %   opts.slice    = 0;
-%   p = utils.mibRenderModel(modelData, NaN, dataset.pixSize, dataset.boundingBox, ...
+%   p = utils.mibRenderModel(modelData, NaN, dataset.pixSize, dataset.image.boundingBox, ...
 %       labels.materialColors, NaN, opts);
 %   for i = 1:numel(p)
 %       fv = struct('faces', p(i).Faces, 'vertices', p(i).Vertices);

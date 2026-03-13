@@ -9,14 +9,19 @@ function gui_WindowKeyPressFcn(obj, hWidget, hData)
 % Return values:
 %
 
-% Get key info directly from the UIFigure current key data
-hFigure = obj.cImageDoc{obj.mibModel.Sets.selectedSet}.UIFigure;
-char = lower(hFigure.CurrentKey);
-modifier = hFigure.CurrentModifier;  % cell array of modifier strings
+% Read key data from the event object (hData), NOT from hFigure.CurrentKey.
+% hFigure.CurrentKey is a stale cached property that retains the last key
+% pressed on that figure — even when a completely different figure fires the
+% callback (e.g. MibDirContents after a save dialog closes).  hData is
+% scoped to the exact event that triggered this invocation, so it is always
+% correct regardless of which figure is in focus.
+if isempty(hData) || ~isprop(hData, 'Key') || isempty(hData.Key); return; end
+char     = lower(hData.Key);
+modifier = hData.Modifier;  % cell array of modifier strings, e.g. {'control'}
 
 % Skip if the focused component is an edit field or text area.
-% Use hWidget (the figure that fired the event), NOT hFigure (the image
-% document panel) — CurrentObject is only set on the event-source figure.
+% Use hWidget (the figure that fired the event) — CurrentObject is only
+% set on the event-source figure.
 focusedComp = hWidget.CurrentObject;
 if ~isempty(focusedComp) && isprop(focusedComp, 'Type') && ...
         ismember(focusedComp.Type, {'uieditfield', 'uinumericeditfield', 'uitextarea', 'uispinner'})

@@ -152,7 +152,23 @@ fprintf(fid, '# AmiraMesh BINARY-LITTLE-ENDIAN 2.1\n\n\n');
 fprintf(fid, 'define Lattice %d %d %d\n\n', size(bitmap,2), size(bitmap,1), nD);
 fprintf(fid, 'Parameters {\n');
 
-% Remove keys that are written explicitly further below
+% BoundingBox: read the numeric value BEFORE removing it from img_info.
+% Priority: explicit numeric "BoundingBox" key > "ImageDescription" prefix > pixel extents.
+bb = [0 max([size(bitmap,2) 2])-1  0 max([size(bitmap,1) 2])-1  0 max([nD 2])-1];
+if isKey(img_info, "BoundingBox")
+    bbVal = img_info{"BoundingBox"};
+    if isnumeric(bbVal) && numel(bbVal) == 6
+        bb = bbVal(:)';
+    end
+elseif isKey(img_info, "ImageDescription")
+    coords = sscanf(char(img_info{"ImageDescription"}), 'BoundingBox %f %f %f %f %f %f');
+    if numel(coords) == 6
+        bb = coords(:)';
+    end
+end
+
+% Remove keys that are written explicitly further below so they are not
+% duplicated inside the im_browser {} generic field loop.
 if isKey(img_info, "Content");     img_info = remove(img_info, "Content");     end
 if isKey(img_info, "BoundingBox"); img_info = remove(img_info, "BoundingBox"); end
 if isKey(img_info, "CoordType");   img_info = remove(img_info, "CoordType");   end
@@ -235,20 +251,6 @@ else
         size(bitmap,2), size(bitmap,1), nD, imgClass);
 end
 
-% BoundingBox: try ImageDescription first, fall back to pixel extents
-bb = [0 max([size(bitmap,2) 2])-1  0 max([size(bitmap,1) 2])-1  0 max([nD 2])-1];
-if isKey(img_info, "ImageDescription")
-    imgDescCell = img_info("ImageDescription");
-    curr_text = char(imgDescCell{1});
-    bb_info_exist = strfind(curr_text, 'BoundingBox');
-    if bb_info_exist == 1
-        spaces  = strfind(curr_text, ' ');
-        if numel(spaces) < 7; spaces(7) = numel(curr_text); end
-        tab_pos = strfind(curr_text, sprintf('\t'));
-        pos = min([spaces(7) tab_pos]);
-        bb = str2num(curr_text(spaces(1):pos)); %#ok<ST2NM>
-    end
-end
 fprintf(fid, '\tBoundingBox %f %f %f %f %f %f,\n', bb(1), bb(2), bb(3), bb(4), bb(5), bb(6));
 fprintf(fid, '\tCoordType "uniform"');
 if isKey(img_info, "TransformationMatrix")

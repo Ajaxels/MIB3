@@ -22,8 +22,6 @@ classdef MibDataset < matlab.mixin.Copyable
         % handle to ROI class, @b mibRoiRegion
 
         % other properties
-        actionLog 
-        % log of actions performed with the dataset, cell array
         axesX
         % a vector [min, max] with minimal and maximal coordinates of
         % the axes X of the 'obj.mibController.cImageDoc{setId}.handles.imViewAxes' axes; use @code obj.mibModel.getAxesLimits() @endcode to read this property
@@ -34,8 +32,6 @@ classdef MibDataset < matlab.mixin.Copyable
         % path to directory where BioFormats Memoizer is storing memo files
         blockModeSwitch
         % a variable to hold a status of the block mode (mibView.handles.toolbarBlockModeSwitch), 1 - enabled, 0 - disabled
-        boundingBox
-        % bounding box of the dataset as [xmin, xmax, ymin, ymax, zmin, zmax]
         current_yxz
         % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes,
         % @note dimensions: @code [1 1 1] @endcode
@@ -138,8 +134,6 @@ classdef MibDataset < matlab.mixin.Copyable
         index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
 
         [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
-
-        [bb, logEntries] = imageDescriptionToBoundingBoxAndLog(obj, imageDescription)   % Extract bounding box and log entries from ImageDescription field
 
         moveView(obj, x, y, orient)        % Center the image view at the provided coordinates: x, y
         

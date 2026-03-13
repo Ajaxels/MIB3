@@ -79,6 +79,7 @@ classdef MibModel < handle
         StopProtocol         % stop batch protocol from execution
         SyncBatch            % synchronize structure for batch actions
         UpdateDatasetAxes    % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+        UpdateFileList       % update the list of files
         UpdateGuiWidgets     % update all widgets of the main GUI
         UpdateRecentDirsList % update the list of recent directories under Open Image button
         UpdateToolbar        % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)

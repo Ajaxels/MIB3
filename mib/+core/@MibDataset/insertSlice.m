@@ -218,11 +218,11 @@ end
 
 % ---- update bounding box ----
 if strcmp(options.dim, 'depth')
-    obj.boundingBox(6) = obj.boundingBox(5) + (obj.image.depth - 1) * obj.pixSize.z;
+    obj.image.boundingBox(6) = obj.image.boundingBox(5) + (obj.image.depth - 1) * obj.pixSize.z;
 end
 
 % ---- update action log ----
-obj.actionLog{end+1} = sprintf('Insert dataset [%dx%dx%dx%dx%d] at position %s=%d', ...
+obj.image.actionLog{end+1} = sprintf('Insert dataset [%dx%dx%dx%dx%d] at position %s=%d', ...
     D2_y, D2_x, D2_z, D2_c, D2_t, options.dim, insertPosition);
 
 if options.showWaitbar; wb.Value = 1; delete(wb); end

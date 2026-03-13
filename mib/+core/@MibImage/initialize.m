@@ -25,7 +25,7 @@ if nargin < 3; meta = []; end
 if nargin < 2; data = []; end
 
 % init meta as empty dictionary or combine with the provided
-if isempty(meta); meta = utils.defaults.initializeImgInfo(); end
+if isempty(meta); meta = core.MibImage.initializeImgInfo(); end
 
 % init data with an empty matrix
 if isempty(data)
@@ -76,6 +76,36 @@ if ~isempty(obj.data)
     obj.filename = meta{'Filename'};
     obj.sliceName = meta{'SliceName'};
     obj.lutColors = meta{'lutColors'};
+
+    % ---- parse ImageDescription → boundingBox + actionLog ----------------
+    % Compute a default bounding box from image dimensions × voxel size.
+    % This is used whenever the file has no BoundingBox tag (e.g. plain PNG).
+    pixSize = meta{'pixSize'};
+    defaultBB = [ 0, (max([obj.width,  2]) - 1) * pixSize.x, ...
+                  0, (max([obj.height, 2]) - 1) * pixSize.y, ...
+                  0, (max([obj.depth,  2]) - 1) * pixSize.z ];
+
+    % Split the raw ImageDescription string (as stored in the file) into:
+    %   imgDesc   — the 'BoundingBox x1 x2 y1 y2 z1 z2' prefix
+    %   parsedLog — cell array of pipe-separated operation log entries
+    [imgDesc, parsedLog] = core.MibImage.splitImageDescription(meta{'ImageDescription'});
+
+    % Try to parse numeric coordinates from the BoundingBox prefix.
+    coords = sscanf(imgDesc, 'BoundingBox %f %f %f %f %f %f');
+    if numel(coords) == 6
+        obj.boundingBox = coords(:)';
+    else
+        obj.boundingBox = defaultBB;
+    end
+
+    % Prefer a pre-split ActionLog already stored in meta by a loader that
+    % called splitImageDescription itself; fall back to what we parsed above.
+    if isKey(meta, 'ActionLog') && ~isempty(meta{'ActionLog'})
+        obj.actionLog = meta{'ActionLog'};
+    else
+        obj.actionLog = parsedLog;
+    end
+    % ----------------------------------------------------------------------
     % update color type
     if ~isempty(meta{'ColorType'})
         obj.colorType = meta{'ColorType'};

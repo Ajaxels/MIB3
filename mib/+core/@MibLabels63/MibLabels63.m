@@ -33,7 +33,7 @@ classdef MibLabels63 < core.MibImage
             % img: an 2D-5D image stack
             % meta: a structure with parameters of the dataset, can be @e []
 
-            if nargin < 2; meta = utils.defaults.initializeImgInfo(); end
+            if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; img = []; end
 
             % init the class using core.MibImage and forcing the type to be labels63

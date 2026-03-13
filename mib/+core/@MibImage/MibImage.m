@@ -24,6 +24,21 @@ classdef MibImage < matlab.mixin.Copyable
         % @note The 'Image' layer dimensions: @code [1:height, 1:width, 1:depth, 1:colors, 1:time] @endcode
         dataClass
         % a char with image class, 'uint8', 'uint16', 'uint32';
+        actionLog = {}
+        % Cell array of per-operation log strings.
+        % Each entry is a timestamped record of a processing step, e.g.:
+        %   'MIB(2601041823): MIB demo dataset, Huh7 SBEM'
+        %   'MIB(2603131934): ImFilter: Gaussian, HSize:3 3, Sigma:0.6'
+        % Populated from the pipe-separated tail of the ImageDescription tag
+        % when a file is loaded.  Appended to by model operations.
+        % MibDataset.actionLog is a Dependent property that forwards here.
+        boundingBox = []
+        % Physical extent of the dataset as [xmin xmax ymin ymax zmin zmax]
+        % in the units stored in MibDataset.pixSize.units (default: µm).
+        % Populated from the 'BoundingBox' prefix of the ImageDescription tag
+        % when a file is loaded; falls back to a default computed from the
+        % image dimensions × voxel size when no BoundingBox tag is present.
+        % MibDataset.boundingBox is a Dependent property that forwards here.
         lutColors
         % a matrix with LUT colors [1:colorChannel, R G B], (0-1)
         maskFilename = 'Mask_none.tif'
@@ -78,6 +93,20 @@ classdef MibImage < matlab.mixin.Copyable
 
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
 
+    end
+
+    methods (Static)
+        % declaration of static functions in the external files
+
+        imginfo = initializeImgInfo(varargin)   % Create the standard MibImage metadata dictionary, optionally overriding defaults via Name-Value pairs.
+
+        [imageDescription, actionLog] = splitImageDescription(fullStr)  % Split a full ImageDescription string at the first '|' into the BoundingBox part and a cell array of log entries.
+
+        str = buildImageDescription(bb, actionLog)  % Reconstruct the full ImageDescription string from a bounding box vector and action log cell array. Inverse of splitImageDescription.
+
+    end
+
+    methods
         function obj = MibImage(data, meta)
             % obj = MibImage(data, meta)
             % MibImage class constructor
@@ -90,7 +119,7 @@ classdef MibImage < matlab.mixin.Copyable
             % meta: a structure with parameters of the dataset, can be @e [], see obj.initImage for details
             % type: type of the data, 'image', 'labels' (MibLabels class), 'labels63' (MibLabels63 class)
             
-            if nargin < 2; meta = utils.defaults.initializeImgInfo(); end
+            if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; data = []; end
             
             % update type

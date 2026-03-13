@@ -489,7 +489,7 @@ if obj.showLines3D && dataset.lines3D.noTrees > 0
         pixBox(4) = datasetHeight;
     end
 
-    bb = dataset.boundingBox; % get bounding box of the dataset
+    bb = dataset.image.boundingBox; % get bounding box of the dataset
     BoxOut = pixBox;
 
     % Convert pixel coordinates to physical coordinates

@@ -26,7 +26,7 @@ function initialize(obj, data, meta)
 if nargin < 3; meta = []; end
 if nargin < 2; data = []; end
 
-if isempty(meta); meta = utils.defaults.initializeImgInfo(); end
+if isempty(meta); meta = core.MibImage.initializeImgInfo(); end
 
 % --- close any previously open virtual readers and loader objects --------
 if iscell(obj.data) && ~isempty(obj.data)

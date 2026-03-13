@@ -90,6 +90,8 @@ classdef MibRibbon
         
         toolsSegmentation_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Segmentation section of the Tools ribbon
 
+        result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
+
         function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
             %% Init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller

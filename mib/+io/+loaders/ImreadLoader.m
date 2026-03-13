@@ -111,8 +111,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % init imginfo dictionary with the default set of keys
-            imginfo = utils.defaults.initializeImgInfo();
+            imginfo = core.MibImage.initializeImgInfo();
             pixSize = imginfo{"pixSize"}; % get default pixel size
+            bbDz = 0;    % BoundingBox Z range from first file (used to correct pixSize.z after loop)
 
             % Initialize default options
             if ~isfield(options, 'waitbar'); options.waitbar = false; end
@@ -304,10 +305,16 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                             dx = bbcoord(2) - bbcoord(1);
                             dy = bbcoord(4) - bbcoord(3);
                             dz = bbcoord(6) - bbcoord(5);
-                            pixSize.x = dx / max([files(fnIndex).width*2-1, 1]);  % tweak for single-layered tifs
-                            pixSize.y = dy / max([files(fnIndex).height*2-1, 1]);
-                            pixSize.z = dz / max([files(fnIndex).noLayers*2-1, 1]);
-                            if pixSize.z == 0; pixSize.z = min([pixSize.x, pixSize.y]); end
+                            bbDz = dz;   % remember for post-loop Z correction
+                            % Round to 10 sig-figs to remove IEEE 754 noise from the string→division round-trip
+                            pixSize.x = round(dx / max([files(fnIndex).width-1, 1]),  10, 'significant');
+                            pixSize.y = round(dy / max([files(fnIndex).height-1, 1]), 10, 'significant');
+                            pixSize.z = round(dz / max([files(fnIndex).noLayers-1, 1]), 10, 'significant');
+                            % For a single-layer file the full Z range is meaningless as Z spacing;
+                            % fall back to the isotropic assumption (same as when dz == 0)
+                            if files(fnIndex).noLayers == 1 || pixSize.z == 0
+                                pixSize.z = min([pixSize.x, pixSize.y]);
+                            end
                             pixSize.units = 'um';
                         end
                     elseif isfield(info, 'Software') && ...
@@ -378,6 +385,15 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 % Update waitbar
                 if ~isempty(wb)
                     if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
+                end
+            end
+
+            % If pixSize.z was estimated from a single-layer file (using the isotropic fallback),
+            % recalculate it now that the total Z depth across all files is known.
+            if bbDz > 0 && isfield(files, 'noLayers') && files(1).noLayers == 1
+                totalDepth = sum([files.noLayers]);
+                if totalDepth > 1
+                    pixSize.z = round(bbDz / (totalDepth - 1), 10, 'significant');
                 end
             end
 

@@ -11,7 +11,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %   1. Validate that the requested layer exists (e.g. mask must exist).
 %   2. Inject dataset-level metadata that the layer objects lack:
 %        .pixSize      from obj.pixSize
-%        .boundingBox  from obj.boundingBox
+%        .boundingBox  from obj.image.boundingBox
 %        .layerType    for format-dispatch (AmiraMesh, HDF5, etc.)
 %   3. Delegate to the appropriate layer object:
 %        'image'  → obj.image.save(filename, options)
@@ -157,13 +157,10 @@ if ~isfield(options,'Saving3DPolicy'); options.Saving3DPolicy = '3D stack'; end
 options.pixSize    = obj.pixSize;
 options.layerType  = layerType;
 
-if ~isempty(obj.boundingBox)
-    options.boundingBox = obj.boundingBox;
-else
-    sz = obj.dim_yxzct;  % [H W D C T]
-    pixSize = obj.pixSize;
-    options.boundingBox = [0, sz(2)*pixSize.x, 0, sz(1)*pixSize.y, 0, sz(3)*pixSize.z];
-end
+% boundingBox lives on obj.image (core.MibImage); access it directly.
+% It is used below for label/mask saves that bypass MibImage.save().
+% For the 'image' case MibImage.save() reads obj.image.boundingBox itself.
+options.boundingBox = obj.image.boundingBox;
 
 % --- resolve fallback filename when none provided ---
 if isempty(filename)
@@ -241,8 +238,9 @@ switch lower(layerType)
         metadata.materialColors = options.MaskColor;
         metadata.sliceName      = {};
         if ~isempty(obj.image.sliceName); metadata.sliceName = obj.image.sliceName; end
-        metadata.layerType      = 'mask';
-        metadata.imageDescription = '';
+        metadata.layerType        = 'mask';
+        metadata.imageDescription = core.MibImage.buildImageDescription( ...
+            obj.image.boundingBox, obj.image.actionLog);
 
         % Dispatch
         saver = io.SaverFactory.create(options.Format, options);

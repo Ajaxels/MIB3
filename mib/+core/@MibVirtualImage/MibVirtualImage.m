@@ -63,7 +63,7 @@ classdef MibVirtualImage < core.MibImage
             % data: ignored (virtual images are not pre-loaded); pass [] or omit
             % meta: metadata dictionary / struct, passed to MibImage constructor
 
-            if nargin < 2; meta = utils.defaults.initializeImgInfo(); end
+            if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; data = []; end
 
             % call superclass constructor — this calls MibVirtualImage.initialize,

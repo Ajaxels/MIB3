@@ -75,5 +75,5 @@ else
 end
 
 %obj.mibView.handles.mibPathEdit.String = mypath;
-
+%focus(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.figureDoc.Figure); % remove focus from hObject
 end
