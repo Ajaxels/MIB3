@@ -1,58 +1,62 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function [result, options] = mibImage2ometiff(filename, imageS, options)
 % function [result, options] = mibImage2ometiff(filename, imageS, options)
-% Save image in OME.TIF format, 2D slices or 5D stacks
+% Save image in OME.TIF format — either as a single 5D file or a 2D sequence.
 %
 % Parameters:
-% filename: filename for the output file
-% imageS: dataset to save [1:height, 1:width, 1:color_channels, 1:no_stacks, 1:time] or [1:height, 1:width, 1:no_stacks, 1:time]
-% options: a structure with optional parameters
-%  .pixSize        — a MIB structure with pixel size (.x, .y, .z, .t, .units, .tunits)
-%  .lutColors      — a matrix with LUT colors
-%  .ImageDescription — a cell string with description of the dataset
-%  .DatasetType    — a string with type of the dataset ('image' or 'model')
-%  .Saving3d       — '5D' : save all stacks into a single file
-%                    '2D' : generate a sequence of files
-%                    @em NaN -> type will be asked
-%  .overwrite      — if @b 1 do not check whether file already exists
-%  .Compression    — 'none', 'lzw', 'packbits'
-%  .showWaitbar    — show a progress bar, @b 1 - on, @b 0 - off
-%  .ParentFigure   — [@em optional] handle to the main MIB application window.
-%                    When provided, the progress bar is rendered as a
-%                    uiprogressdlg attached to that window (recommended for
-%                    GUI use).  When absent or empty the legacy waitbar is
-%                    used as a fallback.
-%  .SliceName      — [@em optional] a cell array with filenames without path
-%  .dimensionOrder — order of dimensions in the dataset, default = 'XYCZT'
+% filename: full path for the output file (extension forced to .ome.tiff)
+% imageS: dataset [height, width, color_channels, z_slices, time]
+% options: [@em optional] struct with fields:
+%  .pixSize        — MIB pixel-size struct (.x .y .z .t .units .tunits);
+%                    default: all 1, units 'um', tunits 's'
+%  .lutColors      — [C x 3] LUT colour matrix (unused in 2D imwrite path)
+%  .ImageDescription — char or cell-string description embedded in the file;
+%                    default: ''
+%  .DatasetType    — 'image' (default) or 'model'
+%  .Saving3d       — '5D' (default): write all slices into one OME-TIFF via
+%                    bfsave; '2D': write each z-slice as a separate .tif file
+%  .overwrite      — 1 = skip the "file exists" prompt (default: 0)
+%  .Compression    — 'none' (default), 'lzw', 'packbits' (2D path only)
+%  .showWaitbar    — 1 (default) show progress bar; 0 suppress
+%  .ParentFigure   — handle to the MIB application window; when provided the
+%                    progress bar is rendered as a uiprogressdlg attached to
+%                    that window.  When absent the legacy waitbar is used.
+%  .silent         — logical (default false); when true all interactive
+%                    dialogs are suppressed
+%  .sequentialFn   — controls 2D output naming:
+%                      true  (default when NaN) : sequential names,
+%                            e.g. image_01.ome.tiff, image_02.ome.tiff
+%                      false : use original per-slice names from .SliceName;
+%                              falls back to sequential when .SliceName is
+%                              absent or empty
+%                      NaN   : decide at runtime — currently defaults to true
+%                    Normally set by the calling saver (OmeTiffSaver) based
+%                    on the user's dialog choice; direct callers may set it
+%                    explicitly to bypass the default.
+%  .SliceName      — cell array of per-slice source filenames (without path);
+%                    used by the 'original filename' branch when
+%                    sequentialFn = false
+%  .cmap           — colormap matrix for indexed images; NaN (default) means
+%                    grayscale / RGB
+%  .Resolution     — [xDPI yDPI] written into 2D .tif files; derived
+%                    automatically from pixSize when absent
+%  .dimensionOrder — dimension order string passed to bfsave / createMinimalOMEXMLMetadata;
+%                    default 'XYZCT'
 %
 % Return values:
-% result: result of the function: @b 1 - success, @b 0 - fail
-% options: structure with used options
+% result: 1 on success, 0 on failure
+% options: the options struct as used (with all defaults filled in)
 
 % use SCIFIO to open ome-tiff in Fiji
 % https://imagej.net/SCIFIO
 
 % Updates
-%
+% 2026 — added options.silent, sequentialFn, cmap, Resolution defaults;
+%        fixed 2D sequential naming (.ome compound extension stripped);
+%        moved naming dialog to OmeTiffSaver (caller)
 
 % Example:
 %   @code
-%   %% Standalone / scripted use (no GUI parent):
+%   %% Standalone 5D save:
 %   opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
 %   opts.Saving3d    = '5D';
 %   opts.Compression = 'lzw';
@@ -62,14 +66,24 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %   @endcode
 %
 %   @code
-%   %% GUI use — attach progress dialog to the MIB window:
-%   opts.pixSize      = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
-%   opts.Saving3d     = '5D';
-%   opts.Compression  = 'lzw';
-%   opts.showWaitbar  = true;
-%   opts.overwrite    = 1;
-%   opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%   mibImage2ometiff('/output/stack.ome.tiff', imageData, opts);
+%   %% 2D sequence — sequential naming:
+%   opts.pixSize       = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
+%   opts.Saving3d      = '2D';
+%   opts.sequentialFn  = true;
+%   opts.showWaitbar   = true;
+%   opts.overwrite     = 1;
+%   opts.ParentFigure  = obj.mibModel.mibGUI;
+%   mibImage2ometiff('/output/slice.ome.tiff', imageData, opts);
+%   % produces /output/slice_01.ome.tiff, /output/slice_02.ome.tiff, ...
+%   @endcode
+%
+%   @code
+%   %% 2D sequence — original naming:
+%   opts.Saving3d      = '2D';
+%   opts.sequentialFn  = false;
+%   opts.SliceName     = {'frame001', 'frame002', 'frame003'};  % no extension
+%   mibImage2ometiff('/output/any.ome.tiff', imageData, opts);
+%   % produces /output/frame001.ome.tiff, /output/frame002.ome.tiff, ...
 %   @endcode
 
 result = 0;
@@ -92,6 +106,9 @@ if ~isfield(options, 'DatasetType'); options.DatasetType = 'image'; end
 if ~isfield(options, 'Saving3d'); options.Saving3d = '5D'; end
 if ~isfield(options, 'Compression'); options.Compression = 'none'; end
 if ~isfield(options, 'dimensionOrder'); options.dimensionOrder = 'XYZCT'; end
+if ~isfield(options, 'cmap');         options.cmap         = NaN;   end   % NaN = grayscale/RGB; otherwise indexed colormap
+if ~isfield(options, 'silent');      options.silent       = false; end   % suppress all interactive dialogs
+if ~isfield(options, 'sequentialFn'); options.sequentialFn = NaN;  end   % NaN=ask, true=sequential, false=original
 
 % define time units for the output
 switch options.pixSize.tunits
@@ -142,6 +159,17 @@ options.pixSize.x = options.pixSize.x * scaleFactor;
 options.pixSize.y = options.pixSize.y * scaleFactor;
 options.pixSize.z = options.pixSize.z * scaleFactor;
 
+% Resolution in pixels-per-inch (imwrite default unit) derived from pixSize [µm]
+% 1 inch = 25400 µm
+if ~isfield(options, 'Resolution')
+    options.Resolution = [25400 / options.pixSize.x, 25400 / options.pixSize.y];
+end
+
+% Ensure ImageDescription is a cell array for indexed access in the 2D path
+if ischar(options.ImageDescription)
+    options.ImageDescription = {options.ImageDescription};
+end
+
 if strcmp(options.Saving3d, '5D')
     % permute image from y,x,c,z,t to y,x,z,c,t
     % imageS = permute(imageS, [1 2 4 3 5]);
@@ -172,60 +200,69 @@ if strcmp(options.Saving3d, '5D')
 %         end
     options.SliceName{1} = filename;
 elseif strcmp(options.Saving3d, '2D')
-    sequentialFn = 1;
-    if isfield(options, 'SliceName') && numel(options.SliceName) > 1
-        choice = questdlg('Would you like to use original or sequential filenaming?','Save as TIF...','Original','Sequential','Cancel','Sequential');
-        switch choice
-            case 'Cancel'
-                disp('Cancelled!')
-                if ~isempty(wb); delete(wb); end
-                return;
-            case 'Original'
-                sequentialFn = 0;
-            case 'Sequential'
-                sequentialFn = 1;
-        end
+    % ---- determine naming mode ----
+    % options.sequentialFn is set by the caller (OmeTiffSaver); NaN falls
+    % back to sequential so direct callers that don't set it still work.
+    if isnan(options.sequentialFn)
+        sequentialFn = true;
+    else
+        sequentialFn = logical(options.sequentialFn);
     end
-    
+
     [pathstr, name] = fileparts(filename);
+    % Strip compound .ome extension so sequential names do not become
+    % 'image.ome_01.ome.tiff'.  fileparts('image.ome.tiff') returns
+    % name='image.ome'; remove the trailing '.ome'.
+    if length(name) > 4 && strcmpi(name(end-3:end), '.ome')
+        name = name(1:end-4);
+    end
+
     if sequentialFn     % generate sequential filenames
         for i = 1:files_no
             options.SliceName{i} = fullfile(pathstr, utils.generateSequentialFilename(name, i, files_no, '.ome.tiff'));
         end
-    else                % use original filenames
-        % remove existing extension
-        for i=1:numel(options.SliceName)
-            [~, options.SliceName{i}] = fileparts(options.SliceName{i});
-        end
-        
-        % find duplicates in the filenames
-        %for i=1:numel(options.SliceName)
-        i=1;
-        while i <= numel(options.SliceName)
-            duplicatesNo = sum(cell2mat((strfind(options.SliceName(:), options.SliceName{i}))));
-            if duplicatesNo > 1   % unique filename is found
-                for j=i:i+duplicatesNo-1
-                    options.SliceName{j} = utils.generateSequentialFilename(options.SliceName{j}, j-i+1, duplicatesNo, '.ome.tiff');
-                end
-                i = i + duplicatesNo;
-            else
-                options.SliceName{i} = [options.SliceName{i} '.tif'];
-                i = i + 1;
+    else                % use original filenames supplied by the caller
+        if ~isfield(options, 'SliceName') || isempty(options.SliceName)
+            % no original names available — fall back to sequential
+            for i = 1:files_no
+                options.SliceName{i} = fullfile(pathstr, utils.generateSequentialFilename(name, i, files_no, '.ome.tiff'));
             end
-        end
-        
-        % generate full path
-        for i=1:files_no
-            options.SliceName{i} = fullfile(pathstr, options.SliceName{i});
+        else
+            % remove existing extension from supplied names
+            for i = 1:numel(options.SliceName)
+                [~, options.SliceName{i}] = fileparts(options.SliceName{i});
+            end
+
+            % resolve duplicate base names
+            i = 1;
+            while i <= numel(options.SliceName)
+                duplicatesNo = sum(cell2mat(strfind(options.SliceName(:), options.SliceName{i})));
+                if duplicatesNo > 1
+                    for j = i:i+duplicatesNo-1
+                        options.SliceName{j} = utils.generateSequentialFilename(options.SliceName{j}, j-i+1, duplicatesNo, '.ome.tiff');
+                    end
+                    i = i + duplicatesNo;
+                else
+                    options.SliceName{i} = [options.SliceName{i} '.ome.tiff'];
+                    i = i + 1;
+                end
+            end
+
+            % prepend full path
+            for i = 1:files_no
+                options.SliceName{i} = fullfile(pathstr, options.SliceName{i});
+            end
         end
     end
     
     
     for num = 1:files_no
+        descIdx = min(num, numel(options.ImageDescription));
+        desc = cell2mat(options.ImageDescription(descIdx));
         if isnan(options.cmap)  % grayscale or rgb image
-            imwrite(imageS(:,:,:,num),options.SliceName{num},'tif','Compression',options.Compression,'Description',cell2mat(ImageDescription(num)),'Resolution',options.Resolution);
+            imwrite(imageS(:,:,:,num),options.SliceName{num},'tif','Compression',options.Compression,'Description',desc,'Resolution',options.Resolution);
         else            % indexed image
-            imwrite(imageS(:,:,:,num),options.cmap,options.SliceName{num},'tif','Compression',options.Compression,'Description',cell2mat(ImageDescription(num)),'Resolution',options.Resolution);
+            imwrite(imageS(:,:,:,num),options.cmap,options.SliceName{num},'tif','Compression',options.Compression,'Description',desc,'Resolution',options.Resolution);
         end
         if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=num/files_no; else; waitbar(num/files_no,wb); end; end
     end

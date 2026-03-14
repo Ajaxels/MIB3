@@ -151,12 +151,16 @@ classdef OmeTiffSaver < io.savers.BaseSaver
 
             fnOut = [];
 
+            % Track which options were explicitly provided by the caller
+            callerSetFilename = isfield(options, 'FilenameGenerator');
+
             % --- defaults ---
-            if ~isfield(options, 'showWaitbar'); options.showWaitbar = true;    end
-            if ~isfield(options, 'silent');      options.silent      = false;   end
-            if ~isfield(options, 'overwrite');   options.overwrite   = true;    end
-            if ~isfield(options, 'layerType');   options.layerType   = 'image'; end
-            if ~isfield(options, 'Format');      options.Format      = 'OME-TIFF 5D (*.ome.tiff)'; end
+            if ~isfield(options, 'showWaitbar');       options.showWaitbar       = true;                     end
+            if ~isfield(options, 'silent');            options.silent            = false;                    end
+            if ~isfield(options, 'overwrite');         options.overwrite         = true;                     end
+            if ~isfield(options, 'layerType');         options.layerType         = 'image';                  end
+            if ~isfield(options, 'Format');            options.Format            = 'OME-TIFF 5D (*.ome.tiff)'; end
+            if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
 
             % --- determine 5D vs 2D saving mode ---
             if contains(options.Format, '2D', 'IgnoreCase', false)
@@ -175,6 +179,18 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             if isempty(pathStr); pathStr = pwd; end
             if exist(pathStr, 'dir') ~= 7; mkdir(pathStr); end
 
+            % --- "Define naming" dialog (2D mode only) ---
+            if strcmp(saving3d, '2D') && ~options.silent && ~callerSetFilename
+                prompts = {'Filename generator:'};
+                defAns  = {{'Use original filename', 'Use sequential filename', 2}};
+                dlgOpts.mibPath     = obj.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                    'Define naming', dlgOpts);
+                if isempty(answer); return; end
+                options.FilenameGenerator = answer{1};
+            end
+
             % --- permute MIB3 [H,W,D,C,T] → [H,W,C,D,T] for mibImage2ometiff ---
             img_hwcdt = permute(data, [1 2 4 3 5]);  % [H, W, C, D, T]
 
@@ -184,6 +200,8 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             savingOptions.overwrite      = options.overwrite;
             savingOptions.DatasetType    = options.layerType;
             savingOptions.showWaitbar    = options.showWaitbar;
+            savingOptions.silent         = options.silent;
+            savingOptions.sequentialFn   = strcmp(options.FilenameGenerator, 'Use sequential filename');
             savingOptions.ParentFigure   = obj.ParentFigure;
 
             if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
@@ -203,6 +221,11 @@ classdef OmeTiffSaver < io.savers.BaseSaver
                 savingOptions.ImageDescription = metadata.imageDescription;
             else
                 savingOptions.ImageDescription = '';
+            end
+
+            % Pass per-slice source filenames for the 'Use original filename' path
+            if isfield(metadata, 'sliceName') && ~isempty(metadata.sliceName)
+                savingOptions.SliceName = metadata.sliceName;
             end
 
             % --- call io.BioFormats.mibImage2ometiff (already in MIB3) ---

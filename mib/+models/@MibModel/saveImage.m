@@ -283,7 +283,7 @@ else
         end
 
         % Fix filename extension to match the selected filter.
-        % MATLAB's uiputfile does not always update the extension (R2026a-pre, case 08552750)when the
+        % MATLAB's uiputfile does not always update the extension (R2026a-pre, case 08552750) when the
         % user changes the format filter (platform-dependent bug), so we
         % enforce it here.  Handles compound extensions like '.ome.tiff'.
         selectedExt  = strrep(filterSpec{filterIndex, 1}, '*', '');   % e.g. '.jpg' or '.ome.tiff'
