@@ -98,6 +98,12 @@ if options.showDialog
     unitIdx   = find(strcmp(unitsList, pixSize.units), 1);
     if isempty(unitIdx); unitIdx = 4; end   % fall back to 'um'
 
+    % Round off IEEE 754 noise that accumulates when pixSize was derived from
+    % a BoundingBox string (e.g. 0.013000000000000003 → 0.013)
+    pixSize.x = round(pixSize.x, 10, 'significant');
+    pixSize.y = round(pixSize.y, 10, 'significant');
+    pixSize.z = round(pixSize.z, 10, 'significant');
+
     prompts = {'Voxel size X:'; 'Voxel size Y:'; 'Voxel size Z:'; ...
                'Time between frames:'; 'Pixel units:'; 'Time units (h, m, s):'};
     defAns  = {pixSize.x; pixSize.y; pixSize.z; pixSize.t; ...

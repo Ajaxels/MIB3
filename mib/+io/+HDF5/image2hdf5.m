@@ -36,7 +36,7 @@ function result = image2hdf5(filename, imageS, options)
 % result: result of the function run, @b 1 - success, @b 0 - fail
 
 % Updates
-% 06.04.2016, IB heavily updated
+% 
 
 % Example:
 %   @code
@@ -62,15 +62,21 @@ if ~isfield(options, 'ChunkSize'); options.ChunkSize = [];    end
 if ~isfield(options, 'Deflate'); options.Deflate = 0;    end
 if ~isfield(options, 'overwrite'); options.overwrite = 0;    end
 if ~isfield(options, 'showWaitbar'); options.showWaitbar = 1;    end
-if ~isfield(options, 'height'); options.height = size(imageS, 1);    end
-if ~isfield(options, 'width'); options.width = size(imageS, 2);    end
-if ~isfield(options, 'colors'); options.colors = size(imageS, 3);    end
-if ~isfield(options, 'depth'); options.depth = size(imageS, 4);    end
-if ~isfield(options, 'time'); options.time = size(imageS, 5);    end
-if ~isfield(options, 'x'); options.x = 1;    end
-if ~isfield(options, 'y'); options.y = 1;    end
-if ~isfield(options, 'z'); options.z = 1;    end
-if ~isfield(options, 't'); options.t = 1;    end
+% Dimension order must be set first — other defaults depend on it.
+% Default 'yxzct' matches MIB3 native layout [H, W, D, C, T].
+% Use 'yxczt' for legacy MIB2 / Ilastik-compatible layout [H, W, C, D, T].
+if ~isfield(options, 'order'); options.order = 'yxzct'; end
+
+if ~isfield(options, 'height'); options.height = size(imageS, 1); end
+if ~isfield(options, 'width');  options.width  = size(imageS, 2); end
+% Derive colors/depth positions from order so defaults are order-aware
+if ~isfield(options, 'colors'); options.colors = size(imageS, strfind(options.order,'c')); end
+if ~isfield(options, 'depth');  options.depth  = size(imageS, strfind(options.order,'z')); end
+if ~isfield(options, 'time');   options.time   = size(imageS, strfind(options.order,'t')); end
+if ~isfield(options, 'x'); options.x = 1; end
+if ~isfield(options, 'y'); options.y = 1; end
+if ~isfield(options, 'z'); options.z = 1; end
+if ~isfield(options, 't'); options.t = 1; end
 if ~isfield(options, 'DatasetName')    % Set dataset name and check for the leading slash
     options.DatasetName = '/MIB_Export';
 else
@@ -78,13 +84,9 @@ else
         options.DatasetName = ['/' options.DatasetName];
     end
 end
-if ~isfield(options, 'ImageDescription'); options.ImageDescription = '';    end
-if ~isfield(options, 'DatasetType'); options.DatasetType = 'image';    end
-if ~isfield(options, 'DatasetClass'); options.DatasetClass = class(imageS);    end
-
-if ~isfield(options, 'order')
-    options.order = 'yxczt';
-end
+if ~isfield(options, 'ImageDescription'); options.ImageDescription = ''; end
+if ~isfield(options, 'DatasetType');      options.DatasetType = 'image'; end
+if ~isfield(options, 'DatasetClass');     options.DatasetClass = class(imageS); end
 
 if options.overwrite == 0
     if exist(filename,'file') == 2
@@ -117,16 +119,33 @@ if exist(filename,'file') && options.t == 1  % for overwrite
     delete(fileNameDelete);
 end
 
-if isempty(options.ChunkSize)   % do not chunk the data
-    options.ChunkSize = [options.height, options.width, 1, options.depth, 1];
+% Build order-aware size/start/chunk helpers.
+% dimSizeMap:  named dimension → its extent
+% dimStartMap: named dimension → write start index (1-based)
+% chunkSzMap:  named dimension → chunk size (spatial: from ChunkSize; c,t: 1)
+dimSizeMap  = struct('y',options.height,'x',options.width, ...
+                     'z',options.depth, 'c',options.colors,'t',options.time);
+dimStartMap = struct('y',options.y,     'x',options.x, ...
+                     'z',options.z,     'c',1,          't',options.t);
+
+if isempty(options.ChunkSize)
+    % default: chunk along y/x/z only (spatial), c and t unchunked
+    options.ChunkSize = [options.height, options.width, options.depth];
 end
+chunkSzMap = struct('y',options.ChunkSize(1),'x',options.ChunkSize(2), ...
+                    'z',options.ChunkSize(3),'c',1,'t',1);
+
+% Derive the 5-element vectors in the caller's chosen order
+datasetSize  = cellfun(@(d) dimSizeMap.(d),  num2cell(options.order));
+chunkVec     = cellfun(@(d) chunkSzMap.(d),  num2cell(options.order));
+writeStart   = cellfun(@(d) dimStartMap.(d), num2cell(options.order));
 
 % create dataset
 if options.t == 1
     if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.05; wb.Message=sprintf('%s\nCreate file container...',filename); else; waitbar(0.05,wb,sprintf('%s\nCreate file container...',filename)); end; end
-    h5create(filename, options.DatasetName, [options.height, options.width, options.colors, options.depth, options.time], ...
+    h5create(filename, options.DatasetName, datasetSize, ...
             'Datatype', options.DatasetClass, 'Deflate', options.Deflate, ...
-            'ChunkSize', [options.ChunkSize(1) options.ChunkSize(2) 1 options.ChunkSize(3) 1]);
+            'ChunkSize', chunkVec);
 end
 
 if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.1; wb.Message=sprintf('%s\nSaving images...',filename); else; waitbar(0.1,wb,sprintf('%s\nSaving images...',filename)); end; end
@@ -144,9 +163,10 @@ if isfield(options, 'mibImage')     % tweak to save HDF5 in the virtual mode, wi
                 for y=1:ceil(options.height/options.ChunkSize(1))
                     getDataOpt.y = [(y-1)*options.ChunkSize(1)+1, y*options.ChunkSize(1)];
                     img2 = options.mibImage.getDataVirt(options.DatasetType, 4, 0, getDataOpt);
-                    h5write(filename, options.DatasetName, img2, ...
-                        [getDataOpt.y(1), getDataOpt.x(1), 1, getDataOpt.z(1), getDataOpt.t(1)],...
-                        [size(img2,1), size(img2,2), size(img2,3), size(img2,4),size(img2,5)]);
+                    chunkStartMap = struct('y',getDataOpt.y(1),'x',getDataOpt.x(1), ...
+                                          'z',getDataOpt.z(1),'c',1,'t',getDataOpt.t(1));
+                    chunkStart = cellfun(@(d) chunkStartMap.(d), num2cell(options.order));
+                    h5write(filename, options.DatasetName, img2, chunkStart, size(img2, 1:5));
                 end
             end
             if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=counterIndex/maxIndex; else; waitbar(counterIndex/maxIndex,wb); end; end
@@ -154,9 +174,7 @@ if isfield(options, 'mibImage')     % tweak to save HDF5 in the virtual mode, wi
         end
     end
 else
-    h5write(filename, options.DatasetName, imageS, ...
-        [options.y, options.x, 1, options.z, options.t],...
-        [size(imageS,1), size(imageS,2), size(imageS,3), size(imageS,4),size(imageS,5)]);
+    h5write(filename, options.DatasetName, imageS, writeStart, size(imageS, 1:5));
 end
 
 if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=0.9; wb.Message=sprintf('%s\nSaving metadata...',filename); else; waitbar(0.9,wb,sprintf('%s\nSaving metadata...',filename)); end; end
@@ -197,7 +215,7 @@ h5writeatt(filename, options.DatasetName, 'axistags', axistags);
 % end
 
 if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=1; else; waitbar(1,wb); end; end
-disp(['image2hdf5: ' filename ' was created!']);
+%disp(['image2hdf5: ' filename ' was created!']);
 if ~isempty(wb)
     if ~isa(wb, 'matlab.ui.dialog.ProgressDialog'); set(0, 'DefaulttextInterpreter', curInt); end
     delete(wb);

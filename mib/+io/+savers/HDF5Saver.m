@@ -2,41 +2,34 @@ classdef HDF5Saver < io.savers.BaseSaver
     % classdef HDF5Saver < io.savers.BaseSaver
     % Saver for Hierarchical Data Format (HDF5) output.
     %
-    % Handles two format variants:
+    % Handles three format variants:
     %   'Hierarchical Data Format (*.h5)'                — standard HDF5 file
-    %   'Hierarchical Data Format with XML header (*.xml)' — HDF5 file with an
-    %       accompanying XML header (Ilastik/BDV-compatible)
+    %   'Hierarchical Data Format with XML header (*.xml)' — HDF5 with an
+    %       accompanying XML header (Ilastik/MIB-compatible, matlab.hdf5)
+    %   'Big Data Viewer HDF5 (*.h5)'                    — Fiji BigDataViewer
+    %       format with int16 data, image pyramid, and mandatory XML header
     %
     % Both image data and mask/labels layers can be saved.  The layer type is
     % controlled by options.layerType ('image' | 'mask' | 'labels').
     %
-    % The saver delegates the actual I/O to the legacy helper function
-    % image2hdf5(), which is ported from MIB2.  For the XML variant the
-    % additional helper saveXMLheader() is called afterwards to write the
-    % BigDataViewer-compatible XML descriptor.
+    % The saver delegates the actual I/O to:
+    %   io.HDF5.image2hdf5()            for the first two formats
+    %   io.HDF5.saveBigDataViewerFormat() for the BDV format
+    % For any XML variant io.HDF5.saveXMLheader() is called afterwards.
     %
     % DATA DIMENSIONS
-    %   Input  data  : [H, W, D, C, T]  (MIB3 native order)
-    %   image2hdf5() expects the same 5-D array; internally it handles
-    %   chunking, deflate compression, and sub-sampling.
+    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
     %
     % NOTES
-    %   * Sub-sampling (HDFoptions.SubSampling) is a [3 x L] matrix where
-    %     each column is [xFactor; yFactor; zFactor] for one resolution level.
+    %   * Sub-sampling (options.SubSampling) is a [3 x L] matrix where
+    %     each column is [xFactor; yFactor; zFactor] for one pyramid level.
     %     Default (silent mode): [1;1;1] — no downsampling.
-    %   * ChunkSize defaults to min([64, H, W, D]) for each spatial dimension.
+    %   * ChunkSize defaults to min([64, H, W, D]) for each spatial dim.
     %   * Deflate=0 disables zlib compression; use 1–9 for increasing
     %     compression ratio vs. speed trade-off.
+    %   * BDV format always forces an XML header and converts data to int16.
     %   * When options.silent is true the saver uses all defaults without
     %     showing any dialogs.
-    %
-    % TODO: port image2hdf5() from
-    %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/HDF5/image2hdf5.m
-    %   to mib/+io/+HDF5/image2hdf5.m
-    %
-    % TODO: port saveXMLheader() from
-    %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/HDF5/saveXMLheader.m
-    %   to mib/+io/+HDF5/saveXMLheader.m
     %
     % USAGE EXAMPLES
     %   @code
@@ -65,24 +58,24 @@ classdef HDF5Saver < io.savers.BaseSaver
     %   @endcode
     %
     %   @code
-    %   %% 2. Save with XML header for BigDataViewer / Ilastik
-    %   saver = io.SaverFactory.create( ...
-    %       'Hierarchical Data Format with XML header (*.xml)');
+    %   %% 2. Save in Fiji BigDataViewer format (int16, image pyramid, XML)
+    %   saver = io.SaverFactory.create('Big Data Viewer HDF5 (*.h5)');
     %
-    %   opts.Format         = 'Hierarchical Data Format with XML header (*.xml)';
+    %   opts.Format         = 'Big Data Viewer HDF5 (*.h5)';
     %   opts.showWaitbar    = true;
     %   opts.silent         = true;
     %   opts.overwrite      = true;
-    %   opts.layerType      = 'image';
+    %   opts.SubSampling    = [1 2 4; 1 2 4; 1 2 4];  % 3-level pyramid
+    %   opts.ChunkSize      = [64;64;64];
+    %   opts.Deflate        = 0;
     %
-    %   meta.filename       = 'source_stack.tif';
-    %   meta.colorType      = 'grayscale';
     %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
     %                                'units','um','t',1,'tunits','s');
     %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
     %
     %   data = uint16(rand(512,512,50,1,1) * 65535);
-    %   fnOut = saver.save(data, meta, '/output/myStack.xml', opts);
+    %   fnOut = saver.save(data, meta, '/output/myStack.h5', opts);
+    %   % Produces myStack.h5 + myStack.xml
     %   @endcode
     %
     %   @code
@@ -99,6 +92,8 @@ classdef HDF5Saver < io.savers.BaseSaver
     %
     % SEE ALSO
     %   io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
+    %   io.HDF5.image2hdf5, io.HDF5.saveBigDataViewerFormat,
+    %   io.HDF5.saveXMLheader,
     %   core.MibImage.save, core.MibDataset.save, models.MibModel.save
 
     methods
@@ -120,12 +115,13 @@ classdef HDF5Saver < io.savers.BaseSaver
             % Return format strings handled by HDF5Saver.
             formats = { ...
                 'Hierarchical Data Format (*.h5)'; ...
-                'Hierarchical Data Format with XML header (*.xml)' };
+                'Hierarchical Data Format with XML header (*.xml)'; ...
+                'Big Data Viewer HDF5 (*.h5)' };
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
             % function fnOut = save(obj, data, metadata, filename, options)
-            % Write data as an HDF5 file (with optional XML header).
+            % Write data as an HDF5 file (standard, XML-header, or BDV variant).
             %
             % Parameters:
             %   data     — [H, W, D, C, T] numeric array
@@ -137,27 +133,31 @@ classdef HDF5Saver < io.savers.BaseSaver
             %     .pixSize          — struct {.x .y .z .units .t .tunits}
             %     .boundingBox      — [xmin xmax ymin ymax zmin zmax]
             %     .imageDescription — (char) dataset description string
-            %   filename — full output path, e.g. '/out/stack.h5' or
-            %              '/out/stack.xml' for the XML-header variant
+            %   filename — full output path, e.g. '/out/stack.h5',
+            %              '/out/stack.xml' for the XML-header variant, or
+            %              '/out/stack.h5'  for the BDV variant
             %   options  — struct; used fields:
-            %     .Format           — format string (selects XML header mode)
-            %     .layerType        — 'image' | 'mask' | 'labels'
-            %                         (default 'image')
+            %     .Format           — format string (selects saving mode)
+            %     .layerType        — 'image' | 'mask' | 'labels' (default 'image')
             %     .showWaitbar      — logical
             %     .silent           — logical, suppress dialogs and use defaults
             %     .overwrite        — logical
-            %     .SubSampling      — [3 x L] sub-sampling factors per level;
-            %                         default [1;1;1] when silent
-            %     .ChunkSize        — [1 x 3] HDF5 chunk size in voxels;
-            %                         default min(64, spatial dimensions)
-            %     .Deflate          — integer 0-9 (zlib level); default 0
+            %     .SubSampling      — [3 x L] sub-sampling factors per level
+            %     .ChunkSize        — [3 x 1] HDF5 chunk size [y x z]
+            %     .Deflate          — integer 0-9 (zlib level)
+            %     .DimOrder         — 'yxzct' | 'yxczt' (HDF5 only)
+            %     .ResamplingMethod — 'nearest'|'bicubic'|'bilinear' (BDV only)
             %
             % Return values:
-            %   fnOut — (char) path of saved .h5 file, [] on failure
-            %
-            % Example — see class-level documentation above.
+            %   fnOut — (char) path of saved .h5 or .xml file, [] on failure
 
             fnOut = [];
+
+            % Track which options were explicitly provided by the caller
+            callerSetChunkSize   = isfield(options, 'ChunkSize');
+            callerSetDeflate     = isfield(options, 'Deflate');
+            callerSetSubSampling = isfield(options, 'SubSampling');
+            callerSetDimOrder    = isfield(options, 'DimOrder') && ~isempty(options.DimOrder);
 
             % --- defaults ---
             if ~isfield(options, 'showWaitbar'); options.showWaitbar = true;    end
@@ -166,6 +166,7 @@ classdef HDF5Saver < io.savers.BaseSaver
             if ~isfield(options, 'layerType');   options.layerType   = 'image'; end
             if ~isfield(options, 'Format');      options.Format      = 'Hierarchical Data Format (*.h5)'; end
 
+            % isXmlFormat: true for the explicit *.xml format entry
             isXmlFormat = contains(options.Format, 'xml', 'IgnoreCase', true);
 
             % --- decompose filename ---
@@ -173,56 +174,197 @@ classdef HDF5Saver < io.savers.BaseSaver
             if isXmlFormat
                 if isempty(ext); ext = '.xml'; end
                 h5Filename = fullfile(pathStr, [baseName '.h5']);
-                xmlFilename = fullfile(pathStr, [baseName ext]);
             else
                 if isempty(ext); ext = '.h5'; end
-                h5Filename  = fullfile(pathStr, [baseName ext]);
-                xmlFilename = '';
+                h5Filename = fullfile(pathStr, [baseName ext]);
             end
             if isempty(pathStr); pathStr = pwd; end
             if exist(pathStr, 'dir') ~= 7; mkdir(pathStr); end
 
-            [nH, nW, nD, ~, ~] = size(data);
+            [nH, nW, nD, nC, nT] = size(data);
+            defaultChunk = [min(64, nH); min(64, nW); min(64, max(1,nD))];
 
-            % --- build HDFoptions metadata struct ---
-            HDFoptions.Format = 'matlab.hdf5';
+            % ============================================================
+            % UNIFIED "HDF5 saving settings" DIALOG
+            % ============================================================
+            if ~options.silent && (~callerSetChunkSize || ~callerSetDeflate)
+                % Default sub-sampling text (for BDV row)
+                if callerSetSubSampling && ~isempty(options.SubSampling)
+                    ss = options.SubSampling;
+                    lvlStrs = arrayfun(@(c) num2str(ss(:,c)', '%g '), 1:size(ss,2), 'UniformOutput', false);
+                    defSubSamp = strjoin(lvlStrs, '; ');
+                else
+                    defSubSamp = '1 1 1; 2 2 2; 4 4 4';
+                end
 
-            % Sub-sampling: default [1;1;1] (no downsampling)
-            if isfield(options, 'SubSampling') && ~isempty(options.SubSampling)
-                HDFoptions.SubSampling = options.SubSampling;
+                defUseChunk = callerSetChunkSize && ~isempty(options.ChunkSize);
+
+                prompts = { ...
+                    sprintf('Export format\n(dimension order):'); ...
+                    'Chunk the dataset:'; ...
+                    'Chunk Y (height):'; ...
+                    'Chunk X (width):'; ...
+                    'Chunk Z (depth):'; ...
+                    sprintf('Deflate\n(0=none, 1-9=zlib):'); ...
+                    sprintf('Create XML header\n(ignored for BDV):'); ...
+                    sprintf('Sub-sampling (BDV only),\ne.g. "1 1 1" or "1 1 1; 2 2 2; 4 4 4":'); ...
+                    sprintf('Resampling method\n(BDV only):')};
+
+                defAns = { ...
+                    {'yxzct - MIB3 default [H,W,D,C,T]', ...
+                     'yxczt - MIB2/Ilastik [H,W,C,D,T]', ...
+                     'bdv   - Fiji BigDataViewer (int16, pyramid)', 1}; ...
+                    defUseChunk; ...
+                    struct('Spinner',true,'Value',defaultChunk(1),'Limits',[1 nH],       'Step',1,'Round',true); ...
+                    struct('Spinner',true,'Value',defaultChunk(2),'Limits',[1 nW],       'Step',1,'Round',true); ...
+                    struct('Spinner',true,'Value',defaultChunk(3),'Limits',[1 max(1,nD)],'Step',1,'Round',true); ...
+                    struct('Spinner',true,'Value',0,              'Limits',[0 9],        'Step',1,'Round',true); ...
+                    isXmlFormat; ...
+                    defSubSamp; ...
+                    {'bicubic', 'nearest', 'bilinear', 1}};
+                dlgOpts.mibPath       = obj.mibPath;
+                dlgOpts.WindowStyle   = 'modal';
+                dlgOpts.LabelPosition = 'left';
+                dlgOpts.WindowWidth   = 600;
+                dlgOpts.WindowHeight  = 360;
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                    'HDF5 saving settings', dlgOpts);
+                if isempty(answer); return; end
+
+                formatChoice = answer{1};
+                isBDV        = startsWith(lower(strtrim(formatChoice)), 'bdv');
+                useChunk     = answer{2};
+                if useChunk
+                    options.ChunkSize = [answer{3}; answer{4}; answer{5}];
+                else
+                    options.ChunkSize = [];
+                end
+                options.Deflate = answer{6};
+
+                if isBDV
+                    % parse sub-sampling: user enters e.g. '1 1 1; 2 2 2; 4 4 4'
+                    ssRaw = str2num(answer{8}); %#ok<ST2NM>
+                    if isempty(ssRaw); ssRaw = [1;1;1]; end
+                    if size(ssRaw,1) == 1; ssRaw = ssRaw(:); end            % row → column
+                    if size(ssRaw,2) == 3 && size(ssRaw,1) ~= 3; ssRaw = ssRaw'; end  % levels-as-rows → [3xL]
+                    options.SubSampling      = ssRaw;
+                    options.ResamplingMethod = answer{9};
+                    isXmlFormat              = true;   % BDV always produces XML
+                else
+                    options.DimOrder = formatChoice(1:5);   % 'yxzct' or 'yxczt'
+                    isXmlFormat      = answer{7};
+                end
             else
-                HDFoptions.SubSampling = [1; 1; 1];
+                % silent / all options pre-set by caller
+                isBDV = isBDVByFormat || (callerSetDimOrder && strcmpi(options.DimOrder, 'bdv'));
+                if isBDV; isXmlFormat = true; end
             end
 
-            % Chunk size: default min(64, spatial dim)
-            if isfield(options, 'ChunkSize') && ~isempty(options.ChunkSize)
-                HDFoptions.ChunkSize = options.ChunkSize;
-            else
-                HDFoptions.ChunkSize = [min(64, nH), min(64, nW), min(64, nD)];
+            % --- apply defaults for any still-unset fields ---
+            % Note: options.ChunkSize == [] means "no chunking" (user explicitly
+            % unchecked the chunk box).  Only set the default when the field is
+            % absent, i.e. the caller never addressed chunking at all.
+            if ~isfield(options,'ChunkSize')
+                options.ChunkSize = defaultChunk;
+            end
+            if ~isfield(options,'Deflate');          options.Deflate          = 0;        end
+            if ~isfield(options,'SubSampling');      options.SubSampling      = [1;1;1];  end
+            if ~isfield(options,'DimOrder');         options.DimOrder         = 'yxzct';  end
+            if ~isfield(options,'ResamplingMethod'); options.ResamplingMethod = 'bicubic'; end
+
+            % ============================================================
+            % BDV SAVE PATH
+            % ============================================================
+            if isBDV
+                BDVoptions = obj.buildCommonHDFOptions(options, metadata, baseName, nH, nW, nD, nC, nT);
+                BDVoptions.SubSampling      = options.SubSampling;
+                BDVoptions.ResamplingMethod = options.ResamplingMethod;
+                % BDV always needs a chunk size; fall back to 64³ if user unchecked chunking
+                if ~isempty(options.ChunkSize)
+                    BDVoptions.ChunkSize = options.ChunkSize;
+                else
+                    BDVoptions.ChunkSize = [64; 64; 64];
+                end
+
+                % BDV requires X/Y swap: permute [H,W,D,C,T] → [W,H,C,D,T]
+                dataBDV = permute(data, [2 1 4 3 5]);
+                io.HDF5.saveBigDataViewerFormat(h5Filename, dataBDV, BDVoptions);
+
+                % BDV always writes an XML header
+                BDVoptions.Format = 'bdv.hdf5';
+                BDVoptions.pixSize.units = sprintf('\xB5m');
+                io.HDF5.saveXMLheader(h5Filename, BDVoptions);
+
+                [~, bn, ~] = fileparts(h5Filename);
+                xmlOut = fullfile(pathStr, [bn '.xml']);
+                fnOut  = xmlOut;
+                fprintf('HDF5Saver: saved BDV → %s + %s\n', h5Filename, xmlOut);
+                return;
             end
 
-            % Deflate compression level
-            if isfield(options, 'Deflate') && ~isempty(options.Deflate)
-                HDFoptions.Deflate = options.Deflate;
-            else
-                HDFoptions.Deflate = 0;
+            % ============================================================
+            % STANDARD HDF5 SAVE PATH (matlab.hdf5 with optional XML)
+            % ============================================================
+
+            % Permute data when a non-default order was requested.
+            switch options.DimOrder
+                case 'yxczt'
+                    dataOut = permute(data, [1 2 4 3 5]);  % [H,W,D,C,T]→[H,W,C,D,T]
+                otherwise
+                    dataOut = data;   % MIB3 native [H,W,D,C,T], no permutation
             end
 
-            HDFoptions.xmlCreate    = 1;
+            HDFoptions = obj.buildCommonHDFOptions(options, metadata, baseName, nH, nW, nD, nC, nT);
+            HDFoptions.Format      = 'matlab.hdf5';
+            HDFoptions.order       = options.DimOrder;
+            HDFoptions.SubSampling = options.SubSampling;
+            if ~isempty(options.ChunkSize)
+                HDFoptions.ChunkSize = options.ChunkSize(:)';  % row vector [y x z]
+            else
+                HDFoptions.ChunkSize = [];   % no chunking
+            end
+
+            io.HDF5.image2hdf5(h5Filename, dataOut, HDFoptions);
+
+            if isXmlFormat
+                io.HDF5.saveXMLheader(h5Filename, HDFoptions);
+                [~, bn, ~] = fileparts(h5Filename);
+                xmlOut = fullfile(pathStr, [bn '.xml']);
+                fnOut  = xmlOut;
+                fprintf('HDF5Saver: saved → %s + %s\n', h5Filename, xmlOut);
+            else
+                fnOut = h5Filename;
+                fprintf('HDF5Saver: saved → %s\n', h5Filename);
+            end
+        end
+
+    end
+
+    methods (Access = private)
+
+        function HDFoptions = buildCommonHDFOptions(~, options, metadata, baseName, nH, nW, nD, nC, nT)
+            % Assemble the HDFoptions struct shared by both save paths.
+            HDFoptions.Deflate      = options.Deflate;
             HDFoptions.showWaitbar  = options.showWaitbar;
             HDFoptions.overwrite    = options.overwrite;
             HDFoptions.layerType    = options.layerType;
-            HDFoptions.ParentFigure = obj.ParentFigure;
+            if isfield(options, 'ParentFigure')
+                HDFoptions.ParentFigure = options.ParentFigure;
+            else
+                HDFoptions.ParentFigure = [];
+            end
+            HDFoptions.height  = nH;
+            HDFoptions.width   = nW;
+            HDFoptions.colors  = nC;
+            HDFoptions.depth   = nD;
+            HDFoptions.time    = nT;
+            HDFoptions.DatasetName = baseName;
 
-            % Pixel size
             if isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
                 HDFoptions.pixSize = metadata.pixSize;
             else
-                HDFoptions.pixSize = struct('x', 1, 'y', 1, 'z', 1, ...
-                    'units', 'um', 't', 1, 'tunits', 's');
+                HDFoptions.pixSize = struct('x',1,'y',1,'z',1,'units','um','t',1,'tunits','s');
             end
-
-            % Bounding box
             if isfield(metadata, 'boundingBox') && ~isempty(metadata.boundingBox)
                 HDFoptions.BoundingBox = metadata.boundingBox;
             else
@@ -230,58 +372,14 @@ classdef HDF5Saver < io.savers.BaseSaver
                                           0 nH*HDFoptions.pixSize.y ...
                                           0 nD*HDFoptions.pixSize.z];
             end
-
-            % Colour LUT
             if isfield(metadata, 'lutColors') && ~isempty(metadata.lutColors)
                 HDFoptions.lutColors = metadata.lutColors;
             else
-                HDFoptions.lutColors = ones(1, 3);
+                HDFoptions.lutColors = ones(1,3);
             end
-
-            % Image description
+            HDFoptions.ImageDescription = '';
             if isfield(metadata, 'imageDescription')
                 HDFoptions.ImageDescription = metadata.imageDescription;
-            else
-                HDFoptions.ImageDescription = '';
-            end
-
-            % --- call legacy image2hdf5 ---
-            % TODO: port image2hdf5() from
-            %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/HDF5/image2hdf5.m
-            %   to mib/+io/+HDF5/image2hdf5.m
-            try
-                io.HDF5.image2hdf5(h5Filename, data, HDFoptions);
-            catch ME
-                error('HDF5Saver:missingHelper', ...
-                    ['image2hdf5() is not yet available.\n' ...
-                     'Please port it from:\n' ...
-                     '  MIB2_RENAMED_FOR_MIB3/ImportExportTools/HDF5/image2hdf5.m\n' ...
-                     'to:\n' ...
-                     '  mib/+io/+HDF5/image2hdf5.m\n\n' ...
-                     'Original error: %s'], ME.message);
-            end
-
-            % --- write XML header if requested ---
-            if isXmlFormat && ~isempty(xmlFilename)
-                % TODO: port saveXMLheader() from
-                %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/HDF5/saveXMLheader.m
-                %   to mib/+io/+HDF5/saveXMLheader.m
-                try
-                    io.HDF5.saveXMLheader(xmlFilename, h5Filename, HDFoptions);
-                catch ME
-                    error('HDF5Saver:missingXmlHelper', ...
-                        ['saveXMLheader() is not yet available.\n' ...
-                         'Please port it from:\n' ...
-                         '  MIB2_RENAMED_FOR_MIB3/ImportExportTools/HDF5/saveXMLheader.m\n' ...
-                         'to:\n' ...
-                         '  mib/+io/+HDF5/saveXMLheader.m\n\n' ...
-                         'Original error: %s'], ME.message);
-                end
-                fnOut = xmlFilename;
-                fprintf('HDF5Saver: saved → %s + %s\n', h5Filename, xmlFilename);
-            else
-                fnOut = h5Filename;
-                fprintf('HDF5Saver: saved → %s\n', h5Filename);
             end
         end
 

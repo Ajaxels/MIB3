@@ -249,7 +249,7 @@ else
         saveOpts.mibPath      = obj.mibPath;
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
     else
-        % No filename → show a save-file dialog so the user can choose
+        % No filename = show a save-file dialog so the user can choose
         formats   = io.SaverFactory.getFormats(layerType);
         extTokens = regexp(formats, '\(\*\.[\w.]+\)', 'match', 'once');
         extTokens = strrep(strrep(extTokens, '(', ''), ')', '');  % '*.tif', '*.am', ...
@@ -281,6 +281,19 @@ else
             utils.dlgs.inputUniversalDlg(obj.mibGUI, {}, {}, 'Missing output format', dlgOpts);
             return;
         end
+
+        % Fix filename extension to match the selected filter.
+        % MATLAB's uiputfile does not always update the extension (R2026a-pre, case 08552750)when the
+        % user changes the format filter (platform-dependent bug), so we
+        % enforce it here.  Handles compound extensions like '.ome.tiff'.
+        selectedExt  = strrep(filterSpec{filterIndex, 1}, '*', '');   % e.g. '.jpg' or '.ome.tiff'
+        allKnownExts = cellfun(@(e) strrep(e, '*', ''), filterSpec(:,1), 'UniformOutput', false);
+        [~, fbase, oldExt] = fileparts(fname);
+        [~, fbase2, ext2]  = fileparts(fbase);   % one extra level for compound ext
+        if ismember([ext2, oldExt], allKnownExts)
+            fbase = fbase2;   % strip compound prefix too (e.g. '.ome' from '.ome.tiff')
+        end
+        fname = [fbase, selectedExt];
 
         filename = fullfile(fpath, fname);
         saveOpts.Format       = filterSpec{filterIndex,2};

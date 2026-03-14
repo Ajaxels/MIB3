@@ -111,6 +111,11 @@ classdef JpgSaver < io.savers.BaseSaver
 
             fnOut = [];
 
+            % Track which options were explicitly provided by the caller
+            callerSetQuality     = isfield(options, 'Quality');
+            callerSetCompression = isfield(options, 'Compression');
+            callerSetFilename    = isfield(options, 'FilenameGenerator');
+
             % --- defaults ---
             if ~isfield(options, 'showWaitbar');       options.showWaitbar    = true;   end
             if ~isfield(options, 'silent');            options.silent         = false;  end
@@ -139,6 +144,36 @@ classdef JpgSaver < io.savers.BaseSaver
                 warning('JpgSaver:wrongClass', ...
                     'Multichannel JPEG requires uint8; got %s. Skipping.', class(data));
                 return;
+            end
+
+            % --- combined "JPG saving settings" dialog ---
+            % Always shown when not silent and Quality or Compression were not
+            % caller-provided.  The "Filename generator" field is appended only
+            % when original slice names are available and were not pre-set.
+            showNaming = ~callerSetFilename && ...
+                isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nD && ...
+                nT == 1 && nD > 1;
+
+            if ~options.silent && (~callerSetQuality || ~callerSetCompression || showNaming)
+                prompts = {'Compression mode:'; 'Quality (0-100):'};
+                defAns  = {{'lossy', 'lossless', 1}; 
+                    struct('Spinner', true, 'Value', options.Quality, 'Limits', [0 100], 'Step', 1, 'Round', true)};
+
+                if showNaming
+                    prompts{end+1} = 'Filename generator:';
+                    defAns{end+1}  = {'Use original filename', 'Use sequential filename', 1};
+                end
+                dlgOpts.mibPath     = obj.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                dlgOpts.LabelPosition = 'left';
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                    'JPG saving settings', dlgOpts);
+                if isempty(answer); return; end
+                options.Compression = answer{1};
+                options.Quality     = answer{2};
+                if showNaming
+                    options.FilenameGenerator = answer{3};
+                end
             end
 
             % --- build output names ---

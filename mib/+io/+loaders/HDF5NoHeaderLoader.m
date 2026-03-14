@@ -305,6 +305,26 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
                 end
             end
 
+            % ---- derive pixSize from BoundingBox in ImageDescription --------
+            % image2hdf5 / MIB embeds a 'BoundingBox xmin xmax ymin ymax zmin zmax'
+            % string inside the axistags description attribute.  Decode it here so
+            % that MibDataset.pixSize reflects the true physical voxel dimensions.
+            if isKey(imginfo, 'ImageDescription') && ~isempty(imginfo{"ImageDescription"})
+                [imgDescParsed, ~] = core.MibImage.splitImageDescription(imginfo{"ImageDescription"});
+                bbCoords = sscanf(imgDescParsed, 'BoundingBox %f %f %f %f %f %f');
+                if numel(bbCoords) == 6
+                    nX  = max([files.width]);
+                    nY  = max([files.height]);
+                    nZ  = sum([files.noLayers]);
+                    pixSz = imginfo{"pixSize"};
+                    if nX > 1; pixSz.x = (bbCoords(2) - bbCoords(1)) / (nX - 1); end
+                    if nY > 1; pixSz.y = (bbCoords(4) - bbCoords(3)) / (nY - 1); end
+                    if nZ > 1; pixSz.z = (bbCoords(6) - bbCoords(5)) / (nZ - 1); end
+                    imginfo{"pixSize"} = pixSz;
+                end
+            end
+            % -----------------------------------------------------------------
+
             % Generate slice names
             imginfo = obj.generateSliceNames(files, imginfo);
 

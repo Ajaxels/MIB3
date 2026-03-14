@@ -168,12 +168,16 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 
             fnOut = [];
 
+            % Track which options were explicitly provided by the caller
+            callerSetFilename = isfield(options, 'FilenameGenerator');
+
             % --- defaults ---
-            if ~isfield(options, 'showWaitbar'); options.showWaitbar = true;    end
-            if ~isfield(options, 'silent');      options.silent      = false;   end
-            if ~isfield(options, 'overwrite');   options.overwrite   = true;    end
-            if ~isfield(options, 'layerType');   options.layerType   = 'image'; end
-            if ~isfield(options, 'Format');      options.Format      = 'Amira Mesh binary (*.am)'; end
+            if ~isfield(options, 'showWaitbar');       options.showWaitbar       = true;    end
+            if ~isfield(options, 'silent');            options.silent            = false;   end
+            if ~isfield(options, 'overwrite');         options.overwrite         = true;    end
+            if ~isfield(options, 'layerType');         options.layerType         = 'image'; end
+            if ~isfield(options, 'Format');            options.Format            = 'Amira Mesh binary (*.am)'; end
+            if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
 
             % --- decompose filename ---
             [pathStr, baseName, ext] = obj.splitFilename(filename); % split the filename and make lower(extension)
@@ -249,6 +253,33 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                 savingOptions.ParentFigure  = obj.ParentFigure;
                 if contains(options.Format, 'sequence', 'IgnoreCase', true)
                     savingOptions.Saving3d = 'sequence';
+
+                    % --- "Define naming" dialog ---
+                    % Show when slice names are available and FilenameGenerator
+                    % was not explicitly provided by the caller.
+                    if ~options.silent && ~callerSetFilename && ...
+                            isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nD && ...
+                            nT == 1 && nD > 1
+                        prompts  = {'Filename generator:'};
+                        defAns   = {{'Use original filename', 'Use sequential filename', 1}};
+                        dlgOpts.mibPath     = obj.mibPath;
+                        dlgOpts.WindowStyle = 'modal';
+                        answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                            'Define naming', dlgOpts);
+                        if isempty(answer); return; end
+                        options.FilenameGenerator = answer{1};
+                    end
+
+                    % Build per-slice output names and pass to bitmap2amiraMesh.
+                    % bitmap2amiraMesh prepends saveDir internally, so strip
+                    % the directory component and pass filenames only.
+                    slicePaths = obj.buildSliceNames(baseName, pathStr, nD, ext, options, metadata);
+                    fnOnly = cell(size(slicePaths));
+                    for k = 1:numel(slicePaths)
+                        [~, fn, fe] = fileparts(slicePaths{k});
+                        fnOnly{k} = [fn, fe];
+                    end
+                    savingOptions.SliceName = fnOnly;
                 end
 
                 io.AmiraMesh.bitmap2amiraMesh(fullFilepath, data(:,:,:,:,1), metaMap, savingOptions);

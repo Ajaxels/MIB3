@@ -135,6 +135,11 @@ classdef TiffSaver < io.savers.BaseSaver
 
             fnOut = [];
 
+            % Track which options were explicitly provided by the caller
+            % (must be done before applying defaults below)
+            callerSetSaving3D = isfield(options, 'Saving3DPolicy');
+            callerSetFilename = isfield(options, 'FilenameGenerator');
+
             % --- defaults ---
             if ~isfield(options, 'showWaitbar');       options.showWaitbar = true; end
             if ~isfield(options, 'silent');            options.silent      = false; end
@@ -190,6 +195,22 @@ classdef TiffSaver < io.savers.BaseSaver
                 warning('TiffSaver:tooManyChannels', ...
                     'TIFF supports ≤3 colour channels; got %d. Use Amira or HDF5 for multichannel data.', nC);
                 return;
+            end
+
+            % --- "TIF saving settings" dialog ---
+            % Show when neither Saving3DPolicy nor FilenameGenerator were
+            % provided by the caller and the dataset has more than one slice.
+            if ~options.silent && ~callerSetSaving3D && ~callerSetFilename && nD > 1
+                prompts = {'Filename generator:'; 'Multi-dimensional saving policy:'};
+                defAns  = {{'Use original filename', 'Use sequential filename', 2}; ...
+                           {'3D stack', '2D sequence', 1}};
+                dlgOpts.mibPath     = obj.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                    'TIF saving settings', dlgOpts);
+                if isempty(answer); return; end
+                options.FilenameGenerator = answer{1};
+                options.Saving3DPolicy    = answer{2};
             end
 
             % --- outer waitbar for time series ---

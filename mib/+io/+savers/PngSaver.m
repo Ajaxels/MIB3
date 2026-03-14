@@ -110,6 +110,9 @@ classdef PngSaver < io.savers.BaseSaver
 
             fnOut = [];
 
+            % Track which options were explicitly provided by the caller
+            callerSetFilename = isfield(options, 'FilenameGenerator');
+
             % --- defaults ---
             if ~isfield(options, 'showWaitbar');       options.showWaitbar = true;  end
             if ~isfield(options, 'silent');            options.silent      = false; end
@@ -150,13 +153,29 @@ classdef PngSaver < io.savers.BaseSaver
                 return;
             end
 
+            % --- "Define naming" dialog ---
+            % Show when slice names are available and FilenameGenerator was not
+            % explicitly provided by the caller.
+            if ~options.silent && ~callerSetFilename && ...
+                    isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nD && ...
+                    nT == 1 && nD > 1
+                prompts  = {'Filename generator:'};
+                defAns   = {{'Use original filename', 'Use sequential filename', 1}};
+                dlgOpts.mibPath     = obj.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                    'Define naming', dlgOpts);
+                if isempty(answer); return; end
+                options.FilenameGenerator = answer{1};
+            end
+
             % --- build per-slice output names ---
             sliceNames = obj.buildSliceNames(baseName, pathStr, nD, ext, options, metadata);
 
             % --- progress bar ---
             wb = [];
             if options.showWaitbar
-                wb = obj.createProgressDialog('Saving images...', sprintf('Saving PNG — %s', baseName), false);
+                wb = obj.createProgressDialog('Saving images...', sprintf('Saving PNG - %s', baseName), false);
             end
 
             allFn = {};
