@@ -1,0 +1,164 @@
+# MIB2 GUIDE → MIB3 AppDesigner Conversion Guide
+
+---
+
+## 1. File layout
+
+| MIB2 | MIB3 |
+|------|------|
+| `Classes/@mibXxxController/mibXxxController.m` | `mib/+controllers/@Xxx/Xxx.m` |
+| `GuiTools/mibXxxGUI.m` + `mibXxxGUI.fig` | `mib/+views/XxxGUI.mlapp` |
+
+Naming: drop the `mib` prefix, PascalCase the rest (`mibBoundingBoxController` → `BoundingBox`).
+
+---
+
+## 2. View (.mlapp)
+
+Create a new App Designer app in `mib/+views/XxxGUI.mlapp`.
+
+- The startup function must accept exactly one argument after `app`: the controller handle.
+  `core.ChildView` calls `XxxGUI(controller)`.
+- Every interactive widget must have a **Tag** set — `core.ChildView` maps Tags to
+  `obj.view.handles.<Tag>`.
+- The `.mlapp` contains **layout only** — no callback logic.
+- No `CloseRequestFcn` in the `.mlapp`; it is set in the controller's `addCallbacks`.
+
+Widget property differences from GUIDE:
+
+| Property | GUIDE | AppDesigner |
+|----------|-------|-------------|
+| Text display | `.String` | `.Text` (uilabel) |
+| Edit / text area | `.String` | `.Value` |
+| Checkbox, dropdown | `.Value` | `.Value` (unchanged) |
+| Button callback | `Callback` | `ButtonPushedFcn` |
+| Edit callback | `Callback` | `ValueChangedFcn` |
+
+---
+
+## 3. Controller (Xxx.m)
+
+### Class and properties
+
+```matlab
+classdef Xxx < handle        % was: mibXxxController
+    properties
+        mibModel
+        view                 % was: View
+        listener
+        BatchOpt
+        ...
+    end
+    events
+        closeEvent
+    end
+```
+
+### Constructor
+
+```matlab
+% MIB2                                   % MIB3
+mibChildView(obj, 'mibXxxGUI')           core.ChildView(obj, 'views.XxxGUI')
+mibRescaleWidgets(...)                   (remove — AppDesigner handles scaling)
+mibUpdateFontSize(gui, Font)             utils.fontSizeUpdate(gui, Font)
+moveWindowOutside(h, 'left')             utils.moveWindowOutside(gui, mibGUI, 'left')
+updateGUIFromBatchOpt_Shared(...)        utils.updateGUIFromBatchOpt_Shared(...)
+updateBatchOptCombineFields_Shared(...)  utils.updateBatchOptCombineFields_Shared(...)
+```
+
+After creating the view, call `obj.addCallbacks()` (see below), then register listeners:
+
+```matlab
+obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+obj.listener{2} = addlistener(obj.mibModel, 'NewDataset',       @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+```
+
+### addCallbacks (new method, no MIB2 equivalent)
+
+All widget callbacks are wired here, called once from the constructor.
+**Always set `CloseRequestFcn` first** so the window X button triggers proper cleanup:
+
+```matlab
+function addCallbacks(obj)
+    obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
+    handles = obj.view.handles;
+    handles.someEdit.ValueChangedFcn   = @obj.updateBatchOptFromGUI;
+    handles.applyButton.ButtonPushedFcn = @(~,~) obj.applyButton_Callback;
+    handles.closeButton.ButtonPushedFcn = @(~,~) obj.closeButton_Callback;
+    ...
+end
+```
+
+In MIB2 these assignments lived in the GUIDE `.m` file (`OpeningFcn`, per-widget
+`_Callback` stubs, `CloseRequestFcn`). All of that moves here.
+
+### ViewListner_Callback2 (static method)
+
+Add a guard against stale listeners (fires when the window was closed via X
+before the listener was cleaned up):
+
+```matlab
+methods (Static)
+    function ViewListner_Callback2(obj, src, evnt)
+        if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
+            for i = 1:numel(obj.listener); delete(obj.listener{i}); end
+            return;
+        end
+        switch evnt.EventName
+            case {'UpdateGuiWidgets', 'NewDataset'}
+                obj.updateWidgets();
+        end
+    end
+end
+```
+
+MIB2 only listened to `updateGuiWidgets`; MIB3 also adds `NewDataset`.
+
+### updateBatchOptFromGUI
+
+AppDesigner callbacks pass an extra `valueChangedData` argument (declare but ignore):
+
+```matlab
+function updateBatchOptFromGUI(obj, hObject, ~)
+    obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
+end
+```
+
+### Other renames
+
+| MIB2 | MIB3 |
+|------|------|
+| `obj.View` | `obj.view` |
+| `okBtn_Callback` | `applyButton_Callback` |
+| `cancelBtn_Callback` | `closeButton_Callback` |
+| `ToggleEventData(x)` | `core.ToggleEventData(x)` |
+| `notify(..., 'updateGuiWidgets')` | `notify(..., 'UpdateGuiWidgets')` |
+| `notify(..., 'updateImgInfo')` | `notify(..., 'UpdateImgInfo')` |
+| `errordlg(...)` | `utils.dlgs.showErrorDialog(...)` |
+
+---
+
+## 4. Model access
+
+Data now lives inside `MibDataset.image` rather than directly on `MibDataset`:
+
+```matlab
+% MIB2                                   % MIB3
+I{id}.pixSize                            I{id}.image.pixSize
+I{id}.getBoundingBox()                   I{id}.image.boundingBox
+I{id}.pixSize.x = v; ...                 I{id}.setPixSize(newStruct)
+I{id}.updateBoundingBox(NaN, shift)      I{id}.updateBoundingBox([], shift)
+```
+
+---
+
+## 5. Checklist
+
+- [ ] `.mlapp` startup function accepts `(app, controller)`
+- [ ] All widgets have unique Tags; addressed as `obj.view.handles.<Tag>`
+- [ ] `core.ChildView` used; `obj.view` (lowercase)
+- [ ] `addCallbacks()` called from constructor; `CloseRequestFcn` set inside it
+- [ ] `ViewListner_Callback2` has `~isvalid(obj.view.gui)` guard
+- [ ] Both `UpdateGuiWidgets` and `NewDataset` listeners registered
+- [ ] All utility functions namespaced (`utils.*`, `core.*`)
+- [ ] Event names PascalCase (`UpdateGuiWidgets`, `UpdateImgInfo`, `NewDataset`)
