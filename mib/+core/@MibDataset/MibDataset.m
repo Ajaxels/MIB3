@@ -61,15 +61,6 @@ classdef MibDataset < matlab.mixin.Copyable
         % @li @b 3 = the 'yz' plane, @b default
         % @li @b 1 = the 'zx' plane
         % @li @b 2 = the 'zy' plane
-        pixSize
-        % a structure with diminsions of voxels, @code .x .y .z .t .tunits .units @endcode
-        % the fields are
-        % @li .x - physical width of a pixel
-        % @li .y - physical height of a pixel
-        % @li .z - physical thickness of a pixel
-        % @li .t - time between the frames for 2D movies
-        % @li .tunits - time units
-        % @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
         restrictSelectionToMask
         % a switch indicating the value of the obj.view.handles.panels.segmentation.handles.restrictMask
         restrictSelectionToMaterial
@@ -150,6 +141,10 @@ classdef MibDataset < matlab.mixin.Copyable
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
 
         fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
+
+        setPixSize(obj, val)        % Propagate a new pixSize struct to image, labels, mask, and selection layers.
+
+        updateBoundingBox(obj, newBB, xyzShift, imgDims)  % Delegate bounding-box update to obj.image; ds.image.pixSize is updated in place.
 
         function obj = MibDataset(img, meta, datasetType, modelType)
             % obj = MibDataset(img, meta, datasetType, modelType)

@@ -49,7 +49,7 @@ if ~isempty(id)
         return;
     else
         try
-            figure(obj.childControllers{id}.View.gui);
+            figure(obj.childControllers{id}.view.gui);
             obj.childControllers{id}.updateWidgets();   % update widgets of the controller when restarting it
             return; 
         catch err

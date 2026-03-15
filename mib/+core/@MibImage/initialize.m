@@ -81,6 +81,7 @@ if ~isempty(obj.data)
     % Compute a default bounding box from image dimensions × voxel size.
     % This is used whenever the file has no BoundingBox tag (e.g. plain PNG).
     pixSize = meta{'pixSize'};
+    obj.pixSize = pixSize;
     defaultBB = [ 0, (max([obj.width,  2]) - 1) * pixSize.x, ...
                   0, (max([obj.height, 2]) - 1) * pixSize.y, ...
                   0, (max([obj.depth,  2]) - 1) * pixSize.z ];

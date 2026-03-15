@@ -168,7 +168,7 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     obj.useLUT = false;
                         
     % update additional properties
-    obj.pixSize    = meta{'pixSize'};
+    obj.setPixSize(meta{'pixSize'});
     obj.dim_yxzct  = obj.image.dim_yxzct;
     % boundingBox and actionLog are owned by obj.image (core.MibImage).
     % They are parsed from meta{'ImageDescription'} inside MibImage.initialize()

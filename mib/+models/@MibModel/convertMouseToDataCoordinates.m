@@ -41,9 +41,9 @@ if mode(1) == 's' % shown
     % Compute coef_z from the current orientation.
     ds = obj.I{obj.id};
     switch ds.orientation
-        case 3;  coef_z = ds.pixSize.x / ds.pixSize.y;
-        case 1;  coef_z = ds.pixSize.z / ds.pixSize.x;
-        otherwise; coef_z = ds.pixSize.z / ds.pixSize.y;
+        case 3;  coef_z = ds.image.pixSize.x / ds.image.pixSize.y;
+        case 1;  coef_z = ds.image.pixSize.z / ds.image.pixSize.x;
+        otherwise; coef_z = ds.image.pixSize.z / ds.image.pixSize.y;
     end
 
     if magFactor >= 1 && axesX(1) <= 1

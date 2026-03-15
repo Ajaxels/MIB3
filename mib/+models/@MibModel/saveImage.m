@@ -313,14 +313,14 @@ else
             dlgOpts.mibPath      = obj.mibPath;
             dlgOpts.HelpUrl      = fullfile(obj.mibPath, ...
                 'techdoc', 'html', 'user-interface', 'menu', 'dataset', 'index.html#parameters');
-            [~, updatedPixSize, pixDlgResult] = utils.updatePixSizeAndResolution([], ds.pixSize, dlgOpts);
+            [~, updatedPixSize, pixDlgResult] = utils.updatePixSizeAndResolution([], ds.image.pixSize, dlgOpts);
             if pixDlgResult == 0; return; end   % user cancelled the voxel-size dialog
 
             % Apply updated pixSize to the dataset and recalculate bounding box
-            ds.pixSize = updatedPixSize;
-            ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.pixSize.x;
-            ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.pixSize.y;
-            ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.pixSize.z;
+            ds.setPixSize(updatedPixSize);
+            ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.image.pixSize.x;
+            ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.image.pixSize.y;
+            ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.image.pixSize.z;
         end
 
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);

@@ -494,17 +494,17 @@ if obj.showLines3D && dataset.lines3D.noTrees > 0
 
     % Convert pixel coordinates to physical coordinates
     if dataset.orientation == 3 % xy
-        BoxOut(1:2) = pixBox(1:2) * dataset.pixSize.x + bb(1) - dataset.pixSize.x;
-        BoxOut(3:4) = pixBox(3:4) * dataset.pixSize.y + bb(3) - dataset.pixSize.y;
-        BoxOut(5:6) = pixBox(5:6) * dataset.pixSize.z + bb(5) - dataset.pixSize.z;
+        BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.x + bb(1) - dataset.image.pixSize.x;
+        BoxOut(3:4) = pixBox(3:4) * dataset.image.pixSize.y + bb(3) - dataset.image.pixSize.y;
+        BoxOut(5:6) = pixBox(5:6) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
     elseif dataset.orientation == 1 % zx
-        BoxOut(1:2) = pixBox(1:2) * dataset.pixSize.z + bb(5) - dataset.pixSize.z;
-        BoxOut(3:4) = pixBox(3:4) * dataset.pixSize.x + bb(1) - dataset.pixSize.x;
-        BoxOut(5:6) = pixBox(5:6) * dataset.pixSize.y + bb(3) - dataset.pixSize.y;
+        BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
+        BoxOut(3:4) = pixBox(3:4) * dataset.image.pixSize.x + bb(1) - dataset.image.pixSize.x;
+        BoxOut(5:6) = pixBox(5:6) * dataset.image.pixSize.y + bb(3) - dataset.image.pixSize.y;
     elseif dataset.orientation == 2 % zy
-        BoxOut(1:2) = pixBox(1:2) * dataset.pixSize.z + bb(5) - dataset.pixSize.z;
-        BoxOut(3:4) = pixBox(3:4) * dataset.pixSize.y + bb(3) - dataset.pixSize.y;
-        BoxOut(5:6) = pixBox(5:6) * dataset.pixSize.x + bb(1) - dataset.pixSize.x;
+        BoxOut(1:2) = pixBox(1:2) * dataset.image.pixSize.z + bb(5) - dataset.image.pixSize.z;
+        BoxOut(3:4) = pixBox(3:4) * dataset.image.pixSize.y + bb(3) - dataset.image.pixSize.y;
+        BoxOut(5:6) = pixBox(5:6) * dataset.image.pixSize.x + bb(1) - dataset.image.pixSize.x;
     end
 
     addLinesOptions.orientation = dataset.orientation;

@@ -71,15 +71,15 @@ end
 
 % get the scaling coefficient
 if obj.mibModel.I{index}.orientation == 3     % xy
-    coef_z = obj.mibModel.I{index}.pixSize.x/obj.mibModel.I{index}.pixSize.y;
+    coef_z = obj.mibModel.I{index}.image.pixSize.x/obj.mibModel.I{index}.image.pixSize.y;
     height = obj.mibModel.I{index}.dim_yxzct(1); % height
     width = obj.mibModel.I{index}.dim_yxzct(2);  % width
 elseif obj.mibModel.I{index}.orientation == 1     % ---- xz
-    coef_z = obj.mibModel.I{index}.pixSize.z/obj.mibModel.I{index}.pixSize.x;
+    coef_z = obj.mibModel.I{index}.image.pixSize.z/obj.mibModel.I{index}.image.pixSize.x;
     height = obj.mibModel.I{index}.dim_yxzct(2); % width
     width = obj.mibModel.I{index}.dim_yxzct(3);  % depth
 elseif obj.mibModel.I{index}.orientation == 2    % ---- yz
-    coef_z = obj.mibModel.I{index}.pixSize.z/obj.mibModel.I{index}.pixSize.y;
+    coef_z = obj.mibModel.I{index}.image.pixSize.z/obj.mibModel.I{index}.image.pixSize.y;
     height = obj.mibModel.I{index}.dim_yxzct(1); % height
     width = obj.mibModel.I{index}.dim_yxzct(3);  % depth
 end

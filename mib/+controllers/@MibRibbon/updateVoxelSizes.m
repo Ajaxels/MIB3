@@ -37,7 +37,7 @@ result = 0;
 
 %% Build default BatchOpt from the currently active dataset
 PossibleOptions = {'m', 'cm', 'mm', 'um', 'nm'};
-pixSizeTemp = obj.mibModel.I{obj.mibModel.id}.pixSize;
+pixSizeTemp = obj.mibModel.I{obj.mibModel.id}.image.pixSize;
 
 BatchOpt = struct();
 BatchOpt.VoxelX    = num2str(pixSizeTemp.x);
@@ -104,17 +104,19 @@ end
 %% Apply new pixSize to the dataset
 ds = obj.mibModel.I{BatchOpt.id};
 
-if isfield(pixSize, 'x');      ds.pixSize.x      = pixSize.x;      end
-if isfield(pixSize, 'y');      ds.pixSize.y      = pixSize.y;      end
-if isfield(pixSize, 'z');      ds.pixSize.z      = pixSize.z;      end
-if isfield(pixSize, 't');      ds.pixSize.t      = pixSize.t;      end
-if isfield(pixSize, 'units');  ds.pixSize.units  = pixSize.units;  end
-if isfield(pixSize, 'tunits'); ds.pixSize.tunits = pixSize.tunits; end
+newPixSize = ds.image.pixSize;
+if isfield(pixSize, 'x');      newPixSize.x      = pixSize.x;      end
+if isfield(pixSize, 'y');      newPixSize.y      = pixSize.y;      end
+if isfield(pixSize, 'z');      newPixSize.z      = pixSize.z;      end
+if isfield(pixSize, 't');      newPixSize.t      = pixSize.t;      end
+if isfield(pixSize, 'units');  newPixSize.units  = pixSize.units;  end
+if isfield(pixSize, 'tunits'); newPixSize.tunits = pixSize.tunits; end
+ds.setPixSize(newPixSize);
 
 % Recalculate bounding box extents from updated voxel sizes (origin unchanged)
-ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.pixSize.x;
-ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.pixSize.y;
-ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.pixSize.z;
+ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.image.pixSize.x;
+ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.image.pixSize.y;
+ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.image.pixSize.z;
 
 %% Refresh view: update axes limits then redraw image
 Options.mode  = 'resize';
@@ -124,13 +126,13 @@ notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 notify(obj.mibModel, 'ShowImage');
 
 %% Sync batch processing system with applied values
-BatchOpt.VoxelX    = num2str(ds.pixSize.x);
-BatchOpt.VoxelY    = num2str(ds.pixSize.y);
-BatchOpt.VoxelZ    = num2str(ds.pixSize.z);
-BatchOpt.VoxelT    = num2str(ds.pixSize.t);
-BatchOpt.Units     = {ds.pixSize.units};
+BatchOpt.VoxelX    = num2str(ds.image.pixSize.x);
+BatchOpt.VoxelY    = num2str(ds.image.pixSize.y);
+BatchOpt.VoxelZ    = num2str(ds.image.pixSize.z);
+BatchOpt.VoxelT    = num2str(ds.image.pixSize.t);
+BatchOpt.Units     = {ds.image.pixSize.units};
 BatchOpt.Units{2}  = PossibleOptions;
-BatchOpt.TimeUnits = ds.pixSize.tunits;
+BatchOpt.TimeUnits = ds.image.pixSize.tunits;
 
 BatchOpt  = rmfield(BatchOpt, 'id');
 eventdata = core.ToggleEventData(BatchOpt);

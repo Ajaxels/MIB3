@@ -10,7 +10,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 % Responsibilities of MibDataset.saveImage():
 %   1. Validate that the requested layer exists (e.g. mask must exist).
 %   2. Inject dataset-level metadata that the layer objects lack:
-%        .pixSize      from obj.pixSize
+%        .pixSize      from obj.image.pixSize
 %        .boundingBox  from obj.image.boundingBox
 %        .layerType    for format-dispatch (AmiraMesh, HDF5, etc.)
 %   3. Delegate to the appropriate layer object:
@@ -154,7 +154,7 @@ if ~isfield(options,'Saving3DPolicy'); options.Saving3DPolicy = '3D stack'; end
 
 % --- inject dataset-level metadata into options ---
 % These are not stored by MibImage/MibLabels themselves
-options.pixSize    = obj.pixSize;
+options.pixSize    = obj.image.pixSize;
 options.layerType  = layerType;
 
 % boundingBox lives on obj.image (core.MibImage); access it directly.

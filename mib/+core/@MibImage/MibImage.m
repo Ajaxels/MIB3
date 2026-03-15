@@ -34,11 +34,23 @@ classdef MibImage < matlab.mixin.Copyable
         % MibDataset.actionLog is a Dependent property that forwards here.
         boundingBox = []
         % Physical extent of the dataset as [xmin xmax ymin ymax zmin zmax]
-        % in the units stored in MibDataset.pixSize.units (default: µm).
+        % in the units stored in pixSize.units (default: µm).
         % Populated from the 'BoundingBox' prefix of the ImageDescription tag
         % when a file is loaded; falls back to a default computed from the
         % image dimensions × voxel size when no BoundingBox tag is present.
-        % MibDataset.boundingBox is a Dependent property that forwards here.
+        pixSize
+        % Physical voxel dimensions. A struct with fields:
+        %   .x      physical width of a pixel in .units
+        %   .y      physical height of a pixel in .units
+        %   .z      physical thickness of a slice in .units
+        %   .t      time between frames (for movies)
+        %   .units  spatial units: 'm' | 'cm' | 'mm' | 'um' | 'nm'
+        %   .tunits time units string
+        %
+        % IMPORTANT — always write via MibDataset.setPixSize():
+        %   ds.setPixSize(newPixSize)       % updates image + labels + mask + selection
+        % Read directly from the layer that owns the data:
+        %   pixSize = ds.image.pixSize;     % the authoritative copy
         lutColors
         % a matrix with LUT colors [1:colorChannel, R G B], (0-1)
         maskFilename = 'Mask_none.tif'

@@ -218,7 +218,7 @@ end
 
 % ---- update bounding box ----
 if strcmp(options.dim, 'depth')
-    obj.image.boundingBox(6) = obj.image.boundingBox(5) + (obj.image.depth - 1) * obj.pixSize.z;
+    obj.image.boundingBox(6) = obj.image.boundingBox(5) + (obj.image.depth - 1) * obj.image.pixSize.z;
 end
 
 % ---- update action log ----

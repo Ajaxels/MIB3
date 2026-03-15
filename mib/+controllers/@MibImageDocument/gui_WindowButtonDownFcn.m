@@ -124,9 +124,9 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
 
     if ~obj.mibController.fastPanningMode % full image / padded mode
         switch dataset.orientation
-            case 3;  coef_z = dataset.pixSize.x / dataset.pixSize.y;
-            case 1;  coef_z = dataset.pixSize.z / dataset.pixSize.x;
-            otherwise; coef_z = dataset.pixSize.z / dataset.pixSize.y;
+            case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
+            case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
+            otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
         end
 
         if magFactor < 1    % zoomed in: load padded region only (avoids fetching the full large image)

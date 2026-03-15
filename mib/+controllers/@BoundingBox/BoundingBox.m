@@ -35,6 +35,15 @@ classdef BoundingBox < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, src, evnt)
+            % Guard: if the view window was closed (e.g. via X button before
+            % CloseRequestFcn was registered, or external deletion), clean up
+            % the listeners now and return silently.
+            if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
+                for i = 1:numel(obj.listener)
+                    delete(obj.listener{i});
+                end
+                return;
+            end
             switch evnt.EventName
                 case {'UpdateGuiWidgets', 'NewDataset'}
                     obj.updateWidgets();
@@ -49,7 +58,7 @@ classdef BoundingBox < handle
             % -------------- fill BatchOpt structure with default values
             obj.BatchOpt.id = obj.mibModel.id;  % optional
 
-            obj.pixSize = obj.mibModel.I{obj.BatchOpt.id}.pixSize;
+            obj.pixSize = obj.mibModel.I{obj.BatchOpt.id}.image.pixSize;
             obj.bb = obj.mibModel.I{obj.BatchOpt.id}.image.boundingBox;    % current bounding box
             obj.BatchOpt.Xmin = num2str(obj.bb(1));
             obj.BatchOpt.Ymin = num2str(obj.bb(3));
@@ -147,7 +156,7 @@ classdef BoundingBox < handle
 
             obj.BatchOpt.id = obj.mibModel.id;
             obj.bb = obj.mibModel.I{obj.BatchOpt.id}.image.boundingBox;
-            obj.pixSize = obj.mibModel.I{obj.BatchOpt.id}.pixSize;
+            obj.pixSize = obj.mibModel.I{obj.BatchOpt.id}.image.pixSize;
             obj.oldBB = obj.bb;
 
             obj.view.handles.BoundingBoxLabel.Text = ...
@@ -192,6 +201,10 @@ classdef BoundingBox < handle
             % assign ValueChanged/ButtonPushed callbacks to all interactive
             % widgets of the view; called once from the constructor after
             % the view is created
+
+            % Hook the window X-button so it triggers the same cleanup as
+            % the explicit Close button (deletes listeners, fires closeEvent).
+            obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
 
             handles = obj.view.handles;
 
@@ -427,21 +440,24 @@ classdef BoundingBox < handle
 
             xyzShift(3) = minZ - obj.bb(5);
 
-            obj.mibModel.I{obj.BatchOpt.id}.pixSize.x = obj.pixSize.x;
-            obj.mibModel.I{obj.BatchOpt.id}.pixSize.y = obj.pixSize.y;
-            obj.mibModel.I{obj.BatchOpt.id}.pixSize.z = obj.pixSize.z;
+            ds = obj.mibModel.I{obj.BatchOpt.id};
+            newPixSize = ds.image.pixSize;
+            newPixSize.x = obj.pixSize.x;
+            newPixSize.y = obj.pixSize.y;
+            newPixSize.z = obj.pixSize.z;
 
             if ~isnan(maxX)  % recalculate pixSize.x
-                obj.mibModel.I{obj.BatchOpt.id}.pixSize.x = (maxX - minX) / (max([obj.mibModel.I{obj.BatchOpt.id}.width  2]) - 1);
+                newPixSize.x = (maxX - minX) / (max([ds.image.width  2]) - 1);
             end
             if ~isnan(maxY)  % recalculate pixSize.y
-                obj.mibModel.I{obj.BatchOpt.id}.pixSize.y = (maxY - minY) / (max([obj.mibModel.I{obj.BatchOpt.id}.height 2]) - 1);
+                newPixSize.y = (maxY - minY) / (max([ds.image.height 2]) - 1);
             end
             if ~isnan(maxZ)  % recalculate pixSize.z
-                obj.mibModel.I{obj.BatchOpt.id}.pixSize.z = (maxZ - minZ) / (max([obj.mibModel.I{obj.BatchOpt.id}.depth  2]) - 1);
+                newPixSize.z = (maxZ - minZ) / (max([ds.image.depth  2]) - 1);
             end
 
-            obj.mibModel.I{obj.BatchOpt.id}.pixSize.units = 'um';
+            newPixSize.units = 'um';
+            ds.setPixSize(newPixSize);
             obj.mibModel.I{obj.BatchOpt.id}.updateBoundingBox();
             obj.mibModel.I{obj.BatchOpt.id}.updateBoundingBox([], xyzShift);
 

@@ -34,7 +34,7 @@ function updateBoundingBox(obj, newBB, xyzShift, imgDims)
 % Updates
 %
 
-if nargin < 4
+if nargin < 4 || isempty(imgDims)
     h     = obj.height;
     w     = obj.width;
     depth = obj.depth;

@@ -68,11 +68,11 @@ end
 
 %% Calculate aspect ratio coefficient based on orientation
 if obj.mibModel.I{datasetId}.orientation == 3 % xy
-    coef_z = obj.mibModel.I{datasetId}.pixSize.x / (obj.mibModel.I{datasetId}.pixSize.y);
+    coef_z = obj.mibModel.I{datasetId}.image.pixSize.x / (obj.mibModel.I{datasetId}.image.pixSize.y);
 elseif obj.mibModel.I{datasetId}.orientation == 1 % zx
-    coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.x;
+    coef_z = obj.mibModel.I{datasetId}.image.pixSize.z / obj.mibModel.I{datasetId}.image.pixSize.x;
 elseif obj.mibModel.I{datasetId}.orientation == 2 % zy
-    coef_z = obj.mibModel.I{datasetId}.pixSize.z / obj.mibModel.I{datasetId}.pixSize.y;
+    coef_z = obj.mibModel.I{datasetId}.image.pixSize.z / obj.mibModel.I{datasetId}.image.pixSize.y;
 end
 
 %% Update image in axes

@@ -47,7 +47,7 @@ datasetId   = obj.quickMeasure.datasetId;
 dataset     = obj.mibModel.I{datasetId};
 magFactor   = dataset.magFactor;
 [axesX, axesY] = dataset.getAxesLimits();
-pixSize     = dataset.pixSize;
+pixSize     = dataset.image.pixSize;
 orientation = dataset.orientation;
 
 switch orientation

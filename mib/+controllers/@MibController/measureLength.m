@@ -132,7 +132,7 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
     dataset     = obj.mibModel.I{datasetId};
     magFactor   = dataset.magFactor;
     [axesX, axesY] = dataset.getAxesLimits();
-    pixSize     = dataset.pixSize;
+    pixSize     = dataset.image.pixSize;
     orientation = dataset.orientation;
 
     % Convert physical (XData) coords to data-pixel coords
