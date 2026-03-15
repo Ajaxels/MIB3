@@ -93,6 +93,8 @@ classdef MibImage < matlab.mixin.Copyable
 
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
 
+        updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
+
     end
 
     methods (Static)

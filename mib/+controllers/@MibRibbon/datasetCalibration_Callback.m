@@ -18,8 +18,9 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
-    case 'scalebar'              % obj.handles.ribbonDataset.scalebar
-    case 'boundingbox'           % obj.handles.ribbonDataset.boundingbox
+    case 'Scale bar'              % obj.handles.ribbonDataset.scalebar
+    case 'Bounding box'           % obj.handles.ribbonDataset.boundingbox
+        obj.mibController.startController('controllers.BoundingBox');  % a new appdesigner version
     case 'Voxels'                % obj.handles.ribbonDataset.voxels
         obj.updateVoxelSizes();
 end

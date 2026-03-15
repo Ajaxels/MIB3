@@ -42,6 +42,7 @@ classdef ChildView < handle
             obj.gui = fh(obj.Controller);   % init the gui
             
             if isprop(obj.gui, 'Figure')  % appDesigner app
+
                 % copy property names to Tag field, to have it similar to GUIDE usage
                 propList = properties(obj.gui);
                 for propId = 1:numel(propList)

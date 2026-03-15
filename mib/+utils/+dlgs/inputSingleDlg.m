@@ -127,7 +127,7 @@ switch options.Icon
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
     case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
-    case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(4));
+    case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(5));
     otherwise
         % puffin_question
         iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));

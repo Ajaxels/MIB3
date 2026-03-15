@@ -9,6 +9,9 @@ if nargin < 2; updatePanels = {}; end
 dataset = obj.mibModel.I{obj.mibModel.id};
 selectedSet = obj.mibModel.Sets.selectedSet;
 
+% get new filename
+[newFileDir, newFileName, newFileExt] = fileparts(dataset.image.filename);
+newFileBasename = [newFileName newFileExt];
 
 %% Update the IMAGE TAB ---------------------------------------------
 % -------------------------------------------------------------------
@@ -183,8 +186,8 @@ end
 if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
-    currentSlice = obj.mibModel.I{obj.mibModel.id}.slices{obj.mibModel.I{obj.mibModel.id}.orientation}(1);
-    max_slice = obj.mibModel.I{obj.mibModel.id}.dim_yxzct(obj.mibModel.I{obj.mibModel.id}.orientation);
+    currentSlice = dataset.slices{dataset.orientation}(1);
+    max_slice = dataset.dim_yxzct(dataset.orientation);
 
     if max_slice > 1 && max_slice ~= imViewHandles.sliceNumber.Limits(2) - 0.001
         imViewHandles.sliceNumber.Limits = [1 max_slice+0.001]; % add small value to make sure that limits are not the same
@@ -208,7 +211,7 @@ end
 if isempty(updatePanels) || ismember(updatePanels, 'timeSlider')
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
-    currentTime = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
+    currentTime = dataset.slices{5}(1);
 
     if dataset.image.time > 1 && dataset.image.time ~= imViewHandles.frameNumber.Limits(2) - 0.001
         imViewHandles.frameNumber.Limits = [1 dataset.image.time+0.001]; % add small value to make sure that limits are not the same
@@ -300,10 +303,10 @@ if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
     % update buffer buttons in the Datasets panel
     bufferId = sprintf('buffer%d', obj.mibModel.Sets.selectedDataset(selectedSet));  % generate handle for the buffer button
     
-    if strcmp(obj.mibModel.I{obj.mibModel.id}.image.filename, 'none.tif')  % no dataset loaded
+    if strcmp(dataset.image.filename, 'none.tif')  % no dataset loaded
         activeDataset.handles.(bufferId).Tooltip = 'use RMB for a context menu with additional options';
     else
-        activeDataset.handles.(bufferId).Tooltip = obj.mibModel.I{obj.mibModel.id}.image.filename;
+        activeDataset.handles.(bufferId).Tooltip = dataset.image.filename;
     end
     activeDataset.handles.(bufferId).BackgroundColor = [0 1 0];
     
@@ -325,19 +328,22 @@ if isempty(updatePanels) || ismember(updatePanels, 'dirContentsDataset')
     if obj.mibModel.useBioFormats; reader = 'BioFormats'; end
     
     % get list of extensions
-    extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(obj.mibModel.I{obj.mibModel.id}.datasetType, reader)];
+    extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(dataset.datasetType, reader)];
     dirContents.handles.fileFilters.Items = extentions;
     dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
     obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = dirContents.handles.fileFilters.Value;
 
-    [newFileDir, newFileName, newFileExt] = fileparts(obj.mibModel.I{obj.mibModel.id}.image.filename);
     if strcmp(newFileDir, obj.mibModel.currentDirectory)
-        % the directory was not updated
-
+        % Same directory — just highlight the matching file in the existing list
+        fileListBox = dirContents.handles.fileList;
+        if ~isempty(newFileBasename) && ismember(newFileBasename, fileListBox.Items)
+            fileListBox.Value = newFileBasename;
+            scroll(fileListBox, newFileBasename);
+        end
     else
-        % the directory was updated
-        %obj.mibModel.currentDirectory = newFileDir;
-        %obj.cDirContents.updateFileList_Callback(obj.mibModel.I{obj.mibModel.id}.image.filename);
+        % Directory changed — update currentDirectory and rebuild the file list
+        obj.mibModel.currentDirectory = newFileDir;
+        obj.cDirContents.updateFileList_Callback(newFileBasename);
     end
 
 end
@@ -387,11 +393,17 @@ if isempty(updatePanels) || ismember(updatePanels, 'selectionPanel')
 end
 
 % update additional settings depending on the type of the loaded dataset
-if obj.mibModel.I{obj.mibModel.id}.datasetType(1) == 'V'  % virtual dataset
+if dataset.datasetType(1) == 'V'  % virtual dataset
     obj.view.brushCursorShow = false;
 else
     obj.view.brushCursorShow = true;
     obj.view.brushCursorOffset = []; % reset offset to re-render cursor
+end
+
+%% Update status bar ---------------------------------------------
+% ------------------------------------------------------------
+if isempty(updatePanels) || ismember(updatePanels, 'statusBar')
+    obj.cStatus.handles.currentDirectory.Value = newFileDir;
 end
 
 %% update mouse and key callbacks for MibImageDocuments --------------------------------------------
@@ -413,7 +425,7 @@ end
 % % update roi list box
 % % get number of ROIs
 % try
-%     [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI();
+%     [number, indices] = dataset.hROI.getNumberOfROI();
 % catch err
 %     err
 % end
@@ -422,20 +434,20 @@ end
 % obj.mibView.handles.mibRoiList.Value = 1;
 % if number > 0
 %     %currVal = obj.mibView.handles.mibRoiList.Value;
-%     currVal = obj.mibModel.I{obj.mibModel.id}.selectedROI;
+%     currVal = dataset.selectedROI;
 %     if currVal > 0; obj.mibView.handles.mibRoiShowCheck.Value = 1; end
 %     for i=1:number
-%         str2(i+1) = obj.mibModel.I{obj.mibModel.id}.hROI.Data(indices(i)).label;
+%         str2(i+1) = dataset.hROI.Data(indices(i)).label;
 %     end
 %     if currVal > number+1
 %         currVal = 1;
-%         obj.mibModel.I{obj.mibModel.id}.selectedROI = 0;
+%         dataset.selectedROI = 0;
 %     else
 %         currVal = currVal+1;
 %     end
 % else
 %     currVal = 1;
-%     obj.mibModel.I{obj.mibModel.id}.selectedROI = 0;
+%     dataset.selectedROI = 0;
 % end
 % obj.mibView.handles.mibRoiList.String = str2;
 % if numel(currVal) > 1
@@ -444,7 +456,7 @@ end
 %     targetRoiValue = max([currVal 1]);
 %     if targetRoiValue > numel(str2)
 %         obj.mibView.handles.mibRoiList.Value = 1;
-%         obj.mibModel.I{obj.mibModel.id}.selectedROI = 0;
+%         dataset.selectedROI = 0;
 %     end
 % end
 % obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
