@@ -329,6 +329,17 @@ if isempty(updatePanels) || ismember(updatePanels, 'dirContentsDataset')
     dirContents.handles.fileFilters.Items = extentions;
     dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
     obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = dirContents.handles.fileFilters.Value;
+
+    [newFileDir, newFileName, newFileExt] = fileparts(obj.mibModel.I{obj.mibModel.id}.image.filename);
+    if strcmp(newFileDir, obj.mibModel.currentDirectory)
+        % the directory was not updated
+
+    else
+        % the directory was updated
+        %obj.mibModel.currentDirectory = newFileDir;
+        %obj.cDirContents.updateFileList_Callback(obj.mibModel.I{obj.mibModel.id}.image.filename);
+    end
+
 end
 
 %% Update panelThresholding panel ---------------------------------------------

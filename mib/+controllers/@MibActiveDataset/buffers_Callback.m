@@ -37,7 +37,7 @@ if ~strcmp(prevBufferStringId, newBufferStringId)
     if strcmp(obj.mibModel.I{prevDatasetId}.image.filename, 'none.tif')  % no dataset loaded
         obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
     else
-        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [0.6 1 0.6];
+        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [0.7 1 0.7];
     end
 
     % update description of the set tab

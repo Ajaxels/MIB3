@@ -136,8 +136,12 @@ classdef TiffSaver < io.savers.BaseSaver
             fnOut = [];
 
             % Track which options were explicitly provided by the caller
-            % (must be done before applying defaults below)
-            callerSetSaving3D = isfield(options, 'Saving3DPolicy');
+            % (must be done before applying defaults below).
+            % NOTE: callerSetSaving3D is intentionally NOT used to gate the
+            % dialog — MibImage.save() always injects a default Saving3DPolicy
+            % before reaching here, so that flag would always be true and the
+            % dialog would never appear.  We gate on callerSetFilename instead,
+            % mirroring PngSaver's approach.
             callerSetFilename = isfield(options, 'FilenameGenerator');
 
             % --- defaults ---
@@ -198,9 +202,11 @@ classdef TiffSaver < io.savers.BaseSaver
             end
 
             % --- "TIF saving settings" dialog ---
-            % Show when neither Saving3DPolicy nor FilenameGenerator were
-            % provided by the caller and the dataset has more than one slice.
-            if ~options.silent && ~callerSetSaving3D && ~callerSetFilename && nD > 1
+            % Show when FilenameGenerator was not explicitly provided by the
+            % caller and the dataset has more than one slice (same logic as
+            % PngSaver; Saving3DPolicy is also asked here since TIFF supports
+            % both 3D stack and 2D sequence modes).
+            if ~options.silent && ~callerSetFilename && nD > 1
                 prompts = {'Filename generator:'; 'Multi-dimensional saving policy:'};
                 defAns  = {{'Use original filename', 'Use sequential filename', 2}; ...
                            {'3D stack', '2D sequence', 1}};

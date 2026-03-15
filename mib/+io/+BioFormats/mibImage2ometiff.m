@@ -39,7 +39,7 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %                    grayscale / RGB
 %  .Resolution     — [xDPI yDPI] written into 2D .tif files; derived
 %                    automatically from pixSize when absent
-%  .dimensionOrder — dimension order string passed to bfsave / createMinimalOMEXMLMetadata;
+%  .DimensionOrder — dimension order string passed to bfsave / createMinimalOMEXMLMetadata;
 %                    default 'XYZCT'
 %
 % Return values:
@@ -105,7 +105,7 @@ if ~isfield(options, 'overwrite'); options.overwrite = 0; end
 if ~isfield(options, 'DatasetType'); options.DatasetType = 'image'; end
 if ~isfield(options, 'Saving3d'); options.Saving3d = '5D'; end
 if ~isfield(options, 'Compression'); options.Compression = 'none'; end
-if ~isfield(options, 'dimensionOrder'); options.dimensionOrder = 'XYZCT'; end
+if ~isfield(options, 'DimensionOrder'); options.DimensionOrder = 'XYZCT'; end
 if ~isfield(options, 'cmap');         options.cmap         = NaN;   end   % NaN = grayscale/RGB; otherwise indexed colormap
 if ~isfield(options, 'silent');      options.silent       = false; end   % suppress all interactive dialogs
 if ~isfield(options, 'sequentialFn'); options.sequentialFn = NaN;  end   % NaN=ask, true=sequential, false=original
@@ -174,7 +174,7 @@ if strcmp(options.Saving3d, '5D')
     % permute image from y,x,c,z,t to y,x,z,c,t
     % imageS = permute(imageS, [1 2 4 3 5]);
     
-    metadata = createMinimalOMEXMLMetadata(imageS, options.dimensionOrder);
+    metadata = createMinimalOMEXMLMetadata(imageS, options.DimensionOrder);
     pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.x), ome.units.UNITS.MICROMETER);
     metadata.setPixelsPhysicalSizeX(pixelSize, 0);
     pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.y), ome.units.UNITS.MICROMETER);
@@ -183,12 +183,34 @@ if strcmp(options.Saving3d, '5D')
     metadata.setPixelsPhysicalSizeZ(pixelSize, 0);
     pixelSize = ome.units.quantity.Time(java.lang.Double(options.pixSize.t), tunits);
     metadata.setPixelsTimeIncrement(pixelSize, 0);
+
+    % ImageDescription — carries the MIB BoundingBox string so that the
+    % dataset's physical extent is preserved when reloading in MIB
+    if isfield(options, 'ImageDescription') && ~isempty(options.ImageDescription)
+        desc5d = options.ImageDescription{1};
+        if ~isempty(desc5d)
+            metadata.setImageDescription(desc5d, 0);
+        end
+    end
+
+    % Channel LUT colours — written so that MIB (and Fiji/OMERO) can
+    % restore per-channel colours when reloading the file
+    if isfield(options, 'lutColors') && ~isempty(options.lutColors)
+        nCh = size(options.lutColors, 1);
+        for iCh = 1:nCh
+            r = int32(round(options.lutColors(iCh, 1) * 255));
+            g = int32(round(options.lutColors(iCh, 2) * 255));
+            b = int32(round(options.lutColors(iCh, 3) * 255));
+            metadata.setChannelColor(ome.xml.model.primitives.Color(r, g, b, int32(255)), 0, iCh-1);
+        end
+    end
     
     % delete old file
     if exist(filename, 'file') == 2; delete(filename); end
 
+    loci.common.DebugTools.enableLogging('ERROR');  % suppress BioFormats tile/strip DEBUG messages
     if strcmp(options.Compression, 'none')
-        bfsave(imageS, filename, 'metadata', metadata);        
+        bfsave(imageS, filename, 'metadata', metadata);
     else
         bfsave(imageS, filename, 'metadata', metadata, 'Compression', options.Compression);
     end
