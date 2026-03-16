@@ -12,6 +12,9 @@ selectedSet = obj.mibModel.Sets.selectedSet;
 % get new filename
 [newFileDir, newFileName, newFileExt] = fileparts(dataset.image.filename);
 newFileBasename = [newFileName newFileExt];
+if isempty(newFileDir)  % placeholder dataset (e.g. 'none.tif') — keep current directory
+    newFileDir = obj.mibModel.currentDirectory;
+end
 
 %% Update the IMAGE TAB ---------------------------------------------
 % -------------------------------------------------------------------
