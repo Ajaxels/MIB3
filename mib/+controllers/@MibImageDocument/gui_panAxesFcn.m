@@ -44,12 +44,14 @@ if ~outSwitch
 
     % Determine the effective magnification factor for data-coordinate adjustment.
     % In fast pan mode, always use the actual magFactor.
-    % In slow pan (full-image) mode, clamp to 1 when zoomed out (magFactor < 1)
-    % because the image is not rescaled in that regime.
+    % In slow pan (full-image) mode, clamp to 1 when zoomed in (magFactor < 1)
+    % because the padded image is displayed at 1:1 data pixels (no downscale).
+    % When magFactor >= 1, both padded+downscaled and full-image paths use
+    % the same display coordinate system (data * coef_z / magFactor).
     if obj.mibController.fastPanningMode
         magFactorFixed = magFactor;
     else
-        if magFactor < 1 % the image is not rescaled if magFactor less than 1
+        if magFactor < 1 % padded 1:1 path: image is not rescaled
             magFactorFixed = 1;
         else
             magFactorFixed = magFactor;

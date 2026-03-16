@@ -129,37 +129,56 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
         end
 
-        if magFactor < 1    % zoomed in: load padded region only (avoids fetching the full large image)
-            % Extend the current viewport by one viewport-size on each side so the
-            % user can pan freely without reloading, while skipping the cost of
-            % fetching the entire dataset.  Region is clamped to image boundaries.
-            % Use orientation-aware dimensions: axesX/Y span depth/width/height
-            % depending on orientation (not always image.width/height).
-            getDimsOpts.blockModeSwitch = false;
-            [imgFullHeight, imgFullWidth] = dataset.getDatasetDimensions('image', [], getDimsOpts);
-            viewportW = axesX(2) - axesX(1);
-            viewportH = axesY(2) - axesY(1);
+        % Determine full image dimensions to decide between padded or full load.
+        % Use padded loading whenever the viewport shows a sub-region of the
+        % image — covers both magFactor < 1 (zoomed in) and magFactor > 1
+        % with large images where loading the full image would be too slow.
+        getDimsOpts.blockModeSwitch = false;
+        [imgFullHeight, imgFullWidth] = dataset.getDatasetDimensions('image', [], getDimsOpts);
+        viewportW = axesX(2) - axesX(1);
+        viewportH = axesY(2) - axesY(1);
+
+        if viewportW < imgFullWidth * 0.99 || viewportH < imgFullHeight * 0.99
+            % Partial view: load padded region only (avoids fetching the full large image).
+            % Extends the current viewport by one viewport-size on each side so the
+            % user can pan freely without reloading, clamped to image boundaries.
             paddedX = [max(1, floor(axesX(1) - viewportW)), min(imgFullWidth,  ceil(axesX(2) + viewportW))];
             paddedY = [max(1, floor(axesY(1) - viewportH)), min(imgFullHeight, ceil(axesY(2) + viewportH))];
 
-            % Load padded region at 1:1 pixel resolution (no up/downscale)
             obj.mibModel.setAxesLimits(paddedX, paddedY);   % temporarily widen the model view
             rgbOptions.blockModeSwitch = 1;
-            rgbOptions.resizeToMagnification = false;
-            imgRGB = obj.mibModel.getRGBimage(rgbOptions);
-            obj.mibModel.setAxesLimits(axesX, axesY);       % restore the real viewport
 
-            obj.imageHandle.CData = [];
-            obj.imageHandle.CData = imgRGB;
-            % Map padded image: first pixel → paddedX(1), one data-unit per pixel
-            obj.imageHandle.XData = [paddedX(1), paddedX(1) + (size(imgRGB, 2) - 1) * coef_z];
-            obj.imageHandle.YData = [paddedY(1), paddedY(1) + size(imgRGB, 1) - 1];
+            if magFactor < 1
+                % Zoomed in: load padded region at 1:1 data pixels (no downscale)
+                rgbOptions.resizeToMagnification = false;
+                imgRGB = obj.mibModel.getRGBimage(rgbOptions);
+                obj.mibModel.setAxesLimits(axesX, axesY);       % restore the real viewport
 
-            % Set XLim in physical (XData) space so coordinate systems are
-            % consistent with showImage and gui_panAxesFcn.
-            % XData maps: data pixel p → paddedX(1) + (p - paddedX(1)) * coef_z
-            obj.handles.imViewAxes.XLim = paddedX(1) + (axesX - paddedX(1)) * coef_z;
-            obj.handles.imViewAxes.YLim = axesY;  % Y: coef_z == 1
+                obj.imageHandle.CData = [];
+                obj.imageHandle.CData = imgRGB;
+                % Map padded image: first pixel → paddedX(1), one data-unit per pixel
+                obj.imageHandle.XData = [paddedX(1), paddedX(1) + (size(imgRGB, 2) - 1) * coef_z];
+                obj.imageHandle.YData = [paddedY(1), paddedY(1) + size(imgRGB, 1) - 1];
+
+                % Set XLim in physical (XData) space so coordinate systems are
+                % consistent with showImage and gui_panAxesFcn.
+                obj.handles.imViewAxes.XLim = paddedX(1) + (axesX - paddedX(1)) * coef_z;
+                obj.handles.imViewAxes.YLim = axesY;  % Y: coef_z == 1
+            else
+                % Zoomed out but partial view (large image): load padded
+                % region downscaled by magFactor — same coordinate system
+                % as the full-image path but only loading the padded sub-region.
+                imgRGB = obj.mibModel.getRGBimage(rgbOptions);
+                obj.mibModel.setAxesLimits(axesX, axesY);       % restore the real viewport
+
+                obj.imageHandle.CData = [];
+                obj.imageHandle.CData = imgRGB;
+                obj.imageHandle.XData = paddedX * coef_z / magFactor;
+                obj.imageHandle.YData = paddedY / magFactor;
+
+                obj.handles.imViewAxes.XLim = axesX * coef_z / magFactor;
+                obj.handles.imViewAxes.YLim = axesY / magFactor;
+            end
 
             % Re-read CurrentPoint after XLim change so xy2 is in the new
             % coordinate system (avoids manual coordinate conversion).
@@ -167,9 +186,9 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             xy2(1) = pt2(1,1);
             xy2(2) = pt2(1,2);
 
-            imgXLim = [obj.imageHandle.XData(1), obj.imageHandle.XData(2)];  % physical space
+            imgXLim = [obj.imageHandle.XData(1), obj.imageHandle.XData(2)];
             imgYLim = [obj.imageHandle.YData(1), obj.imageHandle.YData(2)];
-        else    % zoomed out: full image fits in viewport, load it entirely
+        else    % full image fits in viewport, load it entirely
             rgbOptions.blockModeSwitch = 0;
             imgRGB = obj.mibModel.getRGBimage(rgbOptions);
             obj.imageHandle.CData = [];
