@@ -1,5 +1,5 @@
-function [selection, dontShowAgain] = mibQuestDlg(ParentFigure, question, varargin)
-% function [selection, dontShowAgain] = mibQuestDlg(ParentFigure, question, varargin)
+function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, varargin)
+% function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, varargin)
 %
 % Custom MIB question dialog with the same call syntax as MATLAB questdlg,
 % extended with an optional options structure as the last argument.
@@ -11,15 +11,15 @@ function [selection, dontShowAgain] = mibQuestDlg(ParentFigure, question, vararg
 % question: [char|string|cell] question text; when cell, lines are joined with '\n'. 
 %
 % Questdlg-compatible syntax:
-% selection = mibQuestDlg(ParentFigure, question)
-% selection = mibQuestDlg(ParentFigure, question, dlgTitle)
-% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2)
-% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3)
-% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
-% selection = mibQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
+% selection = inputQuestDlg(ParentFigure, question)
+% selection = inputQuestDlg(ParentFigure, question, dlgTitle)
+% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2)
+% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3)
+% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
+% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
 %
 % Extended syntax (optional last argument):
-% [selection, dontShowAgain] = mibQuestDlg(..., options)
+% [selection, dontShowAgain] = inputQuestDlg(..., options)
 %
 % options: structure with fields:
 % .mibPath             - [char] path to MIB installation folder (default: '')
@@ -44,7 +44,7 @@ function [selection, dontShowAgain] = mibQuestDlg(ParentFigure, question, vararg
 % opt.Icon = 'warning_48px';
 % opt.DoNotShowAgain = true;
 % opt.WindowHeight = 250;
-% [answer, dontShow] = utils.dlgs.mibQuestDlg(obj.view.gui, ...
+% [answer, dontShow] = utils.dlgs.inputQuestDlg(obj.view.gui, ...
 %     'Overwrite existing file?', 'Overwrite', 'Yes', 'No', 'No', opt);
 % if strcmp(answer, 'Yes')
 %     % overwrite
@@ -60,7 +60,7 @@ end
 % Defaults
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 420; end
-if ~isfield(options, 'WindowHeight'); options.WindowHeight = 180; end
+if ~isfield(options, 'WindowHeight'); options.WindowHeight = 150; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'modal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
@@ -75,7 +75,8 @@ persistent mibDir
 persistent parentFigureHandle   % cached handle to the main GUI window
 
 % ParentFigure param takes priority; update cache
-if ~isempty(ParentFigure) && ishandle(ParentFigure)
+% Use isvalid() not ishandle() — AppContainer satisfies isvalid but not ishandle.
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
     parentFigureHandle = ParentFigure;
 end
 
@@ -94,11 +95,11 @@ elseif isempty(mibDir)
 end
 
 % Resolve options.ParentFigure from param or cache
-if ~isempty(ParentFigure) && ishandle(ParentFigure)
+if ~isempty(ParentFigure) && isvalid(ParentFigure)
     options.ParentFigure = ParentFigure;
-elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && ishandle(parentFigureHandle)
+elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
     options.ParentFigure = parentFigureHandle;
-elseif ~isempty(options.ParentFigure) && ishandle(options.ParentFigure)
+elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     parentFigureHandle = options.ParentFigure;
 end
 
@@ -141,7 +142,7 @@ elseif n == 5
     % title, btn1, btn2, btn3, defaultBtn -> 3 buttons + default
     btn1 = varargin{2}; btn2 = varargin{3}; btn3 = varargin{4}; defaultBtn = varargin{5};
 else
-    error('mibQuestDlg:TooManyInputs', 'Too many input arguments.');
+    error('inputQuestDlg:TooManyInputs', 'Too many input arguments.');
 end
 
 dlgTitle = char(string(dlgTitle));
@@ -190,193 +191,208 @@ switch options.Icon
 end
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
-% ---------- Create classic figure ----------
+% ---------- Create uifigure ----------
 selection = '';
 dontShowAgain = false;
 
-fig = figure( ...
-    'Name', dlgTitle, ...
-    'NumberTitle', 'off', ...
-    'MenuBar', 'none', ...
-    'ToolBar', 'none', ...
-    'Resize', 'off', ...
-    'Visible', 'off', ...
-    'WindowStyle', options.WindowStyle, ...
-    'WindowKeyPressFcn', @onKey, ...      % IMPORTANT: Esc works even when focus is on uicontrols
-    'CloseRequestFcn', @onClose);
-
-% Size and position
-pos = get(fig, 'Position');
-pos(3) = options.WindowWidth;
-pos(4) = options.WindowHeight;
-set(fig, 'Position', pos);
-
-% Center on parent
-if ~isempty(options.ParentFigure) && ishandle(options.ParentFigure)
-    try
-        parentPos = get(options.ParentFigure, 'Position');
-        x1 = parentPos(1) + (parentPos(3) - options.WindowWidth) / 2;
-        y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-        set(fig, 'Position', [x1 y1 options.WindowWidth options.WindowHeight]);
-    catch
-    end
+fig = uifigure('Name', dlgTitle, 'Visible', 'off');
+fig.AutoResizeChildren = 'off';
+if strcmpi(options.WindowStyle, 'modal')
+    fig.WindowStyle = 'modal';
 end
+fig.Position(3) = options.WindowWidth;
+fig.Position(4) = options.WindowHeight;
+fig.KeyPressFcn      = @onKey;
+fig.CloseRequestFcn  = @onClose;
 
-% Layout constants
-pad = 10;
-iconW = options.IconWidth;
-
-btnH = 26;
-chkH = 18;
-gapRow = 6;
-bottomH = btnH + (options.DoNotShowAgain * (gapRow + chkH));
-
-textX = pad + iconW + pad;
-textW = options.WindowWidth - textX - pad;
-textY = pad + bottomH + pad;
-textH = options.WindowHeight - textY - pad;
-
-% ---------- Icon: top aligned + alpha ----------
-% Place icon at the TOP of the content area; size uses iconW x iconW.
-iconH = min(iconW, textH);
-iconY = textY + textH - iconH;   % top aligned within the text area
-
-if exist(iconPath, 'file')
-    try
-        ax = axes('Parent', fig, 'Units', 'pixels', ...
-            'Position', [pad, iconY, iconW, iconH], ...
-            'XTick', [], 'YTick', [], 'Box', 'off', 'Color', 'none');
-        [img, ~, alpha] = imread(iconPath);
-        hImg = image(img, 'Parent', ax);
-        if ~isempty(alpha)
-            set(hImg, 'AlphaData', double(alpha)/255);
-        end
-        axis(ax, 'image');
-        axis(ax, 'off');
-    catch
-    end
-end
-
-% Question text
-uicontrol('Parent', fig, 'Style', 'text', ...
-    'Units', 'pixels', ...
-    'Position', [textX, textY, textW, textH], ...
-    'String', qLines, ...
-    'HorizontalAlignment', 'left', ...
-    'FontSize', 11);
-
-% Buttons row (bottom-right)
-btnW = 90;
-gap = 8;
-nBtn = numel(buttons);
-btnTotalW = nBtn*btnW + (nBtn-1)*gap;
-btnX0 = options.WindowWidth - pad - btnTotalW;
-btnY0 = pad + (options.DoNotShowAgain * (gapRow + chkH));
-
-btnHandles = gobjects(nBtn,1);
-for i = 1:nBtn
-    x = btnX0 + (i-1)*(btnW+gap);
-    btnHandles(i) = uicontrol('Parent', fig, 'Style', 'pushbutton', ...
-        'Units', 'pixels', ...
-        'Position', [x, btnY0, btnW, btnH], ...
-        'String', buttons{i}, ...
-        'FontSize', options.ButtonFontSize, ...
-        'Callback', @onButton);
-    if strcmp(buttons{i}, defaultBtn)
-        set(btnHandles(i), 'FontWeight', 'bold');
-    end
-end
-
-% Do not show again (below buttons, right-aligned to dialog edge)
-chk = [];
-if options.DoNotShowAgain
-    chk = uicontrol('Parent', fig, 'Style', 'checkbox', ...
-        'Units', 'pixels', ...
-        'Position', [textX, pad, 10, chkH], ...    % temp width; will be corrected using Extent
-        'String', options.DoNotShowAgainText, ...
-        'Value', 0, ...
-        'HorizontalAlignment', 'left', ...
-        'FontSize', 10);
-    drawnow;
-    ext = get(chk, 'Extent');      % [x y w h] in pixels
-    chkW = ext(3) + 24;             % a small padding
-    chkX = options.WindowWidth - pad - chkW;
-    set(chk, 'Position', [chkX, pad, chkW, chkH]);
-end
-
-% Center dialog on parent figure if provided
+% Center on parent — AppContainer uses WindowBounds (top-left origin);
+% uifigure/figure use Position (bottom-left origin).
 if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
         if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
-            parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
-
-            % Get screen size to convert from top-left to bottom-left origin
-            screenSize = get(0, 'ScreenSize'); % [left bottom width height]
-
-            % Center in parent's coordinates (bottom-left origin)
+            parentPos  = options.ParentFigure.WindowBounds;
+            screenSize = get(0, 'ScreenSize');
             x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            % Convert Y from top-left to bottom-left origin
-            % parentPos(2) is distance from top of screen
-            % Need to convert to distance from bottom of screen
             y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
-        elseif isa(options.ParentFigure, 'matlab.ui.Figure')
-            parentPos = options.ParentFigure.Position;      % [x y w h]
-
-            % Center in parent's coordinates (bottom-left origin)
+        else
+            parentPos = options.ParentFigure.Position;
             x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
             y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-
         end
-
-        % Optionally clamp to screen
-        % screenSize = get(0, 'ScreenSize');
-        % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
-        % y1 = max(0, min(y1, screenSize(4) - options.WindowHeight));
-
         fig.Position(1) = x1;
         fig.Position(2) = y1;
     catch
-        % If centering fails, MATLAB will use default position
     end
 end
 
-% Show and focus default
-drawnow;
-set(fig, 'Visible', 'on');
+% ---- Layout constants ----
+btnW    = 90;
+btnGap  = 8;
+btnH    = 24;
+nBtn    = numel(buttons);
+btnsTotalW = nBtn * btnW + (nBtn - 1) * btnGap;
 
+chkH  = 24;
+iconW = options.IconWidth;
+
+% Bottom row height: buttons + optional checkbox row
+bottomRowH = btnH + 8;
+if options.DoNotShowAgain
+    bottomRowH = bottomRowH + chkH + 6;
+end
+
+% ---- Outer grid: content row (flex) + bottom row (fixed) ----
+outerGrid = uigridlayout(fig, [2, 1]);
+outerGrid.RowHeight   = {'1x', bottomRowH};
+outerGrid.ColumnWidth = {'1x'};
+outerGrid.Padding     = [8, 8, 8, 8];
+outerGrid.RowSpacing  = 4;
+
+% ---- Content area: icon column (fixed) + text column (flex) ----
+% Pre-load and alpha-composite the icon before building UI (same pattern
+% as inputUniversalDlg, so the uiimage receives a pre-blended uint8 array).
+figBgColor = fig.Color;
+iconImg = [];
+if exist(iconPath, 'file')
+    try
+        [img, ~, alpha] = imread(iconPath);
+        if ~isempty(alpha)
+            img    = im2double(img);
+            alpha  = im2double(alpha);
+            for k = 1:3
+                img(:,:,k) = img(:,:,k) .* alpha + figBgColor(k) .* (1 - alpha);
+            end
+            iconImg = im2uint8(img);
+        else
+            iconImg = img;
+        end
+        if ~isempty(iconImg)
+            iconImg = imresize(iconImg, [NaN iconW]);
+        end
+    catch
+        iconImg = [];
+    end
+end
+
+contentGrid = uigridlayout(outerGrid, [1, 2]);
+contentGrid.Layout.Row    = 1;
+contentGrid.Layout.Column = 1;
+contentGrid.ColumnWidth   = {iconW, '1x'};
+contentGrid.RowHeight     = {'1x'};
+contentGrid.Padding       = [0, 0, 0, 0];
+contentGrid.ColumnSpacing = 8;
+
+% Icon (uiimage with pre-composited alpha — no axes toolbar artifacts)
+if ~isempty(iconImg)
+    iconUI = uiimage(contentGrid, 'ImageSource', iconImg);
+    iconUI.Layout.Row         = 1;
+    iconUI.Layout.Column      = 1;
+    iconUI.VerticalAlignment   = 'top';
+    iconUI.HorizontalAlignment = 'left';
+end
+
+% Question text label
+txtLabel = uilabel(contentGrid);
+txtLabel.Layout.Row        = 1;
+txtLabel.Layout.Column     = 2;
+txtLabel.Text              = strjoin(qLines, newline);
+txtLabel.WordWrap          = 'on';
+% FontSize uses uifigure default (~14 pt), matching inputUniversalDlg
+txtLabel.VerticalAlignment = 'top';
+
+% ---- Bottom area: [checkbox row] + buttons row ----
+% Layout: 2 cols — col 1 flex (for checkbox), col 2 fixed (for buttons)
+if options.DoNotShowAgain
+    bottomGrid = uigridlayout(outerGrid, [2, 2]);
+    bottomGrid.RowHeight = {chkH, btnH};
+else
+    bottomGrid = uigridlayout(outerGrid, [1, 2]);
+    bottomGrid.RowHeight = {btnH};
+end
+bottomGrid.Layout.Row    = 2;
+bottomGrid.Layout.Column = 1;
+bottomGrid.ColumnWidth   = {'1x', btnsTotalW};
+bottomGrid.Padding       = [0, 0, 0, 0];
+bottomGrid.RowSpacing    = 6;
+bottomGrid.ColumnSpacing = 8;
+
+% "Do not show again" checkbox (row 1, col 1)
+chk = [];
+if options.DoNotShowAgain
+    chk = uicheckbox(bottomGrid);
+    chk.Layout.Row    = 1;
+    chk.Layout.Column = 1;
+    chk.Text          = options.DoNotShowAgainText;
+    chk.Value         = false;
+    chk.FontSize      = 10;
+end
+
+% Buttons sub-grid (last row, col 2)
+btnGrid = uigridlayout(bottomGrid, [1, nBtn]);
+if options.DoNotShowAgain
+    btnGrid.Layout.Row = 2;
+else
+    btnGrid.Layout.Row = 1;
+end
+btnGrid.Layout.Column = 2;
+btnGrid.ColumnWidth   = repmat({btnW}, 1, nBtn);
+btnGrid.RowHeight     = {btnH};
+btnGrid.Padding       = [0, 0, 0, 0];
+btnGrid.ColumnSpacing = btnGap;
+
+btnHandles = gobjects(nBtn, 1);
+for i = 1:nBtn
+    btnHandles(i) = uibutton(btnGrid, 'push');
+    btnHandles(i).Layout.Row      = 1;
+    btnHandles(i).Layout.Column   = i;
+    btnHandles(i).Text            = buttons{i};
+    btnHandles(i).FontSize        = options.ButtonFontSize;
+    btnHandles(i).ButtonPushedFcn = @onButton;
+    if strcmp(buttons{i}, defaultBtn)
+        btnHandles(i).FontWeight = 'bold';
+    end
+end
+
+% Render layout before showing — ensures widgets are populated before the
+% window becomes visible (no flash of empty window then contents).
+drawnow;
+fig.Visible = 'on';
 idx = find(strcmp(buttons, defaultBtn), 1, 'first');
 if ~isempty(idx)
-    try, uicontrol(btnHandles(idx)); catch, end
+    try; focus(btnHandles(idx)); catch; end
 end
 
 uiwait(fig);
 
-% ---------- callbacks ----------
+% ---------- Nested callbacks ----------
     function storeDontShow()
-        if ~isempty(chk) && ishandle(chk)
-            dontShowAgain = logical(get(chk, 'Value'));
+        if ~isempty(chk) && isvalid(chk)
+            dontShowAgain = chk.Value;
         else
             dontShowAgain = false;
         end
     end
 
     function onButton(src, ~)
-        selection = get(src, 'String');
+        selection = src.Text;
         storeDontShow();
-        uiresume(fig);
-        delete(fig);
+        if isvalid(fig)
+            uiresume(fig);
+            delete(fig);
+        end
     end
 
     function doCancel()
-        % Esc equals Cancel option when Cancel exists, otherwise close with ''
         if ~isempty(cancelLabel)
             selection = cancelLabel;
         else
             selection = '';
         end
         storeDontShow();
-        uiresume(fig);
-        delete(fig);
+        if isvalid(fig)
+            uiresume(fig);
+            delete(fig);
+        end
     end
 
     function onClose(~, ~)
@@ -384,16 +400,16 @@ uiwait(fig);
     end
 
     function onKey(~, evt)
-        if isprop(evt, 'Key') && strcmp(evt.Key, 'escape')
+        if strcmp(evt.Key, 'escape')
             doCancel();
             return;
         end
-        if isfield(evt, 'Key') && (strcmp(evt.Key, 'return') || strcmp(evt.Key, 'enter'))
+        if strcmp(evt.Key, 'return') || strcmp(evt.Key, 'enter')
             if strcmpi(options.DefaultKey, 'cancel')
                 doCancel();
             else
                 id = find(strcmp(buttons, defaultBtn), 1, 'first');
-                if isempty(id), id = 1; end
+                if isempty(id); id = 1; end
                 onButton(btnHandles(id), []);
             end
         end

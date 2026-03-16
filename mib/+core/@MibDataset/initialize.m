@@ -82,7 +82,7 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     obj.annotations = core.Annotations;     % handle to class for keeping annotations
     obj.lines3D = core.Lines3D;             % handle to class for keeping 3D Lines and skeletons
     obj.measure = [];                       % handle to class to keep measurements
-    obj.hROI = [];                          % handle to ROI class, @b mibRoiRegion
+    obj.hROI = core.RoiRegion(obj);         % handle to ROI class, core.RoiRegion
     
     % ---------- other properties ----------
     % a vector [min, max] with minimal and maximal coordinates of
@@ -144,9 +144,9 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
                         
     obj.selectedMaterial = 1;   % index of material selected in the obj.view.handles.panels.segmentation.handles.materialsTable: @b 1 - Mask; @b 2 - Exterior; @b 3 - first material of the model, @b 4 - second material etc
     
-    % a vector of indices (as stored in mibRoiRegion class) of the
-    % selected ROI in the mibView.handles.mibRoiList table; -1 -> roi is not shown; [1, 3] -> first and third...
-    obj.selectedROI = -1;       
+    % index into hROI.Data of the ROI to display; 0 -> show all ROIs,
+    % >0 -> show only that specific ROI index
+    obj.selectedROI = 0;
     
     % Allocate slices
     % coordinates of the shown part of the dataset

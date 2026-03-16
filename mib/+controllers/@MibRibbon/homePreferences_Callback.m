@@ -61,6 +61,7 @@ switch mode
         options.WindowWidth = 700;
         options.WindowHeight = 300;
         options.MsgBoxOnly = true;
+        options.Icon = 'puffin_info';
         options.OkBtnText = 'Copy';
         options.HelpBtnText = 'Calendar';
         options.HelpUrl = 'https://outlook.office365.com/owa/calendar/MIBcall4help@HelsinkiFI.onmicrosoft.com/bookings/s/olBBIX11aEqP-UndmR2Emg2';

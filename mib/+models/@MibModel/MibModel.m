@@ -65,6 +65,9 @@ classdef MibModel < handle
         % variable for Undo history
         useBioFormats = false;
         % use bio-formats reader
+        disableSegmentation = 0;
+        % when 1, segmentation tool callbacks return early (pan still works);
+        % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
 
     end
 
@@ -92,6 +95,8 @@ classdef MibModel < handle
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
 
         [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
+
+        [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)        % convert dataset coordinates to image axes (screen) coordinates
 
         status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model; compatible with the batch mode.
 

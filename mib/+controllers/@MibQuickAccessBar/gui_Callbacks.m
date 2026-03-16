@@ -28,6 +28,10 @@ switch mode
     case 'Save model to a file'
     case 'Enable the blocked mode to process only visible portion of the dataset'
     case 'Enable the ROI mode'
+        % see also obj.mibController.cRoi.gui_Callbacks
+        obj.mibModel.I{obj.mibModel.id}.roiShow = hWidget.Selected;
+        obj.mibController.cRoi.handles.roiShowROI.Value = hWidget.Selected;
+        obj.mibController.showImage();
     case 'Enable the center marker'  % obj.view.handles.qab.target
         % Create or show the center marker
         axesHandle = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes;

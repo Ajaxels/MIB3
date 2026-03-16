@@ -101,7 +101,7 @@ switch menuEntry.Tag
         dlgOpts.WindowHeight = 150';
         dlgOpts.WindowWidth = 400';
         dlgOpts.WindowStyle = 'normal';
-        dlgOpts.Icon = 'puffin_measure';
+        dlgOpts.Icon = 'puffin_info';
         dlgOpts.IconWidth = 96;
         utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'File info', dlgOpts);
 

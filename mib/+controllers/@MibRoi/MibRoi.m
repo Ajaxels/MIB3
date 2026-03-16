@@ -1,4 +1,4 @@
-classdef MibRoi
+classdef MibRoi < handle
     % classdef MibRoi
     % controller for methods of the ROI panel in MIB
     
@@ -9,6 +9,12 @@ classdef MibRoi
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
         UIFigure        % handle to underlying UIFigure
+        drawingROI      % struct tracking an in-progress interactive ROI:
+        %   .active       - logical, true while a draw tool is waiting for user input
+        %   .roi          - handle to the drawrectangle/drawellipse/drawpolygon/drawfreehand object
+        %   .type         - char: 'Rectangle','Ellipse','Polyline','Lasso'
+        %   .dataPos      - data-pixel coords (updated on MovingROI; used by repositionDrawingROI)
+        %   .repositioning - logical guard to prevent re-entry during programmatic repositioning
     end
 
 
@@ -18,6 +24,20 @@ classdef MibRoi
 
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
 
+        addROI(obj) % interactively add a new ROI or create one from manual coordinates
+
+        removeROI(obj) % remove selected ROI(s) from the current dataset
+
+        refreshROIList(obj, previousValue) % rebuild the ROI list-box items from current hROI.Data
+
+        repositionDrawingROI(obj) % reposition the active drawing tool after zoom/pan changes the axes coordinate system
+
+        roiModify(obj) % interactively modify (redraw) an existing ROI in-place
+
+        roiSave(obj) % save ROIs of the current dataset to a .roi (MAT) file
+
+        roiLoad(obj) % load ROIs from a .roi (MAT) file into the current dataset
+
         function obj = MibRoi(mainCtrl, view, guiHandles, model)
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
@@ -25,7 +45,8 @@ classdef MibRoi
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
             obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
-            
+            obj.drawingROI = struct('active', false, 'roi', [], 'type', '', 'dataPos', [], 'repositioning', false);
+
             % ---------------------- Add CALLBACKS to widgets ----------------------
             % example call using lambda functions
             % obj.handles.handleName.ButtonPushedFcn = @(src, event)obj.gui_Callbacks(src, event, customParameter);
@@ -35,6 +56,7 @@ classdef MibRoi
             obj.handles.roiLoad.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiSave.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiAdd.ButtonPushedFcn = @obj.gui_Callbacks;
+            obj.handles.roiModify.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiRemove.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.roiType.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.roiFixAspect.ValueChangedFcn = @obj.gui_Callbacks;

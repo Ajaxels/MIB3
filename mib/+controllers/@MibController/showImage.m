@@ -204,10 +204,16 @@ else
         end
     end
     
-    % %% Add ROIs overlay
-    % if obj.mibView.handles.mibRoiShowCheck.Value
-    %     obj.mibModel.I{datasetId}.hROI.addROIsToPlot(obj, 'shown');
-    % end
+    %% Add ROIs overlay
+    if obj.cQuickAccessBar.handles.roiMode.Value
+        ds = obj.mibModel.I{datasetId};
+        if ds.hROI.getNumberOfROI(ds.orientation) > 0
+            showLabel = obj.cRoi.handles.roiShowLabel.Value;
+            convertFcn = @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown');
+            ds.hROI.addROIsToPlot(obj.cImageDoc{selectedSet}.handles.imViewAxes, ...
+                'shown', ds.orientation, convertFcn, ds.selectedROI, showLabel);
+        end
+    end
 
     % %% Add measurements/annotations overlay
     % if obj.mibModel.mibShowAnnotationsCheck
@@ -224,5 +230,10 @@ end
 
 %% Update cursor size
 obj.cImageDoc{selectedSet}.updateBrushCursor();
+
+%% Reposition drawing ROI if interactive ROI addition is in progress
+if obj.cRoi.drawingROI.active
+    obj.cRoi.repositionDrawingROI();
+end
 
 end

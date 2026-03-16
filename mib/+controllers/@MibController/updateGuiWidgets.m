@@ -424,45 +424,33 @@ end
 
 %% update ROI stuff ---------------------------------------------
 % ---------------------------------------------------------------
+% update ROI list box
+roiListHandle = obj.cRoi.handles.roiList;
+[number, indices] = dataset.hROI.getNumberOfROI(0);
+items = cell(1, number + 1);
+items{1} = 'All';
+for i = 1:number
+    lbl = dataset.hROI.Data(indices(i)).label;
+    if iscell(lbl); lbl = lbl{1}; end
+    items{i+1} = lbl;
+end
+roiListHandle.Items = items;
 
-% % update roi list box
-% % get number of ROIs
-% try
-%     [number, indices] = dataset.hROI.getNumberOfROI();
-% catch err
-%     err
-% end
-% str2 = cell([number+1 1]);
-% str2(1) = cellstr('All');
-% obj.mibView.handles.mibRoiList.Value = 1;
-% if number > 0
-%     %currVal = obj.mibView.handles.mibRoiList.Value;
-%     currVal = dataset.selectedROI;
-%     if currVal > 0; obj.mibView.handles.mibRoiShowCheck.Value = 1; end
-%     for i=1:number
-%         str2(i+1) = dataset.hROI.Data(indices(i)).label;
-%     end
-%     if currVal > number+1
-%         currVal = 1;
-%         dataset.selectedROI = 0;
-%     else
-%         currVal = currVal+1;
-%     end
-% else
-%     currVal = 1;
-%     dataset.selectedROI = 0;
-% end
-% obj.mibView.handles.mibRoiList.String = str2;
-% if numel(currVal) > 1
-%     obj.mibView.handles.mibRoiList.Value = 1;   % All
-% else
-%     targetRoiValue = max([currVal 1]);
-%     if targetRoiValue > numel(str2)
-%         obj.mibView.handles.mibRoiList.Value = 1;
-%         dataset.selectedROI = 0;
-%     end
-% end
-% obj.mibRoiShowCheck_Callback('noplot');    % noplot means do not redraw image inside this function
+if number > 0
+    % try to preserve the previously selected ROI
+    prevSelected = roiListHandle.Value;
+    if ismember(prevSelected, items)
+        roiListHandle.Value = prevSelected;
+    else
+        roiListHandle.Value = 'All';
+    end
+    obj.cRoi.handles.roiShowROI.Value = dataset.roiShow;
+else
+    roiListHandle.Value = 'All';
+    dataset.roiShow = false;
+    obj.cRoi.handles.roiShowROI.Value = false;
+end
+
 
 % update callbacks, not needed here most likely
 % obj.cImageDoc{selectedSet}.setupCallbacks();

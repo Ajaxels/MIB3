@@ -114,7 +114,6 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             ~isempty(obj.quickMeasure.textH) && isvalid(obj.quickMeasure.textH)
         obj.quickMeasure.textH.Visible = false;
     end
-
     % Decide whether "fast pan" mode is enabled.
     % In fast-pan we do not force full-res redraw here; otherwise we fetch
     % full RGB and re-plot annotations/ROIs for smooth panning.
@@ -123,6 +122,12 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     xy2 = zeros([2,1]);  % converted coordinates
 
     if ~obj.mibController.fastPanningMode % full image / padded mode
+        % Delete ROI overlay objects — they use data coordinates that become
+        % invalid when the image is reloaded at a different scale;
+        % showImage redraws them on release. Not needed in fast-pan mode
+        % because the image CData/XData are unchanged there.
+        roiObjs = findobj(obj.handles.imViewAxes, 'tag', 'roi');
+        if ~isempty(roiObjs); delete(roiObjs); end
         switch dataset.orientation
             case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
             case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
@@ -189,22 +194,36 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
             imgXLim = [obj.imageHandle.XData(1), obj.imageHandle.XData(2)];
             imgYLim = [obj.imageHandle.YData(1), obj.imageHandle.YData(2)];
         else    % full image fits in viewport, load it entirely
-            rgbOptions.blockModeSwitch = 0;
-            imgRGB = obj.mibModel.getRGBimage(rgbOptions);
-            obj.imageHandle.CData = [];
-            obj.imageHandle.CData = imgRGB;
-            % getRGBimage downsamples the image when magFactor>1, so the
-            % returned size differs from the previous showImage() render.
-            % Update XData/YData to match the newly loaded image so the
-            % axes display it at the correct scale and position.
-            obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
-            obj.imageHandle.YData = [1, size(imgRGB, 1)];
-
-            % Set XLim in physical (XData) space: axesX*coef_z/magFactor.
-            % This matches showImage's XLim formula, keeping coordinate
-            % systems consistent with gui_panAxesFcn.
-            obj.handles.imViewAxes.XLim = axesX * coef_z / magFactor;
-            obj.handles.imViewAxes.YLim = axesY/magFactor;
+            if magFactor < 1
+                % Zoomed in beyond 100%: use blockModeSwitch=0 to load
+                % the FULL image (not clipped to current axesX viewport).
+                % panModeException (blockModeSwitch=0 && mag<1) skips
+                % the upscale in getRGBimage, giving us 1:1 data pixels —
+                % the same coordinate system as the padded path above.
+                % This keeps gui_panAxesFcn's magFactorFixed=1 correct.
+                rgbOptions.blockModeSwitch = 0;
+                imgRGB = obj.mibModel.getRGBimage(rgbOptions);
+                obj.imageHandle.CData = [];
+                obj.imageHandle.CData = imgRGB;
+                % 1:1 data-pixel mapping (same as padded path)
+                obj.imageHandle.XData = [1, 1 + (size(imgRGB, 2) - 1) * coef_z];
+                obj.imageHandle.YData = [1, size(imgRGB, 1)];
+                % XLim shows the viewport region within the 1:1 image
+                obj.handles.imViewAxes.XLim = 1 + (axesX - 1) * coef_z;
+                obj.handles.imViewAxes.YLim = axesY;
+            else
+                % Zoomed out: blockModeSwitch=0 loads the full image and
+                % getRGBimage downsamples it correctly (panModeException=0
+                % when magFactor>=1).
+                rgbOptions.blockModeSwitch = 0;
+                imgRGB = obj.mibModel.getRGBimage(rgbOptions);
+                obj.imageHandle.CData = [];
+                obj.imageHandle.CData = imgRGB;
+                obj.imageHandle.XData = [1, size(imgRGB, 2) * coef_z];
+                obj.imageHandle.YData = [1, size(imgRGB, 1)];
+                obj.handles.imViewAxes.XLim = axesX * coef_z / magFactor;
+                obj.handles.imViewAxes.YLim = axesY / magFactor;
+            end
             % Re-read CurrentPoint after XLim change so xy2 is in the new
             % coordinate system (avoids manual coordinate conversion).
             pt2 = obj.handles.imViewAxes.CurrentPoint;
@@ -221,6 +240,57 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
         imgYLim = [obj.imageHandle.YData(1), obj.imageHandle.YData(2)];
     end
 
+    % Reposition drawing ROI into the pan coordinate system.
+    % Cannot use convertDataToMouseCoordinates here because pan changes
+    % the axes coordinate system away from what that function expects.
+    if ~obj.mibController.fastPanningMode && obj.mibModel.disableSegmentation == 1
+        drawInfo = obj.mibController.cRoi.drawingROI;
+        roiH = drawInfo.roi;
+        dp   = drawInfo.dataPos;
+        %fprintf('[ROI-reposition] active=%d, roiValid=%d, dpEmpty=%d, magFactor=%.3f, type=%s\n', ...
+        %    drawInfo.active, ~isempty(roiH) && isvalid(roiH), isempty(dp), magFactor, drawInfo.type);
+        if ~isempty(roiH) && isvalid(roiH) && ~isempty(dp)
+            obj.mibController.cRoi.drawingROI.repositioning = true;
+            try
+                if magFactor < 1
+                    % 1:1 data-pixel mapping with coef_z stretch on X.
+                    % imgXLim(1) is both the axes origin and the data-pixel origin.
+                    xO = imgXLim(1);
+                    toX = @(x) xO + (x - xO) .* coef_z;
+                    toY = @(y) y;
+                else
+                    % Downsampled image: axes = data * coef_z / magFactor
+                    toX = @(x) x .* coef_z ./ magFactor;
+                    toY = @(y) y ./ magFactor;
+                end
+
+                switch drawInfo.type
+                    case 'Rectangle'
+                        Xax = toX(dp(:,1));  Yax = toY(dp(:,2));
+                        w = Xax(2)-Xax(1);   h = Yax(2)-Yax(1);
+                        if w > 0 && h > 0
+                            roiH.Position = [Xax(1), Yax(1), w, h];
+                        end
+                    case 'Ellipse'
+                        cx_ax = toX(dp(1));  cy_ax = toY(dp(2));
+                        ex_ax = toX(dp(1)+dp(3));
+                        ey_ax = toY(dp(2)+dp(4));
+                        rx_ax = abs(ex_ax - cx_ax);
+                        ry_ax = abs(ey_ax - cy_ax);
+                        if rx_ax > 0 && ry_ax > 0
+                            roiH.Center   = [cx_ax, cy_ax];
+                            roiH.SemiAxes = [rx_ax, ry_ax];
+                        end
+                    otherwise
+                        Xax = toX(dp(:,1));  Yax = toY(dp(:,2));
+                        roiH.Position = [Xax(:), Yax(:)];
+                end
+            catch
+            end
+            obj.mibController.cRoi.drawingROI.repositioning = false;
+        end
+    end
+
     % Attach panning motion callback
     hFig.WindowButtonMotionFcn = @(~, ~)obj.gui_panAxesFcn(xy2, imgXLim, imgYLim);
 
@@ -231,6 +301,9 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     hFig.WindowButtonUpFcn = @(~, ~)obj.gui_WindowButtonUpFcn();
 elseif strcmp(operation, 'select')
     %% Start segmentation mode
+    % skip all segmentation when ROI drawing is active (pan still works)
+    if obj.mibModel.disableSegmentation == 1; return; end
+
     %y = round(xy(1,2));
     %x = round(xy(1,1));
 

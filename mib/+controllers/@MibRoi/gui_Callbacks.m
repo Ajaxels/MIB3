@@ -14,6 +14,7 @@ function gui_Callbacks(obj, hWidget, hData)
 % 'roiLoad' -> load ROI from a file
 % 'roiSave' -> save ROI to a file
 % 'roiAdd' -> add ROI
+% 'roiModify' -> modify ROI
 % 'roiRemove' -> remove ROI from the list
 % 'roiType' -> select type of ROI to add
 % 'roiFixAspect' -> fix aspect ration when adding a ROI
@@ -42,28 +43,39 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRoi.gui_Callbacks: "obj.handles.%s"-> pressed/changed\n', mode);
 end
 
-
+dataset = obj.mibModel.I{obj.mibModel.id};
 switch mode
     case 'roiOptions' % define ROI visualization options
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        dataset.hROI.updateOptions(obj.mibController.view.gui);
+        obj.mibController.showImage();
     case 'roiList' % list of active ROI
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %s\n', mode, hWidget.Value);
+        % index into hROI.Data of the ROI to highlight; 0 -> show all ROIs
+        % hWidget.ValueIndex==1 is the 'All' entry at the top of the list,
+        % subtract 1 so that entry maps to selectedROI=0 (show all) and
+        % entry 2 maps to selectedROI=1 (first ROI in Data), etc.
+        dataset.selectedROI = hWidget.ValueIndex - 1;
+        obj.mibController.showImage();
     case 'roiLoad' % load ROI from a file
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        obj.roiLoad();
     case 'roiSave' % save ROI to a file
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        obj.roiSave();
     case 'roiAdd' % add ROI
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        obj.addROI();
+    case 'roiModify' % modify the selected ROI
+        obj.roiModify();
     case 'roiRemove' % remove ROI from the list
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        obj.removeROI();
     case 'roiType' % select type of ROI to add
         %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %s\n', mode, hWidget.Value);
     case 'roiFixAspect' % fix aspect ration when adding a ROI
         %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
     case 'roiShowLabel' % show the label with ROI name next to the ROI
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
+        obj.mibController.showImage();
     case 'roiShowROI' % show ROI in the Image View panel
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %d\n', mode, hWidget.Value);
+        % see also obj.mibController.cQuickAccessBar.gui_Callbacks
+        obj.mibModel.I{obj.mibModel.id}.roiShow = hWidget.Value;
+        obj.mibController.cQuickAccessBar.handles.roiMode.Value = logical(hWidget.Value);
+        obj.mibController.showImage();
     case 'roiManually' % enable manual ROI addition mode based on provided coordinates
         if obj.handles.roiManually.Value
             obj.handles.roiX1.Enable = 'on';
