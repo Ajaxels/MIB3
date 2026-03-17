@@ -8,10 +8,17 @@ classdef MibSegmentation
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        listeners       % cell array of listeners
         UIFigure        % handle to underlying UIFigure
     end
 
     methods
+
+        % ------------------ declaration of listeners
+
+        listener_updatePanelPosition(obj, src, evtData) % Listener callback: adapt the Segmentation panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right).
+
+        % ------------------ declaration of other methods and callbacks
 
         annotationsPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Annotations tool
         
@@ -154,6 +161,9 @@ classdef MibSegmentation
             % Bottom section
             obj.handles.materialsTableContextUnlink.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
 
+            %% ---------------------- Add listeners
+            obj.listeners{1} = addlistener(obj.view.handles.panels.segmentationPanel, 'PropertyChanged', @obj.listener_updatePanelPosition); % redraw the panel when Region property gets changed
+
             %% ---------------------- Add CALLBACKS to widgets ----------------------
             obj.handles.createModel.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.loadModel.ButtonPushedFcn = @obj.gui_Callbacks;
@@ -170,7 +180,7 @@ classdef MibSegmentation
 
             obj.handles.segmTool.ValueChangedFcn = @(~,~)obj.segmentationTool_Callback;
 
-            % ---------------------- Key press callback ----------------------
+            %% ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
             %% 3D ball, brush, spot panels

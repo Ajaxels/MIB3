@@ -14,7 +14,7 @@ panelOptions.Title = "ROI";
 panelOptions.Region = "bottom";
 
 obj.handles.panels.roiPanel = matlab.ui.internal.FigurePanel(panelOptions);
-obj.handles.panels.roiPanel.PreferredHeight = 400;
+%obj.handles.panels.roiPanel.PreferredHeight = 400;
 obj.handles.panels.roiPanel.Figure.AutoResizeChildren = 'off';
 
 panelHandles = views.components.Roi( ...

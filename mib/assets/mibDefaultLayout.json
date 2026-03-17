@@ -28,10 +28,10 @@
       "showingContextSetId": "global"
     },
     "bottom": {
-      "freeDimension": 162,
+      "freeDimension": 181,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.19354838709677419,
+      "portion": 0.21624850657108721,
       "children": [
         {
           "id": "panel4",
@@ -51,7 +51,7 @@
     "tileCount": 1,
     "tileCoverage": 0,
     "referenceWidth": 1049,
-    "referenceHeight": 674,
+    "referenceHeight": 655,
     "columnWeights": 1,
     "rowWeights": 1,
     "columnLeft": [
@@ -60,7 +60,7 @@
     ],
     "rowTop": [
       0,
-      674
+      655
     ],
     "tileOccupancy": {
       "children": {
@@ -79,10 +79,10 @@
     "lastSelectedDocumentId": "document1"
   },
   "windowBounds": {
-    "x": 1020,
-    "y": 230,
-    "w": 1400,
-    "h": 980
+    "x": 1590,
+    "y": 295,
+    "w": 1416,
+    "h": 1019
   },
   "toolstripCollapsed": false,
   "tools": {

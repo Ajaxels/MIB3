@@ -51,7 +51,7 @@ classdef MibSelection
             obj.handles.lutTableContextDelete.MenuSelectedFcn = @obj.lutTable_ContextMenu;
             obj.handles.lutTableContextSetLUT.MenuSelectedFcn = @obj.lutTable_ContextMenu;
 
-            % ---------------------- Add CALLBACKS to widgets ----------------------
+            %% ---------------------- Add CALLBACKS to widgets ----------------------
             % example call using lambda functions
             % obj.handles.handleName.ButtonPushedFcn = @(src, event)obj.gui_Callbacks(src, event, customParameter);
 

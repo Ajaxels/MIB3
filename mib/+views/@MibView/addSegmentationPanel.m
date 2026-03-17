@@ -14,7 +14,7 @@ panelOptions.Title = "Segmentation";
 panelOptions.Region = "left";
 
 obj.handles.panels.segmentationPanel = matlab.ui.internal.FigurePanel(panelOptions);
-obj.handles.panels.segmentationPanel.PreferredHeight = 400;
+%obj.handles.panels.segmentationPanel.PreferredHeight = 400;
 obj.handles.panels.segmentationPanel.Figure.AutoResizeChildren = 'off';
 panelHandles = views.components.Segmentation('Parent', obj.handles.panels.segmentationPanel.Figure, ...
     'Units', 'normalized', 'Position', [0 0 1 1]); % needs to have normalized units, by default those are pixels

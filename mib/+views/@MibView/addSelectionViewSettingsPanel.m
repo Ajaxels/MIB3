@@ -15,7 +15,7 @@ panelOptions.Region = "bottom";
 
 obj.handles.panels.selectionPanel = matlab.ui.internal.FigurePanel(panelOptions);
 obj.handles.panels.selectionPanel.WindowBounds(3) = 100;
-obj.handles.panels.selectionPanel.Resizable = false;
+%obj.handles.panels.selectionPanel.Resizable = false;
 obj.handles.panels.selectionPanel.Figure.AutoResizeChildren = 'off';
 
 panelHandles = views.components.SelectionViewSettings( ...

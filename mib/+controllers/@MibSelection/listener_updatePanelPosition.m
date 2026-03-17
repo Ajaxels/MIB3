@@ -44,7 +44,7 @@ switch evtData.PropertyName
                 end
                 obj.handles.mainGridLayout.RowHeight    = {130, 3, 130, 3, 130};
                 obj.handles.mainGridLayout.ColumnWidth  = {'1x'};
-                obj.handles.mainGridLayout.RowSpacing    = 10;
+                obj.handles.mainGridLayout.RowSpacing    = 12;
                 obj.handles.mainGridLayout.ColumnSpacing = 4;
                 obj.handles.mainGridLayout.Padding       = [8 10 6 10];
 
@@ -58,7 +58,7 @@ switch evtData.PropertyName
                     children(i).Layout.Column = rowIdx;
                 end
                 obj.handles.mainGridLayout.RowHeight    = {'1x'};
-                obj.handles.mainGridLayout.ColumnWidth  = {310, 3, 320, 3, '1x'};
+                obj.handles.mainGridLayout.ColumnWidth  = {320, 3, 320, 3, '1x'};
                 obj.handles.mainGridLayout.RowSpacing    = 4;
                 obj.handles.mainGridLayout.ColumnSpacing = 10;
                 obj.handles.mainGridLayout.Padding       = [10 8 10 6];

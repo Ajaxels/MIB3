@@ -95,10 +95,18 @@ if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     obj.mibModel.I{obj.mibModel.id}.moveView(xy2(1), xy2(2));
 
     % get panel positions from the layout
-    leftPanelW   = obj.view.gui.Layout.panelLayout.left.freeDimension;
-    bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
-    if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW   = 0; end
-    if obj.view.gui.Layout.panelLayout.bottom.collapsed; bottomPanelH = 0; end
+    leftPanelW = 0;
+    if isfield(obj.view.gui.Layout.panelLayout, 'left')
+        leftPanelW   = obj.view.gui.Layout.panelLayout.left.freeDimension;
+        if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW   = 0; end
+    end
+    bottomPanelH = 0;
+    if isfield(obj.view.gui.Layout.panelLayout, 'bottom')
+        bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
+        if obj.view.gui.Layout.panelLayout.bottom.collapsed; bottomPanelH = 0; end
+    end
+    
+    
 
     winBounds = obj.view.gui.WindowBounds;   % % main GUI position, [left, top, width, height], top-left origin
     posAxes = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Position;  % image view axes position, [left, bottom, width, height], bottom-left origin within document
