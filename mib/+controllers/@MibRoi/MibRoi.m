@@ -8,6 +8,7 @@ classdef MibRoi < handle
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        listeners       % cell array of listeners
         UIFigure        % handle to underlying UIFigure
         drawingROI      % struct tracking an in-progress interactive ROI:
         %   .active       - logical, true while a draw tool is waiting for user input
@@ -20,7 +21,12 @@ classdef MibRoi < handle
 
 
     methods
-        % declaration of functions in the external files, keep empty line in between for the doc generator
+        % ------------------------- declaration of listeners
+        
+        listener_updatePanelPosition(obj, src, evtData)        % redraw the panel based on its position within the main GUI
+
+        % ------------------------- declaration of functions in the external files, 
+        % keep empty line in between for the doc generator
 
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
 
@@ -70,7 +76,10 @@ classdef MibRoi < handle
             obj.handles.roiToSelection.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
-            % ---------------------- Key press callback ----------------------
+            %% Add listeners
+            obj.listeners{1} = addlistener(obj.view.handles.panels.roiPanel, 'PropertyChanged', @obj.listener_updatePanelPosition); % redraw the panel when Region property gets changed
+
+            %% ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 
         end

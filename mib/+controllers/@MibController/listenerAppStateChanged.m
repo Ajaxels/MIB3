@@ -3,11 +3,13 @@ function listenerAppStateChanged(obj, src, evtData)
 % listener for property change in obj.view.handles.imageViewDocGroup
 % At the moment is used to catch selection of the figure-document in the Image View panel
 
-arguments
-    obj controllers.MibController
-    src matlab.ui.internal.FigureDocumentGroup
-    evtData matlab.ui.container.internal.appcontainer.PropertyChangedEventData
-end
+% arguments
+%     obj controllers.MibController
+%     src matlab.ui.internal.FigureDocumentGroup
+%     evtData matlab.ui.container.internal.appcontainer.PropertyChangedEventData
+% end
+
+%evtData.PropertyName
 
 switch evtData.PropertyName
     case 'LastSelected'
@@ -27,5 +29,11 @@ switch evtData.PropertyName
                 obj.cActiveDataset.setsOps_Callbacks([], [], 'sets');
             end
         end
+    case 'Region'
+        % listeners for movement of the panels to another locations
+        switch src.Title
+            case 'ROI'
+        end
+       
 end
 end

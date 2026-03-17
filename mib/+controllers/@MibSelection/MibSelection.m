@@ -8,10 +8,15 @@ classdef MibSelection
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        listeners       % cell array of listeners
         UIFigure        % handle to underlying UIFigure
     end
 
     methods
+        % declaration of listeners
+
+        listener_updatePanelPosition(obj, src, evtData)        % Listener callback: adapt the Selection panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right).
+
         % declaration of functions in the external files, keep empty line in between for the doc generator
 
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
@@ -82,7 +87,10 @@ classdef MibSelection
             obj.handles.lutTable.CellSelectionCallback = @obj.lutTable_CellSelection;
             obj.handles.lutTable.CellEditCallback = @(src, event)obj.lutTable_CellEditCallback(src, event);
 
-            % ---------------------- Key press callback ----------------------
+            %% Add listeners
+            obj.listeners{1} = addlistener(obj.view.handles.panels.selectionPanel, 'PropertyChanged', @obj.listener_updatePanelPosition); % redraw the panel when Region property gets changed
+
+            %% ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
         end
 
