@@ -82,6 +82,7 @@ classdef MibModel < handle
         StopProtocol         % stop batch protocol from execution
         SyncBatch            % synchronize structure for batch actions
         UpdateDatasetAxes    % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+        UpdateDialog         % request to update specific dialog, for example when Batch Processing is used, requires core.ToggleEventData, see BoundingBox.m
         UpdateFileList       % update the list of files
         UpdateGuiWidgets     % update all widgets of the main GUI
         UpdateImgInfo        % update image information, for example bounding box

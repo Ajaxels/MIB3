@@ -12,7 +12,10 @@ for i=1:numel(BatchOptInputFields)
 %         0;
 %     end
 
-    if iscell(BatchOptInput.(BatchOptInputFields{i})) || iscell(BatchOpt.(BatchOptInputFields{i})(1))
+    if iscell(BatchOptInput.(BatchOptInputFields{i})) || ...
+            (isfield(BatchOpt, BatchOptInputFields{i}) && ...
+             ~isempty(BatchOpt.(BatchOptInputFields{i})) && ...
+             iscell(BatchOpt.(BatchOptInputFields{i})(1)))
         % convert to cell, this happens when the struct initialized as
         % "BatchOpt = struct('Mode', {'Add set'}, 'SetName', 'Set 1');"
         if ischar(BatchOptInput.(BatchOptInputFields{i})); BatchOptInput.(BatchOptInputFields{i}) = {BatchOptInput.(BatchOptInputFields{i})}; end 

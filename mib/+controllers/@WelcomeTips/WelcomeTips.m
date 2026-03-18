@@ -89,7 +89,9 @@ classdef WelcomeTips < handle
             end 
 
             obj.updateWidgets();
-			
+            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+            obj.view.gui.Visible = 'on';    % turn on the window 
+
 			% add listener to obj.mibModel and call controller function as a callback
             %obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
         end

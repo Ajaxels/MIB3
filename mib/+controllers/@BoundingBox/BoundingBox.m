@@ -45,7 +45,7 @@ classdef BoundingBox < handle
                 return;
             end
             switch evnt.EventName
-                case {'UpdateGuiWidgets', 'NewDataset'}
+                case {'UpdateGuiWidgets', 'NewDataset', 'UpdateDialog'}
                     obj.updateWidgets();
             end
         end
@@ -107,6 +107,10 @@ classdef BoundingBox < handle
                     obj.importBtn_Callback(1);  % 1 - batch mode switch
                 end
                 obj.applyButton_Callback(1);   % 1 - batch mode switch
+                
+                Parameters.DialogName = 'BoundingBox';
+                eventdata = core.ToggleEventData(Parameters);
+                notify(obj.mibModel, 'UpdateDialog', eventdata);                
                 return;
             end
 
@@ -128,10 +132,13 @@ classdef BoundingBox < handle
             % update GUI widgets using the provided BatchOpt
             obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             obj.updateWidgets();
+            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+            obj.view.gui.Visible = 'on';    % turn on the window 
 
             % add listener to obj.mibModel and call controller function as a callback
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{3} = addlistener(obj.mibModel, 'UpdateDialog', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
         end
 
         function closeWindow(obj)

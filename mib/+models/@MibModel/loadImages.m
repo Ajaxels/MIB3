@@ -75,7 +75,7 @@ BatchOpt.InsertDatasetPosition = '0';
 BatchOpt.showWaitbar = true;   % show or not the waitbar
 BatchOpt.id = obj.id;   % optional, id
 
-BatchOpt.mibBatchSectionName = 'Menu -> File';    % section name for the Batch
+BatchOpt.mibBatchSectionName = 'Menu -> Home';    % section name for the Batch
 BatchOpt.mibBatchActionName = 'Load and combine images';
 BatchOpt.mibBatchTooltip.Mode = sprintf('Desired mode to combine the images, use "Series-by-series" to process each dataset in a file-container individually (bio-formats only)');
 BatchOpt.mibBatchTooltip.DirectoryName = sprintf('Directory name, where the files are located, use the right mouse click over the Parameters table to modify the directory');
