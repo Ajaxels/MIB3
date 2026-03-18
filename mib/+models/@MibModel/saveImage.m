@@ -430,7 +430,8 @@ fnOut = obj.I{BatchOpt.id}.saveImage(layerType, outputFilename, saveOpts);
 if isempty(fnOut); notify(obj, 'StopProtocol'); end
 
 % update the list of files
-UpdateFilelist.filename = fname;
+[~, outName, outExt] = fileparts(outputFilename);
+UpdateFilelist.filename = [outName outExt];
 eventdata = core.ToggleEventData(UpdateFilelist);
 notify(obj, 'UpdateFileList', eventdata);
 end

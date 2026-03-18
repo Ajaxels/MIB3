@@ -32,7 +32,7 @@ switch Filters{FilterIndex,2}
         save(fn_out, 'Protocol', '-mat', '-v7');
     case 'Excel format (*.xls)'
         warning('off', 'MATLAB:xlswrite:AddSheet');
-        wb = waitbar(0, sprintf('Saving to Excel\nPlease wait...'));
+        wb = uiprogressdlg(obj.view.gui, 'Title', 'Saving to Excel', 'Message', 'Please wait...', 'Value', 0);
         % Sheet 1
         s = {sprintf('MIB protocol file: %s', fn_out)};
         s(3,1) = {'Step'}; s(3,2) = {'Section name'}; s(3,3) = {'Action name'}; s(3,4) = {'Command'};
@@ -57,11 +57,11 @@ switch Filters{FilterIndex,2}
             end
             if isempty(fieldNames); lineIndex = lineIndex + 1; end  % to fix position for the STOP EXECUTION
         end
-        waitbar(.2, wb);
+        wb.Value = 0.2;
         warning('off','MATLAB:COM:invalidargumenttype');    % switch off warnings
         xlswrite2(fn_out, s, 'Protocol');
-        waitbar(1, wb);
-        delete(wb);
+        wb.Value = 1;
+        close(wb);
 end
 fprintf('mib: protocol was saved to "%s"\n', fn_out);
 end

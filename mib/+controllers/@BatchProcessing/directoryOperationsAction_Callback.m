@@ -38,7 +38,7 @@ BatchOpt.Mode = {'Relative to current MIB path'};   % directory resolution mode
 BatchOpt.Mode{2} = {'Absolute', 'Inherit from Directory loop', 'Inherit dirs +Dirname', 'Relative to current MIB path'};
 BatchOpt.DirectoryName = 'subFolder';
 % add section name and action name for the batch tool
-BatchOpt.mibBatchSectionName = 'Menu -> File';
+BatchOpt.mibBatchSectionName = 'Menu -> Home';
 BatchOpt.mibBatchActionName = 'Directory operations';
 % tooltips that will accompany the BatchOpt
 BatchOpt.mibBatchTooltip.Operation = 'A directory operation to perform, directories that have files can not be removed';
@@ -52,7 +52,9 @@ if nargin == 2
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
-            errordlg(sprintf('A structure as the 1st parameter is required!'));
+            errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+            errOpts.Header = 'A structure as the 1st parameter is required!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'directoryOperationsAction_Callback error', errOpts);
         end
         return;
     end

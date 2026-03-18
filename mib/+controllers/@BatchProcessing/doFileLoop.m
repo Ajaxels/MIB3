@@ -39,20 +39,25 @@ filename = {filename(notDirsIndices).name}';
 
 stepOptions.DirectoryName = options.DirectoryName;
 
-if options.FileLoopWaitbar; wb = waitbar(0, '', 'Name', 'Processing files'); set(findall(wb, 'type', 'text'), 'Interpreter', 'none'); end
+if options.FileLoopWaitbar
+    wb = uiprogressdlg(obj.view.gui, 'Title', 'Processing files', ...
+        'Message', 'Please wait...', 'Value', 0, 'Cancelable', 'on', 'CancelText', 'Stop');
+end
 
 for fnId = 1:numel(filename)
     if options.FileLoopWaitbar
-        waitbar(fnId/numel(filename), wb, sprintf('Processing: %s\nPlease wait...', filename{fnId}));
+        wb.Value   = fnId / numel(filename);
+        wb.Message = sprintf('Processing: %s', filename{fnId});
+        if wb.CancelRequested; close(wb); return; end
     end
     stepOptions.FilenameFilter = filename{fnId};
-    stepOptions.Filenames = {{fullfile(stepOptions.DirectoryName, filename{fnId})}};
+    stepOptions.Filenames = {fullfile(stepOptions.DirectoryName, filename{fnId})};
     stepOptions.FileLoopWaitbar = options.FileLoopWaitbar;
     for stepId = startStep:finishStep
         status = obj.doBatchStep(stepId, stepOptions);
         if status == 0; return; end
     end
 end
-if options.FileLoopWaitbar; delete(wb); end
+if options.FileLoopWaitbar; close(wb); end
 status = true;
 end

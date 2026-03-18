@@ -875,7 +875,7 @@ classdef Preferences < handle
                     {'InsertColorMenu', 'ReplaceWithRandomColorMenu', 'SwapTwoColorsMenu', ...
                     'DeleteColorsMenu'})
                 uialert(obj.view.gui, ...
-                    sprintf('!!! Error !!!\n\nPlease select a row in the table first'), 'Error');
+                    sprintf('!!! Error !!!\n\nPlease select a row in the table first'), 'ModelsColorsTableContextMenuCallbacks Error');
                 return;
             end
                 

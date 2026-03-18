@@ -20,30 +20,30 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % dlgTitle: dialog window title string.
 %
 % options: optional struct with fields:
-% .WindowStyle - 'normal' (default) or 'modal'.
-% .PromptLines - scalar or array (numel(prompts)) of integers specifying wrapped title line heights for prompts.
+% .Columns - integer number of columns (default 1).
+% .DefaultKey - which button to trigger on Enter/Return key: 'OK' (default) or 'Cancel'.
+% .DoNotShowAgain - logical, show "Do not show again" checkbox (default false).
+% .DoNotShowAgainText - text for the "Do not show again" checkbox (default 'Do not show again').
+% .Focus - 1-based index of widget to focus on open; 0 = focus OK button (default 0).
 % .Header - string, text displayed above widgets.
 % .HeaderLines - integer number of lines reserved for Header.
-% .WindowWidth - dialog width in pixels (default 560).
-% .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
-% .Columns - integer number of columns (default 1).
-% .Icon - 'puffin_question' (default), 'puffin_warning', 'puffin_info', 'puffin_error', 'puffin_measure', 'question', 'celebrate', 'call4help', 'warning'.
+% .HelpBtnText - text for Help button (default 'Help').
+% .HelpUrl - string URL or command; if provided, shows Help button.
+% .Icon - 'puffin_question' (default), 'puffin_warning', 'puffin_info', 'puffin_error', 'puffin_measure', 'puffin_waiting', 'question', 'celebrate', 'call4help', 'warning'.
 % .IconWidth - width of icon column in pixels (default [], i.e. use the size of the image).
-% .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
 % .LabelPosition - 'left' (default, horizontal layout) or 'top' (vertical layout, labels above widgets).
+% .LastItemColumns - 1 to force last entry to span all columns, 0 otherwise (default 0).
+% .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
+% .MsgBoxOnly - logical, show dialog as a message box with only OK button and single html content (default false).
+% .OkBtnText - text for OK button (default 'OK').
+% .ParentFigure - handle to parent figure; if provided, dialog is centered on parent window (default: []).
+% .PromptLines - scalar or array (numel(prompts)) of integers specifying wrapped title line heights for prompts.
 % .SectionsColumnWidths - cell array specifying label/widget column proportions for each main column,
 %                         used only when LabelPosition='left'. E.g., for 2 main columns: {'1x', '2x', '1x', '2x'} means
 %                         col1 has label:widget = 1x:2x, col2 has label:widget = 1x:2x (default: all 'fit' and '1x').
-% .LastItemColumns - 1 to force last entry to span all columns, 0 otherwise (default 0).
-% .Focus - 1-based index of widget to focus on open; 0 = focus OK button (default 0).
-% .OkBtnText - text for OK button (default 'OK').
-% .HelpBtnText - text for Help button (default 'Help').
-% .HelpUrl - string URL or command; if provided, shows Help button.
-% .MsgBoxOnly - logical, show dialog as a message box with only OK button and single html content (default false).
-% .DoNotShowAgain - logical, show "Do not show again" checkbox (default false).
-% .DoNotShowAgainText - text for the "Do not show again" checkbox (default 'Do not show again').
-% .ParentFigure - handle to parent figure; if provided, dialog is centered on parent window (default: []).
-% .DefaultKey - which button to trigger on Enter/Return key: 'OK' (default) or 'Cancel'.
+% .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
+% .WindowStyle - 'normal' (default) or 'modal'.
+% .WindowWidth - dialog width in pixels (default 560).
 %
 % Return values:
 % answer: a cell array with entered values (or empty when canceled). For dropdowns, value is the selected string; numeric edit returns double; spinner returns double; checkbox returns logical.
@@ -175,7 +175,7 @@ clear fi_ idx_ knownOptionFields
 % Defaults
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth')
-    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_info'})
+    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_info', 'puffin_waiting'})
         options.IconWidth = 96; 
     else
         options.IconWidth = 48; 
@@ -193,7 +193,10 @@ if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end
 if ~isfield(options, 'HelpUrl'); options.HelpUrl = []; end
 if ~isfield(options, 'MsgBoxOnly'); options.MsgBoxOnly = false; end
 if ~isfield(options, 'PromptLines'); options.PromptLines = ones(numel(prompts),1); end
-if ~isfield(options, 'HeaderLines'); options.HeaderLines = 1; end
+if ~isfield(options, 'HeaderLines')
+    options.HeaderLines = 1;
+    if options.MsgBoxOnly; options.HeaderLines = 3; end
+end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 450; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 150; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
@@ -326,6 +329,7 @@ switch options.Icon
     case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
     case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(5));
     case 'puffin_info';      iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
+    case 'puffin_waiting';      iconFilename = sprintf('puffin_waiting_%d_96px.png', randi(3));
     otherwise
         % get random icon
         iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));

@@ -43,7 +43,9 @@ switch obj.Protocol(stepId).Batch.(dirModeField){1}
             try
                 mkdir(obj.Protocol(stepId).Batch.(filenameField));
             catch err
-                errordlg(sprintf('!!! Error !!!\n\n%s\n\n%s', err.identifier, err.message), 'Problem with directory');
+                errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+                errOpts.Header = sprintf('%s\n\n%s', err.identifier, err.message);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with directory', errOpts);
                 warning('on', 'MATLAB:MKDIR:DirectoryExists'); % enable warning of existing directories
                 return;
             end
@@ -63,7 +65,9 @@ switch obj.Protocol(stepId).Batch.(dirModeField){1}
                 try
                     mkdir(dirOut);
                 catch err
-                    errordlg(sprintf('!!! Error !!!\n\n%s\n\n%s', err.identifier, err.message), 'Problem with directory');
+                    errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+                errOpts.Header = sprintf('%s\n\n%s', err.identifier, err.message);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with directory', errOpts);
                     warning('on', 'MATLAB:MKDIR:DirectoryExists'); % enable warning of existing directories
                     return;
                 end
@@ -74,14 +78,18 @@ switch obj.Protocol(stepId).Batch.(dirModeField){1}
         end
     case 'Inherit from Directory loop'
         if ~isfield(stepOptions, 'DirectoryName')
-            errordlg(sprintf('!!! Error !!!\n\nWrong settings: Inherit from Directory loop parameter requires Directory loop before this action!'));
+            errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+            errOpts.Header = 'Wrong settings: Inherit from Directory loop parameter requires Directory loop before this action!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'ObtainDirectoryForAction error', errOpts);
             warning('on', 'MATLAB:MKDIR:DirectoryExists'); % enable warning of existing directories
             return;
         end
         dirOut = stepOptions.DirectoryName;
     case 'Inherit dirs +Dirname'    % get directory from the loop and add subfolder
         if ~isfield(stepOptions, 'DirectoryName')
-            errordlg(sprintf('!!! Error !!!\n\nWrong settings: Inherit from Directory loop parameter requires Directory loop before this action!'));
+            errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+            errOpts.Header = 'Wrong settings: Inherit from Directory loop parameter requires Directory loop before this action!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'ObtainDirectoryForAction error', errOpts);
             warning('on', 'MATLAB:MKDIR:DirectoryExists'); % enable warning of existing directories
             return;
         end

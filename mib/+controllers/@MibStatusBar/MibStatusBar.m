@@ -8,10 +8,13 @@ classdef MibStatusBar
         mibModel        % models.MibModel
         gui             % handle to the GUI of the ROI panel (views.components.Roi)
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
+        listeners       % cell array of listeners
     end
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
+
+        listener_updateStatusBar(obj, src, evtData) % Call for update of the status bar widgets, used upon change of directory in Batch Processing executed upon catch of MibModel->"UpdateStatusBar" event
 
         gui_Callbacks(obj, mode) % callbacks for widgets of some the Status bar obj.handles.status
 
@@ -33,6 +36,10 @@ classdef MibStatusBar
             obj.handles.copyPath.ButtonPushedFcn = @(~,~)obj.gui_Callbacks('copyPath');
             obj.handles.openBrowser.ButtonPushedFcn = @(~,~)obj.gui_Callbacks('openBrowser');
             obj.handles.zoom.ValueChangedFcn = @(~,~)obj.gui_Callbacks('zoom');
+
+            %% Add listeners
+            obj.listeners{1} = addlistener(obj.mibModel, 'UpdateStatusBar', @obj.listener_updateStatusBar); % update the status bar
+
         end
     end
 end

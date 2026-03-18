@@ -53,7 +53,9 @@ else
     switch class(obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}))
         case 'cell'
             if numel(obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex})) == 1
-                warndlg(sprintf('!!! Warning !!!\n\nThe possible configurations for this widget were not provided!'));
+                warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
+                warnOpts.Header = 'The possible configurations for this widget were not provided!';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Warning', warnOpts);
                 obj.view.handles.selectedActionTableCellPopup.Items = obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex})(1);
                 obj.view.handles.selectedActionTableCellPopup.Value = obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}){1};
             else

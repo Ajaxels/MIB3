@@ -13,7 +13,7 @@ function initialize(obj)
 % the section popup can be populated immediately.
 %
 % Currently defined sections (14 total):
-% @li 'Menu -> File'             - load/save, loops, directory/file ops
+% @li 'Menu -> Home'             - load/save, loops, directory/file ops
 % @li 'Menu -> Dataset'          - alignment, crop, resample, transform, etc.
 % @li 'Menu -> Image'            - intensity, colour, mode, morphology
 % @li 'Menu -> Models'           - model management
@@ -43,7 +43,7 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.loadImages([], 
 obj.Sections(secIndex).Actions(actionId).Name = 'Example datasets';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuFileExamples_Callback(Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Save dataset';
-obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.saveImage([], "image", Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.saveImage("image", [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'DIRECTORY LOOP START';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.directoryLoopAction_Callback(Batch)'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'DIRECTORY LOOP STOP';

@@ -40,7 +40,7 @@ BatchOpt.TargetDirectoryMode{2} = {'Absolute', 'Relative to current MIB path', '
 BatchOpt.TargetDirectory = '';
 BatchOpt.FilenameMask = '*.extension';
 % add section name and action name for the batch tool
-BatchOpt.mibBatchSectionName = 'Menu -> File';
+BatchOpt.mibBatchSectionName = 'Menu -> Home';
 BatchOpt.mibBatchActionName = 'File operations';
 % tooltips that will accompany the BatchOpt
 BatchOpt.mibBatchTooltip.Operation = 'File operation to perform';
@@ -57,7 +57,9 @@ if nargin == 2
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
-            errordlg(sprintf('A structure as the 1st parameter is required!'));
+            errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+            errOpts.Header = 'A structure as the 1st parameter is required!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'FileOperationsAction_Callback error', errOpts);
         end
         return;
     end

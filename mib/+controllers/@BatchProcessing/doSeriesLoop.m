@@ -46,20 +46,22 @@ hDataset.setId(filename);
 numSeries = hDataset.getSeriesCount();
 
 if options.FileLoopWaitbar
-    wb = waitbar(0, '', 'Name', 'Processing series');
-    set(findall(wb, 'type', 'text'), 'Interpreter', 'none');
-    waitbar(0, wb, sprintf('Processing : %s\nPlease wait...', filename));
+    wb = uiprogressdlg(obj.view.gui, 'Title', 'Processing series', ...
+        'Message', sprintf('Processing: %s', filename), 'Value', 0, 'Cancelable', 'on', 'CancelText', 'Stop');
 end
 stepOptions.FileLoopWaitbar = options.FileLoopWaitbar;
 
 for seriesId =  1:numSeries
-    if options.FileLoopWaitbar; waitbar(seriesId/numSeries, wb); end
+    if options.FileLoopWaitbar
+        wb.Value = seriesId / numSeries;
+        if wb.CancelRequested; close(wb); return; end
+    end
     stepOptions.seriesId = seriesId;    % set series id for doBatchStep function
     for stepId = startStep:finishStep
         status = obj.doBatchStep(stepId, stepOptions);
         if status == 0; return; end
     end
 end
-if options.FileLoopWaitbar; delete(wb); end
+if options.FileLoopWaitbar; close(wb); end
 status = true;
 end

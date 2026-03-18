@@ -17,7 +17,7 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %   .WindowWidth       - dialog width in pixels (default 400)
 %   .WindowHeight      - dialog height in pixels (default 112)
 %   .WindowStyle - 'normal' (default) or 'modal'
-%   .Icon        - 'puffin_question' (default), 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'question_48px', 'celebrate', 'call4help', 'warning_48px'
+%   .Icon        - 'puffin_question' (default), 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'puffin_waiting', 'question_48px', 'celebrate', 'call4help', 'warning_48px'
 %   .IconWidth   - WindowWidth of icon column in pixels (default 48)
 %   .ParentFigure - handle to the parent window to have the dialog centered
 %
@@ -102,7 +102,7 @@ if ~isfield(options, 'WindowHeight'); options.WindowHeight = 112; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth')
-    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info'})
+    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'puffin_waiting'})
         options.IconWidth = 96; 
     else
         options.IconWidth = 48; 
@@ -129,6 +129,7 @@ switch options.Icon
     case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
     case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(5));
     case 'puffin_info';      iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
+    case 'puffin_waiting';      iconFilename = sprintf('puffin_waiting_%d_96px.png', randi(3));
     otherwise
         % puffin_question
         iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));

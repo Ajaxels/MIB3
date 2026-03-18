@@ -41,7 +41,9 @@ switch hObject.Tag
             if numel(obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex})) > 1     % check range
                 Limits = obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}){2};
                 if values < Limits(1) || values > Limits(2)
-                    errordlg(sprintf('!!! Error!!!\n\nThe value should be between %f - %f!', Limits(1), Limits(2)));
+                    errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
+                    errOpts.Header = sprintf('The value should be between %g and %g!', Limits(1), Limits(2));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Value out of range', errOpts);
                     hObject.Value = num2str(obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}){1});
                     return;
                 end

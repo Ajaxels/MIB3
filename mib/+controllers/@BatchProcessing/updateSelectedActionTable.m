@@ -64,12 +64,23 @@ tData = cell([numel(fieldNames), 2]);
 tData(:,1) = fieldNames;    % plain text; bold applied via uistyle below
 
 for rowId = 1:numel(fieldNames)
-    if iscell(BatchOpt.(fieldNames{rowId}))
-        tData{rowId,2} = BatchOpt.(fieldNames{rowId}){1};
-    elseif islogical(BatchOpt.(fieldNames{rowId}))
-        tData{rowId,2} = BatchOpt.(fieldNames{rowId});
+    val = BatchOpt.(fieldNames{rowId});
+    if iscell(val)
+        val = val{1};           % first element = selected value / current value
+        if iscell(val)          % nested cell (shouldn't happen, but guard anyway)
+            val = val{1};
+        end
+    end
+    % Normalise to a type accepted by AppDesigner Table: char, logical, or scalar numeric
+    if isstring(val); val = char(val); end  % convert MATLAB string object to char
+    if islogical(val)
+        tData{rowId,2} = val(1);        % scalar logical
+    elseif ischar(val)
+        tData{rowId,2} = val;           % char vector — keep as is
+    elseif isnumeric(val)
+        tData{rowId,2} = num2str(val);  % numeric → display string
     else
-        tData{rowId,2} = num2str(BatchOpt.(fieldNames{rowId}));
+        tData{rowId,2} = class(val);    % fallback: show type name
     end
 end
 obj.view.handles.selectedActionTable.Data = tData;

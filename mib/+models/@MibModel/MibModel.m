@@ -87,7 +87,9 @@ classdef MibModel < handle
         UpdateGuiWidgets     % update all widgets of the main GUI
         UpdateImgInfo        % update image information, for example bounding box
         UpdateRecentDirsList % update the list of recent directories under Open Image button
+        UpdateStatusBar      % update status bar
         UpdateToolbar        % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)
+        UpdateUserScore      % update user stats
     end
 
     methods

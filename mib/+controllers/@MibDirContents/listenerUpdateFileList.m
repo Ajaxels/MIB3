@@ -26,13 +26,14 @@ function listenerUpdateFileList(obj, src, evtData)
 % @endcode 
 % // call from MibModel; update the list of files
 % @code
-% // update the current dataset using the "resize" mode
+% // update the list of files highlighting the current dataset
 % notify(obj.mibModel, 'UpdateFileList');
 % @endcode 
 
 % update the missing fields
 if ~isprop(evtData, 'Parameters')
-    selectedFilename = '';
+    [~, fname, ext] = fileparts(obj.mibModel.I{obj.mibModel.id}.image.filename);
+    selectedFilename = [fname, ext];
 else
     selectedFilename = evtData.Parameters.filename;
 end

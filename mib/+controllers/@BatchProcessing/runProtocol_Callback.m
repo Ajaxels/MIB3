@@ -48,7 +48,7 @@ switch parameter
         % count user's points
         obj.mibModel.preferences.Users.Tiers.numberOfBatchProcessings = obj.mibModel.preferences.Users.Tiers.numberOfBatchProcessings+1;
         eventdata = core.ToggleEventData(3);    % scale scoring by factor 3
-        notify(obj.mibModel, 'updateUserScore', eventdata);
+        notify(obj.mibModel, 'UpdateUserScore', eventdata);
         timerProtocolStart = tic;
     case 'from'
         startStep = obj.protocolListIndex;
@@ -88,15 +88,22 @@ while stepId <= finishStep
         % show dirloop waitbar
         showDirLoopWaitbar = false;     % do not show the dir-loop waitbar
         if obj.Protocol(stepId).Batch.DirLoopWaitbar
-            dirLoopWaitbar = waitbar(0, 'Please wait...', 'Name', 'Processing directories');
-            set(findall(dirLoopWaitbar, 'type', 'text'), 'Interpreter', 'none');
+            dirLoopWaitbar = uiprogressdlg(obj.view.gui, 'Title', 'Processing directories', ...
+                'Message', 'Please wait...', 'Value', 0, 'Cancelable', 'on', 'CancelText', 'Stop');
             showDirLoopWaitbar = true;  % show dir-loop waitbar, disable other waitbars
         end
 
         for dirId = 1:numel(obj.Protocol(stepId).Batch.DirectoriesList{2})
             if obj.Protocol(stepId).Batch.DirLoopWaitbar
                 [~, currDirWaitbarText] = fileparts(obj.Protocol(stepId).Batch.DirectoriesList{2}{dirId});
-                waitbar(dirId/numel(obj.Protocol(stepId).Batch.DirectoriesList{2}), dirLoopWaitbar, sprintf('Processing: %s\nPlease wait...', currDirWaitbarText));
+                dirLoopWaitbar.Value   = dirId / numel(obj.Protocol(stepId).Batch.DirectoriesList{2});
+                dirLoopWaitbar.Message = sprintf('Processing: %s', currDirWaitbarText);
+                if dirLoopWaitbar.CancelRequested
+                    close(dirLoopWaitbar);
+                    notify(obj.mibModel, 'StopProtocol');
+                    obj.view.handles.autoAddToProtocol.Value = autoAddSwitch;
+                    return;
+                end
             end
 
             stepId2 = startStep2;
@@ -122,7 +129,7 @@ while stepId <= finishStep
                         if status == 0
                             notify(obj.mibModel, 'StopProtocol');
                             obj.view.handles.autoAddToProtocol.Value = autoAddSwitch;
-                            if obj.Protocol(stepId).Batch.DirLoopWaitbar; delete(dirLoopWaitbar); end
+                            if obj.Protocol(stepId).Batch.DirLoopWaitbar; close(dirLoopWaitbar); end
                             return;
                         end
                         stepId2 = fileLoopFinish + 1;
@@ -133,18 +140,21 @@ while stepId <= finishStep
                         if status == 0
                             notify(obj.mibModel, 'StopProtocol');
                             obj.view.handles.autoAddToProtocol.Value = autoAddSwitch;
-                            if obj.Protocol(stepId).Batch.DirLoopWaitbar; delete(dirLoopWaitbar); end
+                            if obj.Protocol(stepId).Batch.DirLoopWaitbar; close(dirLoopWaitbar); end
                             return;
                         end
                         stepId2 = stepId2 + 1;
                 end
             end
         end
-        if obj.Protocol(stepId).Batch.DirLoopWaitbar; delete(dirLoopWaitbar); end
+        if obj.Protocol(stepId).Batch.DirLoopWaitbar; close(dirLoopWaitbar); end
         stepId = finishStep2 + 1;
     elseif strcmp(obj.Protocol(stepId).mibBatchActionName, 'FILE LOOP START')
         if strcmp(obj.Protocol(stepId).Batch.DirectoryName{1}, 'Inherit from Directory loop')
-            errordlg(sprintf('!!! Error !!!\n\nInherit from Directory loop works only when the File loop is placed after the Directory loop!'), 'Wrong sequence of actions');
+            errOpts.MsgBoxOnly = true; 
+            errOpts.Icon = 'puffin_error';
+            errOpts.Header = 'Inherit from Directory loop works only when the File loop is placed after the Directory loop!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong sequence of actions', errOpts);
             obj.view.handles.autoAddToProtocol.Value = autoAddSwitch;
             return;
         end

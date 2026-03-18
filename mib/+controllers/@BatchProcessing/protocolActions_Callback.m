@@ -26,7 +26,9 @@ function protocolActions_Callback(obj, options)
 switch options
     case {'add', 'insert', 'update', 'duplicate'}      % add, insert or update selected action to the protocol
         if isempty(obj.CurrentBatch)
-            warndlg(sprintf('!!! Warning !!!\n\nPlease select an action to perform from the list of available actions and try again!'), 'The action was not selected!');
+            warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
+            warnOpts.Header = 'Please select an action to perform from the list of available actions and try again!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Action not selected', warnOpts);
             return;
         end
         obj.backupProtocol();   % store the current protocol
@@ -59,7 +61,12 @@ switch options
         obj.Protocol(obj.protocolListIndex).Batch.Description = 'Wait for a user';
     case 'show'
         if obj.protocolListIndex == 0; return; end
-        obj.protocolList_SelectionCallback();
+        BatchOpt = obj.Protocol(obj.protocolListIndex).Batch;
+        BatchOpt.mibBatchSectionName = obj.Protocol(obj.protocolListIndex).mibBatchSectionName;
+        BatchOpt.mibBatchActionName  = obj.Protocol(obj.protocolListIndex).mibBatchActionName;
+        obj.updateSelectedActionTable(BatchOpt);
+        obj.selectedActionTableIndex = 1;
+        obj.displaySelectedActionTableItems();
     case 'moveup'
         if obj.protocolListIndex < 2; return; end
         obj.backupProtocol();   % store the current protocol
