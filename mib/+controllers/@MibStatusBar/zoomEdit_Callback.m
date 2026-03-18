@@ -47,6 +47,11 @@ arguments
     BatchOptIn {mustBeA(BatchOptIn, ["struct", "double"])} = struct()
 end
 
+% developer mode
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibStatusBar.zoomEdit_Callback: pressed %s\n', BatchOptIn.Mode);
+end
+
 %% Focus the zoom edit control when called from UI (no BatchOptIn provided)
 if isempty(fieldnames(BatchOptIn))
     focus(obj.view.handles.panels.dirContentsPanel.Figure); % remove focus from hObject

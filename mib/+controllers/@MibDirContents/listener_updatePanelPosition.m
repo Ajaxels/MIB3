@@ -24,7 +24,12 @@ function listener_updatePanelPosition(obj, src, evtData)
 switch evtData.PropertyName
     case 'Region'
         children = obj.handles.mainGridLayout.Children;
-
+        
+        % developer mode
+        if obj.mibModel.preferences.System.DeveloperMode
+            fprintf('controllers.MibDirContents.listener_updatePanelPosition: panel moved -> %s\n', src.Region);
+        end
+        
         switch src.Region
             case {'left', 'right'}
                 % already in left/right layout (3 rows) — nothing to do

@@ -31,6 +31,7 @@ function gui_Callbacks(obj, hWidget, hData)
 % 'modelTransparency' -> define model transparency
 % 'maskTransparency' -> define mask transparency
 % 'selectionTransparency' -> define selection transparency
+% 'help' -> show help
 %
 % hData: handle to supporting data class
 
@@ -108,5 +109,7 @@ switch mode
     case 'selectionTransparency' % define selection transparency
         obj.mibModel.preferences.Colors.SelectionTransparency = obj.handles.selectionTransparency.Value;
         notify(obj.mibModel, 'ShowImage');
+    case 'help'
+        % help
 end
 end

@@ -2,15 +2,15 @@
   "majorVersion": 3,
   "minorVersion": 1,
   "panelLayout": {
-    "referenceWidth": 1400,
+    "referenceWidth": 1489,
     "referenceHeight": 837,
     "centerExpanded": false,
     "centerCollapsed": false,
     "left": {
-      "freeDimension": 350,
+      "freeDimension": 288,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.25,
+      "portion": 0.19341840161182,
       "children": [
         {
           "id": "panel1",
@@ -50,13 +50,13 @@
     },
     "tileCount": 1,
     "tileCoverage": 0,
-    "referenceWidth": 1049,
+    "referenceWidth": 1200,
     "referenceHeight": 655,
     "columnWeights": 1,
     "rowWeights": 1,
     "columnLeft": [
       0,
-      1049
+      1200
     ],
     "rowTop": [
       0,
@@ -73,15 +73,15 @@
     },
     "emptyTileCount": 0,
     "selectionOrder": {
-      "imageViewDocGroup_document1": 0
+      "imageViewDocGroup_document1": 1
     },
     "reserveDocumentSpace": false,
     "lastSelectedDocumentId": "document1"
   },
   "windowBounds": {
-    "x": 1590,
-    "y": 295,
-    "w": 1416,
+    "x": 1793,
+    "y": 143,
+    "w": 1505,
     "h": 1019
   },
   "toolstripCollapsed": false,

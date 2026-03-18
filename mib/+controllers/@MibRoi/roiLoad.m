@@ -5,6 +5,11 @@ function roiLoad(obj)
 % Parameters: none
 % Return values: none
 
+% developer mode
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibRoi.roiLoad: pressed\n');
+end
+
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 % determine starting directory from image filename or current directory

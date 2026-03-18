@@ -18,6 +18,11 @@ function roiModify(obj)
 % obj.roiModify();
 % @endcode
 
+% developer mode
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibRoi.roiModify: pressed\n');
+end
+
 dataset = obj.mibModel.I{obj.mibModel.id};
 hROI    = dataset.hROI;
 

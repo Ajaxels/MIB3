@@ -7,7 +7,7 @@ function listener_updatePanelPosition(obj, src, evtData)
 % When the panel moves, the layout is transposed:
 %
 %   Bottom  — horizontal, 5-column layout:
-%               ColumnWidth   = {310, 3, 320, 3, '1x'}
+%               ColumnWidth   = {320, 3, 320, 3, '1x'}
 %               RowHeight     = {'1x'}
 %               ColumnSpacing = 10, RowSpacing = 4
 %               Padding = [10 8 10 6]
@@ -32,6 +32,11 @@ switch evtData.PropertyName
     case 'Region'
         children = obj.handles.mainGridLayout.Children;
 
+        % developer mode
+        if obj.mibModel.preferences.System.DeveloperMode
+            fprintf('controllers.MibSelection.listener_updatePanelPosition: panel moved -> %s\n', src.Region);
+        end
+        
         switch src.Region
             case {'left', 'right'}
                 % already in column layout — nothing to do

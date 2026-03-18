@@ -5,6 +5,11 @@ function roiSave(obj)
 % Parameters: none
 % Return values: none
 
+% developer mode
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibRoi.roiSave: pressed\n');
+end
+
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 if dataset.hROI.getNumberOfROI(0) < 1

@@ -26,6 +26,11 @@ function orientationChange(obj, hWidget, moveMouseSw)
 
 if nargin < 3; moveMouseSw = false; end
 
+% developer mode
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibQuickAccessBar.orientationChange: pressed\n');
+end
+
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 % Ensure only the pressed button is active (radio-button behaviour)
@@ -91,10 +96,16 @@ if moveMouseSw
     obj.mibController.showImage();
 
     % Get panel / axes geometry to compute screen coordinates of axes centre
-    leftPanelW = obj.view.gui.Layout.panelLayout.left.freeDimension;
-    bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
-    if obj.view.gui.Layout.panelLayout.left.collapsed;   leftPanelW   = 0; end
-    if obj.view.gui.Layout.panelLayout.bottom.collapsed; bottomPanelH = 0; end
+    leftPanelW = 0;
+    if isfield(obj.view.gui.Layout.panelLayout, 'left')
+        leftPanelW   = obj.view.gui.Layout.panelLayout.left.freeDimension;
+        if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW   = 0; end
+    end
+    bottomPanelH = 0;
+    if isfield(obj.view.gui.Layout.panelLayout, 'bottom')
+        bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
+        if obj.view.gui.Layout.panelLayout.bottom.collapsed; bottomPanelH = 0; end
+    end
 
     winBounds = obj.view.gui.WindowBounds;          % [left, top, width, height], top-left origin
     posAxes = cImageDoc.handles.imViewAxes.Position; % [left, bottom, width, height], bottom-left within document

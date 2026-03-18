@@ -22,6 +22,11 @@ function addROI(obj)
 % obj.addROI();
 % @endcode
 
+% developer mode
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibRoi.addROI: pressed\n');
+end
+
 dataset  = obj.mibModel.I{obj.mibModel.id};        % current MibDataset
 hROI     = dataset.hROI;                            % core.RoiRegion
 newIndex = hROI.getNumberOfROI(0) + 1;              % append position

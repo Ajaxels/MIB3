@@ -21,8 +21,12 @@ switch evtData.PropertyName
     case 'Region'
         children    = obj.handles.mainGridLayout.Children;
         topChildren = obj.handles.topGridLayout.Children;
-
         midChildren = obj.handles.middleGridLayout.Children;
+
+        % developer mode
+        if obj.mibModel.preferences.System.DeveloperMode
+            fprintf('controllers.MibSegmentation.listener_updatePanelPosition: panel moved -> %s\n', src.Region);
+        end
 
         switch src.Region
             case {'left', 'right'}
