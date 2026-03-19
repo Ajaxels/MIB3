@@ -1,5 +1,5 @@
-function listenerShowImage(obj, src, evtData)
-% function listenerShowImage(obj, src, evtData)
+function listener_showImage(obj, src, evtData)
+% function listener_showImage(obj, src, evtData)
 % Call for render image in the Image View panel
 % executed upon catch of MibModel->"ShowImage" event, MIB2 is using 'plotImage' event
 %

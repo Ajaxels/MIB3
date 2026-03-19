@@ -40,7 +40,7 @@ function gui_SizeChangedFcn(obj)
 % obj.gui_SizeChangedFcn();
 % @endcode
 %
-% See also: listenerUpdateDatasetAxes, showImage, updateBrushCursor
+% See also: listener_updateDatasetAxes, showImage, updateBrushCursor
 
 % Check if global resize timer property exists in MibController
 if ~isprop(obj.mibController, 'globalResizeTimer')

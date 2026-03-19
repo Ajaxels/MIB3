@@ -1,5 +1,5 @@
-function listenerUpdateToolbar(obj, src, evtData)
-% function listenerUpdateToolbar(obj, src, evtData)
+function listener_updateToolbar(obj, src, evtData)
+% function listener_updateToolbar(obj, src, evtData)
 % Update buttons in MIB toolbar
 % executed upon catch of MibModel->"UpdateToolbar" event
 %

@@ -1,5 +1,5 @@
-function listenerUpdateDatasetAxes(obj, src, evtData)
-% function listenerUpdateDatasetAxes(obj, src, evtData)
+function listener_updateDatasetAxes(obj, src, evtData)
+% function listener_updateDatasetAxes(obj, src, evtData)
 % Update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
 % executed upon catch of MibModel->"UpdateDatasetAxes" event
 %

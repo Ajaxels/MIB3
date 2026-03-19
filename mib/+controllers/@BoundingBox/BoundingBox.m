@@ -71,7 +71,7 @@ classdef BoundingBox < handle
             obj.BatchOpt.StageRotationBias = '';
             obj.BatchOpt.ImportFromClipboard = false;
             % add section name and action name for the batch tool
-            obj.BatchOpt.mibBatchSectionName = 'Menu -> Dataset';
+            obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
             obj.BatchOpt.mibBatchActionName = 'Bounding Box';
             % tooltips that will accompany the BatchOpt
             obj.BatchOpt.mibBatchTooltip.Xmin = sprintf('Min X point of the bounding box');

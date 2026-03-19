@@ -38,7 +38,7 @@ BatchOpt.Mode = {'Relative to current MIB path'};   % directory resolution mode
 BatchOpt.Mode{2} = {'Absolute', 'Inherit from Directory loop', 'Inherit dirs +Dirname', 'Relative to current MIB path'};
 BatchOpt.DirectoryName = 'subFolder';
 % add section name and action name for the batch tool
-BatchOpt.mibBatchSectionName = 'Menu -> Home';
+BatchOpt.mibBatchSectionName = 'Ribbon -> Home';
 BatchOpt.mibBatchActionName = 'Directory operations';
 % tooltips that will accompany the BatchOpt
 BatchOpt.mibBatchTooltip.Operation = 'A directory operation to perform, directories that have files can not be removed';

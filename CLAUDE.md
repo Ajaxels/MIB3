@@ -120,6 +120,145 @@ Factory pattern for image loading:
 - Pixel/voxel size is stored in `MibDataset.pixSize` struct with fields `.x .y .z .t .units .tunits`.
 - Image orientation: `3` = XY plane (default), `1` = ZX plane, `2` = ZY plane.
 
+## MIB2 → MIB3 Conversion Cheat Sheet
+
+When porting methods, apply these substitutions consistently.
+
+### Dialogs
+
+| MIB2 | MIB3 |
+|------|------|
+| `warndlg(msg, title)` (short, single message) | `dlgOpt.MsgBoxOnly=true; dlgOpt.Icon='puffin_warning'; dlgOpt.Header=msg; dlgOpt.HeaderLines=N; utils.dlgs.inputUniversalDlg(obj.mibGUI,{},{},title,dlgOpt)` |
+| `warndlg` with title + body text | `dlgOpt.MsgBoxOnly=true; dlgOpt.Header='Bold title'; dlgOpt.HeaderLines=1;` then `prompts={''}` and `defAns={'plain body text'}` — `inputUniversalDlg` auto-wraps the body in `<html><p style="font-size:10pt">` when `MsgBoxOnly=true` |
+| `errordlg(msg, title)` | same pattern with `dlgOpt.Icon='puffin_error'` |
+| `questdlg(msg, title, btn1, btn2, default)` | `utils.dlgs.inputQuestDlg(obj.mibGUI, msg, title, btn1, btn2, default)` |
+| `waitbar(v, wb, msg)` / `waitbar(0,'Name',title)` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title,'Indeterminate','on')` then `wb.Value=v` / `delete(wb)` |
+| `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, prompts, defAns, title, options)` |
+| `mibSelectModelTypeDlg` | `inputUniversalDlg` with a dropdown `defAns = {{'63 - ...','255 - ...',1}}` |
+
+`inputUniversalDlg` key options:
+- `MsgBoxOnly=true` + empty `prompts`/`defAns` → message-only dialog (no input widgets)
+- `Icon` — `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`
+- `Header` / `HeaderLines` — bold text above widgets; set `HeaderLines` to match wrapped line count
+- `WindowHeight` — set explicitly when `MsgBoxOnly=true` (auto-calc does not apply)
+- When the warning text is long, split it: put the title in `Header` and the body as an `'<html>...'` prompt
+
+### Events & notifications
+
+| MIB2 | MIB3 |
+|------|------|
+| `notify(obj, 'updateId')` | `notify(obj, 'UpdateGuiWidgets')` |
+| `notify(obj, 'plotImage')` | `notify(obj, 'ShowImage')` |
+| `notify(obj, 'showModel', eventdata)` | `obj.showModel = true` then `notify(obj, 'ShowImage')` |
+| `notify(obj, 'updateGuiWidgets')` | `notify(obj, 'UpdateGuiWidgets')` |
+
+### Data structures
+
+| MIB2 (`mibImage`) | MIB3 (`MibDataset`) |
+|-------------------|---------------------|
+| `obj.model{1}` (packed/uint8/uint16/uint32) | `obj.labels.data{1}` (in `core.MibLabels63` or `core.MibLabels`) |
+| `obj.selection{1}` | `obj.selection.data{1}` (`core.MibLabels`) |
+| `obj.maskImg{1}` | `obj.mask.data{1}` (`core.MibLabels`) |
+| `obj.modelType` | `isa(obj.labels,'core.MibLabels63')` → 63; else `obj.labels.maxMaterials` |
+| `obj.modelExist` | `obj.modelExist` (same) |
+| `obj.maskExist` | `obj.maskExist` (same) |
+| `obj.modelMaterialNames` | `obj.labels.materialNames` |
+| `obj.modelMaterialColors` | `obj.labels.materialColors` |
+| `obj.modelVariable` | `obj.labels.labelsVariable` |
+| `obj.modelFilename` | `obj.labels.filename` |
+| `obj.hLabels.clearContents()` | `obj.annotations.clearContents()` |
+| `size(obj.img{1},1/2/4/5)` → h/w/d/t | `obj.image.height/width/depth/time` |
+| `[h,w,d,t]` dims for model alloc | `[obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time]` (5D: +colors dim=1) |
+
+### Model type 63 bit packing (MibLabels63)
+
+Bits within each uint8 element of `obj.labels.data{1}`:
+- Bits 1–6 (mask `0x3F = 63`) → model material index
+- Bit 7 (`0x40 = 64`) → mask layer
+- Bit 8 (`0x80 = 128`) → selection layer
+
+```matlab
+% Read layers from packed data
+modelData = bitand(data, uint8(63));          % bits 1-6
+maskData  = bitand(data, uint8(64))  / 64;   % bit 7
+selData   = bitand(data, uint8(128)) / 128;  % bit 8
+
+% Write selection into packed data
+data(selData==1) = bitset(data(selData==1), 8, 1);
+
+% Clear model bits only (keep mask/sel)
+data = bitand(data, uint8(192));   % 192 = 0xC0 = bits 7+8
+```
+
+### Creating new label metadata
+
+```matlab
+meta = core.MibImage.initializeImgInfo( ...
+    'pixSize', obj.image.pixSize, ...
+    'Height',  obj.image.height, ...
+    'Width',   obj.image.width,  ...
+    'Depth',   obj.image.depth,  ...
+    'Time',    obj.image.time,   ...
+    'Colors',  1);
+dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
+```
+
+### Path / misc
+
+| MIB2 | MIB3 |
+|------|------|
+| `global mibPath` | `obj.mibPath` (property of `MibModel`) or pass `options.mibPath` to dialogs |
+| `errordlg(sprintf('...'))` | `ErrorDlgOpt.*`  + `notify(obj,'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt))` |
+| `BatchOpt.mibBatchSectionName = 'Menu -> ...'` | `'Ribbon -> ...'` |
+
+## Documentation Requirements
+
+Every new or ported function/method must include a detailed documentation block. Follow this template:
+
+```matlab
+function result = myMethod(obj, param1, param2, BatchOptIn)
+% function result = myMethod(obj, param1, param2, BatchOptIn)
+% One-line summary of what the method does
+%
+% Longer description if needed — explain the algorithm, side-effects,
+% or any non-obvious behaviour.
+%
+% Parameters:
+% param1: [type] description
+% @li value1 - meaning
+% @li value2 - meaning
+% param2: [@em optional] [type] description; default value and when it applies
+% BatchOptIn: a structure for batch processing mode; when NaN, returns
+%   default options via "SyncBatch" event
+% @li .FieldName - [type, {choices}] description
+% @li .showWaitbar - logical, show or not the waitbar
+% @li .id -> [@em optional], dataset index 1–9, default = obj.id
+%
+% Return values:
+% result: [type] description; empty [] when cancelled or on error
+%
+
+%|
+% @b Examples:
+% @code result = obj.mibModel.myMethod(p1, p2);  // typical call from a controller @endcode
+% @code
+% BatchOpt.FieldName = 'value';
+% BatchOpt.showWaitbar = false;
+% obj.mibModel.myMethod(p1, p2, BatchOpt);       // batch / scripted call
+% @endcode
+
+% Updates
+% DD.MM.YYYY - description of a significant change
+```
+
+Key rules:
+- The first comment line **repeats the function signature** exactly.
+- Use `[@em optional]` to mark optional parameters and state their default.
+- Use `@li` for enumerated values or struct fields.
+- Always include at least one `@b Examples:` `@code ... @endcode` block showing a realistic call.
+- For `BatchOpt`-enabled methods include a batch call example.
+- For low-level `core.*` methods show a call via `obj.mibModel.I{obj.mibModel.id}.method(...)`.
+
 ## MATLAB Coding Rules
 - Always use `dictionary` instead of `containers.Map` for key-value storage.
   - Use `dictionary(keys, values)` syntax for initialization.

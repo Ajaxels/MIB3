@@ -95,7 +95,11 @@ classdef MibModel < handle
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
 
+        addMaterial(obj, BatchOptIn)        % add a material to the current model; wrapper around core.MibDataset.addMaterial
+
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
+
+        createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
 
         [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
 

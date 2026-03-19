@@ -28,11 +28,12 @@ end
 
 switch mode
     case 'createModel'
-
+        obj.mibModel.createModel();
     case 'loadModel'
 
     case 'addMaterial'
-
+        utils.unFocus(hWidget);
+        obj.mibModel.addMaterial();
     case 'removeMaterial'
 
     case 'colorWheel'

@@ -191,13 +191,13 @@ BatchOpt.showWaitbar = true; % --- waitbar ---
 % --- batch controller metadata ---
 switch lower(layerType)
     case 'image'
-        BatchOpt.mibBatchSectionName = 'Menu -> Home';
+        BatchOpt.mibBatchSectionName = 'Ribbon -> Home';
         BatchOpt.mibBatchActionName  = 'Save dataset';
     case 'mask'
-        BatchOpt.mibBatchSectionName = 'Menu -> Mask';
+        BatchOpt.mibBatchSectionName = 'Ribbon -> Mask';
         BatchOpt.mibBatchActionName  = 'Save mask';
     case 'labels'
-        BatchOpt.mibBatchSectionName = 'Menu -> Model';
+        BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
         BatchOpt.mibBatchActionName  = 'Save model';
 end
 

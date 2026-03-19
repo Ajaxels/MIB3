@@ -40,7 +40,7 @@ BatchOpt.TargetDirectoryMode{2} = {'Absolute', 'Relative to current MIB path', '
 BatchOpt.TargetDirectory = '';
 BatchOpt.FilenameMask = '*.extension';
 % add section name and action name for the batch tool
-BatchOpt.mibBatchSectionName = 'Menu -> Home';
+BatchOpt.mibBatchSectionName = 'Ribbon -> Home';
 BatchOpt.mibBatchActionName = 'File operations';
 % tooltips that will accompany the BatchOpt
 BatchOpt.mibBatchTooltip.Operation = 'File operation to perform';

@@ -1,5 +1,5 @@
-function listenerNewDataset(obj, src, evtData)
-% function listenerNewDataset(obj, src, evtData)
+function listener_newDataset(obj, src, evtData)
+% function listener_newDataset(obj, src, evtData)
 % Update obj.I (MibDataset) by resizing it to fit on the screen
 % executed upon catch of MibModel->"NewDataset" event
 %
@@ -37,7 +37,7 @@ end
 if ~isfield(Parameters, 'index')
     Parameters.index = obj.mibModel.id;
     % fit the new dataset to screen — drawnow ensures the axes panel has a
-    % valid InnerPosition before listenerUpdateDatasetAxes reads axSize
+    % valid InnerPosition before listener_updateDatasetAxes reads axSize
     drawnow limitrate;
     fitOpt = Parameters;
     fitOpt.mode = 'fitToScreen';

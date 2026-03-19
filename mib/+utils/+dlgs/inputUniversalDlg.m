@@ -121,27 +121,34 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
 % if isempty(answer); return; end
 %
-% Example 3 (message box with HTML content):
-% htmlContent = '<html><body><h3>Important Message</h3><p>This is a message box with <b>rich text</b> formatting.</p><ul><li>Item 1</li><li>Item 2</li></ul></body></html>';
-% dlgTitle = 'Information';
-% options.mibPath = obj.mibModel.mibPath;
+% Example 3 (warning with bold header + plain body text — auto-wrapped to HTML):
 % options.MsgBoxOnly = true;
-% options.Header = 'Please Read';
-% options.OkBtnText = 'OK';
-% options.Icon = 'question_48px';
+% options.Icon       = 'puffin_warning';
+% options.Header     = 'The models are switched off!';   % bold, 1 line
+% options.HeaderLines = 1;
+% % Body text is plain — inputUniversalDlg wraps it automatically in
+% % <html><p style="font-size:10pt">...</p></html>
+% utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+%     {'Please enable the "Enable selection" option in Preferences (Ribbon->Home->Preferences) and try again.'}, ...
+%     'Models are disabled', options);
+%
+% Example 4 (rich HTML body — use explicit HTML only when formatting like bold or
+% lists is required; include font-size:10pt yourself since auto-wrap is skipped):
+% options.MsgBoxOnly = true;
+% options.Icon       = 'puffin_info';
+% options.Header     = 'Please Read';
+% options.HeaderLines = 1;
 % options.DoNotShowAgain = true;
 % options.DoNotShowAgainText = 'Do not show this again';
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, {htmlContent}, {htmlContent}, dlgTitle, options);
+% htmlBody = '<html><p style="font-size:10pt">This message has <b>rich text</b> and a list:<ul><li>Item 1</li><li>Item 2</li></ul></p></html>';
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, {htmlBody}, 'Information', options);
 %
-% Example 4 (minimalist warning):
-% dlgTitle = 'Warning';
-% options.mibPath = obj.mibModel.mibPath;
+% Example 5 (minimalist warning — entire message in Header, no body):
 % options.MsgBoxOnly = true;
-% options.Header = sprintf('!!! Warning !!!\n\nThe output format was not selected!');
-% options.OkBtnText = 'OK';
-% options.Icon = 'puffin_warning';
-% options.WindowHeight = 150;
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, dlgTitle, options);
+% options.Icon       = 'puffin_warning';
+% options.Header     = sprintf('!!! Warning !!!\n\nThe output format was not selected!');
+% options.HeaderLines = 3;
+% utils.dlgs.inputUniversalDlg(obj.mibGUI, {}, {}, 'Warning', options);
 
 
 arguments
@@ -213,6 +220,13 @@ elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     parentFigurePersistent = options.ParentFigure;   % cache for future calls
 end
 if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'OK'; end
+
+% In MsgBoxOnly mode auto-wrap plain-text defAns with the standard HTML
+% font tag so callers do not need to embed HTML themselves.
+if options.MsgBoxOnly && numel(defAns) == 1 && (ischar(defAns{1}) || isstring(defAns{1})) ...
+        && ~strncmpi(char(defAns{1}), '<html>', 6)
+    defAns{1} = sprintf('<html><p style="font-size:10pt">%s</p></html>', defAns{1});
+end
 
 % Normalize PromptLines
 if numel(options.PromptLines) == 1

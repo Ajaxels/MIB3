@@ -100,6 +100,10 @@ classdef MibDataset < matlab.mixin.Copyable
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
+        addMaterial(obj, materialName, newMaterialIndex)        % append a new material to the model; for large models (≥65535) the caller supplies newMaterialIndex
+
+        createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
+
         initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
 
         insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume

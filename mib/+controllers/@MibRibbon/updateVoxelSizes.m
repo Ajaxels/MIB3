@@ -49,7 +49,7 @@ BatchOpt.Units{2}  = PossibleOptions;
 BatchOpt.TimeUnits = pixSizeTemp.tunits;
 BatchOpt.id        = obj.mibModel.id;
 
-BatchOpt.mibBatchSectionName = 'Dataset ribbon -> Calibration';
+BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
 BatchOpt.mibBatchActionName  = 'Voxels';
 BatchOpt.mibBatchTooltip.VoxelX    = 'Voxel size in the X-dimension';
 BatchOpt.mibBatchTooltip.VoxelY    = 'Voxel size in the Y-dimension';

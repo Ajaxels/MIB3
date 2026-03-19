@@ -253,15 +253,14 @@ end
 drawnow;  % Render layout before making visible
 fig.Visible = 'on';
 
-% Set focus on input widget
-try
-    focus(inputCtrl);
-catch
-
-end
-
 % Initialize output
 answer = [];
+
+% Defer focus via java.awt.Robot — simulate a click on the dialog to
+% force OS-level focus, then focus the input widget and select all text
+t = timer('StartDelay', 0.15, 'ExecutionMode', 'singleShot', ...
+    'TimerFcn', @(th,~) deferredFocusClick(th, fig, inputCtrl));
+start(t);
 
 % Wait for user
 uiwait(fig);
@@ -291,6 +290,32 @@ uiwait(fig);
             focus(okBtn);  % Move focus to button, commits editfield value
             pause(0.1);
             onOK();
+        end
+    end
+
+    function deferredFocusClick(th, figHandle, widget)
+        try; stop(th); delete(th); catch; end
+        try
+            if ~isvalid(figHandle); return; end
+
+            figPos     = figHandle.Position;
+            screenSize = get(0, 'ScreenSize');
+            clickX = round(figPos(1) + figPos(3) / 2);
+            clickY = round(screenSize(4) - figPos(2) - figPos(4) + figPos(4) / 2);
+
+            robot = java.awt.Robot();
+            robot.mouseMove(clickX, clickY);
+            robot.mousePress(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);
+            robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);
+
+            if isvalid(widget)
+                focus(widget);
+                robot.keyPress(java.awt.event.KeyEvent.VK_CONTROL);
+                robot.keyPress(java.awt.event.KeyEvent.VK_A);
+                robot.keyRelease(java.awt.event.KeyEvent.VK_A);
+                robot.keyRelease(java.awt.event.KeyEvent.VK_CONTROL);
+            end
+        catch
         end
     end
 end

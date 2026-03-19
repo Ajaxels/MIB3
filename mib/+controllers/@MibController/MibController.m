@@ -68,21 +68,21 @@ classdef MibController < handle
         % declaration of functions in the external files, keep empty line in between for the doc generator
                 
         % LISTENERS CALLBACKS
-        listenerAppStateChanged(obj, src, evtData) % generic listener for change of states in the main GUI
+        listener_appStateChanged(obj, src, evtData) % generic listener for change of states in the main GUI
 
         listner1_Standard(obj, model, evnt)    % listener type 1 callbacks
 
         listner2_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure
 
-        listenerNewDataset(obj, src, evtData) % Update obj.I (MibDataset) by resizing it to fit on the screen executed upon catch of MibModel->"NewDataset" event
+        listener_newDataset(obj, src, evtData) % Update obj.I (MibDataset) by resizing it to fit on the screen executed upon catch of MibModel->"NewDataset" event
 
-        listenerShowImage(obj, src, evtData) % render (show) the current image in the Image View panel
+        listener_showImage(obj, src, evtData) % render (show) the current image in the Image View panel
 
-        listenerShowErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
+        listener_showErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
         
-        listenerUpdateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+        listener_updateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
 
-        listenerUpdateToolbar(obj, src, evtData) % update buttons in MIB toolbar "obj.view.handles.qab.handles"
+        listener_updateToolbar(obj, src, evtData) % update buttons in MIB toolbar "obj.view.handles.qab.handles"
 
 
         % METHODS

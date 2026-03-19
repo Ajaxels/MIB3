@@ -28,7 +28,7 @@ obj.gui.StatusBarSpansFullWidth = true;
 % ------------ add FigureDocumentGroup ------------
 % alternative to add DocumentGroup(groupOptions);
 % documentGroup = matlab.ui.container.internal.appcontainer.DocumentGroup(groupOptions);
-% selection of the figure-document is listened by MibController.listenerAppStateChanged
+% selection of the figure-document is listened by MibController.listener_appStateChanged
 obj.handles.imageViewDocGroup = matlab.ui.internal.FigureDocumentGroup();
 obj.handles.imageViewDocGroup.Tag = 'imageViewDocGroup';
 obj.handles.imageViewDocGroup.EnableDockControls = true;

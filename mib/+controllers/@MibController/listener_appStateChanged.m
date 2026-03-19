@@ -1,5 +1,5 @@
-function listenerAppStateChanged(obj, src, evtData)
-% listenerAppStateChanged(obj, src, evtData)
+function listener_appStateChanged(obj, src, evtData)
+% listener_appStateChanged(obj, src, evtData)
 % listener for property change in obj.view.handles.imageViewDocGroup
 % At the moment is used to catch selection of the figure-document in the Image View panel
 
@@ -15,7 +15,7 @@ switch evtData.PropertyName
     case 'LastSelected'
         if ~isempty(obj.view.gui.LastSelectedDocument)
             if obj.mibModel.preferences.System.DeveloperMode
-                fprintf('MibController.listenerAppStateChanged -> selection of a set\n');
+                fprintf('MibController.listener_appStateChanged -> selection of a set\n');
             end
 
             selectedDoc = obj.view.gui.getDocument(obj.view.gui.LastSelectedDocument.documentGroupTag, obj.view.gui.LastSelectedDocument.tag);

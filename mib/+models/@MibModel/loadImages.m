@@ -75,7 +75,7 @@ BatchOpt.InsertDatasetPosition = '0';
 BatchOpt.showWaitbar = true;   % show or not the waitbar
 BatchOpt.id = obj.id;   % optional, id
 
-BatchOpt.mibBatchSectionName = 'Menu -> Home';    % section name for the Batch
+BatchOpt.mibBatchSectionName = 'Ribbon -> Home';    % section name for the Batch
 BatchOpt.mibBatchActionName = 'Load and combine images';
 BatchOpt.mibBatchTooltip.Mode = sprintf('Desired mode to combine the images, use "Series-by-series" to process each dataset in a file-container individually (bio-formats only)');
 BatchOpt.mibBatchTooltip.DirectoryName = sprintf('Directory name, where the files are located, use the right mouse click over the Parameters table to modify the directory');
@@ -512,7 +512,7 @@ switch BatchOpt.Mode{1}
         else
             obj.I{BatchOpt.id}.slices{4} = 1:min([obj.I{BatchOpt.id}.image.colors 3]);
         end
-        notify(obj, 'NewDataset');   % notify MibController about a new dataset; see function MibController.listenerNewDataset for details
+        notify(obj, 'NewDataset');   % notify MibController about a new dataset; see function MibController.listener_newDataset for details
     case {'Add as new color channel', 'Add each N-th dataset as new color channel'}
         %% Add as new color channel / Add each N-th dataset as new color channel
         if obj.I{BatchOpt.id}.datasetType(1) == 'V'

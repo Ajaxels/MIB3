@@ -79,10 +79,10 @@ else
 end
 
 % Split-panel guard: when multiple documents are visible side-by-side, the
-% AppContainer may not fire listenerAppStateChanged if this document was
+% AppContainer may not fire listener_appStateChanged if this document was
 % already LastSelected. Ensure the model + UI reflect this document's set
 % before any data access. Uses the same setsOps_Callbacks path as
-% listenerAppStateChanged so dropdown, buffer buttons, and ShowImage all update.
+% listener_appStateChanged so dropdown, buffer buttons, and ShowImage all update.
 if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex
     setName = obj.mibModel.Sets.names{obj.setOfDatasetsIndex};
     obj.mibController.view.handles.panels.activeDataset.handles.sets.Value = setName;
