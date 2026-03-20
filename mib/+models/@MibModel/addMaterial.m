@@ -102,11 +102,6 @@ if nargin < 2
             sprintf('m%.3d', number + 1), 'Add material');
         if isempty(answer); return; end
 
-        % dlg = utils.dlgs.InputSingleDlgApp(obj.mibGUI, ...
-        %      'Please enter a name for the new material:', ...
-        %      sprintf('m%.3d', number + 1), 'Add material');
-        % answer = dlg.run();
-        % if isempty(answer); return; end
         BatchOpt.MaterialName = answer;
     end
 end

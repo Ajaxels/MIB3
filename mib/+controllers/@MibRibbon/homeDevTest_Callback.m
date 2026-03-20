@@ -12,6 +12,14 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
+
+% opt.Icon = 'puffin_question';
+% opt.DoNotShowAgain = true;
+% [answer, dontShow] = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+%     'Overwrite existing file?', 'Overwrite', 'Yes', 'No', 'No', opt);
+% if strcmp(answer, 'Yes')
+
+
 %% Test Zarr3 from remote source
 % BatchOptIn.Filenames = {'https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.5/idr0066/ExpA_VIP_ASLM_on.zarr'};
 % BatchOptIn.Filenames = {'https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.5/idr0051/180712_H2B_22ss_Courtney1_20180712-163837_p00_c00_preview.zarr'};

@@ -24,13 +24,14 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 % options: structure with fields:
 % .mibPath             - [char] path to MIB installation folder (default: '')
 % .WindowWidth         - [numeric] width in pixels (default 420)
-% .WindowHeight        - [numeric] height in pixels (default 180)
+% .WindowHeight        - [numeric] height in pixels (default 140)
 % .WindowStyle         - [char] 'normal' or 'modal' (default 'modal') 
 % .Icon                - [char] 'puffin_question' (default), 'puffin_warning', 'question_48px', 'warning_48px', 'celebrate', 'call4help', 
 % .IconWidth           - [numeric] icon column width (default 48)
 % .ParentFigure        - [handle] parent window to center dialog (default []) 
 % .DefaultKey          - [char] 'default' (default) or 'cancel'; Enter triggers default/cancel
-% .ButtonFontSize      - [numeric] button font size (default 13)
+% .FontSize            - [numeric] question text font size (default 14)
+% .ButtonFontSize      - [numeric] button font size (default 12)
 % .DoNotShowAgain      - [logical] show "Do not show again" checkbox (default false) 
 % .DoNotShowAgainText  - [char] checkbox label (default 'Do not show again') 
 %
@@ -60,13 +61,14 @@ end
 % Defaults
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 420; end
-if ~isfield(options, 'WindowHeight'); options.WindowHeight = 150; end
+if ~isfield(options, 'WindowHeight'); options.WindowHeight = 160; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'modal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'default'; end
-if ~isfield(options, 'ButtonFontSize'); options.ButtonFontSize = 10; end
+if ~isfield(options, 'FontSize'); options.FontSize = 14; end
+if ~isfield(options, 'ButtonFontSize'); options.ButtonFontSize = 12; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
 
@@ -202,8 +204,8 @@ if strcmpi(options.WindowStyle, 'modal')
 end
 fig.Position(3) = options.WindowWidth;
 fig.Position(4) = options.WindowHeight;
-fig.KeyPressFcn      = @onKey;
-fig.CloseRequestFcn  = @onClose;
+fig.WindowKeyPressFcn = @onKey;  % WindowKeyPressFcn fires even when child widgets have focus
+fig.CloseRequestFcn   = @onClose;
 
 % Center on parent — AppContainer uses WindowBounds (top-left origin);
 % uifigure/figure use Position (bottom-left origin).
@@ -235,18 +237,16 @@ btnsTotalW = nBtn * btnW + (nBtn - 1) * btnGap;
 chkH  = 24;
 iconW = options.IconWidth;
 
-% Bottom row height: buttons + optional checkbox row
+% Bottom row height: single row with checkbox and buttons side by side
 bottomRowH = btnH + 8;
-if options.DoNotShowAgain
-    bottomRowH = bottomRowH + chkH + 6;
-end
 
 % ---- Outer grid: content row (flex) + bottom row (fixed) ----
 outerGrid = uigridlayout(fig, [2, 1]);
 outerGrid.RowHeight   = {'1x', bottomRowH};
 outerGrid.ColumnWidth = {'1x'};
 outerGrid.Padding     = [8, 8, 8, 8];
-outerGrid.RowSpacing  = 4;
+outerGrid.RowSpacing  = 8;
+outerGrid.ColumnSpacing  = 8;
 
 % ---- Content area: icon column (fixed) + text column (flex) ----
 % Pre-load and alpha-composite the icon before building UI (same pattern
@@ -297,23 +297,16 @@ txtLabel.Layout.Row        = 1;
 txtLabel.Layout.Column     = 2;
 txtLabel.Text              = strjoin(qLines, newline);
 txtLabel.WordWrap          = 'on';
-% FontSize uses uifigure default (~14 pt), matching inputUniversalDlg
+txtLabel.FontSize          = options.FontSize;
 txtLabel.VerticalAlignment = 'top';
 
-% ---- Bottom area: [checkbox row] + buttons row ----
-% Layout: 2 cols — col 1 flex (for checkbox), col 2 fixed (for buttons)
-if options.DoNotShowAgain
-    bottomGrid = uigridlayout(outerGrid, [2, 2]);
-    bottomGrid.RowHeight = {chkH, btnH};
-else
-    bottomGrid = uigridlayout(outerGrid, [1, 2]);
-    bottomGrid.RowHeight = {btnH};
-end
+% ---- Bottom area: single row with checkbox (left) + buttons (right) ----
+bottomGrid = uigridlayout(outerGrid, [1, 2]);
+bottomGrid.RowHeight    = {btnH};
 bottomGrid.Layout.Row    = 2;
 bottomGrid.Layout.Column = 1;
 bottomGrid.ColumnWidth   = {'1x', btnsTotalW};
 bottomGrid.Padding       = [0, 0, 0, 0];
-bottomGrid.RowSpacing    = 6;
 bottomGrid.ColumnSpacing = 8;
 
 % "Do not show again" checkbox (row 1, col 1)
@@ -327,13 +320,9 @@ if options.DoNotShowAgain
     chk.FontSize      = 10;
 end
 
-% Buttons sub-grid (last row, col 2)
+% Buttons sub-grid (row 1, col 2)
 btnGrid = uigridlayout(bottomGrid, [1, nBtn]);
-if options.DoNotShowAgain
-    btnGrid.Layout.Row = 2;
-else
-    btnGrid.Layout.Row = 1;
-end
+btnGrid.Layout.Row    = 1;
 btnGrid.Layout.Column = 2;
 btnGrid.ColumnWidth   = repmat({btnW}, 1, nBtn);
 btnGrid.RowHeight     = {btnH};
@@ -353,16 +342,19 @@ for i = 1:nBtn
     end
 end
 
-% Render layout before showing — ensures widgets are populated before the
-% window becomes visible (no flash of empty window then contents).
 drawnow;
+
+% Show figure after layout is fully built
 fig.Visible = 'on';
+
+% Focus the default button
 idx = find(strcmp(buttons, defaultBtn), 1, 'first');
 if ~isempty(idx)
     try; focus(btnHandles(idx)); catch; end
 end
 
-uiwait(fig);
+% Block caller until dialog is closed
+waitfor(fig);
 
 % ---------- Nested callbacks ----------
     function storeDontShow()
@@ -377,7 +369,6 @@ uiwait(fig);
         selection = src.Text;
         storeDontShow();
         if isvalid(fig)
-            uiresume(fig);
             delete(fig);
         end
     end
@@ -390,7 +381,6 @@ uiwait(fig);
         end
         storeDontShow();
         if isvalid(fig)
-            uiresume(fig);
             delete(fig);
         end
     end

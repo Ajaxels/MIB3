@@ -266,7 +266,7 @@ end
 mibDir = mibDirPersistent;
 
 % Build figure (before icon loading to get background color)
-fig = uifigure('Name', dlgTitle, 'Visible', 'off');
+fig = uifigure('Name', dlgTitle);
 fig.Tag = 'inputUniversalDlg';
 fig.AutoResizeChildren = 'off';  % Disable auto-resize
 if strcmpi(options.WindowStyle,'modal'); fig.WindowStyle='modal'; else; fig.WindowStyle='normal'; end
@@ -802,11 +802,7 @@ end
 fig.KeyPressFcn = @(~, evt) onKey(evt);
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
 
-% Render layout before showing
-drawnow;
-fig.Visible = 'on';
-
-% Set focus after figure is visible
+% Set focus
 if options.MsgBoxOnly || options.Focus == 0
     % Default: focus on OK button to enable Enter key
     try
@@ -831,8 +827,8 @@ answer = {};
 selectedIndices = [];
 dontShowAgain = false;
 
-% Wait for user
-uiwait(fig);
+% Block caller until dialog is closed
+waitfor(fig);
 
 % Callbacks
     function onHelp()
@@ -892,7 +888,6 @@ uiwait(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        uiresume(fig);
         delete(fig);
     end
 
@@ -902,7 +897,6 @@ uiwait(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        uiresume(fig);
         delete(fig);
     end
 
@@ -919,24 +913,12 @@ uiwait(fig);
         if isequal(CurrentKey, 'return')
             % Move focus away from the current widget so it can commit its
             % pending value (e.g. typed text in a uispinner or uieditfield).
-            % WindowKeyPressFcn fires before the widget's own commit logic,
-            % so we defer the actual close to the next event-loop cycle via
-            % a one-shot timer — by then w.Value is up-to-date.
             try; focus(okBtn); catch; end
-            doOK = ~(strcmpi(options.DefaultKey, 'Cancel') && ~isempty(cancelBtn) && isvalid(cancelBtn));
-            t = timer('StartDelay', 0.05, 'ExecutionMode', 'singleShot', ...
-                      'TimerFcn', @(th,~) deferredClose(th, doOK));
-            start(t);
-        end
-    end
-
-    function deferredClose(th, doOK)
-        try; stop(th); delete(th); catch; end
-        if ~isempty(fig) && isvalid(fig)
-            if doOK
-                onOK();
-            else
+            pause(0.1);  % allow widget to commit its value
+            if strcmpi(options.DefaultKey, 'Cancel') && ~isempty(cancelBtn) && isvalid(cancelBtn)
                 onCancel();
+            else
+                onOK();
             end
         end
     end

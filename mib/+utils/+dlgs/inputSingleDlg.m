@@ -1,67 +1,139 @@
 function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
 % function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
-% Efficient single-input dialog with uifigure and icon support offering
-% access to uieditfield for texts or uispinner for values
+% Single-input dialog with uifigure and icon support offering access to
+% uieditfield for texts or uispinner for values.
+%
+% Uses direct focus() call for immediate keyboard focus on the input
+% widget — no java.awt.Robot dependency. The dialog blocks the caller
+% via waitfor() until the user accepts or cancels.
+%
+% The dialog layout consists of two columns:
+%   Column 1: icon image (puffin or standard icon)
+%   Column 2: prompt label, input widget, OK/Cancel buttons
+%
+% Keyboard shortcuts:
+%   Enter  — accept (same as clicking OK)
+%   Escape — cancel (same as clicking Cancel)
 %
 % Parameters:
 % ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
-%   used to center the dialog. Pass [] to use the cached handle from a prior call.
-%   To supply the MIB installation path use options.mibPath.
-% prompt: string with the prompt text for the input field
-% defAns: default value - string for editfield or struct for spinner
-%         For spinner: struct('Value', v, 'Limits', [min max], 'Step', s, 'Round', false/true, 'ValueDisplayFormat', '%.0f MS/s')
-% dlgTitle: dialog window title string
-% options: struct with fields:
-%   .mibPath     - char with path to MIB installation (default: '')
-%   .Type        - 'editfield' (default) or 'spinner'
-%   .WindowWidth       - dialog width in pixels (default 400)
-%   .WindowHeight      - dialog height in pixels (default 112)
-%   .WindowStyle - 'normal' (default) or 'modal'
-%   .Icon        - 'puffin_question' (default), 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'puffin_waiting', 'question_48px', 'celebrate', 'call4help', 'warning_48px'
-%   .IconWidth   - WindowWidth of icon column in pixels (default 48)
-%   .ParentFigure - handle to the parent window to have the dialog centered
+%   used to center the dialog on the parent. Pass [] to use the cached
+%   handle from a prior call. The handle is cached persistently so
+%   subsequent calls with [] will reuse the last valid parent.
+% prompt: char/string with the prompt text displayed above the input field.
+%   Supports newlines via sprintf, e.g. sprintf('Line 1\nLine 2').
+% defAns: default value for the input widget:
+%   @li For editfield (default): char/string with the default text
+%   @li For spinner: struct with fields:
+%       @li .Value - numeric, initial spinner value (default 0)
+%       @li .Limits - [min max], spinner range (default [-Inf Inf])
+%       @li .Step - numeric, increment/decrement step (default 1)
+%       @li .Round - logical, round fractional values (default true)
+%       @li .ValueDisplayFormat - char, e.g. '%.0f', '%d items' (default '%.d')
+% dlgTitle: char/string with the dialog window title
+% options: [@em optional] struct with optional configuration fields:
+%   @li .mibPath - char, path to MIB installation for icon resolution
+%       (default: auto-detected via which('mib3'))
+%   @li .Type - char, input widget type:
+%       @li 'editfield' — text input (default)
+%       @li 'spinner' — numeric spinner
+%   @li .WindowWidth - numeric, dialog width in pixels (default 400)
+%   @li .WindowHeight - numeric, dialog height in pixels (default 112)
+%   @li .WindowStyle - char, figure window style:
+%       @li 'normal' — non-modal (default)
+%       @li 'modal' — modal dialog
+%   @li .Icon - char, icon identifier (default 'puffin_question'):
+%       @li 'puffin_question' — random puffin question icon (96px)
+%       @li 'puffin_warning' — random puffin warning icon (96px)
+%       @li 'puffin_error' — random puffin error icon (96px)
+%       @li 'puffin_measure' — random puffin measure icon (96px)
+%       @li 'puffin_info' — random puffin info icon (96px)
+%       @li 'puffin_waiting' — random puffin waiting icon (96px)
+%       @li 'question_48px' — standard question mark (48px)
+%       @li 'warning_48px' — standard warning triangle (48px)
+%       @li 'celebrate' — puffin cheering icon (220px)
+%       @li 'call4help' — call for help icon
+%   @li .IconWidth - numeric, width of icon column in pixels
+%       (default 96 for puffin icons, 48 for standard icons)
+%   @li .ParentFigure - handle, alternative parent for centering
+%       (overrides the ParentFigure parameter)
 %
 % Return values:
-% answer: entered value (string for editfield, double for spinner), empty when canceled
+% answer: entered value; empty [] when canceled
+%   @li char for editfield mode (the text the user typed)
+%   @li double for spinner mode (the numeric value)
 %
-% Example 1 (editfield):
-%   prompt = 'Enter file name:';
-%   defAns = 'myfile.txt';
-%   dlgTitle = 'File Name';
-%   options.Type = 'editfield';
-%   options.WindowWidth = 400;
-%   options.WindowHeight = 100;
-%   options.WindowStyle = 'modal';
-%   options.Icon = 'question_48px';
-%   options.IconWidth = 48;
-%   options.mibPath = obj.mibModel.mibPath;
-%   answer = utils.dlgs.inputSingleDlg(obj.view.gui, prompt, defAns, dlgTitle, options);
-%   if isempty(answer); return; end
-%
-% Example 2 (spinner):
-%   prompt = 'Enter iteration count:';
-%   defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, 'Round', false, 'ValueDisplayFormat', '%.3f units'); % requires options.Type = 'spinner';
-%   dlgTitle = 'Iterations';
-%   options.Type = 'spinner';
-%   options.WindowWidth = 400;
-%   options.WindowHeight = 100;
-%   options.WindowStyle = 'modal';
-%   options.Icon = 'question_48px';
-%   options.IconWidth = 48;
-%   options.mibPath = obj.mibModel.mibPath;
-%   answer = utils.dlgs.inputSingleDlg(obj.view.gui, prompt, defAns, dlgTitle, options);
-%   if isempty(answer); return; end
-%
-% Example 3 (minimalistic spinner)
-% options.Type = 'spinner';
-% defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d units');
-% options.WindowWidth = 320;
+%|
+% @b Examples:
+% @code
+% % Example 1: Basic editfield — add new material name
 % answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
-%    sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
-%    defAns, ...
-%    'Define number of colors', options);
-% if isempty(noColors); return; end
+%     'Please enter a name for the new material:', ...
+%     sprintf('m%.3d', 5), 'Add material');
+% if isempty(answer); return; end
+% @endcode
+%
+% @code
+% % Example 2: Editfield with all options specified
+% options.Type = 'editfield';
+% options.WindowWidth = 400;
+% options.WindowHeight = 100;
+% options.WindowStyle = 'modal';
+% options.Icon = 'question_48px';
+% options.IconWidth = 48;
+% options.mibPath = obj.mibModel.mibPath;
+% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%     'Enter file name:', 'myfile.txt', 'File Name', options);
+% if isempty(answer); return; end
+% @endcode
+%
+% @code
+% % Example 3: Spinner with full struct configuration
+% options.Type = 'spinner';
+% options.WindowWidth = 400;
+% options.WindowHeight = 100;
+% options.WindowStyle = 'modal';
+% options.Icon = 'question_48px';
+% options.IconWidth = 48;
+% options.mibPath = obj.mibModel.mibPath;
+% defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, ...
+%     'Round', false, 'ValueDisplayFormat', '%.3f units');
+% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%     'Enter iteration count:', defAns, 'Iterations', options);
+% if isempty(answer); return; end
+% @endcode
+%
+% @code
+% % Example 4: Minimalistic spinner with multiline prompt
+% options.Type = 'spinner';
+% options.WindowWidth = 320;
+% defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, ...
+%     'Round', true, 'ValueDisplayFormat', '%d units');
+% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%     sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
+%     defAns, 'Define number of colors', options);
+% if isempty(answer); return; end
+% @endcode
+%
+% @code
+% % Example 5: No parent figure (standalone call, e.g. from command line)
+% answer = utils.dlgs.inputSingleDlg([], 'Enter value:', 'hello', 'Test');
+% if isempty(answer); return; end
+% @endcode
+%
+% @code
+% % Example 6: Editfield with puffin warning icon
+% options.Icon = 'puffin_warning';
+% options.WindowWidth = 450;
+% options.WindowHeight = 130;
+% options.mibPath = obj.mibModel.mibPath;
+% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%     'Enter new filename:', 'myfile.tif', 'Rename File', options);
+% if isempty(answer); return; end
+% @endcode
 
+% Updates
+% 
 
 arguments
     ParentFigure = []
@@ -103,9 +175,9 @@ if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if ~isfield(options, 'IconWidth')
     if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'puffin_waiting'})
-        options.IconWidth = 96; 
+        options.IconWidth = 96;
     else
-        options.IconWidth = 48; 
+        options.IconWidth = 48;
     end
 end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
@@ -120,9 +192,9 @@ end
 
 % Icon selection and loading
 switch options.Icon
-    case 'warning_48px',   iconFilename = 'warning_48px.png';        
+    case 'warning_48px',   iconFilename = 'warning_48px.png';
     case 'question_48px',  iconFilename = 'question_48px.png';
-    case 'celebrate', iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2)); 
+    case 'celebrate', iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
     case 'call4help', iconFilename = 'call4help.jpg';
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
@@ -137,12 +209,10 @@ end
 
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
-fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'WindowStyle', lower(options.WindowStyle));
+% Create figure with Visible='on' (default) for immediate focus support
+fig = uifigure('Name', dlgTitle, 'WindowStyle', lower(options.WindowStyle));
 fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
-% update figure width/height
 fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.WindowHeight];
-
-% Configure figure
 fig.Tag = 'inputSingleDlg';
 
 mainGrid = uigridlayout(fig, [3 2], ...
@@ -153,7 +223,6 @@ mainGrid = uigridlayout(fig, [3 2], ...
 % Column 1: Icon (all rows)
 if exist(iconPath, 'file')
     iconUI = uiimage(mainGrid, 'ImageSource', iconPath, 'ScaleMethod', 'fit');
-
     iconUI.Layout.Row = [1 3];  % Span all rows
     iconUI.Layout.Column = 1;
     iconUI.VerticalAlignment = 'top';
@@ -218,7 +287,7 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     try
         if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
             parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
-            
+
             % Get screen size to convert from top-left to bottom-left origin
             screenSize = get(0, 'ScreenSize'); % [left bottom width height]
 
@@ -234,13 +303,7 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
             % Center in parent's coordinates (bottom-left origin)
             x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
             y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-
         end
-
-        % Optionally clamp to screen
-        % screenSize = get(0, 'ScreenSize');
-        % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
-        % y1 = max(0, min(y1, screenSize(4) - options.WindowHeight));
 
         fig.Position(1) = x1;
         fig.Position(2) = y1;
@@ -249,37 +312,27 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
     end
 end
 
-% Show figure
-drawnow;  % Render layout before making visible
-fig.Visible = 'on';
-
 % Initialize output
 answer = [];
 
-% Defer focus via java.awt.Robot — simulate a click on the dialog to
-% force OS-level focus, then focus the input widget and select all text
-t = timer('StartDelay', 0.15, 'ExecutionMode', 'singleShot', ...
-    'TimerFcn', @(th,~) deferredFocusClick(th, fig, inputCtrl));
-start(t);
+% Direct focus on input widget — no java.awt.Robot, no timer
+focus(inputCtrl);
 
-% Wait for user
-uiwait(fig);
+% Block caller until dialog is closed
+waitfor(fig);
 
 % Callbacks
-% --- Local function (at end of file) ---
     function onOK()
         if strcmpi(options.Type, 'spinner')
             answer = double(inputCtrl.Value);
         else
             answer = char(inputCtrl.Value);
         end
-        uiresume(fig);
         delete(fig);
     end
 
     function onCancel()
         answer = [];
-        uiresume(fig);
         delete(fig);
     end
 
@@ -290,32 +343,6 @@ uiwait(fig);
             focus(okBtn);  % Move focus to button, commits editfield value
             pause(0.1);
             onOK();
-        end
-    end
-
-    function deferredFocusClick(th, figHandle, widget)
-        try; stop(th); delete(th); catch; end
-        try
-            if ~isvalid(figHandle); return; end
-
-            figPos     = figHandle.Position;
-            screenSize = get(0, 'ScreenSize');
-            clickX = round(figPos(1) + figPos(3) / 2);
-            clickY = round(screenSize(4) - figPos(2) - figPos(4) + figPos(4) / 2);
-
-            robot = java.awt.Robot();
-            robot.mouseMove(clickX, clickY);
-            robot.mousePress(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);
-            robot.mouseRelease(java.awt.event.InputEvent.BUTTON1_DOWN_MASK);
-
-            if isvalid(widget)
-                focus(widget);
-                robot.keyPress(java.awt.event.KeyEvent.VK_CONTROL);
-                robot.keyPress(java.awt.event.KeyEvent.VK_A);
-                robot.keyRelease(java.awt.event.KeyEvent.VK_A);
-                robot.keyRelease(java.awt.event.KeyEvent.VK_CONTROL);
-            end
-        catch
         end
     end
 end
