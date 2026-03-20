@@ -209,8 +209,7 @@ end
 
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
-% Create figure with Visible='on' (default) for immediate focus support
-fig = uifigure('Name', dlgTitle, 'WindowStyle', lower(options.WindowStyle));
+fig = uifigure('Name', dlgTitle, 'WindowStyle', lower(options.WindowStyle), Visible='off');
 fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
 fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.WindowHeight];
 fig.Tag = 'inputSingleDlg';
@@ -314,6 +313,9 @@ end
 
 % Initialize output
 answer = [];
+
+drawnow;
+fig.Visible = 'on';
 
 % Direct focus on input widget — no java.awt.Robot, no timer
 focus(inputCtrl);

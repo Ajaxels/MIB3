@@ -48,9 +48,10 @@ switch mode
         options.Header        = sprintf('Update visualization settings');
         options.HeaderLines   = 1;
         options.WindowStyle  = 'normal';
-        options.WindowWidth = 340;
-        options.WindowHeight = 180;
+        options.WindowWidth = 350;
+        %options.WindowHeight = 180;
         options.IconWidth    = 64;
+        options.LabelPosition = 'left';
         options.Icon         = 'question';
         options.mibPath = obj.mibController.mibPath;
         [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);

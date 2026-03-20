@@ -266,7 +266,7 @@ end
 mibDir = mibDirPersistent;
 
 % Build figure (before icon loading to get background color)
-fig = uifigure('Name', dlgTitle);
+fig = uifigure('Name', dlgTitle, 'Visible', 'off');
 fig.Tag = 'inputUniversalDlg';
 fig.AutoResizeChildren = 'off';  % Disable auto-resize
 if strcmpi(options.WindowStyle,'modal'); fig.WindowStyle='modal'; else; fig.WindowStyle='normal'; end
@@ -801,6 +801,10 @@ end
 % Key handling
 fig.KeyPressFcn = @(~, evt) onKey(evt);
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
+
+% show the dialog
+drawnow;
+fig.Visible = 'on';
 
 % Set focus
 if options.MsgBoxOnly || options.Focus == 0

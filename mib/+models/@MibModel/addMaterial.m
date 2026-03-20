@@ -43,7 +43,7 @@ if nargin < 2; BatchOptIn = struct(); end
 %% Declaration of the BatchOpt structure
 BatchOpt = struct();
 BatchOpt.MaterialName  = 'NewMaterial';
-BatchOpt.showWaitbar   = true;
+BatchOpt.showWaitbar   = false;
 BatchOpt.id            = obj.id;
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Segmentation';
