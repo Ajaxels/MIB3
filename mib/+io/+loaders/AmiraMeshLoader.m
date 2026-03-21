@@ -132,7 +132,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
                 % Read header
                 try
-                    [par, info, dim_xyczt] = io.AmiraMesh.getAmiraMeshHeader(files(fnIndex).filename);
+                    [par, info, dim_xyczt, materialNames, materialColors] = io.AmiraMesh.getAmiraMeshHeader(files(fnIndex).filename);
                 catch err
                     imginfo = dictionary();
                     if ~isempty(wb); delete(wb); end
@@ -238,9 +238,9 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                             dy = bb_coord(4)-bb_coord(3);
                             dz = bb_coord(6)-bb_coord(5);
                         catch err
-                            dx = max([files(fn_index).width 2])-1;
-                            dy = max([files(fn_index).height 2])-1;
-                            dz = max([files(fn_index).noLayers 2])-1;
+                            dx = max([files(fnIndex).width 2])-1;
+                            dy = max([files(fnIndex).height 2])-1;
+                            dz = max([files(fnIndex).noLayers 2])-1;
                         end
                     end
 
@@ -263,6 +263,14 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                             end
                         end
                     end
+
+                    % Store material names and colors for model loading
+                    if ~isempty(materialNames)
+                        imginfo{"modelMaterialNames"} = materialNames;
+                    end
+                    if ~isempty(materialColors)
+                        imginfo{"modelMaterialColors"} = materialColors;
+                    end
                 end
 
                 % update pixSize
@@ -275,6 +283,9 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     end
                 end
             end
+
+            % Set number of successfully loaded entries (required by MibDataset.loadModel)
+            imginfo{"numEntries"} = noFiles;
 
             % Generate slice names
             imginfo = obj.generateSliceNames(files, imginfo);

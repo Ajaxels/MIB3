@@ -137,6 +137,17 @@ classdef ImodContourSaver < io.savers.BaseSaver
             if ~isfield(options, 'zScaleFactor');         options.zScaleFactor         = 1;      end
             if ~isfield(options, 'generateSelectionSw');  options.generateSelectionSw  = false;  end
 
+            % --- interactive dialog (skipped in silent/batch mode) ---
+            if ~options.silent
+                prompts  = {'Take each Nth point in contours (> 0):', 'Show detected points in the selection layer'};
+                defAns   = {num2str(options.xyScaleFactor), options.generateSelectionSw};
+                dlgTitle = 'Export to IMOD';
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, dlgTitle);
+                if isempty(answer); return; end
+                options.xyScaleFactor       = str2double(answer{1});
+                options.generateSelectionSw = answer{2};
+            end
+
             % Warn if caller has incorrectly specified an image layer
             if ~strcmpi(options.layerType, 'labels') && ~strcmpi(options.layerType, 'mask')
                 warning('ImodContourSaver:wrongLayerType', ...

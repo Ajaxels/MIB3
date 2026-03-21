@@ -38,8 +38,7 @@ function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
 %   obj.mibZoomEdit_Callback(NaN);
 %
 % Updates:
-%   19.09.2019 - Added batch mode support
-%   27.02.2026 - Updated to MIB3 syntax
+%  
 
 arguments
     obj controllers.MibStatusBar
@@ -49,11 +48,13 @@ end
 
 % developer mode
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibStatusBar.zoomEdit_Callback: pressed %s\n', BatchOptIn.Mode);
+    devText = 'obj.mibController.cStatus.handles.zoom';
+    %if ~isempty(fieldnames(BatchOptIn)); devText = BatchOptIn.Mode; end
+    fprintf('controllers.MibStatusBar.zoomEdit_Callback: pressed %s\n', devText);
 end
 
-%% Focus the zoom edit control when called from UI (no BatchOptIn provided)
-if isempty(fieldnames(BatchOptIn))
+% %% Focus the zoom edit control when called from UI (no BatchOptIn provided)
+if isstruct(BatchOptIn) && isempty(fieldnames(BatchOptIn))
     focus(obj.view.handles.panels.dirContentsPanel.Figure); % remove focus from hObject
 end
 if isempty(recenterSwitch); recenterSwitch = false; end
@@ -73,7 +74,7 @@ BatchOpt = struct();
 BatchOpt.Mode = {'Set magnification'};
 BatchOpt.Mode{2} = {'Set magnification', 'Fit to screen', '100%', 'Zoom in', 'Zoom out'};
 BatchOpt.MagnificationValue = newZoomValue;
-BatchOpt.mibBatchSectionName = 'Quick access bar -> Zoom';
+BatchOpt.mibBatchSectionName = 'Quick access bar';
 BatchOpt.mibBatchActionName  = 'Change magnification';
 
 % Tooltips shown in the batch processing GUI

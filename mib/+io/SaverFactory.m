@@ -222,15 +222,15 @@ classdef SaverFactory
                         'Contours for IMOD (*.mod)'; ...
                         'Hierarchical Data Format (*.h5)'; ...
                         'Hierarchical Data Format with XML header (*.xml)'; ...
-                        'Isosurface as binary STL (*.stl)'; ...
                         'Matlab categorical format (*.mibCat)'; ...
                         'Matlab format (*.model)'; ...
                         'Matlab format 2D sequence (*.model)'; ...
                         'Matlab format for MIB ver. 1 (*.mat)'; ...
+                        'MRC Volume for IMOD (*.mrc)'; ...
                         'NRRD for 3D Slicer (*.nrrd)'; ...
                         'PNG format (*.png)'; ...
+                        'STL isosurface as binary (*.stl)'; ...
                         'TIF format (*.tif)'; ...
-                        'Volume for IMOD (*.mrc)'; ...
                     };
                 otherwise  % 'all'
                     f1 = io.SaverFactory.getFormats('image');
@@ -349,13 +349,13 @@ classdef SaverFactory
                             case 'model'
                                 defaultFormat = 'Matlab format (*.model)'; return;
                             case 'mrc'
-                                defaultFormat = 'Volume for IMOD (*.mrc)'; return;
+                                defaultFormat = 'MRC Volume for IMOD (*.mrc)'; return;
                             case 'nrrd'
                                 defaultFormat = 'NRRD for 3D Slicer (*.nrrd)'; return;
                             case 'png'
                                 defaultFormat = 'PNG format (*.png)'; return;
                             case 'stl'
-                                defaultFormat = 'Isosurface as binary STL (*.stl)'; return;
+                                defaultFormat = 'STL isosurface as binary (*.stl)'; return;
                             case {'tif','tiff'}
                                 defaultFormat = 'TIF format (*.tif)'; return;
                             case 'xml'
@@ -434,7 +434,7 @@ classdef SaverFactory
 
             % ---- IMOD MRC ---------------------------------------------- %
             registry("MRC format for IMOD (*.mrc)") = "io.savers.MrcSaver";
-            registry("Volume for IMOD (*.mrc)")      = "io.savers.MrcSaver";
+            registry("MRC Volume for IMOD (*.mrc)")      = "io.savers.MrcSaver";
 
             % ---- OME-TIFF ---------------------------------------------- %
             registry("OME-TIFF 5D (*.ome.tiff)")          = "io.savers.OmeTiffSaver";
@@ -444,7 +444,7 @@ classdef SaverFactory
             registry("Contours for IMOD (*.mod)") = "io.savers.ImodContourSaver";
 
             % ---- STL isosurface ---------------------------------------- %
-            registry("Isosurface as binary STL (*.stl)") = "io.savers.StlSaver";
+            registry("STL isosurface as binary (*.stl)") = "io.savers.StlSaver";
         end
 
     end  % private static methods

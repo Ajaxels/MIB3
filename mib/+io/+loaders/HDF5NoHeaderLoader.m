@@ -325,6 +325,9 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
             end
             % -----------------------------------------------------------------
 
+            % Set number of entries (required by MibDataset.loadModel)
+            imginfo{"numEntries"} = noFiles;
+
             % Generate slice names
             imginfo = obj.generateSliceNames(files, imginfo);
 

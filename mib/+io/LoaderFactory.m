@@ -110,6 +110,10 @@ classdef LoaderFactory
                     % NRRD format (Nearly Raw Raster Data)
                     loader = io.loaders.NrrdLoader(options);
 
+                case "MatModel"
+                    % MATLAB-format segmentation model (.model, .mat, .mibCat)
+                    loader = io.loaders.MatModelLoader(options);
+
                 case "VideoReader"
                     % MATLAB VideoReader for movie files
                     loader = io.loaders.VideoReaderLoader(options);
@@ -199,6 +203,11 @@ classdef LoaderFactory
             loaderList(idx).loaderId = 'nrrd';
             loaderList(idx).description = 'NRRD format';
             loaderList(idx).extensions = {'nrrd'};
+            idx = idx + 1;
+
+            loaderList(idx).loaderId = 'MatModel';
+            loaderList(idx).description = 'MATLAB-format segmentation model';
+            loaderList(idx).extensions = {'model', 'mat', 'mibcat'};
             idx = idx + 1;
 
             loaderList(idx).loaderId = 'VideoReader';

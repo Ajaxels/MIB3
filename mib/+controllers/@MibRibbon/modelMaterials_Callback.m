@@ -19,14 +19,21 @@ end
 
 switch mode
     case 'Rename material'      % obj.handles.ribbonModel.matRename
-        %widgetHandles.matSwap.ItemPushedFcn = @(src, event)obj.controller.cSegmentation.materialsTable_Materials_ContextMenu(src, event);
+        obj.mibModel.materialsActions('Rename material');
     case 'Add material'      % obj.handles.ribbonModel.matAdd
+        obj.mibModel.materialsActions('Add material');
     case 'Insert material'    % obj.handles.ribbonModel.matInsert
+        obj.mibModel.materialsActions('Insert material');
     case 'Swap materials'      % obj.handles.ribbonModel.matSwap
+        obj.mibModel.materialsActions('Swap materials');
     case 'Reorder materials'      % obj.handles.ribbonModel.matReorder
+        obj.mibModel.materialsActions('Reorder materials');
     case 'Export material'    % obj.handles.ribbonModel.matExport
+        obj.mibModel.materialsActions('Export material');
     case 'Save material to file'      % obj.handles.ribbonModel.matSave
+        obj.mibModel.materialsActions('Save material to file');
     case 'Remove materials'      % obj.handles.ribbonModel.matRemove
+        obj.mibModel.materialsActions('Remove material');
 end
 
 end

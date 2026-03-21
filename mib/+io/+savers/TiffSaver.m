@@ -151,10 +151,13 @@ classdef TiffSaver < io.savers.BaseSaver
             if ~isfield(options, 'Saving3DPolicy');    options.Saving3DPolicy = '3D stack'; end
             if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
 
-            % Determine compression from Format string or explicit field
+            % Determine compression from Format string or explicit field.
+            % 'TIF format (*.tif)' is the labels/mask alias — always LZW.
             if isfield(options, 'Compression')
                 compression = options.Compression;
             elseif isfield(options, 'Format') && contains(options.Format, 'LZW')
+                compression = 'lzw';
+            elseif isfield(options, 'Format') && strcmp(options.Format, 'TIF format (*.tif)')
                 compression = 'lzw';
             else
                 compression = 'none';
@@ -222,13 +225,16 @@ classdef TiffSaver < io.savers.BaseSaver
             % --- outer waitbar for time series ---
             wbOuter = [];
             if options.showWaitbar && nT > 1
-                wbOuter = obj.createProgressDialog('Saving images...', 'Saving TIFF series...', false);
+                wbOuter = obj.createProgressDialog('Saving images...', 'Saving TIFF series...', true);
             end
 
             allFn = cell(nT, 1);
 
             try
                 for t = 1:nT
+                    if ~isempty(wbOuter) && wbOuter.CancelRequested
+                        delete(wbOuter); return;
+                    end
                     % Build filename for this time point
                     if nT > 1
                         tSuffix = sprintf('_T%03d', t);
@@ -247,8 +253,9 @@ classdef TiffSaver < io.savers.BaseSaver
 
                     if strcmp(options.Saving3DPolicy, '3D stack')
                         % --- Save all Z-slices in one multi-frame TIFF ---
-                        obj.writeTiffStack(outPath, slice4D, cmap, imgDescArr, ...
+                        cancelled = obj.writeTiffStack(outPath, slice4D, cmap, imgDescArr, ...
                             compression, resolution, options);
+                        if cancelled; if ~isempty(wbOuter); delete(wbOuter); end; return; end
                         allFn{t} = outPath;
 
                     else
@@ -266,20 +273,25 @@ classdef TiffSaver < io.savers.BaseSaver
                         % Inner waitbar (for Z slices)
                         wbInner = [];
                         if options.showWaitbar && isempty(wbOuter)
-                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF — %s', baseName), false);
+                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF — %s', baseName), true);
                         end
 
                         for z = 1:nD
+                            if ~isempty(wbInner) && wbInner.CancelRequested
+                                delete(wbInner); return;
+                            end
                             img2D = squeeze(slice4D(:, :, :, z));  % [H, W, C]
+                            descArgs = {};
+                            if ~isempty(imgDescArr{z}); descArgs = {'Description', imgDescArr{z}}; end
                             if isnan(cmap)
                                 imwrite(img2D, sliceNames{z}, 'tif', ...
                                     'Compression', compression, ...
-                                    'Description', imgDescArr{z}, ...
+                                    descArgs{:}, ...
                                     'Resolution',  resolution);
                             else
                                 imwrite(img2D, cmap, sliceNames{z}, 'tif', ...
                                     'Compression', compression, ...
-                                    'Description', imgDescArr{z}, ...
+                                    descArgs{:}, ...
                                     'Resolution',  resolution);
                             end
                             if ~isempty(wbInner); wbInner.Value = z/nD; end
@@ -313,7 +325,7 @@ classdef TiffSaver < io.savers.BaseSaver
     % ------------------------------------------------------------------ %
     methods (Access = private)
 
-        function writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...
+        function cancelled = writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...
                 compression, resolution, options)
             % function writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...)
             % Write a multi-frame TIFF where slice4D is [H, W, C, D].
@@ -331,28 +343,34 @@ classdef TiffSaver < io.savers.BaseSaver
             %   resolution  — [xRes yRes] vector
             %   options     — options struct (for overwrite check)
 
+            cancelled = false;
             nD = size(slice4D, 4);
             wb = [];
             if options.showWaitbar
-                wb = obj.createProgressDialog('Saving TIFF...', sprintf('Writing %s', outPath), false);
+                wb = obj.createProgressDialog('Saving TIFF...', sprintf('Writing %s', outPath), true);
             end
 
             for z = 1:nD
+                if ~isempty(wb) && wb.CancelRequested
+                    delete(wb); cancelled = true; return;
+                end
                 frame = squeeze(slice4D(:, :, :, z));   % [H, W, C]
                 writeMode = 'overwrite';
                 if z > 1; writeMode = 'append'; end
 
+                descArgs = {};
+                if ~isempty(imgDescArr{z}); descArgs = {'Description', imgDescArr{z}}; end
                 if isnan(cmap)
                     imwrite(frame, outPath, 'tif', ...
                         'WriteMode',   writeMode, ...
                         'Compression', compression, ...
-                        'Description', imgDescArr{z}, ...
+                        descArgs{:}, ...
                         'Resolution',  resolution);
                 else
                     imwrite(frame, cmap, outPath, 'tif', ...
                         'WriteMode',   writeMode, ...
                         'Compression', compression, ...
-                        'Description', imgDescArr{z}, ...
+                        descArgs{:}, ...
                         'Resolution',  resolution);
                 end
                 if ~isempty(wb); wb.Value = z/nD; end

@@ -34,6 +34,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % .LabelPosition - 'left' (default, horizontal layout) or 'top' (vertical layout, labels above widgets).
 % .LastItemColumns - 1 to force last entry to span all columns, 0 otherwise (default 0).
 % .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
+% .mibPath - path to MIB installation
 % .MsgBoxOnly - logical, show dialog as a message box with only OK button and single html content (default false).
 % .OkBtnText - text for OK button (default 'OK').
 % .ParentFigure - handle to parent figure; if provided, dialog is centered on parent window (default: []).

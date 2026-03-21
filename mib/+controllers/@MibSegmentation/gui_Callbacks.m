@@ -26,16 +26,17 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.gui_Callbacks: clicked on "obj.view.handles.panels.segmentation.handles.%s"\n', mode);
 end
 
+utils.unFocus(hWidget);
+
 switch mode
     case 'createModel'
         obj.mibModel.createModel();
     case 'loadModel'
-
+        obj.mibModel.loadModel();
     case 'addMaterial'
-        utils.unFocus(hWidget);
         obj.mibModel.addMaterial();
     case 'removeMaterial'
-
+        obj.mibModel.removeMaterial();
     case 'colorWheel'
 
     case 'viewSettings'

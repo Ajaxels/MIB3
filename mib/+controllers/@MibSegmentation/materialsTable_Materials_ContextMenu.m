@@ -33,21 +33,21 @@ end
 
 switch menuEntry.Text
     case 'Rename material'
-
+        obj.mibModel.materialsActions('Rename material');
     case 'Add material'
-
+        obj.mibModel.materialsActions('Add material');
     case 'Insert material'
-
+        obj.mibModel.materialsActions('Insert material');
     case 'Swap materials'
-
+        obj.mibModel.materialsActions('Swap materials');
     case 'Reorder materials'
-
+        obj.mibModel.materialsActions('Reorder materials');
     case 'Export material'
-
+        obj.mibModel.materialsActions('Export material');
     case 'Save material to file'
-
+        obj.mibModel.materialsActions('Save material to file');
     case 'Remove materials'
-
+        obj.mibModel.materialsActions('Remove material');
 end
 
 end

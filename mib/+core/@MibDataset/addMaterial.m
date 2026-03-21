@@ -1,66 +1,79 @@
-function addMaterial(obj, materialName, newMaterialIndex)
-% function addMaterial(obj, materialName, newMaterialIndex)
-% Add a material to an existing model — low-level data layer
+function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)
+% function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)
+% Add a material to the model — low-level data layer
 %
-% Updates obj.labels.materialNames and obj.labels.materialColors and
-% adjusts obj.selectedMaterial / obj.selectedAddToMaterial.
+% Creates the model when it does not yet exist.  For small model types
+% (63/255) the new name is appended to the materialNames list and a colour
+% row is generated.  For large model types (65535/4294967295) the next
+% unused index is derived from obj.labels.materialsCount (unless the caller
+% supplies it via newMaterialIndex), capacity is verified, and the new
+% index is registered.
 %
-% For types 63 and 255 the new name is appended to the end of the
-% materialNames list and the corresponding colour row is created if absent.
-% If no model exists yet, createModel is called first so that the new
-% material is recorded together with an empty (zeroed) model matrix.
-%
-% For types 65535 and 4294967295 the caller (MibModel.addMaterial) is
-% responsible for scanning the dataset and supplying the next unused
-% material index via newMaterialIndex.  The name stored in materialNames at
-% the currently active row is updated to reflect that index, and a colour
-% entry is created when needed.
+% In all cases obj.labels.materialsCount is incremented by 1 on success.
 %
 % Parameters:
-% materialName: char, name for the new material.
+% materialName: [@em optional] char, name for the new material
+%   [@em default 'NewMaterial'].
 %   @li For types 63 / 255 – the human-readable label appended to the list.
-%   @li For types 65535 / 4294967295 – typically the string representation
-%       of newMaterialIndex; supplied by MibModel.addMaterial.
+%   @li For types 65535 / 4294967295 – overridden with the string
+%       representation of the assigned index.
 % newMaterialIndex: [@em optional] double, next unused 1-based material
-%   index; required when modelType >= 65535, ignored for types 63 / 255.
+%   index.  When empty the method uses obj.labels.materialsCount + 1.
+%   Ignored for types 63 / 255.
+% wb: [@em optional] handle to a uiprogressdlg used for progress display;
+%   when empty no progress is reported.
 %
 % Return values:
+% result: logical, true on success, false when the model is full
+%   (capacity exceeded).
+% newMaterialIndex: double, the material index that was actually assigned;
+%   relevant for large model types, empty for small types.
 %
 
 %|
 % @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.addMaterial('Nucleus');           // type-63 / 255 model @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.addMaterial('42', 42);            // large model, index supplied @endcode
+% @code obj.mibModel.I{obj.mibModel.id}.addMaterial('Nucleus');              // type-63 / 255 model @endcode
+% @code [ok, idx] = obj.mibModel.I{obj.mibModel.id}.addMaterial('', [], wb); // large model, auto-index @endcode
 
 % Updates
-% 
+%
 
+if nargin < 4; wb = []; end
 if nargin < 3; newMaterialIndex = []; end
 if nargin < 2; materialName = 'NewMaterial'; end
 
+result = true;
 modelType = obj.labels.maxMaterials;
 
 if modelType < 256  %% Types 63 and 255 -----------------------------------------------
 
     if ~obj.modelExist
-        % Create a new model with this first material already named
         obj.createModel(modelType, {materialName});
         return;
     end
 
     list = obj.labels.materialNames;
     if isempty(list); list = cell(0, 1); end
+    nMats = numel(list);
+
+    % Capacity check
+    if modelType < nMats + 1
+        result = false;
+        return;
+    end
+
     list{end+1, 1} = materialName;
     obj.labels.materialNames = list;
 
-    % Ensure a colour row exists for the new material
     nMats = numel(list);
     if size(obj.labels.materialColors, 1) < nMats
         obj.labels.materialColors(nMats, :) = rand(1, 3);
     end
 
+    obj.labels.materialsCount = nMats;
     obj.selectedMaterial      = nMats + 2;
     obj.selectedAddToMaterial = nMats + 2;
+    newMaterialIndex = [];
 
 else  %% Types 65535 and 4294967295 -------------------------------------------
 
@@ -68,11 +81,21 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
         obj.createModel(modelType);
     end
 
-    newIdx = newMaterialIndex;
+    % Derive next index from materialsCount when not supplied
+    if isempty(newMaterialIndex)
+        newMaterialIndex = obj.labels.materialsCount + 1;
+
+        if newMaterialIndex > modelType
+            result = false;
+            return;
+        end
+    end
+
+    materialName = num2str(newMaterialIndex);
 
     % Ensure a colour row exists for this index
-    if size(obj.labels.materialColors, 1) < newIdx
-        obj.labels.materialColors(newIdx, :) = rand(1, 3);
+    if size(obj.labels.materialColors, 1) < newMaterialIndex
+        obj.labels.materialColors(newMaterialIndex, :) = rand(1, 3);
     end
 
     % Determine which row of materialNames to update
@@ -89,6 +112,7 @@ else  %% Types 65535 and 4294967295 -------------------------------------------
     end
     obj.labels.materialNames{matIdx} = materialName;
 
+    obj.labels.materialsCount = newMaterialIndex;
     obj.selectedMaterial      = matIdx + 2;
     obj.selectedAddToMaterial = matIdx + 2;
 end

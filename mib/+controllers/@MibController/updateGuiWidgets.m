@@ -20,6 +20,7 @@ function updateGuiWidgets(obj, updatePanels)
 %   @li 'activeDataset'      - Dataset buffer buttons in the Datasets panel
 %   @li 'dirContentsDataset' - Directory contents file list and filter
 %   @li 'panelThresholding'  - Black/white threshold sliders
+%   @li 'roi'                - ROI related items
 %   @li 'selectionPanel'     - LUT checkbox and colour table
 %   @li 'statusBar'          - Status bar current-directory field
 %
@@ -47,6 +48,10 @@ function updateGuiWidgets(obj, updatePanels)
 % eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
 % notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
 % @endcode
+
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibController.updateGuiWidgets triggered\n');
+end
 
 % define cell array of panels to update, when empty update all panels
 if nargin < 2; updatePanels = {}; end
@@ -318,6 +323,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'checkboxes')
     % update Restrict to Material status and redraw Materials table
     % using obj.updateSegmentationTable() inside mibSegmSelectedOnlyCheck_Callback
     segmentationPanelHandles.restrictMaterial.Value = dataset.restrictSelectionToMaterial;
+    % update materialsTable
     obj.cSegmentation.restrictMaterial_Callback();
 
     % update useLUT checkbox, see below selectionPanel
@@ -472,30 +478,32 @@ end
 %% update ROI stuff ---------------------------------------------
 % ---------------------------------------------------------------
 % update ROI list box
-roiListHandle = obj.cRoi.handles.roiList;
-[number, indices] = dataset.hROI.getNumberOfROI(0);
-items = cell(1, number + 1);
-items{1} = 'All';
-for i = 1:number
-    lbl = dataset.hROI.Data(indices(i)).label;
-    if iscell(lbl); lbl = lbl{1}; end
-    items{i+1} = lbl;
-end
-roiListHandle.Items = items;
-
-if number > 0
-    % try to preserve the previously selected ROI
-    prevSelected = roiListHandle.Value;
-    if ismember(prevSelected, items)
-        roiListHandle.Value = prevSelected;
+if isempty(updatePanels) || ismember(updatePanels, 'roi')
+    roiListHandle = obj.cRoi.handles.roiList;
+    [number, indices] = dataset.hROI.getNumberOfROI(0);
+    items = cell(1, number + 1);
+    items{1} = 'All';
+    for i = 1:number
+        lbl = dataset.hROI.Data(indices(i)).label;
+        if iscell(lbl); lbl = lbl{1}; end
+        items{i+1} = lbl;
+    end
+    roiListHandle.Items = items;
+    
+    if number > 0
+        % try to preserve the previously selected ROI
+        prevSelected = roiListHandle.Value;
+        if ismember(prevSelected, items)
+            roiListHandle.Value = prevSelected;
+        else
+            roiListHandle.Value = 'All';
+        end
+        obj.cRoi.handles.roiShowROI.Value = dataset.roiShow;
     else
         roiListHandle.Value = 'All';
+        dataset.roiShow = false;
+        obj.cRoi.handles.roiShowROI.Value = false;
     end
-    obj.cRoi.handles.roiShowROI.Value = dataset.roiShow;
-else
-    roiListHandle.Value = 'All';
-    dataset.roiShow = false;
-    obj.cRoi.handles.roiShowROI.Value = false;
 end
 
 

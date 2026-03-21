@@ -91,6 +91,10 @@ classdef MibDataset < matlab.mixin.Copyable
         % a switch to show all materials of the model in the image view axes, or only a single one; defined in context menu of obj.cSegmentation.handles.materialsTable
         useLUT
         % use or not LUT for visualization of image, a number @b 0 - do not use; @b 1 - use a status of obj.view.handles.panels.selection.handles.lutColors
+        unlinkMaterials = false
+        % unlink materials in the segmentation table, when true click on
+        % the segmentation table selects individually Materials or addTo
+        % columns
     end
 
     events
@@ -100,9 +104,19 @@ classdef MibDataset < matlab.mixin.Copyable
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        addMaterial(obj, materialName, newMaterialIndex)        % append a new material to the model; for large models (≥65535) the caller supplies newMaterialIndex
+        [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)        % add a material; scans time-points for large models, checks capacity, updates metadata
+
+        removeMaterial(obj, materialIndices, wb)                % remove materials: remaps/zeros pixel data across time-points, then updates metadata
+
+        insertMaterial(obj, materialIndex, materialName, wb)     % insert a new material at the specified position, shifting pixel values and metadata
+
+        swapMaterials(obj, material1, material2, wb)            % swap two materials in the model: pixel data and metadata
+
+        reorderMaterials(obj, newOrder, wb)                     % reorder materials in the model according to a permutation vector (small models only)
 
         createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
+
+        result = loadModel(obj, filenames, options)          % load a segmentation model from files or a raw array; orchestrates loader dispatch, dimension validation, and metadata assignment
 
         initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
 

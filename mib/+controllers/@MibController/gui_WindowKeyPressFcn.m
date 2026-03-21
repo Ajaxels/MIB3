@@ -210,9 +210,8 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             end
 
         case 'Rename material'                          % default F2
-            if dataset.getSelectedMaterialIndex() > 0
-                error("MISSING IMPLEMENTATION: obj.mibModel.renameMaterial();")
-            end
+            if dataset.getSelectedMaterialIndex() < 1; return; end
+            obj.mibModel.materialsActions('Rename material');
 
         case 'Show/hide the Model layer'                % default 'space'
             obj.cSelection.handles.showModel.Value = abs(obj.cSelection.handles.showModel.Value - 1);

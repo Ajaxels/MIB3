@@ -185,7 +185,7 @@ while numel(strfind(tline,'# Data section follows')) == 0
             if customSections == 1
                 msgbox(sprintf('The Amira Mesh Labels is not yet implemented for partial opening of the dataset!\n\nPlease open full dataset'),'Error','error','modal');
             else
-                bitmap = amiraLabels2bitmap(filename);    
+                bitmap = io.AmiraMesh.amiraLabels2bitmap(filename);
             end
             return;
         end

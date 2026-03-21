@@ -164,6 +164,7 @@ When porting methods, apply these substitutions consistently.
 | `obj.maskExist` | `obj.maskExist` (same) |
 | `obj.modelMaterialNames` | `obj.labels.materialNames` |
 | `obj.modelMaterialColors` | `obj.labels.materialColors` |
+| *(no direct equivalent)* | `obj.labels.materialsCount` — current number of materials (small models) or highest assigned index (large models); avoids full-dataset scan in `addMaterial` |
 | `obj.modelVariable` | `obj.labels.labelsVariable` |
 | `obj.modelFilename` | `obj.labels.filename` |
 | `obj.hLabels.clearContents()` | `obj.annotations.clearContents()` |

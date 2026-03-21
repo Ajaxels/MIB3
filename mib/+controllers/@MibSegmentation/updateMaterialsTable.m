@@ -34,8 +34,7 @@ tableHandle = obj.handles.materialsTable;
 % get or initialize UserData
 userData = tableHandle.UserData;
 if isempty(userData)
-    userData = struct(); 
-    userData.unlink = false;
+    userData = struct();
 end
 
 % % check if table is initialized (skip during startup)

@@ -71,8 +71,8 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             %     @li "Datasetname" - HDF5 dataset path (optional)
             %     @li "channelNames" - cell array of channel names
             %     @li "lutColors" - color LUT for channels (optional)
-            %     @li "material_list" - material names (optional)
-            %     @li "color_list" - material colors (optional)
+            %     @li "modelMaterialNames" - material names cell array (optional)
+            %     @li "modelMaterialColors" - material colors [Nx3] RGB (optional)
             %     @li "pixSize" - structure with voxel dimensions
             %     @li "ReturnedLevel" - pyramid level (default = 1)
             %   metaStr: structure with parsed XML content
@@ -155,8 +155,8 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     color_list(matId, :) = str2num(metaStr.(datasetName).SequenceDescription.ViewSetups.Materials.(materialFieldNames{matId}).Color.Text); %#ok<ST2NM>
                 end
 
-                imginfo{"material_list"} = material_list;
-                imginfo{"color_list"} = color_list;
+                imginfo{"modelMaterialNames"} = material_list;
+                imginfo{"modelMaterialColors"} = color_list;
             end
 
             % Convert ViewSetup to cell if only single entry
@@ -541,6 +541,9 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
             % Handle dimension mismatches and bounding box
             imginfo = obj.handleDimensionMismatches(files, imginfo);
+
+            % Set number of entries (required by MibDataset.loadModel)
+            imginfo{"numEntries"} = noFiles;
 
             % Generate slice names from filenames
             imginfo = obj.generateSliceNames(files, imginfo);

@@ -21,6 +21,7 @@ switch mode
     case sprintf('New\nmodel')      % obj.handles.ribbonModel.new
         obj.mibModel.createModel();
     case sprintf('Load\nmodel')     % obj.handles.ribbonModel.load
+        obj.mibModel.loadModel();
     case sprintf('Import\nmodel')   % obj.handles.ribbonModel.import
    
 end

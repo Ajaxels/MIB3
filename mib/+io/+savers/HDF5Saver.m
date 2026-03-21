@@ -377,6 +377,16 @@ classdef HDF5Saver < io.savers.BaseSaver
             else
                 HDFoptions.lutColors = ones(1,3);
             end
+
+            % For model/label layers, store material names and colors so that
+            % saveXMLheader can write the Materials section into the XML file.
+            if isfield(metadata, 'materialNames') && ~isempty(metadata.materialNames)
+                HDFoptions.ModelMaterialNames = metadata.materialNames;
+                % Prefer materialColors for per-material RGB; fall back to lutColors
+                if isfield(metadata, 'materialColors') && ~isempty(metadata.materialColors)
+                    HDFoptions.lutColors = metadata.materialColors;
+                end
+            end
             HDFoptions.ImageDescription = '';
             if isfield(metadata, 'imageDescription')
                 HDFoptions.ImageDescription = metadata.imageDescription;

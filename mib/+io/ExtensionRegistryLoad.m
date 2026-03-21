@@ -160,6 +160,12 @@ classdef ExtensionRegistryLoad < handle
             obj.extensionSets("Standard.BioFormats") = {sort(bioFormats)};
             obj.extensionSets("Virtual.BioFormats") = {sort([{'am'}, bioFormats])};
             obj.extensionSets("BigData.BioFormats") = {''};
+
+            % Model file extensions (used by MibModel.loadModel)
+            % Include imread-compatible formats so *.*  browsing works for
+            % all image types that can carry label data (png, bmp, jpg, etc.)
+            modelExts = unique([{'am','h5','hdf5','mat','mibcat','model','mrc','nrrd','rec','st','tif','tiff','xml'}, obj.imreadExtensions]);
+            obj.extensionSets("Model.Default") = {sort(modelExts)};
         end
 
         function key = generateKey(~, mode, reader)
@@ -210,6 +216,27 @@ classdef ExtensionRegistryLoad < handle
             % 'nrrd' -> NRRD reader
             % 'VideoReader' -> MATLAB reader for video files
             
+            % Model loading: route to format-appropriate loader
+            if mode == "Model"
+                switch lower(ext)
+                    case {'model', 'mat', 'mibcat'}
+                        id = 'MatModel';
+                    case 'am'
+                        id = 'AmiraMesh';
+                    case 'xml'
+                        id = 'hdf5-header';
+                    case {'h5', 'hdf5'}
+                        id = 'hdf5-no-header';
+                    case {'mrc', 'rec', 'st'}
+                        id = 'imod';
+                    case 'nrrd'
+                        id = 'nrrd';
+                    otherwise
+                        id = 'imread';
+                end
+                return;
+            end
+
             % check
             if reader == "BioFormats"
                 if mode == "Virtual" || mode == "BigData"

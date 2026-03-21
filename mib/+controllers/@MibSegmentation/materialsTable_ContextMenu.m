@@ -30,13 +30,22 @@ switch menuEntry.Tag
     case 'materialsTableContextShowSelected'
 
     case 'materialsTableContextRename'
-
+        obj.mibModel.materialsActions('Rename material');
     case 'materialsTableContextSetColor'
 
     case 'materialsTableContextQuant'
 
     case 'materialsTableContextUnlink'
-
+        if strcmp(menuEntry.Checked, 'off')
+            % unlink Materials and AddTo columns
+            obj.mibModel.I{obj.mibModel.id}.unlinkMaterials = true;
+            menuEntry.Checked = 'on';
+        else
+            % link Materials and AddTo columns
+            obj.mibModel.I{obj.mibModel.id}.unlinkMaterials = false;
+            menuEntry.Checked = 'off';
+        end
+        obj.restrictMaterial_Callback();
 end
 
 end

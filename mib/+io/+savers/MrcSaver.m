@@ -5,7 +5,7 @@ classdef MrcSaver < io.savers.BaseSaver
     % Handles two format variants (both write the same MRC file; the second
     % is an alias used in the SaverFactory registry for volume export):
     %   'MRC format for IMOD (*.mrc)'  — standard MRC file for IMOD
-    %   'Volume for IMOD (*.mrc)'      — alias, same output format
+    %   'MRC Volume for IMOD (*.mrc)'      — alias, same output format
     %
     % Both image and label/mask volumes can be saved.  The layer type is
     % controlled by options.layerType (default 'image').
@@ -56,9 +56,9 @@ classdef MrcSaver < io.savers.BaseSaver
     %
     %   @code
     %   %% 2. Save segmentation labels volume for IMOD
-    %   saver = io.SaverFactory.create('Volume for IMOD (*.mrc)');
+    %   saver = io.SaverFactory.create('MRC Volume for IMOD (*.mrc)');
     %
-    %   opts.Format      = 'Volume for IMOD (*.mrc)';
+    %   opts.Format      = 'MRC Volume for IMOD (*.mrc)';
     %   opts.showWaitbar = false;
     %   opts.silent      = true;
     %   opts.overwrite   = true;
@@ -95,7 +95,7 @@ classdef MrcSaver < io.savers.BaseSaver
             % Return format strings handled by MrcSaver.
             formats = { ...
                 'MRC format for IMOD (*.mrc)'; ...
-                'Volume for IMOD (*.mrc)' };
+                'MRC Volume for IMOD (*.mrc)' };
         end
 
         function fnOut = save(obj, data, metadata, filename, options)

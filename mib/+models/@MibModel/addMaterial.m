@@ -6,9 +6,10 @@ function addMaterial(obj, BatchOptIn)
 % name, verifies that the model type can accommodate one more material, then
 % appends the new entry to the list.
 %
-% For models with 65535 or 4294967295 materials: scans all time-points to
-% find the highest occupied material index, checks that the model is not
-% full, then asks MibDataset to register the next unused index.
+% For models with 65535 or 4294967295 materials: uses
+% obj.labels.materialsCount to determine the next available index, checks
+% that the model is not full, then asks MibDataset to register the new
+% index.
 %
 % In all cases the model is created automatically when it does not yet
 % exist.  After a successful addition, UpdateGuiWidgets and ShowImage
@@ -19,8 +20,8 @@ function addMaterial(obj, BatchOptIn)
 %   structure with default options via "SyncBatch" event
 % @li .MaterialName - char, name of the new material (used for types 63
 %   and 255; for larger types the value is overridden with the next unused
-%   index string)
-% @li .showWaitbar - logical, show or not the waitbar
+%   index string) [@em default 'NewMaterial']
+% @li .showWaitbar - logical, show or not the waitbar [@em default false]
 % @li .id -> [@em optional], dataset index from 1 to 9, default = obj.id
 %
 % Return values:
@@ -46,7 +47,7 @@ BatchOpt.MaterialName  = 'NewMaterial';
 BatchOpt.showWaitbar   = false;
 BatchOpt.id            = obj.id;
 
-BatchOpt.mibBatchSectionName = 'Ribbon -> Segmentation';
+BatchOpt.mibBatchSectionName = 'Panel -> Segmentation';
 BatchOpt.mibBatchActionName  = 'Add material';
 BatchOpt.mibBatchTooltip.MaterialName = ...
     '[Models with 63 or 255 materials] Name of a new material to add (no spaces). For larger model types the index is assigned automatically.';
@@ -106,13 +107,20 @@ if nargin < 2
     end
 end
 
-%% Capacity check for small models
-if modelType < 256
-    list   = obj.I{BatchOpt.id}.labels.materialNames;
-    if isempty(list); list = cell(0); end
-    number = numel(list);
+%% Waitbar
+wb = [];
+if BatchOpt.showWaitbar
+    wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+        'Message', 'Adding material, please wait...', ...
+        'Title', 'Add material', 'Indeterminate', 'on');
+end
 
-    if modelType < number + 1
+%% Delegate to MibDataset (scanning, capacity check, metadata update)
+[result, newMaterialIndex] = obj.I{BatchOpt.id}.addMaterial(BatchOpt.MaterialName, [], wb);
+
+if ~result
+    if BatchOpt.showWaitbar; delete(wb); end
+    if modelType < 256
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
         dlgOpt.Header      = sprintf('The current model type supports only %d materials!', modelType);
@@ -120,58 +128,24 @@ if modelType < 256
         utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
             {'Please convert the model to a larger type and try again (Ribbon -> Models -> Type).'}, ...
             'Wrong model type', dlgOpt);
-        notify(obj, 'StopProtocol');
-        return;
-    end
-end
-
-%%
-if BatchOpt.showWaitbar
-    wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
-        'Message', 'Adding material, please wait...', ...
-        'Title', 'Add material', 'Indeterminate', 'on');
-end
-
-%% For large models: scan all time-points to find the next unused index
-newMaterialIndex = [];
-if modelType >= 256
-    % Ensure a model exists before scanning
-    if ~obj.I{BatchOpt.id}.modelExist
-        obj.I{BatchOpt.id}.createModel(modelType);
-    end
-
-    maxVal    = 0;
-    options.blockModeSwitch = false;
-    numT      = obj.I{BatchOpt.id}.image.time;
-    for t = 1:numT
-        M = obj.I{BatchOpt.id}.getData3D('labels', t, 4, 0, options);
-        if ~isempty(M) && ~isempty(M{1})
-            maxVal = max(maxVal, double(max(M{1}(:))));
-        end
-        if BatchOpt.showWaitbar
-            wb.Value = t / numT * 0.9;
-        end
-    end
-
-    if maxVal >= modelType
-        if BatchOpt.showWaitbar; delete(wb); end
+    else
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
         dlgOpt.Header      = 'The model is full!';
         dlgOpt.HeaderLines = 1;
         utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
-            {sprintf('The maximum material index (%d) equals the model capacity.', maxVal)}, ...
+            {'The maximum material index equals the model capacity.'}, ...
             'Model is full', dlgOpt);
-        notify(obj, 'StopProtocol');
-        return;
     end
-
-    newMaterialIndex      = maxVal + 1;
-    BatchOpt.MaterialName = num2str(newMaterialIndex);
+    notify(obj, 'StopProtocol');
+    return;
 end
 
-%% Delegate to MibDataset
-obj.I{BatchOpt.id}.addMaterial(BatchOpt.MaterialName, newMaterialIndex);
+% Update BatchOpt.MaterialName for large models so SyncBatch records the
+% actual assigned index
+if modelType >= 256 && ~isempty(newMaterialIndex)
+    BatchOpt.MaterialName = num2str(newMaterialIndex);
+end
 
 if BatchOpt.showWaitbar; wb.Value = 1; end
 

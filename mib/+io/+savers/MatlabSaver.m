@@ -267,10 +267,13 @@ classdef MatlabSaver < io.savers.BaseSaver
 
             wb = [];
             if options.showWaitbar
-                wb = obj.createProgressDialog('Saving model', 'Saving 2D model sequence...', false);
+                wb = obj.createProgressDialog('Saving model', 'Saving 2D model sequence...', true);
             end
 
             for z = 1:nZ
+                if ~isempty(wb) && wb.CancelRequested
+                    delete(wb); return;
+                end
                 vars          = sharedVars;
                 vars.(labVar) = squeeze(data(:,:,z,1,1));
                 save(sliceNames{z}, '-struct', 'vars', '-mat', '-v7.3');
@@ -314,9 +317,39 @@ classdef MatlabSaver < io.savers.BaseSaver
             %
             % options.Saving3DPolicy controls whether the output is a
             % single 3-D .mibCat file or a 2-D sequence.
+            % options.FilenamePolicy controls filename generation for 2-D sequences.
+            % When both are absent and silent=false a dialog is shown (mirrors MIB2).
             fnOut = [];
+
+            % Capture before defaults: FilenamePolicy is only present in
+            % batch/scripted mode; absent in simple GUI mode → show dialog.
+            % (Mirrors TiffSaver's callerSetFilename pattern.  We cannot
+            % use Saving3DPolicy because MibLabels.save always pre-sets it.)
+            callerSetPolicy = isfield(options, 'FilenamePolicy');
+
+            if ~isfield(options,'silent');         options.silent         = false; end
             if ~isfield(options,'Saving3DPolicy'); options.Saving3DPolicy = '3D stack'; end
-            if ~isfield(options,'FilenamePolicy');  options.FilenamePolicy  = 'Use sequential filename'; end
+            if ~isfield(options,'FilenamePolicy'); options.FilenamePolicy = 'Use sequential filename'; end
+
+            % --- Show options dialog when not in silent/batch mode ---
+            if ~options.silent && ~callerSetPolicy
+                parentFig = [];
+                if isfield(options,'ParentFigure') && ~isempty(options.ParentFigure)
+                    parentFig = options.ParentFigure;
+                end
+                mibPathLocal = '';
+                if isfield(options,'mibPath'); mibPathLocal = options.mibPath; end
+
+                prompts = {'Saving policy:'; 'Filename policy (2D sequence only):'};
+                defAns  = {{'3D stack', '2D sequence', 1}; ...
+                           {'Use sequential filename', 'Use existing name', 1}};
+                dlgOpt.mibPath = mibPathLocal;
+                answer = utils.dlgs.inputUniversalDlg(parentFig, prompts, defAns, ...
+                    'mibCat saving options', dlgOpt);
+                if isempty(answer); return; end
+                options.Saving3DPolicy = answer{1};
+                options.FilenamePolicy  = answer{2};
+            end
 
             matNames = obj.getMaterialNames(metadata);
             % Prepend Exterior if not present
@@ -326,38 +359,44 @@ classdef MatlabSaver < io.savers.BaseSaver
                 classNames = matNames(:);
             end
 
-            % Build shared catOptions struct used in all slice saves
-            catOptions.dimOrder            = 'yxczt';
-            catOptions.modelType           = obj.getModelType(metadata);
-            catOptions.modelMaterialColors = obj.getMaterialColors(metadata);
-            catOptions.modelMaterialNames  = classNames;
+            % Build shared modelOptions struct saved to file as 'options'
+            % (must match the field name MIB2 and the MIB3 loader expect)
+            modelOptions.dimOrder            = 'yxczt';
+            modelOptions.modelType           = obj.getModelType(metadata);
+            modelOptions.modelMaterialColors = obj.getMaterialColors(metadata);
+            modelOptions.modelMaterialNames  = classNames;
 
             if strcmp(options.Saving3DPolicy, '3D stack')
                 % Save full 3-D volume as a single .mibCat file.
-                % Use save('-struct') to avoid eval() and dynamic variable names.
-                % The loaded file contains: imgOut (categorical), imgVariable, catOptions.
+                % The loaded file contains: imgOut (categorical), imgVariable, options.
                 vars.imgOut      = categorical(squeeze(data(:,:,:,1,1)), ...
                     0:numel(classNames)-1, classNames);
                 vars.imgVariable = 'imgOut';
-                vars.catOptions  = catOptions;
+                vars.options     = modelOptions;
                 save(filename, '-struct', 'vars', '-mat', '-v7.3');
                 fnOut = filename;
             else
                 % 2-D sequence — one .mibCat per Z-slice
-                [pathStr, baseName, ext] = obj.splitFilename(filename);
-                if isempty(ext); ext = '.mibCat'; end
+                % Use splitFilename only for path/stem; always force the
+                % correct mixed-case extension (.mibCat) because
+                % splitFilename lowercases all extensions.
+                [pathStr, baseName, ~] = obj.splitFilename(filename);
+                ext = '.mibCat';
                 nZ = size(data,3);
                 sliceNames = obj.buildSliceNames(baseName, pathStr, nZ, ext, options, metadata);
 
                 wb = [];
                 if options.showWaitbar
-                    wb = obj.createProgressDialog('Saving model', 'Saving categorical sequence...', false);
+                    wb = obj.createProgressDialog('Saving model', 'Saving categorical sequence...', true);
                 end
                 for z = 1:nZ
+                    if ~isempty(wb) && wb.CancelRequested
+                        delete(wb); return;
+                    end
                     vars.imgOut      = categorical(squeeze(data(:,:,z,1,1)), ...
                         0:numel(classNames)-1, classNames);
                     vars.imgVariable = 'imgOut';
-                    vars.catOptions  = catOptions;
+                    vars.options     = modelOptions;
                     save(sliceNames{z}, '-struct', 'vars', '-mat', '-v7.3');
                     if ~isempty(wb); wb.Value = z/nZ; end
                 end

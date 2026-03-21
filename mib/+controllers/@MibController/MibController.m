@@ -117,7 +117,11 @@ classdef MibController < handle
         
         startController(obj, controllerName, varargin) % start a child controller using provided name
 
+        updateFrameNumber(obj, BatchOptIn)             % change the currently displayed time frame in the active image document (batch-aware wrapper)
+
         updateGuiWidgets(obj, updatePanels)            % update user interface widgets in obj.mibView.gui based on the properties of the opened dataset
+
+        updateSliceNumber(obj, BatchOptIn)             % change the currently displayed slice number in the active image document (batch-aware wrapper)
 
         updateInterpolationMode(obj, options)        % Function to set the state of the interpolation button in the Selection ribbon
 

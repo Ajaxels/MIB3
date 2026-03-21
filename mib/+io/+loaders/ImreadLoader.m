@@ -420,6 +420,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % use io.BaseImageLoader.handleDimensionMismatches of the parent class
             imginfo = obj.handleDimensionMismatches(files, imginfo);
 
+            % Set number of entries (required by MibDataset.loadModel)
+            imginfo{"numEntries"} = noFiles;
+
             % Generate slice names from filenames
             % use io.BaseImageLoader.generateSliceNames of the parent class
             imginfo = obj.generateSliceNames(files, imginfo);

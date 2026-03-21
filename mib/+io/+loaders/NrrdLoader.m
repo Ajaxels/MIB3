@@ -228,6 +228,9 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
                 end
             end
 
+            % Set number of entries (required by MibDataset.loadModel)
+            imginfo{"numEntries"} = noFiles;
+
             % Generate slice names
             imginfo = obj.generateSliceNames(files, imginfo);
 

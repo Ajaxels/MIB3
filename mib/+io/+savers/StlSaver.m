@@ -3,7 +3,7 @@ classdef StlSaver < io.savers.BaseSaver
     % Saver for binary STL (Stereolithography) isosurface mesh output.
     %
     % Handles one format:
-    %   'Isosurface as binary STL (*.stl)' — one binary STL file per
+    %   'STL isosurface as binary (*.stl)' — one binary STL file per
     %       material, e.g. 'Labels_stack_Nucleus.stl', 'Labels_stack_ER.stl'
     %
     % This saver is labels-only.  It extracts a triangular isosurface mesh
@@ -14,8 +14,8 @@ classdef StlSaver < io.savers.BaseSaver
     % The result is a set of STL files suitable for visualisation in Blender,
     % Paraview, or 3-D printing pipelines.
     %
-    % The saver delegates mesh generation to the legacy helper mibRenderModel(),
-    % which is ported from MIB2.
+    % The saver delegates mesh generation to utils.isosurfaceMibRendering(),
+    % which is ported and refactored from MIB2's mibRenderModel.
     %
     % DATA DIMENSIONS
     %   Input  data : [H, W, D, C, T]  (MIB3 native order)
@@ -40,16 +40,13 @@ classdef StlSaver < io.savers.BaseSaver
     %   options.MaterialIndex   — [] = all materials (default)
     %                             scalar = index of a single material to export
     %
-    % TODO: port mibRenderModel from
-    %   MIB2_RENAMED_FOR_MIB3/Tools/mibRenderModel.m
-    %   to mib/+utils/mibRenderModel.m
     %
     % USAGE EXAMPLES
     %   @code
     %   %% 1. Export all materials as STL for Blender / 3-D printing
-    %   saver = io.SaverFactory.create('Isosurface as binary STL (*.stl)');
+    %   saver = io.SaverFactory.create('STL isosurface as binary (*.stl)');
     %
-    %   opts.Format         = 'Isosurface as binary STL (*.stl)';
+    %   opts.Format         = 'STL isosurface as binary (*.stl)';
     %   opts.showWaitbar    = false;
     %   opts.silent         = true;
     %   opts.overwrite      = true;
@@ -84,7 +81,7 @@ classdef StlSaver < io.savers.BaseSaver
     %   @code
     %   %% 3. Via MibModel batch
     %   BatchOpt.LayerType       = {'labels'};
-    %   BatchOpt.Format          = {'Isosurface as binary STL (*.stl)'};
+    %   BatchOpt.Format          = {'STL isosurface as binary (*.stl)'};
     %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
     %   BatchOpt.DestinationDirectory  = '/output/stl';
     %   BatchOpt.FilenamePolicy  = {'Use existing name'};
@@ -114,7 +111,7 @@ classdef StlSaver < io.savers.BaseSaver
         function formats = getSupportedFormats(~)
             % function formats = getSupportedFormats(~)
             % Return format strings handled by StlSaver.
-            formats = {'Isosurface as binary STL (*.stl)'};
+            formats = {'STL isosurface as binary (*.stl)'};
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
@@ -167,7 +164,6 @@ classdef StlSaver < io.savers.BaseSaver
             if ~isfield(options, 'MaterialIndex'); options.MaterialIndex = [];    end
             if ~isfield(options, 'smooth');        options.smooth       = 5;      end
             if ~isfield(options, 'maxFaces');      options.maxFaces     = 300000; end
-            if ~isfield(options, 'slice');         options.slice        = 0;      end
 
             % Warn if caller has incorrectly specified an image layer
             if ~strcmpi(options.layerType, 'labels') && ~strcmpi(options.layerType, 'mask')
@@ -186,11 +182,27 @@ classdef StlSaver < io.savers.BaseSaver
             % --- default reduce: 500 if image width > 500, else 0 ---
             nW = size(data, 2);
             if ~isfield(options, 'reduce')
-                if nW > 500
-                    options.reduce = 500;
-                else
-                    options.reduce = 0;
-                end
+                options.reduce = 500 * (nW > 500);
+            end
+
+            % --- interactive dialog (skipped in silent/batch mode) ---
+            if ~options.silent
+                dlgOpt.mibPath = obj.mibPath;
+                dlgOpt.windowHeight = 190;
+                prompts = { ...
+                    'Reduce volume to width (px) [0 = no reduction]:'; ...
+                    'Smoothing kernel width (px) [0 = no smoothing]:'; ...
+                    'Max faces per mesh [0 = no limit]:'};
+                defAns = { ...
+                    num2str(options.reduce); ...
+                    num2str(options.smooth); ...
+                    num2str(options.maxFaces)};
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                    'Isosurface parameters', dlgOpt);
+                if isempty(answer); return; end
+                options.reduce   = str2double(answer{1});
+                options.smooth   = str2double(answer{2});
+                options.maxFaces = str2double(answer{3});
             end
 
             % Squeeze to [H, W, D]
@@ -231,11 +243,11 @@ classdef StlSaver < io.savers.BaseSaver
                 materialIndices = options.MaterialIndex(:)';
             end
 
-            % --- mesh saving options struct ---
-            savingOptions.reduce   = options.reduce;
-            savingOptions.smooth   = options.smooth;
-            savingOptions.maxFaces = options.maxFaces;
-            savingOptions.slice    = options.slice;
+            % --- mesh generation options ---
+            meshOpts.reduce        = options.reduce;
+            meshOpts.smooth        = options.smooth;
+            meshOpts.maxFaces      = options.maxFaces;
+            meshOpts.showRendering = ~options.silent;
 
             % --- waitbar ---
             wb = [];
@@ -264,26 +276,12 @@ classdef StlSaver < io.savers.BaseSaver
                     safeName = regexprep(matName, '[^a-zA-Z0-9_\-]', '_');
                     stlFile  = sprintf('%s_%s%s', fnBase, safeName, ext);
 
-                    % --- call legacy mibRenderModel to get isosurface ---
-                    % mibRenderModel(model, selMaterial, pixSize, boundingBox,
-                    %                materialColors, NaN, savingOptions)
-                    % Returns: fv struct with .faces and .vertices
-                    %
-                    % TODO: port mibRenderModel from
-                    %   MIB2_RENAMED_FOR_MIB3/Tools/mibRenderModel.m
-                    %   to mib/+utils/mibRenderModel.m
-                    try
-                        fv = utils.mibRenderModel(model_hwd, matIdx, pixSize, ...
-                            boundingBox, materialColors, NaN, savingOptions);
-                    catch ME
-                        error('StlSaver:missingHelper', ...
-                            ['mibRenderModel() is not yet available.\n' ...
-                             'Please port it from:\n' ...
-                             '  MIB2_RENAMED_FOR_MIB3/Tools/mibRenderModel.m\n' ...
-                             'to:\n' ...
-                             '  mib/+utils/mibRenderModel.m\n\n' ...
-                             'Original error: %s'], ME.message);
-                    end
+                    % --- generate isosurface mesh (+ optional rendering) ---
+                    meshOpts.matColor      = matColor;
+                    meshOpts.initFigure    = (k == 1);
+                    meshOpts.finalizeFigure = (k == numel(materialIndices));
+                    fv = utils.isosurfaceMibRendering(model_hwd, matIdx, pixSize, ...
+                        boundingBox, meshOpts);
 
                     % Skip empty surfaces
                     if isempty(fv) || isempty(fv.faces) || isempty(fv.vertices)
@@ -292,8 +290,9 @@ classdef StlSaver < io.savers.BaseSaver
                         continue;
                     end
 
-                    % Write binary STL; colour is stored as uint8 RGB [0..255]
-                    stlwrite(stlFile, fv, 'FaceColor', matColor * 255);
+                    % Write binary STL (MATLAB R2019b+ requires triangulation object)
+                    TR = triangulation(fv.faces, fv.vertices);
+                    stlwrite(TR, stlFile);
 
                     allFn{end+1} = stlFile; %#ok<AGROW>
                     fprintf('StlSaver:  material ''%s'' → %s\n', matName, stlFile);

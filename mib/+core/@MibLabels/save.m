@@ -25,11 +25,11 @@ function fnOut = save(obj, filename, options)
 %   'Hierarchical Data Format (*.h5)'     — HDF5
 %   'Hierarchical Data Format with XML header (*.xml)' — HDF5 + XML
 %   'NRRD for 3D Slicer (*.nrrd)'         — NRRD (3D Slicer)
-%   'Volume for IMOD (*.mrc)'             — IMOD MRC volume
+%   'MRC Volume for IMOD (*.mrc)'             — IMOD MRC volume
 %   'Contours for IMOD (*.mod)'           — IMOD model contours
 %   'PNG format (*.png)'                  — PNG 2D sequence
 %   'TIF format (*.tif)'                  — TIFF (stack or sequence)
-%   'Isosurface as binary STL (*.stl)'    — STL mesh per material
+%   'STL isosurface as binary (*.stl)'    — STL mesh per material
 %
 % NOTE ON pixSize:
 %   Like MibImage, MibLabels does not store pixel size.

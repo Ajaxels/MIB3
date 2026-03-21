@@ -1,5 +1,5 @@
-function [par, img_info, dim_xyczt, materialNames] = getAmiraMeshHeader(filename)
-% function [par, img_info, dim_xyczt, materialNames] = getAmiraMeshHeader(filename)
+function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMeshHeader(filename)
+% function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMeshHeader(filename)
 % Get header of Amira Mesh file
 %
 % Parameters:
@@ -11,7 +11,8 @@ function [par, img_info, dim_xyczt, materialNames] = getAmiraMeshHeader(filename
 %   .Value -> parameter value
 % img_info: -> MATLAB dictionary (configureDictionary("string","cell")); access values with {} indexing
 % dim_xyczt: -> dimensions of the dataset
-% materialNames: -> detected material names
+% materialNames: -> detected material names (cell array, Exterior excluded)
+% materialColors: -> detected material colors [Nx3] RGB (0..1), Exterior excluded
 
 % Updates
 % 09.01.2018, IB added extraction of embedded containers in the amiramesh headers
@@ -21,6 +22,7 @@ par = [];
 img_info = configureDictionary("string","cell");  % string keys, cell-wrapped values (MIB3 standard)
 dim_xyczt = [];
 materialNames = {};
+materialColors = [];
 
 if nargin < 1
     [filename, pathname] = mib_uigetfile( ...
@@ -201,7 +203,7 @@ for p=1:numel(par)
         fieldName = strrep(fieldName,'-','_');
         img_info{string(fieldName)} = par(p).Value;
 
-        % get material names
+        % get material names and colors
         if strcmp(par(p).Name, 'Materials')
             matName = par(p).Value{1};
             pos1 = strfind(matName, '{');
@@ -209,6 +211,14 @@ for p=1:numel(par)
                 matName = matName(1:pos1-2);
                 if ~strcmp(matName, 'Exterior')
                     materialNames = [materialNames; {matName}];
+                    % Extract Color field: "Color R G B [A]"
+                    colorTok = regexp(par(p).Value{1}, 'Color\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)', 'tokens', 'once');
+                    if ~isempty(colorTok)
+                        rgb = [str2double(colorTok{1}), str2double(colorTok{2}), str2double(colorTok{3})];
+                    else
+                        rgb = rand(1, 3);
+                    end
+                    materialColors = [materialColors; rgb]; %#ok<AGROW>
                 end
             else
                 break;

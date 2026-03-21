@@ -68,7 +68,6 @@ classdef MibModel < handle
         disableSegmentation = 0;
         % when 1, segmentation tool callbacks return early (pan still works);
         % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
-
     end
 
     events
@@ -97,6 +96,14 @@ classdef MibModel < handle
 
         addMaterial(obj, BatchOptIn)        % add a material to the current model; wrapper around core.MibDataset.addMaterial
 
+        loadModel(obj, model, BatchOptIn)   % load a segmentation model from file or import from workspace array; delegates to core.MibDataset.loadModel
+
+        renameMaterial(obj, BatchOptIn)     % rename one or all materials of the current model; wrapper around core.MibLabels.renameMaterial
+
+        removeMaterial(obj, BatchOptIn)     % remove one or more materials from the current model; wrapper around core.MibDataset.removeMaterial
+
+        status = materialsActions(obj, action, BatchOptIn)     % collection of actions related to materials of the model (rename, add, insert, swap, reorder, remove)
+
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
 
         createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
@@ -122,6 +129,8 @@ classdef MibModel < handle
         initializePreferences(obj)            % initialize and update MIB preferences from a file
 
         fnOut = saveImage(obj, layerType, filename, BatchOptIn)        % Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
+
+        fnOut = saveLabels(obj, filename, BatchOptIn)        % Save the segmentation model (labels layer); thin wrapper around saveImage('labels', ...).
 
         setAxesLimits(obj, axesX, axesY, id)        % set axes limits for the currently shown or id dataset
         

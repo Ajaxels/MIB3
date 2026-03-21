@@ -126,13 +126,16 @@ if modelType < 256
         else
             obj.labels.materialNames = modelMaterialNames;
         end
+        obj.labels.materialsCount = numel(modelMaterialNames);
     else
         obj.labels.materialNames = {};
+        obj.labels.materialsCount = 0;
     end
     obj.selectedMaterial = 2;
     obj.selectedAddToMaterial = 2;
 else
     obj.labels.materialNames = {'1'; '2'};
+    obj.labels.materialsCount = 0;   % no pixel data yet
     obj.selectedMaterial = 3;
     obj.selectedAddToMaterial = 3;
 end

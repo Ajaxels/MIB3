@@ -28,8 +28,7 @@ switch hWidget.Value
     case false % do not restrict selection to material
         hWidget.FontColor = obj.handles.favoriteTool.FontColor;
         
-        userData = obj.handles.materialsTable.UserData;
-        if isfield(userData, 'unlink') && ~userData.unlink
+        if ~dataset.unlinkMaterials
             dataset.selectedAddToMaterial = dataset.selectedMaterial;
         end
 end
