@@ -88,12 +88,12 @@ getDataOptions.blockModeSwitch = obj.I{BatchOpt.id}.blockModeSwitch;
 
 setDataOptions.id = BatchOpt.id;
 if strcmp(BatchOpt.DatasetType{1} ,'2D, Slice')
-    %obj.mibDoBackup('selection', 0, setDataOptions);
+    obj.backup(BatchOpt.Layer{1}, 0, setDataOptions);
     img = zeros([h, w], 'uint8');
     obj.I{obj.id}.setData2D(img, BatchOpt.Layer{1}, [], [], [], setDataOptions);
-else 
-    if strcmp(BatchOpt.DatasetType{1} ,'3D, Stack') 
-        %obj.mibDoBackup('selection', 1, setDataOptions);
+else
+    if strcmp(BatchOpt.DatasetType{1} ,'3D, Stack')
+        obj.backup(BatchOpt.Layer{1}, 1, setDataOptions);
         t1 = obj.I{BatchOpt.id}.slices{5}(1);
         t2 = obj.I{BatchOpt.id}.slices{5}(2);
     else

@@ -473,7 +473,7 @@ switch BatchOpt.Mode{1}
         
         % count user's points
         obj.preferences.Users.Tiers.numberOfLoadedDatasets = obj.preferences.Users.Tiers.numberOfLoadedDatasets+1;
-        %notify(obj, 'updateUserScore');     % update score using default obj.preferences.Users.singleToolScores increase
+        notify(obj, 'UpdateUserScore');     % update score using default obj.preferences.Users.singleToolScores increase
     case 'Insert into open dataset'
         %% Insert into open dataset -------------
         virtualMode = obj.I{BatchOpt.id}.datasetType(1) == 'V';

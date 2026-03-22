@@ -95,7 +95,7 @@ mib/
   - `lines3D` — `Lines3D` instance (skeletons)
 - **`MibImage`** — stores image data as a cell array `data{1}` with dimensions `[height, width, depth, colors, time]`. Dataset types: `'Standard'` (in memory), `'Virtual'` (loaded on demand), `'BigData'`.
 - **`MibVirtualImage`** — virtual/lazy loading variant of MibImage (supports Zarr via `getDataZarr.m`).
-- **`MibUndo`** — undo history manager.
+- **`MibBackup`** — undo history manager.
 - **`ChildView`** — base class for child dialog views.
 
 ### I/O Layer (`+io/`)

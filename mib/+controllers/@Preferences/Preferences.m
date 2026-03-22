@@ -383,7 +383,7 @@ classdef Preferences < handle
                     obj.mibModel.I{obj.mibModel.id}.mask.data = [];
                     obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
                 end
-                obj.mibModel.Undo.clearContents();  % delete backup history
+                obj.mibModel.Backup.clearContents();  % delete backup history
             end
             obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
             
@@ -425,14 +425,14 @@ classdef Preferences < handle
             if status == 0; return; end
             
             if obj.preferences.Undo.Enable
-                obj.mibModel.Undo.enableSwitch = true;
+                obj.mibModel.Backup.enableSwitch = true;
             else
-                obj.mibModel.Undo.clearContents();
-                obj.mibModel.Undo.enableSwitch = false;
+                obj.mibModel.Backup.clearContents();
+                obj.mibModel.Backup.enableSwitch = false;
             end
             
-            if obj.preferences.Undo.Max3dUndoHistory ~= obj.mibModel.Undo.max3d_steps || obj.preferences.Undo.MaxUndoHistory ~= obj.mibModel.Undo.max_steps
-                obj.mibModel.Undo.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
+            if obj.preferences.Undo.Max3dUndoHistory ~= obj.mibModel.Backup.max3d_steps || obj.preferences.Undo.MaxUndoHistory ~= obj.mibModel.Backup.max_steps
+                obj.mibModel.Backup.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
             end
             
             if obj.preferences.System.EnableSelection
@@ -453,7 +453,7 @@ classdef Preferences < handle
                     obj.mibModel.I{obj.mibModel.id}.mask.data{1} = NaN;
                     obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
                 end
-                obj.mibModel.Undo.clearContents();  % delete backup history
+                obj.mibModel.Backup.clearContents();  % delete backup history
             end
             obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
             

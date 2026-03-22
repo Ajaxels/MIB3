@@ -650,7 +650,7 @@ elseif strcmp(operation, 'select')
                                 uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, t, NaN, dataset.getSelectedMaterialIndex('AddTo'), getDataOptions)));
 
                             % done in mibSegmentationSAM2
-                            obj.mibModel.mibDoBackup(destinationLayer, 1, getDataOptions);
+                            obj.mibModel.backup(destinationLayer, 1, getDataOptions);
 
                         case 'add, +next material'
                             if dataset.modelType < 256 || ~strcmp(destinationLayer, 'model')
@@ -678,7 +678,7 @@ elseif strcmp(operation, 'select')
 
                             backupOptions.LinkedVariable.modelMaterialNames = 'obj.mibModel.I{obj.mibModel.id}.labels.materialNames';
                             backupOptions.LinkedData.modelMaterialNames = dataset.labels.materialNames;
-                            obj.mibModel.mibDoBackup(destinationLayer, 0, backupOptions);
+                            obj.mibModel.backup(destinationLayer, 0, backupOptions);
 
                         otherwise
                             obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = [];

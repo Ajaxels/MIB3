@@ -61,8 +61,8 @@ classdef MibModel < handle
         % define whether or not display the mask layer (used in obj.mibDataset.getRGBimage)
         showModel = false;
         % define whether or not display the model layer (used in obj.mibDataset.getRGBimage)
-        Undo
-        % variable for Undo history
+        Backup
+        % variable for Undo history, instance of core.MibBackup
         useBioFormats = false;
         % use bio-formats reader
         disableSegmentation = 0;
@@ -127,6 +127,12 @@ classdef MibModel < handle
         initialize(obj)        % initialize the MibModel class
 
         initializePreferences(obj)            % initialize and update MIB preferences from a file
+
+        backup(obj, type, switch3d, getDataOptions)        % store the dataset for Undo
+
+        undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
+
+        moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType, BatchOptIn)        % move datasets between the layers (selection, mask, model)
 
         fnOut = saveImage(obj, layerType, filename, BatchOptIn)        % Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
 

@@ -72,7 +72,7 @@ classdef MibController < handle
 
         listner1_Standard(obj, model, evnt)    % listener type 1 callbacks
 
-        listner2_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure
+        listner_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure, generic listener for small event callbacks
 
         listener_newDataset(obj, src, evtData) % Update obj.I (MibDataset) by resizing it to fit on the screen executed upon catch of MibModel->"NewDataset" event
 

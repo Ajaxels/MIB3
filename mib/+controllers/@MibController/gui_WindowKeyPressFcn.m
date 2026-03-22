@@ -287,9 +287,10 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             delete(fittext);
 
         case 'Undo/Redo last action'                    % default 'Ctrl + z'
-            if obj.mibModel.Undo.enableSwitch == 0; return; end
-            if obj.mibModel.Undo.prevUndoIndex == 0; return; end
-            error("MISSING IMPLEMENTATION: obj.mibDoUndo();")
+            if obj.mibModel.Backup.enableSwitch == 0; return; end
+            if obj.mibModel.Backup.prevUndoIndex == 0; return; end
+            obj.mibModel.undo();
+            obj.showImage();
 
         case 'Find material under cursor'               % default 'Ctrl + f'
             error("MISSING IMPLEMENTATION: obj.mibFindMaterialUnderCursor();")

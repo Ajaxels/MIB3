@@ -9,8 +9,10 @@ end
 % Construct the app
 appOptions.Tag = "mibView";
 % generate the title
-appOptions.Title = sprintf('MIB %s', obj.controller.mibVersion);
-if isdeployed; appOptions.Title = sprintf('%s deployed version', appOptions.Title); end
+titleString = sprintf('MIB %s', obj.controller.mibVersion);
+if isdeployed; titleString = sprintf('%s deployed version', titleString); end
+titleString = [titleString '    level ' obj.mibModel.preferences.Users.tierLevelRanks{min(obj.mibModel.preferences.Users.Tiers.tierLevel, numel(obj.mibModel.preferences.Users.tierLevelRanks))}];
+appOptions.Title =  titleString;
 
 obj.gui = matlab.ui.container.internal.AppContainer(appOptions); 
 

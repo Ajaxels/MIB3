@@ -1,4 +1,4 @@
-classdef MibUndo < handle
+classdef MibBackup < handle
     % This class is responsible to store the previous versions of the dataset, to be used for Undo (Ctrl+Z) command
     
     % The usage of this class is implemented via Ctrl+Z short cut. It allows to return one step back to the previous 
@@ -53,7 +53,7 @@ classdef MibUndo < handle
     end
     
     methods
-        function obj = MibUndo(max_steps, max3d_steps)
+        function obj = MibBackup(max_steps, max3d_steps)
             % function obj = mibImageUndo(max_steps, max3d_steps)
             % mibImageUndo class constructor
             %

@@ -168,9 +168,16 @@ if obj.mibModel.preferences.Users.Tiers.collectedPoints > ...
     showCongratulations = true;
 end
 
+% show milestone dialog upon next level reach
 if showCongratulations
     pause(0.5);
     utils.dlgs.showMilestoneDialog(obj.mibController.view.gui, obj.mibModel.preferences.Users, ...
         'milestoneReached', struct('mibPath', obj.mibModel.mibPath));
+    
+    % update MIB title
+    titleString = sprintf('MIB %s', obj.mibController.mibVersion);
+    if isdeployed; titleString = sprintf('%s deployed version', titleString); end
+    titleString = [titleString '    level ' obj.mibModel.preferences.Users.tierLevelRanks{min(obj.mibModel.preferences.Users.Tiers.tierLevel, numel(obj.mibModel.preferences.Users.tierLevelRanks))}];
+    obj.view.gui.Title =  titleString;
 
 end

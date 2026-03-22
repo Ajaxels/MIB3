@@ -97,6 +97,10 @@ classdef MibImage < matlab.mixin.Copyable
 
         viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
 
+        meta = getMeta(obj)        % collect properties into a metadata dictionary (inverse of initialize)
+
+        setMeta(obj, meta)        % apply a metadata dictionary to properties (inverse of getMeta)
+
         [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)        % Return image stretching coefficients to be used for imadjust function to stretch contrast of the image
 
         initialize(obj, data, meta, type);  % initialize the class using default or provided values
