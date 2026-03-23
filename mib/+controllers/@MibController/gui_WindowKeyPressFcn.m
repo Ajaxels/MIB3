@@ -154,7 +154,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 ["Add to selection to material", "Subtract from material", "Replace material with current selection"], ...
                 ["add",                          "remove",                  "replace"]);
             operation = opMap(KeyShortcuts.Action{ActionId});
-            selectionTo = 'model';
+            selectionTo = 'labels';
             if dataset.getSelectedMaterialIndex('AddTo') == -1; selectionTo = 'mask'; end
             obj.mibModel.moveLayers('selection', selectionTo, layerScope, operation);
 
@@ -356,15 +356,15 @@ else    % all other possible shortcuts
                 if dataset.labels.maxMaterials ~= 128
                     if strcmp(modifier, 'alt')
                         if dataset.selectedMaterial == 1
-                            %obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace');
+                            obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace');
                         elseif dataset.labels.exists
-                            %obj.mibModel.moveLayers('labels', 'selection', '3D, Stack', 'replace');
+                            obj.mibModel.moveLayers('labels', 'selection', '3D, Stack', 'replace');
                         end
                     else
                         if dataset.selectedMaterial == 1
-                            %obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'replace');
+                            obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'replace');
                         elseif dataset.labels.exists
-                            %obj.mibModel.moveLayers('labels', 'selection', '2D, Slice', 'replace');
+                            obj.mibModel.moveLayers('labels', 'selection', '2D, Slice', 'replace');
                         end
                     end
                 end

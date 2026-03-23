@@ -152,6 +152,72 @@ When porting methods, apply these substitutions consistently.
 | `notify(obj, 'showModel', eventdata)` | `obj.showModel = true` then `notify(obj, 'ShowImage')` |
 | `notify(obj, 'updateGuiWidgets')` | `notify(obj, 'UpdateGuiWidgets')` |
 
+### MibModel data accessors (new in MIB3)
+
+MIB3 has thin wrapper methods on `MibModel` that delegate to `obj.I{id}`:
+
+```matlab
+% Reading data — all extract options.id (default obj.id) and delegate
+dataset = obj.mibModel.getData2D(type, slice_no, orient, col_channel, options)
+dataset = obj.mibModel.getData3D(type, time, orient, col_channel, options)
+dataset = obj.mibModel.getData4D(type, orient, col_channel, options)
+
+% Writing data — same pattern
+obj.mibModel.setData2D(dataset, type, slice_no, orient, col_channel, options)
+obj.mibModel.setData3D(dataset, type, time, orient, col_channel, options)
+obj.mibModel.setData4D(dataset, type, orient, col_channel, options)
+```
+
+**Important**: use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
+`NaN` is not handled for `slice_no` by `MibDataset` and will return empty data.
+
+### Backup (undo)
+
+| MIB2 | MIB3 |
+|------|------|
+| `obj.mibDoBackup('selection', 0, options)` | `obj.mibModel.backup('selection', 0, options)` |
+| `obj.mibDoBackup('selection', 1, options)` | `obj.mibModel.backup('selection', 1, options)` |
+
+`backup(type, switch3d, getDataOptions)` — `switch3d=0` for 2D (current slice), `1` for 3D/4D stack.
+`getDataOptions.blockModeSwitch = true` to back up only the visible portion.
+
+### Clearing layers
+
+`MibDataset.clearLayer` is the correct entry point. It accepts string mode shortcuts:
+
+```matlab
+% Clear selection layer — scope controlled by second argument
+obj.mibModel.I{id}.clearLayer('selection');          % full dataset (default)
+obj.mibModel.I{id}.clearLayer('selection', '2D');    % current slice only
+obj.mibModel.I{id}.clearLayer('selection', '3D');    % current z-stack, current t
+obj.mibModel.I{id}.clearLayer('selection', '4D');    % all z and t
+obj.mibModel.I{id}.clearLayer('mask');               % full mask
+obj.mibModel.I{id}.clearLayer('everything');         % sel+mask+labels (MibLabels63 only)
+
+% With block mode (visible area only):
+obj.mibModel.I{id}.clearLayer('selection', '2D', [], [], [], true);
+```
+
+**Architecture note**: `MibDataset.clearLayer` resolves '2D'/'3D'/'4D' string modes to numeric
+coordinates using `obj.slices` and `obj.orientation` (available on `MibDataset`), then passes
+only numeric ranges to the lower-level `MibImage.clearLayer`. Do **not** call `MibImage.clearLayer`
+directly with string modes — it only accepts numeric coordinate ranges.
+
+For '2D': resolves to `z=[currentZ,currentZ]`, `t=[currentT,currentT]`.
+For '3D': resolves to `t=[currentT,currentT]`, z/y/x = full range.
+For '4D': z/t/y/x = full range.
+
+MIB3 has `MibModel.clearSelection(sel_switch, BatchOptIn)` — batch-aware wrapper:
+```matlab
+obj.mibModel.clearSelection('2D, Slice');   % with backup, fires ShowImage
+obj.mibModel.clearSelection('3D, Stack');
+obj.mibModel.clearSelection('4D, Dataset');
+```
+
+At the document level, `MibImageDocument.clearSelection()` reads `obj.UIFigure.CurrentModifier`
+and maps: Alt+Shift → `'4D, Dataset'`; Shift or Alt alone → `'3D, Stack'`; none → `'2D, Slice'`.
+Always check `obj.I{id}.enableSelection == 0` and return early if disabled.
+
 ### Data structures
 
 | MIB2 (`mibImage`) | MIB3 (`MibDataset`) |
@@ -211,6 +277,52 @@ dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
 | `global mibPath` | `obj.mibPath` (property of `MibModel`) or pass `options.mibPath` to dialogs |
 | `errordlg(sprintf('...'))` | `ErrorDlgOpt.*`  + `notify(obj,'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt))` |
 | `BatchOpt.mibBatchSectionName = 'Menu -> ...'` | `'Ribbon -> ...'` |
+| `obj.mibView.gui.CurrentModifier` | `obj.UIFigure.CurrentModifier` (in MibImageDocument) |
+| `obj.mibModel.I{id}.enableSelection == 0` | same — always check before selection operations |
+
+### Image display coordinate systems
+
+MIB3 stretches the X axis of the displayed image for anisotropic voxels. The stretch factor
+`coef_z` is computed from pixel sizes and depends on orientation:
+
+| Orientation | Plane | coef_z formula |
+|-------------|-------|----------------|
+| 3 (default) | XY    | `pixSize.x / pixSize.y` |
+| 1           | ZX    | `pixSize.z / pixSize.x` |
+| 2           | ZY    | `pixSize.z / pixSize.y` |
+
+`imageHandle.XData = [1, shownW * coef_z]` — CData columns are stretched in data/axes space.
+`imageHandle.YData = [1, shownH]` — Y is never stretched.
+
+**Data coords → CData pixel index** (needed for brush/segmentation tools):
+```matlab
+XData = obj.imageHandle.XData;
+YData = obj.imageHandle.YData;
+xc = round((x - XData(1)) / (XData(end) - XData(1)) * (shownW - 1)) + 1;
+xc = max(1, min(shownW, xc));
+yc = round((y - YData(1)) / (YData(end) - YData(1)) * (shownH - 1)) + 1;
+yc = max(1, min(shownH, yc));
+```
+
+**Brush cursor**: use `updateBrushCursorOffset()` which derives `coef_z` from `imageHandle.XData`
+and draws an ellipse (X radius × coef_z, Y radius × 1) to match the actual painted area.
+Store `brushPrevXY` in **data/axes coords** so cursor delta is correct; convert to CData indices
+only for rasterizing into the selection matrix.
+
+### Orientation switching (keyboard shortcuts Alt+1/2/3)
+
+When changing orientation, use `'resize'` mode (not `'fitToScreen'`) to preserve magnification:
+```matlab
+% in MibQuickAccessBar.orientationChange:
+savedMag = dataset.magFactor;
+dataset.transpose(newOrient);   % changes dims but not magFactor
+% compute new centered axes at savedMag for new orientation dims
+dataset.setAxesLimits([newW/2 - halfW, newW/2 + halfW], [newH/2 - halfH, newH/2 + halfH]);
+dataset.magFactor = savedMag;
+Options.mode = 'resize';        % keeps stored magFactor
+notify(obj.mibModel, 'UpdateDatasetAxes', core.ToggleEventData(Options));
+```
+`fitToScreen` always resets zoom; `resize` keeps `magFactor` and recomputes FOV from stored limits.
 
 ## Documentation Requirements
 

@@ -121,12 +121,12 @@ if options.roiId >= 0
         options.x = [bb(1), bb(2)];
         options.y = [bb(3), bb(4)];
 
-        dataset{roiId2} = obj.getData(type, orient, col_channel, options);
+        dataset{roiId2} = obj.(datasetVariable).getData(type, orient, col_channel, options);
         if ~isnan(options.fillBg)
             mask = mask(bb(3):bb(4), bb(1):bb(2));
             
-            mask = repmat(mask,[1, 1, numel(col_channel)]);
-            for layerId = 1:size(dataset{roiId2}, max([ndims(dataset{roiId2}) 3]))
+            mask = repmat(mask,[1, 1, size(dataset{roiId2},3)]);
+            for layerId = 1:size(dataset{roiId2}, max([ndims(dataset{roiId2}) 4]))
                 if strcmp(type, 'image')
                     slice = dataset{roiId2}(:,:,:,layerId);
                     slice(~mask) = options.fillBg;

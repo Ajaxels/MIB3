@@ -146,7 +146,6 @@ else  % set a part of the dataset
             currentDataset = bitset(currentDataset, 7, 0);    % clear mask
             currentDataset = bitor(currentDataset, dataset*64);
             obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
-            obj.maskExist = 1;
         case 'selection'
             currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
             currentDataset = bitset(currentDataset, 8, 0);    % clear selection

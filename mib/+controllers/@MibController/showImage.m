@@ -52,6 +52,8 @@ else
     selectedSet = setOfDatasetsIndex;
 end
 datasetId = obj.mibModel.Sets.selectedDataset(selectedSet)+(obj.mibModel.Sets.datasetsInSet*(selectedSet-1));
+dataset = obj.mibModel.I{datasetId};
+imViewAxes = obj.cImageDoc{selectedSet}.handles.imViewAxes;
 
 %% Generate RGB image to display
 rgbOptions.blockModeSwitch = true;
@@ -67,12 +69,12 @@ else
 end
 
 %% Calculate aspect ratio coefficient based on orientation
-if obj.mibModel.I{datasetId}.orientation == 3 % xy
-    coef_z = obj.mibModel.I{datasetId}.image.pixSize.x / (obj.mibModel.I{datasetId}.image.pixSize.y);
-elseif obj.mibModel.I{datasetId}.orientation == 1 % zx
-    coef_z = obj.mibModel.I{datasetId}.image.pixSize.z / obj.mibModel.I{datasetId}.image.pixSize.x;
-elseif obj.mibModel.I{datasetId}.orientation == 2 % zy
-    coef_z = obj.mibModel.I{datasetId}.image.pixSize.z / obj.mibModel.I{datasetId}.image.pixSize.y;
+if dataset.orientation == 3 % xy
+    coef_z = dataset.image.pixSize.x / (dataset.image.pixSize.y);
+elseif dataset.orientation == 1 % zx
+    coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
+elseif dataset.orientation == 2 % zy
+    coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
 end
 
 %% Update image in axes
@@ -85,7 +87,7 @@ if isempty(obj.cImageDoc{selectedSet}.imageHandle.CData)
         image(obj.mibModel.Ishown, ...
               'XData', [1 imgWidth * coef_z], ...
               'YData', [1 imgHeight], ...
-              'parent', obj.cImageDoc{selectedSet}.handles.imViewAxes);
+              'parent', imViewAxes);
     
     % Configure image object
     obj.cImageDoc{selectedSet}.imageHandle.HitTest = 'off';
@@ -100,48 +102,48 @@ else
     obj.cImageDoc{selectedSet}.imageHandle.YData = [1 imgHeight];
     
     % Remove old measurements and ROI overlays
-    lineObj = findobj(obj.cImageDoc{selectedSet}.handles.imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
+    lineObj = findobj(imViewAxes, 'tag', 'measurements', '-or', 'tag', 'roi');
     if ~isempty(lineObj); delete(lineObj); end
 end
 
 
 %% Configure axes properties
 % moved to controllers.MibActiveDataset.update_fromModel
-% obj.cImageDoc{selectedSet}.handles.imViewAxes.Box = 'on';
-% obj.cImageDoc{selectedSet}.handles.imViewAxes.XTick = [];
-% obj.cImageDoc{selectedSet}.handles.imViewAxes.YTick = [];
-% obj.cImageDoc{selectedSet}.handles.imViewAxes.Interruptible = 'off';
-% obj.cImageDoc{selectedSet}.handles.imViewAxes.BusyAction = 'queue';
-% obj.cImageDoc{selectedSet}.handles.imViewAxes.HandleVisibility = 'callback';
+% imViewAxes.Box = 'on';
+% imViewAxes.XTick = [];
+% imViewAxes.YTick = [];
+% imViewAxes.Interruptible = 'off';
+% imViewAxes.BusyAction = 'queue';
+% imViewAxes.HandleVisibility = 'callback';
 
 %% Set axes limits and zoom
 if ~isempty(sImgIn) && resizeToMagnification == 1
     % Custom image provided - fit to screen
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'manual';
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'manual';
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatio = [1 coef_z 1];
+    imViewAxes.DataAspectRatioMode = 'manual';
+    imViewAxes.PlotBoxAspectRatioMode = 'manual';
+    imViewAxes.DataAspectRatio = [1 coef_z 1];
 
     imPanPos = obj.cImageDoc{selectedSet}.handles.mainGridLayout.OuterPosition;
     imPanPos(3) = imPanPos(3) - obj.cImageDoc{selectedSet}.handles.mainGridLayout.RowHeight{2};
     imPanPos(4) = imPanPos(4) - obj.cImageDoc{selectedSet}.handles.mainGridLayout.ColumnWidth{1};
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [1 size(obj.mibModel.Ishown, 1)];
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
+    imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
+    imViewAxes.YLim = [1 size(obj.mibModel.Ishown, 1)];
+    imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
 else
     % Standard dataset display
-    magFactor = obj.mibModel.I{datasetId}.magFactor;
-    [axesX, axesY] = obj.mibModel.I{datasetId}.getAxesLimits();
+    magFactor = dataset.magFactor;
+    [axesX, axesY] = dataset.getAxesLimits();
 
     % Keep axes in stretch-to-fill mode (auto aspect ratio)
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.DataAspectRatioMode = 'auto';
-    obj.cImageDoc{selectedSet}.handles.imViewAxes.PlotBoxAspectRatioMode = 'auto';
+    imViewAxes.DataAspectRatioMode = 'auto';
+    imViewAxes.PlotBoxAspectRatioMode = 'auto';
 
     if ~resizeToMagnification 
         % Full-resolution mode: axesX/axesY are in data-pixel coords.
         % XLim must be in physical (XData) coords: multiply X by coef_z.
         % Y has no aspect-ratio correction.
-        obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
-        obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = [axesX(1)*coef_z/magFactor axesX(2)*coef_z/magFactor];
+        imViewAxes.YLim = [axesY(1)/magFactor axesY(2)/magFactor];
+        imViewAxes.XLim = [axesX(1)*coef_z/magFactor axesX(2)*coef_z/magFactor];
     else
         % Standard mode: XData = [1, imgWidth*coef_z], so XLim must be in
         % the same physical space: axesX (data pixels) * coef_z / magFactor.
@@ -171,8 +173,8 @@ else
             yl(2) = size(obj.mibModel.Ishown, 1);
         end
 
-        obj.cImageDoc{selectedSet}.handles.imViewAxes.YLim = yl;
-        obj.cImageDoc{selectedSet}.handles.imViewAxes.XLim = xl;
+        imViewAxes.YLim = yl;
+        imViewAxes.XLim = xl;
     end
     
     % update the zoom value only when image of the currently selected set is updated
@@ -182,7 +184,7 @@ else
 
     %% Display center spot marker if enabled
     if obj.view.handles.qab.target.Value
-        axesHandle = obj.cImageDoc{selectedSet}.handles.imViewAxes;
+        axesHandle = imViewAxes;
         centerX = mean(axesHandle.XLim);
         centerY = mean(axesHandle.YLim);
         
@@ -206,11 +208,11 @@ else
     
     %% Add ROIs overlay
     if obj.cQuickAccessBar.handles.roiMode.Value
-        ds = obj.mibModel.I{datasetId};
+        ds = dataset;
         if ds.hROI.getNumberOfROI(ds.orientation) > 0
             showLabel = obj.cRoi.handles.roiShowLabel.Value;
             convertFcn = @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown');
-            ds.hROI.addROIsToPlot(obj.cImageDoc{selectedSet}.handles.imViewAxes, ...
+            ds.hROI.addROIsToPlot(imViewAxes, ...
                 'shown', ds.orientation, convertFcn, ds.selectedROI, showLabel);
         end
     end
@@ -218,8 +220,8 @@ else
     % %% Add measurements/annotations overlay
     % if obj.mibModel.mibShowAnnotationsCheck
     %     obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
-    %     obj.mibModel.I{datasetId}.hMeasure.addMeasurementsToPlot(...
-    %         obj.mibModel, 'shown', obj.cImageDoc{selectedSet}.handles.imViewAxes);
+    %     dataset.hMeasure.addMeasurementsToPlot(...
+    %         obj.mibModel, 'shown', imViewAxes);
     % end
 
     %% Update display

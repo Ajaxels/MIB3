@@ -116,10 +116,10 @@ if options.roiId >= 0
         options.x = [bb(1), bb(2)];
         options.y = [bb(3), bb(4)];
         
-        dataset{roiId2} = obj.getData(type, orient, col_channel, options);
+        dataset{roiId2} = obj.(datasetVariable).getData(type, orient, col_channel, options);
         if ~isnan(options.fillBg)
             mask = mask(max([1 bb(3)]):bb(4), max([1 bb(1)]):bb(2));
-            mask = repmat(mask,[1, 1, numel(col_channel)]);
+            mask = repmat(mask,[1, 1, size(dataset{roiId2}, 3)]);
             for timePnt = 1:size(dataset{roiId2}, ndims(dataset{roiId2}))
                 for layerId = 1:size(dataset{roiId2}, ndims(dataset{roiId2})-1)
                     if strcmp(type, 'image')

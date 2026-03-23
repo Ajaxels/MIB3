@@ -7,9 +7,9 @@ function moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType,
 %
 % Parameters:
 % SourceLayer: name of a layer to get data, 'selection', 'mask', or
-%   'model', can be empty []
+%   'labels', can be empty []
 % DestinationLayer: name of a layer to set data, 'selection', 'mask', or
-%   'model', can be empty []
+%   'labels', can be empty []
 % DatasetType: a string, can be empty []
 % @li '2D, Slice' - 2D mode, move only the shown slice [y,x]
 % @li '3D, Stack' - 3D mode, move 3D dataset [y,x,z]
@@ -59,9 +59,9 @@ end
 %% Declaration of the BatchOpt structure
 BatchOpt = struct();
 if ~isempty(SourceLayer); BatchOpt.SourceLayer = {SourceLayer}; else; BatchOpt.SourceLayer = {'selection'}; end
-BatchOpt.SourceLayer{2} = {'selection', 'mask', 'model'};
+BatchOpt.SourceLayer{2} = {'selection', 'mask', 'labels'};
 if ~isempty(DestinationLayer); BatchOpt.DestinationLayer = {DestinationLayer}; else; BatchOpt.DestinationLayer = {'selection'}; end
-BatchOpt.DestinationLayer{2} = {'selection', 'mask', 'model'};
+BatchOpt.DestinationLayer{2} = {'selection', 'mask', 'labels'};
 if ~isempty(DatasetType); BatchOpt.DatasetType = {DatasetType}; else; BatchOpt.DatasetType = {'2D, Slice'}; end
 BatchOpt.DatasetType{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
 if ~isempty(ActionType); BatchOpt.ActionType = {ActionType}; else; BatchOpt.ActionType = {'add'}; end
@@ -71,7 +71,11 @@ BatchOpt.SelectedAddToMaterial = num2str(obj.I{obj.id}.getSelectedMaterialIndex(
 BatchOpt.restrictSelectionToMaterial = logical(obj.I{obj.id}.restrictSelectionToMaterial);
 BatchOpt.restrictSelectionToMask = logical(obj.I{obj.id}.restrictSelectionToMask);
 BatchOpt.blockModeSwitch = logical(obj.I{obj.id}.blockModeSwitch);
-BatchOpt.roiId = num2str(obj.I{obj.id}.selectedROI);
+if obj.I{obj.id}.roiShow
+    BatchOpt.roiId = num2str(obj.I{obj.id}.selectedROI);
+else
+    BatchOpt.roiId = '-1';
+end
 BatchOpt.fillBg = num2str(NaN);
 BatchOpt.id = obj.id;
 BatchOpt.showWaitbar = true;
@@ -90,7 +94,7 @@ switch BatchOpt.SourceLayer{1}
             case 'selection';   BatchOpt.mibBatchActionName = 'Mask to Selection';
         end
     case 'selection'
-        BatchOpt.mibBatchSectionName = 'Ribbon -> Selection';
+        BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
         switch BatchOpt.DestinationLayer{1}
             case 'mask';        BatchOpt.mibBatchActionName = 'Selection to Mask';
             case 'labels';      BatchOpt.mibBatchActionName = 'Selection to Model';
@@ -194,11 +198,11 @@ t1 = tic;
 
 contSelIndex = BatchOptLocal.SelectedMaterial;
 contAddIndex = BatchOptLocal.SelectedAddToMaterial;
-if strcmp(BatchOptLocal.SourceLayer{1}, 'model') && contSelIndex < 0; BatchOptLocal.SourceLayer{1} = 'mask'; end
-if strcmp(BatchOptLocal.SourceLayer{1}, 'model') && contAddIndex < 0; BatchOptLocal.DestinationLayer{1} = 'mask'; end
+if strcmp(BatchOptLocal.SourceLayer{1}, 'labels') && contSelIndex < 0; BatchOptLocal.SourceLayer{1} = 'mask'; end
+if strcmp(BatchOptLocal.SourceLayer{1}, 'labels') && contAddIndex < 0; BatchOptLocal.DestinationLayer{1} = 'mask'; end
 
 if strcmp(BatchOptLocal.SourceLayer{1}, 'mask') && ...
-        strcmp(BatchOptLocal.DestinationLayer{1}, 'model') && contAddIndex < 0; return; end
+        strcmp(BatchOptLocal.DestinationLayer{1}, 'labels') && contAddIndex < 0; return; end
 
 % fix situation when using Alt+A shortcut over the Mask entry when Fix
 % selection to material is enabled
@@ -207,7 +211,7 @@ if BatchOptLocal.restrictSelectionToMaterial == 1 && strcmp(BatchOptLocal.Source
 end
 
 % check for existence of the model layer
-if obj.I{BatchOptLocal.id}.modelExist == 0 && strcmp(BatchOptLocal.DestinationLayer{1}, 'model')
+if obj.I{BatchOptLocal.id}.modelExist == 0 && strcmp(BatchOptLocal.DestinationLayer{1}, 'labels')
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     dlgOpt.Header = 'The model is missing!';
@@ -238,7 +242,8 @@ else
 end
 if showWaitbar
     wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
-        'Message', [BatchOptLocal.ActionType{1} ' ' BatchOptLocal.SourceLayer{1} ' to/with ' BatchOptLocal.DestinationLayer{1} ' for ' BatchOptLocal.DatasetType{1} ' layer(s)...'], ...
+        'Message', sprintf('%s: %s to/with %s layer(s) for %s\nPlease wait...', ...
+                BatchOptLocal.ActionType{1}, BatchOptLocal.SourceLayer{1}, BatchOptLocal.DestinationLayer{1}, BatchOptLocal.DatasetType{1}), ...
         'Title', 'Moving layers...', 'Indeterminate', 'on');
 end
 
@@ -291,6 +296,7 @@ if strcmp(BatchOptLocal.DatasetType{1},'4D, Dataset') || ...
                     obj.I{BatchOptLocal.id}.moveModelToSelectionDataset(BatchOptLocal.ActionType{1}, helperOpt);
                 case 'mask'
                     obj.I{BatchOptLocal.id}.moveModelToMaskDataset(BatchOptLocal.ActionType{1}, helperOpt);
+                    
                 case 'labels'
                     return;
             end
@@ -338,8 +344,8 @@ else
     end
 
     % filter results by selected material
-    if BatchOptLocal.restrictSelectionToMaterial && ~strcmp(BatchOptLocal.SourceLayer{1}, 'model') && ...
-            obj.I{BatchOptLocal.id}.modelExist && ~strcmp(BatchOptLocal.DestinationLayer{1}, 'model')
+    if BatchOptLocal.restrictSelectionToMaterial && ~strcmp(BatchOptLocal.SourceLayer{1}, 'labels') && ...
+            obj.I{BatchOptLocal.id}.modelExist && ~strcmp(BatchOptLocal.DestinationLayer{1}, 'labels')
         if switch3d
             sel_img = obj.I{BatchOptLocal.id}.getData4D('labels', orient, contSelIndex, BatchOptLocal);
         else
@@ -503,7 +509,7 @@ else
 end
 
 % switch on Model layer
-if strcmp(BatchOptLocal.DestinationLayer{1}, 'model')
+if strcmp(BatchOptLocal.DestinationLayer{1}, 'labels')
     obj.I{BatchOptLocal.id}.modelExist = 1;
     obj.showModel = true;
 end

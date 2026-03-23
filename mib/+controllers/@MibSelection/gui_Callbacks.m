@@ -101,13 +101,13 @@ switch mode
         obj.mibModel.onFlyImageStretch = obj.handles.onFly.Value;
         notify(obj.mibModel, 'ShowImage');
     case 'modelTransparency' % define model transparency
-        obj.mibModel.preferences.Colors.ModelTransparency = obj.handles.modelTransparency.Value;
+        obj.mibModel.preferences.Colors.ModelTransparency = hData.Value;
         notify(obj.mibModel, 'ShowImage');
     case 'maskTransparency' % define mask transparency
-        obj.mibModel.preferences.Colors.MaskTransparency = obj.handles.maskTransparency.Value;
+        obj.mibModel.preferences.Colors.MaskTransparency = hData.Value;
         notify(obj.mibModel, 'ShowImage');
     case 'selectionTransparency' % define selection transparency
-        obj.mibModel.preferences.Colors.SelectionTransparency = obj.handles.selectionTransparency.Value;
+        obj.mibModel.preferences.Colors.SelectionTransparency = hData.Value;
         notify(obj.mibModel, 'ShowImage');
     case 'help'
         % help

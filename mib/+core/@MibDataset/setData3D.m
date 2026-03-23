@@ -77,6 +77,14 @@ if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end
 
+% define datasetVariable for obj.(datasetVariable).getData
+datasetVariable = type;
+if obj.labels.maxMaterials == 63 
+    if ismember(type, {'selection', 'mask', 'everything'}) 
+        datasetVariable = 'labels';
+    end
+end
+
 if ~isfield(options, 'blockModeSwitch')
     if isfield(options, 'x') || isfield(options, 'y') || isfield(options, 'z')
         options.blockModeSwitch = 0; 
@@ -139,23 +147,23 @@ if options.roiId >= 0
         
         if ~isnan(options.fillBg)
             if iscell(dataset)
-                result = obj.setData(type, dataset{roiId2}, orient, col_channel, options);
+                result = obj.(datasetVariable).setData(dataset{roiId2}, type, orient, col_channel, options);
             else
-                result = obj.setData(type, dataset, orient, col_channel, options);
+                result = obj.(datasetVariable).setData(dataset, type, orient, col_channel, options);
             end
         else
             % crop mask to its bounding box
             mask = mask(bb(3):bb(4), bb(1):bb(2));
             if iscell(dataset)
-                mask = repmat(mask, [1, 1, numel(col_channel), size(dataset{roiId2}, max([ndims(dataset{roiId2}) 3]))]);
-                sliceTemp = obj.I{options.id}.getData(type, orient, col_channel, options);     % get current dataset
+                mask = repmat(mask, [1, 1, size(dataset{roiId2}, 3), size(dataset{roiId2}, max([ndims(dataset{roiId2}) 4]))]);
+                sliceTemp = obj.I{options.id}.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
                 sliceTemp(mask==1) = dataset{roiId2}(mask==1);
             else
-                mask = repmat(mask, [1, 1, numel(col_channel), size(dataset, max([ndims(dataset) 3]))]);
-                sliceTemp = obj.I{options.id}.getData(type, orient, col_channel, options);     % get current dataset
+                mask = repmat(mask, [1, 1, size(dataset, 3), size(dataset, max([ndims(dataset) 3]))]);
+                sliceTemp = obj.I{options.id}.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
                 sliceTemp(mask==1) = dataset(mask==1);
             end
-            result = obj.setData(type, sliceTemp, orient, col_channel, options);
+            result = obj.(datasetVariable).setData(sliceTemp, type, orient, col_channel, options);
         end
         roiId2 = roiId2 + 1;
     end
@@ -174,9 +182,9 @@ else
             return;
         end
         if iscell(dataset)
-            result = obj.(type).setData(dataset{1}, type, orient, col_channel, options);
+            result = obj.(datasetVariable).setData(dataset{1}, type, orient, col_channel, options);
         else
-            result = obj.(type).setData(dataset, type, orient, col_channel, options);
+            result = obj.(datasetVariable).setData(dataset, type, orient, col_channel, options);
         end
     end
 end

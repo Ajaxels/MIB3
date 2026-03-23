@@ -122,10 +122,10 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cRibbon.up
 secIndex = secIndex + 1;
 actionId = 1;
 obj.Sections(secIndex).Name = 'Ribbon -> Model';
-% obj.Sections(secIndex).Actions(actionId).Name = 'Model to Mask';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''model'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Model to Selection';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''model'', ''selection'', [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Model to Mask';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''labels'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Model to Selection';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''labels'', ''selection'', [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Convert type';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.convertModel([], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'New model';
@@ -145,19 +145,19 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.materialsAction
 % obj.Sections(secIndex).Actions(actionId).Name = 'Materials color swap';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.materialsSwapColors(Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Interpolate material';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImage(''model'', [], Batch);'; actionId = actionId + 1;
+% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImage(''labels'', [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Smooth model';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.smoothImage(''model'', Batch);'; actionId = actionId + 1;
+% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.smoothImage(''labels'', Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Get statistics';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibStatisticsController'', [], Batch);'; actionId = actionId + 1;
 
-% secIndex = secIndex + 1;
-% actionId = 1;
-% obj.Sections(secIndex).Name = 'Ribbon -> Mask';
-% obj.Sections(secIndex).Actions(actionId).Name = 'Mask to Model';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''mask'', ''model'', [], [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Mask to Selection';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''mask'', ''selection'', [], [], Batch);'; actionId = actionId + 1;
+secIndex = secIndex + 1;
+actionId = 1;
+obj.Sections(secIndex).Name = 'Ribbon -> Mask';
+obj.Sections(secIndex).Actions(actionId).Name = 'Mask to Model';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''mask'', ''labels'', [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Mask to Selection';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''mask'', ''selection'', [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Clear mask';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.clearMask(Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Load mask';
@@ -185,7 +185,7 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.materialsAction
 % actionId = 1;
 % obj.Sections(secIndex).Name = 'Ribbon -> Selection';
 % obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Model';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''model'', [], [], Batch);'; actionId = actionId + 1;
+% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''labels'', [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Mask';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Interpolate selection';
@@ -299,10 +299,10 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.clearSelection(
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.clearLayer([], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Fill selection';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.fillSelectionOrMask([], ''selection'', Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Model';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''model'', [], [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Mask';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Mask';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''selection'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Model';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''selection'', ''labels'', [], [], Batch);'; actionId = actionId + 1;
 
 % secIndex = secIndex + 1;
 % obj.Sections(secIndex).Name = 'Panel -> Image filters';

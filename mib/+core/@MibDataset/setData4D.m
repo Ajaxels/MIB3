@@ -76,6 +76,14 @@ if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end
 
+% define datasetVariable for obj.(datasetVariable).getData
+datasetVariable = type;
+if obj.labels.maxMaterials == 63 
+    if ismember(type, {'selection', 'mask', 'everything'}) 
+        datasetVariable = 'labels';
+    end
+end
+
 if ~isfield(options, 'blockModeSwitch')
     if isfield(options, 'x') || isfield(options, 'y') || isfield(options, 'z')
         options.blockModeSwitch = 0; 
@@ -128,23 +136,23 @@ if options.roiId >= 0
         options.y = [bb(3), bb(4)];
         
         if ~isnan(options.fillBg)
-            result = obj.setData(type, dataset{roiId2}, orient, col_channel, options);
+            result = obj.(datasetVariable).setData(dataset{roiId2}, type, orient, col_channel, options);
         else
             % crop mask to its bounding box
             mask = mask(max([1 bb(3)]):bb(4), max([1 bb(1)]):bb(2));
-            mask = repmat(mask,[1, 1, size(dataset{roiId2},3), size(dataset{roiId2},4)]);
+            mask = repmat(mask,[1, 1, size(dataset{roiId2}, 3), size(dataset{roiId2}, 4)]);
             
             setTime = options.t(1);
             for timePnt = 1:size(dataset{roiId2}, timeDimIndex)
                 options.t = [setTime+timePnt-1, setTime+timePnt-1];
-                sliceTemp = obj.getData(type, orient, col_channel, options);     % get current dataset
+                sliceTemp = obj.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
                 if typeIsImage
                     datasetTemp = dataset{roiId2}(:,:,:,:,timePnt);
                 else
                     datasetTemp = dataset{roiId2}(:,:,:,timePnt);
                 end
                 sliceTemp(mask==1) = datasetTemp(mask==1);
-                result = obj.setData(type, sliceTemp, orient, col_channel, options);
+                result = obj.(datasetVariable).setData(sliceTemp, type, orient, col_channel, options);
             end
         end
         roiId2 = roiId2 + 1;
@@ -153,9 +161,9 @@ else
     if obj.labels.maxMaterials == 63 && ~strcmp(type, 'image')
         % labels -> contains selection, mask, and labels == everything
         if iscell(dataset)
-            result = oobj.labels.setData(dataset{1}, type, orient, col_channel, options);
+            result = obj.labels.setData(dataset{1}, type, orient, col_channel, options);
         else
-            result = oobj.labels.setData(dataset, type, orient, col_channel, options);
+            result = obj.labels.setData(dataset, type, orient, col_channel, options);
         end
     else
         if obj.labels.maxMaterials ~= 63 && strcmp(type, 'everything')
@@ -164,9 +172,9 @@ else
             return;
         end
         if iscell(dataset)
-            result = oobj.(type).setData(dataset{1}, type, orient, col_channel, options);
+            result = obj.(datasetVariable).setData(dataset{1}, type, orient, col_channel, options);
         else
-            result = oobj.(type).setData(dataset, type, orient, col_channel, options);
+            result = obj.(datasetVariable).setData(dataset, type, orient, col_channel, options);
         end
     end
 end
