@@ -41,10 +41,10 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
     % Read the current selection from the model (block-mode aware)
     getDataOptions.blockModeSwitch = 1;
     getDataOptions.roiId = -1;
-    currSelection = cell2mat(obj.mibModel.getData2D('selection', NaN, NaN, NaN, getDataOptions));
+    currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], NaN, getDataOptions));
 
     % Fill holes in brush stroke if the auto-fill option is enabled
-    if obj.mibController.cSegmentation.handles.autoFill.Value
+    if obj.mibController.cSelection.handles.autoFill.Value
         obj.brushSelection{1}.selection = imfill(obj.brushSelection{1}.selection, 'holes');
     end
 
@@ -66,13 +66,13 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
 
     % Restrict brush stroke to the currently selected material if enabled
     if dataset.restrictSelectionToMaterial
-        currModel = cell2mat(obj.mibModel.getData2D('labels', NaN, NaN, NaN, getDataOptions));
+        currModel = cell2mat(obj.mibModel.getData2D('labels', [], [], NaN, getDataOptions));
         obj.brushSelection{1}.selection(currModel ~= selcontour) = 0;
     end
 
     % Restrict brush stroke to the mask layer if enabled
     if dataset.restrictSelectionToMask
-        mask = cell2mat(obj.mibModel.getData2D('mask', NaN, NaN, NaN, getDataOptions));
+        mask = cell2mat(obj.mibModel.getData2D('mask', [], [], NaN, getDataOptions));
         obj.brushSelection{1}.selection(mask ~= 1) = 0;
     end
 
@@ -80,10 +80,10 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
     if strcmp(brush_switch, 'subtract')
         % Eraser mode: remove brush pixels from the existing selection
         currSelection(obj.brushSelection{1}.selection == 1) = 0;
-        obj.mibModel.setData2D('selection', currSelection, NaN, NaN, NaN, getDataOptions);
+        obj.mibModel.setData2D(currSelection, 'selection', [], [], NaN, getDataOptions);
     else
         % Add mode: OR the brush stroke into the existing selection
-        obj.mibModel.setData2D('selection', uint8(currSelection | obj.brushSelection{1}.selection), NaN, NaN, NaN, getDataOptions);
+        obj.mibModel.setData2D(uint8(currSelection | obj.brushSelection{1}.selection), 'selection', [], [], NaN, getDataOptions);
     end
 
     % Add travelled brush distance to the gamification counter
@@ -129,10 +129,10 @@ else
     hFig.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
 end
 
-% Restore scroll wheel callback (moved from plotImage)
+% Restore scroll wheel callback 
 hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
 
-% Restore mouse motion callback (moved from plotImage)
+% Restore mouse motion callback 
 hFig.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 
 % Re-show the center spot marker if it was hidden during pan

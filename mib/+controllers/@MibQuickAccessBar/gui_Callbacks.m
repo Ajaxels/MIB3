@@ -27,6 +27,7 @@ switch mode
     case 'Make a snapshot'
     case 'Save model to a file'
     case 'Enable the blocked mode to process only visible portion of the dataset'
+         obj.mibModel.I{obj.mibModel.id}.blockModeSwitch = hWidget.Selected;
     case 'Enable the ROI mode'
         % see also obj.mibController.cRoi.gui_Callbacks
         obj.mibModel.I{obj.mibModel.id}.roiShow = hWidget.Selected;

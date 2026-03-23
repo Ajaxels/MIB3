@@ -151,7 +151,7 @@ classdef MibBackup < handle
                         end
                     end
                 end
-                if isempty(data{1}(1)); return; end   % no data to store
+                if isempty(data{1}); return; end   % no data to store
             
                 if ~isfield(options, 'switch3d') 
                     if strcmp(type, 'image')

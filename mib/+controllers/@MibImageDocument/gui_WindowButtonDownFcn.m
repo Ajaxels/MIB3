@@ -327,11 +327,6 @@ elseif strcmp(operation, 'select')
     %x = xy(1,1)*obj.mibView.handles.Img{obj.mibView.handles.Id}.I.magFactor + max([0 floor(obj.mibView.handles.Img{obj.mibView.handles.Id}.I.axesX(1))]);
     %y = xy(1,2)*obj.mibView.handles.Img{obj.mibView.handles.Id}.I.magFactor + max([0 floor(obj.mibView.handles.Img{obj.mibView.handles.Id}.I.axesY(1))]);
 
-    % Normalize some tool naming differences between MIB2 and MIB3
-    if strcmp(tool, 'MagicWand/RegionGrowing')
-        tool = 'MagicWand-RegionGrowing';
-    end
-
     switch tool
         case '3D ball'
             % 3D ball: filled shere in 3d with a center at the clicked point
@@ -370,16 +365,9 @@ elseif strcmp(operation, 'select')
             % the Brush mode
             x = round(xy(1,1));
             y = round(xy(1,2));
-            try
-                hFig.WindowScrollWheelFcn = []; % turn off callback for the mouse wheel during the brush selection
-            catch
-            end
-            try
-                hFig.WindowKeyPressFcn = [];    % turn off callback for the keys during the brush selection
-            catch
-            end
-            return;
-            obj.mibSegmentationBrush(y, x, modifier);
+            hFig.WindowScrollWheelFcn = []; % turn off callback for the mouse wheel during the brush selection
+            hFig.WindowKeyPressFcn = [];    % turn off callback for the keys during the brush selection
+            obj.segmentationBrush(y, x, modifier);
             return;
 
         case 'BW Thresholding'

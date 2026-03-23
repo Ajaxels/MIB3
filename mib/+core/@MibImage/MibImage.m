@@ -85,7 +85,7 @@ classdef MibImage < matlab.mixin.Copyable
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
         
-        clearLayer(obj, layerName, y, x, z, t)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
+        clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
 
         output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
 

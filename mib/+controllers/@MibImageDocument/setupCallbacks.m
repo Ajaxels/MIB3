@@ -60,6 +60,7 @@ obj.UIFigure.WindowButtonMotionFcn = @(~, ~)obj.gui_WinMouseMotionFcn();
 obj.UIFigure.WindowScrollWheelFcn = @(~, eventdata)obj.gui_ScrollWheelFcn(eventdata);
 obj.UIFigure.SizeChangedFcn = @(~, ~)obj.gui_SizeChangedFcn();
 obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+obj.UIFigure.WindowKeyReleaseFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
 obj.UIFigure.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 
 %% Model listeners

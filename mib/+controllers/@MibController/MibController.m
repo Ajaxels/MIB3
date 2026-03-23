@@ -104,6 +104,7 @@ classdef MibController < handle
         initializeLibraries(obj, initList)            % initialize external libraries and Java paths
 
         gui_WindowKeyPressFcn(obj, hWidget, hData)        % Callback for a key press in MIB
+        gui_WindowKeyReleaseFcn(obj, hWidget, hData)       % Callback for a key release in MIB; restores brush radius after Ctrl eraser mode
 
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
 

@@ -50,6 +50,9 @@ else
     hWidget.Value = true;
 end
 
+% Save current magnification before transpose (transpose does not touch magFactor)
+savedMag = dataset.magFactor;
+
 % Transpose the dataset to the requested orientation.
 % transpose() argument:  3 -> 'yx' (XY plane)
 %                        1 -> 'xz' (ZX plane)
@@ -63,8 +66,33 @@ switch hWidget.Description
         dataset.transpose(2);   % -> 'yz'
 end
 
-% Re-fit the view: orientation change alters image dimensions, so fit to screen
-Options.mode = 'fitToScreen';
+% Keep the saved magnification across the orientation change.
+% Compute the new image dimensions and coef_z after transpose, then
+% centre the view on the image at the saved magFactor.
+if dataset.orientation == 3
+    coef_z_new = dataset.image.pixSize.x / dataset.image.pixSize.y;
+    newH = dataset.dim_yxzct(1);
+    newW = dataset.dim_yxzct(2);
+elseif dataset.orientation == 1
+    coef_z_new = dataset.image.pixSize.z / dataset.image.pixSize.x;
+    newH = dataset.dim_yxzct(2);
+    newW = dataset.dim_yxzct(3);
+else  % orientation == 2
+    coef_z_new = dataset.image.pixSize.z / dataset.image.pixSize.y;
+    newH = dataset.dim_yxzct(1);
+    newW = dataset.dim_yxzct(3);
+end
+
+cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+axSize = cImageDoc.handles.imViewAxes.InnerPosition;
+halfW  = axSize(3) * savedMag / (2 * coef_z_new);
+halfH  = axSize(4) * savedMag / 2;
+dataset.setAxesLimits([newW/2 - halfW, newW/2 + halfW], ...
+                      [newH/2 - halfH, newH/2 + halfH]);
+dataset.magFactor = savedMag;
+
+% Use 'resize' mode so listener_updateDatasetAxes keeps the restored magFactor
+Options.mode = 'resize';
 eventdata = core.ToggleEventData(Options);
 notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 

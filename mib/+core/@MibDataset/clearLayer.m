@@ -38,10 +38,34 @@ if nargin < 4; x = []; end
 if nargin < 3; y = '4D'; end
 if nargin < 2; layer = 'selection'; end
 
-% find the currently visible limits
-if blockModeSwitch == 1
+% find the currently visible limits for block mode
+if blockModeSwitch
     x = ceil(obj.axesX);
     y = ceil(obj.axesY);
+end
+
+% Resolve string modes ('2D', '3D', '4D') to numeric coordinate ranges
+% here in MibDataset where obj.slices and obj.orientation are available.
+% Lower-level clearLayer (MibImage, MibLabels) only receives numeric coords.
+if ischar(y)
+    switch y
+        case '2D'
+            % current slice only
+            zCur = obj.slices{obj.orientation}(1);
+            tCur = obj.slices{5}(1);
+            z = [zCur, zCur];
+            t = [tCur, tCur];
+        case '3D'
+            % full z-stack at the current time point
+            tCur = obj.slices{5}(1);
+            t = [tCur, tCur];
+            z = [];     % full z range
+        case '4D'
+            z = [];     % full z and t range
+            t = [];
+    end
+    y = [];     % full y range in all modes
+    x = [];     % full x range in all modes
 end
 
 if isa(obj.labels, 'core.MibLabels63') && ~strcmp(layer, 'image')

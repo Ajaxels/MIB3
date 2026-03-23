@@ -159,7 +159,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.mibModel.moveLayers('selection', selectionTo, layerScope, operation);
 
         case 'Clear selection'                          % default 'c'/'Shift+c'
-            error('MISSING IMPLEMENTATION: obj.mibSelectionClearBtn_Callback();')
+            cImageDoc.clearSelection();
 
         case {'Fill the holes in the Selection layer', 'Erode the Selection layer', 'Dilate the Selection layer'}
             % default 'f'/'Shift+f', 'z'/'Shift+z', 'x'/'Shift+x'
@@ -370,13 +370,13 @@ else    % all other possible shortcuts
                 end
                 obj.showImage();
             end
-        case 'control'  % increase the radius of the brush for the erase tool
-            %if strcmp(modifier{1}, 'control') && obj.mibView.ctrlPressed == 0
-            % if obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor == 1; return; end
-            % radius = str2double(obj.mibView.handles.mibSegmSpotSizeEdit.String);
-            % obj.mibView.ctrlPressed = max([floor(radius*obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor - radius) 1]);
-            % obj.mibView.handles.mibSegmSpotSizeEdit.String = num2str(radius+obj.mibView.ctrlPressed);
-            % obj.mibView.updateBrushCursor('solid');
-            %end
+        case 'control'  % temporarily enlarge brush radius for eraser mode
+            if controlSw && obj.view.ctrlPressed == 0
+                if obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor == 1; return; end
+                radius = cSegmentation.handles.brushRadius.Value;
+                obj.view.ctrlPressed = max([floor(radius * obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor - radius), 1]);
+                cSegmentation.handles.brushRadius.Value = radius + obj.view.ctrlPressed;
+                cImageDoc.updateBrushCursor([], '-', true);
+            end
     end
 end

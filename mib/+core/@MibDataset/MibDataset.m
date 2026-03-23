@@ -106,43 +106,19 @@ classdef MibDataset < matlab.mixin.Copyable
         % declaration of functions in the external files, keep empty line in between for the doc generator
         [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)        % add a material; scans time-points for large models, checks capacity, updates metadata
 
-        removeMaterial(obj, materialIndices, wb)                % remove materials: remaps/zeros pixel data across time-points, then updates metadata
-
-        insertMaterial(obj, materialIndex, materialName, wb)     % insert a new material at the specified position, shifting pixel values and metadata
-
-        swapMaterials(obj, material1, material2, wb)            % swap two materials in the model: pixel data and metadata
-
-        reorderMaterials(obj, newOrder, wb)                     % reorder materials in the model according to a permutation vector (small models only)
-
-        createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
-
-        result = loadModel(obj, filenames, options)          % load a segmentation model from files or a raw array; orchestrates loader dispatch, dimension validation, and metadata assignment
-
-        initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
-
-        insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
-
         clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
 
-        moveMaskToSelectionDataset(obj, action_type, options)        % move Mask layer to Selection for full dataset (fast path, no ROI/block mode)
-
-        moveMaskToModelDataset(obj, action_type, options)            % move Mask layer to Model for full dataset (fast path, no ROI/block mode)
-
-        moveModelToSelectionDataset(obj, action_type, options)       % move Model material to Selection for full dataset (fast path, no ROI/block mode)
-
-        moveModelToMaskDataset(obj, action_type, options)            % move Model material to Mask for full dataset (fast path, no ROI/block mode)
-
-        moveSelectionToMaskDataset(obj, action_type, options)        % move Selection layer to Mask for full dataset (fast path, no ROI/block mode)
-
-        moveSelectionToModelDataset(obj, action_type, options)       % move Selection layer to Model for full dataset (fast path, no ROI/block mode)
-
         closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
+
+        createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
         [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
 
         slice_no = getCurrentSliceNumber(obj)        % get slice number of the currently shown image
+
+        timePnt = getCurrentTimePoint(obj)        % Get time point of the currently shown image.
 
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
 
@@ -156,9 +132,35 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
 
+        initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
+
+        insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
+
+        insertMaterial(obj, materialIndex, materialName, wb)     % insert a new material at the specified position, shifting pixel values and metadata
+
+        result = loadModel(obj, filenames, options)          % load a segmentation model from files or a raw array; orchestrates loader dispatch, dimension validation, and metadata assignment
+
+        moveMaskToSelectionDataset(obj, action_type, options)        % move Mask layer to Selection for full dataset (fast path, no ROI/block mode)
+
+        moveMaskToModelDataset(obj, action_type, options)            % move Mask layer to Model for full dataset (fast path, no ROI/block mode)
+
+        moveModelToSelectionDataset(obj, action_type, options)       % move Model material to Selection for full dataset (fast path, no ROI/block mode)
+
+        moveModelToMaskDataset(obj, action_type, options)            % move Model material to Mask for full dataset (fast path, no ROI/block mode)
+
+        moveSelectionToMaskDataset(obj, action_type, options)        % move Selection layer to Mask for full dataset (fast path, no ROI/block mode)
+
+        moveSelectionToModelDataset(obj, action_type, options)       % move Selection layer to Model for full dataset (fast path, no ROI/block mode)
+        
         moveView(obj, x, y, orient)        % Center the image view at the provided coordinates: x, y
+
+        removeMaterial(obj, materialIndices, wb)                % remove materials: remaps/zeros pixel data across time-points, then updates metadata
+
+        reorderMaterials(obj, newOrder, wb)                     % reorder materials in the model according to a permutation vector (small models only)
         
         setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
+
+        swapMaterials(obj, material1, material2, wb)            % swap two materials in the model: pixel data and metadata
 
         newMode = switchDatasetMode(obj, newMode, enableSelection, initWithImage)  % Function to switch between loading datasets to different modes, defined in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
 

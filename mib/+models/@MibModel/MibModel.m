@@ -96,51 +96,64 @@ classdef MibModel < handle
 
         addMaterial(obj, BatchOptIn)        % add a material to the current model; wrapper around core.MibDataset.addMaterial
 
-        loadModel(obj, model, BatchOptIn)   % load a segmentation model from file or import from workspace array; delegates to core.MibDataset.loadModel
-
-        renameMaterial(obj, BatchOptIn)     % rename one or all materials of the current model; wrapper around core.MibLabels.renameMaterial
-
-        removeMaterial(obj, BatchOptIn)     % remove one or more materials from the current model; wrapper around core.MibDataset.removeMaterial
-
-        status = materialsActions(obj, action, BatchOptIn)     % collection of actions related to materials of the model (rename, add, insert, swap, reorder, remove)
+        backup(obj, type, switch3d, getDataOptions)        % store the dataset for Undo
 
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
-
-        createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
-
-        [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
+        clearSelection(obj, sel_switch, BatchOptIn)           % clear the Selection layer (2D/3D/4D scope)
 
         [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)        % convert dataset coordinates to image axes (screen) coordinates
 
-        status = datasetsSetsOps(obj, BatchOptIn) % operations with sets of the  model; compatible with the batch mode.
+        [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
 
-        fnOut = save(obj, layerType, filename, BatchOptIn)        % Unified BatchOpt-compatible save: writes 'image', 'mask', or 'labels' layer. Handles directory/filename policies, [F] template expansion, SyncBatch event, and StopProtocol notification. See models.MibModel.save for full documentation and usage examples.
+        createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
+
+        status = datasetsSetsOps(obj, BatchOptIn)        % operations with sets of the model; compatible with the batch mode.
+
+        dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % get a 2D slice from the current dataset; wrapper around core.MibDataset.getData2D
+
+        dataset = getData3D(obj, type, time, orient, col_channel, options)        % get a 3D dataset from the current dataset; wrapper around core.MibDataset.getData3D
+
+        dataset = getData4D(obj, type, orient, col_channel, options)        % get the complete 4D dataset; wrapper around core.MibDataset.getData4D
 
         [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
-        
-        [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)  % generate RGB image from all layers that have to be shown on the screen.
 
         magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
-        
-        loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack
+
+        [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
 
         initialize(obj)        % initialize the MibModel class
 
-        initializePreferences(obj)            % initialize and update MIB preferences from a file
+        initializePreferences(obj)        % initialize and update MIB preferences from a file
 
-        backup(obj, type, switch3d, getDataOptions)        % store the dataset for Undo
+        loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack
 
-        undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
+        loadModel(obj, model, BatchOptIn)        % load a segmentation model from file or import from workspace array; delegates to core.MibDataset.loadModel
+
+        status = materialsActions(obj, action, BatchOptIn)        % collection of actions related to materials of the model (rename, add, insert, swap, reorder, remove)
 
         moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType, BatchOptIn)        % move datasets between the layers (selection, mask, model)
+
+        removeMaterial(obj, BatchOptIn)        % remove one or more materials from the current model; wrapper around core.MibDataset.removeMaterial
+
+        renameMaterial(obj, BatchOptIn)        % rename one or all materials of the current model; wrapper around core.MibLabels.renameMaterial
+
+        fnOut = save(obj, layerType, filename, BatchOptIn)        % Unified BatchOpt-compatible save: writes 'image', 'mask', or 'labels' layer. Handles directory/filename policies, [F] template expansion, SyncBatch event, and StopProtocol notification. See models.MibModel.save for full documentation and usage examples.
 
         fnOut = saveImage(obj, layerType, filename, BatchOptIn)        % Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
 
         fnOut = saveLabels(obj, filename, BatchOptIn)        % Save the segmentation model (labels layer); thin wrapper around saveImage('labels', ...).
 
         setAxesLimits(obj, axesX, axesY, id)        % set axes limits for the currently shown or id dataset
-        
+
+        result = setData2D(obj, dataset, type, slice_no, orient, col_channel, options)        % set a 2D slice in the current dataset; wrapper around core.MibDataset.setData2D
+
+        result = setData3D(obj, dataset, type, time, orient, col_channel, options)        % set a 3D dataset in the current dataset; wrapper around core.MibDataset.setData3D
+
+        result = setData4D(obj, dataset, type, orient, col_channel, options)        % set the complete 4D dataset; wrapper around core.MibDataset.setData4D
+
         setMagFactor(obj, magFactor, id)        % set magnification for the currently shown or id dataset
+
+        undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
 
         function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             % function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)

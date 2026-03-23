@@ -59,13 +59,25 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     switch datasetType
         case 'Standard'
             obj.image = core.MibImage(img, meta);
+            % Build metadata matching the image dimensions for label layers
+            labelsMeta = core.MibImage.initializeImgInfo( ...
+                'pixSize', obj.image.pixSize, ...
+                'Height',  obj.image.height, ...
+                'Width',   obj.image.width,  ...
+                'Depth',   obj.image.depth,  ...
+                'Time',    obj.image.time,   ...
+                'Colors',  1);
+            labelsDims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
             switch modelType
                 case 'imageOnly'
-                    obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
+                    % Allocate a zero-filled MibLabels63 so that selection/mask
+                    % layers are immediately usable (e.g. brush tool) without
+                    % requiring an explicit createModel call first.
+                    obj.labels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
                 case 'labels'
                     obj.labels = core.MibLabels(zeros(size(img), 'uint8'), meta);
                 case 'labels63'
-                    obj.labels = core.MibLabels63(zeros([size(img, 1) size(img, 2)], 'uint8'), meta);
+                    obj.labels = core.MibLabels63(zeros(labelsDims, 'uint8'), labelsMeta);
             end
         case 'Virtual'
             obj.image = core.MibVirtualImage(img, meta);

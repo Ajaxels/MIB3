@@ -91,11 +91,20 @@ classdef MibImageDocument < handle
 
         gui_SizeChangedFcn(obj)        % Callback when figure size changes
 
+        gui_Brush_scrollWheelFcn(obj, eventdata)        % Handle scroll wheel during adaptive superpixel brush mode
+
+        gui_WindowBrushMotionFcn(obj, structElement)        % Draw brush trace during brush tool use
+
         gui_WindowButtonDownFcn(obj)        % Callback for mouse button press in the image view.
 
         gui_WindowButtonUpFcn(obj, brush_switch)        % Callback for release of the mouse button.
+
+        gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)        % Handle key callbacks during brush superpixel mode
         
         gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
+
+        clearSelection(obj)                           % Clear the Selection layer; scope set by modifier keys
+        segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
 
         selectDocument(obj)        % Select this document in the document group
         

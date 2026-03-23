@@ -284,9 +284,11 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cStatus.zo
 % obj.Sections(secIndex).Actions(actionId).Name = 'Display';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibImageAdjController'', [], Batch);'; actionId = actionId + 1;
 
-% secIndex = secIndex + 1;
-% actionId = 1;
-% obj.Sections(secIndex).Name = 'Panel -> Selection and View settings';
+secIndex = secIndex + 1;
+actionId = 1;
+obj.Sections(secIndex).Name = 'Panel -> Selection and View Settings';
+obj.Sections(secIndex).Actions(actionId).Name = 'Clear selection';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.clearSelection([], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Modify parameters';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibSelectionPanelCheckboxes(Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Erode';
