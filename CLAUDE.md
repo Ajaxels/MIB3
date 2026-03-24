@@ -133,6 +133,7 @@ When porting methods, apply these substitutions consistently.
 | `errordlg(msg, title)` | same pattern with `dlgOpt.Icon='puffin_error'` |
 | `questdlg(msg, title, btn1, btn2, default)` | `utils.dlgs.inputQuestDlg(obj.mibGUI, msg, title, btn1, btn2, default)` |
 | `waitbar(v, wb, msg)` / `waitbar(0,'Name',title)` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title,'Indeterminate','on')` then `wb.Value=v` / `delete(wb)` |
+| `PoolWaitbar(n, msg, [], title)` (MIB2 class) | `core.PoolWaitbar(n, msg, obj.mibGUI, title)` — always use `core.PoolWaitbar` for parfor progress |
 | `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, prompts, defAns, title, options)` |
 | `mibSelectModelTypeDlg` | `inputUniversalDlg` with a dropdown `defAns = {{'63 - ...','255 - ...',1}}` |
 
@@ -142,6 +143,37 @@ When porting methods, apply these substitutions consistently.
 - `Header` / `HeaderLines` — bold text above widgets; set `HeaderLines` to match wrapped line count
 - `WindowHeight` — set explicitly when `MsgBoxOnly=true` (auto-calc does not apply)
 - When the warning text is long, split it: put the title in `Header` and the body as an `'<html>...'` prompt
+
+### Parallel progress: core.PoolWaitbar
+
+**Always use `core.PoolWaitbar` whenever a progress dialog is needed inside a `parfor` / `spmd` / `parfeval` loop.**  The class lives at `mib/+core/@PoolWaitbar/PoolWaitbar.m` and wraps a `uiprogressdlg` with a `parallel.pool.DataQueue` so that UI updates from worker threads are safely marshalled back to the main thread.
+
+| Pattern | Code |
+|---------|------|
+| Create (new dialog) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title');` |
+| Create (cancelable) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title', true);` |
+| Reuse existing dialog | `pwb = core.PoolWaitbar(n, 'Message...', existingWb);` |
+| Signal one step (worker-safe) | `pwb.increment();` — the only method safe inside `parfor` |
+| Set step size | `pwb.setIncrement(10);` — call before parfor to reduce overhead |
+| Update message (main thread only) | `pwb.updateText('Phase 2...');` |
+| Check Cancel (main thread only) | `if pwb.getCancelState(); break; end` |
+| Delete (dialog + queue) | `pwb.deletePoolWaitbar();` |
+| Delete (keep dialog open) | `pwb.deletePoolWaitbar(true); wb = pwb.getWaitbarHandle();` |
+
+```matlab
+% Typical parfor pattern
+pwb = core.PoolWaitbar(max_size2, ...
+    sprintf('Eroding %s...', layerName), obj.mibGUI, 'Eroding...');
+pwb.setIncrement(10);   % send() every 10 slices to reduce IPC overhead
+parfor (layer_id = 1:max_size, parforArg)
+    % ... heavy work ...
+    if mod(layer_id, 10) == 0; pwb.increment(); end
+end
+pwb.deletePoolWaitbar();
+```
+
+**Do not** update `uiprogressdlg.Value` directly inside `parfor` — that is not thread-safe.
+For sequential loops use plain `uiprogressdlg` with `wb.Value = k/n` instead of `core.PoolWaitbar`.
 
 ### Events & notifications
 
@@ -170,6 +202,36 @@ obj.mibModel.setData4D(dataset, type, orient, col_channel, options)
 
 **Important**: use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
 `NaN` is not handled for `slice_no` by `MibDataset` and will return empty data.
+
+### `obj.id` vs `obj.getActiveId()` — split-panel safety
+
+**`obj.id` can be stale in split-panel mode.** `mibModel.id` is only updated by the full UI
+chain (`gui_WindowButtonDownFcn` → `listener_appStateChanged` → `setsOps_Callbacks` →
+`datasetsSetsOps` → `buffers_Callback`). Between user clicks it may still point at the
+previously active dataset.
+
+**Critical rule: `gui_WinMouseMotionFcn` must NEVER write to `mibModel.id` or
+`Sets.selectedSet`.** Mouse motion uses a local `localId` computed from
+`Sets.selectedDataset(setOfDatasetsIndex)` for pixel readout only. Writing `mibModel.id` on
+every mouse move breaks panning, keyboard shortcuts (they stop working after the first press),
+and corrupts the target dataset for any MibModel method that reads `obj.id` as a default.
+
+**`obj.getActiveId()`** computes the correct dataset index from `Sets.selectedSet` and
+`Sets.selectedDataset(selectedSet)`, which are only changed through the full UI chain and are
+therefore always correct.
+
+```matlab
+% WRONG — may be stale if user hasn't clicked on the target document yet
+BatchOpt.id = obj.id;
+
+% CORRECT — always returns the intended dataset index
+BatchOpt.id = obj.getActiveId();
+```
+
+**Rule**: Every MibModel method that initializes `BatchOpt.id` as a default must use
+`obj.getActiveId()`, never `obj.id`. The same applies to any code that computes `id` for
+use as a default target dataset (e.g., `loadModel.m`). Direct use of `obj.id` is fine
+in code paths where it was explicitly set by the caller (e.g., after `id = BatchOpt.id`).
 
 ### Backup (undo)
 
@@ -214,9 +276,11 @@ obj.mibModel.clearSelection('3D, Stack');
 obj.mibModel.clearSelection('4D, Dataset');
 ```
 
-At the document level, `MibImageDocument.clearSelection()` reads `obj.UIFigure.CurrentModifier`
-and maps: Alt+Shift → `'4D, Dataset'`; Shift or Alt alone → `'3D, Stack'`; none → `'2D, Slice'`.
-Always check `obj.I{id}.enableSelection == 0` and return early if disabled.
+At the panel level, `MibSelection.clearSelection()`, `MibSelection.erodeSelection()`, and
+`MibSelection.dilateSelection()` read `obj.mibController.currentModifier`
+(see [Modifier key handling](#modifier-key-handling) below)
+and map: Alt+Shift → `'4D, Dataset'`; Shift or Alt alone → `'3D, Stack'`; none → `'2D, Slice'`.
+Always check `obj.mibModel.I{id}.enableSelection == 0` and return early if disabled.
 
 ### Data structures
 
@@ -277,8 +341,55 @@ dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
 | `global mibPath` | `obj.mibPath` (property of `MibModel`) or pass `options.mibPath` to dialogs |
 | `errordlg(sprintf('...'))` | `ErrorDlgOpt.*`  + `notify(obj,'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt))` |
 | `BatchOpt.mibBatchSectionName = 'Menu -> ...'` | `'Ribbon -> ...'` |
-| `obj.mibView.gui.CurrentModifier` | `obj.UIFigure.CurrentModifier` (in MibImageDocument) |
+| `obj.mibView.gui.CurrentModifier` | `obj.mibController.currentModifier` — **do NOT use `obj.UIFigure.CurrentModifier`** (see Modifier key handling) |
 | `obj.mibModel.I{id}.enableSelection == 0` | same — always check before selection operations |
+
+### Modifier key handling
+
+MIB3 uses MATLAB's **AppContainer** framework, which splits the application into multiple independent
+sub-figures (the main app window, each image document, each panel component). Because of this,
+**`obj.UIFigure.CurrentModifier` is NOT reliable for detecting modifier keys held during button
+clicks** — it only reflects keyboard events that targeted that exact sub-figure, and returns `{}`
+for button clicks originating from a different sub-figure (e.g., the Selection panel).
+
+**Solution:** `MibController` stores and clears modifier state explicitly:
+
+| Location | What it does |
+|----------|--------------|
+| `MibController.currentModifier` | `{}` property; the single source of truth for currently held modifier keys |
+| `gui_WindowKeyPressFcn.m` | Immediately stores `obj.currentModifier = modifier` on every key-press event (all key events are routed here via `WindowKeyPressFcn`) |
+| `gui_WindowKeyReleaseFcn.m` | Clears `obj.currentModifier = {}` on every key-release event |
+
+**Usage in document-level or selection methods:**
+
+```matlab
+% CORRECT — read from MibController
+modifier = obj.mibController.currentModifier;
+
+% WRONG — do not use; returns {} when called from a button callback
+modifier = obj.UIFigure.CurrentModifier;
+```
+
+**Standard modifier → scope mapping** (used by `clearSelection`, `erodeSelection`, and all future
+selection operations that accept a dataset scope):
+
+```matlab
+modifier = obj.mibController.currentModifier;
+if sum(ismember({'alt', 'shift'}, modifier)) == 2
+    if obj.mibModel.I{obj.mibModel.id}.image.time == 1
+        DatasetType = '3D, Stack';
+    else
+        DatasetType = '4D, Dataset';
+    end
+elseif sum(ismember({'alt', 'shift'}, modifier)) == 1
+    DatasetType = '3D, Stack';
+else
+    DatasetType = '2D, Slice';
+end
+```
+
+**Key rule:** every `MibImageDocument` method that must respect modifier keys held during a button
+click **must** read `obj.mibController.currentModifier`, never `obj.UIFigure.CurrentModifier`.
 
 ### Image display coordinate systems
 

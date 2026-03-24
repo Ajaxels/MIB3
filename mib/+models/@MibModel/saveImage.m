@@ -132,7 +132,7 @@ BatchOpt = struct();
 if isstruct(BatchOptIn) && isfield(BatchOptIn, 'id')
     BatchOpt.id = BatchOptIn.id;
 else
-    BatchOpt.id = obj.id;
+    BatchOpt.id = obj.getActiveId();
 end
 
 % --- layer type ---

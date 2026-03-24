@@ -45,7 +45,7 @@ if nargin < 2; BatchOptIn = struct(); end
 BatchOpt = struct();
 BatchOpt.MaterialName  = 'NewMaterial';
 BatchOpt.showWaitbar   = false;
-BatchOpt.id            = obj.id;
+BatchOpt.id            = obj.getActiveId();
 
 BatchOpt.mibBatchSectionName = 'Panel -> Segmentation';
 BatchOpt.mibBatchActionName  = 'Add material';
@@ -145,6 +145,12 @@ end
 % actual assigned index
 if modelType >= 256 && ~isempty(newMaterialIndex)
     BatchOpt.MaterialName = num2str(newMaterialIndex);
+end
+
+% Select the newly added material (offset: 1=Mask, 2=Exterior, 3=1st material...)
+if ~isempty(newMaterialIndex)
+    obj.I{BatchOpt.id}.selectedMaterial      = newMaterialIndex + 2;
+    obj.I{BatchOpt.id}.selectedAddToMaterial = newMaterialIndex + 2;
 end
 
 if BatchOpt.showWaitbar; wb.Value = 1; end

@@ -47,7 +47,7 @@ if nargin < 2; BatchOptIn = struct(); end
 BatchOpt = struct();
 BatchOpt.MaterialName  = '';
 BatchOpt.showWaitbar   = true;
-BatchOpt.id            = obj.id;
+BatchOpt.id            = obj.getActiveId();
 
 % Pre-populate MaterialIndex from the currently selected material
 if obj.I{obj.id}.selectedMaterial > 2

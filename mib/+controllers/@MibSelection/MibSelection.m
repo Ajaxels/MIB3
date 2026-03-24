@@ -21,6 +21,16 @@ classdef MibSelection
 
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
 
+        clearSelection(obj)        % Clear the Selection layer; scope set by modifier keys (no/Shift/Alt/Alt+Shift → 2D/3D/3D/4D)
+
+        dilateSelection(obj)       % Dilate (expand) the Selection layer; reads strel, Apply-in-3D, Difference from panel + modifier keys
+
+        erodeSelection(obj)        % Erode (shrink) the Selection layer; reads strel, Apply-in-3D, Difference from panel + modifier keys
+
+        fillSelection(obj)         % Fill holes in the Selection layer; scope set by modifier keys
+
+        selectionActions(obj, action)  % Add / Subtract / Replace selection to/from the active material or mask; delegates to MibModel.moveLayers
+
         lutTable_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the LUT table widget (obj.view.handles.panels.selection.handles.lutTable)
 
         lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)        % callbacks for cell edit in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
@@ -28,6 +38,8 @@ classdef MibSelection
         lutTable_CellSelection(obj, hWidget, hData)        % callbacks for cell selection in the LUT table (obj.view.handles.panels.selection.handles.lutTable) of the Selection and Image View panel
 
         lutTable_update_fromModel(obj)        % Update obj.view.handles.panels.selection.handles.lutTable table and obj.view.handles.panels.selection.handles.colChannel color dropdown from obj.mibModel
+
+        selectionPanelCheckboxes(obj, BatchOptIn)        % batch-compatible method to read or modify the state of checkboxes and the colour-channel dropdown of the Selection and View Settings panel
 
         function obj = MibSelection(mainCtrl, view, guiHandles, model)
             %% init properties
@@ -62,15 +74,15 @@ classdef MibSelection
             obj.handles.fill.ButtonPushedFcn = @obj.gui_Callbacks;
 
             obj.handles.colChannel.ValueChangedFcn = @obj.gui_Callbacks;
-            obj.handles.apply3D.ValueChangedFcn = @obj.gui_Callbacks;
-            obj.handles.autoFill.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.applySegmentationIn3D.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.autoFillSelection.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.preset1.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.preset2.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.preset3.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.erode.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.dilate.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.strel.ValueChangedFcn = @obj.gui_Callbacks;
-            obj.handles.difference.ValueChangedFcn = @obj.gui_Callbacks;
+            obj.handles.differenceSelection.ValueChangedFcn = @obj.gui_Callbacks;
 
             obj.handles.lutColors.ValueChangedFcn = @obj.gui_Callbacks;
             obj.handles.showModel.ValueChangedFcn = @obj.gui_Callbacks;

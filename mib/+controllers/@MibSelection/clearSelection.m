@@ -21,16 +21,20 @@ function clearSelection(obj)
 %   (none)
 %
 
-%|
+%| 
 % @b Examples:
-% @code obj.clearSelection();   // called from a button callback or keyboard shortcut @endcode
+% @code obj.clearSelection();   // called from the Clear button callback or keyboard shortcut @endcode
 
 % Updates
 %
 
 if obj.mibModel.I{obj.mibModel.id}.enableSelection == 0; return; end
 
-modifier = obj.UIFigure.CurrentModifier;
+% Read modifier state stored by gui_WindowKeyPressFcn / cleared by gui_WindowKeyReleaseFcn.
+% UIFigure.CurrentModifier is NOT used here: it is only updated by keyboard
+% events on that specific sub-figure and returns {} for button clicks coming
+% from the Selection panel (a different sub-figure in the AppContainer).
+modifier = obj.mibController.currentModifier;
 
 if sum(ismember({'alt', 'shift'}, modifier)) == 2
     % Alt + Shift: 4D scope (or 3D if only one time point)

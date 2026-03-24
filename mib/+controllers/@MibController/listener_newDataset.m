@@ -39,10 +39,31 @@ if ~isfield(Parameters, 'index')
     % fit the new dataset to screen — drawnow ensures the axes panel has a
     % valid InnerPosition before listener_updateDatasetAxes reads axSize
     drawnow limitrate;
+    % In split-panel mode, drawnow processes queued AppContainer
+    % PropertyChanged events, which can trigger listener_appStateChanged
+    % → setsOps_Callbacks → datasetsSetsOps and corrupt Sets.selectedSet
+    % and mibModel.id.  Restore them to the intended dataset if changed.
+    % Do NOT fire DatasetsPanelUpdate here — it triggers ShowImage via
+    % buffers_Callback before UpdateDatasetAxes has initialized the axes,
+    % causing an Ishown index error.  Restore model state only; the
+    % DatasetsPanelUpdate is deferred until after UpdateDatasetAxes below.
+    intendedSet = ceil(Parameters.index / obj.mibModel.Sets.datasetsInSet);
+    needsPanelUpdate = false;
+    if obj.mibModel.Sets.selectedSet ~= intendedSet
+        obj.mibModel.Sets.selectedSet = intendedSet;
+        obj.mibModel.id = Parameters.index;
+        needsPanelUpdate = true;
+    elseif obj.mibModel.id ~= Parameters.index
+        obj.mibModel.id = Parameters.index;
+    end
     fitOpt = Parameters;
     fitOpt.mode = 'fitToScreen';
     eventdata = core.ToggleEventData(fitOpt);
     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+    % Now that axes are initialized, sync the Datasets panel if needed
+    if needsPanelUpdate
+        notify(obj.mibModel, 'DatasetsPanelUpdate');
+    end
 else  % use provided index of the dataset
     % resize the dataset with the index to fit the screen
     eventdata = core.ToggleEventData(Parameters);

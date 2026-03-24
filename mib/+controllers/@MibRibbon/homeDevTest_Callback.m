@@ -12,6 +12,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
+obj.mibModel.id
 
 % opt.Icon = 'puffin_question';
 % opt.DoNotShowAgain = true;

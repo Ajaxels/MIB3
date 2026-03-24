@@ -68,6 +68,8 @@ classdef MibSegmentation
 
         update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
 
+        updateInterpolationSettings(obj) % show dialog to modify selection interpolation settings for the brush tool
+
         function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
             %% Init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller

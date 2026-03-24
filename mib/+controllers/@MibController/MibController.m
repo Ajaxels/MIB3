@@ -26,6 +26,13 @@ classdef MibController < handle
         % list of opened sub-controllers
         childControllersIds
         % a cell array with names of initialized child controllers
+        currentModifier = {}
+        % cell array of modifier keys currently held (e.g. {'shift'}, {'alt','shift'}).
+        % Updated by gui_WindowKeyPressFcn and cleared by gui_WindowKeyReleaseFcn.
+        % Use this property (via obj.mibController.currentModifier) instead of
+        % UIFigure.CurrentModifier inside button callbacks — UIFigure.CurrentModifier
+        % is only updated by keyboard events on that specific sub-figure, so it
+        % returns {} when a Selection-panel button is clicked with a modifier held.
         fastPanningMode = false
         % use the fast panning mode, defined in qab by pressing on obj.view.handles.qab.fastpan
         globalResizeTimer

@@ -53,7 +53,7 @@ if nargin < 3; BatchOptIn = struct; end
 
 %% Declaration of the BatchOpt structure
 BatchOpt = struct();
-id = obj.id;
+id = obj.getActiveId();
 
 % Build a sensible default directory and filename filter
 imageFilename = obj.I{id}.image.filename;

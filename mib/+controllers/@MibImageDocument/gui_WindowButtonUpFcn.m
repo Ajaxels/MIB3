@@ -44,7 +44,7 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
     currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], NaN, getDataOptions));
 
     % Fill holes in brush stroke if the auto-fill option is enabled
-    if obj.mibController.cSelection.handles.autoFill.Value
+    if obj.mibModel.autoFillSelection
         obj.brushSelection{1}.selection = imfill(obj.brushSelection{1}.selection, 'holes');
     end
 

@@ -73,7 +73,7 @@ BatchOpt.InsertDatasetDimension = {'depth'};
 BatchOpt.InsertDatasetDimension{2} = {'depth', 'time'};
 BatchOpt.InsertDatasetPosition = '0';
 BatchOpt.showWaitbar = true;   % show or not the waitbar
-BatchOpt.id = obj.id;   % optional, id
+BatchOpt.id = obj.getActiveId();   % optional, id
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Home';    % section name for the Batch
 BatchOpt.mibBatchActionName = 'Load and combine images';
@@ -454,7 +454,7 @@ switch BatchOpt.Mode{1}
 
         notify(obj, 'NewDataset');   % notify mibController about a new dataset; see function obj.Listner2_Callback for details
         
-        obj.I{obj.id}.lastSegmSelection = [2 1];  % last selected contour for use with the 'e' button
+        obj.I{BatchOpt.id}.lastSegmSelection = [2 1];  % last selected contour for use with the 'e' button
         
         % update list of recent directories
         dirPos = ismember(obj.preferences.System.Dirs.RecentDirs, BatchOpt.DirectoryName{1});

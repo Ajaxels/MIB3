@@ -45,7 +45,7 @@ else
     BatchOpt.ModelMaterialNames = '';
 end
 BatchOpt.showWaitbar = true;
-BatchOpt.id = obj.id;
+BatchOpt.id = obj.getActiveId();
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName = 'New model';

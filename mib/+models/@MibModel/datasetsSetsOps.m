@@ -17,17 +17,6 @@ function status = datasetsSetsOps(obj, BatchOptIn)
 
 status = false;
 
-persistent lastTime
-t = datetime("now");
-if isempty(lastTime)
-    dt = NaN; % No previous call
-else
-    dt = seconds(t - lastTime); % Difference in seconds
-end
-lastTime = t;
-if dt < 0.4; return; end
-
-
 % --------------- Batch operation logic ---------------
 % specify default BatchOptIn
 BatchOpt = struct();

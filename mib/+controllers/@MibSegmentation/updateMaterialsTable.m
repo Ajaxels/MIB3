@@ -183,9 +183,9 @@ obj.materialsTable_CellSelectionCallback([dataset.selectedMaterial, 2]);
 %eventData.Indices = [dataset.selectedAddToMaterial, 3];
 obj.materialsTable_CellSelectionCallback([dataset.selectedAddToMaterial, 3]);
 
-% Update selected material indices
-if dataset.selectedMaterial > maxColor; dataset.selectedMaterial = 1; end
-
-if dataset.selectedAddToMaterial > maxColor; dataset.selectedAddToMaterial = 1; end
+% Update selected material indices if they point beyond existing rows
+% selectedMaterial/AddTo use a +2 offset: 1=Mask, 2=Exterior, 3+=materials
+if dataset.selectedMaterial > maxColor + 2; dataset.selectedMaterial = 1; end
+if dataset.selectedAddToMaterial > maxColor + 2; dataset.selectedAddToMaterial = 1; end
 
 end

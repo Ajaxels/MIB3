@@ -103,7 +103,6 @@ classdef MibImageDocument < handle
         
         gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
 
-        clearSelection(obj)                           % Clear the Selection layer; scope set by modifier keys
         segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
 
         selectDocument(obj)        % Select this document in the document group

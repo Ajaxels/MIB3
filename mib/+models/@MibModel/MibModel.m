@@ -9,10 +9,16 @@ classdef MibModel < handle
         % raw image source for Ishown
         Ishown
         % currently rendered images for visualization
+        applySegmentationIn3D = false
+        % apply some segmentation tools in 3D, updated by press of obj.cSelection.handles.applySegmentationIn3D
+        autoFillSelection = true;
+        % autofill the selection layer during segmentation, updated by press of obj.cSelection.handles.autoFillSelection
         currentDirectory
         % current working directory for MIB
         cpuParallelLimitMax
         % max number of parallel workers available
+        differenceSelection = false
+        % apply erode and dilate operations to get only a difference with the original selection, updated by press of obj.cSelection.handles.differenceSelection
         extensionRegistryLoad
         % class containing registry of filename extensions that can be loaded
         hideImage = false;
@@ -101,6 +107,12 @@ classdef MibModel < handle
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
         clearSelection(obj, sel_switch, BatchOptIn)           % clear the Selection layer (2D/3D/4D scope)
 
+        dilateImage(obj, BatchOptIn)       % dilate (expand) the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
+
+        erodeImage(obj, BatchOptIn)        % erode the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
+
+        fillSelectionOrMask(obj, BatchOptIn)   % fill holes in the selection or mask layer (2D/3D/4D scope, sequential or parallel)
+
         [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)        % convert dataset coordinates to image axes (screen) coordinates
 
         [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
@@ -115,6 +127,8 @@ classdef MibModel < handle
 
         dataset = getData4D(obj, type, orient, col_channel, options)        % get the complete 4D dataset; wrapper around core.MibDataset.getData4D
 
+        id = getActiveId(obj)        % compute the correct dataset index from Sets.selectedSet (immune to mouse-motion corruption of obj.id)
+
         [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
 
         magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
@@ -122,6 +136,8 @@ classdef MibModel < handle
         [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
 
         initialize(obj)        % initialize the MibModel class
+
+        interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm
 
         initializePreferences(obj)        % initialize and update MIB preferences from a file
 

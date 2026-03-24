@@ -49,7 +49,7 @@ else
 end
 BatchOpt.DatasetType{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
 BatchOpt.showWaitbar = true;
-BatchOpt.id = obj.id;
+BatchOpt.id = obj.getActiveId();
 BatchOpt.mibBatchTooltip.DatasetType = 'Select to remove selection from the current slice, stack, or dataset';
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';

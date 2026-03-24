@@ -21,6 +21,9 @@ function gui_WindowKeyReleaseFcn(obj, ~, ~)
 % Updates
 %
 
+% Clear stored modifier state so stale values don't affect subsequent button clicks
+obj.currentModifier = {};
+
 if obj.view.ctrlPressed ~= 0
     radius = obj.cSegmentation.handles.brushRadius.Value;
     obj.cSegmentation.handles.brushRadius.Value = radius - max([0, obj.view.ctrlPressed]);

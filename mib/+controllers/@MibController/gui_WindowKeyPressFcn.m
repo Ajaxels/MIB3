@@ -18,6 +18,7 @@ function gui_WindowKeyPressFcn(obj, hWidget, hData)
 if isempty(hData) || ~isprop(hData, 'Key') || isempty(hData.Key); return; end
 char     = lower(hData.Key);
 modifier = hData.Modifier;  % cell array of modifier strings, e.g. {'control'}
+obj.currentModifier = modifier;   % store for button callbacks that can't read UIFigure.CurrentModifier
 
 % Skip if the focused component is an edit field or text area.
 % Use hWidget (the figure that fired the event) — CurrentObject is only
@@ -108,7 +109,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             end
             obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.xz_orientation, true);
         case 'Interpolate selection'            % default 'i'
-            error('MISSING IMPLEMENTATION: obj.menuSelectionInterpolate();');
+            obj.mibModel.interpolateImage('selection');
         case 'Invert image'                     % default 'Ctrl + i'
             error("MISSING IMPLEMENTATION: obj.menuImageInvert_Callback('4D');");
         case {'Add to selection to material', 'Subtract from material', 'Replace material with current selection'}
@@ -159,16 +160,16 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.mibModel.moveLayers('selection', selectionTo, layerScope, operation);
 
         case 'Clear selection'                          % default 'c'/'Shift+c'
-            cImageDoc.clearSelection();
+            obj.cSelection.clearSelection();
 
         case {'Fill the holes in the Selection layer', 'Erode the Selection layer', 'Dilate the Selection layer'}
             % default 'f'/'Shift+f', 'z'/'Shift+z', 'x'/'Shift+x'
             if dataset.enableSelection == 0; return; end
 
             switch KeyShortcuts.Action{ActionId}
-                case 'Fill the holes in the Selection layer';  error('MISSING IMPLEMENTATION: obj.mibSelectionFillBtn_Callback();')
-                case 'Erode the Selection layer';              error('MISSING IMPLEMENTATION: obj.mibSelectionErodeBtn_Callback();')
-                case 'Dilate the Selection layer';             error('MISSING IMPLEMENTATION: obj.mibSelectionDilateBtn_Callback();')
+                case 'Fill the holes in the Selection layer';  obj.cSelection.fillSelection();
+                case 'Erode the Selection layer';              obj.cSelection.erodeSelection();
+                case 'Dilate the Selection layer';             obj.cSelection.dilateSelection();
             end
 
         case {'Zoom out/Previous slice', 'Previous slice', 'Zoom in/Next slice', 'Next slice'}
@@ -214,12 +215,15 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.mibModel.materialsActions('Rename material');
 
         case 'Show/hide the Model layer'                % default 'space'
-            obj.cSelection.handles.showModel.Value = abs(obj.cSelection.handles.showModel.Value - 1);
-            error("MISSING IMPLEMENTATION: obj.mibModelShowCheck_Callback();")
-
+            newValue = logical(abs(obj.cSelection.handles.showModel.Value - 1));
+            obj.cSelection.handles.showModel.Value = newValue;
+            obj.mibModel.showModel = newValue;
+            obj.showImage();
         case 'Show/hide the Mask layer'                 % default 'Ctrl + space'
-            obj.cSelection.handles.showMask.Value = abs(obj.cSelection.handles.showMask.Value - 1);
-            error("MISSING IMPLEMENTATION: obj.mibMaskShowCheck_Callback();")
+            newValue = logical(abs(obj.cSelection.handles.showMask.Value - 1));
+            obj.cSelection.handles.showMask.Value = newValue;
+            obj.mibModel.showMask = newValue;
+            obj.showImage();
 
         case 'Fix selection to material'
             cSegmentation.handles.restrictMaterial.Value = abs(cSegmentation.handles.restrictMaterial.Value - 1);

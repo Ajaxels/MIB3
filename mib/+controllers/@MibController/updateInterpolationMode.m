@@ -25,6 +25,9 @@ function updateInterpolationMode(obj, keepCurrent)
 % swap the interpolation types
 if nargin < 2; keepCurrent = false; end
 
+% force to initialize the Selection ribbon
+if ~isfield(obj.view.handles, 'ribbonSelection'); obj.globalTabGroup_SelectionCallback('Selection'); end
+
 if ~keepCurrent
     if strcmp(obj.mibModel.preferences.SegmTools.Interpolation.Type, 'shape')
         % set it as line interpolation

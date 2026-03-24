@@ -51,7 +51,7 @@ end
 BatchOpt.Layer{2} = {'everything', 'image', 'labels', 'mask', 'selection'}; 
 BatchOpt.DatasetType{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
 BatchOpt.showWaitbar = true;   % show or not the waitbar
-BatchOpt.id = obj.id;   % default BatchOpt.id
+BatchOpt.id = obj.getActiveId();   % default BatchOpt.id
 BatchOpt.mibBatchTooltip.Layer = 'Layer to clear, "everything" works only for models with 63 materials';
 BatchOpt.mibBatchTooltip.DatasetType = 'Select to remove selection from the current slice, stack, or dataset';
 BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not the progress bar during execution');

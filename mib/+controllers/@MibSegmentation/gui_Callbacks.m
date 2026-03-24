@@ -34,6 +34,9 @@ switch mode
     case 'loadModel'
         obj.mibModel.loadModel();
     case 'addMaterial'
+        if ~obj.mibModel.I{obj.mibModel.getActiveId()}.modelExist
+            obj.mibModel.createModel();
+        end
         obj.mibModel.addMaterial();
     case 'removeMaterial'
         obj.mibModel.removeMaterial();

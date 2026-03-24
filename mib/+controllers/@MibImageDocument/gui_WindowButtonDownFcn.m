@@ -18,7 +18,6 @@ function gui_WindowButtonDownFcn(obj)
 
 % ---- Get figure handle + input state ----
 hFig = obj.UIFigure;
-obj.syncActiveSet();   % ensure selectedSet and mibModel.id reflect this document
 seltype = hFig.SelectionType;          % 'normal','alt','extend','open'
 modifier = hFig.CurrentModifier;       % cell array: {'shift','control',...}
 % Get mouse coordinates in axes space (data units)
@@ -26,7 +25,7 @@ xy = obj.handles.imViewAxes.CurrentPoint;  % 2x3, use row(1,1:2)
 % Get selected tool in the segmentation panel
 tool = obj.mibController.cSegmentation.handles.segmTool.Value;
 % 3D interaction switch (best-effort; depends on panel naming)
-switch3d = obj.mibController.cSelection.handles.apply3D.Value;
+switch3d = obj.mibController.cSelection.handles.applySegmentationIn3D.Value;
 
 %character = hFig.CurrentCharacter;
 %fprintf('seltype: %s modifier: "%s" char: "%s"\n', seltype, cell2mat(modifier), character)
@@ -82,7 +81,11 @@ end
 % AppContainer may not fire listener_appStateChanged if this document was
 % already LastSelected. Ensure the model + UI reflect this document's set
 % before any data access. Uses the same setsOps_Callbacks path as
-% listener_appStateChanged so dropdown, buffer buttons, and ShowImage all update.
+% listener_appStateChanged so dropdown, buffer buttons, mibModel.id, and
+% ShowImage all update correctly.
+% NOTE: syncActiveSet() must NOT be called before this block — it would
+% silently update Sets.selectedSet and make this condition always false,
+% preventing the proper full-UI update path from running.
 if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex
     setName = obj.mibModel.Sets.names{obj.setOfDatasetsIndex};
     obj.mibController.view.handles.panels.activeDataset.handles.sets.Value = setName;

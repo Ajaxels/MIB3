@@ -76,11 +76,29 @@ try
         end
 
         if obj.isInsideImage
-            obj.syncActiveSet();  % lightweight: keep mibModel.id/selectedSet in sync for split-panel mode
-            dataset = obj.mibModel.I{obj.mibModel.id};
+            % Use a local id for pixel readout — never write to mibModel.id
+            % here.  Writing mibModel.id on every mouse move corrupts the
+            % active-dataset state for panning, keyboard shortcuts, and any
+            % MibModel method that reads obj.id as a default.
+            localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
+                (obj.setOfDatasetsIndex - 1) * obj.mibModel.Sets.datasetsInSet;
+            dataset = obj.mibModel.I{localId};
             orientation = dataset.orientation;
             cImage = dataset.slices{4};
             tImage = dataset.slices{5}(1);
+
+            % Local copies for coordinate conversion (avoid MibModel
+            % wrappers that read obj.id)
+            magFactor = dataset.magFactor;
+            axesX = dataset.axesX;
+            axesY = dataset.axesY;
+
+            % coef_z for anisotropic voxel stretching
+            switch orientation
+                case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
+                case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
+                otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
+            end
 
             % Handle Virtual mode
             if dataset.datasetType(1) == 'V'
@@ -89,15 +107,14 @@ try
                 % dataset — use 'blockmode' to get position within that crop.
                 % When zoomed out (magFactor >= 1): Iraw is at screen resolution —
                 % axes coordinates index directly into it.
-                magFactor = obj.mibModel.getMagFactor();
                 if magFactor < 1
-                    [xImage, yImage] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'blockmode');
+                    % blockmode conversion (inline)
+                    xImage = ceil(xMouse * magFactor);
+                    yImage = ceil(yMouse * magFactor);
                 else
                     xImage = xMouse;
                     yImage = yMouse;
                 end
-                xImage = ceil(xImage);
-                yImage = ceil(yImage);
 
                 % Clamp Iraw indices to actual rendered image size
                 if ~isempty(obj.mibModel.Iraw)
@@ -105,15 +122,24 @@ try
                     yImage = max(1, min(yImage, size(obj.mibModel.Iraw, 1)));
                 end
 
-                % Dataset-absolute coordinates for the status bar
-                [xStatus, yStatus] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
-                xStatus = ceil(xStatus);
-                yStatus = ceil(yStatus);
+                % Dataset-absolute coordinates for the status bar (shown mode, inline)
+                if magFactor >= 1 && axesX(1) <= 1
+                    xStatus = ceil(xMouse * magFactor / coef_z);
+                    yStatus = ceil(yMouse * magFactor);
+                else
+                    xStatus = ceil(xMouse * magFactor / coef_z + max([0 floor(axesX(1))]));
+                    yStatus = ceil(yMouse * magFactor           + max([0 floor(axesY(1))]));
+                end
             else
-                % Convert mouse coordinates to dataset coordinates
-                [xImage, yImage, sliceNo] = obj.mibModel.convertMouseToDataCoordinates(xMouse, yMouse, 'shown');
-                xImage = ceil(xImage);
-                yImage = ceil(yImage);
+                % Convert mouse coordinates to dataset coordinates (shown mode, inline)
+                if magFactor >= 1 && axesX(1) <= 1
+                    xImage = ceil(xMouse * magFactor / coef_z);
+                    yImage = ceil(yMouse * magFactor);
+                else
+                    xImage = ceil(xMouse * magFactor / coef_z + max([0 floor(axesX(1))]));
+                    yImage = ceil(yMouse * magFactor           + max([0 floor(axesY(1))]));
+                end
+                sliceNo = dataset.getCurrentSliceNumber();
 
                 % Get image dimensions in the current orientation
                 getDimsOptions.blockModeSwitch = false;

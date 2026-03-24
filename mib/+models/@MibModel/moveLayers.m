@@ -77,7 +77,7 @@ else
     BatchOpt.roiId = '-1';
 end
 BatchOpt.fillBg = num2str(NaN);
-BatchOpt.id = obj.id;
+BatchOpt.id = obj.getActiveId();
 BatchOpt.showWaitbar = true;
 
 switch BatchOpt.SourceLayer{1}

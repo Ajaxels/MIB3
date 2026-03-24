@@ -50,7 +50,7 @@ if nargin < 2; BatchOptIn = struct(); end
 BatchOpt = struct();
 BatchOpt.MaterialIndices  = '';
 BatchOpt.showWaitbar      = true;
-BatchOpt.id               = obj.id;
+BatchOpt.id               = obj.getActiveId();
 
 % Pre-populate with the currently selected material index when available
 if obj.I{BatchOpt.id}.selectedMaterial >= 3

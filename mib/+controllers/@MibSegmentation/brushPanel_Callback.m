@@ -28,11 +28,14 @@ end
 
 switch mode
     case 'brushRadius' % change of the brush size
-        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        selectedSet = obj.mibModel.Sets.selectedSet;
+        obj.mibController.cImageDoc{selectedSet}.updateBrushCursorOffset();
+        obj.mibController.cImageDoc{selectedSet}.updateBrushCursor();
     case 'eraserFactor' % change of the eraser magnifier factor
+        obj.mibModel.preferences.SegmTools.Brush.EraserRadiusFactor = obj.handles.eraserFactor.Value;
         %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'interpolationSettings' % set the interpolation settings
-        %fprintf('Clicked on a widget of the segmentation panel->Brush/3D ball/Spot tool (obj.handles.panels.segmentation): %s\n', mode);
+        obj.updateInterpolationSettings();
     case 'brushUseClustering' % selection of the clustering mode
         switch obj.handles.brushUseClustering.SelectedObject.Text
             case 'No clusters'
