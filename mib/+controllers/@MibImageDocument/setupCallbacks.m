@@ -69,6 +69,8 @@ obj.UIFigure.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 % ShowImage covers buffer/dataset switches that don't fire UpdateDatasetAxes.
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(~,~) obj.updateMeasureText());
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowImage',         @(~,~) obj.updateMeasureText());
+obj.listeners{end+1} = addlistener(obj.mibModel, 'SliceChanged',      @(~,~) obj.listener_sliceChanged());
+obj.listeners{end+1} = addlistener(obj.mibModel, 'FrameChanged',      @(~,~) obj.listener_frameChanged());
 
 % obj.figureDoc.CanCloseFcn
 end

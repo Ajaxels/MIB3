@@ -1,5 +1,10 @@
 # MIB2 GUIDE → MIB3 AppDesigner Conversion Guide
 
+> **Purpose:** Generic reference for porting any MIB2 GUIDE-based dialog/controller to the
+> MIB3 AppDesigner + package framework. Add new patterns here as they are discovered so
+> future conversions can proceed without rediscovering the same rules.
+> Last updated during `Annotations` controller port.
+
 ---
 
 ## 1. File layout
@@ -134,7 +139,25 @@ end
 | `ToggleEventData(x)` | `core.ToggleEventData(x)` |
 | `notify(..., 'updateGuiWidgets')` | `notify(..., 'UpdateGuiWidgets')` |
 | `notify(..., 'updateImgInfo')` | `notify(..., 'UpdateImgInfo')` |
-| `errordlg(...)` | `utils.dlgs.showErrorDialog(...)` |
+| `notify(..., 'plotImage', eventdata)` | `notify(..., 'ShowImage')` (no eventdata needed) |
+| `notify(..., 'updateId')` | `notify(..., 'UpdateGuiWidgets')` |
+| `notify(..., 'updatedAnnotations')` | `notify(..., 'UpdateAnnotations')` |
+| `notify(..., 'showMask')` | set `obj.mibModel.showMask = true` then `notify(..., 'ShowImage')` |
+| `notify(..., 'updateLayerSlider', evd)` | update `I{id}.slices{orient}` then `notify(..., 'SliceChanged')` |
+| `notify(..., 'updateTimeSlider', evd)` | update `I{id}.slices{5}` then `notify(..., 'FrameChanged')` |
+| `errordlg(...)` | `utils.dlgs.showErrorDialog(...)` or `inputUniversalDlg` with `puffin_error` icon |
+| `global mibPath` | `mibPath = obj.mibModel.mibPath` (property on MibModel) |
+| `obj.mibModel.mibDoBackup(type, sw)` | `obj.mibModel.backup(type, sw)` |
+| `obj.mibModel.I{id}.clearMask()` | `obj.mibModel.I{id}.clearLayer('mask')` |
+| `obj.mibModel.I{id}.depth/width/height` | `obj.mibModel.I{id}.image.depth/width/height` |
+| `obj.mibModel.I{id}.pixSize` | `obj.mibModel.I{id}.image.pixSize` |
+| `obj.mibModel.I{id}.getBoundingBox()` | `obj.mibModel.I{id}.image.boundingBox` |
+| `obj.mibModel.I{id}.maskExist` | `obj.mibModel.I{id}.maskExist` (unchanged) |
+| `obj.mibModel.getImageProperty('orientation')` | `obj.mibModel.I{id}.orientation` |
+| `obj.mibModel.getImageProperty('slices')` | `obj.mibModel.I{id}.slices` |
+| `obj.mibModel.getImageProperty('depth/width/height/time')` | `obj.mibModel.I{id}.image.depth/width/height/time` |
+| `obj.mibModel.getImageProperty('defaultAnnotationText')` | `obj.mibModel.I{id}.annotations.defaultAnnotationText` |
+| MIB2 orientation: XY=4, ZX=1, ZY=2 | MIB3 orientation: XY=3, ZX=1, ZY=2 |
 
 ---
 

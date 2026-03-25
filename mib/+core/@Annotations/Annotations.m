@@ -605,7 +605,8 @@ classdef Annotations < matlab.mixin.Copyable
             %       'landmarksBin' - amira landmarks as binaries
             %       'psi' - PSI format ASCII
             %       'xls' - Microsoft Excel format
-            %  .showWaitbar - [@em optional] a number 1-show; 0-do not show the waitbar
+            %  .showWaitbar - [@em optional] a number 1-show; 0-do not show the waitbar; requires .mibGUI
+            %  .mibGUI - [@em optional] handle to the main app UIFigure, required when showWaitbar=1
             %  .outputDir - [@em optional] output directory
             %  .convertToUnits - [@em optional] a logical, or not convert pixel coordinates to the units requires bounding box and pixSize information
             %  .boundingBox - a matrix [x1 width y1 height z1 depth],  required for conversion to units
@@ -618,10 +619,12 @@ classdef Annotations < matlab.mixin.Copyable
 
             if nargin < 3; options = struct(); end
             if nargin < 2; filename = []; end
-            if ~isfield(options, 'showWaitbar'); options.showWaitbar = 1; end
+            if ~isfield(options, 'showWaitbar'); options.showWaitbar = true; end
+            if ~isfield(options, 'mibGUI'); options.mibGUI = []; end
             if ~isfield(options, 'outputDir'); options.outputDir = ''; end
             if ~isfield(options, 'convertToUnits'); options.convertToUnits = 0; end
             if ~isfield(options, 'addLabelToFilename'); options.addLabelToFilename = false; end
+            if options.showWaitbar && isempty(options.mibGUI); options.showWaitbar = 0; end
             
             if options.convertToUnits   % check for required bounding box and pixSize 
                 if ~isfield(options, 'boundingBox') || ~isfield(options, 'pixSize') 
@@ -659,7 +662,9 @@ classdef Annotations < matlab.mixin.Copyable
                         options.format = 'xls';
                 end
             end
-            if options.showWaitbar; wb = waitbar(0, 'Please wait...', 'Name', 'Saving Annotations', 'WindowStyle','modal'); end
+            if options.showWaitbar; wb = uiprogressdlg(options.mibGUI, 'Value', 0, ...
+                    'Message', 'Please wait...', 'Title', 'Saving Annotations', 'Indeterminate', 'off'); 
+            end
             % obtain format if it is not provided
             if isempty(options.format)
                 [path, fn, ext] = fileparts(filename);
@@ -759,10 +764,10 @@ classdef Annotations < matlab.mixin.Copyable
                         s(rowId:rowId+noAnn-1, 9:11) = num2cell(labelPositionsOut);
                         s(rowId:rowId+noAnn-1, 12) = num2cell(labelPosition(:, 4));
                     end
-                    if options.showWaitbar; waitbar(0.3, wb); end
+                    if options.showWaitbar; wb.Value = 0.3; end
                     
                     xlswrite2(filename, s, 'Sheet1', 'A1');
-                    if options.showWaitbar; waitbar(1, wb); end
+                    if options.showWaitbar; wb.Value = 1; end
                 case 'psi'
                     %recalcCoordinates = questdlg(sprintf('Recalculate annotations with respect to the current bounding box or save as they are?'),...
                     %    'Recalculate coordinates', 'Recalculate', 'Save as they are', 'Recalculate');
@@ -778,9 +783,9 @@ classdef Annotations < matlab.mixin.Copyable
                     end
                     options.format = 'ascii';
                     options.overwrite = 1;
-                    if options.showWaitbar; waitbar(0.3, wb); end
-                    points2psi(filename, labelPositionsOut, labelText, labelValue, options);
-                    if options.showWaitbar; waitbar(1, wb); end
+                    if options.showWaitbar; wb.Value = 0.3; end
+                    io.AmiraMesh.points2psi(filename, labelPositionsOut, labelText, labelValue, options);
+                    if options.showWaitbar; wb.Value = 1; end
                 case {'landmarkBin', 'landmarkAscii'}
                     % rearrange to [x, y, z] format from [z, x, y]
                     labelPositionsOut = [labelPosition(:,2) labelPosition(:,3) labelPosition(:,1)];
@@ -791,15 +796,15 @@ classdef Annotations < matlab.mixin.Copyable
                         labelPositionsOut(:, 2) = labelPositionsOut(:, 2)*options.pixSize.y + bb(3) - options.pixSize.y/2;
                         labelPositionsOut(:, 3) = labelPositionsOut(:, 3)*options.pixSize.z + bb(5) - options.pixSize.z;
                     end
-                    if options.showWaitbar; waitbar(0.3, wb); end
+                    if options.showWaitbar; wb.Value = 0.3; end
                     if strcmp(options.format, 'landmarkAscii')
                         options.format = 'ascii';
                     else
                         options.format = 'binary';
                     end
                     options.overwrite = 1;
-                    points2amiraLandmarks(filename, labelPositionsOut, options);
-                    if options.showWaitbar; waitbar(1, wb); end
+                    io.AmiraMesh.points2amiraLandmarks(filename, labelPositionsOut, options);
+                    if options.showWaitbar; wb.Value = 1; end
             end
             fprintf('Saving annotations to %s: done!\n', filename);
             if options.showWaitbar; delete(wb); end

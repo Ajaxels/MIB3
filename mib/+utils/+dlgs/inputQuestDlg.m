@@ -228,7 +228,7 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
 end
 
 % ---- Layout constants ----
-btnW    = 90;
+btnW    = 100;
 btnGap  = 8;
 btnH    = 24;
 nBtn    = numel(buttons);

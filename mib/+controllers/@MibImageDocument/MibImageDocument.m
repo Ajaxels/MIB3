@@ -78,6 +78,8 @@ classdef MibImageDocument < handle
         clearQuickMeasure(obj)        % Silently remove the active quick-measurement ROI and text label
 
         frameNumber_Callback(obj, parameter, BatchOptIn)        % Callback for changing the time points of the dataset by entering a new time value
+        listener_frameChanged(obj)    % Listener for MibModel 'FrameChanged' event — syncs frame widgets and redraws
+        listener_sliceChanged(obj)    % Listener for MibModel 'SliceChanged' event — syncs slice widgets and redraws
         
         frameNumberSlider_Callback(obj, sliderValue)        % Change the currently displayed frame using the time-number slider
 

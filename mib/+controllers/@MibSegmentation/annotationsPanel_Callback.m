@@ -28,7 +28,7 @@ end
 
 switch mode
     case 'annAnnotationList' % open another window with the annotation list
-
+        obj.mibController.startController('controllers.Annotations');
     case 'annShowPrompt' % show the annotation prompt when adding a new annotation
 
     case 'annFocusOnValue' % when showing the prompt focus on the value field

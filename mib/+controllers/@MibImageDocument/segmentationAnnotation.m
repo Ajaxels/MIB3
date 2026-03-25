@@ -156,8 +156,7 @@ elseif isShift  % ---- interpolate annotations along Z ----
         dataset.annotations.addLabels(labelTextArr, newPositions, labelValueArr);
     end
 end
-
-notify(obj.mibModel, 'ShowImage');
+notify(obj.mibModel, 'UpdateAnnotations');     % notify about updated annotation
 
 % count user's points
 obj.mibModel.preferences.Users.Tiers.numberOfAnnotations = obj.mibModel.preferences.Users.Tiers.numberOfAnnotations + 1;
