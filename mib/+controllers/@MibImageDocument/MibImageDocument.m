@@ -103,7 +103,13 @@ classdef MibImageDocument < handle
         
         gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
 
+        segmentationAnnotation(obj, y, x, z, t, modifier, options)        % Add or remove a text annotation at the given dataset coordinate
+
+        segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)        % Do segmentation using the 3D ball tool
+
         segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
+
+        segmentationSpot(obj, y, x, modifier, BatchOptIn)        % Do segmentation using the spot tool
 
         selectDocument(obj)        % Select this document in the document group
         

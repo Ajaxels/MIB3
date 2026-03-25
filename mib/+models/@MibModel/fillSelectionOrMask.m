@@ -1,4 +1,4 @@
-function fillSelectionOrMask(obj, BatchOptIn)
+function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 % function fillSelectionOrMask(obj, BatchOptIn)
 % Fill holes in the selection or mask layer.
 %
@@ -10,6 +10,8 @@ function fillSelectionOrMask(obj, BatchOptIn)
 % Toolbox is available; use core.PoolWaitbar for thread-safe progress.
 %
 % Parameters:
+% targetLayer: [@em optional] char with the targer layer, 'mask', or 'selection', 
+%   when [] - 'selection'
 % BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
 %   returns default options via the "SyncBatch" event.
 %   When called from MibSelection.fillSelection the DatasetType and
@@ -45,17 +47,17 @@ function fillSelectionOrMask(obj, BatchOptIn)
 % @endcode
 
 % Updates
-% 24.03.2026 - ported from MIB2 mibModel.fillSelectionOrMask; replaced
-%              PoolWaitbar/waitbar with core.PoolWaitbar/uiprogressdlg;
-%              fixed obj.I{obj.id} -> obj.I{BatchOpt.id} throughout;
-%              merged positional sel_switch/type args into BatchOpt;
-%              sequential path now uses plain uiprogressdlg
+% 
 
-if nargin < 2; BatchOptIn = struct(); end
+if nargin < 3; BatchOptIn = struct(); end
 
 %% Default BatchOpt
 BatchOpt = struct();
-BatchOpt.TargetLayer = {'selection'};
+if isempty(targetLayer)
+    BatchOpt.TargetLayer = {'selection'};
+else
+    BatchOpt.TargetLayer = {targetLayer};
+end
 BatchOpt.TargetLayer{2} = {'selection', 'mask'};
 BatchOpt.DatasetType = {'2D, Slice'};
 BatchOpt.DatasetType{2} = {'2D, Slice', '3D, Stack', '4D, Dataset'};
@@ -84,7 +86,7 @@ if isstruct(BatchOptIn) == 0
         notify(obj, 'SyncBatch', eventdata);
     else
         ErrorDlgOpt.Title  = 'BatchOpt Error';
-        ErrorDlgOpt.String = 'A structure as the 1st parameter is required!';
+        ErrorDlgOpt.String = 'A structure as the 2nd parameter is required!';
         ErrorDlgOpt.Icon   = 'puffin_error';
         notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
     end
@@ -96,7 +98,7 @@ end
 
 % Update batch section name for mask target
 if strcmp(BatchOpt.TargetLayer{1}, 'mask')
-    BatchOpt.mibBatchSectionName = 'Ribbon -> Mask';
+    BatchOpt.mibBatchSectionName = 'Panel -> Selection and View Settings';
     BatchOpt.mibBatchActionName  = 'Fill mask';
 end
 

@@ -93,9 +93,8 @@ switch mode
         %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s -> %s\n', mode, hWidget.Value);
 
     case 'differenceSelection' % enable the differenceSelection mode for the dilate/erode
-        % nothing is done yet
-        % BatchOpt.Difference = checkboxOptions(obj.handles.differenceSelection.Value+1);
-        % obj.selectionPanelCheckboxes(BatchOpt);
+        BatchOpt.DifferenceSelection = checkboxOptions(obj.handles.differenceSelection.Value+1);
+        obj.selectionPanelCheckboxes(BatchOpt);
 
     case 'lutColors' % visualize image using LUT colors
         obj.mibModel.I{obj.mibModel.id}.useLUT = obj.handles.lutColors.Value;

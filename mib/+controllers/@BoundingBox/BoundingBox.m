@@ -161,7 +161,8 @@ classdef BoundingBox < handle
             % function updateWidgets(obj)
             % update widgets of this window
 
-            obj.BatchOpt.id = obj.mibModel.id;
+            obj.BatchOpt.id = obj.mibModel.id;  % = obj.mibModel.getActiveId
+            
             obj.bb = obj.mibModel.I{obj.BatchOpt.id}.image.boundingBox;
             obj.pixSize = obj.mibModel.I{obj.BatchOpt.id}.image.pixSize;
             obj.oldBB = obj.bb;

@@ -513,7 +513,7 @@ end
 
 %% Add annotations overlay
 if obj.showAnnotations
-    Annotations = obj.preferences.SegmTools.Annotations.Precision;
+    Annotations = obj.preferences.SegmTools.Annotations;
     
     if dataset.annotations.getLabelsNumber() >= 1
         if ~isfield(options, 'sliceNo')

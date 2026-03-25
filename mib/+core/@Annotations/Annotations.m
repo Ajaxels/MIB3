@@ -409,7 +409,7 @@ classdef Annotations < matlab.mixin.Copyable
             if isempty(obj.labelPosition); return; end  % nothing to remove
             
             if nargin < 2      % remove all labels
-                choice = questdlg('Delete all annotations from the model?', 'Remove annotations', 'Delete', 'Cancel','Cancel');
+                choice = utils.dlgs.inputQuestDlg([], 'Delete all annotations from the model?', 'Remove annotations', 'Delete', 'Cancel','Cancel');
                 if strcmp(choice, 'Cancel'); return; end
                 obj.clearContents();
                 return;

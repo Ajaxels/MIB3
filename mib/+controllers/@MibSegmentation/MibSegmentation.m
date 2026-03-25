@@ -21,7 +21,7 @@ classdef MibSegmentation
         % ------------------ declaration of other methods and callbacks
 
         annotationsPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Annotations tool
-        
+
         brushPanel_Callback(obj, hWidget, hData, mode)        % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
 
         colorWheel_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the color wheel button (obj.view.handles.panels.segmentation.handles.colorWheel)

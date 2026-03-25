@@ -35,6 +35,9 @@ handles.panelMagicwand.Visible = 'off';
 handles.panelMembrane.Visible = 'off';
 handles.panelSAM.Visible = 'off';  
 
+% show the brush cursor
+obj.view.brushCursorShow = true;
+
 switch segmToolName
     case {'3D ball', 'Spot'}
         handles.brushUseClustering.Visible = 'off';
@@ -43,6 +46,11 @@ switch segmToolName
         handles.panelLines3D.Visible = 'on';
     case 'Annotations'
         handles.panelAnnotations.Visible = 'on';
+        obj.view.brushCursorShow = false;
+        %doc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+        %if ~isempty(doc.brushCursor) && isvalid(doc.brushCursor)
+        %    doc.brushCursor.Visible = 'off';
+        %end
     case 'Brush'
         handles.brushUseClustering.Visible = 'on';
         handles.panelBrush.Visible = 'on';

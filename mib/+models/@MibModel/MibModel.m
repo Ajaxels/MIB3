@@ -86,6 +86,7 @@ classdef MibModel < handle
         SliceChanged         % change of slices of the current dataset (depth)
         StopProtocol         % stop batch protocol from execution
         SyncBatch            % synchronize structure for batch actions
+        UpdateAnnotations    % update annotations, for example when they are removed or modified
         UpdateDatasetAxes    % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
         UpdateDialog         % request to update specific dialog, for example when Batch Processing is used, requires core.ToggleEventData, see BoundingBox.m
         UpdateFileList       % update the list of files
@@ -105,13 +106,16 @@ classdef MibModel < handle
         backup(obj, type, switch3d, getDataOptions)        % store the dataset for Undo
 
         clearLayer(obj, layer, sel_switch, BatchOptIn)        % clear the specified layer
+
         clearSelection(obj, sel_switch, BatchOptIn)           % clear the Selection layer (2D/3D/4D scope)
+
+        deleteAnnotations(obj, BatchOptIn)        % Delete all annotations from the active dataset
 
         dilateImage(obj, BatchOptIn)       % dilate (expand) the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
 
         erodeImage(obj, BatchOptIn)        % erode the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
 
-        fillSelectionOrMask(obj, BatchOptIn)   % fill holes in the selection or mask layer (2D/3D/4D scope, sequential or parallel)
+        fillSelectionOrMask(obj, targetLayer, BatchOptIn)   % fill holes in the selection or mask layer (2D/3D/4D scope, sequential or parallel)
 
         [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)        % convert dataset coordinates to image axes (screen) coordinates
 

@@ -25,7 +25,7 @@ xy = obj.handles.imViewAxes.CurrentPoint;  % 2x3, use row(1,1:2)
 % Get selected tool in the segmentation panel
 tool = obj.mibController.cSegmentation.handles.segmTool.Value;
 % 3D interaction switch (best-effort; depends on panel naming)
-switch3d = obj.mibController.cSelection.handles.applySegmentationIn3D.Value;
+switch3d = obj.mibModel.applySegmentationIn3D;
 
 %character = hFig.CurrentCharacter;
 %fprintf('seltype: %s modifier: "%s" char: "%s"\n', seltype, cell2mat(modifier), character)
@@ -334,7 +334,7 @@ elseif strcmp(operation, 'select')
         case '3D ball'
             % 3D ball: filled shere in 3d with a center at the clicked point
             [w, h, z] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 0);
-            obj.mibSegmentation3dBall(ceil(h), ceil(w), ceil(z), modifier);
+            obj.segmentationBall3D(ceil(h), ceil(w), ceil(z), modifier);
             return;
 
         case '3D lines'
@@ -362,7 +362,7 @@ elseif strcmp(operation, 'select')
         case 'Annotations'
             % add text annotation
             [w, h, z, t] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 0);
-            obj.mibSegmentationAnnotation(h, w, z, t, modifier);
+            obj.segmentationAnnotation(h, w, z, t, modifier);
 
         case {'Brush'}
             % the Brush mode
@@ -416,7 +416,7 @@ elseif strcmp(operation, 'select')
                 catch
                 end
                 spotToolBatchOpt.Radius = [wStr ';' hStr];
-                obj.mibSegmentationSpot(ceil(h), ceil(w), modifier, spotToolBatchOpt);
+                obj.segmentationSpot(ceil(h), ceil(w), modifier, spotToolBatchOpt);
                 return;
             end   % cancel when the manual mode is enabled
 
@@ -788,13 +788,13 @@ elseif strcmp(operation, 'select')
                 return;
 
             elseif samMethodVal == 3    % 'Landmarks'
-                obj.mibSegmentationAnnotation(h, w, z, t, modifier);
+                obj.segmentationAnnotation(h, w, z, t, modifier);
             end
 
         case 'Spot'
             % The spot mode: draw a circle after mouse click
             [w, h, z] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 1);
-            obj.mibSegmentationSpot(ceil(h), ceil(w), modifier);
+            obj.segmentationSpot(ceil(h), ceil(w), modifier);
             return;
     end
 

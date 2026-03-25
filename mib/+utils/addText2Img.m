@@ -1,5 +1,5 @@
-function img = mibAddText2Img(img, textArray, positionList, options)
-% function  img = mibAddText2Img(img, textArray, positionList, options)
+function img = addText2Img(img, textArray, positionList, options)
+% function img = addText2Img(img, textArray, positionList, options)
 % Add text label to the image, a new function introduced in MIB 2.22.
 % Requires insertText and insertMarker functions from the Computer Vision System
 % Toolbox. When these functions are not available mibAddText2Img is using
@@ -53,11 +53,12 @@ maxVal = double(intmax(class(img)));
 
 fontSize = 2*options.fontSize+6;
 
-if ismember(options.markerText, {'Label + Value', 'Label', 'Label'})
+% Always draw the position marker regardless of display mode
+img = insertMarker(img, positionList, '+', 'color', options.color*maxVal, 'size', 2);
+
+% Draw text for modes that include a label, value, or both
+if ismember(options.markerText, {'Label + Value', 'Label', 'Value'})
     img = insertText(img, positionList, textArray, 'FontSize', fontSize, ...
         'BoxOpacity',0, 'TextColor', options.color*maxVal, 'AnchorPoint', options.AnchorPoint);
-end
-if strcmp(options.markerText, 'Marker')
-    img = insertMarker(img, positionList, '+', 'color', options.color*maxVal, 'size', 2);
 end
 end

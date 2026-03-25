@@ -38,6 +38,7 @@ switch mode
         obj.mibModel.preferences.SegmTools.Annotations.Precision = obj.view.handles.panels.segmentation.handles.annPrecision.Value;
         notify(obj.mibModel, 'ShowImage');
     case 'annDeleteAll' % delete all annotations
+        obj.mibModel.deleteAnnotations();
 
     case 'annDisplayAs' % define how annotations should be visualized
         obj.mibModel.preferences.SegmTools.Annotations.DisplayAs = obj.view.handles.panels.segmentation.handles.annDisplayAs.Value;

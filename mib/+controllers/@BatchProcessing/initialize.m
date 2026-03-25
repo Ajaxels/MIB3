@@ -178,8 +178,8 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImag
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.smoothImage(''mask'', Batch)'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Get statistics';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibStatisticsController'', -1, Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Fill mask';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.fillSelectionOrMask([], ''mask'', Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Fill mask';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.fillSelectionOrMask(''mask'', Batch);'; actionId = actionId + 1;
 
 secIndex = secIndex + 1;
 actionId = 1;
@@ -249,20 +249,21 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Rename material';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.renameMaterial(Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Remove material';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.removeMaterial(Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = '3D ball';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibSegmentation3dBall([], [], [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = '3D ball';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentationBall3D([], [], [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Black and white thresholding';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibSegmentationBlackWhiteThreshold([], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Drag & Drop materials';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibGUI_WindowButtonUpDragAndDropFcn([], [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Segment-anything model';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibSegmentationSAM([], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Spot';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibSegmentationSpot([], [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Spot';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentationSpot([], [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Material actions';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.materialsActions([], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Materials color swap';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.materialsSwapColors(Batch);'; actionId = actionId + 1;
+
 
 secIndex = secIndex + 1;
 actionId = 1;
@@ -297,8 +298,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Dilate';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.dilateImage(Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Clear layer';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.clearLayer([], [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Fill selection';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.fillSelectionOrMask([], ''selection'', Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Fill selection';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.fillSelectionOrMask(''selection'', Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Mask';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''selection'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Model';

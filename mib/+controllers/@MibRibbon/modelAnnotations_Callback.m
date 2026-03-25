@@ -21,6 +21,7 @@ switch mode
     case {sprintf('List of\nannotations'), 'List of annotations'}      % obj.handles.ribbonModel.annotations or obj.handles.ribbonModel.annotationsList
     case 'Export to Imaris as Spots'    % obj.handles.ribbonModel.annotationsImaris
     case 'Remove all annotations'    % obj.handles.ribbonModel.annotationsRemove
+        obj.mibModel.deleteAnnotations();
 end
 
 end

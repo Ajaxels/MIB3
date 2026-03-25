@@ -58,5 +58,5 @@ BatchOpt.DatasetType = {DatasetType};
 BatchOpt.SelectedMaterial            = num2str(dataset.getSelectedMaterialIndex());
 BatchOpt.restrictSelectionToMaterial = logical(dataset.restrictSelectionToMaterial);
 
-obj.mibModel.fillSelectionOrMask(BatchOpt);
+obj.mibModel.fillSelectionOrMask('selection', BatchOpt);
 end
