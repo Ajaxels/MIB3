@@ -120,8 +120,8 @@ clipboardText = strjoin(cellfun(@strtrim, ...
     {winTitle, optionalPrefix, errBody, optionalSuffix}, 'UniformOutput', false), newline);
 clipboardText = strtrim(clipboardText);
 
-% --- fallback for legacy / empty ParentFigure ---
-if isempty(ParentFigure) || isa(ParentFigure, 'matlab.ui.Figure')
+% --- fallback for empty ParentFigure ---
+if isempty(ParentFigure) 
     errordlg(clipboardText, winTitle);
     return;
 end

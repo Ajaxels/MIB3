@@ -444,6 +444,9 @@ if isempty(updatePanels) || ismember(updatePanels, 'selectionPanel')
     selectionPanelHandles = obj.view.handles.panels.selection.handles;
 
     selectionPanelHandles.lutColors.Value = dataset.useLUT;
+    selectionPanelHandles.showMask.Value = obj.mibModel.showMask;
+    selectionPanelHandles.showModel = obj.mibModel.showModel;
+    
     % update LUT table and the linked colChannel dropdown
     obj.cSelection.lutTable_update_fromModel();
 end

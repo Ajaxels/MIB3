@@ -34,7 +34,7 @@ switch menuEntry.Tag
     case 'materialsTableContextSetColor'
 
     case 'materialsTableContextQuant'
-
+        obj.mibController.startController('controllers.Quantification');
     case 'materialsTableContextUnlink'
         if strcmp(menuEntry.Checked, 'off')
             % unlink Materials and AddTo columns

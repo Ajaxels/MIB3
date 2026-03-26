@@ -148,8 +148,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Interpolate material';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImage(''labels'', [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Smooth model';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.smoothImage(''labels'', Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Get statistics';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibStatisticsController'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Quantification';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Quantification'', [], Batch);'; actionId = actionId + 1;
 
 secIndex = secIndex + 1;
 actionId = 1;
@@ -176,10 +176,11 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImag
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuMaskImageReplace_Callback(''mask'', Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Smooth mask';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.smoothImage(''mask'', Batch)'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Get statistics';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibStatisticsController'', -1, Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Fill mask';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.fillSelectionOrMask(''mask'', Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Quantification';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Quantification'', -1, Batch);'; actionId = actionId + 1;
+
 
 secIndex = secIndex + 1;
 actionId = 1;

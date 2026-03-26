@@ -128,6 +128,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
 
+        dataset = getPixelIdxList(obj, type, PixelIdxList, options)  % Get pixel values at a list of linear indices; routes to correct layer (image/labels/mask/selection)
+
         index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
 
         [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
@@ -171,6 +173,8 @@ classdef MibDataset < matlab.mixin.Copyable
         result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset
 
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
+
+        result = setPixelIdxList(obj, type, dataset, PixelIdxList, options)  % Write pixel values at a list of linear indices; routes to correct layer and updates modelExist/maskExist flags
 
         fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
 

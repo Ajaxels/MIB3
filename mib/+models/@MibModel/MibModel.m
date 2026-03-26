@@ -83,6 +83,11 @@ classdef MibModel < handle
         NewDataset           % MibModel loaded a new image, update MibController widgets
         ShowErrorDialog      % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         ShowImage            % render image in the Image View panel
+        % ShowMask           % enable mask visualization -> use instead
+        %                       obj.mibModel.showMask = true; 
+        %                       eventdata = core.ToggleEventData({'selectionPanel'});
+        %                       notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
+        %                       notify(obj.mibModel, 'ShowImage');
         SliceChanged         % change of slices of the current dataset (depth)
         StopProtocol         % stop batch protocol from execution
         SyncBatch            % synchronize structure for batch actions
@@ -132,6 +137,8 @@ classdef MibModel < handle
         dataset = getData4D(obj, type, orient, col_channel, options)        % get the complete 4D dataset; wrapper around core.MibDataset.getData4D
 
         id = getActiveId(obj)        % compute the correct dataset index from Sets.selectedSet (immune to mouse-motion corruption of obj.id)
+
+        propertyValue = getImageProperty(obj, propertyName, id)        % get a property of the currently shown or specified MibDataset
 
         [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
 

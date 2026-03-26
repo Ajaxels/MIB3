@@ -1,490 +1,166 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
 
 ## Project Overview
 
-MIB3 (Microscopy Image Browser 3) is a MATLAB application for image processing, segmentation, and visualization of multidimensional (2D-4D) microscopy datasets. It runs either as a MATLAB script or as a compiled standalone Windows application.
+MIB3 (Microscopy Image Browser 3) is a MATLAB application for image processing, segmentation, and visualization of multidimensional (2D-4D) microscopy datasets. Runs as a MATLAB script or compiled standalone Windows app.
 
 - Entry point: `mib/mib3.m`
-- Version string is defined in `mib/mib3.m` in the format: `'ver. 2025.12 / 05.12.2025'`
+- Version string format: `'ver. 2025.12 / 05.12.2025'`
 - Author: Ilya Belevich, University of Helsinki
 
-### MIB2 → MIB3 Migration Context
+### MIB2 → MIB3 Migration
 
-This repository is an active port of MIB2 (`C:\Matlab\MIB2_RENAMED_FOR_MIB3`) to MIB3. MIB3 is a complete rewrite using MATLAB's **AppContainer framework** (ribbon UI, `.mlapp` panel components, docked documents). MIB2 uses the older GUIDE-based `.fig`/`.m` GUI approach with a flat class structure under `Classes/` and `GuiTools/`.
+Active port of MIB2 to MIB3. MIB3 uses MATLAB's **AppContainer framework** (ribbon UI, `.mlapp` panel components, docked documents). MIB2 uses GUIDE-based `.fig`/`.m` with a flat `Classes/` structure.
 
-Key structural differences:
-- MIB2 classes live directly in `Classes/@mibController`, `Classes/@mibModel`, etc. (no packages)
-- MIB3 uses MATLAB packages: `+controllers/`, `+models/`, `+core/`, `+io/`, `+views/`, `+utils/`
-- MIB2 naming: `mibController`, `mibModel`, `mibImage`, `mibView` (lowercase prefix)
-- MIB3 naming: `MibController`, `MibModel`, `MibImage`, `MibView` (PascalCase)
-- MIB2 GUI tools are in `GuiTools/` as `.fig`+`.m` pairs; MIB3 uses `.mlapp` files
-- `MIB2_RENAMED_FOR_MIB3` has some methods/calls already renamed to match MIB3 namespace — use it as the primary reference when porting logic
+| | MIB2 | MIB3 |
+|-|------|------|
+| Class location | `Classes/@mibController` (no packages) | `+controllers/@MibController` (packages) |
+| Naming | `mibController`, `mibModel` (lowercase prefix) | `MibController`, `MibModel` (PascalCase) |
+| GUI | `GuiTools/*.fig` + `*.m` | `+views/*.mlapp` |
 
-When porting a feature from MIB2 to MIB3:
-1. Find the MIB2 source in `C:\Matlab\MIB2_RENAMED_FOR_MIB3\Classes\` or `GuiTools\`
-2. Adapt the logic to the MIB3 package namespace and class hierarchy
-3. Replace direct property access patterns with MIB3 equivalents (e.g. `obj.mibModel.I{obj.mibModel.Id}` → `obj.mibModel.I{obj.mibModel.id}`)
+Two MIB2 reference copies exist with different roles:
+
+| Path | State | Use for |
+|------|-------|---------|
+| `C:\Matlab\MIB2\` | Original, fully working | **Verifying behavior** — run it, debug it, confirm what the code actually does |
+| `C:\Matlab\MIB2_RENAMED_FOR_MIB3\` | Partial rename to MIB3 style, may not run | **Copying logic** — some variables/methods pre-renamed, reduces transformation work |
+
+**Porting workflow:**
+1. Copy the method from `MIB2_RENAMED_FOR_MIB3\Classes\` or `GuiTools\` as the starting point
+2. When behavior is unclear or needs verification, check the same method in `MIB2\` (runs correctly)
+3. Apply the full conversion cheat sheet regardless — `MIB2_RENAMED_FOR_MIB3` renaming is incomplete and inconsistent
+
+---
 
 ## Common Commands
 
-**Run MIB from MATLAB:**
 ```matlab
-cd C:\Matlab\MIB3\mib
-mib3
-```
+% Run MIB
+cd C:\Matlab\MIB3\mib; mib3
 
-**Run build checks and tests (MATLAB Build Tool):**
-```matlab
+% Build checks and tests
 cd C:\Matlab\MIB3
-buildtool          % runs default tasks: check + test
-buildtool check    % run code issues check only
-buildtool test     % run tests only
-buildtool clean    % clean build artifacts
-```
+buildtool          % default: check + test
+buildtool check    % code issues only
+buildtool test     % tests only
 
-**Compile standalone application:**
-```matlab
-% Edit deploymentScript.m to update projectRoot path, then run:
+% Compile standalone
 run('C:\Matlab\MIB3\deploymentScript.m')
 ```
 
+---
+
 ## Architecture
 
-MIB3 uses a strict **MVC pattern** implemented with MATLAB packages (`+pkg`) and classes (`@ClassName`). All source lives under `mib/`:
+MVC pattern with MATLAB packages under `mib/`:
 
 ```
 mib/
-  mib3.m              % Entry point: creates MibModel, then MibController
-  +controllers/       % UI controllers
-  +models/            % Application model
-  +views/             % UI views (.mlapp components + MibView class)
-  +core/              % Core data classes
-  +io/                % Image I/O with factory pattern
-  +utils/             % Utilities, dialogs, defaults
-  assets/             % Icons, images
-  external/           % Third-party libraries
-  jars/               % Java .jar files (BioFormats)
-  plugins/            % User plugins
+  mib3.m          % entry point: creates MibModel → MibController
+  +controllers/   % UI controllers
+  +models/        % application model
+  +views/         % .mlapp components + MibView
+  +core/          % core data classes
+  +io/            % image I/O (factory pattern)
+  +utils/         % dialogs, defaults, utilities
 ```
 
-### MVC Layer Responsibilities
+**Model** (`+models/@MibModel`): Central state. Holds `I{}` array of `MibDataset` instances. Fires events (`NewDataset`, `ShowImage`, `SliceChanged`, …) that controllers listen to.
 
-**Model** (`+models/@MibModel`): Central application state. Holds an array `I{}` of `MibDataset` instances (supporting multiple simultaneously open datasets). Fires MATLAB events (`NewDataset`, `ShowImage`, `SliceChanged`, etc.) that controllers listen to.
+**Controller** (`+controllers/@MibController`): Owns sub-controllers — `cRibbon`, `cSegmentation`, `cDirContents`, `cActiveDataset`, `cImageDoc{}`, `cSelection`, `cRoi`, `cStatus`, `cQuickAccessBar`, `childControllers{}`.
 
-**Controller** (`+controllers/@MibController`): Main controller; owns sub-controllers for each UI panel:
-- `cRibbon` — top ribbon with tabs (Home, Image, Mask, Model, Dataset, Tools)
-- `cSegmentation` — segmentation panel with tools (brush, magic wand, lasso, SAM, etc.)
-- `cDirContents` — directory contents / file browser
-- `cActiveDataset` — dataset/set switcher
-- `cImageDoc{}` — one `MibImageDocument` per open image document
-- `cSelection`, `cRoi`, `cStatus`, `cQuickAccessBar`
-- `childControllers{}` — dynamically spawned sub-controllers (dialogs, tools)
+**View** (`+views/@MibView`): Builds the main app window. Ribbon tabs added by `addRibbonHome.m`, etc. Panel components are `.mlapp` files in `+views/+components/`.
 
-**View** (`+views/@MibView`): Builds the main MATLAB app window. Ribbon tabs are added by methods like `addRibbonHome.m`, `addRibbonImage.m`, etc. Panel components are `.mlapp` files in `+views/+components/`.
+### Core Data (`+core/`)
 
-### Core Data Model (`+core/`)
-
-- **`MibDataset`** — one open dataset; contains named layers:
-  - `image` — `MibImage` instance (the pixel data)
-  - `labels` — `MibLabels` or `MibLabels63` (segmentation model)
-  - `mask` — binary mask layer
-  - `selection` — active selection layer
-  - `annotations` — `Annotations` instance
-  - `lines3D` — `Lines3D` instance (skeletons)
-- **`MibImage`** — stores image data as a cell array `data{1}` with dimensions `[height, width, depth, colors, time]`. Dataset types: `'Standard'` (in memory), `'Virtual'` (loaded on demand), `'BigData'`.
-- **`MibVirtualImage`** — virtual/lazy loading variant of MibImage (supports Zarr via `getDataZarr.m`).
-- **`MibBackup`** — undo history manager.
-- **`ChildView`** — base class for child dialog views.
+- **`MibDataset`** — one open dataset; layers: `image` (MibImage), `labels` (MibLabels/MibLabels63), `mask`, `selection`, `annotations`, `lines3D`
+- **`MibImage`** — pixel data as `data{1}` with dims `[height, width, depth, colors, time]`; types: `'Standard'`, `'Virtual'`, `'BigData'`
+- **`MibBackup`** — undo history; **`ChildView`** — base class for child dialog views
 
 ### I/O Layer (`+io/`)
 
-Factory pattern for image loading:
-1. `ExtensionRegistryLoad` — registry mapping file extensions to loader IDs, grouped by mode (`Standard`/`Virtual`/`BigData`) and reader (`Default`/`BioFormats`).
-2. `LoaderFactory.create(loaderInfo, options)` — instantiates the appropriate loader.
-3. Loaders (in `+loaders/`): `AmiraMeshLoader`, `BioFormatsStdLoader`, `HDF5HeaderLoader`, `HDF5NoHeaderLoader`, `ImodLoader`, `ImreadLoader`, `MibImgLoader`, `NrrdLoader`, `VideoReaderLoader`. All implement `loadMetadata` and `loadImages` methods.
+`ExtensionRegistryLoad` → `LoaderFactory.create()` → loader (`loadMetadata` + `loadImages`). Loaders in `+loaders/`: AmiraMesh, BioFormats, HDF5, Imod, Imread, MibImg, Nrrd, VideoReader, MatModel.
 
-### Utilities (`+utils/`)
-
-- `+defaults/` — functions that generate default preferences, LUTs, key shortcuts, session settings
-- `+dlgs/` — reusable dialog functions (`mibInputUniversalDlg`, `mibQuestDlg`, `showErrorDialog`, etc.)
-- `+deepmib/` — deep learning augmentation helpers
+---
 
 ## Key Conventions
 
-- MATLAB package namespace: all classes are referenced as `controllers.MibController`, `models.MibModel`, `core.MibImage`, `io.LoaderFactory`, `utils.dlgs.showErrorDialog`, etc.
-- Multi-method classes: methods are split into separate `.m` files in the `@ClassName/` folder; the constructor and method signatures are declared in the main class file.
-- Event-driven communication between Model and Controller uses MATLAB `events`/`notify`/`addlistener`. Controller listener methods follow the naming pattern `listner1_Standard`, `listner2_ModelEvent`, `listenerNewDataset`, etc.
+- Package namespace: `controllers.MibController`, `models.MibModel`, `core.MibImage`, `io.LoaderFactory`, `utils.dlgs.showErrorDialog`, etc.
+- Methods split into separate `.m` files in `@ClassName/`; constructor + signatures in main class file.
+- Event-driven: `events`/`notify`/`addlistener`. Listener naming: `listner1_Standard`, `listenerNewDataset`, etc.
 - `.asv` files are MATLAB autosave backups — ignore them.
-- Pixel/voxel size is stored in `MibDataset.pixSize` struct with fields `.x .y .z .t .units .tunits`.
-- Image orientation: `3` = XY plane (default), `1` = ZX plane, `2` = ZY plane.
+- Pixel/voxel size: `MibDataset.pixSize` struct — `.x .y .z .t .units .tunits`.
+- Image orientation: `3` = XY (default), `1` = ZX, `2` = ZY.
 
-## MIB2 → MIB3 Conversion Cheat Sheet
+---
 
-When porting methods, apply these substitutions consistently.
+## MIB2 → MIB3 Quick Reference
+
+Full tables in `.claude/conversion_reference.md` (data structures, backup, clearing, bit packing, PoolWaitbar) and `.claude/conversion_ui.md` (modifier keys, display coords, child dialog keyboard shortcuts, orientation switching).
 
 ### Dialogs
 
 | MIB2 | MIB3 |
 |------|------|
-| `warndlg(msg, title)` (short, single message) | `dlgOpt.MsgBoxOnly=true; dlgOpt.Icon='puffin_warning'; dlgOpt.Header=msg; dlgOpt.HeaderLines=N; utils.dlgs.inputUniversalDlg(obj.mibGUI,{},{},title,dlgOpt)` |
-| `warndlg` with title + body text | `dlgOpt.MsgBoxOnly=true; dlgOpt.Header='Bold title'; dlgOpt.HeaderLines=1;` then `prompts={''}` and `defAns={'plain body text'}` — `inputUniversalDlg` auto-wraps the body in `<html><p style="font-size:10pt">` when `MsgBoxOnly=true` |
+| `warndlg(msg, title)` | `dlgOpt.MsgBoxOnly=true; dlgOpt.Icon='puffin_warning'; dlgOpt.Header=msg; dlgOpt.HeaderLines=N;` + `utils.dlgs.inputUniversalDlg(obj.mibGUI,{},{},title,dlgOpt)` |
+| `warndlg` with body text | same, then `prompts={''}; defAns={'body text'}` — auto-wrapped in `<html>` |
 | `errordlg(msg, title)` | same pattern with `dlgOpt.Icon='puffin_error'` |
-| `questdlg(msg, title, btn1, btn2, default)` | `utils.dlgs.inputQuestDlg(obj.mibGUI, msg, title, btn1, btn2, default)` |
-| `waitbar(v, wb, msg)` / `waitbar(0,'Name',title)` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title,'Indeterminate','on')` then `wb.Value=v` / `delete(wb)` |
-| `PoolWaitbar(n, msg, [], title)` (MIB2 class) | `core.PoolWaitbar(n, msg, obj.mibGUI, title)` — always use `core.PoolWaitbar` for parfor progress |
+| `questdlg(msg,title,b1,b2,def)` | `utils.dlgs.inputQuestDlg(obj.mibGUI, msg, title, b1, b2, def)` |
+| `waitbar` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title)` |
 | `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, prompts, defAns, title, options)` |
-| `mibSelectModelTypeDlg` | `inputUniversalDlg` with a dropdown `defAns = {{'63 - ...','255 - ...',1}}` |
 
-`inputUniversalDlg` key options:
-- `MsgBoxOnly=true` + empty `prompts`/`defAns` → message-only dialog (no input widgets)
-- `Icon` — `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`
-- `Header` / `HeaderLines` — bold text above widgets; set `HeaderLines` to match wrapped line count
-- `WindowHeight` — set explicitly when `MsgBoxOnly=true` (auto-calc does not apply)
-- When the warning text is long, split it: put the title in `Header` and the body as an `'<html>...'` prompt
+`inputUniversalDlg` icons: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`
 
-### Parallel progress: core.PoolWaitbar
-
-**Always use `core.PoolWaitbar` whenever a progress dialog is needed inside a `parfor` / `spmd` / `parfeval` loop.**  The class lives at `mib/+core/@PoolWaitbar/PoolWaitbar.m` and wraps a `uiprogressdlg` with a `parallel.pool.DataQueue` so that UI updates from worker threads are safely marshalled back to the main thread.
-
-| Pattern | Code |
-|---------|------|
-| Create (new dialog) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title');` |
-| Create (cancelable) | `pwb = core.PoolWaitbar(n, 'Message...', obj.mibGUI, 'Title', true);` |
-| Reuse existing dialog | `pwb = core.PoolWaitbar(n, 'Message...', existingWb);` |
-| Signal one step (worker-safe) | `pwb.increment();` — the only method safe inside `parfor` |
-| Set step size | `pwb.setIncrement(10);` — call before parfor to reduce overhead |
-| Update message (main thread only) | `pwb.updateText('Phase 2...');` |
-| Check Cancel (main thread only) | `if pwb.getCancelState(); break; end` |
-| Delete (dialog + queue) | `pwb.deletePoolWaitbar();` |
-| Delete (keep dialog open) | `pwb.deletePoolWaitbar(true); wb = pwb.getWaitbarHandle();` |
-
-```matlab
-% Typical parfor pattern
-pwb = core.PoolWaitbar(max_size2, ...
-    sprintf('Eroding %s...', layerName), obj.mibGUI, 'Eroding...');
-pwb.setIncrement(10);   % send() every 10 slices to reduce IPC overhead
-parfor (layer_id = 1:max_size, parforArg)
-    % ... heavy work ...
-    if mod(layer_id, 10) == 0; pwb.increment(); end
-end
-pwb.deletePoolWaitbar();
-```
-
-**Do not** update `uiprogressdlg.Value` directly inside `parfor` — that is not thread-safe.
-For sequential loops use plain `uiprogressdlg` with `wb.Value = k/n` instead of `core.PoolWaitbar`.
-
-### Events & notifications
+### Events & Notifications
 
 | MIB2 | MIB3 |
 |------|------|
 | `notify(obj, 'updateId')` | `notify(obj, 'UpdateGuiWidgets')` |
 | `notify(obj, 'plotImage')` | `notify(obj, 'ShowImage')` |
-| `notify(obj, 'showModel', eventdata)` | `obj.showModel = true` then `notify(obj, 'ShowImage')` |
+| `notify(obj, 'showModel', evd)` | `obj.showModel = true` then `notify(obj, 'ShowImage')` |
 | `notify(obj, 'updateGuiWidgets')` | `notify(obj, 'UpdateGuiWidgets')` |
 
-### MibModel data accessors (new in MIB3)
-
-MIB3 has thin wrapper methods on `MibModel` that delegate to `obj.I{id}`:
+### MibModel Data Accessors
 
 ```matlab
-% Reading data — all extract options.id (default obj.id) and delegate
+% Reading (options.id defaults to obj.getActiveId())
 dataset = obj.mibModel.getData2D(type, slice_no, orient, col_channel, options)
 dataset = obj.mibModel.getData3D(type, time, orient, col_channel, options)
 dataset = obj.mibModel.getData4D(type, orient, col_channel, options)
 
-% Writing data — same pattern
+% Writing (data before type in setData4D)
 obj.mibModel.setData2D(dataset, type, slice_no, orient, col_channel, options)
 obj.mibModel.setData3D(dataset, type, time, orient, col_channel, options)
 obj.mibModel.setData4D(dataset, type, orient, col_channel, options)
 ```
 
-**Important**: use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
-`NaN` is not handled for `slice_no` by `MibDataset` and will return empty data.
+Use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
 
-### `obj.id` vs `obj.getActiveId()` — split-panel safety
+### obj.id vs obj.getActiveId() — Split-Panel Safety
 
-**`obj.id` can be stale in split-panel mode.** `mibModel.id` is only updated by the full UI
-chain (`gui_WindowButtonDownFcn` → `listener_appStateChanged` → `setsOps_Callbacks` →
-`datasetsSetsOps` → `buffers_Callback`). Between user clicks it may still point at the
-previously active dataset.
-
-**Critical rule: `gui_WinMouseMotionFcn` must NEVER write to `mibModel.id` or
-`Sets.selectedSet`.** Mouse motion uses a local `localId` computed from
-`Sets.selectedDataset(setOfDatasetsIndex)` for pixel readout only. Writing `mibModel.id` on
-every mouse move breaks panning, keyboard shortcuts (they stop working after the first press),
-and corrupts the target dataset for any MibModel method that reads `obj.id` as a default.
-
-**`obj.getActiveId()`** computes the correct dataset index from `Sets.selectedSet` and
-`Sets.selectedDataset(selectedSet)`, which are only changed through the full UI chain and are
-therefore always correct.
+**`obj.id` can be stale** between user clicks in split-panel mode.
 
 ```matlab
-% WRONG — may be stale if user hasn't clicked on the target document yet
-BatchOpt.id = obj.id;
-
-% CORRECT — always returns the intended dataset index
-BatchOpt.id = obj.getActiveId();
+BatchOpt.id = obj.id;           % WRONG — may point at wrong dataset
+BatchOpt.id = obj.getActiveId();  % CORRECT — always uses Sets.selectedSet
 ```
 
-**Rule**: Every MibModel method that initializes `BatchOpt.id` as a default must use
-`obj.getActiveId()`, never `obj.id`. The same applies to any code that computes `id` for
-use as a default target dataset (e.g., `loadModel.m`). Direct use of `obj.id` is fine
-in code paths where it was explicitly set by the caller (e.g., after `id = BatchOpt.id`).
+**Rule:** Every MibModel method that initializes `BatchOpt.id` as a default must use `obj.getActiveId()`. Direct `obj.id` is fine after it was explicitly set by the caller.
 
-### Backup (undo)
+**`gui_WinMouseMotionFcn` must NEVER write to `mibModel.id` or `Sets.selectedSet`** — doing so breaks panning and keyboard shortcuts. See `.claude/port_splitpanel.md`.
 
-| MIB2 | MIB3 |
-|------|------|
-| `obj.mibDoBackup('selection', 0, options)` | `obj.mibModel.backup('selection', 0, options)` |
-| `obj.mibDoBackup('selection', 1, options)` | `obj.mibModel.backup('selection', 1, options)` |
+---
 
-`backup(type, switch3d, getDataOptions)` — `switch3d=0` for 2D (current slice), `1` for 3D/4D stack.
-`getDataOptions.blockModeSwitch = true` to back up only the visible portion.
+## Documentation
 
-### Clearing layers
+See `.claude/doc_template.md` for the full documentation block template.
 
-`MibDataset.clearLayer` is the correct entry point. It accepts string mode shortcuts:
+Key rules: first comment repeats the function signature; `[@em optional]` for optional params; `@li` for struct fields; always include `@b Examples:` with a realistic call.
 
-```matlab
-% Clear selection layer — scope controlled by second argument
-obj.mibModel.I{id}.clearLayer('selection');          % full dataset (default)
-obj.mibModel.I{id}.clearLayer('selection', '2D');    % current slice only
-obj.mibModel.I{id}.clearLayer('selection', '3D');    % current z-stack, current t
-obj.mibModel.I{id}.clearLayer('selection', '4D');    % all z and t
-obj.mibModel.I{id}.clearLayer('mask');               % full mask
-obj.mibModel.I{id}.clearLayer('everything');         % sel+mask+labels (MibLabels63 only)
-
-% With block mode (visible area only):
-obj.mibModel.I{id}.clearLayer('selection', '2D', [], [], [], true);
-```
-
-**Architecture note**: `MibDataset.clearLayer` resolves '2D'/'3D'/'4D' string modes to numeric
-coordinates using `obj.slices` and `obj.orientation` (available on `MibDataset`), then passes
-only numeric ranges to the lower-level `MibImage.clearLayer`. Do **not** call `MibImage.clearLayer`
-directly with string modes — it only accepts numeric coordinate ranges.
-
-For '2D': resolves to `z=[currentZ,currentZ]`, `t=[currentT,currentT]`.
-For '3D': resolves to `t=[currentT,currentT]`, z/y/x = full range.
-For '4D': z/t/y/x = full range.
-
-MIB3 has `MibModel.clearSelection(sel_switch, BatchOptIn)` — batch-aware wrapper:
-```matlab
-obj.mibModel.clearSelection('2D, Slice');   % with backup, fires ShowImage
-obj.mibModel.clearSelection('3D, Stack');
-obj.mibModel.clearSelection('4D, Dataset');
-```
-
-At the panel level, `MibSelection.clearSelection()`, `MibSelection.erodeSelection()`, and
-`MibSelection.dilateSelection()` read `obj.mibController.currentModifier`
-(see [Modifier key handling](#modifier-key-handling) below)
-and map: Alt+Shift → `'4D, Dataset'`; Shift or Alt alone → `'3D, Stack'`; none → `'2D, Slice'`.
-Always check `obj.mibModel.I{id}.enableSelection == 0` and return early if disabled.
-
-### Data structures
-
-| MIB2 (`mibImage`) | MIB3 (`MibDataset`) |
-|-------------------|---------------------|
-| `obj.model{1}` (packed/uint8/uint16/uint32) | `obj.labels.data{1}` (in `core.MibLabels63` or `core.MibLabels`) |
-| `obj.selection{1}` | `obj.selection.data{1}` (`core.MibLabels`) |
-| `obj.maskImg{1}` | `obj.mask.data{1}` (`core.MibLabels`) |
-| `obj.modelType` | `isa(obj.labels,'core.MibLabels63')` → 63; else `obj.labels.maxMaterials` |
-| `obj.modelExist` | `obj.modelExist` (same) |
-| `obj.maskExist` | `obj.maskExist` (same) |
-| `obj.modelMaterialNames` | `obj.labels.materialNames` |
-| `obj.modelMaterialColors` | `obj.labels.materialColors` |
-| *(no direct equivalent)* | `obj.labels.materialsCount` — current number of materials (small models) or highest assigned index (large models); avoids full-dataset scan in `addMaterial` |
-| `obj.modelVariable` | `obj.labels.labelsVariable` |
-| `obj.modelFilename` | `obj.labels.filename` |
-| `obj.hLabels.clearContents()` | `obj.annotations.clearContents()` |
-| `size(obj.img{1},1/2/4/5)` → h/w/d/t | `obj.image.height/width/depth/time` |
-| `[h,w,d,t]` dims for model alloc | `[obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time]` (5D: +colors dim=1) |
-
-### Model type 63 bit packing (MibLabels63)
-
-Bits within each uint8 element of `obj.labels.data{1}`:
-- Bits 1–6 (mask `0x3F = 63`) → model material index
-- Bit 7 (`0x40 = 64`) → mask layer
-- Bit 8 (`0x80 = 128`) → selection layer
-
-```matlab
-% Read layers from packed data
-modelData = bitand(data, uint8(63));          % bits 1-6
-maskData  = bitand(data, uint8(64))  / 64;   % bit 7
-selData   = bitand(data, uint8(128)) / 128;  % bit 8
-
-% Write selection into packed data
-data(selData==1) = bitset(data(selData==1), 8, 1);
-
-% Clear model bits only (keep mask/sel)
-data = bitand(data, uint8(192));   % 192 = 0xC0 = bits 7+8
-```
-
-### Creating new label metadata
-
-```matlab
-meta = core.MibImage.initializeImgInfo( ...
-    'pixSize', obj.image.pixSize, ...
-    'Height',  obj.image.height, ...
-    'Width',   obj.image.width,  ...
-    'Depth',   obj.image.depth,  ...
-    'Time',    obj.image.time,   ...
-    'Colors',  1);
-dims = [obj.image.height, obj.image.width, obj.image.depth, 1, obj.image.time];
-```
-
-### Path / misc
-
-| MIB2 | MIB3 |
-|------|------|
-| `global mibPath` | `obj.mibPath` (property of `MibModel`) or pass `options.mibPath` to dialogs |
-| `errordlg(sprintf('...'))` | `ErrorDlgOpt.*`  + `notify(obj,'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt))` |
-| `BatchOpt.mibBatchSectionName = 'Menu -> ...'` | `'Ribbon -> ...'` |
-| `obj.mibView.gui.CurrentModifier` | `obj.mibController.currentModifier` — **do NOT use `obj.UIFigure.CurrentModifier`** (see Modifier key handling) |
-| `obj.mibModel.I{id}.enableSelection == 0` | same — always check before selection operations |
-
-### Modifier key handling
-
-MIB3 uses MATLAB's **AppContainer** framework, which splits the application into multiple independent
-sub-figures (the main app window, each image document, each panel component). Because of this,
-**`obj.UIFigure.CurrentModifier` is NOT reliable for detecting modifier keys held during button
-clicks** — it only reflects keyboard events that targeted that exact sub-figure, and returns `{}`
-for button clicks originating from a different sub-figure (e.g., the Selection panel).
-
-**Solution:** `MibController` stores and clears modifier state explicitly:
-
-| Location | What it does |
-|----------|--------------|
-| `MibController.currentModifier` | `{}` property; the single source of truth for currently held modifier keys |
-| `gui_WindowKeyPressFcn.m` | Immediately stores `obj.currentModifier = modifier` on every key-press event (all key events are routed here via `WindowKeyPressFcn`) |
-| `gui_WindowKeyReleaseFcn.m` | Clears `obj.currentModifier = {}` on every key-release event |
-
-**Usage in document-level or selection methods:**
-
-```matlab
-% CORRECT — read from MibController
-modifier = obj.mibController.currentModifier;
-
-% WRONG — do not use; returns {} when called from a button callback
-modifier = obj.UIFigure.CurrentModifier;
-```
-
-**Standard modifier → scope mapping** (used by `clearSelection`, `erodeSelection`, and all future
-selection operations that accept a dataset scope):
-
-```matlab
-modifier = obj.mibController.currentModifier;
-if sum(ismember({'alt', 'shift'}, modifier)) == 2
-    if obj.mibModel.I{obj.mibModel.id}.image.time == 1
-        DatasetType = '3D, Stack';
-    else
-        DatasetType = '4D, Dataset';
-    end
-elseif sum(ismember({'alt', 'shift'}, modifier)) == 1
-    DatasetType = '3D, Stack';
-else
-    DatasetType = '2D, Slice';
-end
-```
-
-**Key rule:** every `MibImageDocument` method that must respect modifier keys held during a button
-click **must** read `obj.mibController.currentModifier`, never `obj.UIFigure.CurrentModifier`.
-
-### Image display coordinate systems
-
-MIB3 stretches the X axis of the displayed image for anisotropic voxels. The stretch factor
-`coef_z` is computed from pixel sizes and depends on orientation:
-
-| Orientation | Plane | coef_z formula |
-|-------------|-------|----------------|
-| 3 (default) | XY    | `pixSize.x / pixSize.y` |
-| 1           | ZX    | `pixSize.z / pixSize.x` |
-| 2           | ZY    | `pixSize.z / pixSize.y` |
-
-`imageHandle.XData = [1, shownW * coef_z]` — CData columns are stretched in data/axes space.
-`imageHandle.YData = [1, shownH]` — Y is never stretched.
-
-**Data coords → CData pixel index** (needed for brush/segmentation tools):
-```matlab
-XData = obj.imageHandle.XData;
-YData = obj.imageHandle.YData;
-xc = round((x - XData(1)) / (XData(end) - XData(1)) * (shownW - 1)) + 1;
-xc = max(1, min(shownW, xc));
-yc = round((y - YData(1)) / (YData(end) - YData(1)) * (shownH - 1)) + 1;
-yc = max(1, min(shownH, yc));
-```
-
-**Brush cursor**: use `updateBrushCursorOffset()` which derives `coef_z` from `imageHandle.XData`
-and draws an ellipse (X radius × coef_z, Y radius × 1) to match the actual painted area.
-Store `brushPrevXY` in **data/axes coords** so cursor delta is correct; convert to CData indices
-only for rasterizing into the selection matrix.
-
-### Orientation switching (keyboard shortcuts Alt+1/2/3)
-
-When changing orientation, use `'resize'` mode (not `'fitToScreen'`) to preserve magnification:
-```matlab
-% in MibQuickAccessBar.orientationChange:
-savedMag = dataset.magFactor;
-dataset.transpose(newOrient);   % changes dims but not magFactor
-% compute new centered axes at savedMag for new orientation dims
-dataset.setAxesLimits([newW/2 - halfW, newW/2 + halfW], [newH/2 - halfH, newH/2 + halfH]);
-dataset.magFactor = savedMag;
-Options.mode = 'resize';        % keeps stored magFactor
-notify(obj.mibModel, 'UpdateDatasetAxes', core.ToggleEventData(Options));
-```
-`fitToScreen` always resets zoom; `resize` keeps `magFactor` and recomputes FOV from stored limits.
-
-## Documentation Requirements
-
-Every new or ported function/method must include a detailed documentation block. Follow this template:
-
-```matlab
-function result = myMethod(obj, param1, param2, BatchOptIn)
-% function result = myMethod(obj, param1, param2, BatchOptIn)
-% One-line summary of what the method does
-%
-% Longer description if needed — explain the algorithm, side-effects,
-% or any non-obvious behaviour.
-%
-% Parameters:
-% param1: [type] description
-% @li value1 - meaning
-% @li value2 - meaning
-% param2: [@em optional] [type] description; default value and when it applies
-% BatchOptIn: a structure for batch processing mode; when NaN, returns
-%   default options via "SyncBatch" event
-% @li .FieldName - [type, {choices}] description
-% @li .showWaitbar - logical, show or not the waitbar
-% @li .id -> [@em optional], dataset index 1–9, default = obj.id
-%
-% Return values:
-% result: [type] description; empty [] when cancelled or on error
-%
-
-%|
-% @b Examples:
-% @code result = obj.mibModel.myMethod(p1, p2);  // typical call from a controller @endcode
-% @code
-% BatchOpt.FieldName = 'value';
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.myMethod(p1, p2, BatchOpt);       // batch / scripted call
-% @endcode
-
-% Updates
-% DD.MM.YYYY - description of a significant change
-```
-
-Key rules:
-- The first comment line **repeats the function signature** exactly.
-- Use `[@em optional]` to mark optional parameters and state their default.
-- Use `@li` for enumerated values or struct fields.
-- Always include at least one `@b Examples:` `@code ... @endcode` block showing a realistic call.
-- For `BatchOpt`-enabled methods include a batch call example.
-- For low-level `core.*` methods show a call via `obj.mibModel.I{obj.mibModel.id}.method(...)`.
+---
 
 ## MATLAB Coding Rules
-- Always use `dictionary` instead of `containers.Map` for key-value storage.
-  - Use `dictionary(keys, values)` syntax for initialization.
-  - Use `isKey(d, key)` and `d(key)` for lookups.
-  - `dictionary` is the modern replacement (R2022b+) and supports type inference.
+
+- Use `dictionary` instead of `containers.Map`: `dictionary(keys, values)` for init, `isKey(d, key)` and `d(key)` for lookups. (R2022b+, supports type inference)

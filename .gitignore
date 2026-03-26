@@ -36,3 +36,6 @@ codegen/
 *.sbproj.backup
 *.sbproj.bak
 .aider*
+
+# Claude Code — machine-specific session settings (permissions accumulate per-session)
+.claude/settings.local.json

@@ -17,5 +17,6 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 % obj.handles.ribbonModel.quantification
+obj.mibController.startController('controllers.Quantification');
 
 end

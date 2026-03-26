@@ -282,9 +282,9 @@ if switch3d == 1        % 3D mode
             obj.I{id}.image.getMeta(), getDataOptions);
     elseif strcmp(type, 'annotations')
         [labels.labelText, labels.labelValue, labels.labelPosition] = obj.I{id}.annotations.getLabels();
-        obj.Backup.store(type, {labels}, NaN);
+        obj.Backup.store(type, {labels}, NaN, getDataOptions);
     elseif strcmp(type, 'measurements')
-        obj.Backup.store(type, {obj.I{id}.measure.Data}, NaN);
+        obj.Backup.store(type, {obj.I{id}.measure.Data}, NaN, getDataOptions);
     else
         if obj.I{id}.enableSelection == 0; return; end
         obj.Backup.store(type, obj.I{id}.getData3D(type, NaN, getDataOptions.orient, NaN, getDataOptions), NaN, getDataOptions);

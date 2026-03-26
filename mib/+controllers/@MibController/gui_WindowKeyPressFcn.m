@@ -261,9 +261,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                     return;
                 end
                 toolId = cSegmentation.handles.segmTool.ValueIndex;
-                nextTool = obj.mibModel.preferences.SegmTools.FavoriteTools(find(obj.mibModel.preferences.SegmTools.FavoriteTools > toolId, 1));
-
-                if isempty(nextTool); nextTool = obj.mibModel.preferences.SegmTools.FavoriteTools(1); end
+                nextTool = obj.mibModel.preferences.SegmTools.FavoriteTools(max([1 find(obj.mibModel.preferences.SegmTools.FavoriteTools > toolId, 1)]));
             elseif actionName(end) == 'A'  % favorite tool A, 'Shift+D' shortcut
                 nextTool = find(strcmp(toolList, obj.mibModel.preferences.SegmTools.FavoriteToolA), 1);
             else % 'B'  % favorite tool B, 'Ctrl+D' shortcut
@@ -271,7 +269,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             end
 
             % show information text
-            axPos  = getpixelposition(obj.handles.imViewAxes, true);  % [x y w h] in figure pixels
+            axPos  = getpixelposition(cImageDoc.handles.imViewAxes, true);  % [x y w h] in figure pixels
             % axPos(1) = left edge of axes
             % axPos(2) = bottom edge of axes
             % axPos(3) = axes width
@@ -281,17 +279,18 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             lblX = axPos(1) + (axPos(3) - lblW) / 2;   % horizontally centered over axes
             lblY = axPos(2) + axPos(4) * 0.65;         % 65% up the axes height
 
-            msg = sprintf('<div style="background:#DFF2FC;border-radius:10px;padding:12px 24px;font-family:Arial;font-size:20px;font-weight:bold;font-style:italic;color:#1a1a1a;text-align:center;box-shadow:2px 2px 8px rgba(0,0,0,0.2)">%s</div>', toolList{nextTool});
-            fittext = uihtml(obj.UIFigure, 'HTMLSource', msg, ...
+            msg = sprintf('<div style="background:#ff9e46;border-radius:10px;padding:12px 24px;font-family:Arial;font-size:20px;font-weight:bold;font-style:italic;color:#1a1a1a;text-align:center;box-shadow:2px 2px 8px rgba(0,0,0,0.2)">%s</div>', toolList{nextTool});
+             
+            fittext = uihtml(cImageDoc.UIFigure, 'HTMLSource', msg, ...
                 'Position', [lblX lblY lblW lblH]);
-            pause(.4);
+            pause(.3);
 
             cSegmentation.handles.segmTool.ValueIndex = nextTool;
             cSegmentation.segmentationTool_Callback();
             delete(fittext);
 
         case 'Undo/Redo last action'                    % default 'Ctrl + z'
-            if obj.mibModel.Backup.enableSwitch == 0; return; end
+            if ~obj.mibModel.Backup.enableSwitch; return; end
             if obj.mibModel.Backup.prevUndoIndex == 0; return; end
             obj.mibModel.undo();
             obj.showImage();

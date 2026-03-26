@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__matlab__evaluate_matlab_code",
+      "mcp__matlab__check_matlab_code",
+      "mcp__matlab__run_matlab_file",
+      "mcp__matlab__detect_matlab_toolboxes",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(git mv:*)",
+      "Bash(wc -l:*)"
+    ]
+  }
+}

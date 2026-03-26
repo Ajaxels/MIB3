@@ -58,7 +58,12 @@ defaultAnnotationText  = dataset.annotations.defaultAnnotationText;
 defaultAnnotationValue = dataset.annotations.defaultAnnotationValue;
 if isnan(defaultAnnotationValue); defaultAnnotationValue = 1; end
 
-obj.mibModel.backup('annotations', 0);
+% do backup
+if isShift  % 3D
+    obj.mibModel.backup('annotations', 1);
+else        % 2D
+    obj.mibModel.backup('annotations', 0);
+end
 
 if ~isCtrl && ~isShift   % ---- add annotation ----
     if obj.mibController.cSegmentation.handles.annShowPrompt.Value

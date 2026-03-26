@@ -314,7 +314,7 @@ classdef Annotations < handle
                             'Wrong structure', dlgOpt);
                         return;
                     end
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
 
                     if ~isfield(Labels, 'Values')
                         Labels.Values = ones(numel(Labels.Text), 1);
@@ -336,7 +336,7 @@ classdef Annotations < handle
                     if isequal(filename, 0); return; end
                     fullFilename = fullfile(path, filename{1});
 
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     switch indx
                         case 1  % .ann (MATLAB)
                             res = load(fullFilename, '-mat');
@@ -578,7 +578,7 @@ classdef Annotations < handle
             % Delete all annotations from the current dataset.
 
             id = obj.BatchOpt.id;
-            obj.mibModel.backup('labels', 0);
+            obj.mibModel.backup('annotations', 0);
             obj.mibModel.I{id}.annotations.removeLabels();
             notify(obj.mibModel, 'ShowImage');
             obj.updateWidgets();
@@ -611,7 +611,7 @@ classdef Annotations < handle
             rowId     = Indices(1);
             if rowId > size(data, 1) || isempty(rowNames); return; end
 
-            obj.mibModel.backup('labels', 0);
+            obj.mibModel.backup('annotations', 0);
 
             newLabelText    = data(rowId, 1);
             newLabelValue   = str2double(data{rowId, 2});
@@ -672,8 +672,8 @@ classdef Annotations < handle
                     width  = obj.mibModel.I{id}.image.width;
                     height = obj.mibModel.I{id}.image.height;
                     slices = obj.mibModel.I{id}.slices;
-                    zVal = num2str(slices{orientation}(1));
-                    tVal = num2str(slices{5}(1));
+                    zVal = slices{orientation}(1);
+                    tVal = slices{5}(1);
                     defText  = obj.mibModel.I{id}.annotations.defaultAnnotationText;
                     defValue = num2str(obj.mibModel.I{id}.annotations.defaultAnnotationValue);
 
@@ -682,18 +682,23 @@ classdef Annotations < handle
                         sprintf('X coordinate (Xmax=%d):', width); ...
                         sprintf('Y coordinate (Ymax=%d):', height); ...
                         sprintf('T coordinate (Tmax=%d):', obj.mibModel.I{id}.image.time)};
-                    defAns = {defText; defValue; zVal; '10'; '10'; tVal};
+                    dlgOpt.WindowHeight = 320;
+                    dlgOpt.WindowWidth = 320;
+                    defAns = {defText; defValue; 
+                        struct('Spinner', true, 'Value', zVal, 'Limits', [1 depth], 'Step', 1, 'Round', false); 
+                        struct('Spinner', true, 'Value', 10, 'Limits', [1 width], 'Step', 1, 'Round', false);
+                        struct('Spinner', true, 'Value', 10, 'Limits', [1 height], 'Step', 1, 'Round', false); 
+                        struct('Spinner', true, 'Value', tVal, 'Limits', [1 height], 'Step', 1, 'Round', false)};
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Add annotation');
+                        prompts, defAns, 'Add annotation', dlgOpt);
                     if isempty(answer); return; end
 
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     labelsText = answer(1);
                     obj.mibModel.I{id}.annotations.defaultAnnotationText  = labelsText{1};
                     labelsValue   = str2double(answer{2});
                     obj.mibModel.I{id}.annotations.defaultAnnotationValue = labelsValue;
-                    labelsPos = [str2double(answer{3}), str2double(answer{4}), ...
-                                 str2double(answer{5}), str2double(answer{6})];
+                    labelsPos = [answer{3}, answer{4}, answer{5}, answer{6}];
                     obj.mibModel.I{id}.annotations.addLabels(labelsText, labelsPos, labelsValue);
                     obj.updateWidgets();
                     notify(obj.mibModel, 'ShowImage');
@@ -731,7 +736,7 @@ classdef Annotations < handle
                     labelsList      = labelsList(newIndices);
                     labelValues     = labelValues(newIndices);
                     labelPositions  = labelPositions(newIndices, :);
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     obj.mibModel.I{id}.annotations.clearContents();
                     obj.mibModel.I{id}.annotations.addLabels(labelsList, labelPositions, labelValues);
                     obj.updateWidgets();
@@ -743,9 +748,11 @@ classdef Annotations < handle
                     prompts = {'Type of operation:'; 'Factor:'};
                     defAns = {[operations, find(ismember(operations, obj.batchModifyExpressionOperation), 1)]; ...
                               obj.batchModifyExpressionFactor};
-                    modOpt.Title      = 'Select operation and factor to apply to selected values:';
-                    modOpt.TitleLines = 2;
-                    modOpt.WindowWidth = 1.2;
+                    modOpt.Header      = 'Select operation and factor to apply to selected values:';
+                    modOpt.HeaderLines = 2;
+                    modOpt.WindowWidth = 400;
+                    modOpt.WindowHeight = 200;
+                    modOpt.mibPath = obj.mibModel.mibPath;
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
                         prompts, defAns, 'Batch modify', modOpt);
                     if isempty(answer); return; end
@@ -761,11 +768,12 @@ classdef Annotations < handle
                         if colId == 1
                             dlgOpt.MsgBoxOnly  = true;
                             dlgOpt.Icon        = 'puffin_error';
-                            dlgOpt.Header      = 'Not implemented';
+                            dlgOpt.Header      = 'Ops!';
                             dlgOpt.HeaderLines = 1;
+                            dlgOpt.mibPath = obj.mibModel.mibPath;
                             utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                                {''}, {'Modification of label names is not yet implemented.'}, ...
-                                'Error', dlgOpt);
+                                {''}, {'Use the "Rename selected annotations" option to modify annotations name!'}, ...
+                                'Annotations: batch modify annotations', dlgOpt);
                             return;
                         end
                         if colId == 2
@@ -789,7 +797,7 @@ classdef Annotations < handle
                             labelPositions(obj.indices(idx,1), colId-2) = A;
                         end
                     end
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     obj.mibModel.I{id}.annotations.clearContents();
                     obj.mibModel.I{id}.annotations.addLabels(labelsList, labelPositions, labelValues);
                     obj.updateWidgets();
@@ -802,13 +810,13 @@ classdef Annotations < handle
                     if isempty(currentName); return; end
 
                     prompts = {'String to search for'; 'Replace with'};
-                    defAns  = {''; currentName{1}};
-                    rnOpt.Focus = 2;
+                    defAns  = {currentName{1}; currentName{1}};
+                    rnOpt.Focus = 1;
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
                         prompts, defAns, 'Rename annotations', rnOpt);
                     if isempty(answer); return; end
 
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     if isempty(answer{1})
                         obj.mibModel.I{id}.annotations.renameLabels(rowId, answer(2));
                     else
@@ -897,10 +905,10 @@ classdef Annotations < handle
                     dlgOpt.Icon        = 'puffin_info';
                     dlgOpt.Header      = 'Counting annotations';
                     dlgOpt.HeaderLines = 1;
-                    dlgOpt.WindowHeight = 120;
+                    dlgOpt.mibPath = obj.mibModel.mibPath;
                     utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        {''}, {'Results printed to Command Window and copied to clipboard.'}, ...
-                        'Done', dlgOpt);
+                        {''}, {'Results printed to Command Window and copied to clipboard (use Ctrl+V to paste it)'}, ...
+                        'Count annotations: done!', dlgOpt);
 
                 case 'Clipboard'
                     if isempty(obj.indices); return; end
@@ -918,7 +926,7 @@ classdef Annotations < handle
 
                 case 'ClipboardPaste'
                     if isempty(obj.indices); return; end
-                    obj.mibModel.backup('labels', 1);
+                    obj.mibModel.backup('annotations', 1);
                     startIndex = obj.indices(1,1);
                     colId      = obj.indices(1,2);
 
@@ -952,76 +960,135 @@ classdef Annotations < handle
                 case 'Mask'
                     if isempty(obj.indices); return; end
                     prompts = {'Mode'; ...
-                        'Spot size policy (fixed: all spots same radius)'; ...
-                        'Spot radius in pixels'};
-                    defAns = {{'2D spots', '3D spots', 1}; {'Fixed value', 'Scaled from Value', 1}; '1'};
-                    maskOpt.PromptLines = [1, 2, 1];
-                    maskOpt.WindowWidth = 1.0;
+                        'Spot size policy'; ...
+                        'Spot radius in pixels (Fixed) or scale factor (Scaled)'};
+                    defAns = {{'2D spots', '3D spots', 1}; {'Fixed value', 'Scaled from Value', 1}; 1};
+                    maskOpt.mibPath = obj.mibModel.mibPath;
+                    maskOpt.WindowWidth = 400;
+                    maskOpt.WindowHeight = 200;
                     [answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
                         prompts, defAns, 'Conversion to Mask', maskOpt);
                     if isempty(answer); return; end
 
-                    wb = uiprogressdlg(obj.view.gui, 'Title', 'Mask', ...
-                        'Message', 'Getting annotations...', 'Indeterminate', 'on');
+                    wb = uiprogressdlg(obj.view.gui, 'Title', 'Annotations to Mask', ...
+                        'Message', 'Preparing...', 'Value', 0);
 
                     if obj.mibModel.I{id}.maskExist
                         setDataOptions.blockModeSwitch = 0;
                         obj.mibModel.backup('mask', 1, setDataOptions);
                     end
                     obj.mibModel.I{id}.clearLayer('mask');
+                    obj.mibModel.I{id}.maskExist = 1;
 
-                    data = obj.view.handles.annotationTable.Data;
-                    d    = data(unique(obj.indices(:,1)), 3:6);  % {z, x, y, t}
-                    d2   = ceil(str2double(d));
-                    d2(d2(:,1) < 1, :) = [];
-                    d2(d2(:,1) > obj.mibModel.I{id}.image.depth, :)  = [];
-                    d2(d2(:,2) < 1, :) = [];
-                    d2(d2(:,2) > obj.mibModel.I{id}.image.width, :)  = [];
-                    d2(d2(:,3) < 1, :) = [];
-                    d2(d2(:,3) > obj.mibModel.I{id}.image.height, :) = [];
-                    d2(d2(:,4) < 1, :) = [];
-                    d2(d2(:,4) > obj.mibModel.I{id}.image.time, :)   = [];
+                    data      = obj.view.handles.annotationTable.Data;
+                    selRows   = unique(obj.indices(:,1));
+                    d2        = ceil(str2double(data(selRows, 3:6)));   % [z, x, y, t]
+                    annotVals = str2double(data(selRows, 2));            % annotation values
 
-                    switch answer{2}
-                        case 'Fixed value'
-                            wb.Message = 'Placing seeds...';
-                            for pntId = 1:size(d2, 1)
-                                % direct write into mask for single-voxel placement
-                                zc = round(d2(pntId,1));
-                                xc = round(d2(pntId,2));
-                                yc = round(d2(pntId,3));
-                                tc = round(d2(pntId,4));
-                                obj.mibModel.I{id}.mask.data{1}(yc, xc, zc, 1, tc) = 1;
+                    imgWidth  = obj.mibModel.I{id}.image.width;
+                    imgHeight = obj.mibModel.I{id}.image.height;
+                    imgDepth  = obj.mibModel.I{id}.image.depth;
+                    imgTime   = obj.mibModel.I{id}.image.time;
+
+                    outBounds = d2(:,1) < 1 | d2(:,1) > imgDepth  | ...
+                                d2(:,2) < 1 | d2(:,2) > imgWidth   | ...
+                                d2(:,3) < 1 | d2(:,3) > imgHeight  | ...
+                                d2(:,4) < 1 | d2(:,4) > imgTime;
+                    nOutBounds       = sum(outBounds);
+                    d2(outBounds, :) = [];
+                    annotVals(outBounds) = [];
+
+                    is3D     = strcmp(answer{1}, '3D spots');
+                    isScaled = strcmp(answer{2}, 'Scaled from Value');
+                    if is3D
+                        pixX = obj.mibModel.I{id}.image.pixSize.x;
+                        pixZ = obj.mibModel.I{id}.image.pixSize.z;
+                    end
+
+                    nPts               = size(d2, 1);
+                    getOpt.id          = id;
+                    getOpt.blockModeSwitch = 0;
+
+                    for pntId = 1:nPts
+                        wb.Value   = (pntId - 1) / nPts;
+                        wb.Message = sprintf('Placing spot %d / %d...', pntId, nPts);
+
+                        zc = d2(pntId, 1);
+                        xc = d2(pntId, 2);
+                        yc = d2(pntId, 3);
+                        tc = d2(pntId, 4);
+                        getOpt.t = [tc, tc];
+
+                        % compute spot radius for this annotation
+                        if isScaled
+                            r = round(annotVals(pntId) * answer{3});
+                        else
+                            r = round(answer{3});
+                        end
+                        if isnan(r); r = 0; end
+                        r = max(0, r);
+
+                        % build per-point list of (z-slice, 2D-radius) pairs
+                        if ~is3D || r == 0
+                            zSlices = zc;
+                            r2dList = r;
+                        else
+                            rz      = max(1, round(r * pixX / pixZ));
+                            zSlices = max(1, zc - rz) : min(imgDepth, zc + rz);
+                            r2dList = round(r * sqrt(max(0, ...
+                                1 - ((zSlices - zc) ./ rz).^2)));
+                        end
+
+                        % place spot on each z-slice
+                        for zIdx = 1:numel(zSlices)
+                            zSlice = zSlices(zIdx);
+                            r2d    = r2dList(zIdx);
+
+                            if r2d == 0
+                                % single-voxel
+                                getOpt.x  = [xc, xc];
+                                getOpt.y  = [yc, yc];
+                                maskBlock = cell2mat(obj.mibModel.getData2D( ...
+                                    'mask', zSlice, 3, NaN, getOpt));
+                                maskBlock(1,1) = 1;
+                            else
+                                % disk spot via imdilate
+                                se   = strel('disk', r2d, 0);
+                                seed = zeros(2*r2d+1, 2*r2d+1, 'uint8');
+                                seed(r2d+1, r2d+1) = 1;
+                                spot = imdilate(seed, se);
+
+                                xMin  = max(1, xc - r2d); xMax = min(imgWidth,  xc + r2d);
+                                yMin  = max(1, yc - r2d); yMax = min(imgHeight, yc + r2d);
+                                sxMin = xMin - xc + r2d + 1; sxMax = xMax - xc + r2d + 1;
+                                syMin = yMin - yc + r2d + 1; syMax = yMax - yc + r2d + 1;
+
+                                getOpt.x  = [xMin, xMax];
+                                getOpt.y  = [yMin, yMax];
+                                maskBlock = cell2mat(obj.mibModel.getData2D( ...
+                                    'mask', zSlice, 3, NaN, getOpt));
+                                maskBlock = uint8(maskBlock | spot(syMin:syMax, sxMin:sxMax));
                             end
-                            wb.Message = 'Growing seeds...';
-                            if str2double(answer{3}) > 1
-                                BatchOptDilate.TargetLayer  = {'mask'};
-                                BatchOptDilate.DatasetType  = {'4D, Dataset'};
-                                BatchOptDilate.DilateMode   = {answer{1}(1:2)};
-                                BatchOptDilate.StrelSize    = answer{3};
-                                obj.mibModel.dilateImage(BatchOptDilate);
-                            end
-                            delete(wb);
-                            notify(obj.mibModel, 'ShowImage');
-                            if size(d,1) ~= size(d2,1)
-                                dlgOpt.MsgBoxOnly  = true;
-                                dlgOpt.Icon        = 'puffin_warning';
-                                dlgOpt.Header      = 'Results';
-                                dlgOpt.HeaderLines = 1;
-                                dlgOpt.WindowHeight = 120;
-                                utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                                    {''}, {sprintf('%d annotation(s) were out of image boundaries and not rendered.', ...
-                                    size(d,1)-size(d2,1))}, 'Warning', dlgOpt);
-                            end
-                        case 'Scaled from Value'
-                            delete(wb);
-                            dlgOpt.MsgBoxOnly  = true;
-                            dlgOpt.Icon        = 'puffin_error';
-                            dlgOpt.Header      = 'Not implemented';
-                            dlgOpt.HeaderLines = 1;
-                            utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                                {''}, {'"Scaled from Value" mode is not yet implemented.'}, ...
-                                'Error', dlgOpt);
+                            obj.mibModel.setData2D(maskBlock, 'mask', zSlice, 3, NaN, getOpt);
+                        end
+                    end
+
+                    wb.Value = 1;
+                    delete(wb);
+                    obj.mibModel.showMask = true; 
+                    eventdata = core.ToggleEventData({'selectionPanel'});
+                    notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
+                    notify(obj.mibModel, 'ShowImage');
+
+                    if nOutBounds > 0
+                        dlgOpt.MsgBoxOnly  = true;
+                        dlgOpt.Icon        = 'puffin_warning';
+                        dlgOpt.Header      = 'Results';
+                        dlgOpt.HeaderLines = 1;
+                        dlgOpt.WindowHeight = 180;
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                            {''}, {sprintf('%d annotation(s) were out of image boundaries and not rendered.', ...
+                            nOutBounds)}, 'Annotations: conversion to Mask', dlgOpt);
                     end
 
                 case 'Interpolate'
@@ -1055,7 +1122,7 @@ classdef Annotations < handle
                         interpolationMethod = 'linear';
                     end
 
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     [~, ids]   = sort(labelPosition, 1);
                     labelPosition = labelPosition(ids(:,1), :);
                     labelValues   = labelValues(ids(:,1));
@@ -1144,7 +1211,7 @@ classdef Annotations < handle
                     end
                     if strcmp(button, 'Cancel'); return; end
 
-                    obj.mibModel.backup('labels', 0);
+                    obj.mibModel.backup('annotations', 0);
                     rowNames = obj.view.handles.annotationTable.RowName;
                     removeIds = cellfun(@str2double, rowNames(rowId));
                     obj.mibModel.I{id}.annotations.removeLabels(removeIds);
@@ -1190,7 +1257,7 @@ classdef Annotations < handle
             % function resortTablePopup_Callback(obj)
             % Resort the annotation list by the chosen column.
 
-            obj.mibModel.backup('labels', 1);
+            obj.mibModel.backup('annotations', 1);
             sortBy = lower(obj.view.handles.resortTablePopup.Value);
             obj.mibModel.I{obj.BatchOpt.id}.annotations.sortLabels(sortBy);
             obj.updateWidgets();
@@ -1209,8 +1276,9 @@ classdef Annotations < handle
                 {'1 (pt 8)', '2 (pt 10)', '3 (pt 12)', '4 (pt 14)', '5 (pt 16)', ...
                  '6 (pt 18)', '7 (pt 20)', obj.mibModel.preferences.SegmTools.Annotations.FontSize}; ...
                 false};
-            sOpt.PromptLines = [2; 1; 1];
-            sOpt.WindowWidth = 1.2;
+            sOpt.WindowWidth = 450;
+            sOpt.WindowHeight = 190;
+            sOpt.mibPath = obj.mibModel.mibPath;
             [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
                 prompts, defAns, 'Annotation settings', sOpt);
             if isempty(answer); return; end
