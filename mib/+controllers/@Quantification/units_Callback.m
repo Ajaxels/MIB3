@@ -18,17 +18,20 @@ function units_Callback(obj)
 
 curValue = obj.view.handles.Units.Value;
 
-pixSize = obj.mibModel.getImageProperty('pixSize');
+id = obj.mibModel.getActiveId();
+pixSize = obj.mibModel.I{id}.image.pixSize;
 isAnisotropic = (pixSize.x ~= pixSize.z || pixSize.y ~= pixSize.z);
 is3D = obj.view.handles.Shape3D.Value;
 
 if isAnisotropic && ~strcmp(curValue, 'pixels') && is3D && obj.anisotropicVoxelsAgree == 0
+    dlgOpt.WindowHeight = 200;
+    dlgOpt.Icon = 'puffin_warning';
     answer = utils.dlgs.inputQuestDlg(obj.view.gui, ...
-        sprintf(['!!! Warning !!!\n\nPlease note that calculation of certain 3D properties, such as\n' ...
+        sprintf(['Please note that calculation of certain 3D properties, such as\n' ...
                  'MeridionalEccentricity, EquatorialEccentricity, MajorAxisLength,\n' ...
                  'SecondAxisLength, ThirdAxisLength, EquivDiameter, SurfaceArea\n' ...
                  'requires isotropic voxels!']), ...
-        'Attention!!!', 'Confirm', 'Cancel', 'Confirm');
+        'Attention!!!', 'Confirm', 'Cancel', 'Confirm', dlgOpt);
     if strcmp(answer, 'Cancel')
         obj.view.handles.Units.Value = 'pixels';
         return;

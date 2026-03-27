@@ -137,7 +137,6 @@ classdef BatchProcessing < handle
             obj.createContextMenus();
 
             obj.updateWidgets();
-            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
             obj.view.gui.Visible = 'on';    % turn on the window
 
             % re-fit table columns whenever the parent panel is resized;
@@ -178,7 +177,7 @@ classdef BatchProcessing < handle
             % Updates
             %
             % listener_Callbacks - process model events (UpdateGuiWidgets, SyncBatch, StopProtocol)
-            if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view) || ~isvalid(obj.view.gui); return; end
             switch evnt.EventName
                 case 'UpdateGuiWidgets'
                     obj.updateWidgets();
@@ -359,7 +358,7 @@ classdef BatchProcessing < handle
             %
             % Updates
             %
-            if isempty(obj.view) || ~isvalid(obj.view.gui); return; end
+            if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view) || ~isvalid(obj.view.gui); return; end
             w = obj.view.handles.selectedActionTable.InnerPosition(3);
             if w < 20; return; end
             col1 = max(70, round(w * 0.38));

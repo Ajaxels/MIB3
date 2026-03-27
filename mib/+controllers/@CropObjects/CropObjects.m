@@ -75,10 +75,10 @@ classdef CropObjects < handle
             obj.annotationLabels = annotationLabels;
 
             % Use parent's session key if it defines one, else default to annotations
-            if isprop(parentController, 'sessionSettingsKey')
+            if isprop(parentController, 'sessionSettingsKey') && ~isempty(parentController.sessionSettingsKey)
                 obj.sessionSettingsKey = parentController.sessionSettingsKey;
             else
-                obj.sessionSettingsKey = (obj.sessionSettingsKey);
+                obj.sessionSettingsKey = 'annotationsCropPatches';
             end
 
             id = obj.mibModel.getActiveId();
@@ -86,6 +86,26 @@ classdef CropObjects < handle
             if isempty(obj.outputVar); obj.outputVar = 'CropOut'; end
             
             obj.outputDir = obj.mibModel.currentDirectory;
+
+            % batch mode: resolve output directory, run silently, skip GUI
+            if batchModeSwitch
+                cropDest = obj.parentController.BatchOpt.CropObjectsTo{1};
+                if ~strcmp(cropDest, 'Crop to MATLAB')
+                    outName = obj.parentController.BatchOpt.CropObjectsOutputName;
+                    if ~isempty(outName)
+                        % absolute path if starts with separator or drive letter, else relative to image dir
+                        if outName(1) == filesep || (numel(outName) > 1 && outName(2) == ':')
+                            obj.outputDir = outName;
+                        else
+                            imgDir = fileparts(obj.mibModel.I{id}.image.filename);
+                            obj.outputDir = fullfile(imgDir, outName);
+                        end
+                        if exist(obj.outputDir, 'dir') == 0; mkdir(obj.outputDir); end
+                    end
+                end
+                obj.generatePatches();
+                return;
+            end
 
             % initialise the view
             guiName = 'views.CropObjectsGUI';
@@ -95,6 +115,16 @@ classdef CropObjects < handle
             obj.updateWidgets();
 
             obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+
+            % centre over the parent dialog, or main MIB window as fallback
+            parentGui = obj.mibModel.mibGUI;
+            if ~isempty(parentController) && isvalid(parentController) && ...
+                    ~isempty(parentController.view) && isvalid(parentController.view.gui)
+                parentGui = parentController.view.gui;
+            end
+            drawnow;   % let AppDesigner finish layout before reading position
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, parentGui, 'center', 'center');
+
             obj.view.gui.Visible = 'on';
 
             % register model listeners
@@ -142,6 +172,44 @@ classdef CropObjects < handle
             h.modelFormatPopup.ValueChangedFcn    = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
             h.maskFormatPopup.ValueChangedFcn     = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
             h.SingleMaskObjectPerDataset.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
+
+            h.selectDirBtn.ButtonPushedFcn = @(~,~) obj.selectDirBtn_Callback();
+            h.dirEdit.ValueChangedFcn      = @(~,~) obj.dirEdit_Callback();
+        end
+
+        % -----------------------------------------------------------------
+        function selectDirBtn_Callback(obj)
+            % function selectDirBtn_Callback(obj)
+            % Browse for the output directory using a folder picker dialog.
+
+            obj.view.handles.cropBtn.Enable = 'off';  % prevent crop while dialog is open
+            folder_name = uigetdir(obj.outputDir, 'Select directory');
+            if isequal(folder_name, 0)
+                obj.view.handles.cropBtn.Enable = 'on';
+                return;
+            end
+            obj.outputDir = folder_name;
+            obj.view.handles.dirEdit.Value = folder_name;
+            obj.view.handles.cropBtn.Enable = 'on';
+        end
+
+        % -----------------------------------------------------------------
+        function dirEdit_Callback(obj)
+            % function dirEdit_Callback(obj)
+            % Validate a directory path typed manually into dirEdit.
+
+            folder_name = obj.view.handles.dirEdit.Value;
+            if exist(folder_name, 'dir') == 0
+                choice = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+                    sprintf('The target directory:\n%s\nis missing!\n\nCreate?', folder_name), ...
+                    'Create Directory', 'Create', 'Cancel', 'Cancel');
+                if strcmp(choice, 'Cancel')
+                    obj.view.handles.dirEdit.Value = obj.outputDir;
+                    return;
+                end
+                mkdir(folder_name);
+            end
+            obj.outputDir = folder_name;
         end
 
         % -----------------------------------------------------------------
@@ -154,38 +222,62 @@ classdef CropObjects < handle
             BatchOptLocal = obj.parentController.BatchOpt;
 
             % --- target radio group ---
-            if strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to Matlab')
+            if strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to MATLAB')
                 h.targetPanel.SelectedObject = h.matlabRadio;
-                h.formatPopup.Enable = 'off';
+                h.formatPopup.Enable  = 'off';
+                h.selectDirBtn.Enable = 'off';
+                h.dirEdit.Enable      = 'off';
             else
                 h.targetPanel.SelectedObject = h.fileRadio;
-                h.formatPopup.Enable = 'on';
+                h.formatPopup.Enable  = 'on';
+                h.selectDirBtn.Enable = 'on';
+                h.dirEdit.Enable      = 'on';
                 if ismember(BatchOptLocal.CropObjectsTo{1}, h.formatPopup.Items)
                     h.formatPopup.Value = BatchOptLocal.CropObjectsTo{1};
+                else
+                    % value is not a valid format (e.g. 'Do not crop' from Quantification default)
+                    h.formatPopup.Value = h.formatPopup.Items{1};
+                    BatchOptLocal.CropObjectsTo{1} = h.formatPopup.Items{1};
                 end
             end
 
-            % --- patch dimensions (annotation mode: MarginXY=width, MarginZ=height) ---
-            h.MarginXYLabel.Text = 'Width, px';
-            h.MarginZLabel.Text  = 'Height, px';
+            fromQuantification = isa(obj.parentController, 'controllers.Quantification');
+
+            % --- patch dimensions ---
+            if fromQuantification
+                h.MarginXYLabel.Text = 'MarginXY, px';
+                h.MarginZLabel.Text  = 'MarginZ, px';
+            else
+                h.MarginXYLabel.Text = 'Width, px';
+                h.MarginZLabel.Text  = 'Height, px';
+            end
             h.marginXYEdit.Value = str2double(BatchOptLocal.CropObjectsMarginXY);
             h.marginZEdit.Value  = str2double(BatchOptLocal.CropObjectsMarginZ);
-            h.marginZEdit.Enable = 'on';
 
             % --- 3D patches ---
             h.Generate3DPatches.Enable = 'on';
             h.Generate3DPatches.Value  = BatchOptLocal.Generate3DPatches;
             h.CropObjectsDepth.Value   = str2double(BatchOptLocal.CropObjectsDepth);
-            if BatchOptLocal.Generate3DPatches
-                h.CropObjectsDepth.Enable = 'on';
-            else
+            if fromQuantification
+                % Depth box unused from Quantification (Z comes from BoundingBox)
                 h.CropObjectsDepth.Enable = 'off';
+                % marginZ enabled only when "Crop 3D objects" is checked
+                h.marginZEdit.Enable = matlab.lang.OnOffSwitchState(BatchOptLocal.Generate3DPatches);
+            else
+                h.marginZEdit.Enable = 'on';
+                h.CropObjectsDepth.Enable = matlab.lang.OnOffSwitchState(BatchOptLocal.Generate3DPatches);
             end
 
             % --- model / mask inclusion ---
-            h.SingleMaskObjectPerDataset.Enable = 'off';
-            BatchOptLocal.SingleMaskObjectPerDataset = false;
-            h.SingleMaskObjectPerDataset.Value = false;
+            if fromQuantification
+                isMaskLayer = str2double(obj.parentController.BatchOpt.MaterialIndex) == -1;
+                h.SingleMaskObjectPerDataset.Enable = matlab.lang.OnOffSwitchState(isMaskLayer);
+                BatchOptLocal.SingleMaskObjectPerDataset = BatchOptLocal.SingleMaskObjectPerDataset && isMaskLayer;
+            else
+                h.SingleMaskObjectPerDataset.Enable = 'off';
+                BatchOptLocal.SingleMaskObjectPerDataset = false;
+            end
+            h.SingleMaskObjectPerDataset.Value = BatchOptLocal.SingleMaskObjectPerDataset;
 
             if obj.mibModel.I{id}.modelExist
                 h.cropModelCheck.Enable = 'on';
@@ -214,6 +306,9 @@ classdef CropObjects < handle
                 h.jitterVariationEditbox.Enable = 'off';
                 h.jitterSeedEditbox.Enable      = 'off';
             end
+
+            % --- output directory ---
+            h.dirEdit.Value = obj.outputDir;
 
             obj.parentController.BatchOpt = BatchOptLocal;
         end
@@ -258,11 +353,34 @@ classdef CropObjects < handle
 
             h = obj.view.handles;
             if h.fileRadio.Value
-                h.formatPopup.Enable = 'on';
+                h.formatPopup.Enable  = 'on';
+                h.selectDirBtn.Enable = 'on';
+                h.dirEdit.Enable      = 'on';
                 obj.parentController.BatchOpt.CropObjectsTo{1} = h.formatPopup.Value;
             else
-                h.formatPopup.Enable = 'off';
-                obj.parentController.BatchOpt.CropObjectsTo{1} = 'Crop to Matlab';
+                % MATLAB export — ask for variable name
+                notOk = true;
+                while notOk
+                    answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+                        {sprintf('Enter variable name template for export to MATLAB:\n(must start with a letter)')}, ...
+                        {obj.outputVar}, 'Variable name');
+                    if isempty(answer); return; end
+                    
+                    if ~isnan(str2double(answer(1)))
+                        dlgOpt.MsgBoxOnly  = true;
+                        dlgOpt.Icon        = 'puffin_error';
+                        dlgOpt.Header      = 'The first character cannot be numerical!';
+                        dlgOpt.HeaderLines = 1;
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong variable name', dlgOpt);
+                    else
+                        notOk = false;
+                        obj.outputVar = answer;
+                    end
+                end
+                h.formatPopup.Enable  = 'off';
+                h.selectDirBtn.Enable = 'off';
+                h.dirEdit.Enable      = 'off';
+                obj.parentController.BatchOpt.CropObjectsTo{1} = 'Crop to MATLAB';
             end
         end
 
@@ -272,10 +390,11 @@ classdef CropObjects < handle
             % Callback for the "crop 3D objects" checkbox.
 
             h = obj.view.handles;
-            if h.Generate3DPatches.Value
-                h.CropObjectsDepth.Enable = 'on';
+            state = matlab.lang.OnOffSwitchState(h.Generate3DPatches.Value);
+            if isa(obj.parentController, 'controllers.Quantification')
+                h.marginZEdit.Enable = state;       % Z margin only meaningful in 3D mode
             else
-                h.CropObjectsDepth.Enable = 'off';
+                h.CropObjectsDepth.Enable = state;  % fixed depth box for annotations
             end
             obj.parentController.BatchOpt.Generate3DPatches = h.Generate3DPatches.Value;
         end
@@ -338,18 +457,18 @@ classdef CropObjects < handle
             BatchOptLocal = obj.parentController.BatchOpt;
 
             % persist jitter settings
+            if ~isfield(obj.mibModel.sessionSettings, obj.sessionSettingsKey)
+                obj.mibModel.sessionSettings.(obj.sessionSettingsKey) = struct();
+            end
             obj.mibModel.sessionSettings.(obj.sessionSettingsKey).CropObjectsJitterVariation = BatchOptLocal.CropObjectsJitterVariation;
             obj.mibModel.sessionSettings.(obj.sessionSettingsKey).CropObjectsJitterSeed      = BatchOptLocal.CropObjectsJitterSeed;
 
             if isempty(obj.annotationLabels); return; end
 
-            if strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to Matlab')
+            if strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to MATLAB')
                 obj.outputDir = '';
                 obj.generatePatches();
             else
-                folder = uigetdir(obj.mibModel.currentDirectory, 'Select output directory for patches');
-                if isequal(folder, 0); return; end
-                obj.outputDir = folder;
                 if exist(obj.outputDir, 'dir') == 0; mkdir(obj.outputDir); end
                 obj.generatePatches();
             end
@@ -368,7 +487,8 @@ classdef CropObjects < handle
 
             BatchOptLocal   = obj.parentController.BatchOpt;
             id  = obj.mibModel.getActiveId();
-            h   = obj.view.handles;
+            hasView = ~isempty(obj.view) && isvalid(obj.view.gui);
+            if hasView; h = obj.view.handles; end
 
             % ---- jitter ------------------------------------------------
             if BatchOptLocal.CropObjectsJitter
@@ -392,7 +512,7 @@ classdef CropObjects < handle
             if ~isempty(extensionPos)
                 ext = BatchOptLocal.CropObjectsTo{1}(extensionPos+1:end-1);
             end
-            toMatlab = strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to Matlab');
+            toMatlab = strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to MATLAB');
 
             % ---- dataset dimensions & pixelsize ------------------------
             imgW    = obj.mibModel.I{id}.image.width;
@@ -425,44 +545,48 @@ classdef CropObjects < handle
                     obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials = 1;
                 end
 
-                prompts = {'Include annotation name';
-                           'Include Z coordinate';
-                           'Include X coordinate';
-                           'Include Y coordinate';
-                           'Use slice names as filename templates';
-                           sprintf('Export all materials or only selected?\n(applies when Crop Model is checked)')};
-                defAns = {obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeName;
-                          obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeZ;
-                          obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeX;
-                          obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeY;
-                          obj.mibModel.sessionSettings.(obj.sessionSettingsKey).useSliceNameIdentifier;
-                          {modelText1, modelText2, obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials}};
-                dlgOpt.mibPath      = obj.mibModel.mibPath;
-                dlgOpt.WindowWidth  = 450;
-                dlgOpt.PromptLines  = [1, 1, 1, 1, 1, 2];
-                dlgOpt.Title        = 'Specify additional filename parameters';
-                dlgOpt.TitleLines   = 1;
-                [answer, selValue] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Crop patches settings', dlgOpt);
-                if isempty(answer); return; end
+                if hasView
+                    prompts = {'Include annotation name';
+                               'Include Z coordinate';
+                               'Include X coordinate';
+                               'Include Y coordinate';
+                               'Use slice names as filename templates';
+                               sprintf('Export all materials or only selected?\n(applies when Crop Model is checked)')};
+                    defAns = {obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeName;
+                              obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeZ;
+                              obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeX;
+                              obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeY;
+                              obj.mibModel.sessionSettings.(obj.sessionSettingsKey).useSliceNameIdentifier;
+                              {modelText1, modelText2, obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials}};
+                    dlgOpt.mibPath      = obj.mibModel.mibPath;
+                    dlgOpt.WindowWidth  = 550;
+                    dlgOpt.WindowHeight  = 230;
+                    dlgOpt.LabelPosition = 'left';
+                    dlgOpt.Title        = 'Specify additional filename parameters';
+                    dlgOpt.TitleLines   = 1;
+                    [answer, selValue] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Crop patches settings', dlgOpt);
+                    if isempty(answer); return; end
 
-                obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeName            = logical(answer{1});
-                obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeZ               = logical(answer{2});
-                obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeX               = logical(answer{3});
-                obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeY               = logical(answer{4});
-                obj.mibModel.sessionSettings.(obj.sessionSettingsKey).useSliceNameIdentifier = logical(answer{5});
-                obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials    = selValue(6);
-
-                includeName = logical(answer{1});
-                includeZ    = logical(answer{2});
-                includeX    = logical(answer{3});
-                includeY    = logical(answer{4});
+                    obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeName            = logical(answer{1});
+                    obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeZ               = logical(answer{2});
+                    obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeX               = logical(answer{3});
+                    obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeY               = logical(answer{4});
+                    obj.mibModel.sessionSettings.(obj.sessionSettingsKey).useSliceNameIdentifier = logical(answer{5});
+                    obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials    = selValue(6);
+                end
+                % read naming flags from sessionSettings (set by dialog above, or pre-existing in batch)
+                ss = obj.mibModel.sessionSettings.(obj.sessionSettingsKey);
+                includeName = logical(ss.includeName);
+                includeZ    = logical(ss.includeZ);
+                includeX    = logical(ss.includeX);
+                includeY    = logical(ss.includeY);
 
                 % build per-slice filename templates
                 [~, fnBase]  = fileparts(obj.mibModel.I{id}.image.filename);
                 if isempty(fnBase); fnBase = obj.outputVar; end
                 fnTemplate   = repmat({fnBase}, [imgZ, 1]);
 
-                useSliceIdx = logical(answer{5});
+                useSliceIdx = logical(ss.useSliceNameIdentifier);
                 if useSliceIdx
                     sliceNames = obj.mibModel.I{id}.image.sliceName;
                     if numel(sliceNames) == imgZ
@@ -472,8 +596,12 @@ classdef CropObjects < handle
             end
 
             % ---- model material index ----------------------------------
-            if h.cropModelCheck.Value
-                if obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials == 1
+            cropModelChecked = hasView && h.cropModelCheck.Value || ...
+                (~hasView && ~strcmp(BatchOptLocal.CropObjectsIncludeModel{1}, 'Do not include'));
+            if cropModelChecked
+                if ~isfield(obj.mibModel.sessionSettings, obj.sessionSettingsKey) || ...
+                        ~isfield(obj.mibModel.sessionSettings.(obj.sessionSettingsKey), 'cropOutAllMaterials') || ...
+                        obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials == 1
                     BatchOptLocal.CropObjectsIncludeModelMaterialIndex = 'NaN';
                 else
                     matIdx = max([1, obj.mibModel.I{id}.selectedAddToMaterial - 2]);
@@ -484,12 +612,16 @@ classdef CropObjects < handle
             material_id = str2double(BatchOptLocal.CropObjectsIncludeModelMaterialIndex);
 
             % ---- patch sizes -------------------------------------------
-            patchWidth  = str2double(BatchOptLocal.CropObjectsMarginXY);
-            patchHeight = str2double(BatchOptLocal.CropObjectsMarginZ);
-            if BatchOptLocal.Generate3DPatches
-                patchDepth = str2double(BatchOptLocal.CropObjectsDepth);
-            else
-                patchDepth = 1;
+            marginXY = str2double(BatchOptLocal.CropObjectsMarginXY);
+            marginZ  = str2double(BatchOptLocal.CropObjectsMarginZ);
+            useBoundingBox = isfield(obj.annotationLabels, 'boundingBoxes');
+            if ~useBoundingBox
+                % annotation-based: marginXY = total width, marginZ = total height (Y)
+                if BatchOptLocal.Generate3DPatches
+                    patchDepth = str2double(BatchOptLocal.CropObjectsDepth);
+                else
+                    patchDepth = 1;
+                end
             end
 
             % ---- image save options (shared) ---------------------------
@@ -508,31 +640,52 @@ classdef CropObjects < handle
             % ---- progress bar ------------------------------------------
             noPoints  = size(obj.annotationLabels.positions, 1);
             objDigits = numel(num2str(noPoints));
-            wb = uiprogressdlg(obj.view.gui, 'Title', 'Crop patches', ...
-                'Message', 'Please wait...', 'Value', 0);
+            hasView = ~isempty(obj.view) && isvalid(obj.view.gui);
+            if hasView
+                wb = uiprogressdlg(obj.view.gui, 'Title', 'Crop patches', ...
+                    'Message', 'Please wait...', 'Value', 0);
+            end
 
             getDataOpt.blockModeSwitch = 0;
             getDataOpt.id              = id;
 
             for pntId = 1:noPoints
-                wb.Value   = (pntId - 1) / noPoints;
-                wb.Message = sprintf('Processing patch %d / %d...', pntId, noPoints);
+                if hasView
+                    wb.Value   = (pntId - 1) / noPoints;
+                    wb.Message = sprintf('Processing patch %d / %d...', pntId, noPoints);
+                end
 
                 annZ = obj.annotationLabels.positions(pntId, 1);
                 t1   = obj.annotationLabels.positions(pntId, 4);
 
                 % ---- compute crop bounds --------------------------------
-                x1 = obj.annotationLabels.positions(pntId, 2) - floor(patchWidth  / 2);
-                y1 = obj.annotationLabels.positions(pntId, 3) - floor(patchHeight / 2);
-                z1 = annZ                                      - floor(patchDepth  / 2);
-
-                x1 = max(1, min(x1, imgW - patchWidth  + 1));
-                y1 = max(1, min(y1, imgH - patchHeight + 1));
-                z1 = max(1, min(z1, imgZ - patchDepth  + 1));
-
-                x2 = x1 + patchWidth  - 1;
-                y2 = y1 + patchHeight - 1;
-                z2 = z1 + patchDepth  - 1;
+                if useBoundingBox
+                    % Object-based: BoundingBox + marginXY/marginZ padding on each side.
+                    % MATLAB regionprops BoundingBox: [x_start, y_start, z_start, w, h, d]
+                    % with 0.5-offset origin, so first pixel index = ceil(start).
+                    bb_obj = obj.annotationLabels.boundingBoxes(pntId, :);
+                    bbX1 = ceil(bb_obj(1));  bbX2 = bbX1 + bb_obj(4) - 1;
+                    bbY1 = ceil(bb_obj(2));  bbY2 = bbY1 + bb_obj(5) - 1;
+                    x1 = max(1,    bbX1 - marginXY);
+                    x2 = min(imgW, bbX2 + marginXY);
+                    y1 = max(1,    bbY1 - marginXY);
+                    y2 = min(imgH, bbY2 + marginXY);
+                    if BatchOptLocal.Generate3DPatches
+                        bbZ1 = ceil(bb_obj(3));  bbZ2 = bbZ1 + bb_obj(6) - 1;
+                        z1 = max(1,    bbZ1 - marginZ);
+                        z2 = min(imgZ, bbZ2 + marginZ);
+                    else
+                        z1 = annZ;  z2 = annZ;
+                    end
+                else
+                    % Centroid-based: marginXY = total width, marginZ = total height (Y)
+                    x1 = max(1, min(obj.annotationLabels.positions(pntId, 2) - floor(marginXY / 2), imgW - marginXY + 1));
+                    y1 = max(1, min(obj.annotationLabels.positions(pntId, 3) - floor(marginZ  / 2), imgH - marginZ  + 1));
+                    z1 = max(1, min(annZ - floor(patchDepth / 2), imgZ - patchDepth + 1));
+                    x2 = x1 + marginXY  - 1;
+                    y2 = y1 + marginZ   - 1;
+                    z2 = z1 + patchDepth - 1;
+                end
 
                 getDataOpt.x = [x1, x2];
                 getDataOpt.y = [y1, y2];
@@ -542,17 +695,22 @@ classdef CropObjects < handle
                 xMinPhys = (x1 - 1) * pixSize.x;
                 yMinPhys = (y1 - 1) * pixSize.y;
                 zMinPhys = (z1 - 1) * pixSize.z;
-                xMaxPhys = xMinPhys + patchWidth  * pixSize.x;
-                yMaxPhys = yMinPhys + patchHeight * pixSize.y;
-                zMaxPhys = zMinPhys + patchDepth  * pixSize.z;
+                xMaxPhys = xMinPhys + (x2 - x1 + 1) * pixSize.x;
+                yMaxPhys = yMinPhys + (y2 - y1 + 1) * pixSize.y;
+                zMaxPhys = zMinPhys + (z2 - z1 + 1) * pixSize.z;
                 bb       = [xMinPhys, xMaxPhys, yMinPhys, yMaxPhys, zMinPhys, zMaxPhys];
 
                 % ---- generate output filename ---------------------------
+                if isfield(obj.annotationLabels, 'objectIds')
+                    fileId = obj.annotationLabels.objectIds(pntId);
+                else
+                    fileId = pntId;
+                end
                 if toMatlab
-                    filename = sprintf(['%s_%0' num2str(objDigits) 'd'], fnTemplate, pntId);
+                    filename = sprintf(['%s_%0' num2str(objDigits) 'd'], fnTemplate, fileId);
                 else
                     filename = fullfile(obj.outputDir, ...
-                        sprintf(['%s_%0' num2str(objDigits) 'd'], fnTemplate{annZ}, pntId));
+                        sprintf(['%s_%0' num2str(objDigits) 'd'], fnTemplate{annZ}, fileId));
                     if includeName
                         filename = sprintf('%s_%s', filename, obj.annotationLabels.names{pntId});
                     end
@@ -602,8 +760,8 @@ classdef CropObjects < handle
                         matlabVar.Model.materials = modelMaterialNames;
                         matlabVar.Model.colors    = modelMaterialColors;
                     else
-                        [~, fnModel] = fileparts(filename);
-                        fnModel      = ['Labels_' fnModel];
+                        [~, fnBase] = fileparts(filename);
+                        fnModel = fullfile(obj.outputDir, ['Labels_' fnBase]);
                         obj.saveAuxLayer(modelData, BatchOptLocal.CropObjectsIncludeModel{1}, fnModel, pixSize, ...
                             xMinPhys, yMinPhys, zMinPhys, modelMaterialColors, modelMaterialNames, ...
                             saveOpts, id, 'model');
@@ -617,8 +775,8 @@ classdef CropObjects < handle
                     if toMatlab
                         matlabVar.Mask = maskData;
                     else
-                        [~, fnMask] = fileparts(filename);
-                        fnMask      = ['Mask_' fnMask];
+                        [~, fnBase] = fileparts(filename);
+                        fnMask = fullfile(obj.outputDir, ['Mask_' fnBase]);
                         maskColors  = [.567, .213, .625];
                         maskNames   = {'Mask'};
                         obj.saveAuxLayer(maskData, BatchOptLocal.CropObjectsIncludeMask{1}, fnMask, pixSize, ...
@@ -635,9 +793,11 @@ classdef CropObjects < handle
                 end
             end
 
-            wb.Value = 1;
-            delete(wb);
-            obj.closeWindow();
+            if hasView
+                wb.Value = 1;
+                delete(wb);
+                obj.closeWindow();
+            end
         end
 
         % -----------------------------------------------------------------
@@ -664,7 +824,7 @@ classdef CropObjects < handle
             pixStr.minz = zMinPhys;
 
             switch format
-                case {'Matlab format (*.model)', 'Matlab format (*.mask)'}
+                case {'MATLAB format (*.model)', 'MATLAB format (*.mask)'}
                     if strcmp(layerType, 'model')
                         fnOut              = [fnBase '.model'];
                         imOut              = data;

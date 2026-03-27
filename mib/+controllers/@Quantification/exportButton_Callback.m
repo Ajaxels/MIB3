@@ -18,7 +18,8 @@ function exportButton_Callback(obj, batchModeSwitch)
 if nargin < 2; batchModeSwitch = 0; end
 
 id = obj.mibModel.getActiveId();
-fn_out = obj.mibModel.I{id}.image.sliceName('Filename');
+dataset = obj.mibModel.I{id};
+fn_out = dataset.image.filename;
 
 if batchModeSwitch == 0
     choice = 'Save as...';
@@ -48,10 +49,10 @@ if batchModeSwitch == 0
         obj.BatchOpt.ExportResultsTo(1) = obj.BatchOpt.ExportResultsTo{2}(filterIndex + 2);
     else    % Export to MATLAB
         obj.BatchOpt.ExportResultsTo{1} = choice;
-        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-            {'Variable name for export:'}, {'MIB_stats'}, 'Export to MATLAB', []);
+        answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+            {'Variable name for export:'}, {'MIB_stats'}, 'Export to MATLAB');
         if isempty(answer); return; end
-        obj.BatchOpt.ExportFilename = answer{1};
+        obj.BatchOpt.ExportFilename = answer;
     end
 else
     filterIndex = find(ismember(obj.BatchOpt.ExportResultsTo{2}, obj.BatchOpt.ExportResultsTo{1}), 1) - 2;
@@ -80,25 +81,25 @@ else
     OPTIONS.type = 'Model';
 end
 
-OPTIONS.filename = obj.mibModel.I{id}.image.sliceName('Filename');
+OPTIONS.filename = dataset.image.filename;
 if strcmp(OPTIONS.type, 'Mask')
-    OPTIONS.mask_fn = obj.mibModel.getImageProperty('maskImgFilename');
+    OPTIONS.mask_fn = dataset.labels.maskFilename;
 elseif strcmp(OPTIONS.type, 'Exterior')
-    OPTIONS.model_fn = obj.mibModel.getImageProperty('modelFilename');
+    OPTIONS.model_fn = dataset.labels.filename;
     OPTIONS.material_id = 'Exterior';
 else
-    OPTIONS.model_fn = obj.mibModel.getImageProperty('modelFilename');
+    OPTIONS.model_fn = dataset.labels.filename;
     if ~strcmp(obj.BatchOpt.MaterialIndex, '-2')
         matIdx = str2double(obj.BatchOpt.MaterialIndex);
         OPTIONS.material_id = sprintf('%s (%s)', obj.BatchOpt.MaterialIndex, ...
-            obj.mibModel.I{id}.labels.materialNames{matIdx});
+            dataset.labels.materialNames{matIdx});
     else
         OPTIONS.material_id = 'Full model';
     end
 end
 
 if strcmp(OPTIONS.frame, '2D, Slice')
-    OPTIONS.slicenumber = obj.mibModel.I{id}.getCurrentSliceNumber();
+    OPTIONS.slicenumber = dataset.getCurrentSliceNumber();
 else
     OPTIONS.slicenumber = 0;
 end
@@ -109,7 +110,7 @@ set(0, 'DefaulttextInterpreter', 'none');
 % Resolve [F] filename template
 templatePos = strfind(obj.BatchOpt.ExportFilename, '[');
 if ~isempty(templatePos)
-    [~, fn] = fileparts(obj.mibModel.I{id}.image.sliceName('Filename'));
+    [~, fn] = fileparts(dataset.image.sliceName('Filename'));
     exportFilenameLocal = sprintf('%s%s%s', ...
         obj.BatchOpt.ExportFilename(1:templatePos(1)-1), fn, ...
         obj.BatchOpt.ExportFilename(templatePos(1)+3:end));
@@ -118,17 +119,17 @@ else
 end
 
 if strcmp(obj.BatchOpt.ExportResultsTo{1}, 'Export to MATLAB')
-    fprintf('"%s" structure with results was created in the MATLAB workspace\n', exportFilenameLocal);
     STATSOUT = obj.STATS;
     STATSOUT(1).OPTIONS = OPTIONS;
     assignin('base', exportFilenameLocal, STATSOUT);
+    fprintf('"%s" structure with results was created in the MATLAB workspace\n', exportFilenameLocal);
 elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}(3:6))
     if exportFilenameLocal(1) ~= filesep
         exportFilenameLocal = [filesep exportFilenameLocal];
     end
     fn = [Path, exportFilenameLocal, Extension];
 
-    if obj.BatchOpt.showWaitbar
+    if obj.BatchOpt.showWaitbar && ~isempty(obj.view) && isvalid(obj.view.gui)
         wb = uiprogressdlg(obj.view.gui, 'Title', 'Saving results', ...
             'Message', sprintf('%s\nPlease wait...', fn), 'Indeterminate', 'on');
     end
@@ -138,16 +139,16 @@ elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}
     if exist(fn, 'file') == 2;  delete(fn); end
 
     % Build slice names for export
-    if isKey(obj.mibModel.I{id}.image.sliceName, 'SliceName')
-        snList = obj.mibModel.I{id}.image.sliceName('SliceName');
-        if numel(snList) == obj.mibModel.I{id}.image.depth
+    if ~isempty(dataset.image.sliceName)
+        snList = dataset.image.sliceName;
+        if numel(snList) == dataset.image.depth
             sliceNames = snList;
         else
-            sliceNames = repmat(snList, [obj.mibModel.I{id}.image.depth, 1]);
+            sliceNames = repmat(snList, [dataset.image.depth, 1]);
         end
     else
-        [~, snBase, snExt] = fileparts(obj.mibModel.I{id}.image.sliceName('Filename'));
-        sliceNames = repmat({[snBase, snExt]}, [obj.mibModel.I{id}.image.depth, 1]);
+        [~, snBase, snExt] = fileparts(dataset.image.filename);
+        sliceNames = repmat({[snBase, snExt]}, [dataset.image.depth, 1]);
     end
 
     STATS = obj.STATS; %#ok<PROPLC>
@@ -156,7 +157,7 @@ elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}
         centroidsMatrix = num2cell(cat(1, STATS.Centroid)); %#ok<PROPLC>
         zVectorArray = cell2mat(centroidsMatrix(:,3));
         [STATS.Filename] = deal(sliceNames(round(zVectorArray))); %#ok<PROPLC>
-        if obj.mibModel.I{id}.image.sliceName('Time') == 1
+        if dataset.image.time == 1
             STATS = rmfield(STATS, 'TimePnt'); %#ok<PROPLC>
         end
         if filterIndex == 4
@@ -174,7 +175,7 @@ elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}
     elseif filterIndex == 1 || filterIndex == 2     % Excel or CSV
         warning('off', 'MATLAB:xlswrite:AddSheet');
         s = {'Quantification Results'};
-        s(2,1) = {['Image filename: ' obj.mibModel.I{id}.image.sliceName('Filename')]};
+        s(2,1) = {['Image filename: ' dataset.image.filename]};
         if strcmp(OPTIONS.type, 'Model') || strcmp(OPTIONS.type, 'Exterior')
             s(3,1) = {['Model filename: ' OPTIONS.model_fn]};
             s(3,9) = {OPTIONS.material_id};
@@ -183,7 +184,7 @@ elseif ismember(obj.BatchOpt.ExportResultsTo{1}, obj.BatchOpt.ExportResultsTo{2}
                 s(3,1) = {['Mask filename: ' OPTIONS.mask_fn]};
             end
         end
-        pixSize = obj.mibModel.getImageProperty('pixSize');
+        pixSize = dataset.image.pixSize;
         fieldNames = fieldnames(pixSize);
         s(4,1) = {'Pixel size and units:'};
         for field = 1:numel(fieldNames)

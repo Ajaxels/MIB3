@@ -45,7 +45,7 @@ end
 selectedProperty = obj.BatchOpt.Property{1};
 
 if obj.BatchOpt.Multiple
-    property = arrayfun(@(x) strtrim(x), split(obj.BatchOpt.MultipleProperty, ';'), 'UniformOutput', false);
+    property = cellstr(strtrim(split(obj.BatchOpt.MultipleProperty, ';')));
     allProps = [obj.availableProperties2D, obj.availableProperties3D, obj.availablePropertiesInt];
     property(~ismember(property, allProps)) = [];
 
@@ -179,6 +179,8 @@ intProps = {'SumIntensity','StdIntensity','MeanIntensity','MaxIntensity','MinInt
 pixSize = dataset.image.pixSize;
 
 for t = t1:t2
+    start_id = 1; % init for proper visualization of progress bar
+    end_id = 2;   % init for proper visualization of progress bar
     if strcmp(obj.BatchOpt.ObjectShape{1}, 'Shape3D')
         if strcmp(obj.BatchOpt.DatasetType{1}, '2D, Slice')
             if obj.BatchOpt.showWaitbar; mibSetWb(wb, isUiDlg, 0, ''); delete(wb); end
@@ -210,7 +212,7 @@ for t = t1:t2
         getDataOptions.blockModeSwitch = dataset.blockModeSwitch;
 
         if selectedMaterial == -1
-            img = cell2mat(obj.mibModel.getData3D('mask', t, 3, 0, getDataOptions));
+            img = cell2mat(obj.mibModel.getData3D('mask', t, 3, [], getDataOptions));
         else
             img = cell2mat(obj.mibModel.getData3D('labels', t, 3, selectedMaterial, getDataOptions));
         end
@@ -330,11 +332,11 @@ for t = t1:t2
                 STATS2 = regionprops(CC, img, 'PixelValues');
                 vals = arrayfun(@(x) double(x.PixelValues), STATS2, 'UniformOutput', false);
                 STATS2 = cell2struct(vals', {'PixelValues'});
-                if ismember('MinIntensity',  property); fn = sprintf('MinIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@min,  struct2cell(STATS2), 'UniformOutput', true)); end
-                if ismember('MaxIntensity',  property); fn = sprintf('MaxIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@max,  struct2cell(STATS2), 'UniformOutput', true)); end
-                if ismember('MeanIntensity', property); fn = sprintf('MeanIntensity_Ch%d', colorChannel(i)); [STATS.(fn)] = deal(cellfun(@mean, struct2cell(STATS2), 'UniformOutput', true)); end
-                if ismember('SumIntensity',  property); fn = sprintf('SumIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@sum,  struct2cell(STATS2), 'UniformOutput', true)); end
-                if ismember('StdIntensity',  property); fn = sprintf('StdIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@std2, struct2cell(STATS2), 'UniformOutput', true)); end
+                if ismember('MinIntensity',  property); fn = sprintf('MinIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@min,  struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                if ismember('MaxIntensity',  property); fn = sprintf('MaxIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@max,  struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                if ismember('MeanIntensity', property); fn = sprintf('MeanIntensity_Ch%d', colorChannel(i)); tmp = num2cell(cellfun(@mean, struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                if ismember('SumIntensity',  property); fn = sprintf('SumIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@sum,  struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                if ismember('StdIntensity',  property); fn = sprintf('StdIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@std2, struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
             end
         end
 
@@ -350,9 +352,8 @@ for t = t1:t2
         % Correlation (3D)
         if ~isempty(property(ismember(property, 'Correlation')))
             if obj.BatchOpt.showWaitbar; mibSetWb(wb, isUiDlg, 0.80, sprintf('%s\nComputing: Correlation', waitbarTitle)); end
-            img = cell2mat(obj.mibModel.getData3D('image', t, 3, 0, getDataOptions));
-            img1 = squeeze(img(:,:,colorChannel1,:));
-            img2 = squeeze(img(:,:,colorChannel2,:));
+            img1 = squeeze(cell2mat(obj.mibModel.getData3D('image', t, 3, colorChannel1, getDataOptions)));
+            img2 = squeeze(cell2mat(obj.mibModel.getData3D('image', t, 3, colorChannel2, getDataOptions)));
             clear img;
             for object = 1:numel(STATS)
                 STATS(object).Correlation = corr2(img1(STATS(object).PixelIdxList), img2(STATS(object).PixelIdxList));
@@ -512,17 +513,17 @@ for t = t1:t2
                     STATS2 = regionprops(CC, imgSlice, 'PixelValues');
                     vals = arrayfun(@(x) double(x.PixelValues), STATS2, 'UniformOutput', false);
                     STATS2 = cell2struct(vals', {'PixelValues'});
-                    if ismember('MinIntensity',  property); fn = sprintf('MinIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@min,  struct2cell(STATS2), 'UniformOutput', true)); end
-                    if ismember('MaxIntensity',  property); fn = sprintf('MaxIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@max,  struct2cell(STATS2), 'UniformOutput', true)); end
-                    if ismember('MeanIntensity', property); fn = sprintf('MeanIntensity_Ch%d', colorChannel(i)); [STATS.(fn)] = deal(cellfun(@mean, struct2cell(STATS2), 'UniformOutput', true)); end
-                    if ismember('SumIntensity',  property); fn = sprintf('SumIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@sum,  struct2cell(STATS2), 'UniformOutput', true)); end
-                    if ismember('StdIntensity',  property); fn = sprintf('StdIntensity_Ch%d',  colorChannel(i)); [STATS.(fn)] = deal(cellfun(@std2, struct2cell(STATS2), 'UniformOutput', true)); end
+                    if ismember('MinIntensity',  property); fn = sprintf('MinIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@min,  struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                    if ismember('MaxIntensity',  property); fn = sprintf('MaxIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@max,  struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                    if ismember('MeanIntensity', property); fn = sprintf('MeanIntensity_Ch%d', colorChannel(i)); tmp = num2cell(cellfun(@mean, struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                    if ismember('SumIntensity',  property); fn = sprintf('SumIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@sum,  struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
+                    if ismember('StdIntensity',  property); fn = sprintf('StdIntensity_Ch%d',  colorChannel(i)); tmp = num2cell(cellfun(@std2, struct2cell(STATS2), 'UniformOutput', true)); [STATS.(fn)] = tmp{:}; end
                 end
             end
 
             % Correlation (2D)
             if ~isempty(property(ismember(property, 'Correlation')))
-                imgFull = cell2mat(obj.mibModel.getData2D('image', lay_id, orientation, 0, getDataOptions));
+                imgFull = cell2mat(obj.mibModel.getData2D('image', lay_id, orientation, [], getDataOptions));
                 img1 = imgFull(:,:,colorChannel1);
                 img2 = imgFull(:,:,colorChannel2);
                 for object = 1:numel(STATS)
@@ -605,18 +606,25 @@ end
 
 if obj.BatchOpt.showWaitbar && end_id > start_id; mibSetWb(wb, isUiDlg, 1, 'Done'); end
 
-if ~isempty(rowNames) && batchModeSwitch == 0
-    obj.view.handles.statTable.RowName = rowNames;
+if batchModeSwitch == 0
+    obj.view.handles.statTable.Data = data;
+    if ~isempty(rowNames)
+        obj.view.handles.statTable.RowName = rowNames;
+    end
+    obj.sortBtn_Callback();   % in-place: reorders both Data and RowName together
+    data = obj.view.handles.statTable.Data;  % pick up the sorted data for histogram
+else
+    data = obj.sortBtn_Callback(data);
 end
 
-data = obj.sortBtn_Callback(data);
-if batchModeSwitch == 0; obj.view.handles.statTable.Data = data; end
-
-dataVals = data(:,3);
+dataVals = data(:,2);
 [a, b] = hist(dataVals, 256); %#ok<HIST>
 obj.histLimits = [min(b), max(b)];
 if batchModeSwitch == 0
     bar(obj.view.handles.histogram, b, a);
+    obj.view.handles.histogram.XLim = [obj.histLimits(1), obj.histLimits(2)];
+    obj.view.handles.highlight1.Value = obj.histLimits(1);
+    obj.view.handles.highlight2.Value = obj.histLimits(2);
     obj.histScale_Callback();
     grid(obj.view.handles.histogram);
 end
@@ -627,8 +635,17 @@ if batchModeSwitch == 1
     if ~strcmp(obj.BatchOpt.ExportResultsTo{1}, 'Do not export')
         obj.exportButton_Callback(batchModeSwitch);
     end
-    if ~strcmp(obj.BatchOpt.CropObjectsTo{1}, 'Do not crop')
-        obj.startController('controllers.CropObjects', obj, batchModeSwitch);
+    if ~strcmp(obj.BatchOpt.CropObjectsTo{1}, 'Do not crop') && ~isempty(obj.STATS) && isfield(obj.STATS, 'Centroid')
+        cropObjIds = 1:numel(obj.STATS);
+        centroids  = vertcat(obj.STATS(cropObjIds).Centroid);
+        timePnts   = [obj.STATS(cropObjIds).TimePnt]';
+        cropAnnot.positions  = [centroids(:,3), centroids(:,1), centroids(:,2), timePnts];
+        cropAnnot.names      = repmat({obj.BatchOpt.MaterialIndex}, 1, numel(cropObjIds));
+        if isfield(obj.STATS, 'BoundingBox')
+            cropAnnot.boundingBoxes = vertcat(obj.STATS(cropObjIds).BoundingBox);
+        end
+        cropAnnot.objectIds = [obj.STATS(cropObjIds).ObjectId];
+        obj.startController('controllers.CropObjects', obj, batchModeSwitch, cropAnnot);
     end
 end
 

@@ -40,19 +40,17 @@ h.Multiple.ValueChangedFcn     = @(~,~) obj.multiple_Callback();
 h.logScale.ValueChangedFcn    = @(~,~) obj.histScale_Callback();
 h.highlightOnClick.ValueChangedFcn = @(hObj,~) obj.updateBatchOptFromGUI(hObj);
 
-% radio buttons / button groups — adapt Tags to match the .mlapp layout
-% ObjectShape button group (Shape2D / Shape3D)
-h.Shape2D.ValueChangedFcn = @(hObj,~) obj.radioButton_Callback(hObj);
-h.Shape3D.ValueChangedFcn = @(hObj,~) obj.radioButton_Callback(hObj);
-% DetectionType button group (Object / Intensity)
-h.Object.ValueChangedFcn    = @(hObj,~) obj.radioButton_Callback(hObj);
-h.Intensity.ValueChangedFcn = @(hObj,~) obj.radioButton_Callback(hObj);
+% radio buttons / button groups — use ButtonGroup SelectionChangedFcn
+% (fires once per selection change; evt.NewValue is the newly selected button)
+h.ObjectShape.SelectionChangedFcn   = @(~,evt) obj.radioButton_Callback(evt.NewValue);
+h.DetectionType.SelectionChangedFcn = @(~,evt) obj.radioButton_Callback(evt.NewValue);
 
 % table
 h.statTable.CellSelectionCallback = @(~,evnt) obj.statTable_CellSelectionCallback(evnt.Indices, 'skip');
 
 % histogram click
 obj.view.gui.WindowButtonDownFcn = @(~,~) obj.gui_WindowButtonDownFcn();
+h.highlightRange.ButtonPushedFcn = @(~,~) obj.highlightRange_Callback();
 
 % keyboard shortcuts (undo, escape) — shared handler for child dialogs
 obj.view.gui.WindowKeyPressFcn = @(h,d) utils.childWindowKeyPressFcn(obj, h, d);

@@ -27,7 +27,7 @@ function highlightSelection(obj, object_list, mode, sliceNumbers)
 %
 
 if nargin < 4; sliceNumbers = []; end
-if nargin < 3; mode = obj.view.handles.selectionModePanel.SelectedObject.Text; end
+if nargin < 3 || isempty(mode); mode = obj.view.handles.selectionModePanel.SelectedObject.Text; end
 
 id = obj.mibModel.getActiveId();
 mode2Options.blockModeSwitch = 0;

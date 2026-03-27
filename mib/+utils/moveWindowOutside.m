@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
 % function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
 % Determine the position of the dialog - on a side of the main figure
@@ -60,15 +44,16 @@ else
         GCBFPos = mibGUI.WindowBounds; % main MIB window position [top-left-x, top-left-y, width, height]
         % Convert WindowBounds (top-left origin) to bottom-left origin
         GCBFPos(2) = screenSize(4) - GCBFPos(2) - GCBFPos(4);
-        % Use innerPosition to account for child window's Position vs OuterPosition difference
-        useInnerPosition = true;
     else
-        GCBFOldUnits = get(gcbf, 'Units');
-        set(gcbf, 'Units', 'pixels');
-        GCBFPos = get(gcbf, 'OuterPosition'); % parent window position
-        set(gcbf, 'Units', GCBFOldUnits);
-        useInnerPosition = false;
+        % Use mibGUI directly (gcbf only works inside callbacks, not constructors)
+        GCBFOldUnits = mibGUI.Units;
+        mibGUI.Units = 'pixels';
+        GCBFPos = mibGUI.OuterPosition;
+        mibGUI.Units = GCBFOldUnits;
     end
+    % Always use Position for uifigures — writing OuterPosition can
+    % trigger re-layout and shrink the window
+    useInnerPosition = isa(hObject, 'matlab.ui.Figure');
     
     switch alignH
         case 'left'
@@ -105,15 +90,31 @@ end
 
 FigPos(3:4)=[FigWidth FigHeight];
 
-% Use Position property for App Designer windows to avoid the gap
+% Clamp to screen so bottom is never off-screen
+screenSize = get(0, 'ScreenSize');
+if FigPos(2) < 1
+    FigPos(2) = 1;
+end
+if FigPos(1) < 1
+    FigPos(1) = 1;
+end
+if FigPos(1) + FigWidth > screenSize(3)
+    FigPos(1) = max(1, screenSize(3) - FigWidth);
+end
+if FigPos(2) + FigHeight > screenSize(4)
+    FigPos(2) = max(1, screenSize(4) - FigHeight);
+end
+
+% Only reposition (X, Y) — never overwrite the size that MATLAB laid out.
+% Reading OuterPosition while the figure is invisible can return a stale
+% (smaller) height, so writing it back would shrink the window.
 if useInnerPosition
-    hObject.Position = FigPos;
+    hObject.Position(1:2) = FigPos(1:2);
 else
     try
-        hObject.OuterPosition = FigPos;
+        hObject.OuterPosition(1:2) = FigPos(1:2);
     catch
-        FigPos(2) = FigPos(2) - 32;
-        hObject.Position = FigPos;
+        hObject.Position(1:2) = FigPos(1:2);
     end
 end
 

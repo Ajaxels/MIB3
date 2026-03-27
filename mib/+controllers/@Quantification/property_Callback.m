@@ -71,9 +71,10 @@ if obj.BatchOpt.Multiple
             data(:,1) = [obj.STATS(obj.sortingRowIndex).ObjectId];
 
             id = obj.mibModel.getActiveId();
-            w1 = obj.mibModel.getImageProperty('width');
-            h1 = obj.mibModel.getImageProperty('height');
-            d1 = obj.mibModel.getImageProperty('depth');
+            dataset = obj.mibModel.I{id};
+            w1 = dataset.image.width;
+            h1 = dataset.image.height;
+            d1 = dataset.image.depth;
             for row = 1:size(data, 1)
                 pixelId = max([1 floor(numel(obj.STATS(obj.sortingRowIndex(row)).PixelIdxList)/2)]);
                 [~, ~, data(row,3)] = ind2sub([w1, h1, d1], ...
@@ -82,13 +83,16 @@ if obj.BatchOpt.Multiple
             data(:,4) = [obj.STATS(obj.sortingRowIndex(end)).TimePnt]; % last element indexing kept from MIB2
             obj.view.handles.statTable.RowName = {obj.sortingRowIndex};
         end
-        data = obj.sortBtn_Callback(data);
         obj.view.handles.statTable.Data = data;
+        obj.sortBtn_Callback();   % in-place: reorders both Data and RowName together
 
         dataVals = data(:,2);
         [a, b] = hist(dataVals, 256); %#ok<HIST>
         bar(obj.view.handles.histogram, b, a);
         obj.histLimits = [min(b) max(b)];
+        obj.view.handles.histogram.XLim = [obj.histLimits(1), obj.histLimits(2)];
+        obj.view.handles.highlight1.Value = obj.histLimits(1);
+        obj.view.handles.highlight2.Value = obj.histLimits(2);
         obj.histScale_Callback();
         grid(obj.view.handles.histogram);
     else

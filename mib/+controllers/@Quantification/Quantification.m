@@ -89,34 +89,6 @@ classdef Quantification < handle
             end
         end
 
-        function ViewListner_ModelEvent_Callback(obj, src, evnt)
-            % function ViewListner_ModelEvent_Callback(obj, src, evnt)
-            % static listener callback for generic modelNotify events
-            %
-            % Parameters:
-            % obj: handle to Quantification controller
-            % src: event source
-            % evnt: event data; must contain evnt.Parameter.Name
-
-            if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
-                for i = 1:numel(obj.listener); delete(obj.listener{i}); end
-                return;
-            end
-            if ~ismember('Parameter', fieldnames(evnt))
-                utils.dlgs.showErrorDialog(obj.view.gui, ...
-                    sprintf('Parameter field is required!\n\nExample:\nmotifyEvent.Name = "updateMaterialsTable";\neventdata = core.ToggleEventData(motifyEvent);\nnotify(obj, "modelNotify", eventdata);'), ...
-                    'Listener error');
-                return;
-            end
-            switch evnt.EventName
-                case 'modelNotify'
-                    switch evnt.Parameter.Name
-                        case 'updateMaterialsTable(old updateSegmentationTable)'
-                            obj.updateWidgets();
-                    end
-            end
-        end
-
         function purgeControllers(obj, src, evnt)
             % function purgeControllers(obj, src, evnt)
             % static: remove a closed child controller from childControllers list
@@ -140,6 +112,8 @@ classdef Quantification < handle
 
         addCallbacks(obj) % wire all widget callbacks from the constructor
 
+        applySelectedProperties(obj, propertyList) % apply property list from QuantificationProperties dialog
+
         closeWindow(obj) % close the Quantification dialog and release all resources
 
         createContextMenus(obj) % build the right-click context menu for statTable
@@ -151,6 +125,8 @@ classdef Quantification < handle
         id = findChildId(obj, childName) % find the index of an open child controller by class name
 
         gui_WindowButtonDownFcn(obj) % handle mouse button press events on the histogram axes
+
+        highlightRange_Callback(obj) % highlight objects whose value falls within the highlight1/highlight2 range
 
         highlightSelection(obj, object_list, mode, sliceNumbers) % highlight selected objects in the selection layer
 
@@ -268,6 +244,8 @@ classdef Quantification < handle
                 'TIF format LZW compression (*.tif)', 'TIF format uncompressed (*.tif)'};
             obj.BatchOpt.CropObjectsOutputName = 'CropOut';
             obj.BatchOpt.CropObjectsJitter = false;
+            obj.BatchOpt.Generate3DPatches = false;
+            obj.BatchOpt.CropObjectsDepth = '10';
             if ~isfield(mibModel.sessionSettings, 'quantificationCropPatches') || ...
                     ~isfield(mibModel.sessionSettings.quantificationCropPatches, 'CropObjectsJitterVariation')
                 mibModel.sessionSettings.quantificationCropPatches.CropObjectsJitterVariation = '50';
@@ -308,6 +286,8 @@ classdef Quantification < handle
             obj.BatchOpt.mibBatchTooltip.SingleMaskObjectPerDataset = 'Remove other objects within the clipping box of the main detected object';
             obj.BatchOpt.mibBatchTooltip.showWaitbar = 'Show or hide the progress bar during execution';
             obj.BatchOpt.mibBatchTooltip.CropObjectsJitter = 'Enable jitter for centroid coordinates when cropping objects';
+            obj.BatchOpt.mibBatchTooltip.Generate3DPatches = 'Crop 3D patches with a fixed depth around each object centroid';
+            obj.BatchOpt.mibBatchTooltip.CropObjectsDepth = 'Depth in Z slices for 3D patches';
             obj.BatchOpt.mibBatchTooltip.CropObjectsJitterVariation = 'Jitter variation in pixels';
             obj.BatchOpt.mibBatchTooltip.CropObjectsJitterSeed = 'Random generator seed (0 = random)';
 
@@ -385,7 +365,6 @@ classdef Quantification < handle
             end
             obj.material_Callback();
 
-            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
             obj.view.gui.Visible = 'on';    % turn on the window
 
             % --- Register model listeners ---
@@ -393,8 +372,6 @@ classdef Quantification < handle
                 @(src, evnt) controllers.Quantification.ViewListner_Callback2(obj, src, evnt));
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', ...
                 @(src, evnt) controllers.Quantification.ViewListner_Callback2(obj, src, evnt));
-            %obj.listener{3} = addlistener(obj.mibModel, 'ModelNotify', ...
-            %    @(src, evnt) controllers.Quantification.ViewListner_ModelEvent_Callback(obj, src, evnt));
         end
 
     end % methods

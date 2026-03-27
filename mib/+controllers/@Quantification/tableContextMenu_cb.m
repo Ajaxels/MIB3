@@ -56,20 +56,33 @@ switch parameter
         objIds = str2num(cell2mat(rowNames(rowIndices))); %#ok<ST2NM>
         annotationLabels.positions = zeros(numel(objIds), 4);
         annotationLabels.names = cell(numel(objIds), 1);
-        for k = 1:numel(objIds)
-            c = obj.STATS(objIds(k)).Centroid;
-            annotationLabels.positions(k,:) = [c(3), c(1), c(2), obj.STATS(objIds(k)).TimePnt];
-            annotationLabels.names{k} = obj.view.handles.Material.Value;
+
+        % Cache the repeated GUI lookup ONCE outside any loop context
+        materialValue = obj.view.handles.Material.Value;
+        
+        centroids = vertcat(obj.STATS(objIds).Centroid);   % Nx3 matrix
+        timePnts  = vertcat(obj.STATS(objIds).TimePnt);    % Nx1 vector
+        % build positions in one shot, reordering columns [z, x, y, t]
+        annotationLabels.positions = [centroids(:,3), centroids(:,1), centroids(:,2), timePnts];
+        annotationLabels.names = repmat({materialValue}, 1, numel(objIds));
+        % pass bounding boxes so generatePatches can crop full object + margin
+        if isfield(obj.STATS, 'BoundingBox')
+            annotationLabels.boundingBoxes = vertcat(obj.STATS(objIds).BoundingBox);
         end
+        % pass actual object IDs for use in output filenames
+        annotationLabels.objectIds = [obj.STATS(objIds).ObjectId];
+        
+        % pre-set Generate3DPatches so CropObjects opens with it checked for Shape3D
+        obj.BatchOpt.Generate3DPatches = strcmp(obj.BatchOpt.ObjectShape{1}, 'Shape3D');
         obj.startController('controllers.CropObjects', obj, false, annotationLabels);
 
     case 'hist'
         val = data(obj.indices(:,1), 2);
-        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+        answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
             {sprintf('Number of bins\n(%d entries selected):', numel(val))}, ...
-            {'10'}, 'Histogram', []);
+            {'10'}, 'Histogram');
         if isempty(answer); return; end
-        nbins = str2double(answer{1});
+        nbins = str2double(answer);
         if isnan(nbins)
             utils.dlgs.showErrorDialog(obj.view.gui, 'Please enter a number for bins!', 'Error');
             return;
@@ -84,7 +97,7 @@ switch parameter
         lab(2) = ylabel('Frequency');
         [lab(:).FontSize] = deal(12);
         [lab(:).FontWeight] = deal('bold');
-        [~, figName] = fileparts(obj.mibModel.I{id}.image.sliceName('Filename'));
+        [~, figName] = fileparts(obj.mibModel.I{id}.image.filename);
         hf.Name = figName;
         grid;
 

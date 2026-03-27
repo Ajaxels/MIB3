@@ -32,11 +32,6 @@ switch seltype
 end
 obj.histLimits = sort(obj.histLimits);
 
-obj.view.handles.highlight1.Value = num2str(obj.histLimits(1));
-obj.view.handles.highlight2.Value = num2str(obj.histLimits(2));
-
-data = obj.view.handles.statTable.Data;
-indices = find(data(:,2) >= obj.histLimits(1) & data(:,2) <= obj.histLimits(2));
-object_list = data(indices, 1);
-obj.highlightSelection(object_list);
+obj.view.handles.highlight1.Value = obj.histLimits(1);
+obj.view.handles.highlight2.Value = obj.histLimits(2);
 end
