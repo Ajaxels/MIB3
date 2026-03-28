@@ -44,34 +44,48 @@ switch segmToolName
         handles.panelBrush.Visible = 'on';
     case '3D lines'
         handles.panelLines3D.Visible = 'on';
+        obj.view.brushCursorShow = false;
     case 'Annotations'
         handles.panelAnnotations.Visible = 'on';
         obj.view.brushCursorShow = false;
-        %doc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
-        %if ~isempty(doc.brushCursor) && isvalid(doc.brushCursor)
-        %    doc.brushCursor.Visible = 'off';
-        %end
     case 'Brush'
         handles.brushUseClustering.Visible = 'on';
         handles.panelBrush.Visible = 'on';
     case 'BW thresholding'
         handles.panelThresholding.Visible = 'on';
+        obj.view.brushCursorShow = false;
     case 'Drag&Drop materials'
-        handles.panelDrag.Visible = 'on'; 
+        handles.panelDrag.Visible = 'on';
+        obj.view.brushCursorShow = false;
     case 'Lasso'
         handles.lassoObjectPicker.Visible = 'off';
         handles.lassoCustomParameters.Visible = 'on';
-        handles.panelLasso.Visible = 'on'; 
+        handles.panelLasso.Visible = 'on';
+        obj.view.brushCursorShow = false;
+        % reinitialize the list: remove Object Picker-specific items
+        if numel(handles.lassoType.Items) > 4
+            handles.lassoType.Items = {'Lasso', 'Rectangle', 'Ellipse', 'Polyline'};
+            handles.lassoType.Value = 'Rectangle';
+        end
     case 'MagicWand/RegionGrowing'
-        handles.panelMagicwand.Visible = 'on'; 
+        handles.panelMagicwand.Visible = 'on';
+        obj.view.brushCursorShow = false;
     case 'Membrane ClickTracker'
-        handles.panelMembrane.Visible = 'on'; 
+        handles.panelMembrane.Visible = 'on';
+        obj.view.brushCursorShow = false;
     case 'Object picker'
         handles.lassoCustomParameters.Visible = 'off';
         handles.lassoObjectPicker.Visible = 'on';
-        handles.panelLasso.Visible = 'on'; 
+        handles.panelLasso.Visible = 'on';
+        obj.view.brushCursorShow = false;
+        % add Object Picker-specific items to lassoType dropdown
+        if numel(handles.lassoType.Items) < 6
+            handles.lassoType.Items = {'Click', 'Lasso', 'Rectangle', 'Ellipse', 'Polyline', 'Mask within Selection'};
+            handles.lassoType.Value = 'Click';
+        end
     case 'Segment-anything model'
-        handles.panelSAM.Visible = 'on';  
+        handles.panelSAM.Visible = 'on';
+        obj.view.brushCursorShow = false;
 end
 
 % update the favorite tools checkbox

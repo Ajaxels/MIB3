@@ -10,6 +10,7 @@ classdef MibSegmentation
         handles         % struct of ROI panel handles (panel, listbox, buttons, ...)
         listeners       % cell array of listeners
         UIFigure        % handle to underlying UIFigure
+        thresholdSliderStep = 1     % step for threshold slider context menu (Default/Set step...)
     end
 
     methods
@@ -63,6 +64,8 @@ classdef MibSegmentation
         segmentationTool_Callback(obj, segmToolIndex)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
 
         thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
+
+        thresholdSlider_ContextMenu(obj, menuEntry, selectedData)        % context menu callbacks for threshold sliders (Default, Set step...)
 
         updateMaterialsTable(obj, position)                 % update the segmentation table from model
 
@@ -220,6 +223,9 @@ classdef MibSegmentation
             obj.handles.thresholdLowValue.ValueChangedFcn = @obj.thresholdingPanel_Callback;
             obj.handles.thresholdHighValue.ValueChangedFcn = @obj.thresholdingPanel_Callback;
             obj.handles.threshold.ButtonPushedFcn = @obj.thresholdingPanel_Callback;
+            % Threshold slider context menus
+            obj.handles.thresholdSliderContextDefault.MenuSelectedFcn = @obj.thresholdSlider_ContextMenu;
+            obj.handles.thresholdSliderContextSetStep.MenuSelectedFcn = @obj.thresholdSlider_ContextMenu;
 
             %% Drag and drop objects panel
             obj.handles.dragLayer.ValueChangedFcn = @obj.dragPanel_Callback;
@@ -239,7 +245,6 @@ classdef MibSegmentation
             obj.handles.lassoWidth.ValueChangedFcn = @obj.lassoPanel_Callback;
             obj.handles.lassoHeight.ValueChangedFcn = @obj.lassoPanel_Callback;
             obj.handles.objectRecalculate.ButtonPushedFcn = @obj.lassoPanel_Callback;
-            obj.handles.objectBrush.ValueChangedFcn = @obj.lassoPanel_Callback;
 
             %% Magic wand panel
             obj.handles.magicMethod.ValueChangedFcn = @obj.magicwandPanel_Callback;

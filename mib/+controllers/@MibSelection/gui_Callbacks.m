@@ -75,13 +75,23 @@ switch mode
         obj.selectionPanelCheckboxes(BatchOpt);
 
     case 'preset1' % apply preset 1 to the selected segmentation tool
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s\n', mode);
-
+        if any(strcmp(obj.mibController.currentModifier, 'shift'))
+            obj.updateSegmentationPreset(1);
+        else
+            obj.updateSettingsFromPreset(1);
+        end
     case 'preset2' % apply preset 2 to the selected segmentation tool
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s\n', mode);
-
+        if any(strcmp(obj.mibController.currentModifier, 'shift'))
+            obj.updateSegmentationPreset(2);
+        else
+            obj.updateSettingsFromPreset(2);
+        end
     case 'preset3' % apply preset 3 to the selected segmentation tool
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s\n', mode);
+        if any(strcmp(obj.mibController.currentModifier, 'shift'))
+            obj.updateSegmentationPreset(3);
+        else
+            obj.updateSettingsFromPreset(3);
+        end
 
     case 'erode' % erode selection
         obj.erodeSelection();
@@ -119,7 +129,7 @@ switch mode
         obj.selectionPanelCheckboxes(BatchOpt);
 
     case 'display' % start image view settings dialog
-        %fprintf('controller.selectionPanel_Callbacks: Clicked on a widget of the selection/view settings panel (obj.handles.panels.selection): %s\n', mode);
+        obj.mibController.startController('controllers.DisplayAdjust');
 
     case 'onFly' % automatically adjust contrast and brightness
         BatchOpt.OnFly = checkboxOptions(obj.handles.onFly.Value+1);

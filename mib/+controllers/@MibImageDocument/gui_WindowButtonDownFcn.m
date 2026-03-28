@@ -364,7 +364,7 @@ elseif strcmp(operation, 'select')
             [w, h, z, t] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 0);
             obj.segmentationAnnotation(h, w, z, t, modifier);
 
-        case {'Brush'}
+        case 'Brush'
             % the Brush mode
             x = round(xy(1,1));
             y = round(xy(1,2));
@@ -377,7 +377,7 @@ elseif strcmp(operation, 'select')
             % Black and white thresholding
             return;
 
-        case 'Drag & Drop materials'
+        case 'Drag&Drop materials'
             % Drag and drop selection with the mouse
             x = round(xy(1,1));
             y = round(xy(1,2));
@@ -390,64 +390,29 @@ elseif strcmp(operation, 'select')
                 hFig.WindowKeyPressFcn = [];    % turn off callback for the keys during the brush selection
             catch
             end
-            obj.mibSegmentationDragAndDrop(y, x, modifier);
+            obj.segmentationDragAndDrop(y, x, modifier);
             return;
 
         case 'Lasso'
             % Lasso mode
-            % NOTE: This section depends on a number of UI widgets; in MIB3
-            % their exact handle names may differ. We keep the original logic,
-            % but guard all UI reads.
-            try
-                hManual = obj.mibController.cSegmentation.handles.mibSegmObjectPickerPanelSub2Select;
-                manualEnabled = strcmp(hManual.Enable, 'on');
-            catch
-                manualEnabled = false;
-            end
-
-            if manualEnabled
-                [w, h] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 1);
-                spotToolBatchOpt.Shape = {'square'};
-                % Read width/height from UI (fallback to current brush radius)
-                wStr = '10'; hStr = '10';
-                try
-                    wStr = obj.mibController.cSegmentation.handles.mibSegmObjectPickerPanelSub2Width.String;
-                    hStr = obj.mibController.cSegmentation.handles.mibSegmObjectPickerPanelSub2Height.String;
-                catch
-                end
-                spotToolBatchOpt.Radius = [wStr ';' hStr];
-                obj.segmentationSpot(ceil(h), ceil(w), modifier, spotToolBatchOpt);
-                return;
-            end   % cancel when the manual mode is enabled
-
+            % read add/subtract mode from lassoMode dropdown
             modifier = '';
-            % have to define subtract action differently for the lasso type of tools
-            try
-                addPopupVal = obj.mibController.cSegmentation.handles.mibSegmObjectPickerPanelAddPopup.Value;
-            catch
-                addPopupVal = 1;
-            end
-            if addPopupVal == 2 % subtract mode
+            lassoMode = obj.mibController.cSegmentation.handles.lassoMode.Value;
+            if strcmp(lassoMode, 'Subtract')
                 modifier = 'control';
             end
-            try
-                obj.mibSegmentationLasso(modifier);
-            catch err %#ok<NASGU>
-                %err
+
+            % check if manual mode is enabled
+            manualEnabled = obj.mibController.cSegmentation.handles.lassoManually.Value;
+            if manualEnabled
+                obj.segmentationLassoManual(modifier);
+            else
+                obj.segmentationLasso(modifier);
             end
 
-        case {'MagicWand-RegionGrowing'}
+        case {'MagicWand/RegionGrowing'}
             % Magic Wand mode
-            magicWandRadius = 0;
-            try
-                magicWandRadius = str2double(obj.mibController.cSegmentation.handles.mibMagicWandRadius.String);
-            catch
-                try
-                    magicWandRadius = str2double(obj.view.handles.mibMagicWandRadius.String);
-                catch
-                    magicWandRadius = 0;
-                end
-            end
+            magicWandRadius = obj.mibController.cSegmentation.handles.magicRadius.Value;
 
             if switch3d
                 if obj.mibModel.getImageProperty('blockModeSwitch') == 1 && magicWandRadius == 0
@@ -457,7 +422,6 @@ elseif strcmp(operation, 'select')
                 end
                 yxzCoordinate = [h, w, z];
             else
-                %yxzCoordinate = [yCrop, xCrop];
                 if obj.mibModel.getImageProperty('blockModeSwitch') == 1 && magicWandRadius == 0
                     [w, h, z] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'blockmode', 1);
                 else
@@ -466,12 +430,7 @@ elseif strcmp(operation, 'select')
                 yxzCoordinate = [h, w, z];
             end
 
-            subTool = 1;
-            try
-                subTool = obj.mibController.cSegmentation.handles.mibMagicwandMethodPopup.Value; % magic wand or region growing
-            catch
-                subTool = 1;
-            end
+            subTool = obj.mibController.cSegmentation.handles.magicMethod.Value;
 
             % make new selection with shift and add to the selection
             % without modifiers
@@ -483,13 +442,13 @@ elseif strcmp(operation, 'select')
                 modifier = [];
             end
 
-            if subTool == 1
-                obj.mibSegmentationMagicWand(ceil(yxzCoordinate), modifier);
+            if strcmp(subTool, 'Magic Wand')
+                obj.segmentationMagicWand(ceil(yxzCoordinate), modifier);
             else
-                obj.mibSegmentationRegionGrowing(ceil(yxzCoordinate), modifier);
+                obj.segmentationRegionGrowing(ceil(yxzCoordinate), modifier);
             end
 
-        case 'Object Picker'
+        case 'Object picker'
             % targeted selection from Mask/Models layers
             if switch3d
                 [w, h, z] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 0);
@@ -501,16 +460,7 @@ elseif strcmp(operation, 'select')
                 end
             end
             yxzCoordinate = [h,w,z];
-            try
-                obj.mibSegmentationObjectPicker(ceil(yxzCoordinate), modifier);
-            catch err %#ok<NASGU>
-            end
-
-            % return when using the Brush tool
-            try
-                if obj.mibController.cSegmentation.handles.mibFilterSelectionPopup.Value == 6; return; end
-            catch
-            end
+            obj.segmentationObjectPicker(ceil(yxzCoordinate), modifier);
 
         case 'Membrane ClickTracker'
             % Trace membranes
@@ -523,27 +473,17 @@ elseif strcmp(operation, 'select')
             yx(1) = xy(1,2);
             yx(2) = xy(1,1);
 
-            output = obj.mibSegmentationMembraneClickTraker(ceil(yxzCoordinate), yx, modifier);
+            output = obj.segmentationClickTracker(ceil(yxzCoordinate), yx, modifier);
             if strcmp(output, 'return')
-%                 if obj.mibView.handles.mibSegmTrackRecenterCheck.Value == 1     % recenter the view
-%                     obj.mibModel.I{obj.mibModel.id}.moveView(w, h);
-%                     obj.plotImage(); 
-%                 end
+                % recenter the view if enabled
+                if obj.mibController.cSegmentation.handles.membraneRecenterView.Value && isempty(modifier)
+                    dataset.moveView(w, h);
+                end
                 return;
             end
 
-            % recenter checkbox (best-effort)
-            recenterSw = 0;
-            try
-                recenterSw = obj.mibController.cSegmentation.handles.segmTrackRecenter.Value;
-            catch
-                try
-                    recenterSw = obj.view.handles.mibSegmTrackRecenterCheck.Value;
-                catch
-                    recenterSw = 0;
-                end
-            end
-            if recenterSw == 1 && isempty(modifier)  % recenter the view
+            % recenter the view after placing a starting point
+            if obj.mibController.cSegmentation.handles.membraneRecenterView.Value && isempty(modifier)
                 dataset.moveView(w, h);
             end
 

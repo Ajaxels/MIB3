@@ -51,20 +51,28 @@ switch mode
 
     case 'thresholdLow' % define the low threshold value using the slider
         % use hData.Value instead of obj.view.handles.panels.segmentation.handles.thresholdLowValue.Value
-        % to make the update interactive
-        obj.view.handles.panels.segmentation.handles.thresholdLowValue.Value = hData.Value;
-        %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        % to make the update interactive; round to the configured step
+        val = round(hData.Value / obj.thresholdSliderStep) * obj.thresholdSliderStep;
+        obj.view.handles.panels.segmentation.handles.thresholdLowValue.Value = val;
+        % interactive 2D thresholding on slider drag (skip backup/drawnow/batch)
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentBlackWhiteThreshold();
     case 'thresholdHigh' % define the high threshold value using the slider
         % use hData.Value instead of obj.view.handles.panels.segmentation.handles.thresholdHighValue.Value
-        % to make the update interactive
-        obj.view.handles.panels.segmentation.handles.thresholdHighValue.Value = hData.Value;
-        %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        % to make the update interactive; round to the configured step
+        val = round(hData.Value / obj.thresholdSliderStep) * obj.thresholdSliderStep;
+        obj.view.handles.panels.segmentation.handles.thresholdHighValue.Value = val;
+        % interactive 2D thresholding on slider drag (skip backup/drawnow/batch)
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentBlackWhiteThreshold();
     case 'thresholdLowValue' % define the low threshold value using the numeric edit field
-        %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        obj.view.handles.panels.segmentation.handles.thresholdLow.Value = hWidget.Value;
+        % interactive 2D thresholding on value change (skip backup/drawnow/batch)
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentBlackWhiteThreshold();
     case 'thresholdHighValue' % define the high threshold value using the numeric edit field
-        %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
-    case 'threshold' % apply the thresholding operation
-        %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s\n', mode);
+        obj.view.handles.panels.segmentation.handles.thresholdHigh.Value = hWidget.Value;
+        % interactive 2D thresholding on value change (skip backup/drawnow/batch)
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentBlackWhiteThreshold();
+    case 'threshold' % apply the thresholding operation (uses 3D/4D if checkboxes are set)
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentBlackWhiteThreshold();
 end
 
 end

@@ -32,13 +32,29 @@ switch mode
     case 'dragValue' % define the value for shifting materials
         %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'dragUp' % shift the layer towards up-direction
-        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        stepVal = obj.handles.dragValue.Value;
+        dragMode = '2D, Slice';
+        if obj.mibModel.applySegmentationIn3D; dragMode = '3D, Stack'; end
+        obj.mibModel.backup(obj.handles.dragLayer.Value, obj.mibModel.applySegmentationIn3D);
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.gui_WindowButtonUpDragAndDropFcn(dragMode, 0, -stepVal);
     case 'dragRight' % shift the layer towards right-direction
-        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        stepVal = obj.handles.dragValue.Value;
+        dragMode = '2D, Slice';
+        if obj.mibModel.applySegmentationIn3D; dragMode = '3D, Stack'; end
+        obj.mibModel.backup(obj.handles.dragLayer.Value, obj.mibModel.applySegmentationIn3D);
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.gui_WindowButtonUpDragAndDropFcn(dragMode, stepVal, 0);
     case 'dragLeft' % shift the layer towards left-direction
-        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        stepVal = obj.handles.dragValue.Value;
+        dragMode = '2D, Slice';
+        if obj.mibModel.applySegmentationIn3D; dragMode = '3D, Stack'; end
+        obj.mibModel.backup(obj.handles.dragLayer.Value, obj.mibModel.applySegmentationIn3D);
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.gui_WindowButtonUpDragAndDropFcn(dragMode, -stepVal, 0);
     case 'dragDown' % shift the layer towards down-direction
-        %fprintf('Clicked on a widget of the segmentation panel->Drag-and-drop materials tool (obj.handles.panels.segmentation): %s\n', mode);
+        stepVal = obj.handles.dragValue.Value;
+        dragMode = '2D, Slice';
+        if obj.mibModel.applySegmentationIn3D; dragMode = '3D, Stack'; end
+        obj.mibModel.backup(obj.handles.dragLayer.Value, obj.mibModel.applySegmentationIn3D);
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.gui_WindowButtonUpDragAndDropFcn(dragMode, 0, stepVal);
 end
 
 end

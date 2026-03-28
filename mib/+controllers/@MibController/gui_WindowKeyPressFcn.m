@@ -316,13 +316,12 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case {'Preset 1 use for the selected segmentation tool', ...
                 'Preset 2 use for the selected segmentation tool', ...
                 'Preset 3 use for the selected segmentation tool'}         % default 1, 2, 3
-            error("MISSING IMPLEMENTATION: obj.mibUpdateSegmentationSettingsFromPreset(str2double(KeyShortcuts.Action{ActionId}(8)));")
+            obj.cSelection.updateSettingsFromPreset(str2double(KeyShortcuts.Action{ActionId}(8)));
 
         case {'Preset 1 update from the selected segmentation tool', ...
                 'Preset 2 update from the selected segmentation tool', ...
                 'Preset 3 update from the selected segmentation tool'}     % default Shift+1, Shift+2, Shift+3
-            error("MISSING IMPLEMENTATION: obj.mibUpdatePresetFromSegmentationSettings(str2double(KeyShortcuts.Action{ActionId}(8)));")
-
+            obj.cSelection.updateSegmentationPreset(str2double(KeyShortcuts.Action{ActionId}(8)));
         case 'Zoom to 100% view'  % should be define in Preferences
             error("MISSING IMPLEMENTATION: obj.mibToolbar_ZoomBtn_ClickedCallback('one2onePush');")
 

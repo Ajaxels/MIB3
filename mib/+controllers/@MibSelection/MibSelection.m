@@ -41,6 +41,10 @@ classdef MibSelection
 
         selectionPanelCheckboxes(obj, BatchOptIn)        % batch-compatible method to read or modify the state of checkboxes and the colour-channel dropdown of the Selection and View Settings panel
 
+        updateSegmentationPreset(obj, presetId)        % update preset from the current settings of the selected segmentation tool; callback on Shift+click of preset buttons or Shift+1/2/3 shortcuts
+
+        updateSettingsFromPreset(obj, presetId)        % update settings of the selected segmentation tool from a stored preset; callback on click of preset buttons or 1/2/3 shortcuts
+
         function obj = MibSelection(mainCtrl, view, guiHandles, model)
             %% init properties
             obj.mibController = mainCtrl;       % handle to the main MIB controller

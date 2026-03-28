@@ -520,7 +520,11 @@ end
 %obj.toolbarVirtualMode_ClickedCallback('keepcurrent');         % update the virtual stack button
 
 % clear trackerYXZ variable of the membrane clicktracker tool
-% obj.mibView.trackerYXZ = [NaN; NaN; NaN];
+for ii = 1:numel(obj.cImageDoc)
+    if ~isempty(obj.cImageDoc{ii}) && isvalid(obj.cImageDoc{ii})
+        obj.cImageDoc{ii}.trackerYXZ = [NaN; NaN; NaN];
+    end
+end
  
 % %% place callbacks for gui
 % obj.mibView.gui.WindowButtonMotionFcn = (@(hObject, eventdata, handles) obj.mibGUI_WinMouseMotionFcn());   

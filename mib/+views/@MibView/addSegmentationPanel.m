@@ -190,6 +190,15 @@ panelHandles.handles.materialsTableContextUnlink = uimenu(panelHandles.handles.m
 % Add the context menu to materialsTable
 panelHandles.handles.materialsTable.ContextMenu = panelHandles.handles.materialsTableContext;
 
+% ---------------------- Add context menu for threshold sliders ----------------------
+panelHandles.handles.thresholdSliderContext = uicontextmenu(obj.handles.panels.segmentationPanel.Figure);
+panelHandles.handles.thresholdSliderContextDefault = uimenu(panelHandles.handles.thresholdSliderContext, ...
+    'Text', 'Default', 'Tag', 'thresholdSliderContextDefault');
+panelHandles.handles.thresholdSliderContextSetStep = uimenu(panelHandles.handles.thresholdSliderContext, ...
+    'Text', 'Set step...', 'Tag', 'thresholdSliderContextSetStep');
+panelHandles.handles.thresholdLow.ContextMenu = panelHandles.handles.thresholdSliderContext;
+panelHandles.handles.thresholdHigh.ContextMenu = panelHandles.handles.thresholdSliderContext;
+
 obj.handles.panels.segmentation = panelHandles;
 
 % add the panel to the gui

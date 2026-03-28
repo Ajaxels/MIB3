@@ -65,6 +65,8 @@ classdef MibImageDocument < handle
         sliderZShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
         sliderDebounceTimer = [] % timer used to debounce rapid slider dragging (slice and frame sliders);
 
+        trackerYXZ = [NaN; NaN; NaN]  % [y; x; z] coordinates for the Membrane ClickTracker tool starting point
+
         % switches that are updated within obj.gui_WinMouseMotionFcn
         isInsideAxes = false;   % mouse inside image axes
         wasInsideAxes = [];     % mouse was inside the image axes
@@ -110,6 +112,28 @@ classdef MibImageDocument < handle
         segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)        % Do segmentation using the 3D ball tool
 
         segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
+
+        segmentBlackWhiteThreshold(obj, BatchOptIn)        % Black and white thresholding for segmentation
+
+        segmentationDragAndDrop(obj, y, x, modifier)        % Initiate drag-and-drop of materials/selection/mask
+
+        gui_WindowDragAndDropMotionFcn(obj, brushSelection)  % Visual feedback during drag-and-drop motion
+
+        gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)  % Commit drag-and-drop shift on mouse release
+
+        output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)  % Trace membranes using the click tracker tool
+
+        segmentationLasso(obj, modifier)        % Do segmentation using the lasso tool
+
+        segmentationObjectPicker(obj, yxzCoordinate, modifier)  % Select objects from mask/model layers
+
+        recalculateObjects(obj)  % Recalculate object stats for Object Picker 3D mode
+
+        segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the magic wand tool
+
+        segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the region growing method
+
+        segmentationLassoManual(obj, BatchOptIn)  % Do manual segmentation using the lasso tool
 
         segmentationSpot(obj, y, x, modifier, BatchOptIn)        % Do segmentation using the spot tool
 

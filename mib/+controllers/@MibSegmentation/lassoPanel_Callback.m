@@ -14,7 +14,6 @@ function lassoPanel_Callback(obj, hWidget, hData)
 % 'lassoWidth' -> define width value for the manual lasso placement
 % 'lassoHeight' -> define height value for the manual lasso placement
 % 'objectRecalculate' -> recalculate object properties for 3D selection
-% 'objectBrush' -> select objects with the brush tool
 %
 % hData: handle to supporting data class
 
@@ -51,7 +50,12 @@ switch mode
             obj.view.handles.panels.segmentation.handles.lassoHeight.Enable = 'off';
         end
     case 'lassoSelect' % select the specified area
-        %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s\n', mode);
+        modifier = '';
+        lassoMode = obj.handles.lassoMode.Value;
+        if strcmp(lassoMode, 'Subtract')
+            modifier = 'control';
+        end
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.segmentationLassoManual(modifier);
     case 'lassoX1' % define min-X value for the manual lasso placement
         %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'lassoY1' % define min-X value for the manual lasso placement
@@ -61,9 +65,7 @@ switch mode
     case 'lassoHeight' % define height value for the manual lasso placement
         %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'objectRecalculate' % recalculate object properties for 3D selection
-        %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s\n', mode);
-    case 'objectBrush' % select objects with the brush tool
-        %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.recalculateObjects();
 end
 
 end

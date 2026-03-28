@@ -278,7 +278,7 @@ end
 if switch3d == 1        % 3D mode
     if strcmp(type, 'image')
         getDataOptions.viewPort = obj.I{id}.image.viewPort;
-        obj.Backup.store(type, obj.I{id}.getData3D(type, NaN, getDataOptions.orient, 0, getDataOptions), ...
+        obj.Backup.store(type, obj.I{id}.getData3D(type, NaN, getDataOptions.orient, [], getDataOptions), ...
             obj.I{id}.image.getMeta(), getDataOptions);
     elseif strcmp(type, 'annotations')
         [labels.labelText, labels.labelValue, labels.labelPosition] = obj.I{id}.annotations.getLabels();
@@ -292,7 +292,7 @@ if switch3d == 1        % 3D mode
 else                    % 2D mode
     if strcmp(type, 'image')
         getDataOptions.viewPort = obj.I{id}.image.viewPort;
-        obj.Backup.store(type, obj.I{id}.getData2D(type, getDataOptions.z(1), getDataOptions.orient, 0, getDataOptions), ...
+        obj.Backup.store(type, obj.I{id}.getData2D(type, getDataOptions.z(1), getDataOptions.orient, [], getDataOptions), ...
             obj.I{id}.image.getMeta(), getDataOptions);
     elseif strcmp(type, 'annotations')
         [labels.labelText, labels.labelValue, labels.labelPosition] = obj.I{id}.annotations.getLabels();

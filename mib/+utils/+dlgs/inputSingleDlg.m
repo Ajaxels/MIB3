@@ -36,7 +36,7 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 %       (default: auto-detected via which('mib3'))
 %   @li .Type - char, input widget type:
 %       @li 'editfield' — text input (default)
-%       @li 'spinner' — numeric spinner
+%       @li 'spinner' — numeric spinner (auto-set when defAns is a struct)
 %   @li .WindowWidth - numeric, dialog width in pixels (default 400)
 %   @li .WindowHeight - numeric, dialog height in pixels (default 112)
 %   @li .WindowStyle - char, figure window style:
@@ -173,6 +173,11 @@ if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 112; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
+
+% Auto-detect spinner when defAns is a struct
+if isstruct(defAns) && strcmp(options.Type, 'editfield')
+    options.Type = 'spinner';
+end
 if ~isfield(options, 'IconWidth')
     if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'puffin_waiting'})
         options.IconWidth = 96;

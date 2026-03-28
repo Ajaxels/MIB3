@@ -130,13 +130,19 @@ dataset = obj.mibModel.getData2D(type, slice_no, orient, col_channel, options)
 dataset = obj.mibModel.getData3D(type, time, orient, col_channel, options)
 dataset = obj.mibModel.getData4D(type, orient, col_channel, options)
 
-% Writing (data before type in setData4D)
+% Writing — MIB3: data BEFORE type (MIB2 had type before data!)
 obj.mibModel.setData2D(dataset, type, slice_no, orient, col_channel, options)
 obj.mibModel.setData3D(dataset, type, time, orient, col_channel, options)
 obj.mibModel.setData4D(dataset, type, orient, col_channel, options)
 ```
 
+**Important:** MIB2 `setData` calls had `(type, dataset, ...)` — MIB3 swaps to `(dataset, type, ...)`. The `getData` order (`type` first) is unchanged.
+
 Use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
+
+**Orient values changed:** MIB2 used `4` for native YX; MIB3 uses `3`. All `getData`/`setData` orient arguments: `4` → `3`.
+
+**Data type renamed:** MIB2 `'model'` → MIB3 `'labels'` in `getData`/`setData` type argument.
 
 ### obj.id vs obj.getActiveId() — Split-Panel Safety
 

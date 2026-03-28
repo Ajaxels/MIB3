@@ -151,7 +151,7 @@ for fieldId = 1:numel(fieldNames)
                 obj.handles.autoFillSelection.Value = state;
                 obj.mibModel.autoFillSelection = state;
 
-            case 'Difference'
+            case 'DifferenceSelection'
                 obj.handles.differenceSelection.Value = state;
                 obj.mibModel.differenceSelection = state;
                
