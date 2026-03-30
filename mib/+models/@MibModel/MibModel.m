@@ -91,6 +91,7 @@ classdef MibModel < handle
         SliceChanged         % change of slices of the current dataset (depth)
         StopProtocol         % stop batch protocol from execution
         SyncBatch            % synchronize structure for batch actions
+        Undo                 % notify controllers about an undo operation, carries core.ToggleEventData with the backup type string (e.g. 'lines3d')
         UpdateAnnotations    % update annotations, for example when they are removed or modified
         UpdateDatasetAxes    % request to update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
         UpdateDialog         % request to update specific dialog, for example when Batch Processing is used, requires core.ToggleEventData, see BoundingBox.m
@@ -100,6 +101,7 @@ classdef MibModel < handle
         UpdateRecentDirsList % update the list of recent directories under Open Image button
         UpdateStatusBar      % update status bar
         UpdateToolbar        % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)
+        UpdatedLines3D       % notify controllers about updated Lines3D data, carries core.ToggleEventData with the action string (e.g. 'Add node')
         UpdateUserScore      % update user stats
     end
 

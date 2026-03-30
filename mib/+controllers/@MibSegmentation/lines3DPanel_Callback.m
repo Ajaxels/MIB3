@@ -30,9 +30,10 @@ end
 
 switch mode
     case 'linesTableView' % open a dialog with tables showing line edges and vertices
-        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s\n', mode);
+        obj.mibController.startController('controllers.Lines3dDialog');
     case 'linesShowLines' % show or hide the 3D lines
-        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        obj.mibModel.showLines3D = hWidget.Value;
+        notify(obj.mibModel, 'ShowImage');
     case 'linesClick' % define the default operation on mouse click
         %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
     case 'linesShiftClick' % define the default operation on Shift+mouse click

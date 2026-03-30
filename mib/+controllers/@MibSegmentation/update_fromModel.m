@@ -17,6 +17,6 @@ obj.handles.eraserFactor.Value = obj.mibModel.preferences.SegmTools.Brush.Eraser
 obj.brushPanel_Callback([], [], 'brushUseClustering');
 
 % % ---------- Segment-anything preferences ----------
-obj.handles.samVersion.Value = obj.mibModel.preferences.SegmTools.SAM.samVersion;
+obj.handles.samVersion.ValueIndex = obj.mibModel.preferences.SegmTools.SAM.samVersion;
 
 end

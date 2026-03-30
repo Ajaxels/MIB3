@@ -114,6 +114,10 @@ classdef MibDataset < matlab.mixin.Copyable
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
 
+        [x, y, z] = convertPixelsToUnits(obj, x, y, z)        % Convert pixel coordinates to physical imaging units using pixSize and boundingBox
+
+        [x, y, z] = convertUnitsToPixels(obj, x, y, z)        % Convert physical imaging units to pixel coordinates using pixSize and boundingBox
+
         [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
 
         slice_no = getCurrentSliceNumber(obj)        % get slice number of the currently shown image

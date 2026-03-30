@@ -111,6 +111,8 @@ classdef MibImageDocument < handle
 
         segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)        % Do segmentation using the 3D ball tool
 
+        segmentationLines3D(obj, y, x, z, modifier)        % Handle mouse clicks for 3D line skeleton annotation
+
         segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
 
         segmentBlackWhiteThreshold(obj, BatchOptIn)        % Black and white thresholding for segmentation
@@ -134,6 +136,12 @@ classdef MibImageDocument < handle
         segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the region growing method
 
         segmentationLassoManual(obj, BatchOptIn)  % Do manual segmentation using the lasso tool
+
+        segmentationSAM(obj, extraOptions, BatchOptIn)        % Segment using SAM1 (Segment Anything Model)
+
+        segmentationSAM2(obj, extraOptions, BatchOptIn)       % Segment using SAM2 (Segment Anything Model 2)
+
+        status = segmentationSAM_requirements(obj, samVersion) % Check SAM requirements and download models
 
         segmentationSpot(obj, y, x, modifier, BatchOptIn)        % Do segmentation using the spot tool
 

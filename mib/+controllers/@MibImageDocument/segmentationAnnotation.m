@@ -18,7 +18,7 @@ function segmentationAnnotation(obj, y, x, z, t, modifier, options)
 %   and the current position along Z
 % options: [@em optional] struct with additional settings
 % @li .samInteractiveModel - [logical] when true, triggers
-%   mibSegmentationSAM after adding the annotation; default false
+%   segmentationSAM after adding the annotation; default false
 %
 % Return values:
 %   (none)
@@ -169,6 +169,6 @@ notify(obj.mibModel, 'UpdateUserScore');
 
 % trigger SAM interactive segmentation if requested
 if options.samInteractiveModel
-    obj.mibSegmentationSAM();
+    obj.segmentationSAM();
 end
 end

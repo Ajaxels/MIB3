@@ -188,7 +188,7 @@ Prefs.SegmTools.Superpixels.CompactSLIC = 99;
 
 % ---------- Segment-anything preferences ----------
 Prefs.SegmTools.SAM.samVersion = 'SAM 2'; % use "SAM 1" or "SAM 2"
-Prefs.SegmTools.SAM.linksFile = ['assets', filesep, 'sam_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
+Prefs.SegmTools.SAM.linksFile = ['assets', filesep, 'json', filesep, 'sam_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
 Prefs.SegmTools.SAM.backbone = 'vit_b (0.4Gb)';     % 'vit_h (2.5Gb)', 'vit_l (1.2Gb)', 'vit_b (0.4Gb)'
 Prefs.SegmTools.SAM.environment = 'cuda';     % 'cuda', 'cpu'
 Prefs.SegmTools.SAM.points_per_side = 32;
@@ -210,7 +210,7 @@ Prefs.SegmTools.SAM.sam_installation_path = [];
 Prefs.SegmTools.SAM.showProgressBar = false;     % show or not the progress bar dialog when doing SAM segmentation with points
 
 % define separate settings for SAM2
-Prefs.SegmTools.SAM2.linksFile = ['assets', filesep, 'sam2_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
+Prefs.SegmTools.SAM2.linksFile = ['assets', filesep, 'json', filesep, 'sam2_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
 Prefs.SegmTools.SAM2.backbone = 'sam2_hiera_t (0.15Gb)';     % 'sam2_hiera_t (0.15Gb), sam2_hiera_s (0.18Gb), sam2_hiera_base_plus (0.32Gb), sam2_hiera_l (0.90Gb)'
 Prefs.SegmTools.SAM2.environment = 'cuda';     % 'cuda', 'cpu'
 Prefs.SegmTools.SAM2.sam_installation_path = [];

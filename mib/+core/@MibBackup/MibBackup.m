@@ -15,10 +15,10 @@ classdef MibBackup < handle
         % @li @b 1 - enable
         % @li @b 0 - disable
         type
-        % a variable to store type of the data: ''image'', ''model'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
+        % a variable to store type of the data: ''image'', ''labels'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
         undoList
         % a structure to store the list of the actions for undo
-        % @li @b .type - type of the data: ''image'', ''model'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
+        % @li @b .type - type of the data: ''image'', ''labels'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
         % @li @b .data - a field to store a cell with 3D dataset or 2D slice
         % @li @b .meta - meta dictionary , for the ''image'' type
         % @li @b .options - a substructure with all additional parameters,
@@ -104,12 +104,12 @@ classdef MibBackup < handle
             %
             % Parameters:
             % type: a string that defines the type of the stored data:
-            % ''image'', ''model'', ''selection'', ''mask'', ''everything''
+            % ''image'', ''labels'', ''selection'', ''mask'', ''everything''
             % (for imageData.model_type==''uint6'' only), 'labels',
             % 'lines3d', 'mibImage'
             % data: a cell/cell array with actual 3D or 2D dataset to store, 
             %       or with a structure for labels or with Lines3D class for lines3d object
-            % meta: [@em optional] a imageData.meta dictionary, not required for ''model'', ''selection'', ''mask'', ''everything'', can be @em NaN
+            % meta: [@em optional] a imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything'', can be @em NaN
             % options: a structure with fields:
             % @li .orient -> [@em optional], a number with the orientation of the dataset
             % @li .y -> [@em optional], [roiId][ymin, ymax] of the part of the dataset to store
@@ -259,9 +259,9 @@ classdef MibBackup < handle
             % index: [@em Optional] - index of the dataset to restore. When omitted return the last stored dataset
             %
             % Return values:
-            % type: a string that defines the type of the stored data: ''image'', ''model'', ''selection'', ''mask'', ''everything'' (for imageData.model_type==''uint6'' only)
+            % type: a string that defines the type of the stored data: ''image'', ''labels'', ''selection'', ''mask'', ''everything'' (for imageData.model_type==''uint6'' only)
             % data: a variable where to retrieve the dataset
-            % meta: [@em optional, NaN for 2D] a imageData.meta dictionary, not required for ''model'', ''selection'', ''mask'', ''everything''
+            % meta: [@em optional, NaN for 2D] a imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything''
             % options: a structure with fields:
             % @li .orient -> [@em optional], a number with the orientation of the dataset, for 2D slices; or NaN for 3D
             % @li .y -> [ymin, ymax] coordinates of the stored of the part of the dataset
@@ -324,10 +324,10 @@ classdef MibBackup < handle
             % Parameters:
             % index: an index of the item to replace, when @em empty replace the last entry
             % type: a string that defines the type of the new dataset:
-            % ''image'', ''model'', ''selection'', ''mask'', ''everything''
+            % ''image'', ''labels'', ''selection'', ''mask'', ''everything''
             % (for imageData.model_type==''uint6'' only), or ''mibImage''
             % data: a variable with the new dataset to store
-            % meta: [@em optional] imageData.meta dictionary, not required for ''model'', ''selection'', ''mask'', ''everything'', can be @em NaN
+            % meta: [@em optional] imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything'', can be @em NaN
             % options: a structure with fields:
             % @li .orient -> [@em optional], a number with the orientation of the dataset
             % @li .y -> [@em optional], [ymin, ymax] of the part of the dataset to store

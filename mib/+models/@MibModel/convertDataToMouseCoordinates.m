@@ -36,7 +36,7 @@ if mode(1) == 's' % shown
         otherwise; coef_z = ds.image.pixSize.z / ds.image.pixSize.y;
     end
 
-    if magFactor >= 1 && axesX(1) <= 1
+    if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
         % Full-image mode: inverse of xData = xMouse * magFactor / coef_z
         xOut = x * coef_z / magFactor;
         yOut = y / magFactor;

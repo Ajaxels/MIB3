@@ -1,5 +1,5 @@
 function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
-% function [file, path, indx] = mib_uigetfile(filter, title, defname, mode)
+% function [file, path, indx] = utils.dlgs.mibUiGetFile(filter, title, defname, mode)
 % a wrapper function to provide a modified uigetfile dialog for MacOS
 % Catalina. The general syntax is the same as for uigetfile, except missing
 % 'MultiSelect' key

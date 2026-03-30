@@ -46,7 +46,7 @@ if mode(1) == 's' % shown
         otherwise; coef_z = ds.image.pixSize.z / ds.image.pixSize.y;
     end
 
-    if magFactor >= 1 && axesX(1) <= 1
+    if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
         % Full-image mode (zoomed out, view at dataset origin):
         % XLim starts near 0 and x directly encodes absolute data position.
         xOut = x * magFactor / coef_z;

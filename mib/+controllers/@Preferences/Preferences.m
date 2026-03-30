@@ -965,7 +965,7 @@ classdef Preferences < handle
                     assignin('base',answer{1}, obj.preferences.Colors.ModelMaterialColors);
                     fprintf('Colormap export: created variable %s in the Matlab workspace\n', answer{1});
                 case 'LoadFromFileMenu'
-                    [fileName, pathName] = mib_uigetfile({'*.cmap';'*.mat';'*.*'}, 'Load colormap',...
+                    [fileName, pathName] = utils.dlgs.mibUiGetFile({'*.cmap';'*.mat';'*.*'}, 'Load colormap',...
                         fileparts(obj.mibModel.I{obj.mibModel.id}.meta('Filename')));
                     if isequal(fileName, 0); return; end
                     
@@ -1065,7 +1065,7 @@ classdef Preferences < handle
                 else
                     defaultFilename = obj.preferences.ExternalDirs.(field_name);
                 end
-                [file, path] = mib_uigetfile({'*.exe','Executables (*.exe)'; ...
+                [file, path] = utils.dlgs.mibUiGetFile({'*.exe','Executables (*.exe)'; ...
                     '*.*',  'All Files (*.*)'},...
                     'Select python.exe', defaultFilename);
                 if isequal(file, 0); return; end

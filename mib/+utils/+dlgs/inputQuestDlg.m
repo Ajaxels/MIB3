@@ -335,6 +335,7 @@ for i = 1:nBtn
     btnHandles(i).Layout.Row      = 1;
     btnHandles(i).Layout.Column   = i;
     btnHandles(i).Text            = buttons{i};
+    btnHandles(i).Tooltip         = buttons{i};
     btnHandles(i).FontSize        = options.ButtonFontSize;
     btnHandles(i).ButtonPushedFcn = @onButton;
     if strcmp(buttons{i}, defaultBtn)

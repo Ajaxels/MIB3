@@ -123,7 +123,7 @@ try
                 end
 
                 % Dataset-absolute coordinates for the status bar (shown mode, inline)
-                if magFactor >= 1 && axesX(1) <= 1
+                if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
                     xStatus = ceil(xMouse * magFactor / coef_z);
                     yStatus = ceil(yMouse * magFactor);
                 else
@@ -132,7 +132,7 @@ try
                 end
             else
                 % Convert mouse coordinates to dataset coordinates (shown mode, inline)
-                if magFactor >= 1 && axesX(1) <= 1
+                if magFactor >= 1 && axesX(1) <= 1 && axesY(1) <= 1
                     xImage = ceil(xMouse * magFactor / coef_z);
                     yImage = ceil(yMouse * magFactor);
                 else

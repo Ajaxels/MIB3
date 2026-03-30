@@ -5,7 +5,7 @@ function backup(obj, type, switch3d, getDataOptions)
 % The dataset is stored in the MibBackup class (obj.Backup).
 %
 % Parameters:
-% type: 'image', 'selection', 'mask', 'model', 'labels',
+% type: 'image', 'selection', 'mask', 'model' (swapped to labels), 'labels',
 %   'everything' (for MibLabels63 only), 'lines3d',
 %   'annotations', 'measurements', 'mibDataset'
 % switch3d: a switch to define a 2D or 3D mode to store the dataset
@@ -49,10 +49,10 @@ function backup(obj, type, switch3d, getDataOptions)
 % @endcode
 % @code
 % % Store the model layer as 3D before batch processing
-% obj.mibModel.backup('model', 1);
+% obj.mibModel.backup('labels', 1);
 % @endcode
 % @code
-% % For type-63 models, 'selection'/'mask'/'model' are automatically
+% % For type-63 models, 'selection'/'mask'/'labels' are automatically
 % % converted to 'everything' (all three layers are packed together)
 % obj.mibModel.backup('selection', 0);  // internally stores 'everything'
 % @endcode
@@ -106,10 +106,13 @@ function backup(obj, type, switch3d, getDataOptions)
 
 % check for the virtual stacking mode and return
 if strcmp(obj.I{obj.id}.datasetType, 'Virtual')
-    if ismember(type, {'mask', 'selection', 'model', 'everything'})
+    if ismember(type, {'mask', 'selection', 'model', 'labels', 'everything'})
         return;
     end
 end
+
+% swap labels with model for compatibility with MIB2
+if strcmp(type, 'model'); type = 'labels'; end
 
 % cancel if the undo system is disabled
 if obj.Backup.enableSwitch == 0; return; end
@@ -161,9 +164,9 @@ if strcmp(type, 'mibDataset')
     return;
 end
 
-% replace types 'selection','mask','model' to 'everything' for type-63 models
+% replace types 'selection','mask','labels' to 'everything' for type-63 models
 if isa(obj.I{id}.labels, 'core.MibLabels63')
-    if strcmp(type, 'selection') || strcmp(type, 'mask') || strcmp(type, 'model')
+    if strcmp(type, 'selection') || strcmp(type, 'mask') || strcmp(type, 'labels')
         type = 'everything';
     end
 end

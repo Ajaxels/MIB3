@@ -34,7 +34,14 @@ function gui_ScrollWheelFcn(obj, eventdata)
 %   % - Ctrl+Shift+Scroll Down: Decrease brush size by 5
 
 imViewFigure = obj.UIFigure;
-modifier = imViewFigure.CurrentModifier;
+% Use obj.mibController.currentModifier rather than UIFigure.CurrentModifier.
+% UIFigure.CurrentModifier can become stale after a blocking Python (pyrun)
+% call — the Shift key-release event is queued but never delivered while
+% MATLAB is blocked, so the figure property stays {'shift'} even after the
+% user has released the key.  currentModifier is reset explicitly after each
+% SAM segmentation call, so it always reflects the true keyboard state.
+%modifier = imViewFigure.CurrentModifier;
+modifier = obj.mibController.currentModifier;
 
 % Get scroll parameters
 if isprop(eventdata, 'Parameters')

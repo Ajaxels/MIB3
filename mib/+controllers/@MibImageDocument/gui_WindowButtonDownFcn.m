@@ -45,10 +45,14 @@ if obj.mibModel.preferences.System.LeftMouseButton(1) == 's'  % the selection mo
                 operation = 'select';
             end
         case 'alt'      % RMB, Ctrl+LMB
-            if isempty(modifier)
-                operation = 'pan';
-            else
+            % Use 'control' specifically — not just any non-empty modifier.
+            % UIFigure.CurrentModifier can stay stale as {'shift'} after a
+            % blocking Python call; checking for 'control' prevents a stale
+            % Shift state from turning a plain RMB pan into a select.
+            if any(strcmp(modifier, 'control'))
                 operation = 'select';
+            else
+                operation = 'pan';
             end
         case 'extend'   % Shift+RMB, Shift+LMB, MMB, LMB+RMB
             operation = 'select';
@@ -339,7 +343,7 @@ elseif strcmp(operation, 'select')
 
         case '3D lines'
             [w, h, z] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 0);
-            obj.mibSegmentationLines3D(h, w, z, modifier);
+            obj.segmentationLines3D(h, w, z, modifier);
 
             % recenter the view (best-effort checkbox read)
             recenterSw = 0;
@@ -488,36 +492,27 @@ elseif strcmp(operation, 'select')
             end
 
         case 'Segment-anything model'
-            % NOTE: This block is kept almost verbatim; UI handle access is
-            % adapted to MIB3 (controller-first) but still guarded.
+            % Interactive segment-anything model
 
-            samMethodVal = 1;    % 1=Interactive, 2=Interactive 3D, 3=Landmarks
-            sam2checked = false;
-            try
-                samMethodVal = obj.mibController.cSegmentation.handles.mibSegmSAMMethod.Value;
-            catch
-            end
-            try
-                sam2checked = logical(obj.mibController.cSegmentation.handles.mibSAM2checkbox.Value);
-            catch
-            end
+            samVersion = obj.mibController.cSegmentation.handles.samVersion.ValueIndex; % sam2checked
+            samMethodVal = obj.mibController.cSegmentation.handles.samMethod.ValueIndex;
+            % 1 - Interactive
+            % 2 - Interactive 3D
+            % 3 - Landmarks
+            % 4 - Automatic everything
 
             % check that Interactive 3D mode is used only for SAM2
-            if samMethodVal == 2 && ~sam2checked
-                msg = sprintf('!!! Error !!!\n\nThe Interactive 3D mode is not available for SAM1!\nCheck the SAM2 checkbox or use the 3D mode for the Interactive mode!');
-                try
-                    errorDlgOpts.mibPath = obj.mibModel.mibPath;
-                    utils.dlgs.showErrorDialog(obj.view.gui, msg, 'Error in gui_WindowButtonDownFcn', 'Interactive 3D', '', errorDlgOpts);
-                catch
-                    errordlg(msg, 'Interactive 3D');
-                end
+            if samMethodVal == 2 && samVersion == 1
+                msg = sprintf('The Interactive 3D mode is not available for SAM1!\nChange Version to "SAM2" or use the Dataset: "3D Stack" for the Interactive mode!');
+                errorDlgOpts.mibPath = obj.mibModel.mibPath;
+                utils.dlgs.showErrorDialog(obj.view.gui, msg, 'Error in gui_WindowButtonDownFcn', 'SAM Interactive 3D', '', errorDlgOpts);
                 return;
             end
 
             % add labels
             [w, h, z, t] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 1); % to enable the interactive mode also in YZ/XZ
 
-            if samMethodVal == 1 || samMethodVal == 2   % 'Interactive' or 'Interactive 3D'
+            if samMethodVal < 3 % 'Interactive' or 'Interactive 3D'
                 % remove shift modifier
                 if ~isempty(modifier) && any(strcmp(modifier, 'shift')) && isempty(obj.mibModel.sessionSettings.SAMsegmenter.Points.Value)
                     modifier = [];
@@ -526,33 +521,12 @@ elseif strcmp(operation, 'select')
                 extraOptions.addNextMaterial = false;    % add next material after adding the current one only for "add, +next material" mode
 
                 % Read SAM mode/destination from MIB3 segmentation controller (matches gui_WindowKeyPressFcn usage)
-                samMode = '';
-                destinationLayer = '';
-                try
-                    samMode = obj.mibController.cSegmentation.handles.samMode.Value;
-                catch
-                    try
-                        samMode = obj.mibController.cSegmentation.handles.mibSegmSAMMode.String{obj.mibController.cSegmentation.handles.mibSegmSAMMode.Value};
-                    catch
-                        samMode = 'replace';
-                    end
-                end
-                try
-                    destinationLayer = obj.mibController.cSegmentation.handles.samDestination.Value;
-                catch
-                    try
-                        destinationLayer = obj.mibController.cSegmentation.handles.mibSegmSAMDestination.String{obj.mibController.cSegmentation.handles.mibSegmSAMDestination.Value};
-                    catch
-                        destinationLayer = 'selection';
-                    end
-                end
+                samMode = obj.mibController.cSegmentation.handles.samMode.Value;
+                destinationLayer = obj.mibController.cSegmentation.handles.samDestination.Value;
 
-                if strcmp(samMode, 'add, +next material') && ~strcmp(destinationLayer, 'model')
+                if strcmp(samMode, 'add, +next material') && ~strcmp(destinationLayer, 'labels')
                     samMode = 'replace';
-                    try
-                        obj.mibController.cSegmentation.handles.mibSegmSAMMode.Value = 1;
-                    catch
-                    end
+                    obj.mibController.cSegmentation.handles.samMode.Value = 'replace';
                 end
 
                 if isempty(modifier)    % start new segmentation
@@ -584,30 +558,26 @@ elseif strcmp(operation, 'select')
                             obj.mibModel.backup(destinationLayer, 1, getDataOptions);
 
                         case 'add, +next material'
-                            if dataset.modelType < 256 || ~strcmp(destinationLayer, 'model')
-                                errordlg(sprintf(['!!! Error !!!\n\nThere current settings are not compatible with the "add, +next material" mode!\n\n' ...
+                            if dataset.labels.maxMaterials < 256 || ~strcmp(destinationLayer, 'labels')
+                                utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+                                    sprintf(['The current settings are not compatible with the "add, +next material" mode!\n\n' ...
                                     'Please make sure that:\n' ...
                                     '   1. You created or already have a model with type 65535 or larger\n' ...
                                     '   2. Destination should be set to "Model"']), ...
-                                    'add, +next material');
+                                    'Error', 'add, +next material');
                                 return;
                             end
 
-                            % select the second material row in the table (legacy JTable behavior)
+                            % select the second material row in the table
                             if dataset.selectedAddToMaterial < 4
-                                try
-                                    userData = obj.mibController.cSegmentation.handles.materialsTable.UserData;
-                                    jTable = userData.jTable;   % jTable is initializaed in the beginning of mibGUI.m
-                                    jTable.changeSelection(3, 2, false, false);    % automatically calls mibSegmentationTable_CellSelectionCallback
-                                    dataset.lastSegmSelection = [3 4];
-                                    dataset.selectedAddToMaterial = 4;
-                                catch
-                                end
+                                tableHandle = obj.mibController.cSegmentation.handles.materialsTable;
+                                scroll(tableHandle, 'row', 4);
+                                obj.mibController.cSegmentation.materialsTable_CellSelectionCallback([4, 3]);
                             end
 
                             extraOptions.addNextMaterial = true;
 
-                            backupOptions.LinkedVariable.modelMaterialNames = 'obj.mibModel.I{obj.mibModel.id}.labels.materialNames';
+                            backupOptions.LinkedVariable.modelMaterialNames = 'obj.I{obj.id}.labels.materialNames';
                             backupOptions.LinkedData.modelMaterialNames = dataset.labels.materialNames;
                             obj.mibModel.backup(destinationLayer, 0, backupOptions);
 
@@ -720,11 +690,16 @@ elseif strcmp(operation, 'select')
 
                 if obj.mibModel.preferences.SegmTools.SAM.samVersion == 1
                     % use original SAM1
-                    obj.mibSegmentationSAM(extraOptions);
+                    obj.segmentationSAM(extraOptions);
                 else
                     % use newer version SAM2
-                    obj.mibSegmentationSAM2(extraOptions);
+                    obj.segmentationSAM2(extraOptions);
                 end
+                % Key-release events fired during the blocking Python call are
+                % lost in some MATLAB versions, leaving currentModifier stale.
+                % Reset it explicitly so scroll wheel and other callbacks see
+                % the correct (no-modifier) state after SAM completes.
+                obj.mibController.currentModifier = {};
                 return;
 
             elseif samMethodVal == 3    % 'Landmarks'

@@ -1,0 +1,15 @@
+CUDA issues
+with SAM2:
+Error:
+"Python Error: InstantiationException: Error in call to target 'sam2.modeling.position_encoding.PositionEmbeddingSine':
+RuntimeError('CUDA error: no kernel image is available for execution on the device\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing
+CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n')
+full_key: model.image_encoder.neck.position_encoding"
+Reason:
+	The root cause is a GPU architecture mismatch: PyTorch 2.5.1+cu121 was compiled only for CUDA compute capabilities up to sm_90, but 
+	new NVIDIA RTX 5000 series (Blackwell) GPU requires sm_120.
+The Fix: Upgrade PyTorch
+	PyTorch 2.7.0+ with CUDA 12.8 is the first stable release with official Blackwell
+	
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+
