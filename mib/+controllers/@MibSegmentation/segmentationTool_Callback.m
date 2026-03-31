@@ -65,8 +65,10 @@ switch segmToolName
         % reinitialize the list: remove Object Picker-specific items
         if numel(handles.lassoType.Items) > 4
             handles.lassoType.Items = {'Lasso', 'Rectangle', 'Ellipse', 'Polyline'};
-            handles.lassoType.Value = 'Rectangle';
+            % Restore the previously used tool
+            handles.lassoType.ValueIndex = handles.lassoType.UserData.lassoTypeIndex;
         end
+        handles.lassoMode.ValueIndex = handles.lassoMode.UserData.lassoModeIndex;
     case 'MagicWand/RegionGrowing'
         handles.panelMagicwand.Visible = 'on';
         obj.view.brushCursorShow = false;
@@ -81,8 +83,10 @@ switch segmToolName
         % add Object Picker-specific items to lassoType dropdown
         if numel(handles.lassoType.Items) < 6
             handles.lassoType.Items = {'Click', 'Lasso', 'Rectangle', 'Ellipse', 'Polyline', 'Mask within Selection'};
-            handles.lassoType.Value = 'Click';
+            % Restore the previously used tool
+            handles.lassoType.ValueIndex = handles.lassoType.UserData.objectPickerTypeIndex;
         end
+        handles.lassoMode.ValueIndex = handles.lassoMode.UserData.objectPickerModeIndex;
     case 'Segment-anything model'
         handles.panelSAM.Visible = 'on';
         obj.view.brushCursorShow = false;

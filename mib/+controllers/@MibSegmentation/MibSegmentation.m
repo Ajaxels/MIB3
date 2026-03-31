@@ -67,11 +67,13 @@ classdef MibSegmentation
 
         thresholdSlider_ContextMenu(obj, menuEntry, selectedData)        % context menu callbacks for threshold sliders (Default, Set step...)
 
-        updateMaterialsTable(obj, position)                 % update the segmentation table from model
-
         update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
 
         updateInterpolationSettings(obj) % show dialog to modify selection interpolation settings for the brush tool
+        
+        updateMaterialsTable(obj, position)                 % update the segmentation table from model
+
+        updateSamSettings(obj)        % Open SAM settings dialog for configuring SAM1 or SAM2 parameters
 
         function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
             %% Init properties
@@ -83,9 +85,17 @@ classdef MibSegmentation
             obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
             
             %% Update widgets
+            % define the last selection for each of the lasso/object picker types
+            obj.handles.lassoType.UserData.lassoTypeIndex = 1;
+            obj.handles.lassoMode.UserData.lassoModeIndex = 1;
+            obj.handles.lassoType.UserData.objectPickerTypeIndex = 1;
+            obj.handles.lassoMode.UserData.objectPickerModeIndex = 1;
+
             obj.update_fromModel(); % update widgets of the Segmentation panel
             % render the table
             obj.updateMaterialsTable();
+
+            
 
             %%  Add CALLBACKS to context menus ----------------------
             %% ---------------------- Color wheel button ----------------------

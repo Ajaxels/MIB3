@@ -129,8 +129,7 @@ end
 % init python environment
 if isempty(obj.mibModel.pythonEnv)
     % check python requirements
-    samVersion = 2;
-    status = obj.segmentationSAM_requirements(samVersion);
+    status = obj.segmentationSAM_requirements('SAM2');
     if ~status; return; end
 
     if BatchOpt.showWaitbar

@@ -6,6 +6,7 @@ function status = segmentationSAM_requirements(obj, samVersion)
 % samVersion: [@em optional] integer with version of SAM
 %   @li 1 -> default, the first version SAM (https://segment-anything.com)
 %   @li 2 -> the second version SAM-2 (https://github.com/facebookresearch/segment-anything-2)
+%  OR alternatively a char 'SAM1', 'SAM2'
 %
 % Return values:
 % status: [logical], switch indicating success of the function
@@ -13,14 +14,17 @@ function status = segmentationSAM_requirements(obj, samVersion)
 %|
 % @b Examples:
 % @code
+% status = obj.segmentationSAM_requirements('SAM1');  // check SAM1 requirements
+% status = obj.segmentationSAM_requirements('SAM2');  // check SAM2 requirements
 % status = obj.segmentationSAM_requirements(2);  // check SAM2 requirements
 % @endcode
 
 if nargin < 2; samVersion = 1; end
-
-% define proper field name in obj.mibModel.preferences.SegmTools structure
-samVersionName = 'SAM';
-if samVersion==2; samVersionName = 'SAM2'; end
+if ~ischar(samVersion)
+    % define proper field name in obj.mibModel.preferences.SegmTools structure
+    samVersionName = 'SAM1';
+    if samVersion==2; samVersionName = 'SAM2'; end
+end
 
 status = false;
 
@@ -68,10 +72,10 @@ checkpointLink2 = linksStruct(selectedBackboneIndex).checkpointLink_url_2;
 onnxFilename = '*** not used ***';
 modelCfgFilename = '*** not used ***';
 switch samVersion
-    case 1
+    case 'SAM1'
         onnxFilename = linksStruct(selectedBackboneIndex).onnxFilename;
         onnxLink = linksStruct(selectedBackboneIndex).onnxLink;
-    case 2
+    case 'SAM2'
         % for SAM2 links to model configs are needed
         modelCfgLink = linksStruct(selectedBackboneIndex).modelCfgLink_url_1;
         modelCfgLink2 = linksStruct(selectedBackboneIndex).modelCfgLink_url_2;
@@ -83,10 +87,10 @@ checkpointIsMissing = true;
 while checkpointIsMissing
     checkpointExists = isfile(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, checkpointFilename));
     switch samVersion
-        case 1
+        case 'SAM1'
             modelCfgExists = true; % yaml is not used in SAM1
             onnxExists = isfile(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, onnxFilename));
-        case 2
+        case 'SAM2'
             modelCfgExists = isfile(fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, modelCfgFilename));
             onnxExists = true; % onnx is not used in SAM2
     end

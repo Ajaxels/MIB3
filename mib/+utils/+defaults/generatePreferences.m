@@ -187,27 +187,27 @@ Prefs.SegmTools.Superpixels.NoSLIC = 230;
 Prefs.SegmTools.Superpixels.CompactSLIC = 99;
 
 % ---------- Segment-anything preferences ----------
-Prefs.SegmTools.SAM.samVersion = 'SAM 2'; % use "SAM 1" or "SAM 2"
-Prefs.SegmTools.SAM.linksFile = ['assets', filesep, 'json', filesep, 'sam_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
-Prefs.SegmTools.SAM.backbone = 'vit_b (0.4Gb)';     % 'vit_h (2.5Gb)', 'vit_l (1.2Gb)', 'vit_b (0.4Gb)'
-Prefs.SegmTools.SAM.environment = 'cuda';     % 'cuda', 'cpu'
-Prefs.SegmTools.SAM.points_per_side = 32;
-Prefs.SegmTools.SAM.points_per_batch = 64;
-Prefs.SegmTools.SAM.pred_iou_thresh =  0.88;
-Prefs.SegmTools.SAM.stability_score_thresh = 0.95;
-Prefs.SegmTools.SAM.box_nms_thresh = 0.7;
-Prefs.SegmTools.SAM.crop_n_layers = 0;
-Prefs.SegmTools.SAM.crop_nms_thresh = 0.7;
-Prefs.SegmTools.SAM.crop_overlap_ratio = 0.3413; % 512/1500
-Prefs.SegmTools.SAM.crop_n_points_downscale_factor = 1;
-% Prefs.SegmTools.SAM.point_grids: Optional[List[np.ndarray]] = None;
-Prefs.SegmTools.SAM.min_mask_region_area = 0;
+Prefs.SegmTools.SAM.samVersion = 'SAM2'; % use "SAM1" or "SAM2"
+Prefs.SegmTools.SAM1.linksFile = ['assets', filesep, 'json', filesep, 'sam_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!
+Prefs.SegmTools.SAM1.backbone = 'vit_b (0.4Gb)';     % 'vit_h (2.5Gb)', 'vit_l (1.2Gb)', 'vit_b (0.4Gb)'
+Prefs.SegmTools.SAM1.environment = 'cuda';     % 'cuda', 'cpu'
+Prefs.SegmTools.SAM1.points_per_side = 32;
+Prefs.SegmTools.SAM1.points_per_batch = 64;
+Prefs.SegmTools.SAM1.pred_iou_thresh =  0.88;
+Prefs.SegmTools.SAM1.stability_score_thresh = 0.95;
+Prefs.SegmTools.SAM1.box_nms_thresh = 0.7;
+Prefs.SegmTools.SAM1.crop_n_layers = 0;
+Prefs.SegmTools.SAM1.crop_nms_thresh = 0.7;
+Prefs.SegmTools.SAM1.crop_overlap_ratio = 0.3413; % 512/1500
+Prefs.SegmTools.SAM1.crop_n_points_downscale_factor = 1;
+% Prefs.SegmTools.SAM1.point_grids: Optional[List[np.ndarray]] = None;
+Prefs.SegmTools.SAM1.min_mask_region_area = 0;
 % The form masks are returned in. Can be 'binary_mask', 'uncompressed_rle', or 'coco_rle'. 
 % 'coco_rle' requires pycocotools. For large resolutions, 'binary_mask' may consume 
 % large amounts of memory
-% Prefs.SegmTools.SAM.output_mode = "binary_mask";
-Prefs.SegmTools.SAM.sam_installation_path = [];
-Prefs.SegmTools.SAM.showProgressBar = false;     % show or not the progress bar dialog when doing SAM segmentation with points
+% Prefs.SegmTools.SAM1.output_mode = "binary_mask";
+Prefs.SegmTools.SAM1.sam_installation_path = [];
+Prefs.SegmTools.SAM1.showProgressBar = false;     % show or not the progress bar dialog when doing SAM segmentation with points
 
 % define separate settings for SAM2
 Prefs.SegmTools.SAM2.linksFile = ['assets', filesep, 'json', filesep, 'sam2_links.json'];     % location of sam_links.json file with SAM links settings, relative to MIB path!

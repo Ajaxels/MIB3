@@ -504,7 +504,7 @@ elseif strcmp(operation, 'select')
             % reflects the true keyboard state.
             modifier = obj.mibController.currentModifier;
 
-            samVersion = obj.mibController.cSegmentation.handles.samVersion.ValueIndex; % sam2checked
+            samVersion = obj.mibController.cSegmentation.handles.samVersion.Value; 
             samMethodVal = obj.mibController.cSegmentation.handles.samMethod.ValueIndex;
             % 1 - Interactive
             % 2 - Interactive 3D
@@ -512,7 +512,7 @@ elseif strcmp(operation, 'select')
             % 4 - Automatic everything
 
             % check that Interactive 3D mode is used only for SAM2
-            if samMethodVal == 2 && samVersion == 1
+            if samMethodVal == 2 && strcmp(samVersion, 'SAM1')
                 msg = sprintf('The Interactive 3D mode is not available for SAM1!\nChange Version to "SAM2" or use the Dataset: "3D Stack" for the Interactive mode!');
                 errorDlgOpts.mibPath = obj.mibModel.mibPath;
                 utils.dlgs.showErrorDialog(obj.view.gui, msg, 'Error in gui_WindowButtonDownFcn', 'SAM Interactive 3D', '', errorDlgOpts);
@@ -711,7 +711,7 @@ elseif strcmp(operation, 'select')
                         end
                 end
 
-                if obj.mibModel.preferences.SegmTools.SAM.samVersion == 1
+                if strcmp(samVersion, 'SAM1')
                     % use original SAM1
                     obj.segmentationSAM(extraOptions);
                 else

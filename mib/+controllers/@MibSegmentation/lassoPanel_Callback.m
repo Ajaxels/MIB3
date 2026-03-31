@@ -31,9 +31,21 @@ end
 
 switch mode
     case 'lassoType' % define type of the lasso selection tool
-        %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        % store the current selection of the widget as it is shared between few tools
+        switch obj.handles.segmTool.Value
+            case 'Lasso'
+                hWidget.UserData.lassoTypeIndex = hWidget.ValueIndex;
+            case 'Object picker'
+                hWidget.UserData.objectPickerTypeIndex = hWidget.ValueIndex;
+        end
     case 'lassoMode' % set the mode add/remove lasso-selection to/from the selection layer
-        %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        % store the current selection of the widget as it is shared between few tools
+        switch obj.handles.segmTool.Value
+            case 'Lasso'
+                hWidget.UserData.lassoModeIndex = hWidget.ValueIndex;
+            case 'Object picker'
+                hWidget.UserData.objectPickerModeIndex = hWidget.ValueIndex;
+        end
     case 'lassoManually' % specify the lasso area manually
         %fprintf('Clicked on a widget of the segmentation panel->Lasso/Object picker tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
         if obj.view.handles.panels.segmentation.handles.lassoManually.Value
