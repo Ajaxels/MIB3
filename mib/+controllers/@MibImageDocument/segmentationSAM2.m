@@ -334,9 +334,12 @@ if ismember(BatchOpt.Method{1}, {'Interactive', 'Interactive 3D'})
     getLabelsOpt.blockModeSwitch = true;
     getLabelsOpt.shiftCoordinates = true;
     if ismember(BatchOpt.Mode{1}, {'add', 'add, +next material'}) && methodToUse ~= 2
-        % for non-Interactive-3D modes, backup was already made in gui_WindowButtonDownFcn
-        % for Interactive 3D (methodToUse==2) the z-range grows with each Shift+click,
-        % so backup is always done here with the current full [z1,z2] range
+        % first click in non-Interactive-3D 'add' mode: gui_WindowButtonDownFcn already stored backup
+        doBackup = false;
+    end
+    if numel(obj.mibModel.sessionSettings.SAMsegmenter.Points.Value) > 1 && z1 == z2
+        % same-slice refinement (ctrl-click, or shift-click on same slice): no new backup needed;
+        % the backup was already made on the first click or the first shift-click to a new slice
         doBackup = false;
     end
 else

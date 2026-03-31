@@ -196,7 +196,7 @@ if storeOptions.switch3d     % 3D case
                 case 'mask'
                     obj.I{id}.setData3D(data{cellId}, type, storeOptions.t(1), storeOptions.orient, NaN, setDataOptions2);
                     obj.I{id}.maskExist = 1;
-                case 'model'
+                case {'model', 'labels'}
                     obj.I{id}.setData3D(data{cellId}, 'labels', storeOptions.t(1), storeOptions.orient, NaN, setDataOptions2);
                     obj.I{id}.modelExist = 1;
                 case 'everything'
@@ -235,7 +235,7 @@ else        % 2D case
                 setDataOptions2 = rmfield(setDataOptions, 'roiId');
                 obj.I{id}.setData2D(data{cellId}, type, storeOptions.z(1), storeOptions.orient, NaN, setDataOptions2);
                 obj.I{id}.maskExist = 1;
-            case 'model'
+            case {'model', 'labels'}
                 setDataOptions2 = rmfield(setDataOptions, 'roiId');
                 obj.I{id}.setData2D(data{cellId}, 'labels', storeOptions.z(1), storeOptions.orient, NaN, setDataOptions2);
                 obj.I{id}.modelExist = 1;
@@ -275,4 +275,5 @@ if ~strcmp(type, 'selection') && strcmp(type2, 'selection') && newIndex > newDat
 end
 
 notify(obj, 'ShowImage');
+notify(obj, 'Undo');
 end
