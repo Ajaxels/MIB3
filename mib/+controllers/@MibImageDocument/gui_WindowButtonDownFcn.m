@@ -494,6 +494,16 @@ elseif strcmp(operation, 'select')
         case 'Segment-anything model'
             % Interactive segment-anything model
 
+            % Use obj.mibController.currentModifier as the authoritative modifier.
+            % Both hFig.CurrentModifier and hFig.SelectionType can become stale
+            % after a blocking pyrun() call — key-release events fired during Python
+            % execution are queued but never delivered, so both figure properties
+            % may still show {'shift'} long after the user released the key.
+            % currentModifier is maintained by KeyPressFcn/KeyReleaseFcn and is
+            % explicitly reset to {} after every SAM segmentation call, so it always
+            % reflects the true keyboard state.
+            modifier = obj.mibController.currentModifier;
+
             samVersion = obj.mibController.cSegmentation.handles.samVersion.ValueIndex; % sam2checked
             samMethodVal = obj.mibController.cSegmentation.handles.samMethod.ValueIndex;
             % 1 - Interactive
@@ -554,8 +564,12 @@ elseif strcmp(operation, 'select')
                             obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = ...
                                 uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, t, NaN, dataset.getSelectedMaterialIndex('AddTo'), getDataOptions)));
 
-                            % done in mibSegmentationSAM2
-                            obj.mibModel.backup(destinationLayer, 1, getDataOptions);
+                            % for Interactive 3D the z-range grows with each Shift+click so
+                            % backup is owned by segmentationSAM2 (with full range each time);
+                            % for all other methods backup is done here
+                            if samMethodVal ~= 2
+                                obj.mibModel.backup(destinationLayer, 1, getDataOptions);
+                            end
 
                         case 'add, +next material'
                             if dataset.labels.maxMaterials < 256 || ~strcmp(destinationLayer, 'labels')
@@ -681,6 +695,15 @@ elseif strcmp(operation, 'select')
                 getDataOptions.z = [z1 z2];
 
                 switch samMode
+                    case 'add'
+                        if samMethodVal == 2 && ~isempty(modifier)
+                            % Interactive 3D + Shift+click: z-range just grew, so
+                            % refresh initialImageAddTo to match the new [z1,z2] extent.
+                            % Without this, bitor() in segmentationSAM2 would broadcast
+                            % a stale single-slice state across the full 3D output.
+                            obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = ...
+                                uint8(cell2mat(obj.mibModel.getData3D(destinationLayer, t, NaN, dataset.getSelectedMaterialIndex('AddTo'), getDataOptions)));
+                        end
                     case 'add, +next material'
                         if isempty(modifier) % store initial state for the initial selection of the object
                             obj.mibModel.sessionSettings.SAMsegmenter.initialImageAddTo = ...

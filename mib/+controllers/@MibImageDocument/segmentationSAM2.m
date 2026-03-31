@@ -334,9 +334,10 @@ if ismember(BatchOpt.Method{1}, {'Interactive', 'Interactive 3D'})
 
     getLabelsOpt.blockModeSwitch = true;
     getLabelsOpt.shiftCoordinates = true;
-    if ismember(BatchOpt.Mode{1}, {'add',  'add, +next material'})
-        % do not make backup in this mode
-        % as it has already been made in gui_WindowButtonDownFcn
+    if ismember(BatchOpt.Mode{1}, {'add', 'add, +next material'}) && methodToUse ~= 2
+        % for non-Interactive-3D modes, backup was already made in gui_WindowButtonDownFcn
+        % for Interactive 3D (methodToUse==2) the z-range grows with each Shift+click,
+        % so backup is always done here with the current full [z1,z2] range
         doBackup = false;
     end
 else
