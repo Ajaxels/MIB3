@@ -103,32 +103,57 @@ if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     % get panel positions from the layout
     leftPanelW = 0;
     if isfield(obj.view.gui.Layout.panelLayout, 'left')
-        leftPanelW   = obj.view.gui.Layout.panelLayout.left.freeDimension;
-        if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW   = 0; end
+        leftPanelW = obj.view.gui.Layout.panelLayout.left.freeDimension;
+        if obj.view.gui.Layout.panelLayout.left.collapsed
+            leftPanelW = 0;
+        end
     end
+
     bottomPanelH = 0;
     if isfield(obj.view.gui.Layout.panelLayout, 'bottom')
         bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
-        if obj.view.gui.Layout.panelLayout.bottom.collapsed; bottomPanelH = 0; end
+        if obj.view.gui.Layout.panelLayout.bottom.collapsed
+            bottomPanelH = 0;
+        end
     end
-    
-    
 
-    winBounds = obj.view.gui.WindowBounds;   % % main GUI position, [left, top, width, height], top-left origin
-    posAxes = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Position;  % image view axes position, [left, bottom, width, height], bottom-left origin within document
+    winBounds = obj.view.gui.WindowBounds;   % [left, top, width, height], top-left origin, virtual desktop
+    posAxes = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Position;
 
-    % screenX: window left + left panel + axes left offset + half axes width
+    % original center calculation in virtual-desktop top-based coordinates
     screenX = winBounds(1) + leftPanelW + posAxes(1) + posAxes(3)/2;
-
-    % screenY: window top + window height - bottom panel - axes bottom offset - half axes height
-    % (posAxes y is from document bottom upward, so invert within document height)
     screenY = winBounds(2) + winBounds(4) - bottomPanelH - posAxes(2) - posAxes(4)/2;
 
-    % flip the the y-axis and scale depending on the system scaling factor
     scaling = obj.mibModel.preferences.System.GUI.systemscaling;
-    screenSize = get(0, 'ScreenSize');
-    pointerX = (screenX+8) * scaling;  % 8 pixels is correction due to some margin
-    pointerY = (screenSize(4) - screenY + 26) * scaling;  % 26 pixels is correction due to some margin and the status bar height
+    monPos = get(groot, 'MonitorPositions');   % [x y width height]
+
+    % select monitor from X position
+    idx = find(screenX >= monPos(:,1) & screenX <= (monPos(:,1) + monPos(:,3) - 1), 1, 'first');
+    if isempty(idx)
+        [~, idx] = min(abs(screenX - (monPos(:,1) + monPos(:,3)/2)));
+    end
+
+    % convert top-based virtual Y to monitor-local Y, then to root PointerLocation Y
+    monitorY0   = monPos(idx,2);
+    monitorH    = monPos(idx,4);
+    monitorTop  = monitorY0 + monitorH - 1;
+
+    pointerX = round((screenX + 8) * scaling);
+    pointerY = round((monitorTop - (screenY - monitorY0) + 26) * scaling);
+
+    % % --- DIAGNOSTIC: remove after fixing ---
+    % fprintf('=== zoomEdit_Callback recenter diagnostic ===\n');
+    % fprintf('winBounds: [%.1f, %.1f, %.1f, %.1f]\n', winBounds);
+    % fprintf('posAxes: [%.1f, %.1f, %.1f, %.1f]\n', posAxes);
+    % fprintf('leftPanelW=%.1f bottomPanelH=%.1f\n', leftPanelW, bottomPanelH);
+    % fprintf('screenX=%.1f screenY=%.1f\n', screenX, screenY);
+    % fprintf('scaling=%.3f\n', scaling);
+    % fprintf('monitor index=%d\n', idx);
+    % fprintf('monitorY0=%.1f monitorH=%.1f monitorTop=%.1f\n', monitorY0, monitorH, monitorTop);
+    % fprintf('pointerX=%.1f pointerY=%.1f\n', pointerX, pointerY);
+    % fprintf('MonitorPositions:\n'); disp(monPos);
+    % fprintf('current PointerLocation before set: [%.1f, %.1f]\n', groot().PointerLocation);
+    % % --- END DIAGNOSTIC ---
 
     gr = groot();
     gr.PointerLocation = [pointerX, pointerY];
