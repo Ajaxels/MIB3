@@ -29,7 +29,7 @@ classdef BoundingBox < handle
 
     events
         %> Description of events
-        closeEvent
+        CloseEvent
         % event firing when window is closed
     end
 
@@ -98,6 +98,7 @@ classdef BoundingBox < handle
                         errorOpts.WindowHeight = 150;
                         utils.dlgs.showErrorDialog([], sprintf('A structure as the 4rd parameter is required!'), 'Error', 'Error in controllers.BoundingBox', '', errorOpts);
                     end
+                    notify(obj, 'CloseEvent');
                     return;
                 end
 
@@ -154,7 +155,7 @@ classdef BoundingBox < handle
                 delete(obj.listener{i});
             end
 
-            notify(obj, 'closeEvent');      % notify mibController that this child window is closed
+            notify(obj, 'CloseEvent');      % notify mibController that this child window is closed
         end
 
         function updateWidgets(obj)
@@ -211,7 +212,7 @@ classdef BoundingBox < handle
             % the view is created
 
             % Hook the window X-button so it triggers the same cleanup as
-            % the explicit Close button (deletes listeners, fires closeEvent).
+            % the explicit Close button (deletes listeners, fires CloseEvent).
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
 
             handles = obj.view.handles;

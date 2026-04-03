@@ -47,7 +47,7 @@ classdef Preferences < handle
     
     events
         %> Description of events
-        closeEvent
+        CloseEvent
         % event firing when window is closed
     end
     
@@ -114,7 +114,7 @@ classdef Preferences < handle
                 delete(obj.listener{i});
             end
             
-            notify(obj, 'closeEvent');      % notify mibController that this child window is closed
+            notify(obj, 'CloseEvent');      % notify mibController that this child window is closed
         end
         
         function updateWidgets(obj, panelId)

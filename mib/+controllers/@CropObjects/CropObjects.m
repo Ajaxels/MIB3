@@ -34,7 +34,7 @@ classdef CropObjects < handle
     end
 
     events
-        closeEvent
+        CloseEvent
         % fires when the dialog is closed; caught by parent to purge this child
     end
 
@@ -143,7 +143,7 @@ classdef CropObjects < handle
             for i = 1:numel(obj.listener)
                 delete(obj.listener{i});
             end
-            notify(obj, 'closeEvent');
+            notify(obj, 'CloseEvent');
         end
 
         % -----------------------------------------------------------------

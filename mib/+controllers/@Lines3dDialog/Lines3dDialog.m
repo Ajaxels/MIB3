@@ -42,7 +42,7 @@ classdef Lines3dDialog < handle
     end
 
     events
-        closeEvent
+        CloseEvent
         % fires when the window is closed; caught by MibController to purge this child
     end
 
@@ -71,7 +71,7 @@ classdef Lines3dDialog < handle
 
         function purgeControllers(obj, src, evnt)
             % purgeControllers(obj, src, evnt)
-            % Find and delete a child controller that fired its closeEvent.
+            % Find and delete a child controller that fired its CloseEvent.
             id = obj.findChildId(class(src));
             delete(obj.childControllers{id});
             obj.childControllers(id) = [];
@@ -139,7 +139,7 @@ classdef Lines3dDialog < handle
             for i = 1:numel(obj.listener)
                 delete(obj.listener{i});
             end
-            notify(obj, 'closeEvent');
+            notify(obj, 'CloseEvent');
         end
 
         % -----------------------------------------------------------------

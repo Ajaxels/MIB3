@@ -55,7 +55,7 @@ classdef Quantification < handle
     end
 
     events
-        closeEvent
+        CloseEvent
         % fires when the dialog is closed; caught by parent to clean up
     end
 
@@ -96,7 +96,7 @@ classdef Quantification < handle
             % Parameters:
             % obj: handle to Quantification controller
             % src: closed child controller (event source)
-            % evnt: closeEvent data
+            % evnt: CloseEvent data
 
             id = obj.findChildId(class(src));
             delete(obj.childControllers{id});

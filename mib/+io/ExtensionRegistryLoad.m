@@ -98,7 +98,14 @@ classdef ExtensionRegistryLoad < handle
             % <code> 
             % ext = extReg.getAllowedExtensions('Standard', 'BioFormats', false); 
             % <endcode> 
-
+            % Usage from MibModel
+            % <code>
+            % // default reader
+            % ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false); 
+            % // BioFormats reader
+            % ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'BioFormats', false); 
+            % <endcode>
+            
             if nargin < 4; withDot = true; end
             ext = obj.extensionSets{obj.generateKey(mode, reader)};
             if withDot; ext = strcat('.', ext); end

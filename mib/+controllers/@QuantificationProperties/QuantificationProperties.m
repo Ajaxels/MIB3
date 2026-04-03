@@ -30,7 +30,7 @@ classdef QuantificationProperties < handle
     end
 
     events
-        closeEvent
+        CloseEvent
         % fires when the dialog is closed; caught by parent to clean up
     end
 
@@ -303,7 +303,7 @@ classdef QuantificationProperties < handle
             % Close the QuantificationProperties dialog and release all resources.
             %
             % Deletes the GUI figure, removes all event listeners, and fires
-            % the closeEvent so the parent controller can purge this child.
+            % the CloseEvent so the parent controller can purge this child.
             %
             %|
             % @b Examples:
@@ -318,7 +318,7 @@ classdef QuantificationProperties < handle
             for i = 1:numel(obj.listener)
                 delete(obj.listener{i});
             end
-            notify(obj, 'closeEvent');
+            notify(obj, 'CloseEvent');
         end
 
     end % methods

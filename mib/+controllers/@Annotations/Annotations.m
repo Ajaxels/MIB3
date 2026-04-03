@@ -36,7 +36,7 @@ classdef Annotations < handle
     end
 
     events
-        closeEvent
+        CloseEvent
         % fires when the window is closed; caught by MibController to purge this child
     end
 
@@ -57,7 +57,7 @@ classdef Annotations < handle
 
         function purgeControllers(obj, src, evnt)
             % function purgeControllers(obj, src, evnt)
-            % Find and delete a child controller that fired its closeEvent.
+            % Find and delete a child controller that fired its CloseEvent.
             id = obj.findChildId(class(src));
             delete(obj.childControllers{id});
             obj.childControllers(id) = [];
@@ -173,7 +173,7 @@ classdef Annotations < handle
             for i = 1:numel(obj.listener)
                 delete(obj.listener{i});
             end
-            notify(obj, 'closeEvent');
+            notify(obj, 'CloseEvent');
         end
 
         % -----------------------------------------------------------------
@@ -1336,7 +1336,7 @@ classdef Annotations < handle
             else
                 obj.childControllers{id} = fh(obj.mibModel);
             end
-            addlistener(obj.childControllers{id}, 'closeEvent', ...
+            addlistener(obj.childControllers{id}, 'CloseEvent', ...
                 @(src,evnt) controllers.Annotations.purgeControllers(obj, src, evnt));
         end
 

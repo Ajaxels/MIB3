@@ -23,7 +23,7 @@ classdef DisplayAdjust < handle
     end
 
     events
-        closeEvent
+        CloseEvent
         % event firing when the window is closed
     end
 
@@ -212,7 +212,7 @@ classdef DisplayAdjust < handle
             for i = 1:numel(obj.listener)
                 delete(obj.listener{i});
             end
-            notify(obj, 'closeEvent');
+            notify(obj, 'CloseEvent');
         end
 
         % -----------------------------------------------------------------

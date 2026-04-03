@@ -65,7 +65,7 @@ classdef ImageConverterController < handle
     
     events
         %> Description of events
-        closeEvent
+        CloseEvent
         % event firing when window is closed
     end
     
@@ -293,7 +293,7 @@ classdef ImageConverterController < handle
                     else
                         errordlg(sprintf('A structure as the 3rd parameter is required!')); 
                     end
-                    notify(obj, 'closeEvent'); 
+                    notify(obj, 'CloseEvent'); 
                     return
                 end
                 % add/update BatchOpt with the provided fields in BatchOptIn
@@ -301,7 +301,7 @@ classdef ImageConverterController < handle
                 obj.BatchOpt = updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptIn);
                 
                 obj.Convert();
-                notify(obj, 'closeEvent');
+                notify(obj, 'CloseEvent');
                 return;
             end
 
@@ -368,7 +368,7 @@ classdef ImageConverterController < handle
                 delete(obj.listener{i});
             end
             
-            notify(obj, 'closeEvent');      % notify mibController that this child window is closed
+            notify(obj, 'CloseEvent');      % notify mibController that this child window is closed
         end
         
         function updateWidgets(obj)

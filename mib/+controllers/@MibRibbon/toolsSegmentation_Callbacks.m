@@ -19,6 +19,7 @@ end
 
 switch mode
     case sprintf('Deep learning\nsegmentation')        % obj.handles.ribbonTools.deepmib
+        obj.mibController.startController('controllers.MibDeep', obj.mibController);
     case 'Membrane detector'        % obj.handles.ribbonTools.membrane
     case 'Supervoxels classifier'        % obj.handles.ribbonTools.supervoxels
     case sprintf('Global\nthresholding')        % obj.handles.ribbonTools.globalthres

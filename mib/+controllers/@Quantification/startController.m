@@ -4,7 +4,7 @@ function startController(obj, controllerName, varargin)
 %
 % If a controller with the same class name is already open the call is
 % silently ignored.  Otherwise the controller is instantiated, registered
-% in obj.childControllers, and a 'closeEvent' listener is added so the
+% in obj.childControllers, and a 'CloseEvent' listener is added so the
 % child is purged automatically when it closes.
 %
 % Parameters:
@@ -33,6 +33,6 @@ else
     obj.childControllers{id} = fh(obj.mibModel);
 end
 
-addlistener(obj.childControllers{id}, 'closeEvent', ...
+addlistener(obj.childControllers{id}, 'CloseEvent', ...
     @(src, evnt) controllers.Quantification.purgeControllers(obj, src, evnt));
 end

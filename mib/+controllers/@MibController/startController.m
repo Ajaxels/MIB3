@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function startController(obj, controllerName, varargin)
 % function startController(obj, controllerName, varargin)
 % start a child controller using provided name
@@ -70,15 +54,15 @@ else
     obj.childControllers{id} = fh(obj.mibModel);    % initialize child controller
 end
 
-% add listener to the closeEvent of the child controller
-addlistener(obj.childControllers{id}, 'closeEvent', @(src, evnt) controllers.MibController.purgeControllers(obj, src, evnt));   % static
-%addlistener(obj.childControllers{id}, 'closeEvent', @(src, evnt) obj.purgeControllers(src, evnt)); % dynamic
+% add listener to the CloseEvent of the child controller
+addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) controllers.MibController.purgeControllers(obj, src, evnt));   % static
+%addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) obj.purgeControllers(src, evnt)); % dynamic
 
 p = fieldnames(obj.childControllers{id});
 if ismember('noGui', p)     % close widgets without GUI
-    notify(obj.childControllers{id}, 'closeEvent');
+    notify(obj.childControllers{id}, 'CloseEvent');
 elseif isempty(obj.childControllers{id}.view)   % close widgets with the batch mode
-    notify(obj.childControllers{id}, 'closeEvent');
+    notify(obj.childControllers{id}, 'CloseEvent');
 end
 
 end

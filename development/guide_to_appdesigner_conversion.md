@@ -55,7 +55,7 @@ classdef Xxx < handle        % was: mibXxxController
         ...
     end
     events
-        closeEvent
+        CloseEvent
     end
 ```
 
