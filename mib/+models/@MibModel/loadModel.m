@@ -105,11 +105,11 @@ id = BatchOpt.id;
 if strcmp(obj.I{id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = sprintf('Models are not available in the virtual stacking mode!\nPlease switch to the memory-resident mode first.');
+    header       = sprintf('Models are not available in the virtual stacking mode!\nPlease switch to the memory-resident mode first.');
     dlgOpt.WindowHeight = 170;
     dlgOpt.HeaderLines  = 2;
     dlgOpt.mibPath      = obj.mibPath;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {}, {}, 'Not implemented', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {}, {}, 'Not implemented', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end
@@ -117,14 +117,13 @@ end
 % Check that selection/segmentation layers are enabled
 if obj.I{id}.enableSelection == 0
     dlgOpt.MsgBoxOnly   = true;
-    dlgOpt.Icon         = 'puffin_error';
-    dlgOpt.Header       = 'The segmentation layers are switched off!';
+    header       = 'The segmentation layers are switched off!';
     dlgOpt.HeaderLines  = 1;
     bodyText = sprintf(['Please make sure that the "Enable selection" option in the Preferences dialog ' ...
         '(Ribbon->Home->Preferences) is set to "yes" and try again.']);
     dlgOpt.WindowHeight = 190;
     dlgOpt.mibPath      = obj.mibPath;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {bodyText}, {bodyText}, 'Segmentation disabled', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {bodyText}, {bodyText}, 'Segmentation disabled', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end

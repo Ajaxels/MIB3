@@ -54,8 +54,8 @@ else
         case 'cell'
             if numel(obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex})) == 1
                 warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                warnOpts.Header = 'The possible configurations for this widget were not provided!';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Warning', warnOpts);
+                header = 'The possible configurations for this widget were not provided!';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Warning', warnOpts);
                 obj.view.handles.selectedActionTableCellPopup.Items = obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex})(1);
                 obj.view.handles.selectedActionTableCellPopup.Value = obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}){1};
             else

@@ -227,7 +227,7 @@ classdef HDF5Saver < io.savers.BaseSaver
                 dlgOpts.LabelPosition = 'left';
                 dlgOpts.WindowWidth   = 600;
                 dlgOpts.WindowHeight  = 360;
-                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
                     'HDF5 saving settings', dlgOpts);
                 if isempty(answer); return; end
 

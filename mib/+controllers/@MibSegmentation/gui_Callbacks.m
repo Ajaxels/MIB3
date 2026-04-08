@@ -49,7 +49,7 @@ switch mode
             obj.mibModel.preferences.Styles.Masks.ShowAsContours;
             };
         dlgTitle = 'Visualization options';
-        options.Header        = sprintf('Update visualization settings');
+        header        = sprintf('Update visualization settings');
         options.HeaderLines   = 1;
         options.WindowStyle  = 'normal';
         options.WindowWidth = 350;
@@ -58,7 +58,7 @@ switch mode
         options.LabelPosition = 'left';
         options.Icon         = 'question';
         options.mibPath = obj.mibController.mibPath;
-        [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+        [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
         if isempty(answer); return; end
 
         obj.mibModel.preferences.Styles.Labels.ShowAsContours = answer{1};  % show labels as contours, when false as filled shapes

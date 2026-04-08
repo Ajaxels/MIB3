@@ -19,7 +19,7 @@ function updateDynamicMaskSettings(obj)
     options.WindowStyle = 'normal';
     options.PromptLines = [3, 1, 3];
     options.WindowWidth = 2.0;
-    answer = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    answer = mibInputMultiDlg({mibPath}, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     if str2double(answer{3}) < 0 || str2double(answer{3}) > 1

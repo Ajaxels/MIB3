@@ -40,9 +40,8 @@ function previewModels(obj, loadImagesSwitch)
 
     if isempty(imgList) || isempty(modelList)
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Files were not found in\n%s\n[--> %d file(s)]\n\n%s\n[--> %d file(s)]\n\n- Update the Directory prediction and resulting images fields of the Directories and Preprocessing tab\n- Make sure that the model type is properly choosen under "Predict->Model files"', imgDir, numel(imgList), modelDir, numel(modelList));
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing files', mgsOpt);
+        header = sprintf('Files were not found in\n%s\n[--> %d file(s)]\n\n%s\n[--> %d file(s)]\n\n- Update the Directory prediction and resulting images fields of the Directories and Preprocessing tab\n- Make sure that the model type is properly choosen under "Predict->Model files"', imgDir, numel(imgList), modelDir, numel(modelList));
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing files', mgsOpt);
         return;
     end
 

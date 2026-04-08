@@ -45,9 +45,8 @@ function balanceClasses(obj)
     % check for the proper workflow
     if ~strcmp(obj.BatchOpt.Workflow{1}, '2D Semantic')
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Icon = 'puffin_error';
-        mgsOpt.Header = sprintf('Balancing of labels is implemented only for the 2D Semantic workflow!');
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong workflow', mgsOpt);
+        header = sprintf('Balancing of labels is implemented only for the 2D Semantic workflow!');
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong workflow', mgsOpt);
         return
     end
     tic;
@@ -65,10 +64,9 @@ function balanceClasses(obj)
     % check that number of image and label files match
     if imageSet.NumFiles ~= labelSet.NumFiles
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf(['Directories with images and labels should have equal number of files!\n\n' ...
+        header = sprintf(['Directories with images and labels should have equal number of files!\n\n' ...
                                  'Directory with images:\n%s\n\nDirectory with labels:\n%s\n'], imageDir, labelDir);
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Number of files mismatch', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Number of files mismatch', mgsOpt);
         return
     end
 

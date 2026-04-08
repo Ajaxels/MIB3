@@ -90,10 +90,9 @@ switch action
         activeNodeId = dataset.lines3D.activeNodeId;
         if isempty(activeNodeId)
             dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = sprintf('!!! Error !!!\nPlease select first an active node!\nA new node will be inserted after the active node');
+            header = sprintf('!!! Error !!!\nPlease select first an active node!\nA new node will be inserted after the active node');
             dlgOpt.HeaderLines = 3;
-            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Missing active node', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Missing active node', dlgOpt);
             return;
         end
         dataset.lines3D.insertNode(activeNodeId, x, y, z);

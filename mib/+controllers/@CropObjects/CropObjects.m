@@ -369,9 +369,9 @@ classdef CropObjects < handle
                     if ~isnan(str2double(answer(1)))
                         dlgOpt.MsgBoxOnly  = true;
                         dlgOpt.Icon        = 'puffin_error';
-                        dlgOpt.Header      = 'The first character cannot be numerical!';
+                        header      = 'The first character cannot be numerical!';
                         dlgOpt.HeaderLines = 1;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong variable name', dlgOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong variable name', dlgOpt);
                     else
                         notOk = false;
                         obj.outputVar = answer;
@@ -562,9 +562,9 @@ classdef CropObjects < handle
                     dlgOpt.WindowWidth  = 550;
                     dlgOpt.WindowHeight  = 230;
                     dlgOpt.LabelPosition = 'left';
-                    dlgOpt.Title        = 'Specify additional filename parameters';
-                    dlgOpt.TitleLines   = 1;
-                    [answer, selValue] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Crop patches settings', dlgOpt);
+                    header        = 'Specify additional filename parameters';
+                    dlgOpt.HeaderLines   = 1;
+                    [answer, selValue] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, 'Crop patches settings', dlgOpt);
                     if isempty(answer); return; end
 
                     obj.mibModel.sessionSettings.(obj.sessionSettingsKey).includeName            = logical(answer{1});

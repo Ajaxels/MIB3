@@ -36,12 +36,12 @@ switch menuEntry.Tag
                    'Bioformats file reader, virtual mode:'};
         defAns = {'', '', '', ''};
         dlgTitle = 'Register file extension';
-        options.Header = sprintf('Add file extension to the list of filters.\nMultiple extensions should be separated with semicolon, for example:\n"tif; png; jpg"');
+        header = sprintf('Add file extension to the list of filters.\nMultiple extensions should be separated with semicolon, for example:\n"tif; png; jpg"');
         options.HeaderLines = 3;
         options.PromptLines = [1, 1, 1, 1];
         options.WindowHeight = 240;
         options.mibPath = obj.mibModel.mibPath;
-        output = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+        output = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
         if isempty(output); return; end
 
         withoutDots = true;

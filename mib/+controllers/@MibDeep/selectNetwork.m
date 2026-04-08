@@ -23,9 +23,8 @@ function net = selectNetwork(obj, networkName)
             end
             if exist(networkName, 'file') ~= 2
                 mgsOpt.MsgBoxOnly = true;
-                mgsOpt.Header = sprintf('The provided file does not exist!\n\n%s', networkName);
-                mgsOpt.Icon = 'puffin_error';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong network name', mgsOpt);
+                header = sprintf('The provided file does not exist!\n\n%s', networkName);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong network name', mgsOpt);
                 
                 obj.view.Figure.NetworkFilename.Value = obj.BatchOpt.NetworkFilename;
                 % the two following commands are fix of sending the DeepMIB
@@ -62,9 +61,8 @@ function net = selectNetwork(obj, networkName)
                         obj.AugOpt2D.(importFields{fieldId}) = res.AugOpt2DStruct.(importFields{fieldId});
                     end
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('You are loading an old config file with a smaller number of augmentation options.\nThe loaded settings were merged with the current ones!');
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Merge augmentation settings', mgsOpt);
+                    header = sprintf('You are loading an old config file with a smaller number of augmentation options.\nThe loaded settings were merged with the current ones!');
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Merge augmentation settings', mgsOpt);
                 else
                     obj.AugOpt2D = mibConcatenateStructures(obj.AugOpt2D, res.AugOpt2DStruct);
                 end

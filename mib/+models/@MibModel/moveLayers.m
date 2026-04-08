@@ -143,10 +143,8 @@ end
 if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    dlgOpt.Header = '!!! Warning !!!';
-    dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 120;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, '', {''}, ...
         {'This action is not yet available in the virtual stacking mode. Please switch to the memory-resident mode and try again'}, ...
         'Not implemented', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -157,10 +155,9 @@ end
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    dlgOpt.Header = 'The models are disabled';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 140;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are disabled', {''}, ...
         {'The models, selection and mask layers are switched off! Please make sure that the "Enable selection" option in the Preferences dialog is set to "yes" and try again...'}, ...
         'The models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -214,10 +211,9 @@ end
 if obj.I{BatchOptLocal.id}.modelExist == 0 && strcmp(BatchOptLocal.DestinationLayer{1}, 'labels')
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    dlgOpt.Header = 'The model is missing!';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 120;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The model is missing!', {''}, ...
         {'Please Create the Model first! Press the Create button in the Segmentation panel'}, ...
         'The model is missing!', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -470,11 +466,9 @@ else
             case 'labels'
                 if obj.I{BatchOptLocal.id}.modelExist == 0
                     dlgOpt.MsgBoxOnly = true;
-                    dlgOpt.Icon = 'puffin_error';
-                    dlgOpt.Header = 'Problem with model';
                     dlgOpt.HeaderLines = 1;
                     dlgOpt.WindowHeight = 120;
-                    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+                    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Problem with model', {''}, ...
                         {'No model, or the model of the wrong type. Press the Create button in the Segmentation panel to start a new model.'}, ...
                         'Problem with model', dlgOpt);
                     notify(obj, 'StopProtocol');

@@ -204,7 +204,7 @@ classdef (Abstract) BaseImageLoader < handle
             
             % Show dialog
             dlgTitle = 'Define region to load';
-            dlgOptions.Header = 'Provide image range to load';
+            header = 'Provide image range to load';
             dlgOptions.Columns = 2;
             dlgOptions.WindowWidth = 640;
             dlgOptions.WindowHeight = 220;
@@ -214,7 +214,7 @@ classdef (Abstract) BaseImageLoader < handle
             if isempty(parentFig) && isfield(options, 'ParentFigure')
                 parentFig = options.ParentFigure;
             end
-            answer = utils.dlgs.inputUniversalDlg(parentFig, prompts, defAns, dlgTitle, dlgOptions);
+            answer = utils.dlgs.inputUniversalDlg(parentFig, header, prompts, defAns, dlgTitle, dlgOptions);
             
             if isempty(answer)
                 if options.waitbar; delete(options.waitbar); end
@@ -554,7 +554,7 @@ classdef (Abstract) BaseImageLoader < handle
             mibInputMultiDlgOpt.SectionsColumnWidths = {'fit', 100};
             mibInputMultiDlgOpt.mibPath = obj.mibPath;
             answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, ...
-                prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
+                '', prompt, defAns, 'Conversion to 16bit format', mibInputMultiDlgOpt);
             if isempty(answer); img = []; return; end
             %drawnow;  % prevent crashes
 

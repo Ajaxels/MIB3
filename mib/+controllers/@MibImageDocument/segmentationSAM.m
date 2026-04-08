@@ -73,10 +73,9 @@ if nargin == 3  % batch mode
     end
     if ismember(BatchOpt.Method{1}, {'Interactive'})
         dlgOpt.MsgBoxOnly = true;
-        dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = sprintf('"%s" mode is not available in the batch processing mode!', BatchOpt.Method{1});
+        header = sprintf('"%s" mode is not available in the batch processing mode!', BatchOpt.Method{1});
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Error', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Error', dlgOpt);
         return;
     end
 end
@@ -88,9 +87,9 @@ if strcmp(dataset.datasetType, 'Virtual')
     toolname = 'segment-everything model is';
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    dlgOpt.Header = sprintf('The %s not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again', toolname);
+    header = sprintf('The %s not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again', toolname);
     dlgOpt.HeaderLines = 3;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Not implemented', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Not implemented', dlgOpt);
     return;
 end
 
@@ -116,9 +115,9 @@ switch BatchOpt.Method{1}
             if numel(dataset.labels.materialNames) == 0
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
-                dlgOpt.Header = sprintf('Please create the Model and add there a material first!\n\nPress the "+" in the Segmentation panel');
+                header = sprintf('Please create the Model and add there a material first!\n\nPress the "+" in the Segmentation panel');
                 dlgOpt.HeaderLines = 3;
-                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'The model is missing!', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'The model is missing!', dlgOpt);
                 return;
             end
             if dataset.selectedMaterial < 2; return; end
@@ -308,10 +307,9 @@ try
 
             if size(imgIn, 3) ~= 1 && size(imgIn, 3) ~= 3
                 dlgOpt.MsgBoxOnly = true;
-                dlgOpt.Icon = 'puffin_error';
-                dlgOpt.Header = sprintf('Segmentation using segment-everything model is only available for grayscale and RGB images\nFor multi-channel images select a single channel in the Colors table and try again!');
+                header = sprintf('Segmentation using segment-everything model is only available for grayscale and RGB images\nFor multi-channel images select a single channel in the Colors table and try again!');
                 dlgOpt.HeaderLines = 3;
-                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'SAM segmentation error', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'SAM segmentation error', dlgOpt);
                 if localWaitbar; close(wb); end
                 return;
             end

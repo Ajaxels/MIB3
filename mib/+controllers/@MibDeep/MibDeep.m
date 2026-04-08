@@ -754,8 +754,8 @@ classdef MibDeep < handle
             if gpuDeviceCount == 0
                 obj.view.Figure.GPUDropDown.Items = {'CPU only', 'Parallel'};
                 mgsOpt.MsgBoxOnly = true;
-                mgsOpt.Header     = sprintf('You do not have compatible CUDA card or driver,\nwithout those the training will be extrelemy slow!');
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Warning', mgsOpt);
+                header     = sprintf('You do not have compatible CUDA card or driver,\nwithout those the training will be extrelemy slow!');
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Warning', mgsOpt);
             else
                 clear gpuList;
                 for deviceId = 1:gpuDeviceCount

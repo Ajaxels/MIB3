@@ -15,9 +15,8 @@ function previewPredictions(obj)
 
     if isempty(fnList)
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('No files with predictions were found in\n%s\n\nPlease update the Directory with resulting images field of the Directories and Preprocessing tab!', scoreDir);
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing files', mgsOpt);
+        header = sprintf('No files with predictions were found in\n%s\n\nPlease update the Directory with resulting images field of the Directories and Preprocessing tab!', scoreDir);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing files', mgsOpt);
         return;
     end
     if strcmp(obj.BatchOpt.Workflow{1}(1:2), '3D')  % take only the first file for 3D case

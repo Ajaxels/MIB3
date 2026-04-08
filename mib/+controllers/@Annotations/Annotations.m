@@ -288,7 +288,7 @@ classdef Annotations < handle
                     end
                     prompts = {'Structure name with annotations:'};
                     defAns  = {labelsList};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, ...
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, ...
                         'Input annotations');
                     if isempty(answer); return; end
 
@@ -296,20 +296,16 @@ classdef Annotations < handle
                         Labels = evalin('base', answer{1});
                     catch err
                         dlgOpt.MsgBoxOnly   = true;
-                        dlgOpt.Icon         = 'puffin_error';
-                        dlgOpt.Header       = 'Wrong variable';
                         dlgOpt.HeaderLines  = 1;
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                            {''}, {err.message}, 'Error', dlgOpt);
+                            'Wrong variable', {''}, {err.message}, 'Error', dlgOpt);
                         return;
                     end
                     if ~isfield(Labels, 'Text')
                         dlgOpt.MsgBoxOnly  = true;
-                        dlgOpt.Icon        = 'puffin_error';
-                        dlgOpt.Header      = 'Wrong structure type!';
                         dlgOpt.HeaderLines = 1;
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                            {''}, {'The structure should contain: Text (cell), Values (array), Positions ([N, z x y t])'}, ...
+                            'Wrong structure type!', {''}, {'The structure should contain: Text (cell), Values (array), Positions ([N, z x y t])'}, ...
                             'Wrong structure', dlgOpt);
                         return;
                     end
@@ -370,12 +366,10 @@ classdef Annotations < handle
                                 'Y coordinate (pixels)'; 'T coordinate (pixels)'};
                             defAns = {[varNames2, {1}], [varNames2, {1}], [varNames2, {1}], ...
                                       [varNames2, {1}], [varNames2, {1}], [varNames2, {1}]};
-                            csvOpt.Title       = 'Select column names in CSV file that map to these fields';
-                            csvOpt.TitleLines  = 2;
                             csvOpt.WindowHeight = 320;
                             csvOpt.Columns     = 1;
                             answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                                prompts, defAns, 'Import from CSV', csvOpt);
+                                'Select column names in CSV file that map to these fields', prompts, defAns, 'Import from CSV', csvOpt);
                             if isempty(answer); return; end
 
                             N = height(T);
@@ -449,7 +443,7 @@ classdef Annotations < handle
             if strcmp(button, 'Cancel'); return; end
 
             if strcmp(button, 'Export to Matlab')
-                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
                     {'Please enter a name for the structure with labels:'}, ...
                     {'Labels'}, 'Export to Matlab');
                 if isempty(answer); return; end
@@ -537,7 +531,7 @@ classdef Annotations < handle
                         obj.mibModel.sessionSettings.Annotations.addLabelToFilename};
                     psiOpt.mibPath = obj.mibModel.mibPath;
                     [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Export annotations in PSI format', psiOpt);
+                        '', prompts, defAns, 'Export annotations in PSI format', psiOpt);
                     if isempty(answer); return; end
                     obj.mibModel.sessionSettings.Annotations.recalculateCoordinates = selIndex(1);
                     obj.mibModel.sessionSettings.Annotations.addLabelToFilename = logical(answer{2});
@@ -549,10 +543,10 @@ classdef Annotations < handle
                 otherwise  % Amira landmark formats
                     dlgOpt.MsgBoxOnly  = true;
                     dlgOpt.Icon        = 'puffin_info';
-                    dlgOpt.Header      = 'Only annotation positions are saved. Use PSI format to keep labels and values.';
                     dlgOpt.HeaderLines = 2;
                     dlgOpt.mibPath = obj.mibModel.mibPath;
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {''}, {''}, ...
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                        'Only annotation positions are saved. Use PSI format to keep labels and values.', {''}, {''}, ...
                         'Export to Amira', dlgOpt);
 
                     recalcBtn = utils.dlgs.inputQuestDlg(obj.view.gui, ...
@@ -689,7 +683,7 @@ classdef Annotations < handle
                         struct('Spinner', true, 'Value', 10, 'Limits', [1 height], 'Step', 1, 'Round', false); 
                         struct('Spinner', true, 'Value', tVal, 'Limits', [1 height], 'Step', 1, 'Round', false)};
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Add annotation', dlgOpt);
+                        '', prompts, defAns, 'Add annotation', dlgOpt);
                     if isempty(answer); return; end
 
                     obj.mibModel.backup('annotations', 0);
@@ -743,17 +737,17 @@ classdef Annotations < handle
 
                 case 'Modify'
                     if isempty(obj.indices); return; end
+                    dlg_header = 'Select operation and factor to apply to selected values:';
                     operations = {'Set value','Add','Subtract','Multiply','Divide','Round','Floor','Ceil'};
                     prompts = {'Type of operation:'; 'Factor:'};
                     defAns = {[operations, find(ismember(operations, obj.batchModifyExpressionOperation), 1)]; ...
                               obj.batchModifyExpressionFactor};
-                    modOpt.Header      = 'Select operation and factor to apply to selected values:';
                     modOpt.HeaderLines = 2;
                     modOpt.WindowWidth = 400;
                     modOpt.WindowHeight = 200;
                     modOpt.mibPath = obj.mibModel.mibPath;
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Batch modify', modOpt);
+                        dlg_header, prompts, defAns, 'Batch modify', modOpt);
                     if isempty(answer); return; end
                     obj.batchModifyExpressionOperation = answer{1};
                     obj.batchModifyExpressionFactor    = answer{2};
@@ -766,12 +760,10 @@ classdef Annotations < handle
                         if isempty(idx); continue; end
                         if colId == 1
                             dlgOpt.MsgBoxOnly  = true;
-                            dlgOpt.Icon        = 'puffin_error';
-                            dlgOpt.Header      = 'Ops!';
                             dlgOpt.HeaderLines = 1;
                             dlgOpt.mibPath = obj.mibModel.mibPath;
                             utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                                {''}, {'Use the "Rename selected annotations" option to modify annotations name!'}, ...
+                                'Ops!', {''}, {'Use the "Rename selected annotations" option to modify annotations name!'}, ...
                                 'Annotations: batch modify annotations', dlgOpt);
                             return;
                         end
@@ -812,7 +804,7 @@ classdef Annotations < handle
                     defAns  = {currentName{1}; currentName{1}};
                     rnOpt.Focus = 1;
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Rename annotations', rnOpt);
+                        '', prompts, defAns, 'Rename annotations', rnOpt);
                     if isempty(answer); return; end
 
                     obj.mibModel.backup('annotations', 0);
@@ -856,10 +848,9 @@ classdef Annotations < handle
                         dlgOpt.mibPath = obj.mibModel.mibPath;
                         dlgOpt.MsgBoxOnly  = true;
                         dlgOpt.Icon        = 'puffin_warning';
-                        dlgOpt.Header      = 'The annotation is outside of the image boundaries!';
                         dlgOpt.HeaderLines = 1;
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                            {''}, {''}, ...
+                            'The annotation is outside of the image boundaries!', {''}, {''}, ...
                             'Wrong coordinates', dlgOpt);
                         return;
                     end
@@ -902,11 +893,10 @@ classdef Annotations < handle
                     clipboard('copy', output);
                     dlgOpt.MsgBoxOnly  = true;
                     dlgOpt.Icon        = 'puffin_info';
-                    dlgOpt.Header      = 'Counting annotations';
                     dlgOpt.HeaderLines = 1;
                     dlgOpt.mibPath = obj.mibModel.mibPath;
                     utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        {''}, {'Results printed to Command Window and copied to clipboard (use Ctrl+V to paste it)'}, ...
+                        'Counting annotations', {''}, {'Results printed to Command Window and copied to clipboard (use Ctrl+V to paste it)'}, ...
                         'Count annotations: done!', dlgOpt);
 
                 case 'Clipboard'
@@ -966,7 +956,7 @@ classdef Annotations < handle
                     maskOpt.WindowWidth = 400;
                     maskOpt.WindowHeight = 200;
                     [answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Conversion to Mask', maskOpt);
+                        '', prompts, defAns, 'Conversion to Mask', maskOpt);
                     if isempty(answer); return; end
 
                     wb = uiprogressdlg(obj.view.gui, 'Title', 'Annotations to Mask', ...
@@ -1082,11 +1072,10 @@ classdef Annotations < handle
                     if nOutBounds > 0
                         dlgOpt.MsgBoxOnly  = true;
                         dlgOpt.Icon        = 'puffin_warning';
-                        dlgOpt.Header      = 'Results';
                         dlgOpt.HeaderLines = 1;
                         dlgOpt.WindowHeight = 180;
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                            {''}, {sprintf('%d annotation(s) were out of image boundaries and not rendered.', ...
+                            'Results', {''}, {sprintf('%d annotation(s) were out of image boundaries and not rendered.', ...
                             nOutBounds)}, 'Annotations: conversion to Mask', dlgOpt);
                     end
 
@@ -1097,11 +1086,9 @@ classdef Annotations < handle
 
                     if numel(unique(labelPosition(:,1))) ~= size(obj.indices,1)
                         dlgOpt.MsgBoxOnly  = true;
-                        dlgOpt.Icon        = 'puffin_error';
-                        dlgOpt.Header      = 'Error';
                         dlgOpt.HeaderLines = 1;
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                            {''}, {'Please select annotations with exactly 1 per slice!'}, ...
+                            'Error', {''}, {'Please select annotations with exactly 1 per slice!'}, ...
                             'Error', dlgOpt);
                         return;
                     end
@@ -1113,7 +1100,7 @@ classdef Annotations < handle
                     if nPts > 2
                         interpolationMethod{end+1} = 1;
                         [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                            {'Specify interpolation method:'}, {interpolationMethod}, ...
+                            '', {'Specify interpolation method:'}, {interpolationMethod}, ...
                             'Interpolation method');
                         if isempty(answer); return; end
                         interpolationMethod = interpolationMethod{selIndex(1)};
@@ -1183,7 +1170,7 @@ classdef Annotations < handle
                               num2str(obj.imarisOptions.color); ...
                               labelText{1}};
                     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        prompts, defAns, 'Export to Imaris');
+                        '', prompts, defAns, 'Export to Imaris');
                     if isempty(answer); return; end
                     obj.imarisOptions.radii = str2double(answer{1});
                     obj.imarisOptions.color = str2num(answer{2}); %#ok<ST2NM>
@@ -1285,11 +1272,9 @@ classdef Annotations < handle
             value = str2double(answer{1});
             if isnan(value)
                 dlgOpt.MsgBoxOnly  = true;
-                dlgOpt.Icon        = 'puffin_error';
-                dlgOpt.Header      = 'Wrong value';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                    {''}, {sprintf('Invalid value "%s" — enter a non-negative integer.', answer{1})}, ...
+                    'Wrong value', {''}, {sprintf('Invalid value "%s" — enter a non-negative integer.', answer{1})}, ...
                     'Error', dlgOpt);
                 return;
             end

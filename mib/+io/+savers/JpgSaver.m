@@ -166,7 +166,7 @@ classdef JpgSaver < io.savers.BaseSaver
                 dlgOpts.mibPath     = obj.mibPath;
                 dlgOpts.WindowStyle = 'modal';
                 dlgOpts.LabelPosition = 'left';
-                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
                     'JPG saving settings', dlgOpts);
                 if isempty(answer); return; end
                 options.Compression = answer{1};

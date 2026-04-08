@@ -51,9 +51,9 @@ switch obj.Protocol(stepId).mibBatchActionName
     case 'STOP EXECUTION'
         % stop the protocol
         infoOpts.MsgBoxOnly = true; infoOpts.Icon = 'puffin_waiting';
-        infoOpts.Header = sprintf('Protocol: stop execution event!');
+        header = sprintf('Protocol: stop execution event!');
         infoOpts.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {obj.Protocol(stepId).Batch.Description}, {obj.Protocol(stepId).Batch.Description}, 'STOP EXECUTION', infoOpts);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {obj.Protocol(stepId).Batch.Description}, {obj.Protocol(stepId).Batch.Description}, 'STOP EXECUTION', infoOpts);
         status = false;
         return;
     case {'DIRECTORY LOOP STOP', 'FILE LOOP STOP'}
@@ -74,8 +74,8 @@ switch obj.Protocol(stepId).mibBatchActionName
                         mkdir(dirOut);
                     catch err
                         errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                        errOpts.Header = sprintf('%s\n\n%s\n\n%s', err.identifier, err.message, dirOut);
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with directory', errOpts);
+                        header = sprintf('%s\n\n%s\n\n%s', err.identifier, err.message, dirOut);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Problem with directory', errOpts);
                         return;
                     end
                 end
@@ -84,8 +84,8 @@ switch obj.Protocol(stepId).mibBatchActionName
                     rmdir(dirOut, 's');
                 catch err
                     errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                    errOpts.Header = sprintf('%s\n\n%s\n\nMost likely the following directory is not empty!\n%s', err.identifier, err.message, dirOut);
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with directory', errOpts);
+                    header = sprintf('%s\n\n%s\n\nMost likely the following directory is not empty!\n%s', err.identifier, err.message, dirOut);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Problem with directory', errOpts);
                     return;
                 end
         end
@@ -108,8 +108,8 @@ switch obj.Protocol(stepId).mibBatchActionName
                     copyfile(fullfile(sourceDir, obj.Protocol(stepId).Batch.FilenameMask), targetDir);
                 catch err
                     errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                    errOpts.Header = sprintf('%s\n\n%s\n\nSource directory:\n%s', err.identifier, err.message, fullfile(sourceDir, obj.Protocol(stepId).Batch.FilenameMask));
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with directory', errOpts);
+                    header = sprintf('%s\n\n%s\n\nSource directory:\n%s', err.identifier, err.message, fullfile(sourceDir, obj.Protocol(stepId).Batch.FilenameMask));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Problem with directory', errOpts);
                     return;
                 end
             case 'Move'     % move files
@@ -119,8 +119,8 @@ switch obj.Protocol(stepId).mibBatchActionName
                     movefile(fullfile(sourceDir, obj.Protocol(stepId).Batch.FilenameMask), targetDir);
                 catch err
                     errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                    errOpts.Header = sprintf('%s\n\n%s\n\nSource directory:\n%s', err.identifier, err.message, fullfile(sourceDir, obj.Protocol(stepId).Batch.FilenameMask));
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with directory', errOpts);
+                    header = sprintf('%s\n\n%s\n\nSource directory:\n%s', err.identifier, err.message, fullfile(sourceDir, obj.Protocol(stepId).Batch.FilenameMask));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Problem with directory', errOpts);
                     return;
                 end
         end
@@ -132,8 +132,8 @@ switch obj.Protocol(stepId).mibBatchActionName
         if strcmp(Batch.DirectoryName{1}, 'Inherit from Directory/File loop')
             if ~isfield(stepOptions, 'DirectoryName')
                 errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                errOpts.Header = 'Wrong settings: Inherit from Directory/File loop parameter requires Directory or File loop before this action!';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'DoBatchStep error', errOpts);
+                header = 'Wrong settings: Inherit from Directory/File loop parameter requires Directory or File loop before this action!';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'DoBatchStep error', errOpts);
                 return;
             end
             Batch.DirectoryName{1} = stepOptions.DirectoryName;
@@ -149,8 +149,8 @@ switch obj.Protocol(stepId).mibBatchActionName
         if ~isempty(strfind(Batch.DestinationDirectory, '[InheritLastDIR]')) %#ok<STREMP>
             if ~isfield(stepOptions, 'DirectoryName')
                 errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                errOpts.Header = '[InheritLastDIR] requires DIRECTORY LOOP START action above this step!';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Problem with [InheritLastDIR]', errOpts);
+                header = '[InheritLastDIR] requires DIRECTORY LOOP START action above this step!';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Problem with [InheritLastDIR]', errOpts);
                 return;
             end
             % get inherited path
@@ -162,8 +162,8 @@ switch obj.Protocol(stepId).mibBatchActionName
         if strcmp(Batch.DirectoryName{1}, 'Inherit from Directory/File loop')
             if ~isfield(stepOptions, 'DirectoryName')
                 errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                errOpts.Header = 'Wrong settings: Inherit from Directory/File loop parameter requires Directory or File loop before this action!';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'DoBatchStep error', errOpts);
+                header = 'Wrong settings: Inherit from Directory/File loop parameter requires Directory or File loop before this action!';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'DoBatchStep error', errOpts);
                 return;
             end
             Batch.DirectoryName{1} = stepOptions.DirectoryName;

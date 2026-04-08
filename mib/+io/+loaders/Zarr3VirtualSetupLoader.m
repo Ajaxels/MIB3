@@ -606,7 +606,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
                 dlgOpts.WindowHeight  = 180;
                 dlgOpts.LabelPosition = 'top';
                 if isfield(options, 'mibPath'); dlgOpts.mibPath = options.mibPath; end
-                [answer, selIndices] = utils.dlgs.inputUniversalDlg(options.ParentFigure, ...
+                [answer, selIndices] = utils.dlgs.inputUniversalDlg(options.ParentFigure, '',...
                     {'Select pyramid level to load into memory:'}, ...
                     {labels(:)', {1}}, ...
                     'Zarr3: select resolution level', ...
@@ -662,7 +662,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
                 options.MsgBoxOnly = true;
                 options.WindowHeight = 150;
                 options.Icon = 'puffin_warning';
-                [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(options.ParentFigure, {message}, {message}, dlgTitle, options);
+                [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(options.ParentFigure, '', {message}, {message}, dlgTitle, options);
 
                 dMin = double(min(data(:)));
                 dMax = double(max(data(:)));

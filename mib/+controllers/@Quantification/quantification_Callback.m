@@ -185,9 +185,9 @@ for t = t1:t2
         if strcmp(obj.BatchOpt.DatasetType{1}, '2D, Slice')
             if obj.BatchOpt.showWaitbar; mibSetWb(wb, isUiDlg, 0, ''); delete(wb); end
             dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'CANCELED! The Shown slice with 3D Mode is not implemented!';
+            header = 'CANCELED! The Shown slice with 3D Mode is not implemented!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(parentFig, {}, {}, 'Error!', dlgOpt);
+            utils.dlgs.inputUniversalDlg(parentFig, header, {}, {}, 'Error!', dlgOpt);
             notify(obj.mibModel, 'StopProtocol');
             return;
         end
@@ -202,10 +202,10 @@ for t = t1:t2
         if dataset.orientation ~= 3 && dataset.blockModeSwitch == 1
             if obj.BatchOpt.showWaitbar; delete(wb); end
             dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-            dlgOpt.Header = sprintf(['!!! Warning !!!\n\nBlock mode requires XY orientation.\n' ...
+            header = sprintf(['!!! Warning !!!\n\nBlock mode requires XY orientation.\n' ...
                 'Please switch to XY or disable block mode.']);
             dlgOpt.HeaderLines = 3;
-            utils.dlgs.inputUniversalDlg(parentFig, {}, {}, 'Wrong orientation', dlgOpt);
+            utils.dlgs.inputUniversalDlg(parentFig, header, {}, {}, 'Wrong orientation', dlgOpt);
             notify(obj.mibModel, 'StopProtocol');
             return;
         end

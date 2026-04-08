@@ -479,7 +479,7 @@ switch BatchOpt.Mode{1}
         virtualMode = obj.I{BatchOpt.id}.datasetType(1) == 'V';
         if batchModeSwitch == 0
             dlgOptions = struct;
-            dlgOptions.Header = 'Where the new dataset should be inserted?';
+            header = 'Where the new dataset should be inserted?';
             dlgOptions.HeaderLines = 1;
             prompts = {'Dimension:'; ...
                 sprintf('Position\n1 - beginning of the open dataset\n0 - end of the open dataset\nor type any number to define position')};
@@ -488,7 +488,7 @@ switch BatchOpt.Mode{1}
             dlgOptions.WindowHeight = 230;
             dlgOptions.mibPath = obj.mibPath;
             dlgOptions.Focus = 2; % focus on the edit field
-            answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, ...
+            answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, header, ...
                             prompts, defAns, 'Insert dataset', dlgOptions);
             if isempty(answer); return; end
             options.dim = answer{1};

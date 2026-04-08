@@ -403,12 +403,12 @@ classdef Lines3dDialog < handle
             dlgTitle = 'Lines3D Settings';
             options.WindowStyle = 'normal';
             options.PromptLines = [1, 1, 1, 1, 1, 1, 1];
-            options.Title = 'For colors use [Red, Green, Blue] format with range between 0-1';
-            options.TitleLines = 2;
+            header = 'For colors use [Red, Green, Blue] format with range between 0-1';
+            options.HeaderLines = 2;
             options.Columns = 2;
             options.WindowWidth = 1.2;
             options.Focus = 1;
-            [answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+            [answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
             if isempty(answer); return; end
 
             errorText = '';
@@ -429,9 +429,9 @@ classdef Lines3dDialog < handle
             if ~isempty(errorText)
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_error';
-                dlgOpt.Header = sprintf(errorText);
+                header = sprintf(errorText);
                 dlgOpt.HeaderLines = numel(strfind(errorText, '\n')) + 1;
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
                 return;
             end
             dataset.lines3D.setOptions(settings2);
@@ -464,7 +464,7 @@ classdef Lines3dDialog < handle
                     title = 'Input 3D lines';
                     defAns = {labelsList};
                     prompts = {'Name for structure or graph object with 3D lines:'};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, title);
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, title);
                     if isempty(answer); return; end
 
                     Graph = evalin('base', answer{1});
@@ -478,10 +478,9 @@ classdef Lines3dDialog < handle
                         Lines3D = Graph;
                         if ~isfield(Lines3D, 'G')
                             dlgOpt.MsgBoxOnly = true;
-                            dlgOpt.Icon = 'puffin_error';
-                            dlgOpt.Header = sprintf('!!! Error !!!\n\nThe imported structure %s should contain field G with a graph', answer{1});
+                            header = sprintf('!!! Error !!!\n\nThe imported structure %s should contain field G with a graph', answer{1});
                             dlgOpt.HeaderLines = 3;
-                            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong format', dlgOpt);
+                            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong format', dlgOpt);
                             return;
                         end
                     end
@@ -572,7 +571,7 @@ classdef Lines3dDialog < handle
             if strcmp(button, 'Export to Matlab')
                 prompts = {'Please enter name for the structures with the Graph:'};
                 defAns = {'Lines3D'};
-                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Export to Matlab');
+                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Export to Matlab');
                 if isempty(answer); return; end
 
                 if isempty(treeIds)
@@ -647,10 +646,10 @@ classdef Lines3dDialog < handle
                             end
                             dlgTitle = 'Export to Amira';
                             amiraOpts.WindowStyle = 'normal';
-                            amiraOpts.Title = sprintf('Select fields to export\n(only numerical fields can be exported)');
-                            amiraOpts.TitleLines = 2;
+                            header = sprintf('Select fields to export\n(only numerical fields can be exported)');
+                            amiraOpts.HeaderLines = 2;
                             amiraOpts.Focus = 1;
-                            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, amiraOpts);
+                            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, amiraOpts);
                             if isempty(answer); return; end
                             if numel(extraNodeFields) < 2
                                 outputFieldNode = extraNodeFields(selIndex(1));
@@ -821,15 +820,15 @@ classdef Lines3dDialog < handle
 
                     prompts = {'New name for the selected tree:'};
                     defAns = {currentName};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Rename');
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Rename');
                     if isempty(answer); return; end
 
                     if sum(ismember(obj.view.handles.treesViewTable.Data(:,1), answer(1))) > 0
                         dlgOpt.MsgBoxOnly = true;
                         dlgOpt.Icon = 'puffin_warning';
-                        dlgOpt.Header = '!!! Warning !!!\n\nThe names of trees should be unique!';
+                        header = '!!! Warning !!!\n\nThe names of trees should be unique!';
                         dlgOpt.HeaderLines = 3;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Duplicated tree name', dlgOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Duplicated tree name', dlgOpt);
                         return;
                     end
                     obj.mibModel.backup('lines3d');
@@ -843,7 +842,7 @@ classdef Lines3dDialog < handle
                 case 'find'
                     prompts = {'Enter index of the node to find a corresponding tree:'};
                     defAns = {'1'};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Find tree');
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Find tree');
                     if isempty(answer); return; end
                     nodeId = str2double(answer{1});
                     if isnan(nodeId); return; end
@@ -865,10 +864,9 @@ classdef Lines3dDialog < handle
                     treeIds = obj.indicesTrees(:,1);
                     if numel(treeIds) > 1
                         dlgOpt.MsgBoxOnly = true;
-                        dlgOpt.Icon = 'puffin_error';
-                        dlgOpt.Header = 'Please select a single tree and try again!';
+                        header = 'Please select a single tree and try again!';
                         dlgOpt.HeaderLines = 1;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Multiple trees selection', dlgOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Multiple trees selection', dlgOpt);
                         return;
                     end
                     obj.saveBtn_Callback(treeIds);
@@ -901,10 +899,9 @@ classdef Lines3dDialog < handle
                 case 'Jump'
                     if obj.indicesEdges(1,2) > 2
                         dlgOpt.MsgBoxOnly = true;
-                        dlgOpt.Icon = 'puffin_error';
-                        dlgOpt.Header = 'Please select a cell containing index of a node!';
+                        header = 'Please select a cell containing index of a node!';
                         dlgOpt.HeaderLines = 1;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong cell', dlgOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong cell', dlgOpt);
                         return;
                     end
                     nodeId = cell2mat(obj.view.handles.edgesViewTable.Data(obj.indicesEdges(1,1), obj.indicesEdges(1,2)));
@@ -912,10 +909,9 @@ classdef Lines3dDialog < handle
                 case 'Active'
                     if obj.indicesEdges(1,2) > 2
                         dlgOpt.MsgBoxOnly = true;
-                        dlgOpt.Icon = 'puffin_error';
-                        dlgOpt.Header = 'Please select a cell containing index of a node!';
+                        header = 'Please select a cell containing index of a node!';
                         dlgOpt.HeaderLines = 1;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong cell', dlgOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong cell', dlgOpt);
                         return;
                     end
                     nodeId = cell2mat(obj.view.handles.edgesViewTable.Data(obj.indicesEdges(1,1), obj.indicesEdges(1,2)));
@@ -979,9 +975,9 @@ classdef Lines3dDialog < handle
                     if x > imgW || y > imgH || z > imgZ
                         dlgOpt.MsgBoxOnly = true;
                         dlgOpt.Icon = 'puffin_warning';
-                        dlgOpt.Header = 'The node is outside of the image boundaries!';
+                        header = 'The node is outside of the image boundaries!';
                         dlgOpt.HeaderLines = 1;
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong coordinates', dlgOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong coordinates', dlgOpt);
                         return;
                     end
 
@@ -1009,7 +1005,7 @@ classdef Lines3dDialog < handle
 
                     prompts = {'New name for the selected nodes:'};
                     defAns = {currentName};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, 'Rename');
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Rename');
                     if isempty(answer); return; end
 
                     obj.mibModel.backup('lines3d');
@@ -1032,13 +1028,12 @@ classdef Lines3dDialog < handle
                     elseif orientation == 2  % zy
                         z = x1; x = z1; y = y1;
                     end
-                    msgText = sprintf('The coordinate of the node %d\n(x,y,z = %f, %f, %f)\n\nin pixels:\nXY orientation:         %d, %d, %d\nCurrent orientation:  %d, %d, %d', ...
+                    header = sprintf('The coordinate of the node %d\n(x,y,z = %f, %f, %f)\n\nin pixels:\nXY orientation:         %d, %d, %d\nCurrent orientation:  %d, %d, %d', ...
                         rowId, rowText{4}, rowText{5}, rowText{3}, round(x1), round(y1), round(z1), round(x), round(y), round(z));
                     dlgOpt.MsgBoxOnly = true;
                     dlgOpt.Icon = 'puffin_info';
-                    dlgOpt.Header = msgText;
                     dlgOpt.HeaderLines = 7;
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Node coordinate', dlgOpt);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Node coordinate', dlgOpt);
 
                 case {'AnnotationsNew', 'AnnotationsAdd', 'AnnotationsDelete'}
                     if strcmp(parameter, 'AnnotationsNew')
@@ -1139,7 +1134,7 @@ classdef Lines3dDialog < handle
             prompts = {'Use default colors?', 'Add an orthoslice of the visualization?', 'Slice number:'};
             defAns = {true, false, num2str(dataset.getCurrentSliceNumber())};
             dlgTitle = 'Add slice';
-            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle);
+            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle);
             if isempty(answer); return; end
 
             if answer{2} == 1

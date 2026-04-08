@@ -43,19 +43,19 @@ output = 'continue';
 if obj.mibModel.I{id}.blockModeSwitch
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = 'Please switch off the BlockMode using the button in the toolbar';
+    header = 'Please switch off the BlockMode using the button in the toolbar';
     dlgOpt.HeaderLines = 2;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not compatible with the BlockMode', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not compatible with the BlockMode', dlgOpt);
     return;
 end
 
 if switch3d && ~segmHandles.membraneStraightLine.Value
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = sprintf('The automatic line tracking is only available for the 2D mode; please switch off the 3D mode in the Selection panel\n\nNote: the 3D mode can be used to generate straight line segments when the "Straight line" option of the Membrane ClickTracker tool is selected');
+    header = sprintf('The automatic line tracking is only available for the 2D mode; please switch off the 3D mode in the Selection panel\n\nNote: the 3D mode can be used to generate straight line segments when the "Straight line" option of the Membrane ClickTracker tool is selected');
     dlgOpt.HeaderLines = 6;
     dlgOpt.WindowHeight = 220;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
     return;
 end
 
@@ -81,8 +81,8 @@ if switch3d
         if isnan(obj.trackerYXZ(1))
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_warning';
-            dlgOpt.Header = 'Please use Shift+Mouse click to define the starting point!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing the starting point', dlgOpt);
+            header = 'Please use Shift+Mouse click to define the starting point!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing the starting point', dlgOpt);
             return;
         end
 
@@ -178,8 +178,8 @@ else
         if isnan(obj.trackerYXZ(1))
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_warning';
-            dlgOpt.Header = 'Please use Ctrl+Mouse click to define the starting point!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing the starting point', dlgOpt);
+            header = 'Please use Ctrl+Mouse click to define the starting point!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing the starting point', dlgOpt);
             return;
         end
         obj.trackerYXZ = obj.trackerYXZ(:,end);
@@ -188,9 +188,8 @@ else
         pointX = obj.trackerYXZ(2) - max([0, floor(axesX(1))]);
         if pointY < 1 || pointX < 1 || pointX > axesX(2) || pointY > axesY(2)
             dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'Please shift the window to see both the starting and the ending points!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong view!', dlgOpt);
+            header = 'Please shift the window to see both the starting and the ending points!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong view!', dlgOpt);
             return;
         end
         currentSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], options));
@@ -205,9 +204,8 @@ else
             if colorId == 0
                 if obj.mibModel.I{id}.image.colors > 1
                     dlgOpt.MsgBoxOnly = true;
-                    dlgOpt.Icon = 'puffin_error';
-                    dlgOpt.Header = 'Please select the color channel in the Selection panel!';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong color channel!', dlgOpt);
+                    header = 'Please select the color channel in the Selection panel!';
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong color channel!', dlgOpt);
                     return;
                 else
                     colorId = 1;

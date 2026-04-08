@@ -66,9 +66,9 @@ function res = correctBatchOpt(obj, res)
     switch res.BatchOpt.Architecture{1}
         case {'3DC+DLv3 Resnet18', '3DUnet+DLv3 Resnet18'}
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('This architecture (%s) is not available in the current version of MIB', res.BatchOpt.Architecture{1}');
+            header = sprintf('This architecture (%s) is not available in the current version of MIB', res.BatchOpt.Architecture{1}');
             mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong architecture!', mgsOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong architecture!', mgsOpt);
             return;
         end
 

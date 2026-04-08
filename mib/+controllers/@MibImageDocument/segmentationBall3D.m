@@ -121,9 +121,9 @@ if nargin == 6  % batch mode
         else
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'A structure as the 6th parameter is required!';
+            header = 'A structure as the 6th parameter is required!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'segmentationBall3D', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'segmentationBall3D', dlgOpt);
         end
         return;
     else
@@ -162,9 +162,9 @@ end
 if numel(xVec) ~= numel(yVec)
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = 'Number of X and Y coordinates mismatch!';
+    header = 'Number of X and Y coordinates mismatch!';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, '3D ball segmentation', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, '3D ball segmentation', dlgOpt);
     notify(obj.mibModel, 'StopProtocol');
     return;
 end

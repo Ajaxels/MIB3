@@ -68,10 +68,9 @@ switch mode
         if strcmp(obj.handles.samMethod.Value, 'Automatic everything') && ...
                 dataset.labels.maxMaterials < 65535
             dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = sprintf('To use segment-anything in the automatic mode the model should be able to keep 65535 or more materials!\n\nCreate a new model or change the type of the current model from\nMenu->Models->Convert type');
+            header = sprintf('To use segment-anything in the automatic mode the model should be able to keep 65535 or more materials!\n\nCreate a new model or change the type of the current model from\nMenu->Models->Convert type');
             dlgOpt.HeaderLines = 4;
-            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Wrong model type', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Wrong model type', dlgOpt);
             return;
         end
 

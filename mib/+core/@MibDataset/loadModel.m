@@ -208,12 +208,12 @@ end
 % Handle double/single: prompt in GUI mode, auto-convert in batch
 if isa(rawModel, 'double') || isa(rawModel, 'single')
     if ~options.batchModeSwitch && ~isempty(options.ParentFigure)
-        dlgOpt.Header = 'Convert to uint32?';
+        header = 'Convert to uint32?';
         dlgOpt.HeaderLines = 1;
         dlgOpt.Icon = 'puffin_question';
         dlgOpt.WindowHeight = 160;
         if isfield(options, 'mibPath'); dlgOpt.mibPath = options.mibPath; end
-        answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, ...
+        answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, header, ...
             {sprintf('The model array is class "%s".\nIt will be converted to uint32.\nContinue?', class(rawModel))}, ...
             {{'Yes','No',1}}, 'Convert model', dlgOpt);
         if isempty(answer) || strcmp(answer{1}, 'No'); return; end
@@ -241,7 +241,7 @@ if numel(sz) >= 5; modelT = sz(5); end
 % Check H/W mismatch
 if modelH ~= imgH || modelW ~= imgW
     if ~options.batchModeSwitch && ~isempty(options.ParentFigure)
-        dlgOpt.Header = 'Dimension mismatch';
+        header = 'Dimension mismatch';
         dlgOpt.HeaderLines = 1;
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.MsgBoxOnly = true;
@@ -249,7 +249,7 @@ if modelH ~= imgH || modelW ~= imgW
         if isfield(options, 'mibPath'); dlgOpt.mibPath = options.mibPath; end
         msg = sprintf('<html><p style="font-size:10pt">Model size [%dx%d] does not match image [%dx%d].<br>The model will be padded or cropped to fit.</p></html>', ...
             modelH, modelW, imgH, imgW);
-        utils.dlgs.inputUniversalDlg(options.ParentFigure, {msg}, {''}, ...
+        utils.dlgs.inputUniversalDlg(options.ParentFigure, header, {msg}, {''}, ...
             'Size mismatch', dlgOpt);
     end
     % Crop or pad to image H×W

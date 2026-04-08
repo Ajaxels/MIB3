@@ -46,9 +46,8 @@ switch parameter
         dlgTitle = 'Specify parameter to add';
         options.WindowStyle = 'normal';
         options.PromptLines = [1, 1, 1, 1];
-        options.Header = 'Add parameter';
         options.WindowHeight = 260;
-        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Add parameter', prompts, defAns, dlgTitle, options);
         if isempty(answer); return; end
 
         % select existing or new parameter name
@@ -92,8 +91,8 @@ switch parameter
                 obj.selectedActionTableIndex = 1;   % for some strange reason, selectedActionTableIndex gets reset to 0...
             case {'FILE LOOP START', 'Directory operations', 'File operations'}
                 warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                warnOpts.Header = 'Only Modify directory is available for this action';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not available', warnOpts);
+                header = 'Only Modify directory is available for this action';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not available', warnOpts);
                 return;
             otherwise
                 return;
@@ -105,8 +104,8 @@ switch parameter
                 if selpath == 0; return; end
                 if ismember({lower(selpath)}, lower(obj.CurrentBatch.DirectoriesList{2}))   % check whether it already exists
                     warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                    warnOpts.Header = sprintf('Directory\n%s\nis already in the list', selpath);
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Already present', warnOpts);
+                    header = sprintf('Directory\n%s\nis already in the list', selpath);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Already present', warnOpts);
                     return;
                 end
                 obj.CurrentBatch.DirectoriesList{2}(ismember(obj.CurrentBatch.DirectoriesList{2}, obj.CurrentBatch.DirectoriesList{1})) = {selpath};
@@ -116,14 +115,14 @@ switch parameter
             case {'FILE LOOP START', 'Load and combine images'}
                 if strcmp(obj.CurrentBatch.DirectoryName{1}, 'Current MIB path')
                     warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                    warnOpts.Header = sprintf('This directory parameter:\n"%s"\ncan not be modified!', obj.CurrentBatch.DirectoryName{1});
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Warning', warnOpts);
+                    header = sprintf('This directory parameter:\n"%s"\ncan not be modified!', obj.CurrentBatch.DirectoryName{1});
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Warning', warnOpts);
                     return;
                 end
                 if strcmp(obj.CurrentBatch.DirectoryName{1}, 'Current MIB path') || strcmp(obj.CurrentBatch.DirectoryName{1}, 'Inherit from Directory loop')
                     warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                    warnOpts.Header = sprintf('The option "%s" can not be modified!\nPlease select a directory first and after that modify it...', obj.CurrentBatch.DirectoryName{1});
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Warning', warnOpts);
+                    header = sprintf('The option "%s" can not be modified!\nPlease select a directory first and after that modify it...', obj.CurrentBatch.DirectoryName{1});
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Warning', warnOpts);
                     return;
                 end
                 selpath = uigetdir(obj.CurrentBatch.DirectoryName{1}, 'Update directory');
@@ -191,18 +190,18 @@ switch parameter
             case 'DIRECTORY LOOP START'
                 if numel(obj.CurrentBatch.DirectoriesList{2}) == 1
                     warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                    warnOpts.Header = 'The last directory can not be removed!';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Warning', warnOpts);
+                    header = 'The last directory can not be removed!';
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Warning', warnOpts);
                     return;
                 end
 
                 prompts = obj.CurrentBatch.DirectoriesList{2};
                 defAns = repmat({false}, [numel(obj.CurrentBatch.DirectoriesList{2}) 1]);
                 dlgTitle = 'Remove directories';
-                options.Header = 'Check directories to be removed from the list';
+                header = 'Check directories to be removed from the list';
                 options.WindowHeight = 350;
                 options.LabelPosition = 'left';
-                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
                 if isempty(answer); return; end
 
                 obj.CurrentBatch.DirectoriesList{2}(cell2mat(answer)==1) = [];
@@ -211,8 +210,8 @@ switch parameter
                 obj.displaySelectedActionTableItems();
             case {'FILE LOOP START', 'Directory operations', 'File operations'}
                 warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-                warnOpts.Header = 'Only Modify directory is available for this action';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not available', warnOpts);
+                header = 'Only Modify directory is available for this action';
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not available', warnOpts);
                 return;
             otherwise
                 return;
@@ -227,7 +226,7 @@ switch parameter
         prompts = {'New width of the second column (pixels)'};
         defAns = {defWidth};
         dlgTitle = 'Set column width';
-        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle);
+        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle);
         if isempty(answer); return; end
         obj.view.handles.selectedActionTable.ColumnWidth = {'auto', str2double(answer{1})};
 end

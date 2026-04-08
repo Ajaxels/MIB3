@@ -145,8 +145,8 @@ function startPrediction2D(obj)
             executionEnvironment = 'cpu';
         case 'Multi-GPU'
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('Multi-GPU mode cannot be yet used for prediction. Please select a GPU from the list and restart prediction!');
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Ops!', mgsOpt);
+            header = sprintf('Multi-GPU mode cannot be yet used for prediction. Please select a GPU from the list and restart prediction!');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
             if obj.BatchOpt.showWaitbar; delete(obj.wb); end
             return;
             %executionEnvironment = 'multi-gpu';

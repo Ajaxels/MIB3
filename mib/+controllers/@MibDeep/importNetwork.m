@@ -145,9 +145,8 @@ function importNetwork(obj)
             delete(wb);
         case 'All files (*.*)'
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('Please select correct file format for the network to import!');
-            mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong format', mgsOpt);
+            header = sprintf('Please select correct file format for the network to import!');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong format', mgsOpt);
             return;
     end
 end

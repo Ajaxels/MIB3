@@ -14,12 +14,12 @@ function exportNetwork(obj)
     defAns = {{'ONNX', 'TensorFlow', 1};{'Keep as it is', 'Remove the layer', 'pixelClassificationLayer', 'dicePixelClassificationLayer', 1};  {'6', '7', '8', '9','10','11','12','13', 4}; };
     dlgTitle = 'Export network';
     options.PromptLines = [1, 1, 1];
-    options.Title = sprintf('Convert and export the network to ONNX or TensorFlow format');
-    options.TitleLines = 1;
+    header = sprintf('Convert and export the network to ONNX or TensorFlow format');
+    options.HeaderLines = 1;
     options.WindowWidth = 1.2;
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/exportonnxnetwork.html';
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = mibInputMultiDlg({mibPath}, header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     exportFormat = answer{1};
@@ -112,8 +112,8 @@ function exportNetwork(obj)
     wb.Value = 1;
     delete(wb);
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf('Export finished!\n%s', outoutFilename);
+    header = sprintf('Export finished!\n%s', outoutFilename);
     mgsOpt.Icon = 'puffin_info';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Network export: done!', mgsOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Network export: done!', mgsOpt);
 end
 

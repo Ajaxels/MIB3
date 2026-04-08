@@ -30,21 +30,19 @@ status = false;
 
 if isempty(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath) || ~isfile(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath)
     dlgOpt.MsgBoxOnly = true;
-    dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = 'Location of python interpreter (python.exe) is not specified or python.exe is missing!';
+    header = 'Location of python interpreter (python.exe) is not specified or python.exe is missing!';
     dlgOpt.HeaderLines = 2;
     dlgOpt.WindowHeight = 190;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {''}, {sprintf('<html><p style="font-size:10pt">Specify Python location using<br>Menu->File->Preferences->External dirs...')}, 'Missing Python location', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {''}, {sprintf('<html><p style="font-size:10pt">Specify Python location using<br>Menu->File->Preferences->External dirs...')}, 'Missing Python location', dlgOpt);
     return;
 end
 
 if isempty(obj.mibModel.preferences.SegmTools.(samVersionName).sam_installation_path) || ...
         ~isfolder(obj.mibModel.preferences.SegmTools.(samVersionName).sam_installation_path)
     dlgOpt.MsgBoxOnly = true;
-    dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = sprintf('Location of segment-anything is not specified!\nSpecify its location using SAM settings dialog');
+    header = sprintf('Location of segment-anything is not specified!\nSpecify its location using SAM settings dialog');
     dlgOpt.HeaderLines = 2;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Missing SAM location', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Missing SAM location', dlgOpt);
     return;
 end
 
@@ -53,11 +51,11 @@ linksFile = fullfile(obj.mibModel.mibPath, obj.mibModel.preferences.SegmTools.(s
 if exist(linksFile, 'file') == 0
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = sprintf(['Location of "sam_links.json" (or "sam2_links.json" for SAM2) with links to SAM backbones is not specified!\n\n' ...
+    header = sprintf(['Location of "sam_links.json" (or "sam2_links.json" for SAM2) with links to SAM backbones is not specified!\n\n' ...
         'Specify its location using SAM settings dialog, ' ...
         'the default location in Resources directory under MIB installation']);
     dlgOpt.HeaderLines = 4;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Missing sam_links.json location', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Missing sam_links.json location', dlgOpt);
     return;
 end
 % read links with backbones

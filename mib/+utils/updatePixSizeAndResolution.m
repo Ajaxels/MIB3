@@ -117,7 +117,7 @@ if options.showDialog
     if ~isempty(options.mibPath);  dlgOptions.mibPath  = options.mibPath;  end
     if ~isempty(options.HelpUrl);  dlgOptions.HelpUrl  = options.HelpUrl;  end
 
-    answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, prompts, defAns, ...
+    answer = utils.dlgs.inputUniversalDlg(options.ParentFigure, '', prompts, defAns, ...
         'Dataset parameters', dlgOptions);
     if isempty(answer)
         result = 0;

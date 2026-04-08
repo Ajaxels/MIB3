@@ -186,7 +186,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                 prompt = {sprintf('This is pyramidal TIF that has %d sub-images\nPlease choose the one to get:', numel(info))};
                                 dlgOptions.LabelPosition = 'top';
                                 dlgOptions.mibPath = options.mibPath;
-                                [answer, selectedIndex] = utils.dlgs.inputUniversalDlg(options.ParentFigure, prompt, {defAns}, 'title', dlgOptions);
+                                [answer, selectedIndex] = utils.dlgs.inputUniversalDlg(options.ParentFigure, '', prompt, {defAns}, 'title', dlgOptions);
                                 if isempty(answer)
                                     if ~isempty(wb); delete(wb); end
                                     return;

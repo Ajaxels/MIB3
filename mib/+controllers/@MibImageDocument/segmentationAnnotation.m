@@ -78,7 +78,7 @@ if ~isCtrl && ~isShift   % ---- add annotation ----
         dlgOpt.mibPath = obj.mibModel.mibPath;
         dlgOpt.Focus = 1;
         dlgOpt.WindowWidth = 400;
-        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, title, dlgOpt);
+        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, title, dlgOpt);
         if isempty(answer); return; end
         if obj.mibModel.preferences.SegmTools.Annotations.FocusOnValue
             labelText  = answer(2);

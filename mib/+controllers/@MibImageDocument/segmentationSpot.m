@@ -131,10 +131,9 @@ if nargin == 5  % batch mode
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
             dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'A structure as the 5th parameter is required!';
+            header = 'A structure as the 5th parameter is required!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'segmentationSpot', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'segmentationSpot', dlgOpt);
         end
         return;
     else
@@ -154,10 +153,9 @@ end
 
 if numel(xVec) ~= numel(yVec)
     dlgOpt.MsgBoxOnly = true;
-    dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = 'Number of X and Y coordinates mismatch!';
+    header = 'Number of X and Y coordinates mismatch!';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Spot segmentation', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Spot segmentation', dlgOpt);
     notify(obj.mibModel, 'StopProtocol');
     return;
 end

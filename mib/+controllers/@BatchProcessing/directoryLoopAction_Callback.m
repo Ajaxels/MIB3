@@ -45,9 +45,8 @@ if nargin == 2
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
-            errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-            errOpts.Header = 'A structure as the 1st parameter is required!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'DirectoryLoopAction_Callback error', errOpts);
+            errOpts.MsgBoxOnly = true; 
+            utils.dlgs.inputUniversalDlg(obj.view.gui, 'A structure as the 1st parameter is required!', {}, {}, 'DirectoryLoopAction_Callback error', errOpts);
         end
         return;
     end

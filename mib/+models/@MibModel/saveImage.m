@@ -274,11 +274,10 @@ else
 
         if filterIndex >  size(filterSpec,1) % All Files (*.*) case, cancel
             dlgOpts.MsgBoxOnly = true;
-            dlgOpts.Header = 'The output format was not selected!';
             dlgOpts.Icon = 'puffin_warning';
             dlgOpts.mibPath = obj.mibPath;
             dlgOpts.WindowHeight = 150;
-            utils.dlgs.inputUniversalDlg(obj.mibGUI, {}, {}, 'Missing output format', dlgOpts);
+            utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The output format was not selected!, {}, {}, 'Missing output format', dlgOpts);
             return;
         end
 

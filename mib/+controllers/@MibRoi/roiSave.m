@@ -16,9 +16,9 @@ if dataset.hROI.getNumberOfROI(0) < 1
     dlgTitle = 'No ROI present!';
     dlgOptions.mibPath = obj.mibModel.mibPath;
     dlgOptions.MsgBoxOnly = true;
-    dlgOptions.Header = 'Create a Region of Interest first!';
+    header = 'Create a Region of Interest first!';
     dlgOptions.Icon = 'puffin_warning';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, dlgTitle, dlgOptions);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, dlgTitle, dlgOptions);
     return;
 end
 
@@ -45,10 +45,10 @@ save(fn_out, 'Data', '-mat', '-v7.3');
 dlgTitle = 'ROI Save';
 dlgOptions.mibPath = obj.mibModel.mibPath;
 dlgOptions.MsgBoxOnly = true;
-dlgOptions.Header = 'The ROI(s) was saved to a file!';
+header = 'The ROI(s) was saved to a file!';
 dlgOptions.Icon = 'puffin_info';
 dlgOptions.WindowWidth = 500;
-utils.dlgs.inputUniversalDlg(obj.view.gui, {fn_out}, {fn_out}, dlgTitle, dlgOptions);
+utils.dlgs.inputUniversalDlg(obj.view.gui, header, {fn_out}, {fn_out}, dlgTitle, dlgOptions);
 
 fprintf('MIB: saving ROI to %s -> done!\n', fn_out);
 end

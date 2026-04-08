@@ -79,10 +79,10 @@ end
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
-    dlgOpt.Header      = 'The models are switched off!';
+    header      = 'The models are switched off!';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 160;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
         {'Please make sure that the "Enable selection" option in the Preferences dialog (Ribbon->Home->Preferences) is set to "yes" and try again...'}, ...
         'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -123,17 +123,17 @@ if ~result
     if modelType < 256
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
-        dlgOpt.Header      = sprintf('The current model type supports only %d materials!', modelType);
+        header      = sprintf('The current model type supports only %d materials!', modelType);
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
             {'Please convert the model to a larger type and try again (Ribbon -> Models -> Type).'}, ...
             'Wrong model type', dlgOpt);
     else
         dlgOpt.MsgBoxOnly  = true;
         dlgOpt.Icon        = 'puffin_warning';
-        dlgOpt.Header      = 'The model is full!';
+        header      = 'The model is full!';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
             {'The maximum material index equals the model capacity.'}, ...
             'Model is full', dlgOpt);
     end

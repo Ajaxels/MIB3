@@ -68,9 +68,9 @@ if nargin == 5  % batch mode
         else
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'A structure as the 5th parameter is required!';
+            header = 'A structure as the 5th parameter is required!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
         end
         return;
     else

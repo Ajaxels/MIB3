@@ -53,6 +53,9 @@ classdef AmiraImportDlg < handle
             % Initialize UI components
             obj.initView();
             
+            % move the window to the left hand side of the main window
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
+
             % Make sure the GUI is visible
             obj.view.gui.Visible = true;
         end

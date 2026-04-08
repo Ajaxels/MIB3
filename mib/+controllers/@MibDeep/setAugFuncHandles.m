@@ -57,9 +57,8 @@ function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
 
     if isempty(obj.(AugFuncNamesField))
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Augmentation filters were not selected or their probabilities are zero!\nPlease use set 2D augmentation settings dialog (Train tab->Augmentation->2D) to set them up');
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong augmentations', mgsOpt);
+        header = sprintf('Augmentation filters were not selected or their probabilities are zero!\nPlease use set 2D augmentation settings dialog (Train tab->Augmentation->2D) to set them up');
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong augmentations', mgsOpt);
         return;
     end
     augNumber = numel(obj.(AugFuncNamesField));

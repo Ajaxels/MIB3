@@ -104,10 +104,9 @@ if nargin == 3
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
             dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'A structure as the 3rd parameter is required!';
+            header = 'A structure as the 3rd parameter is required!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
         end
         return;
     else
@@ -122,10 +121,9 @@ id = BatchOpt.id;
 coords = str2num(BatchOpt.Coordinate); %#ok<ST2NM>
 if isempty(coords) || numel(coords) < 2
     dlgOpt.MsgBoxOnly = true;
-    dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = 'Invalid seed point coordinates!';
+    header = 'Invalid seed point coordinates!';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
     return;
 end
 

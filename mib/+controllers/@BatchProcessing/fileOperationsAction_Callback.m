@@ -58,8 +58,8 @@ if nargin == 2
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
             errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-            errOpts.Header = 'A structure as the 1st parameter is required!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'FileOperationsAction_Callback error', errOpts);
+            header = 'A structure as the 1st parameter is required!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'FileOperationsAction_Callback error', errOpts);
         end
         return;
     end

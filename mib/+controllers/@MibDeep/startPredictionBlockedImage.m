@@ -7,9 +7,8 @@ function startPredictionBlockedImage(obj)
     if ismember(obj.BatchOpt.Workflow{1}, {'3D Semantic'})
         if obj.BatchOpt.P_DynamicMasking == true
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('Unfortunately, the dynamic masking mode is not yet implemented for 3D architectures!\n\nPlease uncheck "Dynamic masking" checkbox in the Predict tab');
-            mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not implemented', mgsOpt);
+            header = sprintf('Unfortunately, the dynamic masking mode is not yet implemented for 3D architectures!\n\nPlease uncheck "Dynamic masking" checkbox in the Predict tab');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
             return;
         end
     end

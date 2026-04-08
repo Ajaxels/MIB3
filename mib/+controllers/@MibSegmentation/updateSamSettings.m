@@ -59,8 +59,7 @@ if strcmp(SAM.samVersion, 'SAM1')
 
     dlgTitle = 'Segment-anything settings';
     options.WindowStyle = 'normal';
-    %options.PromptLines = [1, 1, 2, 2, 1, 1, 2, 4, 2, 2, 3, 2, 3, 2, 3, 2, 3];
-    options.Header = sprintf('Usage of Segment-anything requires Python installation with all necessary modules. Please refer to documentation on how to set it up.\nThe selected backbone will be downloaded to DeepMIB temporary directory that can be updated from Menu->File->Preferences->External Dirs');
+    header = sprintf('Usage of Segment-anything requires Python installation with all necessary modules. Please refer to documentation on how to set it up.\nThe selected backbone will be downloaded to DeepMIB temporary directory that can be updated from Menu->File->Preferences->External Dirs');
     options.HeaderLines = 4;
     options.WindowWidth = 900;
     options.WindowHeight = 700;
@@ -68,7 +67,7 @@ if strcmp(SAM.samVersion, 'SAM1')
     options.Focus = 1;
     options.HelpUrl = 'https://mib.helsinki.fi/downloads_systemreq_sam.html';
     options.mibPath = obj.mibModel.mibPath;
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     if answer{7}
@@ -143,10 +142,9 @@ if strcmp(SAM.samVersion, 'SAM1')
     newLinksFile = fullfile(obj.mibModel.mibPath, answer{4});
     if exist(newLinksFile, 'file') == 0
         dlgOpt.MsgBoxOnly = true;
-        dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = sprintf('The provided file:\n%s\nwith SAM links does not exist!\n\nKeeping the previous version:\n%s', newLinksFile, linksFile);
+        header = sprintf('The provided file:\n%s\nwith SAM links does not exist!\n\nKeeping the previous version:\n%s', newLinksFile, linksFile);
         dlgOpt.HeaderLines = 5;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Wrong JSON file', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Wrong JSON file', dlgOpt);
     else
         SAM1.linksFile = answer{4};
     end
@@ -196,7 +194,7 @@ else
     dlgTitle = 'Segment-anything-2 settings';
     options.WindowStyle = 'normal';
     %options.PromptLines = [1, 1, 1, 2, 1, 1, 1, 4, 2, 2, 3, 2, 3, 2, 2, 3, 1];
-    options.Header = sprintf('Usage of Segment-anything requires Python installation with all necessary modules. Please refer to documentation on how to set it up.\nThe selected backbone will be downloaded to DeepMIB temporary directory that can be updated from\nRibbon->Home->Preferences->External Dirs');
+    header = sprintf('Usage of Segment-anything requires Python installation with all necessary modules. Please refer to documentation on how to set it up.\nThe selected backbone will be downloaded to DeepMIB temporary directory that can be updated from\nRibbon->Home->Preferences->External Dirs');
     options.HeaderLines = 3;
     options.WindowWidth = 900;
     options.WindowHeight = 650;
@@ -205,7 +203,7 @@ else
     options.HelpUrl = 'https://mib.helsinki.fi/downloads_systemreq_sam2.html';
     options.mibPath = obj.mibModel.mibPath;
 
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     if answer{7}
@@ -281,10 +279,9 @@ else
     newLinksFile = fullfile(obj.mibModel.mibPath, answer{4});
     if exist(newLinksFile, 'file') == 0
         dlgOpt.MsgBoxOnly = true;
-        dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = sprintf('The provided file:\n%s\nwith SAM links does not exist!\n\nKeeping the previous version:\n%s', newLinksFile, linksFile);
+        header = sprintf('The provided file:\n%s\nwith SAM links does not exist!\n\nKeeping the previous version:\n%s', newLinksFile, linksFile);
         dlgOpt.HeaderLines = 5;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Wrong JSON file', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Wrong JSON file', dlgOpt);
     else
         SAM2.linksFile = answer{4};
     end

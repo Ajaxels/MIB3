@@ -121,8 +121,8 @@ function updateWidgets(obj)
 
     if foldersOk == 0 && obj.view.gui.Visible == true
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Some directories specified in the config file are missing!\nPlease check the directories in the Directories and Preprocessing tab');
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong directories', mgsOpt);
+        header = sprintf('Some directories specified in the config file are missing!\nPlease check the directories in the Directories and Preprocessing tab');
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong directories', mgsOpt);
     end
 
     obj.view.handles.T_SendReports.Value = obj.SendReports.T_SendReports;

@@ -107,10 +107,10 @@ end
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = 'The selection layer is switched off!';
+    header       = 'The selection layer is switched off!';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 170;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
         {'Please make sure that the "Enable selection" option in the Preferences dialog (Ribbon->Home->Preferences) is set to "yes" and try again...'}, ...
         'interpolateImages: The selection layer is disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -121,10 +121,9 @@ end
 if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = 'Ops!';
     dlgOpt.HeaderLines  = 1;
     dlgOpt.WindowHeight = 160;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Ops!', {''}, ...
         {'The interpolation tool is not yet available in the virtual stacking mode. Please switch to the memory-resident mode and try again.'}, ...
         'interpolateImages: Not implemented', dlgOpt);
     notify(obj, 'StopProtocol');

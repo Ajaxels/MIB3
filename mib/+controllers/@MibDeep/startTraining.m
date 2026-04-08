@@ -73,12 +73,11 @@ obj.selectGPUDevice();
 inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
 if numel(inputPatchSize) ~= 4
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf(['Please provide the input patch size (BatchOpt.T_InputPatchSize) as 4 numbers that define\n' ...
+    header = sprintf(['Please provide the input patch size (BatchOpt.T_InputPatchSize) as 4 numbers that define\n' ...
         'height, width, depth, colors\n\nFor example:\n' ...
         '"32, 32, 1, 3" for 2D U-net of 3 color channel images\n' ...
         '"64, 64, 64, 1" for 3D U-net of 1 color channel images']);
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong patch size', mgsOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong patch size', mgsOpt);
     return;
 end
 
@@ -88,14 +87,13 @@ if inputPatchSize(1)~=inputPatchSize(2) && obj.BatchOpt.T_augmentation
             (strcmp(obj.BatchOpt.Workflow{1}(1:2), '3D') && obj.AugOpt3D.Rotation90.Enable ) || ...
             (strcmp(obj.BatchOpt.Workflow{1}(1:2), '2.') && obj.AugOpt3D.Rotation90.Enable )
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
+        header = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
             'How to fix (one of these options):\n   a) set probability of Rotation90 augmentations to 0\n' ...
                 '   b) make sure that the input patch size has a square shape as "%d %d %d %d"\n' ...
                 '   c)   if Rotation90 is required rotate the original dataset (images and labels) and save it as ' ...
                 'additional files to be used for training'], ...
                 inputPatchSize(1), inputPatchSize(1), inputPatchSize(3), inputPatchSize(4));
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Rotation90 is not available', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Rotation90 is not available', mgsOpt);
         return;
     end
 
@@ -243,14 +241,13 @@ try
     % check that number of files larger than minibatch size
     if noFiles*obj.BatchOpt.T_PatchesPerImage{1} < obj.BatchOpt.T_MiniBatchSize{1}
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
+        header = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
             'Patches_per_image (%d) x Number_of_images (%d) = %d\n\n' ...
             'Solve by:\n-Decrease mini-batch size\n' ...
             '-Increase patches per image\n' ...
             '-Increase number of files used for training'], ...
             obj.BatchOpt.T_MiniBatchSize{1}, obj.BatchOpt.T_PatchesPerImage{1}, noFiles, noFiles*obj.BatchOpt.T_PatchesPerImage{1});
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong configuration', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration', mgsOpt);
         if showWaitbarLocal; delete(obj.wb); end
         return;
     end
@@ -393,10 +390,9 @@ try
     
             if numel(labelsDS.Files) ~= noFiles
                 mgsOpt.MsgBoxOnly = true;
-                mgsOpt.Header = sprintf('In this mode number of model files should match number of image files!\n\nCheck\n%s\n\n%s', ...
+                header = sprintf('In this mode number of model files should match number of image files!\n\nCheck\n%s\n\n%s', ...
                     fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'));
-                mgsOpt.Icon = 'puffin_error';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', mgsOpt);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
                 if showWaitbarLocal; delete(obj.wb); end
                 return;
             end
@@ -467,10 +463,9 @@ try
     
                 if numel(valLabelsDS.Files) ~= numel(valImgDS.Files)
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('In this mode number of model files should match number of image files!\n\nCheck\n%s\n\n%s', ...
+                    header = sprintf('In this mode number of model files should match number of image files!\n\nCheck\n%s\n\n%s', ...
                         fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'));
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', mgsOpt);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
                     if showWaitbarLocal; delete(obj.wb); end
                     return;
                 end
@@ -558,9 +553,8 @@ try
     if isempty(outputPatchSize)
         if isdeployed
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('Unfortunately, 3D U-Net Anisotropic architecture with the "valid" padding is not yet available in the deployed version of MIB\n\nPlease use the "same" padding instead');
-            mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not implemented', mgsOpt);
+            header = sprintf('Unfortunately, 3D U-Net Anisotropic architecture with the "valid" padding is not yet available in the deployed version of MIB\n\nPlease use the "same" padding instead');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
             if showWaitbarLocal; delete(obj.wb); end
             return;
         else
@@ -891,9 +885,8 @@ try
                 case {'focalLossLayer', 'dicePixelClassificationLayer'}
                 % case 'dicePixelClassificationLayer'
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('%s is not yet implemented for the trainnet engine!\nSwitch to another segmentation layer or use trainNetwork engine', obj.BatchOpt.T_SegmentationLayer{1});
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not implemented', mgsOpt);
+                    header = sprintf('%s is not yet implemented for the trainnet engine!\nSwitch to another segmentation layer or use trainNetwork engine', obj.BatchOpt.T_SegmentationLayer{1});
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
                     return;
             end
     end

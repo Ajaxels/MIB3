@@ -177,7 +177,7 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
         options.mibPath        = obj.mibPath;
         options.DoNotShowAgain = true;
         [~, ~, obj.mibModel.sessionSettings.DoNotShowDialogs.MeasureLength] = ...
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {htmlContent}, {htmlContent}, dlgTitle, options);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, '', {htmlContent}, {htmlContent}, dlgTitle, options);
     end
 
     disp(str2);

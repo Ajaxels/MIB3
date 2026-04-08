@@ -66,7 +66,7 @@ switch mode
         options.HelpBtnText = 'Calendar';
         options.HelpUrl = 'https://outlook.office365.com/owa/calendar/MIBcall4help@HelsinkiFI.onmicrosoft.com/bookings/s/olBBIX11aEqP-UndmR2Emg2';
         options.mibPath = obj.mibModel.mibPath;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {infoText}, {infoText}, dlgTitle, options);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, '', {infoText}, {infoText}, dlgTitle, options);
         clipboard('copy', call4help.Link);
 
 

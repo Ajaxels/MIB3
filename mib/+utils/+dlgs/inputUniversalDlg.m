@@ -1,11 +1,13 @@
-function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, prompts, defAns, dlgTitle, options)
-% [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, prompts, defAns, dlgTitle, options)
+function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
+% [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
 % uifigure + uigridlayout version of mibInputMultiDlg with extra widget types
 %
 % Parameters:
 % ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
 %   used to center the dialog. Pass [] to use the cached handle from a prior call.
 %   To supply the MIB installation path use options.mibPath.
+% header: [@em optional] char, header text displayed above the dialog content (bold label).
+%   Replaces options.Header; options.Header is ignored when header is non-empty.
 % prompts: a cell array {n x 1} with the prompts for each input field of the dialog.
 % defaultAns: a cell array {n x 1} with default values for each entry.
 % The following types are supported per element
@@ -25,7 +27,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % .DoNotShowAgain - logical, show "Do not show again" checkbox (default false).
 % .DoNotShowAgainText - text for the "Do not show again" checkbox (default 'Do not show again').
 % .Focus - 1-based index of widget to focus on open; 0 = focus OK button (default 0).
-% .Header - string, text displayed above widgets.
+% .Header - string, text displayed above widgets; superseded by the header parameter when non-empty.
 % .HeaderLines - integer number of lines reserved for Header.
 % .HelpBtnText - text for Help button (default 'Help').
 % .HelpUrl - string URL or command; if provided, shows Help button.
@@ -75,7 +77,6 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % options.PromptLines  = [1 1 1 1 2 3 1 1];  %
 % dlgTitle = 'multi line input dialog';
 % options.WindowStyle  = 'normal';
-% options.Header       = 'My test Input dialog';
 % options.HeaderLines  = 2;
 % options.WindowWidth  = 672;
 % options.WindowHeight = 350;
@@ -95,7 +96,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % options.DoNotShowAgainText    = 'Do not show again';
 % options.DefaultKey   = 'OK';
 % options.ParentFigure = obj.view.gui;
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, 'My test Input dialog', prompts, defAns, dlgTitle, options);
 % if isempty(answer); return; end
 %
 % Example 2 (input dialog with vertical layout - label on top):
@@ -119,17 +120,17 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % options.LabelPosition = 'top';
 % options.Columns      = 1;
 % options.Icon         = 'question_48px';
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
 % if isempty(answer); return; end
 %
 % Example 3 (warning with bold header + plain body text — auto-wrapped to HTML):
+% % Pass header text as the second argument; icon defaults to 'puffin_error' in MsgBoxOnly mode.
 % options.MsgBoxOnly = true;
 % options.Icon       = 'puffin_warning';
-% options.Header     = 'The models are switched off!';   % bold, 1 line
 % options.HeaderLines = 1;
 % % Body text is plain — inputUniversalDlg wraps it automatically in
 % % <html><p style="font-size:10pt">...</p></html>
-% utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+% utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
 %     {'Please enable the "Enable selection" option in Preferences (Ribbon->Home->Preferences) and try again.'}, ...
 %     'Models are disabled', options);
 %
@@ -137,23 +138,23 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % lists is required; include font-size:10pt yourself since auto-wrap is skipped):
 % options.MsgBoxOnly = true;
 % options.Icon       = 'puffin_info';
-% options.Header     = 'Please Read';
 % options.HeaderLines = 1;
 % options.DoNotShowAgain = true;
 % options.DoNotShowAgainText = 'Do not show this again';
 % htmlBody = '<html><p style="font-size:10pt">This message has <b>rich text</b> and a list:<ul><li>Item 1</li><li>Item 2</li></ul></p></html>';
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, {htmlBody}, 'Information', options);
+% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Please Read', {''}, {htmlBody}, 'Information', options);
 %
-% Example 5 (minimalist warning — entire message in Header, no body):
+% Example 5 (minimalist warning — entire message in header param, no body):
+% % Icon defaults to 'puffin_error' in MsgBoxOnly mode unless overridden.
 % options.MsgBoxOnly = true;
 % options.Icon       = 'puffin_warning';
-% options.Header     = sprintf('!!! Warning !!!\n\nThe output format was not selected!');
 % options.HeaderLines = 3;
-% utils.dlgs.inputUniversalDlg(obj.mibGUI, {}, {}, 'Warning', options);
+% utils.dlgs.inputUniversalDlg(obj.mibGUI, sprintf('!!! Warning !!!\n\nThe output format was not selected!'), {}, {}, 'Warning', options);
 
 
 arguments
     ParentFigure = []
+    header char = ''
     prompts cell = {'Enter a text:'}
     defAns cell = {[]}
     dlgTitle char = 'MultiEdit dialog'
@@ -163,25 +164,40 @@ end
 persistent mibDirPersistent;       % cached MIB installation path
 persistent parentFigurePersistent; % cached handle to the main GUI window
 
-% Normalize options field names (case-insensitive) so callers can pass
-% e.g. 'msgBoxOnly' or 'msgboxonly' and have it match 'MsgBoxOnly'.
+% Normalize options field names to their canonical casing.
+% MATLAB struct field lookup is case-sensitive, so options.msgboxonly would be
+% silently ignored. This loop finds any supplied field whose name matches a known
+% field case-insensitively but differs in case (e.g. 'msgBoxOnly' -> 'MsgBoxOnly')
+% and renames it to the canonical form before the defaults section runs.
 knownOptionFields = {'Icon','IconWidth','WindowStyle','Columns','MainColumnWidths', ...
     'LabelPosition','SectionsColumnWidths','Focus','LastItemColumns', ...
     'OkBtnText','HelpBtnText','HelpUrl','MsgBoxOnly','PromptLines', ...
     'HeaderLines','Header','WindowWidth','WindowHeight','DoNotShowAgain', ...
     'DoNotShowAgainText','ParentFigure','DefaultKey'};
-for fi_ = fieldnames(options)'
-    fi_ = fi_{1};
-    idx_ = find(strcmpi(knownOptionFields, fi_), 1);
-    if ~isempty(idx_) && ~strcmp(fi_, knownOptionFields{idx_})
-        options.(knownOptionFields{idx_}) = options.(fi_);
-        options = rmfield(options, fi_);
+for suppliedField = fieldnames(options)'
+    suppliedField = suppliedField{1};
+    canonicalIdx  = find(strcmpi(knownOptionFields, suppliedField), 1);
+    if ~isempty(canonicalIdx) && ~strcmp(suppliedField, knownOptionFields{canonicalIdx})
+        % Rename the misspelled/wrong-case field to the canonical name
+        options.(knownOptionFields{canonicalIdx}) = options.(suppliedField);
+        options = rmfield(options, suppliedField);
     end
 end
-clear fi_ idx_ knownOptionFields
+clear suppliedField canonicalIdx knownOptionFields
 
 % Defaults
-if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
+if ~isfield(options, 'MsgBoxOnly'); options.MsgBoxOnly = false; end
+% header parameter always takes priority over options.Header
+if ~isempty(header)
+    options.Header = header;
+end
+if ~isfield(options, 'Icon')
+    if options.MsgBoxOnly
+        options.Icon = 'puffin_error';
+    else
+        options.Icon = 'puffin_question';
+    end
+end
 if ~isfield(options, 'IconWidth')
     if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_info', 'puffin_waiting'})
         options.IconWidth = 96; 
@@ -199,7 +215,6 @@ if ~isfield(options, 'LastItemColumns'); options.LastItemColumns = 0; end
 if ~isfield(options, 'OkBtnText'); options.OkBtnText = 'OK'; end
 if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end
 if ~isfield(options, 'HelpUrl'); options.HelpUrl = []; end
-if ~isfield(options, 'MsgBoxOnly'); options.MsgBoxOnly = false; end
 if ~isfield(options, 'PromptLines'); options.PromptLines = ones(numel(prompts),1); end
 if ~isfield(options, 'HeaderLines')
     options.HeaderLines = 1;

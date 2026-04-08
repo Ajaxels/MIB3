@@ -4,9 +4,8 @@ function startPreprocessing(obj)
     if strcmp(obj.BatchOpt.Workflow{1},  '2D Patch-wise')  % '2D Patch-wise Resnet18' or '2D Patch-wise Resnet50'
         if ismember(obj.BatchOpt.PreprocessingMode{1}, {'Training and Prediction', 'Training', 'Prediction'})
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('Preprocessing of images is not required for patch-wise workflows');
-            mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not implemented', mgsOpt);
+            header = sprintf('Preprocessing of images is not required for patch-wise workflows');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
             return;
         end
     end
@@ -126,9 +125,8 @@ function startPreprocessing(obj)
 
                 if numel(imageFiles) ~= numel(labelsFiles) || numel(imageFiles) == 0
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('There are no files or number of files mismatch in\n\n%s\n\n- Images\n- Labels', obj.BatchOpt.OriginalTrainingImagesDir);
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong files', mgsOpt);
+                    header = sprintf('There are no files or number of files mismatch in\n\n%s\n\n- Images\n- Labels', obj.BatchOpt.OriginalTrainingImagesDir);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong files', mgsOpt);
                     return;
                 end
                 noFiles = numel(imageFiles);

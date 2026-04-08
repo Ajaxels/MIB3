@@ -33,9 +33,8 @@ function evaluateSegmentation(obj)
 
     if isempty(truthList) && isempty(predictionList)
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Models were not found in\n%s\n\n%s\n\nPlease update the Directory prediction and resulting images fields of the Directories and Preprocessing tab!', truthDir, predictionDir);
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing files', mgsOpt);
+        header = sprintf('Models were not found in\n%s\n\n%s\n\nPlease update the Directory prediction and resulting images fields of the Directories and Preprocessing tab!', truthDir, predictionDir);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing files', mgsOpt);
         return;
     end
 

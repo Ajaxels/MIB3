@@ -44,18 +44,17 @@ try
                 case 'DeepLab v3+'
                     if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
                         mgsOpt.MsgBoxOnly = true;
-                        mgsOpt.Header = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
+                        header = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
                         mgsOpt.Icon = 'puffin_error';
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong configuration!', mgsOpt);
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration!', mgsOpt);
                         return;
                     end
 
                     targetNetwork = lower(obj.BatchOpt.T_EncoderNetwork{1});
                     if ismember(targetNetwork, {'xception', 'inceptionresnetv2'}) && isdeployed
                         mgsOpt.MsgBoxOnly = true;
-                        mgsOpt.Header = sprintf('Currently %s network is only available in MIB for MATLAB\nTry to use DLv3-Resnet18/50 instead!', obj.BatchOpt.Architecture{1});
-                        mgsOpt.Icon = 'puffin_error';
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Ops!', mgsOpt);
+                        header = sprintf('Currently %s network is only available in MIB for MATLAB\nTry to use DLv3-Resnet18/50 instead!', obj.BatchOpt.Architecture{1});
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
                         return;
                     end
                     lgraph = obj.generateDeepLabV3Network(inputPatchSize([1 2 colorDimension]), obj.BatchOpt.T_NumberOfClasses{1}, targetNetwork);
@@ -115,9 +114,8 @@ try
                     case 'DLv3'
                         if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
                             mgsOpt.MsgBoxOnly = true;
-                            mgsOpt.Header = sprintf('%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
-                            mgsOpt.Icon = 'puffin_error';
-                            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong configuration!', mgsOpt);
+                            header = sprintf('%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
+                            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration!', mgsOpt);
                             return;
                         end
                         targetNetwork = lower(obj.BatchOpt.T_EncoderNetwork{1});
@@ -131,9 +129,8 @@ try
                     case {'3DC + DLv3 Resnet18'}
                         if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
                             mgsOpt.MsgBoxOnly = true;
-                            mgsOpt.Header = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
-                            mgsOpt.Icon = 'puffin_error';
-                            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong configuration!', mgsOpt);
+                            header = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
+                            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration!', mgsOpt);
                             return;
                         end
                         switch selectedArchitecture
@@ -223,16 +220,14 @@ try
             if obj.BatchOpt.T_UseImageNetWeights
                 if isdeployed
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('Initialization of the network with imagenet weights is only available in MIB for MATLAB!\n\nPlease uncheck the "use ImageNet weights" checkbox to initialize the network using empty weights and try again.');
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Ops!', mgsOpt);
+                    header = sprintf('Initialization of the network with imagenet weights is only available in MIB for MATLAB!\n\nPlease uncheck the "use ImageNet weights" checkbox to initialize the network using empty weights and try again.');
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
                     return;
                 end
                 if inputPatchSize(4) ~= 3
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('Initialization of the network with imagenet weights is only available for images with 3 color channels!\n\nPlease change "Input patch size" to [%d %d %d 3] and try again', inputPatchSize(1), inputPatchSize(2), inputPatchSize(3));
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Ops!', mgsOpt);
+                    header = sprintf('Initialization of the network with imagenet weights is only available for images with 3 color channels!\n\nPlease change "Input patch size" to [%d %d %d 3] and try again', inputPatchSize(1), inputPatchSize(2), inputPatchSize(3));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
                     return;
                 end
                 weightsValue = 'imagenet';

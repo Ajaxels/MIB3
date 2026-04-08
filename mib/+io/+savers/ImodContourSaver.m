@@ -142,7 +142,7 @@ classdef ImodContourSaver < io.savers.BaseSaver
                 prompts  = {'Take each Nth point in contours (> 0):', 'Show detected points in the selection layer'};
                 defAns   = {num2str(options.xyScaleFactor), options.generateSelectionSw};
                 dlgTitle = 'Export to IMOD';
-                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, dlgTitle);
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, dlgTitle);
                 if isempty(answer); return; end
                 options.xyScaleFactor       = str2double(answer{1});
                 options.generateSelectionSw = answer{2};

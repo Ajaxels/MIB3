@@ -28,9 +28,9 @@ if sum(ismember(propertyList, customProps)) > 0
     if strcmp(obj.view.handles.Connectivity.Value, '4/6 connectivity')
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_warning';
-        dlgOpt.Header = 'The connectivity parameter was changed from 4 to 8!';
+        header = 'The connectivity parameter was changed from 4 to 8!';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Connectivity changed', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Connectivity changed', dlgOpt);
         obj.view.handles.Connectivity.Value = '8/26 connectivity';
         obj.BatchOpt.Connectivity{1} = '8/26 connectivity';
     end

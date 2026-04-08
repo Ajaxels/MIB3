@@ -33,9 +33,8 @@ function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
                         'Normalization', obj.InputLayerOpt.Normalization);
                 otherwise
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('Wrong normlization paramter (%s)!\n\nUse one of those:\n - zerocenter\n - zscore\n - rescale-symmetric\n - rescale-zero-one\n - none', obj.InputLayerOpt.Normalization);
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong normalization', mgsOpt);
+                    header = sprintf('Wrong normlization paramter (%s)!\n\nUse one of those:\n - zerocenter\n - zscore\n - rescale-symmetric\n - rescale-zero-one\n - none', obj.InputLayerOpt.Normalization);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong normalization', mgsOpt);
                     lgraph = [];
                     return;
             end
@@ -81,9 +80,8 @@ function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
                         'Normalization', obj.InputLayerOpt.Normalization);
                 otherwise
                     mgsOpt.MsgBoxOnly = true;
-                    mgsOpt.Header = sprintf('Wrong normlization paramter (%s)!\n\nUse one of those:\n - zerocenter\n - zscore\n - rescale-symmetric\n - rescale-zero-one\n - none', obj.InputLayerOpt.Normalization);
-                    mgsOpt.Icon = 'puffin_error';
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong normalization', mgsOpt);
+                    header = sprintf('Wrong normlization paramter (%s)!\n\nUse one of those:\n - zerocenter\n - zscore\n - rescale-symmetric\n - rescale-zero-one\n - none', obj.InputLayerOpt.Normalization);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong normalization', mgsOpt);
                     lgraph = [];
                     return;
             end

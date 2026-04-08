@@ -116,9 +116,9 @@ if ~strcmp(clusterMode, 'No clusters') && ~isCtrl
     if isnan(col_channel) && (dataset.image.colors ~= 3 && dataset.image.colors ~= 1)
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = 'Please select the color channel!';
+        header = 'Please select the color channel!';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {'Selection panel -> Color channel'}, {''}, 'MibImageDocument.segmentationBrush', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {'Selection panel -> Color channel'}, {''}, 'MibImageDocument.segmentationBrush', dlgOpt);
 
         % restore callbacks and return
         hFig.Pointer = 'crosshair';

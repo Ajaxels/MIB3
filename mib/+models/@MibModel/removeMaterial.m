@@ -91,10 +91,9 @@ dlgOpt.mibPath = obj.mibPath;
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = 'The models are switched off!';
     dlgOpt.HeaderLines  = 1;
     dlgOpt.WindowHeight = 160;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
         {'Please make sure that the "Enable selection" option in the Preferences dialog (Ribbon->Home->Preferences) is set to "yes" and try again...'}, ...
         'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -104,9 +103,8 @@ end
 if ~obj.I{BatchOpt.id}.modelExist
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = 'No model exists!';
     dlgOpt.HeaderLines  = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'No model exists!', {''}, ...
         {'Please create a model first (Ribbon -> Models -> New Model).'}, ...
         'No model', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -148,9 +146,9 @@ MaterialIndices = str2num(BatchOpt.MaterialIndices); %#ok<ST2NM>
 if isempty(MaterialIndices)
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = sprintf('Wrong material indices: "%s"', BatchOpt.MaterialIndices);
+    header       = sprintf('Wrong material indices: "%s"', BatchOpt.MaterialIndices);
     dlgOpt.HeaderLines  = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
         {'The function requires a list of numbers, for example "1", "2 4", or "3:5".'}, ...
         'Remove material', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -163,9 +161,8 @@ MaterialIndices = MaterialIndices(MaterialIndices >= 1 & MaterialIndices <= maxV
 if isempty(MaterialIndices)
     dlgOpt.MsgBoxOnly   = true;
     dlgOpt.Icon         = 'puffin_warning';
-    dlgOpt.Header       = 'No valid material indices!';
     dlgOpt.HeaderLines  = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'No valid material indices!', {''}, ...
         {sprintf('All specified indices are out of range. The model has only %d material(s).', maxValid)}, ...
         'Remove material', dlgOpt);
     notify(obj, 'StopProtocol');

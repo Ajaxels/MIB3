@@ -90,9 +90,9 @@ if nargin == 2
         else
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'A structure as the 2nd parameter is required!';
+            header = 'A structure as the 2nd parameter is required!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
         end
         return;
     else
@@ -106,9 +106,9 @@ type = BatchOpt.Shape{1};
 if ~ismember(type, {'Rectangle', 'Ellipse'})
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = sprintf('The manual mode is not available for the "%s" type!\nPlease use Rectangle or Ellipse instead', type);
+    header = sprintf('The manual mode is not available for the "%s" type!\nPlease use Rectangle or Ellipse instead', type);
     dlgOpt.HeaderLines = 2;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Lasso manual mode', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Lasso manual mode', dlgOpt);
     notify(obj.mibModel, 'stopProtocol');
     return;
 end

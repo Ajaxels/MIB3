@@ -77,9 +77,8 @@ function transferLearning(obj)
 
         if segmLayerId == 0
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('The original network does not have %s layer', layerName);
-            mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Transfer learning', mgsOpt);
+            header = sprintf('The original network does not have %s layer', layerName);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Transfer learning', mgsOpt);
             delete(obj.wb);
             return;
         end

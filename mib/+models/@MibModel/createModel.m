@@ -81,10 +81,10 @@ end
 if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    dlgOpt.Header = sprintf('Models are not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again');
+    header = sprintf('Models are not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again');
     dlgOpt.WindowHeight = 170;
     dlgOpt.HeaderLines = 3;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {}, {}, 'Not implemented', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {}, {}, 'Not implemented', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end
@@ -93,12 +93,12 @@ end
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    dlgOpt.Header = 'The models are switched off!';
+    header = 'The models are switched off!';
     dlgOpt.HeaderLines = 1;
     text = sprintf(['Please make sure that the "Enable selection" option in the Preferences dialog ' ...
         '(Ribbon->Home->Preferences) is set to "yes" and try again...']);
     dlgOpt.WindowHeight = 190;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {text}, {text}, 'Models are disabled', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {text}, {text}, 'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end

@@ -152,9 +152,8 @@ while stepId <= finishStep
     elseif strcmp(obj.Protocol(stepId).mibBatchActionName, 'FILE LOOP START')
         if strcmp(obj.Protocol(stepId).Batch.DirectoryName{1}, 'Inherit from Directory loop')
             errOpts.MsgBoxOnly = true; 
-            errOpts.Icon = 'puffin_error';
-            errOpts.Header = 'Inherit from Directory loop works only when the File loop is placed after the Directory loop!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong sequence of actions', errOpts);
+            header = 'Inherit from Directory loop works only when the File loop is placed after the Directory loop!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong sequence of actions', errOpts);
             obj.view.handles.autoAddToProtocol.Value = autoAddSwitch;
             return;
         end

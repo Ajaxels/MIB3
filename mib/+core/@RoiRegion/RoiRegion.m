@@ -215,7 +215,7 @@ classdef RoiRegion < matlab.mixin.Copyable
                 defAns{k}{end+1} = idx2;
             end
             dlgOptions.WindowHeight = 430;
-            A = utils.dlgs.inputUniversalDlg(parentFigure, prompts, defAns, 'ROI Options', dlgOptions);
+            A = utils.dlgs.inputUniversalDlg(parentFigure, '', prompts, defAns, 'ROI Options', dlgOptions);
             if isempty(A); return; end
 
             for k = 1:numel(fields)

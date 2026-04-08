@@ -93,10 +93,9 @@ end
 if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
-    dlgOpt.Header      = 'The models are switched off!';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 160;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
         {'Please make sure that the "Enable selection" option in the Preferences dialog (Ribbon->Home->Preferences) is set to "yes" and try again...'}, ...
         'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -106,9 +105,8 @@ end
 if ~obj.I{BatchOpt.id}.modelExist
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
-    dlgOpt.Header      = 'No model exists!';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'No model exists!', {''}, ...
         {'Please create a model first (Ribbon -> Models -> New Model).'}, ...
         'No model', dlgOpt);
     notify(obj, 'StopProtocol');

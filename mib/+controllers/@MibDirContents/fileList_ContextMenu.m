@@ -52,12 +52,12 @@ switch menuEntry.Tag
         obj.mibModel.loadImages('Add each N-th dataset as new color channel');
     case 'fileListContextRename'
         if numel(obj.mibModel.selectedFiles) ~= 1
-            dlgOpts.Header = 'Please select a single file!';
+            header = 'Please select a single file!';
             dlgOpts.MsgBoxOnly = true;
             dlgOpts.WindowStyle = 'normal';
             dlgOpts.WindowHeight = 150';
             dlgOpts.Icon = 'puffin_warning';
-            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'Rename file', dlgOpts);
+            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Rename file', dlgOpts);
             return;
         end
         [filePath, filename, ext] = fileparts(fullfile(obj.mibModel.currentDirectory, obj.mibModel.selectedFiles{1}));
@@ -95,7 +95,7 @@ switch menuEntry.Tag
     case 'fileListContextProps'
         if isempty(obj.mibModel.selectedFiles); return; end
         fileInfo = dir(fullfile(obj.mibModel.currentDirectory, obj.mibModel.selectedFiles{1}));
-        dlgOpts.Header = sprintf('Filename: %s\nDate: %s\nSize: %.3f KB', fileInfo.name, fileInfo.date, fileInfo.bytes/1000);
+        header = sprintf('Filename: %s\nDate: %s\nSize: %.3f KB', fileInfo.name, fileInfo.date, fileInfo.bytes/1000);
         dlgOpts.HeaderLines = 4;
         dlgOpts.MsgBoxOnly = true;
         dlgOpts.WindowHeight = 150';
@@ -103,7 +103,7 @@ switch menuEntry.Tag
         dlgOpts.WindowStyle = 'normal';
         dlgOpts.Icon = 'puffin_info';
         dlgOpts.IconWidth = 96;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, {}, {}, 'File info', dlgOpts);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'File info', dlgOpts);
 
 end
 

@@ -27,8 +27,8 @@ switch options
     case {'add', 'insert', 'update', 'duplicate'}      % add, insert or update selected action to the protocol
         if isempty(obj.CurrentBatch)
             warnOpts.MsgBoxOnly = true; warnOpts.Icon = 'puffin_warning';
-            warnOpts.Header = 'Please select an action to perform from the list of available actions and try again!';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Action not selected', warnOpts);
+            header = 'Please select an action to perform from the list of available actions and try again!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Action not selected', warnOpts);
             return;
         end
         obj.backupProtocol();   % store the current protocol

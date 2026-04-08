@@ -42,10 +42,9 @@ if obj.mibModel.I{BatchOpt.id}.selectedColorChannel == 0
         obj.mibModel.I{BatchOpt.id}.selectedColorChannel = 1;
     else
         dlgOpt.MsgBoxOnly = true;
-        dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = '!!! Error !!!\n\nPlease select the active color channel for the thresholding!\nSelection panel -> Color channel:';
-        dlgOpt.HeaderLines = 4;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong color channel', dlgOpt);
+        header = 'Please select the active color channel for the thresholding!\nSelection panel -> Color channel:';
+        dlgOpt.HeaderLines = 3;
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong color channel', dlgOpt);
         notify(obj.mibModel, 'stopProtocol');
         return;
     end
@@ -104,10 +103,9 @@ if nargin == 2  % batch mode
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
             dlgOpt.MsgBoxOnly = true;
-            dlgOpt.Icon = 'puffin_error';
-            dlgOpt.Header = 'A structure as the 2nd parameter is required!';
+            header = 'A structure as the 2nd parameter is required!';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
         end
         return;
     else
@@ -119,10 +117,9 @@ end
 % check for the virtual stacking mode and return
 if obj.mibModel.I{BatchOpt.id}.datasetType(1) == 'V'
     dlgOpt.MsgBoxOnly = true;
-    dlgOpt.Icon = 'puffin_error';
-    dlgOpt.Header = sprintf('The black-and-white thresholding is not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again');
+    header = sprintf('The black-and-white thresholding is not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again');
     dlgOpt.HeaderLines = 4;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Black and white thresholding', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Black and white thresholding', dlgOpt);
     return;
 end
 

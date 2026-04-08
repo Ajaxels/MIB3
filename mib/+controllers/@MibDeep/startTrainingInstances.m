@@ -52,13 +52,12 @@ obj.selectGPUDevice();
 inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
 if numel(inputPatchSize) ~= 4
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf(['Please provide the "Input patch size" (BatchOpt.T_InputPatchSize) as 4 numbers that define\n' ...
+    header = sprintf(['Please provide the "Input patch size" (BatchOpt.T_InputPatchSize) as 4 numbers that define\n' ...
         'height, width, depth, colors\n\nFor example:\n' ...
         '"800, 800, 1, 3" for SOLOv2 of 3 color channel images\n' ...
         '"1280, 800, 1, 1" for SOLOv2 of 1 color channel images\n\n' ...
         'Please note that the width and height should be multiples of 32 and color are 1 or 3']);
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong patch size', mgsOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong patch size', mgsOpt);
     return;
 end
 
@@ -66,14 +65,13 @@ end
 if inputPatchSize(1)~=inputPatchSize(2) && obj.BatchOpt.T_augmentation
     if (strcmp(obj.BatchOpt.Workflow{1}(1:2), '2D') && obj.AugOpt2D.Rotation90.Enable )
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
+        header = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
             'How to fix (one of these options):\n   a) set probability of Rotation90 augmentations to 0\n' ...
                 '   b) make sure that the input patch size has a square shape as "%d %d %d %d"\n' ...
                 '   c)   if Rotation90 is required rotate the original dataset (images and labels) and save it as ' ...
                 'additional files to be used for training'], ...
                 inputPatchSize(1), inputPatchSize(1), inputPatchSize(3), inputPatchSize(4));
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Rotation90 is not available', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Rotation90 is not available', mgsOpt);
         return;
     end
 end
@@ -187,14 +185,13 @@ try
     % check that number of files larger than minibatch size
     if noFiles*obj.BatchOpt.T_PatchesPerImage{1} < obj.BatchOpt.T_MiniBatchSize{1}
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
+        header = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
         'Patches_per_image (%d) x Number_of_images (%d) = %d\n\n' ...
             'Solve by (one of the options):\n-Decrease mini-batch size\n' ...
             '-Increase patches per image\n' ...
             '-Increase number of files used for training'], ...
             obj.BatchOpt.T_MiniBatchSize{1}, obj.BatchOpt.T_PatchesPerImage{1}, noFiles, noFiles*obj.BatchOpt.T_PatchesPerImage{1});
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong configuration', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration', mgsOpt);
         if showWaitbarLocal; delete(obj.wb); end
         return;
     end
@@ -216,10 +213,9 @@ try
 
     if numel(labelsDS.Files) ~= noFiles
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Number of model files should match number of image files!\n\nCheck that number of files match in\n\n%s\n\n%s', ...
+        header = sprintf('Number of model files should match number of image files!\n\nCheck that number of files match in\n\n%s\n\n%s', ...
             fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'));
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
         if showWaitbarLocal; delete(obj.wb); end
         return;
     end
@@ -244,10 +240,9 @@ try
 
         if numel(valLabelsDS.Files) ~= numel(valImgDS.Files)
             mgsOpt.MsgBoxOnly = true;
-            mgsOpt.Header = sprintf('Number of MAT-files should match number of image files!\n\nCheck that number of files match in\n\n%s\n\n%s', ...
+            header = sprintf('Number of MAT-files should match number of image files!\n\nCheck that number of files match in\n\n%s\n\n%s', ...
                 fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'));
-            mgsOpt.Icon = 'puffin_error';
-            utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', mgsOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
             if showWaitbarLocal; delete(obj.wb); end
             return;
         end

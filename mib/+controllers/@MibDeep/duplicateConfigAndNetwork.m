@@ -22,9 +22,8 @@ function duplicateConfigAndNetwork(obj)
         copyfile(fullfile(currPath, currFile), newNetworkFile);
     else
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('The network file to copy is missing!\nPlease select the network file and try again');
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Network file is missing!', mgsOpt);
+        header = sprintf('The network file to copy is missing!\nPlease select the network file and try again');
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Network file is missing!', mgsOpt);
         delete(wb);
         return;
     end

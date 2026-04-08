@@ -44,10 +44,10 @@ switch parameter
         clipboard('copy', val);
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_info';
-        dlgOpt.Header = sprintf('%s value for %d selected objects: %f\n\n(copied to clipboard)', ...
+        header = sprintf('%s value for %d selected objects: %f\n\n(copied to clipboard)', ...
             label, numel(obj.indices(:,1)), val);
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, [label ' value'], dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, [label ' value'], dlgOpt);
 
     case 'crop'
         % Build annotationLabels from STATS for the selected rows
@@ -136,7 +136,7 @@ switch parameter
             options.Title = 'Annotation labels settings:';
             %options.WindowHeight = 220;
             options.LabelPosition = 'left';
-            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '',  prompts, defAns, dlgTitle, options);
             if isempty(answer); return; end
 
             obj.mibModel.sessionSettings.StatToAnnotation.CustomText = answer{1};

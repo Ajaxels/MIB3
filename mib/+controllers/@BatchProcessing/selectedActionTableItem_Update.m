@@ -42,8 +42,8 @@ switch hObject.Tag
                 Limits = obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}){2};
                 if values < Limits(1) || values > Limits(2)
                     errOpts.MsgBoxOnly = true; errOpts.Icon = 'puffin_error';
-                    errOpts.Header = sprintf('The value should be between %g and %g!', Limits(1), Limits(2));
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Value out of range', errOpts);
+                    header = sprintf('The value should be between %g and %g!', Limits(1), Limits(2));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Value out of range', errOpts);
                     hObject.Value = num2str(obj.CurrentBatch.(fieldNames{obj.selectedActionTableIndex}){1});
                     return;
                 end

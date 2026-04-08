@@ -46,26 +46,22 @@ options.Focus         = 1;
 options.WindowHeight = 200;
 options.mibPath       = obj.mibController.mibPath;
 
-[answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
+[answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
 if isempty(answer); return; end
 
 noPoints = round(answer{2});
 if noPoints < 2
     errOpts.MsgBoxOnly   = true;
-    errOpts.Icon         = 'puffin_error';
-    errOpts.Header       = 'Ops!';
     errOpts.mibPath      = obj.mibController.mibPath;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {''}, {'Number of points should be more than 1'}, 'Wrong value', errOpts);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, 'Ops!', {''}, {'Number of points should be more than 1'}, 'Wrong value', errOpts);
     return;
 end
 
 lineWidth = round(answer{3});
 if lineWidth < 1
     errOpts.MsgBoxOnly   = true;
-    errOpts.Icon         = 'puffin_error';
-    errOpts.Header       = 'Ops!';
     errOpts.mibPath      = obj.mibController.mibPath;
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {''}, {'Line width should be more than 0'}, 'Wrong value', errOpts);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, 'Ops!', {''}, {'Line width should be more than 0'}, 'Wrong value', errOpts);
     return;
 end
 

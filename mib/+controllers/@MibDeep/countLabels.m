@@ -25,8 +25,8 @@ function countLabels(obj)
     if numel(labelFileList) == 0
         mgsOpt.MsgBoxOnly = true;
         mgsOpt.Icon = 'puffin_error';
-        mgsOpt.Header = sprintf('Directory:\n%s\ndoes not contain any files with "%s" extension', obj.sessionSettings.countLabelsDir, labelExtension);
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing label files', mgsOpt);
+        header = sprintf('Directory:\n%s\ndoes not contain any files with "%s" extension', obj.sessionSettings.countLabelsDir, labelExtension);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing label files', mgsOpt);
         return
     end
 

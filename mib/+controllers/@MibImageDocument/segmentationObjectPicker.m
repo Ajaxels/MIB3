@@ -39,10 +39,9 @@ if colchannel == -1
     type = 'mask';
     if ~obj.mibModel.I{id}.maskExist
         dlgOpt.MsgBoxOnly = true;
-        dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = sprintf('No mask found!\nGenerate the mask layer first');
+        header = sprintf('No mask found!\nGenerate the mask layer first');
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
         return;
     end
     colchannel = 0;
@@ -50,10 +49,9 @@ else
     type = 'labels';
     if ~obj.mibModel.I{id}.modelExist
         dlgOpt.MsgBoxOnly = true;
-        dlgOpt.Icon = 'puffin_error';
-        dlgOpt.Header = sprintf('Model was not found!\nPlease create a model first...');
+        header = sprintf('Model was not found!\nPlease create a model first...');
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
         return;
     end
     if obj.mibModel.I{id}.labels.maxMaterials > 255

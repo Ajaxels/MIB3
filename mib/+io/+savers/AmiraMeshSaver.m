@@ -264,7 +264,7 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
                         defAns   = {{'Use original filename', 'Use sequential filename', 1}};
                         dlgOpts.mibPath     = obj.mibPath;
                         dlgOpts.WindowStyle = 'modal';
-                        answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                        answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
                             'Define naming', dlgOpts);
                         if isempty(answer); return; end
                         options.FilenameGenerator = answer{1};

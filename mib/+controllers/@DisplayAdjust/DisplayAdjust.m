@@ -177,8 +177,6 @@ classdef DisplayAdjust < handle
             if strcmp(obj.mibModel.I{id}.image.colorType, 'indexed')
                 dlgOpt.MsgBoxOnly   = true;
                 dlgOpt.Icon         = 'puffin_warning';
-                dlgOpt.Header       = '!!! Warning !!!';
-                dlgOpt.HeaderLines  = 1;
                 prompts = {sprintf('Indexed images cannot be adjusted!\nPlease convert to Grayscale or RGB first:\nMenu -> Image -> Mode ->')};
                 defAns  = {''};
                 utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, prompts, defAns, 'Indexed colors', dlgOpt);
@@ -732,9 +730,9 @@ classdef DisplayAdjust < handle
             else
                 if threshold ~= 0
                     dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_error';
-                    dlgOpt.Header = 'Quantile calculation in Virtual mode is not implemented!';
+                    header = 'Quantile calculation in Virtual mode is not implemented!';
                     dlgOpt.HeaderLines = 1;
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
                     notify(obj.mibModel, 'StopProtocol');
                     if ~isempty(wb); delete(wb); end
                     minval = []; return;
@@ -812,9 +810,9 @@ classdef DisplayAdjust < handle
             else
                 if threshold ~= 0
                     dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_error';
-                    dlgOpt.Header = 'Quantile calculation in Virtual mode is not implemented!';
+                    header = 'Quantile calculation in Virtual mode is not implemented!';
                     dlgOpt.HeaderLines = 1;
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', dlgOpt);
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
                     notify(obj.mibModel, 'StopProtocol');
                     if ~isempty(wb); delete(wb); end
                     maxval = []; return;
@@ -849,9 +847,9 @@ classdef DisplayAdjust < handle
 
             if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                dlgOpt.Header = 'Intensity recalculation is not available in Virtual mode!';
+                header = 'Intensity recalculation is not available in Virtual mode!';
                 dlgOpt.HeaderLines = 1;
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not implemented', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end
@@ -911,9 +909,9 @@ classdef DisplayAdjust < handle
 
             if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                dlgOpt.Header = 'Intensity recalculation is not available in Virtual mode!';
+                header = 'Intensity recalculation is not available in Virtual mode!';
                 dlgOpt.HeaderLines = 1;
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Not implemented', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end

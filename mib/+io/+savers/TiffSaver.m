@@ -215,7 +215,7 @@ classdef TiffSaver < io.savers.BaseSaver
                            {'3D stack', '2D sequence', 1}};
                 dlgOpts.mibPath     = obj.mibPath;
                 dlgOpts.WindowStyle = 'modal';
-                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, prompts, defAns, ...
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
                     'TIF saving settings', dlgOpts);
                 if isempty(answer); return; end
                 options.FilenameGenerator = answer{1};

@@ -15,9 +15,8 @@ function processImagesForInstanceSegmentation(obj, preprocessFor)
 
 if nargin < 2
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf('processImagesForInstanceSegmentation: the second parameter is required!');
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Preprocessing error', mgsOpt);
+    header = sprintf('processImagesForInstanceSegmentation: the second parameter is required!');
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Preprocessing error', mgsOpt);
     return; 
 end
 
@@ -31,32 +30,28 @@ elseif strcmp(preprocessFor, 'prediction')
     trainingSwitch = 0;
 
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf('processImagesForInstanceSegmentation: not yet implemented!');
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Preprocessing error', mgsOpt);
+    header = sprintf('processImagesForInstanceSegmentation: not yet implemented!');
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Preprocessing error', mgsOpt);
     return; 
 else
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf('processImagesForInstanceSegmentation: the second parameter is wrong!');
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Preprocessing error', mgsOpt);
+    header = sprintf('processImagesForInstanceSegmentation: the second parameter is wrong!');
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Preprocessing error', mgsOpt);
 end
 
 %% Load data
 if ~isfolder(fullfile(imageDirIn, 'Images'))
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf('The images and models should be arranged in "Images" and "Labels" directories under\n\n%s\n\nCopy files there and try again!', imageDirIn);
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Old project or missing files', mgsOpt);
+    header = sprintf('The images and models should be arranged in "Images" and "Labels" directories under\n\n%s\n\nCopy files there and try again!', imageDirIn);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Old project or missing files', mgsOpt);
     return;
 end
 
 imgFilelist = dir(fullfile(imageDirIn, 'Images', ['*.' lower(imageFilenameExtension)]));
 if isempty(imgFilelist)
     mgsOpt.MsgBoxOnly = true;
-    mgsOpt.Header = sprintf('Image files are missing in\n%s', fullfile(imageDirIn, 'Images'));
-    mgsOpt.Icon = 'puffin_error';
-    utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing image files!', mgsOpt);
+    header = sprintf('Image files are missing in\n%s', fullfile(imageDirIn, 'Images'));
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing image files!', mgsOpt);
     return;
 end
 numImgFiles = numel(imgFilelist);
@@ -100,9 +95,8 @@ if strcmp(obj.BatchOpt.ModelFilenameExtension{1}, 'MODEL')
     files = dir(fullfile(imageDirIn, 'Labels', '*.model'));
     if isempty(files) && trainingSwitch
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Model files are missing in\n%s', fullfile(imageDirIn, 'Labels'));
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Missing model files!', mgsOpt);
+        header = sprintf('Model files are missing in\n%s', fullfile(imageDirIn, 'Labels'));
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing model files!', mgsOpt);
         if obj.BatchOpt.showWaitbar; delete(pwb); end
         return;
     elseif ~isempty(files)
@@ -157,9 +151,8 @@ if labelsExists
             end
             if numel(labelsDS.Files) ~= numImgFiles
                 mgsOpt.MsgBoxOnly = true;
-                mgsOpt.Header = sprintf('In this mode number of model files should match number of image files!');
-                mgsOpt.Icon = 'puffin_error';
-                utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Error', mgsOpt);
+                header = sprintf('In this mode number of model files should match number of image files!');
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
                 if obj.BatchOpt.showWaitbar; delete(pwb); end
                 return;
             end
@@ -172,9 +165,8 @@ end
 if singleModelTrainingFileParFor && ~isempty(labelsDS)
     if size(labelsDS.(labelsDS.modelVariable), 3) < numImgFiles
         mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Header = sprintf('Number of slices in the model file is smaller than number of images\n\nYou may want to uncheck the "Single MIB model file" checkbox!');
-        mgsOpt.Icon = 'puffin_error';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, {}, {}, 'Wrong model file', mgsOpt);
+        header = sprintf('Number of slices in the model file is smaller than number of images\n\nYou may want to uncheck the "Single MIB model file" checkbox!');
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong model file', mgsOpt);
         if showWaitbarParFor; delete(pwb); end
         return;
     end
