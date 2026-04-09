@@ -1,4 +1,5 @@
 function imgOut = channelWisePreProcess(obj, imgIn)
+% function imgOut = channelWisePreProcess(obj, imgIn)
     % function imgOut = channelWisePreProcess(obj, imgIn)
     % Normalize images
     % As input has 4 channels (modalities), remove the mean and divide by the

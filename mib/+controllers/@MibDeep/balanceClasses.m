@@ -1,4 +1,5 @@
 function balanceClasses(obj)
+% function balanceClasses(obj)
     % balance classes before training
     % see example from here:
     % https://se.mathworks.com/help/vision/ref/balancepixellabels.html

@@ -1,4 +1,5 @@
 function setTrainingSettings(obj)
+% function setTrainingSettings(obj)
     % update settings for training of networks
     global mibPath;
 

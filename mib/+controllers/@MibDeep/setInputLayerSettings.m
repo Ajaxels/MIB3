@@ -1,4 +1,5 @@
 function setInputLayerSettings(obj)
+% function setInputLayerSettings(obj)
     % update init settings for the input layer of networks
     global mibPath;
 
