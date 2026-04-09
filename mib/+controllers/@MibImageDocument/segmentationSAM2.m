@@ -332,7 +332,7 @@ if ismember(BatchOpt.Method{1}, {'Interactive', 'Interactive 3D'})
 
     getLabelsOpt.blockModeSwitch = true;
     getLabelsOpt.shiftCoordinates = true;
-    if ismember(BatchOpt.Mode{1}, {'add', 'add, +next material'}) && methodToUse ~= 2
+    if ismember(BatchOpt.Mode{1}, {'add', 'add, +next material'}) % && methodToUse ~= 2
         % first click in non-Interactive-3D 'add' mode: gui_WindowButtonDownFcn already stored backup
         doBackup = false;
     end
@@ -756,6 +756,8 @@ end
 
 labelPositions = py.numpy.array(labelPositions);
 pyrun('input_point = np.array(pointCoordinates)', pointCoordinates=labelPositions);
+%  transpose to have labelIndices in a row:
+if size(labelIndices,1)>size(labelIndices,2); labelIndices = labelIndices'; end
 labelIndices = py.numpy.array(labelIndices);
 pyrun('input_label = np.array(labelIndices)', labelIndices=labelIndices);
 

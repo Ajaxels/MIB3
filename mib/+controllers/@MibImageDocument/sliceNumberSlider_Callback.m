@@ -47,9 +47,9 @@ function sliceNumberSlider_Callback(obj, sliderValue)
 
 if nargin < 2; sliderValue = obj.handles.sliceNumberSlider.Value; end
 
-if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibImageDocument.sliceNumberSlider_Callback: "obj.cImageDoc{%d}.handles.sliceNumberSlider" ->slices changed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet);
-end
+% if obj.mibModel.preferences.System.DeveloperMode
+%     fprintf('controllers.MibImageDocument.sliceNumberSlider_Callback: "obj.cImageDoc{%d}.handles.sliceNumberSlider" ->slices changed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet);
+% end
 
 sliceNumber = round(sliderValue); % the slider top limit is a float with +0.001, thus it needs to be rounded
 

@@ -69,7 +69,7 @@ end
 
 %% Update the IMAGE TAB ---------------------------------------------
 % -------------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'ribbonImage')
+if isempty(updatePanels) || ismember('ribbonImage', updatePanels)
     % get short handle to ribbonImage
     ribbonImage = obj.cRibbon.handles.ribbonImage;
     if isempty(ribbonImage)
@@ -134,7 +134,7 @@ end
 
 %% Update the MODEL TAB ---------------------------------------------
 % -------------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
+if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
     % get short handle to ribbonImage
     ribbonModel = obj.cRibbon.handles.ribbonModel;
     if isempty(ribbonModel)
@@ -194,7 +194,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'ribbonModel')
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.addMaterial:\n%s', segmHandles.addMaterial.Tooltip);
         end
         % update the remove material button -> squeeze the labels
-        segmHandles.removeMaterial = core.MibIconCache.get('alpha_cache', 'shrink_16px');
+        segmHandles.removeMaterial.Icon = core.MibIconCache.get('alpha_cache', 'shrink_16px');
         segmHandles.removeMaterial.Tooltip = 'Squeeze the labels to remove all empty indices and select next available index';
         if obj.mibModel.preferences.System.DeveloperMode
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.removeMaterial:\n%s', segmHandles.removeMaterial.Tooltip);
@@ -207,7 +207,7 @@ end
 
 %% Update the QuickAccessBar TAB ------------------------------------
 % -------------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'QuickAccessBar')
+if isempty(updatePanels) || ismember('QuickAccessBar', updatePanels)
     % update orientation buttons
     qabHandles = obj.cQuickAccessBar.handles;
     if dataset.orientation == 3 && ~qabHandles.yx_orientation.Value
@@ -237,7 +237,7 @@ end
 
 %% Update sliders ---------------------------------------------
 % -------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
+if isempty(updatePanels) || ismember('depthSlider', updatePanels)
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
     currentSlice = dataset.slices{dataset.orientation}(1);
@@ -262,7 +262,7 @@ if isempty(updatePanels) || ismember(updatePanels, 'depthSlider')
 end
 
 % update time slider
-if isempty(updatePanels) || ismember(updatePanels, 'timeSlider')
+if isempty(updatePanels) || ismember('timeSlider', updatePanels)
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
     currentTime = dataset.slices{5}(1);
@@ -288,7 +288,7 @@ end
 
 %% Update checkboxes ---------------------------------------------
 % ----------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'checkboxes')
+if isempty(updatePanels) || ismember('checkboxes', updatePanels)
     % create aliases
     selectionPanelHandles = obj.view.handles.panels.selection.handles;
     segmentationPanelHandles = obj.view.handles.panels.segmentation.handles;
@@ -331,7 +331,7 @@ end
 
 %% Update imView panel ---------------------------------------------
 % ------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'imView')
+if isempty(updatePanels) || ismember('imView', updatePanels)
     % update image view panel
     % add a label to the image view panel
     strVal1 = 'Image View    >>>>>    ';
@@ -352,7 +352,7 @@ end
 %% Update activeDataset panel ---------------------------------------------
 % ------------------------------------------------------------
 % update tooltip for the buffer button
-if isempty(updatePanels) || ismember(updatePanels, 'activeDataset')
+if isempty(updatePanels) || ismember('activeDataset', updatePanels)
     % get alias
     activeDataset = obj.view.handles.panels.activeDataset;
 
@@ -375,7 +375,7 @@ end
 
 %% Update dirContentsDataset panel ---------------------------------------------
 % ------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'dirContentsDataset')
+if isempty(updatePanels) || ismember('dirContentsDataset', updatePanels)
     % update directory contents panel
     % get alias
     dirContents = obj.view.handles.panels.dirContents;
@@ -407,7 +407,7 @@ end
 %% Update panelThresholding panel ---------------------------------------------
 % ------------------------------------------------------------
 % sliders in the black-and-white thresholding
-if isempty(updatePanels) || ismember(updatePanels, 'panelThresholding')
+if isempty(updatePanels) || ismember('panelThresholding', updatePanels)
     % get alias to the panel
     segmHandles = obj.cSegmentation.handles;
     maxInt = dataset.image.maxInt;
@@ -439,7 +439,7 @@ end
 
 %% Update selectionPanel panel ---------------------------------------------
 % ------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'selectionPanel')
+if isempty(updatePanels) || ismember('selectionPanel', updatePanels)
     % update selection and view settings panel
     selectionPanelHandles = obj.view.handles.panels.selection.handles;
 
@@ -455,13 +455,22 @@ end
 if dataset.datasetType(1) == 'V'  % virtual dataset
     obj.view.brushCursorShow = false;
 else
-    obj.view.brushCursorShow = true;
     obj.view.brushCursorOffset = []; % reset offset to re-render cursor
+    if ismember(obj.cSegmentation.handles.segmTool.Value, {'3D ball', 'Spot', 'Brush', })
+        % show cursor
+        obj.view.brushCursorShow = true;
+        selectedSet = obj.mibModel.Sets.selectedSet;
+        obj.cImageDoc{selectedSet}.updateBrushCursorOffset();
+        obj.cImageDoc{selectedSet}.updateBrushCursor();
+    else
+        % hide cursor
+        obj.view.brushCursorShow = false;
+    end
 end
 
 %% Update status bar ---------------------------------------------
 % ------------------------------------------------------------
-if isempty(updatePanels) || ismember(updatePanels, 'statusBar')
+if isempty(updatePanels) || ismember('statusBar', updatePanels)
     obj.cStatus.handles.currentDirectory.Value = newFileDir;
 end
 
@@ -481,7 +490,7 @@ end
 %% update ROI stuff ---------------------------------------------
 % ---------------------------------------------------------------
 % update ROI list box
-if isempty(updatePanels) || ismember(updatePanels, 'roi')
+if isempty(updatePanels) || ismember('roi', updatePanels)
     roiListHandle = obj.cRoi.handles.roiList;
     [number, indices] = dataset.hROI.getNumberOfROI(0);
     items = cell(1, number + 1);

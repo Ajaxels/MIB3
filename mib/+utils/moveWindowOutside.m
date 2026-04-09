@@ -80,7 +80,7 @@ else
     
     switch alignV
         case 'top'
-            FigPos(2) = GCBFPos(2)+GCBFPos(4)-FigHeight;
+            FigPos(2) = GCBFPos(2)+GCBFPos(4)-FigHeight-30;
         case 'bottom'
             FigPos(2) = GCBFPos(2);
         case 'center'

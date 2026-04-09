@@ -147,7 +147,7 @@ end
 obj.showModel = true;
 
 % update checkboxes
-eventdata = core.ToggleEventData({'checkboxes'});
+eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
 notify(obj, 'UpdateGuiWidgets', eventdata);
 % show image
 notify(obj, 'ShowImage');

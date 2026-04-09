@@ -35,6 +35,7 @@ if obj.mibModel.I{obj.mibModel.id}.enableSelection == 0; return; end
 % events on that specific sub-figure and returns {} for button clicks coming
 % from the Selection panel (a different sub-figure in the AppContainer).
 modifier = obj.mibController.currentModifier;
+obj.mibController.currentModifier = {};  % clear before notify/drawnow yield points below
 
 if sum(ismember({'alt', 'shift'}, modifier)) == 2
     % Alt + Shift: 4D scope (or 3D if only one time point)

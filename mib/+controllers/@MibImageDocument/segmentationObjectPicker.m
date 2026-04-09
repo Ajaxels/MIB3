@@ -13,7 +13,7 @@ function segmentationObjectPicker(obj, yxzCoordinate, modifier)
 % modifier: a string, to specify what to do with the generated selection
 % @li @em empty - makes new selection (adds to existing)
 % @li @em 'control' - removes selection from the existing one
-% @li @em 'shift' - used for 3D mode in Mask within Selection
+% @li @em 'shift' - used for 3D mode in Mask within Selection, returns a union of mask and selection
 %
 % Return values:
 %   (none)
@@ -41,7 +41,7 @@ if colchannel == -1
         dlgOpt.MsgBoxOnly = true;
         header = sprintf('No mask found!\nGenerate the mask layer first');
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Object picker error', dlgOpt);
         return;
     end
     colchannel = 0;
@@ -51,7 +51,7 @@ else
         dlgOpt.MsgBoxOnly = true;
         header = sprintf('Model was not found!\nPlease create a model first...');
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Object picker error', dlgOpt);
         return;
     end
     if obj.mibModel.I{id}.labels.maxMaterials > 255
@@ -89,6 +89,14 @@ switch subTool
     case 'Click'
         % selection with mouse button click
         if switch3d
+            if isempty(obj.mibModel.I{id}.maskStats)
+                dlgOpt.MsgBoxOnly = true;
+                dlgOpt.HeaderLines = 1;
+                header = sprintf('Stats for the objects were not yet calculated!');
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Press the "Recalculate stats for 3D objects" button and try again.'}, 'Object picker error', dlgOpt);
+                return;
+            end
+
             if isfield(obj.mibModel.I{id}.maskStats, 'PixelIdxList')
                 % fast path using pre-computed PixelIdxList
                 convertPixelOpt.y = [1, obj.mibModel.I{id}.image.height];

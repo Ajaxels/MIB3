@@ -16,9 +16,9 @@ function sliceNumber_Callback(obj, parameter, BatchOptIn)
 if nargin < 3; BatchOptIn = struct; end
 if nargin < 2; parameter = []; end
 
-if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibImageDocument.sliceNumber_Callback: "obj.cImageDoc{%d}.handles.sliceNumber" ->slices changed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet);
-end
+% if obj.mibModel.preferences.System.DeveloperMode
+%     fprintf('controllers.MibImageDocument.sliceNumber_Callback: "obj.cImageDoc{%d}.handles.sliceNumber" ->slices changed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet);
+% end
 
 if isempty(parameter); parameter = obj.handles.sliceNumber.Value; end
 

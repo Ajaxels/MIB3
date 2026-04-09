@@ -29,31 +29,34 @@ handles = cSeg.handles;
 % restore segmentation settings depending on the selected tool
 switch handles.segmTool.Value
     case 'Annotations'
-        handles.annShowPrompt.Value = obj.mibModel.preferences.SegmTools.Presets.Annotations.(setName).ShowPrompt;
-        handles.annFocusOnValue.Value = obj.mibModel.preferences.SegmTools.Presets.Annotations.(setName).FocusOnValue;
-        obj.mibModel.preferences.SegmTools.Annotations.FontSize = obj.mibModel.preferences.SegmTools.Presets.Annotations.(setName).Size;
-        obj.mibModel.preferences.SegmTools.Annotations.Color = obj.mibModel.preferences.SegmTools.Presets.Annotations.(setName).Color;
-        obj.mibModel.preferences.SegmTools.Annotations.ShownExtraDepth = obj.mibModel.preferences.SegmTools.Presets.Annotations.(setName).ExtraSlices;
-        handles.annDisplayAs.Value = obj.mibModel.preferences.SegmTools.Presets.Annotations.(setName).DisplayAs;
+        Annotations = obj.mibModel.preferences.SegmTools.Presets.Annotations;
+        handles.annShowPrompt.Value = Annotations.(setName).ShowPrompt;
+        handles.annFocusOnValue.Value = Annotations.(setName).FocusOnValue;
+        obj.mibModel.preferences.SegmTools.Annotations.FontSize = Annotations.(setName).Size;
+        obj.mibModel.preferences.SegmTools.Annotations.Color = Annotations.(setName).Color;
+        obj.mibModel.preferences.SegmTools.Annotations.ShownExtraDepth = Annotations.(setName).ExtraSlices;
+        handles.annDisplayAs.Value = Annotations.(setName).DisplayAs;
         notify(obj.mibModel, 'ShowImage');
     case '3D lines'
-        handles.linesClick.Value = obj.mibModel.preferences.SegmTools.Presets.Lines3D.(setName).Click;
-        handles.linesShiftClick.Value = obj.mibModel.preferences.SegmTools.Presets.Lines3D.(setName).ShiftClick;
-        handles.linesCtrlClick.Value = obj.mibModel.preferences.SegmTools.Presets.Lines3D.(setName).CtrlClick;
-        handles.linesAltClick.Value = obj.mibModel.preferences.SegmTools.Presets.Lines3D.(setName).AltClick;
+        Lines3D = obj.mibModel.preferences.SegmTools.Presets.Lines3D;
+        handles.linesClick.Value = Lines3D.(setName).Click;
+        handles.linesShiftClick.Value = Lines3D.(setName).ShiftClick;
+        handles.linesCtrlClick.Value = Lines3D.(setName).CtrlClick;
+        handles.linesAltClick.Value = Lines3D.(setName).AltClick;
     case {'3D ball', 'Brush', 'Spot'}
+        Brush = obj.mibModel.preferences.SegmTools.Presets.Brush;
         % restore brush radius (may be stored as string in legacy preferences)
-        radius = obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).Radius;
+        radius = Brush.(setName).Radius;
         if ischar(radius); radius = str2double(radius); end
         handles.brushRadius.Value = radius;
         % restore eraser factor (may be stored as string in legacy preferences)
-        eraser = obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).Eraser;
+        eraser = Brush.(setName).Eraser;
         if ischar(eraser); eraser = str2double(eraser); end
         handles.eraserFactor.Value = eraser;
         % restore clustering mode from Watershed/SLIC boolean flags
-        if obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).Watershed
+        if Brush.(setName).Watershed
             targetCluster = 'Watershed';
-        elseif obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).SLIC
+        elseif Brush.(setName).SLIC
             targetCluster = 'SLIC';
         else
             targetCluster = 'No clusters';
@@ -71,7 +74,8 @@ switch handles.segmTool.Value
         obj.mibController.cImageDoc{selectedSet}.updateBrushCursorOffset();
         obj.mibController.cImageDoc{selectedSet}.updateBrushCursor();
     case 'BW thresholding'
-        handles.thresholdAdaptive.Value = logical(obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).Adaptive);
+        BWThresholding = obj.mibModel.preferences.SegmTools.Presets.BWThresholding;
+        handles.thresholdAdaptive.Value = logical(BWThresholding.(setName).Adaptive);
         if handles.thresholdAdaptive.Value
             handles.thresholdType.Enable = 'on';
             handles.thresholdInvert.Enable = 'on';
@@ -79,47 +83,49 @@ switch handles.segmTool.Value
             handles.thresholdType.Enable = 'off';
             handles.thresholdInvert.Enable = 'off';
         end
-        handles.thresholdType.Value = obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).BlackOnWhite;
-        handles.threshold3D.Value = logical(obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).Switch3D);
-        handles.thresholdInvert.Value = logical(obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).Invert);
+        handles.thresholdType.Value = BWThresholding.(setName).BlackOnWhite;
+        handles.threshold3D.Value = logical(BWThresholding.(setName).Switch3D);
+        handles.thresholdInvert.Value = logical(BWThresholding.(setName).Invert);
         % restore low threshold value and sync slider
-        paramLo = obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).ParameterLo;
+        paramLo = BWThresholding.(setName).ParameterLo;
         if ischar(paramLo); paramLo = str2double(paramLo); end
         paramLo = max(handles.thresholdLow.Limits(1), min(handles.thresholdLow.Limits(2), paramLo));
         handles.thresholdLowValue.Value = paramLo;
         handles.thresholdLow.Value = paramLo;
         % restore high threshold value and sync slider
-        paramHi = obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).ParameterHi;
+        paramHi = BWThresholding.(setName).ParameterHi;
         if ischar(paramHi); paramHi = str2double(paramHi); end
         paramHi = max(handles.thresholdHigh.Limits(1), min(handles.thresholdHigh.Limits(2), paramHi));
         handles.thresholdHighValue.Value = paramHi;
         handles.thresholdHigh.Value = paramHi;
         % restore slider step
-        cSeg.thresholdSliderStep = obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).SliderStep;
+        cSeg.thresholdSliderStep = BWThresholding.(setName).SliderStep;
     case 'Drag&Drop materials'
-        handles.dragLayer.Value = obj.mibModel.preferences.SegmTools.Presets.DragNDrop.(setName).Layer;
-        shift = obj.mibModel.preferences.SegmTools.Presets.DragNDrop.(setName).Shift;
+        DragNDrop = obj.mibModel.preferences.SegmTools.Presets.DragNDrop;
+        handles.dragLayer.Value = DragNDrop.(setName).Layer;
+        shift = DragNDrop.(setName).Shift;
         if ischar(shift); shift = str2double(shift); end
         handles.dragValue.Value = shift;
     case 'MagicWand/RegionGrowing'
-        handles.magicMethod.Value = obj.mibModel.preferences.SegmTools.Presets.MagicWand.(setName).Method;
+        MagicWand = obj.mibModel.preferences.SegmTools.Presets.MagicWand;
+        handles.magicMethod.Value = MagicWand.(setName).Method;
         % update Range2 enable state based on method
         if strcmp(handles.magicMethod.Value, 'Magic Wand')
             handles.magicRange2.Enable = true;
         else
             handles.magicRange2.Enable = false;
         end
-        varLo = obj.mibModel.preferences.SegmTools.Presets.MagicWand.(setName).VariationLo;
+        varLo = MagicWand.(setName).VariationLo;
         if ischar(varLo); varLo = str2double(varLo); end
         handles.magicRange1.Value = varLo;
-        varHi = obj.mibModel.preferences.SegmTools.Presets.MagicWand.(setName).VariationHi;
+        varHi = MagicWand.(setName).VariationHi;
         if ischar(varHi); varHi = str2double(varHi); end
         handles.magicRange2.Value = varHi;
-        radius = obj.mibModel.preferences.SegmTools.Presets.MagicWand.(setName).Radius;
+        radius = MagicWand.(setName).Radius;
         if ischar(radius); radius = str2double(radius); end
         handles.magicRadius.Value = radius;
         % restore connectivity via ButtonGroup child search
-        connectVal = obj.mibModel.preferences.SegmTools.Presets.MagicWand.(setName).Connect;
+        connectVal = MagicWand.(setName).Connect;
         bg = handles.magicConnect;
         for btn = bg.Children'
             if isa(btn, 'matlab.ui.control.RadioButton') && contains(btn.Text, num2str(connectVal))
@@ -128,20 +134,26 @@ switch handles.segmTool.Value
             end
         end
     case 'Membrane ClickTracker'
-        scale = obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).Scale;
+        MembraClickTracker = obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker;
+        scale = MembraClickTracker.(setName).Scale;
         if ischar(scale); scale = str2double(scale); end
         handles.membraneScale.Value = scale;
-        width = obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).Width;
+        width = MembraClickTracker.(setName).Width;
         if ischar(width); width = str2double(width); end
         handles.membraneWidth.Value = width;
-        handles.membraneStraightLine.Value = logical(obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).StraightLine);
-        handles.membraneBlackSignal.Value = logical(obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).BlackSignal);
-        handles.membraneRecenterView.Value = logical(obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).RecenterView);
+        handles.membraneStraightLine.Value = logical(MembraClickTracker.(setName).StraightLine);
+        handles.membraneBlackSignal.Value = logical(MembraClickTracker.(setName).BlackSignal);
+        handles.membraneRecenterView.Value = logical(MembraClickTracker.(setName).RecenterView);
+    case 'Object picker'
+        ObjectPicker = obj.mibModel.preferences.SegmTools.Presets.ObjectPicker;
+        handles.lassoType.Value = ObjectPicker.(setName).lassoType;
+        handles.lassoMode.Value = ObjectPicker.(setName).lassoMode;
     case 'Segment-anything model'
-        handles.samMethod.Value = obj.mibModel.preferences.SegmTools.Presets.SAM.(setName).Method;
-        handles.samDataset.Value = obj.mibModel.preferences.SegmTools.Presets.SAM.(setName).Dataset;
-        handles.samDestination.Value = obj.mibModel.preferences.SegmTools.Presets.SAM.(setName).Destination;
-        handles.samMode.Value = obj.mibModel.preferences.SegmTools.Presets.SAM.(setName).Mode;
+        SAM = obj.mibModel.preferences.SegmTools.Presets.SAM;
+        handles.samMethod.Value =SAM.(setName).Method;
+        handles.samDataset.Value =SAM.(setName).Dataset;
+        handles.samDestination.Value =SAM.(setName).Destination;
+        handles.samMode.Value =SAM.(setName).Mode;
         % update samSegment enable state based on selected method
         switch handles.samMethod.Value
             case {'Automatic everything', 'Landmarks'}

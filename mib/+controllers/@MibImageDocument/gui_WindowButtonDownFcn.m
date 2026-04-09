@@ -436,20 +436,20 @@ elseif strcmp(operation, 'select')
 
             subTool = obj.mibController.cSegmentation.handles.magicMethod.Value;
 
-            % make new selection with shift and add to the selection
-            % without modifiers
+            % make new selection with shift and add to the selection without modifiers
+            BatchOptIn = struct;
             if isempty(modifier)
-                modifier = 'shift';
-            elseif ischar(modifier) && strcmp(modifier, 'shift')
-                modifier = [];
-            elseif iscell(modifier) && any(strcmp(modifier, 'shift'))
-                modifier = [];
+                BatchOptIn.Action = 'Add';
+            elseif ismember('shift', modifier)
+                BatchOptIn.Action = 'Replace';
+            elseif ismember('control', modifier)
+                BatchOptIn.Action = 'Subtract';
             end
-
+            
             if strcmp(subTool, 'Magic Wand')
-                obj.segmentationMagicWand(ceil(yxzCoordinate), modifier);
+                obj.segmentationMagicWand(ceil(yxzCoordinate), BatchOptIn);
             else
-                obj.segmentationRegionGrowing(ceil(yxzCoordinate), modifier);
+                obj.segmentationRegionGrowing(ceil(yxzCoordinate), BatchOptIn);
             end
 
         case 'Object picker'
@@ -503,7 +503,7 @@ elseif strcmp(operation, 'select')
             % explicitly reset to {} after every SAM segmentation call, so it always
             % reflects the true keyboard state.
             modifier = obj.mibController.currentModifier;
-
+            
             samVersion = obj.mibController.cSegmentation.handles.samVersion.Value; 
             samMethodVal = obj.mibController.cSegmentation.handles.samMethod.ValueIndex;
             % 1 - Interactive
@@ -718,6 +718,7 @@ elseif strcmp(operation, 'select')
                     % use newer version SAM2
                     obj.segmentationSAM2(extraOptions);
                 end
+
                 % Key-release events fired during the blocking Python call are
                 % lost in some MATLAB versions, leaving currentModifier stale.
                 % Reset it explicitly so scroll wheel and other callbacks see

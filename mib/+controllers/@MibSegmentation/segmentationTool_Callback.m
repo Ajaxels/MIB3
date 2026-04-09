@@ -90,6 +90,11 @@ switch segmToolName
     case 'Segment-anything model'
         handles.panelSAM.Visible = 'on';
         obj.view.brushCursorShow = false;
+        % add service variables
+        if ~isfield(obj.mibModel.sessionSettings, 'SAMsegmenter')
+            obj.mibModel.sessionSettings.SAMsegmenter.Points.Position = [];
+            obj.mibModel.sessionSettings.SAMsegmenter.Points.Value = [];
+        end
 end
 
 % update the favorite tools checkbox

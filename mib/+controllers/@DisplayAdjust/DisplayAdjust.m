@@ -375,11 +375,10 @@ classdef DisplayAdjust < handle
             options.blockModeSwitch = 1;
             img = cell2mat(obj.mibModel.getData2D('image', [], [], channel, options));
 
-            minX = viewPort.min(channel) - 1;
-            maxX = viewPort.max(channel) + 1;
-            viewDiff = max(1, ceil((maxX - minX) / 255));
-            x = minX:viewDiff:maxX;
-            if numel(x) < 2; x = [minX, maxX+1]; end
+            minX = 0;
+            maxX = maxInt;
+            nBins = min(512, maxInt);
+            x = linspace(minX, maxX, nBins + 1);
             counts = histcounts(double(img(:)), x);
 
             if obj.mibModel.I{id}.useLUT
@@ -596,6 +595,8 @@ classdef DisplayAdjust < handle
                 channels = channel;
             end
             obj.mibModel.I{id}.image.viewPort.min(channels) = val;
+            h.imHist.XLim = [min(val, double(obj.mibModel.I{id}.image.maxInt)-3), ...
+                             max(obj.mibModel.I{id}.image.viewPort.max(channel), 2)];
             obj.throttledShowImage();
         end
 
@@ -619,6 +620,8 @@ classdef DisplayAdjust < handle
                 channels = channel;
             end
             obj.mibModel.I{id}.image.viewPort.max(channels) = val;
+            h.imHist.XLim = [min(obj.mibModel.I{id}.image.viewPort.min(channel), double(obj.mibModel.I{id}.image.maxInt)-3), ...
+                             max(val, 2)];
             obj.throttledShowImage();
         end
 

@@ -382,3 +382,12 @@ else    % all other possible shortcuts
             end
     end
 end
+
+% When the keypress came from a child panel (MibSelection, DisplayAdjust, etc.)
+% that has no WindowKeyReleaseFcn registered, the key-release event fires on that
+% panel's figure and never reaches gui_WindowKeyReleaseFcn — so currentModifier
+% would stay stale.  Clear it here after the action is handled.
+if isempty(hWidget.WindowKeyReleaseFcn)
+    obj.currentModifier = {};
+end
+end

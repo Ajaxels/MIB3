@@ -71,6 +71,9 @@ switch handles.segmTool.Value
         obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).StraightLine = logical(handles.membraneStraightLine.Value);
         obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).BlackSignal = logical(handles.membraneBlackSignal.Value);
         obj.mibModel.preferences.SegmTools.Presets.MembraClickTracker.(setName).RecenterView = logical(handles.membraneRecenterView.Value);
+    case 'Object picker'
+        obj.mibModel.preferences.SegmTools.Presets.ObjectPicker.(setName).lassoType = handles.lassoType.Value;
+        obj.mibModel.preferences.SegmTools.Presets.ObjectPicker.(setName).lassoMode = handles.lassoMode.Value;
     case 'Segment-anything model'
         obj.mibModel.preferences.SegmTools.Presets.SAM.(setName).Method = handles.samMethod.Value;
         obj.mibModel.preferences.SegmTools.Presets.SAM.(setName).Dataset = handles.samDataset.Value;

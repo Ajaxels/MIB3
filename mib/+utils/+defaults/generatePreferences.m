@@ -334,6 +334,13 @@ Prefs.SegmTools.Presets.MembraClickTracker.Set3.StraightLine = true;
 Prefs.SegmTools.Presets.MembraClickTracker.Set3.BlackSignal = true;
 Prefs.SegmTools.Presets.MembraClickTracker.Set3.RecenterView= true;
 
+Prefs.SegmTools.Presets.ObjectPicker.Set1.lassoType = 'Click';
+Prefs.SegmTools.Presets.ObjectPicker.Set1.lassoMode = 'Add';
+Prefs.SegmTools.Presets.ObjectPicker.Set2.lassoType = 'Rectangle';
+Prefs.SegmTools.Presets.ObjectPicker.Set2.lassoMode = 'Add';
+Prefs.SegmTools.Presets.ObjectPicker.Set3.lassoType = 'Lasso';
+Prefs.SegmTools.Presets.ObjectPicker.Set3.lassoMode = 'Add';
+
 Prefs.SegmTools.Presets.SAM.Set1.Method = 'Interactive';
 Prefs.SegmTools.Presets.SAM.Set1.Dataset = '2D, Slice'; % '2D, Slice', '3D, Stack', 4D, Dataset'
 Prefs.SegmTools.Presets.SAM.Set1.Destination = 'selection'; % 'selection', 'mask', 'model'

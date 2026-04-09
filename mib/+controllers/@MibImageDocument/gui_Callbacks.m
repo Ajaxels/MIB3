@@ -31,6 +31,7 @@ if isempty(mode); mode = hWidget.Tag; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibImageDocument.gui_Callbacks: "obj.cImageDoc{%d}.handles.%s" -> changed/pressed (obj.mibModel.Sets.selectedSet)\n', obj.mibModel.Sets.selectedSet, mode);
+    % see also sliceNumber_Callback and sliceNumberSlider_Callback
 end
 
 switch mode

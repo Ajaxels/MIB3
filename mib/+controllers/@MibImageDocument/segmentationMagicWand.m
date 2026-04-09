@@ -49,7 +49,7 @@ BatchOpt.id = obj.mibModel.getActiveId();
 BatchOpt.Coordinate = '';
 if nargin >= 2 && ~isempty(yxzCoordinate)
     BatchOpt.Coordinate = num2str(yxzCoordinate, '%d; ');
-    BatchOpt.Coordinate = BatchOpt.Coordinate(1:end-2);    % remove trailing '; '
+    BatchOpt.Coordinate = BatchOpt.Coordinate(1:end-1);    % remove trailing '; '
 end
 
 BatchOpt.Mode = {'2D, Slice'};
@@ -103,28 +103,32 @@ BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during exec
 if nargin == 3
     if ischar(BatchOptIn)
         % interactive call with modifier string
-        if strcmp(BatchOptIn, 'shift')
-            BatchOpt.Action{1} = 'Add';
-        elseif strcmp(BatchOptIn, 'control')
-            BatchOpt.Action{1} = 'Subtract';
+        keyModifier = BatchOptIn; % store the state
+        BatchOptIn = struct;
+        if strcmp(keyModifier, 'shift') 
+            BatchOptIn.Action{1} = 'Add';
+        elseif strcmp(keyModifier, 'control')
+            BatchOptIn.Action{1} = 'Subtract';
         else
-            BatchOpt.Action{1} = 'Replace';
+            BatchOptIn.Action{1} = 'Replace';
         end
     elseif isstruct(BatchOptIn) == 0
         if isnan(BatchOptIn)
             BatchOpt = rmfield(BatchOpt, 'id');
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
+            return;
+        elseif isempty(BatchOptIn)
+            BatchOptIn.Action{1} = 'Replace';
         else
             dlgOpt.MsgBoxOnly = true;
             header = 'A structure as the 3rd parameter is required!';
             dlgOpt.HeaderLines = 1;
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
+            return;
         end
-        return;
-    else
-        BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
     end
+    BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
 elseif nargin == 2
     % called with only yxzCoordinate, no modifier → Replace
     BatchOpt.Action{1} = 'Replace';
@@ -148,7 +152,7 @@ col_channel = find(ismember(BatchOpt.ColorChannel{2}, BatchOpt.ColorChannel{1}))
 selcontour = obj.mibModel.I{id}.getSelectedMaterialIndex();
 switch3d = strcmp(BatchOpt.Mode{1}, '3D, Stack');
 
-if obj.mibModel.I{id}.getDatasetDimensions('image') < 3; switch3d = false; end
+if obj.mibModel.I{id}.image.depth < 3; switch3d = false; end
 
 %% 2D mode
 if ~switch3d
