@@ -34,14 +34,14 @@ switch mode
     case 'linesShowLines' % show or hide the 3D lines
         obj.mibModel.showLines3D = hWidget.Value;
         notify(obj.mibModel, 'ShowImage');
+        focus(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.figureDoc.Figure);  % remove focus from hObject
     case 'linesClick' % define the default operation on mouse click
-        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        focus(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.figureDoc.Figure);  % remove focus from hObject
     case 'linesShiftClick' % define the default operation on Shift+mouse click
-        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        focus(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.figureDoc.Figure);  % remove focus from hObject
     case 'linesCtrlClick' % define the default operation on Ctrl+mouse click
-        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        focus(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.figureDoc.Figure);  % remove focus from hObject
     case 'linesAltClick' % define the default operation on Alt+mouse click
-        %fprintf('Clicked on a widget of the segmentation panel->3D lines tool (obj.handles.panels.segmentation): %s -> %s\n', mode, hWidget.Value);
+        focus(obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.figureDoc.Figure);  % remove focus from hObject
 end
-
 end

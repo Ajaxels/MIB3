@@ -85,6 +85,11 @@ classdef QuantificationProperties < handle
                 parentGui = obj.parentController.view.gui;
             end
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, parentGui, 'right');
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';
         end
 

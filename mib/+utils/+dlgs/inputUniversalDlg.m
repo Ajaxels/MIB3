@@ -148,6 +148,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % % Icon defaults to 'puffin_error' in MsgBoxOnly mode unless overridden.
 % options.MsgBoxOnly = true;
 % options.Icon       = 'puffin_warning';
+% options.Header = 'Warning!';
 % options.HeaderLines = 3;
 % utils.dlgs.inputUniversalDlg(obj.mibGUI, sprintf('!!! Warning !!!\n\nThe output format was not selected!'), {}, {}, 'Warning', options);
 
@@ -241,7 +242,7 @@ if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'OK'; end
 % font tag so callers do not need to embed HTML themselves.
 if options.MsgBoxOnly && numel(defAns) == 1 && (ischar(defAns{1}) || isstring(defAns{1})) ...
         && ~strncmpi(char(defAns{1}), '<html>', 6)
-    defAns{1} = sprintf('<html><p style="font-size:10pt">%s</p></html>', defAns{1});
+    defAns{1} = sprintf('<html><p style="font-size:10pt">%s</p></html>', strrep(defAns{1}, newline, '<br>'));
 end
 
 % Normalize PromptLines

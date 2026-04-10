@@ -74,10 +74,9 @@ function str = buildImageDescription(bb, actionLog)
 %
 %   @code
 %   %% 6. Append a new log entry to a MibImage in-place
-%   logEntry = sprintf('MIB(%s): ImFilter: Median, HSize:3 3, Orient:4', ...
-%                      datestr(now, 'yymmddHHMM'));
-%   img.actionLog{end+1} = logEntry;
-%   % The next call to img.save() will include the new entry automatically.
+%   img.updateActionLog('ImFilter: Median, HSize:3 3, Orient:4');
+%   % The timestamp is added automatically; the next call to img.save()
+%   % will include the new entry automatically.
 %   @endcode
 %
 % SEE ALSO

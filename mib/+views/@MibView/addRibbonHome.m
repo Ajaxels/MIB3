@@ -28,14 +28,6 @@ section = obj.handles.ribbon.home.addSection("Import image");
 column = section.addColumn();
 homeHandles.loadFile =  SplitButton("Load", Icon.OPEN_24);
 homeHandles.loadFile.Description = "Load dataset";
-
-% make a popup list for the dropdown button
-popupList = PopupList();
-% add header
-header = PopupListHeader('Recent directories');
-popupList.add(header);
-homeHandles.loadFile.Popup = popupList;
-
 % add the dropdown button to the column
 column.add(homeHandles.loadFile);
 
@@ -404,11 +396,25 @@ column.add(homeHandles.help);
 %% ============= Make "Dev corner" section =============
 section = obj.handles.ribbon.home.addSection("Dev corner");
 
-% % --------- Batch processing ---------
 column = section.addColumn();
-homeHandles.devMode = Button(sprintf("Development"),  Icon(fullfile(iconPath, 'dev_corner_24px.png')));
-homeHandles.devMode.Description = 'Reserved for developmental purposes';
-column.add(homeHandles.devMode);
+
+homeHandles.devModeSplitBtn = SplitButton(sprintf("Development"),  Icon(fullfile(iconPath, 'dev_corner_24px.png')));
+homeHandles.devModeSplitBtn.Description = 'Reserved for developmental purposes';
+% make a popup list for the dropdown button
+popupList = PopupList();
+homeHandles.devModeEnabled = matlab.ui.internal.toolstrip.ListItemWithCheckBox('Developer mode', false);
+homeHandles.devModeEnabled.Description = 'Enable developer mode that reports handles of widgets in tooltips';
+popupList.add(homeHandles.devModeEnabled);
+homeHandles.devMode = ListItem(sprintf("Development"),  Icon(fullfile(iconPath, 'dev_corner_16px.png')));
+homeHandles.devMode.Description = 'Start developer callback ()';
+popupList.add(homeHandles.devMode);
+% add the popup list to the SplitButton
+homeHandles.devModeSplitBtn.Popup = popupList;
+column.add(homeHandles.devModeSplitBtn);
+
+%homeHandles.devMode = Button(sprintf("Development"),  Icon(fullfile(iconPath, 'dev_corner_24px.png')));
+%homeHandles.devMode.Description = 'Reserved for developmental purposes';
+%column.add(homeHandles.devMode);
 
 %% Finalize
 

@@ -26,8 +26,10 @@ classdef MibRibbon
 
         datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
 
-        homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
+        homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
         
+        homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
+
         homeExamples_Callback(obj, hWidget, hData)   % callback on press of the Examples buttons in the Home ribbon
 
         homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
@@ -169,12 +171,17 @@ classdef MibRibbon
             obj.handles.ribbonHome.personalStats.ItemPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.licenses.ItemPushedFcn = @obj.homePreferences_Callback;
             obj.handles.ribbonHome.about.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.devMode.ButtonPushedFcn = @obj.homeDevTest_Callback;
+            obj.handles.ribbonHome.devModeSplitBtn.ButtonPushedFcn = @obj.homeDevTest_Callback;
+            obj.handles.ribbonHome.devModeEnabled.ValueChangedFcn = @obj.homeDevModeEnable_Callback;
+            obj.handles.ribbonHome.devMode.ItemPushedFcn = @obj.homeDevTest_Callback;           
+            %obj.handles.ribbonHome.devMode.ButtonPushedFcn = @obj.homeDevTest_Callback;
 
             % --------- update listeners
             % update list of recent directories
             obj.listeners{1} = addlistener(obj.mibModel, 'UpdateRecentDirsList', @(src, evnt)obj.homeUpdateRecentDirsList()); 
 
+            % update checkboxes
+            obj.handles.ribbonHome.devModeEnabled.Value = model.preferences.System.DeveloperMode;
 
         end
 

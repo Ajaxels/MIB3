@@ -14,8 +14,7 @@ function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
 %   coordinate system (before magnification correction)
 % modifier: a string, to specify what to do with the generated selection
 % @li @em empty - trace membrane from the starting to the selected point
-% @li @em 'shift' - defines the starting point of a membrane (3D mode)
-% @li @em 'control' - defines the starting point of a membrane (2D mode)
+% @li @em 'shift' - defines the starting point of a membrane (2D/3D mode)
 %
 % Return values:
 % output: a string that defines what next to do in the gui_WindowButtonDownFcn function
@@ -169,7 +168,7 @@ else
     z = yxzCoordinate(3);
     options.blockModeSwitch = 1;
     options.id = id;
-    if strcmp(modifier, 'control')    % defines first point for the tracer
+    if strcmp(modifier, 'shift')    % defines first point for the tracer
         obj.trackerYXZ = [yCrop; xCrop; z];
         currentSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], options));
         selarea = zeros(size(currentSelection), 'uint8');

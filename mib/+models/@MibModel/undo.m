@@ -168,6 +168,7 @@ else
     end
 end
 obj.Backup.undoIndex = newIndex;
+eventdata = core.ToggleEventData('');    % make empty event data for the notify function at the end
 
 % --- Apply the stored undo data ---
 setDataOptions = storeOptions;
@@ -246,6 +247,7 @@ else        % 2D case
                 annotData = data{cellId};
                 obj.I{id}.annotations.replaceLabels(annotData.labelText, annotData.labelPosition, annotData.labelValue);
             case 'lines3d'
+                eventdata = core.ToggleEventData('lines3d');
                 obj.I{id}.lines3D = copy(data{cellId});
             case 'measurements'
                 obj.I{id}.measure.Data = data{cellId};
@@ -275,5 +277,6 @@ if ~strcmp(type, 'selection') && strcmp(type2, 'selection') && newIndex > newDat
 end
 
 notify(obj, 'ShowImage');
-notify(obj, 'Undo');
+
+notify(obj, 'Undo', eventdata);
 end

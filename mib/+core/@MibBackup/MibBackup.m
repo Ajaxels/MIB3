@@ -216,7 +216,7 @@ classdef MibBackup < handle
             if isa(obj.undoList(1).data, 'mibImage')
                 obj.undoIndex = numel(obj.undoList) + 1;
             else
-                if isstruct(obj.undoList(1).data{1}) || isa(obj.undoList(1).data{1}, 'Lines3D')
+                if isstruct(obj.undoList(1).data{1}) || isa(obj.undoList(1).data{1}, 'core.Lines3D')
                     obj.undoIndex = numel(obj.undoList) + 1;
                 else
                     if ~isnan(obj.undoList(1).data{1}(1))

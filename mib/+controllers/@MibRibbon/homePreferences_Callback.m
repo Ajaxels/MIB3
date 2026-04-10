@@ -31,6 +31,10 @@ switch mode
     case 'Save the current layout as MIB default'               % obj.handles.ribbonHome.saveLayoutMibDefault
         obj.mibController.saveLayout('globalDefault');
     case 'Preferences'                  % obj.handles.ribbonHome.preferences
+        % update obj.mibModel.preferences.Colors from the current dataset
+        % otherwise the materials color table won't be properly populated
+        id = obj.mibModel.getActiveId;
+        obj.mibModel.preferences.Colors.ModelMaterialColors = obj.mibModel.I{id}.labels.materialColors;
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu

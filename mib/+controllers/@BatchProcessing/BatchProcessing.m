@@ -137,6 +137,12 @@ classdef BatchProcessing < handle
             obj.createContextMenus();
 
             obj.updateWidgets();
+
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';    % turn on the window
 
             % re-fit table columns whenever the parent panel is resized;

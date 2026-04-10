@@ -125,6 +125,11 @@ classdef CropObjects < handle
             drawnow;   % let AppDesigner finish layout before reading position
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, parentGui, 'center', 'center');
 
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';
 
             % register model listeners

@@ -365,6 +365,11 @@ classdef Quantification < handle
             end
             obj.material_Callback();
 
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';    % turn on the window
 
             % --- Register model listeners ---

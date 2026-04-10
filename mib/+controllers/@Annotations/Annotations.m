@@ -151,6 +151,13 @@ classdef Annotations < handle
             % position window and show
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
             obj.updateWidgets();
+
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            
+            % show the gui
             obj.view.gui.Visible = 'on';
 
             % register model listeners

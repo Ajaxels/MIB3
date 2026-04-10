@@ -96,6 +96,8 @@ classdef Preferences < handle
 
             obj.duplicateEntries = [];
             obj.updateWidgets();
+           
+            % show the gui
             obj.view.gui.Visible = 'on';    % turn on the window 
             
             % add listener to obj.mibModel and call controller function as a callback

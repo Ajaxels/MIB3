@@ -171,6 +171,11 @@ classdef DisplayAdjust < handle
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 
             obj.updateWidgets();
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';
 
             % check for indexed color (cannot adjust)
@@ -892,7 +897,8 @@ classdef DisplayAdjust < handle
 
             log_text = sprintf('ContrastGamma: Channel:%d, Min:%g, Max:%g, Gamma:%g', ...
                 channel, viewPort.min(channel), viewPort.max(channel), viewPort.gamma(channel));
-            obj.mibModel.I{id}.image.updateImgInfo(log_text);
+            
+            obj.mibModel.I{id}.image.updateActionLog(log_text);
 
             obj.mibModel.I{id}.image.viewPort.min(channel)   = 0;
             obj.mibModel.I{id}.image.viewPort.max(channel)   = maxInt;

@@ -157,6 +157,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             operation = opMap(KeyShortcuts.Action{ActionId});
             selectionTo = 'labels';
             if dataset.getSelectedMaterialIndex('AddTo') == -1; selectionTo = 'mask'; end
+            obj.currentModifier = {};  % clear before notify/drawnow yield points below
             obj.mibModel.moveLayers('selection', selectionTo, layerScope, operation);
 
         case 'Clear selection'                          % default 'c'/'Shift+c'

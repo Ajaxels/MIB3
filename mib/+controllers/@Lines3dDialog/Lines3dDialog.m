@@ -58,7 +58,7 @@ classdef Lines3dDialog < handle
             end
             switch evnt.EventName
                 case 'UpdatedLines3D'
-                    if obj.view.handles.autoRefreshCheck.Value == 0; return; end
+                    if ~obj.view.handles.autoRefreshCheck.Value; return; end
                     obj.updateWidgets();
                 case {'UpdateGuiWidgets', 'NewDataset'}
                     obj.updateWidgets();
@@ -108,25 +108,27 @@ classdef Lines3dDialog < handle
 
             % update font and size
             Font = obj.mibModel.preferences.System.Font;
-            if obj.view.handles.closeBtn.FontSize ~= Font.FontSize || ...
-                    ~strcmp(obj.view.handles.closeBtn.FontName, Font.FontName)
+            if obj.view.handles.refreshBtn.FontSize ~= Font.FontSize || ...
+                    ~strcmp(obj.view.handles.refreshBtn.FontName, Font.FontName)
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
 
             % position window and show
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
             obj.updateWidgets();
+            
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';
 
             % register model listeners
-            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', ...
-                @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{2} = addlistener(obj.mibModel, 'UpdatedLines3D', ...
-                @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{3} = addlistener(obj.mibModel, 'Undo', ...
-                @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{4} = addlistener(obj.mibModel, 'NewDataset', ...
-                @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{2} = addlistener(obj.mibModel, 'UpdatedLines3D', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{3} = addlistener(obj.mibModel, 'Undo', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{4} = addlistener(obj.mibModel, 'NewDataset', @(src,evnt) obj.ViewListner_Callback2(obj, src, evnt));
         end
 
         % -----------------------------------------------------------------
@@ -152,20 +154,13 @@ classdef Lines3dDialog < handle
             h = obj.view.handles;
 
             % Tables
-            h.treesViewTable.CellEditCallback = ...
-                @(~, evt) obj.treesViewTable_CellEditCallback(evt.Indices);
-            h.treesViewTable.CellSelectionCallback = ...
-                @(~, evt) obj.treesViewTable_CellSelectionCallback(evt.Indices);
+            h.treesViewTable.CellEditCallback = @(~, evt) obj.treesViewTable_CellEditCallback(evt.Indices);
+            h.treesViewTable.CellSelectionCallback = @(~, evt) obj.treesViewTable_CellSelectionCallback(evt.Indices);
+            h.nodesViewTable.CellEditCallback = @(~, evt) obj.nodesViewTable_CellEditCallback(evt);
+            h.nodesViewTable.CellSelectionCallback = @(~, evt) obj.nodesViewTable_CellSelectionCallback(evt.Indices);
 
-            h.nodesViewTable.CellEditCallback = ...
-                @(~, evt) obj.nodesViewTable_CellEditCallback(evt);
-            h.nodesViewTable.CellSelectionCallback = ...
-                @(~, evt) obj.nodesViewTable_CellSelectionCallback(evt.Indices);
-
-            h.edgesViewTable.CellEditCallback = ...
-                @(~, evt) obj.edgesViewTable_CellEditCallback(evt);
-            h.edgesViewTable.CellSelectionCallback = ...
-                @(~, evt) obj.edgesViewTable_CellSelectionCallback(evt.Indices);
+            h.edgesViewTable.CellEditCallback = @(~, evt) obj.edgesViewTable_CellEditCallback(evt);
+            h.edgesViewTable.CellSelectionCallback = @(~, evt) obj.edgesViewTable_CellSelectionCallback(evt.Indices);
 
             % Buttons
             h.settingsBtn.ButtonPushedFcn  = @(~,~) obj.settingsBtn_Callback();
@@ -227,11 +222,15 @@ classdef Lines3dDialog < handle
                     activeTreeIndex = find(ismember(treeNames, activeTreeName));
 
                     curTable = obj.view.handles.tableSelectionPopup.Value;
+                    obj.view.handles.nodesViewTable.Visible = false;
+                    obj.view.handles.edgesViewTable.Visible = false;
                     switch curTable
                         case 'Nodes'
                             obj.updateNodesViewTable(activeTreeIndex, nodeByTree);
+                            obj.view.handles.nodesViewTable.Visible = true;
                         case 'Edges'
                             obj.updateEdgesViewTable(activeTreeIndex, nodeByTree);
+                            obj.view.handles.edgesViewTable.Visible = true;
                     end
 
                     obj.view.handles.activeTreeText.Text = sprintf('Active tree: %d', activeTreeIndex);
@@ -392,7 +391,7 @@ classdef Lines3dDialog < handle
             prompts = {'Color for edges:'; 'Color for the active tree:'; ...
                 'Color for nodes:'; 'Color for active node:'; ...
                 'Edge thickness (1-...):'; 'Node radius (1-...):'; ...
-                'Extra clipping (0-...):'};
+                'Extra clipping, defines number of sections where the edge is visible (0-...):'};
             defAns = {sprintf('%.3f, %.3f, %.3f', settings.edgeColor(1), settings.edgeColor(2), settings.edgeColor(3)); ...
                 sprintf('%.3f, %.3f, %.3f', settings.edgeActiveColor(1), settings.edgeActiveColor(2), settings.edgeActiveColor(3)); ...
                 sprintf('%.3f, %.3f, %.3f', settings.nodeColor(1), settings.nodeColor(2), settings.nodeColor(3)); ...
@@ -402,11 +401,11 @@ classdef Lines3dDialog < handle
                 sprintf('%d', settings.clipExtraThickness)};
             dlgTitle = 'Lines3D Settings';
             options.WindowStyle = 'normal';
-            options.PromptLines = [1, 1, 1, 1, 1, 1, 1];
             header = 'For colors use [Red, Green, Blue] format with range between 0-1';
             options.HeaderLines = 2;
             options.Columns = 2;
-            options.WindowWidth = 1.2;
+            options.WindowWidth = 500;
+            options.WindowHeight = 300;
             options.Focus = 1;
             [answer, ~] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
             if isempty(answer); return; end
@@ -427,11 +426,9 @@ classdef Lines3dDialog < handle
             settings2.clipExtraThickness = round(str2double(answer{7}));
             if isnan(settings2.clipExtraThickness) || settings2.clipExtraThickness < 0; errorText = [errorText '\nWrong clipping value, should be above 0']; end
             if ~isempty(errorText)
-                dlgOpt.MsgBoxOnly = true;
-                dlgOpt.Icon = 'puffin_error';
-                header = sprintf(errorText);
-                dlgOpt.HeaderLines = numel(strfind(errorText, '\n')) + 1;
-                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
+                errDlgOpt.mibPath = obj.mibModel.mibPath;
+                utils.dlgs.showErrorDialog(obj.view.gui, sprintf(errorText), 'Import Error', ...
+                         'Failed to update the settings:', '', errDlgOpt);
                 return;
             end
             dataset.lines3D.setOptions(settings2);
@@ -586,7 +583,7 @@ classdef Lines3dDialog < handle
                 fprintf('Export Lines3d: structure ''%s'' with fields .G and .Settings was exported to Matlab!\n', answer{1});
             else
                 if isempty(dataset.lines3D.filename)
-                    fn_out = dataset.image.sliceName('Filename');
+                    fn_out = dataset.image.filename;
                     [pathStr, fn_out, ~] = fileparts(fn_out);
                     if isempty(pathStr); pathStr = obj.mibModel.currentDirectory; end
                     if isempty(fn_out)
@@ -818,44 +815,45 @@ classdef Lines3dDialog < handle
                     rowText = obj.view.handles.treesViewTable.Data(rowId(1),:);
                     currentName = rowText{1};
 
-                    prompts = {'New name for the selected tree:'};
-                    defAns = {currentName};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Rename');
+                    answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+                             'New name for the selected tree:', currentName, 'Rename');
                     if isempty(answer); return; end
 
-                    if sum(ismember(obj.view.handles.treesViewTable.Data(:,1), answer(1))) > 0
+                    if sum(ismember(obj.view.handles.treesViewTable.Data(:,1), answer)) > 0
                         dlgOpt.MsgBoxOnly = true;
                         dlgOpt.Icon = 'puffin_warning';
-                        header = '!!! Warning !!!\n\nThe names of trees should be unique!';
-                        dlgOpt.HeaderLines = 3;
+                        header = 'The names of trees should be unique!';
                         utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Duplicated tree name', dlgOpt);
                         return;
                     end
                     obj.mibModel.backup('lines3d');
-                    dataset.lines3D.defaultTreeName = answer{1};
+                    dataset.lines3D.defaultTreeName = answer;
 
                     ids = find(ismember(dataset.lines3D.G.Nodes.TreeName, rowText(1)) == 1);
-                    dataset.lines3D.G.Nodes.TreeName(ids) = answer(1);
+                    dataset.lines3D.G.Nodes.TreeName(ids) = {answer};
                     obj.updateWidgets();
                     notify(obj.mibModel, 'ShowImage');
 
                 case 'find'
-                    prompts = {'Enter index of the node to find a corresponding tree:'};
-                    defAns = {'1'};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Find tree');
-                    if isempty(answer); return; end
-                    nodeId = str2double(answer{1});
-                    if isnan(nodeId); return; end
-
+                    defAns = struct('Value', 1, 'Limits', [1 size(dataset.lines3D.G.Nodes,1)], 'Step', 1, 'Round', true);
+                    nodeId = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+                        'Enter index of the node to find a corresponding tree:', defAns, 'Find tree');
+                    if isempty(nodeId); return; end
+                    
                     TreeName = dataset.lines3D.G.Nodes(nodeId,:).TreeName;
                     TreeNames = obj.view.handles.treesViewTable.Data(:,1);
                     Indices = find(ismember(TreeNames, TreeName));
                     dataset.lines3D.activeNodeId = nodeId;
-                    try
-                        scroll(obj.view.handles.treesViewTable, 'row', Indices);
-                    catch
+                    scroll(obj.view.handles.treesViewTable, 'row', Indices);
+                    obj.view.handles.treesViewTable.Selection = [Indices(1), 1];
+                    obj.treesViewTable_CellSelectionCallback(Indices);
+                    % highlight the node
+                    nodeTableIds = str2num(obj.view.handles.nodesViewTable.RowName); %#ok<ST2NM>
+                    nodeRowIndex = find(nodeTableIds == nodeId);
+                    if ~isempty(nodeRowIndex)
+                        obj.view.handles.nodesViewTable.Selection = [nodeRowIndex(1), 1];
                     end
-
+                    
                 case 'visualize'
                     rowId = obj.indicesTrees(:,1);
                     obj.visualizeBtn_Callback(rowId);
@@ -1003,14 +1001,13 @@ classdef Lines3dDialog < handle
                     rowText = obj.view.handles.nodesViewTable.Data(rowId(1),:);
                     currentName = rowText{1};
 
-                    prompts = {'New name for the selected nodes:'};
-                    defAns = {currentName};
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Rename');
+                    answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+                        'New name for the selected nodes:', currentName, 'Rename');
                     if isempty(answer); return; end
 
                     obj.mibModel.backup('lines3d');
                     nodesIds = str2num(obj.view.handles.nodesViewTable.RowName(rowId,:)); %#ok<ST2NM>
-                    dataset.lines3D.G.Nodes.NodeName(nodesIds) = repmat(answer(1), [numel(nodesIds), 1]);
+                    dataset.lines3D.G.Nodes.NodeName(nodesIds) = repmat({answer}, [numel(nodesIds), 1]);
 
                     obj.updateWidgets();
                     notify(obj.mibModel, 'ShowImage');
@@ -1028,12 +1025,14 @@ classdef Lines3dDialog < handle
                     elseif orientation == 2  % zy
                         z = x1; x = z1; y = y1;
                     end
-                    header = sprintf('The coordinate of the node %d\n(x,y,z = %f, %f, %f)\n\nin pixels:\nXY orientation:         %d, %d, %d\nCurrent orientation:  %d, %d, %d', ...
-                        rowId, rowText{4}, rowText{5}, rowText{3}, round(x1), round(y1), round(z1), round(x), round(y), round(z));
+                    header = sprintf('The coordinate of the node: %d', rowId);
+                    text = sprintf('(x,y,z = %f, %f, %f)\n\nin pixels:\nXY orientation:         %d, %d, %d\nCurrent orientation:  %d, %d, %d', ...
+                        rowText{4}, rowText{5}, rowText{3}, round(x1), round(y1), round(z1), round(x), round(y), round(z));
                     dlgOpt.MsgBoxOnly = true;
                     dlgOpt.Icon = 'puffin_info';
-                    dlgOpt.HeaderLines = 7;
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Node coordinate', dlgOpt);
+                    dlgOpt.HeaderLines = 1;
+                    dlgOpt.WindowHeight = 200;
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {text}, 'Node coordinate', dlgOpt);
 
                 case {'AnnotationsNew', 'AnnotationsAdd', 'AnnotationsDelete'}
                     if strcmp(parameter, 'AnnotationsNew')
@@ -1134,16 +1133,13 @@ classdef Lines3dDialog < handle
             prompts = {'Use default colors?', 'Add an orthoslice of the visualization?', 'Slice number:'};
             defAns = {true, false, num2str(dataset.getCurrentSliceNumber())};
             dlgTitle = 'Add slice';
-            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle);
+            dlgOpt.LabelPosition = 'left';
+            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, dlgOpt);
             if isempty(answer); return; end
 
-            if answer{2} == 1
-                showSlice = str2double(answer{3});
-            else
-                showSlice = [];
-            end
-
             defaultColors = answer{1};
+            showSlice = [];
+            if answer{2} == 1; showSlice = str2double(answer{3}); end
 
             if isempty(obj.hFig)
                 obj.hFig = figure();

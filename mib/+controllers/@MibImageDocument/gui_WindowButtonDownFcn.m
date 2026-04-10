@@ -360,7 +360,7 @@ elseif strcmp(operation, 'select')
                 dataset.moveView(w, h);
             end
 
-            localRefreshImage(obj);
+            obj.mibController.showImage();
             return;
 
         case 'Annotations'
@@ -482,6 +482,7 @@ elseif strcmp(operation, 'select')
                 % recenter the view if enabled
                 if obj.mibController.cSegmentation.handles.membraneRecenterView.Value && isempty(modifier)
                     dataset.moveView(w, h);
+                    obj.mibController.showImage();
                 end
                 return;
             end
@@ -738,7 +739,7 @@ elseif strcmp(operation, 'select')
     end
 
     % Refresh image after interaction and restore motion/up callbacks
-    localRefreshImage(obj);
+    obj.mibController.showImage();
 
     % moved from plotImage
     if ismethod(obj, 'gui_WinMouseMotionFcn')
@@ -762,21 +763,4 @@ elseif strcmp(operation, 'select')
     end
 end
 
-end
-
-% -------------------------------------------------------------------------
-% Local helpers (kept inside the method file for clarity)
-% -------------------------------------------------------------------------
-
-function localRefreshImage(obj)
-% Refresh displayed image after an interaction.
-% Prefer controller-driven refresh in MIB3, fall back to legacy plotImage.
-try
-    obj.mibController.showImage();
-catch
-    try
-        obj.plotImage();
-    catch
-    end
-end
 end

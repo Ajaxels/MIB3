@@ -30,7 +30,9 @@ classdef MibImage < matlab.mixin.Copyable
         %   'MIB(2601041823): MIB demo dataset, Huh7 SBEM'
         %   'MIB(2603131934): ImFilter: Gaussian, HSize:3 3, Sigma:0.6'
         % Populated from the pipe-separated tail of the ImageDescription tag
-        % when a file is loaded.  Appended to by model operations.
+        % when a file is loaded.  Appended to by model operations via
+        % updateActionLog(), which prepends the timestamp automatically:
+        %   img.updateActionLog('ImFilter: Gaussian, HSize:3 3, Sigma:0.6');
         % MibDataset.actionLog is a Dependent property that forwards here.
         boundingBox = []
         % Physical extent of the dataset as [xmin xmax ymin ymax zmin zmax]
@@ -112,6 +114,8 @@ classdef MibImage < matlab.mixin.Copyable
         result = setPixelIdxList(obj, type, dataset, PixelIdxList)  % Write pixel values at a list of linear indices; handles MibLabels63 bit-packing automatically
 
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
+
+        updateActionLog(obj, logEntry)    % Append a timestamped log entry to obj.actionLog in place.
 
         updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
 

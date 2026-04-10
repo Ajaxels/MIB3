@@ -72,9 +72,14 @@ for i = 1:numel(fields)
         outputTypeCell = false;
 
         if isprop(current, 'Tooltip')  % appdesigner widget
-            currentDescription = cell2mat(current.Tooltip);
+            outputTypeCell = iscell(current.Tooltip);  % currentDescription should be converted to cell
+            if outputTypeCell % cell
+                currentDescription = cell2mat(current.Tooltip);
+            else % char
+                currentDescription = current.Tooltip;
+            end
             updateDescription = true;
-            outputTypeCell = true; % currentDescription should be converted to cell
+            outputFieldName = 'Tooltip';
         elseif isprop(current, 'Description')  % AppContainers widget
             outputFieldName = 'Description';
             % quick access buttons

@@ -34,6 +34,7 @@ import matlab.ui.internal.toolstrip.ListItem
 import matlab.ui.internal.toolstrip.Button
 import matlab.ui.internal.toolstrip.DropDownButton
 import matlab.ui.internal.toolstrip.PopupListHeader
+import matlab.ui.internal.toolstrip.ListItemWithCheckBox
 
 %% ============= Make "Dataset tools" section =============
 section = obj.handles.ribbon.image.addSection("Convert");
@@ -46,16 +47,16 @@ popupList = PopupList();
 header1 = PopupListHeader('Image mode change');
 popupList.add(header1);
 % % Mode -> grayscale
-widgetHandles.grayscale =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Grayscale', true);
+widgetHandles.grayscale =  ListItemWithCheckBox('Grayscale', true);
 popupList.add(widgetHandles.grayscale);
 % % Mode -> multichannel
-widgetHandles.multichannel =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Multi-channel', false);
+widgetHandles.multichannel =  ListItemWithCheckBox('Multi-channel', false);
 popupList.add(widgetHandles.multichannel);
 % % Mode -> HSV color
-widgetHandles.hsv =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('HSV color', false);
+widgetHandles.hsv =  ListItemWithCheckBox('HSV color', false);
 popupList.add(widgetHandles.hsv);
 % % Mode -> Indexed
-widgetHandles.indexed =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('Indexed', false);
+widgetHandles.indexed =  ListItemWithCheckBox('Indexed', false);
 popupList.add(widgetHandles.indexed);
 
 % % SEPARATOR
@@ -63,13 +64,13 @@ separator = matlab.ui.internal.toolstrip.PopupListSeparator();
 popupList.add(separator);
 
 % % Mode -> 8bit
-widgetHandles.bit8 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('8 bit', true);
+widgetHandles.bit8 =  ListItemWithCheckBox('8 bit', true);
 popupList.add(widgetHandles.bit8);
 % % Mode -> 16bit
-widgetHandles.bit16 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('16 bit', false);
+widgetHandles.bit16 =  ListItemWithCheckBox('16 bit', false);
 popupList.add(widgetHandles.bit16);
 % % Mode -> 32bit
-widgetHandles.bit32 =  matlab.ui.internal.toolstrip.ListItemWithCheckBox('32 bit', false);
+widgetHandles.bit32 =  ListItemWithCheckBox('32 bit', false);
 popupList.add(widgetHandles.bit32);
 
 % add the popup list to the Mode button

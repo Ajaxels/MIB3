@@ -134,6 +134,12 @@ classdef BoundingBox < handle
             obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             obj.updateWidgets();
             obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+
+            % add handle tags to the tooltips
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+            % show the gui
             obj.view.gui.Visible = 'on';    % turn on the window 
 
             % add listener to obj.mibModel and call controller function as a callback
@@ -169,7 +175,7 @@ classdef BoundingBox < handle
             obj.oldBB = obj.bb;
 
             obj.view.handles.BoundingBoxLabel.Text = ...
-                sprintf('xmin-xmax: %g - %g\nymin-ymax: %g - %g\nzmin-zmax: %g - %g', ...
+                sprintf('X: %g - %g\nY: %g - %g\nZ: %g - %g', ...
                 obj.bb(1), obj.bb(2), obj.bb(3), obj.bb(4), obj.bb(5), obj.bb(6));
             obj.view.handles.pixSizeLabel.Text = sprintf('X: %g\nY: %g\nZ: %g', ...
                 obj.pixSize.x, obj.pixSize.y, obj.pixSize.z);
