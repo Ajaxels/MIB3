@@ -38,8 +38,7 @@ switch menuEntry.Tag
         dlgTitle = 'Register file extension';
         header = sprintf('Add file extension to the list of filters.\nMultiple extensions should be separated with semicolon, for example:\n"tif; png; jpg"');
         options.HeaderLines = 3;
-        options.PromptLines = [1, 1, 1, 1];
-        options.WindowHeight = 240;
+        options.WindowHeight = 320;
         options.mibPath = obj.mibModel.mibPath;
         output = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
         if isempty(output); return; end

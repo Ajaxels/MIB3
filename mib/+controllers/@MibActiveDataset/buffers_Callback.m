@@ -49,6 +49,23 @@ obj.view.handles.panels.activeDataset.handles.(newBufferStringId).BackgroundColo
 % update Dataset Type dropdown in the Datasets panel
 obj.view.handles.panels.activeDataset.handles.datasetType.Value = obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)};
 
+% Linked-view: when switching TO a buffer that is linked to the one just left,
+% copy the previous buffer's view state so both show the same position.
+prevDatasetIdLocal = obj.mibModel.previouslySelectedDataset;
+newDatasetId = obj.mibModel.id;
+partnerOfNew = obj.mibModel.getLinkedDataset(newDatasetId);
+if ~isempty(partnerOfNew) && partnerOfNew == prevDatasetIdLocal
+    src = obj.mibModel.I{prevDatasetIdLocal};
+    dst = obj.mibModel.I{newDatasetId};
+    for iDim = 1:5
+        maxVal = dst.dim_yxzct(iDim);
+        dst.slices{iDim} = min(src.slices{iDim}, [maxVal maxVal]);
+    end
+    [axX, axY] = obj.mibModel.getAxesLimits(prevDatasetIdLocal);
+    obj.mibModel.setAxesLimits(axX, axY, newDatasetId);
+    obj.mibModel.setMagFactor(obj.mibModel.getMagFactor(prevDatasetIdLocal), newDatasetId);
+end
+
 notify(obj.mibModel, 'UpdateGuiWidgets');
 notify(obj.mibModel, 'ShowImage');
 

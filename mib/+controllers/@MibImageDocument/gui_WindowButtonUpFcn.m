@@ -149,8 +149,9 @@ if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'textH') && ...
     obj.quickMeasure.textH.Visible = true;
 end
 
-% Refresh the full image display
-obj.mibController.showImage();
+% Refresh the full image display, explicitly specifying this document's set
+% so the correct panel is rendered regardless of mibModel.Sets.selectedSet state.
+obj.mibController.showImage(true, obj.setOfDatasetsIndex);
 
 % Update the dashed brush cursor outline for the next stroke
 % Pass [] so the position is read from CurrentPoint (not treated as xy)

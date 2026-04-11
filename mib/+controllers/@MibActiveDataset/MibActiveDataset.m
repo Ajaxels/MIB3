@@ -17,7 +17,7 @@ classdef MibActiveDataset
 
         buffers_Callback(obj, hWidget, hData, buttonId)        % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset stored in a buffer defined by the pressed button
 
-        buffers_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the buffers (obj.handles.panels.activeDataset.handles.buffer1) buttons
+        buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)        % callbacks for the context menu of the buffers (obj.handles.panels.activeDataset.handles.buffer1) buttons; batch-compatible
 
         setsOps_Callbacks(obj, hWidget, hData, mode)        % callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
 
@@ -40,13 +40,13 @@ classdef MibActiveDataset
             %%  Add CALLBACKS to context menus ----------------------
             %% ---------------------- Add context menu for the Buffer buttons ----------------------
             % obj.handles.datasets
-            obj.handles.buffersContextDuplicate.MenuSelectedFcn = @obj.buffers_ContextMenu;
-            obj.handles.buffersContextSyncXY.MenuSelectedFcn = @obj.buffers_ContextMenu;
-            obj.handles.buffersContextSyncXYZ.MenuSelectedFcn = @obj.buffers_ContextMenu;
-            obj.handles.buffersContextSyncXYZT.MenuSelectedFcn = @obj.buffers_ContextMenu;
-            obj.handles.buffersContextLink.MenuSelectedFcn = @obj.buffers_ContextMenu;
-            obj.handles.buffersContextClose.MenuSelectedFcn = @obj.buffers_ContextMenu;
-            obj.handles.buffersContextCloseSet.MenuSelectedFcn = @obj.buffers_ContextMenu;
+            obj.handles.buffersContextDuplicate.MenuSelectedFcn  = @(src,evtData) obj.buffers_ContextMenu('duplicate',   str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextSyncXY.MenuSelectedFcn     = @(src,evtData) obj.buffers_ContextMenu('sync_xy',     str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextSyncXYZ.MenuSelectedFcn    = @(src,evtData) obj.buffers_ContextMenu('sync_xyz',    str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextSyncXYZT.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('sync_xyzt',   str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextLink.MenuSelectedFcn       = @(src,evtData) obj.buffers_ContextMenu('link_views',  str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextClose.MenuSelectedFcn      = @(src,evtData) obj.buffers_ContextMenu('close',       str2double(evtData.ContextObject.Text));
+            obj.handles.buffersContextCloseSet.MenuSelectedFcn   = @(src,evtData) obj.buffers_ContextMenu('closeSet',    str2double(evtData.ContextObject.Text));
             
             %% ---------------------- Add context menu for the Sets dropdown ----------------------
             obj.handles.setsContextAdd.MenuSelectedFcn = @obj.setsOps_Callbacks;

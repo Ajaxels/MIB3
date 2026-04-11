@@ -104,12 +104,16 @@ Full tables in `.claude/conversion_reference.md` (data structures, backup, clear
 
 | MIB2 | MIB3 |
 |------|------|
-| `warndlg(msg, title)` | `dlgOpt.MsgBoxOnly=true; dlgOpt.Icon='puffin_warning'; dlgOpt.Header=msg; dlgOpt.HeaderLines=N;` + `utils.dlgs.inputUniversalDlg(obj.mibGUI,{},{},title,dlgOpt)` |
-| `warndlg` with body text | same, then `prompts={''}; defAns={'body text'}` — auto-wrapped in `<html>` |
-| `errordlg(msg, title)` | same pattern with `dlgOpt.Icon='puffin_error'` |
+| `warndlg(msg, title)` | `dlgOpt.MsgBoxOnly=true; dlgOpt.Icon='puffin_warning'; dlgOpt.HeaderLines=N;` + `utils.dlgs.inputUniversalDlg(obj.mibGUI, msg, {}, {}, title, dlgOpt)` |
+| `warndlg` with body text | same but pass body in prompts/defAns: `utils.dlgs.inputUniversalDlg(obj.mibGUI, '!!! Warning !!!', {''}, {'body text'}, title, dlgOpt)` |
+| `errordlg(msg, title)` | `utils.dlgs.showErrorDialog(obj.mibGUI, msg, title)` |
 | `questdlg(msg,title,b1,b2,def)` | `utils.dlgs.inputQuestDlg(obj.mibGUI, msg, title, b1, b2, def)` |
 | `waitbar` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title)` |
-| `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, prompts, defAns, title, options)` |
+| `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, header, prompts, defAns, title, options)` |
+
+**`inputUniversalDlg` signature:** `(ParentFigure, header, prompts, defAns, dlgTitle, options)` — `header` is a bold label shown above the content; pass `''` when not needed.
+
+**Dropdown `defAns`:** `{'item1', 'item2', 'item3', 2}` — string items followed by a **numeric default index** as last element. `answer{i}` returns the selected item string.
 
 `inputUniversalDlg` icons: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`
 

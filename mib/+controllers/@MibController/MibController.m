@@ -35,6 +35,9 @@ classdef MibController < handle
         % returns {} when a Selection-panel button is clicked with a modifier held.
         fastPanningMode = false
         % use the fast panning mode, defined in qab by pressing on obj.view.handles.qab.fastpan
+        propagatingLinkedView = false
+        % guard flag: true while showImage is recursively rendering a linked-partner panel;
+        % prevents infinite mutual propagation between two linked datasets
         globalResizeTimer
         % global timer for proper resizing of panels (used in MibImageDocument.gui_SizeChangedFcn)
         listeners

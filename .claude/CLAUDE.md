@@ -18,6 +18,7 @@ Supplementary to the root `CLAUDE.md` (architecture, conventions, essential conv
 | [port_movelayers.md](port_movelayers.md) | Property mapping, fast/slow path, performance notes |
 | [port_splitpanel.md](port_splitpanel.md) | Root causes, all fixes, reliable UI chain diagram |
 | [sync_memory.md](sync_memory.md) | One-time setup command for Claude memory sync on a new workstation |
+| [link_views_plan.md](link_views_plan.md) | Linked-view propagation: `linkedPairs` on MibModel, propagation in `showImage`, buffer-switch sync |
 
 ---
 

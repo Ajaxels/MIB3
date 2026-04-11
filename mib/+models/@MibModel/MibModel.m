@@ -74,6 +74,11 @@ classdef MibModel < handle
         disableSegmentation = 0;
         % when 1, segmentation tool callbacks return early (pan still works);
         % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
+        linkedPairs = zeros(0,2)
+        % n×2 double array of global dataset ID pairs that are linked for view synchronisation;
+        % each row [idA, idB] means dataset idA and idB always show the same position.
+        % Managed by controllers.MibActiveDataset.buffers_ContextMenu (link/unlink/close actions).
+        % Queried by MibController.showImage for live propagation.
     end
 
     events
@@ -139,6 +144,10 @@ classdef MibModel < handle
         dataset = getData4D(obj, type, orient, col_channel, options)        % get the complete 4D dataset; wrapper around core.MibDataset.getData4D
 
         id = getActiveId(obj)        % compute the correct dataset index from Sets.selectedSet (immune to mouse-motion corruption of obj.id)
+
+        imageDeepCopy(obj, fromId, toId, options)        % deep-copy a MibDataset from one container slot to another, correctly handling handle sub-properties (image, labels, mask, selection, annotations, lines3D, measure, hROI)
+
+        partnerId = getLinkedDataset(obj, id)        % return the global dataset ID of the linked partner, or [] if id is not part of any linked pair
 
         propertyValue = getImageProperty(obj, propertyName, id)        % get a property of the currently shown or specified MibDataset
 

@@ -221,21 +221,21 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Change magnification';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cStatus.zoomEdit_Callback([], Batch);'; actionId = actionId + 1;
 
 
-% secIndex = secIndex + 1;
-% actionId = 1;
-% obj.Sections(secIndex).Name = 'Panel -> Directory contents';
+secIndex = secIndex + 1;
+actionId = 1;
+obj.Sections(secIndex).Name = 'Panel -> Datasets';
 % obj.Sections(secIndex).Actions(actionId).Name = 'Change container';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggle_Callback([], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Duplicate dataset';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggleContext_Callback(''duplicate'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Close dataset';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggleContext_Callback(''close'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Close all datasets';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggleContext_Callback(''closeAll'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Sync views';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggleContext_Callback(''sync_xy'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Link views';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibBufferToggleContext_Callback(''link_views'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Duplicate dataset';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''duplicate'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Close dataset';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''close'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Close all datasets in set';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''closeSet'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Sync views';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''sync_xy'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Link views';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cActiveDataset.buffers_ContextMenu(''link_views'', [], Batch);'; actionId = actionId + 1;
 
 secIndex = secIndex + 1;
 actionId = 1;

@@ -238,4 +238,40 @@ if obj.cRoi.drawingROI.active
     obj.cRoi.repositionDrawingROI();
 end
 
+%% Linked-view propagation
+% When two datasets are linked, copy the view state (slices, axes, magFactor)
+% of the just-rendered dataset to its partner, and re-render the partner's
+% panel if it is currently active in a different set (split-panel mode).
+% The propagatingLinkedView guard prevents infinite mutual recursion.
+if ~isempty(obj.mibModel.linkedPairs) && ~obj.propagatingLinkedView && isempty(sImgIn)
+    partnerGlobalId = obj.mibModel.getLinkedDataset(datasetId);
+    if ~isempty(partnerGlobalId)
+        src = obj.mibModel.I{datasetId};
+        dst = obj.mibModel.I{partnerGlobalId};
+
+        % copy slices (clamped to partner dimensions)
+        for iDim = 1:5
+            maxVal = dst.dim_yxzct(iDim);
+            dst.slices{iDim} = min(src.slices{iDim}, [maxVal maxVal]);
+        end
+
+        % copy axes limits and magnification
+        [axX, axY] = obj.mibModel.getAxesLimits(datasetId);
+        obj.mibModel.setAxesLimits(axX, axY, partnerGlobalId);
+        obj.mibModel.setMagFactor(obj.mibModel.getMagFactor(datasetId), partnerGlobalId);
+
+        % re-render partner panel when it is the active dataset in another set
+        partnerSetIdx  = ceil(partnerGlobalId / obj.mibModel.Sets.datasetsInSet);
+        activeInPartner = obj.mibModel.Sets.selectedDataset(partnerSetIdx) + ...
+            (partnerSetIdx-1)*obj.mibModel.Sets.datasetsInSet;
+        if activeInPartner == partnerGlobalId && ...
+                partnerSetIdx ~= selectedSet && ...
+                partnerSetIdx <= numel(obj.cImageDoc)
+            obj.propagatingLinkedView = true;
+            obj.showImage(resizeToMagnification, partnerSetIdx);
+            obj.propagatingLinkedView = false;
+        end
+    end
+end
+
 end

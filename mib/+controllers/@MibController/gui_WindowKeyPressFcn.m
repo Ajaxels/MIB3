@@ -35,7 +35,19 @@ if strcmp(char, 'alt'); return; end %#ok<STCI>
 % find a shortcut action
 KeyShortcuts = obj.mibModel.preferences.KeyShortcuts;
 dataset = obj.mibModel.I{obj.mibModel.id};
-cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
+
+% In split-panel mode, determine which document panel the mouse is hovering over.
+% Keyboard events always arrive on one UIFigure regardless of which panel has
+% the cursor, so we cannot rely on Sets.selectedSet for view-navigation keys
+% (zoom, cursor repositioning). For those keys we use the hovered panel.
+hoverDocIdx = obj.mibModel.Sets.selectedSet;
+for iHoverDoc = 1:numel(obj.cImageDoc)
+    if obj.cImageDoc{iHoverDoc}.isInsideAxes
+        hoverDocIdx = iHoverDoc;
+        break;
+    end
+end
+cImageDoc = obj.cImageDoc{hoverDocIdx};
 cSegmentation = obj.cSegmentation;
 
 % cancel if button is not registered as a shortcut
@@ -200,6 +212,14 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                     cImageDoc.sliceNumberSlider_Callback();
                 end
             else
+                % Zoom in/out: apply to the panel the mouse is hovering over.
+                % Sync mibModel state so zoomEdit_Callback uses the correct
+                % dataset/panel for axis reads and cursor repositioning.
+                if hoverDocIdx ~= obj.mibModel.Sets.selectedSet
+                    obj.mibModel.Sets.selectedSet = hoverDocIdx;
+                    obj.mibModel.id = obj.mibModel.Sets.selectedDataset(hoverDocIdx) + ...
+                        (hoverDocIdx-1)*obj.mibModel.Sets.datasetsInSet;
+                end
                 if isNext
                     BatchOpt.Mode = 'Zoom in';
                     recenterSwitch = true;
