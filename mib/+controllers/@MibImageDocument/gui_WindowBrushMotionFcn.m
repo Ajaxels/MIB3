@@ -30,6 +30,7 @@ YLim = size(obj.mibModel.Ishown, 1);
 
 if isempty(obj.brushPrevXY) || (isscalar(obj.brushPrevXY) && isnan(obj.brushPrevXY))
     obj.brushPrevXY = [pos(1,1) pos(1,2)];
+    obj.brushCursorOffset = [];  % force recalculation with this panel's magFactor on next call
     return;
 end
 
@@ -50,23 +51,26 @@ obj.brushSelection{1}.travelPathInPixels = ...
 % ---- convert data coords to CData pixel indices ----
 % imageHandle.XData = [1, shownW * coef_z]; for ZX/ZY orientations coef_z
 % can be >> 1, so axes data coords are a stretched version of CData indices.
+% Scale factors are pre-computed once and applied inline to all 4 points,
+% avoiding anonymous-function closure allocation on every call.
 XData = obj.imageHandle.XData;
 YData = obj.imageHandle.YData;
 if XData(end) > XData(1) && XLim > 1
-    toCDataX = @(v) max(1, min(XLim, round((v - XData(1)) / (XData(end) - XData(1)) * (XLim - 1)) + 1));
+    scaleX = (XLim - 1) / (XData(end) - XData(1));
+    curX  = max(1, min(XLim, round((pos(1,1)           - XData(1)) * scaleX) + 1));
+    prevX = max(1, min(XLim, round((obj.brushPrevXY(1) - XData(1)) * scaleX) + 1));
 else
-    toCDataX = @(v) max(1, min(XLim, round(v)));
+    curX  = max(1, min(XLim, round(pos(1,1))));
+    prevX = max(1, min(XLim, round(obj.brushPrevXY(1))));
 end
 if YData(end) > YData(1) && YLim > 1
-    toCDataY = @(v) max(1, min(YLim, round((v - YData(1)) / (YData(end) - YData(1)) * (YLim - 1)) + 1));
+    scaleY = (YLim - 1) / (YData(end) - YData(1));
+    curY  = max(1, min(YLim, round((pos(1,2)           - YData(1)) * scaleY) + 1));
+    prevY = max(1, min(YLim, round((obj.brushPrevXY(2) - YData(1)) * scaleY) + 1));
 else
-    toCDataY = @(v) max(1, min(YLim, round(v)));
+    curY  = max(1, min(YLim, round(pos(1,2))));
+    prevY = max(1, min(YLim, round(obj.brushPrevXY(2))));
 end
-
-curX  = toCDataX(pos(1,1));
-curY  = toCDataY(pos(1,2));
-prevX = toCDataX(obj.brushPrevXY(1));
-prevY = toCDataY(obj.brushPrevXY(2));
 
 % ---- rasterize line between previous and current point ----
 selarea = false([YLim, XLim]);
@@ -110,6 +114,7 @@ end
 
 % ---- update selection and CData overlay ----
 CData = obj.imageHandle.CData;
+overlayValue = intmax(class(CData)) * 0.4;   % cache once; avoids re-querying CData class per branch
 
 if numel(obj.brushSelection) > 1
     % ---- superpixel mode ----
@@ -125,12 +130,12 @@ if numel(obj.brushSelection) > 1
     selarea2 = ismember(obj.brushSelection{2}.slic, slicIndices);
 
     obj.brushSelection{2}.selectedSlic(selarea2 == 1) = 1;
-    CData(obj.brushSelection{2}.selectedSlic == 1) = intmax(class(obj.imageHandle.CData)) * .4;
+    CData(obj.brushSelection{2}.selectedSlic == 1) = overlayValue;
     obj.brushSelection{1}.selection(selarea1 == 1) = true;
 else
     % ---- normal brush mode ----
     obj.brushSelection{1}.selection = obj.brushSelection{1}.selection | selarea1;
-    CData(obj.brushSelection{1}.selection) = intmax(class(obj.imageHandle.CData)) * .4;
+    CData(obj.brushSelection{1}.selection) = overlayValue;
 end
 
 obj.imageHandle.CData = CData;

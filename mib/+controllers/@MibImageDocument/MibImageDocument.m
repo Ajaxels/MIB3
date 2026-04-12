@@ -36,6 +36,7 @@ classdef MibImageDocument < handle
         setOfDatasetsIndex      % double, index of this document in the Sets
         brushCursor             % matlab.graphics.chart.primitive.Line, handle to brush cursor plot
         brushCursorOffset       % 2×N double array, [X offsets; Y offsets] for brush cursor circle
+        brushCursorMagFactor    % scalar double, magFactor used when brushCursorOffset was last computed
         brushPrevXY             % coordinates of the previous pixel for the @em Brush tool,
                                 % @note dimensions: [x, y] or []
         brushSelection = []     % selection layer during the brush tool movement, @code {1:2}[1:height,1:width] or NaN @endcode

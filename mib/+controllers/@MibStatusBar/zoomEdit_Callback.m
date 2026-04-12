@@ -60,6 +60,37 @@ end
 if isempty(recenterSwitch); recenterSwitch = false; end
 
 if recenterSwitch
+    % In split-panel mode selectedSet can be stale when the cursor is over
+    % a panel that is not the currently "active" set. Detect the true active
+    % document from the physical cursor X position before doing anything
+    % document-specific (CurrentPoint, convertMouseToDataCoordinates, moveView).
+    numDocs = numel(obj.mibController.cImageDoc);
+    if numDocs > 1
+        scaling = obj.mibModel.preferences.System.GUI.systemscaling;
+        curScreenX = groot().PointerLocation(1) / scaling - 8;  % back to winBounds space
+
+        leftPanelW_det = 0;
+        if isfield(obj.view.gui.Layout.panelLayout, 'left')
+            leftPanelW_det = obj.view.gui.Layout.panelLayout.left.freeDimension;
+            if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW_det = 0; end
+        end
+        winBounds_det = obj.view.gui.WindowBounds;
+        docEdge = winBounds_det(1) + leftPanelW_det;
+        detectedDocIdx = obj.mibModel.Sets.selectedSet;  % fallback
+        for iDoc = 1:numDocs
+            docEdge = docEdge + obj.mibController.cImageDoc{iDoc}.figureDoc.Figure.Position(3);
+            if curScreenX < docEdge
+                detectedDocIdx = iDoc;
+                break;
+            end
+        end
+        if detectedDocIdx ~= obj.mibModel.Sets.selectedSet
+            obj.mibModel.Sets.selectedSet = detectedDocIdx;
+            obj.mibModel.id = obj.mibModel.Sets.selectedDataset(detectedDocIdx) + ...
+                (detectedDocIdx - 1) * obj.mibModel.Sets.datasetsInSet;
+        end
+    end
+
     xy = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.CurrentPoint;
 
     [xy2(1),xy2(2)] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown');
@@ -120,8 +151,17 @@ if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     winBounds = obj.view.gui.WindowBounds;   % [left, top, width, height], top-left origin, virtual desktop
     posAxes = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Position;
 
-    % original center calculation in virtual-desktop top-based coordinates
-    screenX = winBounds(1) + leftPanelW + posAxes(1) + posAxes(3)/2;
+    % add horizontal offset of preceding documents in split view
+    splitOffsetX = 0;
+    if numel(obj.mibController.cImageDoc) > 1 && obj.mibModel.Sets.selectedSet > 1
+        for iDoc = 1:obj.mibModel.Sets.selectedSet-1
+            figPos = obj.mibController.cImageDoc{iDoc}.figureDoc.Figure.Position;
+            splitOffsetX = splitOffsetX + figPos(3);
+        end
+    end
+
+    % original center calculation, plus split-view horizontal offset
+    screenX = winBounds(1) + leftPanelW + splitOffsetX + posAxes(1) + posAxes(3)/2;
     screenY = winBounds(2) + winBounds(4) - bottomPanelH - posAxes(2) - posAxes(4)/2;
 
     scaling = obj.mibModel.preferences.System.GUI.systemscaling;
@@ -134,18 +174,19 @@ if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     end
 
     % convert top-based virtual Y to monitor-local Y, then to root PointerLocation Y
-    monitorY0   = monPos(idx,2);
-    monitorH    = monPos(idx,4);
-    monitorTop  = monitorY0 + monitorH - 1;
+    monitorY0 = monPos(idx,2);
+    monitorH = monPos(idx,4);
+    monitorTop = monitorY0 + monitorH - 1;
 
     pointerX = round((screenX + 8) * scaling);
     pointerY = round((monitorTop - (screenY - monitorY0) + 26) * scaling);
 
     % % --- DIAGNOSTIC: remove after fixing ---
     % fprintf('=== zoomEdit_Callback recenter diagnostic ===\n');
+    % fprintf('selectedSet=%d, numDocs=%d\n', obj.mibModel.Sets.selectedSet, numel(obj.mibController.cImageDoc));
     % fprintf('winBounds: [%.1f, %.1f, %.1f, %.1f]\n', winBounds);
     % fprintf('posAxes: [%.1f, %.1f, %.1f, %.1f]\n', posAxes);
-    % fprintf('leftPanelW=%.1f bottomPanelH=%.1f\n', leftPanelW, bottomPanelH);
+    % fprintf('leftPanelW=%.1f bottomPanelH=%.1f splitOffsetX=%.1f\n', leftPanelW, bottomPanelH, splitOffsetX);
     % fprintf('screenX=%.1f screenY=%.1f\n', screenX, screenY);
     % fprintf('scaling=%.3f\n', scaling);
     % fprintf('monitor index=%d\n', idx);
@@ -153,6 +194,10 @@ if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     % fprintf('pointerX=%.1f pointerY=%.1f\n', pointerX, pointerY);
     % fprintf('MonitorPositions:\n'); disp(monPos);
     % fprintf('current PointerLocation before set: [%.1f, %.1f]\n', groot().PointerLocation);
+    % for iDoc = 1:numel(obj.mibController.cImageDoc)
+    %     figPos = obj.mibController.cImageDoc{iDoc}.figureDoc.Figure.Position;
+    %     fprintf(' cImageDoc{%d}.figureDoc.Figure.Position: [%.1f, %.1f, %.1f, %.1f]\n', iDoc, figPos);
+    % end
     % % --- END DIAGNOSTIC ---
 
     gr = groot();

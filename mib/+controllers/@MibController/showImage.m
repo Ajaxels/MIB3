@@ -51,6 +51,15 @@ if isempty(setOfDatasetsIndex)
 else
     selectedSet = setOfDatasetsIndex;
 end
+
+% Guard against shutdown: cImageDoc panels may be deleted while a queued
+% ShowImage event is still in flight (e.g. during AppContainer teardown).
+if selectedSet > numel(obj.cImageDoc) || ...
+        ~isvalid(obj.cImageDoc{selectedSet}) || ...
+        ~isvalid(obj.cImageDoc{selectedSet}.handles.imViewAxes)
+    return;
+end
+
 datasetId = obj.mibModel.Sets.selectedDataset(selectedSet)+(obj.mibModel.Sets.datasetsInSet*(selectedSet-1));
 dataset = obj.mibModel.I{datasetId};
 imViewAxes = obj.cImageDoc{selectedSet}.handles.imViewAxes;

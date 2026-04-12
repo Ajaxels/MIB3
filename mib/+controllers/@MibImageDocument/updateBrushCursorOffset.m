@@ -19,8 +19,14 @@ function updateBrushCursorOffset(obj)
 % Get brush radius from segmentation panel
 radius = obj.view.handles.panels.segmentation.handles.brushRadius.Value - 1;
 
-% Get current magnification factor for cursor scaling
-magFactor = obj.mibModel.getMagFactor();
+% Get magnification factor for THIS document's panel.
+% Do NOT use getMagFactor() without an id — it reads the global mibModel.id
+% which is stale in split view (still pointing at the other panel until the
+% user clicks). Use setOfDatasetsIndex to resolve the local dataset id.
+localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
+    (obj.setOfDatasetsIndex - 1) * obj.mibModel.Sets.datasetsInSet;
+
+magFactor = obj.mibModel.getMagFactor(localId);
 
 % Calculate scaled size (in CData pixels)
 if radius == 0
@@ -34,8 +40,8 @@ end
 % XData = [1, shownW * coef_z]; YData = [1, shownH] (no Y stretch).
 coef_z = 1;
 if ~isempty(obj.imageHandle) && isvalid(obj.imageHandle)
-    XData = obj.imageHandle.XData;
-    shownW = size(obj.mibModel.Ishown, 2);
+    XData  = obj.imageHandle.XData;
+    shownW = size(obj.imageHandle.CData, 2);   % use this panel's CData, not global Ishown
     if numel(XData) >= 2 && shownW > 1
         coef_z = (XData(end) - XData(1)) / (shownW - 1);
     end
@@ -46,5 +52,9 @@ end
 theta = linspace(0, 2*pi, 17);
 obj.brushCursorOffset(1, :) = cos(theta) * se_size * coef_z;  % X offsets
 obj.brushCursorOffset(2, :) = sin(theta) * se_size;           % Y offsets
+
+% Remember which magFactor produced this offset so updateBrushCursor can
+% detect when the magnification has changed (e.g. after switching panels).
+obj.brushCursorMagFactor = magFactor;
 
 end

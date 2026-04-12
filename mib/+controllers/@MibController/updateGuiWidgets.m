@@ -53,12 +53,20 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibController.updateGuiWidgets triggered\n');
 end
 
+% Guard against shutdown: widgets inside document panels may already be
+% deleted while a queued UpdateGuiWidgets event is still in flight.
+selectedSet = obj.mibModel.Sets.selectedSet;
+if selectedSet > numel(obj.cImageDoc) || ...
+        ~isvalid(obj.cImageDoc{selectedSet}) || ...
+        ~isvalid(obj.cImageDoc{selectedSet}.handles.imViewAxes)
+    return;
+end
+
 % define cell array of panels to update, when empty update all panels
 if nargin < 2; updatePanels = {}; end
 
 % create a alias for the dataset
 dataset = obj.mibModel.I{obj.mibModel.id};
-selectedSet = obj.mibModel.Sets.selectedSet;
 
 % get new filename
 [newFileDir, newFileName, newFileExt] = fileparts(dataset.image.filename);

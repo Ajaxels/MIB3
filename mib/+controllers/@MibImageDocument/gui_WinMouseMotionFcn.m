@@ -195,7 +195,9 @@ try
                     xStatus, yStatus, colorPadded(1), colorPadded(2), colorPadded(3), colorPadded(4), modelValues);
             end
 
-            % Update brush cursor position
+            % Update brush cursor position.
+            % Magnification staleness is detected inside updateBrushCursor
+            % (via brushCursorMagFactor), so no explicit resetOffset needed here.
             if obj.view.brushCursorShow
                 obj.updateBrushCursor([xMouse, yMouse]);
             end

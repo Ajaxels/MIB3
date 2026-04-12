@@ -31,8 +31,11 @@ if nargin < 2; xyCoordinate = []; end
 if isempty(lineStyle); lineStyle = ':'; end
 
 % Determine visibility: show only when globally enabled AND inside axes
-% if Virtual mode, do not show cursor
-shouldShow = obj.view.brushCursorShow && obj.isInsideImage && obj.mibModel.I{obj.mibModel.id}.datasetType(1) ~= 'V'; 
+% if Virtual mode, do not show cursor.
+% Use this document's local id — mibModel.id is stale in split view.
+localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
+    (obj.setOfDatasetsIndex - 1) * obj.mibModel.Sets.datasetsInSet;
+shouldShow = obj.view.brushCursorShow && obj.isInsideImage && obj.mibModel.I{localId}.datasetType(1) ~= 'V';
 
 if resetOffset; obj.brushCursorOffset = []; end
 
@@ -45,8 +48,14 @@ if shouldShow
         xy = xyCoordinate;
     end
 
-    % Calculate brush cursor offset if not initialized
-    if isempty(obj.brushCursorOffset)
+    % Recalculate brush cursor offset when not yet initialised or when the
+    % magnification has changed (e.g. after switching to a panel with a
+    % different zoom level — wasInsideAxes cannot detect this because the
+    % callback simply stops firing while the cursor is in another panel).
+    currentMagFactor = obj.mibModel.I{localId}.magFactor;
+    if isempty(obj.brushCursorOffset) || ...
+            isempty(obj.brushCursorMagFactor) || ...
+            obj.brushCursorMagFactor ~= currentMagFactor
         obj.updateBrushCursorOffset();
     end
 
@@ -68,8 +77,10 @@ if shouldShow
             obj.brushCursor.LineStyle = lineStyle;
         end
 
-        % Ensure visibility
-        obj.brushCursor.Visible = 'on';
+        % Ensure visibility (guard against unnecessary graphics invalidation)
+        if obj.brushCursor.Visible ~= "on"
+            obj.brushCursor.Visible = 'on';
+        end
     end
 else
     % Hide cursor when brushCursorShow is disabled OR mouse is outside axes
