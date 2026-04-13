@@ -1,6 +1,6 @@
-function palette = generateDefaultSegmentationPalette(paletteName, colorsNo)
-% function palette = generateDefaultSegmentationPalette(paletteName, colorsNo)
-% generate color palette depending on the provided paletteName and required noColors
+function palette = generateDefaultPalette(paletteName, colorsNo)
+% function palette = generateDefaultPalette(paletteName, colorsNo)
+% generate color palette depending on the provided paletteName and required colorsNo
 %
 % Parameters:
 % paletteName: string with the name of the palette to use, see below for
@@ -10,14 +10,14 @@ function palette = generateDefaultSegmentationPalette(paletteName, colorsNo)
 % Return values:
 % palette: matrix [colorId][R G B] in range from 0 to 1 with colors
 
-%| 
+%|
 % @b Examples:
-% @code 
+% @code
 % // generate 3 color palette from the default colors
-% palette = utils.defaults.generateDefaultSegmentationPalette('Default, 6 colors', 3);
+% palette = utils.defaults.generateDefaultPalette('Default, 6 colors', 3);
 % @endcode
 % Updates
-% 
+%
 
 if nargin < 2; colorsNo = 6; end
 if nargin < 1; paletteName = 'Default, 6 colors'; end
@@ -142,17 +142,17 @@ switch paletteName
             otherwise; palette = [255,255,217; 237,248,177; 199,233,180; 127,205,187; 65,182,196; 29,145,192; 34,94,168; 37,52,148; 8,29,88]/255;
         end
     case 'Matlab Jet'
-        palette =  colormap(jet(colorsNo));
+        palette =  jet(colorsNo);
     case 'Matlab Gray'
-        palette =  colormap(gray(colorsNo));
+        palette =  gray(colorsNo);
     case 'Matlab Bone'
-        palette =  colormap(bone(colorsNo));
+        palette =  bone(colorsNo);
     case 'Matlab HSV'
-        palette =  colormap(hsv(colorsNo));
+        palette =  hsv(colorsNo);
     case 'Matlab Cool'
-        palette =  colormap(cool(colorsNo));
+        palette =  cool(colorsNo);
     case 'Matlab Hot'
-        palette =  colormap(hot(colorsNo));
+        palette =  hot(colorsNo);
     case 'Random Colors'
         rng('shuffle');     % randomize generator
         randomSeed = round(rand()*100000);
@@ -165,12 +165,13 @@ switch paletteName
         if isempty(answer); return; end
 
         rng(answer, 'twister');
-        palette =  colormap(rand([colorsNo,3]));
+        palette =  rand([colorsNo,3]);
 end
 
 % add random colors to the palette
 if size(palette, 1) < colorsNo
     rng('shuffle');     % randomize generator
-    palette2 =  colormap(rand([colorsNo-size(palette, 1), 3]));
+    palette2 =  rand([colorsNo-size(palette, 1), 3]);
     palette = [palette; palette2];
+end
 end

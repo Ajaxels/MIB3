@@ -183,6 +183,8 @@ classdef MibModel < handle
 
         setAxesLimits(obj, axesX, axesY, id)        % set axes limits for the currently shown or id dataset
 
+        setDefaultColorPalette(obj, paletteName, colorsNo)        % set default color palette for materials of the model
+
         result = setData2D(obj, dataset, type, slice_no, orient, col_channel, options)        % set a 2D slice in the current dataset; wrapper around core.MibDataset.setData2D
 
         result = setData3D(obj, dataset, type, time, orient, col_channel, options)        % set a 3D dataset in the current dataset; wrapper around core.MibDataset.setData3D

@@ -750,7 +750,7 @@ classdef Preferences < handle
             % update color palette based on selected parameters in the paletteTypePopup and paletteColorNumberPopup popups
             colorsNo = str2double(obj.view.handles.NumberOfColorsDropDown.Value);
             
-            obj.preferences.Colors.ModelMaterialColors = utils.defaults.generateDefaultSegmentationPalette(obj.view.handles.PaletteGeneratorDropDown.Value, colorsNo);
+            obj.preferences.Colors.ModelMaterialColors = utils.defaults.generateDefaultPalette(obj.view.handles.PaletteGeneratorDropDown.Value, colorsNo);
             obj.updateColorsTables('ModelsColorsTable');
         end
         

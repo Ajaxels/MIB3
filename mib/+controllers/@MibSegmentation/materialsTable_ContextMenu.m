@@ -28,7 +28,11 @@ end
 
 switch menuEntry.Tag
     case 'materialsTableContextShowSelected'
-
+        id = obj.mibModel.getActiveId();
+        obj.mibModel.I{id}.showAllMaterials = 1 - obj.mibModel.I{id}.showAllMaterials;    % invert the showAll toggle status
+        menuEntry.Checked = logical(obj.mibModel.I{id}.showAllMaterials);
+        obj.mibController.showImage();
+        
     case 'materialsTableContextRename'
         obj.mibModel.materialsActions('Rename material');
     case 'materialsTableContextSetColor'

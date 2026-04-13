@@ -175,7 +175,8 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
     
     % update buttons of the segmentation panel if needed
     segmHandles = obj.view.handles.panels.segmentation.handles;
-    if dataset.labels.maxMaterials < 256 && (segmHandles.colorWheel.Visible || isempty(segmHandles.addMaterial.Icon))
+    if dataset.labels.maxMaterials < 256 && ... 
+            (isempty(segmHandles.addMaterial.Icon) || ~strcmp(segmHandles.addMaterial.Tooltip, 'Add a new material to the model'))
         % update the buttons in the panel to match the model type with less than 256 materials
 
         % update the add material button
@@ -190,9 +191,7 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
         if obj.mibModel.preferences.System.DeveloperMode
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.removeMaterial:\n%s', segmHandles.removeMaterial.Tooltip);
         end
-        % hide color wheel button
-        segmHandles.colorWheel.Visible = false;
-    elseif dataset.labels.maxMaterials > 256 && ~segmHandles.colorWheel.Visible
+    elseif dataset.labels.maxMaterials > 256 && ~strcmp(segmHandles.addMaterial.Tooltip, 'Find and select the next empty material')
         % update the buttons in the panel to match the model type with more than 256 materials
         
         % update the add material button -> to next material
@@ -207,9 +206,6 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
         if obj.mibModel.preferences.System.DeveloperMode
             segmHandles.addMaterial.Tooltip = sprintf('obj.cSegmentation.view.handles.removeMaterial:\n%s', segmHandles.removeMaterial.Tooltip);
         end
-
-        % show color wheel button
-        segmHandles.colorWheel.Visible = true;
     end
 end
 
@@ -334,6 +330,10 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
     % update materialsTable
     obj.cSegmentation.restrictMaterial_Callback();
 
+    % update Show selected material only
+    if logical(segmentationPanelHandles.materialsTableContextShowSelected.Checked) == dataset.showAllMaterials
+        segmentationPanelHandles.materialsTableContextShowSelected.Checked = logical(1-dataset.showAllMaterials);
+    end
     % update useLUT checkbox, see below selectionPanel
 end
 
