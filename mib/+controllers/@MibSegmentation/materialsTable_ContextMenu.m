@@ -36,7 +36,10 @@ switch menuEntry.Tag
     case 'materialsTableContextRename'
         obj.mibModel.materialsActions('Rename material');
     case 'materialsTableContextSetColor'
-
+        cellIndices = obj.handles.materialsTable.Selection;
+        if isempty(cellIndices); return; end
+        cellIndices(2) = 1;
+        obj.materialsTable_CellSelectionCallback(cellIndices);    
     case 'materialsTableContextQuant'
         obj.mibController.startController('controllers.Quantification');
     case 'materialsTableContextUnlink'

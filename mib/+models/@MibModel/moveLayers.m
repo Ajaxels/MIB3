@@ -44,7 +44,7 @@ function moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType,
 % @code obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace'); // replace selection with mask @endcode
 
 % Updates
-% 
+%
 
 if nargin < 5
     ErrorDlgOpt.winTitle = 'moveLayers Error';
@@ -239,7 +239,7 @@ end
 if showWaitbar
     wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
         'Message', sprintf('%s: %s to/with %s layer(s) for %s\nPlease wait...', ...
-                BatchOptLocal.ActionType{1}, BatchOptLocal.SourceLayer{1}, BatchOptLocal.DestinationLayer{1}, BatchOptLocal.DatasetType{1}), ...
+        BatchOptLocal.ActionType{1}, BatchOptLocal.SourceLayer{1}, BatchOptLocal.DestinationLayer{1}, BatchOptLocal.DatasetType{1}), ...
         'Title', 'Moving layers...', 'Indeterminate', 'on');
 end
 
@@ -292,7 +292,7 @@ if strcmp(BatchOptLocal.DatasetType{1},'4D, Dataset') || ...
                     obj.I{BatchOptLocal.id}.moveModelToSelectionDataset(BatchOptLocal.ActionType{1}, helperOpt);
                 case 'mask'
                     obj.I{BatchOptLocal.id}.moveModelToMaskDataset(BatchOptLocal.ActionType{1}, helperOpt);
-                    
+
                 case 'labels'
                     return;
             end

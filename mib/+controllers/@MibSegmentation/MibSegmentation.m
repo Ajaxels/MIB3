@@ -49,8 +49,8 @@ classdef MibSegmentation
                                                                                 % - Segmentation table widget -> Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
                                                                                 % - Menu ribbon -> Models -> Materials (obj.view.handles.model.materials)
 
-        materialsTable_moveLayers(obj, menuEntry, selectedData)  % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTableContextM2S):
-
+        materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, action_type)  % callbacks for the context menu of the segmentation table to move layers
+        
         materialsTable_render(obj, menuEntry, selectedData)  % callbacks for the context menu of the Segmentation table widget -> Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen)
 
         membranePanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Membrane click tracker tool
@@ -140,35 +140,35 @@ classdef MibSegmentation
             obj.handles.materialsTableContextMatSave.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
             obj.handles.materialsTableContextMatRemove.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
             % Material to Selection...
-            obj.handles.materialsTableContextM2SN2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SA2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SS2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SN3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SA3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SS3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SN4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SA4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2SS4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
+            obj.handles.materialsTableContextM2SN2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '2D, Slice', 'replace');
+            obj.handles.materialsTableContextM2SA2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '2D, Slice', 'add');
+            obj.handles.materialsTableContextM2SS2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '2D, Slice', 'remove');
+            obj.handles.materialsTableContextM2SN3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '3D, Stack', 'replace');
+            obj.handles.materialsTableContextM2SA3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '3D, Stack', 'add');
+            obj.handles.materialsTableContextM2SS3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '3D, Stack', 'remove');
+            obj.handles.materialsTableContextM2SN4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '4D, Dataset', 'replace');
+            obj.handles.materialsTableContextM2SA4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '4D, Dataset', 'add');
+            obj.handles.materialsTableContextM2SS4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '4D, Dataset', 'remove');
             % Material to Mask...
-            obj.handles.materialsTableContextM2MN2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MA2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MS2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MN3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MA3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MS3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MN4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MA4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2MS4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
+            obj.handles.materialsTableContextM2MN2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '2D, Slice', 'replace');
+            obj.handles.materialsTableContextM2MA2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '2D, Slice', 'add');
+            obj.handles.materialsTableContextM2MS2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '2D, Slice', 'remove');
+            obj.handles.materialsTableContextM2MN3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '3D, Stack', 'replace');
+            obj.handles.materialsTableContextM2MA3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '3D, Stack', 'add');
+            obj.handles.materialsTableContextM2MS3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '3D, Stack', 'remove');
+            obj.handles.materialsTableContextM2MN4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '4D, Dataset', 'replace');
+            obj.handles.materialsTableContextM2MA4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '4D, Dataset', 'add');
+            obj.handles.materialsTableContextM2MS4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'mask', '4D, Dataset', 'remove');
             % Mask to Material...
-            obj.handles.materialsTableContextM2M2N2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2A2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2S2D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2N3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2A3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2S3D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2N4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2A4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
-            obj.handles.materialsTableContextM2M2S4D.MenuSelectedFcn = @obj.materialsTable_moveLayers;
+            obj.handles.materialsTableContextM2M2N2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '2D, Slice', 'replace');
+            obj.handles.materialsTableContextM2M2A2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '2D, Slice', 'add');
+            obj.handles.materialsTableContextM2M2S2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '2D, Slice', 'remove');
+            obj.handles.materialsTableContextM2M2N3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '3D, Stack', 'replace');
+            obj.handles.materialsTableContextM2M2A3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '3D, Stack', 'add');
+            obj.handles.materialsTableContextM2M2S3D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '3D, Stack', 'remove');
+            obj.handles.materialsTableContextM2M2N4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '4D, Dataset', 'replace');
+            obj.handles.materialsTableContextM2M2A4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '4D, Dataset', 'add');
+            obj.handles.materialsTableContextM2M2S4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '4D, Dataset', 'remove');
             % Render...
             obj.handles.materialsTableContextRenMIB.MenuSelectedFcn = @obj.materialsTable_render;
             obj.handles.materialsTableContextRenMat.MenuSelectedFcn = @obj.materialsTable_render;

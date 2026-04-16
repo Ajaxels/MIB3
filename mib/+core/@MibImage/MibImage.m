@@ -89,6 +89,8 @@ classdef MibImage < matlab.mixin.Copyable
         
         clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
 
+        crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
+
         output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
 
         insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data{1} along depth or time; updates sliceName

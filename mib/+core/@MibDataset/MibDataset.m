@@ -110,6 +110,8 @@ classdef MibDataset < matlab.mixin.Copyable
 
         closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
 
+        result = cropDataset(obj, cropF, options)        % Crop all layers of the dataset (image, labels, mask, selection); handles Virtual → Standard conversion
+
         createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
 
         [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
@@ -133,6 +135,8 @@ classdef MibDataset < matlab.mixin.Copyable
         varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
 
         dataset = getPixelIdxList(obj, type, PixelIdxList, options)  % Get pixel values at a list of linear indices; routes to correct layer (image/labels/mask/selection)
+
+        bb = getRoiBoundingBox(obj, roiIndex)        % Return the bounding box for a ROI at its native orientation.
 
         index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
 

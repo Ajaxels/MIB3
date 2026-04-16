@@ -19,6 +19,7 @@ end
 
 switch mode
     case 'Crop'              % obj.handles.ribbonDataset.crop
+        obj.mibController.startController('controllers.CropDataset', obj.mibController);
     case 'Resize'                 % obj.handles.ribbonDataset.resize
 end
 
