@@ -13,7 +13,7 @@ function listener_frameChanged(obj)
 % new frame value BEFORE firing the event so this listener can read it.
 %
 % The method guards against processing changes that belong to a different
-% document in split-panel mode (setOfDatasetsIndex ~= mibModel.id).
+% document in split-panel mode (selectedSet ~= setOfDatasetsIndex).
 %
 % Important: this method updates widgets DIRECTLY and must NOT delegate to
 % frameNumber_Callback or frameNumberSlider_Callback — those callbacks
@@ -34,7 +34,7 @@ function listener_frameChanged(obj)
 % @endcode
 
 % Only act for the dataset displayed by this document
-if obj.setOfDatasetsIndex ~= obj.mibModel.id; return; end
+if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 
 frameNumber = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
 

@@ -3,7 +3,7 @@ function imgOut = resizeImage3d(img, scale, options)
 % Resize 3D dataset
 %
 % Parameters:
-% img: a 3D (y,x,z) or 4D (y,x,c,z) dataset for resize
+% img: a 3D (y,x,z) or 4D (y,x,z,c) dataset for resize
 % scale: a number or a vector [scaleY, scaleX, scaleZ] for each dimension with resizing scaling
 % factor, could be empty when options.width, options.height, options.depth
 % fields are used
@@ -51,7 +51,7 @@ if ~isfield(options, 'imgType')
         options.imgType = '3D';
     end
 end
-if strcmp(options.imgType, '3D'); img = permute(img, [1 2 4 3]); end
+img = permute(img, [1 2 4 3]);  % 3D:[y,x,z]→[y,x,1,z]; 4D new layout:[y,x,z,c]→[y,x,c,z]
 
 [height, width, colors, depth] = size(img);
 
@@ -204,9 +204,7 @@ else
 end
 
 
-if strcmp(options.imgType, '3D')
-    imgOut = permute(imgOut, [1 2 4 3]);
-end
+imgOut = permute(imgOut, [1 2 4 3]);  % internal [y,x,c,z] → new layout [y,x,z,c]
 
 % only delete waitbars that were created here; caller-owned handles are left intact
 if ~isempty(localWb); try; delete(localWb); catch; end; end

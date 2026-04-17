@@ -9,7 +9,7 @@ function listener_sliceChanged(obj)
 %   notify(obj.mibModel, 'SliceChanged');
 %
 % The method guards against processing changes that belong to a different
-% document in split-panel mode (setOfDatasetsIndex ~= mibModel.id).
+% document in split-panel mode (selectedSet ~= setOfDatasetsIndex).
 %
 % Important: this method updates widgets DIRECTLY and must NOT delegate to
 % sliceNumber_Callback or sliceNumberSlider_Callback — those callbacks
@@ -30,7 +30,7 @@ function listener_sliceChanged(obj)
 % @endcode
 
 % Only act for the dataset displayed by this document
-if obj.setOfDatasetsIndex ~= obj.mibModel.id; return; end
+if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 
 dataset     = obj.mibModel.I{obj.mibModel.id};
 sliceNumber = dataset.slices{dataset.orientation}(1);

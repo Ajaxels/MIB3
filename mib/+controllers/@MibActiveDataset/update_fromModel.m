@@ -93,28 +93,27 @@ if newSelectedDatasetIndex ~= prevSelectedDatasetIndex
         sprintf('Buffer %d:\n%s', newSelectedDatasetIndex, obj.mibModel.I{newBufferGlobalIndex}.image.filename));
 end
 
-if selectedSet ~= prevSelectedSet
-    % update colors for the dataset buttons
-    defaultBackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor; % default color for buttons
+% Always repaint all buffer buttons for the current set so that any buffer
+% that just received data (e.g. crop-to a different buffer) turns green
+% without requiring a set change.
+defaultBackgroundColor = obj.view.handles.panels.activeDataset.handles.addSet.BackgroundColor;
+for datasetId = 1:Sets.datasetsInSet
+    bufferId = sprintf('buffer%d', datasetId);
+    buttonHandle = obj.handles.(bufferId);
 
-    for datasetId = 1:Sets.datasetsInSet
-        bufferId = sprintf('buffer%d', datasetId);
-        buttonHandle = obj.handles.(bufferId);
+    globalIndex = datasetId + ((selectedSet-1) * Sets.datasetsInSet);
+    if strcmp(obj.mibModel.I{globalIndex}.image.filename, 'none.tif')  % no dataset loaded
+        buttonHandle.BackgroundColor = defaultBackgroundColor;
+        buttonHandle.Tooltip = 'use RMB for a context menu with additional options';
+    else
+        buttonHandle.BackgroundColor = [0.6 1 0.6];
+        buttonHandle.Tooltip = obj.mibModel.I{globalIndex}.image.filename;
+    end
 
-        globalIndex = datasetId + ((selectedSet-1) * Sets.datasetsInSet);
-        if strcmp(obj.mibModel.I{globalIndex}.image.filename, 'none.tif')  % no dataset loaded
-            buttonHandle.BackgroundColor = defaultBackgroundColor;
-            buttonHandle.Tooltip = 'use RMB for a context menu with additional options';
-        else
-            buttonHandle.BackgroundColor = [0.6 1 0.6];
-            buttonHandle.Tooltip = obj.mibModel.I{globalIndex}.image.filename;
-        end
-        
-        % add DeveloperMode tag
-        if obj.mibModel.preferences.System.DeveloperMode
-            buttonHandle.Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...
-                bufferId, buttonHandle.Tooltip);
-        end
+    % add DeveloperMode tag
+    if obj.mibModel.preferences.System.DeveloperMode
+        buttonHandle.Tooltip = sprintf('obj.view.handles.panels.activeDataset.handles.%s:\n%s', ...
+            bufferId, buttonHandle.Tooltip);
     end
 end
 

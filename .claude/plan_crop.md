@@ -39,6 +39,17 @@ end
 
 None — all items resolved. See implementation logs below.
 
+### Completed items (chronological)
+1. Port `CropDataset` controller from MIB2 (`mibCropController`)
+2. Fix `maxId` → `Sets.datasetsInSet * numel(Sets.names)`
+3. Fix `core.ChildView` "too many input arguments" (mlapp `startupFcn` signature)
+4. Fix interactive crop zoom/pan via `cRoi.drawingROI` integration
+5. Simplify Interactive section (single try-catch, one cleanup block)
+6. Rewrite `cropToBtn_Callback` dialog to Set + Buffer spinner pattern
+7. Fix Manual mode crop not executing (`editboxes_Callback` not syncing `BatchOpt`)
+8. Fix crop-to: destination button not green + axes not fit-to-screen
+9. Fix post-crop slice widget crash (`slices` stale after deep copy + crop; guard bug in listeners)
+
 ---
 
 ## Full Conversion Reference
@@ -397,3 +408,112 @@ Default empty-buffer sentinel: `'none.tif'` (same in both versions).
 - Escape / invalid-ROI handling: `isvalid(roi)` check after `wait(roi)` — when
   the user presses Escape, the ROI object becomes invalid and we return without
   cropping (no error dialog).
+
+---
+
+## Interactive crop mode — zoom/pan stability via cRoi.drawingROI
+
+**Status:** Implemented 16.04.2026
+
+- Old approach: bare `drawrectangle` + `wait(roi)` — position lost during zoom/pan because
+  `showImage` runs `repositionDrawingROI()` only on `cRoi.drawingROI.active == true`.
+- Fix: piggyback on `cRoi.drawingROI` struct:
+  - Set `cRoi.drawingROI.active = true` before `wait(roi)`, clear on all exit paths.
+  - Add `MovingROI`/`ROIMoved` listeners → `captureCropDataPos` (static private method)
+    that calls `mibModel.convertMouseToDataCoordinates` and writes data-pixel coords into
+    `cRoi.drawingROI.dataPos` (2×2: `[xmin ymin; xmax ymax]`).
+  - `showImage` (line 247) already calls `cRoi.repositionDrawingROI()` on every redraw.
+  - Final crop position read from `cRoi.drawingROI.dataPos` (zoom-corrected) instead of
+    converting `roi.Position` again.
+
+---
+
+## Simplification of Interactive section in cropBtn_Callback
+
+**Status:** 16.04.2026
+
+- Replaced 4 near-identical cleanup blocks with a single `try`-`catch` + `drawOk` flag and
+  one cleanup section at the end.
+- Merged two `obj.mibController` guard checks into one.
+- Replaced `if-elseif` orientation chain with `switch`.
+- Removed all commented-out dead code.
+- Brush cursor save/restore pattern: save `brushCursorState`, hide cursor before draw,
+  restore on ALL exit paths.
+
+---
+
+## cropToBtn_Callback — Set + Buffer spinner dialog
+
+**Status:** 16.04.2026
+
+- Replaced flat global-index dropdown with two-field dialog matching the "Link views" /
+  "Duplicate dataset" pattern from `buffers_ContextMenu.m`.
+- Prompts: set-name dropdown (`Sets.names`) + local buffer spinner (1..`datasetsInSet`).
+- Default destination: first empty container, resolved via `ceil/mod` decomposition.
+- Result global id: `destLocalId + (destSetIdx-1)*datasetsInSet`.
+
+---
+
+## editboxes_Callback — Manual mode crop was not executing
+
+**Status:** 16.04.2026
+
+- **Root cause:** `editboxes_Callback` only updated `obj.roiPos` but `cropBtn_Callback`
+  reads exclusively from `BatchOptLoc` (snapshot of `obj.BatchOpt`).
+- **Fix:** Added `obj.BatchOpt.Width/Height/Depth/Time` sync lines at the top of
+  `editboxes_Callback` before updating `obj.roiPos`.
+
+---
+
+## Crop-to — destination buffer button not green + axes not fit-to-screen
+
+**Status:** Fixed 16.04.2026
+
+### Bug 1 — axes not fit-to-screen
+`listener_newDataset.m` else branch (when `Parameters.index` is provided) was firing
+`UpdateDatasetAxes` with no `mode` field → defaulted to `'resize'` (keeps stale zoom).
+**Fix:** Add `Parameters.mode = 'fitToScreen'` in the else branch.
+
+### Bug 2 — button not turning green
+`update_fromModel.m` button-color loop was gated on `selectedSet ~= prevSelectedSet`.
+When crop-to targets a buffer in the **same set**, colors were never refreshed.
+**Fix:** Move the button-color `for` loop outside the set-change condition so it always
+runs on every `DatasetsPanelUpdate` event.
+
+### Bug 3 — DatasetsPanelUpdate not fired for crop-to
+`listener_newDataset.m` else branch did not fire `DatasetsPanelUpdate`, so
+`update_fromModel` never ran. **Fix:** Added `notify(obj.mibModel, 'DatasetsPanelUpdate')`
+after `UpdateDatasetAxes` in the else branch.
+
+---
+
+## Post-crop slice widget crash when navigating destination buffer
+
+**Status:** Fixed 16.04.2026
+
+### Bug 1 — stale `slices{}` after deep copy + crop (root cause)
+`imageDeepCopy` copies `slices{orientation}(1)` from source to destination. If the crop
+reduces depth, the copied value (e.g. 80) exceeds the new max (e.g. 50). When
+`updateGuiWidgets` sets `Limits = [1, 50]` then tries `Value = 80`, MATLAB throws
+`'Value' must be within Limits`.
+
+**Fix (`CropDataset.m`):** After `cropDataset`, clamp all slice positions:
+```matlab
+newDims = obj.mibModel.I{bufferId}.dim_yxzct;
+maxZ = newDims(3); maxT = newDims(5);
+for dimIdx = 1:3
+    obj.mibModel.I{bufferId}.slices{dimIdx} = min(obj.mibModel.I{bufferId}.slices{dimIdx}, [maxZ maxZ]);
+end
+obj.mibModel.I{bufferId}.slices{5} = min(obj.mibModel.I{bufferId}.slices{5}, [maxT maxT]);
+```
+
+### Bug 2 — defensive clamp in updateGuiWidgets
+`updateGuiWidgets.m` now clamps `currentSlice`/`currentTime` to `max_slice`/`image.time`
+before assigning to widget `Value`, guarding against any future stale-slices scenario.
+
+### Bug 3 — wrong guard in listener_sliceChanged / listener_frameChanged (pre-existing)
+Guard was `obj.setOfDatasetsIndex ~= obj.mibModel.id` — compares SET index (1,2,…) to
+GLOBAL buffer id (1…N). With `datasetsInSet = 10`, only buffer 1 of set 1 ever matched.
+**Fix:** Changed to `obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex` — the same
+comparison used by `gui_ScrollWheelFcn` and `gui_WindowButtonDownFcn`.
+

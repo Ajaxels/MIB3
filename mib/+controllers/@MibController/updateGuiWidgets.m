@@ -244,8 +244,8 @@ end
 if isempty(updatePanels) || ismember('depthSlider', updatePanels)
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
-    currentSlice = dataset.slices{dataset.orientation}(1);
     max_slice = dataset.dim_yxzct(dataset.orientation);
+    currentSlice = min(dataset.slices{dataset.orientation}(1), max_slice); % clamp: guard against stale post-crop values
 
     if max_slice > 1 && max_slice ~= imViewHandles.sliceNumber.Limits(2) - 0.001
         imViewHandles.sliceNumber.Limits = [1 max_slice+0.001]; % add small value to make sure that limits are not the same
@@ -269,7 +269,7 @@ end
 if isempty(updatePanels) || ismember('timeSlider', updatePanels)
     % get alias to handles
     imViewHandles = obj.cImageDoc{selectedSet}.handles;
-    currentTime = dataset.slices{5}(1);
+    currentTime = min(dataset.slices{5}(1), dataset.image.time); % clamp: guard against stale post-crop values
 
     if dataset.image.time > 1 && dataset.image.time ~= imViewHandles.frameNumber.Limits(2) - 0.001
         imViewHandles.frameNumber.Limits = [1 dataset.image.time+0.001]; % add small value to make sure that limits are not the same

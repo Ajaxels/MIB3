@@ -19,8 +19,10 @@ end
 
 switch mode
     case {'Export', 'Export model to MATLAB'}    % obj.handles.ribbonModel.export or obj.handles.ribbonModel.exportToMatlab
+        
     case 'Export model to Imaris as volume'      % obj.handles.ribbonModel.exportToImaris
-    case 'Save'                                  % obj.handles.ribbonModel.save — save using existing filename
+
+    case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filenam
         obj.mibModel.saveLabels();
 
     case sprintf('Save\nmodel as...')            % obj.handles.ribbonModel.saveAs — save with dialog

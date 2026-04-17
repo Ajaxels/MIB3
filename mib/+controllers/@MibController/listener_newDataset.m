@@ -65,9 +65,15 @@ if ~isfield(Parameters, 'index')
         notify(obj.mibModel, 'DatasetsPanelUpdate');
     end
 else  % use provided index of the dataset
-    % resize the dataset with the index to fit the screen
+    % Fit the destination buffer to screen so the user sees it correctly when
+    % switching to it. The no-index branch already uses fitToScreen; mirror that.
+    Parameters.mode = 'fitToScreen';
     eventdata = core.ToggleEventData(Parameters);
     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+    % Refresh the Datasets-panel button colors (e.g. turn the destination
+    % buffer button green). update_fromModel is safe to call here because
+    % the active buffer (mibModel.id) is unchanged — it just repaints buttons.
+    notify(obj.mibModel, 'DatasetsPanelUpdate');
 end
 
 % update BioFormatsMemoizer directory

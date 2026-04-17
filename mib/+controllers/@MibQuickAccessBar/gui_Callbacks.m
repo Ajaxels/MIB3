@@ -70,5 +70,7 @@ switch mode
         BatchOpt.Mode = 'Zoom in';
         obj.mibController.cStatus.zoomEdit_Callback([], BatchOpt);
     case 'Redo the undo operation'
+
     case 'Undo the last operation'
+        
 end

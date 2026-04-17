@@ -411,18 +411,23 @@ classdef CropDataset < handle
 
         function editboxes_Callback(obj)
             % function editboxes_Callback(obj)
-            % update obj.roiPos from the values in the Width/Height/Depth/Time fields
+            % update obj.BatchOpt and obj.roiPos from the Width/Height/Depth/Time fields
 
-            str2 = obj.view.handles.Width.Value;
+            obj.BatchOpt.Width  = obj.view.handles.Width.Value;
+            obj.BatchOpt.Height = obj.view.handles.Height.Value;
+            obj.BatchOpt.Depth  = obj.view.handles.Depth.Value;
+            obj.BatchOpt.Time   = obj.view.handles.Time.Value;
+
+            str2 = obj.BatchOpt.Width;
             obj.roiPos{1}(1) = min(str2num(str2)); %#ok<ST2NM>
             obj.roiPos{1}(2) = max(str2num(str2)); %#ok<ST2NM>
-            str2 = obj.view.handles.Height.Value;
+            str2 = obj.BatchOpt.Height;
             obj.roiPos{1}(3) = min(str2num(str2)); %#ok<ST2NM>
             obj.roiPos{1}(4) = max(str2num(str2)); %#ok<ST2NM>
-            str2 = obj.view.handles.Depth.Value;
+            str2 = obj.BatchOpt.Depth;
             obj.roiPos{1}(5) = min(str2num(str2)); %#ok<ST2NM>
             obj.roiPos{1}(6) = max(str2num(str2)); %#ok<ST2NM>
-            str2 = obj.view.handles.Time.Value;
+            str2 = obj.BatchOpt.Time;
             obj.roiPos{1}(7) = min(str2num(str2)); %#ok<ST2NM>
             obj.roiPos{1}(8) = max(str2num(str2)); %#ok<ST2NM>
         end
@@ -523,31 +528,41 @@ classdef CropDataset < handle
                 dlgOpt.Icon        = 'puffin_warning';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                    '!!! Warning !!!', {''}, ...
-                    {'Oops, not implemented yet!\nPlease select a single ROI from the Select ROI combobox'}, ...
+                    'Oops, not implemented yet!', {''}, ...
+                    {sprintf('Please select a single ROI from the Select ROI combobox')}, ...
                     'Multiple ROI crop', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end
 
-            % find the first empty buffer as default destination
-            maxId = obj.mibModel.Sets.datasetsInSet * numel(obj.mibModel.Sets.names);
-            bufferId = maxId;
-            for i = 1:maxId - 1
+            % Resolve the default destination: first empty container in the current set
+            datasetsInSet = obj.mibModel.Sets.datasetsInSet;
+            selectedSet   = obj.mibModel.Sets.selectedSet;
+            destGlobalId  = selectedSet * datasetsInSet;   % fallback: last in current set
+            for i = 1:datasetsInSet * numel(obj.mibModel.Sets.names)
                 if strcmp(obj.mibModel.I{i}.image.filename, 'none.tif')
-                    bufferId = i;
+                    destGlobalId = i;
                     break;
                 end
             end
+            destSetIdx  = ceil(destGlobalId / datasetsInSet);
+            destLocalId = mod(destGlobalId - 1, datasetsInSet) + 1;
 
-            prompts = {'Enter the destination buffer:'};
-            defAns  = {arrayfun(@(x) {num2str(x)}, 1:maxId)};
-            defAns{1}(end+1) = {bufferId};      % numeric default index as last element
-            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Crop dataset to');
+            prompts  = {'Destination set:', sprintf('Destination buffer (1-%d):', datasetsInSet)};
+            setItems = obj.mibModel.Sets.names(:)';
+            defAns   = {[setItems, {destSetIdx}], ...
+                        struct('Spinner', true, 'Value', destLocalId, 'Limits', [1 datasetsInSet], 'Step', 1, 'Round', true)};
+            dlgOptions.mibPath       = obj.mibModel.mibPath;
+            dlgOptions.LabelPosition = 'left';
+            dlgOptions.Focus         = 2;
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Crop dataset to', dlgOptions);
             if isempty(answer); return; end
 
-            bufferId = str2double(answer{1});
-            obj.BatchOpt.Destination(1) = {sprintf('Container %d', bufferId)};
+            destSetIdx   = selIndex(1);
+            destLocalId  = answer{2};
+            destGlobalId = destLocalId + (destSetIdx - 1) * datasetsInSet;
+
+            obj.BatchOpt.Destination(1) = {sprintf('Container %d', destGlobalId)};
             obj.cropBtn_Callback();
         end
 
@@ -568,20 +583,20 @@ classdef CropDataset < handle
             id          = obj.mibModel.id;
 
             if strcmp(BatchOptLoc.cropMode{1}, 'Interactive')
-                % --- Interactive mode: user draws a rectangle on the image axes ---
-                % Resolve the currently active image axes (split-panel safe).
-                % Priority: mibController → cImageDoc{selectedSet}.handles.imViewAxes;
-                % fall back to a cached axes handle if mibController is not available.
+                % --- Interactive mode: draw a rectangle on the image axes ---
+                % Resolve axes, cImageDoc and cRoi from mibController (split-panel safe).
+                % Falls back to obj.mibImageAxes when mibController is absent.
                 imViewAxes = [];
                 cImageDoc  = [];
+                cRoi       = [];
+                brushCursorState = [];
                 if ~isempty(obj.mibController) && isvalid(obj.mibController)
                     selectedSet = obj.mibModel.Sets.selectedSet;
-                    if selectedSet >= 1 && selectedSet <= numel(obj.mibController.cImageDoc)
-                        cImageDoc  = obj.mibController.cImageDoc{selectedSet};
-                        if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                            imViewAxes = cImageDoc.handles.imViewAxes;
-                        end
+                    cImageDoc = obj.mibController.cImageDoc{selectedSet};
+                    if ~isempty(cImageDoc) && isvalid(cImageDoc)
+                        imViewAxes = cImageDoc.handles.imViewAxes;
                     end
+                    cRoi = obj.mibController.cRoi;
                 end
                 if isempty(imViewAxes) && ~isempty(obj.mibImageAxes) && isgraphics(obj.mibImageAxes)
                     imViewAxes = obj.mibImageAxes;
@@ -593,79 +608,103 @@ classdef CropDataset < handle
                     return;
                 end
 
+                % Prepare drawing state
                 obj.view.gui.Visible = 'off';
                 obj.mibModel.disableSegmentation = 1;
-
-                % Hide brush overlay and switch cursor while drawing
                 if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                    if ~isempty(cImageDoc.brushCursor) && isvalid(cImageDoc.brushCursor)
-                        cImageDoc.brushCursor.Visible = false;
-                    end
+                    brushCursorState = obj.mibController.view.brushCursorShow;
+                    obj.mibController.view.brushCursorShow = false;
                     cImageDoc.UIFigure.Pointer = 'cross';
                 end
-
-                roi = [];
-                try
-                    roi = drawrectangle(imViewAxes);
-                    if isvalid(roi); wait(roi); end
-                catch ME
-                    if ~isempty(roi) && isvalid(roi); delete(roi); end
-                    obj.mibModel.disableSegmentation = 0;
-                    if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                        cImageDoc.UIFigure.Pointer = 'cross';
-                        cImageDoc.updateBrushCursor();
-                    end
-                    obj.view.gui.Visible = 'on';
-                    rethrow(ME);
+                if ~isempty(cRoi)
+                    cRoi.drawingROI.type          = 'Rectangle';
+                    cRoi.drawingROI.dataPos       = [];
+                    cRoi.drawingROI.repositioning  = false;
+                    cRoi.drawingROI.active         = false;
                 end
 
-                % Cleanup pointer/overlay
+                % Draw rectangle and wait for confirmation (single try-catch).
+                % Zoom-stable repositioning via cRoi.drawingROI / repositionDrawingROI
+                % is activated after drawrectangle creates the ROI object.
+                roi = [];  movingLsn = [];  movedLsn = [];
+                drawOk = false;
+                try
+                    roi = drawrectangle(imViewAxes);
+                    if isvalid(roi)
+                        captureF  = @() controllers.CropDataset.captureCropDataPos(roi, cRoi, obj.mibModel);
+                        movingLsn = addlistener(roi, 'MovingROI', @(~,~) captureF());
+                        movedLsn  = addlistener(roi, 'ROIMoved',  @(~,~) captureF());
+                        captureF();
+                        if ~isempty(cRoi)
+                            cRoi.drawingROI.roi    = roi;
+                            cRoi.drawingROI.active = true;
+                        end
+                        wait(roi);
+                        drawOk = isvalid(roi);
+                    end
+                catch
+                end
+
+                % Cleanup: listeners, drawing state, cursor, dialog visibility
+                if ~isempty(movingLsn); delete(movingLsn); end
+                if ~isempty(movedLsn);  delete(movedLsn);  end
+                if ~isempty(cRoi); cRoi.drawingROI.active = false; end
                 obj.mibModel.disableSegmentation = 0;
                 if ~isempty(cImageDoc) && isvalid(cImageDoc)
                     cImageDoc.UIFigure.Pointer = 'cross';
-                    cImageDoc.updateBrushCursor();
+                    obj.mibController.view.brushCursorShow = brushCursorState;
                 end
                 obj.view.gui.Visible = 'on';
 
-                % User cancelled (Escape) — roi becomes invalid before Position is read
-                if isempty(roi) || ~isvalid(roi); return; end
+                if ~drawOk
+                    if ~isempty(roi) && isvalid(roi); delete(roi); end
+                    return;
+                end
 
-                new_position = roi.Position;   % [xmin ymin w h] — same format as imrect
-                delete(roi);
+                % Extract final position in data-pixel coordinates.
+                % Prefer coords cached by captureF (already in data pixels, zoom-corrected).
+                % Fall back to converting roi.Position when cRoi was unavailable.
+                if ~isempty(cRoi) && ~isempty(cRoi.drawingROI.dataPos)
+                    dp = cRoi.drawingROI.dataPos;   % 2×2: [xmin ymin; xmax ymax]
+                    delete(roi);
+                    position = ceil([dp(1,1), dp(1,2), dp(2,1), dp(2,2)]);
+                else
+                    new_position = roi.Position;   % [xmin ymin w h]
+                    delete(roi);
+                    if isempty(new_position) || any(~isfinite(new_position)); return; end
+                    new_position(3) = new_position(3) + new_position(1);
+                    new_position(4) = new_position(4) + new_position(2);
+                    new_position(1) = max(new_position(1), 0.5);
+                    new_position(2) = max(new_position(2), 0.5);
+                    [position(1), position(2)] = obj.mibModel.convertMouseToDataCoordinates(new_position(1), new_position(2), 'shown');
+                    [position(3), position(4)] = obj.mibModel.convertMouseToDataCoordinates(new_position(3), new_position(4), 'shown');
+                    position = ceil(position);
+                end
 
-                if isempty(new_position) || any(~isfinite(new_position)); return; end
-                if new_position(3) == 0 || new_position(4) == 0
+                % Validate crop area
+                if position(3) <= position(1) || position(4) <= position(2)
                     utils.dlgs.showErrorDialog(obj.view.gui, ...
                         sprintf('!!! Error !!!\n\nThe defined area is too small!\nTo select the area for crop press the left mouse button and drag the mouse while having the left mouse button pressed. To confirm selection, double click inside the selected area'), ...
                         'Crop error');
                     return;
                 end
 
-                % convert [xmin ymin width height] to [xmin ymin xmax ymax]
-                new_position(3) = new_position(3) + new_position(1);   % xMax
-                new_position(4) = new_position(4) + new_position(2);   % yMax
-                if new_position(1) < 0; new_position(1) = max([new_position(1), 0.5]); end
-                if new_position(2) < 0; new_position(2) = max([new_position(2), 0.5]); end
-
+                % Clamp to image bounds and build crop_factor
                 opts.blockModeSwitch = 0;
                 [height, width] = obj.mibModel.I{id}.getDatasetDimensions('selection', [], opts);
+                position(3) = min(position(3), width);
+                position(4) = min(position(4), height);
 
-                [position(1), position(2)] = obj.mibModel.convertMouseToDataCoordinates(new_position(1), new_position(2), 'shown');
-                [position(3), position(4)] = obj.mibModel.convertMouseToDataCoordinates(new_position(3), new_position(4), 'shown');
-                position = ceil(position);
-
-                if position(3) > width;  position(3) = width;  end
-                if position(4) > height; position(4) = height; end
-
-                if obj.mibModel.I{id}.orientation == 3       % XY plane
-                    crop_factor = [position(1:2), position(3)-position(1)+1, position(4)-position(2)+1, ...
-                        1, obj.mibModel.I{id}.image.depth];
-                elseif obj.mibModel.I{id}.orientation == 1   % XZ plane
-                    crop_factor = [position(2), 1, position(4)-position(2)+1, obj.mibModel.I{id}.image.height, ...
-                        position(1), position(3)-position(1)+1];
-                elseif obj.mibModel.I{id}.orientation == 2   % YZ plane
-                    crop_factor = [1, position(2), obj.mibModel.I{id}.image.width, position(4)-position(2)+1, ...
-                        position(1), position(3)-position(1)+1];
+                switch obj.mibModel.I{id}.orientation
+                    case 3   % XY plane
+                        crop_factor = [position(1:2), position(3)-position(1)+1, position(4)-position(2)+1, ...
+                            1, obj.mibModel.I{id}.image.depth];
+                    case 1   % XZ plane
+                        crop_factor = [position(2), 1, position(4)-position(2)+1, obj.mibModel.I{id}.image.height, ...
+                            position(1), position(3)-position(1)+1];
+                    case 2   % YZ plane
+                        crop_factor = [1, position(2), obj.mibModel.I{id}.image.width, position(4)-position(2)+1, ...
+                            position(1), position(3)-position(1)+1];
                 end
 
             else
@@ -675,8 +714,8 @@ classdef CropDataset < handle
                     dlgOpt.Icon        = 'puffin_warning';
                     dlgOpt.HeaderLines = 1;
                     utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                        '!!! Warning !!!', {''}, ...
-                        {'Oops, not implemented yet!\nPlease select a single ROI from the Select ROI combobox'}, ...
+                        'Oops, not implemented yet!', {''}, ...
+                        {'Please select a single ROI from the Select ROI combobox'}, ...
                         'Multiple ROI crop', dlgOpt);
                     notify(obj.mibModel, 'StopProtocol');
                     return;
@@ -718,7 +757,7 @@ classdef CropDataset < handle
             obj.mibModel.I{bufferId}.enableSelection = obj.mibModel.preferences.System.EnableSelection;
 
             % get Zarr pyramid level index if applicable
-            if strcmp(obj.view.handles.ZarrPyramidLevel.Enable, 'on')
+            if ~obj.batchProcessingSwitch && strcmp(obj.view.handles.ZarrPyramidLevel.Enable, 'on')
                 items = obj.view.handles.ZarrPyramidLevel.Items;
                 BatchOptLoc.pyramidLevel = find(strcmp(items, obj.view.handles.ZarrPyramidLevel.Value), 1);
                 if isempty(BatchOptLoc.pyramidLevel); BatchOptLoc.pyramidLevel = 1; end
@@ -731,6 +770,17 @@ classdef CropDataset < handle
             obj.mibModel.I{bufferId}.annotations.crop(crop_factor);
             log_text = ['ImCrop: [x1 y1 dx dy z1 dz t1 dt]: [' num2str(crop_factor) ']'];
             obj.mibModel.I{bufferId}.image.updateActionLog(log_text);
+
+            % Clamp stale slice positions that were deep-copied from the source buffer.
+            % When crop reduces the Z-depth or T-frames, slices{} may exceed the new
+            % dimensions, causing widget Value-out-of-range errors on first display.
+            newDims = obj.mibModel.I{bufferId}.dim_yxzct;   % [height, width, depth, colors, time]
+            maxZ = newDims(3);
+            maxT = newDims(5);
+            for dimIdx = 1:3   % all three Z-related orientations
+                obj.mibModel.I{bufferId}.slices{dimIdx} = min(obj.mibModel.I{bufferId}.slices{dimIdx}, [maxZ maxZ]);
+            end
+            obj.mibModel.I{bufferId}.slices{5} = min(obj.mibModel.I{bufferId}.slices{5}, [maxT maxT]);
 
             % notify about the new dataset
             obj.listener{1}.Enabled = 0;    % suppress updateWidgets during event
@@ -773,5 +823,24 @@ classdef CropDataset < handle
             web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/dataset/dataset-crop.html'), '-browser');
         end
 
+    end
+
+    methods (Static, Access = private)
+        function captureCropDataPos(roi, cRoi, mibModel)
+            % Store the current drawrectangle position in data-pixel coordinates.
+            % Called from MovingROI/ROIMoved listeners during interactive crop drawing.
+            % Writes result into cRoi.drawingROI.dataPos (2×2: [xmin ymin; xmax ymax]).
+            if isempty(roi) || ~isvalid(roi); return; end
+            if ~isempty(cRoi) && cRoi.drawingROI.repositioning; return; end
+            try
+                p = roi.Position;   % [x y w h] in axes coords
+                [X, Y] = mibModel.convertMouseToDataCoordinates( ...
+                    [p(1); p(1)+p(3)], [p(2); p(2)+p(4)], 'shown');
+                if ~isempty(cRoi)
+                    cRoi.drawingROI.dataPos = [X(:), Y(:)];
+                end
+            catch
+            end
+        end
     end
 end
