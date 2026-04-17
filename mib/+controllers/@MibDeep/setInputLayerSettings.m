@@ -1,8 +1,6 @@
 function setInputLayerSettings(obj)
 % function setInputLayerSettings(obj)
     % update init settings for the input layer of networks
-    global mibPath;
-
     prompts = {...
         sprintf('Data normalization\n"zerocenter" - subtract the mean specified by Mean\n"zscore" - subtract the mean specified by Mean and divide by StandardDeviation\n"rescale-symmetric" - rescale the input to be in the range [-1, 1] using the minimum and maximum values specified by Min and Max, respectively\n"rescale-zero-one" - rescale the input to be in the range [0, 1] using the minimum and maximum values specified by Min and Max, respectively\n"none" - do not normalize the input data'); ...
         sprintf('\nThe following fields may be empty for automatic calculations during training or be an array of values per channel or a numeric scalar\n\nMean [zerocenter or z-score]'); ...
@@ -18,10 +16,10 @@ function setInputLayerSettings(obj)
     dlgTitle = 'Input layer settings';
     options.WindowStyle = 'normal';
     options.PromptLines = [8, 5, 1, 1, 1];
-    options.WindowWidth = 2.1;
+    options.WindowWidth = 950;
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/nnet.cnn.layer.image3dinputlayer.html'; % [optional], an url for the Help button
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     obj.InputLayerOpt.Normalization = answer{1};

@@ -2,8 +2,6 @@ function countLabels(obj)
 % function countLabels(obj)
 % count occurrences of labels in model files
 % callback for press of the "Count labels" in the Options panel
-global mibPath;
-
 % define directory with label files
 if ~isfield(obj.sessionSettings, 'countLabelsDir')
     obj.sessionSettings.countLabelsDir = obj.BatchOpt.OriginalTrainingImagesDir;
@@ -16,7 +14,7 @@ prompts = {'Label filenames extension:'; 'Number of classes including exterior, 
 defAns = {{'model', 'mibCat', 'png', 'tif', 'tiff', 1}, num2str(obj.BatchOpt.T_NumberOfClasses{1})};
 dlgTitle = 'Options';
 dlgOptions.PromptLines = [1, 2];
-[answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, dlgOptions);
+[answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, dlgOptions);
 if isempty(answer); return; end
 labelExtension = answer{1};
 numClasses = str2double(answer{2});
@@ -55,13 +53,13 @@ try
     switch labelExtension
         case 'model'
             dsLabels = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-                'FileExtensions', '.model', 'ReadFcn', @mibDeepStoreLoadModel);
+                'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
         case 'mibCat'
             %dsLabels = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-            %    'FileExtensions', '.mibCat', 'ReadFcn', @mibDeepStoreLoadImages);
+            %    'FileExtensions', '.mibCat', 'ReadFcn', @utils.deepmib.storeLoadImages);
             dsLabels = imageDatastore(fullPathFilenames, ...
                 'FileExtensions', '.mibCat', 'IncludeSubfolders', false, ...
-                'ReadFcn', @mibDeepStoreLoadCategorical);
+                'ReadFcn', @utils.deepmib.storeLoadCategorical);
         otherwise
             dsLabels = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
                 'FileExtensions', lower(['.' labelExtension]));
@@ -89,7 +87,7 @@ end
 dsLabels.reset();
 
 % make waitbar
-pw = PoolWaitbar(numel(dsLabels.Files), sprintf('Counting labels\nit may take a while...'), [], TitleTest);
+pw = core.PoolWaitbar(numel(dsLabels.Files), sprintf('Counting labels\nit may take a while...'), obj.view.gui, TitleTest);
 pw.setIncrement(10);
 occurrenceGT = cell([numel(dsLabels.Files), 1]);
 

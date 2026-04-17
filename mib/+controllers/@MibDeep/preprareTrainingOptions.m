@@ -126,11 +126,11 @@ try
                 switch obj.TrainEngine
                     case 'trainNetwork'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)mibDeepCustomTrainingProgressDisplay(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                             ], ' ');
                     case 'trainnet'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)mibDeepCustomTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
                             ], ' ');
                 end
             otherwise
@@ -155,11 +155,11 @@ try
                 switch obj.TrainEngine
                     case 'trainNetwork'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)mibDeepCustomTrainingProgressDisplay(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                             ], ' ');
                     case 'trainnet'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)mibDeepCustomTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
                             ], ' ');
                 end
 
@@ -176,7 +176,7 @@ try
         end
     else
         evalTrainingOptions = join([evalTrainingOptions
-            "'OutputFcn', @mibDeepStopTrainingWithoutPlots,"
+            "'OutputFcn', @utils.deepmib.stopTrainingWithoutPlots,"
             ], ' ');
     end
 

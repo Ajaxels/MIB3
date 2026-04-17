@@ -39,8 +39,6 @@ function net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwor
 % - add for classification layer options
 % - add ReLU layer options
 
-global mibPath;
-
 if nargin < 4; targetNetwork = 'resnet18'; end
 
 % generate template network
@@ -70,14 +68,14 @@ else
         dlgTitle = 'Download network template';
         options.WindowStyle = 'normal';       % [optional] style of the window
         options.PromptLines = 1;   % [optional] number of lines for widget titles
-        options.Title = sprintf(['!!! Warning !!!\n\nGeneration of CNN using the "2D DeepLabV3 %s" architecture requires a templete file!\n\n' ...
+        options.Header = sprintf(['!!! Warning !!!\n\nGeneration of CNN using the "2D DeepLabV3 %s" architecture requires a templete file!\n\n' ...
             'The file will be downloaded and placed to\n%s\n' ...
             'This destination directory can be changed from\n' ...
             'Menu->File->Preferences->External directories'], targetNetwork, strrep(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, '\','/'));
-        options.TitleLines = 9;                   % [optional] make it twice tall, number of text lines for the title
-        options.WindowWidth = 1.5; 
+        options.HeaderLines = 9;
+        options.WindowWidth = 680;
         options.HelpUrl = 'http://mib.helsinki.fi/help/main2/ug_gui_menu_tools_deeplearning.html';
-        [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
         if isempty(answer); net = []; return; end 
 
         switch answer{1}

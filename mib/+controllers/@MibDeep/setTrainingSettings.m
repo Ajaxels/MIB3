@@ -1,8 +1,6 @@
 function setTrainingSettings(obj)
 % function setTrainingSettings(obj)
     % update settings for training of networks
-    global mibPath;
-
     prompts = {'solverName, solver for training network'; ...
         'MaxEpochs, maximum number of epochs to use for training [30]'; ...
         'Shuffle, options for data shuffling [once]'; ...
@@ -41,13 +39,13 @@ function setTrainingSettings(obj)
         2, 3, 2, 3, 2, 3, 2, 3, 1, 2, 2];   % [optional] number of lines for widget titles
     %options.Title = 'My test Input dialog';   % [optional] additional text at the top of the window
     %options.TitleLines = 2;                   % [optional] make it twice tall, number of text lines for the title
-    options.WindowWidth = 1.9;    % [optional] make window x1.2 times wider
+    options.WindowWidth = 860;
     options.Columns = 2;    % [optional] define number of columns
     options.Focus = 1;      % [optional] define index of the widget to get focus
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/trainingoptions.html'; % [optional], an url for the Help button
     %options.LastItemColumns = 1; % [optional] force the last entry to be on a single column
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     obj.TrainingOpt.solverName = answer{1};

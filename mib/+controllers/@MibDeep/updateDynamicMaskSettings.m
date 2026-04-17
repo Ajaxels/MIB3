@@ -4,8 +4,6 @@ function updateDynamicMaskSettings(obj)
     % prediction using blockedimage mode
     % the settings are stored in obj.DynamicMaskOpt
 
-    global mibPath;
-
     % 'Keep above threshold' or 'Keep below threshold'
     prompts = {...
         sprintf('Masking method:\n"Keep above threshold" - threshold the image and process only the areas that are above the specified threshold\n"Keep below threshold" - threshold the image and process only the areas that are below the specified threshold'); ...
@@ -18,8 +16,8 @@ function updateDynamicMaskSettings(obj)
     dlgTitle = 'Dynamic masking settings';
     options.WindowStyle = 'normal';
     options.PromptLines = [3, 1, 3];
-    options.WindowWidth = 2.0;
-    answer = mibInputMultiDlg({mibPath}, '', prompts, defAns, dlgTitle, options);
+    options.WindowWidth = 900;
+    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     if str2double(answer{3}) < 0 || str2double(answer{3}) > 1

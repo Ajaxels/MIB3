@@ -16,10 +16,10 @@ function exportNetwork(obj)
     options.PromptLines = [1, 1, 1];
     header = sprintf('Convert and export the network to ONNX or TensorFlow format');
     options.HeaderLines = 1;
-    options.WindowWidth = 1.2;
+    options.WindowWidth = 540;
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/exportonnxnetwork.html';
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, header, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     exportFormat = answer{1};
@@ -85,12 +85,12 @@ function exportNetwork(obj)
     switch exportFormat
         case 'ONNX'
             try
-                exportONNXNetwork(lgraph, outoutFilename, 'OpsetVersion', opsetVersion);
+                utils.deepmib.exportONNXNetwork(lgraph, outoutFilename, 'OpsetVersion', opsetVersion);
             catch err
                 % when addSpkgBinPath is not patched a second attempt to export is needed
                 % line 6: should be "if isempty(pathSet) && ~isdeployed"
                 try
-                    exportONNXNetwork(lgraph, outoutFilename, 'OpsetVersion', opsetVersion);
+                    utils.deepmib.exportONNXNetwork(lgraph, outoutFilename, 'OpsetVersion', opsetVersion);
                 catch err2
                     delete(wb);
                     reply = uiconfirm(obj.view.gui, ...

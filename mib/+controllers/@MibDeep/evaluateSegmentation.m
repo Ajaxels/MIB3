@@ -2,8 +2,6 @@ function evaluateSegmentation(obj)
 % function evaluateSegmentation(obj)
 % evaluate segmentation results by comparing predicted models
 % with the ground truth models
-global mibPath;
-
 % check for evaluation of patches in the patch-wise mode
 if exist(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'patchPredictionResults.mat'), 'file') == 2
     obj.evaluateSegmentationPatches();
@@ -52,14 +50,14 @@ defAns = {obj.mibModel.preferences.Deep.Metrics.Accuracy; ...
     };
 
 dlgTitle = 'Evaluation settings';
-options.Title = sprintf('Please select the metrics from the options below\nKeep in mind that the evaluation processs in rather slow\nRatio of execution times for each metric: 0.10 x 0.78 x 0.04 x 0.03 x 0.05');
+options.Header = sprintf('Please select the metrics from the options below\nKeep in mind that the evaluation processs in rather slow\nRatio of execution times for each metric: 0.10 x 0.78 x 0.04 x 0.03 x 0.05');
 options.WindowStyle = 'normal';
 options.PromptLines = [1, 1, 1, 1, 1];
 options.WindowWidth = 2.45;
-options.TitleLines = 3;
+options.HeaderLines = 3;
 options.HelpUrl = 'https://se.mathworks.com/help/vision/ref/evaluatesemanticsegmentation.html';
 
-[answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+[answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
 if isempty(answer); return; end
 
 obj.mibModel.preferences.Deep.Metrics.Accuracy = logical(answer{1});
@@ -109,12 +107,12 @@ try
     fullPathFilenames = arrayfun(@(filename) fullfile(truthDir, cell2mat(filename)), {truthList.name}, 'UniformOutput', false);  % generate full paths
     if preprocessedSwitch
         dsTruth = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-            'FileExtensions', '.mibCat', 'ReadFcn', @mibDeepStoreLoadImages);
+            'FileExtensions', '.mibCat', 'ReadFcn', @utils.deepmib.storeLoadImages);
     else
         switch obj.BatchOpt.ModelFilenameExtension{1}
             case 'MODEL'
                 dsTruth = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-                    'FileExtensions', '.model', 'ReadFcn', @mibDeepStoreLoadModel);
+                    'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
                 % I = readimage(dsTruth,1);  % read model test
                 % reset(dsTruth);
             otherwise
@@ -132,7 +130,7 @@ fullPathFilenames = arrayfun(@(filename) fullfile(obj.BatchOpt.ResultingImagesDi
 switch obj.BatchOpt.P_ModelFiles{1}
     case 'MIB Model format'
         dsResults = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-            'FileExtensions', '.model', 'ReadFcn', @mibDeepStoreLoadModel);
+            'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
     case {'TIF compressed format', 'TIF uncompressed format'}
         if strcmp(obj.BatchOpt.Workflow{1}(1:2), '2D')
             dsResults = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
@@ -145,7 +143,7 @@ switch obj.BatchOpt.P_ModelFiles{1}
 end
 
 tic
-pw = PoolWaitbar(2, sprintf('Starting evaluation\nit may take a while...'), [], 'Evaluate segmentation');
+pw = core.PoolWaitbar(2, sprintf('Starting evaluation\nit may take a while...'), obj.view.gui, 'Evaluate segmentation');
 try
     ssm = evaluateSemanticSegmentation(dsResults, dsTruth, 'Metrics', metricsList);
 catch err
@@ -218,10 +216,10 @@ if ismember('IoU', ssm.ClassMetrics.Properties.VariableNames)
         s = sprintf('%s%s:               %f\n', s, ssm.ClassMetrics.Properties.RowNames{i}, ssm.ClassMetrics.IoU(i));
     end
 end
-options.Title = s;
-options.TitleLines = numel(strfind(s, sprintf('\n'))); %#ok<SPRINTFN>
+options.Header = s;
+options.HeaderLines = numel(strfind(s, sprintf('\n'))); %#ok<SPRINTFN>
 options.HelpUrl = 'https://se.mathworks.com/help/vision/ref/evaluatesemanticsegmentation.html';
-options.WindowWidth = 2.0;
+options.WindowWidth = 900;
 options.PromptLines = [1, 1, 1, 1, 3, 1, 1, 1];
 prompts = {'Export to Matlab'; 'Save as Matlab file'; 'Save as Excel file'; 'Save as CSV file';...
     'Calculate occurrence of labels in ground truth and resulting images and Sørensen-Dice similarity (takes extra time)';...
@@ -230,7 +228,7 @@ defAns = {false; false; false; false; ...
     {'Do not calculate', 'Calculate occurrence', 'Calculate Sørensen-Dice similarity', 'Calculate everything', 1}; ...
     NaN; NaN; NaN; };
 options.Columns = 2;
-answer = mibInputMultiDlg({mibPath}, prompts, defAns, 'Evaluation results', options);
+answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Evaluation results', options);
 if isempty(answer); return; end
 
 
@@ -254,7 +252,7 @@ if ~strcmp(answer{5}, 'Do not calculate')
     dsResults.reset();
 
     % make waitbar
-    pw = PoolWaitbar(numel(dsTruth.Files), sprintf('Starting evaluation\nit may take a while...'), [], TitleTest);
+    pw = core.PoolWaitbar(numel(dsTruth.Files), sprintf('Starting evaluation\nit may take a while...'), obj.view.gui, TitleTest);
     pw.setIncrement(10);
     occurrenceGT = [];
     occurrenceRes = [];

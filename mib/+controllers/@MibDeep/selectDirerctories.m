@@ -14,6 +14,7 @@ function selectDirerctories(obj, event)
     end
     selpath = uigetdir(obj.BatchOpt.(fieldName), title);
     if selpath == 0; return; end
+    
     % the two following commands are fix of sending the DeepMIB
     % window behind main MIB window
     drawnow;

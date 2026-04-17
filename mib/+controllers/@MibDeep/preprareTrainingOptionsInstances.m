@@ -95,7 +95,7 @@ try
                 end
 
                 evalTrainingOptions = join([evalTrainingOptions
-                    "'OutputFcn', @(info)mibDeepCustomTrainingProgressDisplay(info, trainingProgressOptions),"
+                    "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                     ], ' ');
             otherwise
                 trainingProgressOptions = struct();
@@ -117,7 +117,7 @@ try
                 end
 
                 evalTrainingOptions = join([evalTrainingOptions
-                    "'OutputFcn', @(info)mibDeepCustomTrainingProgressDisplay(info, trainingProgressOptions),"
+                    "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                     ], ' ');
 
                 % testing DispatchInBackground
@@ -133,7 +133,7 @@ try
         end
     else
         evalTrainingOptions = join([evalTrainingOptions
-            "'OutputFcn', @mibDeepStopTrainingWithoutPlots,"
+            "'OutputFcn', @utils.deepmib.stopTrainingWithoutPlots,"
             ], ' ');
     end
 

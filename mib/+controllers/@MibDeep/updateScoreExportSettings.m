@@ -2,17 +2,15 @@ function updateScoreExportSettings(obj)
     % function updateScoreExportSettings(obj)
     % update export settings for score files
 
-    global mibPath;
-
     prompts = {sprintf('Export exterior material')};
     defAns = {obj.ScoreExportOpt.IncludeExterior};
     dlgTitle = 'Export scores settings';
     
     options.WindowStyle = 'normal';
-    options.Title = sprintf('Additional settings for export of score files\nOnly for Blocked-image engine'); 
-    options.TitleLines = 2;                  
+    options.Header = sprintf('Additional settings for export of score files\nOnly for Blocked-image engine');
+    options.HeaderLines = 2;
 
-    answer = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
     obj.ScoreExportOpt.IncludeExterior = logical(answer{1});
 

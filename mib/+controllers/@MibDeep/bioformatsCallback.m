@@ -17,9 +17,9 @@ function bioformatsCallback(obj, event)
 
     obj.view.handles.(indexFieldName).Enable = 'on';
     if obj.BatchOpt.(bioformatsFileName)    % bio formats checkbox ticked
-        obj.BatchOpt.(extensionFieldName){2} = upper(obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false)); %{'LEI', 'ZVI'};
-    else
         obj.BatchOpt.(extensionFieldName){2} = upper(obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'BioFormats', false)); %{'AM', 'PNG', 'TIF'};
+    else
+        obj.BatchOpt.(extensionFieldName){2} = upper(obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false)); %{'LEI', 'ZVI'};
         %                 if strcmp(indexFieldName, 'BioformatsTrainingIndex')
         %                     obj.view.handles.(indexFieldName).Enable = 'off';
         %                 end

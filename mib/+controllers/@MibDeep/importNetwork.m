@@ -9,8 +9,6 @@ function importNetwork(obj)
 % % save network to a file
 % save('myNewNetwork.mat', 'net', '-mat');
 % % use Import opetation to load and adapt the network for use with DeepMIB
-global mibPath;
-
 if obj.mibController.matlabVersion < 9.11 % 'Interpreter' is available only from R2021b
     selection = uiconfirm(obj.view.gui,...
         sprintf('[BETA] The following operation is allowing to import a network designed or trained externally\nResult of the operation is generation of "mibCfg" and "mibDeep" files that can be used with DeepMIB\n\nBefore proceeding please make sure that the most closest architecture is selected in DeepMIB settings and all other relevant parameter (e.g. directories) are specified. Check <a href="http://mib.helsinki.fi/help/main2/ug_gui_menu_tools_deeplearning.html#6">Help</a> for details.\n\nSupported formats:\n-Matlab'),...
@@ -24,7 +22,7 @@ if strcmp(selection, 'Cancel'); return; end
 
 fileFilters = {'*.mat;', 'Matlab format (*.mat)';
     '*.*', 'All files (*.*)'};
-[filenameIn, pathIn, selectedIndx] = mib_uigetfile(fileFilters, 'Select network file', obj.mibModel.currentDirectory);
+[filenameIn, pathIn, selectedIndx] = utils.dlgs.mibUiGetFile(fileFilters, 'Select network file', obj.mibModel.currentDirectory);
 if isequal(filenameIn, 0); return; end
 filenameIn = filenameIn{1};
 
@@ -42,7 +40,7 @@ switch fileFilters{selectedIndx, 2}
             prompts = {'Select the variable containing the network:'};
             defAns = {fieldNamesList, 1};
             dlgTitle = 'Import network';
-            [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle);
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle);
             if isempty(answer); return; end
 
             wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Importing the network\nPlease wait...'), ...
@@ -89,7 +87,7 @@ switch fileFilters{selectedIndx, 2}
         defAns = {num2str(outputPatchSize)};
         dlgTitle = 'Import network';
         inputDlgOpt.PromptLines = 2;
-        [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, inputDlgOpt);
+        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, inputDlgOpt);
         if isempty(answer); delete(wb); return; end
         outputPatchSize = str2num(answer{1});
 

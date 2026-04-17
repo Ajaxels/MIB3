@@ -6,7 +6,7 @@ function loadConfig(obj, configName)
 % configName: full filename for the config file to load
 
 if nargin < 2
-    [file, projectPath] = mib_uigetfile({'*.mibCfg;', 'Deep MIB config files (*.mibCfg)';
+    [file, projectPath] = utils.dlgs.mibUiGetFile({'*.mibCfg;', 'Deep MIB config files (*.mibCfg)';
         '*.mat', 'Mat files (*.mat)'}, 'Open network file', ...
         obj.BatchOpt.NetworkFilename);
     if isequal(file, 0); return; end
@@ -61,7 +61,7 @@ if ~isfield(res.BatchOpt, 'T_ActivationLayer')
 end
 
 % update res.BatchOpt to be compatible with DeepMIB v2.83
-res = correctBatchOpt(obj, res);
+res = obj.correctBatchOpt(res);
 if isempty(res); delete(obj.wb); return; end
 obj.wb.Value = 0.4;
 
@@ -81,7 +81,7 @@ end
 
 % add/update BatchOpt with the provided fields in BatchOptIn
 % combine fields from input and default structures
-obj.BatchOpt = updateBatchOptCombineFields_Shared(obj.BatchOpt, res.BatchOpt);
+obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, res.BatchOpt);
 if ~strcmp(obj.view.handles.T_EncoderNetwork.Value, obj.BatchOpt.T_EncoderNetwork{1})
     obj.view.handles.T_EncoderNetwork.Value = obj.BatchOpt.T_EncoderNetwork{1};
     event.Source = obj.view.handles.T_EncoderNetwork;
@@ -91,28 +91,28 @@ obj.wb.Value = 0.8;
 
 try
     if isstruct(obj.AugOpt2D.RandScale)
-        obj.AugOpt2D = mibConcatenateStructures(obj.AugOpt2D, res.AugOpt2DStruct);
-        obj.AugOpt3D = mibConcatenateStructures(obj.AugOpt3D, res.AugOpt3DStruct);
+        obj.AugOpt2D = utils.concatenateStructures(obj.AugOpt2D, res.AugOpt2DStruct);
+        obj.AugOpt3D = utils.concatenateStructures(obj.AugOpt3D, res.AugOpt3DStruct);
     else
         % the current obj.AugOpt2D is in the old format, thus
         % overwrite it with settings from the config file
         obj.AugOpt2D = res.AugOpt2DStruct;
         obj.AugOpt3D = res.AugOpt3DStruct;
     end
-    obj.TrainingOpt = mibConcatenateStructures(obj.TrainingOpt, res.TrainingOptStruct);
+    obj.TrainingOpt = utils.concatenateStructures(obj.TrainingOpt, res.TrainingOptStruct);
     % fix an old parameter that is no longer in use
     if strcmp(obj.TrainingOpt.Plots, 'training-progress-Matlab'); obj.TrainingOpt.Plots = 'training-progress'; end
-    obj.InputLayerOpt = mibConcatenateStructures(obj.InputLayerOpt, res.InputLayerOpt);
+    obj.InputLayerOpt = utils.concatenateStructures(obj.InputLayerOpt, res.InputLayerOpt);
 
     if isfield(res, 'ActivationLayerOpt')   % new in MIB 2.71
-        obj.ActivationLayerOpt = mibConcatenateStructures(obj.ActivationLayerOpt, res.ActivationLayerOpt);
-        obj.SegmentationLayerOpt = mibConcatenateStructures(obj.SegmentationLayerOpt, res.SegmentationLayerOpt);
+        obj.ActivationLayerOpt = utils.concatenateStructures(obj.ActivationLayerOpt, res.ActivationLayerOpt);
+        obj.SegmentationLayerOpt = utils.concatenateStructures(obj.SegmentationLayerOpt, res.SegmentationLayerOpt);
     end
     if isfield(res, 'DynamicMaskOpt')   % new in MIB 2.83
-        obj.DynamicMaskOpt = mibConcatenateStructures(obj.DynamicMaskOpt, res.DynamicMaskOpt);
+        obj.DynamicMaskOpt = utils.concatenateStructures(obj.DynamicMaskOpt, res.DynamicMaskOpt);
     end
     if isfield(res, 'ScoreExportOpt')   % new in MIB 2.9113
-        obj.ScoreExportOpt = mibConcatenateStructures(obj.ScoreExportOpt, res.ScoreExportOpt);
+        obj.ScoreExportOpt = utils.concatenateStructures(obj.ScoreExportOpt, res.ScoreExportOpt);
     end
 catch err
     % when the training was stopped before finish,

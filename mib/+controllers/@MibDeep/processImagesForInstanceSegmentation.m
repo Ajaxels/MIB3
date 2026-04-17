@@ -58,9 +58,8 @@ numImgFiles = numel(imgFilelist);
 
 obj.BatchOpt.showWaitbar = true;
 if obj.BatchOpt.showWaitbar
-    pwb = PoolWaitbar(1, sprintf('Creating labels datastore\nPlease wait...'), [], ...
-        sprintf('%s %s: processing for %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}, preprocessFor), ...
-        obj.view.gui);
+    pwb = core.PoolWaitbar(1, sprintf('Creating labels datastore\nPlease wait...'), obj.view.gui, ...
+        sprintf('%s %s: processing for %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}, preprocessFor));
 else
     pwb = [];
 end
@@ -141,7 +140,7 @@ if labelsExists
                 case 'MODEL'
                     labelsDS = imageDatastore(fullfile(imageDirIn, 'Labels'), ...
                         'IncludeSubfolders', false, ...
-                        'FileExtensions', '.model', 'ReadFcn', @mibDeepStoreLoadModel);
+                        'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
                     % I = readimage(labelsDS,1);  % read model test
                     % reset(labelsDS);
                 otherwise
@@ -206,7 +205,7 @@ parfor (imgId=1:numImgFiles, parforArg)
             end
 
             % save mat-file
-            saveInstanceLabelsParFor(fullfile(outputDir, [fnModOut '.mat']), imgFilelist(imgId).name, instanceBoxes, instanceNames, instanceMasks, compressModels)
+            utils.deepmib.saveInstanceLabelsParFor(fullfile(outputDir, [fnModOut '.mat']), imgFilelist(imgId).name, instanceBoxes, instanceNames, instanceMasks, compressModels)
         else   % 3D case
             
         end

@@ -3,7 +3,7 @@ function duplicateConfigAndNetwork(obj)
     % copy the network file and its config to a new filename
 
     currPath = fileparts(obj.BatchOpt.NetworkFilename);
-    [currFile, currPath] = mib_uigetfile({'*.mibDeep', 'mibDeep Files (*.mibDeep)'}, ...
+    [currFile, currPath] = utils.dlgs.mibUiGetFile({'*.mibDeep', 'mibDeep Files (*.mibDeep)'}, ...
         'Select source network', currPath);
     if isequal(currFile, 0); return; end
     currFile = currFile{1};

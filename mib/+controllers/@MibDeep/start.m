@@ -3,7 +3,6 @@ function start(obj, event)
     % start calcualtions, depending on the selected tab
     % preprocessing, training, or prediction is initialized
 
-    global mibPath
     global mibDeepStopTraining     % variable to define stop of training (when true)
 
     if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
@@ -39,12 +38,12 @@ function start(obj, event)
                     defAns = {{'Console printout', 'MATLAB progress window (requires MATLAB)', 1}};
                     dlgTitle = 'Progress window';
                     options.WindowStyle = 'normal';
-                    options.Title = sprintf(['!!! Warning !!!\n\n' ...
+                    options.Header = sprintf(['!!! Warning !!!\n\n' ...
                         'Multi-GPU training is not compatible with the custom MIB progress window!\n' ...
                         'Would you like to use any of these options?']);
-                    options.TitleLines = 5;
-                    options.WindowWidth = 1.2;
-                    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+                    options.HeaderLines = 5;
+                    options.WindowWidth = 540;
+                    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
                     if isempty(answer); return; end
 
                     % turn off custom progress plot

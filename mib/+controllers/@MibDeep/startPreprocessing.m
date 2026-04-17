@@ -6,7 +6,7 @@ function startPreprocessing(obj)
         if ismember(obj.BatchOpt.PreprocessingMode{1}, {'Training and Prediction', 'Training', 'Prediction'})
             mgsOpt.MsgBoxOnly = true;
             header = sprintf('Preprocessing of images is not required for patch-wise workflows');
-            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
             return;
         end
     end

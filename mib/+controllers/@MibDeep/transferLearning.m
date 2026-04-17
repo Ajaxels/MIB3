@@ -3,8 +3,6 @@ function transferLearning(obj)
     % perform fine-tuning of the loaded network to a different
     % number of classes
 
-    global mibPath;
-
     obj.BatchOpt.Mode{1} = 'Predict';   % change the mode, so that selectNetwork function loads the network
     net = obj.selectNetwork();
     if isempty(net); return; end
@@ -15,8 +13,8 @@ function transferLearning(obj)
     [outPath, outNetworkName, outExt] = fileparts(obj.BatchOpt.NetworkFilename);
     outNetworkName = [outNetworkName '_TrLrn'];
 
-    options.Title = sprintf('!!! Attention !!!\nYou are going to modify number of output classes!\nThis operation should be followed with retraining of the network!');
-    options.TitleLines = 3;
+    options.Header = sprintf('!!! Attention !!!\nYou are going to modify number of output classes!\nThis operation should be followed with retraining of the network!');
+    options.HeaderLines = 3;
     prompts = { 'Define new number of classes (including Exterior):';...
         'Segmentation layer:';...
         'New network name:'};
@@ -28,10 +26,10 @@ function transferLearning(obj)
     dlgTitle = 'Transfer learning';
     options.WindowStyle = 'normal';
     options.PromptLines = [1, 1, 1];   % [optional] number of lines for widget titles
-    options.WindowWidth = 1.3;    % [optional] make window x1.2 times wider
+    options.WindowWidth = 580;
     %options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/imagedataaugmenter.html'; % [optional], an url for the Help button
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Performing transfer learning\nPlease wait...'), ...

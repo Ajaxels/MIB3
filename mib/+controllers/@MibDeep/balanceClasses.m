@@ -3,8 +3,6 @@ function balanceClasses(obj)
     % balance classes before training
     % see example from here:
     % https://se.mathworks.com/help/vision/ref/balancepixellabels.html
-    global mibPath;
-
     if ~isfield(obj.sessionSettings, 'numBalanceObservations'); obj.sessionSettings.numBalanceObservations = 200; end
     if ~isfield(obj.sessionSettings, 'balanceObservationsParallel'); obj.sessionSettings.balanceObservationsParallel = false; end
 
@@ -16,19 +14,19 @@ function balanceClasses(obj)
     defAns = {num2str(obj.sessionSettings.numBalanceObservations); num2str(blockSize); obj.BatchOpt.T_NumberOfClasses{1}; obj.sessionSettings.balanceObservationsParallel};
     dlgTitle = 'Settings';
     inputDlgOpt.PromptLines = 1;
-    inputDlgOpt.Title = sprintf(['This is a beta procedure to balance rare classes in the dataset\n' ...
+    inputDlgOpt.Header = sprintf(['This is a beta procedure to balance rare classes in the dataset\n' ...
         'The procedure is implemented only for the 2D Semantic workflow and only for images and labels that are ' ...
         'stored in standard image formats (e.g. TIF, PNG, JPG).\n' ...
         'The images and labels needs to be placed in "Images" and "Labels" subfolders under ' ...
         '"Directories with images and labels for training" specified in the "Directories and preprocessing" tab\n' ...
         'The balanced results are generated under the same directory in ' ...
         '"ImagesBalanced" and "LabelsBalanced" subfolders']);
-    inputDlgOpt.TitleLines = 10;
-    inputDlgOpt.WindowWidth = 1.4;
+    inputDlgOpt.HeaderLines = 10;
+    inputDlgOpt.WindowWidth = 630;
     inputDlgOpt.helpBtnText = 'Info example';
     inputDlgOpt.HelpUrl = 'https://se.mathworks.com/help/vision/ref/balancepixellabels.html';
     inputDlgOpt.WindowStyle = 'normal';
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, inputDlgOpt);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, inputDlgOpt);
     if isempty(answer); return; end
 
     % Speciy number of block locations to sample from the dataset.
@@ -71,7 +69,7 @@ function balanceClasses(obj)
         return
     end
 
-    pw = PoolWaitbar(imageSet.NumFiles, sprintf('Balancing labels\nPlease wait...'));
+    pw = core.PoolWaitbar(imageSet.NumFiles, sprintf('Balancing labels\nPlease wait...'), obj.view.gui);
 
     % Create an array of labeled images from the dataset.
     blockedLabelsList = blockedImage(labelSet);

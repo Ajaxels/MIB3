@@ -1,7 +1,6 @@
 function setActivationLayerOptions(obj)
     % function setActivationLayerOptions(obj)
     % update options for the activation layers
-    global mibPath;
     switch obj.BatchOpt.T_ActivationLayer{1}
         case 'clippedReluLayer'
             prompts = {'Ceiling for input clipping, positive scalar [default=10]'};
@@ -20,7 +19,7 @@ function setActivationLayerOptions(obj)
     options.WindowStyle = 'normal';
     %options.WindowWidth = 1;    % [optional] make window x1.2 times wider
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     switch obj.BatchOpt.T_ActivationLayer{1}

@@ -543,11 +543,7 @@ classdef MibDeep < handle
 
         updateWidgets(obj)        % update widgets of this window
 
-        [patchOut, info, augList, augPars] = mibDeepAugmentAndCrop3dPatchMultiGPU(patchIn, info, inputPatchSize, outputPatchSize, mode, options) % augment patches for 3D in multi-gpu mode
-
-        [patchOut, info, augList, augPars] = mibDeepAugmentAndCrop2dPatchMultiGPU(patchIn, info, inputPatchSize, outputPatchSize, mode, options) %  augment patches for 2D in multi-gpu mode
-
-
+       
         function obj = MibDeep(mibModel, varargin)
             obj.mibModel = mibModel;    % assign model
             obj.mibController = varargin{1};

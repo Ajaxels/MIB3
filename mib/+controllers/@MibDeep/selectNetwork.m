@@ -15,7 +15,7 @@ function net = selectNetwork(obj, networkName)
     switch obj.BatchOpt.Mode{1}
         case 'Predict'
             if isempty(networkName)
-                [file, path] = mib_uigetfile({'*.mibDeep;', 'Deep MIB network files (*.mibDeep)';
+                [file, path] = utils.dlgs.mibUiGetFile({'*.mibDeep;', 'Deep MIB network files (*.mibDeep)';
                     '*.mat', 'Mat files (*.mat)'}, 'Open network file', ...
                     obj.BatchOpt.NetworkFilename);
                 if isequal(file , 0); return; end
@@ -52,7 +52,7 @@ function net = selectNetwork(obj, networkName)
 
             % update res.BatchOpt to be compatible with DeepMIB v2.83
             res = obj.correctBatchOpt(res);
-            obj.BatchOpt = updateBatchOptCombineFields_Shared(obj.BatchOpt, res.BatchOpt);
+            obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, res.BatchOpt);
 
             try
                 if isfield(res.AugOpt2DStruct, 'ImageBlur') == 0
@@ -64,12 +64,12 @@ function net = selectNetwork(obj, networkName)
                     header = sprintf('You are loading an old config file with a smaller number of augmentation options.\nThe loaded settings were merged with the current ones!');
                     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Merge augmentation settings', mgsOpt);
                 else
-                    obj.AugOpt2D = mibConcatenateStructures(obj.AugOpt2D, res.AugOpt2DStruct);
+                    obj.AugOpt2D = utils.concatenateStructures(obj.AugOpt2D, res.AugOpt2DStruct);
                 end
-                obj.TrainingOpt = mibConcatenateStructures(obj.TrainingOpt, res.TrainingOptStruct);
+                obj.TrainingOpt = utils.concatenateStructures(obj.TrainingOpt, res.TrainingOptStruct);
                 if strcmp(obj.TrainingOpt.Plots, 'training-progress-Matlab'); obj.TrainingOpt.Plots = 'training-progress'; end
-                obj.InputLayerOpt = mibConcatenateStructures(obj.InputLayerOpt, res.InputLayerOpt);
-                obj.AugOpt3D = mibConcatenateStructures(obj.AugOpt3D, res.AugOpt3DStruct);
+                obj.InputLayerOpt = utils.concatenateStructures(obj.InputLayerOpt, res.InputLayerOpt);
+                obj.AugOpt3D = utils.concatenateStructures(obj.AugOpt3D, res.AugOpt3DStruct);
 
                 if ~isfield(obj.TrainingOpt, 'GradientDecayFactor')     % add new fields in MIB 2.71
                     obj.TrainingOpt.GradientDecayFactor = 0.9;

@@ -1,8 +1,6 @@
 function setSegmentationLayerOptions(obj)
     % function setSegmentationLayerOptions(obj)
     % update options for the activation layers
-    global mibPath;
-
     switch obj.BatchOpt.T_SegmentationLayer{1}
         case 'focalLossLayer'
             prompts = {sprintf('Alpha, balancing parameter of the focal loss function\nThe Alpha value scales the loss function linearly, when decreasing Alpha, increase Gamma\npositive real number, [default=0.25]'); ...
@@ -14,14 +12,14 @@ function setSegmentationLayerOptions(obj)
             prompts = {sprintf('Exclude the Exterior (default: false)')};
             defAns = {obj.SegmentationLayerOpt.dicePixelCustom.ExcludeExerior};
             options.PromptLines = 3;
-            options.TitleLines = 4;
-            options.Title = sprintf('EXPERIMENTAL!\nExclude the Exterior (background) class\nfrom calculation of the loss function\n(disabled when 0-pixels used as mask)');
+            options.HeaderLines = 4;
+            options.Header = sprintf('EXPERIMENTAL!\nExclude the Exterior (background) class\nfrom calculation of the loss function\n(disabled when 0-pixels used as mask)');
     end
     dlgTitle = 'Segmentation layer options';
     options.WindowStyle = 'normal';
-    options.WindowWidth = 1.2;    % [optional] make window x1.2 times wider
+    options.WindowWidth = 540;
 
-    [answer, selIndex] = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     switch obj.BatchOpt.T_SegmentationLayer{1}

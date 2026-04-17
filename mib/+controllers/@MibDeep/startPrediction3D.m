@@ -41,7 +41,7 @@ function startPrediction3D(obj)
         saveImageOpt.dimOrder = 'yxzct';
     end
 
-    if obj.BatchOpt.showWaitbar; pwb = PoolWaitbar(1, 'Creating image store for prediction...', [], 'Predicting dataset', obj.view.gui); end
+    if obj.BatchOpt.showWaitbar; pwb = core.PoolWaitbar(1, 'Creating image store for prediction...', obj.view.gui, 'Predicting dataset'); end
 
     % creating output directories
     warning('off', 'MATLAB:MKDIR:DirectoryExists');
@@ -83,13 +83,13 @@ function startPrediction3D(obj)
     try
         if preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages'), ...
-                'FileExtensions', '.mibImg', 'ReadFcn', @mibDeepStoreLoadImages);
+                'FileExtensions', '.mibImg', 'ReadFcn', @utils.deepmib.storeLoadImages);
         else    % without preprocessing
             fnExtention = lower(['.' obj.BatchOpt.ImageFilenameExtension{1}]);
             imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images'), ...
                 'FileExtensions', fnExtention, ...
                 'IncludeSubfolders', false, ...
-                'ReadFcn', @(fn)mibDeepStoreLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');

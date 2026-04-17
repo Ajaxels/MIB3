@@ -3,8 +3,6 @@ function sendReportsCallback(obj)
     % define parameters for sending progress report to the user's
     % email address
 
-    global mibPath;
-
     obj.SendReports.T_SendReports = obj.view.handles.T_SendReports.Value;
     if obj.SendReports.T_SendReports == 0; return; end
 
@@ -20,13 +18,14 @@ function sendReportsCallback(obj)
     options.PromptLines = [1,1,1,1,1,1,1,2,2,2];
     options.WindowWidth = 1.4;
     options.helpBtnText = 'Test connection';
-    options.Title = sprintf(['Use this dialog to specify settings for email notifications' ...
+    options.Header = sprintf(['Use this dialog to specify settings for email notifications' ...
         'that are sent to your inbox.\nConnection can be checked by pressing ' ...
         'the "Test connection" button in the left bottom corner.' ...
         'To check connection reopen this dialog!']);
-    options.TitleLines = 5;
+    options.HeaderLines = 5;
+    options.WindowWidth = 630;
     options.HelpUrl = sprintf('sendmail("%s", "Greetings from DeepMIB", "If you received this email, connection from DeepMIB to your email works fine!");', obj.SendReports.TO_email);
-    answer = mibInputMultiDlg({mibPath}, prompts, defAns, dlgTitle, options);
+    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     obj.SendReports.TO_email = answer{1};
@@ -42,8 +41,8 @@ function sendReportsCallback(obj)
         prompts2 = {'Here is the password for connection to SMTP server:'};
         defAns2 = {obj.SendReports.SMTP_password};
         options2.okBtnText = 'Update';
-        options2.WindowWidth = 2;
-        answer2 = mibInputMultiDlg({mibPath}, prompts2, defAns2, 'SMTP password', options2);
+        options2.WindowWidth = 900;
+        answer2 = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts2, defAns2, 'SMTP password', options2);
         if ~isempty(answer2); obj.SendReports.SMTP_password = answer2{1}; end
     end
     obj.SendReports.sendWhenFinished = logical(answer{9});

@@ -60,15 +60,16 @@ function processImages(obj, preprocessFor)
     %% Load data
     if ~isfolder(fullfile(imageDirIn, 'Images'))
         mgsOpt.MsgBoxOnly = true;
-        header = sprintf('The images and models should be arranged in "Images" and "Labels" directories under\n\n%s\n\nCopy files there and try again!', imageDirIn);
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Old project or missing files', mgsOpt);
+        mgsOpt.WindowWidth = 600;
+        mgsOpt.WindowHeight = 200;
+        msgText = sprintf('The images and models should be arranged in "Images" and "Labels" directories under\n\n%s\n\nCopy files there and try again!', imageDirIn);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, '', {}, {msgText}, 'Old project or missing files', mgsOpt);
         return;
     end
 
     if obj.BatchOpt.showWaitbar
-        pwb = PoolWaitbar(1, sprintf('Creating image datastore\nPlease wait...'), [], ...
-            sprintf('%s %s: processing for %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}, preprocessFor), ...
-            obj.view.gui);
+        pwb = core.PoolWaitbar(1, sprintf('Creating image datastore\nPlease wait...'), obj.view.gui, ...
+            sprintf('%s %s: processing for %s', obj.BatchOpt.Workflow{1}, obj.BatchOpt.Architecture{1}, preprocessFor));
     else
         pwb = [];
     end
@@ -76,24 +77,13 @@ function processImages(obj, preprocessFor)
 
     % make datastore for images
     try
-        switch lower(['.' imageFilenameExtension])
-            case '.am'
-                getDataOptions.getMeta = false;     % do not process meta data in amiramesh files
-                getDataOptions.verbose = false;     % do not display info about loaded image
-                imgDS = imageDatastore(fullfile(imageDirIn, 'Images'), ...
-                    'FileExtensions', lower(['.' imageFilenameExtension]),...
-                    'IncludeSubfolders', false, ...
-                    'ReadFcn', @(fn)amiraMesh2bitmap(fn, getDataOptions));
-
-            otherwise
-                getDataOptions.mibBioformatsCheck = mibBioformatsCheck;
-                getDataOptions.verbose = false;
-                getDataOptions.BioFormatsIndices = BioFormatsIndices;
-                imgDS = imageDatastore(fullfile(imageDirIn, 'Images'), ...
-                    'FileExtensions', lower(['.' imageFilenameExtension]), ...
-                    'IncludeSubfolders', false, ...
-                    'ReadFcn', @(fn)mibLoadImages(fn, getDataOptions));
-        end
+        getDataOptions.verbose = false;
+        getDataOptions.mibBioformatsCheck = mibBioformatsCheck;
+        getDataOptions.BioFormatsIndices = BioFormatsIndices;
+        imgDS = imageDatastore(fullfile(imageDirIn, 'Images'), ...
+            'FileExtensions', lower(['.' imageFilenameExtension]), ...
+            'IncludeSubfolders', false, ...
+            'ReadFcn', @(fn)io.loadImagesWrapper(fn, getDataOptions));
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
         if obj.BatchOpt.showWaitbar; delete(pwb); end
@@ -259,7 +249,7 @@ function processImages(obj, preprocessFor)
                     case 'MODEL'
                         modDS = imageDatastore(fullfile(imageDirIn, 'Labels'), ...
                             'IncludeSubfolders', false, ...
-                            'FileExtensions', '.model', 'ReadFcn', @mibDeepStoreLoadModel);
+                            'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
                         % I = readimage(modDS,1);  % read model test
                         % reset(modDS);
                     otherwise
@@ -281,7 +271,7 @@ function processImages(obj, preprocessFor)
                             case 'MASK'
                                 maskDS = imageDatastore(fullfile(imageDirIn, 'Masks'), ...
                                     'IncludeSubfolders', false, ...
-                                    'FileExtensions', '.mask', 'ReadFcn', @mibDeepStoreLoadImages);
+                                    'FileExtensions', '.mask', 'ReadFcn', @utils.deepmib.storeLoadImages);
                             otherwise
                                 maskDS = imageDatastore(fullfile(imageDirIn, 'Masks'), ...
                                     'IncludeSubfolders', false, 'FileExtensions', lower(['.' obj.BatchOpt.MaskFilenameExtension{1}]));
@@ -306,11 +296,11 @@ function processImages(obj, preprocessFor)
             try
                 modDS = imageDatastore(fullfile(imageDirIn, 'Labels'), ...
                     'IncludeSubfolders', false, ...
-                    'FileExtensions', '.model', 'ReadFcn', @mibDeepStoreLoadModel);
+                    'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
                 if MaskAwayParFor && trainingSwitch     % do not use masks for prediction
                     maskDS = imageDatastore(fullfile(imageDirIn, 'Masks'), ...
                         'IncludeSubfolders', false, ...
-                        'FileExtensions', '.mask', 'ReadFcn', @mibDeepStoreLoadImages);
+                        'FileExtensions', '.mask', 'ReadFcn', @utils.deepmib.storeLoadImages);
                 end
             catch err
                 utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
@@ -387,9 +377,9 @@ function processImages(obj, preprocessFor)
             labelDir = fullfile(ResultingImagesDirParFor, 'PredictionImages', 'GroundTruthLabels');
         end
 
-        mibImg = readimage(imgDS, imgId);   % read image as [height, width, color, depth]
+        mibImg = readimage(imgDS, imgId);   % read image as [height, width, depth, color, time]
         if convertToRGB % grayscale image needs to be converted to RGB
-            mibImg = repmat(mibImg, [1, 1, 3, 1]);
+            mibImg = repmat(mibImg, [1, 1, 1, 3, 1]);
         end
 
         [~, fnOut] = fileparts(imgDS.Files{imgId});    % get filename of the image
@@ -397,10 +387,6 @@ function processImages(obj, preprocessFor)
         %                     fprintf('!!! Warning !!! Normalizing images!\n')
         %                     outImg = obj.channelWisePreProcess(outImg);     % normalize the signals, remove outliers and scale between 0 and 1
         %                 end
-
-        if ndims(mibImg) == 4
-            mibImg = permute(mibImg, [1 2 4 3]);    % permute from [height, width, color, depth] -> [height, width, depth, color]
-        end
 
         % saving image
         fn = fullfile(imDir, sprintf('%s.mibImg', fnOut));

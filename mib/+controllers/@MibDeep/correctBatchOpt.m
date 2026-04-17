@@ -73,10 +73,10 @@ function res = correctBatchOpt(obj, res)
         end
 
     if ~isfield(res.AugOpt2DStruct, 'RandScale') || ~isstruct(res.AugOpt2DStruct.RandScale)
-        res.AugOpt2DStruct = mibDeepConvertOldAugmentationSettingsToNew(res.AugOpt2DStruct, '2D');
+        res.AugOpt2DStruct = utils.deepmib.oldAugSettingsToNew(res.AugOpt2DStruct, '2D');
     end
     if ~isfield(res.AugOpt3DStruct, 'RandScale') || ~isstruct(res.AugOpt3DStruct.RandScale)
-        res.AugOpt3DStruct = mibDeepConvertOldAugmentationSettingsToNew(res.AugOpt3DStruct, '3D');
+        res.AugOpt3DStruct = utils.deepmib.oldAugSettingsToNew(res.AugOpt3DStruct, '3D');
     end
 end
 
