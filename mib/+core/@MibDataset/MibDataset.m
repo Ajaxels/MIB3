@@ -216,10 +216,46 @@ classdef MibDataset < matlab.mixin.Copyable
             %   @li 'Standard' - standard image, one that is loaded to memory completely
             %   @li 'Virtual' - virtual dataset that is loaded upon demand
             %   @li 'BigData' - big-data compatible dataset
-            % modelType: type of the labels, 
+            % modelType: type of the labels,
             % .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
             % .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
             % .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
+            %
+            % @b Examples:
+            % @code
+            % % Minimal: create an empty dataset
+            % ds = core.MibDataset();
+            % @endcode
+            % @code
+            % % Create from a raw uint8 volume (grayscale, 1 z-slice)
+            % vol = imread('myImage.tif');                    % [H, W] or [H, W, C]
+            % ds = core.MibDataset(vol);
+            % @endcode
+            % @code
+            % % Create from a 3D stack with labels support (63 materials)
+            % vol = zeros(512, 512, 1, 40, 'uint8');          % [H, W, C, Z]
+            % ds = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
+            % ds.image.pixSize.x = 0.013;
+            % ds.image.pixSize.y = 0.013;
+            % ds.image.pixSize.z = 0.030;
+            % ds.image.sliceName = {'myStack.tif'};
+            % ds.updateBoundingBox([], [0 0 0]);
+            % @endcode
+            % @code
+            % % Create with metadata pre-filled via dictionary
+            % meta = dictionary();
+            % meta('filename') = 'C:\data\myImage.tif';
+            % ds = core.MibDataset(vol, meta, 'Standard', 'labels63');
+            % @endcode
+            % @code
+            % % Replace the active dataset in the model with a freshly loaded volume
+            % vol = webread('http://example.com/data.raw', weboptions('ContentType','raw'));
+            % vol = reshape(vol, [372 521 1 75]);
+            % obj.mibModel.I{obj.mibModel.id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
+            % obj.mibModel.I{obj.mibModel.id}.image.sliceName = {fullfile(obj.mibModel.currentDirectory, 'data.tif')};
+            % notify(obj.mibModel, 'NewDataset');
+            % notify(obj.mibModel, 'ShowImage');
+            % @endcode
 
             if nargin < 4; modelType = 'imageOnly'; end
             if nargin < 3; datasetType = 'Standard'; end

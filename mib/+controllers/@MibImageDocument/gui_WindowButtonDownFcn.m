@@ -147,6 +147,8 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
         % with large images where loading the full image would be too slow.
         getDimsOpts.blockModeSwitch = false;
         [imgFullHeight, imgFullWidth] = dataset.getDatasetDimensions('image', [], getDimsOpts);
+        if numel(axesX) < 2 || isnan(axesX(1)); axesX = [1, imgFullWidth]; end
+        if numel(axesY) < 2 || isnan(axesY(1)); axesY = [1, imgFullHeight]; end
         viewportW = axesX(2) - axesX(1);
         viewportH = axesY(2) - axesY(1);
 

@@ -92,6 +92,8 @@ try
             magFactor = dataset.magFactor;
             axesX = dataset.axesX;
             axesY = dataset.axesY;
+            if numel(axesX) < 2 || isnan(axesX(1)); axesX = [1, dataset.dim_yxzct(2)]; end
+            if numel(axesY) < 2 || isnan(axesY(1)); axesY = [1, dataset.dim_yxzct(1)]; end
 
             % coef_z for anisotropic voxel stretching
             switch orientation

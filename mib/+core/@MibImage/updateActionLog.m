@@ -1,29 +1,71 @@
-function updateActionLog(obj, logEntry)
-% function updateActionLog(obj, logEntry)
-% Append a new timestamped entry to the action log of the MibImage instance.
-%
-% The current date/time stamp is prepended automatically in the format
-% 'MIB(yymmddHHMM): <logEntry>'. When logEntry is omitted or empty
-% the call is a no-op.
+% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
+% Date: 25.04.2023
+% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
+
+function updateActionLog(obj, logEntry, action, entryIndex)
+% function updateActionLog(obj, logEntry, action, entryIndex)
+% Append or modify a timestamped entry in the action log (obj.actionLog).
 %
 % Parameters:
-% logEntry: [@em optional] char or string, description of the processing step
-%   to record, e.g. 'ImFilter: Median, HSize:3 3, Orient:4'.
-%   When omitted or empty, no entry is added.
+% logEntry: [char or string] description of the processing step to record,
+%   e.g. 'ImFilter: Median, HSize:3 3, Orient:4'. Pass '' when only
+%   performing a delete action.
+% action: [@em optional] additional operation to perform:
+%   @li 'insert' - insert new entry before position entryIndex
+%   @li 'delete' - delete entry at position entryIndex (logEntry ignored)
+%   @li 'modify' - overwrite entry at position entryIndex
+%   when omitted, entry is appended to the end
+% entryIndex: [@em optional] 1-based index for 'insert', 'delete', 'modify'
 %
 % Return values:
 % (none) — modifies obj.actionLog in place.
 %
-
-%|
 % @b Examples:
 % @code
-% obj.mibModel.I{obj.mibModel.id}.image.updateActionLog('ImFilter: Median, HSize:3 3, Orient:4');
+% obj.image.updateActionLog('ImFilter: Median, HSize:3 3, Orient:4');
+% @endcode
+% @code
+% obj.image.updateActionLog('MIB demo dataset', 'insert', 2);
+% @endcode
+% @code
+% obj.image.updateActionLog('', 'delete', 4);
+% @endcode
+% @code
+% obj.image.updateActionLog('Updated text', 'modify', 4);
 % @endcode
 
 % Updates
 % 11.04.2026 - created
+% 18.04.2026 - added action/entryIndex parameters
 
-if nargin < 2 || isempty(logEntry); return; end
-obj.actionLog{end+1} = sprintf('MIB(%s): %s', datestr(now, 'yymmddHHMM'), char(logEntry));
+if nargin < 2; logEntry = ''; end
+if isempty(logEntry) && (nargin < 3); return; end
+
+stamp = sprintf('MIB(%s): %s', datestr(now, 'yymmddHHMM'), char(logEntry));
+
+if nargin < 3   % simple append
+    obj.actionLog{end+1} = stamp;
+    return;
+end
+
+switch action
+    case 'insert'
+        if nargin < 4 || isempty(entryIndex) || entryIndex > numel(obj.actionLog)
+            obj.actionLog{end+1} = stamp;
+        else
+            obj.actionLog = [obj.actionLog(1:entryIndex-1), {stamp}, obj.actionLog(entryIndex:end)];
+        end
+    case 'delete'
+        if nargin >= 4 && ~isempty(entryIndex) && entryIndex <= numel(obj.actionLog)
+            obj.actionLog(entryIndex) = [];
+        end
+    case 'modify'
+        if nargin >= 4 && ~isempty(entryIndex) && entryIndex <= numel(obj.actionLog)
+            obj.actionLog{entryIndex} = stamp;
+        end
+    otherwise
+        if ~isempty(logEntry)
+            obj.actionLog{end+1} = stamp;
+        end
+end
 end

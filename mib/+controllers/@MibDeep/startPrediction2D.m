@@ -343,10 +343,10 @@ function startPrediction2D(obj)
                 bitmap2amiraMesh(filename, scoreImg, [], amiraOpt);
             elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
-                saveImageParFor(filename, scoreImg, false, saveImageOpt);
+                utils.deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
             else  % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format',
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
-                saveImageParFor(filename, scoreImg, generateScoreFiles, saveImageOpt);
+                utils.deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles, saveImageOpt);
             end
         end
 

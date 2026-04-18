@@ -83,10 +83,10 @@ function processImages(obj, preprocessFor)
         imgDS = imageDatastore(fullfile(imageDirIn, 'Images'), ...
             'FileExtensions', lower(['.' imageFilenameExtension]), ...
             'IncludeSubfolders', false, ...
-            'ReadFcn', @(fn)io.loadImagesWrapper(fn, getDataOptions));
+            'ReadFcn', @(fn)io.loadImagesWrapper(fn, getDataOptions));   % read as [y,x,z,c]
     catch err
-        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
         if obj.BatchOpt.showWaitbar; delete(pwb); end
+        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
         return;
     end
 
@@ -115,8 +115,8 @@ function processImages(obj, preprocessFor)
             end
         end
     catch err
-        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Problems with removing directories');
         if obj.BatchOpt.showWaitbar; delete(pwb); end
+        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Problems with removing directories');
         return;
     end
 
@@ -145,10 +145,12 @@ function processImages(obj, preprocessFor)
         % read number of materials for the first file
         files = dir(fullfile(imageDirIn, 'Labels', '*.model'));
         if isempty(files) && trainingSwitch
-            mgsOpt.MsgBoxOnly = true;
-            header = sprintf('Model files are missing in\n%s', fullfile(imageDirIn, 'Labels'));
-            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing model files!', mgsOpt);
             if obj.BatchOpt.showWaitbar; delete(pwb); end
+            mgsOpt.MsgBoxOnly = true;
+            mgsOpt.WindowHeight = 200;
+            mgsOpt.WindowWidth = 600;
+            header = 'Model files are missing!';
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {sprintf('Location:\n%s', fullfile(imageDirIn, 'Labels'))}, 'Missing model files!', mgsOpt);
             return;
         elseif ~isempty(files)
             modelFn = fullfile(files(1).folder, files(1).name);
@@ -161,9 +163,7 @@ function processImages(obj, preprocessFor)
         classNames = [{'Exterior'}; classNames'];
         files = dir(fullfile(imageDirIn, 'Labels', lower(['*.' obj.BatchOpt.ModelFilenameExtension{1}]))); % extensions on Linux are case sensitive
 
-        if ~isempty(files)
-            GroundTruthModelSwitch = 1;     % models exists
-        end
+        if ~isempty(files); GroundTruthModelSwitch = 1; end     % models exists
     end
 
     % update number of classes variables
@@ -186,10 +186,10 @@ function processImages(obj, preprocessFor)
         randIndices = randperm(NumFiles);   % Random permutation of integers
         validationIndices = randIndices(1:ceil(obj.BatchOpt.ValidationFraction{1}*NumFiles));   % get indices of images to be used for validation
         if numel(validationIndices) == NumFiles
-            mgsOpt.MsgBoxOnly = true;
-            header = sprintf('With the current settings all images are assigned to the validation set!\nPlease decrease the value in the "Fraction of images for validation" edit box and try again!');
-            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Validation set is too large', mgsOpt);
             if obj.BatchOpt.showWaitbar; delete(pwb); end
+            mgsOpt.MsgBoxOnly = true;
+            msgText = sprintf('With the current settings all images are assigned to the validation set!\nPlease decrease the value in the "Fraction of images for validation" edit box and try again!');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, '', {}, {msgText}, 'Validation set is too large', mgsOpt);
             return;
         end
     else
@@ -237,10 +237,12 @@ function processImages(obj, preprocessFor)
                         fullMaskPathFilenames = arrayfun(@(filename) fullfile(imageDirIn, 'Masks', cell2mat(filename)), {fileList.name}, 'UniformOutput', false);  % generate full paths
                         maskDS = matfile(fullMaskPathFilenames{1});
                     else
-                        mgsOpt.MsgBoxOnly = true;
-                        header = sprintf('The mask files were not found!\nPlace *.mask files under\n\n%s', fullfile(imageDirIn, 'Masks'));
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Mask is missing', mgsOpt);
                         if obj.BatchOpt.showWaitbar; delete(pwb); end
+                        mgsOpt.MsgBoxOnly = true;
+                        mgsOpt.WindowHeight = 210;
+                        mgsOpt.WindowWidth = 600;
+                        msgText = sprintf('Place *.mask files under\n\n%s', fullfile(imageDirIn, 'Masks'));
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, 'The mask files were not found!', {}, {msgText}, 'Mask is missing', mgsOpt);
                         return;
                     end
                 end
@@ -258,10 +260,10 @@ function processImages(obj, preprocessFor)
                             'FileExtensions', lower(['.' obj.BatchOpt.ModelFilenameExtension{1}]));
                 end
                 if numel(modDS.Files) ~= numel(imgDS.Files)
+                    if obj.BatchOpt.showWaitbar; delete(pwb); end
                     mgsOpt.MsgBoxOnly = true;
                     header = sprintf('In this mode number of model files should match number of image files!');
                     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Files number mismatch!', mgsOpt);
-                    if obj.BatchOpt.showWaitbar; delete(pwb); end
                     return;
                 end
 
@@ -303,8 +305,8 @@ function processImages(obj, preprocessFor)
                         'FileExtensions', '.mask', 'ReadFcn', @utils.deepmib.storeLoadImages);
                 end
             catch err
-                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
                 if obj.BatchOpt.showWaitbar; delete(pwb); end
+                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
                 return;
             end
             %outModelFull = zeros([1 1 numel(imgDS.Files)]);
@@ -390,7 +392,7 @@ function processImages(obj, preprocessFor)
 
         % saving image
         fn = fullfile(imDir, sprintf('%s.mibImg', fnOut));
-        saveImageParFor(fn, mibImg, compressImages, saveImageOpt);
+        utils.deepmib.saveImageParFor(fn, mibImg, compressImages, saveImageOpt);
 
         if GroundTruthModelSwitch
             if strcmp(mode2D3DParFor, '2D')
@@ -427,7 +429,7 @@ function processImages(obj, preprocessFor)
             end
 
             fn = fullfile(labelDir, sprintf('%s.mibCat', fnModOut));
-            saveImageParFor(fn, mibImg, compressModels, saveModelOpt);
+            utils.deepmib.saveImageParFor(fn, mibImg, compressModels, saveModelOpt);
         end
         %if pwb.getCancelState(); delete(pwb); imgId = numFiles; end
         if showWaitbarParFor && mod(imgId, 10) == 1; increment(pwb); end

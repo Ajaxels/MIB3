@@ -64,7 +64,7 @@ if ~isempty(obj.data)
     % fix the missing properties in the provided meta class
     if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
     if ~isKey(meta, 'lutColors'); meta{'lutColors'} = utils.defaults.generateLUT(obj.colors); end
-    if isempty(meta{'viewPort'}) || numel(meta{'viewPort'}.min) ~= meta{'Colors'}
+    if isempty(meta{'viewPort'}) || numel(meta{'viewPort'}.min) ~= obj.colors
         viewPort = obj.getDefaultViewPort();
         meta{'viewPort'} = viewPort;
     end
@@ -116,6 +116,11 @@ if ~isempty(obj.data)
         else
             obj.colorType = 'multichannel';
         end
+    end
+    % ensure colorType is consistent with actual data: 'grayscale' is only
+    % valid for single-channel data; upgrade to 'multichannel' otherwise
+    if strcmp(obj.colorType, 'grayscale') && obj.colors > 1
+        obj.colorType = 'multichannel';
     end
 
     % update obj.pyramid

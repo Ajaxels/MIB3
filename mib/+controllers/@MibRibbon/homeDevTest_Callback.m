@@ -13,6 +13,7 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 obj.mibModel.id
+%obj.mibModel.I{obj.mibModel.id}.labels
 
 % opt.Icon = 'puffin_question';
 % opt.DoNotShowAgain = true;

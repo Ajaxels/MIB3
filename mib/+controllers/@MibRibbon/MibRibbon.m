@@ -30,7 +30,7 @@ classdef MibRibbon
         
         homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
 
-        homeExamples_Callback(obj, hWidget, hData)   % callback on press of the Examples buttons in the Home ribbon
+        homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
 
         homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
 
@@ -115,20 +115,20 @@ classdef MibRibbon
             obj.handles.ribbonHome.importFromURL.ItemPushedFcn = @obj.homeImport_Callback;
 
             %% Add Callbacks for the HOME ribbon -> Examples
-            obj.handles.ribbonHome.deepmib2dLargeSpots.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib2dSmallSpots.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib25dLargeSpots.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib2dPatchWise.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib2dMembranesEM.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib2dNucleiLM.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib3dMitoEM.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.deepmib3dHairCellsLM.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.lm3dsimER.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.lm3dsted.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.lmWFbleaching.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.sbfsemHuh7.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.sbfsemTrypanosoma.ItemPushedFcn = @obj.homeExamples_Callback;
-            obj.handles.ribbonHome.mriBrain.ItemPushedFcn = @obj.homeExamples_Callback;
+            obj.handles.ribbonHome.deepmib2dLargeSpots.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Synthetic 2D Large spots'}}));
+            obj.handles.ribbonHome.deepmib2dSmallSpots.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Synthetic 2D small spots'}}));
+            obj.handles.ribbonHome.deepmib25dLargeSpots.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Synthetic 2.5D large spots'}}));
+            obj.handles.ribbonHome.deepmib2dPatchWise.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Synthetic 2D patch-wise'}}));
+            obj.handles.ribbonHome.deepmib2dMembranesEM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'2D EM membranes'}}));
+            obj.handles.ribbonHome.deepmib2dNucleiLM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'2D LM nuclei'}}));
+            obj.handles.ribbonHome.deepmib3dMitoEM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'3D EM mitochondria'}}));
+            obj.handles.ribbonHome.deepmib3dHairCellsLM.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'3D LM hair cells'}}));
+            obj.handles.ribbonHome.lm3dsimER.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'LM 3D SIM ER'}}));
+            obj.handles.ribbonHome.lm3dsted.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'LM 3D STED'}}));
+            obj.handles.ribbonHome.lmWFbleaching.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'LM WF ER photobleaching'}}));
+            obj.handles.ribbonHome.sbfsemHuh7.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Huh7 and model'}}));
+            obj.handles.ribbonHome.sbfsemTrypanosoma.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'Trypanosoma and model'}}));
+            obj.handles.ribbonHome.mriBrain.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'MATLAB Brain and model'}}));
 
             %% Add Callbacks for the HOME ribbon -> Export section 
             obj.handles.ribbonHome.saveFileAs.ButtonPushedFcn = @obj.homeExport_Callback;

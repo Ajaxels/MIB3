@@ -117,7 +117,7 @@ classdef MibImage < matlab.mixin.Copyable
 
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
 
-        updateActionLog(obj, logEntry)    % Append a timestamped log entry to obj.actionLog in place.
+        updateActionLog(obj, logEntry, action, entryIndex)    % Append, insert, delete, or modify a timestamped entry in obj.actionLog.
 
         updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
 

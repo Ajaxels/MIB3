@@ -179,6 +179,11 @@ else
     end
 end
 
+if ismember(type, {'labels', 'everything'})
+    obj.modelExist = true;
+elseif strcmp(type, 'mask')
+    obj.maskExist = true;
+end
 setDataOpt.type = type;
 setDataOpt.mode = '4D';
 eventdata = core.ToggleEventData(setDataOpt);
