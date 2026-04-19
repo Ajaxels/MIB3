@@ -66,16 +66,17 @@ else
         prompts = {sprintf('Select the target application:')};
         defAns = {{'Electron Microscopy', 'Light microscopy/Pathology', 1}};
         dlgTitle = 'Download network template';
-        options.WindowStyle = 'normal';       % [optional] style of the window
-        options.PromptLines = 1;   % [optional] number of lines for widget titles
-        options.Header = sprintf(['!!! Warning !!!\n\nGeneration of CNN using the "2D DeepLabV3 %s" architecture requires a templete file!\n\n' ...
+        dlgOpt.WindowStyle = 'normal';       % [optional] style of the window
+        dlgOpt.PromptLines = 1;   % [optional] number of lines for widget titles
+        dlgOpt.Header = sprintf(['Generation of CNN using the "2D DeepLabV3 %s" architecture requires a templete file!\n\n' ...
             'The file will be downloaded and placed to\n%s\n' ...
             'This destination directory can be changed from\n' ...
             'Menu->File->Preferences->External directories'], targetNetwork, strrep(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, '\','/'));
-        options.HeaderLines = 9;
-        options.WindowWidth = 680;
-        options.HelpUrl = 'http://mib.helsinki.fi/help/main2/ug_gui_menu_tools_deeplearning.html';
-        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
+        dlgOpt.HeaderLines = 6;
+        dlgOpt.WindowWidth = 680;
+        dlgOpt.WindowHeight = 240;
+        dlgOpt.HelpUrl = 'https://mib.helsinki.fi/help/main2/user-interface/deepmib/deepmib-networks.html';
+        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, dlgOpt);
         if isempty(answer); net = []; return; end 
 
         switch answer{1}

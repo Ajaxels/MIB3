@@ -31,16 +31,19 @@ predictionList = dir(fullfile(predictionDir, lower(modelFileExtension)));
 
 if isempty(truthList) && isempty(predictionList)
     mgsOpt.MsgBoxOnly = true;
-    header = sprintf('Models were not found in\n%s\n\n%s\n\nPlease update the Directory prediction and resulting images fields of the Directories and Preprocessing tab!', truthDir, predictionDir);
-    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing files', mgsOpt);
+    mgsOpt.headerLines = 1;
+    mgsOpt.WindowWidth = 600;
+    mgsOpt.WindowHeight = 260;
+    msgText = sprintf('Ground truth labels folder:\n%s\n\nPredicted labels folder:%s\n\nPlease update the Directory prediction and resulting images fields of the Directories and Preprocessing tab!', truthDir, predictionDir);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, 'Ground truth or predicted labels were not found!', {}, {msgText}, 'Missing files', mgsOpt);
     return;
 end
 
-prompts = { 'Accuracy: the percentage of correctly identified pixels for each class';...
-    'bfscore: the boundary F1 (BF) contour matching score indicates how well the predicted boundary of each class aligns with the true boundary';...
-    'Global Accuracy: the ratio of correctly classified pixels, regardless of class, to the total number of pixels'; ...
-    'IOU (Jaccard similarity coefficient): Intersection over union, a statistical accuracy measurement that penalizes false positives'; ...
-    'Weighted IOU: average IoU of each class, weighted by the number of pixels in that class';
+prompts = { sprintf('Accuracy:\nthe percentage of correctly identified pixels for each class');...
+    sprintf('bfscore:\nthe boundary F1 (BF) contour matching score\nindicates how well the predicted boundary of each\nclass aligns with the true boundary');...
+    sprintf('Global Accuracy:\nthe ratio of correctly classified pixels,\nregardless of class, to the total number of pixels'); ...
+    sprintf('IOU (Jaccard similarity coefficient):\nIntersection over union, a statistical accuracy\nmeasurement that penalizes false positives'); ...
+    sprintf('Weighted IOU:\naverage IoU of each class,\nweighted by the number of pixels in that class');
     };
 defAns = {obj.mibModel.preferences.Deep.Metrics.Accuracy; ...
     obj.mibModel.preferences.Deep.Metrics.BFscore; ...
@@ -53,8 +56,10 @@ dlgTitle = 'Evaluation settings';
 options.Header = sprintf('Please select the metrics from the options below\nKeep in mind that the evaluation processs in rather slow\nRatio of execution times for each metric: 0.10 x 0.78 x 0.04 x 0.03 x 0.05');
 options.WindowStyle = 'normal';
 options.PromptLines = [1, 1, 1, 1, 1];
-options.WindowWidth = 2.45;
+options.WindowWidth = 550;
+options.WindowHeight = 400;
 options.HeaderLines = 3;
+options.LabelPosition = 'left';
 options.HelpUrl = 'https://se.mathworks.com/help/vision/ref/evaluatesemanticsegmentation.html';
 
 [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
@@ -206,8 +211,9 @@ s = sprintf('%sWeightedIoU: average IoU of all classes in the image, weighted by
 s = sprintf('%sMeanBFScore: average boundary F1 (BF) score of each class in the image\n\n', s);
 
 for i=1:numel(metricName)
-    s = sprintf('%s%s: %f            ', s, metricName{i}, metricValue(:,i));
-    if mod(i,2) == 0; s = sprintf('%s\n', s); end
+    %s = sprintf('%s%s: %f\t\t', s, metricName{i}, metricValue(:,i));
+    %if mod(i,2) == 0; s = sprintf('%s\n', s); end
+    s = sprintf('%s%s: %f\n', s, metricName{i}, metricValue(:,i));
 end
 
 if ismember('IoU', ssm.ClassMetrics.Properties.VariableNames)
@@ -216,19 +222,16 @@ if ismember('IoU', ssm.ClassMetrics.Properties.VariableNames)
         s = sprintf('%s%s:               %f\n', s, ssm.ClassMetrics.Properties.RowNames{i}, ssm.ClassMetrics.IoU(i));
     end
 end
-options.Header = s;
 options.HeaderLines = numel(strfind(s, sprintf('\n'))); %#ok<SPRINTFN>
 options.HelpUrl = 'https://se.mathworks.com/help/vision/ref/evaluatesemanticsegmentation.html';
-options.WindowWidth = 900;
-options.PromptLines = [1, 1, 1, 1, 3, 1, 1, 1];
 prompts = {'Export to Matlab'; 'Save as Matlab file'; 'Save as Excel file'; 'Save as CSV file';...
-    'Calculate occurrence of labels in ground truth and resulting images and Sørensen-Dice similarity (takes extra time)';...
-    ''; ''; '';};
+    sprintf('Calculate occurrence of labels in ground truth and\nresulting images and Sørensen-Dice similarity (takes extra time)');};
 defAns = {false; false; false; false; ...
-    {'Do not calculate', 'Calculate occurrence', 'Calculate Sørensen-Dice similarity', 'Calculate everything', 1}; ...
-    NaN; NaN; NaN; };
-options.Columns = 2;
-answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, 'Evaluation results', options);
+    {'Do not calculate', 'Calculate occurrence', 'Calculate Sørensen-Dice similarity', 'Calculate everything', 1};};
+options.LabelPosition = 'left';
+options.WindowHeight = 660;
+options.WindowWidth = 660;
+answer = utils.dlgs.inputUniversalDlg(obj.view.gui, s, prompts, defAns, 'Evaluation results', options);
 if isempty(answer); return; end
 
 

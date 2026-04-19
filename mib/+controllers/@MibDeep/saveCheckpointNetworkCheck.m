@@ -2,14 +2,15 @@ function saveCheckpointNetworkCheck(obj)
     % function saveCheckpointNetworkCheck(obj)
     % callback for press of Save checkpoint networks (obj.view.handles.T_SaveProgress)
     obj.BatchOpt.T_SaveProgress = obj.view.handles.T_SaveProgress.Value;
-    if obj.mibController.matlabVersion >= 9.11 && obj.BatchOpt.T_SaveProgress
+    if obj.BatchOpt.T_SaveProgress
         prompts = {'Frequency of saving checkpoint networks, once in N epochs:'};
-        defAns = {num2str(obj.TrainingOpt.CheckpointFrequency)};
+        defAns = struct('Value', obj.TrainingOpt.CheckpointFrequency, 'Limits', [1 Inf], 'Step', 1, 'Round', true);
         dlgTitle = 'Checkpoint frequency';
         options.PromptLines = 2;
-        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
+        answer = utils.dlgs.inputSingleDlg(obj.view.gui, prompts, defAns, dlgTitle, options);
         if isempty(answer); return; end
-        obj.TrainingOpt.CheckpointFrequency = str2double(answer{1});
+        
+        obj.TrainingOpt.CheckpointFrequency = answer;
     end
 end
 

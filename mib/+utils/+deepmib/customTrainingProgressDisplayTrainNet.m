@@ -209,14 +209,14 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.TrainingOpt.ValidationFrequency.Text = sprintf('Validation frequency: %.1f /epoch', trainingProgressOptions.TrainingOpt.ValidationFrequency);
 
     mibDeepTrainingProgressStruct.StopTrainingButton = uibutton(mibDeepTrainingProgressStruct.InputPatchPreviewPanel, 'push',...
-        'ButtonPushedFcn', @mibDeepStopTrainingCallback);
+        'ButtonPushedFcn', @utils.deepmib.stopTrainingCallback);
     mibDeepTrainingProgressStruct.StopTrainingButton.BackgroundColor = [0 1 0];
     mibDeepTrainingProgressStruct.StopTrainingButton.Position = [140 8 100 22];
     mibDeepTrainingProgressStruct.StopTrainingButton.Text = 'Stop training';
     mibDeepTrainingProgressStruct.StopTrainingButton.Tooltip = 'Stop and finalize the run, it may take significant time for large datasets';
 
     mibDeepTrainingProgressStruct.EmergencyBrakeButton = uibutton(mibDeepTrainingProgressStruct.InputPatchPreviewPanel, 'push',...
-        'ButtonPushedFcn', @mibDeepStopTrainingCallback);
+        'ButtonPushedFcn', @utils.deepmib.stopTrainingCallback);
     mibDeepTrainingProgressStruct.EmergencyBrakeButton.BackgroundColor = [1 0 0];
     mibDeepTrainingProgressStruct.EmergencyBrakeButton.Position = [101 39 139 22];
     mibDeepTrainingProgressStruct.EmergencyBrakeButton.Text = 'Emergency brake';

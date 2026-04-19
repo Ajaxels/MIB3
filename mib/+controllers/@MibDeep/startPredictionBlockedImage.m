@@ -7,8 +7,9 @@ function startPredictionBlockedImage(obj)
     if ismember(obj.BatchOpt.Workflow{1}, {'3D Semantic'})
         if obj.BatchOpt.P_DynamicMasking == true
             mgsOpt.MsgBoxOnly = true;
-            header = sprintf('Unfortunately, the dynamic masking mode is not yet implemented for 3D architectures!\n\nPlease uncheck "Dynamic masking" checkbox in the Predict tab');
-            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
+            mgsOpt.headerLines = 2;
+            mgsOpt.WindowHeight = 180;
+            utils.dlgs.inputUniversalDlg(obj.view.gui, 'Unfortunately, the dynamic masking mode is not yet implemented for 3D architectures!', {}, {'Please uncheck "Dynamic masking" checkbox in the Predict tab'}, 'Not implemented', mgsOpt);
             return;
         end
     end
@@ -28,7 +29,7 @@ function startPredictionBlockedImage(obj)
             strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Training')
         preprocessedSwitch = false;
 
-        msg = sprintf('!!! Warning !!!\nYou are going to start prediction without preprocessing!\nConfirm that your images are located under\n\n%s\n\n%s\n%s\n\n%s', ...
+        msg = sprintf('You are going to start prediction without preprocessing!\nConfirm that your images are located under\n\n%s\n\n%s\n%s\n\n%s', ...
             obj.BatchOpt.OriginalPredictionImagesDir, ...
             '- Images', '- Labels (optionally, when ground truth is present)', ...
             'Patch-wise mode is also allowing to have patches stored in subfolders');
@@ -91,8 +92,7 @@ function startPredictionBlockedImage(obj)
     end
     if noOutputModelFiles > 0 || noOutputScoreFiles > 0
         selection = uiconfirm(obj.view.gui, ...
-            sprintf(['!!! Warning !!!\n\n' ...
-            'The destination directories:\n- PredictionImages/ResultsModels\n- PredictionImages/ResultsScores\n\n' ...
+            sprintf(['The destination directories:\n- PredictionImages/ResultsModels\n- PredictionImages/ResultsScores\n\n' ...
             'in\n%s\n\n' ...
             'are not empty!\n\nShell the destination folders be emptied and prediction started?'], obj.BatchOpt.ResultingImagesDir), ...
             'Destination folders are not empty',...
@@ -174,30 +174,6 @@ function startPredictionBlockedImage(obj)
                     'IncludeSubfolders', false, ...
                     'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
             end
-
-            % if isfolder(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images'))
-            %     % semantic segmentation or patch-wise segmentation of large images
-            %     imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images'), ...
-            %         'FileExtensions', fnExtention, ...
-            %         'IncludeSubfolders', false, ...
-            %         'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
-            % else
-            %     % patch-wise segmentation of individual patches
-            %     % stored under subfolders
-            %     imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalPredictionImagesDir), ...
-            %         'FileExtensions', fnExtention, ...
-            %         'IncludeSubfolders', true, ...
-            %         "LabelSource", "foldernames", ...
-            %         'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
-            %     if numel(unique(imgDS.Labels)) < 2
-            %         ME = MException('MyComponent:noSuchVariable:MissingFiles', ...
-            %             ['For the patch-wise mode the files needs to be arranged under "Images"/"Labels" subfolders\n' ...
-            %             'or under subfolders with names of each image class!\n\n' ...
-            %             'Please check directory with images for Prediction']);
-            %         throw(ME);
-            %     end
-            %     patchwisePatchesPredictSwitch = true;
-            % end
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
@@ -567,7 +543,9 @@ function startPredictionBlockedImage(obj)
                     amiraOpt.overwrite = 1;
                     amiraOpt.showWaitbar = 0;
                     amiraOpt.verbose = false;
-                    bitmap2amiraMesh(filename, scoreImg, [], amiraOpt);
+                    % scoreImg is [H W C] (pure 2D) or [H W C D] (2.5D / 3D / use3DdatasetWith2Dnet);
+                    % bitmap2amiraMesh expects [H W D C T] - trailing singleton handles the 2D case
+                    io.AmiraMesh.bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), [], amiraOpt);
                 elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
                     utils.deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
@@ -598,7 +576,7 @@ function startPredictionBlockedImage(obj)
 
     % count user's points
     obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks+1;
-    eventdata = ToggleEventData(4);    % scale scoring by factor 5
+    eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
     if obj.BatchOpt.showWaitbar; delete(pwb); end
 end

@@ -95,7 +95,7 @@ if nargin == 3 && ~isempty(BatchOptIn)
         return;
     else
         BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
-        batchModeSwitch = isfield(BatchOptIn, 'mibBatchTooltip');
+        batchModeSwitch = isfield(BatchOptIn, 'mibBatchTooltip') || isfield(BatchOptIn, 'FilenameFilter');
     end
 end
 

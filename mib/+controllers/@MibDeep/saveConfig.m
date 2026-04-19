@@ -37,10 +37,10 @@ function saveConfig(obj, configName)
     ScoreExportOpt = obj.ScoreExportOpt;
 
     % try to export path as relatives
-    BatchOpt.NetworkFilename = convertAbsoluteToRelativePath(BatchOpt.NetworkFilename, projectPath, '[RELATIVE]');
-    BatchOpt.OriginalTrainingImagesDir = convertAbsoluteToRelativePath(BatchOpt.OriginalTrainingImagesDir, projectPath, '[RELATIVE]');
-    BatchOpt.OriginalPredictionImagesDir = convertAbsoluteToRelativePath(BatchOpt.OriginalPredictionImagesDir, projectPath, '[RELATIVE]');
-    BatchOpt.ResultingImagesDir = convertAbsoluteToRelativePath(BatchOpt.ResultingImagesDir, projectPath, '[RELATIVE]');
+    BatchOpt.NetworkFilename = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.NetworkFilename, projectPath, '[RELATIVE]');
+    BatchOpt.OriginalTrainingImagesDir = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.OriginalTrainingImagesDir, projectPath, '[RELATIVE]');
+    BatchOpt.OriginalPredictionImagesDir = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.OriginalPredictionImagesDir, projectPath, '[RELATIVE]');
+    BatchOpt.ResultingImagesDir = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.ResultingImagesDir, projectPath, '[RELATIVE]');
 
     % add MIB version to the saved config
     mibVersion.mibVersion = obj.mibController.mibVersion;

@@ -509,7 +509,7 @@ function startPrediction3D(obj)
     toc(t1)
     % count user's points
     obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks+1;
-    eventdata = ToggleEventData(4);    % scale scoring by factor 5
+    eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
     if obj.BatchOpt.showWaitbar; delete(pwb); end

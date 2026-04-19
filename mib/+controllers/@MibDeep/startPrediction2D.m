@@ -340,7 +340,8 @@ function startPrediction2D(obj)
                 amiraOpt.overwrite = 1;
                 amiraOpt.showWaitbar = 0;
                 amiraOpt.verbose = false;
-                bitmap2amiraMesh(filename, scoreImg, [], amiraOpt);
+                % scoreImg is [H W C] (classes in 3rd dim); bitmap2amiraMesh expects [H W D C T]
+                bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), [], amiraOpt);
             elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
                 utils.deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
@@ -364,7 +365,7 @@ function startPrediction2D(obj)
     toc(t1)
     % count user's points
     obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks+1;
-    eventdata = ToggleEventData(4);    % scale scoring by factor 5
+    eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
     if obj.BatchOpt.showWaitbar; delete(pwb); end

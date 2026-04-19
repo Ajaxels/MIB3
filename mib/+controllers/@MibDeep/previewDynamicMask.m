@@ -6,8 +6,7 @@ function previewDynamicMask(obj)
         'Title', 'Generating blocks');
 
     % get current image
-    getDataOpt.blockModeSwitch = true;
-    img = obj.mibModel.getData2D('image', NaN, NaN, NaN, getDataOpt);
+    img = obj.mibModel.getData2D('image');
     noColors = size(img, 3);
     inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize);
     img = blockedImage(img{1}, ...              % % [height, width, color]

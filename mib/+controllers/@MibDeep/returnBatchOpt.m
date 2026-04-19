@@ -11,7 +11,7 @@ if nargin < 2; BatchOptOut = obj.BatchOpt; end
 
 if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end  % remove id field
 % trigger syncBatch event to send BatchOptOut to mibBatchController
-eventdata = ToggleEventData(BatchOptOut);
+eventdata = core.ToggleEventData(BatchOptOut);
 notify(obj.mibModel, 'SyncBatch', eventdata);
 end
 

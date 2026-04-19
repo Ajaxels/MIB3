@@ -691,7 +691,7 @@ end
 
 % count user's points
 obj.mibModel.preferences.Users.Tiers.numberOfTrainedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfTrainedDeepNetworks+1;
-eventdata = ToggleEventData(10);    % scale scoring by factor 5
+eventdata = core.ToggleEventData(10);    % scale scoring by factor 5
 notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
 mibDeepTrainingProgressStruct =  struct();

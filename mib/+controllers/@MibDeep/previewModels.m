@@ -47,13 +47,13 @@ end
 
 if strcmp(obj.BatchOpt.Workflow{1}(1:2), '3D')  % take only the first file for 3D case
     if loadImagesSwitch
-        BatchOptIn1.Filenames = {{fullfile(imgDir, imgList(1).name)}};
+        BatchOptIn1.Filenames = {fullfile(imgDir, imgList(1).name)};
     end
     BatchOptIn2.DirectoryName = {modelDir};
     BatchOptIn2.FilenameFilter = modelList(1).name;
 else
     if loadImagesSwitch
-        BatchOptIn1.Filenames = {arrayfun(@(filename) fullfile(imgDir, cell2mat(filename)), {imgList.name}, 'UniformOutput', false)};  % generate full paths
+        BatchOptIn1.Filenames = arrayfun(@(filename) fullfile(imgDir, cell2mat(filename)), {imgList.name}, 'UniformOutput', false);  % generate full paths
     end
     BatchOptIn2.DirectoryName = {modelDir};
     BatchOptIn2.FilenameFilter = modelFileExtension;
@@ -62,9 +62,8 @@ end
 if loadImagesSwitch % load images
     BatchOptIn1.UseBioFormats = obj.BatchOpt.Bioformats;
     BatchOptIn1.BioFormatsIndices = num2str(obj.BatchOpt.BioformatsIndex{1});
-    BatchOptIn1.verbose = false;    % do not display loading files into the main command window
     obj.mibModel.currentDirectory = imgDir;
-    obj.mibController.mibFilesListbox_cm_Callback([], BatchOptIn1);     % load images
+    obj.mibModel.loadImages([], BatchOptIn1);
 end
 obj.mibModel.loadModel([], BatchOptIn2);  % load models
 end

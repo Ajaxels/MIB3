@@ -56,11 +56,14 @@ obj.selectGPUDevice();
 inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
 if numel(inputPatchSize) ~= 4
     mgsOpt.MsgBoxOnly = true;
-    header = sprintf(['Please provide the input patch size (BatchOpt.T_InputPatchSize) as 4 numbers that define\n' ...
+    mgsOpt.headerLines = 2;
+    mgsOpt.WindowHeight = 240;
+    mgsOpt.WindowWidth = 500;
+    msgText = sprintf(['Use 4 numbers that define\n' ...
         'height, width, depth, colors\n\nFor example:\n' ...
         '"32, 32, 1, 3" for 2D U-net of 3 color channel images\n' ...
         '"64, 64, 64, 1" for 3D U-net of 1 color channel images']);
-    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong patch size', mgsOpt);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, 'Please provide the input patch size (BatchOpt.T_InputPatchSize)', {}, {msgText}, 'Wrong patch size', mgsOpt);
     return;
 end
 
@@ -70,16 +73,18 @@ if inputPatchSize(1)~=inputPatchSize(2) && obj.BatchOpt.T_augmentation
             (strcmp(obj.BatchOpt.Workflow{1}(1:2), '3D') && obj.AugOpt3D.Rotation90.Enable ) || ...
             (strcmp(obj.BatchOpt.Workflow{1}(1:2), '2.') && obj.AugOpt3D.Rotation90.Enable )
         mgsOpt.MsgBoxOnly = true;
-        header = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
+        mgsOpt.headerLines = 1;
+        mgsOpt.WindowHeight = 280;
+        mgsOpt.WindowWidth = 580;
+        msgText = sprintf(['Rotation augmentations are only implemented for input patches that have a square shape!\n\n' ...
             'How to fix (one of these options):\n   a) set probability of Rotation90 augmentations to 0\n' ...
                 '   b) make sure that the input patch size has a square shape as "%d %d %d %d"\n' ...
                 '   c)   if Rotation90 is required rotate the original dataset (images and labels) and save it as ' ...
                 'additional files to be used for training'], ...
                 inputPatchSize(1), inputPatchSize(1), inputPatchSize(3), inputPatchSize(4));
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Rotation90 is not available', mgsOpt);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Rotation90 is not available', {}, {msgText}, 'Rotation90 is not available', mgsOpt);
         return;
     end
-
 end
 
 % fix the 3rd value in the input patch size for 2D networks
@@ -114,16 +119,14 @@ if isfolder(fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork'))
 end
 
 if numel(checkPointFiles) > 1
-    prompts = {'Select the check point:'};
+    prompts = sprintf(['Select the checkpoint to continue\nIf you choose "Start new training" the checkpoint directory ' ...
+        'will be cleared from the older checkpoints and the new training session initiated:']);
     defAns = {checkPointFiles, 1};
     dlgTitle = 'Select checkpoint';
-    options.PromptLines = 1;
-    options.Header = sprintf(['Files with training checkpoints were detected.\n' ...
-        'Please select the checkpoint to continue, if you choose "Start new training" the checkpoint directory ' ...
-        'will be cleared from the older checkpoints and the new training session initiated:']);
-    options.HeaderLines = 5;
-    options.WindowWidth = 630;
-    [answer, selPosition] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
+    dlgOpt.HeaderLines = 1;
+    dlgOpt.WindowWidth = 500;
+    dlgOpt.WindowHeight = 180;
+    [answer, selPosition] = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Files with training checkpoints were detected', {prompts}, defAns, dlgTitle, dlgOpt);
     if isempty(answer); return; end
 
     switch selPosition
@@ -223,15 +226,19 @@ try
     
     % check that number of files larger than minibatch size
     if noFiles*obj.BatchOpt.T_PatchesPerImage{1} < obj.BatchOpt.T_MiniBatchSize{1}
+        if showWaitbarLocal; delete(obj.wb); end
         mgsOpt.MsgBoxOnly = true;
-        header = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
+        mgsOpt.headerLines = 1;
+        mgsOpt.WindowWidth = 500;
+        mgsOpt.WindowHeight = 240;
+        msgText = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
             'Patches_per_image (%d) x Number_of_images (%d) = %d\n\n' ...
             'Solve by:\n-Decrease mini-batch size\n' ...
             '-Increase patches per image\n' ...
             '-Increase number of files used for training'], ...
             obj.BatchOpt.T_MiniBatchSize{1}, obj.BatchOpt.T_PatchesPerImage{1}, noFiles, noFiles*obj.BatchOpt.T_PatchesPerImage{1});
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration', mgsOpt);
-        if showWaitbarLocal; delete(obj.wb); end
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Wrong mini-batch size', {}, {msgText}, 'Wrong configuration', mgsOpt);
+        
         return;
     end
     
@@ -253,20 +260,16 @@ try
                 end
     
                 if numel(files) < 1
-                    prompts = {'Material names (comma-separated list):'};
+                    prompts = {sprintf('Enter material names used during preprocessing or restore the model file and restart the training\nMaterial names (comma-separated list):')};
                     defAns = arrayfun(@(x) sprintf('Class%.2d', x), 1:obj.BatchOpt.T_NumberOfClasses{1}, 'UniformOutput', false);
                     defAns = [{'Exterior'}, defAns];
                     defAns = {strjoin(defAns, ', ')};
                     dlgTitle = 'Missing the model file';
                     warning('off', 'MATLAB:printf:BadEscapeSequenceInFormat');  % turn off possible warnings about sprintf syntax
-                    options.Header = (sprintf(['Attention!\nThe model file is missing in\n%s\n\n' ...
-                        'Enter material names used during preprocessing or ' ...
-                        'restore the model file and restart the training'], modelDir));
-
-                    options.HeaderLines = 5;
-                    options.WindowWidth = 900;
-
-                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
+                    dlgOpt.HeaderLines = 2;
+                    dlgOpt.WindowWidth = 560;
+                    dlgOpt.WindowHeight = 200;
+                    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, sprintf('The model file is missing in\n%s', modelDir), prompts, defAns, dlgTitle, dlgOpt);
                     if isempty(answer)
                         if showWaitbarLocal; delete(obj.wb); end
                         return;
@@ -372,11 +375,14 @@ try
             end
     
             if numel(labelsDS.Files) ~= noFiles
-                mgsOpt.MsgBoxOnly = true;
-                header = sprintf('In this mode number of model files should match number of image files!\n\nCheck\n%s\n\n%s', ...
-                    fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'));
-                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
                 if showWaitbarLocal; delete(obj.wb); end
+                mgsOpt.MsgBoxOnly = true;
+                mgsOpt.headerLines = 2;
+                mgsOpt.WindowHeight = 220;
+                mgsOpt.WindowWidth = 600;
+                header = sprintf('In this mode number of model files should match number of image files!');
+                msgText = sprintf('Check\n%s\n\n%s', fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'));
+                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {msgText}, 'Number of files mismatch', mgsOpt);
                 return;
             end
         end
@@ -445,11 +451,14 @@ try
                 end
     
                 if numel(valLabelsDS.Files) ~= numel(valImgDS.Files)
-                    mgsOpt.MsgBoxOnly = true;
-                    header = sprintf('In this mode number of model files should match number of image files!\n\nCheck\n%s\n\n%s', ...
-                        fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'));
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
                     if showWaitbarLocal; delete(obj.wb); end
+                    mgsOpt.MsgBoxOnly = true;
+                    mgsOpt.headerLines = 2;
+                    mgsOpt.WindowHeight = 220;
+                    mgsOpt.WindowWidth = 600;
+                    msgText = sprintf('Check\n%s\n\n%s', ...
+                        fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, 'In this mode number of model files should match number of image files!', {}, {msgText}, 'Number of files mismatch', mgsOpt);
                     return;
                 end
             else    % do not use validation
@@ -535,20 +544,20 @@ try
 
     if isempty(outputPatchSize)
         if isdeployed
-            mgsOpt.MsgBoxOnly = true;
-            header = sprintf('Unfortunately, 3D U-Net Anisotropic architecture with the "valid" padding is not yet available in the deployed version of MIB\n\nPlease use the "same" padding instead');
-            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', mgsOpt);
             if showWaitbarLocal; delete(obj.wb); end
+            mgsOpt.MsgBoxOnly = true;
+            mgsOpt.WindowHeight = 180;
+            header = sprintf('Unfortunately, 3D U-Net Anisotropic architecture with the "valid" padding is not yet available in the deployed version of MIB\n\n');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Please use the "same" padding instead'}, 'Not implemented', mgsOpt);
             return;
         else
             analyzeNetwork(lgraph);
-            prompts = {'Output patch size:'};
+            prompts = {sprintf('Please enter the output patch size from the Network Analyzer window. It is displayer in the Activations column for the Softmax-Layer\n\nOutput patch size:')};
             defAns = {obj.BatchOpt.T_InputPatchSize};
             dlgTitle = 'Define output patch size';
-            options.Header = (sprintf('Attention!\nDue to Matlab limitations you have to set the output patch size manually\nPlease enter the output patch size from the Network Analyzer window. It is displayer in the Activations column for the Softmax-Layer'));
-            options.HeaderLines = 8;
-
-            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
+            dlgOpt.HeaderLines = 2;
+            dlgOpt.WindowHeight = 210;
+            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Due to Matlab limitations you have to set the output patch size manually', prompts, defAns, dlgTitle, dlgOpt);
             if isempty(answer)
                 if showWaitbarLocal; delete(obj.wb); end
                 return;
@@ -714,7 +723,9 @@ try
         obj.wb.Message = 'Starting trainining...';
         obj.wb.Value = 0.9;
     end
-    modelDateTime = datestr(now, 'dd-mmm-yyyy-HH-MM-SS');
+    modelDateTime = datetime('now');
+    modelDateTime.Format = 'dd-MMM-yyyy-HH-mm-ss';
+    modelDateTime = char(modelDateTime);
     
     % load the checkpoint to resume training
     if ~isempty(checkPointRestoreFile)
@@ -746,8 +757,7 @@ try
             outLayer = lgraph.Layers(layerId);
             if sum(ismember(cellstr(outLayer.Classes), classNames)) ~= numel(classNames)
                 selection = uiconfirm(obj.view.gui, ...
-                    sprintf(['!!! Warning !!!\n\n' ...
-                    'The class names of the loaded network do not match class names of the training model\n\n' ...
+                    sprintf(['The class names of the loaded network do not match class names of the training model\n\n' ...
                     'Model classes:%s\nNetwork classes: %s\n\n' ...
                     'Press "Update network" to modify the network with new model class names'], ...
                     strjoin(string(classNames), ', '), strjoin(cellstr(outLayer.Classes), ', ')),...
@@ -1050,7 +1060,7 @@ end
 
 % count user's points
 obj.mibModel.preferences.Users.Tiers.numberOfTrainedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfTrainedDeepNetworks+1;
-eventdata = ToggleEventData(10);    % scale scoring by factor 5
+eventdata = core.ToggleEventData(10);    % scale scoring by factor 5
 notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
 mibDeepTrainingProgressStruct =  struct();
