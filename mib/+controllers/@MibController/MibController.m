@@ -54,6 +54,9 @@ classdef MibController < handle
         % version of MIB in numerical form
         mibWebWindow
         % handle of the underlying matlab.internal.webwindow class window (used for drag-and-drop of files
+        dndBridgeButton = []
+        % hidden uibutton returned by utils.attachFileDnD; state for the
+        % drag-and-drop bridge lives in its UserData
         view
     end
 

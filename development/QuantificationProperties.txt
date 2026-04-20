@@ -1,0 +1,475 @@
+classdef QuantificationPropertiesGUI < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        Figure                    matlab.ui.Figure
+        shapes3dPanel             matlab.ui.container.Panel
+        shapes3dGridLayout        matlab.ui.container.GridLayout
+        SurfaceArea3d             matlab.ui.control.CheckBox
+        Solidity3d                matlab.ui.control.CheckBox
+        Extent3d                  matlab.ui.control.CheckBox
+        EquivDiameter3d           matlab.ui.control.CheckBox
+        ConvexVolume3d            matlab.ui.control.CheckBox
+        EndpointsLength3d         matlab.ui.control.CheckBox
+        ThirdAxisLength3d         matlab.ui.control.CheckBox
+        SecondAxisLength3d        matlab.ui.control.CheckBox
+        MajorAxisLength3d         matlab.ui.control.CheckBox
+        MeridionalEccentricity3d  matlab.ui.control.CheckBox
+        EquatorialEccentricity3d  matlab.ui.control.CheckBox
+        FilledArea3d              matlab.ui.control.CheckBox
+        Volume3d                  matlab.ui.control.CheckBox
+        mainGridLayout            matlab.ui.container.GridLayout
+        separatorPanel            matlab.ui.container.Panel
+        intensityPanel            matlab.ui.container.Panel
+        intensityGridLayout       matlab.ui.container.GridLayout
+        Correlation               matlab.ui.control.CheckBox
+        SumIntensity              matlab.ui.control.CheckBox
+        StdIntensity              matlab.ui.control.CheckBox
+        MeanIntensity             matlab.ui.control.CheckBox
+        MaxIntensity              matlab.ui.control.CheckBox
+        MinIntensity              matlab.ui.control.CheckBox
+        shapes2dPanel             matlab.ui.container.Panel
+        shapes2dGridLayout        matlab.ui.container.GridLayout
+        SecondAxisLength          matlab.ui.control.CheckBox
+        FirstAxisLength           matlab.ui.control.CheckBox
+        EndpointsLength           matlab.ui.control.CheckBox
+        CurveLength               matlab.ui.control.CheckBox
+        Solidity                  matlab.ui.control.CheckBox
+        Perimeter                 matlab.ui.control.CheckBox
+        Orientation               matlab.ui.control.CheckBox
+        MinorAxisLength           matlab.ui.control.CheckBox
+        MajorAxisLength           matlab.ui.control.CheckBox
+        FilledArea                matlab.ui.control.CheckBox
+        Extent                    matlab.ui.control.CheckBox
+        EulerNumber               matlab.ui.control.CheckBox
+        EquivDiameter             matlab.ui.control.CheckBox
+        Eccentricity              matlab.ui.control.CheckBox
+        ConvexArea                matlab.ui.control.CheckBox
+        Area                      matlab.ui.control.CheckBox
+        bottomGridLayout          matlab.ui.container.GridLayout
+        CancelButton              matlab.ui.control.Button
+        OKButton                  matlab.ui.control.Button
+        UncheckallButton          matlab.ui.control.Button
+        CheckallButton            matlab.ui.control.Button
+    end
+
+    
+    properties (Access = private)
+        winController % Description
+    end
+    
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Code that executes after component creation
+        function startupFcn(app, winController)
+            app.winController = winController;
+            app.Figure.Visible = false;
+            app.Figure.Name = 'Define object properties';
+            app.Figure.Icon = fullfile(app.winController.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+            
+            %app.shapes2dGridLayout = uigridlayout(app.shapes2dPanel);
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create Figure and hide until all components are created
+            app.Figure = uifigure('Visible', 'off');
+            app.Figure.Position = [100 100 467 400];
+            app.Figure.Name = 'MATLAB App';
+
+            % Create mainGridLayout
+            app.mainGridLayout = uigridlayout(app.Figure);
+            app.mainGridLayout.ColumnWidth = {'1x', '1x', 3, '1x'};
+            app.mainGridLayout.RowHeight = {'1x', 26};
+
+            % Create bottomGridLayout
+            app.bottomGridLayout = uigridlayout(app.mainGridLayout);
+            app.bottomGridLayout.ColumnWidth = {80, 80, '1x', 70, 70};
+            app.bottomGridLayout.RowHeight = {'1x'};
+            app.bottomGridLayout.Padding = [2 2 2 2];
+            app.bottomGridLayout.Layout.Row = 2;
+            app.bottomGridLayout.Layout.Column = [1 4];
+
+            % Create CheckallButton
+            app.CheckallButton = uibutton(app.bottomGridLayout, 'push');
+            app.CheckallButton.Layout.Row = 1;
+            app.CheckallButton.Layout.Column = 1;
+            app.CheckallButton.Text = 'Check all';
+
+            % Create UncheckallButton
+            app.UncheckallButton = uibutton(app.bottomGridLayout, 'push');
+            app.UncheckallButton.Layout.Row = 1;
+            app.UncheckallButton.Layout.Column = 2;
+            app.UncheckallButton.Text = 'Uncheck all';
+
+            % Create OKButton
+            app.OKButton = uibutton(app.bottomGridLayout, 'push');
+            app.OKButton.Layout.Row = 1;
+            app.OKButton.Layout.Column = 4;
+            app.OKButton.Text = 'OK';
+
+            % Create CancelButton
+            app.CancelButton = uibutton(app.bottomGridLayout, 'push');
+            app.CancelButton.Layout.Row = 1;
+            app.CancelButton.Layout.Column = 5;
+            app.CancelButton.Text = 'Cancel';
+
+            % Create shapes2dPanel
+            app.shapes2dPanel = uipanel(app.mainGridLayout);
+            app.shapes2dPanel.BorderType = 'none';
+            app.shapes2dPanel.Title = 'Shape properties for 2D objects';
+            app.shapes2dPanel.Tag = 'shapes2dPanel';
+            app.shapes2dPanel.Layout.Row = 1;
+            app.shapes2dPanel.Layout.Column = [1 2];
+
+            % Create shapes2dGridLayout
+            app.shapes2dGridLayout = uigridlayout(app.shapes2dPanel);
+            app.shapes2dGridLayout.RowHeight = {22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, '1x'};
+            app.shapes2dGridLayout.RowSpacing = 3;
+
+            % Create Area
+            app.Area = uicheckbox(app.shapes2dGridLayout);
+            app.Area.Tag = 'Area';
+            app.Area.Tooltip = {'Actual number of pixels in the region, returned as a scalar.'};
+            app.Area.Text = 'Area';
+            app.Area.Layout.Row = 1;
+            app.Area.Layout.Column = 1;
+
+            % Create ConvexArea
+            app.ConvexArea = uicheckbox(app.shapes2dGridLayout);
+            app.ConvexArea.Tag = 'ConvexArea';
+            app.ConvexArea.Tooltip = {'Number of pixels in ''ConvexImage'', returned as a scalar.'};
+            app.ConvexArea.Text = 'Convex Area';
+            app.ConvexArea.Layout.Row = 2;
+            app.ConvexArea.Layout.Column = 1;
+
+            % Create Eccentricity
+            app.Eccentricity = uicheckbox(app.shapes2dGridLayout);
+            app.Eccentricity.Tag = 'Eccentricity';
+            app.Eccentricity.Tooltip = {'Eccentricity of the ellipse that has the same second-moments as the region, returned as a scalar (0 is a circle; 1 is a line)'};
+            app.Eccentricity.Text = 'Eccentricity';
+            app.Eccentricity.Layout.Row = 3;
+            app.Eccentricity.Layout.Column = 1;
+
+            % Create EquivDiameter
+            app.EquivDiameter = uicheckbox(app.shapes2dGridLayout);
+            app.EquivDiameter.Tag = 'EquivDiameter';
+            app.EquivDiameter.Tooltip = {'Diameter of a circle with the same area as the region, returned as a scalar. Computed as sqrt(4*Area/pi)'};
+            app.EquivDiameter.Text = 'Equiv Diameter';
+            app.EquivDiameter.Layout.Row = 4;
+            app.EquivDiameter.Layout.Column = 1;
+
+            % Create EulerNumber
+            app.EulerNumber = uicheckbox(app.shapes2dGridLayout);
+            app.EulerNumber.Tag = 'EulerNumber';
+            app.EulerNumber.Tooltip = {'Number of objects in the region minus the number of holes in those objects, returned as a scalar'};
+            app.EulerNumber.Text = 'Euler Number';
+            app.EulerNumber.Layout.Row = 5;
+            app.EulerNumber.Layout.Column = 1;
+
+            % Create Extent
+            app.Extent = uicheckbox(app.shapes2dGridLayout);
+            app.Extent.Tag = 'Extent';
+            app.Extent.Tooltip = {'Ratio of pixels in the region to pixels in the total bounding box, returned as a scalar. Computed as the Area divided by the area of the bounding box.'};
+            app.Extent.Text = 'Extent';
+            app.Extent.Layout.Row = 6;
+            app.Extent.Layout.Column = 1;
+
+            % Create FilledArea
+            app.FilledArea = uicheckbox(app.shapes2dGridLayout);
+            app.FilledArea.Tag = 'FilledArea';
+            app.FilledArea.Tooltip = {'Number of on pixels in FilledImage, returned as a scalar.'};
+            app.FilledArea.Text = 'Filled Area';
+            app.FilledArea.Layout.Row = 7;
+            app.FilledArea.Layout.Column = 1;
+
+            % Create MajorAxisLength
+            app.MajorAxisLength = uicheckbox(app.shapes2dGridLayout);
+            app.MajorAxisLength.Tag = 'MajorAxisLength';
+            app.MajorAxisLength.Tooltip = {'length of the major axis '};
+            app.MajorAxisLength.Text = 'Major Axis Length';
+            app.MajorAxisLength.Layout.Row = 8;
+            app.MajorAxisLength.Layout.Column = 1;
+
+            % Create MinorAxisLength
+            app.MinorAxisLength = uicheckbox(app.shapes2dGridLayout);
+            app.MinorAxisLength.Tag = 'MinorAxisLength';
+            app.MinorAxisLength.Tooltip = {'length of the minor axis '};
+            app.MinorAxisLength.Text = 'Minor Axis Length';
+            app.MinorAxisLength.Layout.Row = 9;
+            app.MinorAxisLength.Layout.Column = 1;
+
+            % Create Orientation
+            app.Orientation = uicheckbox(app.shapes2dGridLayout);
+            app.Orientation.Tag = 'Orientation';
+            app.Orientation.Tooltip = {'Angle between the x-axis and the major axis of the ellipse that has the same second-moments as the region, returned as a scalar'};
+            app.Orientation.Text = 'Orientation';
+            app.Orientation.Layout.Row = 10;
+            app.Orientation.Layout.Column = 1;
+
+            % Create Perimeter
+            app.Perimeter = uicheckbox(app.shapes2dGridLayout);
+            app.Perimeter.Tag = 'Perimeter';
+            app.Perimeter.Tooltip = {'Distance around the boundary of the region. returned as a scalar'};
+            app.Perimeter.Text = 'Perimeter';
+            app.Perimeter.Layout.Row = 11;
+            app.Perimeter.Layout.Column = 1;
+
+            % Create Solidity
+            app.Solidity = uicheckbox(app.shapes2dGridLayout);
+            app.Solidity.Tag = 'Solidity';
+            app.Solidity.Tooltip = {'Proportion of the pixels in the convex hull that are also in the region, returned as a scalar. Computed as Area/ConvexArea.'};
+            app.Solidity.Text = 'Solidity';
+            app.Solidity.Layout.Row = 12;
+            app.Solidity.Layout.Column = 1;
+
+            % Create CurveLength
+            app.CurveLength = uicheckbox(app.shapes2dGridLayout);
+            app.CurveLength.Tag = 'CurveLength';
+            app.CurveLength.Text = 'Curve Length';
+            app.CurveLength.Layout.Row = 1;
+            app.CurveLength.Layout.Column = 2;
+
+            % Create EndpointsLength
+            app.EndpointsLength = uicheckbox(app.shapes2dGridLayout);
+            app.EndpointsLength.Tag = 'EndpointsLength';
+            app.EndpointsLength.Text = 'Endpoints Length';
+            app.EndpointsLength.Layout.Row = 2;
+            app.EndpointsLength.Layout.Column = 2;
+
+            % Create FirstAxisLength
+            app.FirstAxisLength = uicheckbox(app.shapes2dGridLayout);
+            app.FirstAxisLength.Tag = 'FirstAxisLength';
+            app.FirstAxisLength.Text = 'First Axis Length';
+            app.FirstAxisLength.Layout.Row = 8;
+            app.FirstAxisLength.Layout.Column = 2;
+
+            % Create SecondAxisLength
+            app.SecondAxisLength = uicheckbox(app.shapes2dGridLayout);
+            app.SecondAxisLength.Tag = 'SecondAxisLength';
+            app.SecondAxisLength.Text = 'Second Axis Length';
+            app.SecondAxisLength.Layout.Row = 9;
+            app.SecondAxisLength.Layout.Column = 2;
+
+            % Create intensityPanel
+            app.intensityPanel = uipanel(app.mainGridLayout);
+            app.intensityPanel.BorderType = 'none';
+            app.intensityPanel.Title = 'Intensity properties';
+            app.intensityPanel.Tag = 'intensityPanel';
+            app.intensityPanel.Layout.Row = 1;
+            app.intensityPanel.Layout.Column = 4;
+
+            % Create intensityGridLayout
+            app.intensityGridLayout = uigridlayout(app.intensityPanel);
+            app.intensityGridLayout.ColumnWidth = {'1x'};
+            app.intensityGridLayout.RowHeight = {22, 22, 22, 22, 22, 22, '1x'};
+            app.intensityGridLayout.RowSpacing = 3;
+
+            % Create MinIntensity
+            app.MinIntensity = uicheckbox(app.intensityGridLayout);
+            app.MinIntensity.Tag = 'MinIntensity';
+            app.MinIntensity.Text = 'Min Intensity';
+            app.MinIntensity.Layout.Row = 1;
+            app.MinIntensity.Layout.Column = 1;
+
+            % Create MaxIntensity
+            app.MaxIntensity = uicheckbox(app.intensityGridLayout);
+            app.MaxIntensity.Tag = 'MaxIntensity';
+            app.MaxIntensity.Text = 'Max Intensity';
+            app.MaxIntensity.Layout.Row = 2;
+            app.MaxIntensity.Layout.Column = 1;
+
+            % Create MeanIntensity
+            app.MeanIntensity = uicheckbox(app.intensityGridLayout);
+            app.MeanIntensity.Tag = 'MeanIntensity';
+            app.MeanIntensity.Text = 'Mean Intensity';
+            app.MeanIntensity.Layout.Row = 3;
+            app.MeanIntensity.Layout.Column = 1;
+
+            % Create StdIntensity
+            app.StdIntensity = uicheckbox(app.intensityGridLayout);
+            app.StdIntensity.Tag = 'StdIntensity';
+            app.StdIntensity.Text = 'Std Intensity';
+            app.StdIntensity.Layout.Row = 4;
+            app.StdIntensity.Layout.Column = 1;
+
+            % Create SumIntensity
+            app.SumIntensity = uicheckbox(app.intensityGridLayout);
+            app.SumIntensity.Tag = 'SumIntensity';
+            app.SumIntensity.Text = 'Sum Intensity';
+            app.SumIntensity.Layout.Row = 5;
+            app.SumIntensity.Layout.Column = 1;
+
+            % Create Correlation
+            app.Correlation = uicheckbox(app.intensityGridLayout);
+            app.Correlation.Tag = 'Correlation';
+            app.Correlation.Text = 'Correlation';
+            app.Correlation.Layout.Row = 6;
+            app.Correlation.Layout.Column = 1;
+
+            % Create separatorPanel
+            app.separatorPanel = uipanel(app.mainGridLayout);
+            app.separatorPanel.BorderType = 'none';
+            app.separatorPanel.BackgroundColor = [0.9608 0.6118 0.3882];
+            app.separatorPanel.Layout.Row = 1;
+            app.separatorPanel.Layout.Column = 3;
+
+            % Create shapes3dPanel
+            app.shapes3dPanel = uipanel(app.Figure);
+            app.shapes3dPanel.BorderType = 'none';
+            app.shapes3dPanel.Title = 'Shape properties for 3D objects';
+            app.shapes3dPanel.Tag = 'shapes2dPanel';
+            app.shapes3dPanel.Position = [2 -376 295 354];
+
+            % Create shapes3dGridLayout
+            app.shapes3dGridLayout = uigridlayout(app.shapes3dPanel);
+            app.shapes3dGridLayout.RowHeight = {22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, '1x'};
+            app.shapes3dGridLayout.RowSpacing = 3;
+
+            % Create Volume3d
+            app.Volume3d = uicheckbox(app.shapes3dGridLayout);
+            app.Volume3d.Tag = 'Volume3d';
+            app.Volume3d.Tooltip = {'Count of the actual number of ''on'' voxels in the region, returned as a scalar. Volume represents the metric or measure of the number of voxels in the regions within the volumetric binary image, BW.'};
+            app.Volume3d.Text = 'Volume';
+            app.Volume3d.Layout.Row = 1;
+            app.Volume3d.Layout.Column = 1;
+
+            % Create FilledArea3d
+            app.FilledArea3d = uicheckbox(app.shapes3dGridLayout);
+            app.FilledArea3d.Tag = 'FilledArea3d';
+            app.FilledArea3d.Tooltip = {''};
+            app.FilledArea3d.Text = 'Filled Area';
+            app.FilledArea3d.Layout.Row = 2;
+            app.FilledArea3d.Layout.Column = 1;
+
+            % Create EquatorialEccentricity3d
+            app.EquatorialEccentricity3d = uicheckbox(app.shapes3dGridLayout);
+            app.EquatorialEccentricity3d.Tag = 'EquatorialEccentricity3d';
+            app.EquatorialEccentricity3d.Tooltip = {'Equatorial Eccentricity, defined as the eccentricity of the section through the second longest and the shortest axes'};
+            app.EquatorialEccentricity3d.Text = 'Equatorial Eccentricity';
+            app.EquatorialEccentricity3d.Layout.Row = 4;
+            app.EquatorialEccentricity3d.Layout.Column = 1;
+
+            % Create MeridionalEccentricity3d
+            app.MeridionalEccentricity3d = uicheckbox(app.shapes3dGridLayout);
+            app.MeridionalEccentricity3d.Tag = 'MeridionalEccentricity3d';
+            app.MeridionalEccentricity3d.Tooltip = {'Meriodional Eccentricity, defineds as the eccentricity of the section through the longest and the shortest axes'};
+            app.MeridionalEccentricity3d.Layout.Row = 5;
+            app.MeridionalEccentricity3d.Layout.Column = 1;
+
+            % Create MajorAxisLength3d
+            app.MajorAxisLength3d = uicheckbox(app.shapes3dGridLayout);
+            app.MajorAxisLength3d.Tag = 'MajorAxisLength3d';
+            app.MajorAxisLength3d.Tooltip = {'length of the major axis '};
+            app.MajorAxisLength3d.Text = 'Major Axis Length';
+            app.MajorAxisLength3d.Layout.Row = 7;
+            app.MajorAxisLength3d.Layout.Column = 1;
+
+            % Create SecondAxisLength3d
+            app.SecondAxisLength3d = uicheckbox(app.shapes3dGridLayout);
+            app.SecondAxisLength3d.Tag = 'SecondAxisLength3d';
+            app.SecondAxisLength3d.Tooltip = {'the length of the second axis '};
+            app.SecondAxisLength3d.Text = 'Second Axis Length';
+            app.SecondAxisLength3d.Layout.Row = 8;
+            app.SecondAxisLength3d.Layout.Column = 1;
+
+            % Create ThirdAxisLength3d
+            app.ThirdAxisLength3d = uicheckbox(app.shapes3dGridLayout);
+            app.ThirdAxisLength3d.Tag = 'ThirdAxisLength3d';
+            app.ThirdAxisLength3d.Tooltip = {'the length of the third axis '};
+            app.ThirdAxisLength3d.Text = 'Third Axis Length';
+            app.ThirdAxisLength3d.Layout.Row = 9;
+            app.ThirdAxisLength3d.Layout.Column = 1;
+
+            % Create EndpointsLength3d
+            app.EndpointsLength3d = uicheckbox(app.shapes3dGridLayout);
+            app.EndpointsLength3d.Tag = 'EndpointsLength3d';
+            app.EndpointsLength3d.Text = 'Endpoints Length';
+            app.EndpointsLength3d.Layout.Row = 1;
+            app.EndpointsLength3d.Layout.Column = 2;
+
+            % Create ConvexVolume3d
+            app.ConvexVolume3d = uicheckbox(app.shapes3dGridLayout);
+            app.ConvexVolume3d.Tag = 'ConvexVolume3d';
+            app.ConvexVolume3d.Tooltip = {'Number of voxels in ''ConvexImage'', returned as a scalar.'};
+            app.ConvexVolume3d.Enable = 'off';
+            app.ConvexVolume3d.Text = 'Convex Volume';
+            app.ConvexVolume3d.Layout.Row = 3;
+            app.ConvexVolume3d.Layout.Column = 2;
+
+            % Create EquivDiameter3d
+            app.EquivDiameter3d = uicheckbox(app.shapes3dGridLayout);
+            app.EquivDiameter3d.Tag = 'EquivDiameter3d';
+            app.EquivDiameter3d.Tooltip = {'Diameter of a sphere with the same volume as the region, returned as a scalar. Computed as (6*Volume/pi)^(1/3).'};
+            app.EquivDiameter3d.Enable = 'off';
+            app.EquivDiameter3d.Text = 'Equiv Diameter';
+            app.EquivDiameter3d.Layout.Row = 4;
+            app.EquivDiameter3d.Layout.Column = 2;
+
+            % Create Extent3d
+            app.Extent3d = uicheckbox(app.shapes3dGridLayout);
+            app.Extent3d.Tag = 'Extent3d';
+            app.Extent3d.Tooltip = {'Ratio of voxels in the region to voxels in the total bounding box, returned as a scalar. Computed as the value of Volume divided by the volume of the bounding box. [Volume/(bounding box width * bounding box height * bounding box depth)]'};
+            app.Extent3d.Enable = 'off';
+            app.Extent3d.Text = 'Extent';
+            app.Extent3d.Layout.Row = 5;
+            app.Extent3d.Layout.Column = 2;
+
+            % Create Solidity3d
+            app.Solidity3d = uicheckbox(app.shapes3dGridLayout);
+            app.Solidity3d.Tag = 'Solidity3d';
+            app.Solidity3d.Tooltip = {'Proportion of the voxels in the convex hull that are also in the region, returned as a scalar. Computed as Volume/ConvexVolume'};
+            app.Solidity3d.Enable = 'off';
+            app.Solidity3d.Text = 'Solidity';
+            app.Solidity3d.Layout.Row = 6;
+            app.Solidity3d.Layout.Column = 2;
+
+            % Create SurfaceArea3d
+            app.SurfaceArea3d = uicheckbox(app.shapes3dGridLayout);
+            app.SurfaceArea3d.Tag = 'SurfaceArea3d';
+            app.SurfaceArea3d.Tooltip = {'Area around the boundary of the region'};
+            app.SurfaceArea3d.Enable = 'off';
+            app.SurfaceArea3d.Text = 'Surface Area';
+            app.SurfaceArea3d.Layout.Row = 7;
+            app.SurfaceArea3d.Layout.Column = 2;
+
+            % Show the figure after all components are created
+            app.Figure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = QuantificationPropertiesGUI(varargin)
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.Figure)
+
+            % Execute the startup function
+            runStartupFcn(app, @(app)startupFcn(app, varargin{:}))
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.Figure)
+        end
+    end
+end

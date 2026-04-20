@@ -43,10 +43,10 @@ for i = numel(webWindowsList):-1:1
     if isempty(webWindowsList(i).Title) || numel(webWindowsList(i).Title) < 24; continue; end
     if strcmp(webWindowsList(i).Title(1:8), 'MIB ver.')
         obj.controller.mibWebWindow = webWindowsList(i);
-        obj.controller.mibWebWindow.enableDragAndDropAll;
-        % add drag-and-drop filename callback
-        obj.controller.mibWebWindow.FileDragDropCallback = @(varargin)obj.controller.dragNdrop_Callback(varargin);
-        %fprintf('Drag-and-drop filenames Enabled for %s\n', obj.controller.mibWebWindow.Title);
+        obj.controller.dndBridgeButton = utils.attachFileDnD( ...
+            obj.controller.mibWebWindow, ...
+            obj.handles.panels.selectionPanel.Figure, ...
+            @(params) obj.controller.dragNdrop_Callback(params));
         fprintf('Drag-and-drop filenames: Enabled\n');
         break;
     end

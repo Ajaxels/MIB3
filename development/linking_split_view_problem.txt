@@ -1,0 +1,23 @@
+Cursor repositioning problem in split view
+
+  When zooming with q/w keys, the cursor is moved to the axes center so consecutive zooms stay centered. The formula:
+
+  screenX = winBounds(1) + leftPanelW + posAxes(1) + posAxes(3)/2;
+
+  This works for set 1 (left panel) but is wrong for set 2 (right panel) because posAxes is relative to each panel's own
+   embedded UIFigure — it doesn't include the horizontal offset of the right panel within the window.
+
+  Diagnostic numbers (zooming in set 2):
+  - Formula gives screenX = 1118 + 271 + 47 + 256 = 1692 → cursor lands in set 1
+  - Actual cursor was at x = 2286 → over set 2
+  - Missing offset ≈ 594 px (roughly half the 1145 px document area)
+
+  Two failed fix attempts:
+  1. Used figureDoc.Figure.Position(1) directly — broke single-panel zoom because it's in MATLAB logical pixels, not the
+   same coordinate system as winBounds (CSS/web logical pixels)
+  2. Computed panelOffset proportionally from axes widths — theoretically correct (~572 px offset) but user reported no
+  effect. Unclear if selectedSet was actually 2 at runtime, or if MATLAB was running cached code
+
+  Core challenge: winBounds (AppContainer, CSS pixels) and figureDoc.Figure.Position (MATLAB logical pixels) are
+  different coordinate systems. The +8/+26 magic offsets and scaling factor convert winBounds → groot().PointerLocation,
+   but there's no known conversion from figure positions to winBounds space.

@@ -340,8 +340,9 @@ function startPrediction2D(obj)
                 amiraOpt.overwrite = 1;
                 amiraOpt.showWaitbar = 0;
                 amiraOpt.verbose = false;
-                % scoreImg is [H W C] (classes in 3rd dim); bitmap2amiraMesh expects [H W D C T]
-                bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), [], amiraOpt);
+                % scoreImg is [H W C] (pure 2D) or [H W C D] (2.5D / 3D / use3DdatasetWith2Dnet);
+                % bitmap2amiraMesh expects [H W D C T] - trailing singleton handles the 2D case
+                io.AmiraMesh.bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), [], amiraOpt);
             elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
                 utils.deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);

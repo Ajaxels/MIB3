@@ -425,6 +425,12 @@ classdef (Abstract) BaseImageLoader < handle
                     imginfo{"MaxInt"} = double(intmax(files(1).imgClass));
             end
 
+            % sync viewPort.max to MaxInt so 16-bit images aren't displayed
+            % with a uint8 ceiling (255) when no loader has set it explicitly
+            viewPort = imginfo{"viewPort"};
+            viewPort.max = imginfo{"MaxInt"};
+            imginfo{"viewPort"} = viewPort;
+
             % update the lutColors
             if isKey(imginfo, 'lutColors')
                 currColors = imginfo{'lutColors'};

@@ -174,3 +174,4 @@ Key rules: first comment repeats the function signature; `[@em optional]` for op
 ## MATLAB Coding Rules
 
 - Use `dictionary` instead of `containers.Map`: `dictionary(keys, values)` for init, `isKey(d, key)` and `d(key)` for lookups. (R2022b+, supports type inference)
+- Use descriptive variable names — avoid short abbreviations like `vp`, `wb`, `im`, `fn`. Write `viewPort`, `waitbar`, `image`, `filename` etc. in full so the code is self-explanatory without comments.

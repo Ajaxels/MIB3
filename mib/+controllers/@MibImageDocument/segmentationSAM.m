@@ -505,4 +505,7 @@ pyrun([
     "gc.collect()"
 ]);
 
+% this pause is required to clear the sticky key modifier states
+pause(0.1);
+
 end

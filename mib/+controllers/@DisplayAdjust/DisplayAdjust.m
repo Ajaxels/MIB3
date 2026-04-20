@@ -380,11 +380,21 @@ classdef DisplayAdjust < handle
             options.blockModeSwitch = 1;
             img = cell2mat(obj.mibModel.getData2D('image', [], [], channel, options));
 
-            minX = 0;
-            maxX = maxInt;
-            nBins = min(512, maxInt);
-            x = linspace(minX, maxX, nBins + 1);
-            counts = histcounts(double(img(:)), x);
+            % Clamp viewport bounds to the valid intensity range
+            viewMin = max(0, viewPort.min(channel));
+            viewMax = min(maxInt, viewPort.max(channel));
+            if viewMax - viewMin < 1
+                viewMax = viewMin + 1;  % guard against zero-width range
+            end
+
+            % Distribute all bins across the visible viewport range so the
+            % histogram has full resolution regardless of zoom level.
+            % At full range this is identical to the old behavior; when
+            % zoomed to a narrow range each bin covers a fraction of an
+            % intensity level instead of ~128 levels.
+            nBins = min(512, max(1, round(viewMax - viewMin)));
+            binEdges = linspace(viewMin, viewMax, nBins + 1);
+            counts = histcounts(double(img(:)), binEdges);
 
             if obj.mibModel.I{id}.useLUT
                 plotColor = obj.mibModel.I{id}.image.lutColors(channel, :);
@@ -395,14 +405,13 @@ classdef DisplayAdjust < handle
 
             ax = h.imHist;
             if any(counts > 0)
-                areaObj = area(ax, x(1:end-1), counts, 'LineStyle', 'none', 'FaceColor', plotColor);
+                areaObj = area(ax, binEdges(1:end-1), counts, 'LineStyle', 'none', 'FaceColor', plotColor);
                 areaObj.HitTest = 'off';
                 areaObj.PickableParts = 'none';
             else
                 cla(ax);
             end
-            ax.XLim = [min(viewPort.min(channel), maxInt-3), ...
-                       max(viewPort.max(channel), 2)];
+            ax.XLim = [viewMin, viewMax];
             if h.logViewCheck.Value
                 ax.YScale = 'log';
             else
