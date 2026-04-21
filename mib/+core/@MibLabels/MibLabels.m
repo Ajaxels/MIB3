@@ -43,12 +43,47 @@ classdef MibLabels < core.MibImage
 
         function obj = MibLabels(img, meta)
             % function obj = MibLabels(img, meta)
-            % constructor of MibLabels class, inherits properties and
-            % methods of MibImage
+            % Constructor of MibLabels — segmentation label storage for
+            % models with up to 255 (or 65535 / 4294967295) materials.
+            % Inherits all properties and methods from core.MibImage.
+            %
+            % Data layout: [H, W, Z, 1, T] — single color channel, depth
+            % in dimension 3.  MibLabels does NOT apply the [H,W,C]→[H,W,1,C]
+            % permute that MibImage uses for colour images.
             %
             % Parameters:
-            % img: an 2D-5D image stack
-            % meta: a structure with parameters of the dataset, can be @e []
+            % img: [@em optional] 2-D to 5-D uint8/uint16/uint32 array, or [].
+            %   Dim 3 is always treated as depth (Z), never as color.
+            %   @li []              — empty placeholder; obj.exists = false
+            %   @li [H, W]          — single 2-D label map
+            %   @li [H, W, Z]       — 3-D label volume (Z slices)
+            %   @li [H, W, Z, 1, T] — full 5-D form (preferred for clarity)
+            % meta: [@em optional] metadata dictionary from
+            %   core.MibImage.initializeImgInfo().  Pass [] to use defaults.
+            %
+            % After construction ALL dimension properties are set from the
+            % actual array size via MibImage.initialize():
+            %   obj.height, obj.width, obj.depth, obj.colors, obj.time,
+            %   obj.dim_yxzct, obj.maxInt, obj.dataClass
+            %
+            % @b Examples:
+            % @code
+            % % 1. 3-D label volume, 3 slices
+            % rawLabels = uint8(zeros(254, 378, 3));
+            % meta = core.MibImage.initializeImgInfo( ...
+            %     'pixSize', obj.image.pixSize, ...
+            %     'Height', 254, 'Width', 378, 'Depth', 3, 'Time', 1, 'Colors', 1);
+            % lbl = core.MibLabels(rawLabels, meta);
+            % % lbl.depth == 3, lbl.colors == 1
+            %
+            % % 2. Empty placeholder
+            % lbl = core.MibLabels();
+            % % lbl.exists == false
+            %
+            % % 3. After construction, set maxMaterials for large models
+            % lbl = core.MibLabels(rawLabels, meta);
+            % lbl.maxMaterials = 65535;
+            % @endcode
             
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; img = []; end

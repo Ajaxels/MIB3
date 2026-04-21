@@ -182,7 +182,7 @@ end
 
 %% Load segmentation model layer
 if showModelSwitch && dataset.modelExist && obj.preferences.Colors.ModelTransparency < 1
-    sOver1 = cell2mat(dataset.getData2D('labels', sliceToShowIdx, NaN, NaN, options));
+    sOver1 = cell2mat(dataset.getData2D('labels', sliceToShowIdx, [], [], options));
 
     % Resize model to match image
     if panModeException == 0 && magnificationFactor > 1
@@ -347,7 +347,7 @@ switch colortype
 end
 
 %% Overlay segmentation model
-if ~isnan(sOver1(1,1,1))
+if ~isempty(sOver1) && ~isnan(sOver1(1,1,1))
     sList = dataset.labels.materialNames;
     T = obj.preferences.Colors.ModelTransparency;
 
@@ -430,7 +430,7 @@ end
 %% Overlay mask layer
 T1 = obj.preferences.Colors.SelectionTransparency;
 
-if ~isnan(sOver2(1,1,1))
+if ~isempty(sOver2) && ~isnan(sOver2(1,1,1))
     T2 = obj.preferences.Colors.MaskTransparency;
     ind = 1;
 

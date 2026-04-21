@@ -67,6 +67,11 @@ obj.wb.Value = 0.4;
 
 % remove ImageNoise that may somehow sneak when importing old projects
 if isfield(res.AugOpt2DStruct, 'ImageNoise');  res.AugOpt2DStruct = rmfield(res.AugOpt2DStruct, 'ImageNoise'); end
+%if strcmp(res.BatchOpt.Architecture{1}, 'U-net') && strcmp(res.BatchOpt.Workflow{1}, '2D Semantic')
+%    delete(obj.wb); return;
+%end
+
+
 
 % compare current vs the loaded workflow
 if ~strcmp(obj.BatchOpt.Workflow{1}, res.BatchOpt.Workflow{1})
@@ -75,6 +80,12 @@ if ~strcmp(obj.BatchOpt.Workflow{1}, res.BatchOpt.Workflow{1})
 end
 % compare current vs the loaded architecture
 if ~strcmp(obj.BatchOpt.Architecture{1}, res.BatchOpt.Architecture{1})
+    if strcmp(res.BatchOpt.Architecture{1}, 'U-net')
+        errText = sprintf('Unfortunately, this type of U-net architecture is not supported in MIB3!\nPlease use "U-net +Encoder" option, we will try to restore all used parameters...\nYou will need to retrain the network, alternatively use MIB2');
+        utils.dlgs.showErrorDialog(obj.view.gui, errText, 'The architecture is not supported')
+        res.BatchOpt.Architecture{1} = 'U-net +Encoder';
+        res.BatchOpt.T_EncoderNetwork{1} = 'Classic';
+    end
     obj.view.handles.Architecture.Value = res.BatchOpt.Architecture{1};
     obj.selectArchitecture();
 end

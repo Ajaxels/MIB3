@@ -87,10 +87,10 @@ if blockModeSwitchLocal == 0  % return the full dataset
     end
 else  % return a subvolume of the full dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
-    Xlim = [1 obj.width];
-    Ylim = [1 obj.height];
-    Zlim = [1 obj.depth];
-    Tlim = [1 obj.time];
+    Xlim = [1 size(obj.data{1}, 2)];
+    Ylim = [1 size(obj.data{1}, 1)];
+    Zlim = [1 size(obj.data{1}, 3)];
+    Tlim = [1 size(obj.data{1}, 5)];
 
     % convert coordinates to the original dataset
     if orient==1     % xz
@@ -113,10 +113,10 @@ else  % return a subvolume of the full dataset
     end
 
     % make sure that the coordinates within the dimensions of the dataset
-    Xlim = [max([Xlim(1) 1]) min([Xlim(2) floor(obj.width)])];
-    Ylim = [max([Ylim(1) 1]) min([Ylim(2) floor(obj.height)])];
-    Zlim = [max([Zlim(1) 1]) min([Zlim(2) obj.depth])];
-    Tlim = [max([Tlim(1) 1]) min([Tlim(2) obj.time])];
+    Xlim = [max([Xlim(1) 1]) min([Xlim(2) floor(size(obj.data{1}, 2))])];
+    Ylim = [max([Ylim(1) 1]) min([Ylim(2) floor(size(obj.data{1}, 1))])];
+    Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data{1}, 3)])];
+    Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data{1}, 5)])];
 
     dataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     if orient==1     % permute to xz

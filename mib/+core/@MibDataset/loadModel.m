@@ -278,8 +278,25 @@ rawModel = reshape(rawModel, [modelH, modelW, modelD, 1, modelT]);
 
 %% Create model and assign data
 
+% createModel handles: layer-type transitions (type-63 ↔ type-255 pack/unpack
+% of sel/mask bits), selectedMaterial, selectedAddToMaterial, lastSegmSelection,
+% and annotations.clearContents().
 obj.createModel(modelType);
-obj.labels.data{1} = rawModel;
+
+% Rebuild the labels object from rawModel using the class constructor so that
+% ALL dimension properties (height, width, depth, colors, time, dim_yxzct,
+% maxInt, dataClass) are derived from the actual data via MibImage.initialize().
+% Direct assignment (obj.labels.data{1} = rawModel) leaves those properties stale
+% when createModel took the type-63 fast path and reused the existing object.
+modelMeta = core.MibImage.initializeImgInfo( ...
+    'pixSize', obj.image.pixSize, ...
+    'Height',  modelH, 'Width', modelW, 'Depth', modelD, 'Time', modelT, 'Colors', 1);
+if modelType == 63
+    obj.labels = core.MibLabels63(rawModel, modelMeta);
+else
+    obj.labels = core.MibLabels(rawModel, modelMeta);
+    obj.labels.maxMaterials = modelType;
+end
 
 %% Assign material metadata
 

@@ -371,7 +371,7 @@ classdef MibDeep < handle
 
             % define available architectures
             workflowsList = {'2D Semantic', '2.5D Semantic', '3D Semantic', '2D Patch-wise', '2D Instance'};
-            architectureList{1} = {'DeepLab v3+', 'SegNet', 'U-net', 'U-net +Encoder'};
+            architectureList{1} = {'DeepLab v3+', 'SegNet', 'U-net +Encoder'};
             %architectureList{2} = {'3DC + DLv3 Resnet18', 'Z2C + DLv3 Resnet18', 'Z2C + DLv3 Resnet50', 'Z2C + U-net', 'Z2C + U-net +Encoder'};
             architectureList{2} = {'Z2C + DLv3', 'Z2C + U-net', 'Z2C + U-net +Encoder'}; % 3DC + DLv3 Resnet18'
             architectureList{3} = {'U-net', 'U-net Anisotropic'};

@@ -16,6 +16,9 @@ function [outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, 
         padMethod = 'symmetric';
     end
 
+    if dataDimension == 2
+        vol = squeeze(vol);  % MIB3 stores 2D images as [Y,X,1,C]; squeeze to [Y,X,C]
+    end
     if dataDimension == 2 && size(vol, 3) ~= inputPatchSize(4)
         % dynamically convert grayscale to RGB if needed
         vol = repmat(vol, [1, 1, 3]);

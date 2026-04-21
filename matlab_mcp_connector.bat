@@ -1,0 +1,1 @@
+claude mcp add --transport stdio matlab -- c:\Users\Ilya\.local\bin\ --initial-working-folder=c:\Matlab\MIB3\

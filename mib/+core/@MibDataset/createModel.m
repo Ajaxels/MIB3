@@ -56,6 +56,13 @@ if modelType == 63
         % and selection (bit 8)
         if obj.labels.exists
             obj.labels.data{1} = bitand(obj.labels.data{1}, uint8(192));
+            [h, w, d, ~, t] = size(obj.labels.data{1});
+            obj.labels.height    = h;
+            obj.labels.width     = w;
+            obj.labels.depth     = d;
+            obj.labels.colors    = 1;
+            obj.labels.time      = t;
+            obj.labels.dim_yxzct = [h, w, d, 1, t];
         else
             obj.labels = core.MibLabels63(zeros(dims, 'uint8'), meta);
         end

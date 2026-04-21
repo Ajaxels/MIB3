@@ -138,14 +138,45 @@ classdef MibImage < matlab.mixin.Copyable
         function obj = MibImage(data, meta)
             % obj = MibImage(data, meta)
             % MibImage class constructor
-            
-            % Constructor for the MibBaseImage class. 
-            % Create a new instance of the class with default parameters
+            %
+            % Creates a new MibImage for raw pixel data.  The constructor
+            % calls initialize() which derives all dimension properties
+            % (height, width, depth, colors, time, dim_yxzct, maxInt,
+            % dataClass) from the actual data size.
             %
             % Parameters:
-            % data: an 2D-5D image stack
-            % meta: a structure with parameters of the dataset, can be @e [], see obj.initImage for details
-            % type: type of the data, 'image', 'labels' (MibLabels class), 'labels63' (MibLabels63 class)
+            % data: [@em optional] 2-D to 5-D numeric array, any class.
+            %   Accepted input shapes and how they are interpreted:
+            %   @li [] or omitted — empty placeholder; obj.exists = false
+            %   @li [H, W]        — single grayscale slice
+            %   @li [H, W, C]     — C-channel 2-D image (C < 4); dim 3 is
+            %       permuted to dim 4 so storage becomes [H,W,1,C]
+            %   @li [H, W, C]     — 3-D stack when C >= 4 (no permute)
+            %   @li [H, W, Z, C]  — multi-channel 3-D stack
+            %   @li [H, W, Z, C, T] — full 5-D dataset
+            %   Note: the [H,W,C] → [H,W,1,C] permute applies to MibImage
+            %   only.  MibLabels and MibLabels63 store depth in dim 3 and
+            %   are never permuted.
+            % meta: [@em optional] metadata dictionary from
+            %   core.MibImage.initializeImgInfo().  Pass [] to use defaults.
+            %
+            % @b Examples:
+            % @code
+            % % 1. Grayscale 3-D stack (512×512×10, uint8)
+            % data = uint8(zeros(512, 512, 10));
+            % meta = core.MibImage.initializeImgInfo('pixSize', pixSize);
+            % img  = core.MibImage(data, meta);
+            % % img.depth == 10, img.colors == 1
+            %
+            % % 2. RGB 2-D image stored as [H,W,3]  (C < 4 → permuted to [H,W,1,3])
+            % rgb  = uint8(rand(256, 256, 3) * 255);
+            % img  = core.MibImage(rgb);          % meta defaults OK
+            % % img.depth == 1, img.colors == 3
+            %
+            % % 3. Empty placeholder (no pixel data yet)
+            % img  = core.MibImage();
+            % % img.exists == false
+            % @endcode
             
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; data = []; end
@@ -165,8 +196,10 @@ classdef MibImage < matlab.mixin.Copyable
             if isempty(data) 
                 obj.initialize(data, meta);
             else
-                % permute the 3rd dimension into the 4th dimension
-                if ndims(data)==3 && size(data, 3) < 4
+                % For image data only: permute [H,W,C] → [H,W,1,C] so the
+                % colour dimension lands in position 4.  Labels store depth
+                % in position 3, so the permute must be skipped for them.
+                if ndims(data)==3 && size(data, 3) < 4 && strcmp(obj.type, 'image')
                     data = permute(data, [1 2 4 3]);
                 end
                 obj.initialize(data, meta);
