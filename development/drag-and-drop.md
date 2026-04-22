@@ -63,6 +63,47 @@ attachment lives in that button's `UserData`.
   or skip it entirely — but you cannot mix a main-window webwindow with a
   child-dialog figure.
 
+### Alternative: route via the main window's existing bridge
+
+Child dialogs that use `DivFigurePlatformHost` (undocked AppContainer documents,
+URL port 31515) cannot host a bridge because their Chromium window is not
+registered in any MATLAB webwindow manager and cannot be reached by
+`attachFileDnD`. For these windows the practical fallback is to **intercept the
+extension in the main window's drop callback and forward to the child
+controller**.
+
+In `MibController.dragNdrop_Callback` add a guard at the top of the
+extension-routing block:
+
+```matlab
+% Route .mibcfg to DeepMIB if it is open; always intercept so the extension
+% never falls through to the image loader (which would error on unknown ext).
+if strcmpi(extLower, '.mibcfg')
+    deepMibIdx = find(strcmp(obj.childControllersIds, 'controllers.MibDeep'), 1);
+    if ~isempty(deepMibIdx) && isvalid(obj.childControllers{deepMibIdx})
+        obj.childControllers{deepMibIdx}.loadConfig(filenameList{1});
+        status = true;
+    else
+        dlgOpt.MsgBoxOnly = true;
+        dlgOpt.Icon = 'puffin_warning';
+        utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+            'DeepMIB window must be open to load a *.mibCfg config file.', ...
+            {}, {}, 'Drag and Drop', dlgOpt);
+    end
+    return;   % always return — never fall through
+end
+```
+
+Key rules for this pattern:
+- **Always `return` unconditionally** — even when DeepMIB is closed. Letting an
+  unrecognised extension fall through to `loadImages` triggers an extension-
+  registry error.
+- **Show a warning when the child is not open.** The user dropped a file with a
+  purposeful intent; a silent no-op is confusing.
+- The child controller is found via `obj.childControllersIds` (populated by
+  `startController`) using the exact string passed to `startController`, e.g.
+  `'controllers.MibDeep'`.
+
 ### Child windows need their own bridge
 
 Each child dialog opened via `obj.startController(...)` (or anything that
@@ -72,21 +113,36 @@ initialization, passing **that** child's webwindow and a figure inside it.
 
 ### Finding the webwindow
 
-MIB3 walks `matlab.internal.webwindowmanager.instance.windowList` and matches
-by title prefix (`'MIB ver.'`). For a child dialog, match by a unique substring
-of your own title:
+**Two webwindow managers exist in R2025+:**
+
+| Window type | Manager | URL port |
+|-------------|---------|----------|
+| AppContainer app (main MIB window) | `matlab.internal.webwindowmanager` | 31516 |
+| Standalone mlapp / undocked figure | `matlab.internal.cef.webwindowmanager` | 31515 |
+
+Match by **URL**, not title, using `matlab.ui.internal.FigureServices.getFigureURL(fig)`:
 
 ```matlab
-webWindowsList = matlab.internal.webwindowmanager.instance.windowList;
-childWebwin = [];
-for i = numel(webWindowsList):-1:1
-    t = webWindowsList(i).Title;
-    if ~isempty(t) && startsWith(t, 'My Child Dialog')
-        childWebwin = webWindowsList(i);
-        break;
+figUrl = matlab.ui.internal.FigureServices.getFigureURL(fig);
+
+% Primary: CEF manager for standalone mlapp windows
+cefWW = matlab.internal.cef.webwindowmanager.instance.windowList;
+matchIdx = find(strcmp(figUrl, {cefWW.URL}), 1);
+if ~isempty(matchIdx)
+    childWebwin = cefWW(matchIdx);
+end
+
+% Fallback: AppContainer manager
+if isempty(childWebwin)
+    wwList = matlab.internal.webwindowmanager.instance.windowList;
+    matchIdx = find(strcmp(figUrl, {wwList.URL}), 1);
+    if ~isempty(matchIdx)
+        childWebwin = wwList(matchIdx);
     end
 end
 ```
+
+`utils.attachFileDnD` accepts both `matlab.internal.webwindow` and `matlab.internal.cef.webwindow` — both expose `enableDragAndDropAll`, `FileDragDropCallback`, and `executeJS`.
 
 ---
 

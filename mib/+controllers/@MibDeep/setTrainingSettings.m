@@ -35,11 +35,12 @@ function setTrainingSettings(obj)
         num2str(obj.TrainingOpt.CheckpointFrequency)};
     dlgTitle = 'Training settings';
     options.WindowStyle = 'normal';
-    options.PromptLines = [1, 2, 1, 6, 2, ...
-        2, 3, 2, 3, 2, 3, 2, 3, 1, 2, 2];   % [optional] number of lines for widget titles
+    %options.PromptLines = [1, 2, 1, 6, 2, ...
+    %    2, 3, 2, 3, 2, 3, 2, 3, 1, 2, 2];   % [optional] number of lines for widget titles
     %options.Title = 'My test Input dialog';   % [optional] additional text at the top of the window
     %options.TitleLines = 2;                   % [optional] make it twice tall, number of text lines for the title
-    options.WindowWidth = 860;
+    options.WindowWidth = 760;
+    options.WindowHeight = 540;
     options.Columns = 2;    % [optional] define number of columns
     options.Focus = 1;      % [optional] define index of the widget to get focus
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/trainingoptions.html'; % [optional], an url for the Help button

@@ -9,7 +9,8 @@ function bridgeButton = attachFileDnD(webwin, parentFigure, callback)
 %     behaviours are all suppressed
 %
 % Parameters:
-% webwin:        handle to matlab.internal.webwindow hosting the app
+% webwin:        handle to matlab.internal.webwindow (AppContainer) or
+%                matlab.internal.cef.webwindow (standalone mlapp) hosting the app
 % parentFigure:  a uifigure rendered inside webwin's Chromium document
 %                (the hidden bridge uibutton becomes its child)
 % callback:      function handle; invoked on drop as callback(params)
@@ -35,7 +36,7 @@ function bridgeButton = attachFileDnD(webwin, parentFigure, callback)
 % See development/drag-and-drop.md for a full explanation of the pattern.
 
 arguments (Input)
-    webwin                       matlab.internal.webwindow
+    webwin                       handle   % matlab.internal.webwindow or matlab.internal.cef.webwindow
     parentFigure                 matlab.ui.Figure
     callback        (1,1)        function_handle
 end

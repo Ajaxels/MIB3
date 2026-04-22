@@ -30,6 +30,22 @@ end
 [path, fn, ext] = fileparts(filenameList{1});
 extLower = lower(ext);
 
+% .mibcfg is a DeepMIB config file — always handled here, never falls through
+if strcmpi(extLower, '.mibcfg')
+    deepMibIdx = find(strcmp(obj.childControllersIds, 'controllers.MibDeep'), 1);
+    if ~isempty(deepMibIdx) && isvalid(obj.childControllers{deepMibIdx})
+        obj.childControllers{deepMibIdx}.loadConfig(filenameList{1});
+        status = true;
+    else
+        dlgOpt.MsgBoxOnly = true;
+        dlgOpt.Icon = 'puffin_warning';
+        utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+            'DeepMIB window must be open to load a *.mibCfg config file.', ...
+            {}, {}, 'Drag and Drop', dlgOpt);
+    end
+    return;
+end
+
 % extension-based routing between loadImages and loadModel
 % - modelOnlyExts  : always load as segmentation model
 % - ambiguousExts  : can be image or model; decide by current dataset state

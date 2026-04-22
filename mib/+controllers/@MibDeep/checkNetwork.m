@@ -9,8 +9,11 @@ function checkNetwork(obj, fn)
     if nargin < 2; fn = []; end
     if ~isempty(fn) && exist(fn, 'file') == 0
         mgsOpt.MsgBoxOnly = true;
-        header = sprintf('The selected network file is empty!\n\nPlease check filename:\n%s', fn);
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Network file is missing!', mgsOpt);
+        mgsOpt.WindowHeight = 200;
+        mgsOpt.WindowWidth = 550;
+        mgsOpt.headerLines = 1;
+        msgText = sprintf('Please check filename:\n%s', fn);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, 'The selected network file is empty!', {}, {msgText}, 'Network file is missing!', mgsOpt);
         return;
     end
 

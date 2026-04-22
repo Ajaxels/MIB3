@@ -422,6 +422,8 @@ classdef MibDeep < handle
             obj.BatchOpt.T_NumFirstEncoderFilters{2} = [1 Inf];
             obj.BatchOpt.T_FilterSize{1} = 3;
             obj.BatchOpt.T_FilterSize{2} = [3 Inf];
+            obj.BatchOpt.T_NumAnisotropicBlocks{1} = 1;
+            obj.BatchOpt.T_NumAnisotropicBlocks{2} = [1 Inf];
             obj.BatchOpt.T_UseImageNetWeights = false;
             obj.BatchOpt.T_PatchesPerImage{1} = 1;
             obj.BatchOpt.T_PatchesPerImage{2} = [1 Inf];
@@ -531,6 +533,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.T_EncoderDepth = 'The depth of the network determines the number of times the input volumetric image is downsampled or upsampled during processing';
             obj.BatchOpt.mibBatchTooltip.T_NumFirstEncoderFilters = 'Number of output channels for the first encoder stage';
             obj.BatchOpt.mibBatchTooltip.T_FilterSize = 'Convolutional layer filter size, specified as a positive odd integer';
+            obj.BatchOpt.mibBatchTooltip.T_NumAnisotropicBlocks = 'Number of initial 2D-only downsampling blocks before full 3D convolutions; for anisotropic datasets where Z spacing is coarser than XY (U-net Anisotropic only)';
             obj.BatchOpt.mibBatchTooltip.T_UseImageNetWeights = 'Init the network with imagenet weights [MATLAB version of MIB only]';
             obj.BatchOpt.mibBatchTooltip.T_PatchesPerImage = 'Number of patches to extract from each image';
             obj.BatchOpt.mibBatchTooltip.T_MiniBatchSize = 'Number of observations that are returned in each batch';
@@ -690,10 +693,10 @@ classdef MibDeep < handle
             end
             % show the gui
             obj.view.Figure.Figure.Visible = 'on';
-            
+
             % add listner to obj.mibModel and call controller function as a callback
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.viewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
-           
+
             if gpuDeviceCount == 0
                 obj.view.Figure.GPUDropDown.Items = {'CPU only', 'Parallel'};
                 mgsOpt.MsgBoxOnly = true;
@@ -713,6 +716,7 @@ classdef MibDeep < handle
                 obj.view.Figure.GPUDropDown.Value = gpuList{1};
                 gpuDevice(1);   % select 1st device
             end
+
         end
 
     end

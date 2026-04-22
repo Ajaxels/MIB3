@@ -859,7 +859,12 @@ waitfor(fig);
             if strncmpi(H,'http',4) || contains(H,'.html')
                 web(H,'-browser');
             else
-                try, evalin('base', H); catch, try, eval(H); catch, end, end
+                try
+                    evalin('base', H)
+                catch err
+                    utils.dlgs.showErrorDialog(ParentFigure, err);
+                    try eval(H); catch, end
+                end
             end
         end
     end

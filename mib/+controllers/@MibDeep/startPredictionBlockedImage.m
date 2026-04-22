@@ -329,7 +329,7 @@ function startPredictionBlockedImage(obj)
             if dataDimension == 3 % for 3D downsample all dimensions
                 imResizeOpt.depth = round(imgDepth/obj.BatchOpt.P_ImageDownsamplingFactor{1}); % % new depth value, overrides the scale parameter
             end
-            vol = mibResize3d(vol, [], imResizeOpt);
+            vol = utils.resizeImage3d(vol, [], imResizeOpt);
         end
 
         % depth of the volume
@@ -478,7 +478,7 @@ function startPredictionBlockedImage(obj)
             imResizeOpt.height = imgHeight;  % upsample height value, overrides the scale parameter
             imResizeOpt.depth = imgDepth;
             imResizeOpt.method = 'nearest';
-            outputLabels = mibResize3d(outputLabels, [], imResizeOpt);
+            outputLabels = utils.resizeImage3d(outputLabels, [], imResizeOpt);
 
             % % smooth models for 2 classes outputs
             if numClasses == 2
@@ -498,7 +498,7 @@ function startPredictionBlockedImage(obj)
 
             if generateScoreFiles > 0
                 imResizeOpt.imgType = '4D';
-                scoreImg = mibResize3d(scoreImg, [], imResizeOpt);
+                scoreImg = utils.resizeImage3d(scoreImg, [], imResizeOpt);
             end
         end
 

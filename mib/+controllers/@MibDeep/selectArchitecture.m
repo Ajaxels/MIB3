@@ -21,6 +21,7 @@ obj.view.handles.P_OverlappingTilesPercentage.Enable = 'on';
 obj.view.handles.P_PatchWiseUpsample.Enable = 'off';
 obj.view.handles.P_ExtraPaddingPercentage.Enable = 'on';
 obj.view.handles.T_EncoderNetwork.Enable = 'off';
+obj.view.handles.T_NumAnisotropicBlocks.Enable = 'off';
 
 obj.TrainEngine = 'trainNetwork'; % original method
 
@@ -86,6 +87,7 @@ switch obj.BatchOpt.Workflow{1}
         obj.singleModelTrainingFileValueChanged(event2);    % callback for press of Single MIB model checkbox
         obj.view.handles.SingleModelTrainingFile.Enable = 'off';
         obj.BatchOpt.SingleModelTrainingFile = false;
+        obj.view.handles.T_NumAnisotropicBlocks.Enable = 'on';
     case '2D Patch-wise'
         % preprocessing tab
         obj.view.handles.MaskAway.Enable = 'off';

@@ -85,7 +85,7 @@ function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
                     lgraph = [];
                     return;
             end
-            lgraph = replaceLayer(lgraph, 'ImageInputLayer', inputLayer);
+            lgraph = replaceLayer(lgraph, lgraph.Layers(1).Name, inputLayer);
     end
 end
 

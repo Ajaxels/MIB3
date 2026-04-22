@@ -15,15 +15,16 @@ function setInputLayerSettings(obj)
         num2str(reshape(obj.InputLayerOpt.Max, [1 numel(obj.InputLayerOpt.Max)]))};
     dlgTitle = 'Input layer settings';
     options.WindowStyle = 'normal';
-    options.PromptLines = [8, 5, 1, 1, 1];
-    options.WindowWidth = 950;
+    options.WindowWidth = 550;
+    options.WindowHeight = 450;
+    options.LabelPosition = 'top';
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/nnet.cnn.layer.image3dinputlayer.html'; % [optional], an url for the Help button
 
     [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     obj.InputLayerOpt.Normalization = answer{1};
-    obj.InputLayerOpt.Mean = str2num(answer{2});
+    obj.InputLayerOpt.Mean = str2num(answer{2}); %#ok<*ST2NM>
     obj.InputLayerOpt.StandardDeviation = str2num(answer{3});
     obj.InputLayerOpt.Min = str2num(answer{4});
     obj.InputLayerOpt.Max = str2num(answer{5});

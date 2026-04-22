@@ -21,6 +21,12 @@ inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize);    % as [height, width,
 
 selectedArchitecture = obj.BatchOpt.Architecture{1};
 
+% default message box settings
+mgsOpt.MsgBoxOnly = true;
+mgsOpt.headerLines = 1;
+mgsOpt.WindowHeight = 180;
+mgsOpt.Icon = 'puffin_error';
+
 try
     switch obj.BatchOpt.Workflow{1}
         case '2D Semantic'
@@ -43,18 +49,16 @@ try
                     outputPatchSize = inputPatchSize;  % as [height, width, depth, color]
                 case 'DeepLab v3+'
                     if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
-                        mgsOpt.MsgBoxOnly = true;
-                        header = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
-                        mgsOpt.Icon = 'puffin_error';
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration!', mgsOpt);
+                        msgText = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Wrong configuration!', {}, {msgText}, 'Wrong configuration!', mgsOpt);
                         return;
                     end
 
                     targetNetwork = lower(obj.BatchOpt.T_EncoderNetwork{1});
                     if ismember(targetNetwork, {'xception', 'inceptionresnetv2'}) && isdeployed
-                        mgsOpt.MsgBoxOnly = true;
-                        header = sprintf('Currently %s network is only available in MIB for MATLAB\nTry to use DLv3-Resnet18/50 instead!', obj.BatchOpt.Architecture{1});
-                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
+                        mgsOpt.headerLines = 2;
+                        header = sprintf('Currently %s network is only available in MIB for MATLAB', obj.BatchOpt.Architecture{1});
+                        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Try to use DLv3-Resnet18/50 instead!'}, 'Ops!', mgsOpt);
                         return;
                     end
                     lgraph = obj.generateDeepLabV3Network(inputPatchSize([1 2 colorDimension]), obj.BatchOpt.T_NumberOfClasses{1}, targetNetwork);
@@ -113,9 +117,8 @@ try
 
                     case 'DLv3'
                         if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
-                            mgsOpt.MsgBoxOnly = true;
-                            header = sprintf('%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
-                            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration!', mgsOpt);
+                            msgText = sprintf('%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
+                            utils.dlgs.inputUniversalDlg(obj.view.gui, 'Wrong configuration!', {}, {msgText}, 'Wrong configuration!', mgsOpt);
                             return;
                         end
                         targetNetwork = lower(obj.BatchOpt.T_EncoderNetwork{1});
@@ -128,9 +131,8 @@ try
                 switch selectedArchitecture
                     case {'3DC + DLv3 Resnet18'}
                         if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
-                            mgsOpt.MsgBoxOnly = true;
-                            header = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
-                            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration!', mgsOpt);
+                            msgText = sprintf('"%s" network architecture requires:\n - input patch size of at least [224 224]\n- 1 or 3 color channels\n- "same" padding', obj.BatchOpt.Architecture{1});
+                            utils.dlgs.inputUniversalDlg(obj.view.gui, 'Wrong configuration!', {}, {msgText}, 'Wrong configuration!', mgsOpt);
                             return;
                         end
                         switch selectedArchitecture
@@ -150,84 +152,39 @@ try
                 case 'U-net'
                     %lgraph = obj.generate3DDeepLabV3Network(inputPatchSize([1 2 4]), obj.BatchOpt.T_NumberOfClasses{1}, 8, 'resnet50');
 
-
-                    [lgraph, outputPatchSize] = unet3dLayers(...
-                        inputPatchSize, obj.BatchOpt.T_NumberOfClasses{1}, ...
-                        'NumFirstEncoderFilters', obj.BatchOpt.T_NumFirstEncoderFilters{1}, 'FilterSize', obj.BatchOpt.T_FilterSize{1}, ...
-                        'ConvolutionPadding', obj.BatchOpt.T_ConvolutionPadding{1}, 'EncoderDepth', obj.BatchOpt.T_EncoderDepth{1}); %#ok<*ST2NM>
+                    if ~isMATLABReleaseOlderThan('R2026a')  % unet3dLayers removed in R2026a
+                        [lgraph, outputPatchSize] = unet3d(...
+                            inputPatchSize, obj.BatchOpt.T_NumberOfClasses{1}, ...
+                            'NumFirstEncoderFilters', obj.BatchOpt.T_NumFirstEncoderFilters{1}, 'FilterSize', obj.BatchOpt.T_FilterSize{1}, ...
+                            'ConvolutionPadding', obj.BatchOpt.T_ConvolutionPadding{1}, 'EncoderDepth', obj.BatchOpt.T_EncoderDepth{1}); %#ok<*ST2NM>
+                    else
+                        [lgraph, outputPatchSize] = unet3dLayers(...
+                            inputPatchSize, obj.BatchOpt.T_NumberOfClasses{1}, ...
+                            'NumFirstEncoderFilters', obj.BatchOpt.T_NumFirstEncoderFilters{1}, 'FilterSize', obj.BatchOpt.T_FilterSize{1}, ...
+                            'ConvolutionPadding', obj.BatchOpt.T_ConvolutionPadding{1}, 'EncoderDepth', obj.BatchOpt.T_EncoderDepth{1}); %#ok<UNRCH>
+                    end
                 case 'U-net Anisotropic'
-                    % 3D U-net for anisotropic datasets, the first
-                    % convolutional and max pooling layers are 2D
-                    switch obj.BatchOpt.T_ConvolutionPadding{1}
-                        case 'same'
-                            PaddingValue = 'same';
-                        case 'valid'
-                            PaddingValue = 0;
-                    end
-
-                    % generate standard 3D Unet
-                    [lgraph, outputPatchSize] = unet3dLayers(...
+                    %obj.BatchOpt.T_NumAnisotropicBlocks{1} = 1; % define number of 2D convolutional blocks
+                    [lgraph, outputPatchSize] = utils.deepmib.createAnisotropic3dUnet(...
                         inputPatchSize, obj.BatchOpt.T_NumberOfClasses{1}, ...
-                        'NumFirstEncoderFilters', obj.BatchOpt.T_NumFirstEncoderFilters{1}, 'FilterSize', obj.BatchOpt.T_FilterSize{1}, ...
-                        'ConvolutionPadding', obj.BatchOpt.T_ConvolutionPadding{1}, 'EncoderDepth', obj.BatchOpt.T_EncoderDepth{1});
-
-                    % replace first convolution layers of the 1 lvl of the net
-                    %lgraph.Layers(2).Name
-                    layerId = find(ismember({lgraph.Layers.Name}, 'Encoder-Stage-1-Conv-1')==1);
-                    layer = convolution3dLayer([obj.BatchOpt.T_FilterSize{1} obj.BatchOpt.T_FilterSize{1} 1], obj.BatchOpt.T_NumFirstEncoderFilters{1}, ...
-                        'Padding', PaddingValue, 'Name', lgraph.Layers(layerId).Name);
-                    lgraph = replaceLayer(lgraph, lgraph.Layers(layerId).Name, layer);
-
-                    layerId = find(ismember({lgraph.Layers.Name}, 'Encoder-Stage-1-Conv-2')==1);
-                    layer = convolution3dLayer([obj.BatchOpt.T_FilterSize{1} obj.BatchOpt.T_FilterSize{1} 1], obj.BatchOpt.T_NumFirstEncoderFilters{1}, ...
-                        'Padding', PaddingValue, 'Name', lgraph.Layers(layerId).Name);
-                    lgraph = replaceLayer(lgraph, lgraph.Layers(layerId).Name, layer);
-
-                    layerId = find(ismember({lgraph.Layers.Name}, 'Encoder-Stage-1-MaxPool')==1);
-                    layer = maxPooling3dLayer([2 2 1], ...
-                        'Padding', PaddingValue, 'Name', lgraph.Layers(layerId).Name, ...
-                        'Stride', [2 2 1]);
-                    lgraph = replaceLayer(lgraph, lgraph.Layers(layerId).Name, layer);
-
-                    %analyzeNetwork(lgraph);
-                    % get index of the final convolution layer
-                    finalConvId = find(ismember({lgraph.Layers.Name}, 'Final-ConvolutionLayer')==1);
-                    % using name of the previous level find index of the last decoder stage
-                    layerName = lgraph.Layers(finalConvId-1).Name;  % 'Decoder-Stage-2-ReLU-2'
-                    dashIds = strfind(layerName, '-');  % positions of dashes
-                    stageId = layerName(dashIds(2)+1:dashIds(3)-1);     % get stage id
-
-                    layerId = find(ismember({lgraph.Layers.Name}, sprintf('Decoder-Stage-%s-UpConv', stageId))==1);
-                    layer = transposedConv3dLayer([2 2 1], lgraph.Layers(layerId).NumFilters, ...
-                        'Stride', [2 2 1], 'Name', lgraph.Layers(layerId).Name);
-                    lgraph = replaceLayer(lgraph, lgraph.Layers(layerId).Name, layer);
-
-                    layerId = find(ismember({lgraph.Layers.Name}, sprintf('Decoder-Stage-%s-Conv-1', stageId))==1);
-                    layer = convolution3dLayer([obj.BatchOpt.T_FilterSize{1} obj.BatchOpt.T_FilterSize{1} 1], obj.BatchOpt.T_NumFirstEncoderFilters{1}, ...
-                        'Padding', PaddingValue, 'Name', lgraph.Layers(layerId).Name);
-                    lgraph = replaceLayer(lgraph, lgraph.Layers(layerId).Name, layer);
-
-                    layerId = find(ismember({lgraph.Layers.Name}, sprintf('Decoder-Stage-%s-Conv-2', stageId))==1);
-                    layer = convolution3dLayer([obj.BatchOpt.T_FilterSize{1} obj.BatchOpt.T_FilterSize{1} 1], obj.BatchOpt.T_NumFirstEncoderFilters{1}, ...
-                        'Padding', PaddingValue, 'Name', lgraph.Layers(layerId).Name);
-                    lgraph = replaceLayer(lgraph, lgraph.Layers(layerId).Name, layer);
-
-                    if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')
-                        outputPatchSize = [];
-                    end
+                        obj.BatchOpt.T_FilterSize{1}, obj.BatchOpt.T_NumFirstEncoderFilters{1}, ...
+                        obj.BatchOpt.T_ConvolutionPadding{1}, obj.BatchOpt.T_EncoderDepth{1}, ...
+                        obj.BatchOpt.T_NumAnisotropicBlocks{1});
             end
         case '2D Patch-wise'
             if obj.BatchOpt.T_UseImageNetWeights
                 if isdeployed
-                    mgsOpt.MsgBoxOnly = true;
-                    header = sprintf('Initialization of the network with imagenet weights is only available in MIB for MATLAB!\n\nPlease uncheck the "use ImageNet weights" checkbox to initialize the network using empty weights and try again.');
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
+                    mgsOpt.headerLines = 2;
+                    header = sprintf('Initialization of the network with imagenet weights is only available in MIB for MATLAB!');
+                    msgText = 'Please uncheck the "use ImageNet weights" checkbox to initialize the network using empty weights and try again.';
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {msgText}, 'Ops!', mgsOpt);
                     return;
                 end
                 if inputPatchSize(4) ~= 3
-                    mgsOpt.MsgBoxOnly = true;
-                    header = sprintf('Initialization of the network with imagenet weights is only available for images with 3 color channels!\n\nPlease change "Input patch size" to [%d %d %d 3] and try again', inputPatchSize(1), inputPatchSize(2), inputPatchSize(3));
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
+                    mgsOpt.headerLines = 2;
+                    header = sprintf('Initialization of the network with imagenet weights is only available for images with 3 color channels!');
+                    msgText = sprintf('Change "Input patch size" to [%d %d %d 3] and try again', inputPatchSize(1), inputPatchSize(2), inputPatchSize(3));
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {msgText}, 'Ops!', mgsOpt);
                     return;
                 end
                 weightsValue = 'imagenet';

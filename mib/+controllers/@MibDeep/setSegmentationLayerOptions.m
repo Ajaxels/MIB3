@@ -7,13 +7,14 @@ function setSegmentationLayerOptions(obj)
                 sprintf('Gamma, focusing parameter of the focal loss function\nIncreasing the value of Gamma increases the sensitivity of the network to misclassified observations\npositive real number [default=2]')};
             defAns = {num2str(obj.SegmentationLayerOpt.focalLossLayer.Alpha);...
                 num2str(obj.SegmentationLayerOpt.focalLossLayer.Gamma)};
-            options.PromptLines = [5 5];
+            options.WindowHeight = 250;
         case 'dicePixelCustomClassificationLayer'
             prompts = {sprintf('Exclude the Exterior (default: false)')};
             defAns = {obj.SegmentationLayerOpt.dicePixelCustom.ExcludeExerior};
-            options.PromptLines = 3;
             options.HeaderLines = 4;
             options.Header = sprintf('EXPERIMENTAL!\nExclude the Exterior (background) class\nfrom calculation of the loss function\n(disabled when 0-pixels used as mask)');
+            options.LabelPosition = 'left';
+            options.WindowHeight = 180;
     end
     dlgTitle = 'Segmentation layer options';
     options.WindowStyle = 'normal';

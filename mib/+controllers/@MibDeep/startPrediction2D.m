@@ -158,7 +158,7 @@ function startPrediction2D(obj)
     end
 
     while hasdata(imgDS)
-        vol = read(imgDS);  % [height, width, color] for 2D
+        vol = squeeze(read(imgDS));  % [height, width, depth, color] for 2D
         if size(vol, 3) ~= inputPatchSize(4)
             % dynamically convert grayscale to RGB if needed
             vol = repmat(vol, [1, 1, 3]);

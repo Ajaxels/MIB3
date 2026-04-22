@@ -7,6 +7,7 @@ function updateScoreExportSettings(obj)
     dlgTitle = 'Export scores settings';
     
     options.WindowStyle = 'normal';
+    options.LabelPosition = 'left';
     options.Header = sprintf('Additional settings for export of score files\nOnly for Blocked-image engine');
     options.HeaderLines = 2;
 
