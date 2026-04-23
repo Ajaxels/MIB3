@@ -55,7 +55,7 @@ else
 end
 
 % add listener to the CloseEvent of the child controller
-addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) mibController.purgeControllers(obj, src, evnt));   % static
+addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) controllers.MibController.purgeControllers(obj, src, evnt));   % static
 %addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) obj.purgeControllers(src, evnt)); % dynamic
 
 p = fieldnames(obj.childControllers{id});

@@ -47,7 +47,7 @@ if parentDir(1) == 'T'  % image coming for training
 else                    % image coming for validation
     imageFilename = fullfile(projectDir, 'ValidationImages', data.imageFilename);
 end
-out{1} = mibDeepStoreLoadImages(imageFilename, getImageOptions);
+out{1} = utils.deepmib.storeLoadImages(imageFilename, getImageOptions);
 if ndims(out{1}) > 3
     errordlg(sprintf(['!!! Error !!!\n\n' ...
                     'The instance segmentation requires 2D images:\n' ...

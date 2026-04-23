@@ -172,7 +172,8 @@ try
         mibDeepStoreLoadImagesOpt.UseBioFormats = obj.BatchOpt.BioformatsTraining;
         mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsTrainingIndex{1};
         mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
-    
+        mibDeepStoreLoadImagesOpt.ParentFigure = obj.view.gui;
+
         if preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'TrainImages'), ...
                 'FileExtensions', '.mibImg', 'IncludeSubfolders', false, ...

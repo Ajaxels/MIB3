@@ -240,7 +240,7 @@ classdef MibDeep < handle
 
         exportNetwork(obj)        % convert and export network to ONNX or TensorFlow formats
 
-        id = findChildId(childName)        % find id of a child controller
+        id = findChildId(obj, childName)        % find id of a child controller
 
         net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork) % generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
 
@@ -298,9 +298,7 @@ classdef MibDeep < handle
 
         [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)        % define list of 2D/3D augmentation functions
 
-        setAugmentation2DSettings(obj)        % update settings for augmentation fo 2D images
-
-        setAugmentation3DSettings(obj)        % update settings for augmentation fo 3D images
+        setAugmentationSettings(obj, mode)        % update settings for augmentation fo 2D images
 
         setInputLayerSettings(obj)        % update init settings for the input layer of networks
 
@@ -598,6 +596,10 @@ classdef MibDeep < handle
                 obj.TrainingOpt.GradientDecayFactor = 0.9;
                 obj.TrainingOpt.SquaredGradientDecayFactor = 0.9;
                 obj.TrainingOpt.ValidationPatience = Inf;
+            end
+            if ~isfield(obj.TrainingOpt, 'GradientThreshold')      % add new fields in MIB 2.85
+                obj.TrainingOpt.GradientThreshold = Inf;            % Inf = no clipping (default)
+                obj.TrainingOpt.GradientThresholdMethod = 'l2norm'; % recommended for Dice loss
             end
             % dynamic masking and score export properties
             obj.DynamicMaskOpt = obj.mibModel.preferences.Deep.DynamicMaskOpt;

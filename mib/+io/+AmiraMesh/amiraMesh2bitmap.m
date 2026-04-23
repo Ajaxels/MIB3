@@ -40,7 +40,7 @@ function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
 bitmap = NaN;
 status = false; 
 if nargin < 2; options = struct(); end
-if ~isfield(options, 'hWaitbar');    options.hWaitbar = NaN; end
+if ~isfield(options, 'hWaitbar');    options.hWaitbar = []; end
 if ~isfield(options, 'getMeta');    options.getMeta = true; end
 if ~isfield(options, 'verbose');    options.verbose = true; end
 
@@ -270,8 +270,7 @@ for dataBlock = 1:dataIndex - 1
                 bitmap(:, :, zIndex, color_id:color_id+colorChannels(dataBlock)-1) = permute(dataVec, [1,2,4,3]);
             end
         end
-        %if ~isnan(options.hWaitbar) && mod(zIndex, ceil(maxZ/20))==0;
-        if isvalid(options.hWaitbar) && mod(zIndex, waitbarUpdateFrequency)==0
+        if ~isempty(options.hWaitbar) && mod(zIndex, waitbarUpdateFrequency)==0
             if options.hWaitbar.CancelRequested
                 fclose(fid);
                 bitmap = NaN;

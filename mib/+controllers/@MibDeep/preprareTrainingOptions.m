@@ -79,6 +79,8 @@ try
         "'LearnRateDropPeriod', obj.TrainingOpt.LearnRateDropPeriod,"
         "'LearnRateDropFactor', obj.TrainingOpt.LearnRateDropFactor,"
         "'L2Regularization', obj.TrainingOpt.L2Regularization,"
+        "'GradientThreshold', obj.TrainingOpt.GradientThreshold,"
+        "'GradientThresholdMethod', obj.TrainingOpt.GradientThresholdMethod,"
         "'Plots', PlotsSwitch,"
         "'Verbose', verboseSwitch,"
         "'ResetInputNormalization', ResetInputNormalization,"

@@ -133,8 +133,7 @@ classdef BoundingBox < handle
             % update GUI widgets using the provided BatchOpt
             obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             obj.updateWidgets();
-            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
-
+            
             % add handle tags to the tooltips
             if obj.mibModel.preferences.System.DeveloperMode
                 utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');

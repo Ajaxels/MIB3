@@ -76,8 +76,12 @@ function start(obj, event)
             else
                 if ismember(obj.BatchOpt.Workflow{1}, {'2D Patch-wise', '2.5D Semantic'})
                     mgsOpt.MsgBoxOnly = true;
-                    header = sprintf('%s workflow can only be processed using the Blocked-image prediction mode\n\nSwitch the Prediction engine:\n    "Legacy" -> "Blocked-image"', obj.BatchOpt.Workflow{1});
-                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong prediction mode', mgsOpt);
+                    mgsOpt.headerLines = 2;
+                    mgsOpt.WindowHeight = 180;
+                    mgsOpt.Icon = 'puffin_error';
+                    header = sprintf('%s workflow can only be processed using the Blocked-image prediction mode', obj.BatchOpt.Workflow{1});
+                    msgText = sprintf('Switch the Prediction engine:\n    "Legacy" -> "Blocked-image"');
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {msgText}, 'Wrong prediction mode', mgsOpt);
                     return;
                 end
                 if strcmp(obj.BatchOpt.Workflow{1}(1:2), '2D')

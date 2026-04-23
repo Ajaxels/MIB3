@@ -337,6 +337,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             options = obj.mergeOptions(obj.Options, options);
 
             % Initialize default options
+            if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
             if ~isfield(options, 'waitbar'); options.waitbar = true; end
             if ~isfield(options, 'imgStretch'); options.imgStretch = true; end
             if ~isfield(options, 'silentMode'); options.silentMode = false; end

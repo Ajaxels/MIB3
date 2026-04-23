@@ -13,29 +13,28 @@ function transferLearning(obj)
     [outPath, outNetworkName, outExt] = fileparts(obj.BatchOpt.NetworkFilename);
     outNetworkName = [outNetworkName '_TrLrn'];
 
-    options.Header = sprintf('!!! Attention !!!\nYou are going to modify number of output classes!\nThis operation should be followed with retraining of the network!');
-    options.HeaderLines = 3;
+    header = sprintf('You are going to modify number of output classes!\nThis operation should be followed with retraining of the network!');
     prompts = { 'Define new number of classes (including Exterior):';...
         'Segmentation layer:';...
         'New network name:'};
-    defAns = {num2str(obj.BatchOpt.T_NumberOfClasses{1}); ...
+    defAns = {struct('Spinner', true, 'Value', obj.BatchOpt.T_NumberOfClasses{1}, 'Limits', [1 Inf], 'Step', 1, 'Round', true)
         [obj.view.Figure.T_SegmentationLayer.Items find(ismember(obj.view.Figure.T_SegmentationLayer.Items, obj.BatchOpt.T_SegmentationLayer{1}))];...
         outNetworkName
         };
-
     dlgTitle = 'Transfer learning';
-    options.WindowStyle = 'normal';
-    options.PromptLines = [1, 1, 1];   % [optional] number of lines for widget titles
-    options.WindowWidth = 580;
+    options.HeaderLines = 2;
+    options.Icon = 'puffin_warning';
+    options.WindowWidth = 400;
+    options.WindowHeight = 250;
     %options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/imagedataaugmenter.html'; % [optional], an url for the Help button
 
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Performing transfer learning\nPlease wait...'), ...
         'Title', 'Transfer learning');
 
-    newNoClasses = str2double(answer{1});
+    newNoClasses = answer{1};
     newSegLayer = answer{2};
     outNetworkName = answer{3};
     outConfigName = fullfile(outPath, [outNetworkName '.mibCfg']);

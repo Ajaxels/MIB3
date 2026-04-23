@@ -82,15 +82,13 @@ function lgraph = updateSegmentationLayer(obj, lgraph, classNames)
                     lgraph = replaceLayer(lgraph, 'pixelLabels', outputLayer);
             end
         case '3D Semantic'
-            if strcmp(obj.BatchOpt.Architecture{1}, 'U-net')
+            if ismember(obj.BatchOpt.Architecture{1}, {'U-net', 'U-net Anisotropic'})
                 try
                     lgraph = replaceLayer(lgraph, 'Segmentation-Layer', outputLayer);
                 catch err
                     if contains(lower(lgraph.Layers(end).Name), 'segmentation')
                         lgraph = replaceLayer(lgraph, lgraph.Layers(end).Name, outputLayer);
                     else
-                        % when deeplabv3plusLayers used to generate
-                        % one of the standard networks
                         lgraph = replaceLayer(lgraph, 'classification', outputLayer);
                     end
                 end
