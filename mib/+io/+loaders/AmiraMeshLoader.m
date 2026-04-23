@@ -426,6 +426,13 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     return;
                 end
 
+                % amiraMesh2bitmap returns NaN when the user cancels via the waitbar
+                if isscalar(imgIn) && isnan(imgIn)
+                    if ~isempty(wb); delete(wb); end
+                    img = [];
+                    return;
+                end
+
                 img(1:maxY, 1:maxX, layerId:layerId+files(fnIndex).noLayers-1, 1:maxC, 1) = ...
                     imgIn(1:maxY, 1:maxX, 1:files(fnIndex).noLayers, 1:maxC);
 

@@ -271,14 +271,15 @@ for dataBlock = 1:dataIndex - 1
             end
         end
         %if ~isnan(options.hWaitbar) && mod(zIndex, ceil(maxZ/20))==0;
-        if ishandle(options.hWaitbar) && mod(zIndex, waitbarUpdateFrequency)==0
-            if getappdata(options.hWaitbar, 'canceling')
+        if isvalid(options.hWaitbar) && mod(zIndex, waitbarUpdateFrequency)==0
+            if options.hWaitbar.CancelRequested
                 fclose(fid);
                 bitmap = NaN;
                 return;
             end
-            waitbar((zIndex)/maxZ, options.hWaitbar);
+            options.hWaitbar.Value = zIndex/maxZ;
         end
+
         zIndex = zIndex + 1;
     end
     if depth_step == 1 && dataBlock < dataIndex - 1
