@@ -79,6 +79,8 @@ classdef MibModel < handle
         % each row [idA, idB] means dataset idA and idB always show the same position.
         % Managed by controllers.MibActiveDataset.buffers_ContextMenu (link/unlink/close actions).
         % Queried by MibController.showImage for live propagation.
+        connImaris = []
+        % handle to an active IceImarisConnector connection; [] when not connected
     end
 
     events
@@ -137,6 +139,12 @@ classdef MibModel < handle
 
         status = datasetsSetsOps(obj, BatchOptIn)        % operations with sets of the model; compatible with the batch mode.
 
+        exportDataset(obj, layerType, BatchOptIn)        % export image, mask, or labels layer to MATLAB workspace
+
+        exportDatasetToImaris(obj, layerType, BatchOptIn)        % export image, mask, or model layer to Imaris via IceImarisConnector
+
+        exportDatasetToMib(obj, layerType, BatchOptIn)           % copy mask or model layer to another MIB container
+
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % get a 2D slice from the current dataset; wrapper around core.MibDataset.getData2D
 
         dataset = getData3D(obj, type, time, orient, col_channel, options)        % get a 3D dataset from the current dataset; wrapper around core.MibDataset.getData3D
@@ -157,6 +165,8 @@ classdef MibModel < handle
 
         [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
 
+        importDataset(obj, layerType, BatchOptIn)        % Import the image, mask, or model layer from the MATLAB main workspace.
+        
         initialize(obj)        % initialize the MibModel class
 
         interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm

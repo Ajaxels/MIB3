@@ -39,3 +39,5 @@ codegen/
 
 # Claude Code — machine-specific session settings (permissions accumulate per-session)
 .claude/settings.local.json
+
+/mib/ImportExportTools/Imaris/mibConnectToImaris.m

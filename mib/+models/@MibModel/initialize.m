@@ -44,7 +44,7 @@ obj.matlabVersion = str2double(v(1).Version);   % conversion is not correct as v
 %obj.showAllMaterials = 1;   % display all materials of the model
 %obj.disableSegmentation = 0;    % disable segmentation switch
 %obj.storedSelection = [];   % initialize stored selection
-%obj.connImaris = [];    % empty connection to Imaris
+obj.connImaris = [];    % empty connection to Imaris
 
 obj.Backup = core.MibBackup();    % create instance for keeping undo information
 obj.pythonEnv = [];     % Python environment for MIB

@@ -119,6 +119,8 @@ popupList.add(header1);
 % export to MATLAB
 widgetHandles.exportToMatlab = ListItem('Export model to MATLAB', Icon(fullfile(iconPath, 'export_model_matlab_24px.png')));
 popupList.add(widgetHandles.exportToMatlab);
+widgetHandles.exportToMIB =  ListItem( 'Export model to another MIB dataset',  Icon(fullfile(iconPath, 'mib_icon_24px.png'))); 
+popupList.add(widgetHandles.exportToMIB);
 % export to Imaris
 widgetHandles.exportToImaris = ListItem('Export model to Imaris as volume', Icon(fullfile(iconPath, 'export_model_imaris_24px.png')));
 popupList.add(widgetHandles.exportToImaris);

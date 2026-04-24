@@ -19,6 +19,7 @@ end
 
 switch mode
     case {'Import', 'MATLAB'}  % obj.handles.ribbonHome.import &  obj.handles.ribbonHome.importFromMatlab
+        obj.mibModel.importDataset('image');
     case 'System Clipboard'    % obj.handles.ribbonHome.importFromClipboard
     case 'Imaris'              % obj.handles.ribbonHome.importFromImaris
     case 'Omero'               % obj.handles.ribbonHome.importFromOmero

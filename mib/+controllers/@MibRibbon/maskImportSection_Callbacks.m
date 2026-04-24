@@ -21,6 +21,7 @@ switch mode
     case sprintf('Clear\nmask')      % obj.handles.ribbonMask.clear
     case sprintf('Load\nmask')   % obj.handles.ribbonMask.load
     case {'Import', 'Import mask from MATLAB'}  % obj.handles.ribbonMask.import or obj.handles.ribbonMask.importFromMatlab
+        obj.mibModel.importDataset('mask');
     case 'Import mask from another MIB dataset'      % obj.handles.ribbonMask.importFromMIB
 end
 

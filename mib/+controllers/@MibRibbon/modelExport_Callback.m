@@ -19,8 +19,13 @@ end
 
 switch mode
     case {'Export', 'Export model to MATLAB'}    % obj.handles.ribbonModel.export or obj.handles.ribbonModel.exportToMatlab
-        
+        obj.mibModel.exportDataset('model');
+
     case 'Export model to Imaris as volume'      % obj.handles.ribbonModel.exportToImaris
+        obj.mibModel.exportDatasetToImaris('model');
+
+    case 'Export model to another MIB dataset'   % obj.handles.ribbonModel.exportToMIB
+        obj.mibModel.exportDatasetToMib('model');
 
     case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filenam
         obj.mibModel.saveLabels();

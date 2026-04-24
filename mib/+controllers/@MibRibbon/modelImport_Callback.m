@@ -23,7 +23,8 @@ switch mode
     case sprintf('Load\nmodel')     % obj.handles.ribbonModel.load
         obj.mibModel.loadModel();
     case sprintf('Import\nmodel')   % obj.handles.ribbonModel.import
-   
+        obj.mibModel.importDataset('model');
+
 end
 
 end

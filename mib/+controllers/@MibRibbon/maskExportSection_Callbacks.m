@@ -19,7 +19,11 @@ end
 
 switch mode
     case {'Export', 'Export mask to MATLAB'}        % obj.handles.ribbonMask.export or obj.handles.ribbonMask.exportToMatlab
+        obj.mibModel.exportDataset('mask');
+    case 'Export mask to Imaris'                     % obj.handles.ribbonMask.exportToImaris
+        obj.mibModel.exportDatasetToImaris('mask');
     case 'Export mask to another MIB dataset'       % obj.handles.ribbonMask.exportToMIB
+        obj.mibModel.exportDatasetToMib('mask');
     case sprintf('Save\nmask')                      % obj.handles.ribbonMask.saveMask
         obj.mibModel.save('mask');
 end

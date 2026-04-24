@@ -310,6 +310,7 @@ classdef MibRibbon
             %% Add Callbacks for the MODEL ribbon -> Export section
             obj.handles.ribbonModel.export.ButtonPushedFcn = @obj.modelExport_Callback;
             obj.handles.ribbonModel.exportToMatlab.ItemPushedFcn = @obj.modelExport_Callback;
+            obj.handles.ribbonModel.exportToMIB.ItemPushedFcn = @obj.modelExport_Callback;
             obj.handles.ribbonModel.exportToImaris.ItemPushedFcn = @obj.modelExport_Callback;
             obj.handles.ribbonModel.save.ButtonPushedFcn = @obj.modelExport_Callback;
             obj.handles.ribbonModel.saveAs.ButtonPushedFcn = @obj.modelExport_Callback;
