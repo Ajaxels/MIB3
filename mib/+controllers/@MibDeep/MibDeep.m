@@ -270,7 +270,7 @@ classdef MibDeep < handle
 
         previewPredictions(obj)        % load images of prediction scores into MIB
 
-        [outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, net, inputPatchSize, outputPatchSize, blockSize, padShift, dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, classNames, generateScoreFiles, executionEnvironment, fn) % process image as patches using the blockmode    
+        [cancelled, outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, net, inputPatchSize, outputPatchSize, blockSize, padShift, dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, classNames, generateScoreFiles, executionEnvironment, fn, progressDlg) % process image as patches using the blockmode    
 
         processImages(obj, preprocessFor)        % Preprocess images for training and prediction
 

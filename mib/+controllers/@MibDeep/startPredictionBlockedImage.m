@@ -71,9 +71,15 @@ function startPredictionBlockedImage(obj)
         saveImageOpt.dimOrder = 'yxczt';    % for 2D or saveImageOpt.dimOrder = 'yxzct'; for 3D
     end
 
+    maxIterations = 1;
+    currentIteration = 0;
+    incrementStep = 1;
     if obj.BatchOpt.showWaitbar
-        % make uiprogressdlg based waitbar
-        pwb = core.PoolWaitbar(1, 'Creating image store for prediction...', obj.view.gui, 'Predicting dataset');
+        pwb = uiprogressdlg(obj.view.gui, ...
+            'Title', 'Predicting dataset', ...
+            'Message', 'Creating image store for prediction...', ...
+            'Cancelable', true, ...
+            'Value', 0);
     end
 
     % creating output directories
@@ -97,7 +103,7 @@ function startPredictionBlockedImage(obj)
             'are not empty!\n\nShell the destination folders be emptied and prediction started?'], obj.BatchOpt.ResultingImagesDir), ...
             'Destination folders are not empty',...
             'Icon','warning');
-        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; delete(obj.wb); end; return; end
+        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
         if noOutputModelFiles > 0
             delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', '*'));
         end
@@ -164,7 +170,7 @@ function startPredictionBlockedImage(obj)
                         'Missing Images subfolder', ...
                         'Options', {'Predict images','Cancel'}, ...
                         'Icon', 'warning');
-                    if strcmp(res, 'Cancel');  if obj.BatchOpt.showWaitbar; delete(obj.wb); end; return; end
+                    if strcmp(res, 'Cancel');  if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
                     imagesSubfolder = [];
                 end
 
@@ -177,15 +183,15 @@ function startPredictionBlockedImage(obj)
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
-        if obj.BatchOpt.showWaitbar; delete(obj.wb); end
+        if obj.BatchOpt.showWaitbar; close(pwb); end
         return;
     end
 
     if obj.BatchOpt.showWaitbar
-        if pwb.getCancelState(); delete(pwb); return; end
+        if pwb.CancelRequested; close(pwb); return; end
         extraWaitbarInfo = '';
         if patchwisePatchesPredictSwitch; extraWaitbarInfo = ' for the patch-wise mode'; end
-        pwb.updateText(sprintf('Loading network%s\nPlease wait...', extraWaitbarInfo));
+        pwb.Message = sprintf('Loading network%s\nPlease wait...', extraWaitbarInfo);
     end
     % loading: 'net', 'TrainingOptStruct', 'classNames',
     % 'inputPatchSize', 'outputPatchSize', 'BatchOpt' variables
@@ -215,8 +221,8 @@ function startPredictionBlockedImage(obj)
 
     noFiles = numel(imgDS.Files);
     if obj.BatchOpt.showWaitbar
-        if pwb.getCancelState(); delete(pwb); return; end   % check for cancel
-        pwb.updateText(sprintf('Starting prediction%s\nPlease wait...', extraWaitbarInfo));
+        if pwb.CancelRequested; close(pwb); return; end
+        pwb.Message = sprintf('Starting prediction%s\nPlease wait...', extraWaitbarInfo);
     end
     id = 1;     % indices of files
 
@@ -276,14 +282,15 @@ function startPredictionBlockedImage(obj)
     progressUpdatesPerFile = 1;
     if obj.BatchOpt.showWaitbar
         progressUpdatesPerFile = 20;
-        pwb.updateMaxNumberOfIterations(noFiles*progressUpdatesPerFile);
+        maxIterations = noFiles * progressUpdatesPerFile;
     end
 
     t1 = tic;
+    if obj.BatchOpt.showWaitbar; progressDialog = pwb; else; progressDialog = []; end
 
     while hasdata(imgDS)
         % check for Cancel
-        if obj.BatchOpt.showWaitbar && pwb.getCancelState(); delete(pwb); return; end
+        if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
 
         % update block size
         if dataDimension == 2         % 2D case
@@ -350,10 +357,11 @@ function startPredictionBlockedImage(obj)
                     subVol = vol(:,:,zValue-paddingValue:zValue+paddingValue);
                 end
 
-                [outputLabelsCurrent, scoreImgCurrent] = obj.processBlocksBlockedImage(subVol, zValue, net, ...
+                [outputLabelsCurrent, scoreImgCurrent, cancelled] = obj.processBlocksBlockedImage(subVol, zValue, net, ...
                     inputPatchSize, outputPatchSize, blockSize, padShift, ...
                     dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-                    classNames, generateScoreFiles, executionEnvironment, fn);
+                    classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
+                if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
 
                 if zValue == 1
                     outputLabels = zeros([size(outputLabelsCurrent,1), size(outputLabelsCurrent,2), volDepth], 'uint8');
@@ -376,15 +384,16 @@ function startPredictionBlockedImage(obj)
                 end
 
                 % check for Cancel
-                if obj.BatchOpt.showWaitbar && pwb.getCancelState(); delete(pwb); return; end
+                if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
 
                 % update progress bar
                 if obj.BatchOpt.showWaitbar && zValue >= nextWaitbarIterationFromZ
                     elapsedTime = toc(t1);
-                    currIteration = pwb.getCurrentIteration()+1;
-                    timerValue = elapsedTime/currIteration*(pwb.getMaxNumberOfIterations()-currIteration);
-                    pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
-                    pwb.increment();
+                    currIteration = currentIteration + 1;
+                    timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
+                    pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+                    currentIteration = currentIteration + incrementStep;
+                    pwb.Value = min(1, currentIteration / maxIterations);
                     nextWaitbarIterationFromZ = nextWaitbarIterationFromZ + volDepth/progressUpdatesPerFile;
                 end
             end
@@ -395,25 +404,26 @@ function startPredictionBlockedImage(obj)
             if dataDimension == 2       % 2D case
                 if volDepth > 3 && size(vol, 3) ~= inputPatchSize(4)
                     use3DdatasetWith2Dnet = true;
-                    pwb.setIncrement(1);
+                    incrementStep = 1;
                 else
                     use3DdatasetWith2Dnet = false;
-                    pwb.setIncrement(progressUpdatesPerFile);
+                    incrementStep = progressUpdatesPerFile;
                 end
             elseif dataDimension == 3
                 use3DdatasetWith2Dnet = false;
-                pwb.setIncrement(progressUpdatesPerFile);
+                incrementStep = progressUpdatesPerFile;
             else
                 use3DdatasetWith2Dnet = false;
-                pwb.setIncrement(1);
+                incrementStep = 1;
             end
 
             if use3DdatasetWith2Dnet
                 for zValue = 1:volDepth
-                    [outputLabelsCurrent, scoreImgCurrent] = obj.processBlocksBlockedImage(squeeze(vol(:,:,zValue,:)), zValue, net, ...
+                    [outputLabelsCurrent, scoreImgCurrent, cancelled] = obj.processBlocksBlockedImage(squeeze(vol(:,:,zValue,:)), zValue, net, ...
                         inputPatchSize, outputPatchSize, blockSize, padShift, ...
                         dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-                        classNames, generateScoreFiles, executionEnvironment, fn);
+                        classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
+                    if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
                     if zValue == 1
                         outputLabels = zeros([size(outputLabelsCurrent,1), size(outputLabelsCurrent,2), volDepth], 'uint8');
                         if generateScoreFiles > 0
@@ -435,23 +445,25 @@ function startPredictionBlockedImage(obj)
                     end
 
                     % check for Cancel
-                    if obj.BatchOpt.showWaitbar && pwb.getCancelState(); delete(pwb); return; end
+                    if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
                     % update progress bar
                     if obj.BatchOpt.showWaitbar && zValue >= nextWaitbarIterationFromZ
                         elapsedTime = toc(t1);
-                        currIteration = pwb.getCurrentIteration()+1;
-                        timerValue = elapsedTime/currIteration*(pwb.getMaxNumberOfIterations()-currIteration);
-                        pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
-                        pwb.increment();
+                        currIteration = currentIteration + 1;
+                        timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
+                        pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+                        currentIteration = currentIteration + incrementStep;
+                        pwb.Value = min(1, currentIteration / maxIterations);
                         nextWaitbarIterationFromZ = nextWaitbarIterationFromZ + volDepth/progressUpdatesPerFile;
                     end
                 end
             else
                 zValue = NaN;
-                [outputLabels, scoreImg] = obj.processBlocksBlockedImage(vol, zValue, net, ...
+                [outputLabels, scoreImg, cancelled] = obj.processBlocksBlockedImage(vol, zValue, net, ...
                     inputPatchSize, outputPatchSize, blockSize, padShift, ...
                     dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-                    classNames, generateScoreFiles, executionEnvironment, fn);
+                    classNames, generateScoreFiles, executionEnvironment, fn, progressDialog);
+                if cancelled; if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
                 
                 % remove exterior
                 if generateScoreFiles > 0 && ~obj.ScoreExportOpt.IncludeExterior
@@ -459,14 +471,15 @@ function startPredictionBlockedImage(obj)
                 end
 
                 % check for Cancel
-                if obj.BatchOpt.showWaitbar && pwb.getCancelState(); delete(pwb); return; end
+                if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
                 % update progress bar
                 if obj.BatchOpt.showWaitbar
                     elapsedTime = toc(t1);
-                    currIteration = pwb.getCurrentIteration()+1;
-                    timerValue = elapsedTime/currIteration*(pwb.getMaxNumberOfIterations()-currIteration);
-                    pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
-                    pwb.increment();
+                    currIteration = currentIteration + 1;
+                    timerValue = elapsedTime/currIteration*(maxIterations - currIteration);
+                    pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+                    currentIteration = currentIteration + incrementStep;
+                    pwb.Value = min(1, currentIteration / maxIterations);
                 end
             end
         end
@@ -578,6 +591,6 @@ function startPredictionBlockedImage(obj)
     obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks+1;
     eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
-    if obj.BatchOpt.showWaitbar; delete(pwb); end
+    if obj.BatchOpt.showWaitbar; close(pwb); end
 end
 

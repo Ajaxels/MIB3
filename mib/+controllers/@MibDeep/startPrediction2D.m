@@ -41,7 +41,15 @@ function startPrediction2D(obj)
         saveImageOpt.dimOrder = 'yxczt';    % for 2D or saveImageOpt.dimOrder = 'yxzct'; for 3D
     end
 
-    if obj.BatchOpt.showWaitbar; pwb = core.PoolWaitbar(1, 'Creating image store for prediction...', obj.view.gui, 'Predicting dataset'); end
+    maxIterations = 1;
+    currentIteration = 0;
+    if obj.BatchOpt.showWaitbar
+        pwb = uiprogressdlg(obj.view.gui, ...
+            'Title', 'Predicting dataset', ...
+            'Message', 'Creating image store for prediction...', ...
+            'Cancelable', true, ...
+            'Value', 0);
+    end
 
     % creating output directories
     warning('off', 'MATLAB:MKDIR:DirectoryExists');
@@ -62,7 +70,7 @@ function startPrediction2D(obj)
             sprintf('!!! Warning !!!\n\nThe destination directories:\n- PredictionImages/ResultsModels\n- PredictionImages/ResultsScores\n\nare not empty!\n\nShell the destination folders be emptied and prediction started?'), ...
             'Destination folders are not empty',...
             'Icon','warning');
-        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; delete(obj.wb); end; return; end
+        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
         if noOutputModelFiles > 0
             delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', '*'));
         end
@@ -92,13 +100,13 @@ function startPrediction2D(obj)
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
-        if obj.BatchOpt.showWaitbar; delete(obj.wb); end
+        if obj.BatchOpt.showWaitbar; close(pwb); end
         return;
     end
 
     if obj.BatchOpt.showWaitbar
-        if pwb.getCancelState(); delete(pwb); return; end
-        pwb.updateText('Loading network...');
+        if pwb.CancelRequested; close(pwb); return; end
+        pwb.Message = 'Loading network...';
     end
     % loading: 'net', 'TrainingOptStruct', 'classNames',
     % 'inputPatchSize', 'outputPatchSize', 'BatchOpt' variables
@@ -127,9 +135,9 @@ function startPrediction2D(obj)
     t1 = tic;
     noFiles = numel(imgDS.Files);
     if obj.BatchOpt.showWaitbar
-        if pwb.getCancelState(); delete(pwb); return; end
-        pwb.updateText(sprintf('Starting prediction\nPlease wait...'));
-        pwb.increaseMaxNumberOfIterations(noFiles);
+        if pwb.CancelRequested; close(pwb); return; end
+        pwb.Message = sprintf('Starting prediction\nPlease wait...');
+        maxIterations = maxIterations + noFiles;
     end
     id = 1;     % indices of files
     patchCount = 1; % counter of processed patches
@@ -147,7 +155,7 @@ function startPrediction2D(obj)
             mgsOpt.MsgBoxOnly = true;
             header = sprintf('Multi-GPU mode cannot be yet used for prediction. Please select a GPU from the list and restart prediction!');
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
-            if obj.BatchOpt.showWaitbar; delete(obj.wb); end
+            if obj.BatchOpt.showWaitbar; close(pwb); end
             return;
             %executionEnvironment = 'multi-gpu';
         case 'Parallel'
@@ -354,11 +362,12 @@ function startPrediction2D(obj)
 
         % copy original file to the results for easier evaluation
         if obj.BatchOpt.showWaitbar
-            if pwb.getCancelState(); delete(pwb); return; end
+            if pwb.CancelRequested; close(pwb); return; end
             elapsedTime = toc(t1);
             timerValue = elapsedTime/id*(noFiles-id);
-            pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
-            pwb.increment();
+            pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+            currentIteration = currentIteration + 1;
+            pwb.Value = min(1, currentIteration / maxIterations);
         end
         id=id+1;
     end
@@ -369,6 +378,6 @@ function startPrediction2D(obj)
     eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
-    if obj.BatchOpt.showWaitbar; delete(pwb); end
+    if obj.BatchOpt.showWaitbar; close(pwb); end
 end
 

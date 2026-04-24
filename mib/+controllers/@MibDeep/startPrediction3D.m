@@ -41,7 +41,15 @@ function startPrediction3D(obj)
         saveImageOpt.dimOrder = 'yxzct';
     end
 
-    if obj.BatchOpt.showWaitbar; pwb = core.PoolWaitbar(1, 'Creating image store for prediction...', obj.view.gui, 'Predicting dataset'); end
+    maxIterations = 1;
+    currentIteration = 0;
+    if obj.BatchOpt.showWaitbar
+        pwb = uiprogressdlg(obj.view.gui, ...
+            'Title', 'Predicting dataset', ...
+            'Message', 'Creating image store for prediction...', ...
+            'Cancelable', true, ...
+            'Value', 0);
+    end
 
     % creating output directories
     warning('off', 'MATLAB:MKDIR:DirectoryExists');
@@ -62,7 +70,7 @@ function startPrediction3D(obj)
             sprintf('!!! Warning !!!\n\nThe destination directories:\n- PredictionImages/ResultsModels\n- PredictionImages/ResultsScores\n\nare not empty!\n\nShell the destination folders be emptied and prediction started?'), ...
             'Destination folders are not empty',...
             'Icon','warning');
-        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; delete(obj.wb); end; return; end
+        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
         if noOutputModelFiles > 0
             delete(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', '*'));
         end
@@ -93,13 +101,13 @@ function startPrediction3D(obj)
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
-        if obj.BatchOpt.showWaitbar; delete(obj.wb); end
+        if obj.BatchOpt.showWaitbar; close(pwb); end
         return;
     end
 
     if obj.BatchOpt.showWaitbar
-        if pwb.getCancelState(); delete(pwb); return; end
-        pwb.updateText('Loading network...');
+        if pwb.CancelRequested; close(pwb); return; end
+        pwb.Message = 'Loading network...';
     end
     % loading: 'net', 'TrainingOptStruct', 'classNames',
     % 'inputPatchSize', 'outputPatchSize', 'BatchOpt' variables
@@ -128,8 +136,8 @@ function startPrediction3D(obj)
     t1 = tic;
     noFiles = numel(imgDS.Files);
     if obj.BatchOpt.showWaitbar
-        if pwb.getCancelState(); delete(pwb); return; end
-        pwb.updateText(sprintf('Starting prediction\nPlease wait...'));
+        if pwb.CancelRequested; close(pwb); return; end
+        pwb.Message = sprintf('Starting prediction\nPlease wait...');
     end
     id = 1;     % indices of files
     patchCount = 1; % counter of processed patches
@@ -153,7 +161,7 @@ function startPrediction3D(obj)
             mgsOpt.MsgBoxOnly = true;
             header = sprintf('Multi-GPU mode cannot be yet used for prediction. Please select a GPU from the list and restart prediction!');
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Ops!', mgsOpt);
-            if obj.BatchOpt.showWaitbar; delete(obj.wb); end
+            if obj.BatchOpt.showWaitbar; close(pwb); end
             return;
             %executionEnvironment = 'multi-gpu';
         case 'Parallel'
@@ -197,11 +205,11 @@ function startPrediction3D(obj)
                     end
 
                     if obj.BatchOpt.showWaitbar
-                        if pwb.getCancelState(); delete(pwb); return; end
+                        if pwb.CancelRequested; close(pwb); return; end
                         iterNo = numel(1:inputPatchSize(3):depthPad) * ...
                             numel(1:inputPatchSize(2):widthPad) * ...
                             numel(1:inputPatchSize(1):heightPad);
-                        pwb.increaseMaxNumberOfIterations(iterNo);
+                        maxIterations = maxIterations + iterNo;
                     end
 
                     for k = 1:inputPatchSize(3):depthPad
@@ -234,13 +242,14 @@ function startPrediction3D(obj)
                                         k:k+outputPatchSize(3)-1,:) = scoreBlock*multipleScoreFactor;
                                 end
                                 if obj.BatchOpt.showWaitbar
-                                    if pwb.getCancelState(); delete(pwb); return; end
+                                    if pwb.CancelRequested; close(pwb); return; end
                                     elapsedTime = toc(t1);
                                     if mod(patchCount, 10)
-                                        timerValue = elapsedTime/patchCount*(pwb.getMaxNumberOfIterations()-patchCount);
-                                        pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
+                                        timerValue = elapsedTime/patchCount*(maxIterations - patchCount);
+                                        pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
                                     end
-                                    pwb.increment();
+                                    currentIteration = currentIteration + 1;
+                                    pwb.Value = min(1, currentIteration / maxIterations);
                                 end
                                 patchCount = patchCount + 1;
                             end
@@ -280,7 +289,7 @@ function startPrediction3D(obj)
                     iterNo = numel(1:outputPatchSize(3):depthPad-outputPatchSize(3)+1) * ...
                         numel(1:outputPatchSize(2):widthPad-outputPatchSize(2)+1) * ...
                         numel(1:outputPatchSize(1):heightPad-outputPatchSize(1)+1);
-                    pwb.increaseMaxNumberOfIterations(iterNo);
+                    maxIterations = maxIterations + iterNo;
                 end
 
                 for k = 1:outputPatchSize(3):depthPad-outputPatchSize(3)+1
@@ -314,13 +323,14 @@ function startPrediction3D(obj)
                             end
 
                             if obj.BatchOpt.showWaitbar
-                                if pwb.getCancelState(); delete(pwb); return; end
+                                if pwb.CancelRequested; close(pwb); return; end
                                 elapsedTime = toc(t1);
                                 if mod(patchCount, 10)
-                                    timerValue = elapsedTime/patchCount*(pwb.getMaxNumberOfIterations()-patchCount);
-                                    pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
+                                    timerValue = elapsedTime/patchCount*(maxIterations - patchCount);
+                                    pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
                                 end
-                                pwb.increment();
+                                currentIteration = currentIteration + 1;
+                                pwb.Value = min(1, currentIteration / maxIterations);
                             end
                             patchCount = patchCount + 1;
                         end
@@ -351,11 +361,11 @@ function startPrediction3D(obj)
             end
 
             if obj.BatchOpt.showWaitbar
-                if pwb.getCancelState(); delete(pwb); return; end
+                if pwb.CancelRequested; close(pwb); return; end
                 iterNo = numel(1:outputPatchSize(3):depthPad-inputPatchSize(3)+1) * ...
                     numel(1:outputPatchSize(2):widthPad-inputPatchSize(2)+1) * ...
                     numel(1:outputPatchSize(1):heightPad-inputPatchSize(1)+1);
-                pwb.increaseMaxNumberOfIterations(iterNo);
+                maxIterations = maxIterations + iterNo;
             end
 
             %                     % ----- test making patches for parallel computing ----
@@ -412,13 +422,14 @@ function startPrediction3D(obj)
                                 k:k+outputPatchSize(3)-1,:) = scoreBlock*multipleScoreFactor;
                         end
                         if obj.BatchOpt.showWaitbar
-                            if pwb.getCancelState(); delete(pwb); return; end
+                            if pwb.CancelRequested; close(pwb); return; end
                             elapsedTime = toc(t1);
                             if mod(patchCount, 10)
-                                timerValue = elapsedTime/patchCount*(pwb.getMaxNumberOfIterations()-patchCount);
-                                pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
+                                timerValue = elapsedTime/patchCount*(maxIterations - patchCount);
+                                pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
                             end
-                            pwb.increment();
+                            currentIteration = currentIteration + 1;
+                            pwb.Value = min(1, currentIteration / maxIterations);
                         end
                         patchCount = patchCount + 1;
                     end
@@ -429,7 +440,7 @@ function startPrediction3D(obj)
             outputLabels = outputLabels(1:height, 1:width, 1:depth);
             if generateScoreFiles > 1; scoreImg = scoreImg(1:height, 1:width, 1:depth, :); end
         end
-        if obj.BatchOpt.showWaitbar; pwb.updateText('Saving results...'); end
+        if obj.BatchOpt.showWaitbar; pwb.Message = 'Saving results...'; end
 
         % Save results
         outputLabels = outputLabels - 1;    % remove the first "exterior" class
@@ -472,7 +483,7 @@ function startPrediction3D(obj)
         end
 
         % check for cancel
-        if obj.BatchOpt.showWaitbar && pwb.getCancelState(); delete(pwb); return; end
+        if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
 
         % save score map
         if generateScoreFiles > 0
@@ -497,11 +508,12 @@ function startPrediction3D(obj)
         % copy original file to the results for easier evaluation
         %copyfile(fullfile(projDir, ImageSource, '01_input_images', rawFn), outputDir);
         if obj.BatchOpt.showWaitbar
-            if obj.BatchOpt.showWaitbar && pwb.getCancelState(); delete(pwb); return; end
+            if pwb.CancelRequested; close(pwb); return; end
             elapsedTime = toc(t1);
             timerValue = elapsedTime/id*(noFiles-id);
-            pwb.updateText(sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60)));
-            pwb.increment();
+            pwb.Message = sprintf('%s\nHold on ~%.0f:%.2d mins left...', fn, floor(timerValue/60), mod(round(timerValue),60));
+            currentIteration = currentIteration + 1;
+            pwb.Value = min(1, currentIteration / maxIterations);
         end
         id=id+1;
     end
@@ -512,6 +524,6 @@ function startPrediction3D(obj)
     eventdata = core.ToggleEventData(4);    % scale scoring by factor 5
     notify(obj.mibModel, 'UpdateUserScore', eventdata);
 
-    if obj.BatchOpt.showWaitbar; delete(pwb); end
+    if obj.BatchOpt.showWaitbar; close(pwb); end
 end
 

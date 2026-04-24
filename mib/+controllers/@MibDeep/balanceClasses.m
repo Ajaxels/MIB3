@@ -11,9 +11,11 @@ function balanceClasses(obj)
     blockSize = [inputPatchSize(1) inputPatchSize(2)];
 
     prompts = {sprintf('Number of patches in the balanced dataset to generate:'); 'Output patch size:'; 'Number of classes (incl. Exterior):'; 'Use parallel processing:'};
-    defAns = {num2str(obj.sessionSettings.numBalanceObservations); num2str(blockSize); obj.BatchOpt.T_NumberOfClasses{1}; obj.sessionSettings.balanceObservationsParallel};
+    defAns = {struct('Spinner', true, 'Value', obj.sessionSettings.numBalanceObservations, 'Limits', [1 Inf], 'Step', 1, 'Round', true); ...
+        num2str(blockSize); ...
+        struct('Spinner', true, 'Value', obj.BatchOpt.T_NumberOfClasses{1}, 'Limits', [1 Inf], 'Step', 1, 'Round', true); ...
+        obj.sessionSettings.balanceObservationsParallel};
     dlgTitle = 'Settings';
-    inputDlgOpt.PromptLines = 1;
     inputDlgOpt.Header = sprintf(['This is a beta procedure to balance rare classes in the dataset\n' ...
         'The procedure is implemented only for the 2D Semantic workflow and only for images and labels that are ' ...
         'stored in standard image formats (e.g. TIF, PNG, JPG).\n' ...
@@ -21,18 +23,19 @@ function balanceClasses(obj)
         '"Directories with images and labels for training" specified in the "Directories and preprocessing" tab\n' ...
         'The balanced results are generated under the same directory in ' ...
         '"ImagesBalanced" and "LabelsBalanced" subfolders']);
-    inputDlgOpt.HeaderLines = 10;
+    inputDlgOpt.HeaderLines = 6;
     inputDlgOpt.WindowWidth = 630;
+    inputDlgOpt.WindowHeight = 310;
     inputDlgOpt.helpBtnText = 'Info example';
+    inputDlgOpt.LabelPosition = 'left';
     inputDlgOpt.HelpUrl = 'https://se.mathworks.com/help/vision/ref/balancepixellabels.html';
-    inputDlgOpt.WindowStyle = 'normal';
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, inputDlgOpt);
+    answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, inputDlgOpt);
     if isempty(answer); return; end
 
     % Speciy number of block locations to sample from the dataset.
-    obj.sessionSettings.numBalanceObservations = str2double(answer{1});
+    obj.sessionSettings.numBalanceObservations = answer{1};
     blockSize = str2num(answer{2});
-    numberOfClasses = str2double(answer{3});
+    numberOfClasses = answer{3};
     obj.sessionSettings.balanceObservationsParallel = logical(answer{4});
 
     parforArg = 0;  % no parallel pool

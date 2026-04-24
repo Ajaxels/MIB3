@@ -105,8 +105,6 @@ if progressStruct.Iteration == 0
     mibDeepTrainingProgressStruct.AccTrainGauge = uigauge(mibDeepTrainingProgressStruct.AccuracyPanel, 'linear');
     mibDeepTrainingProgressStruct.AccTrainGauge.Orientation = 'vertical';
     mibDeepTrainingProgressStruct.AccTrainGauge.Position = [6 28 40 190];
-    mibDeepTrainingProgressStruct.AccTrainGauge.Enable = 'off'; % disable accuracy gauge as this metric is not available
-
     mibDeepTrainingProgressStruct.AccValGauge = uigauge(mibDeepTrainingProgressStruct.AccuracyPanel, 'linear');
     mibDeepTrainingProgressStruct.AccValGauge.Orientation = 'vertical';
     mibDeepTrainingProgressStruct.AccValGauge.Position = [54 28 40 190];

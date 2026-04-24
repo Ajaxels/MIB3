@@ -15,7 +15,6 @@ function sendReportsCallback(obj)
         obj.SendReports.SMTP_username, '**************', false, ...
         obj.SendReports.sendWhenFinished, obj.SendReports.sendDuringRun};
     dlgTitle = 'Send progress reports';
-    options.WindowWidth = 450;
     options.helpBtnText = 'Test connection';
     options.Header = sprintf(['Use this dialog to specify settings for email notifications' ...
         'that are sent to your inbox.\nConnection can be checked by pressing ' ...
@@ -23,7 +22,7 @@ function sendReportsCallback(obj)
         'To check connection reopen this dialog!']);
     options.HeaderLines = 3;
     options.WindowWidth = 630;
-    options.WindowHeight = 420;
+    options.WindowHeight = 430;
     options.LabelPosition = 'left';
     options.HelpUrl = sprintf('sendmail("%s", "Greetings from DeepMIB", "If you received this email, connection from DeepMIB to your email works fine!");', obj.SendReports.TO_email);
     answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);

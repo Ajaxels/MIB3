@@ -17,6 +17,7 @@ function exportNetwork(obj)
     header = sprintf('Convert and export the network to ONNX or TensorFlow format');
     options.HeaderLines = 1;
     options.WindowWidth = 540;
+    options.WindowHeight = 220;
     options.HelpUrl = 'https://se.mathworks.com/help/deeplearning/ref/exportonnxnetwork.html';
 
     [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, options);
@@ -30,16 +31,16 @@ function exportNetwork(obj)
 
     switch exportFormat
         case 'ONNX'
-            outoutFilename = fullfile(currDir, [fn '.onnx']);
+            outputFilename = fullfile(currDir, [fn '.onnx']);
             [filename, pathname] = uiputfile( ...
                 {'*.onnx','ONNX-files (*.onnx)';...
                 '*.*',  'All Files (*.*)'}, ...
-                'Set output file', outoutFilename);
+                'Set output file', outputFilename);
             if filename == 0; return; end
-            outoutFilename = fullfile(pathname, filename);
+            outputFilename = fullfile(pathname, filename);
         case 'TensorFlow'
-            outoutFilename = uigetdir(currDir, 'TensorFlow: define model package name');
-            if outoutFilename == 0; return; end
+            outputFilename = uigetdir(currDir, 'TensorFlow: define model package name');
+            if outputFilename == 0; return; end
     end
 
     wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Exporting to %s\nPlease wait...', exportFormat), ...
@@ -85,12 +86,12 @@ function exportNetwork(obj)
     switch exportFormat
         case 'ONNX'
             try
-                utils.deepmib.exportONNXNetwork(lgraph, outoutFilename, 'OpsetVersion', opsetVersion);
+                utils.deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
             catch err
                 % when addSpkgBinPath is not patched a second attempt to export is needed
                 % line 6: should be "if isempty(pathSet) && ~isdeployed"
                 try
-                    utils.deepmib.exportONNXNetwork(lgraph, outoutFilename, 'OpsetVersion', opsetVersion);
+                    utils.deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
                 catch err2
                     delete(wb);
                     reply = uiconfirm(obj.view.gui, ...
@@ -103,7 +104,7 @@ function exportNetwork(obj)
             end
         case 'TensorFlow'
             try
-                exportNetworkToTensorFlow(lgraph, outoutFilename);
+                exportNetworkToTensorFlow(lgraph, outputFilename);
             catch err
                 utils.dlgs.showErrorDialog(obj.view.gui, err, 'Export to TensorFlow');
                 delete(wb); return;
@@ -111,8 +112,9 @@ function exportNetwork(obj)
     end
     wb.Value = 1;
     delete(wb);
+    
     mgsOpt.MsgBoxOnly = true;
-    header = sprintf('Export finished!\n%s', outoutFilename);
+    header = sprintf('Export finished!\n%s', outputFilename);
     mgsOpt.Icon = 'puffin_info';
     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Network export: done!', mgsOpt);
 end

@@ -11,21 +11,25 @@ if selpath == 0; return; end
 obj.sessionSettings.countLabelsDir = selpath;
 % define extension of the label files
 prompts = {'Label filenames extension:'; 'Number of classes including exterior, (for TIF and PNG or put largest possible value):'};
-defAns = {{'model', 'mibCat', 'png', 'tif', 'tiff', 1}, num2str(obj.BatchOpt.T_NumberOfClasses{1})};
+defAns = {{'model', 'mibCat', 'png', 'tif', 'tiff', 1}, ...
+    struct('Spinner', true, 'Value', obj.BatchOpt.T_NumberOfClasses{1}, 'Limits', [1 Inf], 'Step', 1, 'Round', true) };
 dlgTitle = 'Options';
-dlgOptions.PromptLines = [1, 2];
+dlgOptions.WindowHeight = 180;
 [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, dlgOptions);
 if isempty(answer); return; end
 labelExtension = answer{1};
-numClasses = str2double(answer{2});
+numClasses = answer{2};
 
 % get list of files
 labelFileList = dir(fullfile(obj.sessionSettings.countLabelsDir, lower(['*.' labelExtension])));
 if numel(labelFileList) == 0
     mgsOpt.MsgBoxOnly = true;
     mgsOpt.Icon = 'puffin_error';
-    header = sprintf('Directory:\n%s\ndoes not contain any files with "%s" extension', obj.sessionSettings.countLabelsDir, labelExtension);
-    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing label files', mgsOpt);
+    mgsOpt.WindowWidth = 500;
+    mgsOpt.WindowHeight = 200;
+    mgsOpt.headerLines = 1;
+    msgText = sprintf('Directory:\n%s\n\ndoes not contain any files with "%s" extension', obj.sessionSettings.countLabelsDir, labelExtension);
+    utils.dlgs.inputUniversalDlg(obj.view.gui, 'Missing labels!', {}, {msgText}, 'Missing label files', mgsOpt);
     return
 end
 

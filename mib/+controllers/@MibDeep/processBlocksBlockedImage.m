@@ -1,13 +1,84 @@
-function [outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, net, ...
+function [outputLabels, scoreImg, cancelled] = processBlocksBlockedImage(obj, vol, zValue, net, ...
         inputPatchSize, outputPatchSize, blockSize, padShift, ...
         dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-        classNames, generateScoreFiles, executionEnvironment, fn)
-    % function [outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, net, ...
+        classNames, generateScoreFiles, executionEnvironment, fn, pwb)
+    % function [outputLabels, scoreImg, cancelled] = processBlocksBlockedImage(obj, vol, zValue, net, ...
     %         inputPatchSize, outputPatchSize, blockSize, padShift, ...
     %         dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, ...
-    %         classNames, generateScoreFiles, executionEnvironment, fn)
-    % process image as patches using the blockmode
-    % dataDimension: numeric switch that identify dataset dimension, can be 2, 2.5, 3
+    %         classNames, generateScoreFiles, executionEnvironment, fn, pwb)
+    % Segment one image volume using the blockedImage overlap-tile strategy.
+    %
+    % Converts the input volume to a blockedImage, divides it into tiles of
+    % blockSize (with optional border padding for overlap or valid-padding
+    % networks), calls utils.deepmib.segmentBlockedImage on every tile via
+    % blockedImage/apply, then gathers and crops the results back to the
+    % original image extent.  Supports 2D, 2.5D, and 3D networks, patch-wise
+    % classification, dynamic masking, and optional score-map generation.
+    %
+    % Parameters:
+    % obj: MibDeep controller instance
+    % vol: input image volume
+    %   @li 2D  — [height, width, colors]
+    %   @li 2.5D/3D — [height, width, depth, colors]
+    % zValue: z-slice index used when building output filenames for the 2.5D
+    %   per-slice loop; pass NaN for full-volume (2D / 3D) calls
+    % net: trained deep learning network loaded from the network file
+    % inputPatchSize: patch size expected by the network [height, width, colors]
+    %   or [height, width, depth, colors]
+    % outputPatchSize: network output patch size; equals inputPatchSize for
+    %   'same' padding, smaller for 'valid' padding
+    % blockSize: effective tile footprint passed to blockedImage/apply; already
+    %   reduced by padShift when overlap-tile mode is active
+    % padShift: border overlap in pixels [height, width] or [height, width, depth];
+    %   zero when overlap-tile mode is off
+    % dataDimension: numeric, dataset/network dimensionality
+    %   @li 2   — 2D network
+    %   @li 2.5 — 2.5D (Z-context) network
+    %   @li 3   — 3D network
+    % patchwiseWorkflowSwitch: logical; true for the '2D Patch-wise' workflow
+    %   where the Exterior class is not removed and per-patch CSV files are written
+    % patchwisePatchesPredictSwitch: logical; true when prediction images are
+    %   stored in class-named subfolders (patch classification mode) — skips
+    %   the gather/crop post-processing
+    % classNames: cell array of class name strings loaded from the network file
+    % generateScoreFiles: score-file format selector
+    %   @li 0 — do not generate score files
+    %   @li 1 — AmiraMesh (.am)
+    %   @li 2 — MATLAB non-compressed (.mibImg)
+    %   @li 3 — MATLAB compressed (.mibImg)
+    %   @li 4 — MATLAB non-compressed, range 0–1 (.mat)
+    % executionEnvironment: string passed to segmentBlockedImage
+    %   @li 'cpu' — CPU only
+    %   @li 'gpu' — single GPU
+    %   @li 'multi-gpu' — multiple GPUs (patch-wise only)
+    %   @li 'parallel' — parallel pool
+    % fn: base filename (no extension) of the current image; used when writing
+    %   per-patch CSV score/label files
+    % pwb: [@em optional] uiprogressdlg handle used to check for user
+    %   cancellation between the pre-apply and post-apply stages; pass [] when
+    %   no progress dialog is active
+    %
+    % Return values:
+    % outputLabels: predicted label matrix (uint8); [] when cancelled
+    % scoreImg: probability/score map array; [] when cancelled, 0 when
+    %   generateScoreFiles == 0
+    % cancelled: logical; true when the user pressed Cancel on pwb
+    %
+
+    %|
+    % @b Examples:
+    % @code
+    % % Typical call from startPredictionBlockedImage (2D full-volume path):
+    % [outputLabels, scoreImg, cancelled] = obj.processBlocksBlockedImage( ...
+    %     vol, NaN, net, inputPatchSize, outputPatchSize, blockSize, padShift, ...
+    %     2, false, false, classNames, 0, 'gpu', 'myImage', pwb);
+    % if cancelled; close(pwb); return; end
+    % @endcode
+
+    % Updates
+    % 24.04.2025 - added pwb parameter and cancelled output for cancel support
+    
+    cancelled = false;
 
     % define padding method for blocks
     if verLessThan('matlab', '9.14')
@@ -49,6 +120,8 @@ function [outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, 
         % condition will work
         bls.ImageNumber = 1;
     end
+
+    if ~isempty(pwb) && pwb.CancelRequested; outputLabels = []; scoreImg = []; cancelled = true; return; end
 
     if numel(bls.ImageNumber) > 0
         blockedImageWaitBarStatus = false; % due to a bug switch off waitbar for blockedImage/apply
@@ -150,6 +223,8 @@ function [outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, 
                 'Adapter', images.blocked.InMemory);    % convert to blockedimage
         end
     end
+
+    if ~isempty(pwb) && pwb.CancelRequested; outputLabels = []; scoreImg = []; cancelled = true; return; end
 
     %[~, fn] = fileparts(imgDS.Files{id});
     if ~patchwisePatchesPredictSwitch % standard semantic segmentation mode or patch-wise mode when prediction images are not in patches
