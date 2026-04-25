@@ -23,6 +23,7 @@ switch mode
     case {'Import', 'Import mask from MATLAB'}  % obj.handles.ribbonMask.import or obj.handles.ribbonMask.importFromMatlab
         obj.mibModel.importDataset('mask');
     case 'Import mask from another MIB dataset'      % obj.handles.ribbonMask.importFromMIB
+        obj.mibModel.importDatasetFromMib('mask');
 end
 
 

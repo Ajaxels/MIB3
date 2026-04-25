@@ -22,9 +22,10 @@ switch mode
         obj.mibModel.createModel();
     case sprintf('Load\nmodel')     % obj.handles.ribbonModel.load
         obj.mibModel.loadModel();
-    case sprintf('Import\nmodel')   % obj.handles.ribbonModel.import
+    case {'Import', 'Import model from MATLAB'}   % obj.handles.ribbonModel.import
         obj.mibModel.importDataset('model');
-
+    case 'Import model from another MIB dataset'    % obj.handles.ribbonModel.importFromMIB
+        obj.mibModel.importDatasetFromMib('model');
 end
 
 end

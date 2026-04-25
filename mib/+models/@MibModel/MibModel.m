@@ -166,7 +166,9 @@ classdef MibModel < handle
         [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
 
         importDataset(obj, layerType, BatchOptIn)        % Import the image, mask, or model layer from the MATLAB main workspace.
-        
+
+        importDatasetFromMib(obj, layerType, BatchOptIn)        % Import the mask or model layer from another MIB container.
+
         initialize(obj)        % initialize the MibModel class
 
         interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm

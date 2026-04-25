@@ -140,6 +140,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Load model';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.loadModel([], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Import model from MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.importDataset("model", Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Import model from MIB container';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.importDatasetFromMib("model", Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Export model to MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.exportDataset("model", Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Export model to MIB container';
@@ -176,6 +178,8 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''ma
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.loadMask([], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Import mask from MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.importDataset("mask", Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Import mask from MIB container';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.importDatasetFromMib("mask", Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Export mask to MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.exportDataset("mask", Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Export mask to MIB container';

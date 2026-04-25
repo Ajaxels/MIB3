@@ -181,9 +181,9 @@ if nargin < 3
             end
             defaultIdx = find(ismember(modelVars, 'O'), 1);
             if isempty(defaultIdx); defaultIdx = 1; end
-
-            dlgOpt.PromptLines = 3;
-            prompts  = {sprintf('Model variable\n(numeric array or struct with .model,\n.modelMaterialNames, .modelMaterialColors, .modelType):')};
+            
+            dlgOpt.WindowHeight=200;
+            prompts  = {sprintf('Model variable\nnumeric array or struct with:\n\t.model\n\t.modelMaterialNames\n\t.modelMaterialColors\n\t.modelType:')};
             defAns   = {[modelVarsDetails(:)', {defaultIdx}]};
             [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, ...
                 'Import model from MATLAB', dlgOpt);
@@ -251,12 +251,16 @@ switch BatchOpt.LayerType{1}
             img = uint8(img);
         end
 
-        %% --- reshape if color channel is missing (3D with dim3 > 3) ---
-        if ndims(img) == 3 && size(img, 3) > 3
-            reshapeBtn = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
-                sprintf('The color-channel dimension appears to be missing.\nMove the 3rd dimension to depth (Z)?'), ...
-                'Reshape image', 'Yes', 'No', 'Yes');
-            if strcmp(reshapeBtn, 'Yes')
+        %% --- check if dim3 is colors or depth (only for strict 3D arrays) ---
+        % MibImage stores [H, W, D, C, T]: dim3 = depth, dim4 = colors.
+        % A 3D workspace array [H, W, K] is read as D=K, C=1 by default.
+        % Only ask when K is small enough to plausibly be a color channel count.
+        if ndims(img) == 3 && size(img, 3) > 1 && size(img, 3) <= 6
+            colorBtn = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
+                sprintf('The image is 3D (%d x %d x %d).\nIs the 3rd dimension color channels (not depth/Z)?', ...
+                        size(img,1), size(img,2), size(img,3)), ...
+                'Image dimensions', 'Yes (colors)', 'No (depth/Z)', 'No (depth/Z)');
+            if strcmp(colorBtn, 'Yes (colors)')
                 img = reshape(img, size(img,1), size(img,2), 1, size(img,3));
             end
         end
@@ -279,8 +283,7 @@ switch BatchOpt.LayerType{1}
         obj.I{BatchOpt.id}.initialize(img, metaIn, 'Standard', 'imageOnly', obj.preferences.System.EnableSelection);
 
         %% --- notify controllers ---
-        eventdata = core.ToggleEventData(BatchOpt.id);
-        notify(obj, 'NewDataset', eventdata);
+        notify(obj, 'NewDataset');
         notify(obj, 'ShowImage');
 
     case 'mask'
@@ -373,11 +376,31 @@ switch BatchOpt.LayerType{1}
             if maxVal >= 64; loadOpts.modelType = 255; end
         end
 
-        %% --- delegate to loadModel ---
-        obj.loadModel(modelArray, loadOpts);
+        %% --- build dsOpts and call MibDataset.loadModel directly ---
+        % Calling obj.loadModel(modelArray, loadOpts) would lose modelMaterialNames /
+        % modelMaterialColors / modelType because MibModel.loadModel's numeric import
+        % path does not forward those extra fields from BatchOpt to dsOpts.
+        dsOpts = struct();
+        dsOpts.model        = modelArray;
+        dsOpts.modelType    = loadOpts.modelType;
+        dsOpts.showWaitbar  = BatchOpt.showWaitbar;
+        dsOpts.preferences  = obj.preferences;
+        dsOpts.mibPath      = obj.mibPath;
+        dsOpts.ParentFigure = obj.mibGUI;
+        if isfield(loadOpts, 'modelMaterialNames');  dsOpts.modelMaterialNames  = loadOpts.modelMaterialNames;  end
+        if isfield(loadOpts, 'modelMaterialColors'); dsOpts.modelMaterialColors = loadOpts.modelMaterialColors; end
+        if isfield(loadOpts, 'labelText')
+            dsOpts.labelText     = loadOpts.labelText;
+            dsOpts.labelPosition = loadOpts.labelPosition;
+            dsOpts.labelValue    = loadOpts.labelValue;
+        end
+
+        result = obj.I{BatchOpt.id}.loadModel([], dsOpts);
+        if isempty(result); notify(obj, 'StopProtocol'); return; end
 
         %% --- show model ---
         obj.showModel = true;
+        notify(obj, 'UpdateGuiWidgets');
         notify(obj, 'ShowImage');
 end
 

@@ -92,16 +92,27 @@ column = section.addColumn();
 widgetHandles.new = Button(sprintf('New\nmodel'),  Icon(fullfile(iconPath, 'model_new_24px.png')));
 widgetHandles.new.Description = 'Start a new model';
 column.add(widgetHandles.new);
+
 %% Load model
 column = section.addColumn();
 widgetHandles.load = Button(sprintf('Load\nmodel'), Icon(fullfile(iconPath, 'model_load_24px.png')));
 widgetHandles.load.Description = 'Load model';
 column.add(widgetHandles.load);
 
-% Import model
+% ------------- Import model -------------
 column = section.addColumn();
-widgetHandles.import =  Button(sprintf('Import\nmodel'), Icon(fullfile(iconPath, 'model_import_24px.png')));
-widgetHandles.import.Description = "Import model to MIB from MATLAB";
+widgetHandles.import =  SplitButton('Import', Icon(fullfile(iconPath, 'model_import_24px.png')));
+widgetHandles.import.Description = 'Import model from MATLAB';
+
+popupList = PopupList();
+header1 = PopupListHeader('Import model');
+popupList.add(header1);
+widgetHandles.importFromMatlab =  ListItem( 'Import model from MATLAB',  Icon.MATLAB_24); 
+popupList.add(widgetHandles.importFromMatlab);
+widgetHandles.importFromMIB =  ListItem( 'Import model from another MIB dataset',  Icon(fullfile(iconPath, 'mib_icon_24px.png'))); 
+popupList.add(widgetHandles.importFromMIB);
+widgetHandles.import.Popup = popupList;
+column.add(widgetHandles.import);
 
 column.add(widgetHandles.import);
 
