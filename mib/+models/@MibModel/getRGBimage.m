@@ -127,6 +127,12 @@ else
 end
 
 %% Resize image to display resolution
+% Precompute subsampling indices once — reused for image, model, mask, selection
+if magnificationFactor > 1
+    rowIdx = round(.51:magnificationFactor:size(sImgIn,1)+.49);
+    colIdx = round(.51:magnificationFactor:size(sImgIn,2)+.49);
+end
+
 if panModeException == 1
     % Image already at correct size (pan mode or pyramid)
     sImg = sImgIn;
@@ -134,17 +140,14 @@ else
     if magnificationFactor > 1
         % Downsample image
         if strcmp(imageResizeMethod, 'nearest') || strcmp(colortype, 'indexed')
-            % Fast nearest neighbor via subsampling
-            sImg = sImgIn(round(.51:magnificationFactor:end+.49), ...
-                          round(.51:magnificationFactor:end+.49), :);
+            sImg = sImgIn(rowIdx, colIdx, :);
         else
-            % Quality resize for each channel
-            for colCh = 1:size(sImgIn, 3)
-                if colCh == 1
-                    sImg = imresize(sImgIn(:,:,colCh), 1/magnificationFactor, imageResizeMethod);
-                else
-                    sImg(:,:,colCh) = imresize(sImgIn(:,:,colCh), 1/magnificationFactor, imageResizeMethod);
-                end
+            % Quality resize with preallocated output stack
+            firstChannel = imresize(sImgIn(:,:,1), 1/magnificationFactor, imageResizeMethod);
+            sImg = zeros([size(firstChannel,1), size(firstChannel,2), size(sImgIn,3)], 'like', sImgIn);
+            sImg(:,:,1) = firstChannel;
+            for colCh = 2:size(sImgIn, 3)
+                sImg(:,:,colCh) = imresize(sImgIn(:,:,colCh), 1/magnificationFactor, imageResizeMethod);
             end
         end
     else
@@ -159,15 +162,20 @@ if strcmp(dataset.datasetType, 'Virtual'); imgRAW = sImg; end
 
 %% Apply display adjustments to image
 % Hide image if requested
-if obj.hideImage; sImg = zeros(size(sImg), class(sImg)); end
+if obj.hideImage; sImg(:) = 0; end
 
 max_int = double(dataset.image.maxInt);
 
 % Apply live stretch if enabled
 if obj.onFlyImageStretch
     if ~isa(sImg, 'uint32')
-        for i = 1:size(sImg, 3)
-            sImg(:,:,i) = imadjust(sImg(:,:,i), stretchlim(sImg(:,:,i), [0 1]), []);
+        % imadjust only accepts 2-D or H×W×3 — fall back to per-channel for 2 or 4+ channels
+        if size(sImg, 3) == 1 || size(sImg, 3) == 3
+            sImg = imadjust(sImg, stretchlim(sImg, [0 1]), []);
+        else
+            for i = 1:size(sImg, 3)
+                sImg(:,:,i) = imadjust(sImg(:,:,i), stretchlim(sImg(:,:,i), [0 1]), []);
+            end
         end
     else
         % Handle uint32 separately
@@ -187,8 +195,7 @@ if showModelSwitch && dataset.modelExist && obj.preferences.Colors.ModelTranspar
     % Resize model to match image
     if panModeException == 0 && magnificationFactor > 1
         if strcmp(imageResizeMethod, 'nearest') || strcmp(colortype, 'indexed')
-            sOver1 = sOver1(round(.51:magnificationFactor:end+.49), ...
-                            round(.51:magnificationFactor:end+.49));
+            sOver1 = sOver1(rowIdx, colIdx);
         else
             sOver1 = imresize(sOver1, 1/magnificationFactor, 'nearest');
         end
@@ -204,8 +211,7 @@ if showMaskSwitch && dataset.maskExist && obj.preferences.Colors.MaskTransparenc
     % Resize mask to match image
     if panModeException == 0 && magnificationFactor > 1
         if strcmp(imageResizeMethod, 'nearest') || strcmp(colortype, 'indexed')
-            sOver2 = sOver2(round(.51:magnificationFactor:end+.49), ...
-                            round(.51:magnificationFactor:end+.49));
+            sOver2 = sOver2(rowIdx, colIdx);
         else
             sOver2 = imresize(sOver2, 1/magnificationFactor, 'nearest');
         end
@@ -221,8 +227,7 @@ if dataset.enableSelection && obj.preferences.Colors.SelectionTransparency < 1
         % Resize selection to match image
         if panModeException == 0 && magnificationFactor > 1
             if strcmp(imageResizeMethod, 'nearest') || strcmp(colortype, 'indexed')
-                selectionLayer = selectionLayer(round(.51:magnificationFactor:end+.49), ...
-                                                round(.51:magnificationFactor:end+.49));
+                selectionLayer = selectionLayer(rowIdx, colIdx);
             else
                 selectionLayer = imresize(selectionLayer, 1/magnificationFactor, 'nearest');
             end
@@ -299,18 +304,16 @@ switch colortype
         else
             % Standard RGB display
             if numel(slices{4}) > 3
-                % More than 3 channels - use first 3
+                % More than 3 channels - use first 3, batched imadjust
                 [lowIn, highIn, lowOut, highOut] = dataset.image.getImAdjustStretchCoef(1:3);
-                R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(1));
-                G = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(2));
-                B = imadjust(sImg(:,:,3), [lowIn(3), highIn(3)], [lowOut(3) highOut(3)], currViewPort.gamma(3));
-            
+                adjRGB = imadjust(sImg(:,:,1:3), [lowIn(:)'; highIn(:)'], [lowOut(:)'; highOut(:)'], currViewPort.gamma(1:3));
+                R = adjRGB(:,:,1); G = adjRGB(:,:,2); B = adjRGB(:,:,3);
+
             elseif numel(slices{4}) == 3
-                % Exactly 3 channels selected
+                % Exactly 3 channels selected, batched imadjust
                 [lowIn, highIn, lowOut, highOut] = dataset.image.getImAdjustStretchCoef(slices{4});
-                R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
-                G = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(slices{4}(2)));
-                B = imadjust(sImg(:,:,3), [lowIn(3), highIn(3)], [lowOut(3) highOut(3)], currViewPort.gamma(slices{4}(3)));
+                adjRGB = imadjust(sImg(:,:,1:3), [lowIn(:)'; highIn(:)'], [lowOut(:)'; highOut(:)'], currViewPort.gamma(slices{4}));
+                R = adjRGB(:,:,1); G = adjRGB(:,:,2); B = adjRGB(:,:,3);
 
             elseif numel(slices{4}) == 2
                 % Two channels - map to RGB based on selection
@@ -318,22 +321,22 @@ switch colortype
 
                 if dataset.image.colors == 3 || slices{4}(end) < 4
                     if slices{4}(1) ~= 1
-                        R = zeros(size(sImg,1), size(sImg,2), class(sImg));
+                        R = zeros(size(sImg,1), size(sImg,2), 'like', sImg);
                         G = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
                         B = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(slices{4}(2)));
                     elseif slices{4}(2) ~= 2
                         R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
-                        G = zeros(size(sImg,1), size(sImg,2), class(sImg));
+                        G = zeros(size(sImg,1), size(sImg,2), 'like', sImg);
                         B = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(slices{4}(2)));
                     else
                         R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
                         G = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(slices{4}(2)));
-                        B = zeros(size(sImg,1), size(sImg,2), class(sImg));
+                        B = zeros(size(sImg,1), size(sImg,2), 'like', sImg);
                     end
                 else
                     R = imadjust(sImg(:,:,1), [lowIn(1), highIn(1)], [lowOut(1) highOut(1)], currViewPort.gamma(slices{4}(1)));
                     G = imadjust(sImg(:,:,2), [lowIn(2), highIn(2)], [lowOut(2) highOut(2)], currViewPort.gamma(slices{4}(2)));
-                    B = zeros(size(sImg,1), size(sImg,2), class(sImg));
+                    B = zeros(size(sImg,1), size(sImg,2), 'like', sImg);
                 end
 
             elseif isscalar(slices{4})
@@ -380,45 +383,51 @@ if ~isempty(sOver1) && ~isnan(sOver1(1,1,1))
 
         % Blend model colors with image
         if dataset.showAllMaterials
-            modIndeces = find(M ~= 0);
-            if numel(modIndeces) > 0
-                % Generate color lookup for materials
-                switch class(R)
-                    case 'uint8'
-                        modColors = uint8(dataset.labels.materialColors * colorScale);
-                    case 'uint16'
-                        modColors = uint16(dataset.labels.materialColors * colorScale);
-                    case 'uint32'
-                        modColors = uint32(dataset.labels.materialColors * colorScale);
-                end
+            % labeloverlay path: single optimized C call (uint8 RGB only, ≤65535 materials)
+            useLabelOverlay = isa(R, 'uint8') && dataset.labels.maxMaterials <= 65535;
+            if useLabelOverlay && any(M, 'all')
+                imgTmp = cat(3, R, G, B);
+                imgTmp = labeloverlay(imgTmp, M, ...
+                    'Colormap', dataset.labels.materialColors, ...
+                    'Transparency', T);
+                R = imgTmp(:,:,1); G = imgTmp(:,:,2); B = imgTmp(:,:,3);
+            else
+                nzMask = (M ~= 0);
+                if any(nzMask, 'all')
+                    switch class(R)
+                        case 'uint8'
+                            modColors = uint8(dataset.labels.materialColors * colorScale);
+                        case 'uint16'
+                            modColors = uint16(dataset.labels.materialColors * colorScale);
+                        case 'uint32'
+                            modColors = uint32(dataset.labels.materialColors * colorScale);
+                    end
 
-                if dataset.labels.maxMaterials <= 65535
-                    R(modIndeces) = R(modIndeces) * T + modColors(M(modIndeces), 1) * (1 - T);
-                    G(modIndeces) = G(modIndeces) * T + modColors(M(modIndeces), 2) * (1 - T);
-                    B(modIndeces) = B(modIndeces) * T + modColors(M(modIndeces), 3) * (1 - T);
-                else
-                    % Handle large model IDs
-                    colorId = mod(M(modIndeces) - 1, 65535) + 1;
-                    R(modIndeces) = R(modIndeces) * T + modColors(colorId, 1) * (1 - T);
-                    G(modIndeces) = G(modIndeces) * T + modColors(colorId, 2) * (1 - T);
-                    B(modIndeces) = B(modIndeces) * T + modColors(colorId, 3) * (1 - T);
+                    if dataset.labels.maxMaterials <= 65535
+                        Mvals = M(nzMask);
+                    else
+                        Mvals = mod(M(nzMask) - 1, 65535) + 1;
+                    end
+                    R(nzMask) = imlincomb(T, R(nzMask), 1-T, modColors(Mvals, 1));
+                    G(nzMask) = imlincomb(T, G(nzMask), 1-T, modColors(Mvals, 2));
+                    B(nzMask) = imlincomb(T, B(nzMask), 1-T, modColors(Mvals, 3));
                 end
             end
         elseif selectedObject > 0
-            i = selectedObject;
-            pntlist = find(M == i);
+            materialIdx = selectedObject;
+            nzMask = (M == materialIdx);
             if dataset.labels.maxMaterials > 65535
-                i = mod(i - 1, 65535) + 1;
+                materialIdx = mod(materialIdx - 1, 65535) + 1;
             end
-            if ~isempty(pntlist)
-                R(pntlist) = R(pntlist) * T + dataset.labels.materialColors(i, 1) * colorScale * (1 - T);
-                G(pntlist) = G(pntlist) * T + dataset.labels.materialColors(i, 2) * colorScale * (1 - T);
-                B(pntlist) = B(pntlist) * T + dataset.labels.materialColors(i, 3) * colorScale * (1 - T);
+            if any(nzMask, 'all')
+                R(nzMask) = R(nzMask) * T + dataset.labels.materialColors(materialIdx, 1) * colorScale * (1 - T);
+                G(nzMask) = G(nzMask) * T + dataset.labels.materialColors(materialIdx, 2) * colorScale * (1 - T);
+                B(nzMask) = B(nzMask) * T + dataset.labels.materialColors(materialIdx, 3) * colorScale * (1 - T);
             end
         end
     elseif dataset.modelType == 127 || dataset.modelType == 32767
         % Special signed model visualization
-        maximum = max(max(sOver1));
+        maximum = max(sOver1, [], 'all');
         coef = double(1 + 255/maximum * (1 - T));
         R = zeros(size(R), 'uint8');
         R(sOver1 < 0) = uint8(abs(sOver1(sOver1 < 0))) * coef;
@@ -446,20 +455,20 @@ if ~isempty(sOver2) && ~isnan(sOver2(1,1,1))
     end
 
     % Blend mask color
-    pntlist = find(M == ind);
-    if ~isempty(pntlist)
-        R(pntlist) = R(pntlist) * T2 + obj.preferences.Colors.MaskColor(1) * colorScale * (1 - T2);
-        G(pntlist) = G(pntlist) * T2 + obj.preferences.Colors.MaskColor(2) * colorScale * (1 - T2);
-        B(pntlist) = B(pntlist) * T2 + obj.preferences.Colors.MaskColor(3) * colorScale * (1 - T2);
+    nzMask = (M == ind);
+    if any(nzMask, 'all')
+        R(nzMask) = R(nzMask) * T2 + obj.preferences.Colors.MaskColor(1) * colorScale * (1 - T2);
+        G(nzMask) = G(nzMask) * T2 + obj.preferences.Colors.MaskColor(2) * colorScale * (1 - T2);
+        B(nzMask) = B(nzMask) * T2 + obj.preferences.Colors.MaskColor(3) * colorScale * (1 - T2);
     end
 end
 
 %% Overlay selection layer
 if ~isnan(selectionLayer(1))
-    pnt_list = find(selectionLayer == 1);
-    R(pnt_list) = R(pnt_list) * T1 + obj.preferences.Colors.SelectionColor(1) * colorScale * (1 - T1);
-    G(pnt_list) = G(pnt_list) * T1 + obj.preferences.Colors.SelectionColor(2) * colorScale * (1 - T1);
-    B(pnt_list) = B(pnt_list) * T1 + obj.preferences.Colors.SelectionColor(3) * colorScale * (1 - T1);
+    nzSel = logical(selectionLayer);
+    R(nzSel) = R(nzSel) * T1 + obj.preferences.Colors.SelectionColor(1) * colorScale * (1 - T1);
+    G(nzSel) = G(nzSel) * T1 + obj.preferences.Colors.SelectionColor(2) * colorScale * (1 - T1);
+    B(nzSel) = B(nzSel) * T1 + obj.preferences.Colors.SelectionColor(3) * colorScale * (1 - T1);
 end
 
 %% Combine RGB channels

@@ -1,5 +1,67 @@
 # Performance Improvements for `getRGBimage.m`
 
+## Implementation Status (2026-04-26)
+
+Optimizations applied incrementally with per-step benchmarking via `controllers.MibRibbon.homeDevTest_Callback` (100× `getRGBimage` calls, tic/toc). Each was kept only if it didn't regress on the test dataset.
+
+| # | Optimization | Status | Notes |
+|---|---|---|---|
+| 1 | Cache subsampling indices (`rowIdx`/`colIdx`) | ✅ Applied | ~1–2% on test config |
+| 2 | Preallocate resized channel stack | ✅ Applied | Active only on bicubic downsample |
+| 3 | Single RGB `stretchlim`+`imadjust` call | ✅ Applied (with fallback) | `imadjust` only accepts H×W or H×W×3 — falls back to per-channel loop for 2-/4+-channel data. On-fly stretch path only |
+| 4 | Single `imadjust` for 3-channel branches | ✅ Applied | Multichannel non-LUT, ≥3 channels selected |
+| 5 | `immultiply`/`imadd` LUT blend | ❌ Reverted | Per-channel function-call overhead + per-step saturation semantics differ |
+| 6 | `find()`→logical mask + `imlincomb` | ✅ Applied | Without intermediate `tgtR/G/B` allocations (feeds `imlincomb` directly with `modColors(Mvals,c)` vector) |
+| 7 | `labeloverlay` for all-materials blend | ✅ Applied (guarded) | Only when R is uint8 AND `maxMaterials ≤ 65535`; otherwise falls back to opt #6 path |
+| 8 | `max(..., 'all')` instead of `max(max(...))` | ✅ Applied | Signed-model branch only |
+| 9 | `zeros(..., 'like', x)` cleanup | ✅ Applied | `hideImage` now uses `sImg(:) = 0` (in-place) |
+| 10 | `boundarymask` for contour-quality loop | ❌ Reverted | Behavior differences in boundary thickness vs per-material erode |
+| 11 | Preallocate `pos` in annotations block | ⏳ Not applied | Trivial; annotation path only |
+
+### Benchmark Results
+
+Times in **ms / call** — mean over 100 iterations of `getRGBimage` via `homeDevTest_Callback`. Each row shows the cumulative state after that step was applied (or attempted). Empty cells = configuration not measured for that step.
+
+Test configurations (columns):
+
+- **gray 200%** — single-channel grayscale, 200% zoom
+- **2ch 200%** — 2-channel image, 200% zoom
+- **3ch 200%** — 3-channel image, 200% zoom
+- **3ch LUT 200%** — 3-channel with LUT mixing, 200% zoom
+- **3ch LUT 200% onfly** — same + on-fly stretch enabled
+- **3ch LUT 200% onfly. Boundary** — same + boundary contour rendering
+- **4k fit** — 4K dataset fit-to-window
+
+| Step | gray 200% | 2ch 200% | 3ch 200% | 3ch LUT 200% | 3ch LUT 200% onfly | 3ch LUT 200% onfly. Boundary | 4k fit | Note |
+|---|---|---|---|---|---|---|---|---|
+| baseline (HEAD) | 18.94 | 20.17 | 20.94 | 22.17 | 25.61 | 25.62 | 28.33 | |
+| 1. Cache subsampling indices | 18.74 | 20.06 | 21.02 | 22.20 | 25.44 | 25.91 | 28.12 | |
+| 2. Preallocate resized channel stack | 18.77 | 20.06 | 21.08 | 23.00 | 25.65 | 22.95 | 28.19 | |
+| 3. Single RGB stretchlim+imadjust | | | | | 24.41 | | | onfly path only |
+| 4. Single imadjust 3-channel | | | 20.92 | | | | | |
+| 5. Saturated arithmetic (immultiply) LUT | | | | 22.22 | 24.42 | 24.38 | | **reverted** |
+| 6. find()+indexed → imlincomb | 11.34 | 12.99 | 14.04 | 15.11 | 17.51 | 16.99 | 25.07 | major win |
+| 7. Evaluate labeloverlay (initial) | | | | | | | | not measured here |
+| 8. max(...,'all') | 11.44 | | | | | | 25.01 | |
+| 9. zeros(...,'like',X) | 11.58 | 12.90 | 14.16 | 15.10 | 16.90 | 17.21 | 25.57 | |
+| 10. boundarymask contour loop | 12.29 | | | | | | 25.83 | **reverted** |
+| 11. Preallocate pos | | | | | | | | not applied |
+| 7. labeloverlay (applied, guarded) | **4.91** | **6.36** | **7.57** | **8.64** | **10.39** | **11.50** | **23.24** | huge win on uint8 + ≤65535 materials |
+
+### Total improvement (baseline → final state)
+
+| Configuration | Baseline (ms) | Final (ms) | Speedup |
+|---|---:|---:|---:|
+| gray 200% | 18.94 | 4.91 | **3.86×** |
+| 2ch 200% | 20.17 | 6.36 | **3.17×** |
+| 3ch 200% | 20.94 | 7.57 | **2.77×** |
+| 3ch LUT 200% | 22.17 | 8.64 | **2.57×** |
+| 3ch LUT 200% onfly | 25.61 | 10.39 | **2.46×** |
+| 3ch LUT 200% onfly + Boundary | 25.62 | 11.50 | **2.23×** |
+| 4k fit | 28.33 | 23.24 | **1.22×** |
+
+Dominant wins: opt #6 (`find()` → `imlincomb`) and opt #7 (`labeloverlay`). Both target the model-overlay blend, which is the per-call hot loop.
+
 ## Context
 
 `mib/+models/@MibModel/getRGBimage.m` is called on the display hot path — every pan, zoom, slice change, or frame change routes through `MibController.showImage` → `MibModel.getRGBimage`. Any latency here directly affects perceived UI responsiveness. The function is ~590 lines and performs many operations that have more efficient MATLAB equivalents (vectorization, avoiding `find()`, batching `imresize`/`imadjust` calls, reusing computed indices, using saturated arithmetic from the Image Processing Toolbox).

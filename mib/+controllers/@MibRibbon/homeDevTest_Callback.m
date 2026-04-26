@@ -12,7 +12,20 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
-obj.mibModel.id
+%% Benchmark: getRGBimage x 100
+nIter = 100;
+options.blockModeSwitch = 0;
+options.resizeToMagnification = true;
+tStart = tic;
+for k = 1:nIter
+    imgRGB = obj.mibModel.getRGBimage(options); %#ok<NASGU>
+end
+elapsed = toc(tStart);
+fprintf('getRGBimage benchmark: %d iterations in %.3f s — mean %.2f ms/call\n', ...
+    nIter, elapsed, elapsed/nIter*1000);
+return
+
+
 %obj.mibModel.I{obj.mibModel.id}.labels
 
 % opt.Icon = 'puffin_question';

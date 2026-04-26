@@ -253,16 +253,15 @@ if isempty(updatePanels) || ismember('depthSlider', updatePanels)
         imViewHandles.sliceNumberSlider.MinorTicks = 1:(max_slice-1)/10:max_slice;
         % show the slider panel
         if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 30; imViewHandles.mainGridLayout.ColumnWidth{1} = 30; end
-        imViewHandles.sliceNumber.Value = currentSlice;
-        imViewHandles.sliceNumberSlider.Value = currentSlice;
     elseif max_slice == 1 && max_slice ~= imViewHandles.sliceNumber.Limits(2) - 0.001
         imViewHandles.sliceNumber.Limits = [1 max_slice+0.001];
         imViewHandles.sliceNumberSlider.Limits = [1 max_slice+0.001];
         % hide the slider panel
         if imViewHandles.mainGridLayout.ColumnWidth{1} ~= 0; imViewHandles.mainGridLayout.ColumnWidth{1} = 0; end
-        imViewHandles.sliceNumber.Value = currentSlice;
-        imViewHandles.sliceNumberSlider.Value = currentSlice;
     end
+    % always sync the slider/edit value to the active dataset's current slice
+    imViewHandles.sliceNumber.Value = currentSlice;
+    imViewHandles.sliceNumberSlider.Value = currentSlice;
 end
 
 % update time slider
@@ -275,18 +274,17 @@ if isempty(updatePanels) || ismember('timeSlider', updatePanels)
         imViewHandles.frameNumber.Limits = [1 dataset.image.time+0.001]; % add small value to make sure that limits are not the same
         imViewHandles.frameNumberSlider.Limits = [1 dataset.image.time+0.001];
         imViewHandles.frameNumberSlider.MinorTicks = 1:(dataset.image.time-1)/10:dataset.image.time;
-        imViewHandles.frameNumber.Value = currentTime;
-        imViewHandles.frameNumberSlider.Value = currentTime;
         % show the slider panel
         if imViewHandles.mainGridLayout.RowHeight{2} ~= 20; imViewHandles.mainGridLayout.RowHeight{2} = 20; end
     elseif dataset.image.time == 1 && dataset.image.time ~= imViewHandles.frameNumber.Limits(2) - 0.001
         % hide the slider panel
         if imViewHandles.mainGridLayout.RowHeight{2} ~= 0; imViewHandles.mainGridLayout.RowHeight{2} = 0; end
-        imViewHandles.frameNumber.Value = currentTime;
-        imViewHandles.frameNumberSlider.Value = currentTime;
         imViewHandles.frameNumber.Limits = [1 dataset.image.time+0.001];
         imViewHandles.frameNumberSlider.Limits = [1 dataset.image.time+0.001];
     end
+    % always sync the slider/edit value to the active dataset's current frame
+    imViewHandles.frameNumber.Value = currentTime;
+    imViewHandles.frameNumberSlider.Value = currentTime;
 end
 
 
