@@ -14,12 +14,12 @@
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi 
 % Date: 25.04.2023
 
-classdef ImageConverterController < handle
-    % @type ImageConverterController class is a template class for using with
+classdef ImageConverter < handle
+    % @type ImageConverter class is a template class for using with
     % GUI developed using appdesigner of Matlab
     %
     % @code
-    % obj.startController('ImageConverterController'); // as GUI tool
+    % obj.startController('ImageConverter'); // as GUI tool
     % @endcode
     % or 
     % @code 
@@ -29,13 +29,13 @@ classdef ImageConverterController < handle
     % BatchOpt.Popup = {'value'};        // value for the popups as a cell
     % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
     % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('ImageConverterController', [], BatchOpt); // start ImageConverterController in the batch mode
+    % obj.startController('ImageConverter', [], BatchOpt); // start ImageConverter in the batch mode
     % @endcode
     % or
     % @code
     % // trigger return of the possible Options using returnBatchOpt function
     % // using notify SyncBatch event
-    % obj.startController('ImageConverterController', [], NaN);
+    % obj.startController('ImageConverter', [], NaN);
     % @endcode
     
 	% Updates
@@ -44,7 +44,7 @@ classdef ImageConverterController < handle
     properties
         mibModel
         % handles to mibModel
-        View
+        view
         % handle to the view / ImageConverterGUI
         listener
         % a cell array with handles to listeners
@@ -82,7 +82,7 @@ classdef ImageConverterController < handle
             imOut = imread(fn);
         end
 
-        function generatePyramidalTIF(data, writeInfo, outputType, levelsVec, compression)
+        function generatePyramidalTIF(data, writeInfo, outputType, levelsVec, compression, wb)
             % function generatePyramidalTIF(data, writeInfo, outputType, levelsVec)
             % generate pyramidal TIF file
             % 
@@ -113,11 +113,11 @@ classdef ImageConverterController < handle
                         bim{1} = blockedImage(data); 
                     else
                         scaleFactor = 1/2^(levelsVec(1)-1);
-                        bim{1} = blockedImage(data).apply(@(bigimg)ImageConverterController.resizeBlocks(bigimg, scaleFactor), 'DisplayWaitbar', false);
+                        bim{1} = blockedImage(data).apply(@(bigimg)ImageConverter.resizeBlocks(bigimg, scaleFactor), 'DisplayWaitbar', false);
                     end
                 else
                     scaleFactor = 1/2^(levelsVec(levelId) - levelsVec(levelId-1));
-                    bim{levelId} = bim{levelId-1}.apply(@(bigimg)ImageConverterController.resizeBlocks(bigimg, scaleFactor), 'DisplayWaitbar', false);
+                    bim{levelId} = bim{levelId-1}.apply(@(bigimg)ImageConverter.resizeBlocks(bigimg, scaleFactor), 'DisplayWaitbar', false);
                 end
             end
             
@@ -141,6 +141,12 @@ classdef ImageConverterController < handle
                 "BlockSize", [2048 2048], ...
                 "Adapter", writeAdapter, ...
                 'DisplayWaitbar',false);
+            if nargin > 5 && ~isempty(wb)
+                wb.increment();
+                if wb.getCancelState()
+                    error('ImageConverter:Cancelled', 'Cancelled by user');
+                end
+            end
        end
 
         function blockedImageOut = resizeBlocks(blockedImageIn, scaleFactor)
@@ -186,10 +192,38 @@ classdef ImageConverterController < handle
             end
         end
 
+        function img = readWithLoader(loader, filename, options)
+            % Read a single image file via a MIB3 loader instance
+            % Returns image squeezed from MIB5D [H,W,Z,C,T] to remove singletons
+            [imginfo, files] = loader.loadMetadata({filename}, options);
+            if ~isa(imginfo, 'dictionary') || ~isKey(imginfo, 'Height')
+                img = zeros(1, 1, 'uint8');
+                return;
+            end
+            loadOptions = options;
+            loadOptions.waitbar = false;
+            [img, ~] = loader.loadImages(files, imginfo, loadOptions);
+            img = squeeze(img);
+        end
+
+        function writeImageWithProgress(data, writeInfo, outputFormat, wb)
+            % Write image to disk and update waitbar; throw cancel signal if requested
+            % outputFormat: target extension string, e.g. 'tif', 'png', 'jpg'
+            [pathOut, nameOut, ~] = fileparts(writeInfo.SuggestedOutputName);
+            outputFilename = fullfile(pathOut, [nameOut '.' outputFormat]);
+            imwrite(data, outputFilename);
+            if ~isempty(wb)
+                wb.increment();
+                if wb.getCancelState()
+                    error('ImageConverter:Cancelled', 'Cancelled by user');
+                end
+            end
+        end
+
     end
-    
+
     methods
-        function obj = ImageConverterController(mibModel, varargin)
+        function obj = ImageConverter(mibModel, varargin)
             obj.mibModel = mibModel;    % assign model
             
             %% fill the BatchOpt structure with default values
@@ -202,12 +236,11 @@ classdef ImageConverterController < handle
             
             obj.BatchOpt.InputDirectory = obj.mibModel.currentDirectory;
             obj.BatchOpt.OutputDirectory = fullfile(obj.mibModel.currentDirectory, 'FileConvert');
-            registry = imformats();
             obj.BatchOpt.InputImageFormatExtension = {'tif'};
-            obj.BatchOpt.InputImageFormatExtension{2} = [registry.ext];
+            obj.BatchOpt.InputImageFormatExtension{2} = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false);
             obj.BatchOpt.BioFormatsReader = false;
             obj.BatchOpt.BioFormatsInputImageFormatExtension = {'dm4'};
-            obj.BatchOpt.BioFormatsInputImageFormatExtension{2} = obj.mibModel.preferences.System.Files.BioFormatsExt;
+            obj.BatchOpt.BioFormatsInputImageFormatExtension{2} = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'BioFormats', false);
             obj.BatchOpt.BioFormatsIndex{1} = 1;
             obj.BatchOpt.BioFormatsIndex{2} = [0 Inf];
             obj.BatchOpt.BioFormatsIndex{3} = 'on';
@@ -223,7 +256,7 @@ classdef ImageConverterController < handle
             obj.BatchOpt.Suffix = '';
             obj.BatchOpt.ParallelProcessing = false;
             obj.BatchOpt.ParallelWorkersNumber{1} = 1;
-            obj.BatchOpt.ParallelWorkersNumber{2} = [0 obj.mibModel.cpuParallelLimit];
+            obj.BatchOpt.ParallelWorkersNumber{2} = [0 obj.mibModel.cpuParallelLimitMax];
             obj.BatchOpt.ParallelWorkersNumber{3} = 'on';
             % Zarr settings
             obj.BatchOpt.ZarrVersion = {'Zarr v2'};
@@ -247,7 +280,7 @@ classdef ImageConverterController < handle
             
             %% part below is only valid for use of the plugin from MIB batch controller
             % comment it if intended use not from the batch mode
-            obj.BatchOpt.mibBatchSectionName = 'Menu -> Plugins';    % section name for the Batch
+            obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Plugins';    % section name for the Batch
             obj.BatchOpt.mibBatchActionName = 'Convert image files';           % name of the plugin
             % tooltips that will accompany the BatchOpt
             obj.BatchOpt.mibBatchTooltip.InputDirectory = 'Directory with input images';
@@ -282,7 +315,7 @@ classdef ImageConverterController < handle
             obj.BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not waitbar');
 
             %% add here a code for the batch mode, for example
-            % when the BatchOpt stucture is provided the controller will
+            % when the BatchOpt structure is provided the controller will
             % use it as the parameters, and performs the function in the
             % headless mode without GUI
             if nargin == 3
@@ -291,14 +324,14 @@ classdef ImageConverterController < handle
                     if isnan(BatchOptIn)     % when varargin{2} == NaN return possible settings
                         obj.returnBatchOpt();   % obtain Batch parameters
                     else
-                        errordlg(sprintf('A structure as the 3rd parameter is required!')); 
+                        utils.dlgs.showErrorDialog([], 'A structure as the 3rd parameter is required!', 'Error');
                     end
                     notify(obj, 'CloseEvent'); 
                     return
                 end
                 % add/update BatchOpt with the provided fields in BatchOptIn
                 % combine fields from input and default structures
-                obj.BatchOpt = updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptIn);
+                obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptIn);
                 
                 obj.Convert();
                 notify(obj, 'CloseEvent');
@@ -310,29 +343,28 @@ classdef ImageConverterController < handle
             end
             
             guiName = 'ImageConverterGUI';
-            obj.View = mibChildView(obj, guiName); % initialize the view
+            obj.view = core.ChildView(obj, guiName); % initialize the view
             
-            % init the widgets
-            %destBuffers = arrayfun(@(x) sprintf('Container %d', x), 1:obj.mibModel.maxId, 'UniformOutput', false);
-            %obj.View.handles.Popup.String = destBuffers;
-            
+            % Set the window title-bar icon.  Use a plugin-specific 16 px icon
+            % when present, otherwise fall back to the shared MIB application icon.
+            pluginDir   = fileparts(mfilename('fullpath'));
+            localIcon   = fullfile(pluginDir, 'icon_16px.png');
+            fallbackIcon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+            if isfile(localIcon)
+                obj.view.gui.Icon = localIcon;
+            elseif isfile(fallbackIcon)
+                obj.view.gui.Icon = fallbackIcon;
+            end
+
 			% move the window to the left hand side of the main window
-            obj.View.gui = utils.moveWindowOutside(obj.View.gui, obj.mibModel.mibGUI, 'left');
-            
-            % resize all elements of the GUI
-            % mibRescaleWidgets(obj.View.gui); % this function is not yet
-            % compatible with appdesigner
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
             
             % update font and size
-            % you may need to replace "obj.View.handles.text1" with tag of any text field of your own GUI
-%             global Font;
-%             if ~isempty(Font)
-%               if obj.View.handles.text1.FontSize ~= Font.FontSize+4 ...   
-%                     || ~strcmp(obj.View.handles.text1.FontName,
-%                     Font.FontName) % font size for appdesigner +4 larger than that for guide 
-%                   mibUpdateFontSize(obj.View.gui, Font);
-%               end
-%             end
+            Font = obj.mibModel.preferences.System.Font;
+            if obj.view.handles.InputDirectory.FontSize ~= Font.FontSize ...
+                    || ~strcmp(obj.view.handles.InputDirectory.FontName, Font.FontName)
+                utils.fontSizeUpdate(obj.view.gui, Font);
+            end
 
             infoText = ['Use the tool to convert image files from one format to another<br>' ...
                 '<b>TIF->XML</b> convertion is only implemented for Zeiss Atlas Fibics TIF files<br>' ...
@@ -342,24 +374,25 @@ classdef ImageConverterController < handle
                 '<li><em>Output directory</em> is directing to the parent folder of the one selected as the <em>Input directory</em></li>' ...
                 '<li>add prefix or suffix</li>' ...
                 '</ul>'];
-            obj.View.handles.infoText.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
+            obj.view.handles.infoText.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
 			obj.updateWidgets();
+
 			% update widgets from the BatchOpt structure
-            %obj.View = updateGUIFromBatchOpt_Shared(obj.View, obj.BatchOpt);
+            %obj.view = utils.updateBatchOptFromGUI_Shared(obj.view, obj.BatchOpt);
             
-			% obj.View.gui.WindowStyle = 'modal';     % make window modal
+			% obj.view.gui.WindowStyle = 'modal';     % make window modal
 			
 			% add listner to obj.mibModel and call controller function as a callback
             %obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
         end
         
         function closeWindow(obj)
-            % closing ImageConverterController window
+            % closing ImageConverter window
             % store the current settings
             obj.mibModel.sessionSettings.ImageConverter = obj.BatchOpt;
             % closing
-            if isvalid(obj.View.gui)
-                delete(obj.View.gui);   % delete childController window
+            if isvalid(obj.view.gui)
+                delete(obj.view.gui);   % delete childController window
             end
             
             % delete listeners, otherwise they stay after deleting of the
@@ -378,7 +411,7 @@ classdef ImageConverterController < handle
             % when elements GIU needs to be updated, update obj.BatchOpt
             % structure and after that update elements of GUI by the
             % following function
-            obj.View = updateGUIFromBatchOpt_Shared(obj.View, obj.BatchOpt);
+            obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             obj.updateOutputFormat();
             obj.zarrVersionValueChanged();
             obj.useShardingCallback();
@@ -389,29 +422,29 @@ classdef ImageConverterController < handle
             % function updateBatchOptFromGUI(obj, event)
             %
             % update obj.BatchOpt from widgets of GUI
-            % use an external function (Tools\updateBatchOptFromGUI_Shared.m) that is common for all tools
+            % use an external function (+utils\updateBatchOptFromGUI_Shared.m) that is common for all tools
             % compatible with the Batch mode
             %
             % Parameters:
             % event: event from the callback
             
-            obj.BatchOpt = updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
+            obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
 
         function updateOutputFormat(obj, event)
             % function updateOutputFormat(obj, event)
             % callback for change of the output format dropdown
             if nargin > 1
-                obj.BatchOpt = updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
+                obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             end
 
-            %if strcmp(obj.View.handles.OutputImageFormatExtension.Value, 'zarr')
+            %if strcmp(obj.view.handles.OutputImageFormatExtension.Value, 'zarr')
             if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr')
-                obj.View.handles.ExportSettingsPanel.Visible = 'off';
-                obj.View.handles.ZarrSettingsPanel.Visible = 'on';
+                obj.view.handles.ExportSettingsPanel.Visible = 'off';
+                obj.view.handles.ZarrSettingsPanel.Visible = 'on';
             else
-                obj.View.handles.ZarrSettingsPanel.Visible = 'off';
-                obj.View.handles.ExportSettingsPanel.Visible = 'on';
+                obj.view.handles.ZarrSettingsPanel.Visible = 'off';
+                obj.view.handles.ExportSettingsPanel.Visible = 'on';
             end
             
         end
@@ -428,7 +461,7 @@ classdef ImageConverterController < handle
             
             if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end  % remove id field
             % trigger SyncBatch event to send BatchOptOut to mibBatchController 
-            eventdata = ToggleEventData(BatchOptOut);
+            eventdata = core.ToggleEventData(BatchOptOut);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         end
         
@@ -439,11 +472,11 @@ classdef ImageConverterController < handle
                 case 'SelectInputDirectory'
                     selpath = uigetdir(obj.BatchOpt.InputDirectory, 'Select input directory');
                     if selpath == 0; return; end
-                    obj.View.handles.InputDirectory.Value = selpath;
-                    event2.Source = obj.View.handles.InputDirectory;
+                    obj.view.handles.InputDirectory.Value = selpath;
+                    event2.Source = obj.view.handles.InputDirectory;
                     obj.updateBatchOptFromGUI(event2);
-                    obj.View.handles.OutputDirectory.Value = fullfile(selpath, 'FileConvert');
-                    event2.Source = obj.View.handles.OutputDirectory;
+                    obj.view.handles.OutputDirectory.Value = fullfile(selpath, 'FileConvert');
+                    event2.Source = obj.view.handles.OutputDirectory;
                     obj.updateBatchOptFromGUI(event2);
                 case 'SelectOutputDirectory'
                     if exist(obj.BatchOpt.OutputDirectory, 'dir') == 7
@@ -453,15 +486,15 @@ classdef ImageConverterController < handle
                     end
                     selpath = uigetdir(defDir, 'Select output directory');
                     if selpath == 0; return; end
-                    obj.View.handles.OutputDirectory.Value = selpath;
-                    event2.Source = obj.View.handles.OutputDirectory;
+                    obj.view.handles.OutputDirectory.Value = selpath;
+                    event2.Source = obj.view.handles.OutputDirectory;
                     obj.updateBatchOptFromGUI(event2);
             end
             
             % the two following commands are fix of sending the DeepMIB
             % window behind main MIB window
             drawnow;
-            figure(obj.View.gui);
+            figure(obj.view.gui);
         end
         
         function BioFormatsReader_ValueChanged(obj, event)
@@ -470,25 +503,25 @@ classdef ImageConverterController < handle
             % toggles between standard and BioFormats readers
             
             obj.updateBatchOptFromGUI(event);
-            if obj.View.handles.BioFormatsReader.Value     % use BioFormats reader
-                obj.View.handles.InputImageFormatExtension.Enable = 'off';
-                obj.View.handles.BioFormatsInputImageFormatExtension.Enable = 'on';
-                obj.View.handles.BioFormatsIndex.Enable = 'on';
+            if obj.view.handles.BioFormatsReader.Value     % use BioFormats reader
+                obj.view.handles.InputImageFormatExtension.Enable = 'off';
+                obj.view.handles.BioFormatsInputImageFormatExtension.Enable = 'on';
+                obj.view.handles.BioFormatsIndex.Enable = 'on';
             else        % use standard reader
-                obj.View.handles.InputImageFormatExtension.Enable = 'on';
-                obj.View.handles.BioFormatsInputImageFormatExtension.Enable = 'off';
-                obj.View.handles.BioFormatsIndex.Enable = 'off';
+                obj.view.handles.InputImageFormatExtension.Enable = 'on';
+                obj.view.handles.BioFormatsInputImageFormatExtension.Enable = 'off';
+                obj.view.handles.BioFormatsIndex.Enable = 'off';
             end
         end
 
         function parallelProcessingCallback(obj, event)
             % function parallelProcessingCallback(obj, event)
             % callback on press of the parallel processing checkbox
-            obj.BatchOpt.ParallelProcessing = obj.View.handles.ParallelProcessing.Value;
+            obj.BatchOpt.ParallelProcessing = obj.view.handles.ParallelProcessing.Value;
             if obj.BatchOpt.ParallelProcessing % enable parallel processing
-                obj.View.handles.ParallelWorkersNumber.Enable = 'on';
+                obj.view.handles.ParallelWorkersNumber.Enable = 'on';
             else % disable parallel processing
-                obj.View.handles.ParallelWorkersNumber.Enable = 'off';
+                obj.view.handles.ParallelWorkersNumber.Enable = 'off';
             end
         end
 
@@ -496,12 +529,12 @@ classdef ImageConverterController < handle
             % function zarrVersionValueChanged(obj, event)
             % callback on change of the zarr version
             
-            if strcmp(obj.View.handles.ZarrVersion.Value, 'Zarr v2')
-                obj.View.handles.ZarrUseSharding.Value = false;
+            if strcmp(obj.view.handles.ZarrVersion.Value, 'Zarr v2')
+                obj.view.handles.ZarrUseSharding.Value = false;
             else
-                obj.View.handles.ZarrUseSharding.Value = obj.BatchOpt.ZarrUseSharding;
+                obj.view.handles.ZarrUseSharding.Value = obj.BatchOpt.ZarrUseSharding;
             end
-            obj.BatchOpt.ZarrVersion{1} = obj.View.handles.ZarrVersion.Value;
+            obj.BatchOpt.ZarrVersion{1} = obj.view.handles.ZarrVersion.Value;
             obj.useShardingCallback();
 
         end
@@ -512,18 +545,18 @@ classdef ImageConverterController < handle
             
             if nargin < 2; event = []; end
 
-            if obj.View.handles.ZarrUseSharding.Value
-                if ~strcmp(obj.View.handles.ZarrVersion.Value, 'Zarr v3')
-                    obj.View.handles.ZarrUseSharding.Value = false;
-                    uialert(obj.View.gui, ...
+            if obj.view.handles.ZarrUseSharding.Value
+                if ~strcmp(obj.view.handles.ZarrVersion.Value, 'Zarr v3')
+                    obj.view.handles.ZarrUseSharding.Value = false;
+                    uialert(obj.view.gui, ...
                         sprintf('!!! Warning !!!\n\nSharding is available only for Zarr version 3!'), ...
                         'Not available', 'Icon', 'warning');
                     return;
                 end
-                obj.View.handles.ZarrShardXFactorsXYZ.Enable = true;
+                obj.view.handles.ZarrShardXFactorsXYZ.Enable = true;
                 obj.BatchOpt.ZarrUseSharding = true;
             else
-                obj.View.handles.ZarrShardXFactorsXYZ.Enable = false;
+                obj.view.handles.ZarrShardXFactorsXYZ.Enable = false;
                 obj.BatchOpt.ZarrUseSharding = false;
             end
         
@@ -532,14 +565,13 @@ classdef ImageConverterController < handle
         % ------------------------------------------------------------------
         % % Additional functions and callbacks
         function helpButton_Callback(obj)
-            global mibPath;
-            web(fullfile(mibPath, 'techdoc/html/user-interface/plugins/file-processing/image-converter.html'), '-browser');
+            web(fullfile(obj.mibModel.mibPath, '../docs/html/user-interface/plugins/file-processing/image-converter.html'), '-browser');
         end
         
         function Convert(obj)
             % start main calculation of the plugin
             if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'xml')
-                selection = uiconfirm(obj.View.gui, ...
+                selection = uiconfirm(obj.view.gui, ...
                     sprintf('!!! Warning !!!\n\nThis mode is only implemented for extraction of metadata from Zeiss Atlas Fibics TIF files to XML documents!'), ...
                     'Warning!', 'Icon', 'warning');
                 if strcmp(selection, 'Cancel'); return; end
@@ -547,16 +579,17 @@ classdef ImageConverterController < handle
                 % parallel processing is not available as the function
                 % always works with the same temp file
                 obj.BatchOpt.ParallelProcessing = false;
-                obj.View.handles.ParallelProcessing.Value = false;
+                obj.view.handles.ParallelProcessing.Value = false;
             end
-            % check for existance of zarr dataset at destination
+            
+            % check for existence of zarr dataset at destination
             if strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr')
                 zarrPath = obj.BatchOpt.OutputDirectory;
                 zarrPath = strrep(zarrPath, '\', '/');
                 zarrFilename1 = fullfile(zarrPath, '.zattrs');
                 zarrFilename2 = fullfile(zarrPath, 's0');
                 if isfile(zarrFilename1) || isfolder(zarrFilename2)
-                    choice = uiconfirm(obj.View.gui, ...
+                    choice = uiconfirm(obj.view.gui, ...
                         sprintf('!!! Warning !!!\n\nThe provided file already exist!\n\n%s\n%s\nWould you like to overwrite it?', zarrFilename1, zarrFilename2), ...
                         'Zarr file exists!', ...
                         'Options',{'Overwrite', 'Cancel'}, ...
@@ -565,7 +598,7 @@ classdef ImageConverterController < handle
                         return;
                     end
                     if obj.BatchOpt.showWaitbar
-                        wb = uiprogressdlg(obj.View.gui, 'Title','Removing files',...
+                        wb = uiprogressdlg(obj.view.gui, 'Title','Removing files',...
                             'Message', 'Please wait...');
                     end
                     rmdir(zarrPath, 's');
@@ -575,15 +608,15 @@ classdef ImageConverterController < handle
             end
 
             % init python environment
-            if isempty(obj.mibModel.mibPython)
+            if isempty(obj.mibModel.pythonEnv)
                 try
-                    obj.mibModel.mibPython = pyenv( ...
+                    obj.mibModel.pythonEnv = pyenv( ...
                         'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
                         'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
                 catch err
                     if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
                         terminate(pyenv);
-                        obj.mibModel.mibPython = pyenv( ...
+                        obj.mibModel.pythonEnv = pyenv( ...
                             'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
                             'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
                     end
@@ -593,8 +626,8 @@ classdef ImageConverterController < handle
             t1 = tic;
             wb = [];
             if obj.BatchOpt.showWaitbar
-                wb = PoolWaitbar(1, sprintf('Making data store\nPlease wait...'), [], 'Image converter', obj.View.gui);
-                %wb = PoolWaitbar(1, sprintf('Making data store\nPlease wait...'), [], 'Image converter');
+                wb = core.PoolWaitbar(1, sprintf('Making data store\nPlease wait...'), obj.view.gui, 'Image converter', true);
+                %wb = core.PoolWaitbar(1, sprintf('Making data store\nPlease wait...'), obj.view.gui, 'Image converter');
             end
             
             if exist(obj.BatchOpt.OutputDirectory, 'dir') == 0
@@ -617,22 +650,30 @@ classdef ImageConverterController < handle
                             imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
                                 'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
                                 'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
-                                'ReadFcn', @(fn)ImageConverterController.getPNGwithoutColormap(fn));
+                                'ReadFcn', @(fn)ImageConverter.getPNGwithoutColormap(fn));
                         else
+                            standardLoaderOptions = struct('waitbar', false, 'silentMode', true, ...
+                                'mibPath', obj.mibModel.mibPath, 'verbose', false);
+                            standardLoaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader( ...
+                                ['file.' obj.BatchOpt.InputImageFormatExtension{1}], 'Standard', 'Default');
+                            standardLoader = io.LoaderFactory.create(standardLoaderInfo, standardLoaderOptions);
                             imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
                                 'FileExtensions', lower(['.' obj.BatchOpt.InputImageFormatExtension{1}]), ...
-                                'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders);
+                                'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
+                                'ReadFcn', @(fn) ImageConverter.readWithLoader(standardLoader, fn, standardLoaderOptions));
                         end
                     end
                 else    % BioFormats reader
-                    getDataOptions.mibBioformatsCheck = obj.BatchOpt.BioFormatsReader;
-                    getDataOptions.verbose = false;
-                    getDataOptions.BioFormatsIndices = obj.BatchOpt.BioFormatsIndex{1};
-                    
+                    bioFormatsLoaderOptions = struct('waitbar', false, 'silentMode', true, ...
+                        'BioFormatsIndices', obj.BatchOpt.BioFormatsIndex{1}, ...
+                        'bioFormatsMemoizerMemoDir', tempdir(), 'verbose', false);
+                    bioFormatsLoaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader( ...
+                        ['file.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}], 'Standard', 'BioFormats');
+                    bioFormatsLoader = io.LoaderFactory.create(bioFormatsLoaderInfo, bioFormatsLoaderOptions);
                     imgDS = imageDatastore(obj.BatchOpt.InputDirectory, ...
                         'FileExtensions', lower(['.' obj.BatchOpt.BioFormatsInputImageFormatExtension{1}]), ...
                         'IncludeSubfolders', obj.BatchOpt.IncludeSubfolders, ...
-                        'ReadFcn', @(fn)mibLoadImages(fn, getDataOptions));
+                        'ReadFcn', @(fn) ImageConverter.readWithLoader(bioFormatsLoader, fn, bioFormatsLoaderOptions));
                 end
             catch err
                 if obj.BatchOpt.showWaitbar; delete(wb); end
@@ -652,9 +693,10 @@ classdef ImageConverterController < handle
                     writeall(imgDS, obj.BatchOpt.OutputDirectory, ...
                         'FilenamePrefix', obj.BatchOpt.Prefix, 'FilenameSuffix', obj.BatchOpt.Suffix, ...
                         'UseParallel', obj.BatchOpt.ParallelProcessing, ...
-                        'WriteFcn', @(data, writeInfo, outputType)extractToXMLMetaFromFibicsTIFs(data, writeInfo, outputType, wb));
+                        'WriteFcn', @(data, writeInfo, outputType) extractToXMLMetaFromFibicsTIFs(data, writeInfo, outputType, wb));
                 catch err
                     if obj.BatchOpt.showWaitbar; delete(wb); end
+                    if strcmp(err.identifier, 'ImageConverter:Cancelled'); return; end
                     warndlg(sprintf('%s, \n\nHINT: add filename prefix of suffix and try again', err.message), 'Directory selection error');
                     return;
                 end
@@ -670,21 +712,42 @@ classdef ImageConverterController < handle
                     writeall(imgDS, obj.BatchOpt.OutputDirectory, ...
                             'FilenamePrefix', obj.BatchOpt.Prefix, 'FilenameSuffix', obj.BatchOpt.Suffix, ...
                             'UseParallel', obj.BatchOpt.ParallelProcessing, ...
-                            'WriteFcn', @(data, writeInfo, outputType)ImageConverterController.generatePyramidalTIF(data, writeInfo, outputType, levelsVec, compressionType));
+                            'WriteFcn', @(data, writeInfo, outputType) ImageConverter.generatePyramidalTIF(data, writeInfo, outputType, levelsVec, compressionType, wb));
                 catch err
-                    errordlg(sprintf('!!! Error !!!\n\n%s\n\n%s', err.identifier, err.message), 'Convert to pyramidal TIFs');
                     if obj.BatchOpt.showWaitbar; delete(wb); end
+                    if strcmp(err.identifier, 'ImageConverter:Cancelled'); return; end
+                    errordlg(sprintf('!!! Error !!!\n\n%s\n\n%s', err.identifier, err.message), 'Convert to pyramidal TIFs');
                     return;
                 end
             else
                 try
-                    writeall(imgDS, obj.BatchOpt.OutputDirectory, ...
-                        'OutputFormat', obj.BatchOpt.OutputImageFormatExtension{1},...
-                        'FilenamePrefix', obj.BatchOpt.Prefix, 'FilenameSuffix', obj.BatchOpt.Suffix, ...
-                        'UseParallel', obj.BatchOpt.ParallelProcessing);
+                    outputFormat = obj.BatchOpt.OutputImageFormatExtension{1};
+                    sourceFiles = imgDS.Files;
+                    noSourceFiles = numel(sourceFiles);
+                    if obj.BatchOpt.ParallelProcessing
+                        parforArg = obj.BatchOpt.ParallelWorkersNumber{1};
+                        parfor (fileIdx = 1:noSourceFiles, parforArg)
+                            [~, nameOut, ~] = fileparts(sourceFiles{fileIdx});
+                            outputFilename = fullfile(obj.BatchOpt.OutputDirectory, ...
+                                [obj.BatchOpt.Prefix nameOut obj.BatchOpt.Suffix '.' outputFormat]);
+                            imwrite(imgDS.readimage(fileIdx), outputFilename);
+                            if ~isempty(wb); wb.increment(); end %#ok<PFBNS>
+                        end
+                    else
+                        for fileIdx = 1:noSourceFiles
+                            [~, nameOut, ~] = fileparts(sourceFiles{fileIdx});
+                            outputFilename = fullfile(obj.BatchOpt.OutputDirectory, ...
+                                [obj.BatchOpt.Prefix nameOut obj.BatchOpt.Suffix '.' outputFormat]);
+                            imwrite(imgDS.readimage(fileIdx), outputFilename);
+                            if ~isempty(wb)
+                                wb.increment();
+                                if wb.getCancelState(); break; end
+                            end
+                        end
+                    end
                 catch err
-                    errordlg(sprintf('!!! Error !!!\n\n%s\n\n%s', err.identifier, err.message), 'Missing files');
                     if obj.BatchOpt.showWaitbar; delete(wb); end
+                    errordlg(sprintf('!!! Error !!!\n\n%s\n\n%s', err.identifier, err.message), 'Missing files');
                     return;
                 end
             end
@@ -736,7 +799,7 @@ classdef ImageConverterController < handle
             Options.chunks = str2num(obj.BatchOpt.ZarrChunkSizes); %#ok<ST2NM>
             if strcmp(Options.dataType, 'image') && numel(Options.chunks)~=5 || strcmp(Options.dataType, 'labels') && numel(Options.chunks)~=4
                 if ~isempty(wb); delete(wb); end
-                uialert(obj.View.gui, sprintf('!!! Error !!!\nThe Chunk sizes (x,y,z,c,t) parameter should contain:\n  - 5 numbers for Image type: "image"\n  - 4 numbers for Image type: "labels"'), 'Wrong parameters');
+                uialert(obj.view.gui, sprintf('!!! Error !!!\nThe Chunk sizes (x,y,z,c,t) parameter should contain:\n  - 5 numbers for Image type: "image"\n  - 4 numbers for Image type: "labels"'), 'Wrong parameters');
                 return;
             end
             Options.chunks = flip(Options.chunks); % convert from (x,y,z) to (z,y,x)
@@ -750,7 +813,7 @@ classdef ImageConverterController < handle
                     Options.shards = Options.chunks .* Options.shards; % calculate the shards size
                     if numel(Options.shards) ~= 5
                         if ~isempty(wb); delete(wb); end
-                        uialert(obj.View.gui, sprintf('!!! Error !!!\nThe Shard sizes (x,y,z,c,t) parameter should contain 5 numbers'), 'Wrong parameters');
+                        uialert(obj.view.gui, sprintf('!!! Error !!!\nThe Shard sizes (x,y,z,c,t) parameter should contain 5 numbers'), 'Wrong parameters');
                         return;
                     end
                 end
@@ -760,7 +823,7 @@ classdef ImageConverterController < handle
             downsampleImageLimit = str2num(obj.BatchOpt.ZarrDownsampleLimitXYZ); %#ok<ST2NM>
             if numel(downsampleImageLimit) ~= 3
                 if ~isempty(wb); delete(wb); end
-                uialert(obj.View.gui, sprintf('!!! Error !!!\nThe Downsample limitXYZ (x,y,z) parameter should contain 3 numbers'), 'Wrong parameters');
+                uialert(obj.view.gui, sprintf('!!! Error !!!\nThe Downsample limitXYZ (x,y,z) parameter should contain 3 numbers'), 'Wrong parameters');
                 return;
             end
             downsampleImageLimit = flip(downsampleImageLimit); % convert from (x,y,z) to (z,y,x)
@@ -769,7 +832,7 @@ classdef ImageConverterController < handle
             Options.compressionLevel = obj.BatchOpt.ZarrCompressionLevel{1};  % compression level
             if Options.zarrFormat == 3 && strcmp(Options.compressionType, 'gzip')
                 if ~isempty(wb); delete(wb); end
-                uialert(obj.View.gui, sprintf('!!! Error !!!\nUnfortunately, GZip compression is not implemented for Zarr version 3.\nUse Blosc compression instead!'), 'Wrong compression');
+                uialert(obj.view.gui, sprintf('!!! Error !!!\nUnfortunately, GZip compression is not implemented for Zarr version 3.\nUse Blosc compression instead!'), 'Wrong compression');
                 return;
             end
 
@@ -777,7 +840,7 @@ classdef ImageConverterController < handle
             voxelSize = str2num(obj.BatchOpt.ZarrVoxelSizeXYZ); %#ok<ST2NM>
             if numel(voxelSize) ~= 3
                 if ~isempty(wb); delete(wb); end
-                uialert(obj.View.gui, sprintf('!!! Error !!!\nThe voxel size (x,y,z) parameter should contain 3 numbers'), 'Wrong parameters');
+                uialert(obj.view.gui, sprintf('!!! Error !!!\nThe voxel size (x,y,z) parameter should contain 3 numbers'), 'Wrong parameters');
                 return;
             end
             voxelSize = flip(voxelSize); % convert from (x,y,z) to (z,y,x)
@@ -786,7 +849,7 @@ classdef ImageConverterController < handle
             boundingBoxShiftsZYX = str2num(obj.BatchOpt.ZarrBBShiftsXYZ); %#ok<ST2NM>
             if numel(boundingBoxShiftsZYX) ~= 3
                 if ~isempty(wb); delete(wb); end
-                uialert(obj.View.gui, sprintf('!!! Error !!!\nThe bounding box shifts (x,y,z) parameter should contain 3 numbers'), 'Wrong parameters');
+                uialert(obj.view.gui, sprintf('!!! Error !!!\nThe bounding box shifts (x,y,z) parameter should contain 3 numbers'), 'Wrong parameters');
                 return;
             end
             boundingBoxShiftsZYX = flip(boundingBoxShiftsZYX); % convert from (x,y,z) to (z,y,x)
@@ -827,13 +890,13 @@ classdef ImageConverterController < handle
 
             %% Init python
             try
-                obj.mibModel.mibPython = pyenv( ...
+                obj.mibModel.pythonEnv = pyenv( ...
                     'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
                     'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
             catch err
                 if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
                     terminate(pyenv);
-                    obj.mibModel.mibPython = pyenv( ...
+                    obj.mibModel.pythonEnv = pyenv( ...
                         'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
                         'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
                 end
@@ -928,7 +991,7 @@ classdef ImageConverterController < handle
                 if ~isempty(wb); wb.updateMaxNumberOfIterations(numel(zStarts)); end
                 if parforArg == 0 % standard for-loop
                     for idx = 1:numel(zStarts)
-                        ImageConverterController.processZChunk(idx, zStarts, zChunk, maxZ, imageSwitch, ...
+                        ImageConverter.processZChunk(idx, zStarts, zChunk, maxZ, imageSwitch, ...
                             imageSize, imageType, imgDS, ...
                             levelNames, scaleZYX, zarrPath);
                         if ~isempty(wb)
@@ -942,7 +1005,7 @@ classdef ImageConverterController < handle
                     % submit jobs
                     futures = parallel.FevalFuture.empty(numel(zStarts),0);
                     for idx = 1:numel(zStarts)
-                        futures(idx) = parfeval(@ImageConverterController.processZChunk, 0, ...
+                        futures(idx) = parfeval(@ImageConverter.processZChunk, 0, ...
                             idx, zStarts, zChunk, maxZ, imageSwitch, ...
                             imageSize, imageType, imgDS, ...
                             levelNames, scaleZYX, zarrPath);
@@ -968,7 +1031,7 @@ classdef ImageConverterController < handle
 
             if ~isempty(wb) && wb.getCancelState
                 delete(wb);
-                uialert(obj.View.gui, 'Zarr conversion cancelled!', 'Cancelled', 'Icon', 'warning');
+                uialert(obj.view.gui, 'Zarr conversion cancelled!', 'Cancelled', 'Icon', 'warning');
                 return;
             end
 
@@ -979,7 +1042,7 @@ classdef ImageConverterController < handle
                 scalesText = sprintf('%s\n%s     -> %d x %d x %d       ->  %d %d %d', scalesText, levelNames{scaleId}, scaleZYX(scaleId, :), levelImageSizes(scaleId, :));
             end
             reportText = sprintf('Multiscale Zarr written to: %s\n\n%s\n\nElapsed time is %f seconds', zarrPath, scalesText, t2);
-            uialert(obj.View.gui, reportText, 'Zarr conversion done!', 'Icon', 'success');
+            uialert(obj.view.gui, reportText, 'Zarr conversion done!', 'Icon', 'success');
             
             fprintf('Multiscale Zarr written to: %s\nElapsed time is %f seconds\n', zarrPath, t2);
         end

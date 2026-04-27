@@ -14,12 +14,12 @@
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi 
 % Date: 25.04.2023
 
-classdef MultiRenameToolController < handle
-    % @type MultiRenameToolController class is a template class for using with
+classdef MultiRenameTool < handle
+    % @type MultiRenameTool class is a template class for using with
     % GUI developed using appdesigner of Matlab
     %
     % @code
-    % obj.startController('MultiRenameToolController'); // as GUI tool
+    % obj.startController('MultiRenameTool'); // as GUI tool
     % @endcode
     % or 
     % @code 
@@ -29,13 +29,13 @@ classdef MultiRenameToolController < handle
     % BatchOpt.Popup = {'value'};        // value for the popups as a cell
     % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
     % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('MultiRenameToolController', [], BatchOpt); // start MultiRenameToolController in the batch mode
+    % obj.startController('MultiRenameTool', [], BatchOpt); // start MultiRenameTool in the batch mode
     % @endcode
     % or
     % @code
     % // trigger return of the possible Options using returnBatchOpt function
     % // using notify SyncBatch event
-    % obj.startController('MultiRenameToolController', [], NaN);
+    % obj.startController('MultiRenameTool', [], NaN);
     % @endcode
     
 	% Updates
@@ -44,7 +44,7 @@ classdef MultiRenameToolController < handle
     properties
         mibModel
         % handles to mibModel
-        View
+        view
         % handle to the view / MultiRenameToolGUI
         listener
         % a cell array with handles to listeners
@@ -87,7 +87,7 @@ classdef MultiRenameToolController < handle
     end
     
     methods
-        function obj = MultiRenameToolController(mibModel, varargin)
+        function obj = MultiRenameTool(mibModel, varargin)
             obj.mibModel = mibModel;    % assign model
             
             %% fill the BatchOpt structure with default values
@@ -149,14 +149,14 @@ classdef MultiRenameToolController < handle
                     if isnan(BatchOptIn)     % when varargin{2} == NaN return possible settings
                         obj.returnBatchOpt();   % obtain Batch parameters
                     else
-                        errordlg(sprintf('A structure as the 3rd parameter is required!')); 
+                        utils.dlgs.showErrorDialog([], 'A structure as the 3rd parameter is required!', 'Error');
                     end
                     notify(obj, 'CloseEvent'); 
                     return
                 end
                 % add/update BatchOpt with the provided fields in BatchOptIn
                 % combine fields from input and default structures
-                obj.BatchOpt = updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptIn);
+                obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptIn);
                 
                 %obj.Calculate();
                 notify(obj, 'CloseEvent');
@@ -164,11 +164,11 @@ classdef MultiRenameToolController < handle
             end
             
             guiName = 'MultiRenameToolGUI';
-            obj.View = mibChildView(obj, guiName); % initialize the view
+            obj.view = core.ChildView(obj, guiName); % initialize the view
             
             % init the widgets
             %destBuffers = arrayfun(@(x) sprintf('Container %d', x), 1:obj.mibModel.maxId, 'UniformOutput', false);
-            %obj.View.handles.Popup.String = destBuffers;
+            %obj.view.handles.Popup.String = destBuffers;
             obj.fileListInput = struct();
             obj.fileListInput.fn = {};
             obj.fileListInput.ext = {};
@@ -177,37 +177,40 @@ classdef MultiRenameToolController < handle
             obj.autoPreview = true;
 
 			% move the window to the left hand side of the main window
-            obj.View.gui = utils.moveWindowOutside(obj.View.gui, obj.mibModel.mibGUI, 'left');
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
             
-            % resize all elements of the GUI
-            % mibRescaleWidgets(obj.View.gui); % this function is not yet
-            % compatible with appdesigner
-            
+            % Set the window title-bar icon.  Use a plugin-specific 16 px icon
+            % when present, otherwise fall back to the shared MIB application icon.
+            pluginDir   = fileparts(mfilename('fullpath'));
+            localIcon   = fullfile(pluginDir, 'icon_16px.png');
+            fallbackIcon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+            if isfile(localIcon)
+                obj.view.gui.Icon = localIcon;
+            elseif isfile(fallbackIcon)
+                obj.view.gui.Icon = fallbackIcon;
+            end
+
             % update font and size
-            % you may need to replace "obj.View.handles.text1" with tag of any text field of your own GUI
-%             global Font;
-%             if ~isempty(Font)
-%               if obj.View.handles.text1.FontSize ~= Font.FontSize+4 ...   
-%                     || ~strcmp(obj.View.handles.text1.FontName,
-%                     Font.FontName) % font size for appdesigner +4 larger than that for guide 
-%                   mibUpdateFontSize(obj.View.gui, Font);
-%               end
-%             end
+            Font = obj.mibModel.preferences.System.Font;
+            if obj.view.handles.PathToFiles.FontSize ~= Font.FontSize ...
+                    || ~strcmp(obj.view.handles.PathToFiles.FontName, Font.FontName)
+                utils.fontSizeUpdate(obj.view.gui, Font);
+            end
             
 			obj.updateWidgets();
 			% update widgets from the BatchOpt structure
-            obj.View = updateGUIFromBatchOpt_Shared(obj.View, obj.BatchOpt);
+            obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
             
-			% obj.View.gui.WindowStyle = 'modal';     % make window modal
+			% obj.view.gui.WindowStyle = 'modal';     % make window modal
 			
 			% add listner to obj.mibModel and call controller function as a callback
             % obj.listener{1} = addlistener(obj.mibModel, 'updateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));   
         end
         
         function closeWindow(obj)
-            % closing MultiRenameToolController window
-            if isvalid(obj.View.gui)
-                delete(obj.View.gui);   % delete childController window
+            % closing MultiRenameTool window
+            if isvalid(obj.view.gui)
+                delete(obj.view.gui);   % delete childController window
             end
             
             % delete listeners, otherwise they stay after deleting of the
@@ -231,7 +234,7 @@ classdef MultiRenameToolController < handle
             % when elements GIU needs to be updated, update obj.BatchOpt
             % structure and after that update elements of GUI by the
             % following function
-            obj.View = updateGUIFromBatchOpt_Shared(obj.View, obj.BatchOpt);    %
+            obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);    %
             
             infoText = ['<div style="font-family: Sans-serif; font-size: 9pt;">' ...
                 '<b>[C]</b> - add filename counter<br>' ...
@@ -239,9 +242,9 @@ classdef MultiRenameToolController < handle
                 '<b>[N]</b> - add filename<br>' ...
                 '<b>[P]</b> - add parent folder<br>'];
 
-            obj.View.handles.infoHTML1.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
+            obj.view.handles.infoHTML1.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: 9pt;">%s</p>', infoText);
 
-            obj.View.handles.autoPreview.Value = obj.autoPreview;
+            obj.view.handles.autoPreview.Value = obj.autoPreview;
 
         end
         
@@ -255,7 +258,7 @@ classdef MultiRenameToolController < handle
             % Parameters:
             % event: event from the callback
             
-            obj.BatchOpt = updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
+            obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             % auto preview results
             if obj.autoPreview; obj.preview(); end
         end
@@ -289,7 +292,7 @@ classdef MultiRenameToolController < handle
                 '*.tif',  'TIF Files (*.tif)'};
             [file, path, indx] = utils.dlgs.mibUiGetFile(fileFilter, 'Select files', obj.mibModel.currentDirectory, 'on');
             drawnow;
-            figure(obj.View.gui);
+            figure(obj.view.gui);
             if isequal(file, 0); return; end
             
             [~, file, ext] = fileparts(file);
@@ -304,7 +307,7 @@ classdef MultiRenameToolController < handle
             if path(end)==filesep; path = path(1:end-1); end    % remove ending slash
             obj.fileListInput.path = path;
             
-            obj.View.handles.PathToFiles.Value = path;
+            obj.view.handles.PathToFiles.Value = path;
             obj.updateFileListTable();
         end
 
@@ -316,15 +319,15 @@ classdef MultiRenameToolController < handle
             newExtensions = obj.processFileNames(obj.fileListInput.ext, obj.BatchOpt.ExtensionTemplate);
                         
             % Update table
-            obj.View.handles.FileListTable.Data = table(obj.fileListInput.fn', obj.fileListInput.ext', newNames', newExtensions', ...
+            obj.view.handles.FileListTable.Data = table(obj.fileListInput.fn', obj.fileListInput.ext', newNames', newExtensions', ...
                 'VariableNames', {'Old name','Old extension','New name', 'New extension'});
-            obj.View.handles.FileListTable.ColumnName = {'Old name','Old extension','New name', 'New extension'};
+            obj.view.handles.FileListTable.ColumnName = {'Old name','Old extension','New name', 'New extension'};
         end
 
         function autoPreviewValueChanged(obj)
             % function autoPreviewValueChanged(obj)
             % modify the auto preview state
-            obj.autoPreview = obj.View.handles.autoPreview.Value;
+            obj.autoPreview = obj.view.handles.autoPreview.Value;
         end
 
         function preview(obj)
@@ -502,21 +505,20 @@ classdef MultiRenameToolController < handle
         end
 
         function helpButton_Callback(obj)
-            global mibPath;
-            web(fullfile(mibPath, 'techdoc/html/user-interface/plugins/file-processing/multi-rename-tool.html'), '-browser');
+            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/plugins/file-processing/multi-rename-tool.html'), '-browser');
         end
 
         function FileListTableContextMenu(obj, operation)
             % function FileListTableContextMenu(obj, operation)
-            % context menu callbacks for obj.View.handles.FileListTable
+            % context menu callbacks for obj.view.handles.FileListTable
             %
             % Parameters:
             % operation: string with required operation:
             % @li "RemoveFromList" - selected files remove from the list
 
-            if isempty(obj.View.handles.FileListTable.Data); return; end
+            if isempty(obj.view.handles.FileListTable.Data); return; end
 
-            rowsId = unique(obj.View.handles.FileListTable.Selection(:,1));
+            rowsId = unique(obj.view.handles.FileListTable.Selection(:,1));
             switch operation
                 case 'RemoveFromList'
                     obj.fileListInput.fn(rowsId) = [];
@@ -534,9 +536,7 @@ classdef MultiRenameToolController < handle
             noFiles = numel(oldFullFiles);
 
             if obj.BatchOpt.showWaitbar
-                pwb = PoolWaitbar(1, sprintf('Starting calculations\nPlease wait...'), [], ...
-                    'My plugin', ...
-                    obj.View.gui);
+                pwb = core.PoolWaitbar(1, sprintf('Starting calculations\nPlease wait...'), obj.view.gui, 'My plugin', true);
                 pwb.updateMaxNumberOfIterations(noFiles);     % update number of max iterations for the waitbar
                 pwb.setIncrement(10);
             end
@@ -559,7 +559,7 @@ classdef MultiRenameToolController < handle
                     end
                 end
             catch err
-                mibShowErrorDialog(obj.View.gui, err, 'Error');
+                utils.dlgs.showErrorDialog(obj.view.gui, err, 'Error');
                 if obj.BatchOpt.showWaitbar; delete(pwb); end
             end
 

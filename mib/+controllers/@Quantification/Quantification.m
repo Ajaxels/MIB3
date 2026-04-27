@@ -89,21 +89,6 @@ classdef Quantification < handle
             end
         end
 
-        function purgeControllers(obj, src, evnt)
-            % function purgeControllers(obj, src, evnt)
-            % static: remove a closed child controller from childControllers list
-            %
-            % Parameters:
-            % obj: handle to Quantification controller
-            % src: closed child controller (event source)
-            % evnt: CloseEvent data
-
-            id = obj.findChildId(class(src));
-            delete(obj.childControllers{id});
-            obj.childControllers(id) = [];
-            obj.childControllersIds(id) = [];
-        end
-
     end % methods (Static)
 
     methods
@@ -121,8 +106,6 @@ classdef Quantification < handle
         enableStatTable(obj) % enable or disable statTable depending on whether results are available
 
         exportButton_Callback(obj, batchModeSwitch) % export results to Excel, CSV, MAT, or MATLAB workspace
-
-        id = findChildId(obj, childName) % find the index of an open child controller by class name
 
         gui_WindowButtonDownFcn(obj) % handle mouse button press events on the histogram axes
 
@@ -147,8 +130,6 @@ classdef Quantification < handle
         returnBatchOpt(obj, BatchOptOut) % publish BatchOpt to the macro recorder via SyncBatch event
 
         data = sortBtn_Callback(obj, data) % sort statTable data according to current sorting settings
-
-        startController(obj, controllerName, varargin) % launch a child controller by class name
 
         statTable_CellSelectionCallback(obj, indices, parameter) % handle cell selection in statTable and optionally highlight
 

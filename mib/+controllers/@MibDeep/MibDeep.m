@@ -240,9 +240,7 @@ classdef MibDeep < handle
 
         exportNetwork(obj)        % convert and export network to ONNX or TensorFlow formats
 
-        id = findChildId(obj, childName)        % find id of a child controller
-
-        net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork) % generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
+        net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)% generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
 
         net = generate3DDeepLabV3Network(obj, imageSize, numClasses, downsamplingFactor, targetNetwork) % generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
 
@@ -311,8 +309,6 @@ classdef MibDeep < handle
         singleModelTrainingFileValueChanged(obj, event)        % callback for press of SingleModelTrainingFile
 
         start(obj, event)        % start calcualtions, depending on the selected tab preprocessing, training, or prediction is initialized
-
-        startController(obj, controllerName, varargin)        % start a child controller using provided name
 
         startPrediction2D(obj)        % predict datasets for 2D taken to a separate function for better performance
 

@@ -1,68 +1,47 @@
 function startController(obj, controllerName, varargin)
 % function startController(obj, controllerName, varargin)
-% start a child controller using provided name
+% launch a child controller by class name
+%
+% Delegates to utils.startController, which provides the full implementation.
+% Use utils.startController directly when calling from a plugin controller
+% that has no access to MibController.
+%
+% Behaviour:
+% @li If the child window is already open, it is brought to the front and
+%     its widgets are refreshed.
+% @li If a BatchOpt struct is supplied (varargin{2}), the child runs in
+%     batch mode (no GUI) and returns immediately.
+% @li Lifecycle is managed automatically: a CloseEvent listener is wired
+%     on the child and calls utils.purgeChildController on close.
 %
 % Parameters:
-% controllerName: a string with name of a child controller, for example, 'mibImageAdjController'
-% varargin: additional optional controllers or parameters
-% varargin{2}: a structure with parameters for the batch processing, see
-% mibHistThresController. names of the fields can be seen in the alt-text of the widgets!
+% controllerName: char — fully-qualified child controller class name,
+%                 e.g. @b 'controllers.ResampleDataset'
+% varargin{1}:   [@em optional] placeholder argument, pass @b [] when supplying BatchOpt
+% varargin{2}:   [@em optional] BatchOpt struct to run in batch mode, or
+%                @b NaN to trigger returnBatchOpt
 
-%| 
+%|
 % @b Examples:
-% @code obj.startController('controllers.mibImageAdjController');     // start a child controller from MibController  @endcode
 % @code
-% BatchOpt.colChannel = 1;    % color channel for thresholding
-% BatchOpt.Mode = '3D, Stack';     % mode to use
-% BatchOpt.Method = 'Otsu';       % thresholding algorithm
-% BatchOpt.t = [1 1];     % [optional] time points, [t1, t2]
-% BatchOpt.z = [1 10];    % [optional] slices, [z1, z2]
-% BatchOpt.x = [10 120];    % [optional] slices, [x1, x2]
-% BatchOpt.Orientation = 2; % [optional] dataset orientation
-% obj.startController('controllers.mibHistThresController', [], BatchOpt);
+% % Open a child controller GUI (interactive):
+% obj.startController('controllers.ResampleDataset');
+% @endcode
+% @code
+% % Run a child controller in batch mode (no GUI):
+% BatchOpt.ResamplingMode = {'Dimensions'};
+% BatchOpt.DimensionX = '256';
+% BatchOpt.DimensionY = '256';
+% obj.startController('controllers.ResampleDataset', [], BatchOpt);
+% @endcode
+% @code
+% % Same call from a plugin controller that has no MibController handle:
+% utils.startController(obj, 'controllers.ResampleDataset', [], BatchOpt);
 % @endcode
 
 % Updates
 %
 
-id = obj.findChildId(controllerName);        % define/find index for this child controller window
-if ~isempty(id)
-    if numel(varargin) == 2     % run the batch mode when the controller is already opened
-        fh = str2func(controllerName);               %  Construct function handle from character vector
-        fh(obj.mibModel, varargin{1:numel(varargin)});
-        return;
-    else
-        try
-            figure(obj.childControllers{id}.view.gui);
-            obj.childControllers{id}.updateWidgets();   % update widgets of the controller when restarting it
-            return; 
-        catch err
-            obj.childControllersIds(id) = [];
-            obj.childControllersIds = obj.childControllersIds(~cellfun('isempty', obj.childControllersIds));
-        end
-    end
-end   % return if controller is already opened
-
-% assign id and populate obj.childControllersIds for a new controller
-id = numel(obj.childControllersIds) + 1;    
-obj.childControllersIds{id} = controllerName;
-
-fh = str2func(controllerName);               %  Construct function handle from character vector
-if nargin > 2 
-    obj.childControllers{id} = fh(obj.mibModel, varargin{1:numel(varargin)});    % initialize child controller with additional parameters
-else
-    obj.childControllers{id} = fh(obj.mibModel);    % initialize child controller
-end
-
-% add listener to the CloseEvent of the child controller
-addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) controllers.MibController.purgeControllers(obj, src, evnt));   % static
-%addlistener(obj.childControllers{id}, 'CloseEvent', @(src, evnt) obj.purgeControllers(src, evnt)); % dynamic
-
-p = fieldnames(obj.childControllers{id});
-if ismember('noGui', p)     % close widgets without GUI
-    notify(obj.childControllers{id}, 'CloseEvent');
-elseif isempty(obj.childControllers{id}.view)   % close widgets with the batch mode
-    notify(obj.childControllers{id}, 'CloseEvent');
-end
+utils.startController(obj, controllerName, varargin{:});
 
 end

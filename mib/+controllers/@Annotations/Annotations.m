@@ -54,15 +54,6 @@ classdef Annotations < handle
                     obj.updateWidgets();
             end
         end
-
-        function purgeControllers(obj, src, evnt)
-            % function purgeControllers(obj, src, evnt)
-            % Find and delete a child controller that fired its CloseEvent.
-            id = obj.findChildId(class(src));
-            delete(obj.childControllers{id});
-            obj.childControllers(id) = [];
-            obj.childControllersIds(id) = [];
-        end
     end
 
     methods
@@ -173,6 +164,15 @@ classdef Annotations < handle
         function closeWindow(obj)
             % function closeWindow(obj)
             % Close the Annotations window and clean up listeners.
+
+            for i = numel(obj.childControllers):-1:1
+                child = obj.childControllers{i};
+                if isa(child, 'handle') && isvalid(child)
+                    child.closeWindow();
+                end
+            end
+            obj.childControllers    = {};
+            obj.childControllersIds = {};
 
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
@@ -1150,7 +1150,7 @@ classdef Annotations < handle
                     indList = unique(obj.indices(:,1));
                     annotationLabels.positions = obj.mibModel.I{id}.annotations.labelPosition(indList, :);
                     annotationLabels.names     = obj.mibModel.I{id}.annotations.labelText(indList);
-                    obj.startController('controllers.CropObjects', obj, false, annotationLabels);
+                    utils.startController(obj, 'controllers.CropObjects', obj, false, annotationLabels);
 
                 case 'Imaris'
                     if isempty(obj.indices); return; end
@@ -1306,42 +1306,6 @@ classdef Annotations < handle
 
             web(fullfile(fileparts(obj.mibModel.mibPath), ...
                 'docs/html/user-interface/menu/models/annotations.html'), '-browser');
-        end
-
-        % -----------------------------------------------------------------
-        function startController(obj, controllerName, varargin)
-            % function startController(obj, controllerName, varargin)
-            % Start a child controller by name (e.g., 'controllers.CropObjects').
-            %
-            % Parameters:
-            % controllerName: char — fully-qualified controller class name
-            % varargin: additional arguments forwarded to the child constructor
-
-            id = obj.findChildId(controllerName);
-            if ~isempty(id); return; end  % already open
-
-            id = numel(obj.childControllersIds) + 1;
-            obj.childControllersIds{id} = controllerName;
-            fh = str2func(controllerName);
-            if nargin > 2
-                obj.childControllers{id} = fh(obj.mibModel, varargin{:});
-            else
-                obj.childControllers{id} = fh(obj.mibModel);
-            end
-            addlistener(obj.childControllers{id}, 'CloseEvent', ...
-                @(src,evnt) controllers.Annotations.purgeControllers(obj, src, evnt));
-        end
-
-        % -----------------------------------------------------------------
-        function id = findChildId(obj, childName)
-            % function id = findChildId(obj, childName)
-            % Return index of named child controller, or [] if not open.
-
-            if ~ismember(childName, obj.childControllersIds)
-                id = [];
-            else
-                id = find(ismember(obj.childControllersIds, childName), 1);
-            end
         end
 
     end

@@ -13,6 +13,15 @@ function closeWindow(obj)
 % Updates
 %
 
+for i = numel(obj.childControllers):-1:1
+    child = obj.childControllers{i};
+    if isa(child, 'handle') && isvalid(child)
+        child.closeWindow();
+    end
+end
+obj.childControllers    = {};
+obj.childControllersIds = {};
+
 if isvalid(obj.view.gui)
     delete(obj.view.gui);
 end

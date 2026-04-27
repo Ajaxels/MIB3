@@ -14,8 +14,9 @@ end
 
 % close child controllers
 for i=numel(obj.childControllers):-1:1
-    if isvalid(obj.childControllers{i})
-        obj.childControllers{i}.closeWindow();
+    child = obj.childControllers{i};
+    if isa(child, 'handle') && isvalid(child)
+        child.closeWindow();
     end
 end
 

@@ -9,12 +9,12 @@ function setAugmentationSettings(obj, mode)
             if ~isstruct(obj.AugOpt2D.RandScale)
                 obj.AugOpt2D = utils.deepmib.oldAugSettingsToNew(obj.AugOpt2D, '2D');
             end
-            obj.startController('controllers.MibDeepAugmentSettings', obj, '2D');
+            utils.startController(obj, 'controllers.MibDeepAugmentSettings', obj, '2D');
         case '3D'
             if ~isstruct(obj.AugOpt3D.RandScale)
                 obj.AugOpt3D = utils.deepmib.oldAugSettingsToNew(obj.AugOpt3D, '3D');
             end
-            obj.startController('controllers.MibDeepAugmentSettings', obj, '3D');
+            utils.startController(obj, 'controllers.MibDeepAugmentSettings', obj, '3D');
 
     end
 end

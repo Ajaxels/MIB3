@@ -645,7 +645,7 @@ if batchModeSwitch == 1
             cropAnnot.boundingBoxes = vertcat(obj.STATS(cropObjIds).BoundingBox);
         end
         cropAnnot.objectIds = [obj.STATS(cropObjIds).ObjectId];
-        obj.startController('controllers.CropObjects', obj, batchModeSwitch, cropAnnot);
+        utils.startController(obj, 'controllers.CropObjects', obj, batchModeSwitch, cropAnnot);
     end
 end
 

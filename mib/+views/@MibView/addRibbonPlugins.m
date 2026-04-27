@@ -54,19 +54,22 @@ for sectionId = 1:numel(pluginSections)
     category = matlab.ui.internal.toolstrip.GalleryCategory(categoryName);
 
     for pluginId = 1:numel(pluginList)
-        iconFileName = fullfile(fullfile(obj.controller.mibPath, 'plugins', pluginSections{sectionId}, pluginList{pluginId}, 'icon_24px.png' ));
-        if isfile(iconFileName)
-            icon = matlab.ui.internal.toolstrip.Icon(iconFileName);
-        else
-            icon = matlab.ui.internal.toolstrip.Icon.PLAY_24;
+        pluginDir = fullfile(obj.controller.mibPath, 'plugins', pluginSections{sectionId}, pluginList{pluginId});
+        if ~isdeployed; addpath(pluginDir); end
+
+        iconFileName = fullfile(pluginDir, 'icon_24px.png');
+        if ~isfile(iconFileName)
+            iconFileName = fullfile(obj.controller.mibPath, 'assets', 'icons', 'mib_icon_24px.png');
         end
+        icon = matlab.ui.internal.toolstrip.Icon(iconFileName);
+        pluginClassName = pluginList{pluginId};
         % add space before capital letter
-        pluginName = regexprep(pluginList{pluginId}, '([A-Z])', ' $1');
+        pluginName = regexprep(pluginClassName, '([A-Z])', ' $1');
         pluginName = strtrim(pluginName); % Remove possible leading space
 
         item = matlab.ui.internal.toolstrip.GalleryItem(pluginName, icon);
         %item.Description = 'Trypanosoma brucei cell and a model of nuclei, endoplasmic reticulum, mitochondria, vesicles, lipid droplets, and cytoplasm';
-        item.ItemPushedFcn = @(varargin)(fprintf('Plugin: "%s" pressed\n', item.Text));
+        item.ItemPushedFcn = @(varargin) obj.controller.startController(pluginClassName);
         category.add(item);
     end
     popup.add(category);

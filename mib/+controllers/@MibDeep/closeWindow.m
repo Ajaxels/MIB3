@@ -27,6 +27,16 @@ obj.mibModel.preferences.Deep.SendReports = obj.SendReports;
 % switch off warning for unetLayers
 warning('off', 'vision:semanticseg:unetLayersDeprecation')
 
+% close child controllers before tearing down own GUI
+for i = numel(obj.childControllers):-1:1
+    child = obj.childControllers{i};
+    if isa(child, 'handle') && isvalid(child)
+        child.closeWindow();
+    end
+end
+obj.childControllers    = {};
+obj.childControllersIds = {};
+
 % close gpu into window if it is open
 if ~isempty(obj.gpuInfoFig) && isvalid(obj.gpuInfoFig)
     delete(obj.gpuInfoFig);

@@ -25,5 +25,5 @@ else
     propertyList(~ismember(propertyList, allProps)) = [];
 end
 
-obj.startController('controllers.QuantificationProperties', obj, propertyList, obj3d);
+utils.startController(obj, 'controllers.QuantificationProperties', obj, propertyList, obj3d);
 end

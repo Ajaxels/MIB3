@@ -74,7 +74,7 @@ switch parameter
         
         % pre-set Generate3DPatches so CropObjects opens with it checked for Shape3D
         obj.BatchOpt.Generate3DPatches = strcmp(obj.BatchOpt.ObjectShape{1}, 'Shape3D');
-        obj.startController('controllers.CropObjects', obj, false, annotationLabels);
+        utils.startController(obj, 'controllers.CropObjects', obj, false, annotationLabels);
 
     case 'hist'
         val = data(obj.indices(:,1), 2);

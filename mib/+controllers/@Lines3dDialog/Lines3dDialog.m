@@ -68,15 +68,6 @@ classdef Lines3dDialog < handle
                     end
             end
         end
-
-        function purgeControllers(obj, src, evnt)
-            % purgeControllers(obj, src, evnt)
-            % Find and delete a child controller that fired its CloseEvent.
-            id = obj.findChildId(class(src));
-            delete(obj.childControllers{id});
-            obj.childControllers(id) = [];
-            obj.childControllersIds(id) = [];
-        end
     end
 
     methods
@@ -135,6 +126,16 @@ classdef Lines3dDialog < handle
         function closeWindow(obj)
             % closeWindow(obj)
             % Close the Lines3dDialog window and clean up listeners.
+
+            for i = numel(obj.childControllers):-1:1
+                child = obj.childControllers{i};
+                if isa(child, 'handle') && isvalid(child)
+                    child.closeWindow();
+                end
+            end
+            obj.childControllers    = {};
+            obj.childControllersIds = {};
+
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end

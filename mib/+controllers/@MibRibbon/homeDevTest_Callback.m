@@ -13,17 +13,17 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 %% Benchmark: getRGBimage x 100
-nIter = 100;
-options.blockModeSwitch = 0;
-options.resizeToMagnification = true;
-tStart = tic;
-for k = 1:nIter
-    imgRGB = obj.mibModel.getRGBimage(options); %#ok<NASGU>
-end
-elapsed = toc(tStart);
-fprintf('getRGBimage benchmark: %d iterations in %.3f s — mean %.2f ms/call\n', ...
-    nIter, elapsed, elapsed/nIter*1000);
-return
+% nIter = 100;
+% options.blockModeSwitch = 0;
+% options.resizeToMagnification = true;
+% tStart = tic;
+% for k = 1:nIter
+%     imgRGB = obj.mibModel.getRGBimage(options); %#ok<NASGU>
+% end
+% elapsed = toc(tStart);
+% fprintf('getRGBimage benchmark: %d iterations in %.3f s — mean %.2f ms/call\n', ...
+%     nIter, elapsed, elapsed/nIter*1000);
+% return
 
 
 %obj.mibModel.I{obj.mibModel.id}.labels

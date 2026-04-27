@@ -1,6 +1,6 @@
 function exploreActivations(obj)
 % function exploreActivations(obj)
 % explore activations within the trained network
-obj.startController('controllers.MibDeepActivations', obj);
+utils.startController(obj, 'controllers.MibDeepActivations', obj);
 end
 

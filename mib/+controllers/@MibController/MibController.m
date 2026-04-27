@@ -64,16 +64,7 @@ classdef MibController < handle
         function purgeControllers(obj, src, evnt)
             % function purgeControllers(obj, src, evnt)
             % remove child controller
-
-            % find index of the child controller
-            id = obj.findChildId(class(src));
-
-            % delete the child controller
-            delete(obj.childControllers{id});
-
-            % clear the handle
-            obj.childControllers(id) = [];
-            obj.childControllersIds(id) = [];
+            utils.purgeChildController(obj, src);
         end
     end
 
