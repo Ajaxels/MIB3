@@ -177,7 +177,7 @@ classdef MultiRenameTool < handle
             obj.autoPreview = true;
 
 			% move the window to the left hand side of the main window
-            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'center', 'center');
             
             % Set the window title-bar icon.  Use a plugin-specific 16 px icon
             % when present, otherwise fall back to the shared MIB application icon.

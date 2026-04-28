@@ -53,21 +53,33 @@ if ~isempty(existingId)
             parentObj.childControllers{existingId}.updateWidgets();
             return;
         catch
-            parentObj.childControllers(existingId)    = [];
+            % Stale entry (e.g. closed via debugger without firing CloseEvent,
+            % or arrays de-synced by a previous failed constructor).
+            % Guard against childControllers being shorter than childControllersIds.
+            if existingId <= numel(parentObj.childControllers)
+                parentObj.childControllers(existingId) = [];
+            end
             parentObj.childControllersIds(existingId) = [];
         end
     end
 end
 
-% Allocate a new slot and instantiate the controller
+% Allocate a new slot and instantiate the controller.
+% Write the name first so the slot is reserved, then roll it back if the
+% constructor throws (keeps both tracking arrays in sync).
 id = numel(parentObj.childControllersIds) + 1;
 parentObj.childControllersIds{id} = controllerName;
 
 fh = str2func(controllerName);
-if nargin > 2
-    parentObj.childControllers{id} = fh(parentObj.mibModel, varargin{1:numel(varargin)});
-else
-    parentObj.childControllers{id} = fh(parentObj.mibModel);
+try
+    if nargin > 2
+        parentObj.childControllers{id} = fh(parentObj.mibModel, varargin{1:numel(varargin)});
+    else
+        parentObj.childControllers{id} = fh(parentObj.mibModel);
+    end
+catch constructorErr
+    parentObj.childControllersIds(id) = [];   % roll back the pre-written slot
+    rethrow(constructorErr);
 end
 
 % Wire CloseEvent for lifecycle management

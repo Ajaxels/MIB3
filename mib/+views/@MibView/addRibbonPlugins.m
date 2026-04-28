@@ -76,7 +76,7 @@ for sectionId = 1:numel(pluginSections)
 end
 
 % Create the main gallery and add it to the view column.
-obj.handles.ribbonPlugins.gallery = matlab.ui.internal.toolstrip.Gallery(popup, 'MinColumnCount', 3, 'MaxColumnCount', 5 );
+obj.handles.ribbonPlugins.gallery = matlab.ui.internal.toolstrip.Gallery(popup, 'MinColumnCount', 3, 'MaxColumnCount', 20);
 column.add( obj.handles.ribbonPlugins.gallery )
 
 widgetHandles = obj.handles.ribbonPlugins;

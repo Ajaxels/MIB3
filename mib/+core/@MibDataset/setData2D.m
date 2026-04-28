@@ -162,6 +162,13 @@ else
 
 end
 
+% update logical switches 
+if ismember(type, {'labels', 'everything'})
+    obj.modelExist = true;
+elseif strcmp(type, 'mask')
+    obj.maskExist = true;
+end
+
 % notify about setData method used
 setDataOpt.type = type;
 setDataOpt.mode = '2D';

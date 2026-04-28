@@ -70,7 +70,12 @@ switch mode
         BatchOpt.Mode = 'Zoom in';
         obj.mibController.cStatus.zoomEdit_Callback([], BatchOpt);
     case 'Redo the undo operation'
+        index = obj.mibModel.Backup.undoIndex + 1;
+        if index > numel(obj.mibModel.Backup.undoList); return; end
+        obj.mibModel.undo(index);
 
     case 'Undo the last operation'
-        
+        index = obj.mibModel.Backup.undoIndex - 1;
+        if index == 0; return; end
+        obj.mibModel.undo(index);
 end

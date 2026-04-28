@@ -224,13 +224,16 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImag
 % obj.Sections(secIndex).Actions(actionId).Name = 'Semi-automatic segmentation --> Global thresholding';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibHistThresController'', [], Batch);'; actionId = actionId + 1;
 
-% secIndex = secIndex + 1;
-% actionId = 1;
-% obj.Sections(secIndex).Name = 'Ribbon -> Plugins';
-% obj.Sections(secIndex).Actions(actionId).Name = 'Convert image files';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''ImageConverterController'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Demo Plugin App Designer';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''DemoPluginAppDesignerController'', [], Batch);'; actionId = actionId + 1;
+secIndex = secIndex + 1;
+actionId = 1;
+obj.Sections(secIndex).Name = 'Ribbon -> Plugins';
+obj.Sections(secIndex).Actions(actionId).Name = 'Convert image files';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''ImageConverter'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Demo Plugin';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''DemoPlugin'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'GuiTutorial Batch';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''GuiTutorialBatch'', [], Batch);'; actionId = actionId + 1;
+
 % obj.Sections(secIndex).Actions(actionId).Name = 'Demo Plugin GUIDE Batch';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''DemoPluginGuideBatchController'', [], Batch);'; actionId = actionId + 1;
 
