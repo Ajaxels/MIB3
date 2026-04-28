@@ -60,6 +60,10 @@ classdef (Abstract) BaseSaver < handle
         % Handle to the main MIB application window.
         % Required as parent for uiprogressdlg progress bars.
         % Set from options.ParentFigure at construction time; empty in standalone use.
+        WaitbarHandle = []
+        % Handle to an indeterminate uiprogressdlg created upstream (before data
+        % extraction).  When set, createProgressDialog() reuses and switches this
+        % dialog to determinate mode instead of creating a new one.
     end
 
     % ------------------------------------------------------------------ %
@@ -155,6 +159,9 @@ classdef (Abstract) BaseSaver < handle
             if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
                 obj.ParentFigure = options.ParentFigure;
             end
+            if isfield(options, 'waitbarHandle') && ~isempty(options.waitbarHandle)
+                obj.WaitbarHandle = options.waitbarHandle;
+            end
         end
 
         function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
@@ -164,6 +171,25 @@ classdef (Abstract) BaseSaver < handle
             % All wb access by callers must be guarded with  if ~isempty(wb).
             if nargin < 4; cancelable    = false; end
             if nargin < 5; indeterminate = false; end
+
+            % Reuse a dialog created upstream (during data-gathering phase)
+            if ~isempty(obj.WaitbarHandle)
+                try
+                    if isvalid(obj.WaitbarHandle)
+                        wb = obj.WaitbarHandle;
+                        obj.WaitbarHandle = [];   % consume — caller now owns it
+                        wb.Indeterminate = 'off';
+                        wb.Value         = 0;
+                        wb.Title         = title;
+                        wb.Message       = message;
+                        if cancelable; wb.Cancelable = 'on'; end
+                        return;
+                    end
+                catch
+                end
+                obj.WaitbarHandle = [];
+            end
+
             wb = [];
             if isempty(obj.ParentFigure); return; end
             try
@@ -171,11 +197,8 @@ classdef (Abstract) BaseSaver < handle
             catch; return; end
             try
                 args = {'Title', title, 'Message', message};
-                if indeterminate
-                    args = [args, {'Indeterminate', 'on'}];
-                elseif cancelable
-                    args = [args, {'Cancelable', 'on'}];
-                end
+                if indeterminate; args = [args, {'Indeterminate', 'on'}]; end
+                if cancelable;    args = [args, {'Cancelable', 'on'}]; end
                 wb = uiprogressdlg(obj.ParentFigure, args{:});
             catch
                 wb = [];

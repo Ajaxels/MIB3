@@ -172,6 +172,23 @@ if ~isfield(options,'pixSize') || isempty(options.pixSize)
     options.pixSize = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
 end
 
+% Show indeterminate progress dialog immediately so the user sees feedback
+% while the (potentially slow) data-extraction step runs.
+earlyWb = [];
+if options.showWaitbar && isfield(options,'ParentFigure') && ~isempty(options.ParentFigure)
+    try
+        if isvalid(options.ParentFigure)
+            earlyWb = uiprogressdlg(options.ParentFigure, ...
+                'Title',         'Saving image', ...
+                'Message',       'Preparing data...', ...
+                'Indeterminate', 'on', ...
+                'Cancelable',    'on');
+            options.waitbarHandle = earlyWb;
+        end
+    catch
+    end
+end
+
 % --- assemble metadata from object properties ---
 metadata.filename   = obj.filename;
 metadata.colorType  = obj.colorType;
@@ -205,6 +222,13 @@ end
 
 % --- get full 5-D data [H, W, D, C, T] ---
 data = obj.getData('image', 3, []);
+
+% Check if user cancelled during data extraction
+if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
+    delete(earlyWb);
+    fnOut = [];
+    return;
+end
 
 % --- dispatch to appropriate saver ---
 saver = io.SaverFactory.create(options.Format, options);

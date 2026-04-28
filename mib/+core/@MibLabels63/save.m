@@ -95,6 +95,23 @@ if ~isfield(options,'pixSize') || isempty(options.pixSize)
     options.pixSize = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
 end
 
+% Show indeterminate progress dialog immediately so the user sees feedback
+% while the (potentially slow) data-extraction step runs.
+earlyWb = [];
+if options.showWaitbar && isfield(options,'ParentFigure') && ~isempty(options.ParentFigure)
+    try
+        if isvalid(options.ParentFigure)
+            earlyWb = uiprogressdlg(options.ParentFigure, ...
+                'Title',         'Saving labels', ...
+                'Message',       'Preparing data...', ...
+                'Indeterminate', 'on', ...
+                'Cancelable',    'on');
+            options.waitbarHandle = earlyWb;
+        end
+    catch
+    end
+end
+
 % --- handle MaterialIndex: extract a specific material if requested ---
 selMaterial = [];  % [] means all
 if isfield(options,'MaterialIndex') && ~isempty(options.MaterialIndex)
@@ -143,6 +160,13 @@ else
         metadata.materialNames  = metadata.materialNames(selMaterial);
         metadata.materialColors = metadata.materialColors(selMaterial, :);
     end
+end
+
+% Check if user cancelled during data extraction
+if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
+    delete(earlyWb);
+    fnOut = [];
+    return;
 end
 
 % --- dispatch ---

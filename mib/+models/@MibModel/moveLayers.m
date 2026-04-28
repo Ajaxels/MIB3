@@ -505,7 +505,11 @@ end
 % switch on Model layer
 if strcmp(BatchOptLocal.DestinationLayer{1}, 'labels')
     obj.I{BatchOptLocal.id}.modelExist = 1;
-    obj.showModel = true;
+    if ~obj.showModel
+        obj.showModel = true;
+        eventdata = core.ToggleEventData({'checkboxes'});
+        notify(obj, 'UpdateGuiWidgets', eventdata);
+    end
 end
 
 % switch on Mask layer
