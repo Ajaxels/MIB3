@@ -1,6 +1,9 @@
 function exportNetwork(obj)
-    % function exportNetwork(obj)
-    % convert and export network to ONNX or TensorFlow formats
+% EXPORTNETWORK - convert and export network to ONNX or TensorFlow formats.
+%
+% Syntax:
+%   function exportNetwork(obj)
+%
     
     if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
         mgsOpt.MsgBoxOnly = true;

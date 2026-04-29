@@ -1,6 +1,6 @@
 classdef MibDirContents
-    % classdef MibDirContents
-    % controller for methods of the DirContents panel in MIB
+% MIBDIRCONTENTS - controller for methods of the DirContents panel in MIB.
+%
 
     properties
         mibController   % controllers.MibController
@@ -32,7 +32,11 @@ classdef MibDirContents
         updateFileList_Callback(obj, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 
         function obj = MibDirContents(mainCtrl, view, guiHandles, model)
-            %% Init properties
+            % MIBDIRCONTENTS - % Init properties.
+            %
+            % Syntax:
+            %   function obj = MibDirContents(mainCtrl, view, guiHandles, model)
+            %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)

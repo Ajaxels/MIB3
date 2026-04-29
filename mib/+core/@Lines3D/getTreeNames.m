@@ -1,12 +1,15 @@
 function treeNames = getTreeNames(obj, index)
-% function treeNames = getTreeNames(obj, index)
-% return name of trees
+% GETTREENAMES - return name of trees.
 %
-% Parameters:
-% index: [@em optional] indices of the trees
+% Syntax:
+%   function treeNames = getTreeNames(obj, index)
 %
-% Return values:
-% treeNames: a cell array with names of trees
+% Input Arguments:
+%   - **index** — *(optional)* indices of the trees
+%
+% Output Arguments:
+%   - **treeNames** — a cell array with names of trees
+%
 
 if nargin < 2; index = []; end
 if isempty(obj.G.Nodes); treeNames = []; return; end

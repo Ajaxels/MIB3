@@ -1,6 +1,8 @@
 function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
-% function fillSelectionOrMask(obj, BatchOptIn)
-% Fill holes in the selection or mask layer.
+% FILLSELECTIONORMASK - Fill holes in the selection or mask layer.
+%
+% Syntax:
+%   function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 %
 % Applies imfill('holes') slice-by-slice across the chosen scope.
 % Optionally the filled result is clipped to the pixels belonging to a
@@ -9,42 +11,51 @@ function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 % Parallel 2D filling is supported via parfor when the Parallel Computing
 % Toolbox is available; use core.PoolWaitbar for thread-safe progress.
 %
-% Parameters:
-% targetLayer: [@em optional] char with the targer layer, 'mask', or 'selection', 
-%   when [] - 'selection'
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
-%   returns default options via the "SyncBatch" event.
-%   When called from MibSelection.fillSelection the DatasetType and
-%   TargetLayer fields are already populated.
-% @li .TargetLayer  - cell string, {'selection','mask'} layer to fill
-% @li .DatasetType  - cell string, {'2D, Slice','3D, Stack','4D, Dataset'} scope
-% @li .SelectedMaterial - string, material index used when
-%     restrictSelectionToMaterial=true; '-1' mask, '0' exterior, '1','2'...
-% @li .restrictSelectionToMaterial - logical, clip filled result to the
-%     pixels of the selected model material
-% @li .Use2DParallelComputing - logical, use parfor for slice-by-slice fill
-% @li .showWaitbar  - logical, show or not the progress dialog
-% @li .id           -> [@em optional] dataset index 1-9, default = obj.id
+% Input Arguments:
+%   - **targetLayer** — *(optional)* char with the targer layer, 'mask', or 'selection',
+%     when [] - 'selection'
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%     returns default options via the "SyncBatch" event.
+%     When called from MibSelection.fillSelection the DatasetType and
+%     TargetLayer fields are already populated.
 %
-% Return values:
+%     - ``.TargetLayer`` — cell string, ``{'selection','mask'}`` layer to fill
+%     - ``.DatasetType`` — cell string, ``{'2D, Slice','3D, Stack','4D, Dataset'}`` scope
+%     - ``.SelectedMaterial`` — string, material index used when
+%       restrictSelectionToMaterial=true; ``'-1'`` mask, ``'0'`` exterior, ``'1'``, ``'2'``...
+%     - ``.restrictSelectionToMaterial`` — logical, clip filled result to the
+%       pixels of the selected model material
+%     - ``.Use2DParallelComputing`` — logical, use parfor for slice-by-slice fill
+%     - ``.showWaitbar`` — logical, show or not the progress dialog
+%     - ``.id`` — *(optional)* dataset index 1-9, default = obj.id
+%
+%
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.fillSelectionOrMask();  // fill selection on current slice @endcode
-% @code
-% % Fill the mask layer across the full z-stack
-% BatchOpt.TargetLayer = {'mask'};
-% BatchOpt.DatasetType = {'3D, Stack'};
-% BatchOpt.restrictSelectionToMaterial = false;
-% BatchOpt.showWaitbar = true;
-% obj.mibModel.fillSelectionOrMask(BatchOpt);
-% @endcode
-% @code
-% % Return default BatchOpt to the Batch Processing editor
-% obj.mibModel.fillSelectionOrMask(NaN);
-% @endcode
+% Usage:
+%   **Example 1** — fill selection on current slice
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.fillSelectionOrMask();
+%
+%   **Example 2** — fill the mask layer across the full z-stack
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.TargetLayer = {'mask'};
+%      BatchOpt.DatasetType = {'3D, Stack'};
+%      BatchOpt.restrictSelectionToMaterial = false;
+%      BatchOpt.showWaitbar = true;
+%      obj.mibModel.fillSelectionOrMask(BatchOpt);
+%
+%   **Example 3** — return default BatchOpt to the Batch Processing editor
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.fillSelectionOrMask(NaN);
+%
 
 % Updates
 % 

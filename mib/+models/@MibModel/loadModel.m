@@ -1,50 +1,66 @@
 function loadModel(obj, model, BatchOptIn)
-% function loadModel(obj, model, BatchOptIn)
-% Load a segmentation model from file or import from a workspace array
+% LOADMODEL - Load a segmentation model from file or import from a workspace array.
+%
+% Syntax:
+%   function loadModel(obj, model, BatchOptIn)
 %
 % This is the top-level BatchOpt-compatible wrapper for model loading.
 % It handles:
 %
-%   FILE PATH  — model is empty; a file browser (GUI) or FilenameFilter
-%                template (batch) is used to locate the file(s); the
-%                factory-pattern loaders in +io are dispatched through
-%                MibDataset.loadModel.
+% FILE PATH  — model is empty; a file browser (GUI) or FilenameFilter
+% template (batch) is used to locate the file(s); the
+% factory-pattern loaders in +io are dispatched through
+% MibDataset.loadModel.
 %
-%   IMPORT PATH — model is a numeric array or a struct produced by
-%                 mibImage.getData3D/4D or an export helper; metadata is
-%                 unpacked from the struct before delegating to
-%                 MibDataset.loadModel.
+% IMPORT PATH — model is a numeric array or a struct produced by
+% mibImage.getData3D/4D or an export helper; metadata is
+% unpacked from the struct before delegating to
+% MibDataset.loadModel.
 %
-% Parameters:
-% model: [@em optional] raw model array (numeric) or struct with fields:
-% @li numeric — raw [H W D] or [H W D 1 T] label array
-% @li struct  — may contain: .modelMaterialNames, .modelMaterialColors,
-%               .modelType, .modelVariable, .labelText, .labelPosition,
-%               .labelValue, and a field whose name matches .modelVariable
-%               (or any field holding the array)
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
-%   returns default options via the "SyncBatch" event
-% @li .DirectoryName  - [cell, {'Inherit from dataset filename'}] target dir
-% @li .FilenameFilter - [char, {'Labels_[F].model'}] filename filter;
-%       [F] is expanded to the base name of the currently open image
-% @li .showWaitbar    - [logical, {true}] show progress dialog
-% @li .id             - [numeric, {obj.id}] dataset index 1..9
+% Input Arguments:
+%   - **model** — *(optional)* raw model array (numeric) or struct with fields:
 %
-% Return values:
+%     - ``numeric`` — raw [H W D] or [H W D 1 T] label array
+%     - ``struct`` — may contain: ``.modelMaterialNames``, ``.modelMaterialColors``,
+%       ``.modelType``, ``.modelVariable``, ``.labelText``, ``.labelPosition``,
+%       ``.labelValue``, and a field whose name matches ``.modelVariable``
+%       (or any field holding the array)
+%
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%     returns default options via the "SyncBatch" event
+%
+%     - ``.DirectoryName`` — [cell, ``{'Inherit from dataset filename'}``] target dir
+%     - ``.FilenameFilter`` — [char, ``{'Labels_[F].model'}``] filename filter;
+%       ``[F]`` is expanded to the base name of the currently open image
+%     - ``.showWaitbar`` — [logical, ``{true}``] show progress dialog
+%     - ``.id`` — [numeric, ``{obj.id}``] dataset index 1..9
+%
+%
+% Output Arguments:
 %   none
 %
-%|
-% @b Examples:
-% @code obj.mibModel.loadModel();  // interactive: file browser @endcode
-% @code
-% BatchOpt.DirectoryName   = {'C:\data'};
-% BatchOpt.FilenameFilter  = 'Labels_[F].model';
-% obj.mibModel.loadModel([], BatchOpt);   // batch: load by name template
-% @endcode
-% @code
-% rawArray = obj.mibModel.I{obj.mibModel.id}.getData3D('labels');
-% obj.mibModel.loadModel(rawArray);       // import from workspace array
-% @endcode
+% Usage:
+%   **Example 1** — interactive file browser
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.loadModel();
+%
+%   **Example 2** — batch: load by name template
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.DirectoryName   = {'C:\data'};
+%      BatchOpt.FilenameFilter  = 'Labels_[F].model';
+%      obj.mibModel.loadModel([], BatchOpt);
+%
+%   **Example 3** — import from workspace array
+%
+%   .. code-block:: matlab
+%
+%      rawArray = obj.mibModel.I{obj.mibModel.id}.getData3D('labels');
+%      obj.mibModel.loadModel(rawArray);
+%
 
 % Updates
 

@@ -15,12 +15,14 @@
 % Date: 25.04.2023
 
 classdef Preferences < handle
-    % @type Preferences class displays preferences dialog
-    % using appdesigner created GUI
-    %
-    % @code
-    % obj.startController('Preferences'); // as GUI tool
-    % @endcode
+% PREFERENCES - @type Preferences class displays preferences dialog.
+%
+% using appdesigner created GUI
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('Preferences'); // as GUI tool
 
     % Updates
     %
@@ -105,7 +107,11 @@ classdef Preferences < handle
         end
         
         function closeWindow(obj)
-            % closing Preferences window
+            % CLOSEWINDOW - closing Preferences window.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -120,13 +126,16 @@ classdef Preferences < handle
         end
         
         function updateWidgets(obj, panelId)
-            % function updateWidgets(obj, panelId)
-            % update widgets of this window
+            % UPDATEWIDGETS - update widgets of this window.
             %
-            % Parameters:
-            % panelId; [optional] handle to panel that has to be updated, when
-            % missing all panels are updated
-            % "UserInterfacePanel", 
+            % Syntax:
+            %   function updateWidgets(obj, panelId)
+            %
+            % Input Arguments:
+            %   panelId; [optional] handle to panel that has to be updated, when
+            %   missing all panels are updated
+            %   "UserInterfacePanel",
+            %
             
             panelsList = {'UserInterfacePanel', 'ColorsPanel', 'BackupAndUndoPanel', ...
                 'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel'};
@@ -338,8 +347,11 @@ classdef Preferences < handle
         end
 
         function status = ApplyButtonPushedCallback(obj)
-            % function ApplyButtonPushedCallback(obj)
-            % apply preferences to MIB
+            % APPLYBUTTONPUSHEDCALLBACK - apply preferences to MIB.
+            %
+            % Syntax:
+            %   function status = ApplyButtonPushedCallback(obj)
+            %
             
             %global scalingGUI;
             status = 0;
@@ -408,8 +420,11 @@ classdef Preferences < handle
         end
         
         function RescaleGUIButtonPushed(obj)
-            % function RescaleGUIButtonPushed(obj)
-            % rescale user interface of MIB
+            % RESCALEGUIBUTTONPUSHED - rescale user interface of MIB.
+            %
+            % Syntax:
+            %   function RescaleGUIButtonPushed(obj)
+            %
             global scalingGUI;
             
             scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
@@ -419,8 +434,11 @@ classdef Preferences < handle
         end
         
         function OKButtonPushedCallback(obj)
-            % function OKButtonPushedCallback(obj)
-            % callback on press of OK
+            % OKBUTTONPUSHEDCALLBACK - callback on press of OK.
+            %
+            % Syntax:
+            %   function OKButtonPushedCallback(obj)
+            %
             
             status = obj.ApplyButtonPushedCallback();
             if status == 0; return; end
@@ -467,11 +485,14 @@ classdef Preferences < handle
         end
         
         function ColorPanelCallbacks(obj, event)
-            % function ColorPanelsCallbacks(obj, event)
-            % callbacks for modification of the Colors panel
+            % COLORPANELCALLBACKS - callbacks for modification of the Colors panel.
             %
-            % Parameters:
-            % event: a structure to the GUI element that has triggered callback
+            % Syntax:
+            %   function ColorPanelCallbacks(obj, event)
+            %
+            % Input Arguments:
+            %   - **event** — a structure to the GUI element that has triggered callback
+            %
             
             switch event.Source.Tag
                 case 'SelectionColorButton'    % update selection color
@@ -564,10 +585,14 @@ classdef Preferences < handle
         end
         
         function KeyboardShortcutsPanelCallbacks(obj, event)
-            % function KeyboardShortcutsPanelCallbacks(obj, event)
-            % callbacks for modification of the Keyboard shortcuts panel
-            % Parameters:
-            % event: a structure to the GUI element that has triggered callback
+            % KEYBOARDSHORTCUTSPANELCALLBACKS - callbacks for modification of the Keyboard shortcuts panel.
+            %
+            % Syntax:
+            %   function KeyboardShortcutsPanelCallbacks(obj, event)
+            %
+            % Input Arguments:
+            %   - **event** — a structure to the GUI element that has triggered callback
+            %
             
             switch event.Source.Tag
                 case 'ResetKeyShortcutsButton'
@@ -583,10 +608,14 @@ classdef Preferences < handle
         end
         
         function SegmentationPanelCallbacks(obj, event)
-            % function SegmentationPanelCallbacks(obj, event)
-            % callbacks for modification of the Segmentation tools panel
-            % Parameters:
-            % event: a structure to the GUI element that has triggered callback
+            % SEGMENTATIONPANELCALLBACKS - callbacks for modification of the Segmentation tools panel.
+            %
+            % Syntax:
+            %   function SegmentationPanelCallbacks(obj, event)
+            %
+            % Input Arguments:
+            %   - **event** — a structure to the GUI element that has triggered callback
+            %
             
             switch event.Source.Tag
                 case 'annotationFontSize'
@@ -607,11 +636,14 @@ classdef Preferences < handle
         end
         
         function BackupAndUndoPanelCallbacks(obj, event)
-            % function BackupAndUndoPanelCallbacks(obj, event)
-            % callbacks for modification of the Undo and backup panel
+            % BACKUPANDUNDOPANELCALLBACKS - callbacks for modification of the Undo and backup panel.
             %
-            % Parameters:
-            % event: a structure to the GUI element that has triggered callback
+            % Syntax:
+            %   function BackupAndUndoPanelCallbacks(obj, event)
+            %
+            % Input Arguments:
+            %   - **event** — a structure to the GUI element that has triggered callback
+            %
             
             switch event.Source.Tag
                 case 'EnableUndo'
@@ -635,11 +667,14 @@ classdef Preferences < handle
         end
         
         function UserInterfacePanelCallbacks(obj, event)
-            % function UserInterfacePanelCallbacks(obj, event)
-            % callbacks for modification of the User Interface panel
+            % USERINTERFACEPANELCALLBACKS - callbacks for modification of the User Interface panel.
             %
-            % Parameters:
-            % event: a structure to the GUI element that has triggered callback
+            % Syntax:
+            %   function UserInterfacePanelCallbacks(obj, event)
+            %
+            % Input Arguments:
+            %   - **event** — a structure to the GUI element that has triggered callback
+            %
             
             switch event.Source.Tag
                 case 'MouseWheelActionDropDown'
@@ -726,11 +761,14 @@ classdef Preferences < handle
         
         
         function CategoriesTreeSelectionChanged(obj, selectedNodes)
-            % function CategoriesTreeSelectionChanged(obj, selectedNodes)
-            % callback for change of nodes of CategoriesTree
+            % CATEGORIESTREESELECTIONCHANGED - callback for change of nodes of CategoriesTree.
             %
-            % Parameters:
-            % selectedNodes: handle to the selected nodes
+            % Syntax:
+            %   function CategoriesTreeSelectionChanged(obj, selectedNodes)
+            %
+            % Input Arguments:
+            %   - **selectedNodes** — handle to the selected nodes
+            %
             
             % hide currently visible (previous) panel
             obj.view.handles.(obj.shownPanelTag).Visible = 'off';
@@ -744,8 +782,11 @@ classdef Preferences < handle
         
         
         function updateColorPalette(obj)
-            % function updateColorPalette(obj)
-            % generate default colors for the selected palette
+            % UPDATECOLORPALETTE - generate default colors for the selected palette.
+            %
+            % Syntax:
+            %   function updateColorPalette(obj)
+            %
             
             % update color palette based on selected parameters in the paletteTypePopup and paletteColorNumberPopup popups
             colorsNo = str2double(obj.view.handles.NumberOfColorsDropDown.Value);
@@ -755,15 +796,18 @@ classdef Preferences < handle
         end
         
         function updateColorsTables(obj, ColorTableTag, options)
-            % function updateColorsTables(obj, ColorTableTag, options)
-            % update color tables: ModelsColorsTable or LUTColorsTable
+            % UPDATECOLORSTABLES - update color tables: ModelsColorsTable or LUTColorsTable.
             %
-            % Parameters:
-            % ColorTableHandle: a string with a tag of the table: "ModelsColorsTable", "LUTColorsTable"
-            % options:  a structure with additional parameters
-            % .updateDataOnly - [logical, dafault=false] update the data in the table without
-            % .rowId - [integer, default=[]] index of a row to update, when empty update the full table
-            % redrawing the styles
+            % Syntax:
+            %   function updateColorsTables(obj, ColorTableTag, options)
+            %
+            % Input Arguments:
+            %   - **ColorTableHandle** — a string with a tag of the table: "ModelsColorsTable", "LUTColorsTable"
+            %   - **options** — a structure with additional parameters
+            %     .updateDataOnly - [logical, dafault=false] update the data in the table without
+            %     .rowId - [integer, default=[]] index of a row to update, when empty update the full table
+            %     redrawing the styles
+            %
             
             if nargin < 2; error('ColorTableTag  is missing'); end
             if nargin < 3; options = struct(); end
@@ -826,9 +870,11 @@ classdef Preferences < handle
         end
         
         function TableCellSelectionCallback(obj, event)
-            % function ModelsColorsTableCellSelection(obj, event)
-            % callback for selection of a cell in ModelsColorsTable
-            % 
+            % TABLECELLSELECTIONCALLBACK - callback for selection of a cell in ModelsColorsTable.
+            %
+            % Syntax:
+            %   function TableCellSelectionCallback(obj, event)
+            %
             % Paramters:
             % event:  a handle to the event structure
             
@@ -863,8 +909,10 @@ classdef Preferences < handle
         end
         
         function ModelsColorsTableContextMenuCallbacks(obj, event)
-            % function ModelsColorsTableContextMenuCallbacks(obj, event)
-            % callbacks for the context menu of ModelsColorsTable
+            % MODELSCOLORSTABLECONTEXTMENUCALLBACKS - callbacks for the context menu of ModelsColorsTable.
+            %
+            % Syntax:
+            %   function ModelsColorsTableContextMenuCallbacks(obj, event)
             %
             % Paramters:
             % event:  a handle to the event structure
@@ -994,8 +1042,10 @@ classdef Preferences < handle
         end
         
         function TableCellEditCallback(obj, event)
-            % function TableCellEditCallback(obj, event)
-            % callback for modification of cells in tables
+            % TABLECELLEDITCALLBACK - callback for modification of cells in tables.
+            %
+            % Syntax:
+            %   function TableCellEditCallback(obj, event)
             %
             % Paramters:
             % event:  a handle to the event structure
@@ -1039,8 +1089,11 @@ classdef Preferences < handle
         end
         
         function ExternalDirSelect(obj, event)
-            % function ExternalDirSelect(obj, event)
-            % callback for press of select directory button
+            % EXTERNALDIRSELECT - callback for press of select directory button.
+            %
+            % Syntax:
+            %   function ExternalDirSelect(obj, event)
+            %
         
             switch event.Source.Tag
                 case 'FijiDirSelectBtn'
@@ -1095,8 +1148,11 @@ classdef Preferences < handle
         end
         
         function ExternalDirPathChange(obj, event)
-            % function ExternalDirPathChange(obj, event)
-            % update of external directories
+            % EXTERNALDIRPATHCHANGE - update of external directories.
+            %
+            % Syntax:
+            %   function ExternalDirPathChange(obj, event)
+            %
             
             if ~isempty(obj.view.handles.(event.Source.Tag).Value)
                 if ~ismember(exist(obj.view.handles.(event.Source.Tag).Value), [2, 7]) %#ok<EXIST> % keep exists function here, for correct work with /Applications/Fiji.app 
@@ -1121,8 +1177,11 @@ classdef Preferences < handle
         end
         
         function updateKeyShortcut(obj, eventdata)
-            % function updateKeyShortcut(obj, event)
-            % callback for change of key shortcuts in the table
+            % UPDATEKEYSHORTCUT - callback for change of key shortcuts in the table.
+            %
+            % Syntax:
+            %   function updateKeyShortcut(obj, eventdata)
+            %
             % obj.view.handles.shortcutsTable
             
             index = eventdata.Indices(1);
@@ -1193,7 +1252,11 @@ classdef Preferences < handle
         % ------------------------------------------------------------------
         % % Additional functions and callbacks
         function Calculate(obj)
-            % start main calculation of the plugin
+            % CALCULATE - start main calculation of the plugin.
+            %
+            % Syntax:
+            %   function Calculate(obj)
+            %
             
             % redraw the image if needed
             notify(obj.mibModel, 'plotImage');

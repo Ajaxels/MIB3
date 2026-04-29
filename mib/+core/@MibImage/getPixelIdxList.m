@@ -1,39 +1,49 @@
 function dataset = getPixelIdxList(obj, type, PixelIdxList)
-% function dataset = getPixelIdxList(obj, type, PixelIdxList)
-% Get pixel values at a list of linear indices from MibImage or a subclass.
+% GETPIXELIDXLIST - Get pixel values at a list of linear indices from MibImage or a subclass.
+%
+% Syntax:
+%   function dataset = getPixelIdxList(obj, type, PixelIdxList)
 %
 % For standard MibImage and MibLabels the raw data are read directly from
 % obj.data{1}.  For MibLabels63 (bit-packed) the values are unpacked
 % according to the layer type:
-% @li 'labels'    — lower 6 bits  (bitand with 63)
-% @li 'mask'      — bit 7         (bitget position 7)
-% @li 'selection' — bit 8         (bitget position 8)
-% @li 'everything'— raw byte      (no unpacking)
+% - 'labels'    — lower 6 bits  (bitand with 63)
+% - 'mask'      — bit 7         (bitget position 7)
+% - 'selection' — bit 8         (bitget position 8)
+% - 'everything'— raw byte      (no unpacking)
 %
-% Parameters:
-% type: char, layer type to read
-%   @li 'image'     - pixel values from an image layer (MibImage)
-%   @li 'labels'    - material indices from labels layer
-%   @li 'mask'      - mask layer values (0/1)
-%   @li 'selection' - selection layer values (0/1)
-%   @li 'everything'- raw packed byte (MibLabels63 only)
-% PixelIdxList: numeric vector of linear pixel indices into obj.data{1}
-%   in the XY orientation (standard MATLAB column-major order)
+% Input Arguments:
+%   - **type** — char, layer type to read:
 %
-% Return values:
-% dataset: numeric column vector of values at the requested indices;
-%   [] when the layer does not exist (e.g. modelExist == 0)
-
-%|
-% @b Examples:
-% @code
-% CC = bwconncomp(mask3D, 26);
-% vals = obj.labels.getPixelIdxList('selection', CC.PixelIdxList{1});
-% @endcode
-% @code
-% % Reading from the image layer:
-% pixVals = obj.image.getPixelIdxList('image', idx);
-% @endcode
+%     - ``'image'`` — pixel values from an image layer (MibImage)
+%     - ``'labels'`` — material indices from labels layer
+%     - ``'mask'`` — mask layer values (0/1)
+%     - ``'selection'`` — selection layer values (0/1)
+%     - ``'everything'`` — raw packed byte (MibLabels63 only)
+%   - **PixelIdxList** — numeric vector of linear pixel indices into obj.data{1}
+%     in the XY orientation (standard MATLAB column-major order)
+%
+% Output Arguments:
+%   - **dataset** — numeric column vector of values at the requested indices;
+%     [] when the layer does not exist (e.g. modelExist == 0)
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     CC = bwconncomp(mask3D, 26);
+%     vals = obj.labels.getPixelIdxList('selection', CC.PixelIdxList{1});
+%
+%   **Example 2** — Reading from the image layer
+%
+%   .. code-block:: matlab
+%
+%
+%     % Reading from the image layer:
+%     pixVals = obj.image.getPixelIdxList('image', idx);
+%
 
 % Updates
 %

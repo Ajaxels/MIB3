@@ -1,7 +1,10 @@
 function startPredictionBlockedImage(obj)
-    % function startPredictionBlockedImage(obj)
-    % predict 2D/3D datasets using the blockedImage class
-    % requires R2021a or newer
+% STARTPREDICTIONBLOCKEDIMAGE - predict 2D/3D datasets using the blockedImage class.
+%
+% Syntax:
+%   function startPredictionBlockedImage(obj)
+%
+% requires R2021a or newer
 
     % detect 2D or 3D architecture
     if ismember(obj.BatchOpt.Workflow{1}, {'3D Semantic'})

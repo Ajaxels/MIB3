@@ -1,22 +1,23 @@
 function gui_WindowKeyReleaseFcn(obj, ~, ~)
-% function gui_WindowKeyReleaseFcn(obj, ~, ~)
-% Callback for key release in MIB
+% GUI_WINDOWKEYRELEASEFCN - Callback for key release in MIB.
+%
+% Syntax:
+%   function gui_WindowKeyReleaseFcn(obj, ~, ~)
 %
 % Restores the brush radius enlarged by the Ctrl-key eraser mode and
 % resets obj.view.ctrlPressed to 0.  Registered as WindowKeyReleaseFcn on
 % every ImageViewDocument UIFigure (see MibImageDocument.setupCallbacks).
 %
-% Parameters:
+% Input Arguments:
 %   (event arguments ignored)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code % registered automatically in MibImageDocument.setupCallbacks:
-% obj.UIFigure.WindowKeyReleaseFcn = @(h,d)obj.mibController.gui_WindowKeyReleaseFcn(h,d); @endcode
+% Usage:
+%   @code % registered automatically in MibImageDocument.setupCallbacks:
+%   obj.UIFigure.WindowKeyReleaseFcn = @(h,d)obj.mibController.gui_WindowKeyReleaseFcn(h,d); @endcode
+%
 
 % Updates
 %

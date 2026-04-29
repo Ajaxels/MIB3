@@ -1,6 +1,9 @@
 function processImagesForInstanceSegmentation(obj, preprocessFor)
-% function processImagesForInstanceSegmentation(obj, preprocessFor)
-% Preprocess labels for 2D instance segmentation for training and prediction
+% PROCESSIMAGESFORINSTANCESEGMENTATION - Preprocess labels for 2D instance segmentation for training and prediction.
+%
+% Syntax:
+%   function processImagesForInstanceSegmentation(obj, preprocessFor)
+%
 % as result, mat-files with the following variables are created:
 % - instanceBoxes, matrix  [N×4 double] containing bounding box coordinates of objects, where N is a number of objects on the image
 % - instanceNames, array [N×1 categorical] containing names of objects,
@@ -10,8 +13,9 @@ function processImagesForInstanceSegmentation(obj, preprocessFor)
 % represents individual object that should match the corresponding entry in
 % instanceBoxes and instanceNames
 %
-% Parameters:
-% preprocessFor: a string with target, 'training', 'prediction'
+% Input Arguments:
+%   - **preprocessFor** — a string with target, 'training', 'prediction'
+%
 
 if nargin < 2
     mgsOpt.MsgBoxOnly = true;

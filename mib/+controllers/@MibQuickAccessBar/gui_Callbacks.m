@@ -1,14 +1,17 @@
 function gui_Callbacks(obj, hWidget, hData)
-% function gui_Callbacks(obj, hWidget, hData)
-% callbacks for widgets of the quick access bar of MIB
+% GUI_CALLBACKS - callbacks for widgets of the quick access bar of MIB.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.tag -> char, identifier the widget, used when the same operation
-% is called from menu
-% '' ->
+% Syntax:
+%   function gui_Callbacks(obj, hWidget, hData)
 %
-% hData: handle to supporting data class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.tag char, identifier the widget, used when the same operation
+%     is called from menu
+%     '' ->
+%
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibQuickAccessBar

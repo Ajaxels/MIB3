@@ -1,6 +1,9 @@
 function saveCheckpointNetworkCheck(obj)
-    % function saveCheckpointNetworkCheck(obj)
-    % callback for press of Save checkpoint networks (obj.view.handles.T_SaveProgress)
+% SAVECHECKPOINTNETWORKCHECK - callback for press of Save checkpoint networks (obj.view.handles.T_SaveProgress).
+%
+% Syntax:
+%   function saveCheckpointNetworkCheck(obj)
+%
     obj.BatchOpt.T_SaveProgress = obj.view.handles.T_SaveProgress.Value;
     if obj.BatchOpt.T_SaveProgress
         prompts = {'Frequency of saving checkpoint networks, once in N epochs:'};

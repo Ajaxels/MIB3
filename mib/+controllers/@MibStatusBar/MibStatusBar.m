@@ -1,6 +1,6 @@
 classdef MibStatusBar
-    % classdef MibStatusBar
-    % controller for methods of the Selection and View settings panel in MIB
+% MIBSTATUSBAR - controller for methods of the Selection and View settings panel in MIB.
+%
 
     properties
         mibController   % controllers.MibController

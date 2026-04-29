@@ -15,22 +15,26 @@
 % Date: 25.04.2023
 
 function net = generate3DDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
-% function generate3DDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
-% generate a hybrid 2.5D DeepLabv3+ convolutional neural network for semantic image
+% GENERATE3DDEEPLABV3NETWORK - generate a hybrid 2.5D DeepLabv3+ convolutional neural network for semantic image.
+%
+% Syntax:
+%   function net = generate3DDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
+%
 % segmentation. The training data should be a small substack of 3,5,7 etc
 % slices, where only the middle slice is segmented.
 % As the update, a 2 blocks of 3D convolutions were added before the
 % standard DLv3
 %
-% Parameters:
-% imageSize: vector [height, width, colors] defining input patch size,
-% should be larger than [224 224] for resnet18, colors should be 3
-% numClasses: number of output classes (including exterior) for the output results
-% targetNetwork: string defining the base architecture for the initialization
-%   'resnet18' - resnet18 network
-%   'resnet50' - resnet50 network
-%   'xception' - xception network
-%   'inceptionresnetv2' - resnet50 network
+% Input Arguments:
+%   - **imageSize** — vector [height, width, colors] defining input patch size,
+%     should be larger than [224 224] for resnet18, colors should be 3
+%   - **numClasses** — number of output classes (including exterior) for the output results
+%   - **targetNetwork** — string defining the base architecture for the initialization
+%     'resnet18' - resnet18 network
+%     'resnet50' - resnet50 network
+%     'xception' - xception network
+%     'inceptionresnetv2' - resnet50 network
+%
 
 %
 % Updates
@@ -356,7 +360,11 @@ if obj.BatchOpt.showWaitbar; obj.wb.Value = 1; drawnow; end
 end
 
 function X = padResult(X, Y)
-% custom function to pad 2D softmax to 3D
+% PADRESULT - custom function to pad 2D softmax to 3D.
+%
+% Syntax:
+%   function X = padResult(X, Y)
+%
 
 pad = X.*0;
 pad = dlresize(pad, 'Scale', [1 1 floor(size(Y,3)/2)]);

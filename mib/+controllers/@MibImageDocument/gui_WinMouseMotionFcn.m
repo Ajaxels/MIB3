@@ -1,6 +1,8 @@
 function gui_WinMouseMotionFcn(obj)
-% function gui_WinMouseMotionFcn(obj)
-% Callback for mouse movement over the figure window
+% GUI_WINMOUSEMOTIONFCN - Callback for mouse movement over the figure window.
+%
+% Syntax:
+%   function gui_WinMouseMotionFcn(obj)
 %
 % This function is called on every mouse movement. It:
 % - Updates cursor position display in the status bar
@@ -11,11 +13,12 @@ function gui_WinMouseMotionFcn(obj)
 % Uses persistent variables to prevent callback re-entrance
 % and improve performance during rapid mouse movements.
 %
-% Parameters:
+% Input Arguments:
 %   none
 %
-% Return values:
+% Output Arguments:
 %   none
+%
 
 persistent inCallback lastCallTime %obj.wasInsideAxes
 currentTime = tic();

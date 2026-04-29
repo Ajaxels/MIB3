@@ -1,6 +1,8 @@
 function removeMaterial(obj, materialIndices, wb)
-% function removeMaterial(obj, materialIndices, wb)
-% Remove materials from the model — low-level data layer
+% REMOVEMATERIAL - Remove materials from the model — low-level data layer.
+%
+% Syntax:
+%   function removeMaterial(obj, materialIndices, wb)
 %
 % Modifies pixel data across all time-points and then updates the model
 % metadata (materialNames, materialColors, selection state).
@@ -13,19 +15,29 @@ function removeMaterial(obj, materialIndices, wb)
 % are indexed directly by material value, so row-deletion would shift
 % colours of unrelated materials; they are therefore left unchanged.
 %
-% Parameters:
-% materialIndices: double vector, 1-based indices of materials to remove.
-%   Must already be validated by the caller (MibModel.removeMaterial).
-% wb: [@em optional] handle to a uiprogressdlg used for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **materialIndices** — double vector, 1-based indices of materials to remove.
+%     Must already be validated by the caller (MibModel.removeMaterial).
+%   - **wb** — *(optional)* handle to a uiprogressdlg used for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.removeMaterial([2 4]);      // remove materials 2 and 4 @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.removeMaterial([1 3], wb);  // with progress bar @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.removeMaterial([2 4]);% remove materials 2 and 4
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.removeMaterial([1 3], wb);% with progress bar
+%
 
 % Updates
 %

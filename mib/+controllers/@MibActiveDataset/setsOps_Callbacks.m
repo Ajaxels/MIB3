@@ -1,21 +1,25 @@
 function setsOps_Callbacks(obj, hWidget, hData, mode)
-% function setsOps_Callbacks(obj, hWidget, hData, mode)
-% callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
-% Handles the following widgets:
-% - obj.view.handles.panels.activeDataset.handles.sets -> select set
-% - obj.view.handles.panels.activeDataset.handles.setsContextRename -> context menu for sets dropdown, rename the selected set
-% - obj.view.handles.panels.activeDataset.handles.setsContextAdd -> context menu for sets dropdown, add a new set
-% - obj.view.handles.panels.activeDataset.handles.setsContextRemove -> context menu for sets dropdown, remove the selected set
+% SETSOPS_CALLBACKS - callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles.
 %
-% Parameters:
-% hWidget: handle to the pressed widget: dropdown or button
-% hData: handle to supporting data class
-% mode: char, optional identifier the widget, used when the same operation
-% is called from menu, when empty or missing hWidget.Tag is used as an identifier:
-% 'sets' -> selected set
-% 'setsContextAdd' -> add a new set
-% 'setsContextRename' -> rename the current set
-% 'setsContextRemove' -> remove the current set
+% Syntax:
+%   function setsOps_Callbacks(obj, hWidget, hData, mode)
+%
+% Handles the following widgets:
+% - obj.view.handles.panels.activeDataset.handles.sets select set
+% - obj.view.handles.panels.activeDataset.handles.setsContextRename context menu for sets dropdown, rename the selected set
+% - obj.view.handles.panels.activeDataset.handles.setsContextAdd context menu for sets dropdown, add a new set
+% - obj.view.handles.panels.activeDataset.handles.setsContextRemove context menu for sets dropdown, remove the selected set
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget: dropdown or button
+%   - **hData** — handle to supporting data class
+%   - **mode** — char, optional identifier the widget, used when the same operation
+%     is called from menu, when empty or missing hWidget.Tag is used as an identifier:
+%     'sets' selected set
+%     'setsContextAdd' add a new set
+%     'setsContextRename' rename the current set
+%     'setsContextRemove' remove the current set
+%
 
 % arguments (Input)
 %     obj controllers.MibActiveDataset

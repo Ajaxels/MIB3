@@ -1,6 +1,9 @@
 function setAugmentationSettings(obj, mode)
-    % function setAugmentationSettings(obj, mode)
-    % update settings for augmentation for 2D or 3D networks
+% SETAUGMENTATIONSETTINGS - update settings for augmentation for 2D or 3D networks.
+%
+% Syntax:
+%   function setAugmentationSettings(obj, mode)
+%
     
     if nargin < 2; mode = '2D'; end
 

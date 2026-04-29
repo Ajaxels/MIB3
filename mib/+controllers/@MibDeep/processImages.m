@@ -1,9 +1,12 @@
 function processImages(obj, preprocessFor)
-    % function processImages(obj, preprocessFor)
-    % Preprocess images for training and prediction
-    %
-    % Parameters:
-    % preprocessFor: a string with target, 'training', 'prediction'
+% PROCESSIMAGES - Preprocess images for training and prediction.
+%
+% Syntax:
+%   function processImages(obj, preprocessFor)
+%
+% Input Arguments:
+%   - **preprocessFor** — a string with target, 'training', 'prediction'
+%
 
     if nargin < 2
         mgsOpt.MsgBoxOnly = true;

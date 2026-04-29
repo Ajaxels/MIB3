@@ -1,52 +1,59 @@
 function [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)
-% Generate RGB image from all layers for display
-%
-% Generate RGB image by combining image data, segmentation model, mask,
-% selection layer, annotations, and 3D lines for visualization
+% GETRGBIMAGE - Generate RGB image from all layers for display.
 %
 % Syntax:
-%   [imgRGB, imgRAW] = obj.getRGBimage(options)
-%   [imgRGB, imgRAW] = obj.getRGBimage(options, sImgIn)
 %
-% Parameters:
-%   options: [@em struct] structure with display parameters:
-%       .blockModeSwitch - [@em optional] 0 - return full slice RGB image [@b default], 
-%                          1 - return only the visible area
-%       .resizeToMagnification: [@em optional, logical] display mode:
-%           true - resize to current magnification [@b default]          
-%           false - return in original 100% resolution
-%       .sliceNo - [@em optional] specific slice index to display
-%       .markerType - [@em optional] annotation display type, the default value takes selection of 
-%           obj.view.handles.panels.segmentation.handles.annDisplayAs via obj.preferences.SegmTools.Annotations.DisplayAs
-%                     'Marker' - show only position marker,
-%                     'Label' - show marker with label
-%                     'Value' -  show marker woth value
-%                     'Label + Value' - show marker with label and value
-%       .t - [@em optional] [tmin, tmax] time point to display [default: current]
-%       .y - [@em optional] [ymin, ymax] Y-coordinates of region to extract
-%       .x - [@em optional] [xmin, xmax] X-coordinates of region to extract
-%       .useLut - [@em optional] 0 or 1 to use LUT color table [default: current setting, taken from dataset.useLUT]
-%   datasetId: [@em optional] index of the dataset to generate RGB image, when empty or missing, get the RGB of the currently selected dataset
-%   sImgIn: [@em optional] custom 3D image stack to use instead of loading from dataset
+%   .. code-block:: matlab
 %
-% Return values:
-%   imgRGB - RGB image combining all visible layers [height, width, 3]
-%   imgRAW - Raw image data (used for virtual stacking mode)
+%      [imgRGB, imgRAW] = obj.getRGBimage(options)
+%      [imgRGB, imgRAW] = obj.getRGBimage(options, datasetId)
+%      [imgRGB, imgRAW] = obj.getRGBimage(options, datasetId, sImgIn)
 %
-% Examples:
-%   % Get full slice RGB with all layers
-%   options.blockModeSwitch = 0;
-%   imgRGB = obj.getRGBimage(options);
+% Combines image data, segmentation model, mask, selection layer,
+% annotations, and 3D lines into a single RGB image for visualization.
 %
-%   % Get cropped RGB of visible area only
-%   options.blockModeSwitch = 1;
-%   options.resizeToMagnification = true;
-%   imgRGB = obj.getRGBimage(options);
+% Input Arguments:
+%   - **options** — struct with display parameters
+%   - ``.blockModeSwitch`` — *(optional)* ``0`` return full slice [*default*], ``1`` crop to visible area
+%   - ``.resizeToMagnification`` — *(optional)* ``true`` resize to current magnification [*default*], ``false`` return at 100%
+%   - ``.sliceNo`` — *(optional)* specific slice index to display
+%   - ``.markerType`` — *(optional)* annotation display type, default from preferences
+%     (``'Marker'``, ``'Label'``, ``'Value'``, ``'Label + Value'``)
+%   - ``.t`` — *(optional)* [tmin, tmax] time point to display
+%   - ``.y`` — *(optional)* [ymin, ymax] Y-coordinates of region to extract
+%   - ``.x`` — *(optional)* [xmin, xmax] X-coordinates of region to extract
+%   - ``.useLut`` — *(optional)* ``0`` or ``1`` to use LUT color table [*default*: current dataset setting]
+%   - **datasetId** — *(optional)* index of the dataset; when empty uses the currently selected dataset
+%   - **sImgIn** — *(optional)* custom 3D image stack to use instead of loading from dataset
 %
-%   % Get specific slice without resizing
-%   options.sliceNo = 50;
-%   options.resizeToMagnification = false;
-%   imgRGB = obj.getRGBimage(options);
+% Output Arguments:
+%   - **imgRGB** — RGB image combining all visible layers [height × width × 3]
+%   - **imgRAW** — raw image data (used for virtual stacking mode)
+%
+% Usage:
+%   **Example 1** — get full slice RGB with all layers
+%
+%   .. code-block:: matlab
+%
+%      options.blockModeSwitch = 0;
+%      imgRGB = obj.getRGBimage(options);
+%
+%   **Example 2** — get cropped RGB of visible area only
+%
+%   .. code-block:: matlab
+%
+%      options.blockModeSwitch = 1;
+%      options.resizeToMagnification = true;
+%      imgRGB = obj.getRGBimage(options);
+%
+%   **Example 3** — get specific slice without resizing
+%
+%   .. code-block:: matlab
+%
+%      options.sliceNo = 50;
+%      options.resizeToMagnification = false;
+%      imgRGB = obj.getRGBimage(options);
+%
 
 if nargin < 4; sImgIn = []; end
 if nargin < 3; datasetId = []; end

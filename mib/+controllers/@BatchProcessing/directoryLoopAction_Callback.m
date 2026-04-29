@@ -1,6 +1,8 @@
 function directoryLoopAction_Callback(obj, BatchOptInput)
-% function directoryLoopAction_Callback(obj, BatchOptInput)
-% build or apply the BatchOpt structure for a Directory Loop protocol step
+% DIRECTORYLOOPACTION_CALLBACK - build or apply the BatchOpt structure for a Directory Loop protocol step.
+%
+% Syntax:
+%   function directoryLoopAction_Callback(obj, BatchOptInput)
 %
 % When called with no second argument (interactive mode) the function
 % constructs a default BatchOpt and returns without doing anything further.
@@ -10,21 +12,23 @@ function directoryLoopAction_Callback(obj, BatchOptInput)
 % defaults via updateBatchOptCombineFields_Shared.
 %
 % The resulting BatchOpt specifies:
-% @li DirectoriesList - initially set to obj.mibModel.currentDirectory; the
-%     user expands the list via the context menu in the Batch Processing GUI
-% @li DirLoopWaitbar  - [logical] whether to show a per-directory waitbar
+%   - DirectoriesList - initially set to obj.mibModel.currentDirectory; the
+% user expands the list via the context menu in the Batch Processing GUI
+%   - DirLoopWaitbar  - [logical] whether to show a per-directory waitbar
 %
-% Parameters:
-% BatchOptInput: [optional]
-%   @li NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
-%   @li struct - override defaults with supplied fields and apply
+% Input Arguments:
+%   - **BatchOptInput** — [optional]
+%     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
+%     - struct - override defaults with supplied fields and apply
 %
-%|
-% @b Examples:
-% @code obj.directoryLoopAction_Callback(NaN); // populate parameter table @endcode
-% @code obj.directoryLoopAction_Callback(BatchOpt); // apply saved settings @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.directoryLoopAction_Callback(NaN); // populate parameter table
+%
+%   Example 2::
+%
+%     obj.directoryLoopAction_Callback(BatchOpt); // apply saved settings
 %
 
 BatchOpt.DirectoriesList = {obj.mibModel.currentDirectory};   % cell with the selected directory

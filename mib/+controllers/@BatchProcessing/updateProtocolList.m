@@ -1,12 +1,13 @@
 function updateProtocolList(obj)
-% function updateProtocolList(obj)
-% refresh the protocol listbox from obj.Protocol, preserving the current selection
+% UPDATEPROTOCOLLIST - refresh the protocol listbox from obj.Protocol, preserving the current selection.
 %
-%|
-% @b Examples:
-% @code obj.updateProtocolList(); @endcode
+% Syntax:
+%   function updateProtocolList(obj)
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.updateProtocolList();
 %
 
 tData = cell([numel(obj.Protocol), 1]);

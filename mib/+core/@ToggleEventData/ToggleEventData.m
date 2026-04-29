@@ -8,14 +8,15 @@
 % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 % GNU General Public License for more details.
 % You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
+% along with this program.  If not, see <https:% www.gnu.org/licenses/>
 
 % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi 
 % Date: 25.04.2023
 
 classdef (ConstructOnLoad) ToggleEventData < event.EventData
-    % a class to pass data together with a notification event
+    % UNKNOWN - a class to pass data together with a notification event.
+    %
     
     properties
         Parameters
@@ -23,14 +24,17 @@ classdef (ConstructOnLoad) ToggleEventData < event.EventData
     
     methods
         function data = ToggleEventData(newParameter)
-            % function data = ToggleEventData(newParameter)
-            % 
-            % Parameters:
+            % TOGGLEEVENTDATA - Parameters:.
+            %
+            % Syntax:
+            %   function data = ToggleEventData(newParameter)
+            %
             % newParameter: a data that has to be passed to the destination
             % function with the event
             %
-            % Return values:
-            % data: a structure with the provided parameter
+            % Output Arguments:
+            %   - **data** — a structure with the provided parameter
+            %
             
             data.Parameters = newParameter;
         end

@@ -1,16 +1,31 @@
 function resolution = calculateResolution(pixSize)
-% function resolution = calculateResolution(pixSize)
-% Calculate image resolution in Inch as default for saving tifs
-% 
-% Parameters:
-% pixSize: a structure with voxel physical dimensions, the three following
-% fields are used:
-% - .x - physical width of the pixel
-% - .y - physical height of the pixel
-% - .units - physical units: ''m'', ''cm'', ''mm'', ''um'', ''nm''
-% 
-% Return values:
-% resolution: a vector [XResolution, YResolution] in Pixels/Inch
+% CALCULATERESOLUTION - Calculate image resolution in Pixels/Inch for saving TIFF files.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      resolution = calculateResolution(pixSize)
+%
+% Input Arguments:
+%   - **pixSize** — struct with physical voxel dimensions:
+%
+%     - ``.x`` — physical width of the pixel
+%     - ``.y`` — physical height of the pixel
+%     - ``.units`` — physical unit string: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``
+%
+% Output Arguments:
+%   - **resolution** — [numeric] ``[XResolution, YResolution]`` in Pixels/Inch
+%
+% Usage:
+%
+%   **Example 1** — compute resolution for TIFF saving
+%
+%   .. code-block:: matlab
+%
+%      pixSize.x = 0.065; pixSize.y = 0.065; pixSize.units = 'um';
+%      resolution = utils.calculateResolution(pixSize);
+%
 
 % Updates
 % 

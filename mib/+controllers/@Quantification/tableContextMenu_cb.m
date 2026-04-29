@@ -1,27 +1,34 @@
 function tableContextMenu_cb(obj, parameter)
-% function tableContextMenu_cb(obj, parameter)
-% Handle context menu actions on statTable rows.
+% TABLECONTEXTMENU_CB - Handle context menu actions on statTable rows.
+%
+% Syntax:
+%   function tableContextMenu_cb(obj, parameter)
 %
 % Dispatches to the appropriate action based on parameter.  All actions
 % operate on the rows currently selected in obj.indices.
 %
-% Parameters:
-% parameter: string — action identifier
-% @li 'mean' - compute mean of column 2 for selected rows; copy to clipboard
-% @li 'sum'  - compute sum; copy to clipboard
-% @li 'min'  - compute min; copy to clipboard
-% @li 'max'  - compute max; copy to clipboard
-% @li 'copyColumn' - copy selected column(s) to system clipboard
-% @li 'crop' - open controllers.CropObjects with centroids of selected objects
-% @li 'hist' - plot histogram of selected values in the histogram axes
-% @li 'newLabel'    - create new MIB annotations at selected object centroids
-% @li 'addLabel'    - add MIB annotations (keeps existing)
-% @li 'removeLabel' - remove MIB annotations at selected centroids
+% Input Arguments:
+%   - **parameter** — string — action identifier
+%     - 'mean' - compute mean of column 2 for selected rows; copy to clipboard
+%     - 'sum'  - compute sum; copy to clipboard
+%     - 'min'  - compute min; copy to clipboard
+%     - 'max'  - compute max; copy to clipboard
+%     - 'copyColumn' - copy selected column(s) to system clipboard
+%     - 'crop' - open controllers.CropObjects with centroids of selected objects
+%     - 'hist' - plot histogram of selected values in the histogram axes
+%     - 'newLabel'    - create new MIB annotations at selected object centroids
+%     - 'addLabel'    - add MIB annotations (keeps existing)
+%     - 'removeLabel' - remove MIB annotations at selected centroids
 %
-%|
-% @b Examples:
-% @code obj.tableContextMenu_cb('mean');  // aggregate and copy @endcode
-% @code obj.tableContextMenu_cb('crop');  // open crop dialog @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.tableContextMenu_cb('mean');  // aggregate and copy
+%
+%   Example 2::
+%
+%     obj.tableContextMenu_cb('crop');  // open crop dialog
+%
 
 % Updates
 %

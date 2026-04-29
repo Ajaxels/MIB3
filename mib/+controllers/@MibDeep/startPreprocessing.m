@@ -1,6 +1,9 @@
 function startPreprocessing(obj)
-    % function startPreprocessing(obj)
-    % preprocess imaging for training and prediction
+% STARTPREPROCESSING - preprocess imaging for training and prediction.
+%
+% Syntax:
+%   function startPreprocessing(obj)
+%
 
     if strcmp(obj.BatchOpt.Workflow{1},  '2D Patch-wise')  % '2D Patch-wise Resnet18' or '2D Patch-wise Resnet50'
         if ismember(obj.BatchOpt.PreprocessingMode{1}, {'Training and Prediction', 'Training', 'Prediction'})

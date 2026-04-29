@@ -1,6 +1,9 @@
 function repositionDrawingROI(obj)
-% function repositionDrawingROI(obj)
-% Reposition the active interactive drawing tool after zoom/pan redraws
+% REPOSITIONDRAWINGROI - Reposition the active interactive drawing tool after zoom/pan redraws.
+%
+% Syntax:
+%   function repositionDrawingROI(obj)
+%
 % the image at a different axes coordinate scale.
 %
 % Called from controllers.MibController.showImage at the end of every
@@ -11,10 +14,11 @@ function repositionDrawingROI(obj)
 % models.MibModel.convertDataToMouseCoordinates and applied to the live
 % drawing object, keeping the ROI visually anchored to the same image pixels.
 %
-% Parameters:
-%   obj: controllers.MibRoi
+% Input Arguments:
+%   - **obj** — controllers.MibRoi
 %
-% Return values: none
+%   Return values: none
+%
 
 if ~obj.drawingROI.active; return; end
 

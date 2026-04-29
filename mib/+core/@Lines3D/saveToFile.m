@@ -1,19 +1,22 @@
 function saveToFile(obj, filename, options)
-% function saveToFile(obj, filename, options)
-% save Lines3D to a file
+% SAVETOFILE - save Lines3D to a file.
 %
-% Parameters:
-% filename: full path to file
-% options: a structure with optional paramters
-%  .format - a char string
-%       'lines3d' - MIB lines3d format
-%       'amira-ascii' - amira ascii
-%       'amira-binary' - amira binary
-%       'excel' - Microsoft Excel format
-%  .treeId - a number with index of a tree to save, when empty save all graph
-%  .NodeFieldName - [@em optional] name of variable for nodes to save, only for Amira
-%  .EdgeFieldName - [@em optional] name of variable for edges to save, only for Amira
-%  .showWaitbar - [@em optional] a number 1-show; 0-do not show the waitbar
+% Syntax:
+%   function saveToFile(obj, filename, options)
+%
+% Input Arguments:
+%   - **filename** — full path to file
+%   - **options** — a structure with optional paramters
+%     .format - a char string
+%     'lines3d' - MIB lines3d format
+%     'amira-ascii' - amira ascii
+%     'amira-binary' - amira binary
+%     'excel' - Microsoft Excel format
+%     .treeId - a number with index of a tree to save, when empty save all graph
+%     .NodeFieldName - *(optional)* name of variable for nodes to save, only for Amira
+%     .EdgeFieldName - *(optional)* name of variable for edges to save, only for Amira
+%     .showWaitbar - *(optional)* a number 1-show; 0-do not show the waitbar
+%
 
 if nargin < 3; options = struct(); end
 if nargin < 2; filename = []; end

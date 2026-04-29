@@ -1,6 +1,8 @@
 function status = doBatchStep(obj, stepId, stepOptions)
-% function status = doBatchStep(obj, stepId, stepOptions)
-% execute a single step of the batch protocol
+% DOBATCHSTEP - execute a single step of the batch protocol.
+%
+% Syntax:
+%   function status = doBatchStep(obj, stepId, stepOptions)
 %
 % Handles all built-in service steps (STOP EXECUTION, loop markers, Directory
 % operations, File operations) directly, then delegates every other action to
@@ -11,24 +13,26 @@ function status = doBatchStep(obj, stepId, stepOptions)
 % Returns false immediately if obj.stopProtocolSwitch is set to true (the
 % user pressed the Stop button while the protocol was running).
 %
-% Parameters:
-% stepId: 1-based index into obj.Protocol of the step to execute
-% stepOptions: optional struct carrying loop context; may include:
-%   @li .DirectoryName    - directory from an enclosing Directory or File loop
-%   @li .FilenameFilter   - bare filename (without path) supplied by a File loop
-%   @li .Filenames        - full path(s) to the file supplied by a File loop
-%   @li .FileLoopWaitbar  - [logical] when true suppress per-step waitbars
-%   @li .seriesId         - integer BioFormats series index (from doSeriesLoop)
+% Input Arguments:
+%   - **stepId** — 1-based index into obj.Protocol of the step to execute
+%   - **stepOptions** — optional struct carrying loop context; may include:
+%     - .DirectoryName    - directory from an enclosing Directory or File loop
+%     - .FilenameFilter   - bare filename (without path) supplied by a File loop
+%     - .Filenames        - full path(s) to the file supplied by a File loop
+%     - .FileLoopWaitbar  - [logical] when true suppress per-step waitbars
+%     - .seriesId         - integer BioFormats series index (from doSeriesLoop)
 %
-% Return values:
-% status: [logical] true on success, false if the step failed or was aborted
+% Output Arguments:
+%   - **status** — [logical] true on success, false if the step failed or was aborted
 %
-%|
-% @b Examples:
-% @code status = obj.doBatchStep(stepId); @endcode
-% @code status = obj.doBatchStep(stepId, stepOptions);  // with loop context @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     status = obj.doBatchStep(stepId);
+%
+%   Example 2::
+%
+%     status = obj.doBatchStep(stepId, stepOptions);  // with loop context
 %
 
 status = false;

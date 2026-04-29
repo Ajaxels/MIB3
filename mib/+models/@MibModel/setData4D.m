@@ -1,34 +1,47 @@
 function result = setData4D(obj, dataset, type, orient, col_channel, options)
-% function result = setData4D(obj, dataset, type, orient, col_channel, options)
-% Set the complete 4D dataset in the current (or specified) dataset; wrapper around core.MibDataset.setData4D
+% SETDATA4D - Set the complete 4D dataset in the current (or specified) dataset; wrapper around core.MibDataset.setData4D.
+%
+% Syntax:
+%   function result = setData4D(obj, dataset, type, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.setData4D(...) instead of
 % obj.mibModel.I{obj.mibModel.id}.setData4D(...).
 % All argument semantics are identical to core.MibDataset.setData4D.
 %
-% Parameters:
-% dataset: 4D image data — matrix or cell array; see MibDataset.setData4D
-% type: type of the dataset layer to update
-% @li 'image' - [@b default] the image layer
-% @li 'labels' - labels layer with segmentation
-% @li 'mask' - mask layer
-% @li 'selection' - selection layer
-% @li 'everything' - packed model/mask/selection (MibLabels63 only)
-% orient: [@em optional] orientation; [] = current orientation
-% col_channel: [@em optional] colour channel(s); [] = current channels; NaN = all
-% options: [@em optional] struct with extra parameters
-% @li .id -> [@em optional] dataset index 1-9; default = obj.id
-% @li .blockModeSwitch, .roiId, .fillBg, .x, .y, .z, .t,
-%     .replaceDatasetSwitch, .keepModel — see MibDataset.setData4D
+% Input Arguments:
+%   - **dataset** — 4D image data — matrix or cell array; see ``MibDataset.setData4D``
+%   - **type** — type of the dataset layer to update:
 %
-% Return values:
-% result: logical; true on success, false on failure
-
-%|
-% @b Examples:
-% @code result = obj.mibModel.setData4D(dataset, 'image');  // replace full dataset @endcode
-% @code result = obj.mibModel.setData4D(dataset, 'image', 3, 2);  // XY orient, ch 2 @endcode
+%     - ``'image'`` — [*default*] the image layer
+%     - ``'labels'`` — labels layer with segmentation
+%     - ``'mask'`` — mask layer
+%     - ``'selection'`` — selection layer
+%     - ``'everything'`` — packed model/mask/selection (MibLabels63 only)
+%
+%   - **orient** — *(optional)* orientation; ``[]`` = current orientation
+%   - **col_channel** — *(optional)* colour channel(s); ``[]`` = current channels; ``NaN`` = all
+%   - **options** — *(optional)* struct with extra parameters:
+%
+%     - ``.id`` — *(optional)* dataset index 1-9; default = ``obj.id``
+%     - ``.blockModeSwitch``, ``.roiId``, ``.fillBg``, ``.x``, ``.y``, ``.z``, ``.t``, ``.replaceDatasetSwitch``, ``.keepModel`` — see ``MibDataset.setData4D``
+%
+% Output Arguments:
+%   - **result** — logical; true on success, false on failure
+%
+% Usage:
+%   **Example 1** — replace full dataset
+%
+%   .. code-block:: matlab
+%
+%      result = obj.mibModel.setData4D(dataset, 'image');
+%
+%   **Example 2** — XY orient, ch 2
+%
+%   .. code-block:: matlab
+%
+%      result = obj.mibModel.setData4D(dataset, 'image', 3, 2);
+%
 
 % Updates
 %

@@ -1,13 +1,29 @@
 function result = struct2array(S)
-% function result = struct2array(S)
-% replacement for struct2array function that was present is Matlab before
-% R2021b (at least)
+% STRUCT2ARRAY - Convert a scalar struct to a flat array of its field values.
 %
-% Parameters:
-% S: input structure
+% Syntax:
 %
-% Return values:
-% result: array with values
+%   .. code-block:: matlab
+%
+%      result = struct2array(S)
+%
+% Replacement for the built-in ``struct2array`` that was removed in MATLAB R2021b.
+%
+% Input Arguments:
+%   - **S** — [struct] scalar input structure
+%
+% Output Arguments:
+%   - **result** — array containing all field values of S concatenated horizontally
+%
+% Usage:
+%
+%   **Example 1** — flatten a struct of numeric values
+%
+%   .. code-block:: matlab
+%
+%      S.a = 1; S.b = 2; S.c = 3;
+%      result = utils.struct2array(S);   % result = [1 2 3]
+%
 
 % Convert structure to cell
 c = struct2cell(S);

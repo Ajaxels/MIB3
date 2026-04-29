@@ -1,6 +1,8 @@
 function fnOut = save(obj, filename, options)
-% function fnOut = save(obj, filename, options)
-% Save label/segmentation data from a MibLabels object to a file.
+% SAVE - Save label/segmentation data from a MibLabels object to a file.
+%
+% Syntax:
+%   function fnOut = save(obj, filename, options)
 %
 % This method OVERRIDES core.MibImage.save() to inject label-specific
 % metadata (material names, material colours, labels variable name) into
@@ -8,110 +10,118 @@ function fnOut = save(obj, filename, options)
 %
 % MibLabels (and its sibling MibLabels63) stores multi-material
 % segmentation data:
-%   - data{1} is a uint8/uint16 array where each voxel value indicates
-%     the material index (0 = exterior/background, 1..N = materials).
-%   - materialNames  — cell array of strings naming each material
-%   - materialColors — [N x 3] matrix of per-material RGB colours (0..1)
-%   - labelsVariable — name used as the variable in .model/.mat files
+% - data{1} is a uint8/uint16 array where each voxel value indicates
+% the material index (0 = exterior/background, 1..N = materials).
+% - materialNames  — cell array of strings naming each material
+% - materialColors — [N x 3] matrix of per-material RGB colours (0..1)
+% - labelsVariable — name used as the variable in .model/.mat files
 %
-% Supported formats (from io.SaverFactory.getFormats('labels')):
-%   'Matlab format (*.model)'             — MIB3 native model file
-%   'Matlab format 2D sequence (*.model)' — one file per Z-slice
-%   'Matlab format for MIB ver. 1 (*.mat)'— legacy MIB v1 compatibility
-%   'Matlab categorical format (*.mibCat)'— MATLAB categorical array
-%   'Amira mesh binary (*.am)'            — Amira binary mesh
-%   'Amira mesh binary RLE compression SLOW (*.am)' — Amira RLE
-%   'Amira mesh ascii (*.am)'             — Amira ASCII mesh
-%   'Hierarchical Data Format (*.h5)'     — HDF5
-%   'Hierarchical Data Format with XML header (*.xml)' — HDF5 + XML
-%   'NRRD for 3D Slicer (*.nrrd)'         — NRRD (3D Slicer)
-%   'MRC Volume for IMOD (*.mrc)'             — IMOD MRC volume
-%   'Contours for IMOD (*.mod)'           — IMOD model contours
-%   'PNG format (*.png)'                  — PNG 2D sequence
-%   'TIF format (*.tif)'                  — TIFF (stack or sequence)
-%   'STL isosurface as binary (*.stl)'    — STL mesh per material
+% Supported formats (from ``io.SaverFactory.getFormats('labels')``):
+% ``'Matlab format (\*.model)'``             — MIB3 native model file
+% ``'Matlab format 2D sequence (\*.model)'`` — one file per Z-slice
+% ``'Matlab format for MIB ver. 1 (\*.mat)'``— legacy MIB v1 compatibility
+% ``'Matlab categorical format (\*.mibCat)'``— MATLAB categorical array
+% ``'Amira mesh binary (\*.am)'``            — Amira binary mesh
+% ``'Amira mesh binary RLE compression SLOW (\*.am)'`` — Amira RLE
+% ``'Amira mesh ascii (\*.am)'``             — Amira ASCII mesh
+% ``'Hierarchical Data Format (\*.h5)'``     — HDF5
+% ``'Hierarchical Data Format with XML header (\*.xml)'`` — HDF5 + XML
+% ``'NRRD for 3D Slicer (\*.nrrd)'``         — NRRD (3D Slicer)
+% ``'MRC Volume for IMOD (\*.mrc)'``         — IMOD MRC volume
+% ``'Contours for IMOD (\*.mod)'``           — IMOD model contours
+% ``'PNG format (\*.png)'``                  — PNG 2D sequence
+% ``'TIF format (\*.tif)'``                  — TIFF (stack or sequence)
+% ``'STL isosurface as binary (\*.stl)'``    — STL mesh per material
 %
 % NOTE ON pixSize:
-%   Like MibImage, MibLabels does not store pixel size.
-%   Supply options.pixSize, or it defaults to 1×1×1 µm.
+% Like MibImage, MibLabels does not store pixel size.
+% Supply options.pixSize, or it defaults to 1×1×1 µm.
 %
-% Parameters:
-%   obj      — MibLabels (or MibLabels63) instance
-%   filename — (char) full output path including extension, e.g.
-%              '/data/Labels_stack.model'
-%   options  — (struct, optional) saving options:
-%     .Format         — (char) format string (see list above).
-%                       Inferred from file extension when absent.
-%     .Saving3DPolicy — (char) '3D stack' | '2D sequence', default '3D stack'
-%     .showWaitbar    — (logical) default true
-%     .silent         — (logical) suppress dialogs, default false
-%     .overwrite      — (logical) default true
-%     .MaterialIndex  — (double|[]) which material to export.
-%                       [] or NaN → all materials.
-%                       integer   → single material (returned as binary 0/1).
-%     .FilenameGenerator — (char) filename policy for 2D sequences
-%     .pixSize        — (struct) injected by MibDataset.save()
-%     .boundingBox    — ([1x6]) injected by MibDataset.save()
-%     .annotations    — (struct) injected by MibDataset.save() when present;
-%                       fields: .labelText, .labelValue, .labelPosition
+% Input Arguments:
+%   - **obj** — ``MibLabels`` (or ``MibLabels63``) instance
+%   - **filename** — (char) full output path including extension, e.g.
+%     ``'/data/Labels_stack.model'``
+%   - **options** — *(optional)* struct with saving options:
 %
-% Return values:
-%   fnOut — (char or cell of char) saved filename(s); [] on failure
+%     - ``.Format`` — (char) format string (see list above).
+%       Inferred from file extension when absent.
+%     - ``.Saving3DPolicy`` — (char) ``'3D stack'`` | ``'2D sequence'``, default ``'3D stack'``
+%     - ``.showWaitbar`` — (logical) default ``true``
+%     - ``.silent`` — (logical) suppress dialogs, default ``false``
+%     - ``.overwrite`` — (logical) default ``true``
+%     - ``.MaterialIndex`` — (double|[]) which material to export;
+%       ``[]`` or ``NaN`` → all materials; integer → single material (returned as binary 0/1)
+%     - ``.FilenameGenerator`` — (char) filename policy for 2D sequences
+%     - ``.pixSize`` — (struct) injected by ``MibDataset.save()``
+%     - ``.boundingBox`` — ([1x6]) injected by ``MibDataset.save()``
+%     - ``.annotations`` — (struct) injected by ``MibDataset.save()`` when present;
+%       fields: ``.labelText``, ``.labelValue``, ``.labelPosition``
 %
-% USAGE EXAMPLES
-%   @code
-%   %% 1. Save labels in MIB native format (standalone, no MibDataset needed)
-%   labels = core.MibLabels(uint8(zeros(256,256,50,1,1)));
-%   labels.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
-%   labels.materialColors = [0 0 1; 0 1 0; 1 0 0];
-%   labels.labelsVariable = 'mibModel';
+% Output Arguments:
+%   - **fnOut** — (char or cell of char) saved filename(s); ``[]`` on failure
 %
-%   opts.Format      = 'Matlab format (*.model)';
-%   opts.showWaitbar = false;
-%   opts.silent      = true;
-%   opts.overwrite   = true;
-%   opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-%   opts.boundingBox = [0 16.6 0 16.6 0 10];
+% Usage:
+%   **Example 1** — Save labels in MIB native format (standalone, no MibDataset needed)
 %
-%   fnOut = labels.save('/output/Labels_stack.model', opts);
-%   @endcode
+%   .. code-block:: matlab
 %
-%   @code
-%   %% 2. Export only one material as TIFF sequence
-%   opts.Format         = 'TIF format (*.tif)';
-%   opts.Saving3DPolicy = '2D sequence';
-%   opts.MaterialIndex  = 2;   % export material 2 (ER) only; voxels → 1
-%   opts.showWaitbar    = true;
-%   opts.silent         = true;
-%   opts.overwrite      = true;
-%   opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-%   fnOut = labels.save('/output/Labels_ER.tif', opts);
-%   @endcode
 %
-%   @code
-%   %% 3. Save labels as Amira mesh (binary)
-%   opts.Format      = 'Amira mesh binary (*.am)';
-%   opts.showWaitbar = true;
-%   opts.silent      = true;
-%   opts.overwrite   = true;
-%   opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-%   opts.boundingBox = [0 16.6 0 16.6 0 10];
-%   opts.layerType   = 'labels';  % required for AmiraMeshSaver to choose correct writer
-%   fnOut = labels.save('/output/Labels_stack.am', opts);
-%   @endcode
+%       labels = core.MibLabels(uint8(zeros(256,256,50,1,1)));
+%       labels.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
+%       labels.materialColors = [0 0 1; 0 1 0; 1 0 0];
+%       labels.labelsVariable = 'mibModel';
 %
-%   @code
-%   %% 4. Via MibDataset (recommended — pixSize and boundingBox are injected)
-%   opts.Format      = 'Matlab format (*.model)';
-%   opts.showWaitbar = false;
-%   opts.silent      = true;
-%   opts.overwrite   = true;
-%   fnOut = dataset.save('labels', '/output/Labels_stack.model', opts);
-%   @endcode
+%       opts.Format      = 'Matlab format (*.model)';
+%       opts.showWaitbar = false;
+%       opts.silent      = true;
+%       opts.overwrite   = true;
+%       opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%       opts.boundingBox = [0 16.6 0 16.6 0 10];
 %
-% SEE ALSO
-%   core.MibImage.save, core.MibDataset.save, models.MibModel.save,
-%   io.SaverFactory, io.savers.MatlabSaver, io.savers.AmiraMeshSaver
+%       fnOut = labels.save('/output/Labels_stack.model', opts);
+%
+%   **Example 2** — Export only one material as TIFF sequence
+%
+%   .. code-block:: matlab
+%
+%
+%       opts.Format         = 'TIF format (*.tif)';
+%       opts.Saving3DPolicy = '2D sequence';
+%       opts.MaterialIndex  = 2;   % export material 2 (ER) only; voxels → 1
+%       opts.showWaitbar    = true;
+%       opts.silent         = true;
+%       opts.overwrite      = true;
+%       opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%       fnOut = labels.save('/output/Labels_ER.tif', opts);
+%
+%   **Example 3** — Save labels as Amira mesh (binary)
+%
+%   .. code-block:: matlab
+%
+%
+%       opts.Format      = 'Amira mesh binary (*.am)';
+%       opts.showWaitbar = true;
+%       opts.silent      = true;
+%       opts.overwrite   = true;
+%       opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%       opts.boundingBox = [0 16.6 0 16.6 0 10];
+%       opts.layerType   = 'labels';  % required for AmiraMeshSaver to choose correct writer
+%       fnOut = labels.save('/output/Labels_stack.am', opts);
+%
+%   **Example 4** — Via MibDataset (recommended: pixSize and boundingBox are injected)
+%
+%   .. code-block:: matlab
+%
+%
+%       opts.Format      = 'Matlab format (*.model)';
+%       opts.showWaitbar = false;
+%       opts.silent      = true;
+%       opts.overwrite   = true;
+%       fnOut = dataset.save('labels', '/output/Labels_stack.model', opts);
+%
+% See also:
+%   core.MibImage.save, core.MibDataset.save, models.MibModel.save, io.SaverFactory, io.savers.MatlabSaver, io.savers.AmiraMeshSaver
+%
 
 fnOut = [];
 

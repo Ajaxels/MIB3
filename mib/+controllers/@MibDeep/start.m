@@ -1,7 +1,10 @@
 function start(obj, event)
-    % function start(obj, event)
-    % start calcualtions, depending on the selected tab
-    % preprocessing, training, or prediction is initialized
+% START - start calcualtions, depending on the selected tab.
+%
+% Syntax:
+%   function start(obj, event)
+%
+% preprocessing, training, or prediction is initialized
 
     global mibDeepStopTraining     % variable to define stop of training (when true)
 

@@ -1,12 +1,16 @@
 function segmentationTool_Callback(obj, segmToolIndex)
-% function segmentationTool_Callback(obj, segmToolIndex)
-% callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in
-% obj.handles.panels.segmentation panel. 
+% SEGMENTATIONTOOL_CALLBACK - callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in.
+%
+% Syntax:
+%   function segmentationTool_Callback(obj, segmToolIndex)
+%
+% obj.handles.panels.segmentation panel.
 % Select segmentation tool
 %
-% Parameters:
-% segmToolIndex: [optional] index of the segmentation tool to select, when
-% not provided, takes currently selected value in obj.view.handles.panels.segmentation.handles.segmTool.ValueIndex
+% Input Arguments:
+%   - **segmToolIndex** — [optional] index of the segmentation tool to select, when
+%     not provided, takes currently selected value in obj.view.handles.panels.segmentation.handles.segmTool.ValueIndex
+%
 
 % get alias
 handles = obj.view.handles.panels.segmentation.handles;

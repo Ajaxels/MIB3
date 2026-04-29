@@ -1,35 +1,46 @@
 function clearSelection(obj, sel_switch, BatchOptIn)
-% function clearSelection(obj, sel_switch, BatchOptIn)
-% Clear the Selection layer for the current dataset
+% CLEARSELECTION - Clear the Selection layer for the current dataset.
+%
+% Syntax:
+%   function clearSelection(obj, sel_switch, BatchOptIn)
 %
 % Clears all pixels in the Selection layer for the current slice,
 % the whole z-stack, or the entire 4D dataset, depending on the
 % requested scope.  Supports batch-processing mode via BatchOptIn.
 %
-% Parameters:
-% sel_switch: [@em optional] string defining the clear scope
-% @li '2D, Slice'   - clear the currently shown slice only (default)
-% @li '3D, Stack'   - clear the full z-stack at the current time point(s)
-% @li '4D, Dataset' - clear the entire dataset (all z and t)
-% BatchOptIn: [@em optional] structure for batch processing mode; when
-%   NaN, returns default options via the "SyncBatch" event
-% @li .DatasetType  - cell {value, {choices}} selecting the clear scope
-% @li .showWaitbar  - logical, show or not the progress bar
-% @li .id           - dataset index 1-9; default = obj.id
+% Input Arguments:
+%   - **sel_switch** — *(optional)* string defining the clear scope
+%   - '2D, Slice'   - clear the currently shown slice only (default)
+%   - '3D, Stack'   - clear the full z-stack at the current time point(s)
+%   - '4D, Dataset' - clear the entire dataset (all z and t)
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when
+%     NaN, returns default options via the "SyncBatch" event
+%   - .DatasetType  - cell {value, {choices}} selecting the clear scope
+%   - .showWaitbar  - logical, show or not the progress bar
+%   - .id           - dataset index 1-9; default = obj.id
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.clearSelection('2D, Slice');              // clear current slice @endcode
-% @code obj.mibModel.clearSelection('3D, Stack');              // clear current z-stack @endcode
-% @code obj.mibModel.clearSelection('4D, Dataset');            // clear full dataset @endcode
-% @code
-% BatchOpt.DatasetType = {'3D, Stack'};
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.clearSelection([], BatchOpt);                  // batch / scripted call @endcode
+% Usage:
+%   **Example 1** — clear current slice
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.clearSelection('2D, Slice');
+%
+%   **Example 2** — clear current z-stack
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.clearSelection('3D, Stack');
+%
+%   **Example 3** — clear full dataset
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.clearSelection('4D, Dataset');
+%
 
 % Updates
 %

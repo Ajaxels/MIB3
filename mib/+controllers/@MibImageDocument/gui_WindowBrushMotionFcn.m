@@ -1,6 +1,8 @@
 function gui_WindowBrushMotionFcn(obj, structElement)
-% function gui_WindowBrushMotionFcn(obj, structElement)
-% Draw the brush trace during use of the brush tool
+% GUI_WINDOWBRUSHMOTIONFCN - Draw the brush trace during use of the brush tool.
+%
+% Syntax:
+%   function gui_WindowBrushMotionFcn(obj, structElement)
 %
 % This function is called on every mouse movement while the brush tool
 % is active. It rasterizes the line from the previous cursor position to
@@ -8,18 +10,17 @@ function gui_WindowBrushMotionFcn(obj, structElement)
 % the selection overlay on the displayed image. Supports both normal
 % brush and superpixel-assisted (SLIC/Watershed) modes.
 %
-% Parameters:
-% structElement: double matrix, circular structural element for brush
-%   dilation, generated in segmentationBrush.m
+% Input Arguments:
+%   - **structElement** — double matrix, circular structural element for brush
+%     dilation, generated in segmentationBrush.m
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code % typically called as a callback, not directly:
-% hFig.WindowButtonMotionFcn = @(~,~)obj.gui_WindowBrushMotionFcn(structElement); @endcode
+% Usage:
+%   @code % typically called as a callback, not directly:
+%   hFig.WindowButtonMotionFcn = @(~,~)obj.gui_WindowBrushMotionFcn(structElement); @endcode
+%
 
 % Updates
 %

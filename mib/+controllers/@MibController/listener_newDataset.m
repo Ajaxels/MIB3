@@ -1,30 +1,34 @@
 function listener_newDataset(obj, src, evtData)
-% function listener_newDataset(obj, src, evtData)
-% Update obj.I (MibDataset) by resizing it to fit on the screen
+% LISTENER_NEWDATASET - Update obj.I (MibDataset) by resizing it to fit on the screen.
+%
+% Syntax:
+%   function listener_newDataset(obj, src, evtData)
+%
 % executed upon catch of MibModel->"NewDataset" event
 %
-% Parameters:
-% src: handle to MibModel
-% evtData: event data, an instance of core.ToggleEventData class with the following fields:
-% .Parameters field containing a structure with the
-%    .evtData.Parameters.index -> [@b optional] index of obj.I to update, when @em [] updates the currently selected dataset
-% .Source -> handle to MibModel
-% .EventName -> string with the event name that triggered the callback
-% see example in MibModel.datasetsSetsOps-> 'Add set'
-
-%| 
-% @b Examples:
-% @code
-% // update the current dataset using the "resize" mode
-% notify(obj.mibModel, 'NewDataset');
-% @endcode 
+% Input Arguments:
+%   - **src** — handle to MibModel
+%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
+%     .Parameters field containing a structure with the
+%     .evtData.Parameters.index [**optional]** index of obj.I to update, when *[]* updates the currently selected dataset
+%     .Source handle to MibModel
+%     .EventName string with the event name that triggered the callback
+%     see example in MibModel.datasetsSetsOps-> 'Add set'
 %
-% @code
-% Options.index = 8;
-% eventdata = core.ToggleEventData(Options);
-% // update dataset 8 using the "resize" mode
-% notify(obj.mibModel, 'NewDataset', eventdata);
-% @endcode 
+% Usage:
+%   Example 1::
+%
+%     // update the current dataset using the "resize" mode
+%     notify(obj.mibModel, 'NewDataset');
+%
+%
+%   Example 2::
+%
+%     Options.index = 8;
+%     eventdata = core.ToggleEventData(Options);
+%     // update dataset 8 using the "resize" mode
+%     notify(obj.mibModel, 'NewDataset', eventdata);
+%
 
 % if Parameters was not initialized
 if ~isprop(evtData, 'Parameters')

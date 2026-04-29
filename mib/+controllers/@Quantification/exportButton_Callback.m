@@ -1,16 +1,19 @@
 function exportButton_Callback(obj, batchModeSwitch)
-% function exportButton_Callback(obj, batchModeSwitch)
-% Export quantification results to Excel, CSV, MAT file, or MATLAB workspace.
+% EXPORTBUTTON_CALLBACK - Export quantification results to Excel, CSV, MAT file, or MATLAB workspace.
+%
+% Syntax:
+%   function exportButton_Callback(obj, batchModeSwitch)
 %
 % In interactive mode (batchModeSwitch = 0) shows a file-save dialog and
 % lets the user choose the format.  Supported formats:
-% @li Excel (*.xls) via xlswrite2 (in mib/external/)
-% @li Comma-separated values (*.csv) via writecell / dlmwrite
-% @li MATLAB struct (*.mat) — full or minimalistic (no PixelIdxList/BoundingBox)
-% @li Export to MATLAB workspace via assignin
+%   - Excel (``*.xls``) via xlswrite2 (in mib/external/)
+%   - Comma-separated values (``*.csv``) via writecell / dlmwrite
+%   - MATLAB struct (``*.mat``) — full or minimalistic (no PixelIdxList/BoundingBox)
+%   - Export to MATLAB workspace via assignin
 %
-% Parameters:
-% batchModeSwitch: [@em optional] logical; 1 = headless batch mode, skips dialogs; default 0
+% Input Arguments:
+%   - **batchModeSwitch** — *(optional)* logical; 1 = headless batch mode, skips dialogs; default 0
+%
 
 % Updates
 %

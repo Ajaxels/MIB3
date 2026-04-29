@@ -1,9 +1,12 @@
 function panelHandles = addRoiPanel(obj)
-% function panelHandles = addRoiPanel(obj)
-% add the ROI panel and add context menus
+% ADDROIPANEL - add the ROI panel and add context menus.
+%
+% Syntax:
+%   function panelHandles = addRoiPanel(obj)
+%
 % The callbacks are added in the controller of the panel:
 % controllers.MibRoi during its creation in
-% MibController.initialize() -> MibController.addGuiControllers()
+% MibController.initialize() MibController.addGuiControllers()
 
 arguments (Input)
     obj views.MibView

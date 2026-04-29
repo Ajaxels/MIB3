@@ -1,39 +1,42 @@
 function result = image2hdf5(filename, imageS, options)
-% function result = image2hdf5(filename, imageS, options)
-% Save image into hdf5 format
+% IMAGE2HDF5 - Save image into hdf5 format.
 %
-% Parameters:
-% filename: filename for hdf file
-% imageS: original dataset [1:height, 1:width, 1:colors, 1:no_stacks] or [1:height, 1:width, 1:no_stacks]
-% options: [@em optional] a structure with additional parameters
-%  - .ChunkSize - a matrix [y, x, z] of chunk size
-%  - .Deflate - a number 0-9, defines gzip compression level (0-9)
-%  - .overwrite, if @b 1 do not check whether file with provided filename already exists
-%  - .showWaitbar, @b 1 - show the progress bar, @b 0 - do not show
-%  - .ParentFigure - [@em optional] handle to the main MIB application window.
-%                    When provided, the progress bar is rendered as a
-%                    uiprogressdlg attached to that window (recommended for
-%                    GUI use).  When absent or empty the legacy waitbar is
-%                    used as a fallback.
-%  - .lutColors, - not yet implemented
-%  - .pixSize, - not yet implemented
-%  - .ImageDescription, - a cell string with dataset description
-%  - .DatasetName, - a cell string or a containers.Map with metadata
-%  - .order, - a string with order of the axes, 'yxczt'
-%  - .height - height of the full dataset, required for the initialization (i.e. when options.t==1);
-%  - .width - width of the full dataset, required for the initialization (i.e. when options.t==1);
-%  - .colors - number of colors of the full dataset, required for the initialization (i.e. when options.t==1);
-%  - .depth - depth of the full dataset, required for the initialization (i.e. when options.t==1);
-%  - .time - time of the full dataset, required for the initialization (i.e. when options.t==1);
-%  - .x - define a minimal X point for data to store
-%  - .y - define a minimal Y point for data to store
-%  - .z - define a minimal Z point for data to store
-%  - .t - define a minimal T point for data to store
-%  - .DatasetType - a string, type of the dataset 'image', 'model', 'mask'
-%  - .DatasetClass - a string, image class of the dataset, uint8, uint16...
+% Syntax:
+%   function result = image2hdf5(filename, imageS, options)
 %
-% Return values:
-% result: result of the function run, @b 1 - success, @b 0 - fail
+% Input Arguments:
+%   - **filename** — filename for hdf file
+%   - **imageS** — original dataset [1:height, 1:width, 1:colors, 1:no_stacks] or [1:height, 1:width, 1:no_stacks]
+%   - **options** — *(optional)* a structure with additional parameters
+%     - .ChunkSize - a matrix [y, x, z] of chunk size
+%     - .Deflate - a number 0-9, defines gzip compression level (0-9)
+%     - .overwrite, if **1** do not check whether file with provided filename already exists
+%     - .showWaitbar, **1** - show the progress bar, **0** - do not show
+%     - .ParentFigure - *(optional)* handle to the main MIB application window.
+%     When provided, the progress bar is rendered as a
+%     uiprogressdlg attached to that window (recommended for
+%     GUI use).  When absent or empty the legacy waitbar is
+%     used as a fallback.
+%     - .lutColors, - not yet implemented
+%     - .pixSize, - not yet implemented
+%     - .ImageDescription, - a cell string with dataset description
+%     - .DatasetName, - a cell string or a containers.Map with metadata
+%     - .order, - a string with order of the axes, 'yxczt'
+%     - .height - height of the full dataset, required for the initialization (i.e. when options.t==1);
+%     - .width - width of the full dataset, required for the initialization (i.e. when options.t==1);
+%     - .colors - number of colors of the full dataset, required for the initialization (i.e. when options.t==1);
+%     - .depth - depth of the full dataset, required for the initialization (i.e. when options.t==1);
+%     - .time - time of the full dataset, required for the initialization (i.e. when options.t==1);
+%     - .x - define a minimal X point for data to store
+%     - .y - define a minimal Y point for data to store
+%     - .z - define a minimal Z point for data to store
+%     - .t - define a minimal T point for data to store
+%     - .DatasetType - a string, type of the dataset 'image', 'model', 'mask'
+%     - .DatasetClass - a string, image class of the dataset, uint8, uint16...
+%
+% Output Arguments:
+%   - **result** — result of the function run, **1** - success, **0** - fail
+%
 
 % Updates
 % 

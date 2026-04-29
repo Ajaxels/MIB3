@@ -1,38 +1,51 @@
 function dataset = getData63(obj, type, orient, materialIndex, options) % get complete 5D dataset
-% function dataset = getData(obj, type, orient, materialIndex, options)
-% Get dataset from MibLabels63 class
+% GETDATA63 - Get dataset from MibLabels63 class.
 %
-% Parameters:
-% type: char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once
-% orient: [@em optional, can be [], default == 3];
-% @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
-% @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
-% @li when @b 3 returns the original dataset to the yx configuration, [y,x,z,c,t]
-% materialIndex: [@em optional, default==[] ],
-% @li when type == 'labels', @b materialIndex is an integer to take material with this specific index (returned with value == 1), when [] - take all materials
-% @li when type == 'mask', @b materialIndex is not used
-% @li when type == 'selection', @b materialIndex is not used
-% @li when type == 'everything', @b materialIndex is not used
-% options: [@em optional], a structure with extra parameters
-% @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
-% @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
-% @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
-% @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
+% Syntax:
+%   function dataset = getData63(obj, type, orient, materialIndex, options) % get complete 5D dataset
 %
-% Return values:
-% dataset: 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
-
-%|
-% @b Examples:
-% @code dataset = obj.getData('mask', 3, []);      // get mask for the complete dataset in the YX orientation @endcode
-% @code
-% options.x = [100 200];
-% options.y = [100 200];
-% options.z = 100;
-% options.t = 1;
-% materialIndex = 2;
-% dataset = obj.getData('labels', [], materialIndex, options);      // get labels, subvolume = [100:200, 100:200] at slice 100, material 2
-% @endcode
+% Input Arguments:
+%   - **type** — char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once
+%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%
+%     - ``1`` — returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` — returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` — returns original dataset in YX configuration: ``[y,x,z,c,t]``
+%
+%   - **materialIndex** — *(optional)*, can be ``[]``:
+%
+%     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
+%     - for ``type = 'mask'``, ``'selection'``, ``'everything'``: not used
+%   - **options** — *(optional)*, a structure with extra parameters
+%
+%     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
+%     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
+%     - ``.z`` *(optional)*, [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
+%     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
+%
+% Output Arguments:
+%   - **dataset** — 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getData('mask', 3, []);% get mask for the complete dataset in the YX orientation
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.x = [100 200];
+%     options.y = [100 200];
+%     options.z = 100;
+%     options.t = 1;
+%     materialIndex = 2;
+%     dataset = obj.getData('labels', [], materialIndex, options);% get labels, subvolume = [100:200, 100:200] at slice 100, material 2
+%
 
 
 % Updates

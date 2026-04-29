@@ -1,39 +1,47 @@
 function bridgeButton = attachFileDnD(webwin, parentFigure, callback)
-% function bridgeButton = attachFileDnD(webwin, parentFigure, callback)
-% Attach OS-level file drag-and-drop to a MATLAB webwindow.
+% ATTACHFILEDND - Attach OS-level file drag-and-drop to a MATLAB webwindow.
 %
-% Wraps MATLAB's native FileDragDropCallback in a JS bridge so that:
-%   - opening is deferred until the real DOM drop (mouse release), not the
-%     native drag-enter event
-%   - Chromium's default navigate / Save-As / red-no-parking-cursor
-%     behaviours are all suppressed
+% Syntax:
 %
-% Parameters:
-% webwin:        handle to matlab.internal.webwindow (AppContainer) or
-%                matlab.internal.cef.webwindow (standalone mlapp) hosting the app
-% parentFigure:  a uifigure rendered inside webwin's Chromium document
-%                (the hidden bridge uibutton becomes its child)
-% callback:      function handle; invoked on drop as callback(params)
-%                where params = {webwin, filenames} — same shape the native
-%                FileDragDropCallback produces. Wrap method calls in an
-%                explicit anonymous function — @obj.ctrl.method does not
-%                work across chained property access. Typical usage:
-%                    @(params) obj.myController.dragNdrop_Callback(params)
+%   .. code-block:: matlab
 %
-% Returns:
-% bridgeButton:  handle to the hidden uibutton; deleting it detaches the
-%                MATLAB side of the bridge (the JS handlers remain until
-%                the webwindow is reloaded, but they become no-ops)
+%      bridgeButton = attachFileDnD(webwin, parentFigure, callback)
 %
-% @b Examples:
-% @code
-% obj.controller.dndBridgeButton = utils.attachFileDnD( ...
-%     obj.controller.mibWebWindow, ...
-%     obj.handles.panels.selectionPanel.Figure, ...
-%     @(params) obj.controller.dragNdrop_Callback(params));
-% @endcode
+% Wraps MATLAB's native ``FileDragDropCallback`` in a JS bridge so that:
 %
-% See development/drag-and-drop.md for a full explanation of the pattern.
+% - file opening is deferred until the actual DOM drop (mouse release),
+%   not the native drag-enter event
+% - Chromium's default navigate / Save-As / red-no-parking-cursor
+%   behaviours are all suppressed
+%
+% Input Arguments:
+%   - **webwin** — handle to ``matlab.internal.webwindow`` (AppContainer) or
+%     ``matlab.internal.cef.webwindow`` (standalone mlapp) hosting the app
+%   - **parentFigure** — a ``uifigure`` rendered inside webwin's Chromium document
+%     (the hidden bridge uibutton becomes its child)
+%   - **callback** — function handle invoked on drop as ``callback(params)``
+%     where ``params = {webwin, filenames}`` — the same shape the native
+%     ``FileDragDropCallback`` produces.  Wrap method calls in an explicit
+%     anonymous function, e.g. ``@(params) obj.myController.dragNdrop_Callback(params)``
+%
+% Output Arguments:
+%   - **bridgeButton** — handle to the hidden uibutton; deleting it detaches the
+%     MATLAB side of the bridge (the JS handlers remain until the webwindow is
+%     reloaded, but they become no-ops)
+%
+% Usage:
+%
+%   **Example 1** — attach drag-and-drop to the selection panel
+%
+%   .. code-block:: matlab
+%
+%      obj.controller.dndBridgeButton = utils.attachFileDnD( ...
+%          obj.controller.mibWebWindow, ...
+%          obj.handles.panels.selectionPanel.Figure, ...
+%          @(params) obj.controller.dragNdrop_Callback(params));
+%
+%   See ``development/drag-and-drop.md`` for a full explanation of the pattern.
+%
 
 arguments (Input)
     webwin                       handle   % matlab.internal.webwindow or matlab.internal.cef.webwindow

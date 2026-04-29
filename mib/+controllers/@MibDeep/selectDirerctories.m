@@ -1,6 +1,9 @@
 function selectDirerctories(obj, event)
-% function selectDirerctories(obj, event)
-% select directories containing images for training and prediction
+% SELECTDIRERCTORIES - select directories containing images for training and prediction.
+%
+% Syntax:
+%   function selectDirerctories(obj, event)
+%
     switch event.Source.Tag
         case 'SelectOriginalTrainingImagesDir'
             fieldName = 'OriginalTrainingImagesDir';

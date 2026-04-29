@@ -1,23 +1,27 @@
 function segmentationDragAndDrop(obj, y, x, modifier)
-% function segmentationDragAndDrop(obj, y, x, modifier)
-% Initiate drag-and-drop of materials, selection, or mask layer
+% SEGMENTATIONDRAGANDDROP - Initiate drag-and-drop of materials, selection, or mask layer.
+%
+% Syntax:
+%   function segmentationDragAndDrop(obj, y, x, modifier)
 %
 % Captures the initial selection under the mouse, sets up motion and
 % button-up callbacks for interactive dragging.
 %
-% Parameters:
-% y: double, y-coordinate of the mouse cursor at the starting point
-% x: double, x-coordinate of the mouse cursor at the starting point
-% modifier: char, modifier key held during click
-% @li 'shift' - drag all objects on the slice
-% @li 'control' - drag only the single object under the cursor
+% Input Arguments:
+%   - **y** — double, y-coordinate of the mouse cursor at the starting point
+%   - **x** — double, x-coordinate of the mouse cursor at the starting point
+%   - **modifier** — char, modifier key held during click
+%     - 'shift' - drag all objects on the slice
+%     - 'control' - drag only the single object under the cursor
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.segmentationDragAndDrop(50, 75, 'control');  // drag the object at [y,x]=[50,75] @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationDragAndDrop(50, 75, 'control');  // drag the object at [y,x]=[50,75]
+%
 
 % Updates
 %

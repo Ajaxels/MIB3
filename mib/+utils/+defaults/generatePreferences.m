@@ -1,13 +1,23 @@
 function Prefs = generatePreferences()
-% Prefs = generateDefaultPreferences()
-% generate default preferences for MIB
+% GENERATEPREFERENCES - Generate the default MIB preferences structure.
 %
-% Return values:
-% Prefs: a structure with preferences
-
-% %|
-% @b Examples:
-% @code obj.mibModel.preferences = utils.defaults.generatePreferences();   // generate default preferences for MIB @endcode
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      Prefs = generatePreferences()
+%
+% Output Arguments:
+%   - **Prefs** — struct containing all MIB application preferences
+%
+% Usage:
+%
+%   **Example 1** — initialise preferences at startup
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.preferences = utils.defaults.generatePreferences();
+%
 
 
 %% ----------- USER INTERFACE PANEL -----------

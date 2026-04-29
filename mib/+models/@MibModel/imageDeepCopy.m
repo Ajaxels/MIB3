@@ -1,27 +1,34 @@
 function imageDeepCopy(obj, fromId, toId, options)
-% function imageDeepCopy(obj, fromId, toId, options)
-% Deep-copy a MibDataset from one container slot to another.
+% IMAGEDEEPCOPY - Deep-copy a MibDataset from one container slot to another.
+%
+% Syntax:
+%   function imageDeepCopy(obj, fromId, toId, options)
 %
 % @c copy() (matlab.mixin.Copyable) performs a shallow copy only — all
-% handle sub-properties (@em image, @em labels, @em mask, @em selection,
-% @em annotations, @em lines3D, @em measure, @em hROI) continue to point
+% handle sub-properties (*image,* *labels,* *mask,* *selection,*
+% *annotations,* *lines3D,* *measure,* *hROI)* continue to point
 % at the same objects after a plain @c copy(). This method fixes that by
 % explicitly deep-copying every handle sub-property.
 %
-% Parameters:
-% fromId: index of the source dataset in @code obj.I @endcode
-% toId:   index of the destination dataset in @code obj.I @endcode
-% options: [@em optional] structure with additional parameters
-% @li .showWaitbar - logical, show a progress dialog (default: @b true)
-% @li .UIFigure    - handle to a UIFigure for the progress dialog; when
-%     empty the dialog is created without a parent (default: @b [])
+% Input Arguments:
+%   - **fromId** — index of the source dataset in ``obj.I``
+%   - **toId** — index of the destination dataset in ``obj.I``
+%   - **options** — *(optional)* structure with additional parameters
 %
-% Return values:
+%     - ``.showWaitbar`` — logical, show a progress dialog *(default: true)*
+%     - ``.UIFigure`` — handle to a UIFigure for the progress dialog; when
+%       empty the dialog is created without a parent *(default:* ``[]`` *)*
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.imageDeepCopy(srcId, destId, options); @endcode
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — deep-copy dataset from container 1 to container 2
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.imageDeepCopy(srcId, destId, options);
+%
 
 % Updates
 %

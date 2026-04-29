@@ -1,26 +1,26 @@
 classdef RoiRegion < matlab.mixin.Copyable
-    % @type RoiRegion class is responsible for keeping regions of interest (ROI)
+    % ROIREGION - :class:`RoiRegion` class is responsible for keeping regions of interest (ROI).
     %
-    % Ported from MIB2 @type mibRoiRegion class, adapted for the MIB3
+    % Ported from MIB2 :class:`mibRoiRegion` class, adapted for the MIB3
     % package namespace.  This class manages ROI data storage and
     % visualization options only.  Interactive drawing of new ROIs is
-    % handled by @type controllers.MibRoi; this class is data-only and
+    % handled by :class:`controllers.MibRoi;` this class is data-only and
     % does not hold references to any controller.
     %
-    % @b Supported @b ROI @b types:
-    % @li @b 'rectangle' - rectangular ROI (MIB2 equivalent: 'imrect')
-    % @li @b 'ellipse'   - elliptical ROI  (MIB2 equivalent: 'imellipse')
-    % @li @b 'polygon'   - polygonal ROI   (MIB2 equivalent: 'impoly')
-    % @li @b 'freehand'  - freehand ROI    (MIB2 equivalent: 'imfreehand')
+    % **Supported** **ROI** **types:**
+    % - **'rectangle'** - rectangular ROI (MIB2 equivalent: 'imrect')
+    % - **'ellipse'**   - elliptical ROI  (MIB2 equivalent: 'imellipse')
+    % - **'polygon'**   - polygonal ROI   (MIB2 equivalent: 'impoly')
+    % - **'freehand'**  - freehand ROI    (MIB2 equivalent: 'imfreehand')
     %
-    % @b Data @b structure — each element of the @em obj.Data struct array
+    % **Data** **structure** — each element of the *obj.Data* struct array
     % contains:
-    % @li @em .label       — string/cellstr with a user-visible label
-    % @li @em .type        — string: 'rectangle', 'ellipse', 'polygon', 'freehand'
-    % @li @em .X           — vector of X-coordinates of vertices
-    % @li @em .Y           — vector of Y-coordinates of vertices
-    % @li @em .orientation — orientation when the ROI was created: 1-'zx', 2-'zy', 3-'yx'
-    % @li @em .BoundingBox — struct with @em .x = [xmin, xmax] and @em .y = [ymin, ymax]
+    % - *.label*       — string/cellstr with a user-visible label
+    % - *.type*        — string: 'rectangle', 'ellipse', 'polygon', 'freehand'
+    % - *.X*           — vector of X-coordinates of vertices
+    % - *.Y*           — vector of Y-coordinates of vertices
+    % - *.orientation* — orientation when the ROI was created: 1-'zx', 2-'zy', 3-'yx'
+    % - *.BoundingBox* — struct with *.x* = [xmin, xmax] and *.y* = [ymin, ymax]
 
     % Updates
     % 
@@ -63,28 +63,47 @@ classdef RoiRegion < matlab.mixin.Copyable
     methods
 
         function obj = RoiRegion(mibDataset)
-            % function obj = RoiRegion(mibDataset)
-            % Constructor for the @type RoiRegion class.
+            % ROIREGION - Constructor for the :class:`RoiRegion` class.
+            %
+            % Syntax:
+            %   function obj = RoiRegion(mibDataset)
             %
             % Create a new instance of the class with default parameters.
             % The class is typically instantiated inside
-            % @em core.MibDataset.initialize and stored as @em obj.hROI.
+            % *core.MibDataset.initialize* and stored as *obj.hROI.*
             %
-            % Parameters:
-            % mibDataset: [@em optional] handle to @type core.MibDataset
-            %   (the parent dataset that owns this ROI collection).
-            %   When omitted or empty, the class still works but methods
-            %   that need orientation or image dimensions require explicit
-            %   arguments.
+            % Input Arguments:
+            %   - **mibDataset** — *(optional)* handle to :class:`core.MibDataset`
+            %     (the parent dataset that owns this ROI collection).
+            %     When omitted or empty, the class still works but methods
+            %     that need orientation or image dimensions require explicit
+            %     arguments.
             %
-            % Return values:
-            % obj: instance of the @type core.RoiRegion class.
-
-            %|
-            % @b Examples:
-            % @code hROI = core.RoiRegion(obj);                           // call from MibDataset.initialize; create ROI handler attached to this dataset @endcode
-            % @code hROI = core.RoiRegion();                              // create a standalone ROI handler (no dataset reference) @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI = core.RoiRegion(obj.mibModel.I{obj.mibModel.id}); // call from mibController; re-create ROI handler @endcode
+            % Output Arguments:
+            %   - **obj** — instance of the :class:`core.RoiRegion` class.
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     hROI = core.RoiRegion(obj);% call from MibDataset.initialize; create ROI handler attached to this dataset
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     hROI = core.RoiRegion();% create a standalone ROI handler (no dataset reference)
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI = core.RoiRegion(obj.mibModel.I{obj.mibModel.id});% call from mibController; re-create ROI handler
+            %
 
             if nargin < 1; mibDataset = []; end
             obj.mibDataset = mibDataset;
@@ -92,39 +111,66 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function clearContents(obj)
-            % function clearContents(obj)
-            % Set all elements of the class to default values.
+            % CLEARCONTENTS - Set all elements of the class to default values.
             %
-            % Resets both the display Options (via @em setDefaultOptions)
-            % and the stored Data (via @em clearData) to their initial
+            % Syntax:
+            %   function clearContents(obj)
+            %
+            % Resets both the display Options (via *setDefaultOptions)*
+            % and the stored Data (via *clearData)* to their initial
             % empty/default state.
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.clearContents();        // call from mibController; clear all ROIs and reset options @endcode
-            % @code clearContents(obj);                                           // call within the class @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.clearContents();% call from mibController; clear all ROIs and reset options
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     clearContents(obj);% call within the class
+            %
 
             obj.setDefaultOptions();
             obj.clearData();
         end
 
         function clearData(obj)
-            % function clearData(obj)
-            % Remove all values from the Data structure, resetting it to an
+            % CLEARDATA - Remove all values from the Data structure, resetting it to an.
+            %
+            % Syntax:
+            %   function clearData(obj)
+            %
             % empty single-element struct with the correct field names.
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.clearData();            // call from mibController; remove all stored ROIs @endcode
-            % @code clearData(obj);                                               // call within the class @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.clearData();% call from mibController; remove all stored ROIs
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     clearData(obj);% call within the class
+            %
 
             obj.Data = [];
 
@@ -138,19 +184,32 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function setDefaultOptions(obj)
-            % function setDefaultOptions(obj)
-            % Set all values of the Options structure to their default state.
+            % SETDEFAULTOPTIONS - Set all values of the Options structure to their default state.
+            %
+            % Syntax:
+            %   function setDefaultOptions(obj)
             %
             % Default values match the original MIB2 mibRoiRegion defaults.
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.setDefaultOptions();    // call from mibController; reset display options to defaults @endcode
-            % @code setDefaultOptions(obj);                                       // call within the class @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.setDefaultOptions();% call from mibController; reset display options to defaults
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     setDefaultOptions(obj);% call within the class
+            %
 
             obj.Options.marker = 's';
             obj.Options.markersize = '6';
@@ -166,24 +225,37 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function updateOptions(obj, parentFigure)
-            % function updateOptions(obj, parentFigure)
-            % Show an interactive dialog to update the display Options.
+            % UPDATEOPTIONS - Show an interactive dialog to update the display Options.
             %
-            % Opens @em utils.dlgs.inputUniversalDlg with the current
+            % Syntax:
+            %   function updateOptions(obj, parentFigure)
+            %
+            % Opens *utils.dlgs.inputUniversalDlg* with the current
             % option values as defaults.  If the user cancels the dialog
             % no changes are made.
             %
-            % Parameters:
-            % parentFigure: handle to the parent window used for dialog
-            %   centering.  Can be an AppContainer handle, a uifigure
-            %   handle, or @em [] for automatic placement.
+            % Input Arguments:
+            %   - **parentFigure** — handle to the parent window used for dialog
+            %     centering.  Can be an AppContainer handle, a uifigure
+            %     handle, or *[]* for automatic placement.
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.updateOptions(obj.mibController.view.gui); // call from mibController; open options dialog parented to the main window @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.updateOptions([]);                         // call from a plugin; let MATLAB place the dialog @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.updateOptions(obj.mibController.view.gui);% call from mibController; open options dialog parented to the main window
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.updateOptions([]);% call from a plugin; let MATLAB place the dialog
+            %
 
             O = obj.Options;
             prompts = { ...
@@ -224,25 +296,45 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function index = findIndexByLabel(obj, labelStr)
-            % function index = findIndexByLabel(obj, labelStr)
-            % Find the index of a ROI whose @em Data.label matches the
-            % given string.  When @em labelStr is @b 'All', returns the
+            % FINDINDEXBYLABEL - Find the index of a ROI whose *Data.label* matches the.
+            %
+            % Syntax:
+            %   function index = findIndexByLabel(obj, labelStr)
+            %
+            % given string.  When *labelStr* is **'All',** returns the
             % indices of every ROI visible in the current orientation.
             %
-            % Parameters:
-            % labelStr: char/string — the label to search for.
-            %   Use @b 'All' to retrieve all ROIs for the current
-            %   dataset orientation.
+            % Input Arguments:
+            %   - **labelStr** — char/string — the label to search for.
+            %     Use **'All'** to retrieve all ROIs for the current
+            %     dataset orientation.
             %
-            % Return values:
-            % index: numeric vector — index (or indices) of matching ROI(s)
-            %   in the @em obj.Data array.  Empty if no match is found.
-
-            %|
-            % @b Examples:
-            % @code index = obj.mibModel.I{obj.mibModel.id}.hROI.findIndexByLabel('ROI 1');  // call from mibController; find the ROI labelled 'ROI 1' @endcode
-            % @code indices = obj.mibModel.I{obj.mibModel.id}.hROI.findIndexByLabel('All');   // call from mibController; get all ROI indices for the current orientation @endcode
-            % @code index = findIndexByLabel(obj, 'MyROI');                                    // call within the class @endcode
+            % Output Arguments:
+            %   - **index** — numeric vector — index (or indices) of matching ROI(s)
+            %     in the *obj.Data* array.  Empty if no match is found.
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     index = obj.mibModel.I{obj.mibModel.id}.hROI.findIndexByLabel('ROI 1');% call from mibController; find the ROI labelled 'ROI 1'
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     indices = obj.mibModel.I{obj.mibModel.id}.hROI.findIndexByLabel('All');% call from mibController; get all ROI indices for the current orientation
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     index = findIndexByLabel(obj, 'MyROI');% call within the class
+            %
 
             if strcmp(labelStr, 'All')
                 orient = [];
@@ -256,38 +348,56 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function storeROI(obj, newData, index)
-            % function storeROI(obj, newData, index)
-            % Add or insert ROI information into the @em obj.Data struct
+            % STOREROI - Add or insert ROI information into the *obj.Data* struct.
+            %
+            % Syntax:
+            %   function storeROI(obj, newData, index)
+            %
             % array.
             %
-            % If @em index is less than or equal to the current number of
+            % If *index* is less than or equal to the current number of
             % ROIs, the new entry is inserted at that position (existing
             % entries shift forward).  Otherwise the entry is appended.
             %
-            % Parameters:
-            % newData: struct — a single element whose fields match those
-            %   of @em obj.Data (@em .label, @em .type, @em .X, @em .Y,
-            %   @em .orientation, @em .BoundingBox).
-            % index: [@em optional] numeric — position at which to store
-            %   the ROI.  Default is @code obj.getNumberOfROI(0) + 1 @endcode
-            %   (append).
+            % Input Arguments:
+            %   - **newData** — struct — a single element whose fields match those
+            %     of *obj.Data* (*.label,* *.type,* *.X,* *.Y,*
+            %     *.orientation,* *.BoundingBox).*
+            %   - **index** — *(optional)* numeric — position at which to store
+            %     the ROI.  Default is ``obj.getNumberOfROI(0) + 1``
+            %     (append).
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code
-            % newData.label = cellstr('1');
-            % newData.type  = cellstr('rectangle');
-            % newData.X = [10; 200];
-            % newData.Y = [20; 150];
-            % newData.orientation = 3;
-            % newData.BoundingBox.x = [10; 200];
-            % newData.BoundingBox.y = [20; 150];
-            % obj.mibModel.I{obj.mibModel.id}.hROI.storeROI(newData);        // call from mibController; append a new rectangle ROI
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.storeROI(newData, 3); // call from mibController; insert a ROI at position 3 @endcode
-            % @code storeROI(obj, newData, 5);                                  // call within the class; insert at position 5 @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     newData.label = cellstr('1');
+            %     newData.type  = cellstr('rectangle');
+            %     newData.X = [10; 200];
+            %     newData.Y = [20; 150];
+            %     newData.orientation = 3;
+            %     newData.BoundingBox.x = [10; 200];
+            %     newData.BoundingBox.y = [20; 150];
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.storeROI(newData);% call from mibController; append a new rectangle ROI
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.storeROI(newData, 3);% call from mibController; insert a ROI at position 3
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     storeROI(obj, newData, 5);% call within the class; insert at position 5
+            %
 
             if nargin < 3; index = obj.getNumberOfROI(0) + 1; end
 
@@ -301,26 +411,51 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function removeROI(obj, index)
-            % function removeROI(obj, index)
-            % Remove one or more ROIs from the class.
+            % REMOVEROI - Remove one or more ROIs from the class.
             %
-            % When @em index is 0, empty, or omitted all ROIs are removed
-            % (equivalent to @em clearData).  When @em index equals the
-            % total number of ROIs, @em clearData is also called to avoid
+            % Syntax:
+            %   function removeROI(obj, index)
+            %
+            % When *index* is 0, empty, or omitted all ROIs are removed
+            % (equivalent to *clearData).*  When *index* equals the
+            % total number of ROIs, *clearData* is also called to avoid
             % leaving an empty struct array.
             %
-            % Parameters:
-            % index: [@em optional] numeric — index of the ROI to remove.
-            %   Use @b 0 or omit to remove all ROIs.
+            % Input Arguments:
+            %   - **index** — *(optional)* numeric — index of the ROI to remove.
+            %     Use **0** or omit to remove all ROIs.
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.removeROI(3);  // call from mibController; remove the 3rd ROI @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.removeROI(0);  // call from mibController; remove all ROIs @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.removeROI();   // call from mibController; remove all ROIs (same as 0) @endcode
-            % @code removeROI(obj, 5);                                    // call within the class; remove 5th ROI @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.removeROI(3);% call from mibController; remove the 3rd ROI
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.removeROI(0);% call from mibController; remove all ROIs
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.removeROI();% call from mibController; remove all ROIs (same as 0)
+            %
+            %   **Example 4**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     removeROI(obj, 5);% call within the class; remove 5th ROI
+            %
 
             if nargin < 2; index = 0; end
             if isempty(index); index = 0; end
@@ -337,30 +472,57 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function [number, indices] = getNumberOfROI(obj, orientation)
-            % function [number, indices] = getNumberOfROI(obj, orientation)
-            % Get the number of stored ROIs and their indices, optionally
+            % GETNUMBEROFROI - Get the number of stored ROIs and their indices, optionally.
+            %
+            % Syntax:
+            %   function [number, indices] = getNumberOfROI(obj, orientation)
+            %
             % filtered by orientation.
             %
-            % Parameters:
-            % orientation: [@em optional] numeric — filter ROIs by
-            %   orientation:
-            %   @li @b 1 — 'zx' plane
-            %   @li @b 2 — 'zy' plane
-            %   @li @b 3 — 'yx' plane (default in MIB3)
-            %   @li @b 0 — return all ROIs regardless of orientation
-            %   When omitted or empty, uses @code obj.mibDataset.orientation @endcode.
+            % Input Arguments:
+            %   - **orientation** — *(optional)* numeric — filter ROIs by plane:
             %
-            % Return values:
-            % number:  numeric — count of ROIs matching the filter
-            % indices: numeric vector — indices into @em obj.Data of the
-            %   matching ROIs
-
-            %|
-            % @b Examples:
-            % @code [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI();  // call from mibController; get ROIs for the current orientation @endcode
-            % @code [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(3); // call from mibController; get ROIs for the YX orientation @endcode
-            % @code number = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0);            // call from mibController; get total count of all ROIs @endcode
-            % @code [n, idx] = getNumberOfROI(obj, 0);                                           // call within the class; get all @endcode
+            %     - **1** — 'zx' plane
+            %     - **2** — 'zy' plane
+            %     - **3** — 'yx' plane (default in MIB3)
+            %     - **0** — return all ROIs regardless of orientation
+            %
+            %     When omitted or empty, uses ``obj.mibDataset.orientation``.
+            %
+            % Output Arguments:
+            %   - **number** — numeric — count of ROIs matching the filter
+            %   - **indices** — numeric vector — indices into *obj.Data* of the
+            %     matching ROIs
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI();% call from mibController; get ROIs for the current orientation
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [number, indices] = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(3);% call from mibController; get ROIs for the YX orientation
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     number = obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0);% call from mibController; get total count of all ROIs
+            %
+            %   **Example 4**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [n, idx] = getNumberOfROI(obj, 0);% call within the class; get all
+            %
 
             if nargin < 2 || isempty(orientation)
                 if ~isempty(obj.mibDataset)
@@ -385,27 +547,52 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function bb = getBoundingBox(obj, index)
-            % function bb = getBoundingBox(obj, index)
-            % Return the combined bounding box for one or more ROIs.
+            % GETBOUNDINGBOX - Return the combined bounding box for one or more ROIs.
             %
-            % When @em index is 0 the bounding box is the union of all
+            % Syntax:
+            %   function bb = getBoundingBox(obj, index)
+            %
+            % When *index* is 0 the bounding box is the union of all
             % ROIs visible in the current orientation.  A label string can
             % be passed instead of a numeric index.
             %
-            % Parameters:
-            % index: numeric or char/string — index of the ROI.
-            %   Use @b 0 to get a combined bounding box for all visible
-            %   ROIs.  A label string (e.g. @em 'ROI 1') is also accepted.
+            % Input Arguments:
+            %   - **index** — numeric or char/string — index of the ROI.
+            %     Use **0** to get a combined bounding box for all visible
+            %     ROIs.  A label string (e.g. *'ROI* 1') is also accepted.
             %
-            % Return values:
-            % bb: numeric vector @code [xmin, xmax, ymin, ymax] @endcode
-
-            %|
-            % @b Examples:
-            % @code bb = obj.mibModel.I{obj.mibModel.id}.hROI.getBoundingBox(1);       // call from mibController; bounding box of ROI #1 @endcode
-            % @code bb = obj.mibModel.I{obj.mibModel.id}.hROI.getBoundingBox(0);       // call from mibController; combined bounding box of all visible ROIs @endcode
-            % @code bb = obj.mibModel.I{obj.mibModel.id}.hROI.getBoundingBox('MyROI'); // call from mibController; bounding box by label @endcode
-            % @code bb = getBoundingBox(obj, 3);                                        // call within the class @endcode
+            % Output Arguments:
+            %   - **bb** — numeric vector ``[xmin, xmax, ymin, ymax]``
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     bb = obj.mibModel.I{obj.mibModel.id}.hROI.getBoundingBox(1);% call from mibController; bounding box of ROI #1
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     bb = obj.mibModel.I{obj.mibModel.id}.hROI.getBoundingBox(0);% call from mibController; combined bounding box of all visible ROIs
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     bb = obj.mibModel.I{obj.mibModel.id}.hROI.getBoundingBox('MyROI');% call from mibController; bounding box by label
+            %
+            %   **Example 4**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     bb = getBoundingBox(obj, 3);% call within the class
+            %
 
             if ischar(index) || isstring(index)
                 index = obj.findIndexByLabel(index);
@@ -431,43 +618,74 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function mask = returnMask(obj, index, Height, Width, orient, blockModeSwitch)
-            % function mask = returnMask(obj, index, Height, Width, orient, blockModeSwitch)
-            % Generate a binary (uint8) mask image for the specified ROI(s).
+            % RETURNMASK - Generate a binary (uint8) mask image for the specified ROI(s).
             %
-            % For @em 'rectangle' ROIs the mask is filled directly.  For
-            % @em 'ellipse' ROIs @code inpolygon @endcode is used.  For
-            % @em 'polygon' and @em 'freehand' ROIs @code poly2mask @endcode
+            % Syntax:
+            %   function mask = returnMask(obj, index, Height, Width, orient, blockModeSwitch)
+            %
+            % For *'rectangle'* ROIs the mask is filled directly.  For
+            % *'ellipse'* ROIs ``inpolygon`` is used.  For
+            % *'polygon'* and *'freehand'* ROIs ``poly2mask``
             % is used.
             %
-            % When @em blockModeSwitch is 1 the ROI coordinates are shifted
+            % When *blockModeSwitch* is 1 the ROI coordinates are shifted
             % by the current axes limits so that the mask aligns with the
             % visible viewport.
             %
-            % Parameters:
-            % index: numeric or char/string — ROI index.
-            %   Use @b 0 to combine masks of all ROIs visible in the
-            %   current orientation.  A label string is also accepted.
-            % Height: [@em optional] numeric — height of the output mask.
-            %   Default: image height from @em obj.mibDataset.
-            % Width:  [@em optional] numeric — width of the output mask.
-            %   Default: image width from @em obj.mibDataset.
-            % orient: [@em optional] numeric — orientation filter
-            %   (1/2/3).  Default: @code obj.mibDataset.orientation @endcode.
-            % blockModeSwitch: [@em optional] numeric — override the
-            %   block-mode flag (0 or 1).  Default: value from
-            %   @code obj.mibDataset.blockModeSwitch @endcode.
+            % Input Arguments:
+            %   - **index** — numeric or char/string — ROI index.
+            %     Use **0** to combine masks of all ROIs visible in the
+            %     current orientation.  A label string is also accepted.
+            %   - **Height** — *(optional)* numeric — height of the output mask.
+            %     Default: image height from ``obj.mibDataset``.
+            %   - **Width** — *(optional)* numeric — width of the output mask.
+            %     Default: image width from ``obj.mibDataset``.
+            %   - **orient** — *(optional)* numeric — orientation filter
+            %     (1/2/3).  Default: ``obj.mibDataset.orientation``.
+            %   - **blockModeSwitch** — *(optional)* numeric — override the
+            %     block-mode flag (0 or 1).  Default: value from
+            %     ``obj.mibDataset.blockModeSwitch``.
             %
-            % Return values:
-            % mask: uint8 matrix @code [Height x Width] @endcode — binary
-            %   mask where 1 indicates pixels inside the ROI.
-
-            %|
-            % @b Examples:
-            % @code mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask(1);                  // call from mibController; get mask for ROI #1 @endcode
-            % @code mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask(0);                  // call from mibController; combined mask of all visible ROIs @endcode
-            % @code mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask('MyROI');             // call from mibController; mask by label @endcode
-            % @code mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask(0, 512, 512, 3, 0);  // call from mibController; explicit height, width, orient, block mode @endcode
-            % @code mask = returnMask(obj, 2);                                                    // call within the class @endcode
+            % Output Arguments:
+            %   - **mask** — uint8 matrix ``[Height x Width]`` — binary
+            %     mask where 1 indicates pixels inside the ROI.
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask(1);% call from mibController; get mask for ROI #1
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask(0);% call from mibController; combined mask of all visible ROIs
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask('MyROI');% call from mibController; mask by label
+            %
+            %   **Example 4**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mask = obj.mibModel.I{obj.mibModel.id}.hROI.returnMask(0, 512, 512, 3, 0);% call from mibController; explicit height, width, orient, block mode
+            %
+            %   **Example 5**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mask = returnMask(obj, 2);% call within the class
+            %
 
             ds = obj.mibDataset;
 
@@ -539,27 +757,52 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function resample(obj, resampledRatio)
-            % function resample(obj, resampledRatio)
-            % Recalculate ROI positions after the image has been resampled.
+            % RESAMPLE - Recalculate ROI positions after the image has been resampled.
+            %
+            % Syntax:
+            %   function resample(obj, resampledRatio)
             %
             % Each ROI's X, Y coordinates and BoundingBox are scaled by the
             % appropriate ratio depending on the ROI's orientation.
             % Supports both MIB2 orientation values (4 = yx) and MIB3
             % values (3 = yx).
             %
-            % Parameters:
-            % resampledRatio: numeric vector @code [ratioW, ratioH, ratioZ] @endcode
-            %   — ratio of new/old dimensions after resampling.
-            %   For example @code [0.5, 0.5, 1] @endcode bins XY by 2.
+            % Input Arguments:
+            %   - **resampledRatio** — numeric vector ``[ratioW, ratioH, ratioZ]``
+            %     — ratio of new/old dimensions after resampling.
+            %     For example ``[0.5, 0.5, 1]`` bins XY by 2.
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code resampledRatio = [0.5, 0.5, 1];                                                    // bin XY dimensions by 2 @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.resample(resampledRatio);                     // call from mibController; resample all ROIs @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.resample([2, 2, 2]);                          // call from mibController; double all dimensions @endcode
-            % @code resample(obj, [1, 1, 0.5]);                                                         // call within the class; bin Z by 2 @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     resampledRatio = [0.5, 0.5, 1];% bin XY dimensions by 2
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.resample(resampledRatio);% call from mibController; resample all ROIs
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.resample([2, 2, 2]);% call from mibController; double all dimensions
+            %
+            %   **Example 4**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     resample(obj, [1, 1, 0.5]);% call within the class; bin Z by 2
+            %
 
             for i = 1:numel(obj.Data)
                 orient = obj.Data(i).orientation;
@@ -592,31 +835,50 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function crop(obj, cropF)
-            % function crop(obj, cropF)
-            % Recalculate ROI positions after the image has been cropped.
+            % CROP - Recalculate ROI positions after the image has been cropped.
+            %
+            % Syntax:
+            %   function crop(obj, cropF)
             %
             % Each ROI's X, Y coordinates and BoundingBox are shifted by
             % the crop origin, depending on the ROI's orientation.
             % Supports both MIB2 (4 = yx) and MIB3 (3 = yx) orientation
             % values.
             %
-            % Parameters:
-            % cropF: numeric vector @code [x1, y1, dx, dy, z1, dz] @endcode
-            %   — crop parameters in pixels.
-            %   @li @em x1 — starting X coordinate
-            %   @li @em y1 — starting Y coordinate
-            %   @li @em dx — width of the crop region
-            %   @li @em dy — height of the crop region
-            %   @li @em z1 — starting Z slice
-            %   @li @em dz — number of Z slices
+            % Input Arguments:
+            %   - **cropF** — numeric vector ``[x1, y1, dx, dy, z1, dz]``
+            %     — crop parameters in pixels.
+            %   - *x1* — starting X coordinate
+            %   - *y1* — starting Y coordinate
+            %   - *dx* — width of the crop region
+            %   - *dy* — height of the crop region
+            %   - *z1* — starting Z slice
+            %   - *dz* — number of Z slices
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code cropF = [100, 50, 200, 200, 1, 10];                                                // crop starting at (100,50) with size 200x200, slices 1-10 @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.crop(cropF);                                  // call from mibController; adjust ROI positions after crop @endcode
-            % @code crop(obj, [1, 1, 512, 512, 5, 20]);                                                 // call within the class @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     cropF = [100, 50, 200, 200, 1, 10];% crop starting at (100,50) with size 200x200, slices 1-10
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.crop(cropF);% call from mibController; adjust ROI positions after crop
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     crop(obj, [1, 1, 512, 512, 5, 20]);% call within the class
+            %
 
             for i = 1:numel(obj.Data)
                 orient = obj.Data(i).orientation;
@@ -643,53 +905,75 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function addROIsToPlot(obj, axesHandle, ~, orientation, convertFcn, selectedROI, showLabel)
-            % function addROIsToPlot(obj, axesHandle, mode, orientation, convertFcn, selectedROI, showLabel)
-            % Plot stored ROIs as line/marker overlays on the given axes.
+            % ADDROISTOPLOT - Plot stored ROIs as line/marker overlays on the given axes.
+            %
+            % Syntax:
+            %   function addROIsToPlot(obj, axesHandle, ~, orientation, convertFcn, selectedROI, showLabel)
             %
             % This method replaces the MIB2 version that required a
-            % @em mibController handle.  Instead it receives the axes
+            % *mibController* handle.  Instead it receives the axes
             % handle and a coordinate-conversion function handle directly,
             % keeping the class independent of any controller.
             %
-            % The conversion function @em convertFcn must accept two
+            % The conversion function *convertFcn* must accept two
             % numeric vectors (X, Y) in data coordinates and return the
             % corresponding axes (screen) coordinates:
-            % @code [Xaxes, Yaxes] = convertFcn(Xdata, Ydata); @endcode
+            % ``[Xaxes, Yaxes] = convertFcn(Xdata, Ydata);``
             %
-            % Parameters:
-            % axesHandle:  handle to the target @em matlab.ui.control.UIAxes
-            %   or @em matlab.graphics.axis.Axes where ROIs will be drawn.
-            % mode: char — rendering mode, either @b 'shown' (default view)
-            %   or @b 'full' (used during panning).
-            % orientation: numeric — current dataset orientation
-            %   (3 = yx, 1 = zx, 2 = zy).  Only ROIs matching this
-            %   orientation are plotted.
-            % convertFcn: function_handle — @code @(X,Y) ... @endcode
-            %   that converts data coordinates to axes coordinates.
-            %   Typically @code @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, mode) @endcode.
-            % selectedROI: [@em optional] numeric — controls which ROIs are
-            %   drawn:
-            %   @li @b 0 — draw all ROIs matching the current orientation
-            %       (default).
-            %   @li @b >0 — draw only the ROI at that index in @em obj.Data.
-            % showLabel: [@em optional] logical — whether to display ROI
-            %   labels as text annotations next to each shape.
-            %   Default = @em false.
+            % Input Arguments:
+            %   - **axesHandle** — handle to the target *matlab.ui.control.UIAxes*
+            %     or *matlab.graphics.axis.Axes* where ROIs will be drawn.
+            %   - **mode** — char — rendering mode, either **'shown'** (default view)
+            %     or **'full'** (used during panning).
+            %   - **orientation** — numeric — current dataset orientation
+            %     (3 = yx, 1 = zx, 2 = zy).  Only ROIs matching this
+            %     orientation are plotted.
+            %   - **convertFcn** — function_handle — ``@(X,Y) ...``
+            %     that converts data coordinates to axes coordinates.
+            %     Typically ``@(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, mode)``.
+            %   - **selectedROI** — *(optional)* numeric — controls which ROIs are drawn:
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code
-            % % Full example from controllers.MibController.showImage:
-            % ds = obj.mibModel.I{datasetId};
-            % ax = obj.cImageDoc{selectedSet}.handles.imViewAxes;
-            % convertFcn = @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown');
-            % ds.hROI.addROIsToPlot(ax, 'shown', ds.orientation, convertFcn, 0, true);
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(ax, 'shown', 3, @(x,y) deal(x,y), 0, false); // plot all ROIs with identity conversion @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(ax, 'shown', 3, convertFcn, 2, true);         // plot only ROI #2 @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(ax, 'full', ds.orientation, convertFcn);       // plot all, no labels @endcode
+            %     - **0** — draw all ROIs matching the current orientation (default).
+            %     - **>0** — draw only the ROI at that index in *obj.Data.*
+            %   - **showLabel** — *(optional)* logical — whether to display ROI
+            %     labels as text annotations next to each shape.
+            %     Default = *false.*
+            %
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1** — Full example from controllers.MibController.showImage
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Full example from controllers.MibController.showImage:
+            %     ds = obj.mibModel.I{datasetId};
+            %     ax = obj.cImageDoc{selectedSet}.handles.imViewAxes;
+            %     convertFcn = @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown');
+            %     ds.hROI.addROIsToPlot(ax, 'shown', ds.orientation, convertFcn, 0, true);
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(ax, 'shown', 3, @(x,y) deal(x,y), 0, false);% plot all ROIs with identity conversion
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(ax, 'shown', 3, convertFcn, 2, true);% plot only ROI #2
+            %
+            %   **Example 4**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.addROIsToPlot(ax, 'full', ds.orientation, convertFcn);% plot all, no labels
+            %
 
             if nargin < 7; showLabel = false; end
             if nargin < 6; selectedROI = 0; end
@@ -791,31 +1075,42 @@ classdef RoiRegion < matlab.mixin.Copyable
         end
 
         function convertLegacyTypes(obj)
-            % function convertLegacyTypes(obj)
-            % Convert MIB2 ROI type-name strings to MIB3 equivalents.
+            % CONVERTLEGACYTYPES - Convert MIB2 ROI type-name strings to MIB3 equivalents.
             %
-            % Iterates through @em obj.Data and replaces any legacy type
-            % names (@em 'imrect', @em 'imellipse', @em 'impoly',
-            % @em 'imfreehand') with their MIB3 equivalents
-            % (@em 'rectangle', @em 'ellipse', @em 'polygon',
-            % @em 'freehand') using the @em LegacyTypeMap dictionary.
+            % Syntax:
+            %   function convertLegacyTypes(obj)
             %
-            % This method should be called after loading a @em .roi file
+            % Iterates through *obj.Data* and replaces any legacy type
+            % names (*'imrect',* *'imellipse',* *'impoly',*
+            % *'imfreehand')* with their MIB3 equivalents
+            % (*'rectangle',* *'ellipse',* *'polygon',*
+            % *'freehand')* using the *LegacyTypeMap* dictionary.
+            %
+            % This method should be called after loading a *.roi* file
             % that was saved by MIB2.
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-
-            %|
-            % @b Examples:
-            % @code
-            % % typical usage after loading an old .roi file:
-            % res = load(fullfile(path, filename), '-mat');
-            % obj.mibModel.I{obj.mibModel.id}.hROI.Data = res.Data;
-            % obj.mibModel.I{obj.mibModel.id}.hROI.convertLegacyTypes();  // convert old type names
-            % @endcode
-            % @code convertLegacyTypes(obj);                               // call within the class @endcode
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1** — typical usage after loading an old .roi file
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % typical usage after loading an old .roi file:
+            %     res = load(fullfile(path, filename), '-mat');
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.Data = res.Data;
+            %     obj.mibModel.I{obj.mibModel.id}.hROI.convertLegacyTypes();% convert old type names
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     convertLegacyTypes(obj);% call within the class
+            %
 
             if isempty(obj.Data) || isempty(obj.Data(1).type)
                 return;

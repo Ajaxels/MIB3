@@ -5,18 +5,20 @@
 % Igor Beati, Bitplane.
 
 function connImaris = renderModelImaris(mibImage, connImaris, options)
-% function connImaris = renderModelImaris(mibImage, connImaris)
-% Render a model in Imaris. 
+% RENDERMODELIMARIS - Render a model in Imaris.
 %
-% Parameters:
-% mibImage: an instance of mibImage with the model to export to Imaris
-% connImaris: [@em optional] a handle to imaris connection
-% options: an optional structure with additional settings
-% @li .materialIndex - an index of material to render. When 0 - render all
-% 
+% Syntax:
+%   function connImaris = renderModelImaris(mibImage, connImaris, options)
 %
-% Return values:
-% connImaris: a handle to imaris connection
+% Input Arguments:
+%   - **mibImage** — an instance of mibImage with the model to export to Imaris
+%   - **connImaris** — *(optional)* a handle to imaris connection
+%   - **options** — an optional structure with additional settings
+%     - .materialIndex - an index of material to render. When 0 - render all
+%
+% Output Arguments:
+%   - **connImaris** — a handle to imaris connection
+%
 
 
 % @note 

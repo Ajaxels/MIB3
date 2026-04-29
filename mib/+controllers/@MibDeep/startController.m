@@ -1,21 +1,26 @@
 function startController(obj, controllerName, varargin)
-% function startController(obj, controllerName, varargin)
-% Launch a child controller by class name.
+% STARTCONTROLLER - Launch a child controller by class name.
+%
+% Syntax:
+%   function startController(obj, controllerName, varargin)
 %
 % Delegates to utils.startController — see that function for full
 % documentation of interactive, batch, and lifecycle behaviour.
 %
-% Parameters:
-% controllerName: char — fully-qualified controller class name
-% varargin: additional arguments forwarded to the child constructor
+% Input Arguments:
+%   - **controllerName** — char — fully-qualified controller class name
+%   - **varargin** — additional arguments forwarded to the child constructor
 %
-%|
-% @b Examples:
-% @code obj.startController('controllers.MibDeepController'); @endcode
-% @code
-% BatchOpt.Mode = '3D, Stack';
-% obj.startController('controllers.HistThres', [], BatchOpt);
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.startController('controllers.MibDeepController');
+%
+%   Example 2::
+%
+%     BatchOpt.Mode = '3D, Stack';
+%     obj.startController('controllers.HistThres', [], BatchOpt);
+%
 
 utils.startController(obj, controllerName, varargin{:});
 end

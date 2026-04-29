@@ -1,16 +1,23 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function KeyShortcuts = generateKeyShortcuts()
-% function KeyShortcuts = generateKeyShortcuts()
-% generate KeyShortcuts structure with default key shortcuts
+% GENERATEKEYSHORTCUTS - Generate KeyShortcuts structure with default key shortcuts.
 %
-%|
-% @b Examples:
-% @code
-% KeyShortcuts = utils.defaults.generateKeyShortcuts(); // generate default key shortcuts
-% @endcode
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      KeyShortcuts = generateKeyShortcuts()
+%
+% Output Arguments:
+%   - **KeyShortcuts** — structure with default keyboard shortcut bindings used by MIB
+%
+% Usage:
+%
+%   **Example 1** — generate default key shortcuts
+%
+%   .. code-block:: matlab
+%
+%      KeyShortcuts = utils.defaults.generateKeyShortcuts();
+%
 
 % define keyboard shortcuts
 maxShortCutIndex = 45;  % total number of shortcuts

@@ -1,27 +1,34 @@
 function segmentationObjectPicker(obj, yxzCoordinate, modifier)
-% function segmentationObjectPicker(obj, yxzCoordinate, modifier)
-% Select 2D/3D objects from the Mask or Model layers
+% SEGMENTATIONOBJECTPICKER - Select 2D/3D objects from the Mask or Model layers.
+%
+% Syntax:
+%   function segmentationObjectPicker(obj, yxzCoordinate, modifier)
 %
 % Picks connected objects from the Mask or Model layer and copies them
 % to the Selection layer. Supports multiple sub-modes: Click (direct
 % object selection), Lasso/Rectangle/Ellipse/Polyline (ROI-based), and
 % Mask within Selection (AND operation).
 %
-% Parameters:
-% yxzCoordinate: a vector with [y, x, z] coordinates of the starting point;
-%   for the 2D case [y, x] is sufficient
-% modifier: a string, to specify what to do with the generated selection
-% @li @em empty - makes new selection (adds to existing)
-% @li @em 'control' - removes selection from the existing one
-% @li @em 'shift' - used for 3D mode in Mask within Selection, returns a union of mask and selection
+% Input Arguments:
+%   - **yxzCoordinate** — a vector with [y, x, z] coordinates of the starting point;
+%     for the 2D case [y, x] is sufficient
+%   - **modifier** — a string, to specify what to do with the generated selection
+%     - *empty* - makes new selection (adds to existing)
+%     - *'control'* - removes selection from the existing one
+%     - *'shift'* - used for 3D mode in Mask within Selection, returns a union of mask and selection
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.segmentationObjectPicker([50, 75, 1], '');           // select object at [y,x,z]=50,75,1 @endcode
-% @code obj.segmentationObjectPicker([50, 75, 1], 'control');    // subtract object from selection @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationObjectPicker([50, 75, 1], '');           // select object at [y,x,z]=50,75,1
+%
+%   Example 2::
+%
+%     obj.segmentationObjectPicker([50, 75, 1], 'control');    // subtract object from selection
+%
 
 % Updates
 %
@@ -320,14 +327,18 @@ end
 
 %% Local helper: draw ROI interactively and return a binary mask
 function [selected_mask, cancelled] = drawROIAndCreateMask(obj, subTool)
-% Draw an interactive ROI on the image axes and return the binary mask
+% DRAWROIANDCREATEMASK - Draw an interactive ROI on the image axes and return the binary mask.
 %
-% Parameters:
-% subTool: char, one of 'Lasso', 'Rectangle', 'Ellipse', 'Polyline'
+% Syntax:
+%   function [selected_mask, cancelled] = drawROIAndCreateMask(obj, subTool)
 %
-% Return values:
-% selected_mask: uint8 binary mask (size of displayed image)
-% cancelled: logical, true if the user cancelled
+% Input Arguments:
+%   - **subTool** — char, one of 'Lasso', 'Rectangle', 'Ellipse', 'Polyline'
+%
+% Output Arguments:
+%   - **selected_mask** — uint8 binary mask (size of displayed image)
+%   - **cancelled** — logical, true if the user cancelled
+%
 
 cancelled = true;
 selected_mask = [];

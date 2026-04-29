@@ -1,9 +1,12 @@
 function lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)
-    % function lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)
-    % update maxPool and TransposedConvolution layers depending
-    % on network downsampling factor only for U-net and SegNet.
-    % This function is applied when the network downsampling factor
-    % is different from 2
+% UPDATEMAXPOOLANDTRANSCONVLAYERS - update maxPool and TransposedConvolution layers depending.
+%
+% Syntax:
+%   function lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)
+%
+% on network downsampling factor only for U-net and SegNet.
+% This function is applied when the network downsampling factor
+% is different from 2
 
     if nargin < 3
         % downsampling factor

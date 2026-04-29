@@ -1,14 +1,18 @@
 function closeWindow(obj)
-% function closeWindow(obj)
-% Close the Quantification dialog and release all resources.
+% CLOSEWINDOW - Close the Quantification dialog and release all resources.
+%
+% Syntax:
+%   function closeWindow(obj)
 %
 % Deletes the AppDesigner figure, removes all event listeners, and fires
 % the 'CloseEvent' so the parent MibController can purge this child
 % from its childControllers list.
 %
-%|
-% @b Examples:
-% @code obj.closeWindow();  // programmatic close @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.closeWindow();  // programmatic close
+%
 
 % Updates
 %

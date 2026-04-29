@@ -1,16 +1,25 @@
 function loss = customDiceForwardLoss(Y, T, dataDimension, useClasses)
-% loss = customDiceForwardLoss(Y, T, dataDimension, useClasses) returns the Dice loss between
-% the predictions Y and the training targets T.
+% CUSTOMDICEFORWARDLOSS - Compute Dice loss between network predictions and training targets.
 %
-% At the moment it is a test function to be used in
-% [net, info] = trainnet(AugTrainDS, net, @customDiceForwardLoss, TrainingOptions);
-% in startTraining
-%dataDimensions
-% Parameters:
-% Y: dlarray objects that correspond to the n network predictions (provided by trainnet)
-% T: dlarray objects that correspond to the n network targets (provided by trainnet)
-% dataDimension: value defining dimension of the data: 2, 2.5, 3
-% useClasses: indices of class ids to be used for calculation of loss, when empty, calculate for all classes
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      loss = customDiceForwardLoss(Y, T, dataDimension, useClasses)
+%
+% Used with ``trainnet`` as a custom loss function:
+%
+% .. code-block:: matlab
+%
+%    [net, info] = trainnet(AugTrainDS, net, @customDiceForwardLoss, TrainingOptions);
+%
+% Input Arguments:
+%   - **Y** — ``dlarray`` of network predictions (provided by ``trainnet``)
+%   - **T** — ``dlarray`` of training targets (provided by ``trainnet``)
+%   - **dataDimension** — [numeric] dataset dimensionality: ``2``, ``2.5``, or ``3``
+%   - **useClasses** — [numeric] indices of classes to include in the loss;
+%     pass ``[]`` to use all classes
+%
 
 % Info:
 % https://se.mathworks.com/help/releases/R2024b/deeplearning/ug/semantic-segmentation-using-deep-learning.html

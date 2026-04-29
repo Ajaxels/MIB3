@@ -1,37 +1,40 @@
 function initializeLibraries(obj, initList)
-% function initializeLibraries(obj, initList)
-% initializeLibraries - Initialize external libraries and Java paths
+% INITIALIZELIBRARIES - Initialize external libraries and Java paths.
 %
 % Syntax:
-%   obj.initializeLibraries()
-%   obj.initializeLibraries(initList)
+%   function initializeLibraries(obj, initList)
+%
+% Syntax:
+% obj.initializeLibraries()
+% obj.initializeLibraries(initList)
 %
 % Description:
-%   Initializes external libraries and adds Java paths needed for MIB.
-%   Can selectively initialize specific libraries or all libraries.
+% Initializes external libraries and adds Java paths needed for MIB.
+% Can selectively initialize specific libraries or all libraries.
 %
-% Parameters:
-%   initList: cell array (optional)
-%       Cell array of library identifiers to initialize. When empty or
-%       missing, all libraries will be initialized.
-%       Valid identifiers:
-%           'bm3d'          - BM3D/BM4D denoising libraries
-%           'omero'         - OMERO client libraries
-%           'mij.jar'       - MIJ Java interface for ImageJ/Fiji
-%           'bioformats'    - Bio-Formats image reading library
-%           'imageselection' - ImageSelection for clipboard operations
-%           'fiji'          - Fiji/ImageJ application
-%           'poi'           - Apache POI for Excel file operations
-%           'imaris'        - Imaris integration
+% Input Arguments:
+%   - **initList** — cell array (optional)
+%     Cell array of library identifiers to initialize. When empty or
+%     missing, all libraries will be initialized.
+%     Valid identifiers:
+%     'bm3d'          - BM3D/BM4D denoising libraries
+%     'omero'         - OMERO client libraries
+%     'mij.jar'       - MIJ Java interface for ImageJ/Fiji
+%     'bioformats'    - Bio-Formats image reading library
+%     'imageselection' - ImageSelection for clipboard operations
+%     'fiji'          - Fiji/ImageJ application
+%     'poi'           - Apache POI for Excel file operations
+%     'imaris'        - Imaris integration
 %
-% Example:
-%   % Initialize all libraries
-%   obj.initializeLibraries();
-%   
+%   - **Example** —
+%     % Initialize all libraries
+%     obj.initializeLibraries();
+%
 %   % Initialize only specific libraries
 %   obj.initializeLibraries({'mij.jar', 'bioformats'});
 %
-% See also: initialize
+%   See also: initialize
+%
 
 arguments (Input)
     obj controllers.MibController

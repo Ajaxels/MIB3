@@ -1,10 +1,13 @@
 function toolsSegmentation_Callbacks(obj, hWidget, hData)
-% function toolsSegmentation_Callbacks(obj, hWidget, hData)
-% callback on press of buttons in the Segmentation section of the Tools ribbon
+% TOOLSSEGMENTATION_CALLBACKS - callback on press of buttons in the Segmentation section of the Tools ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function toolsSegmentation_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

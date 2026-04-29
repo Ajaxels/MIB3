@@ -1,6 +1,8 @@
 function deleteImageDocument(obj, docIndex)
-% function deleteImageDocument(obj, docIndex)
-% Delete an image document and reindex remaining documents
+% DELETEIMAGEDOCUMENT - Delete an image document and reindex remaining documents.
+%
+% Syntax:
+%   function deleteImageDocument(obj, docIndex)
 %
 % Removes the image document at the specified index, properly cleans up
 % all associated resources (FigureDocument, ImageViewDocument, brush cursor),
@@ -13,15 +15,15 @@ function deleteImageDocument(obj, docIndex)
 % 3. Removes the document from the cImageDoc array
 % 4. Reindexes all documents after the deleted position
 %
-% Parameters:
-%   docIndex: double, index of the document to delete (1-based)
+% Input Arguments:
+%   - **docIndex** — double, index of the document to delete (1-based)
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-% Example:
-%   % Delete document at index 3
-%   obj.mibController.deleteImageDocument(3);
+%   - **Example** —
+%     % Delete document at index 3
+%     obj.mibController.deleteImageDocument(3);
 %
 %   % Delete document when closing a buffer
 %   prevSelectedSet = 2;
@@ -30,14 +32,15 @@ function deleteImageDocument(obj, docIndex)
 %   % Delete with validation
 %   setToDelete = 5;
 %   if setToDelete <= numel(obj.mibController.cImageDoc)
-%       obj.mibController.deleteImageDocument(setToDelete);
-%       fprintf('Document %d deleted successfully\n', setToDelete);
+%   obj.mibController.deleteImageDocument(setToDelete);
+%   fprintf('Document %d deleted successfully\n', setToDelete);
 %   end
 %
 %   % Delete all documents (cleanup)
 %   while ~isempty(obj.mibController.cImageDoc)
-%       obj.mibController.deleteImageDocument(1);
+%   obj.mibController.deleteImageDocument(1);
 %   end
+%
 
 % Validate index
 if docIndex < 1 || docIndex > numel(obj.cImageDoc)

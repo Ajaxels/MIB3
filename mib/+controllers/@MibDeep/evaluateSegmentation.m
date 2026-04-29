@@ -1,6 +1,9 @@
 function evaluateSegmentation(obj)
-% function evaluateSegmentation(obj)
-% evaluate segmentation results by comparing predicted models
+% EVALUATESEGMENTATION - evaluate segmentation results by comparing predicted models.
+%
+% Syntax:
+%   function evaluateSegmentation(obj)
+%
 % with the ground truth models
 % check for evaluation of patches in the patch-wise mode
 if exist(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'patchPredictionResults.mat'), 'file') == 2

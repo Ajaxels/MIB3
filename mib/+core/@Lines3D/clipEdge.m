@@ -1,13 +1,16 @@
 function [edge, edgeIds] = clipEdge(obj, Box)
-% function [edge, edgeIds] = clipEdge(obj, Box)
-% clip the edge using the Box matrix
+% CLIPEDGE - clip the edge using the Box matrix.
 %
-% Parameters:
-% Box: a vector used for cliping the edges [xMin, xMax, yMin, yMax, zMin, zMax]
+% Syntax:
+%   function [edge, edgeIds] = clipEdge(obj, Box)
 %
-% Return values:
-% edge: a matrix of edges shown inside the clipping box, [x1 y1 z1 x2 y2 z2]
-% edgeIds: indices of the returned edges
+% Input Arguments:
+%   - **Box** — a vector used for cliping the edges [xMin, xMax, yMin, yMax, zMin, zMax]
+%
+% Output Arguments:
+%   - **edge** — a matrix of edges shown inside the clipping box, [x1 y1 z1 x2 y2 z2]
+%   - **edgeIds** — indices of the returned edges
+%
 
 try
     % remove edges that are outside the bounding box

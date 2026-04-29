@@ -1,33 +1,32 @@
 function updateSelectedActionTable(obj, BatchOpt)
-% function updateSelectedActionTable(obj, BatchOpt)
-% populate selectedActionTable from a BatchOpt structure
+% UPDATESELECTEDACTIONTABLE - populate selectedActionTable from a BatchOpt structure.
+%
+% Syntax:
+%   function updateSelectedActionTable(obj, BatchOpt)
 %
 % Also updates obj.selectedSection, obj.selectedAction and obj.CurrentBatch.
 %
-% Parameters:
-% BatchOpt: a structure with action parameters. Fields that drive the
-%   widget type shown in displaySelectedActionTableItems:
-%   - logical scalar  -> checkbox
-%   - cell{1} string, cell{2} cell-of-strings -> dropdown
-%   - cell{1} numeric, [cell{2} limits, cell{3} rounding] -> numeric text edit
-%   - char string -> text edit field
-%   - plain numeric -> numeric edit field
-%   Required meta-fields (removed from the table display):
-%   .mibBatchSectionName - section name string
-%   .mibBatchActionName  - action name string
-%   .mibBatchTooltip     - [optional] struct with per-field tooltip strings
+% Input Arguments:
+%   - **BatchOpt** — a structure with action parameters. Fields that drive the
+%     widget type shown in displaySelectedActionTableItems:
+%     - logical scalar checkbox
+%     - cell{1} string, cell{2} cell-of-strings dropdown
+%     - cell{1} numeric, [cell{2} limits, cell{3} rounding] numeric text edit
+%     - char string text edit field
+%     - plain numeric numeric edit field
+%     Required meta-fields (removed from the table display):
+%     .mibBatchSectionName - section name string
+%     .mibBatchActionName  - action name string
+%     .mibBatchTooltip     - [optional] struct with per-field tooltip strings
 %
-%|
-% @b Examples:
-% @code
-% BatchOpt.colChannel = {1; {1,2,3}};   % dropdown, selected=1
-% BatchOpt.showWaitbar = true;            % checkbox
-% BatchOpt.mibBatchSectionName = 'Menu -> Image';
-% BatchOpt.mibBatchActionName  = 'Invert image';
-% obj.updateSelectedActionTable(BatchOpt);
-% @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     BatchOpt.colChannel = {1; {1,2,3}};   % dropdown, selected=1
+%     BatchOpt.showWaitbar = true;            % checkbox
+%     BatchOpt.mibBatchSectionName = 'Menu -> Image';
+%     BatchOpt.mibBatchActionName  = 'Invert image';
+%     obj.updateSelectedActionTable(BatchOpt);
 %
 
 % update sections list

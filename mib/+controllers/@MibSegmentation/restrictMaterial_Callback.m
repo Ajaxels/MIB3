@@ -1,11 +1,14 @@
 function restrictMaterial_Callback(obj)
-% function restrictMaterial_Callback(obj)
-% callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in
+% RESTRICTMATERIAL_CALLBACK - callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in.
+%
+% Syntax:
+%   function restrictMaterial_Callback(obj)
+%
 % obj.handles.panels.segmentation panel.
 % Restrict selection to the selected material in obj.handles.panels.segmentation.handles.materialsTable
 %
-% Parameters:
-% 
+% Input Arguments:
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

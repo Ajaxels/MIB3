@@ -1,0 +1,108 @@
+/* ── MIB3 custom theme ──────────────────────────────────────────────────── */
+
+/* === Brand colours: primary #006633 (green), accent #F28C38 (orange) ==== */
+/* Override sphinx-immaterial's primary palette variables (last-write wins) */
+[data-md-color-primary="green"],
+[data-md-color-primary] {
+    --md-primary-fg-color:        #006633;
+    --md-primary-fg-color--light: #338855;
+    --md-primary-fg-color--dark:  #004d26;
+    --md-primary-bg-color:        #ffffff;
+    --md-primary-bg-color--light: rgba(255,255,255,0.70);
+}
+
+/* Header bar background */
+.md-header {
+    background-color: #006633;
+}
+
+/* Sidebar active link / accent */
+.md-nav__link--active,
+.md-nav__link:focus,
+.md-nav__link:hover {
+    color: #006633;
+}
+
+/* === Typography ========================================================= */
+
+.md-typeset {
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.md-typeset code,
+.md-typeset pre,
+.md-typeset .highlight {
+    font-size: 0.55rem;
+}
+
+/* Tighten spacing */
+.md-typeset dl {
+    margin-top:    0.4em;
+    margin-bottom: 0.4em;
+}
+.md-typeset dl dt { margin-top: 0.3em; }
+.md-typeset dl dd { margin-top: 0.1em; margin-bottom: 0.2em; }
+.md-typeset p     { margin-top: 0.5em; margin-bottom: 0.5em; }
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+    margin-top:    1.0em;
+    margin-bottom: 0.4em;
+}
+
+/* === MATLAB domain — function/class/method signature boxes ============== */
+
+/* Signature container: green tint background + orange left border */
+dt.sig.sig-object {
+    background-color: rgba(0, 102, 51, 0.07);
+    border-left:      3px solid #F28C38;
+    border-radius:    2px;
+    padding:          3px 8px;
+    font-size:        0.80rem;
+    line-height:      1.5;
+}
+
+/* Function / method name: bold */
+dt.sig .sig-name,
+dt.sig .descname,
+dt.sig span.sig-name {
+    font-weight: bold;
+    color:       #004d26;
+}
+
+/* Module/class prefix slightly dimmer */
+dt.sig .sig-prename,
+dt.sig .descclassname {
+    color: #888;
+}
+
+/* Outer description list: a little breathing room */
+dl.mat.function,
+dl.mat.class,
+dl.mat.method,
+dl.mat.attribute {
+    margin-top:    0.8em;
+    margin-bottom: 0.6em;
+}
+
+/* Description body (dd): indent under signature */
+dl.mat.function > dd,
+dl.mat.class    > dd,
+dl.mat.method   > dd {
+    margin-left: 1.0em;
+}
+
+/* === Section sub-headings inside API descriptions ======================= */
+/* "Syntax:", "Input Arguments:", "Output Arguments:", "Usage example:" etc. */
+.md-typeset dl.mat dd > p > strong:first-child,
+.md-typeset dl.mat dd > .rubric {
+    color: #F28C38;
+}
+
+/* Section sub-heading <dt> labels ("Input Arguments:", "Output Arguments:", etc.) */
+.md-typeset dl.mat dd dl > dt {
+    color: #004d26;
+    font-weight: bold;
+}

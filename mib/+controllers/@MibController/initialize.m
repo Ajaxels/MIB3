@@ -1,6 +1,9 @@
 function initialize(obj)
-% function initialize(obj)
-% Initialize the main MibController class
+% INITIALIZE - Initialize the main MibController class.
+%
+% Syntax:
+%   function initialize(obj)
+%
 
 arguments (Input)
     obj controllers.MibController

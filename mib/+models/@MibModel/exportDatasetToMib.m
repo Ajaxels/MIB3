@@ -1,27 +1,44 @@
 function exportDatasetToMib(obj, layerType, BatchOptIn)
-% function exportDatasetToMib(obj, layerType, BatchOptIn)
-% Copy the mask or model layer to another MIB container (buffer).
+% EXPORTDATASETTOMIB - Copy the mask or model layer to another MIB container (buffer).
 %
-% Parameters:
-% layerType: a string specifying which layer to copy
-% @li 'mask'  - copy the mask layer
-% @li 'model' - copy the model (labels) layer, including material metadata
-% BatchOptIn: [@em optional] a structure for batch processing mode; when NaN
-%   returns a structure with default options via "SyncBatch" event
-% @li .LayerType - cell string, {'mask'|'model'} layer to copy
-% @li .Destination - cell string, destination container, e.g. {'Container 2'}
-% @li .showWaitbar - logical, show or not the waitbar
-% @li .id - [@em optional] index of the source dataset
-
-%|
-% @b Examples:
-% @code obj.mibModel.exportDatasetToMib('mask');   // copy mask interactively @endcode
-% @code obj.mibModel.exportDatasetToMib('model');  // copy model interactively @endcode
-% @code
-% BatchOpt.Destination = {'Container 2'};
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.exportDatasetToMib('mask', BatchOpt);  // batch mode
-% @endcode
+% Syntax:
+%   function exportDatasetToMib(obj, layerType, BatchOptIn)
+%
+% Input Arguments:
+%   - **layerType** — a string specifying which layer to copy:
+%
+%     - ``'mask'`` — copy the mask layer
+%     - ``'model'`` — copy the model (labels) layer, including material metadata
+%
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%     returns a structure with default options via "SyncBatch" event:
+%
+%     - ``.LayerType`` — cell string, ``{'mask'|'model'}`` layer to copy
+%     - ``.Destination`` — cell string, destination container, e.g. ``{'Container 2'}``
+%     - ``.showWaitbar`` — logical, show or not the waitbar
+%     - ``.id`` — *(optional)* index of the source dataset
+%
+% Usage:
+%   **Example 1** — copy mask interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.exportDatasetToMib('mask');
+%
+%   **Example 2** — copy model interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.exportDatasetToMib('model');
+%
+%   **Example 3** — batch mode
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Destination = {'Container 2'};
+%      BatchOpt.showWaitbar = false;
+%      obj.mibModel.exportDatasetToMib('mask', BatchOpt);
+%
 
 % Updates
 %

@@ -1,17 +1,20 @@
 function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
-    % function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
-    % define list of 2D/3D augmentation functions
-    %
-    % Parameters:
-    % mode: string defining '2D' or '3D' augmentations
-    % augOptions: a custom temporary structure with augmentation
-    %    options to be used instead of obj.AugOpt2D and obj.AugOpt3D.
-    %    It is used by mibDeepAugmentSettingsController to preview
-    %    selected augmentations
-    %
-    % Return values:
-    % status: a logical success switch (1-success, 0- fail)
-    % augNumber: number of selected augmentations
+% SETAUGFUNCHANDLES - define list of 2D/3D augmentation functions.
+%
+% Syntax:
+%   function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
+%
+% Input Arguments:
+%   - **mode** — string defining '2D' or '3D' augmentations
+%   - **augOptions** — a custom temporary structure with augmentation
+%     options to be used instead of obj.AugOpt2D and obj.AugOpt3D.
+%     It is used by mibDeepAugmentSettingsController to preview
+%     selected augmentations
+%
+% Output Arguments:
+%   - **status** — a logical success switch (1-success, 0- fail)
+%   - **augNumber** — number of selected augmentations
+%
 
     status = 0;
     augNumber = 0;

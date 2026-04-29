@@ -1,6 +1,9 @@
 function result = exitProgram(obj, target)
-% function result = exitProgram(obj)
-%   Exit MIB and do required closing tasks
+% EXITPROGRAM -
+%
+% Syntax:
+%   function result = exitProgram(obj, target)
+%
 
 arguments (Input)
     obj controllers.MibController

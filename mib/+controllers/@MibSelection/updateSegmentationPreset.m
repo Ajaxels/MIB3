@@ -1,17 +1,21 @@
 function updateSegmentationPreset(obj, presetId)
-% function updateSegmentationPreset(obj, presetId)
-% Update preset from the current settings of the selected segmentation
+% UPDATESEGMENTATIONPRESET - Update preset from the current settings of the selected segmentation.
+%
+% Syntax:
+%   function updateSegmentationPreset(obj, presetId)
+%
 % tool; callback on Shift+click of preset1/2/3 buttons or Shift+1/2/3 keyboard shortcuts.
 %
-% Parameters:
-% presetId: [numeric] preset index, 1 to 3
+% Input Arguments:
+%   - **presetId** — [numeric] preset index, 1 to 3
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.updateSegmentationPreset(1);  // store current settings to preset 1 @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.updateSegmentationPreset(1);  // store current settings to preset 1
+%
 
 % Updates
 %

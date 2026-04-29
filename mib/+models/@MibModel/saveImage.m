@@ -1,119 +1,108 @@
 function fnOut = saveImage(obj, layerType, filename, BatchOptIn)
-% function fnOut = saveImage(obj, layerType, filename, BatchOptIn)
-% Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
+% SAVEIMAGE - Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
 %
-% This is the HIGHEST-LEVEL save entry point.  It replaces the three
-% separate MIB2 functions (saveImageAsDialog / saveMask / saveModel) with
-% a unified interface that:
-%   1. Declares a BatchOpt structure with full tooltip metadata for the
-%      batch processing controller.
-%   2. Handles the SyncBatch event (when BatchOptIn == NaN) so the batch
-%      controller can discover this function's parameters.
-%   3. Resolves output directory and filename policies (Subfolder, Full
-%      path, Same as image/loaded, Use existing name, Use new name, [F]
-%      template substitution).
-%   4. Delegates to core.MibDataset.saveImage() for actual file writing.
-%   5. Fires StopProtocol if saving fails.
+% Syntax:
 %
-% PARAMETER OVERVIEW
-%   layerType — (char) 'image' | 'mask' | 'labels' | 'everything' for MibLabels63 only
-%   filename  — (char, optional) full output path.  When empty the path is
-%               resolved through the directory/filename policies below.
-%   BatchOptIn — (struct | NaN | omitted):
-%     When omitted     → simple GUI mode (prompts dialogs unless opts set)
-%     When NaN         → SyncBatch mode: fires SyncBatch event and returns
-%     When a struct    → batch/scripted mode: merges with defaults,
-%                        resolves policies, then calls MibDataset.saveImage()
+%   .. code-block:: matlab
 %
-% BatchOpt FIELDS (also the defaults used in simple mode)
-%   .LayerType       — {'image'} | {'mask'} | {'labels'} (cell{1})
-%   .Format          — {'TIF format uncompressed (*.tif)'} (image default)
-%                      Format{2} = list of valid formats for this LayerType
-%   .FilenamePolicy  — {'Use existing name'} | {'Use new provided name'}
-%   .Filename        — (char) stem used when FilenamePolicy = 'Use new…'
-%                      Supports [F] template to embed the source stem:
-%                        'Labels_[F]_suffix' → 'Labels_myStack_suffix.model'
-%   .OutputDirectoryPolicy — {'Same as image'} | {'Subfolder'} |
-%                             {'Full path'} | {'Same as loaded'}
-%   .DestinationDirectory  — (char) meaning depends on OutputDirectoryPolicy:
-%                             Subfolder  → relative subdirectory name
-%                             Full path  → absolute destination path
-%                             Use [InheritLastDIR] to inherit from DIR LOOP
-%   .FilenameGenerator     — {'Use sequential filename'} |
-%                             {'Use original filename'}
-%   .Saving3DPolicy        — {'3D stack'} | {'2D sequence'}
-%   .MaterialIndex         — (char) '' = all materials, 'NaN' = current
-%   .showWaitbar           — (logical)
-%   .id                    — (integer) dataset index, default obj.id
+%      fnOut = obj.saveImage(layerType)
+%      fnOut = obj.saveImage(layerType, filename)
+%      fnOut = obj.saveImage(layerType, filename, BatchOptIn)
 %
-% Batch metadata (not used at run-time, displayed in batch controller UI):
-%   .mibBatchSectionName   — 'Menu -> File' | 'Menu -> Mask' | 'Menu -> Models'
-%   .mibBatchActionName    — 'Save layer'
-%   .mibBatchTooltip.<field> — (char) help text per BatchOpt field
+% This is the highest-level save entry point. It replaces the three
+% separate MIB2 functions (saveImageAsDialog / saveMask / saveModel)
+% with a unified interface that declares a BatchOpt structure, handles
+% the SyncBatch event, resolves output directory and filename policies,
+% and delegates to ``core.MibDataset.saveImage`` for actual file writing.
 %
-% Return values:
-%   fnOut — (char or cell of char) saved filename(s); [] on failure
+% Input Arguments:
+%   - **layerType** — ``'image'`` | ``'mask'`` | ``'labels'`` | ``'everything'`` (MibLabels63 only)
+%   - **filename** — *(optional)* full output path; when empty the path is resolved
+%     through the directory/filename policies below
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%     returns default options via the "SyncBatch" event
+%   - ``.LayerType`` — cell string, ``{'image'|'mask'|'labels'}`` layer to save
+%   - ``.Format`` — cell string, output format (default depends on layer type)
+%   - ``.FilenamePolicy`` — cell string, ``{'Use existing name'}`` | ``{'Use new provided name'}``
+%   - ``.Filename`` — char, stem used when FilenamePolicy = ``'Use new…'``; supports ``[F]``
+%     template to embed the source stem: ``'Labels_[F]_suffix'`` → ``'Labels_myStack_suffix.model'``
+%   - ``.OutputDirectoryPolicy`` — cell string, ``{'Same as image'}`` | ``{'Subfolder'}`` |
+%     ``{'Full path'}`` | ``{'Same as loaded'}``
+%   - ``.DestinationDirectory`` — char, meaning depends on OutputDirectoryPolicy
+%   - ``.FilenameGenerator`` — cell string, ``{'Use sequential filename'}`` | ``{'Use original filename'}``
+%   - ``.Saving3DPolicy`` — cell string, ``{'3D stack'}`` | ``{'2D sequence'}``
+%   - ``.MaterialIndex`` — char, ``''`` = all materials, ``'NaN'`` = current
+%   - ``.showWaitbar`` — logical, show progress dialog
+%   - ``.id`` — numeric, dataset index (default: ``obj.id``)
 %
-% USAGE EXAMPLES
-%   @code
-%   %% 1. Simple mode — save current image (GUI-based, asks dialogs as needed)
-%   obj.mibModel.saveImage('image');
-%   @endcode
+% Output Arguments:
+%   - **fnOut** — char or cell of char; saved filename(s); ``[]`` on failure
 %
-%   @code
-%   %% 2. Simple mode with explicit filename (silent, no dialogs)
-%   obj.mibModel.saveImage('image', '/output/stack.tif');
-%   @endcode
+% Usage:
+%   **Example 1** — simple mode — save current image (GUI-based, asks dialogs as needed)
 %
-%   @code
-%   %% 3. Scripted/batch mode — save image to a specific folder and format
-%   BatchOpt.LayerType              = {'image'};
-%   BatchOpt.Format                 = {'TIF format LZW compression (*.tif)'};
-%   BatchOpt.OutputDirectoryPolicy  = {'Full path'};
-%   BatchOpt.DestinationDirectory   = '/output/tif_export';
-%   BatchOpt.FilenamePolicy         = {'Use existing name'};
-%   BatchOpt.FilenameGenerator      = {'Use sequential filename'};
-%   BatchOpt.Saving3DPolicy         = {'3D stack'};
-%   BatchOpt.showWaitbar            = false;
-%   BatchOpt.mibBatchTooltip.LayerType = '';   % marks as full batch mode
-%   obj.mibModel.saveImage('image', [], BatchOpt);
-%   @endcode
+%   .. code-block:: matlab
 %
-%   @code
-%   %% 4. Batch mode with [F] template — prefix saved name with dataset stem
-%   BatchOpt.LayerType              = {'labels'};
-%   BatchOpt.Format                 = {'Matlab format (*.model)'};
-%   BatchOpt.FilenamePolicy         = {'Use new provided name'};
-%   BatchOpt.Filename               = 'Labels_[F]';   % [F] → source stem
-%   BatchOpt.OutputDirectoryPolicy  = {'Subfolder'};
-%   BatchOpt.DestinationDirectory   = 'Models';
-%   BatchOpt.Saving3DPolicy         = {'3D stack'};
-%   BatchOpt.showWaitbar            = false;
-%   BatchOpt.mibBatchTooltip.LayerType = '';
-%   obj.mibModel.saveImage('labels', [], BatchOpt);
-%   @endcode
+%      obj.mibModel.saveImage('image');
 %
-%   @code
-%   %% 5. SyncBatch mode — let batch controller discover this function
-%   obj.mibModel.saveImage('image', [], NaN);
-%   % → fires SyncBatch event with default BatchOpt; no file is written
-%   @endcode
+%   **Example 2** — simple mode with explicit filename (silent, no dialogs)
 %
-%   @code
-%   %% 6. Save mask in Amira format to same directory as source image
-%   BatchOpt.LayerType              = {'mask'};
-%   BatchOpt.Format                 = {'Amira mesh binary (*.am)'};
-%   BatchOpt.OutputDirectoryPolicy  = {'Same as image'};
-%   BatchOpt.FilenamePolicy         = {'Use existing name'};
-%   BatchOpt.Saving3DPolicy         = {'3D stack'};
-%   BatchOpt.showWaitbar            = true;
-%   BatchOpt.mibBatchTooltip.LayerType = '';
-%   obj.mibModel.saveImage('mask', [], BatchOpt);
-%   @endcode
+%   .. code-block:: matlab
 %
-% SEE ALSO
-%   core.MibDataset.saveImage, core.MibImage.save, core.MibLabels.save,
-%   io.SaverFactory, utils.updateBatchOptCombineFields_Shared
+%      obj.mibModel.saveImage('image', '/output/stack.tif');
+%
+%   **Example 3** — scripted/batch mode — save image to a specific folder and format
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.LayerType              = {'image'};
+%      BatchOpt.Format                 = {'TIF format LZW compression (``*.tif``)'};
+%      BatchOpt.OutputDirectoryPolicy  = {'Full path'};
+%      BatchOpt.DestinationDirectory   = '/output/tif_export';
+%      BatchOpt.FilenamePolicy         = {'Use existing name'};
+%      BatchOpt.FilenameGenerator      = {'Use sequential filename'};
+%      BatchOpt.Saving3DPolicy         = {'3D stack'};
+%      BatchOpt.showWaitbar            = false;
+%      BatchOpt.mibBatchTooltip.LayerType = '';
+%      obj.mibModel.saveImage('image', [], BatchOpt);
+%
+%   **Example 4** — batch mode with [F] template — prefix saved name with dataset stem
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.LayerType              = {'labels'};
+%      BatchOpt.Format                 = {'Matlab format (``*.model``)'};
+%      BatchOpt.FilenamePolicy         = {'Use new provided name'};
+%      BatchOpt.Filename               = 'Labels_[F]';
+%      BatchOpt.OutputDirectoryPolicy  = {'Subfolder'};
+%      BatchOpt.DestinationDirectory   = 'Models';
+%      BatchOpt.Saving3DPolicy         = {'3D stack'};
+%      BatchOpt.showWaitbar            = false;
+%      BatchOpt.mibBatchTooltip.LayerType = '';
+%      obj.mibModel.saveImage('labels', [], BatchOpt);
+%
+%   **Example 5** — SyncBatch mode — let batch controller discover this function
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.saveImage('image', [], NaN);
+%
+%   **Example 6** — save mask in Amira format to same directory as source image
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.LayerType              = {'mask'};
+%      BatchOpt.Format                 = {'Amira mesh binary (``*.am``)'};
+%      BatchOpt.OutputDirectoryPolicy  = {'Same as image'};
+%      BatchOpt.FilenamePolicy         = {'Use existing name'};
+%      BatchOpt.Saving3DPolicy         = {'3D stack'};
+%      BatchOpt.showWaitbar            = true;
+%      BatchOpt.mibBatchTooltip.LayerType = '';
+%      obj.mibModel.saveImage('mask', [], BatchOpt);
+%
+% See also:
+%   core.MibDataset.saveImage, core.MibImage.save, core.MibLabels.save, io.SaverFactory, utils.updateBatchOptCombineFields_Shared
+%
 
 fnOut = [];
 if nargin < 4; BatchOptIn = struct(); end
@@ -439,7 +428,11 @@ end
 %   Local helper                                                       %
 % ------------------------------------------------------------------   %
 function tf = isabsolute_path(p)
-% Return true if p is an absolute filesystem path.
+% ISABSOLUTE_PATH - Return true if p is an absolute filesystem path.
+%
+% Syntax:
+%   function tf = isabsolute_path(p)
+%
 if ispc
     tf = numel(p) >= 2 && p(2) == ':';    % Windows: starts with drive letter
 else

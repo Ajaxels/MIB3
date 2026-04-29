@@ -1,16 +1,20 @@
 function addNode(obj, x, y, z, newTreeSwitch, options)
-% function addNode(obj, x, y, z, newTreeSwitch, options)
-% add a new node(s) to the graph; when x,y,z are columns of
+% ADDNODE - add a new node(s) to the graph; when x,y,z are columns of.
+%
+% Syntax:
+%   function addNode(obj, x, y, z, newTreeSwitch, options)
+%
 % coordinates they are considered to be connected with edges
 %
-% Parameters:
-% x: a column of x coordinates of nodes (in physical units)
-% y: a column of y coordinates of nodes (in physical units)
-% z: a column of z coordinates of nodes (in physical units)
-% newTreeSwitch: an optional switch to start a new tree
-% options: a structure with optional parameters
-%  .pixSize - structure with pixel sizes of the dataset
-%  .BoundingBox - a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
+% Input Arguments:
+%   - **x** — a column of x coordinates of nodes (in physical units)
+%   - **y** — a column of y coordinates of nodes (in physical units)
+%   - **z** — a column of z coordinates of nodes (in physical units)
+%   - **newTreeSwitch** — an optional switch to start a new tree
+%   - **options** — a structure with optional parameters
+%     .pixSize - structure with pixel sizes of the dataset
+%     .BoundingBox - a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
+%
 
 if nargin < 6; options = struct(); end
 if nargin < 5; newTreeSwitch = 0; end

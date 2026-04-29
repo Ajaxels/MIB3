@@ -1,12 +1,13 @@
 classdef Lines3dDialog < handle
-    % Lines3dDialog is a controller class for the Lines3D table view dialog.
-    %
-    % Displays and edits 3D line trees, nodes and edges via interactive
-    % tables. Opened from the segmentation panel's "Table View" button.
-    %
-    % @code
-    % obj.startController('controllers.Lines3dDialog'); // as GUI tool
-    % @endcode
+% LINES3DDIALOG - Lines3dDialog is a controller class for the Lines3D table view dialog.
+%
+% Displays and edits 3D line trees, nodes and edges via interactive
+% tables. Opened from the segmentation panel's "Table View" button.
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.Lines3dDialog'); // as GUI tool
 
     % Updates
     % ported to MIB3 AppDesigner framework
@@ -48,7 +49,11 @@ classdef Lines3dDialog < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, src, evnt)
-            % ViewListner_Callback2(obj, src, evnt)
+            % VIEWLISTNER_CALLBACK2 - ViewListner_Callback2(obj, src, evnt).
+            %
+            % Syntax:
+            %   function ViewListner_Callback2(obj, src, evnt)
+            %
             % Static callback for model event listeners.
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
@@ -72,12 +77,17 @@ classdef Lines3dDialog < handle
 
     methods
         function obj = Lines3dDialog(mibModel, varargin)
-            % Lines3dDialog(mibModel, varargin)
+            % LINES3DDIALOG - Lines3dDialog(mibModel, varargin).
+            %
+            % Syntax:
+            %   function obj = Lines3dDialog(mibModel, varargin)
+            %
             % Constructor for the Lines3dDialog controller.
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: controller handle (unused, for startController compatibility)
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — controller handle (unused, for startController compatibility)
+            %
 
             obj.mibModel = mibModel;
 
@@ -124,7 +134,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function closeWindow(obj)
-            % closeWindow(obj)
+            % CLOSEWINDOW - closeWindow(obj).
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
             % Close the Lines3dDialog window and clean up listeners.
 
             for i = numel(obj.childControllers):-1:1
@@ -147,7 +161,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function addCallbacks(obj)
-            % addCallbacks(obj)
+            % ADDCALLBACKS - addCallbacks(obj).
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
+            %
             % Wire all widget callbacks. Called once from the constructor.
 
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
@@ -200,7 +218,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function updateWidgets(obj)
-            % updateWidgets(obj)
+            % UPDATEWIDGETS - updateWidgets(obj).
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
             % Update all tables and status indicators.
 
             id = obj.mibModel.getActiveId();
@@ -248,7 +270,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function updateEdgesViewTable(obj, activeTreeIndex, nodeByTree)
-            % updateEdgesViewTable(obj, activeTreeIndex, nodeByTree)
+            % UPDATEEDGESVIEWTABLE - updateEdgesViewTable(obj, activeTreeIndex, nodeByTree).
+            %
+            % Syntax:
+            %   function updateEdgesViewTable(obj, activeTreeIndex, nodeByTree)
+            %
             % Update the edges table for the given tree.
 
             id = obj.mibModel.getActiveId();
@@ -289,7 +315,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree)
-            % activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree)
+            % UPDATENODESVIEWTABLE - activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree).
+            %
+            % Syntax:
+            %   function activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree)
+            %
             % Update the nodes table for the given tree.
 
             id = obj.mibModel.getActiveId();
@@ -336,7 +366,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function edgesViewTable_CellEditCallback(obj, eventdata)
-            % edgesViewTable_CellEditCallback(obj, eventdata)
+            % EDGESVIEWTABLE_CELLEDITCALLBACK - edgesViewTable_CellEditCallback(obj, eventdata).
+            %
+            % Syntax:
+            %   function edgesViewTable_CellEditCallback(obj, eventdata)
+            %
             % Callback for modification of cell in edgesViewTable.
 
             id = obj.mibModel.getActiveId();
@@ -355,7 +389,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function nodesViewTable_CellEditCallback(obj, eventdata)
-            % nodesViewTable_CellEditCallback(obj, eventdata)
+            % NODESVIEWTABLE_CELLEDITCALLBACK - nodesViewTable_CellEditCallback(obj, eventdata).
+            %
+            % Syntax:
+            %   function nodesViewTable_CellEditCallback(obj, eventdata)
+            %
             % Callback for modification of cell in nodesViewTable.
 
             id = obj.mibModel.getActiveId();
@@ -382,7 +420,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function settingsBtn_Callback(obj)
-            % settingsBtn_Callback(obj)
+            % SETTINGSBTN_CALLBACK - settingsBtn_Callback(obj).
+            %
+            % Syntax:
+            %   function settingsBtn_Callback(obj)
+            %
             % Update visual settings for Lines3D.
 
             id = obj.mibModel.getActiveId();
@@ -438,7 +480,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function loadBtn_Callback(obj)
-            % loadBtn_Callback(obj)
+            % LOADBTN_CALLBACK - loadBtn_Callback(obj).
+            %
+            % Syntax:
+            %   function loadBtn_Callback(obj)
+            %
             % Load Lines3D from a file or import from Matlab workspace.
 
             id = obj.mibModel.getActiveId();
@@ -551,7 +597,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function saveBtn_Callback(obj, treeIds)
-            % saveBtn_Callback(obj, treeIds)
+            % SAVEBTN_CALLBACK - saveBtn_Callback(obj, treeIds).
+            %
+            % Syntax:
+            %   function saveBtn_Callback(obj, treeIds)
+            %
             % Save Lines3D to a file or export to Matlab workspace.
 
             if nargin < 2; treeIds = []; end
@@ -673,7 +723,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function deleteBtn_Callback(obj)
-            % deleteBtn_Callback(obj)
+            % DELETEBTN_CALLBACK - deleteBtn_Callback(obj).
+            %
+            % Syntax:
+            %   function deleteBtn_Callback(obj)
+            %
             % Delete all Lines3D data.
 
             id = obj.mibModel.getActiveId();
@@ -692,7 +746,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function nodesViewTable_CellSelectionCallback(obj, Indices, forceJump)
-            % nodesViewTable_CellSelectionCallback(obj, Indices, forceJump)
+            % NODESVIEWTABLE_CELLSELECTIONCALLBACK - nodesViewTable_CellSelectionCallback(obj, Indices, forceJump).
+            %
+            % Syntax:
+            %   function nodesViewTable_CellSelectionCallback(obj, Indices, forceJump)
+            %
             % Callback for cell selection in nodesViewTable.
 
             if nargin < 3; forceJump = 0; end
@@ -706,7 +764,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function edgesViewTable_CellSelectionCallback(obj, Indices, forceJump)
-            % edgesViewTable_CellSelectionCallback(obj, Indices, forceJump)
+            % EDGESVIEWTABLE_CELLSELECTIONCALLBACK - edgesViewTable_CellSelectionCallback(obj, Indices, forceJump).
+            %
+            % Syntax:
+            %   function edgesViewTable_CellSelectionCallback(obj, Indices, forceJump)
+            %
             % Callback for cell selection in edgesViewTable.
 
             if nargin < 3; forceJump = obj.view.handles.jumpCheck.Value; end
@@ -722,7 +784,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function treesViewTable_CellSelectionCallback(obj, Indices)
-            % treesViewTable_CellSelectionCallback(obj, Indices)
+            % TREESVIEWTABLE_CELLSELECTIONCALLBACK - treesViewTable_CellSelectionCallback(obj, Indices).
+            %
+            % Syntax:
+            %   function treesViewTable_CellSelectionCallback(obj, Indices)
+            %
             % Callback for cell selection in treesViewTable.
 
             if isempty(Indices); return; end
@@ -777,7 +843,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function treesViewTable_CellEditCallback(obj, Indices)
-            % treesViewTable_CellEditCallback(obj, Indices)
+            % TREESVIEWTABLE_CELLEDITCALLBACK - treesViewTable_CellEditCallback(obj, Indices).
+            %
+            % Syntax:
+            %   function treesViewTable_CellEditCallback(obj, Indices)
+            %
             % Callback for cell edit in treesViewTable.
             %
             % Note: this method appears to handle annotation edits in the
@@ -803,7 +873,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function treesViewTable_cb(obj, parameter)
-            % treesViewTable_cb(obj, parameter)
+            % TREESVIEWTABLE_CB - treesViewTable_cb(obj, parameter).
+            %
+            % Syntax:
+            %   function treesViewTable_cb(obj, parameter)
+            %
             % Context menu callbacks for treesViewTable.
 
             id = obj.mibModel.getActiveId();
@@ -887,7 +961,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function edgesViewTable_cb(obj, parameter)
-            % edgesViewTable_cb(obj, parameter)
+            % EDGESVIEWTABLE_CB - edgesViewTable_cb(obj, parameter).
+            %
+            % Syntax:
+            %   function edgesViewTable_cb(obj, parameter)
+            %
             % Context menu callbacks for edgesViewTable.
 
             id = obj.mibModel.getActiveId();
@@ -922,7 +1000,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function nodesViewTable_cb(obj, parameter, nodeId)
-            % nodesViewTable_cb(obj, parameter, nodeId)
+            % NODESVIEWTABLE_CB - nodesViewTable_cb(obj, parameter, nodeId).
+            %
+            % Syntax:
+            %   function nodesViewTable_cb(obj, parameter, nodeId)
+            %
             % Context menu callbacks for nodesViewTable.
 
             if nargin < 3; nodeId = []; end
@@ -1123,7 +1205,11 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function visualizeBtn_Callback(obj, treeId)
-            % visualizeBtn_Callback(obj, treeId)
+            % VISUALIZEBTN_CALLBACK - visualizeBtn_Callback(obj, treeId).
+            %
+            % Syntax:
+            %   function visualizeBtn_Callback(obj, treeId)
+            %
             % Visualize the graph in 3D using a separate figure.
 
             if nargin < 2; treeId = 0; end

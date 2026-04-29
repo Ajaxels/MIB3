@@ -1,6 +1,8 @@
 function createModel(obj, modelType, modelMaterialNames)
-% function createModel(obj, modelType, modelMaterialNames)
-% Create an empty model: allocate memory for a new model
+% CREATEMODEL - Create an empty model: allocate memory for a new model.
+%
+% Syntax:
+%   function createModel(obj, modelType, modelMaterialNames)
 %
 % This function reinitializes the labels layer (obj.labels) with a
 % zero-filled matrix of the appropriate class and dimensions.
@@ -8,25 +10,35 @@ function createModel(obj, modelType, modelMaterialNames)
 % the separate-layer models (core.MibLabels, types 255/65535/4294967295),
 % the selection and mask layers are converted automatically.
 %
-% Parameters:
-% modelType: [@em optional] a number that defines the type of model
-% - @b 63  - a segmentation model with up to 63 materials; 'Labels', 'Mask',
-%             and 'Selection' layers are packed in a single uint8 matrix
-%             (core.MibLabels63) to reduce memory consumption
-% - @b 255 - a segmentation model with up to 255 materials; layers stored
-%             in separate matrices (core.MibLabels)
-% - @b 65535 - a segmentation model with up to 65535 materials
-% - @b 4294967295 - a segmentation model with up to 4294967295 materials
-% modelMaterialNames: [@em optional] a cell array with names of materials;
-%   not used for modelType > 255
+% Input Arguments:
+%   - **modelType** — *(optional)* a number that defines the type of model
+%   - **63**  - a segmentation model with up to 63 materials; 'Labels', 'Mask',
+%     and 'Selection' layers are packed in a single uint8 matrix
+%     (core.MibLabels63) to reduce memory consumption
+%   - **255** - a segmentation model with up to 255 materials; layers stored
+%     in separate matrices (core.MibLabels)
+%   - **65535** - a segmentation model with up to 65535 materials
+%   - **4294967295** - a segmentation model with up to 4294967295 materials
+%   - **modelMaterialNames** — *(optional)* a cell array with names of materials;
+%     not used for modelType > 255
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.createModel(63);  // allocate a new type-63 model @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.createModel(255, {'Nucleus','Cytoplasm'});  // type-255 with names @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.createModel(63);% allocate a new type-63 model
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.createModel(255, {'Nucleus','Cytoplasm'});% type-255 with names
+%
 
 % Updates
 % Ported from MIB2 mibImage.createModel

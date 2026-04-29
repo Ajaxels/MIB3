@@ -1,49 +1,56 @@
 function segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)
-% function segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)
-% Do segmentation using the 3D ball tool
+% SEGMENTATIONBALL3D - Do segmentation using the 3D ball tool.
+%
+% Syntax:
+%   function segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)
 %
 % Places an ellipsoidal 3D ball in the dataset at the given coordinate.
 % The ball is anisotropy-corrected: radii along each axis are scaled by
 % the voxel size ratio so the ball appears physically spherical.
 %
-% Parameters:
-% y: double, y-coordinate of the ball centre in full-dataset pixels
-% x: double, x-coordinate of the ball centre in full-dataset pixels
-% z: double, z-coordinate (slice index) of the ball centre
-% modifier: cell array of chars or char, modifier keys held during click
-% @li empty '' - add ball to the selection/mask layer
-% @li 'control' - subtract ball from the selection/mask layer
-% BatchOptIn: [@em optional] struct for batch processing mode; when NaN,
-%   returns default options via the 'SyncBatch' event
-% @li .Radius - [char] ball radius in pixels (raw spinner value)
-% @li .X - [char] vector or single X coordinate of the ball centre
-% @li .Y - [char] vector or single Y coordinate of the ball centre
-% @li .Z - [char] vector or single Z coordinate of the ball centre;
+% Input Arguments:
+%   - **y** — double, y-coordinate of the ball centre in full-dataset pixels
+%   - **x** — double, x-coordinate of the ball centre in full-dataset pixels
+%   - **z** — double, z-coordinate (slice index) of the ball centre
+%   - **modifier** — cell array of chars or char, modifier keys held during click
+%     - empty '' - add ball to the selection/mask layer
+%     - 'control' - subtract ball from the selection/mask layer
+%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when NaN,
+%     returns default options via the 'SyncBatch' event
+%     - .Radius - [char] ball radius in pixels (raw spinner value)
+%     - .X - [char] vector or single X coordinate of the ball centre
+%     - .Y - [char] vector or single Y coordinate of the ball centre
+%     - .Z - [char] vector or single Z coordinate of the ball centre;
 %   empty = current slice
-% @li .Mode - [char, {'add','erase'}] add or subtract ball
-% @li .restrictSelectionToMask - [logical] paint only within the mask
-% @li .restrictSelectionToMaterial - [logical] paint only within the
+%     - .Mode - [char, {'add','erase'}] add or subtract ball
+%     - .restrictSelectionToMask - [logical] paint only within the mask
+%     - .restrictSelectionToMaterial - [logical] paint only within the
 %   selected material
-% @li .Target - [char, {'selection','mask'}] destination layer
-% @li .showWaitbar - [logical] show or not the progress bar
-% @li .id -> [@em optional] dataset index 1-9, default = obj.mibModel.getActiveId()
+%     - .Target - [char, {'selection','mask'}] destination layer
+%     - .showWaitbar - [logical] show or not the progress bar
+%     - .id *(optional)* dataset index 1-9, default = obj.mibModel.getActiveId()
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.segmentationBall3D(50, 75, 10, '');  // add 3D ball at [y,x,z]=[50,75,10] @endcode
-% @code obj.segmentationBall3D(50, 75, 10, 'control');  // erase 3D ball @endcode
-% @code
-% BatchOpt.Radius = '6';
-% BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '10';
-% BatchOpt.Mode = {'add'};
-% BatchOpt.Target = {'selection'};
-% BatchOpt.showWaitbar = false;
-% obj.segmentationBall3D(50, 75, 10, '', BatchOpt);   // batch / scripted call
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationBall3D(50, 75, 10, '');  // add 3D ball at [y,x,z]=[50,75,10]
+%
+%   Example 2::
+%
+%     obj.segmentationBall3D(50, 75, 10, 'control');  // erase 3D ball
+%
+%   Example 3::
+%
+%     BatchOpt.Radius = '6';
+%     BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '10';
+%     BatchOpt.Mode = {'add'};
+%     BatchOpt.Target = {'selection'};
+%     BatchOpt.showWaitbar = false;
+%     obj.segmentationBall3D(50, 75, 10, '', BatchOpt);   // batch / scripted call
+%
 
 % Updates
 %

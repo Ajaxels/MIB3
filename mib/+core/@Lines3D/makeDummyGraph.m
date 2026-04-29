@@ -1,6 +1,9 @@
 function makeDummyGraph(obj)
-% function makeDummyGraph(obj)
-% generate a dummy graph for developmental purposes
+% MAKEDUMMYGRAPH - generate a dummy graph for developmental purposes.
+%
+% Syntax:
+%   function makeDummyGraph(obj)
+%
 
 points = [303 81 72;...
     294 90 67;...

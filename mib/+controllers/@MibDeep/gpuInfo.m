@@ -1,6 +1,9 @@
 function gpuInfo(obj)
-    % function gpuInfo(obj)
-    % display information about the selected GPU
+% GPUINFO - display information about the selected GPU.
+%
+% Syntax:
+%   function gpuInfo(obj)
+%
 
     selectedIndex = find(ismember(obj.view.Figure.GPUDropDown.Items, obj.view.Figure.GPUDropDown.Value));
     switch obj.view.Figure.GPUDropDown.Value

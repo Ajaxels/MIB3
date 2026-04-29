@@ -1,20 +1,23 @@
 function updateBrushCursorOffset(obj)
-% function updateBrushCursorOffset(obj)
-% Update brush cursor offset based on current brush radius and magnification
+% UPDATEBRUSHCURSOROFFSET - Update brush cursor offset based on current brush radius and magnification.
+%
+% Syntax:
+%   function updateBrushCursorOffset(obj)
 %
 % Calculates the circle points for the brush cursor based on
 % the current brush radius setting and image magnification factor.
 % The offset is stored as a 2×N array with X and Y offsets.
 %
-% Parameters:
+% Input Arguments:
 %   none
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-% Example:
-%   % Called automatically when brush size changes
-%   obj.updateBrushCursorOffset();
+%   - **Example** —
+%     % Called automatically when brush size changes
+%     obj.updateBrushCursorOffset();
+%
 
 % Get brush radius from segmentation panel
 radius = obj.view.handles.panels.segmentation.handles.brushRadius.Value - 1;

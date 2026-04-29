@@ -1,6 +1,8 @@
 function setupCallbacks(obj)
-% function setupCallbacks(obj)
-% Setup all callbacks for this image document
+% SETUPCALLBACKS - Setup all callbacks for this image document.
+%
+% Syntax:
+%   function setupCallbacks(obj)
 %
 % Configures callbacks for:
 % - Slice and frame navigation buttons and sliders
@@ -8,11 +10,12 @@ function setupCallbacks(obj)
 % - Mouse scroll wheel interactions
 % - Window resize events
 %
-% Parameters:
+% Input Arguments:
 %   none
 %
-% Return values:
+% Output Arguments:
 %   none
+%
 
 %% Context menu to the sliders
 

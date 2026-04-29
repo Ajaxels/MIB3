@@ -1,12 +1,16 @@
 function helpButtons_Callback(obj, hWidget, hData)
-% function helpButtons_Callback(obj, hWidget, hData)
-% callback for click on the Help buttons in various panels of MIB
+% HELPBUTTONS_CALLBACK - callback for click on the Help buttons in various panels of MIB.
+%
+% Syntax:
+%   function helpButtons_Callback(obj, hWidget, hData)
+%
 % The function is triggered by clicks on
 % - obj.handles.panels.dirContents.handles.help
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibController

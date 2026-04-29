@@ -1,37 +1,41 @@
 function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, stepId, stepOptions)
-% function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, stepId, stepOptions)
-% resolve and return an output directory for a single protocol step
+% OBTAINDIRECTORYFORACTION - resolve and return an output directory for a single protocol step.
+%
+% Syntax:
+%   function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, stepId, stepOptions)
 %
 % Evaluates the directory-mode field of the step's BatchOpt and returns the
 % corresponding absolute path.  If the directory does not yet exist it is
 % created (except for the 'Inherit from Directory loop' modes).  Returns an
 % empty array on error so that the caller can abort cleanly.
 %
-% Supported directory modes (value of @em dirModeField):
-% @li 'Absolute'                    - use the path stored in @em filenameField verbatim
-% @li 'Relative to current MIB path'- append @em filenameField to obj.mibModel.currentDirectory;
-%                                     leading "../" sequences navigate up the tree
-% @li 'Inherit from Directory loop' - take stepOptions.DirectoryName from the
-%                                     enclosing directory loop
-% @li 'Inherit dirs +Dirname'       - concatenate stepOptions.DirectoryName with
-%                                     obj.Protocol(stepId).Batch.DirectoryName
+% Supported directory modes (value of *dirModeField):*
+%   - 'Absolute'                    - use the path stored in *filenameField* verbatim
+%   - 'Relative to current MIB path'- append *filenameField* to obj.mibModel.currentDirectory;
+% leading "../" sequences navigate up the tree
+%   - 'Inherit from Directory loop' - take stepOptions.DirectoryName from the
+% enclosing directory loop
+%   - 'Inherit dirs +Dirname'       - concatenate stepOptions.DirectoryName with
+% obj.Protocol(stepId).Batch.DirectoryName
 %
-% Parameters:
-% dirModeField: name of a BatchOpt field whose value selects the directory mode
-% filenameField: name of a BatchOpt field that holds the actual directory path string
-% stepId: index of the protocol step being executed
-% stepOptions: a struct passed down from the loop runner; may contain:
-%   @li .DirectoryName - directory provided by an enclosing Directory loop
+% Input Arguments:
+%   - **dirModeField** — name of a BatchOpt field whose value selects the directory mode
+%   - **filenameField** — name of a BatchOpt field that holds the actual directory path string
+%   - **stepId** — index of the protocol step being executed
+%   - **stepOptions** — a struct passed down from the loop runner; may contain:
+%     - .DirectoryName - directory provided by an enclosing Directory loop
 %
-% Return values:
-% dirOut: resolved absolute directory path, or [] on failure
+% Output Arguments:
+%   - **dirOut** — resolved absolute directory path, or [] on failure
 %
-%|
-% @b Examples:
-% @code dirOut = obj.obtainDirectoryForAction('Mode', 'DirectoryName', stepId, stepOptions); @endcode
-% @code sourceDir = obj.obtainDirectoryForAction('CurrentDirectoryMode', 'CurrentDirectory', stepId, stepOptions); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     dirOut = obj.obtainDirectoryForAction('Mode', 'DirectoryName', stepId, stepOptions);
+%
+%   Example 2::
+%
+%     sourceDir = obj.obtainDirectoryForAction('CurrentDirectoryMode', 'CurrentDirectory', stepId, stepOptions);
 %
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists'); % disable warning of existing directories

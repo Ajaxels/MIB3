@@ -1,6 +1,9 @@
 function viewPort = getDefaultViewPort(obj)
-% function viewPort = getDefaultViewPort(obj)
-% get default view port for stretching the image for visualization
+% GETDEFAULTVIEWPORT - get default view port for stretching the image for visualization.
+%
+% Syntax:
+%   function viewPort = getDefaultViewPort(obj)
+%
 
 viewPort = struct();
 viewPort.min = zeros([obj.colors, 1]);

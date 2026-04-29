@@ -1,5 +1,6 @@
 classdef Annotations < matlab.mixin.Copyable
-    % @type Annotations class is responsible for keeping annotations of the model
+    % ANNOTATIONS - :class:`Annotations` class is responsible for keeping annotations of the model.
+    %
     
 	% Updates
 	% 
@@ -19,32 +20,48 @@ classdef Annotations < matlab.mixin.Copyable
     
     methods
         function obj = Annotations()
-            % function obj = Annotations()
-            % Constructor for the @type Annotations class.
+            % ANNOTATIONS - Constructor for the :class:`Annotations` class.
+            %
+            % Syntax:
+            %   function obj = Annotations()
             %
             % Constructor for the Annotations class. Create a new instance of
             % the class with default parameters
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-            % obj - instance of the @type Annotations class.
+            % Output Arguments:
+            %   obj - instance of the :class:`Annotations` class.
+            %
             
             obj.clearContents();
         end
         
         function clearContents(obj)
-            % function clearContents(obj)
-            % Set all elements of the class to default values
+            % CLEARCONTENTS - Set all elements of the class to default values.
             %
-            % Parameters:
+            % Syntax:
+            %   function clearContents(obj)
             %
-            % Return values:
-            
-            %| 
-			% @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.clearContents(); @endcode
-            % @code clearContents(obj); // Call within the class @endcode
+            % Input Arguments:
+            %
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.clearContents();
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     clearContents(obj);% Call within the class
+            %
             
             obj.labelText = {};   %  a cell array with labels
             obj.labelValue = [];    % an array with values for the labels
@@ -54,26 +71,44 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function addLabels(obj, labels, positions, values)
-            % function addLabel(obj, labels, positions, values)
-            % Add labels with positions to the class
+            % ADDLABELS - Add labels with positions to the class.
             %
-            % Parameters:
-            % labels: a cell array with labels
-            % positions: a matrix with coordinates of the labels [pointIndex, z  x  y  t]
-            % values: an array of numbers with values for the labels [@em
-            % optional], default = 1
-            % Return values:
-            
-            %| 
-			% @b Examples:
-            % @code
-            % labels{1} = 'my label 1';
-            % labels{2} = 'my label 2';
-            % positions(1,:) = [50, 75, 1, 3]; // position 1: z=1, x=50, y=75, t=3;            
-            % positions(2,:) = [50, 75, 2, 5]; // position 1: z=2, x=50, y=75, t=5;
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.addLabel(labels, positions); // add a labels to the list, call from mibController @endcode
-            % @code addLabel(obj, labels, positions); // Call within the class;  add a labels to the list @endcode
+            % Syntax:
+            %   function addLabels(obj, labels, positions, values)
+            %
+            % Input Arguments:
+            %   - **labels** — a cell array with labels
+            %   - **positions** — a matrix with coordinates of the labels [pointIndex, z  x  y  t]
+            %   - **values** — an array of numbers with values for the labels [@em
+            %     optional], default = 1
+            %
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     labels{1} = 'my label 1';
+            %     labels{2} = 'my label 2';
+            %     positions(1,:) = [50, 75, 1, 3];% position 1: z=1, x=50, y=75, t=3;
+            %     positions(2,:) = [50, 75, 2, 5];% position 1: z=2, x=50, y=75, t=5;
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.addLabel(labels, positions);% add a labels to the list, call from mibController
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     addLabel(obj, labels, positions);% Call within the class;  add a labels to the list
+            %
             
             if ~iscell(labels); labels = cellstr(labels); end
             if numel(labels) ~= size(positions, 1); error('Annotations.addLabels: error, number of labels and coordinates mismatch!'); end
@@ -104,20 +139,41 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function crop(obj, cropF)
-            % function crop(obj, cropF)
-            % Recalculation of annotation positions during image crop
+            % CROP - Recalculation of annotation positions during image crop.
             %
-            % Parameters:
-            % cropF: a vector [x1, y1, dx, dy, z1, dz, t1, dt] with
-            % parameters of the crop. @b Note! The units are pixels! Parameters t1 and
-            % dt are optional!
-            
-            %|
-            % @b Examples:
-            % @code cropF = [100 512 200 512 5 20 7 15];  // define parameters of the crop  @endcode
-            % @code cropF2 = [100 512 NaN NaN 5 NaN 7 NaN];  // alternative definition of parameters for the crop  @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.crop(cropF); // adjust coordinates due to cropping @endcode
-            % @attention parameters dx, dy, dz, dt are not used, so they can be replaced with NaNs 
+            % Syntax:
+            %   function crop(obj, cropF)
+            %
+            % Input Arguments:
+            %   - **cropF** — a vector [x1, y1, dx, dy, z1, dz, t1, dt] with
+            %     parameters of the crop. **Note!** The units are pixels! Parameters t1 and
+            %     dt are optional!
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     cropF = [100 512 200 512 5 20 7 15];% define parameters of the crop
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     cropF2 = [100 512 NaN NaN 5 NaN 7 NaN];% alternative definition of parameters for the crop
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.crop(cropF);% adjust coordinates due to cropping
+            %
+            %
+            %   **Attention:** parameters dx, dy, dz, dt are not used, so they can be replaced with NaNs
+            %
 
             if obj.getLabelsNumber > 0
                 obj.labelPosition(:,1) = obj.labelPosition(:,1) - cropF(5) + 1;
@@ -132,22 +188,38 @@ classdef Annotations < matlab.mixin.Copyable
         
         
         function [labelsList, labelValues, labelPositions, indices] = getCurrentSliceLabels(obj)
-            % [labelsList, labelValues, labelPositions, indices] = getCurrentSliceLabels(obj)
+            % GETCURRENTSLICELABELS - [labelsList, labelValues, labelPositions, indices] = getCurrentSliceLabels(obj).
+            %
+            % Syntax:
+            %   function [labelsList, labelValues, labelPositions, indices] = getCurrentSliceLabels(obj)
+            %
             % Get list of labels shown at the current slice
             %
-            % @note replaced with mibImage.getSliceLabels
             %
-            % Parameters:
+            % **Note:** replaced with mibImage.getSliceLabels
             %
-            % Return values:
-            % labelsList:   a cell array with labels
-            % labelPositions:   a matrix with coordinates of the labels [labelIndex, z x y t]
-            % indices:  indices of the labels
-            
-            %| 
-			% @b Examples:
-            % @code [labelsList, labelPositions, indices] = LabelsInstance.getCurrentSliceLabels(); // get all labels from the currently shown slice @endcode
-            % @code [labelsList, labelPositions, indices] = getCurrentSliceLabels(obj); // Call within the class;  get all labels from the currently shown slice @endcode
+            % Input Arguments:
+            %
+            % Output Arguments:
+            %   - **labelsList** — a cell array with labels
+            %   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y t]
+            %   - **indices** — indices of the labels
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelPositions, indices] = LabelsInstance.getCurrentSliceLabels();% get all labels from the currently shown slice
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelPositions, indices] = getCurrentSliceLabels(obj);% Call within the class;  get all labels from the currently shown slice
+            %
             
             error('replaced with mibImage.getSliceLabels(), use without parameters!');
             
@@ -163,27 +235,46 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function [labelsList, labelValues, labelPositions, indices] = getLabels(obj, rangeZ, rangeX, rangeY, rangeT)
-            % function [labelsList, labelValues, labelPositions, indices] = getLabels(obj, rangeZ, rangeX, rangeY, rangeT)
-            % Get list of labels
+            % GETLABELS - Get list of labels.
             %
-            % Parameters:
-            % rangeZ: [@em optional] define range of labels to retrieve for
-            % Z [minZ maxZ], can be @b NaN
-            % rangeX: [@em optional] define range of labels to retrieve for X [minX maxX], can be @b NaN
-            % rangeY: [@em optional] define range of labels to retrieve for Y [minY maxY], can be @b NaN
-            % rangeT: [@em optional] define range of labels to retrieve for T [minT maxT], can be @b NaN
+            % Syntax:
+            %   function [labelsList, labelValues, labelPositions, indices] = getLabels(obj, rangeZ, rangeX, rangeY, rangeT)
             %
-            % Return values:
-            % labelsList:   a cell array with labels
-            % labelValues: an array of numbers with values
-            % labelPositions:   a matrix with coordinates of the labels [labelIndex, z x y t]
-            % indices:  indices of the labels
-            
-            %| 
-			% @b Examples:
-            % @code [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabels(); // get all labels @endcode
-            % @code [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabels(50); // get all labels from slice 50 @endcode
-            % @code [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabels(obj, 50); // Call within the class;  get all labels from slice 50 @endcode
+            % Input Arguments:
+            %   - **rangeZ** — *(optional)* define range of labels to retrieve for
+            %     Z [minZ maxZ], can be **NaN**
+            %   - **rangeX** — *(optional)* define range of labels to retrieve for X [minX maxX], can be **NaN**
+            %   - **rangeY** — *(optional)* define range of labels to retrieve for Y [minY maxY], can be **NaN**
+            %   - **rangeT** — *(optional)* define range of labels to retrieve for T [minT maxT], can be **NaN**
+            %
+            % Output Arguments:
+            %   - **labelsList** — a cell array with labels
+            %   - **labelValues** — an array of numbers with values
+            %   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y t]
+            %   - **indices** — indices of the labels
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabels();% get all labels
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabels(50);% get all labels from slice 50
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabels(obj, 50);% Call within the class;  get all labels from slice 50
+            %
             
             if nargin < 5; rangeT = NaN; end
             if nargin < 4; rangeY = NaN; end
@@ -247,27 +338,33 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function [labels, values, positions, indices] = getLabelsById(obj, labelId)
-            % function labels, values, positions, indices] = getLabelsById(obj, labelId)
-            % Get labels using labelId
+            % GETLABELSBYID - Get labels using labelId.
             %
-            % Parameters:
-            % labelId: a variable or a vector with an old label to be updated:
-            % - @b a @b single @b number @b or @b a @b column @b of @b numbers:     remove label that have index equal to the number
-            % - @b a @b matrix:     remove all labels that have coordinates specified in the matrix [labelIndex, z x y t]
-            % - @b a @b cell @b array:     remove all labels that have text specified in the cell array 
-            % newLabelText,     a cell or a char string with new text for the label
+            % Syntax:
+            %   function [labels, values, positions, indices] = getLabelsById(obj, labelId)
             %
-            % Return values:
-            % labels:   - cell array with labels of annotations
-            % values:   - array with values of annotations
-            % positions: - a matrix with coordinates (index; z,x,y,t)
-            % indices: - array with indices of annotations
-            %| 
-			% @b Examples:
-            % @code
-            % labelIds = [5, 7, 10]';
-            % [labels, values, positions, id] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabelsById(labelIds); // call from mibController, get labels with indices 5, 7, 10 
-            % @endcode
+            % Input Arguments:
+            %   - **labelId** — a variable or a vector with a label to retrieve:
+            %
+            %     - **a single number or a column of numbers** — get label that has index equal to the number
+            %     - **a matrix** — get all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** — get all labels that have text specified in the cell array
+            %
+            % Output Arguments:
+            %   - **labels** — - cell array with labels of annotations
+            %   - **values** — - array with values of annotations
+            %   - **positions** — - a matrix with coordinates (index; z,x,y,t)
+            %   - **indices** — - array with indices of annotations
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     labelIds = [5, 7, 10]';
+            %     [labels, values, positions, id] = obj.mibModel.I{obj.mibModel.id}.annotations.getLabelsById(labelIds);% call from mibController, get labels with indices 5, 7, 10
+            %
             
             if nargin < 2     % check parameters
                 error('Annotations.getLabelsById: not enough arguments!');
@@ -304,39 +401,67 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function labelsNumber = getLabelsNumber(obj)
-            % function labelsNumber = getLabelsNumber(obj, rangeZ)
-            % Get total number of labels 
+            % GETLABELSNUMBER - Get total number of labels.
             %
-            % Parameters:
+            % Syntax:
+            %   function labelsNumber = getLabelsNumber(obj)
             %
-            % Return values:
-            % labelsNumber:   a number of labels
-            
-            %| 
-			% @b Examples:
-            % @code labelsNumber = obj.mibModel.I{obj.mibModel.id}.annotations.getLabelsNumber(); // get number of labels @endcode
-            % @code labelsNumber = getLabelsNumber(obj); // Call within the class;  get number of labels  @endcode
+            % Input Arguments:
+            %
+            % Output Arguments:
+            %   - **labelsNumber** — a number of labels
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     labelsNumber = obj.mibModel.I{obj.mibModel.id}.annotations.getLabelsNumber();% get number of labels
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     labelsNumber = getLabelsNumber(obj);% Call within the class;  get number of labels
+            %
             labelsNumber = numel(obj.labelText);
         end
         
         function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, handles, sliceNumber, timePoint)
-            % [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, handles, sliceNumber, timePoint)
+            % GETSLICELABELS - [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, handles, sliceNumber, timePoint).
+            %
+            % Syntax:
+            %   function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, handles, sliceNumber, timePoint)
+            %
             % Get list of labels shown at the specified slice
             %
-            % Parameters:
-            % handles:  a handles structure of im_browser
-            % sliceNumber: [@em optional], a slice number to get labels
-            % timePoint: [@em optional], a time point to get the labels
+            % Input Arguments:
+            %   - **handles** — a handles structure of im_browser
+            %   - **sliceNumber** — *(optional)*, a slice number to get labels
+            %   - **timePoint** — *(optional)*, a time point to get the labels
             %
-            % Return values:
-            % labelsList:   a cell array with labels
-            % labelPositions:   a matrix with coordinates of the labels [labelIndex, z x y]
-            % indices:  indices of the labels
-            
-            %| 
-			% @b Examples:
-            % @code [labelsList, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getSliceLabels(handles, 15); // get all labels from the slice 15 @endcode
-            % @code [labelsList, labelPositions, indices] = getSliceLabels(obj, handles); // Call within the class;  get all labels from the currently shown slice @endcode
+            % Output Arguments:
+            %   - **labelsList** — a cell array with labels
+            %   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y]
+            %   - **indices** — indices of the labels
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.annotations.getSliceLabels(handles, 15);% get all labels from the slice 15
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [labelsList, labelPositions, indices] = getSliceLabels(obj, handles);% Call within the class;  get all labels from the currently shown slice
+            %
             error('moved to mibImage.getSliceLabels');
             
             if nargin < 4
@@ -357,30 +482,28 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function [minZ, labelIds] = getMinValueZ(obj)
-            % function [minZ, labelIds] = getMinValueZ(obj)
-            % find and return the minimum Z value for all annotations as
-            % well as their indices
+            % GETMINVALUEZ - Find and return the minimum Z value for all annotations, as well as their indices.
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-            % minZ: value of min Z for all annotations
-            % labelIds: indices of those annotations
+            % Output Arguments:
+            %   - **minZ** — value of min Z for all annotations
+            %   - **labelIds** — indices of those annotations
+            %
 
             minZ = min(obj.labelPosition(:,1));
             labelIds = find(obj.labelPosition(:,1) == minZ); 
         end
 
         function [maxZ, labelIds] = getMaxValueZ(obj)
-            % function [mazZ, labelIds] = getMaxValueZ(obj)
-            % find and return the maximum Z value for all annotations as
-            % well as their indices
+            % GETMAXVALUEZ - Find and return the maximum Z value for all annotations, as well as their indices.
             %
-            % Parameters:
+            % Input Arguments:
             %
-            % Return values:
-            % maxZ: value of max Z for all annotations
-            % labelIds: indices of those annotations
+            % Output Arguments:
+            %   - **maxZ** — value of max Z for all annotations
+            %   - **labelIds** — indices of those annotations
+            %
             
             maxZ = max(obj.labelPosition(:,1));
             labelIds = find(obj.labelPosition(:,1) == maxZ); 
@@ -388,23 +511,43 @@ classdef Annotations < matlab.mixin.Copyable
         end
 
         function removeLabels(obj, labels)
-            % removeLabels(obj, labels)
+            % REMOVELABELS - removeLabels(obj, labels).
+            %
+            % Syntax:
+            %   function removeLabels(obj, labels)
+            %
             % Remove specified labels
             %
-            % Parameters:
-            % labels: a variable or a vector with a label:
-            % @li @b omitted:     remove all labels
-            % @li @b a @b single @b number @b or @b a @b column @b of @b numbers:     remove label that have index equal to the number
-            % @li @b a @b matrix:     remove all labels that have coordinates specified in the matrix [labelIndex, z x y t]
-            % @li @b a @b cell @b array:     remove all labels that have text specified in the cell array 
-            
-            %| 
-			% @b Examples:
-            % @code
-            % labels{1} = 'my label 1';
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.removeLabels(labels); // remove annotations that match labels @endcode
-            % @code removeLabels(obj, labels); // Call within the class; remove annotations that match labels  @endcode
+            % Input Arguments:
+            %   - **labels** — *(optional)* a variable or a vector with a label to remove:
+            %
+            %     - omitted — remove all labels
+            %     - **a single number or a column of numbers** — remove label that has index equal to the number
+            %     - **a matrix** — remove all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** — remove all labels that have text specified in the cell array
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     labels{1} = 'my label 1';
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.removeLabels(labels);% remove annotations that match labels
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     removeLabels(obj, labels);% Call within the class; remove annotations that match labels
+            %
             
             if isempty(obj.labelPosition); return; end  % nothing to remove
             
@@ -442,26 +585,39 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function result = renameLabels(obj, oldLabel, newLabelText)
-            % function result = renameLabels(obj, oldLabel, newLabelText)
-            % Rename specified labels with new text
+            % RENAMELABELS - Rename specified labels with new text.
             %
-            % Parameters:
-            % oldLabel: a variable or a vector with an old label to be updated:
-            % - @b a @b single @b number @b or @b a @b column @b of @b numbers:     remove label that have index equal to the number
-            % - @b a @b matrix:     remove all labels that have coordinates specified in the matrix [labelIndex, z x y t]
-            % - @b a @b cell @b array:     remove all labels that have text specified in the cell array 
-            % newLabelText:     a cell or a char string with new text for the label
+            % Syntax:
+            %   function result = renameLabels(obj, oldLabel, newLabelText)
             %
-            % Return values:
-            % result:   result of the function work: @b 1 - good, @b 0 - bad
-            
-            %| 
-			% @b Examples:
-            % @code
-            % oldLabelId = [5, 7, 10]';
-            % label{1} = 'my label 1';
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.renameLabels(oldLabelId, label); // call from mibController, rename labels with indices 5, 7, 10 @endcode
+            % Input Arguments:
+            %   - **oldLabel** — a variable or a vector with an old label to be renamed:
+            %
+            %     - **a single number or a column of numbers** — rename the label with this index
+            %     - **a matrix** — rename all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** — rename all labels that have text specified in the cell array
+            %
+            %   - **newLabelText** — a cell or a char string with new text for the label
+            %
+            % Output Arguments:
+            %   - **result** — result of the function work: ``1`` = success, ``0`` = failure
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     oldLabelId = [5, 7, 10]';
+            %     label{1} = 'my label 1';
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.renameLabels(oldLabelId, label);% call from mibController, rename labels with indices 5, 7, 10
+            %
             
             
             result = 0;
@@ -493,25 +649,44 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function replaceLabels(obj, labels, positions, values)
-            % replaceLabels(obj, labels, positions, values)
+            % REPLACELABELS - replaceLabels(obj, labels, positions, values).
+            %
+            % Syntax:
+            %   function replaceLabels(obj, labels, positions, values)
+            %
             % Replace existing labels with a new list of labels and their
             % values
             %
-            % Parameters:
-            % labels: a cell array with labels
-            % positions: a matrix with coordinates of the labels [pointIndex, z  x  y  t]
-            % values: an array of numbers with values of the labels, [@em optional] default = 1
-            
-            %| 
-			% @b Examples:
-            % @code
-            % labels{1} = 'my label 1';
-            % labels{2} = 'my label 2';
-            % positions(1,:) = [1, 50, 75, 5]; // position 1: x=50, y=75, z=1,t=5;
-            % positions(2,:) = [2, 50, 75, 6]; // position 1: x=50, y=75, z=2, t=6;
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.replaceLabels(labels, positions); // replace labels with a new list @endcode
-            % @code replaceLabels(obj, labels, positions); // Call within the class; replace labels with a new list @endcode
+            % Input Arguments:
+            %   - **labels** — a cell array with labels
+            %   - **positions** — a matrix with coordinates of the labels [pointIndex, z  x  y  t]
+            %   - **values** — an array of numbers with values of the labels, *(optional)* default = 1
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     labels{1} = 'my label 1';
+            %     labels{2} = 'my label 2';
+            %     positions(1,:) = [1, 50, 75, 5];% position 1: x=50, y=75, z=1,t=5;
+            %     positions(2,:) = [2, 50, 75, 6];% position 1: x=50, y=75, z=2, t=6;
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.replaceLabels(labels, positions);% replace labels with a new list
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     replaceLabels(obj, labels, positions);% Call within the class; replace labels with a new list
+            %
             
             if ~iscell(labels); labels = cellstr(labels); end
             if numel(labels) ~= size(positions, 1); error('Annotations.replaceLabels: error, number of labels and coordinates mismatch!'); end
@@ -532,28 +707,41 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function result = updateLabels(obj, oldLabel, newLabelText, newLabelPos, newLabelValues)
-            % function result = updateLabels(obj, oldLabel, newLabelText, newLabelPos, newLabelValues)
-            % Update specified labels with newLabels
+            % UPDATELABELS - Update specified labels with newLabels.
             %
-            % Parameters:
-            % oldLabel: a variable or a vector with an old label to be updated:
-            % - @b a @b single @b number @b or @b a @b column @b of @b numbers:     remove label that have index equal to the number
-            % - @b a @b matrix:     remove all labels that have coordinates specified in the matrix [labelIndex, z x y t]
-            % - @b a @b cell @b array:     remove all labels that have text specified in the cell array 
-            % newLabelText:     a cell or a char string with new text for the label
-            % newLabelPos:      coordinates of the new label [z, x, y]
-            % newLabelValues:   an array of numbers with values of the labels, [@em optional] default = 1
+            % Syntax:
+            %   function result = updateLabels(obj, oldLabel, newLabelText, newLabelPos, newLabelValues)
             %
-            % Return values:
-            % result:   result of the function work: @b 1 - good, @b 0 - bad
-            
-            %| 
-			% @b Examples:
-            % @code
-            % label{1} = 'my label 1';
-            % newPosition(1,:) = [50, 75, 1, 5]; // position 1: x=50, y=75; z=1, t=5
-            % @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.updateLabels(label, label, newPosition); // call from mibController, update coordinates of a label that has "my label 1" text @endcode
+            % Input Arguments:
+            %   - **oldLabel** — a variable or a vector with an old label to be updated:
+            %
+            %     - **a single number or a column of numbers** — update the label with this index
+            %     - **a matrix** — update all labels that have coordinates specified in the matrix ``[labelIndex, z x y t]``
+            %     - **a cell array** — update all labels that have text specified in the cell array
+            %
+            %   - **newLabelText** — a cell or a char string with new text for the label
+            %   - **newLabelPos** — coordinates of the new label ``[z, x, y]``
+            %   - **newLabelValues** — *(optional)* an array of numbers with values of the labels, default = ``1``
+            %
+            % Output Arguments:
+            %   - **result** — result of the function work: **1** - good, **0** - bad
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     label{1} = 'my label 1';
+            %     newPosition(1,:) = [50, 75, 1, 5];% position 1: x=50, y=75; z=1, t=5
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.updateLabels(label, label, newPosition);% call from mibController, update coordinates of a label that has "my label 1" text
+            %
             
             
             result = 0;
@@ -593,29 +781,35 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function saveToFile(obj, filename, options)
-            % function saveToFile(obj, filename, options)
-            % save Annotations to a file
+            % SAVETOFILE - save Annotations to a file.
             %
-            % Parameters:
-            % filename: full path to file
-            % options: a structure with optional paramters
-            %  .format - a char string
-            %       'ann' - MIB annotation format
-            %       'landmarksAscii' - amira landmarks in the ascii format
-            %       'landmarksBin' - amira landmarks as binaries
-            %       'psi' - PSI format ASCII
-            %       'xls' - Microsoft Excel format
-            %  .showWaitbar - [@em optional] a number 1-show; 0-do not show the waitbar; requires .mibGUI
-            %  .mibGUI - [@em optional] handle to the main app UIFigure, required when showWaitbar=1
-            %  .outputDir - [@em optional] output directory
-            %  .convertToUnits - [@em optional] a logical, or not convert pixel coordinates to the units requires bounding box and pixSize information
-            %  .boundingBox - a matrix [x1 width y1 height z1 depth],  required for conversion to units
-            %  .pixSize - a MIB structure with pixel sizes
-            %  .labelText - [@em optional], instead of obj.labelText save provided labelText
-            %  .labelPosition - [@em optional], instead of obj.labelPosition save provided labelPosition
-            %  .labelValue - [@em optional], instead of obj.labelValue save provided labelValue
-            %  .sliceNames - [@em optional], cell array with filenames, used for export to excel and csv
-            %  .addLabelToFilename - [@em optional], logical add annotation label to filename, default = false
+            % Syntax:
+            %   function saveToFile(obj, filename, options)
+            %
+            % Input Arguments:
+            %   - **filename** — full path to output file
+            %   - **options** — *(optional)* struct with saving parameters:
+            %
+            %     - ``.format`` — (char) output file format:
+            %
+            %       - ``'ann'`` — MIB annotation format
+            %       - ``'landmarksAscii'`` — Amira landmarks in ASCII format
+            %       - ``'landmarksBin'`` — Amira landmarks as binaries
+            %       - ``'psi'`` — PSI format ASCII
+            %       - ``'xls'`` — Microsoft Excel format
+            %
+            %     - ``.showWaitbar`` — *(optional)* logical; ``1`` = show, ``0`` = hide; requires ``.mibGUI``
+            %     - ``.mibGUI`` — *(optional)* handle to the main app UIFigure, required when ``showWaitbar=1``
+            %     - ``.outputDir`` — *(optional)* output directory
+            %     - ``.convertToUnits`` — *(optional)* logical; convert pixel coordinates to physical units; requires ``.boundingBox`` and ``.pixSize``
+            %     - ``.boundingBox`` — matrix ``[x1 width y1 height z1 depth]``, required for unit conversion
+            %     - ``.pixSize`` — MIB struct with pixel sizes
+            %     - ``.labelText`` — *(optional)* override ``obj.labelText`` with provided cell array
+            %     - ``.labelPosition`` — *(optional)* override ``obj.labelPosition`` with provided matrix
+            %     - ``.labelValue`` — *(optional)* override ``obj.labelValue`` with provided array
+            %     - ``.sliceNames`` — *(optional)* cell array with filenames, used for Excel and CSV export
+            %     - ``.addLabelToFilename`` — *(optional)* logical; append annotation label to filename; default ``false``
+            %
 
             if nargin < 3; options = struct(); end
             if nargin < 2; filename = []; end
@@ -811,28 +1005,40 @@ classdef Annotations < matlab.mixin.Copyable
         end
         
         function sortLabels(obj, sortBy, direction)
-            % function sortLabels(obj, sortBy, direction)
-            % Resort the list of annotation labels
+            % SORTLABELS - Resort the list of annotation labels.
             %
-            % Parameters:
-            % sortBy: a string with the field to be used for sorting
-            % - 'name', @em default sort by the label name
-            % - 'value', sort by value
-            % - 'x', sort by the X coordinate
-            % - 'y', sort by the Y coordinate
-            % - 'z', sort by the Z coordinate
-            % - 't', sort by the T coordinate
-            % direction: a string with sorting direction
-            % - 'ascend', @em default sort in the ascending order
-            % - 'descend', sort in the descending order
+            % Syntax:
+            %   function sortLabels(obj, sortBy, direction)
             %
-            % Return values:
-            % 
-            
-            %| 
-			% @b Examples:
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels(); // call from mibController, sort the list by the label name @endcode
-            % @code obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels('name', 'descend'); // call from mibController, sort the list by the label name using descending order @endcode
+            % Input Arguments:
+            %   - **sortBy** — a string with the field to be used for sorting
+            %   - 'name', *default* sort by the label name
+            %   - 'value', sort by value
+            %   - 'x', sort by the X coordinate
+            %   - 'y', sort by the Y coordinate
+            %   - 'z', sort by the Z coordinate
+            %   - 't', sort by the T coordinate
+            %   - **direction** — a string with sorting direction
+            %   - 'ascend', *default* sort in the ascending order
+            %   - 'descend', sort in the descending order
+            %
+            % Output Arguments:
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels();% call from mibController, sort the list by the label name
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels('name', 'descend');% call from mibController, sort the list by the label name using descending order
+            %
             
             if nargin < 3; direction = 'ascend'; end
             if nargin < 2; sortBy = 'name'; end

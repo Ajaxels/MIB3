@@ -1,20 +1,27 @@
 function property_Callback(obj)
-% function property_Callback(obj)
-% Handle selection change in the Property dropdown.
+% PROPERTY_CALLBACK - Handle selection change in the Property dropdown.
+%
+% Syntax:
+%   function property_Callback(obj)
 %
 % Side-effects:
-% @li Enables ColorChannel2 only when 'Correlation' is selected
-% @li Warns and switches Connectivity to 8 when EndpointsLength/CurveLength
-%     is selected with 4/6 connectivity
-% @li Stores the selected index for the current mode/shape so it can be
-%     restored when the user switches shape or mode
-% @li In Multiple mode, immediately re-sorts and re-renders the table and
-%     histogram using the newly chosen display property
+%   - Enables ColorChannel2 only when 'Correlation' is selected
+%   - Warns and switches Connectivity to 8 when EndpointsLength/CurveLength
+% is selected with 4/6 connectivity
+%   - Stores the selected index for the current mode/shape so it can be
+% restored when the user switches shape or mode
+%   - In Multiple mode, immediately re-sorts and re-renders the table and
+% histogram using the newly chosen display property
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.Property.ValueChangedFcn = @(~,~) obj.property_Callback(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.Property.ValueChangedFcn = @(~,~) obj.property_Callback();
+%
 
 % Updates
 %

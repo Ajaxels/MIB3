@@ -1,10 +1,13 @@
 function imageMode_Callback(obj, hWidget, hData)
-% function imageMode_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Mode section of the Image ribbon
+% IMAGEMODE_CALLBACK - callback on press of buttons in the Mode section of the Image ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function imageMode_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

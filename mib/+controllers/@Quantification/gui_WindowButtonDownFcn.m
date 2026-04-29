@@ -1,6 +1,8 @@
 function gui_WindowButtonDownFcn(obj)
-% function gui_WindowButtonDownFcn(obj)
-% Handle mouse button press events on the histogram axes.
+% GUI_WINDOWBUTTONDOWNFCN - Handle mouse button press events on the histogram axes.
+%
+% Syntax:
+%   function gui_WindowButtonDownFcn(obj)
 %
 % Left-click sets the lower histogram limit (obj.histLimits(1));
 % right-click sets the upper limit (obj.histLimits(2)).
@@ -9,10 +11,15 @@ function gui_WindowButtonDownFcn(obj)
 % boxes are updated and objects whose value column falls within
 % [histLimits(1), histLimits(2)] are highlighted in the selection layer.
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code obj.view.gui.WindowButtonDownFcn = @(~,~) obj.gui_WindowButtonDownFcn(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     obj.view.gui.WindowButtonDownFcn = @(~,~) obj.gui_WindowButtonDownFcn();
+%
 
 % Updates
 %

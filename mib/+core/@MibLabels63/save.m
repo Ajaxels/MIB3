@@ -1,6 +1,8 @@
 function fnOut = save(obj, filename, options)
-% function fnOut = save(obj, filename, options)
-% Save label/segmentation data from a MibLabels63 object to a file.
+% SAVE - Save label/segmentation data from a MibLabels63 object to a file.
+%
+% Syntax:
+%   function fnOut = save(obj, filename, options)
 %
 % This method OVERRIDES core.MibImage.save() to inject label-specific
 % metadata (material names, material colours, labels variable name) into
@@ -14,50 +16,57 @@ function fnOut = save(obj, filename, options)
 % Supported formats: same as core.MibLabels.save (see io.SaverFactory.getFormats('labels'))
 %
 % NOTE ON pixSize:
-%   MibLabels63 does not store pixel size.
-%   Supply options.pixSize, or it defaults to 1x1x1 um.
+% MibLabels63 does not store pixel size.
+% Supply options.pixSize, or it defaults to 1x1x1 um.
 %
-% Parameters:
-%   obj      — MibLabels63 instance
-%   filename — (char) full output path including extension
-%   options  — (struct, optional) saving options:
-%     .Format         — (char) format string; inferred from extension when absent
-%     .Saving3DPolicy — (char) '3D stack' | '2D sequence', default '3D stack'
-%     .showWaitbar    — (logical) default true
-%     .silent         — (logical) suppress dialogs, default false
-%     .overwrite      — (logical) default true
-%     .MaterialIndex  — (double|[]) which material to export.
-%                       [] or NaN → all materials.
-%                       integer   → single material (returned as binary 0/1).
-%     .FilenameGenerator — (char) filename policy for 2D sequences
-%     .pixSize        — (struct) injected by MibDataset.saveImage()
-%     .boundingBox    — ([1x6]) injected by MibDataset.saveImage()
-%     .annotations    — (struct) injected by MibDataset.saveImage() when present
+% Input Arguments:
+%   - **obj** — ``MibLabels63`` instance
+%   - **filename** — (char) full output path including extension
+%   - **options** — *(optional)* struct with saving options:
 %
-% Return values:
-%   fnOut — (char or cell of char) saved filename(s); [] on failure
+%     - ``.Format`` — (char) format string; inferred from extension when absent
+%     - ``.Saving3DPolicy`` — (char) ``'3D stack'`` | ``'2D sequence'``; default ``'3D stack'``
+%     - ``.showWaitbar`` — (logical) default ``true``
+%     - ``.silent`` — (logical) suppress dialogs; default ``false``
+%     - ``.overwrite`` — (logical) default ``true``
+%     - ``.MaterialIndex`` — (double|[]) which material to export:
 %
-%|
-% @b Examples:
-% @code
-% %% Save type-63 model via MibDataset (recommended — pixSize injected)
-% opts.Format      = 'Matlab format (*.model)';
-% opts.showWaitbar = false;
-% opts.silent      = true;
-% opts.overwrite   = true;
-% fnOut = obj.mibModel.I{obj.mibModel.id}.saveImage('labels', '/output/model.model', opts);
-% @endcode
+%       - ``[]`` or ``NaN`` — all materials
+%       - integer — single material (returned as binary 0/1)
 %
-% @code
-% %% Direct call (standalone, no MibDataset)
-% opts.Format      = 'Matlab format (*.model)';
-% opts.showWaitbar = false;
-% opts.silent      = true;
-% opts.overwrite   = true;
-% opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-% opts.boundingBox = [0 16.6 0 16.6 0 10];
-% fnOut = labels63.save('/output/model63.model', opts);
-% @endcode
+%     - ``.FilenameGenerator`` — (char) filename policy for 2D sequences
+%     - ``.pixSize`` — (struct) injected by ``MibDataset.saveImage()``
+%     - ``.boundingBox`` — ([1×6]) injected by ``MibDataset.saveImage()``
+%     - ``.annotations`` — (struct) injected by ``MibDataset.saveImage()`` when present
+%
+% Output Arguments:
+%   - **fnOut** — (char or cell of char) saved filename(s); ``[]`` on failure
+%
+% Usage:
+%   **Example 1** — Save type-63 model via MibDataset (recommended: pixSize injected)
+%
+%   .. code-block:: matlab
+%
+%
+%     opts.Format      = 'Matlab format (*.model)';
+%     opts.showWaitbar = false;
+%     opts.silent      = true;
+%     opts.overwrite   = true;
+%     fnOut = obj.mibModel.I{obj.mibModel.id}.saveImage('labels', '/output/model.model', opts);
+%
+%   **Example 2** — Direct call (standalone, no MibDataset)
+%
+%   .. code-block:: matlab
+%
+%
+%     opts.Format      = 'Matlab format (*.model)';
+%     opts.showWaitbar = false;
+%     opts.silent      = true;
+%     opts.overwrite   = true;
+%     opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%     opts.boundingBox = [0 16.6 0 16.6 0 10];
+%     fnOut = labels63.save('/output/model63.model', opts);
+%
 
 % Updates
 

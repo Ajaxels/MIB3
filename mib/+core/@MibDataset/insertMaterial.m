@@ -1,26 +1,38 @@
 function insertMaterial(obj, materialIndex, materialName, wb)
-% function insertMaterial(obj, materialIndex, materialName, wb)
-% Insert a new material at the specified position — MibDataset wrapper
+% INSERTMATERIAL - Insert a new material at the specified position — MibDataset wrapper.
+%
+% Syntax:
+%   function insertMaterial(obj, materialIndex, materialName, wb)
 %
 % Delegates to obj.labels.insertMaterial which handles both the pixel
 % data shifting (via direct obj.data{1} access) and the metadata
 % update (names, colours, materialsCount).
 %
-% Parameters:
-% materialIndex: double, 1-based position where the new material is
-%   inserted.
-% materialName: char, name of the new material (used for small models;
-%   ignored for large models).
-% wb: [@em optional] handle to a uiprogressdlg for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **materialIndex** — double, 1-based position where the new material is
+%     inserted.
+%   - **materialName** — char, name of the new material (used for small models;
+%     ignored for large models).
+%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.insertMaterial(3, 'Nucleus');       // insert at position 3 @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.insertMaterial(5, 'New', wb);       // with progress bar @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.insertMaterial(3, 'Nucleus');% insert at position 3
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.insertMaterial(5, 'New', wb);% with progress bar
+%
 
 % Updates
 %

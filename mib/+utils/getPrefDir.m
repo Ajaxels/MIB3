@@ -1,23 +1,28 @@
 function prefdir = getPrefDir()
-% function prefdir = getPrefDir()
-% get directory where MIB preferences are stored
-% on Windows it is C:\Users\Username\Matlab
-% on Mac it is /Users/username/Matlab
-% on Linux it is /home/username/Matlab
+% GETPREFDIR - Get directory where MIB preferences are stored.
 %
-% Parameters:
+% Syntax:
 %
+%   .. code-block:: matlab
 %
-% Return values:
-% prefdir: сhar with location of MIB preferences
-
-%|
-% @b Examples:
-% @code
-% prefdir = utils.getPrefDir(); // call from the main controller class
-% @endcode
+%      prefdir = getPrefDir()
 %
-% Updates
+% Platform-specific locations:
+%
+% - Windows: ``C:\Users\Username\Matlab``
+% - macOS:   ``/Users/username/Matlab``
+% - Linux:   ``/home/username/Matlab``
+%
+% Output Arguments:
+%   - **prefdir** — [char] full path to the MIB preferences directory
+%
+% Usage:
+%
+%   **Example 1** — retrieve the preferences directory path
+%
+%   .. code-block:: matlab
+%
+%      prefdir = utils.getPrefDir();
 %
 
 arguments (Output)

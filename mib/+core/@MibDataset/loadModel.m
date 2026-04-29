@@ -1,60 +1,71 @@
 function result = loadModel(obj, filenames, options)
-% function result = loadModel(obj, filenames, options)
-% Load a segmentation model into this dataset from files or a raw array
+% LOADMODEL - Load a segmentation model into this dataset from files or a raw array.
+%
+% Syntax:
+%   function result = loadModel(obj, filenames, options)
 %
 % This is the dataset-level orchestrator for model loading.  It is called
 % by MibModel.loadModel after BatchOpt processing, virtual-mode guarding,
 % and file browsing have been completed.  It handles:
 %
-%   FILE PATH  — filenames is a cell array of full file paths.
-%                Dispatches to the loader identified by options.loaderInfo.
+% FILE PATH  — filenames is a cell array of full file paths.
+% Dispatches to the loader identified by options.loaderInfo.
 %
-%   IMPORT PATH — options.model contains the raw array (workspace import).
-%                 filenames is empty ([]); the loader is bypassed entirely.
+% IMPORT PATH — options.model contains the raw array (workspace import).
+% filenames is empty ([]); the loader is bypassed entirely.
 %
 % After the array is obtained the method validates dimensions against the
 % open image, calls createModel(), writes the data, and populates all label
 % metadata properties.
 %
-% Parameters:
-% filenames: cell array with full file paths, or [] for the import path
-% options: struct with loading parameters
-% @li .loaderInfo        - struct returned by ExtensionRegistryLoad.resolveLoader
-%                          (required for the file path; ignored for import)
-% @li .model             - raw array to import (import path only)
-% @li .modelMaterialNames - cell array of names for the import path
-% @li .modelMaterialColors - Nx3 RGB matrix for the import path
-% @li .modelType         - numeric model type (63/255/65535/4294967295)
-% @li .labelText         - annotation text cell array (or [])
-% @li .labelPosition     - annotation positions (or [])
-% @li .labelValue        - annotation values (or [])
-% @li .batchModeSwitch   - [logical, {false}] suppress interactive dialogs
-% @li .preferences       - MIB preferences struct (for color fallback)
-% @li .ParentFigure      - parent figure handle for dialogs
-% @li .mibPath           - path to MIB installation directory
-% @li .showWaitbar       - [logical, {true}] show progress dialog
+% Input Arguments:
+%   - **filenames** — cell array with full file paths, or [] for the import path
+%   - **options** — struct with loading parameters
 %
-% Return values:
-% result: struct with loaded metadata, or [] on error or user cancel
-% @li .materialNames  - cell array of material names
-% @li .materialColors - Nx3 RGB color matrix
-% @li .modelType      - numeric type used
-% @li .labelsVariable - variable name
-
-%|
-% @b Examples:
-% @code
-% options.loaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader('file.model','Model','Default');
-% options.preferences = obj.mibModel.preferences;
-% result = obj.mibModel.I{obj.mibModel.id}.loadModel({'C:\data\Labels.model'}, options);
-% @endcode
+%     - ``.loaderInfo`` — struct returned by ExtensionRegistryLoad.resolveLoader
+%       (required for the file path; ignored for import)
+%     - ``.model`` — raw array to import (import path only)
+%     - ``.modelMaterialNames`` — cell array of names for the import path
+%     - ``.modelMaterialColors`` — Nx3 RGB matrix for the import path
+%     - ``.modelType`` — numeric model type (63/255/65535/4294967295)
+%     - ``.labelText`` — annotation text cell array (or [])
+%     - ``.labelPosition`` — annotation positions (or [])
+%     - ``.labelValue`` — annotation values (or [])
+%     - ``.batchModeSwitch`` — [logical, {false}] suppress interactive dialogs
+%     - ``.preferences`` — MIB preferences struct (for color fallback)
+%     - ``.ParentFigure`` — parent figure handle for dialogs
+%     - ``.mibPath`` — path to MIB installation directory
+%     - ``.showWaitbar`` — [logical, {true}] show progress dialog
 %
-% @code
-% % import path
-% options.model = myModelArray;
-% options.modelMaterialNames = {'Cell','Nucleus'};
-% result = obj.mibModel.I{obj.mibModel.id}.loadModel([], options);
-% @endcode
+% Output Arguments:
+%   - **result** — struct with loaded metadata, or [] on error or user cancel
+%
+%     - ``.materialNames`` — cell array of material names
+%     - ``.materialColors`` — Nx3 RGB color matrix
+%     - ``.modelType`` — numeric type used
+%     - ``.labelsVariable`` — variable name
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.loaderInfo = obj.mibModel.extensionRegistryLoad.resolveLoader('file.model','Model','Default');
+%     options.preferences = obj.mibModel.preferences;
+%     result = obj.mibModel.I{obj.mibModel.id}.loadModel({'C:\data\Labels.model'}, options);
+%
+%
+%   **Example 2** — import path
+%
+%   .. code-block:: matlab
+%
+%
+%     % import path
+%     options.model = myModelArray;
+%     options.modelMaterialNames = {'Cell','Nucleus'};
+%     result = obj.mibModel.I{obj.mibModel.id}.loadModel([], options);
+%
 
 % Updates
 

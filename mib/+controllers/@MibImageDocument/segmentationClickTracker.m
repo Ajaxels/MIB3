@@ -1,30 +1,37 @@
 function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
-% function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
-% Trace membranes and draw straight lines in 2D and 3D
+% SEGMENTATIONCLICKTRACKER - Trace membranes and draw straight lines in 2D and 3D.
+%
+% Syntax:
+%   function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
 %
 % Uses the Membrane Click Tracker tool to connect two user-clicked points
 % either by tracing along minimum intensity gradients (fast marching) or by
 % drawing a straight line segment. In 3D mode only straight lines are
 % supported.
 %
-% Parameters:
-% yxzCoordinate: a vector with [y, x, z] coordinates of the starting point
-%   (matching voxel coordinates of the dataset)
-% yx: a vector [y, x] with coordinates of the clicked point in the display
-%   coordinate system (before magnification correction)
-% modifier: a string, to specify what to do with the generated selection
-% @li @em empty - trace membrane from the starting to the selected point
-% @li @em 'shift' - defines the starting point of a membrane (2D/3D mode)
+% Input Arguments:
+%   - **yxzCoordinate** — a vector with [y, x, z] coordinates of the starting point
+%     (matching voxel coordinates of the dataset)
+%   - **yx** — a vector [y, x] with coordinates of the clicked point in the display
+%     coordinate system (before magnification correction)
+%   - **modifier** — a string, to specify what to do with the generated selection
+%     - *empty* - trace membrane from the starting to the selected point
+%     - *'shift'* - defines the starting point of a membrane (2D/3D mode)
 %
-% Return values:
-% output: a string that defines what next to do in the gui_WindowButtonDownFcn function
-% @li @em 'continue' - continue with the script
-% @li @em 'return' - stop execution and return
+% Output Arguments:
+%   - **output** — a string that defines what next to do in the gui_WindowButtonDownFcn function
+%     - *'continue'* - continue with the script
+%     - *'return'* - stop execution and return
 %
-%|
-% @b Examples:
-% @code output = obj.segmentationClickTracker([50, 75, 1], [25, 38], 'shift');     // define starting point @endcode
-% @code output = obj.segmentationClickTracker([50, 75, 1], [25, 38], '');          // trace to endpoint @endcode
+% Usage:
+%   Example 1::
+%
+%     output = obj.segmentationClickTracker([50, 75, 1], [25, 38], 'shift');     // define starting point
+%
+%   Example 2::
+%
+%     output = obj.segmentationClickTracker([50, 75, 1], [25, 38], '');          // trace to endpoint
+%
 
 % Updates
 %

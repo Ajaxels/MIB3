@@ -1,7 +1,10 @@
 function startPrediction2D(obj)
-    % function startPrediction2D(obj)
-    % predict datasets for 2D taken to a separate function for
-    % better performance
+% STARTPREDICTION2D - predict datasets for 2D taken to a separate function for.
+%
+% Syntax:
+%   function startPrediction2D(obj)
+%
+% better performance
 
     if strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Preprocessing is not required') || ...
             strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Split files for training/validation') || ...

@@ -1,11 +1,15 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function stopTrainingCallback(hButton, varargin)
-% function stopTrainingCallback()
-% stop training process by pressing the Stop training or Emergency stop
-% buttons
+% STOPTRAININGCALLBACK - Stop the DeepMIB training process via the Stop or Emergency Brake button.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      stopTrainingCallback(hButton)
+%
+% Input Arguments:
+%   - **hButton** — handle to the button that triggered the callback, or a
+%     ``matlab.ui.dialog.ProgressDialog`` handle when called from a progress dialog
 
 global mibDeepStopTraining
 global mibDeepTrainingProgressStruct

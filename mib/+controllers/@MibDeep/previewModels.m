@@ -1,12 +1,15 @@
 function previewModels(obj, loadImagesSwitch)
-% function previewModels(obj, loadImagesSwitch)
-% load images for predictions and the resulting modelsinto MIB
+% PREVIEWMODELS - load images for predictions and the resulting modelsinto MIB.
 %
-% Parameters:
-% loadImagesSwitch: [logical], load or not (assuming that
-% images have already been preloaded) images. When true, both
-% images and models are loaded, when false - only models are
-% loaded
+% Syntax:
+%   function previewModels(obj, loadImagesSwitch)
+%
+% Input Arguments:
+%   - **loadImagesSwitch** — [logical], load or not (assuming that
+%     images have already been preloaded) images. When true, both
+%     images and models are loaded, when false - only models are
+%     loaded
+%
 
 imgDir = 0;
 if loadImagesSwitch

@@ -1,6 +1,6 @@
 classdef MibSelection
-    % classdef MibSelection
-    % controller for methods of the Selection and View settings panel in MIB
+% MIBSELECTION - controller for methods of the Selection and View settings panel in MIB.
+%
 
     properties
         mibController   % controllers.MibController
@@ -46,7 +46,11 @@ classdef MibSelection
         updateSettingsFromPreset(obj, presetId)        % update settings of the selected segmentation tool from a stored preset; callback on click of preset buttons or 1/2/3 shortcuts
 
         function obj = MibSelection(mainCtrl, view, guiHandles, model)
-            %% init properties
+            % MIBSELECTION - % init properties.
+            %
+            % Syntax:
+            %   function obj = MibSelection(mainCtrl, view, guiHandles, model)
+            %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Roi)

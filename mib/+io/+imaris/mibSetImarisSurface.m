@@ -15,39 +15,38 @@
 % Date: 25.04.2023
 
 function connImaris = mibSetImarisSurface(surface, connImaris, options)
-% function connImaris = mibSetImarisSurface(surface, connImaris, options)
-% Send a surface from MIB to Imaris
+% MIBSETIMARISSURFACE - Send a surface from MIB to Imaris.
 %
-% Parameters:
-% surface: a structure with fields:
-%   .vertices - coordinates of vertices [Nx3]
-%   .faces    - indeces of vertices for each face/triangle
-%   .normals  - matrix with normals [Nx3]
-% connImaris: [@em optional] a handle to Imaris connection
-% options: an optional structure with additional settings 
-% @li .color [@em optional] a vector with color for spots: (1x4), (0..1) vector of [R G B A] values
-% @li .name -> a char with the name of the object
+% Syntax:
+%   function connImaris = mibSetImarisSurface(surface, connImaris, options)
 %
-% Return values:
-% connImaris:  a handle to Imaris connection
-
-% @note
-% uses IceImarisConnector bindings
-% @b Requires:
-% 1. set system environment variable IMARISPATH to the installation
-% directory, for example "c:\tools\science\imaris"
-% 2. restart Matlab
-% 3. The function is using patchnormals function written by by Dirk-Jan Kroon
-% https://se.mathworks.com/matlabcentral/fileexchange/24330-patch-normals
-
-%|
-% @b Examples:
-% @code 
-% surface.vertices = [28 40 0; 29 40 0; 27 40 1; 28 40 1];
-% surface.faces = [1 3 4; 1 4 2];
-% options.color = [1 0 0];
-% obj.connImaris = mibSetImarisSurface(surface, obj.connImaris, options);     // call from mibController; send surface from Matlab to Imaris
-% @endcode
+% Input Arguments:
+%   - **surface** — a structure with fields:
+%
+%     - ``.vertices`` — coordinates of vertices ``[Nx3]``
+%     - ``.faces`` — indices of vertices for each face/triangle
+%     - ``.normals`` — matrix with normals ``[Nx3]``
+%
+%   - **connImaris** — *(optional)* a handle to Imaris connection
+%   - **options** — *(optional)* structure with additional settings:
+%
+%     - ``.color`` — *(optional)* ``[R G B A]`` vector (1x4, range 0..1)
+%     - ``.name`` — (char) name of the object
+%
+% Output Arguments:
+%   - **connImaris** — a handle to Imaris connection
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     surface.vertices = [28 40 0; 29 40 0; 27 40 1; 28 40 1];
+%     surface.faces = [1 3 4; 1 4 2];
+%     options.color = [1 0 0];
+%     connImaris = io.imaris.mibSetImarisSurface(surface, connImaris, options);
+%
 
 % Updates
 % 

@@ -1,136 +1,142 @@
 function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
-% function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
-% Single-input dialog with uifigure and icon support offering access to
-% uieditfield for texts or uispinner for values.
+% INPUTSINGLEDLG - Single-input dialog for one text (``uieditfield``) or numeric (``uispinner``) value.
 %
-% Uses direct focus() call for immediate keyboard focus on the input
-% widget — no java.awt.Robot dependency. The dialog blocks the caller
-% via waitfor() until the user accepts or cancels.
-%
-% The dialog layout consists of two columns:
-%   Column 1: icon image (puffin or standard icon)
-%   Column 2: prompt label, input widget, OK/Cancel buttons
+% Uses direct ``focus()`` for immediate keyboard focus — no ``java.awt.Robot`` dependency.
+% The dialog blocks the caller via ``waitfor()`` until accepted or cancelled.
 %
 % Keyboard shortcuts:
-%   Enter  — accept (same as clicking OK)
-%   Escape — cancel (same as clicking Cancel)
 %
-% Parameters:
-% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
-%   used to center the dialog on the parent. Pass [] to use the cached
-%   handle from a prior call. The handle is cached persistently so
-%   subsequent calls with [] will reuse the last valid parent.
-% prompt: char/string with the prompt text displayed above the input field.
-%   Supports newlines via sprintf, e.g. sprintf('Line 1\nLine 2').
-% defAns: default value for the input widget:
-%   @li For editfield (default): char/string with the default text
-%   @li For spinner: struct with fields:
-%       @li .Value - numeric, initial spinner value (default 0)
-%       @li .Limits - [min max], spinner range (default [-Inf Inf])
-%       @li .Step - numeric, increment/decrement step (default 1)
-%       @li .Round - logical, round fractional values (default true)
-%       @li .ValueDisplayFormat - char, e.g. '%.0f', '%d items' (default '%.d')
-% dlgTitle: char/string with the dialog window title
-% options: [@em optional] struct with optional configuration fields:
-%   @li .mibPath - char, path to MIB installation for icon resolution
-%       (default: auto-detected via which('mib3'))
-%   @li .Type - char, input widget type:
-%       @li 'editfield' — text input (default)
-%       @li 'spinner' — numeric spinner (auto-set when defAns is a struct)
-%   @li .WindowWidth - numeric, dialog width in pixels (default 400)
-%   @li .WindowHeight - numeric, dialog height in pixels (default 112)
-%   @li .WindowStyle - char, figure window style:
-%       @li 'normal' — non-modal (default)
-%       @li 'modal' — modal dialog
-%   @li .Icon - char, icon identifier (default 'puffin_question'):
-%       @li 'puffin_question' — random puffin question icon (96px)
-%       @li 'puffin_warning' — random puffin warning icon (96px)
-%       @li 'puffin_error' — random puffin error icon (96px)
-%       @li 'puffin_measure' — random puffin measure icon (96px)
-%       @li 'puffin_info' — random puffin info icon (96px)
-%       @li 'puffin_waiting' — random puffin waiting icon (96px)
-%       @li 'question_48px' — standard question mark (48px)
-%       @li 'warning_48px' — standard warning triangle (48px)
-%       @li 'celebrate' — puffin cheering icon (220px)
-%       @li 'call4help' — call for help icon
-%   @li .IconWidth - numeric, width of icon column in pixels
-%       (default 96 for puffin icons, 48 for standard icons)
-%   @li .ParentFigure - handle, alternative parent for centering
-%       (overrides the ParentFigure parameter)
+% - **Enter** — accept (equivalent to clicking OK)
+% - **Escape** — cancel (equivalent to clicking Cancel)
 %
-% Return values:
-% answer: entered value; empty [] when canceled
-%   @li char for editfield mode (the text the user typed)
-%   @li double for spinner mode (the numeric value)
+% Syntax:
 %
-%|
-% @b Examples:
-% @code
-% % Example 1: Basic editfield — add new material name
-% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
-%     'Please enter a name for the new material:', ...
-%     sprintf('m%.3d', 5), 'Add material');
-% if isempty(answer); return; end
-% @endcode
+%   .. code-block:: matlab
 %
-% @code
-% % Example 2: Editfield with all options specified
-% options.Type = 'editfield';
-% options.WindowWidth = 400;
-% options.WindowHeight = 100;
-% options.WindowStyle = 'modal';
-% options.Icon = 'question_48px';
-% options.IconWidth = 48;
-% options.mibPath = obj.mibModel.mibPath;
-% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
-%     'Enter file name:', 'myfile.txt', 'File Name', options);
-% if isempty(answer); return; end
-% @endcode
+%      answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle)
+%      answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options)
 %
-% @code
-% % Example 3: Spinner with full struct configuration
-% options.Type = 'spinner';
-% options.WindowWidth = 400;
-% options.WindowHeight = 100;
-% options.WindowStyle = 'modal';
-% options.Icon = 'question_48px';
-% options.IconWidth = 48;
-% options.mibPath = obj.mibModel.mibPath;
-% defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, ...
-%     'Round', false, 'ValueDisplayFormat', '%.3f units');
-% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
-%     'Enter iteration count:', defAns, 'Iterations', options);
-% if isempty(answer); return; end
-% @endcode
+% Input Arguments:
+%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%     used to centre the dialog. Pass ``[]`` to reuse the cached handle from a prior call.
+%   - **prompt** — [char|string] prompt text displayed above the input field.
+%     Supports newlines, e.g. ``sprintf('Line 1\nLine 2')``.
+%   - **defAns** — default value for the input widget:
 %
-% @code
-% % Example 4: Minimalistic spinner with multiline prompt
-% options.Type = 'spinner';
-% options.WindowWidth = 320;
-% defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, ...
-%     'Round', true, 'ValueDisplayFormat', '%d units');
-% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
-%     sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
-%     defAns, 'Define number of colors', options);
-% if isempty(answer); return; end
-% @endcode
+%     - For editfield (default): [char|string] default text.
+%     - For spinner: struct with the following fields:
 %
-% @code
-% % Example 5: No parent figure (standalone call, e.g. from command line)
-% answer = utils.dlgs.inputSingleDlg([], 'Enter value:', 'hello', 'Test');
-% if isempty(answer); return; end
-% @endcode
+%       - ``.Value`` — [numeric] initial value (default: ``0``)
+%       - ``.Limits`` — ``[min max]`` spinner range (default: ``[-Inf Inf]``)
+%       - ``.Step`` — [numeric] increment/decrement step (default: ``1``)
+%       - ``.Round`` — [logical] round fractional values (default: ``true``)
+%       - ``.ValueDisplayFormat`` — [char] format string, e.g. ``'%.0f'`` (default: ``'%.d'``)
 %
-% @code
-% % Example 6: Editfield with puffin warning icon
-% options.Icon = 'puffin_warning';
-% options.WindowWidth = 450;
-% options.WindowHeight = 130;
-% options.mibPath = obj.mibModel.mibPath;
-% answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
-%     'Enter new filename:', 'myfile.tif', 'Rename File', options);
-% if isempty(answer); return; end
-% @endcode
+%   - **dlgTitle** — [char|string] dialog window title.
+%   - **options** *(optional)* — struct with configuration fields:
+%
+%     - ``.mibPath`` — [char] path to MIB installation for icon resolution
+%       (default: auto-detected via ``which('mib3')``)
+%     - ``.Type`` — [char] input widget type (default: ``'editfield'``):
+%
+%       - ``'editfield'`` — text input
+%       - ``'spinner'`` — numeric spinner (auto-set when ``defAns`` is a struct)
+%
+%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 400)
+%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 112)
+%     - ``.WindowStyle`` — [char] ``'normal'`` (default) or ``'modal'``
+%     - ``.Icon`` — [char] icon identifier (default: ``'puffin_question'``):
+%
+%       - ``'puffin_question'``, ``'puffin_warning'``, ``'puffin_error'``,
+%         ``'puffin_measure'``, ``'puffin_info'``, ``'puffin_waiting'`` — puffin icons (96 px)
+%       - ``'question_48px'``, ``'warning_48px'`` — standard icons (48 px)
+%       - ``'celebrate'``, ``'call4help'`` — special icons
+%
+%     - ``.IconWidth`` — [numeric] icon column width in pixels
+%       (default: 96 for puffin icons, 48 for standard icons)
+%     - ``.ParentFigure`` — [handle] alternative parent for centering
+%       (overrides the ``ParentFigure`` parameter)
+%
+% Output Arguments:
+%   - **answer** — entered value; ``[]`` when cancelled:
+%     - [char] for editfield mode
+%     - [double] for spinner mode
+%
+% Usage:
+%
+%   **Example 1** — Basic editfield: add new material name
+%
+%   .. code-block:: matlab
+%
+%      answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%          'Please enter a name for the new material:', ...
+%          sprintf('m%.3d', 5), 'Add material');
+%      if isempty(answer); return; end
+%
+%   **Example 2** — Editfield with all options specified
+%
+%   .. code-block:: matlab
+%
+%      options.Type = 'editfield';
+%      options.WindowWidth = 400;
+%      options.WindowHeight = 100;
+%      options.WindowStyle = 'modal';
+%      options.Icon = 'question_48px';
+%      options.IconWidth = 48;
+%      options.mibPath = obj.mibModel.mibPath;
+%      answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%          'Enter file name:', 'myfile.txt', 'File Name', options);
+%      if isempty(answer); return; end
+%
+%   **Example 3** — Spinner with full struct configuration
+%
+%   .. code-block:: matlab
+%
+%      options.Type = 'spinner';
+%      options.WindowWidth = 400;
+%      options.WindowHeight = 100;
+%      options.WindowStyle = 'modal';
+%      options.Icon = 'question_48px';
+%      options.IconWidth = 48;
+%      options.mibPath = obj.mibModel.mibPath;
+%      defAns = struct('Value', 10, 'Limits', [1 100], 'Step', 1, ...
+%          'Round', false, 'ValueDisplayFormat', '%.3f units');
+%      answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%          'Enter iteration count:', defAns, 'Iterations', options);
+%      if isempty(answer); return; end
+%
+%   **Example 4** — Minimalistic spinner with multiline prompt
+%
+%   .. code-block:: matlab
+%
+%      options.Type = 'spinner';
+%      options.WindowWidth = 320;
+%      defAns = struct('Value', 5, 'Limits', [1 Inf], 'Step', 1, ...
+%          'Round', true, 'ValueDisplayFormat', '%d units');
+%      answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%          sprintf('Please enter number of colors\n(max. value is %d)', 255), ...
+%          defAns, 'Define number of colors', options);
+%      if isempty(answer); return; end
+%
+%   **Example 5** — No parent figure (standalone call)
+%
+%   .. code-block:: matlab
+%
+%      answer = utils.dlgs.inputSingleDlg([], 'Enter value:', 'hello', 'Test');
+%      if isempty(answer); return; end
+%
+%   **Example 6** — Editfield with puffin warning icon
+%
+%   .. code-block:: matlab
+%
+%      options.Icon = 'puffin_warning';
+%      options.WindowWidth = 450;
+%      options.WindowHeight = 130;
+%      options.mibPath = obj.mibModel.mibPath;
+%      answer = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+%          'Enter new filename:', 'myfile.tif', 'Rename File', options);
+%      if isempty(answer); return; end
+%
 
 % Updates
 % 

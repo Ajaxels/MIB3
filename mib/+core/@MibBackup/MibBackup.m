@@ -1,5 +1,6 @@
 classdef MibBackup < handle
-    % This class is responsible to store the previous versions of the dataset, to be used for Undo (Ctrl+Z) command
+    % MIBBACKUP - This class is responsible to store the previous versions of the dataset, to be used for Undo (Ctrl+Z) command.
+    %
     
     % The usage of this class is implemented via Ctrl+Z short cut. It allows to return one step back to the previous 
     % version of the dataset. It works with @em do_undo function of mib.m
@@ -12,36 +13,29 @@ classdef MibBackup < handle
     properties (SetAccess = public, GetAccess = public)
         enableSwitch = 1        % Enable/disable undo operation
         % a variable to store whether Undo is available or not:
-        % @li @b 1 - enable
-        % @li @b 0 - disable
+        %
+        % - **1** — enable
+        % - **0** — disable
         type
-        % a variable to store type of the data: ''image'', ''labels'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
+        % a variable to store type of the data: 'image', 'labels', 'selection', 'mask', 'measurement', 'everything' (for model_type==uint6 only)
         undoList
-        % a structure to store the list of the actions for undo
-        % @li @b .type - type of the data: ''image'', ''labels'', ''selection'', ''mask'', ''labels'', ''measurement'',''everything'' (for imageData.model_type==''uint6'' only)
-        % @li @b .data - a field to store a cell with 3D dataset or 2D slice
-        % @li @b .meta - meta dictionary , for the ''image'' type
-        % @li @b .options - a substructure with all additional parameters,
-        % as for example the following list
-        % @li @b .orient - orientation of the slice, @b 1 - xz, @b 2 - yz, @b 4 - yx
-        % @li @b .switch3d - a switch indicating 3D dataset
-        % @li @b .x - coordinates of the stored of the part of the dataset,as [roiId; xmin, xmax]
-        % @li @b .y - coordinates of the stored of the part of the dataset
-        % @li @b .z - coordinates of the stored of the part of the dataset
-        % @li @b .t - coordinates of the stored of the part of the dataset
-        % @li @b .viewPort - viewPort structure (only for the 'image')
-        % @li @b .id - index of MIB container
-        % @li @b .LinkedData - structure with additional data to be stored
-        % @li @b .LinkedVariable - structure that keeps variable names for data stored in LinkedData
-        % for example (see in mibController.mibSegmentationSAM), 
-        %   .LinkedData.Points = obj.mibModel.sessionSettings.SAMsegmenter.Points;
-        %   .LinkedVariable.Points = 'obj.mibModel.sessionSettings.SAMsegmenter.Points';
+        % a structure to store the list of the actions for undo:
+        %
+        % - ``.type`` — type of the data: 'image', 'labels', 'selection', 'mask', 'measurement', 'everything' (for model_type==uint6 only)
+        % - ``.data`` — a field to store a cell with 3D dataset or 2D slice
+        % - ``.meta`` — meta dictionary, for the 'image' type
+        % - ``.options`` — a substructure with all additional parameters:
+        %   ``.orient`` (1=xz, 2=yz, 3=yx), ``.switch3d``, ``.x``, ``.y``, ``.z``, ``.t``,
+        %   ``.viewPort`` (for 'image'), ``.id`` (MIB container index)
+        % - ``.LinkedData`` — structure with additional data to be stored
+        % - ``.LinkedVariable`` — structure that keeps variable names for data stored in LinkedData;
+        %   e.g. ``.LinkedData.Points`` and ``.LinkedVariable.Points = 'obj.mibModel.sessionSettings.SAMsegmenter.Points'``
         max_steps
         % a variable to limit maximal number of history steps
         max3d_steps
         % a variable to limit maximal number of history for the 3D datasets
         undoIndex
-        % a variable to keep index of @em NaN (currently restored dataset) element of the undoList structure
+        % a variable to keep index of ``NaN`` (currently restored dataset) element of the undoList structure
         prevUndoIndex
         % a variable to keep previous index of NaN element of the undoList structure, for use with Ctrl+Z
         index3d
@@ -54,15 +48,18 @@ classdef MibBackup < handle
     
     methods
         function obj = MibBackup(max_steps, max3d_steps)
-            % function obj = mibImageUndo(max_steps, max3d_steps)
-            % mibImageUndo class constructor
+            % MIBBACKUP - mibImageUndo class constructor.
+            %
+            % Syntax:
+            %   function obj = MibBackup(max_steps, max3d_steps)
             %
             % Constructor for the mibImageUndo class. Create a new instance of
             % the class with default parameters
             %
-            % Parameters:
-            % max_steps: maximal length of the history log
-            % max3d_steps: maximal length of the 3D history log
+            % Input Arguments:
+            %   - **max_steps** — maximal length of the history log
+            %   - **max3d_steps** — maximal length of the 3D history log
+            %
             if nargin < 2; max3d_steps = 1; end
             if nargin < 1; max_steps = 8; end
             obj.setNumberOfHistorySteps(max_steps, max3d_steps);
@@ -70,13 +67,26 @@ classdef MibBackup < handle
         end
         
         function clearContents(obj)
-            % function clearContents(obj)
-            % Set all elements of the class to default values
-            
-            %| 
-			% @b Examples:
-            % @code mibImageUndo.clearContents(); @endcode
-            % @code clearContents(obj); // Call within the class @endcode
+            % CLEARCONTENTS - Set all elements of the class to default values.
+            %
+            % Syntax:
+            %   function clearContents(obj)
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mibImageUndo.clearContents();
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     clearContents(obj);% Call within the class
+            %
             
             obj.type = '';
             obj.undoList = struct('type', NaN, 'data', NaN, 'meta', NaN, ...
@@ -91,7 +101,11 @@ classdef MibBackup < handle
         end
         
         function setNumberOfHistorySteps(obj, max_steps, max3d_steps)
-            % setNumberOfHistorySteps(obj, max_steps, max3d_steps)
+            % SETNUMBEROFHISTORYSTEPS - setNumberOfHistorySteps(obj, max_steps, max3d_steps).
+            %
+            % Syntax:
+            %   function setNumberOfHistorySteps(obj, max_steps, max3d_steps)
+            %
             % Set number of history steps for undo
             obj.clearContents();
             obj.max_steps = max_steps;
@@ -99,32 +113,51 @@ classdef MibBackup < handle
         end
         
         function store(obj, type, data, meta, options)
-            % function store(obj, type, data, meta, options)
-            % Store the data
+            % STORE - Store the data.
             %
-            % Parameters:
-            % type: a string that defines the type of the stored data:
-            % ''image'', ''labels'', ''selection'', ''mask'', ''everything''
-            % (for imageData.model_type==''uint6'' only), 'labels',
-            % 'lines3d', 'mibImage'
-            % data: a cell/cell array with actual 3D or 2D dataset to store, 
-            %       or with a structure for labels or with Lines3D class for lines3d object
-            % meta: [@em optional] a imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything'', can be @em NaN
-            % options: a structure with fields:
-            % @li .orient -> [@em optional], a number with the orientation of the dataset
-            % @li .y -> [@em optional], [roiId][ymin, ymax] of the part of the dataset to store
-            % @li .x -> [@em optional], [roiId][xmin, xmax] of the part of the dataset to store
-            % @li .z -> [@em optional], [roiId][zmin, zmax] of the part of the dataset to store
-            % @li .t -> [@em optional], [roiId][tmin, tmax] of the part of the dataset to store
-            % @li .viewPort -> [@em optional] viewPort structure (only for the 'image')
-            % @li .switch3d -> a switch indicating 3D dataset
-            % @li .id -> index of MIB container to store
-            
-            %| 
-			% @b Examples:
-            % @code storeOptions.t = [5 5]; @endcode
-            % @code mibImageUndo.store('image', img, meta, storeOptions); // store 3D image dataset at the 5th time point @endcode
-            % @code store(obj, 'selection', selection, NaN, storeOptions); // Call within the class; store selection at the 5th time point @endcode
+            % Syntax:
+            %   function store(obj, type, data, meta, options)
+            %
+            % Input Arguments:
+            %   - **type** — a string that defines the type of the stored data:
+            %     ''image'', ''labels'', ''selection'', ''mask'', ''everything''
+            %     (for imageData.model_type==''uint6'' only), 'labels',
+            %     'lines3d', 'mibImage'
+            %   - **data** — a cell/cell array with actual 3D or 2D dataset to store,
+            %     or with a structure for labels or with Lines3D class for lines3d object
+            %   - **meta** — *(optional)* a imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything'', can be *NaN*
+            %   - **options** — a structure with fields:
+            %   - .orient *(optional)*, a number with the orientation of the dataset
+            %   - .y *(optional)*, [roiId][ymin, ymax] of the part of the dataset to store
+            %   - .x *(optional)*, [roiId][xmin, xmax] of the part of the dataset to store
+            %   - .z *(optional)*, [roiId][zmin, zmax] of the part of the dataset to store
+            %   - .t *(optional)*, [roiId][tmin, tmax] of the part of the dataset to store
+            %   - .viewPort *(optional)* viewPort structure (only for the 'image')
+            %   - .switch3d a switch indicating 3D dataset
+            %   - .id index of MIB container to store
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     storeOptions.t = [5 5];
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mibImageUndo.store('image', img, meta, storeOptions);% store 3D image dataset at the 5th time point
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     store(obj, 'selection', selection, NaN, storeOptions);% Call within the class; store selection at the 5th time point
+            %
             
             if obj.enableSwitch == 0; return; end
             if nargin < 5; options = struct(); end
@@ -252,30 +285,43 @@ classdef MibBackup < handle
         end
         
         function [type, data, meta, options] = undo(obj, index)
-            % function [type, data, meta, options] = undo(obj, index)
-            % Recover the stored dataset
+            % UNDO - Recover the stored dataset.
             %
-            % Parameters:
-            % index: [@em Optional] - index of the dataset to restore. When omitted return the last stored dataset
+            % Syntax:
+            %   function [type, data, meta, options] = undo(obj, index)
             %
-            % Return values:
-            % type: a string that defines the type of the stored data: ''image'', ''labels'', ''selection'', ''mask'', ''everything'' (for imageData.model_type==''uint6'' only)
-            % data: a variable where to retrieve the dataset
-            % meta: [@em optional, NaN for 2D] a imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything''
-            % options: a structure with fields:
-            % @li .orient -> [@em optional], a number with the orientation of the dataset, for 2D slices; or NaN for 3D
-            % @li .y -> [ymin, ymax] coordinates of the stored of the part of the dataset
-            % @li .x -> [xmin, xmax] coordinates of the stored of the part of the dataset
-            % @li .z -> [zmin, zmax] coordinates of the stored of the part of the dataset
-            % @li .z -> [tmin, tmax] coordinates of the stored of the part of the dataset
-            % @li .viewPort -> viewPort structure (only for the 'image')
-            % @li .switch3d -> a switch indicating 3d dataset
-            % @li .id -> index of MIB container
-            
-            %| 
-			% @b Examples:
-            % @code [type, img, meta, options] = mibImageUndo.undo(); // recover the image @endcode
-            % @code [type, img] = undo(obj); // Call within the class; recover the image @endcode
+            % Input Arguments:
+            %   - **index** — *(optional)* - index of the dataset to restore. When omitted return the last stored dataset
+            %
+            % Output Arguments:
+            %   - **type** — a string that defines the type of the stored data: ''image'', ''labels'', ''selection'', ''mask'', ''everything'' (for imageData.model_type==''uint6'' only)
+            %   - **data** — a variable where to retrieve the dataset
+            %   - **meta** — [*optional,* NaN for 2D] a imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything''
+            %   - **options** — a structure with fields:
+            %   - .orient *(optional)*, a number with the orientation of the dataset, for 2D slices; or NaN for 3D
+            %   - .y [ymin, ymax] coordinates of the stored of the part of the dataset
+            %   - .x [xmin, xmax] coordinates of the stored of the part of the dataset
+            %   - .z [zmin, zmax] coordinates of the stored of the part of the dataset
+            %   - .z [tmin, tmax] coordinates of the stored of the part of the dataset
+            %   - .viewPort viewPort structure (only for the 'image')
+            %   - .switch3d a switch indicating 3d dataset
+            %   - .id index of MIB container
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [type, img, meta, options] = mibImageUndo.undo();% recover the image
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     [type, img] = undo(obj);% Call within the class; recover the image
+            %
             if obj.enableSwitch == 0; return; end
             if nargin < 2
                 if obj.undoIndex == numel(obj.undoList)
@@ -301,16 +347,29 @@ classdef MibBackup < handle
         
         
         function removeItem(obj, index)
-            % function removeItem(obj, index)
-            % Delete a stored item
+            % REMOVEITEM - Delete a stored item.
             %
-            % Parameters:
-            % index: [@em optional] - index of the item to remove, when empty will remove the last entry
-            
-            %| 
-			% @b Examples:
-            % @code mibImageUndo.removeItem(5); // delete item number 5 @endcode
-            % @code removeItem(obj, 5); // Call within the class; delete item number 5 @endcode
+            % Syntax:
+            %   function removeItem(obj, index)
+            %
+            % Input Arguments:
+            %   - **index** — *(optional)* - index of the item to remove, when empty will remove the last entry
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mibImageUndo.removeItem(5);% delete item number 5
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     removeItem(obj, 5);% Call within the class; delete item number 5
+            %
             if nargin < 2; index = numel(obj.undoList); end
             if obj.undoIndex >= index; obj.undoIndex = obj.undoIndex - 1; end
             vector = 1:numel(obj.undoList);
@@ -318,31 +377,50 @@ classdef MibBackup < handle
         end
         
         function replaceItem(obj, index, type, data, meta, options)
-            % function replaceItem(obj, index, type, data, meta, options)
-            % Replace the stored item with a new dataset
+            % REPLACEITEM - Replace the stored item with a new dataset.
             %
-            % Parameters:
-            % index: an index of the item to replace, when @em empty replace the last entry
-            % type: a string that defines the type of the new dataset:
-            % ''image'', ''labels'', ''selection'', ''mask'', ''everything''
-            % (for imageData.model_type==''uint6'' only), or ''mibImage''
-            % data: a variable with the new dataset to store
-            % meta: [@em optional] imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything'', can be @em NaN
-            % options: a structure with fields:
-            % @li .orient -> [@em optional], a number with the orientation of the dataset
-            % @li .y -> [@em optional], [ymin, ymax] of the part of the dataset to store
-            % @li .x -> [@em optional], [xmin, xmax] of the part of the dataset to store
-            % @li .z -> [@em optional], [zmin, zmax] of the part of the dataset to store
-            % @li .z -> [@em optional], [tmin, tmax] of the part of the dataset to store
-            % @li .viewPort -> [@em optional], viewPort structure (only for the 'image')
-            % @li .switch3d -> switch that indicates 3D dataset
-            % @li .id -> index of MIB container
-            
-            %| 
-			% @b Examples:
-            % @code storeOptions.t = [5 5]; @endcode
-            % @code mibImageUndo.replaceItem(1, 'image', img, meta, storeOptions); // replace the 1st stored dataset @endcode
-            % @code replaceItem(obj, 1, 'selection', selection, storeOptions); // Call within the class; replace the 1st stored dataset  @endcode
+            % Syntax:
+            %   function replaceItem(obj, index, type, data, meta, options)
+            %
+            % Input Arguments:
+            %   - **index** — an index of the item to replace, when *empty* replace the last entry
+            %   - **type** — a string that defines the type of the new dataset:
+            %     ''image'', ''labels'', ''selection'', ''mask'', ''everything''
+            %     (for imageData.model_type==''uint6'' only), or ''mibImage''
+            %   - **data** — a variable with the new dataset to store
+            %   - **meta** — *(optional)* imageData.meta dictionary, not required for ''labels'', ''selection'', ''mask'', ''everything'', can be *NaN*
+            %   - **options** — a structure with fields:
+            %   - .orient *(optional)*, a number with the orientation of the dataset
+            %   - .y *(optional)*, [ymin, ymax] of the part of the dataset to store
+            %   - .x *(optional)*, [xmin, xmax] of the part of the dataset to store
+            %   - .z *(optional)*, [zmin, zmax] of the part of the dataset to store
+            %   - .z *(optional)*, [tmin, tmax] of the part of the dataset to store
+            %   - .viewPort *(optional)*, viewPort structure (only for the 'image')
+            %   - .switch3d switch that indicates 3D dataset
+            %   - .id index of MIB container
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     storeOptions.t = [5 5];
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     mibImageUndo.replaceItem(1, 'image', img, meta, storeOptions);% replace the 1st stored dataset
+            %
+            %   **Example 3**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     replaceItem(obj, 1, 'selection', selection, storeOptions);% Call within the class; replace the 1st stored dataset
+            %
             
             %if nargin < 7; orient=NaN; sliceNo=NaN; end;
             %if nargin < 6; timePnt=1; end;

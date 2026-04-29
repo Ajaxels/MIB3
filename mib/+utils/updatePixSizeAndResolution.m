@@ -1,73 +1,86 @@
 function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixSize, options)
-% function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixSize, options)
-% Calculate update resolution fields in the imageData.img_info('ImageDescription') or recalculate physical size of voxels.
+% UPDATEPIXSIZEANDRESOLUTION - Calculate update resolution fields in the imageData.img_info('ImageDescription') or recalculate physical size of voxels.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixSize)
+%      [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixSize, options)
+%
 % Optionally shows an interactive dialog so the user can review/change voxel sizes before the update is applied.
 %
 % - If 'BoundingBox' information exist in the imageData.img_info('ImageDescription') the function recalculates the
-% imageData.pixSize based on information from the BoundingBox.
+%   imageData.pixSize based on information from the BoundingBox.
 % - If 'BoundingBox' is missing, but imageData.img_info('XResolution') is present the imageData.pixSize recalculated based
-% on XResolution and YResolution information
+%   on XResolution and YResolution information
 % - If both 'BoundingBox' and 'XResolution' is missing, the resolution is recalculated based on imageData.pixSize
 %
-% Parameters:
-% img_info: information about the dataset, an instance of the MATLAB @b dictionary class.
-%   Pass @b [] to skip the img_info resolution update (e.g. when only the dialog / pixSize update is needed).
-% pixSize: a structure (imageData.pixSize) with dimensions of voxels, @code .x .y .z .t .tunits .units @endcode
-% the fields are
-% @li .x - physical width of a pixel
-% @li .y - physical height of a pixel
-% @li .z - physical depth of a pixel
-% @li .t - time between the frames for 2D movies
-% @li .tunits - time units
-% @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
-% options: [@e optional] a struct with optional fields:
-% @li .showDialog   - logical (default false); when true, prompt the user with an interactive
-%                     dialog to review and edit the voxel sizes before applying
-% @li .ParentFigure - handle to the parent figure/window used to anchor the dialog
-% @li .mibPath      - (char) MIB installation directory, used for help / icon lookup
-% @li .HelpUrl      - (char) URL or path for the Help button shown in the dialog
+% Input Arguments:
+%   - **img_info** — information about the dataset, an instance of the MATLAB **dictionary** class.
+%     Pass **[]** to skip the img_info resolution update (e.g. when only the dialog / pixSize update is needed).
+%   - **pixSize** — a structure (imageData.pixSize) with dimensions of voxels, ``.x .y .z .t .tunits .units``
+%     the fields are
+%     - .x - physical width of a pixel
+%     - .y - physical height of a pixel
+%     - .z - physical depth of a pixel
+%     - .t - time between the frames for 2D movies
+%     - .tunits - time units
+%     - .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+%   - **options** — *(optional)* a struct with optional fields:
+%     - .showDialog   - logical (default false); when true, prompt the user with an interactive
+%       dialog to review and edit the voxel sizes before applying
+%     - .ParentFigure - handle to the parent figure/window used to anchor the dialog
+%     - .mibPath      - (char) MIB installation directory, used for help / icon lookup
+%     - .HelpUrl      - (char) URL or path for the Help button shown in the dialog
 %
-% Return values:
-% img_info: updated imageData.img_info (unchanged and [] when img_info was passed as [])
-% pixSize: updated imageData.pixSize (unchanged when user cancels the dialog)
-% result: @b 1 on success, @b 0 when the user cancelled the interactive dialog
+% Output Arguments:
+%   - **img_info** — updated imageData.img_info (unchanged and [] when img_info was passed as [])
+%   - **pixSize** — updated imageData.pixSize (unchanged when user cancels the dialog)
+%   - **result** — **1** on success, **0** when the user cancelled the interactive dialog
 %
-% @attention @b requires Width, Height, Depth fields in img_info when img_info is not []
 %
-%| 
-% @b Examples:
-% @code
-% %% 1. Update resolution fields in img_info from a known pixSize (no dialog)
-% pixSize.x = 0.05; pixSize.y = 0.05; pixSize.z = 0.2;
-% pixSize.t = 1; pixSize.units = 'um'; pixSize.tunits = 's';
-% [img_info, pixSize] = utils.updatePixSizeAndResolution(img_info, pixSize);
-% @endcode
+% .. note::
+%    Requires ``Width``, ``Height``, ``Depth`` fields in ``img_info`` when ``img_info`` is not ``[]``.
 %
-% @code
-% %% 2. Recalculate pixSize from BoundingBox / XResolution stored in img_info
-% %    (called during image loading when pixSize is not yet known)
-% [img_info, pixSize] = utils.updatePixSizeAndResolution(img_info);
-% @endcode
+% Usage:
 %
-% @code
-% %% 3. Interactive dialog only — no img_info update needed (e.g. from MibRibbon)
-% dlgOpts.showDialog   = true;
-% dlgOpts.ParentFigure = obj.view.gui;
-% dlgOpts.mibPath      = obj.mibModel.mibPath;
-% dlgOpts.HelpUrl      = fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/dataset/index.html#parameters');
-% [~, pixSize, result] = utils.updatePixSizeAndResolution([], obj.mibModel.I{id}.pixSize, dlgOpts);
-% if result == 0; return; end   % user cancelled
-% obj.mibModel.I{id}.pixSize = pixSize;
-% @endcode
+%   **Example 1** — update resolution fields in img_info from a known pixSize (no dialog)
 %
-% @code
-% %% 4. Interactive dialog + img_info update in one call (e.g. during save)
-% dlgOpts.showDialog   = true;
-% dlgOpts.ParentFigure = obj.mibGUI;
-% dlgOpts.mibPath      = obj.mibPath;
-% [img_info, pixSize, result] = utils.updatePixSizeAndResolution(img_info, currentPixSize, dlgOpts);
-% if result == 0; return; end   % user cancelled
-% @endcode
+%   .. code-block:: matlab
+%
+%      pixSize.x = 0.05; pixSize.y = 0.05; pixSize.z = 0.2;
+%      pixSize.t = 1; pixSize.units = 'um'; pixSize.tunits = 's';
+%      [img_info, pixSize] = utils.updatePixSizeAndResolution(img_info, pixSize);
+%
+%   **Example 2** — recalculate pixSize from BoundingBox / XResolution stored in img_info
+%
+%   .. code-block:: matlab
+%
+%      [img_info, pixSize] = utils.updatePixSizeAndResolution(img_info);
+%
+%   **Example 3** — interactive dialog only (no img_info update needed, e.g. from MibRibbon)
+%
+%   .. code-block:: matlab
+%
+%      dlgOpts.showDialog   = true;
+%      dlgOpts.ParentFigure = obj.view.gui;
+%      dlgOpts.mibPath      = obj.mibModel.mibPath;
+%      dlgOpts.HelpUrl      = fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/dataset/index.html#parameters');
+%      [~, pixSize, result] = utils.updatePixSizeAndResolution([], obj.mibModel.I{id}.pixSize, dlgOpts);
+%      if result == 0; return; end
+%      obj.mibModel.I{id}.pixSize = pixSize;
+%
+%   **Example 4** — interactive dialog + img_info update in one call (e.g. during save)
+%
+%   .. code-block:: matlab
+%
+%      dlgOpts.showDialog   = true;
+%      dlgOpts.ParentFigure = obj.mibGUI;
+%      dlgOpts.mibPath      = obj.mibPath;
+%      [img_info, pixSize, result] = utils.updatePixSizeAndResolution(img_info, currentPixSize, dlgOpts);
+%      if result == 0; return; end
+%
 
 % Updates
 % 13.03.2026 added optional interactive dialog and result return value

@@ -1,5 +1,9 @@
 function surfacesFromSegmentationImage(aImarisApplicationID)
-% an old surface segmentation function written by Igor Beati from Bitplane
+% SURFACESFROMSEGMENTATIONIMAGE - an old surface segmentation function written by Igor Beati from Bitplane.
+%
+% Syntax:
+%   function surfacesFromSegmentationImage(aImarisApplicationID)
+%
 
 % connect to Imaris Com interface
 if ~isa(aImarisApplicationID, 'COM.Imaris_Application')
@@ -37,7 +41,11 @@ aImage(20:60, 10:30, 5:15) = 2; % second cell touching the first
 
 
 function aDataSet = DataSetFromImage(aImage, aImaris)
-% generate imaris dataset from matlab image
+% DATASETFROMIMAGE - generate imaris dataset from matlab image.
+%
+% Syntax:
+%   function aDataSet = DataSetFromImage(aImage, aImaris)
+%
 aDataSet = aImaris.mFactory.CreateDataSet;
 vSize = size(aImage);
 aDataSet.Create('eTypeUInt8', vSize(1), vSize(2), vSize(3));

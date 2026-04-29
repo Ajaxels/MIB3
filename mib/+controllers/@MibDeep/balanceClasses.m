@@ -1,8 +1,11 @@
 function balanceClasses(obj)
-% function balanceClasses(obj)
-    % balance classes before training
-    % see example from here:
-    % https://se.mathworks.com/help/vision/ref/balancepixellabels.html
+% BALANCECLASSES - balance classes before training.
+%
+% Syntax:
+%   function balanceClasses(obj)
+%
+% see example from here:
+% https://se.mathworks.com/help/vision/ref/balancepixellabels.html
     if ~isfield(obj.sessionSettings, 'numBalanceObservations'); obj.sessionSettings.numBalanceObservations = 200; end
     if ~isfield(obj.sessionSettings, 'balanceObservationsParallel'); obj.sessionSettings.balanceObservationsParallel = false; end
 

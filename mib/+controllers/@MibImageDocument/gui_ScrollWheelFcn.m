@@ -1,15 +1,17 @@
 function gui_ScrollWheelFcn(obj, eventdata)
-% function gui_ScrollWheelFcn(obj, eventdata)
-% Callback for mouse scroll wheel
+% GUI_SCROLLWHEELFCN - Callback for mouse scroll wheel.
+%
+% Syntax:
+%   function gui_ScrollWheelFcn(obj, eventdata)
 %
 % Dispatches scroll events to one of three behaviors based on active
 % modifier keys and the MouseWheel mode preference:
 %
-%   Ctrl + Scroll         - Adjust brush/tool size by 1 unit
-%   Ctrl + Shift + Scroll - Adjust brush/tool size by 5 units
-%   Alt + Scroll          - Navigate time frames (scroll mode + AltWithScrollWheel pref)
-%   Scroll (zoom mode)    - Zoom in/out centred on cursor position (power law, C=1.10)
-%   Scroll (scroll mode)  - Navigate Z-slices
+% Ctrl + Scroll         - Adjust brush/tool size by 1 unit
+% Ctrl + Shift + Scroll - Adjust brush/tool size by 5 units
+% Alt + Scroll          - Navigate time frames (scroll mode + AltWithScrollWheel pref)
+% Scroll (zoom mode)    - Zoom in/out centred on cursor position (power law, C=1.10)
+% Scroll (scroll mode)  - Navigate Z-slices
 %
 % When adjusting brush size, the cursor is temporarily replaced with a
 % numeric size indicator (capped at display value 99). Brush size is
@@ -21,17 +23,17 @@ function gui_ScrollWheelFcn(obj, eventdata)
 % VerticalScrollAmount.
 %
 % Inputs:
-%   obj       - View controller; holds handles to GUI, mibModel, and
-%               segmentation panel widgets
-%   eventdata - matlab.ui.eventdata.ScrollData  (normal scroll), OR
-%               core.ToggleEventData with .Parameter.VerticalScrollCount /
-%               .VerticalScrollAmount  (key shortcut call)
+% obj       - View controller; holds handles to GUI, mibModel, and
+% segmentation panel widgets
+% eventdata - matlab.ui.eventdata.ScrollData  (normal scroll), OR
+% core.ToggleEventData with .Parameter.VerticalScrollCount /
+% .VerticalScrollAmount  (key shortcut call)
 %
 % Example usage:
-%   % This callback is automatically triggered by scroll events
-%   % User actions:
-%   % - Ctrl+Scroll Up: Increase brush size by 1
-%   % - Ctrl+Shift+Scroll Down: Decrease brush size by 5
+% % This callback is automatically triggered by scroll events
+% % User actions:
+% % - Ctrl+Scroll Up: Increase brush size by 1
+% % - Ctrl+Shift+Scroll Down: Decrease brush size by 5
 
 imViewFigure = obj.UIFigure;
 % Use obj.mibController.currentModifier rather than UIFigure.CurrentModifier.

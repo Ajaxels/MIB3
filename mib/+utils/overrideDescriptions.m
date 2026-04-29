@@ -1,35 +1,43 @@
 function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclusionList)
-% function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclusionList)
-% Override Description property of widgets to add the widget handle name to
+% OVERRIDEDESCRIPTIONS - Override Description property of widgets to add the widget handle name to.
+%
+% Syntax:
+%   function stopped = overrideDescriptions(handles, developerMode, fieldPath, exclusionList)
+%
 % the beginning of the Description field depending on the developerMode
 % setting.
 %
-% Parameters:
-% handles: handles structure of the view class (obj.handles)
-% developerMode: logical switch, when 
-%   true  - adds the handle label to the beginning of the Description field that is shown as a tooltip
-%   false - removes the handle label from the beginning of the Description field that is shown as a tooltip
-% fieldPath: char, optional string to specify the parent name when
-% generating the handle. This text will be added before the handle tag into
-% the tooltip
-% exclusionList: cell array of char, optional list of field names to skip.
-%   Fields matching any name in this list will not be renamed, and recursion
-%   will not descend into them. Matching is against the bare field name only
-%   (not the full path).
+% Input Arguments:
+%   - **handles** — handles structure of the view class (obj.handles)
+%   - **developerMode** — logical switch, when
+%     true  - adds the handle label to the beginning of the Description field that is shown as a tooltip
+%     false - removes the handle label from the beginning of the Description field that is shown as a tooltip
+%   - **fieldPath** — char, optional string to specify the parent name when
+%     generating the handle. This text will be added before the handle tag into
+%     the tooltip
+%   - **exclusionList** — cell array of char, optional list of field names to skip.
+%     Fields matching any name in this list will not be renamed, and recursion
+%     will not descend into them. Matching is against the bare field name only
+%     (not the full path).
 %
-% Return values:
-% stopped: logical true if function exited early due to no change needed or first update done
-
-%|
-% @b Examples:
-% @code
-% // call inside the view class
-% developerMode = true;
-% utils.overrideDescriptions(obj.handles, developerMode); // add handle label to the tooltip
-% @endcode
-% @code
-% utils.overrideDescriptions(obj.handles, developerMode, 'obj.handles', {'segmentation', 'toolbar'});  // skip two panels
-% @endcode
+% Output Arguments:
+%   - **stopped** — logical true if function exited early due to no change needed or first update done
+%
+% Usage:
+%
+%   **Example 1** — add handle name to tooltips (developer mode on)
+%
+%   .. code-block:: matlab
+%
+%      developerMode = true;
+%      utils.overrideDescriptions(obj.handles, developerMode);
+%
+%   **Example 2** — skip two panels while adding handle labels
+%
+%   .. code-block:: matlab
+%
+%      utils.overrideDescriptions(obj.handles, developerMode, 'obj.handles', {'segmentation', 'toolbar'});
+%
 
 arguments (Input)
     handles

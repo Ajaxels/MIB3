@@ -1,6 +1,9 @@
 function materialsTable_CellSelectionCallback(obj, cellIndices)
-% function materialsTable_CellSelectionCallback(obj, cellIndices)
-% Handle cell selection in materials table (obj.handles.materialsTable)
+% MATERIALSTABLE_CELLSELECTIONCALLBACK - Handle cell selection in materials table (obj.handles.materialsTable).
+%
+% Syntax:
+%   function materialsTable_CellSelectionCallback(obj, cellIndices)
+%
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.materialsTable_CellSelectionCallback cell in the materialsTable (obj.mibController.cSegmentation.handles.materialsTable) was selected\n');

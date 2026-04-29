@@ -1,20 +1,24 @@
 function globalTabGroup_SelectionCallback(obj, hWidget)
-% function globalTabGroup_SelectionCallback(obj, hWidget)
-% Callback for selection of a tab in the top ribbon of MIB
+% GLOBALTABGROUP_SELECTIONCALLBACK - Callback for selection of a tab in the top ribbon of MIB.
+%
+% Syntax:
+%   function globalTabGroup_SelectionCallback(obj, hWidget)
+%
 % used to apply lazy loading of the tabs upon the first selection
 %
 % used as a callback upon selection of tabs in the ribbon:
 % obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 %
-% Parameters:
-% hWidget: [char] indicating the handle of the tab, e.g. 'Dataset',
-% 'Image', 'Model', matching the tab title: obj.view.handles.ribbon.global.SelectedTab.Title
+% Input Arguments:
+%   - **hWidget** — [char] indicating the handle of the tab, e.g. 'Dataset',
+%     'Image', 'Model', matching the tab title: obj.view.handles.ribbon.global.SelectedTab.Title
 %
-% Examples:
-% <code>
-% // call from MibController to check/init the Image tab in the ribbon
-% obj.globalTabGroup_SelectionCallback('Image');
-% <endcode>
+% Usage:
+%   <code>
+%   // call from MibController to check/init the Image tab in the ribbon
+%   obj.globalTabGroup_SelectionCallback('Image');
+%   <endcode>
+%
 
 showDevInfo = false;
 if nargin < 2

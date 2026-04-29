@@ -1,13 +1,17 @@
 function widgetHandles = addRibbonSelection(obj, lazyInit)
-% function widgetHandles = addRibbonSelection(obj, lazyInit)
-% build the Selection tab group (obj.handles.ribbon.selection)
-% and add it to obj.handles.ribbon.global 
+% ADDRIBBONSELECTION - build the Selection tab group (obj.handles.ribbon.selection).
 %
-% Parameters:
-% lazyInit: [@em optional default=false] logical, when true do only
-% place maker initialization of the panel. The full rendering is upon the
-% first call, using
-% "controllers.MibController.globalTabGroup_SelectionCallback" function
+% Syntax:
+%   function widgetHandles = addRibbonSelection(obj, lazyInit)
+%
+% and add it to obj.handles.ribbon.global
+%
+% Input Arguments:
+%   - **lazyInit** — [*optional* default=false] logical, when true do only
+%     place maker initialization of the panel. The full rendering is upon the
+%     first call, using
+%     "controllers.MibController.globalTabGroup_SelectionCallback" function
+%
 
 arguments (Input)
     obj views.MibView

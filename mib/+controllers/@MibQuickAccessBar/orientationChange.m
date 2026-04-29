@@ -1,28 +1,32 @@
 function orientationChange(obj, hWidget, moveMouseSw)
-% function orientationChange(obj, hWidget, moveMouseSw)
-% Callback for the orientation toggle buttons in the Quick Access Bar.
+% ORIENTATIONCHANGE - Callback for the orientation toggle buttons in the Quick Access Bar.
+%
+% Syntax:
+%   function orientationChange(obj, hWidget, moveMouseSw)
+%
 % Switches the viewing plane of the current dataset to YX (XY), XZ, or YZ.
 % Converted from MIB2 @mibController/mibToolbarPlaneToggle.m
 %
-% Parameters:
-% hWidget: handle to the pressed orientation button (yx_orientation,
-%          xz_orientation, or yz_orientation), or a char with the target
-%          orientation description string (for keyboard-shortcut callers).
-% moveMouseSw: [@em optional] logical, when true moves the mouse cursor to the
-%              pivot point of the orientation change (used with Alt+1/2/3
-%              keyboard shortcuts so the cursor stays over the image).
-%              Default: false.
+% Input Arguments:
+%   - **hWidget** — handle to the pressed orientation button (yx_orientation,
+%     xz_orientation, or yz_orientation), or a char with the target
+%     orientation description string (for keyboard-shortcut callers).
+%   - **moveMouseSw** — *(optional)* logical, when true moves the mouse cursor to the
+%     pivot point of the orientation change (used with Alt+1/2/3
+%     keyboard shortcuts so the cursor stays over the image).
+%   - **Default** — false.
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-% Example:
-%   % Called from gui_Callbacks when an orientation button is pressed:
-%   obj.orientationChange(hWidget);
+%   - **Example** —
+%     % Called from gui_Callbacks when an orientation button is pressed:
+%     obj.orientationChange(hWidget);
 %
 %   % Called from gui_WindowKeyPressFcn with mouse centering (Alt+1):
 %   obj.mibController.cActiveDataset.cQAB.orientationChange( ...
-%       obj.mibController.view.handles.qab.handles.yx_orientation, true);
+%   obj.mibController.view.handles.qab.handles.yx_orientation, true);
+%
 
 if nargin < 3; moveMouseSw = false; end
 

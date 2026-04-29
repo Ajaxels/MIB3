@@ -1,6 +1,9 @@
 function homeHandles = addRibbonHome(obj)
-% function homeHandles = addRibbonHome(obj)
-% build the Home tab group (obj.handles.ribbon.home) and add it to obj.handles.ribbon.global 
+% ADDRIBBONHOME - build the Home tab group (obj.handles.ribbon.home) and add it to obj.handles.ribbon.global.
+%
+% Syntax:
+%   function homeHandles = addRibbonHome(obj)
+%
 
 arguments (Input)
     obj views.MibView

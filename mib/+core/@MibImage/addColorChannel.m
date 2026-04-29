@@ -1,24 +1,38 @@
 function output = addColorChannel(obj, img, channelId, lutColors, options)
-% function output = addColorChannel(obj, img, channelId, lutColors, options)
-% Add or replace a color channel in the existing dataset
+% ADDCOLORCHANNEL - Add or replace a color channel in the existing dataset.
 %
-% Parameters:
-% img: image stack [height, width, depth, colors, time] to add/replace
-% channelId: [@em optional] 1-based channel index to replace;
-%   NaN (default) - append img as new color channel(s)
-% lutColors: [@em optional] matrix [nNewChannels x 3] with LUT colors in
-%   the range 0-1. Pass NaN (default) to auto-assign random colors.
-% options: [@em optional] struct with fields:
-%   @li .ParentFigure - handle to parent figure for dialogs (default [])
-%   @li .showWaitbar  - logical; show progress bar (default true)
+% Syntax:
+%   function output = addColorChannel(obj, img, channelId, lutColors, options)
 %
-% Return values:
-% output: 1 - success; 0 - cancelled or failed
-
-%|
-% @b Examples:
-% @code obj.image.addColorChannel(img, NaN, lutColors, opts); @endcode
-% @code obj.image.addColorChannel(img, 2);    % replace channel 2 @endcode
+% Input Arguments:
+%   - **img** — image stack [height, width, depth, colors, time] to add/replace
+%   - **channelId** — *(optional)* 1-based channel index to replace;
+%     NaN (default) - append img as new color channel(s)
+%   - **lutColors** — *(optional)* matrix [nNewChannels x 3] with LUT colors in
+%     the range 0-1. Pass NaN (default) to auto-assign random colors.
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``.ParentFigure`` — handle to parent figure for dialogs (default [])
+%     - ``.showWaitbar`` — logical; show progress bar (default true)
+%
+% Output Arguments:
+%   - **output** — 1 - success; 0 - cancelled or failed
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.addColorChannel(img, NaN, lutColors, opts);
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.addColorChannel(img, 2);    % replace channel 2
+%
 
 % Updates
 %

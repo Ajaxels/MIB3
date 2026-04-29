@@ -1,12 +1,15 @@
 function lutTable_update_fromModel(obj)
-% function lutTable_update_fromModel(obj)
-% Update obj.view.handles.panels.selection.handles.lutTable table and
+% LUTTABLE_UPDATE_FROMMODEL - Update obj.view.handles.panels.selection.handles.lutTable table and.
+%
+% Syntax:
+%   function lutTable_update_fromModel(obj)
+%
 % obj.view.handles.panels.selection.handles.colChannel color dropdown from
 % obj.mibModel
 %
-% Parameters:
-% 
-% Return values:
+% Input Arguments:
+%
+% Output Arguments:
 %
 
 % Updates

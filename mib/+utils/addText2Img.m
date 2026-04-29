@@ -1,44 +1,53 @@
 function img = addText2Img(img, textArray, positionList, options)
-% function img = addText2Img(img, textArray, positionList, options)
-% Add text label to the image, a new function introduced in MIB 2.22.
-% Requires insertText and insertMarker functions from the Computer Vision System
-% Toolbox. When these functions are not available mibAddText2Img is using
-% an old function.
+% ADDTEXT2IMG - Add text labels to a 2D image using Computer Vision Toolbox functions.
 %
-% Parameters:
-%       img: image, 2D
-%       textArray: a cell array with text, [textArray{1}=''label1''; textArray{2}=''label2'';]
-%       positionList: position of a label [pointNo; x, y]
-%       options: a structure with @em optional additional parameters
-%           .color [@em optional, default color GREY] a number or a rgb-vector with a color for the text,
-%                   @em for @em example: [1 0 0] - for red; or 0.5 - for grey
-%           .fontSize [@em optional, default font size=2] a number with a font size from 1 to 7, that corresponds to pt8, 10 ... 20 of Ubuntu Mono font.
-%           .markerText [@em an @em optional @em string, default
-%                           'both'] when @b both show a label next to the position marker,
-%                           when @b marker - show only the marker without the label, when
-%                           @b text - show only text without marker
-%           .AnchorPoint text box reference point, ''LeftTop'' (default) |
-%           ''LeftCenter'' | ''LeftBottom'' | ''CenterTop'' | ''Center'' | ''CenterBottom'' | ''RightTop'' | ''RightCenter'' | ''RightBottom''
+% Syntax:
 %
-% Return values:
-%   img: image 2D
+%   .. code-block:: matlab
 %
-% @note: if you need to print special characters generate them using
-% char(dec_index) command. For example to replace all \mu with a proper u character use char(956) command:
-% textArray = strrep(textArray, ''\mu'', char(956));
-% see more codes: https://unicode-table.com/en/
-
-%| 
-% @b Examples:
-% @code
-% textArray{1}='label1';
-% textArray{2}='label2';
-% positionList(1,:) = [50, 75];
-% positionList(2,:) = [150, 175];
-% options.color = [1 0 0];
-% options.fontSize = 3;
-% selection(:,:,5) = utils.addText2Img(selection(:,:,5), textArray, positionList, options);      // add 2 labels to the selection layer
-% @endcode
+%      img = addText2Img(img, textArray, positionList, options)
+%
+% Requires ``insertText`` and ``insertMarker`` from the Computer Vision
+% Toolbox.  Falls back to a legacy implementation when those are unavailable.
+%
+% Input Arguments:
+%   - **img** — [numeric] 2D image to annotate
+%   - **textArray** — [cell] labels to render, e.g. ``{'label1'; 'label2'}``
+%   - **positionList** — [numeric] label positions ``[pointNo; x, y]``
+%   - **options** *(optional)* — struct with rendering settings:
+%
+%     - ``.color``       — [numeric] text colour as an RGB vector or scalar grey value (default: ``0.5``)
+%     - ``.fontSize``    — [numeric] font size index 1–7, mapping to pt 8–20 of Ubuntu Mono (default: ``2``)
+%     - ``.markerText``  — [char] marker+text visibility: ``'both'`` *(default)*, ``'marker'`` (no text), or ``'text'`` (no marker)
+%     - ``.AnchorPoint`` — [char] text-box reference point: ``'LeftTop'`` *(default)*, ``'LeftCenter'``, ``'LeftBottom'``, ``'CenterTop'``, ``'Center'``, ``'CenterBottom'``, ``'RightTop'``, ``'RightCenter'``, ``'RightBottom'``
+%
+% Output Arguments:
+%   - **img** — [numeric] annotated 2D image
+%
+% .. note::
+%    To print special characters, generate them with ``char(dec_index)``.
+%    For example, replace ``\mu`` with the proper symbol:
+%
+%    .. code-block:: matlab
+%
+%       textArray = strrep(textArray, '\mu', char(956));
+%
+%    See https://unicode-table.com/en/ for character codes.
+%
+% Usage:
+%
+%   **Example 1** — add two coloured labels at specified positions
+%
+%   .. code-block:: matlab
+%
+%      textArray{1} = 'label1';
+%      textArray{2} = 'label2';
+%      positionList(1,:) = [50, 75];
+%      positionList(2,:) = [150, 175];
+%      options.color = [1 0 0];
+%      options.fontSize = 3;
+%      selection(:,:,5) = utils.addText2Img(selection(:,:,5), textArray, positionList, options);
+%
 
 % Updates
 % this is an updated version of the function that uses matlab functions

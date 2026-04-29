@@ -1,11 +1,15 @@
 function returnBatchOpt(obj, BatchOptOut)
-% function returnBatchOpt(obj, BatchOptOut)
-% return structure with Batch Options and possible configurations
+% RETURNBATCHOPT - return structure with Batch Options and possible configurations.
+%
+% Syntax:
+%   function returnBatchOpt(obj, BatchOptOut)
+%
 % via the notify 'SyncBatch' event
-% Parameters:
-% BatchOptOut: a local structure with Batch Options generated
-% during Continue callback. It may contain more fields than
-% obj.BatchOpt structure
+%
+% Input Arguments:
+%   - **BatchOptOut** — a local structure with Batch Options generated
+%     during Continue callback. It may contain more fields than
+%     obj.BatchOpt structure
 %
 if nargin < 2; BatchOptOut = obj.BatchOpt; end
 

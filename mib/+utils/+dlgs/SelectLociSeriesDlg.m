@@ -1,27 +1,27 @@
 classdef SelectLociSeriesDlg < handle
-    % SelectLociSeriesDlg Controller for Bio-Formats (LOCI) Series Selection Dialog
-    %
-    % The SelectLociSeriesDlg class manages series selection from Bio-Formats compatible files.
-    % It provides an interface to select series, preview images, and configure metadata reading.
-    % Logic ported from selectLociSeries.m to support App Designer views.
-    %
-    % Usage:
-    %   % Initialize the controller for the dialog
-    %   controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure);
-    %   
-    %   % Run the controller to acquire user input
-    %   [seriesIndex, hDataset, metaSwitch, dimxyczt, seriesRealName] = controller.run();
-    %
-    % Examples:
-    %   % Example with new reader
-    %   filename = 'sample_image.czi';
-    %   controller = utils.dlgs.SelectLociSeriesDlg(filename, [], options.Font, ParentFigure);
-    %   [seriesIdx, reader, readMeta, dims, name] = controller.run();
-    %   
-    %   % Example with existing Bio-Formats reader
-    %   reader = bfGetReader('sample_image.czi');
-    %   controller = utils.dlgs.SelectLociSeriesDlg('sample_image.czi', reader, Font, ParentFigure);
-    %   [seriesIdx, reader, readMeta, dims, name] = controller.run();
+% SELECTLOCISERIESDLG - SelectLociSeriesDlg Controller for Bio-Formats (LOCI) Series Selection Dialog.
+%
+% The SelectLociSeriesDlg class manages series selection from Bio-Formats compatible files.
+% It provides an interface to select series, preview images, and configure metadata reading.
+% Logic ported from selectLociSeries.m to support App Designer views.
+%
+% Usage:
+% % Initialize the controller for the dialog
+% controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure);
+%
+% % Run the controller to acquire user input
+% [seriesIndex, hDataset, metaSwitch, dimxyczt, seriesRealName] = controller.run();
+% Usage:
+%   % Example with new reader
+%   filename = 'sample_image.czi';
+%   controller = utils.dlgs.SelectLociSeriesDlg(filename, [], options.Font, ParentFigure);
+%   [seriesIdx, reader, readMeta, dims, name] = controller.run();
+%
+%   % Example with existing Bio-Formats reader
+%   reader = bfGetReader('sample_image.czi');
+%   controller = utils.dlgs.SelectLociSeriesDlg('sample_image.czi', reader, Font, ParentFigure);
+%   [seriesIdx, reader, readMeta, dims, name] = controller.run();
+%
     
     % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
     % Part of Microscopy Image Browser, http://mib.helsinki.fi
@@ -47,13 +47,17 @@ classdef SelectLociSeriesDlg < handle
     
     methods
         function obj = SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
-            % Constructor
+            % SELECTLOCISERIESDLG - Constructor.
             %
-            % Parameters:
-            %   filename: String path to the Bio-Formats file
-            %   hDataset: Optional Bio-Formats reader object (pass [] to create new)
-            %   Font: Structure with FontName and FontSize fields
-            %   ParentFigure: Handle to the parent GUI figure
+            % Syntax:
+            %   function obj = SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
+            %
+            % Input Arguments:
+            %   - **filename** — String path to the Bio-Formats file
+            %   - **hDataset** — Optional Bio-Formats reader object (pass [] to create new)
+            %   - **Font** — Structure with FontName and FontSize fields
+            %   - **ParentFigure** — Handle to the parent GUI figure
+            %
             
             obj.filename = filename;
             if iscell(obj.filename); obj.filename = obj.filename{1}; end
@@ -89,14 +93,17 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function varargout = run(obj)
-            % RUN Execute the dialog logic
+            % RUN - RUN Execute the dialog logic.
+            %
+            % Syntax:
+            %   function varargout = run(obj)
             %
             % Returns:
-            %   seriesIndex: Selected series index (1-based) or 'Cancel'
-            %   hDataset: Bio-Formats reader object
-            %   metaSwitch: Flag indicating whether to read metadata
-            %   dimxyczt: Dimensions vector [x y c z t]
-            %   seriesRealName: Cell array with series name
+            % seriesIndex: Selected series index (1-based) or 'Cancel'
+            % hDataset: Bio-Formats reader object
+            % metaSwitch: Flag indicating whether to read metadata
+            % dimxyczt: Dimensions vector [x y c z t]
+            % seriesRealName: Cell array with series name
             
             % Check if only one series exists - auto-select and return
             if size(obj.tableData, 1) == 1
@@ -131,7 +138,11 @@ classdef SelectLociSeriesDlg < handle
     
     methods (Access = private)
         function loadBioFormatsLibrary(~)
-            % Load Bio-Formats library into MATLAB environment
+            % LOADBIOFORMATSLIBRARY - Load Bio-Formats library into MATLAB environment.
+            %
+            % Syntax:
+            %   function loadBioFormatsLibrary(~)
+            %
             if ~isdeployed
                 javapath = javaclasspath('-all');
                 if isempty(cell2mat(strfind(javapath, 'bioformats_package.jar')))
@@ -141,7 +152,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function initView(obj)
-            % Initialize view components, parse file, and setup callbacks
+            % INITVIEW - Initialize view components, parse file, and setup callbacks.
+            %
+            % Syntax:
+            %   function initView(obj)
+            %
             
             % Setup image preview axes
             obj.view.handles.imagePreview.DataAspectRatio = [1 1 1];
@@ -184,7 +199,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function parseBioFormatsFile(obj)
-            % Parse Bio-Formats file and extract series information
+            % PARSEBIOFORMATSFILE - Parse Bio-Formats file and extract series information.
+            %
+            % Syntax:
+            %   function parseBioFormatsFile(obj)
+            %
             numSeries = obj.reader.getSeriesCount();
             obj.tableData = cell(numSeries, 6);  % prepare data for the table
             obj.dimensionOrder = cell([numSeries 1]);
@@ -208,7 +227,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function processSelection(obj, rowIndices)
-            % Process series selection
+            % PROCESSSELECTION - Process series selection.
+            %
+            % Syntax:
+            %   function processSelection(obj, rowIndices)
+            %
             if isempty(obj.tableData) || rowIndices(1) < 1; return; end
             
             % Update selected series
@@ -304,7 +327,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function out = prepareOutput(obj)
-            % Prepare output arguments
+            % PREPAREOUTPUT - Prepare output arguments.
+            %
+            % Syntax:
+            %   function out = prepareOutput(obj)
+            %
             out{1} = obj.selectedSeriesIndex;
             out{2} = obj.hDataset;
             out{3} = obj.metadataSwitch;
@@ -317,7 +344,11 @@ classdef SelectLociSeriesDlg < handle
         % ----------------------
         
         function onTableSelection(obj, ~, event)
-            % Handle table row selection
+            % ONTABLESELECTION - Handle table row selection.
+            %
+            % Syntax:
+            %   function onTableSelection(obj, ~, event)
+            %
             if isempty(event.Indices); return; end
             
             rowIndex = unique(event.Indices(:, 1));
@@ -325,17 +356,29 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onParametersCheck(obj, src, ~)
-            % Handle metadata checkbox change
+            % ONPARAMETERSCHECK - Handle metadata checkbox change.
+            %
+            % Syntax:
+            %   function onParametersCheck(obj, src, ~)
+            %
             obj.metadataSwitch = src.Value;
         end
         
         function onPreviewCheck(obj, ~, ~)
-            % Handle preview checkbox change
+            % ONPREVIEWCHECK - Handle preview checkbox change.
+            %
+            % Syntax:
+            %   function onPreviewCheck(obj, ~, ~)
+            %
             obj.updateImagePreview();
         end
         
         function onSliceSlider(obj, src, event)
-            % Handle slice slider movement
+            % ONSLICESLIDER - Handle slice slider movement.
+            %
+            % Syntax:
+            %   function onSliceSlider(obj, src, event)
+            %
             persistent lastUpdate;
             if isempty(lastUpdate), lastUpdate = tic; end
 
@@ -353,7 +396,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onSliceEdit(obj, src, ~)
-            % Handle slice edit field change
+            % ONSLICEEDIT - Handle slice edit field change.
+            %
+            % Syntax:
+            %   function onSliceEdit(obj, src, ~)
+            %
             if strcmp(obj.selectedSeriesIndex, 'Cancel')
                 src.Value = 1;
                 return;
@@ -372,7 +419,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onTableKeyPress(obj, ~, event)
-            % Handle key press in table
+            % ONTABLEKEYPRESS - Handle key press in table.
+            %
+            % Syntax:
+            %   function onTableKeyPress(obj, ~, event)
+            %
             if strcmp(event.Key, 'return')
                 % Fix for return key shifting cell index
                 obj.reader.setSeries(obj.selectedSeriesIndex(1) - 1);
@@ -382,7 +433,11 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onKeyPress(obj, ~, event)
-            % Handle keyboard shortcuts
+            % ONKEYPRESS - Handle keyboard shortcuts.
+            %
+            % Syntax:
+            %   function onKeyPress(obj, ~, event)
+            %
             if strcmp(event.Key, 'escape')
                 obj.onCancel();
             elseif strcmp(event.Key, 'return')
@@ -391,12 +446,20 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onContinue(obj, ~, ~)
-            % Handle continue button
+            % ONCONTINUE - Handle continue button.
+            %
+            % Syntax:
+            %   function onContinue(obj, ~, ~)
+            %
             uiresume(obj.view.gui);
         end
         
         function onCancel(obj, ~, ~)
-            % Handle cancel button
+            % ONCANCEL - Handle cancel button.
+            %
+            % Syntax:
+            %   function onCancel(obj, ~, ~)
+            %
             obj.selectedSeriesIndex = 'Cancel';
             uiresume(obj.view.gui);
         end

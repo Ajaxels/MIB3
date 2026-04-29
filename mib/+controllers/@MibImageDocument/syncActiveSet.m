@@ -1,6 +1,8 @@
 function changed = syncActiveSet(obj)
-% function changed = syncActiveSet(obj)
-% Lightweight sync of mibModel's active set to this document's setOfDatasetsIndex.
+% SYNCACTIVESET - Lightweight sync of mibModel's active set to this document's setOfDatasetsIndex.
+%
+% Syntax:
+%   function changed = syncActiveSet(obj)
 %
 % In split-panel mode the model keeps a single "active set" (Sets.selectedSet +
 % mibModel.id), but multiple MibImageDocument panels are simultaneously visible
@@ -12,16 +14,17 @@ function changed = syncActiveSet(obj)
 % Callers that need a full UI refresh (dropdown, buffer buttons, re-render)
 % should call the setsOps_Callbacks path instead; see gui_WindowButtonDownFcn.
 %
-% Parameters:
+% Input Arguments:
 %   none
 %
-% Return values:
-%   changed: logical, true if the active set was actually changed
+% Output Arguments:
+%   - **changed** — logical, true if the active set was actually changed
 %
-% Example:
-%   % At start of a frequent callback (mouse motion, scroll)
-%   obj.syncActiveSet();
-%   dataset = obj.mibModel.I{obj.mibModel.id};
+%   - **Example** —
+%     % At start of a frequent callback (mouse motion, scroll)
+%     obj.syncActiveSet();
+%     dataset = obj.mibModel.I{obj.mibModel.id};
+%
 
 changed = (obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex);
 if changed

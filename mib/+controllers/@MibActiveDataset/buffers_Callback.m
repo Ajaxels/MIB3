@@ -1,18 +1,23 @@
 function buffers_Callback(obj, hWidget, hData, buttonId)
-% buffers_Callback(obj, hWidget, hData)
+% BUFFERS_CALLBACK - buffers_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function buffers_Callback(obj, hWidget, hData, buttonId)
+%
 % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset
 % stored in a buffer defined by the pressed button
 %
 % Handles the following widgets:
 % - obj.handles.panels.activeDataset.handles.bufferN, where N is number 1 to 10,
 %
-% Parameters:
-% obj: controllers.MibActiveDataset
-% hWidget: handle to the pressed widget (matlab.ui.control.Button)
-% hData: handle to supporting ButtonPushedData class (matlab.ui.eventdata.ButtonPushedData)
-% buttonId: [optional] index of dataset in MibModel (the shown one is
-% obj.mibModel.id), when omitted a generic callback on the buffer button
-% press is executed
+% Input Arguments:
+%   - **obj** — controllers.MibActiveDataset
+%   - **hWidget** — handle to the pressed widget (matlab.ui.control.Button)
+%   - **hData** — handle to supporting ButtonPushedData class (matlab.ui.eventdata.ButtonPushedData)
+%   - **buttonId** — [optional] index of dataset in MibModel (the shown one is
+%     obj.mibModel.id), when omitted a generic callback on the buffer button
+%     press is executed
+%
 
 if nargin < 4
     % get index of the pressed button

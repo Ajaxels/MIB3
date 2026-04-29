@@ -1,15 +1,18 @@
 function Graph = calculateLengthOfNodes(obj, Graph, options)
-% function Length = calculateLengthOfNodes(obj, Graph, options)
-% calculate length of nodes
+% CALCULATELENGTHOFNODES - calculate length of nodes.
 %
-% Parameters:
-% Graph: a graph object
-% options: [@em optional] - an optional structure with
-% additional parameters
-%   .nodeId - ids of nodes that include edges that should be recalculated
+% Syntax:
+%   function Graph = calculateLengthOfNodes(obj, Graph, options)
 %
-% Return values:
-% Graph: the graph object with added/modified Length field
+% Input Arguments:
+%   - **Graph** — a graph object
+%   - **options** — *(optional)* - an optional structure with
+%     additional parameters
+%     .nodeId - ids of nodes that include edges that should be recalculated
+%
+% Output Arguments:
+%   - **Graph** — the graph object with added/modified Length field
+%
 
 if obj.noTrees == 0; return; end
 

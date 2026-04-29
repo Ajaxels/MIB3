@@ -1,16 +1,19 @@
 function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
-% function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
-% callbacks for cell edit in the LUT table (obj.handles.lutTable) of the Selection and Image View panel
+% LUTTABLE_CELLEDITCALLBACK - callbacks for cell edit in the LUT table (obj.handles.lutTable) of the Selection and Image View panel.
 %
-% Parameters:
-% hWidget: handle to the pressed widget (lutTable)
-% hData: CellEditData object with properties:
-%   .Indices: [row, col] - indices of edited cell
-%   .PreviousData - old value before edit
-%   .NewData - new value after edit
-%   .Source - handle to the table
-%   .EventName - 'CellEdit'
-% keyModifier: a pressed key modifier, [], 'control', 'shift'
+% Syntax:
+%   function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget (lutTable)
+%   - **hData** — CellEditData object with properties:
+%     .Indices: [row, col] - indices of edited cell
+%     .PreviousData - old value before edit
+%     .NewData - new value after edit
+%     .Source - handle to the table
+%     .EventName - 'CellEdit'
+%   - **keyModifier** — a pressed key modifier, [], 'control', 'shift'
+%
 
 if nargin < 4
     keyModifier = obj.view.handles.panels.selectionPanel.Figure.CurrentModifier; 

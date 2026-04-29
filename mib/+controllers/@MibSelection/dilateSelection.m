@@ -1,6 +1,8 @@
 function dilateSelection(obj)
-% function dilateSelection(obj)
-% Expand (dilate) the Selection layer for the current dataset.
+% DILATESELECTION - Expand (dilate) the Selection layer for the current dataset.
+%
+% Syntax:
+%   function dilateSelection(obj)
 %
 % Reads modifier keys to determine the dataset scope, then reads the
 % Apply-in-3D, Difference and Strel-size widgets from the Selection panel.
@@ -9,28 +11,30 @@ function dilateSelection(obj)
 % All heavy lifting is delegated to obj.mibModel.dilateImage.
 %
 % Modifier-key scope rules (same as erodeSelection and clearSelection):
-% @li no modifier       -> '2D, Slice'  (current slice only)
-% @li Alt or Shift      -> '3D, Stack'  (full z-stack at current t)
-% @li Alt + Shift       -> '4D, Dataset' (entire dataset)
+%   - no modifier '2D, Slice'  (current slice only)
+%   - Alt or Shift '3D, Stack'  (full z-stack at current t)
+%   - Alt + Shift '4D, Dataset' (entire dataset)
 %
 % When only one time point is present, '4D, Dataset' is demoted to
 % '3D, Stack' automatically.
 %
-% Parameters:
+% Input Arguments:
 %   (none)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.dilateSelection();  // called from the Dilate button callback @endcode
-% @code
-% % Simulated call with 3D strel confirmed:
-% % (modifier keys are read automatically; no arguments needed)
-% obj.mibController.cImageDoc{1}.dilateSelection();
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.dilateSelection();  // called from the Dilate button callback
+%
+%   Example 2 - Simulated call with 3D strel confirmed::
+%
+%     % Simulated call with 3D strel confirmed:
+%     % (modifier keys are read automatically; no arguments needed)
+%     obj.mibController.cImageDoc{1}.dilateSelection();
+%
 
 % Updates
 %

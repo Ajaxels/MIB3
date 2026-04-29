@@ -1,10 +1,13 @@
 function imageVisualization_Callbacks(obj, hWidget, hData)
-% function imageVisualization_Callbacks(obj, hWidget, hData)
-% callback on press of the Visualization buttons in the Image ribbon
+% IMAGEVISUALIZATION_CALLBACKS - callback on press of the Visualization buttons in the Image ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function imageVisualization_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

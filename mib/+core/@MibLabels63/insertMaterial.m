@@ -1,6 +1,8 @@
 function insertMaterial(obj, index, name, wb)
-% function insertMaterial(obj, index, name, wb)
-% Insert a material at the specified position (type-63 bit-packed model)
+% INSERTMATERIAL - Insert a material at the specified position (type-63 bit-packed model).
+%
+% Syntax:
+%   function insertMaterial(obj, index, name, wb)
 %
 % For the bit-packed format (maxMaterials = 63), the model occupies bits
 % 1-6 of each uint8 element.  When inserting in the middle, all model
@@ -8,19 +10,29 @@ function insertMaterial(obj, index, name, wb)
 % selection (bit 8) bits.  When appending at the end, only the name and
 % colour are added.
 %
-% Parameters:
-% index: double, 1-based position where the new material is inserted.
-% name: char, name for the new material.
-% wb: [@em optional] handle to a uiprogressdlg for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **index** — double, 1-based position where the new material is inserted.
+%   - **name** — char, name for the new material.
+%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(3, 'Nucleus');       // insert at position 3 @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(5, 'New', wb);       // with progress bar @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(3, 'Nucleus');% insert at position 3
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(5, 'New', wb);% with progress bar
+%
 
 % Updates
 %

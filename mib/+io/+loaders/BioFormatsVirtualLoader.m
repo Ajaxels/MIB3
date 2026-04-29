@@ -1,26 +1,26 @@
 classdef BioFormatsVirtualLoader < handle
-    % classdef BioFormatsVirtualLoader < handle
-    % On-demand plane reader for MIB3 BioFormats virtual datasets.
-    %
-    % Wraps a single microscopy file accessible via the Bio-Formats library.
-    % A loci.formats.Memoizer reader is opened lazily on the first readPlane
-    % call and kept open for the lifetime of the loader, avoiding the
-    % overhead of re-opening the reader for every z-slice and time-point.
-    %
-    % Call close() (or let closeVirtualDataset delete the loader) to
-    % release the file handle when the virtual dataset is closed.
-    %
-    % Unlike the batch loaders in +io/+loaders/ this class does NOT
-    % implement BaseImageLoader — it is stateful and designed for repeated
-    % single-plane reads rather than single full-dataset loads.
-    %
-    % Usage example:
-    % @code
-    % loader = io.loaders.BioFormatsVirtualLoader('/data/stack.czi', 0, tempdir);
-    % planes = loader.readPlane([1 512], [1 512], 5, [1 2], 0, 'uint16');
-    % % planes is [512, 512, 2] — one tile per requested channel
-    % loader.close();
-    % @endcode
+% BIOFORMATSVIRTUALLOADER - On-demand plane reader for MIB3 BioFormats virtual datasets.
+%
+% Wraps a single microscopy file accessible via the Bio-Formats library.
+% A loci.formats.Memoizer reader is opened lazily on the first readPlane
+% call and kept open for the lifetime of the loader, avoiding the
+% overhead of re-opening the reader for every z-slice and time-point.
+%
+% Call close() (or let closeVirtualDataset delete the loader) to
+% release the file handle when the virtual dataset is closed.
+%
+% Unlike the batch loaders in +io/+loaders/ this class does NOT
+% implement BaseImageLoader — it is stateful and designed for repeated
+% single-plane reads rather than single full-dataset loads.
+%
+% Usage example:
+%
+% .. code-block:: matlab
+%
+%   loader = io.loaders.BioFormatsVirtualLoader('/data/stack.czi', 0, tempdir);
+%   planes = loader.readPlane([1 512], [1 512], 5, [1 2], 0, 'uint16');
+%   % planes is [512, 512, 2] — one tile per requested channel
+%   loader.close();
 
     properties (SetAccess = private)
         filename
@@ -35,13 +35,18 @@ classdef BioFormatsVirtualLoader < handle
 
     methods
         function obj = BioFormatsVirtualLoader(filename, seriesIndex, memoDir)
-            % obj = BioFormatsVirtualLoader(filename, seriesIndex, memoDir)
+            % BIOFORMATSVIRTUALLOADER - obj = BioFormatsVirtualLoader(filename, seriesIndex, memoDir).
+            %
+            % Syntax:
+            %   function obj = BioFormatsVirtualLoader(filename, seriesIndex, memoDir)
+            %
             % Constructor
             %
-            % Parameters:
-            % filename    : [char] full path to the BioFormats-readable file
-            % seriesIndex : [numeric] 0-based series index
-            % memoDir     : [char] directory for BioFormats Memoizer memo files
+            % Input Arguments:
+            %   - **filename** — [char] full path to the BioFormats-readable file
+            %   - **seriesIndex** — [numeric] 0-based series index
+            %   - **memoDir** — [char] directory for BioFormats Memoizer memo files
+            %
 
             obj.filename    = filename;
             obj.seriesIndex = seriesIndex;
@@ -50,22 +55,27 @@ classdef BioFormatsVirtualLoader < handle
         end
 
         function planes = readPlane(obj, Ylim, Xlim, planeId, colChannel, timepoint, dataClass)
-            % planes = readPlane(obj, Ylim, Xlim, planeId, colChannel, timepoint, dataClass)
+            % READPLANE - planes = readPlane(obj, Ylim, Xlim, planeId, colChannel, timepoint, dataClass).
+            %
+            % Syntax:
+            %   function planes = readPlane(obj, Ylim, Xlim, planeId, colChannel, timepoint, dataClass)
+            %
             % Read one XY tile across the requested colour channels from a single z/t plane.
             %
             % The Bio-Formats reader is opened on the first call and reused
             % on all subsequent calls to this loader.
             %
-            % Parameters:
-            % Ylim       : [ymin ymax] pixel range (1-based, inclusive)
-            % Xlim       : [xmin xmax] pixel range (1-based, inclusive)
-            % planeId    : [numeric] 1-based z-plane index within this file/series
-            % colChannel : [1 x nC] vector of 1-based colour channel indices
-            % timepoint  : [numeric] 0-based time-point index (as used by getIndex)
-            % dataClass  : [char] output class, e.g. 'uint8' or 'uint16'
+            % Input Arguments:
+            %   - **Ylim** — [ymin ymax] pixel range (1-based, inclusive)
+            %   - **Xlim** — [xmin xmax] pixel range (1-based, inclusive)
+            %   - **planeId** — [numeric] 1-based z-plane index within this file/series
+            %   - **colChannel** — [1 x nC] vector of 1-based colour channel indices
+            %   - **timepoint** — [numeric] 0-based time-point index (as used by getIndex)
+            %   - **dataClass** — [char] output class, e.g. 'uint8' or 'uint16'
             %
-            % Return values:
-            % planes : [nY, nX, nC] array — one slice per requested channel
+            % Output Arguments:
+            %   - **planes** — [nY, nX, nC] array — one slice per requested channel
+            %
 
             if isempty(obj.reader)
                 obj.openReader();
@@ -91,7 +101,11 @@ classdef BioFormatsVirtualLoader < handle
         end
 
         function close(obj)
-            % close(obj)
+            % CLOSE - close(obj).
+            %
+            % Syntax:
+            %   function close(obj)
+            %
             % Close the Bio-Formats reader and release the file handle.
             % Safe to call multiple times.
 
@@ -106,7 +120,11 @@ classdef BioFormatsVirtualLoader < handle
         end
 
         function delete(obj)
-            % delete(obj)
+            % DELETE - delete(obj).
+            %
+            % Syntax:
+            %   function delete(obj)
+            %
             % Destructor — closes the reader when the object is destroyed.
 
             obj.close();
@@ -115,7 +133,11 @@ classdef BioFormatsVirtualLoader < handle
 
     methods (Access = private)
         function openReader(obj)
-            % openReader(obj)
+            % OPENREADER - openReader(obj).
+            %
+            % Syntax:
+            %   function openReader(obj)
+            %
             % Open the Bio-Formats Memoizer reader and select the series.
             % Called lazily on the first readPlane call.
 

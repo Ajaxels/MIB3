@@ -1,30 +1,35 @@
 function [img, img_info, viewPort, lutColors, connImaris] = getImarisDataset(connImaris)
-% function [img, img_info, viewPort, lutColors, connImaris] = io.imaris.getImarisDataset(connImaris)
-% Get a dataset opened in Imaris and corresponding meta-data
+% GETIMARISDATASET - Get a dataset opened in Imaris and corresponding meta-data.
 %
-% Parameters:
-% connImaris: [@em optional] a handle to imaris connection
+% Syntax:
+%   function [img, img_info, viewPort, lutColors, connImaris] = getImarisDataset(connImaris)
 %
-% Return values:
-% img: 4D dataset
-% img_info: Containers.Map with meta data
-% viewPort: a structure with the viewPort parameters
-%   .min - a vector with minimal intensities for contrast adjustment
-%   .max - a vector with maximal intensities for contrast adjustment
-%   .gamma - a vector with gamma factor for contrast adjustment
-% lutColors: a matrix with LUT colors [1:colorChannel, R G B], (0-1)
-% connImaris:  a handle to imaris connection
-
-% @note 
-% uses IceImarisConnector bindings
-% @b Requires:
-% 1. set system environment variable IMARISPATH to the installation
-% directory, for example "c:\tools\science\imaris"
-% 2. restart Matlab
-
-%|
-% @b Examples:
-% @code [img, img_info] = io.imaris.getImarisDataset();     // get dataset from imaris @endcode
+% Input Arguments:
+%   - **connImaris** — *(optional)* a handle to imaris connection
+%
+% Output Arguments:
+%   - **img** — 4D dataset
+%   - **img_info** — ``containers.Map`` with meta data
+%   - **viewPort** — a structure with the viewPort parameters:
+%
+%     - ``.min`` — a vector with minimal intensities for contrast adjustment
+%     - ``.max`` — a vector with maximal intensities for contrast adjustment
+%     - ``.gamma`` — a vector with gamma factor for contrast adjustment
+%
+%   - **lutColors** — a matrix with LUT colors ``[1:colorChannel, R G B]``, (0-1)
+%   - **connImaris** — a handle to Imaris connection
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [img, img_info] = io.imaris.getImarisDataset();
+%
+% See also:
+%   io.imaris.getImarisDataset_StandardConnection
+%
 
 % Updates
 % 25.09.2017 IB updated connection to Imaris

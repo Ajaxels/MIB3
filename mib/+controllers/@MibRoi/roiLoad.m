@@ -1,6 +1,8 @@
 function roiLoad(obj)
-% function roiLoad(obj)
-% Load ROIs from a .roi (MAT) file into the current dataset
+% ROILOAD - Load ROIs from a .roi (MAT) file into the current dataset.
+%
+% Syntax:
+%   function roiLoad(obj)
 %
 % Parameters: none
 % Return values: none

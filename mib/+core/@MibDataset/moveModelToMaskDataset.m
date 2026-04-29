@@ -1,32 +1,41 @@
 function moveModelToMaskDataset(obj, action_type, options)
-% function moveModelToMaskDataset(obj, action_type, options)
-% Move the selected Material to the Mask layer for the full dataset.
+% MOVEMODELTOMASKDATASET - Move the selected Material to the Mask layer for the full dataset.
+%
+% Syntax:
+%   function moveModelToMaskDataset(obj, action_type, options)
 %
 % Fast-path function for moving complete datasets between layers without
 % ROI or block mode. Operates directly on packed data arrays for maximum
 % performance.
 %
-% Parameters:
-% action_type: a type of the desired action
-% @li 'add' - add the selected material (Select from) to mask
-% @li 'remove' - remove the selected material (Select from) from mask
-% @li 'replace' - replace mask with the selected (Select from) material
-% options: a structure with additional parameters
-% @li .contSelIndex - index of the Select from material
-% @li .contAddIndex - index of the Add to material
-% @li .level -> [@em optional], index of image level from the image pyramid, default = 1
+% Input Arguments:
+%   - **action_type** — a type of the desired action
+%   - 'add' - add the selected material (Select from) to mask
+%   - 'remove' - remove the selected material (Select from) from mask
+%   - 'replace' - replace mask with the selected (Select from) material
+%   - **options** — a structure with additional parameters
 %
-% Return values:
-
-%|
-% @b Examples:
-% @code
-% options.contSelIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();
-% options.contAddIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');
-% obj.mibModel.I{obj.mibModel.id}.moveModelToMaskDataset('add', options);  // add material to mask
-% @endcode
-% @attention @b NOT @b sensitive to the blockModeSwitch
-% @attention @b NOT @b sensitive to the shown ROI
+%     - ``.contSelIndex`` — index of the Select from material
+%     - ``.contAddIndex`` — index of the Add to material
+%     - ``.level`` *(optional)*, index of image level from the image pyramid, default = 1
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.contSelIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();
+%     options.contAddIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');
+%     obj.mibModel.I{obj.mibModel.id}.moveModelToMaskDataset('add', options);% add material to mask
+%
+%
+%   **Attention:** **NOT** **sensitive** to the blockModeSwitch
+%
+%   **Attention:** **NOT** **sensitive** to the shown ROI
+%
 
 % Updates
 % 

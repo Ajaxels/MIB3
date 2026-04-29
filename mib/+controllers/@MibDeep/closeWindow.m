@@ -1,6 +1,9 @@
 function closeWindow(obj)
-% function closeWindow(obj)
-% callback on closing of DeepMIB window
+% CLOSEWINDOW - callback on closing of DeepMIB window.
+%
+% Syntax:
+%   function closeWindow(obj)
+%
 
 % update preferences structure
 obj.mibModel.preferences.Deep.OriginalTrainingImagesDir = obj.BatchOpt.OriginalTrainingImagesDir;

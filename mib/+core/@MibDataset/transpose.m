@@ -1,25 +1,36 @@
 function transpose(obj, new_orient)
-% function transpose(obj, new_orient)
-% Change orientation of the image to the YX, XZ, or YZ plane.
+% TRANSPOSE - Change orientation of the image to the YX, XZ, or YZ plane.
+%
+% Syntax:
+%   function transpose(obj, new_orient)
+%
 % Converted from MIB2 @mibImage/transpose.m
 %
-% @note This function updates only the slices and orientation fields; it does
-%       NOT rearrange the underlying image data in memory.
 %
-% Parameters:
-% new_orient: desired orientation:
-%   @li @b 1 -> XZ plane (xz)
-%   @li @b 2 -> YZ plane (yz)
-%   @li @b 3 -> YX plane (yx, default view)
+% **Note:** This function updates only the slices and orientation fields; it does
+% NOT rearrange the underlying image data in memory.
 %
-% Return values:
+% Input Arguments:
+%   - **new_orient** — desired orientation:
+%
+%     - ``1`` — XZ plane (xz)
+%     - ``2`` — YZ plane (yz)
+%     - ``3`` — YX plane (yx, default view)
+%
+% Output Arguments:
 %   none
 %
-% Example:
-%   obj.transpose(1);   % switch to XZ plane
-%   obj.transpose(2);   % switch to YZ plane
-%   obj.transpose(3);   % switch to YX plane
-%   obj.mibModel.I{obj.mibModel.id}.transpose(3);   % switch to YX plane, call from MibController
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.transpose(1);   % switch to XZ plane
+%     obj.transpose(2);   % switch to YZ plane
+%     obj.transpose(3);   % switch to YX plane
+%     obj.mibModel.I{obj.mibModel.id}.transpose(3);   % call from MibController
+%
 
 
 % Save the current slice index for the orientation being left, so we can

@@ -1,21 +1,29 @@
 function [img, img_info, viewPort] = getImarisDataset_StandardConnection(vImarisApp)
-% function [img, img_info, viewPort] = getImarisDataset_StandardConnection(vImarisApp)
-% Get a dataset opened in Imaris and corresponding meta-data
+% GETIMARISDATASET_STANDARDCONNECTION - Get a dataset opened in Imaris and corresponding meta-data.
 %
-% Parameters:
-% vImarisApp: [@em optional] a handle to Imaris
+% Syntax:
+%   function [img, img_info, viewPort] = getImarisDataset_StandardConnection(vImarisApp)
 %
-% Return values:
-% img: 4D dataset
-% img_info: Containers.Map with meta data
-% viewPort: a structure with the viewPort parameters
-%   .min - a vector with minimal intensities for contrast adjustment
-%   .max - a vector with maximal intensities for contrast adjustment
-%   .gamma - a vector with gamma factor for contrast adjustment
-
-%| 
-% @b Examples:
-% @code [img, img_info] = io.imaris.getImarisDataset_StandardConnection();     // get dataset from imaris @endcode
+% Input Arguments:
+%   - **vImarisApp** — *(optional)* a handle to Imaris
+%
+% Output Arguments:
+%   - **img** — 4D dataset
+%   - **img_info** — ``containers.Map`` with meta data
+%   - **viewPort** — a structure with the viewPort parameters:
+%
+%     - ``.min`` — a vector with minimal intensities for contrast adjustment
+%     - ``.max`` — a vector with maximal intensities for contrast adjustment
+%     - ``.gamma`` — a vector with gamma factor for contrast adjustment
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [img, img_info] = io.imaris.getImarisDataset_StandardConnection();
+%
 
 % Updates
 % 

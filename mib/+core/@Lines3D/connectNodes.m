@@ -1,10 +1,13 @@
 function connectNodes(obj, s, t)
-% function connectNodes(obj, s, t)
-% make an edge between two nodes
+% CONNECTNODES - make an edge between two nodes.
 %
-% Parameters:
-% s: index of the first node
-% t: index of the second node
+% Syntax:
+%   function connectNodes(obj, s, t)
+%
+% Input Arguments:
+%   - **s** — index of the first node
+%   - **t** — index of the second node
+%
 
 if nargin < 3; error('not enough parameters!'); end
 

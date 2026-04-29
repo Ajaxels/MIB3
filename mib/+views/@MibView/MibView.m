@@ -1,6 +1,6 @@
 classdef MibView < handle
-    % classdef mibView < handle
-    % the main view class of MIB
+    % MIBVIEW - the main view class of MIB.
+    %
 
     properties
         gui
@@ -79,14 +79,19 @@ classdef MibView < handle
         recenterGui(obj) % recenter MIB to be on the center of the screen
 
         function obj = MibView(controller)
-           % obj = mibView(controller)
-            % mibView class constructor
-            %
-            % Constructor for the mibView class. Create a new instance of
-            % the class with default parameters
-            %
-            % Parameters:
-            % controller: handle to mibController class
+           % MIBVIEW - obj = mibView(controller).
+           %
+           % Syntax:
+           %   function obj = MibView(controller)
+           %
+           % mibView class constructor
+           %
+           % Constructor for the mibView class. Create a new instance of
+           % the class with default parameters
+           %
+           % Input Arguments:
+           %   - **controller** — handle to mibController class
+           %
 
             obj.controller = controller;
             obj.mibModel = controller.mibModel;

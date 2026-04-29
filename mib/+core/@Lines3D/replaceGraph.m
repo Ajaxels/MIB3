@@ -1,31 +1,34 @@
 function replaceGraph(obj, Graph)
-% function replaceGraph(obj, Graph)
-% replace the current graph object with a new graph
+% REPLACEGRAPH - replace the current graph object with a new graph.
 %
-% Parameters:
-% Graph: graph object with a new graph, required fields (may have more)
-%   .Nodes - a table containing information about nodes of the graph
-%       .PointsXYZ - matrix with coordinates of nodes [nodeId](x, y, z) (in physical units)
-%           to recalculate from pixels to the imaging units use mibImage.convertPixelsToUnits
-%       .TreeName - [@em optional] a cell array where each entry contains name of the node's parant tree
-%       .NodeName - [@em optional] a cell array where each entry has name of the corresponding node
-%       .Radius - [@em optional] a vector with radius parameter for each node
-%   	.[name_of_field] - [@em optional] optional fields as either array of vectors or cells
-%       .Properties.UserData.pixSize - a structure with pixSize of the underlying dataset
-%               .x - x resoulution, um/px
-%               .y - x resoulution, um/px
-%               .z - x resoulution, um/px
-%       .Properties.UserData.BoundingBox - a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
-%       .Properties.VariableUnits - a cell array with units for each
-%               variable, when coordinate are 'pixels', MIB suggest recompute
-%               them to image units
+% Syntax:
+%   function replaceGraph(obj, Graph)
+%
+% Input Arguments:
+%   - **Graph** — graph object with a new graph, required fields (may have more)
+%     .Nodes - a table containing information about nodes of the graph
+%     .PointsXYZ - matrix with coordinates of nodes [nodeId](x, y, z) (in physical units)
+%     to recalculate from pixels to the imaging units use mibImage.convertPixelsToUnits
+%     .TreeName - *(optional)* a cell array where each entry contains name of the node's parant tree
+%     .NodeName - *(optional)* a cell array where each entry has name of the corresponding node
+%     .Radius - *(optional)* a vector with radius parameter for each node
+%     .[name_of_field] - *(optional)* optional fields as either array of vectors or cells
+%     .Properties.UserData.pixSize - a structure with pixSize of the underlying dataset
+%     .x - x resoulution, um/px
+%     .y - x resoulution, um/px
+%     .z - x resoulution, um/px
+%     .Properties.UserData.BoundingBox - a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
+%     .Properties.VariableUnits - a cell array with units for each
+%     variable, when coordinate are 'pixels', MIB suggest recompute
+%     them to image units
 %
 %   .Edges - a table containing information about edges of the graph
-%       .EndNodes - connectivity table [edgeId][Node1 Node2], each row defines an edge
-%                   with indices of nodes that form the edge
-%       .Edges - [@em optional] a matrix with coordinates of the edges, [edgeId][x1 y1 z1 x2 y2 z2], (in physical units)
-%       .Weight - [@em optional] a vector of weights for each edge
-%       .Length - [@em optional] a vector of length for each edge (in physical units)
+%   .EndNodes - connectivity table [edgeId][Node1 Node2], each row defines an edge
+%   with indices of nodes that form the edge
+%   .Edges - *(optional)* a matrix with coordinates of the edges, [edgeId][x1 y1 z1 x2 y2 z2], (in physical units)
+%   .Weight - *(optional)* a vector of weights for each edge
+%   .Length - *(optional)* a vector of length for each edge (in physical units)
+%
 
 if nargin < 2; obj.clearContents(); return; end
 

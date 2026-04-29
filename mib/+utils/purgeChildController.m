@@ -1,20 +1,25 @@
 function purgeChildController(parentObj, src)
-% utils.purgeChildController — remove a child controller from its parent
+% PURGECHILDCONTROLLER - remove a child controller from its parent.
+%
+% Syntax:
+%   function purgeChildController(parentObj, src)
 %
 % Called as the CloseEvent listener callback wired by utils.startController.
 % Finds the child by class name, deletes it if still valid, and removes it
 % from the parent's tracking arrays.
 %
-% Parameters:
-% parentObj:  handle — parent controller (must have childControllers / childControllersIds)
-% src:        handle — the child controller that fired CloseEvent
+% Input Arguments:
+%   - **parentObj** — handle — parent controller (must have childControllers / childControllersIds)
+%   - **src** — handle — the child controller that fired CloseEvent
 %
-%| 
-% @b Examples:
-% @code
-% % Wired internally by utils.startController — not called directly by user code.
-% addlistener(child, 'CloseEvent', @(src,~) utils.purgeChildController(parentObj, src));
-% @endcode
+% Usage:
+%
+%   **Example 1** — wired internally by ``utils.startController`` (not called directly)
+%
+%   .. code-block:: matlab
+%
+%      addlistener(child, 'CloseEvent', @(src,~) utils.purgeChildController(parentObj, src));
+%
 
 % Updates
 %

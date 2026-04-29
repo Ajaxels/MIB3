@@ -1,6 +1,6 @@
 classdef MibSegmentation
-    % classdef MibSegmentation
-    % controller for methods of the Segmentation panel in MIB
+% MIBSEGMENTATION - controller for methods of the Segmentation panel in MIB.
+%
 
     properties
         mibController   % controllers.MibController
@@ -76,7 +76,11 @@ classdef MibSegmentation
         updateSamSettings(obj)        % Open SAM settings dialog for configuring SAM1 or SAM2 parameters
 
         function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
-            %% Init properties
+            % MIBSEGMENTATION - % Init properties.
+            %
+            % Syntax:
+            %   function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
+            %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Segmentation)

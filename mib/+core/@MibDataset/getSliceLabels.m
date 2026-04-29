@@ -1,24 +1,39 @@
 function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)
-% [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)
+% GETSLICELABELS - [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options).
+%
+% Syntax:
+%   function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)
+%
 % Get list of labels (mibImage.annotations) shown at the specified slice
 %
-% Parameters:
-% sliceNumber: [@em optional], a slice number to get labels
-% timePoint: [@em optional], a time point to get the labels
-% options: [@em optional], structure with additional parameters
-%       -> .blockModeSwitch: [@em optional], optionally return labels that are seen only in the current view
-%       -> .shiftCoordinates: [@em optional], shift coordinates so that they are corrected relative to the crop introduces by blockModeSwitch
-%       
+% Input Arguments:
+%   - **sliceNumber** — *(optional)*, a slice number to get labels
+%   - **timePoint** — *(optional)*, a time point to get the labels
+%   - **options** — *(optional)*, structure with additional parameters:
 %
-% Return values:
-% labelsList:   a cell array with labels
-% labelPositions:   a matrix with coordinates of the labels [labelIndex, z x y]
-% indices:  indices of the labels
-
-%|
-% @b Examples:
-% @code [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.getSliceLabels(15); // call from mibController; get all labels from the slice 15 @endcode
-% @code [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.getSliceLabels(); // call from mibController;  get all labels from the currently shown slice @endcode
+%     - ``.blockModeSwitch`` — *(optional)*, optionally return labels that are seen only in the current view
+%     - ``.shiftCoordinates`` — *(optional)*, shift coordinates so that they are corrected relative to the crop introduces by blockModeSwitch
+%
+% Output Arguments:
+%   - **labelsList** — a cell array with labels
+%   - **labelPositions** — a matrix with coordinates of the labels [labelIndex, z x y]
+%   - **indices** — indices of the labels
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.getSliceLabels(15);% call from mibController; get all labels from the slice 15
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     [labelsList, labelValues, labelPositions, indices] = obj.mibModel.I{obj.mibModel.id}.getSliceLabels();% call from mibController;  get all labels from the currently shown slice
+%
 
 if nargin < 4; options = struct(); end
 if nargin < 3; timePoint = obj.slices{5}(1); end

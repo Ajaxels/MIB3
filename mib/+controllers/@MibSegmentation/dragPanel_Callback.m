@@ -1,18 +1,23 @@
 function dragPanel_Callback(obj, hWidget, hData)
-% dragPanel_Callback(obj, hWidget, hData)
+% DRAGPANEL_CALLBACK - dragPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function dragPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->Drag-and-drop materials tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag -> identifier the widget, used when the same operation is called from menu
-% 'dragLayer' -> select MIB layout to apply the drag-and-drop operation
-% 'dragValue' -> define the value for shifting materials
-% 'dragUp' -> shift the layer towards up-direction
-% 'dragRight' -> shift the layer towards right-direction
-% 'dragLeft' -> shift the layer towards left-direction
-% 'dragDown' -> shift the layer towards down-direction
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag identifier the widget, used when the same operation is called from menu
+%     'dragLayer' select MIB layout to apply the drag-and-drop operation
+%     'dragValue' define the value for shifting materials
+%     'dragUp' shift the layer towards up-direction
+%     'dragRight' shift the layer towards right-direction
+%     'dragLeft' shift the layer towards left-direction
+%     'dragDown' shift the layer towards down-direction
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

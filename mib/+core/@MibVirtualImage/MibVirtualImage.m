@@ -1,32 +1,32 @@
 classdef MibVirtualImage < core.MibImage
-    % classdef MibVirtualImage < core.MibImage
-    % Virtual image class for MIB3 — reads slices from disk on demand.
+    % MIBVIRTUALIMAGE - Virtual image class for MIB3 — reads slices from disk on demand.
     %
     % The dataset is NOT loaded into memory; obj.data{} stores either:
-    %   - file-path strings  (hdf5 / BioFormats mode)
-    %   - loci.formats.Memoizer reader handles (BioFormats mode, when opened)
-    %   - a zarr path string in obj.data{1}  (Zarr/pyramid mode)
+    % - file-path strings  (hdf5 / BioFormats mode)
+    % - loci.formats.Memoizer reader handles (BioFormats mode, when opened)
+    % - a zarr path string in obj.data{1}  (Zarr/pyramid mode)
     %
     % Dispatch logic in getData():
-    %   ~isempty(obj.pyramid.levelNames)  ->  getDataZarr
-    %   otherwise                         ->  getDataVirt  (BioFormats / HDF5)
+    % ~isempty(obj.pyramid.levelNames) getDataZarr
+    % otherwise getDataVirt  (BioFormats / HDF5)
     %
     % Key differences vs MIB2:
-    %   - dimension order: [y, x, z, c, t]  (MIB3) vs [y, x, c, z, t] (MIB2)
-    %   - YX orientation  = 3               (MIB3) vs 4               (MIB2)
-    %   - image data      = obj.data{}      (MIB3) vs obj.img{}        (MIB2)
-    %   - image class     = obj.dataClass   (MIB3) vs obj.meta('imgClass') (MIB2)
+    % - dimension order: [y, x, z, c, t]  (MIB3) vs [y, x, c, z, t] (MIB2)
+    % - YX orientation  = 3               (MIB3) vs 4               (MIB2)
+    % - image data      = obj.data{}      (MIB3) vs obj.img{}        (MIB2)
+    % - image class     = obj.dataClass   (MIB3) vs obj.meta('imgClass') (MIB2)
 
     properties
         Virtual
         % a structure describing the virtual stack layout:
-        % @li .readerId        - [1 x depth] index into obj.data{} for each slice
-        % @li .objectType      - {1 x nReaders} cell of reader type strings:
-        %                        'bioformats', 'matlab.hdf5', 'hdf5_image'
-        % @li .seriesName      - {1 x nReaders} series name / HDF5 dataset path per reader;
-        %                        for 'bioformats' this is a 1-based numeric series index
-        % @li .slicesPerFile   - [1 x nReaders] number of z-slices contributed by each file
-        % @li .filenames       - {1 x nReaders} full file paths
+        %
+        % - ``.readerId`` — ``[1 x depth]`` index into ``obj.data{}`` for each slice
+        % - ``.objectType`` — ``{1 x nReaders}`` cell of reader type strings:
+        %   ``'bioformats'``, ``'matlab.hdf5'``, ``'hdf5_image'``
+        % - ``.seriesName`` — ``{1 x nReaders}`` series name / HDF5 dataset path per reader;
+        %   for ``'bioformats'`` this is a 1-based numeric series index
+        % - ``.slicesPerFile`` — ``[1 x nReaders]`` number of z-slices contributed by each file
+        % - ``.filenames`` — ``{1 x nReaders}`` full file paths
         bioFormatsMemoizerMemoDir = ''
         % [char] path to the directory used by the BioFormats Memoizer for memo files.
         % Mirrors MibDataset.bioFormatsMemoizerMemoDir — set from there when a
@@ -56,12 +56,17 @@ classdef MibVirtualImage < core.MibImage
         insertSlice(obj, img, insertPosition, dim, virtMeta, options)    % Insert virtual file references along depth; updates Virtual struct and sliceName
 
         function obj = MibVirtualImage(data, meta)
-            % obj = MibVirtualImage(data, meta)
+            % MIBVIRTUALIMAGE - obj = MibVirtualImage(data, meta).
+            %
+            % Syntax:
+            %   function obj = MibVirtualImage(data, meta)
+            %
             % Constructor — delegates to MibImage then initialises Virtual struct.
             %
-            % Parameters:
-            % data: ignored (virtual images are not pre-loaded); pass [] or omit
-            % meta: metadata dictionary / struct, passed to MibImage constructor
+            % Input Arguments:
+            %   - **data** — ignored (virtual images are not pre-loaded); pass [] or omit
+            %   - **meta** — metadata dictionary / struct, passed to MibImage constructor
+            %
 
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; data = []; end

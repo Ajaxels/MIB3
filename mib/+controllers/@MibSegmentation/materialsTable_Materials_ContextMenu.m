@@ -1,24 +1,28 @@
 function materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)
-% function materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)
-% callbacks for the context menu of
-% - Segmentation table widget -> Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
-% - Menu ribbon -> Models -> Materials (obj.view.handles.model.materials)
+% MATERIALSTABLE_MATERIALS_CONTEXTMENU - callbacks for the context menu of.
 %
-% Parameters:
-% menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-% selectedData: handle to the pressed
-% 'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-% button that has the context menu (selectedData.ContextObject)
+% Syntax:
+%   function materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)
 %
-% Available menu options available from 'menuEntry.Text':
-% 'Rename material' -> rename the selected material
-% 'Add material' -> add a new material to the model
-% 'Insert material' -> insert a new material to the model
-% 'Swap materials' ->  swap positions of the two materials
-% 'Reorder materials' -> reorder materials
-% 'Export material' -> export the selected material
-% 'Save material to file' -> save the selected material
-% 'Remove materials' -> remove the selected material
+% - Segmentation table widget Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
+% - Menu ribbon Models Materials (obj.view.handles.model.materials)
+%
+% Input Arguments:
+%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
+%   - **selectedData** — handle to the pressed
+%     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
+%     button that has the context menu (selectedData.ContextObject)
+%
+%   Available menu options available from 'menuEntry.Text':
+%   'Rename material' rename the selected material
+%   'Add material' add a new material to the model
+%   'Insert material' insert a new material to the model
+%   'Swap materials' swap positions of the two materials
+%   'Reorder materials' reorder materials
+%   'Export material' export the selected material
+%   'Save material to file' save the selected material
+%   'Remove materials' remove the selected material
+%
 
 
 arguments (Input)

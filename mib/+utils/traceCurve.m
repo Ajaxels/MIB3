@@ -1,27 +1,45 @@
 function [mask, status] = traceCurve(img, options, mask)
-% function [mask, status] = traceCurve(img, options, mask)
-% Connect points with search for a minimum gradients
+% TRACECURVE - Connect two points by searching for a minimum-gradient path.
 %
-% Based on Accurate Fast Marching function by Dirk-Jan Kroon.
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      [mask, status] = traceCurve(img, options)
+%      [mask, status] = traceCurve(img, options, mask)
+%
+% Based on the Accurate Fast Marching function by Dirk-Jan Kroon.
 % Called from the Membrane Click Tracker segmentation tool.
 %
-% Parameters:
-% img: original image to probe gradients
-% options: a structure with parameters
-% @li .p1 - coordinates of the starting point, (y;x)
-% @li .p2 - coordinates of the target point, (y;x)
-% @li .scaleFactor - scale factor for amplifying intensities
-% @li .segmTrackBlackChk - switch to define whether the signal is black (1) or white (0)
-% @li .colorId - index of the color channel to follow
-% mask: [@em optional] an existing mask/selection layer
+% Input Arguments:
+%   - **img** — original image used to probe gradients
+%   - **options** — struct with algorithm parameters:
 %
-% Return values:
-% mask: a bitmap image with a connecting line, to be used as the 'Selection' layer
-% status: result of the function run: 0 = fail, 1 = success
+%     - ``.p1``                   — starting point coordinates ``[y; x]``
+%     - ``.p2``                   — target point coordinates ``[y; x]``
+%     - ``.scaleFactor``          — scale factor for amplifying intensity differences
+%     - ``.segmTrackBlackChk``    — ``1`` when signal is dark (black membrane), ``0`` for bright
+%     - ``.colorId``              — index of the colour channel to follow
 %
-%|
-% @b Examples:
-% @code [mask, status] = utils.traceCurve(img, options);     // trace curve between two points @endcode
+%   - **mask** *(optional)* — existing mask/selection layer to draw into
+%
+% Output Arguments:
+%   - **mask** — [uint8] bitmap image with the connecting line (use as Selection layer)
+%   - **status** — [numeric] ``1`` on success, ``0`` on failure
+%
+% Usage:
+%
+%   **Example 1** — trace a curve between two points
+%
+%   .. code-block:: matlab
+%
+%      options.p1 = [100; 150];
+%      options.p2 = [200; 300];
+%      options.scaleFactor = 1;
+%      options.segmTrackBlackChk = 1;
+%      options.colorId = 1;
+%      [mask, status] = utils.traceCurve(img, options);
+%
 
 % Updates
 %

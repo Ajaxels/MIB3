@@ -1,16 +1,18 @@
 function sliceNumber_Callback(obj, parameter, BatchOptIn)
-% function sliceNumber_Callback(obj, parameter, BatchOptIn)
-% Callback for changing the slices of the 3D dataset by entering a new slice number
-% 
-% Parameters:
-% parameter: [@b optional], when provided:
-% @li 0 - set dataset to the last slice, used as a callback for obj.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.lastSlice
-% @li 1 - set dataset to the first slice, used as a callback for obj.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.firstSlice
-% BatchOptIn: a structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event
-% @li .SliceNumber -> string, slice number to show
+% SLICENUMBER_CALLBACK - Callback for changing the slices of the 3D dataset by entering a new slice number.
 %
-% Return values:
+% Syntax:
+%   function sliceNumber_Callback(obj, parameter, BatchOptIn)
+%
+% Input Arguments:
+%   - **parameter** — [**optional],** when provided:
+%     - 0 - set dataset to the last slice, used as a callback for obj.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.lastSlice
+%     - 1 - set dataset to the first slice, used as a callback for obj.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.firstSlice
+%   - **BatchOptIn** — a structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event
+%     - .SliceNumber string, slice number to show
+%
+% Output Arguments:
 %
 
 if nargin < 3; BatchOptIn = struct; end

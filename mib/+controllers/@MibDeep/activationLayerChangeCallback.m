@@ -1,6 +1,9 @@
 function activationLayerChangeCallback(obj)
-    % function activationLayerChangeCallback(obj)
-    % callback for modification of the Activation Layer dropdown
+% ACTIVATIONLAYERCHANGECALLBACK - callback for modification of the Activation Layer dropdown.
+%
+% Syntax:
+%   function activationLayerChangeCallback(obj)
+%
 
     switch obj.view.handles.T_ActivationLayer.Value
         case {'leakyReluLayer', 'clippedReluLayer', 'eluLayer'}

@@ -1,10 +1,13 @@
 function datasetTools_Callback(obj, hWidget, hData)
-% function datasetTools_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Dataset tools section of the Dataset ribbon
+% DATASETTOOLS_CALLBACK - callback on press of buttons in the Dataset tools section of the Dataset ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function datasetTools_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

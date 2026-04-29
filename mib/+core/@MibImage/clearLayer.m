@@ -1,37 +1,49 @@
 function clearLayer(obj, layerName, y, x, z, t)
-% function clearLayer(obj, layerName, y, x, z, t)
-% Clear the layer using numeric coordinate ranges.
+% CLEARLAYER - Clear the layer using numeric coordinate ranges.
+%
+% Syntax:
+%   function clearLayer(obj, layerName, y, x, z, t)
 %
 % String mode resolution ('2D', '3D', '4D') and block-mode coordinate
 % clamping are handled upstream in MibDataset.clearLayer, which has
 % access to obj.slices and obj.orientation. This function only accepts
 % numeric coordinate ranges or [] for full extent.
 %
-% Parameters:
-% layerName: char with the target layer name, can be []
-% @li [] -> 'selection'
-% @li 'selection' -> clear the selection layer
-% @li 'mask' -> clear the mask layer
-% @li 'labels' -> clear the labels layer
-% @li 'everything' -> clear selection, mask, labels layers for core.MibLabels63 class only
-% @li 'image' -> clear the image layer
-% y: [@em optional] numeric [minY, maxY] or [] for full height extent
-% x: [@em optional] numeric [minX, maxX] or [] for full width extent
-% z: [@em optional] numeric [minZ, maxZ] or [] for full depth extent
-% t: [@em optional] numeric [minT, maxT] or [] for full time extent
-% blockModeSwitch: [@em optional] unused; block mode is resolved in MibDataset.clearLayer
+% Input Arguments:
+%   - **layerName** — char with the target layer name; default ``'selection'``:
 %
-% Return values:
-% 
+%     - ``'selection'`` — clear the selection layer
+%     - ``'mask'`` — clear the mask layer
+%     - ``'labels'`` — clear the labels layer
+%     - ``'everything'`` — clear selection, mask, and labels layers (``core.MibLabels63`` only)
+%     - ``'image'`` — clear the image layer
+%   - **y** — *(optional)* numeric [minY, maxY] or [] for full height extent
+%   - **x** — *(optional)* numeric [minX, maxX] or [] for full width extent
+%   - **z** — *(optional)* numeric [minZ, maxZ] or [] for full depth extent
+%   - **t** — *(optional)* numeric [minT, maxT] or [] for full time extent
+%   - **blockModeSwitch** — *(optional)* unused; block mode is resolved in MibDataset.clearLayer
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.selection.clearLayer();% call from mibController, clear the Selection layer completely
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.selection.clearLayer([], 1:imageData.y, 1:imageData.x, 1:3);% call from mibController, clear the Selection layer only in 3 first slices
+%
 
-%| 
-% Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.selection.clearLayer(); // call from mibController, clear the Selection layer completely @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.selection.clearLayer([], 1:imageData.y, 1:imageData.x, 1:3); //  call from mibController, clear the Selection layer only in 3 first slices  @endcode
-
-% @code obj.clearLayer('selection');      // clear the layer, call from the class @endcode
-% @code dataset = obj.clearLayer('everything'); // clear the layer call from MibController, where type='image', 'label', 'mask', 'selection', 'everything'
-% @code obj.clearLayer('selection', '3D', [], [], [], true);      // clear the selection layer in 3D in the currently visible area @endcode
+% @code obj.clearLayer('selection');% clear the layer, call from the class @endcode
+% @code dataset = obj.clearLayer('everything');% clear the layer call from MibController, where type='image', 'label', 'mask', 'selection', 'everything'
+% @code obj.clearLayer('selection', '3D', [], [], [], true);% clear the selection layer in 3D in the currently visible area @endcode
 
 % Updates
 % 

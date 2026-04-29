@@ -1,10 +1,13 @@
 function [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)
-% function hSplashScreen = showSplashScreen(obj, titleText, initText)
-% Show MIB splash screen while loading
+% SHOWSPLASHSCREEN - Show MIB splash screen while loading.
 %
-% Parameters:
-% titleText: char with the window title
-% initText: char with the initial status text
+% Syntax:
+%   function [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)
+%
+% Input Arguments:
+%   - **titleText** — char with the window title
+%   - **initText** — char with the initial status text
+%
 
 arguments (Input)
     obj controllers.MibController

@@ -1,17 +1,22 @@
 function membranePanel_Callback(obj, hWidget, hData)
-% membranePanel_Callback(obj, hWidget, hData)
+% MEMBRANEPANEL_CALLBACK - membranePanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function membranePanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->Membrane click tracker tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag - identifier the widget, used when the same operation is called from menu
-% 'membraneScale' -> scale parameter for membrane tracking
-% 'membraneWidth' -> width of the membrane
-% 'membraneStraightLine' -> generate straight line instead of tracking
-% 'membraneBlackSignal' -> signal type: black-on-white / white-on-black signal
-% 'membraneRecenterView' -> recenter the view after placing a point
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
+%     'membraneScale' scale parameter for membrane tracking
+%     'membraneWidth' width of the membrane
+%     'membraneStraightLine' generate straight line instead of tracking
+%     'membraneBlackSignal' signal type: black-on-white / white-on-black signal
+%     'membraneRecenterView' recenter the view after placing a point
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

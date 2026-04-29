@@ -1,6 +1,8 @@
 function insertSlice(obj, img, insertPosition, meta, options)
-% function insertSlice(obj, img, insertPosition, meta, options)
-% Insert a slice or a dataset into the existing volume
+% INSERTSLICE - Insert a slice or a dataset into the existing volume.
+%
+% Syntax:
+%   function insertSlice(obj, img, insertPosition, meta, options)
 %
 % This is the interactive wrapper: it handles user dialogs, a waitbar and
 % annotation bookkeeping, then delegates the actual array manipulation to
@@ -8,28 +10,46 @@ function insertSlice(obj, img, insertPosition, meta, options)
 % (virtual) for the image layer, and to MibImage.insertSlice for each
 % auxiliary layer (labels, mask, selection).
 %
-% Parameters:
-% img: new 2D-5D image stack to insert, dimensions [height, width, depth, colors, time]
-% insertPosition: [@em optional] position where to insert the new slice/volume
-%   starting from @b 1. When omitted, @em NaN, or @em 0 - appends to the end
-% meta: [@em optional] dictionary with dataset parameters,
-%   used to retrieve 'SliceName' entries for the inserted slices; can be @em []
-% options: [@em optional] structure with additional parameters
-%   @li .dim - string defining insertion dimension: 'depth' (default) or 'time'
-%   @li .BackgroundColorIntensity - background fill value for dimension mismatches
-%   @li .silentMode - logical; when @b true no dialogs are shown
-%   @li .showWaitbar - logical; @b true (default) shows a progress waitbar
-%   @li .ParentFigure - handle to parent figure for dialog centering (default: [])
-%   @lo .mibPath - path to MIB installation directory
+% Input Arguments:
+%   - **img** — new 2D-5D image stack to insert, dimensions [height, width, depth, colors, time]
+%   - **insertPosition** — *(optional)* position where to insert the new slice/volume
+%     starting from **1.** When omitted, *NaN,* or *0* - appends to the end
+%   - **meta** — *(optional)* dictionary with dataset parameters,
+%     used to retrieve 'SliceName' entries for the inserted slices; can be *[]*
+%   - **options** — *(optional)* structure with additional parameters
 %
-% Return values:
+%     - ``.dim`` — string defining insertion dimension: 'depth' (default) or 'time'
+%     - ``.BackgroundColorIntensity`` — background fill value for dimension mismatches
+%     - ``.silentMode`` — logical; when **true** no dialogs are shown
+%     - ``.showWaitbar`` — logical; **true** (default) shows a progress waitbar
+%     - ``.ParentFigure`` — handle to parent figure for dialog centering (default: [])
+%       @lo .mibPath - path to MIB installation directory
+%
+% Output Arguments:
 %   none
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.insertSlice(img, 1);           // insert img at the beginning @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.insertSlice(img, NaN);         // append img to the end @endcode
-% @code options.dim = 'time'; obj.mibModel.I{obj.mibModel.id}.insertSlice(img, 1, [], options); @endcode
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.insertSlice(img, 1);% insert img at the beginning
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.insertSlice(img, NaN);% append img to the end
+%
+%   **Example 3**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.dim = 'time'; obj.mibModel.I{obj.mibModel.id}.insertSlice(img, 1, [], options);
+%
 
 % Updates
 % Annotation shift corrected to +D2_z/+D2_t (was +1 in MIB2)

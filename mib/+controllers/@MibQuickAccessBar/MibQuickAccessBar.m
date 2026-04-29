@@ -1,6 +1,6 @@
 classdef MibQuickAccessBar
-    % classdef MibQuickAccessBar
-    % controller for methods of the Quick access bar in MIB
+% MIBQUICKACCESSBAR - controller for methods of the Quick access bar in MIB.
+%
 
     properties
         mibController   % controllers.MibController
@@ -19,7 +19,11 @@ classdef MibQuickAccessBar
         orientationChange(obj, hWidget, moveMouseSw)  % switch viewing plane to YX/XZ/YZ orientation
 
         function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
-            %% Init properties
+            % MIBQUICKACCESSBAR - % Init properties.
+            %
+            % Syntax:
+            %   function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
+            %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.handles = guiHandles;           % handles for the panel (equal to obj.view.handles.qab.handles ...)

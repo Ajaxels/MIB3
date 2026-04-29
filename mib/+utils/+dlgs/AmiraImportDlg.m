@@ -1,21 +1,21 @@
 classdef AmiraImportDlg < handle
-    % AmiraImportDlg Controller for Amira Mesh Import Dialog
-    %
-    % The AmiraImportDlg class is responsible for a dialog to advanced opening of Amira Mesh files.
-    % It manages the interaction logic between the model and the App Designer view.
-    %
-    % Examples:
-    %   % Initialize controller
-    %   controller = utils.dlgs.AmiraImportDlg(dimxyczt, ParentFigure, options.Font);
-    %   %   % Run dialog
-    %   result = controller.run();
-    %
-    %   % Result structure contains:
-    %   % result.startIndex
-    %   % result.endIndex
-    %   % result.zstep
-    %   % result.xy_step
-    %   % result.method
+% AMIRAIMPORTDLG - AmiraImportDlg Controller for Amira Mesh Import Dialog.
+%
+% The AmiraImportDlg class is responsible for a dialog to advanced opening of Amira Mesh files.
+% It manages the interaction logic between the model and the App Designer view.
+% Usage:
+%   % Initialize controller
+%   controller = utils.dlgs.AmiraImportDlg(dimxyczt, ParentFigure, options.Font);
+%   %   % Run dialog
+%   result = controller.run();
+%
+%   % Result structure contains:
+%   % result.startIndex
+%   % result.endIndex
+%   % result.zstep
+%   % result.xy_step
+%   % result.method
+%
     
     % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
     % Part of Microscopy Image Browser, http://mib.helsinki.fi
@@ -32,7 +32,11 @@ classdef AmiraImportDlg < handle
     
     methods
         function obj = AmiraImportDlg(dimxyczt, ParentFigure, Font)
-            % Constructor
+            % AMIRAIMPORTDLG - Constructor.
+            %
+            % Syntax:
+            %   function obj = AmiraImportDlg(dimxyczt, ParentFigure, Font)
+            %
             % dimxyczt: vector containing dimensions
             % ParentFigure: handle to the parent figure/app
             % Font: structure with FontName and FontSize
@@ -61,7 +65,11 @@ classdef AmiraImportDlg < handle
         end
         
         function result = run(obj)
-            % RUN Execute the dialog logic
+            % RUN - RUN Execute the dialog logic.
+            %
+            % Syntax:
+            %   function result = run(obj)
+            %
             % Blocks execution until the user continues or cancels.
             
             % Block execution
@@ -83,7 +91,11 @@ classdef AmiraImportDlg < handle
     
     methods (Access = private)
         function initView(obj)
-            % Initialize view components and callbacks
+            % INITVIEW - Initialize view components and callbacks.
+            %
+            % Syntax:
+            %   function initView(obj)
+            %
 
             % Center the window relative to parent
             utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
@@ -118,14 +130,22 @@ classdef AmiraImportDlg < handle
         end
         
         function onZStepChange(obj, src, ~)
-            % Sync handles.zStepSpinner and handles.binZSpinner
+            % ONZSTEPCHANGE - Sync handles.zStepSpinner and handles.binZSpinner.
+            %
+            % Syntax:
+            %   function onZStepChange(obj, src, ~)
+            %
             val = src.Value;
             obj.view.handles.binZSpinner.Value = val;
             obj.view.handles.zStepSpinner.Value = val;
         end
         
         function onContinue(obj, ~, ~)
-            % Gather data and close
+            % ONCONTINUE - Gather data and close.
+            %
+            % Syntax:
+            %   function onContinue(obj, ~, ~)
+            %
             
             % Collect results from UI
             % Assuming NumericEditFields for numerical inputs
@@ -144,13 +164,21 @@ classdef AmiraImportDlg < handle
         end
         
         function onCancel(obj, ~, ~)
-            % Cancel operation
+            % ONCANCEL - Cancel operation.
+            %
+            % Syntax:
+            %   function onCancel(obj, ~, ~)
+            %
             obj.output = NaN;
             uiresume(obj.view.gui);
         end
         
         function onKeyPress(obj, ~, event)
-            % Handle Enter and Escape keys
+            % ONKEYPRESS - Handle Enter and Escape keys.
+            %
+            % Syntax:
+            %   function onKeyPress(obj, ~, event)
+            %
             if strcmp(event.Key, 'escape')
                 obj.onCancel();
             elseif strcmp(event.Key, 'return') || strcmp(event.Key, 'enter')

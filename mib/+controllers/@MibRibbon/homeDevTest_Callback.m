@@ -1,6 +1,9 @@
 function homeDevTest_Callback(obj, hWidget, hData)
-% function homeDevTest_Callback(obj, hWidget, hData)
-% Reserved for MIB developmental purposes
+% HOMEDEVTEST_CALLBACK - Reserved for MIB developmental purposes.
+%
+% Syntax:
+%   function homeDevTest_Callback(obj, hWidget, hData)
+%
 
 arguments (Input)
     obj controllers.MibRibbon

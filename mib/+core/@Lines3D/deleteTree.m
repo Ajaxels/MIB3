@@ -1,9 +1,12 @@
 function deleteTree(obj, treeId)
-% function deleteTree(obj, treeId)
-% delete tree from the graph
+% DELETETREE - delete tree from the graph.
 %
-% Parameters:
-% treeId: index of the tree to delete, or string with name of the tree
+% Syntax:
+%   function deleteTree(obj, treeId)
+%
+% Input Arguments:
+%   - **treeId** — index of the tree to delete, or string with name of the tree
+%
 
 if nargin < 2; error('treeId is missing!'); end
 

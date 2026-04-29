@@ -1,6 +1,9 @@
 function homeDevModeEnable_Callback(obj, hWidget, hData)
-% function homeDevModeEnable_Callback(obj, hWidget, hData)
-% Enable or disable developer mode that shows handles of widgets in
+% HOMEDEVMODEENABLE_CALLBACK - Enable or disable developer mode that shows handles of widgets in.
+%
+% Syntax:
+%   function homeDevModeEnable_Callback(obj, hWidget, hData)
+%
 % tooltips
 
 arguments (Input)

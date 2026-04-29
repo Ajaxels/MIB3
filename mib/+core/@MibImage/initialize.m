@@ -1,25 +1,29 @@
 function initialize(obj, data, meta)
-% function initialize(obj, data, meta)
-% initialize the class using default or provided values
+% INITIALIZE - initialize the class using default or provided values.
 %
-% Parameters:
-% data: matrix with the image to initialize the class, can be empty
-% meta: a dictionary with default settings for the class, can be empty;
-%       the following fields are used,
-%       .filename -> full path to the dataset
-%       .SliceName -> cell array with slice names, can be empty
-%       .lutColors -> matrix with LUT colors to use (colChannel, R G B) in range 0-1
-%       .pixSize -> structure with
-%           @li .x - physical width of a pixel
-%           @li .y - physical height of a pixel
-%           @li .z - physical thickness of a pixel
-%           @li .t - time between the frames for 2D movies
-%           @li .tunits - time units
-%           @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
-%       .viewPort -> structure with viewing parameters:
-%           @li .min - a vector with minimal value for intensity stretching for each color channel
-%           @li .max - a vector with maximal value for intensity stretching for each color channel
-%           @li .gamma a vector with gamma factor for contrast adjustment for each color channel
+% Syntax:
+%   function initialize(obj, data, meta)
+%
+% Input Arguments:
+%   - **data** — matrix with the image to initialize the class, can be empty
+%   - **meta** — a dictionary with default settings for the class, can be empty;
+%     the following fields are used,
+%     .filename full path to the dataset
+%     .SliceName cell array with slice names, can be empty
+%     .lutColors matrix with LUT colors to use (colChannel, R G B) in range 0-1
+%     .pixSize structure with
+%
+%     - ``.x`` — physical width of a pixel
+%     - ``.y`` — physical height of a pixel
+%     - ``.z`` — physical thickness of a pixel
+%     - ``.t`` — time between the frames for 2D movies
+%     - ``.tunits`` — time units
+%     - ``.units`` — physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+%       .viewPort structure with viewing parameters:
+%     - ``.min`` — a vector with minimal value for intensity stretching for each color channel
+%     - ``.max`` — a vector with maximal value for intensity stretching for each color channel
+%     - ``.gamma`` a vector with gamma factor for contrast adjustment for each color channel
+%
 
 if nargin < 3; meta = []; end
 if nargin < 2; data = []; end

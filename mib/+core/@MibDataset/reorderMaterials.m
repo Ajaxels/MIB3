@@ -1,6 +1,8 @@
 function reorderMaterials(obj, newOrder, wb)
-% function reorderMaterials(obj, newOrder, wb)
-% Reorder materials in the model — low-level data layer
+% REORDERMATERIALS - Reorder materials in the model — low-level data layer.
+%
+% Syntax:
+%   function reorderMaterials(obj, newOrder, wb)
 %
 % Remaps pixel values according to newOrder across every time-point.
 % Only supported for small models (maxMaterials < 256).  The mapping is
@@ -8,21 +10,31 @@ function reorderMaterials(obj, newOrder, wb)
 % After remapping, material names and colours are reordered via
 % obj.labels.reorderMaterials.
 %
-% Parameters:
-% newOrder: double vector, permutation of 1:numel(materialNames)
-%   specifying the desired arrangement.  For example [3 1 2] means:
-%   old material 3 becomes new material 1, old 1 becomes new 2, old 2
-%   becomes new 3.
-% wb: [@em optional] handle to a uiprogressdlg for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **newOrder** — double vector, permutation of 1:numel(materialNames)
+%     specifying the desired arrangement.  For example [3 1 2] means:
+%     old material 3 becomes new material 1, old 1 becomes new 2, old 2
+%     becomes new 3.
+%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.reorderMaterials([3 1 2]);       // rotate materials @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.reorderMaterials([2 1 3], wb);   // swap first two, with progress @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.reorderMaterials([3 1 2]);% rotate materials
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.reorderMaterials([2 1 3], wb);% swap first two, with progress
+%
 
 % Updates
 %

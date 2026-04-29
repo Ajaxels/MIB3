@@ -1,12 +1,39 @@
 function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
-% function hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
-% Determine the position of the dialog - on a side of the main figure
-% if available, else, centered on the main figure
-% Parameters:
-% hObject: handle of the window to be moved
-% mibGUI: handle to the main MIB gui, can be obtained from obj.mibModel.mibGUI
-% alignH: an optional string with the preferred horizontal alignment: 'left' (@em default), 'right', 'center'
-% alignV: an optional string with the preferred vertical alignment: 'top' (@em default), 'bottom', 'center'
+% MOVEWINDOWOUTSIDE - Position a dialog window alongside the main MIB figure.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      hObject = moveWindowOutside(hObject, mibGUI)
+%      hObject = moveWindowOutside(hObject, mibGUI, alignH, alignV)
+%
+% Attempts to place the dialog beside the main window.  Falls back to
+% centring on the main figure when there is insufficient screen space.
+%
+% Input Arguments:
+%   - **hObject** — handle of the window to be moved
+%   - **mibGUI** — handle to the main MIB GUI (``obj.mibModel.mibGUI``); pass ``[]`` to centre on screen
+%   - **alignH** *(optional)* — [char] horizontal alignment: ``'left'`` *(default)*, ``'right'``, ``'center'``
+%   - **alignV** *(optional)* — [char] vertical alignment: ``'top'`` *(default)*, ``'bottom'``, ``'center'``
+%
+% Output Arguments:
+%   - **hObject** — handle to the repositioned window
+%
+% Usage:
+%
+%   **Example 1** — position a child dialog to the left of the main window
+%
+%   .. code-block:: matlab
+%
+%      obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI);
+%
+%   **Example 2** — position to the right and bottom
+%
+%   .. code-block:: matlab
+%
+%      obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'right', 'bottom');
+%
 
 if nargin < 4; alignV = 'top'; end
 if nargin < 3; alignH = 'left'; end

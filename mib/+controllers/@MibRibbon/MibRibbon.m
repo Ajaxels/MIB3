@@ -1,6 +1,6 @@
 classdef MibRibbon
-    % classdef MibRibbon
-    % controller for methods of the ribbon panels in MIB
+% MIBRIBBON - controller for methods of the ribbon panels in MIB.
+%
 
     properties
         mibController   % controllers.MibController
@@ -95,7 +95,11 @@ classdef MibRibbon
         result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
 
         function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
-            %% Init properties
+            % MIBRIBBON - % Init properties.
+            %
+            % Syntax:
+            %   function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
+            %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.gui = ribbonHandles;            % handle to the GUI of the ribbon (obj.view.handles.ribbon.global, obj.view.handles.ribbon.home, obj.view.handles.ribbon.dataset...)
@@ -186,8 +190,11 @@ classdef MibRibbon
         end
 
         function addCallbacksToDatasetRibbon(obj)
-            % function addCallbacksToDatasetRibbon(obj)
-            % add callbacks to the Dataset ribbon to allow lazy loading
+            % ADDCALLBACKSTODATASETRIBBON - add callbacks to the Dataset ribbon to allow lazy loading.
+            %
+            % Syntax:
+            %   function addCallbacksToDatasetRibbon(obj)
+            %
 
             %% Add Callbacks for the DATASET ribbon -> Alignment
             obj.handles.ribbonDataset.alignment.ButtonPushedFcn = @obj.datasetAlignment_Callback;
@@ -226,8 +233,11 @@ classdef MibRibbon
         end
 
         function addCallbacksToDatasetImage(obj)
-            % function addCallbacksToDatasetImage(obj)
-            % add callbacks to the Image ribbon to allow lazy loading
+            % ADDCALLBACKSTODATASETIMAGE - add callbacks to the Image ribbon to allow lazy loading.
+            %
+            % Syntax:
+            %   function addCallbacksToDatasetImage(obj)
+            %
         
             %% Add Callbacks for the IMAGE ribbon -> Mode
             obj.handles.ribbonImage.grayscale.ValueChangedFcn = @obj.imageMode_Callback;
@@ -291,8 +301,11 @@ classdef MibRibbon
         end
 
         function addCallbacksToDatasetModel(obj)
-            % function addCallbacksToDatasetModel(obj)
-            % add callbacks to the Model ribbon to allow lazy loading
+            % ADDCALLBACKSTODATASETMODEL - add callbacks to the Model ribbon to allow lazy loading.
+            %
+            % Syntax:
+            %   function addCallbacksToDatasetModel(obj)
+            %
 
             %% Add Callbacks for the MODEL ribbon -> Convert type
             obj.handles.ribbonModel.mat63.ValueChangedFcn = @obj.modelConvertType_Callback;
@@ -344,8 +357,11 @@ classdef MibRibbon
         end
 
         function addCallbacksToDatasetMask(obj)
-            % function addCallbacksToDatasetMask(obj)
-            % add callbacks to the Mask ribbon to allow lazy loading
+            % ADDCALLBACKSTODATASETMASK - add callbacks to the Mask ribbon to allow lazy loading.
+            %
+            % Syntax:
+            %   function addCallbacksToDatasetMask(obj)
+            %
 
             %% Add Callbacks for the MASK ribbon -> Mask to Selection
             obj.handles.ribbonMask.maskToSelection2DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
@@ -380,8 +396,11 @@ classdef MibRibbon
         end
 
         function addCallbacksToDatasetSelection(obj)
-            % function addCallbacksToDatasetSelection(obj)
-            % add callbacks to the Selection ribbon to allow lazy loading
+            % ADDCALLBACKSTODATASETSELECTION - add callbacks to the Selection ribbon to allow lazy loading.
+            %
+            % Syntax:
+            %   function addCallbacksToDatasetSelection(obj)
+            %
 
             %% Add Callbacks for the SELECTION ribbon -> Converts section
             % Selection to mask
@@ -421,8 +440,11 @@ classdef MibRibbon
         end
 
         function addCallbacksToDatasetTools(obj)
-            % function addCallbacksToDatasetTools(obj)
-            % add callbacks to the Tools ribbon to allow lazy loading
+            % ADDCALLBACKSTODATASETTOOLS - add callbacks to the Tools ribbon to allow lazy loading.
+            %
+            % Syntax:
+            %   function addCallbacksToDatasetTools(obj)
+            %
 
             %% Add Callbacks for the SELECTION ribbon -> Segmentation section
             % DeepMIB

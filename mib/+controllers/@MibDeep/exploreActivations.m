@@ -1,6 +1,9 @@
 function exploreActivations(obj)
-% function exploreActivations(obj)
-% explore activations within the trained network
+% EXPLOREACTIVATIONS - explore activations within the trained network.
+%
+% Syntax:
+%   function exploreActivations(obj)
+%
 utils.startController(obj, 'controllers.MibDeepActivations', obj);
 end
 

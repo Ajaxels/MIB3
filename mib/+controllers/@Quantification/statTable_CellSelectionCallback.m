@@ -1,28 +1,38 @@
 function statTable_CellSelectionCallback(obj, indices, parameter)
-% function statTable_CellSelectionCallback(obj, indices, parameter)
-% Handle cell selection in statTable and optionally highlight objects.
+% STATTABLE_CELLSELECTIONCALLBACK - Handle cell selection in statTable and optionally highlight objects.
+%
+% Syntax:
+%   function statTable_CellSelectionCallback(obj, indices, parameter)
 %
 % Called both from the table's CellSelectionCallback and from context menu
 % items.  Navigates to the slice containing the selected object and,
 % depending on parameter, highlights it in the selection layer.
 %
-% Parameters:
-% indices: numeric [N×2] array of [row, col] indices of selected cells,
-%   as provided by AppDesigner CellSelectionCallback evnt.Indices;
-%   pass [] to use the last saved selection (obj.indices)
-% parameter: string controlling highlight behaviour
-% @li 'skip' - navigate to slice but only highlight if highlightOnClick
-%     is on; Ctrl+click forces 'Remove'
-% @li 'Add'     - add selected objects to selection layer
-% @li 'Remove'  - remove selected objects from selection layer
-% @li 'Replace' - replace selection layer with selected objects
-% @li 'obj2model' - convert each selected object to a new model material
+% Input Arguments:
+%   - **indices** — numeric [N×2] array of [row, col] indices of selected cells,
+%     as provided by AppDesigner CellSelectionCallback evnt.Indices;
+%     pass [] to use the last saved selection (obj.indices)
+%   - **parameter** — string controlling highlight behaviour
+%     - 'skip' - navigate to slice but only highlight if highlightOnClick
+%   is on; Ctrl+click forces 'Remove'
+%     - 'Add'     - add selected objects to selection layer
+%     - 'Remove'  - remove selected objects from selection layer
+%     - 'Replace' - replace selection layer with selected objects
+%     - 'obj2model' - convert each selected object to a new model material
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.statTable.CellSelectionCallback = @(~,evnt) obj.statTable_CellSelectionCallback(evnt.Indices, 'skip'); @endcode
-% @code obj.statTable_CellSelectionCallback([], 'Replace');  // from context menu @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.statTable.CellSelectionCallback = @(~,evnt) obj.statTable_CellSelectionCallback(evnt.Indices, 'skip');
+%
+%   Example 3::
+%
+%     obj.statTable_CellSelectionCallback([], 'Replace');  // from context menu
+%
 
 % Updates
 %

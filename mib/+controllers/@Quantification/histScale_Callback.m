@@ -1,13 +1,17 @@
 function histScale_Callback(obj)
-% function histScale_Callback(obj)
-% Toggle the histogram Y axis between logarithmic and linear scale.
+% HISTSCALE_CALLBACK - Toggle the histogram Y axis between logarithmic and linear scale.
+%
+% Syntax:
+%   function histScale_Callback(obj)
 %
 % Reads obj.view.handles.logScale checkbox value: true = log, false = linear.
 % Called on checkbox change and after every histogram redraw.
 %
-%|
-% @b Examples:
-% @code obj.histScale_Callback();  // refresh scale after redraw @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.histScale_Callback();  // refresh scale after redraw
+%
 
 % Updates
 %

@@ -1,10 +1,13 @@
 function selectionTools_Callbacks(obj, hWidget, hData)
-% function selectionTools_Callbacks(obj, hWidget, hData)
-% callback on press of buttons in the Tools section of the Selection ribbon
+% SELECTIONTOOLS_CALLBACKS - callback on press of buttons in the Tools section of the Selection ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function selectionTools_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

@@ -1,26 +1,32 @@
 classdef MibDeep < handle
-    % @type MibDeep class is a template class for using with
-    % GUI developed using appdesigner of Matlab
-    %
-    % @code
-    % obj.mibController.startController('controllers.MibDeep', obj.mibController);; // as GUI tool
-    % @endcode
-    % or
-    % @code
-    % // a code below was used for mibImageArithmeticController
-    % BatchOpt.Parameter = 'test'mib;  // fill edit boxes as strings
-    % BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-    % BatchOpt.Popup = {'value'};        // value for the popups as a cell
-    % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-    % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('MibDeep', [], BatchOpt); // start MibDeep in the batch mode
-    % @endcode
-    % or
-    % @code
-    % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
-    % obj.startController('MibDeep', [], NaN);
-    % @endcode
+% MIBDEEP - @type MibDeep class is a template class for using with.
+%
+% GUI developed using appdesigner of Matlab
+%
+%
+% .. code-block:: matlab
+%
+%   obj.mibController.startController('controllers.MibDeep', obj.mibController);; // as GUI tool
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // a code below was used for mibImageArithmeticController
+%   BatchOpt.Parameter = 'test'mib;  // fill edit boxes as strings
+%   BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
+%   BatchOpt.Popup = {'value'};        // value for the popups as a cell
+%   BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
+%   BatchOpt.showWaitbar = true;  // show or not the waitbar
+%   obj.startController('MibDeep', [], BatchOpt); // start MibDeep in the batch mode
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // trigger return of the possible Options using returnBatchOpt function
+%   // using notify syncBatch event
+%   obj.startController('MibDeep', [], NaN);
 
     % Updates
     %
@@ -191,7 +197,11 @@ classdef MibDeep < handle
         end
 
         function data = tif3DFileRead(filename)
-            % data = tif3DFileRead(filename)
+            % TIF3DFILEREAD - data = tif3DFileRead(filename).
+            %
+            % Syntax:
+            %   function data = tif3DFileRead(filename)
+            %
             % custom reading function to load tif files with stack of images
             % used in evaluate segmentation function
             meta = imfinfo(filename);

@@ -1,16 +1,19 @@
 function gui_Callbacks(obj, hWidget, hData)
-% function gui_Callbacks(obj, hWidget, hData)
-% callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
+% GUI_CALLBACKS - callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag, char, identifier the widget, used when the same operation
-% 'createModel' -> create a new segmentation model
-% 'loadModel' -> load model from a file
-% 'addMaterial' -> add material to the model
-% 'removeMaterial' -> remove material from the model
-% 'colorWheel' -> restore default color scheme or generate random colors for 65535+ models
-% 'viewSettings' -> view visualization settings for model/mask visualization
+% Syntax:
+%   function gui_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag, char, identifier the widget, used when the same operation
+%     'createModel' create a new segmentation model
+%     'loadModel' load model from a file
+%     'addMaterial' add material to the model
+%     'removeMaterial' remove material from the model
+%     'colorWheel' restore default color scheme or generate random colors for 65535+ models
+%     'viewSettings' view visualization settings for model/mask visualization
+%
 
 % hData: handle to supporting data class
 

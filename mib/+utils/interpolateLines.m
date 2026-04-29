@@ -1,19 +1,36 @@
 function img = interpolateLines(img, max_pnts, lineWidth)
-% function img = interpolateLines(img, max_pnts, lineWidth)
-% Interpolate lines between the slices
+% INTERPOLATELINES - Interpolate line selections between slices.
 %
-% One of two interpolation methods. The interpolation method can be
-% selected in @em im_browser->File->Preferences. 
-% @note This method can interpolate only the @b not closed lines.
+% Syntax:
 %
-% Parameters:
-% img: -> binary image dataset, for example the 'Selection' layer [1:height, 1:width, 1:z]
-% max_pnts: -> maximal number of points used for interpolation. 
-% lineWidth: -> width of the line in pixels. 
+%   .. code-block:: matlab
 %
-% Return values:
-% img: -> binary image dataset, for example the 'Selection' layer [1:height, 1:width, 1:z]
-% @see ib_interpolateShapes
+%      img = interpolateLines(img, max_pnts, lineWidth)
+%
+% One of two interpolation methods selectable via *MIB -> File -> Preferences*.
+%
+% .. note::
+%    This method interpolates only **non-closed** lines.
+%    Use ``utils.interpolateShapes`` for filled shapes.
+%
+% Input Arguments:
+%   - **img** — [uint8] binary image dataset, e.g. the Selection layer ``[height, width, z]``
+%   - **max_pnts** *(optional)* — [numeric] maximum number of interpolation points (default: ``140``)
+%   - **lineWidth** *(optional)* — [numeric] line width in pixels (default: ``4``)
+%
+% Output Arguments:
+%   - **img** — [uint8] binary image dataset with interpolated lines
+%
+% Usage:
+%
+%   **Example 1** — interpolate line selections across slices with default settings
+%
+%   .. code-block:: matlab
+%
+%      selection = obj.mibModel.getData3D('selection', [], 3);
+%      selection = utils.interpolateLines(selection);
+%      obj.mibModel.setData3D(selection, 'selection', [], 3);
+%
 
 % Updates
 % v1.01 06.03.2014, fixed the interpolation for the last slice in sequence
@@ -109,15 +126,19 @@ end
 
 
 function contour = interp_points(contour1, contour2, slice_id1, slice_id2)
-% get interpolated points between two contours
+% INTERP_POINTS - get interpolated points between two contours.
+%
+% Syntax:
+%   function contour = interp_points(contour1, contour2, slice_id1, slice_id2)
+%
 % contour = interp_points(contour1, contour2, slice_id1, slice_id2)
-% OUT: 
-% contour -> coordinates of interpolated points between two known contours (point_id, [y x], slice)
+% OUT:
+% contour coordinates of interpolated points between two known contours (point_id, [y x], slice)
 % IN:
-% contour1 -> first contour coordinates (point_id, [y x])
-% contour2 -> second contour coordinates (point_id, [y x])
-% slice_id1 -> number of the first slice
-% slice_id2 -> number of the second slice
+% contour1 first contour coordinates (point_id, [y x])
+% contour2 second contour coordinates (point_id, [y x])
+% slice_id1 number of the first slice
+% slice_id2 number of the second slice
 
 z_num = slice_id2 - slice_id1;
 

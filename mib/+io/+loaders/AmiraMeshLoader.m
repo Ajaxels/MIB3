@@ -1,40 +1,42 @@
 classdef AmiraMeshLoader < io.loaders.BaseImageLoader
-    % classdef AmiraMeshLoader
-    % Loader for Amira Mesh (.am) files, based on io.loaders.BaseImageLoader base class
-    %
-    % This loader implements the legacy Amira Mesh reader from getImageMetadata.m
-    % and getImages.m as a standalone loader class.
-    %
-    % It uses the existing helper functions:
-    %   - getAmiraMeshHeader.m
-    %   - amiraMesh2bitmap.m
-    %   - ib_amiraImportGui.m (optional, used for custom binning / section selection)
+% AMIRAMESHLOADER - Loader for Amira Mesh (.am) files, based on io.loaders.BaseImageLoader base class.
+%
+% This loader implements the legacy Amira Mesh reader from getImageMetadata.m
+% and getImages.m as a standalone loader class.
+%
+% It uses the existing helper functions:
+% - getAmiraMeshHeader.m
+% - amiraMesh2bitmap.m
+% - ib_amiraImportGui.m (optional, used for custom binning / section selection)
 
     methods
         function obj = AmiraMeshLoader(options)
-            % function obj = AmiraMeshLoader(options)
-            % Constructor for AmiraMeshLoader class
+            % AMIRAMESHLOADER - Constructor for AmiraMeshLoader class.
             %
-            % Parameters:
-            %   options: [@em optional, struct] options structure
-            %     @li .waitbar - [logical] show or not the waitbar
-            %     @li .mibPath - [char] path to MIB directory
-            %     @li .customSections - [logical] load custom sections only
-            %     @li .customSectionsSettings - [struct] custom section parameters
-            %     @li .imgStretch - [logical] stretch uint32 images to uint16
-            %     @li .silentMode - [logical] do not ask user questions
-            %     @li .verbose - [logical] show timing information
-            %     @li .Font - [struct] font settings for dialogs
-            %     @li .ParentFigure - handle of the main MIB window (parent for uiprogressdlg)
+            % Syntax:
+            %   function obj = AmiraMeshLoader(options)
             %
-            % Return values:
-            %   obj: instance of the AmiraMeshLoader class
+            % Input Arguments:
+            %   - **options** — [*optional,* struct] options structure
+            %   - .waitbar - [logical] show or not the waitbar
+            %   - .mibPath - [char] path to MIB directory
+            %   - .customSections - [logical] load custom sections only
+            %   - .customSectionsSettings - [struct] custom section parameters
+            %   - .imgStretch - [logical] stretch uint32 images to uint16
+            %   - .silentMode - [logical] do not ask user questions
+            %   - .verbose - [logical] show timing information
+            %   - .Font - [struct] font settings for dialogs
+            %   - .ParentFigure - handle of the main MIB window (parent for uiprogressdlg)
             %
-            % Example:
-            %   @code
-            %   options.waitbar = true;
-            %   loader = io.loaders.AmiraMeshLoader(options);
-            %   @endcode
+            % Output Arguments:
+            %   - **obj** — instance of the AmiraMeshLoader class
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %       options.waitbar = true;
+            %       loader = io.loaders.AmiraMeshLoader(options);
+            %
 
             obj.Options = struct();
             obj.Options.Font = struct('FontName', 'Helvetica', 'FontSize', 12);
@@ -45,32 +47,35 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for Amira Mesh files
+            % LOADMETADATA - Load metadata for Amira Mesh files.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
             %
             % This method reads the Amira Mesh header and populates:
-            %   - files structure array (dimensions, class, binning options)
-            %   - imginfo dictionary (format metadata)
-            %   - pixSize structure (voxel sizes)
+            % - files structure array (dimensions, class, binning options)
+            % - imginfo dictionary (format metadata)
+            % - pixSize structure (voxel sizes)
             %
-            % Parameters:
-            %   filenames: cell array with filenames of Amira Mesh files
-            %   options: [@em struct] options for metadata loading
-            %     @li .waitbar - [logical] show or not the waitbar
-            %     @li .customSections - [logical] load part of the dataset
-            %     @li .Font - [struct] font settings for dialogs
-            %     @li .ParentFigure - parent figure handle for uiprogressdlg
+            % Input Arguments:
+            %   - **filenames** — cell array with filenames of Amira Mesh files
+            %   - **options** — [*struct]* options for metadata loading
+            %   - .waitbar - [logical] show or not the waitbar
+            %   - .customSections - [logical] load part of the dataset
+            %   - .Font - [struct] font settings for dialogs
+            %   - .ParentFigure - parent figure handle for uiprogressdlg
             %
-            % Return values:
-            %   imginfo: dictionary with image metadata, including pixSize structure
-            %   files: structure array with file information
+            % Output Arguments:
+            %   - **imginfo** — dictionary with image metadata, including pixSize structure
+            %   - **files** — structure array with file information
             %
-            % Example:
-            %   @code
-            %   loader = io.loaders.AmiraMeshLoader();
-            %   filenames = {'dataset.am'};
-            %   [imginfo, files] = loader.loadMetadata(filenames, options);
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       loader = io.loaders.AmiraMeshLoader();
+            %       filenames = {'dataset.am'};
+            %       [imginfo, files] = loader.loadMetadata(filenames, options);
+            %
 
             % Merge constructor options with runtime options
             if nargin < 3; options = obj.Options; end
@@ -297,40 +302,43 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Load image data from Amira Mesh files
+            % LOADIMAGES - Load image data from Amira Mesh files.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
             %
             % This method calls amiraMesh2bitmap() and stores the returned data
             % into the MIB image array.
             %
-            % Parameters:
-            %   files: structure array from loadMetadata
-            %   imginfo: dictionary with image metadata
-            %     @li "Height" - image height in pixels
-            %     @li "Width" - image width in pixels
-            %     @li "Colors" - number of color channels
-            %     @li "Depth" - number of z-slices
-            %     @li "Time" - number of time points
-            %     @li "imgClass" - image class (uint8, uint16, etc.)
-            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
-            %     @li "ImageDescription" - description with BoundingBox info
-            %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
-            %     @li "Levels" - number of pyramid levels (for BDV only)
-            %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
-            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
-            %     @li other format-specific metadata fields
-            %   options: [@em struct] options for image loading
+            % Input Arguments:
+            %   - **files** — structure array from loadMetadata
+            %   - **imginfo** — dictionary with image metadata
+            %   - "Height" - image height in pixels
+            %   - "Width" - image width in pixels
+            %   - "Colors" - number of color channels
+            %   - "Depth" - number of z-slices
+            %   - "Time" - number of time points
+            %   - "imgClass" - image class (uint8, uint16, etc.)
+            %   - "ColorType" - 'grayscale', 'truecolor', or 'indexed'
+            %   - "ImageDescription" - description with BoundingBox info
+            %   - "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
+            %   - "Levels" - number of pyramid levels (for BDV only)
+            %   - "ReturnedLevel" - selected pyramid level (for BDV only)
+            %   - "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
+            %   - other format-specific metadata fields
+            %   - **options** — [*struct]* options for image loading
             %
-            % Return values:
-            %   img: loaded image dataset
-            %   imginfo: updated dictionary
+            % Output Arguments:
+            %   - **img** — loaded image dataset
+            %   - **imginfo** — updated dictionary
             %
-            % Example:
-            %   @code
-            %   loader = io.loaders.AmiraMeshLoader();
-            %   [imginfo, files] = loader.loadMetadata({'dataset.am'}, options);
-            %   [img, imginfo] = loader.loadImages(files, imginfo, options);
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       loader = io.loaders.AmiraMeshLoader();
+            %       [imginfo, files] = loader.loadMetadata({'dataset.am'}, options);
+            %       [img, imginfo] = loader.loadImages(files, imginfo, options);
+            %
 
             % Merge constructor options with runtime options
             if nargin < 4; options = obj.Options; end

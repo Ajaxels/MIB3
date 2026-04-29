@@ -1,10 +1,14 @@
 function res = correctBatchOpt(obj, res)
-    % function res = correctBatchOpt(obj, res)
-    % correct loaded BatchOpt structure if it is not compatible
-    % with the current version of DeepMIB
-    %
-    % Parameters:
-    % res: BatchOpt structure loaded from a file
+% CORRECTBATCHOPT - correct loaded BatchOpt structure if it is not compatible.
+%
+% Syntax:
+%   function res = correctBatchOpt(obj, res)
+%
+% with the current version of DeepMIB
+%
+% Input Arguments:
+%   - **res** — BatchOpt structure loaded from a file
+%
 
     % update res.BatchOpt to be compatible with DeepMIB v2.83
     if ~isfield(res.BatchOpt, 'Workflow')

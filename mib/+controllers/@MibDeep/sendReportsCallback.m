@@ -1,7 +1,10 @@
 function sendReportsCallback(obj)
-    % function sendReportsCallback(obj)
-    % define parameters for sending progress report to the user's
-    % email address
+% SENDREPORTSCALLBACK - define parameters for sending progress report to the user's.
+%
+% Syntax:
+%   function sendReportsCallback(obj)
+%
+% email address
 
     obj.SendReports.T_SendReports = obj.view.handles.T_SendReports.Value;
     if obj.SendReports.T_SendReports == 0; return; end

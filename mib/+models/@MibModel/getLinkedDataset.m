@@ -1,20 +1,26 @@
 function partnerId = getLinkedDataset(obj, id)
-% function partnerId = getLinkedDataset(obj, id)
-% Return the global dataset ID of the linked partner, or [] if not linked.
+% GETLINKEDDATASET - Return the global dataset ID of the linked partner, or [] if not linked.
 %
-% Searches @code obj.linkedPairs @endcode (n×2 array of [idA idB] global ID
-% pairs) for a row that contains @em id and returns the other column value.
+% Syntax:
+%   function partnerId = getLinkedDataset(obj, id)
 %
-% Parameters:
-% id: (1,1) double, global dataset ID to look up
+% Searches ``obj.linkedPairs`` (n×2 array of [idA idB] global ID
+% pairs) for a row that contains *id* and returns the other column value.
 %
-% Return values:
-% partnerId: scalar double with the partner's global ID, or [] if id is not
-%   part of any linked pair
-
-%|
-% @b Examples:
-% @code partnerId = obj.mibModel.getLinkedDataset(3); @endcode
+% Input Arguments:
+%   - **id** — (1,1) double, global dataset ID to look up
+%
+% Output Arguments:
+%   - **partnerId** — scalar double with the partner's global ID, or [] if id is not
+%     part of any linked pair
+%
+% Usage:
+%   **Example 1** — look up the linked partner for dataset 3
+%
+%   .. code-block:: matlab
+%
+%      partnerId = obj.mibModel.getLinkedDataset(3);
+%
 
 if isempty(obj.linkedPairs)
     partnerId = [];

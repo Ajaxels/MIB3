@@ -1,10 +1,13 @@
 function imageTools_Callbacks(obj, hWidget, hData)
-% function imageTools_Callbacks(obj, hWidget, hData)
-% callback on press of Image tools buttons in the Image ribbon
+% IMAGETOOLS_CALLBACKS - callback on press of Image tools buttons in the Image ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function imageTools_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

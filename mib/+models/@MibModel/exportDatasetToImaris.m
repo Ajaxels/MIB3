@@ -1,27 +1,44 @@
 function exportDatasetToImaris(obj, layerType, BatchOptIn)
-% function exportDatasetToImaris(obj, layerType, BatchOptIn)
-% Export the image, mask, or model layer to Imaris via IceImarisConnector.
+% EXPORTDATASETTOIMARIS - Export the image, mask, or model layer to Imaris via IceImarisConnector.
 %
-% Parameters:
-% layerType: a string specifying which layer to export
-% @li 'image' - export image data
-% @li 'mask' - export mask layer as a single binary channel
-% @li 'model' - export model (labels layer); prompts for material index
-% BatchOptIn: [@em optional] a structure for batch processing mode; when NaN
-%   returns a structure with default options via "SyncBatch" event
-% @li .LayerType - cell string, {'image'|'mask'|'model'} layer to export
-% @li .MaterialIndex - string, [model only] material index to export; empty = all materials
-% @li .showWaitbar - logical, show or not the waitbar
-% @li .id - [@em optional] index of the dataset
-
-%|
-% @b Examples:
-% @code obj.mibModel.exportDatasetToImaris('image'); // export image interactively @endcode
-% @code obj.mibModel.exportDatasetToImaris('mask');  // export mask interactively @endcode
-% @code
-% BatchOpt.MaterialIndex = '1';
-% obj.mibModel.exportDatasetToImaris('model', BatchOpt); // export first material in batch mode
-% @endcode
+% Syntax:
+%   function exportDatasetToImaris(obj, layerType, BatchOptIn)
+%
+% Input Arguments:
+%   - **layerType** — a string specifying which layer to export:
+%
+%     - ``'image'`` — export image data
+%     - ``'mask'`` — export mask layer as a single binary channel
+%     - ``'model'`` — export model (labels layer); prompts for material index
+%
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%     returns a structure with default options via "SyncBatch" event:
+%
+%     - ``.LayerType`` — cell string, ``{'image'|'mask'|'model'}`` layer to export
+%     - ``.MaterialIndex`` — string, [model only] material index to export; empty = all materials
+%     - ``.showWaitbar`` — logical, show or not the waitbar
+%     - ``.id`` — *(optional)* index of the dataset
+%
+% Usage:
+%   **Example 1** — export image interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.exportDatasetToImaris('image');
+%
+%   **Example 2** — export mask interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.exportDatasetToImaris('mask');
+%
+%   **Example 3** — export first material in batch mode
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.MaterialIndex = '1';
+%      obj.mibModel.exportDatasetToImaris('model', BatchOpt);
+%
 
 % Updates
 %

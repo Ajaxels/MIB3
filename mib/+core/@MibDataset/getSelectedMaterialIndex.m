@@ -1,24 +1,38 @@
 function index = getSelectedMaterialIndex(obj, target)
-% function index = getSelectedMaterialIndex(obj)
-% return the index of the currently selected material in the mibView.handles.materialsTable
-% 
-% Parameters:
-% target: a string with optional target column of the table
-% @li ''Material'' - (@em default) the selected row in the material column
-% @li ''AddTo'' - the selected row in the AddTo column
+% GETSELECTEDMATERIALINDEX - return the index of the currently selected material in the mibView.handles.materialsTable.
 %
-% Return values:
-% index: an index of the currently selected material;
-% @li ''-1'' - Mask
-% @li ''0'' - Exterior
-% @li ''1'' - 1st material of the model
-% @li ''2'' - 2nd material of the model
+% Syntax:
+%   function index = getSelectedMaterialIndex(obj, target)
 %
-
-%| 
-% @b Examples:
-% @code selcontour = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex(); // call from mibController class; return the index of the currently selected material @endcode
-% @code selcontour = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo'); // call from mibController class; return the index of the currently selected material in the AddTo column @endcode
+% Input Arguments:
+%   - **target** — a string specifying the target column of the materials table:
+%
+%     - ``'Material'`` — *(default)* the selected row in the material column
+%     - ``'AddTo'`` — the selected row in the AddTo column
+%
+% Output Arguments:
+%   - **index** — index of the currently selected material:
+%
+%     - ``-1`` — Mask
+%     - ``0`` — Exterior
+%     - ``1`` — 1st material of the model
+%     - ``2``, ``3``, ... — 2nd, 3rd, ... material of the model
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     selcontour = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();% call from mibController class; return the index of the currently selected material
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     selcontour = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');% call from mibController class; return the index of the currently selected material in the AddTo column
+%
 
 if nargin < 2; target = 'Material'; end
 

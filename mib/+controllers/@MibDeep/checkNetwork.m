@@ -1,10 +1,13 @@
 function checkNetwork(obj, fn)
-    % function checkNetwork(obj, fn)
-    % generate and check network using settings in the Train tab
-    %
-    % Parameters:
-    % fn: optional string with filename (*.mibDeep) to preview its
-    % configuration
+% CHECKNETWORK - generate and check network using settings in the Train tab.
+%
+% Syntax:
+%   function checkNetwork(obj, fn)
+%
+% Input Arguments:
+%   - **fn** — optional string with filename (``*.mibDeep``) to preview its
+%     configuration
+%
 
     if nargin < 2; fn = []; end
     if ~isempty(fn) && exist(fn, 'file') == 0

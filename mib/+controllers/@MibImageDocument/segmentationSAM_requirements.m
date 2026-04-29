@@ -1,23 +1,27 @@
 function status = segmentationSAM_requirements(obj, samVersionName)
-% status = segmentationSAM_requirements(obj, samVersionName)
+% SEGMENTATIONSAM_REQUIREMENTS - status = segmentationSAM_requirements(obj, samVersionName).
+%
+% Syntax:
+%   function status = segmentationSAM_requirements(obj, samVersionName)
+%
 % Check for files required to run segmentation using segment-anything model https://segment-anything.com
 %
-% Parameters:
-% samVersionName: [@em optional] integer with version of SAM
-%   @li 1 -> the first version SAM (https://segment-anything.com)
-%   @li 2 -> default, the second version SAM-2 (https://github.com/facebookresearch/segment-anything-2)
-%  OR alternatively a char 'SAM1', 'SAM2'
+% Input Arguments:
+%   - **samVersionName** — *(optional)* integer with version of SAM
+%     - 1 the first version SAM (https://segment-anything.com)
+%     - 2 default, the second version SAM-2 (https://github.com/facebookresearch/segment-anything-2)
+%   OR alternatively a char 'SAM1', 'SAM2'
 %
-% Return values:
-% status: [logical], switch indicating success of the function
-
-%|
-% @b Examples:
-% @code
-% status = obj.segmentationSAM_requirements('SAM1');  // check SAM1 requirements
-% status = obj.segmentationSAM_requirements('SAM2');  // check SAM2 requirements
-% status = obj.segmentationSAM_requirements(2);  // check SAM2 requirements
-% @endcode
+% Output Arguments:
+%   - **status** — [logical], switch indicating success of the function
+%
+% Usage:
+%   Example 1::
+%
+%     status = obj.segmentationSAM_requirements('SAM1');  // check SAM1 requirements
+%     status = obj.segmentationSAM_requirements('SAM2');  // check SAM2 requirements
+%     status = obj.segmentationSAM_requirements(2);  // check SAM2 requirements
+%
 
 if nargin < 2; samVersionName = 'SAM2'; end
 if ~ischar(samVersionName)

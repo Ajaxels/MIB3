@@ -15,19 +15,22 @@
 % Date: 25.04.2023
 
 function connImaris = mibSetImarisSpots(spots, connImaris, options)
-% function connImaris = mibSetImarisSpots(spots, connImaris, options)
-% Send a spots from MIB to Imaris
+% MIBSETIMARISSPOTS - Send a spots from MIB to Imaris.
 %
-% Parameters:
-% spots: a matrix [x, y, z, t] with coordinates of the spots (n x 4)
-% connImaris: [@em optional] a handle to Imaris connection
-% options: an optional structure with additional settings 
-% @li .radii -> [@em optional] a vector with radii of the spots (n x 1)
-% @li .color [@em optional] a vector with color for spots: (1x4), (0..1) vector of [R G B A] values
-% @li .name -> a char with the name of the object
+% Syntax:
+%   function connImaris = mibSetImarisSpots(spots, connImaris, options)
 %
-% Return values:
-% connImaris:  a handle to Imaris connection
+% Input Arguments:
+%   - **spots** — a matrix [x, y, z, t] with coordinates of the spots (n x 4)
+%   - **connImaris** — *(optional)* a handle to Imaris connection
+%   - **options** — an optional structure with additional settings
+%     - .radii *(optional)* a vector with radii of the spots (n x 1)
+%     - .color *(optional)* a vector with color for spots: (1x4), (0..1) vector of [R G B A] values
+%     - .name a char with the name of the object
+%
+% Output Arguments:
+%   - **connImaris** — a handle to Imaris connection
+%
 
 % @note
 % uses IceImarisConnector bindings

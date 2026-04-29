@@ -1,37 +1,44 @@
 function segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)
-% function segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)
-% Do segmentation using the Magic Wand tool
+% SEGMENTATIONMAGICWAND - Do segmentation using the Magic Wand tool.
+%
+% Syntax:
+%   function segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)
 %
 % Selects pixels connected to the clicked point whose intensity falls
 % within the specified threshold range. Supports 2D and 3D modes,
 % optional radius limit, and connectivity filtering.
 %
-% Parameters:
-% yxzCoordinate: vector with [y, x, z] coordinates of the starting point;
-%   for the 2D case [y, x] is sufficient
-% BatchOptIn: [@em optional] a structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event, or a char modifier
-%   for interactive calls
-% @li .Coordinate - Seed point as 'y; x' (2D) or 'y; x; z' (3D)
-% @li .Mode - Apply for the current slice (2D, Slice) or the whole stack (3D, Stack)
-% @li .ThresholdLow - Low threshold shift from the seed intensity
-% @li .ThresholdHigh - High threshold shift from the seed intensity
-% @li .ColorChannel - Color channel to use for thresholding
-% @li .Radius - Effective radius limit (0 = no limit)
-% @li .Connectivity - Connectivity type: 8/26-connected, 4/6-connected, or None
-% @li .Action - Action: Add, Subtract, or Replace
-% @li .FillHoles - Fill holes in the resulting selection
-% @li .FixSelectionToMask - Apply selection only to the masked area
-% @li .FixSelectionToMaterial - Apply selection only to the area of the selected material
-% @li .showWaitbar - Show or not the progress bar during execution
+% Input Arguments:
+%   - **yxzCoordinate** — vector with [y, x, z] coordinates of the starting point;
+%     for the 2D case [y, x] is sufficient
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event, or a char modifier
+%     for interactive calls
+%     - .Coordinate - Seed point as 'y; x' (2D) or 'y; x; z' (3D)
+%     - .Mode - Apply for the current slice (2D, Slice) or the whole stack (3D, Stack)
+%     - .ThresholdLow - Low threshold shift from the seed intensity
+%     - .ThresholdHigh - High threshold shift from the seed intensity
+%     - .ColorChannel - Color channel to use for thresholding
+%     - .Radius - Effective radius limit (0 = no limit)
+%     - .Connectivity - Connectivity type: 8/26-connected, 4/6-connected, or None
+%     - .Action - Action: Add, Subtract, or Replace
+%     - .FillHoles - Fill holes in the resulting selection
+%     - .FixSelectionToMask - Apply selection only to the masked area
+%     - .FixSelectionToMaterial - Apply selection only to the area of the selected material
+%     - .showWaitbar - Show or not the progress bar during execution
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.segmentationMagicWand([50, 75], 'shift');     // magic wand from [y,x]=50,75 and add to selection @endcode
-% @code obj.segmentationMagicWand([50, 75], BatchOpt);    // batch mode @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationMagicWand([50, 75], 'shift');     // magic wand from [y,x]=50,75 and add to selection
+%
+%   Example 2::
+%
+%     obj.segmentationMagicWand([50, 75], BatchOpt);    // batch mode
+%
 
 % Updates
 %

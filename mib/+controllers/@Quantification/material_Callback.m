@@ -1,18 +1,25 @@
 function material_Callback(obj)
-% function material_Callback(obj)
-% Handle selection change in the Material dropdown.
+% MATERIAL_CALLBACK - Handle selection change in the Material dropdown.
+%
+% Syntax:
+%   function material_Callback(obj)
 %
 % Updates obj.BatchOpt.MaterialIndex and the dialog title bar to reflect
 % the chosen material.  Index encoding:
-% @li -1 = Mask
-% @li  0 = Exterior
-% @li  1, 2, … = individual model materials (modelType ≤ 255)
-% @li  string value = material name (modelType > 255, high-content models)
+%   - -1 = Mask
+%   - 0 = Exterior
+%   - 1, 2, … = individual model materials (modelType ≤ 255)
+%   - string value = material name (modelType > 255, high-content models)
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.Material.ValueChangedFcn = @(~,~) obj.material_Callback(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.Material.ValueChangedFcn = @(~,~) obj.material_Callback();
+%
 
 % Updates
 %

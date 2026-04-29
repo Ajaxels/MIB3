@@ -15,24 +15,27 @@
 % Date: 25.04.2023
 
 function id = findChildId(obj, childName)
-% function id = findChildId(obj, childName)
-% find id of a child controller
+% FINDCHILDID - find id of a child controller.
+%
+% Syntax:
+%   function id = findChildId(obj, childName)
 %
 % the child controllers of MIB are stored in obj.childControllersIds cell
 % array. This function look for index that matches with childName string.
 % If it is in the list the function returns its index, otherwise it adds it
 % to the list as a new element
 %
-% Parameters:
-% childName: name of a child controller
+% Input Arguments:
+%   - **childName** — name of a child controller
 %
-% Return values:
-% id: index of the requested child controller or empty if it is not open
+% Output Arguments:
+%   - **id** — index of the requested child controller or empty if it is not open
 %
-
-%| 
-% @b Examples:
-% @code id = obj.findChildId('mibImageAdjController');     // find an index of mibImageAdjController @endcode
+% Usage:
+%   Example 1::
+%
+%     id = obj.findChildId('mibImageAdjController');     // find an index of mibImageAdjController
+%
  
 % Updates
 %

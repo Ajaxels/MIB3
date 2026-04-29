@@ -1,51 +1,61 @@
 function result = setPixelIdxList(obj, type, dataset, PixelIdxList, options) %#ok<INUSD>
-% function result = setPixelIdxList(obj, type, dataset, PixelIdxList, options)
-% Write pixel values at a list of linear indices into the active dataset layer.
+% SETPIXELIDXLIST - Write pixel values at a list of linear indices into the active dataset layer.
+%
+% Syntax:
+%   function result = setPixelIdxList(obj, type, dataset, PixelIdxList, options) %#ok<INUSD>
 %
 % Wrapper method on MibDataset that routes the write request to the correct
 % layer object (obj.image, obj.labels, obj.mask, obj.selection) and then
 % delegates to core.MibImage.setPixelIdxList.
 %
 % Routing rules (mirror setData3D):
-% @li type 'image'               → obj.image
-% @li type 'labels'/'model'      → obj.labels; sets obj.modelExist = true
-% @li type 'mask'                → obj.labels (MibLabels63) or obj.mask (MibLabels);
-%                                    sets obj.maskExist = true
-% @li type 'selection'           → obj.labels (MibLabels63) or obj.selection (MibLabels)
-% @li type 'everything'          → obj.labels (MibLabels63 only)
+% - type 'image'               → obj.image
+% - type 'labels'/'model'      → obj.labels; sets obj.modelExist = true
+% - type 'mask'                → obj.labels (MibLabels63) or obj.mask (MibLabels);
+% sets obj.maskExist = true
+% - type 'selection'           → obj.labels (MibLabels63) or obj.selection (MibLabels)
+% - type 'everything'          → obj.labels (MibLabels63 only)
 %
 % The PixelIdxList must be linear indices into the full 3D volume in XY
 % orientation (i.e. as returned by bwconncomp / regionprops).
 %
-% Parameters:
-% type: char, layer type to write
-%   @li 'image'     - pixel values of the image layer
-%   @li 'model'     - synonym for 'labels'
-%   @li 'labels'    - material indices into the labels layer
-%   @li 'mask'      - mask layer values (0/1)
-%   @li 'selection' - selection layer values (0/1)
-%   @li 'everything'- raw packed byte (MibLabels63 only)
-% dataset: numeric vector of values to write; must match numel(PixelIdxList)
-% PixelIdxList: numeric vector of linear pixel indices into the full dataset
-%   in the XY orientation (standard MATLAB column-major order)
-% options: [@em optional] struct; reserved for future use, not used currently
+% Input Arguments:
+%   - **type** — char, layer type to write:
 %
-% Return values:
-% result: logical @b true on success, @b false on error
-
-%|
-% @b Examples:
-% @code
-% I = cell2mat(obj.mibModel.getData3D('mask'));
-% CC = bwconncomp(I, 26);
-% val = zeros(numel(CC.PixelIdxList{1}), 1, 'uint8') + 1;
-% % move object 1 pixels into the selection layer:
-% obj.mibModel.I{id}.setPixelIdxList('selection', val, CC.PixelIdxList{1});
-% @endcode
-% @code
-% % clear the model label at a set of pixel positions:
-% obj.mibModel.I{id}.setPixelIdxList('labels', zeros(numel(idx),1,'uint8'), idx);
-% @endcode
+%     - ``'image'`` — pixel values of the image layer
+%     - ``'model'`` — synonym for ``'labels'``
+%     - ``'labels'`` — material indices into the labels layer
+%     - ``'mask'`` — mask layer values (0/1)
+%     - ``'selection'`` — selection layer values (0/1)
+%     - ``'everything'`` — raw packed byte (``MibLabels63`` only)
+%   - **dataset** — numeric vector of values to write; must match numel(PixelIdxList)
+%   - **PixelIdxList** — numeric vector of linear pixel indices into the full dataset
+%     in the XY orientation (standard MATLAB column-major order)
+%   - **options** — *(optional)* struct; reserved for future use, not used currently
+%
+% Output Arguments:
+%   - **result** — logical **true** on success, **false** on error
+%
+% Usage:
+%   **Example 1** — move object 1 pixels into the selection layer
+%
+%   .. code-block:: matlab
+%
+%
+%     I = cell2mat(obj.mibModel.getData3D('mask'));
+%     CC = bwconncomp(I, 26);
+%     val = zeros(numel(CC.PixelIdxList{1}), 1, 'uint8') + 1;
+%     % move object 1 pixels into the selection layer:
+%     obj.mibModel.I{id}.setPixelIdxList('selection', val, CC.PixelIdxList{1});
+%
+%   **Example 2** — clear the model label at a set of pixel positions
+%
+%   .. code-block:: matlab
+%
+%
+%     % clear the model label at a set of pixel positions:
+%     obj.mibModel.I{id}.setPixelIdxList('labels', zeros(numel(idx),1,'uint8'), idx);
+%
 
 % Updates
 %

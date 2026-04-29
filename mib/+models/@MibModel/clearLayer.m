@@ -1,30 +1,45 @@
 function clearLayer(obj, layer, sel_switch, BatchOptIn)
-% function clearLayer(obj, layer, sel_switch, BatchOptIn)
-% clear the specified layer
+% CLEARLAYER - clear the specified layer.
 %
-% Parameters:
-% layer: a string with the target layer, can be []
-% @li [] -> 'selection'
-% @li 'selection' -> clear the selection layer
-% @li 'mask' -> clear the mask layer
-% @li 'labels' -> clear the labels layer
-% @li 'everything' -> clear selection, mask, labels layers for core.MibLabels63 class only
-% @li 'image' -> clear the image layer
-% sel_switch: a string to define where selection should be cleared:
-% @li when @b '2D, Slice' fill holes for the currently shown slice
-% @li when @b '3D, Stack' fill holes for the currently shown z-stack
-% @li when @b '4D, Dataset' fill holes for the whole dataset
-% BatchOptIn: [@em optional], a structure with extra parameters or settings for the batch processing mode, when NaN return
-%    a structure with default options via "SyncBatch" event
-% optional parameters
-% @li .Layer -> cell with one of possible parameters: 'selection', 'mask', 'labels', 'everything', 'image'
-% @li .DatasetType -> cell with one of possible parameters: '2D, Slice', '3D, Stack', '4D, Dataset'
-% @li .showWaitbar - logical, show or not the waitbar
-
-%| 
-% Examples:
-% @code obj.mibModel.clearLayer('selection'); // clear the selection layer for the whole dataset % @endcode 
-% @code obj.mibModel.clearLayer('selection', '2D, Stack'); // clear the selection layer of the shown slice % @endcode 
+% Syntax:
+%   function clearLayer(obj, layer, sel_switch, BatchOptIn)
+%
+% Input Arguments:
+%   - **layer** — a string with the target layer
+%
+%     - ``[]`` — default (``'selection'``)
+%     - ``'selection'`` — clear the selection layer
+%     - ``'mask'`` — clear the mask layer
+%     - ``'labels'`` — clear the labels layer
+%     - ``'everything'`` — clear selection, mask, and labels layers (core.MibLabels63 only)
+%     - ``'image'`` — clear the image layer
+%
+%   - **sel_switch** — a string to define the extent of the clear operation
+%
+%     - ``'2D, Slice'`` — clear the currently shown slice only
+%     - ``'3D, Stack'`` — clear the currently shown z-stack
+%     - ``'4D, Dataset'`` — clear the whole dataset
+%
+%   - **BatchOptIn** — *(optional)* structure with extra parameters for batch processing mode;
+%     when NaN, returns a structure with default options via ``SyncBatch`` event
+%
+%     - ``.Layer`` — cell with one of: ``'selection'``, ``'mask'``, ``'labels'``, ``'everything'``, ``'image'``
+%     - ``.DatasetType`` — cell with one of: ``'2D, Slice'``, ``'3D, Stack'``, ``'4D, Dataset'``
+%     - ``.showWaitbar`` — logical, show or not the waitbar
+%
+% Usage:
+%   **Example 1** — clear the selection layer for the whole dataset
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.clearLayer('selection');
+%
+%   **Example 2** — clear the selection layer of the shown slice
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.clearLayer('selection', '2D, Stack');
+%
 
 % Updates
 % 

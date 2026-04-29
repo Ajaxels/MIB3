@@ -1,72 +1,79 @@
 classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
-    % classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
-    % Setup loader for OME-Zarr v3 datasets — handles all dataset modes.
-    %
-    % This loader runs ONCE when the user opens a .zarr3 file and handles
-    % all three MIB3 dataset modes:
-    %
-    %   Standard : loadImages() loads the full selected pyramid level into
-    %              memory and returns pixel data.
-    %   Virtual  : loadImages() returns the zarr root path only + pyramid
-    %              metadata; pixels are read on demand by Zarr3VirtualLoader.
-    %   BigData  : identical to Virtual mode.
-    %
-    % The dataset mode is passed via options.datasetMode (set by LoaderFactory
-    % from loaderInfo.mode).
-    %
-    % --- Relationship to Zarr3VirtualLoader ---------------------------------
-    %
-    %   Zarr3VirtualSetupLoader  — runs ONCE when the user opens a file.
-    %     Phase   : dataset initialisation (MibModel.loadImages)
-    %     Job     : parse OME-Zarr metadata, build pyramid struct, return path.
-    %     Reads pixels? Yes (Standard mode) / No (Virtual/BigData mode).
-    %     Lifetime: discarded after open; implements BaseImageLoader.
-    %     Created by: LoaderFactory (case "OmeZarr")
-    %
-    %   Zarr3VirtualLoader  — runs on EVERY slice request during the session.
-    %     Phase   : on-demand pixel reading (MibVirtualImage.getDataZarr)
-    %     Job     : read sub-region via ZarrArray.read(bbox).
-    %     Reads pixels? Yes.
-    %     Lifetime: cached in MibVirtualImage.loaders{1} for the session.
-    %     Created by: MibVirtualImage.getDataZarr / getOrCreateLoader
-    %
-    % -------------------------------------------------------------------------
-    %
-    % Supported formats:
-    %   - OME-Zarr v3 (zarr.json metadata) — local folders and HTTP/HTTPS URLs
-    %   - Single-array zarr v3 (no multiscales metadata) — treated as 1 level
-    %   - NOT zarr v2 (.zattrs / .zgroup) — clear error message is shown
-    %
-    % Usage examples:
-    % @code
-    % % Virtual mode (typical usage via MibModel.loadImages)
-    % opts.datasetMode = 'Virtual';
-    % loader = io.loaders.Zarr3VirtualSetupLoader(opts);
-    % [imginfo, files] = loader.loadMetadata({'C:\data\stack.zarr3'}, opts);
-    % [img, imginfo]   = loader.loadImages(files, imginfo, opts);
-    % % img = {'C:\data\stack.zarr3'} and imginfo{"Pyramid"} holds the struct
-    % @endcode
-    %
-    % @code
-    % % Standard mode — prompts user to select pyramid level, returns pixel data
-    % opts.datasetMode  = 'Standard';
-    % opts.ParentFigure = gcf;
-    % loader = io.loaders.Zarr3VirtualSetupLoader(opts);
-    % [imginfo, files] = loader.loadMetadata({'C:\data\stack.zarr3'}, opts);
-    % [img, imginfo]   = loader.loadImages(files, imginfo, opts);
-    % % img{1} is a [y,x,z,c,t] uint16 array
-    % @endcode
+% ZARR3VIRTUALSETUPLOADER - Setup loader for OME-Zarr v3 datasets — handles all dataset modes.
+%
+% This loader runs ONCE when the user opens a .zarr3 file and handles
+% all three MIB3 dataset modes:
+%
+% Standard : loadImages() loads the full selected pyramid level into
+% memory and returns pixel data.
+% Virtual  : loadImages() returns the zarr root path only + pyramid
+% metadata; pixels are read on demand by Zarr3VirtualLoader.
+% BigData  : identical to Virtual mode.
+%
+% The dataset mode is passed via options.datasetMode (set by LoaderFactory
+% from loaderInfo.mode).
+%
+% **Relationship to Zarr3VirtualLoader**
+%
+% Zarr3VirtualSetupLoader  — runs ONCE when the user opens a file.
+% Phase   : dataset initialisation (MibModel.loadImages)
+% Job     : parse OME-Zarr metadata, build pyramid struct, return path.
+% Reads pixels? Yes (Standard mode) / No (Virtual/BigData mode).
+% Lifetime: discarded after open; implements BaseImageLoader.
+% Created by: LoaderFactory (case "OmeZarr")
+%
+% Zarr3VirtualLoader  — runs on EVERY slice request during the session.
+% Phase   : on-demand pixel reading (MibVirtualImage.getDataZarr)
+% Job     : read sub-region via ZarrArray.read(bbox).
+% Reads pixels? Yes.
+% Lifetime: cached in MibVirtualImage.loaders{1} for the session.
+% Created by: MibVirtualImage.getDataZarr / getOrCreateLoader
+%
+%
+% Supported formats:
+% - OME-Zarr v3 (zarr.json metadata) — local folders and HTTP/HTTPS URLs
+% - Single-array zarr v3 (no multiscales metadata) — treated as 1 level
+% - NOT zarr v2 (.zattrs / .zgroup) — clear error message is shown
+%
+% Usage examples:
+%
+% .. code-block:: matlab
+%
+%   % Virtual mode (typical usage via MibModel.loadImages)
+%   opts.datasetMode = 'Virtual';
+%   loader = io.loaders.Zarr3VirtualSetupLoader(opts);
+%   [imginfo, files] = loader.loadMetadata({'C:\data\stack.zarr3'}, opts);
+%   [img, imginfo]   = loader.loadImages(files, imginfo, opts);
+%   % img = {'C:\data\stack.zarr3'} and imginfo{"Pyramid"} holds the struct
+%
+%
+%
+% .. code-block:: matlab
+%
+%   % Standard mode — prompts user to select pyramid level, returns pixel data
+%   opts.datasetMode  = 'Standard';
+%   opts.ParentFigure = gcf;
+%   loader = io.loaders.Zarr3VirtualSetupLoader(opts);
+%   [imginfo, files] = loader.loadMetadata({'C:\data\stack.zarr3'}, opts);
+%   [img, imginfo]   = loader.loadImages(files, imginfo, opts);
+%   % img{1} is a [y,x,z,c,t] uint16 array
 
     methods
         function obj = Zarr3VirtualSetupLoader(options)
-            % obj = Zarr3VirtualSetupLoader(options)
+            % ZARR3VIRTUALSETUPLOADER - obj = Zarr3VirtualSetupLoader(options).
+            %
+            % Syntax:
+            %   function obj = Zarr3VirtualSetupLoader(options)
+            %
             % Constructor
             %
-            % Parameters:
-            % options : [@em optional, struct] options including:
-            %   @li .datasetMode - [char] 'Standard', 'Virtual', or 'BigData'
-            %                      (set by LoaderFactory from loaderInfo.mode)
-            %   @li .ParentFigure - handle to parent figure for dialogs
+            % Input Arguments:
+            %   - **options** — [*optional,* struct] options including:
+            %
+            %     - ``.datasetMode`` — [char] ``'Standard'``, ``'Virtual'``, or ``'BigData'``
+            %       (set by LoaderFactory from loaderInfo.mode)
+            %     - ``.ParentFigure`` — handle to parent figure for dialogs
+            %
 
             obj.Options = struct();
             obj.Options.Font = struct('FontName', 'Helvetica', 'FontSize', 12);
@@ -79,7 +86,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options) %#ok<INUSD>
-            % [imginfo, files] = loadMetadata(obj, filenames, options)
+            % LOADMETADATA - [imginfo, files] = loadMetadata(obj, filenames, options).
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options) %#ok<INUSD>
+            %
             % Parse OME-Zarr v3 metadata from the zarr root.
             %
             % Reads zarr.json via ZarrGroup / ZarrNode (works for local paths
@@ -87,21 +98,22 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
             % chunk/shard sizes, and pixel sizes from the OME-Zarr multiscales
             % attribute.  Falls back to single-level if no multiscales found.
             %
-            % Parameters:
-            % filenames : {1 x 1} cell — path to the zarr root folder or URL
-            % options   : (unused; present for interface compatibility)
+            % Input Arguments:
+            %   - **filenames** — {1 x 1} cell — path to the zarr root folder or URL
+            %   - **options** — (unused; present for interface compatibility)
             %
-            % Return values:
-            % imginfo : dictionary with image metadata (Height, Width, Depth, etc.)
-            % files   : struct with parsed metadata for use by loadImages
+            % Output Arguments:
+            %   - **imginfo** — dictionary with image metadata (Height, Width, Depth, etc.)
+            %   - **files** — struct with parsed metadata for use by loadImages
             %
-            % @b Examples:
-            % @code
-            % loader  = io.loaders.Zarr3VirtualSetupLoader();
-            % [info, files] = loader.loadMetadata({'C:\data\vol.zarr3'}, struct());
-            % fprintf('Height=%d  Width=%d  Depth=%d\n', ...
-            %     info{"Height"}, info{"Width"}, info{"Depth"});
-            % @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     loader  = io.loaders.Zarr3VirtualSetupLoader();
+            %     [info, files] = loader.loadMetadata({'C:\data\vol.zarr3'}, struct());
+            %     fprintf('Height=%d  Width=%d  Depth=%d\n', ...
+            %         info{"Height"}, info{"Width"}, info{"Depth"});
+            %
 
             imginfo  = core.MibImage.initializeImgInfo();
             rootPath = filenames{1};
@@ -204,32 +216,37 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % [img, imginfo] = loadImages(obj, files, imginfo, options)
+            % LOADIMAGES - [img, imginfo] = loadImages(obj, files, imginfo, options).
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %
             % Mode-dependent image setup.
             %
             % Standard mode: prompts the user to select a pyramid level, then
-            %   loads the full level into memory as a [y,x,z,c,t] array.
+            % loads the full level into memory as a [y,x,z,c,t] array.
             % Virtual / BigData mode: returns the zarr root path and populates
-            %   imginfo{"Pyramid"} and imginfo{"Virtual"} for on-demand reading.
+            % imginfo{"Pyramid"} and imginfo{"Virtual"} for on-demand reading.
             %
-            % Parameters:
-            % files   : struct from loadMetadata
-            % imginfo : dictionary from loadMetadata
-            % options : struct; relevant field: .ParentFigure (for dialogs)
+            % Input Arguments:
+            %   - **files** — struct from loadMetadata
+            %   - **imginfo** — dictionary from loadMetadata
+            %   - **options** — struct; relevant field: .ParentFigure (for dialogs)
             %
-            % Return values:
-            % img     : Standard mode — {1 x 1} cell holding [y,x,z,c,t] array.
-            %           Virtual/BigData mode — {1 x 1} cell holding root path.
-            % imginfo : updated dictionary; Virtual mode adds "Pyramid" and "Virtual"
+            % Output Arguments:
+            %   - **img** — Standard mode — {1 x 1} cell holding [y,x,z,c,t] array.
+            %     Virtual/BigData mode — {1 x 1} cell holding root path.
+            %   - **imginfo** — updated dictionary; Virtual mode adds "Pyramid" and "Virtual"
             %
-            % @b Examples:
-            % @code
-            % opts.datasetMode  = 'Virtual';
-            % loader = io.loaders.Zarr3VirtualSetupLoader(opts);
-            % [info, f] = loader.loadMetadata({'C:\data\vol.zarr3'}, opts);
-            % [img, info] = loader.loadImages(f, info, opts);
-            % % img = {'C:\data\vol.zarr3'}, info{"Pyramid"}.levelNames = {'0','1',...}
-            % @endcode
+            % Usage:
+            %   Example 1 - img = {'C:\data\vol.zarr3'}, info{"Pyramid"}.levelNames = {'0','1',...}::
+            %
+            %     opts.datasetMode  = 'Virtual';
+            %     loader = io.loaders.Zarr3VirtualSetupLoader(opts);
+            %     [info, f] = loader.loadMetadata({'C:\data\vol.zarr3'}, opts);
+            %     [img, info] = loader.loadImages(f, info, opts);
+            %     % img = {'C:\data\vol.zarr3'}, info{"Pyramid"}.levelNames = {'0','1',...}
+            %
 
             if nargin < 4; options = struct(); end
 
@@ -248,7 +265,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
     methods (Access = private)
 
         function [files, imginfo] = parseMultiscales(obj, rootPath, multiscales, imginfo)
-            % Parse OME-Zarr multiscales metadata and populate files + imginfo.
+            % PARSEMULTISCALES - Parse OME-Zarr multiscales metadata and populate files + imginfo.
+            %
+            % Syntax:
+            %   function [files, imginfo] = parseMultiscales(obj, rootPath, multiscales, imginfo)
+            %
 
             ms = multiscales(1);   % use first multiscales entry
 
@@ -274,7 +295,7 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
             chunkSizes             = cell(nLevels, 1);
             shardSizes             = cell(nLevels, 1);
 
-            % --- Coordinate transformation semantics -------------------------
+            % **Coordinate transformation semantics**
             %
             % globalScales  [1 x nAxes] — top-level coordinateTransformations
             %   on the multiscales object (OME-NGFF v0.5 pattern).
@@ -299,7 +320,6 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
             %   level's physical voxel size to level 0.  Level 0 = [1,1,1].
             %   Used by getDataZarr to pick the best pyramid level for the
             %   current display magnification (magFactor).
-            % ----------------------------------------------------------------
 
             % global scale from top-level coordinateTransformations (OME-Zarr v0.5)
             globalScales = ones(1, numel(axisLabels));
@@ -421,11 +441,14 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function ms = extractMultiscales(~, attrs)
-            % Extract the multiscales array from zarr attributes.
+            % EXTRACTMULTISCALES - Extract the multiscales array from zarr attributes.
+            %
+            % Syntax:
+            %   function ms = extractMultiscales(~, attrs)
             %
             % Handles two OME-NGFF versions:
-            %   v0.4: attrs.multiscales  (top-level)
-            %   v0.5: attrs.ome.multiscales  (nested under "ome" namespace)
+            % v0.4: attrs.multiscales  (top-level)
+            % v0.5: attrs.ome.multiscales  (nested under "ome" namespace)
             %
             % Returns the multiscales struct array, or [] if not found.
 
@@ -439,12 +462,15 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function subPath = findMultiscalesSubPath(~, rootPath, attrs, grp)
-            % Find the sub-group path most likely to contain multiscales.
+            % FINDMULTISCALESSUBPATH - Find the sub-group path most likely to contain multiscales.
+            %
+            % Syntax:
+            %   function subPath = findMultiscalesSubPath(~, rootPath, attrs, grp)
             %
             % Strategy (in order):
-            %   1. OME-Zarr label container: attrs.labels lists sub-group names.
-            %   2. Local path: use listContents() to find the first sub-group.
-            %   3. HTTP path fallback: try the sub-path '0' (common convention).
+            % 1. OME-Zarr label container: attrs.labels lists sub-group names.
+            % 2. Local path: use listContents() to find the first sub-group.
+            % 3. HTTP path fallback: try the sub-path '0' (common convention).
             %
             % Returns '' if nothing useful is found.
 
@@ -509,7 +535,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function [files, imginfo] = parseSingleArray(obj, rootPath, imginfo)
-            % Fallback: open root as a single ZarrArray (no multiscales metadata).
+            % PARSESINGLEARRAY - Fallback: open root as a single ZarrArray (no multiscales metadata).
+            %
+            % Syntax:
+            %   function [files, imginfo] = parseSingleArray(obj, rootPath, imginfo)
+            %
 
             try
                 arr     = ZarrArray(rootPath);
@@ -581,7 +611,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImagesStandard(obj, files, imginfo, options)
-            % loadImages for Standard mode: prompt level selection, load pixels.
+            % LOADIMAGESSTANDARD - loadImages for Standard mode: prompt level selection, load pixels.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImagesStandard(obj, files, imginfo, options)
+            %
 
             nLevels = files.nLevels;
 
@@ -686,7 +720,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImagesVirtual(~, files, imginfo)
-            % loadImages for Virtual / BigData mode: return path + pyramid metadata.
+            % LOADIMAGESVIRTUAL - loadImages for Virtual / BigData mode: return path + pyramid metadata.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImagesVirtual(~, files, imginfo)
+            %
 
             rootPath = files.filename;
             img = {rootPath};   % path only; no pixel data loaded
@@ -718,7 +756,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         % ---- Metadata parsing helpers ------------------------------------
 
         function axisOrder = extractAxisOrder(~, ms)
-            % Extract axis order string (e.g. 'tczyx') from multiscales entry.
+            % EXTRACTAXISORDER - Extract axis order string (e.g. 'tczyx') from multiscales entry.
+            %
+            % Syntax:
+            %   function axisOrder = extractAxisOrder(~, ms)
+            %
             axisOrder = 'tczyx';   % OME-Zarr default if not specified
             if ~isfield(ms, 'axes') || isempty(ms.axes)
                 return;
@@ -739,36 +781,44 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function labels = axisOrderToLabels(~, axisOrder)
-            % Convert axis order string to cell array of single-char labels.
+            % AXISORDERTOLABELS - Convert axis order string to cell array of single-char labels.
+            %
+            % Syntax:
+            %   function labels = axisOrderToLabels(~, axisOrder)
+            %
             labels = num2cell(lower(char(axisOrder)));
         end
 
         function scales = extractScaleFromCT(~, ct, nAxes)
-            % Extract physical scale vector from an OME-Zarr coordinateTransformations.
+            % EXTRACTSCALEFROMCT - Extract physical scale vector from an OME-Zarr coordinateTransformations.
+            %
+            % Syntax:
+            %   function scales = extractScaleFromCT(~, ct, nAxes)
             %
             % The returned vector has length nAxes and is aligned to the axis
             % order declared in multiscales.axes (C-order, e.g. [t,c,z,y,x]).
             % Missing leading axes (t, c) default to 1.0.
             %
-            % Parameters:
+            % Input Arguments:
             %   ct     — coordinateTransformations value from zarr.json.
-            %            May be a struct array or cell array of transform objects.
+            %   May be a struct array or cell array of transform objects.
             %   nAxes  — number of axes declared in multiscales.axes (numel(axisLabels)).
-            %            Equals the length of the desired output vector.
+            %   Equals the length of the desired output vector.
             %
-            % Return value:
+            % Output Arguments:
             %   scales — [1 x nAxes] vector in axisLabels order.
-            %            Example for 'tczyx' (nAxes=5):
-            %              scales(1)=t_scale, (2)=c_scale, (3)=z_scale,
-            %              (4)=y_scale, (5)=x_scale
+            %   Example for 'tczyx' (nAxes=5):
+            %   scales(1)=t_scale, (2)=c_scale, (3)=z_scale,
+            %   (4)=y_scale, (5)=x_scale
             %
-            % Alignment rule when CT provides fewer values than nAxes:
+            %   Alignment rule when CT provides fewer values than nAxes:
             %   In OME-Zarr, non-spatial axes (t, c) come BEFORE spatial axes
             %   (z, y, x) and typically have scale=1.  So a 3-element CT scale
             %   [0.03, 0.13, 0.13] for a 'tczyx' dataset means [z, y, x] — the
             %   values belong at the END of the output vector:
-            %     scales = [1, 1, 0.03, 0.13, 0.13]
+            %   scales = [1, 1, 0.03, 0.13, 0.13]
             %   This is why values are right-aligned, not left-aligned.
+            %
 
             scales = ones(1, nAxes);
             try
@@ -820,7 +870,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function unit = extractAxisUnit(~, ms, yIdx)
-            % Extract physical unit from the Y axis definition.
+            % EXTRACTAXISUNIT - Extract physical unit from the Y axis definition.
+            %
+            % Syntax:
+            %   function unit = extractAxisUnit(~, ms, yIdx)
+            %
             unit = 'um';   % default
             if ~isfield(ms, 'axes') || isempty(ms.axes) || isempty(yIdx)
                 return;
@@ -858,7 +912,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
     methods (Static, Access = private)
 
         function v = safeGetDim(shape, idx, default)
-            % Return shape(idx) or default if idx is empty/out of range.
+            % SAFEGETDIM - Return shape(idx) or default if idx is empty/out of range.
+            %
+            % Syntax:
+            %   function v = safeGetDim(shape, idx, default)
+            %
             if isempty(idx) || idx > numel(shape)
                 v = default;
             else
@@ -867,7 +925,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function v = safeGetScale(scales, idx, default)
-            % Return scales(idx) or default if idx is empty/out of range.
+            % SAFEGETSCALE - Return scales(idx) or default if idx is empty/out of range.
+            %
+            % Syntax:
+            %   function v = safeGetScale(scales, idx, default)
+            %
             if isempty(idx) || isempty(scales) || idx > numel(scales)
                 v = default;
             else
@@ -876,7 +938,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function r = safeRatio(levelScales, idx, level0Scales)
-            % Compute levelScales(idx) / level0Scales(idx), default 1.
+            % SAFERATIO - Compute levelScales(idx) / level0Scales(idx), default 1.
+            %
+            % Syntax:
+            %   function r = safeRatio(levelScales, idx, level0Scales)
+            %
             if isempty(idx) || isempty(level0Scales) || idx > numel(level0Scales) ...
                     || level0Scales(idx) == 0
                 r = 1;
@@ -886,7 +952,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function matlabClass = zarrTypeToMatlabClass(zarrType)
-            % Convert zarr v3 data type string to MATLAB class string.
+            % ZARRTYPETOMATLABCLASS - Convert zarr v3 data type string to MATLAB class string.
+            %
+            % Syntax:
+            %   function matlabClass = zarrTypeToMatlabClass(zarrType)
+            %
             switch lower(char(zarrType))
                 case {'float32'}
                     matlabClass = 'single';
@@ -901,7 +971,11 @@ classdef Zarr3VirtualSetupLoader < io.loaders.BaseImageLoader
         end
 
         function mx = classMaxInt(imgClass)
-            % Maximum intensity value for the given MATLAB class.
+            % CLASSMAXINT - Maximum intensity value for the given MATLAB class.
+            %
+            % Syntax:
+            %   function mx = classMaxInt(imgClass)
+            %
             switch imgClass
                 case {'uint8','uint16','uint32','uint64','int8','int16','int32','int64'}
                     mx = double(intmax(imgClass));

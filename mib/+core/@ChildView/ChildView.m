@@ -1,5 +1,6 @@
 classdef ChildView < handle
-    % @type ChildView class is a template of the View type classes for
+    % CHILDVIEW - :class:`ChildView` class is a template of the View type classes for.
+    %
     % each controller
     
 	% Updates
@@ -54,11 +55,16 @@ classdef ChildView < handle
         end
         
         function getChildren(obj, guiHandle)
-            % get handles to children of GUI elements and assign them to
+            % GETCHILDREN - get handles to children of GUI elements and assign them to.
+            %
+            % Syntax:
+            %   function getChildren(obj, guiHandle)
+            %
             % obj.handles structure
             %
-            % Parameters:
-            % guiHandle: handle of the element to get children
+            % Input Arguments:
+            %   - **guiHandle** — handle of the element to get children
+            %
             childrenList = guiHandle.Children;
             for i=1:numel(childrenList)     % generate handles structure similar to guide
                 obj.handles.(childrenList(i).Tag) = childrenList(i);

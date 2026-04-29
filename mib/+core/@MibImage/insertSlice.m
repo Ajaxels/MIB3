@@ -1,35 +1,61 @@
 function insertSlice(obj, img, insertPosition, dim, options)
-% function insertSlice(obj, img, insertPosition, dim, options)
-% Low-level insert of img into obj.data{1} along the depth (z) or time (t) dimension.
+% INSERTSLICE - Low-level insert of img into obj.data{1} along the depth (z) or time (t) dimension.
+%
+% Syntax:
+%   function insertSlice(obj, img, insertPosition, dim, options)
 %
 % This is the pure data-manipulation layer: no dialogs, no waitbars, no
 % annotation handling. All validation and user interaction is done by the
 % caller (core.MibDataset.insertSlice).
 %
-% Parameters:
-% img: 5D array [height, width, depth, colors, time] to insert; must already
-%   be the correct class. Use the same conventions as obj.data{1}.
-% insertPosition: 1-based insertion index (already clamped to a valid range
-%   by the caller). 0 or NaN means append to the end.
-% dim: 'depth' (default) inserts along dimension 3 (z);
-%      'time' inserts along dimension 5 (t)
-% options: [@em optional] struct with fields:
-%   @li .BackgroundColorIntensity - scalar fill value for dimension mismatches (default 0)
-%   @li .sliceNames - cell array of names for the inserted depth slices (default {})
+% Input Arguments:
+%   - **img** — 5D array [height, width, depth, colors, time] to insert; must already
+%     be the correct class. Use the same conventions as obj.data{1}.
+%   - **insertPosition** — 1-based insertion index (already clamped to a valid range
+%     by the caller). 0 or NaN means append to the end.
+%   - **dim** — 'depth' (default) inserts along dimension 3 (z);
+%     'time' inserts along dimension 5 (t)
+%   - **options** — *(optional)* struct with fields:
 %
-% Return values:
+%     - ``.BackgroundColorIntensity`` — scalar fill value for dimension mismatches (default 0)
+%     - ``.sliceNames`` — cell array of names for the inserted depth slices (default {})
+%
+% Output Arguments:
 %   none
 %
-% After the call the following properties are updated:
+%   After the call the following properties are updated:
 %   obj.data{1}, obj.height, obj.width, obj.depth, obj.colors, obj.time,
 %   obj.dim_yxzct, obj.sliceName (when applicable)
-
-%|
-% @b Examples:
-% @code obj.image.insertSlice(img5D, 5, 'depth'); @endcode
-% @code obj.labels.insertSlice(zeros([H W D 1 T],'uint8'), 5, 'depth'); @endcode
-% @code opts.BackgroundColorIntensity = 255; opts.sliceNames = {'slice1','slice2'}; @endcode
-% @code obj.image.insertSlice(img5D, 5, 'depth', opts); @endcode
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.insertSlice(img5D, 5, 'depth');
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.labels.insertSlice(zeros([H W D 1 T],'uint8'), 5, 'depth');
+%
+%   **Example 3**
+%
+%   .. code-block:: matlab
+%
+%
+%     opts.BackgroundColorIntensity = 255; opts.sliceNames = {'slice1','slice2'};
+%
+%   **Example 4**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.insertSlice(img5D, 5, 'depth', opts);
+%
 
 % Updates
 %

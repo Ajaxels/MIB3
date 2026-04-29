@@ -1,13 +1,17 @@
 function materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)
-% materialsTable_applyRowStyle - Apply highlighting style to material row
+% MATERIALSTABLE_APPLYROWSTYLE - Apply highlighting style to material row.
 %
-% Parameters:
+% Syntax:
+%   function materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)
+%
+% Input Arguments:
 %   obj - Controller object
 %   rowIndex - Row index to style (1-based)
 %   isHighlighted - true to highlight, false to restore original color
 %   columnIndex - specific column(s) to style
 %   fontColor - Font color to use
 %   highlightColor - Background color for highlighting (empty for white)
+%
 
 tableHandle = obj.handles.materialsTable;
 

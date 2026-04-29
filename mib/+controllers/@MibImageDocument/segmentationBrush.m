@@ -1,6 +1,8 @@
 function segmentationBrush(obj, y, x, modifier)
-% function segmentationBrush(obj, y, x, modifier)
-% Start segmentation using the brush tool
+% SEGMENTATIONBRUSH - Start segmentation using the brush tool.
+%
+% Syntax:
+%   function segmentationBrush(obj, y, x, modifier)
 %
 % This method initializes the brush tool for interactive painting on the
 % image. It creates a structural element based on the brush radius,
@@ -8,21 +10,25 @@ function segmentationBrush(obj, y, x, modifier)
 % and button release. Supports normal brush, eraser (Ctrl), and
 % superpixel-assisted (SLIC/Watershed) modes.
 %
-% Parameters:
-% y: double, y-coordinate of the mouse cursor at the starting point (in shown image coords)
-% x: double, x-coordinate of the mouse cursor at the starting point (in shown image coords)
-% modifier: cell array of chars or char, modifier keys held during click
-% @li empty '' - add selection
-% @li 'control' - subtract selection (eraser mode)
+% Input Arguments:
+%   - **y** — double, y-coordinate of the mouse cursor at the starting point (in shown image coords)
+%   - **x** — double, x-coordinate of the mouse cursor at the starting point (in shown image coords)
+%   - **modifier** — cell array of chars or char, modifier keys held during click
+%     - empty '' - add selection
+%     - 'control' - subtract selection (eraser mode)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.segmentationBrush(50, 75, '');  // start brush from shown position [y,x]=50,75 @endcode
-% @code obj.segmentationBrush(50, 75, 'control');  // start eraser from shown position @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationBrush(50, 75, '');  // start brush from shown position [y,x]=50,75
+%
+%   Example 2::
+%
+%     obj.segmentationBrush(50, 75, 'control');  // start eraser from shown position
+%
 
 % Updates
 %

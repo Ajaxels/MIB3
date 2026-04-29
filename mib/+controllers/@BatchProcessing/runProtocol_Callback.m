@@ -1,6 +1,8 @@
 function runProtocol_Callback(obj, parameter)
-% function runProtocol_Callback(obj, parameter)
-% start or stop protocol execution in response to a toolbar button press
+% RUNPROTOCOL_CALLBACK - start or stop protocol execution in response to a toolbar button press.
+%
+% Syntax:
+%   function runProtocol_Callback(obj, parameter)
 %
 % Orchestrates the top-level execution loop: walks obj.Protocol from the
 % requested start step, dispatches Directory loop blocks to doDirectoryLoop
@@ -12,22 +14,30 @@ function runProtocol_Callback(obj, parameter)
 % Pressing the Run button a second time while a protocol is executing sets
 % obj.stopProtocolSwitch which causes doBatchStep to abort on the next step.
 %
-% Parameters:
-% parameter: string controlling which part of the protocol to execute:
-%   'complete'    - run all steps from the first to the last
-%   'from'        - run from the currently selected step to the end
-%   'step'        - execute only the currently selected step
-%   'stepadvance' - execute the currently selected step then advance
-%                   the selection to the next step
+% Input Arguments:
+%   - **parameter** — string controlling which part of the protocol to execute:
+%     'complete'    - run all steps from the first to the last
+%     'from'        - run from the currently selected step to the end
+%     'step'        - execute only the currently selected step
+%     'stepadvance' - execute the currently selected step then advance
+%     the selection to the next step
 %
-%|
-% @b Examples:
-% @code obj.runProtocol_Callback('complete'); @endcode
-% @code obj.runProtocol_Callback('from'); @endcode
-% @code obj.runProtocol_Callback('step'); @endcode
-% @code obj.runProtocol_Callback('stepadvance'); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.runProtocol_Callback('complete');
+%
+%   Example 2::
+%
+%     obj.runProtocol_Callback('from');
+%
+%   Example 3::
+%
+%     obj.runProtocol_Callback('step');
+%
+%   Example 4::
+%
+%     obj.runProtocol_Callback('stepadvance');
 %
 
 obj.stopProtocolSwitch = false;

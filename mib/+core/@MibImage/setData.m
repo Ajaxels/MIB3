@@ -1,39 +1,54 @@
 function result = setData(obj, dataset, layerType, orient, colChannel, options) 
-% function result = setData(obj, dataset, layerType, orient, colChannel, options) 
-% Set dataset to MibBaseImage class
+% SETDATA - Set dataset to MibBaseImage class.
 %
-% Parameters:
-% dataset: matrix with the dataset to update MibBaseImage.data 
-% layerType: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
-%   Values are 'labels', 'mask', 'selection', or 'everything' to get all
-%   layers at once, @em default = 'image'
-% orient: [@em optional, can be [], default == 3];
-% @li when @b 1 updates transposed dataset from the zx configuration, [x,z,y,c,t] -> [y,x,z,c,t]
-% @li when @b 2 updates transposed dataset from the zy configuration, [y,z,x,c,t] -> [y,x,z,c,t]
-% @li when @b 3 updates original dataset from the yx configuration, [y,x,z,c,t]
-% colChannel: [@em optional, default==[] ],
-% @li when obj.type == 'image', @b colChannel is a vector with color numbers to take, when [] take all color channels
-% @li when obj.type == 'labels', @b colChannel is an integer to take material with this specific index (returned with value == 1), when [] - take all materials
-% options: [@em optional], a structure with extra parameters
-% @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to set after transpose, can be a single number
-% @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to set after transpose, can be a single number
-% @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to set after transpose, can be a single number
-% @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to set after transpose, can be a single number
+% Syntax:
+%   function result = setData(obj, dataset, layerType, orient, colChannel, options)
 %
-% Return values:
-% result: -> @b 1 - success, @b 0 - error
-
-%|
-% @b Examples:
-% @code obj.setData(dataset, [], 3, []);      // set the complete dataset in the YX orientation @endcode
-% @code
-% options.x = [100 200];
-% options.y = [100 200];
-% options.z = 100;
-% options.t = 1;
-% colChannel = 2;
-% obj.setData(dataset, [], [], colChannel, options);      //set subvolume = [100:200, 100:200] at slice 100, color channel 1
-% @endcode
+% Input Arguments:
+%   - **dataset** — matrix with the dataset to update MibBaseImage.data
+%   - **layerType** — char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.
+%     Values are 'labels', 'mask', 'selection', or 'everything' to get all
+%     layers at once, *default* = 'image'
+%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%
+%     - ``1`` — updates transposed dataset from ZX configuration: ``[x,z,y,c,t]`` → ``[y,x,z,c,t]``
+%     - ``2`` — updates transposed dataset from ZY configuration: ``[y,z,x,c,t]`` → ``[y,x,z,c,t]``
+%     - ``3`` — updates original dataset from YX configuration: ``[y,x,z,c,t]``
+%
+%   - **colChannel** — *(optional)*, can be ``[]``; when ``[]`` sets all color channels or materials:
+%
+%     - for ``type = 'image'``: vector of color channel indices; ``[]`` = all channels
+%     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
+%   - **options** — *(optional)*, a structure with extra parameters
+%
+%     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to set after transpose, can be a single number
+%     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to set after transpose, can be a single number
+%     - ``.z`` *(optional)*, [zmin, zmax] coordinates of the dataset to set after transpose, can be a single number
+%     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to set after transpose, can be a single number
+%
+% Output Arguments:
+%   - **result** — **1** - success, **0** - error
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.setData(dataset, [], 3, []);% set the complete dataset in the YX orientation
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.x = [100 200];
+%     options.y = [100 200];
+%     options.z = 100;
+%     options.t = 1;
+%     colChannel = 2;
+%     obj.setData(dataset, [], [], colChannel, options);% set subvolume = [100:200, 100:200] at slice 100, color channel 1
+%
 
 
 % Updates

@@ -1,13 +1,16 @@
 function homeExamples_Callback(obj, BatchOptIn)
-% function homeExamples_Callback(obj, BatchOptIn)
-% callback on press of the Examples buttons in the Home ribbon; imports an example dataset
+% HOMEEXAMPLES_CALLBACK - callback on press of the Examples buttons in the Home ribbon; imports an example dataset.
 %
-% Parameters:
-% BatchOptIn: a structure for batch processing mode, when NaN return
-%             a structure with default options via "syncBatch" event
-% .Dataset -> [cell] dataset name
-% .DirectoryName -> [cell] output directory, only for DeepMIB projects
-% .showWaitbar -> [logical] show or not the waitbar
+% Syntax:
+%   function homeExamples_Callback(obj, BatchOptIn)
+%
+% Input Arguments:
+%   - **BatchOptIn** — a structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event
+%     .Dataset [cell] dataset name
+%     .DirectoryName [cell] output directory, only for DeepMIB projects
+%     .showWaitbar [logical] show or not the waitbar
+%
 
 BatchOpt = struct();
 BatchOpt.Dataset = {'Huh7 and model'};

@@ -1,6 +1,9 @@
 function selectArchitecture(obj, event)
-% function selectArchitecture(obj, event)
-% select the target architecture
+% SELECTARCHITECTURE - select the target architecture.
+%
+% Syntax:
+%   function selectArchitecture(obj, event)
+%
 
 if nargin < 2; event.Source = obj.view.handles.Architecture; end
 obj.updateBatchOptFromGUI(event);

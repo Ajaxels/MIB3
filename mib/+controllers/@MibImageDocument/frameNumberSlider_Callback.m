@@ -1,39 +1,41 @@
 function frameNumberSlider_Callback(obj, sliderValue)
-% function frameNumberSlider_Callback(obj, sliderValue)
-% Change the currently displayed frame using the time-number slider
+% FRAMENUMBERSLIDER_CALLBACK - Change the currently displayed frame using the time-number slider.
+%
+% Syntax:
+%   function frameNumberSlider_Callback(obj, sliderValue)
 %
 % Handles user interaction with the frame number slider in the MIB image
 % document view. Updates the model's active time-point (dimension 5) and
 % triggers a view refresh.
 %
 % Syntax:
-%   obj.frameNumberSlider_Callback()
-%   obj.frameNumberSlider_Callback(sliderValue)
+% obj.frameNumberSlider_Callback()
+% obj.frameNumberSlider_Callback(sliderValue)
 %
 % Inputs:
-%   obj        - MibImageDocument controller instance (handle)
-%   sliderValue - (optional) double. The raw slider value to apply.
-%                 If omitted, reads the current value from
-%                 obj.handles.frameNumberSlider.Value.
+% obj        - MibImageDocument controller instance (handle)
+% sliderValue - (optional) double. The raw slider value to apply.
+% If omitted, reads the current value from
+% obj.handles.frameNumberSlider.Value.
 %
 % Notes:
-%   - sliderValue is rounded to the nearest integer because the slider's
-%     upper limit is set as a float (+0.001 offset) to avoid out-of-range
-%     errors in MATLAB's uicontrol/slider widget.
-%   - Updates obj.mibModel.I{id}.slices{5} as [frameNumber, frameNumber],
-%     where index 5 corresponds to the time (T) dimension.
-%   - Fires the 'SliceChanged' event on mibModel to notify any listeners
-%     (e.g., other panels or overlays that depend on the current frame).
-%   - In DeveloperMode, prints a diagnostic message to the command window
-%     indicating which image set triggered the callback.
+% - sliderValue is rounded to the nearest integer because the slider's
+% upper limit is set as a float (+0.001 offset) to avoid out-of-range
+% errors in MATLAB's uicontrol/slider widget.
+% - Updates obj.mibModel.I{id}.slices{5} as [frameNumber, frameNumber],
+% where index 5 corresponds to the time (T) dimension.
+% - Fires the 'SliceChanged' event on mibModel to notify any listeners
+% (e.g., other panels or overlays that depend on the current frame).
+% - In DeveloperMode, prints a diagnostic message to the command window
+% indicating which image set triggered the callback.
 %
 % MVC Role:
-%   Controller (MibImageDocument) — mediates between the slider UI handle
-%   (View) and the image dataset model (mibModel).
+% Controller (MibImageDocument) — mediates between the slider UI handle
+% (View) and the image dataset model (mibModel).
 %
 % Example:
-%   % Programmatically jump to frame 7:
-%   obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumberSlider_Callback(7);
+% % Programmatically jump to frame 7:
+% obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumberSlider_Callback(7);
 
 
 if nargin < 2; sliderValue = obj.handles.frameNumberSlider.Value; end

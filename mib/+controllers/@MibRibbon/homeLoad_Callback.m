@@ -1,13 +1,16 @@
 function homeLoad_Callback(obj, hWidget, hData)
-% function homeLoad_Callback(obj, hWidget, hData)
-% callback on press of the load button in the Home ribbon
+% HOMELOAD_CALLBACK - callback on press of the load button in the Home ribbon.
+%
+% Syntax:
+%   function homeLoad_Callback(obj, hWidget, hData)
 %
 % Handles the following widget(s):
 % - obj.handles.ribbonHome.loadFile
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

@@ -1,10 +1,13 @@
 function toolsMisc_Callbacks(obj, hWidget, hData)
-% function toolsMisc_Callbacks(obj, hWidget, hData)
-% callback on press of buttons in the Misc section of the Tools ribbon
+% TOOLSMISC_CALLBACKS - callback on press of buttons in the Misc section of the Tools ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function toolsMisc_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

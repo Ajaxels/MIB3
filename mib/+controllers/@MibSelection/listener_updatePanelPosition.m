@@ -1,32 +1,36 @@
 function listener_updatePanelPosition(obj, src, evtData)
-% function listener_updatePanelPosition(obj, src, evtData)
-% Listener callback: adapt the Selection panel grid layout when the panel is
+% LISTENER_UPDATEPANELPOSITION - Listener callback: adapt the Selection panel grid layout when the panel is.
+%
+% Syntax:
+%   function listener_updatePanelPosition(obj, src, evtData)
+%
 % docked to a new region of the AppContainer (bottom, left, or right).
 %
 % The Selection panel uses a mainGridLayout whose children are sub-grids.
 % When the panel moves, the layout is transposed:
 %
-%   Bottom  — horizontal, 5-column layout:
-%               ColumnWidth   = {320, 3, 320, 3, '1x'}
-%               RowHeight     = {'1x'}
-%               ColumnSpacing = 10, RowSpacing = 4
-%               Padding = [10 8 10 6]
+% Bottom  — horizontal, 5-column layout:
+% ColumnWidth   = {320, 3, 320, 3, '1x'}
+% RowHeight     = {'1x'}
+% ColumnSpacing = 10, RowSpacing = 4
+% Padding = [10 8 10 6]
 %
-%   Left / Right — vertical, 5-row layout:
-%               RowHeight     = {130, 3, 130, 3, 1}
-%               ColumnWidth   = {'1x'}
-%               RowSpacing = 10, ColumnSpacing = 4
-%               Padding = [8 10 6 10]
+% Left / Right — vertical, 5-row layout:
+% RowHeight     = {130, 3, 130, 3, 1}
+% ColumnWidth   = {'1x'}
+% RowSpacing = 10, ColumnSpacing = 4
+% Padding = [8 10 6 10]
 %
-%   Each child grid's Layout.Column (bottom) becomes Layout.Row (vertical)
-%   and vice-versa, preserving their relative order.
+% Each child grid's Layout.Column (bottom) becomes Layout.Row (vertical)
+% and vice-versa, preserving their relative order.
 %
-% Parameters:
+% Input Arguments:
 %   obj     - controllers.MibSelection instance
 %   src     - handle to the panel whose property changed
-%             (obj.view.handles.panels.selectionPanel)
+%   (obj.view.handles.panels.selectionPanel)
 %   evtData - matlab.ui.eventdata.PropertyChangedData;
-%             evtData.PropertyName is checked for 'Region'
+%   evtData.PropertyName is checked for 'Region'
+%
 
 switch evtData.PropertyName
     case 'Region'

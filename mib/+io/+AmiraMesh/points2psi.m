@@ -15,24 +15,31 @@
 % Date: 25.04.2023
 
 function res = points2psi(filename, points, pntLabels, pntValues, options)
-% generate PSI file for Amira
+% POINTS2PSI - generate PSI file for Amira.
+%
+% Syntax:
+%   function res = points2psi(filename, points, pntLabels, pntValues, options)
+%
 % the file contains cloud of points, their labels and values
 %
-% Parameters:
-% filename: filename to save data
-% points: a matrix with points [point number, x, y, z]
-% pntLabels: a cell array with labels for each point; can be empty (@em
-% default: " "); note the spaces will be replaced with underlines
-% pntValues: an array of values for each point; can be empty (@em default: 1)
-% options: a structure with additional options
-%   .overwrite - 1-automatically overwrite existing files
-%   .format - a string with format: 'binary' or 'ascii'
-%   
-% Return values:
+% Input Arguments:
+%   - **filename** — filename to save data
+%   - **points** — a matrix with points [point number, x, y, z]
+%   - **pntLabels** — a cell array with labels for each point; can be empty (default: ``" "``);
+%     note: spaces will be replaced with underscores
+%   - **pntValues** — an array of values for each point; can be empty (default: ``1``)
+%   - **options** — a structure with additional options:
 %
-% @note @b Important: the data saved in this format can be opened in Amira,
-% but saving of the data from amira crashes Amira due to an internal bug in
-% Amira. Amira version tested 6.4.0
+%     - ``.overwrite`` — ``1`` = automatically overwrite existing files
+%     - ``.format`` — (char) ``'binary'`` or ``'ascii'``
+%
+% Output Arguments:
+%   - **res** — ``1`` = success, ``0`` = failure
+%
+% .. note::
+%   Data saved in PSI format can be opened in Amira, but saving from Amira
+%   crashes it (internal Amira bug; tested in version 6.4.0).
+%
 
 res = 0;
 

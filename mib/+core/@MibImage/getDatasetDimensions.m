@@ -1,28 +1,44 @@
 function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)
-% function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)
-% Get dimensions of the dataset as [height, width, depth, colors, time] or
-% combined vector
+% GETDATASETDIMENSIONS - Get dimensions of the dataset as [height, width, depth, colors, time] or a combined vector.
 %
-% Parameters:
-% orient: [@em optional], can be @em [] 
-% @li when @b [] -> default "3"
-% @li when @b 1 returns dimensions of the transposed dataset to the zx configuration: [y,x,z,c,t] -> [x,z,y,c,t]
-% @li when @b 2 returns dimensions of the transposed dataset to the zy configuration: [y,x,z,c,t] -> [y,z,x,c,t]
-% @li when @b 3 returns dimensions of the original dataset to the yx configuration: [y,x,z,c,t]
-% splitDims: logical
-% .true -> [@em default] split dimensions into individual variables as height, width, depth, color, time; 
-% .false -> return a single array where each of this dimensions is reported - [height, width, depth, color, time]
-% blockModeSwitch: [@em logical] return dimensions of the shown or full dataset, @em default == false
-% @li @b false - return dimensions of the full dataset
-% @li @b true - return dimensions of the shown part only
-
-% Return values:
-% height: height of the dataset
-% width: width of the dataset
-% depth: number of z-layers of the dataset
-% colors: vector of colors of the dataset
-% time: number of time points
-% or vector with all those numbers when splitDims == true
+% Syntax:
+%   function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)
+%
+% Input Arguments:
+%   - **orient** — *(optional)*, can be ``[]``; default ``3``:
+%
+%     - ``1`` — returns dimensions in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` — returns dimensions in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` — returns dimensions of the original YX dataset: ``[y,x,z,c,t]``
+%
+%   - **splitDims** — *(optional)* logical; default ``true``:
+%
+%     - ``true`` — return individual outputs: ``height``, ``width``, ``depth``, ``colors``, ``time``
+%     - ``false`` — return a single array ``[height, width, depth, colors, time]``
+%
+%   - **blockModeSwitch** — *(optional)* logical; default ``false``:
+%
+%     - ``false`` — return dimensions of the full dataset
+%     - ``true`` — return dimensions of the shown (block-mode) part only
+%
+% Output Arguments:
+%   - when **splitDims** = ``true``: ``[height, width, depth, colors, time]`` as separate outputs
+%   - when **splitDims** = ``false``: single numeric array ``[height, width, depth, colors, time]``
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [height, width, depth, colors, time] = obj.getDatasetDimensions();
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     dims = obj.getDatasetDimensions(3, false);   % dims = [height, width, depth, colors, time]
 
 % define missing parameters
 if nargin < 4; blockModeSwitch = false; end  
@@ -32,10 +48,6 @@ if nargin < 2; orient = []; end
 % update default settings
 if isempty(splitDims); splitDims = true; end % split dimensions
 if isempty(orient); orient = 3; end % YX-plane
-
-%| 
-% @b Examples:
-% @code [height, width, depth, colors, time] = MibBaseImage.getDatasetDimensions()      // get dimensions of the complete dataset  @endcode
 
 dim_yxz = [obj.height, obj.width, obj.depth];
 colors = obj.colors;

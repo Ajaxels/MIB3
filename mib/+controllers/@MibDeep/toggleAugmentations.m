@@ -1,6 +1,9 @@
 function toggleAugmentations(obj)
-    % function toggleAugmentations(obj)
-    % callback for press of the T_augmentation checkbox
+% TOGGLEAUGMENTATIONS - callback for press of the T_augmentation checkbox.
+%
+% Syntax:
+%   function toggleAugmentations(obj)
+%
     if obj.view.handles.T_augmentation.Value == 1
         obj.view.handles.Augmentation2DSettings.Enable = 'on';
         obj.view.handles.Augmentation3DSettings.Enable = 'on';

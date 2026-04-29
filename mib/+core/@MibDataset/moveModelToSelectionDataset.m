@@ -1,34 +1,43 @@
 function moveModelToSelectionDataset(obj, action_type, options)
-% function moveModelToSelectionDataset(obj, action_type, options)
-% Move the selected Material to the Selection layer for the full dataset.
+% MOVEMODELTOSELECTIONDATASET - Move the selected Material to the Selection layer for the full dataset.
+%
+% Syntax:
+%   function moveModelToSelectionDataset(obj, action_type, options)
 %
 % Fast-path function for moving complete datasets between layers without
 % ROI or block mode. Operates directly on packed data arrays for maximum
 % performance.
 %
-% Parameters:
-% action_type: a type of the desired action
-% @li 'add' - add the selected material (Select from) to selection
-% @li 'remove' - remove the selected material (Select from) from selection
-% @li 'replace' - replace selection with the selected (Select from) material
-% options: a structure with additional parameters
-% @li .contSelIndex - index of the Select from material
-% @li .contAddIndex - index of the Add to material
-% @li .maskedAreaSw - [0/1] limit actions to the masked areas
-% @li .level -> [@em optional], index of image level from the image pyramid, default = 1
+% Input Arguments:
+%   - **action_type** — a type of the desired action
+%   - 'add' - add the selected material (Select from) to selection
+%   - 'remove' - remove the selected material (Select from) from selection
+%   - 'replace' - replace selection with the selected (Select from) material
+%   - **options** — a structure with additional parameters
 %
-% Return values:
-
-%|
-% @b Examples:
-% @code
-% options.contSelIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();
-% options.contAddIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');
-% options.maskedAreaSw = 0;
-% obj.mibModel.I{obj.mibModel.id}.moveModelToSelectionDataset('add', options);  // add material to selection
-% @endcode
-% @attention @b NOT @b sensitive to the blockModeSwitch
-% @attention @b NOT @b sensitive to the shown ROI
+%     - ``.contSelIndex`` — index of the Select from material
+%     - ``.contAddIndex`` — index of the Add to material
+%     - ``.maskedAreaSw`` — [0/1] limit actions to the masked areas
+%     - ``.level`` *(optional)*, index of image level from the image pyramid, default = 1
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.contSelIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();
+%     options.contAddIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');
+%     options.maskedAreaSw = 0;
+%     obj.mibModel.I{obj.mibModel.id}.moveModelToSelectionDataset('add', options);% add material to selection
+%
+%
+%   **Attention:** **NOT** **sensitive** to the blockModeSwitch
+%
+%   **Attention:** **NOT** **sensitive** to the shown ROI
+%
 
 % Updates
 % 

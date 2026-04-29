@@ -1,54 +1,61 @@
 function segmentationSpot(obj, y, x, modifier, BatchOptIn)
-% function segmentationSpot(obj, y, x, modifier, BatchOptIn)
-% Do segmentation using the spot tool
+% SEGMENTATIONSPOT - Do segmentation using the spot tool.
+%
+% Syntax:
+%   function segmentationSpot(obj, y, x, modifier, BatchOptIn)
 %
 % Places a circular or square spot (selection or mask) at the given image
 % coordinate. Supports 2D and 3D modes, restriction to mask/material, and
 % batch scripting.
 %
-% Parameters:
-% y: double, y-coordinate of the spot centre in full-dataset pixels
-% x: double, x-coordinate of the spot centre in full-dataset pixels
-% modifier: cell array of chars or char, modifier keys held during click
-% @li empty '' - add selection
-% @li 'control' - subtract selection (eraser mode)
-% BatchOptIn: [@em optional] struct for batch processing mode; when NaN,
-%   returns default options via the 'SyncBatch' event
-% @li .Shape - [char, {'circle','square'}] shape of the spot
-% @li .Radius - [char] spot radius in pixels; two numbers separated by ';'
+% Input Arguments:
+%   - **y** — double, y-coordinate of the spot centre in full-dataset pixels
+%   - **x** — double, x-coordinate of the spot centre in full-dataset pixels
+%   - **modifier** — cell array of chars or char, modifier keys held during click
+%     - empty '' - add selection
+%     - 'control' - subtract selection (eraser mode)
+%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when NaN,
+%     returns default options via the 'SyncBatch' event
+%     - .Shape - [char, {'circle','square'}] shape of the spot
+%     - .Radius - [char] spot radius in pixels; two numbers separated by ';'
 %   set independent half-width / half-height
-% @li .X - [char] vector or single X coordinate of the spot centre
-% @li .Y - [char] vector or single Y coordinate of the spot centre
-% @li .Z - [char] vector or single Z slice index; empty = current slice
-% @li .Mode - [char, {'add','erase'}] add or subtract spot
-% @li .Check3D - [logical] apply spot across all z-slices (3-D sphere); default from obj.mibModel.applySegmentationIn3D
-% @li .restrictSelectionToMask - [logical] paint only within the mask
-% @li .restrictSelectionToMaterial - [logical] paint only within the
+%     - .X - [char] vector or single X coordinate of the spot centre
+%     - .Y - [char] vector or single Y coordinate of the spot centre
+%     - .Z - [char] vector or single Z slice index; empty = current slice
+%     - .Mode - [char, {'add','erase'}] add or subtract spot
+%     - .Check3D - [logical] apply spot across all z-slices (3-D sphere); default from obj.mibModel.applySegmentationIn3D
+%     - .restrictSelectionToMask - [logical] paint only within the mask
+%     - .restrictSelectionToMaterial - [logical] paint only within the
 %   selected material
-% @li .Orientation - [char, {'XZ','YZ','not available','YX'}] dataset
+%     - .Orientation - [char, {'XZ','YZ','not available','YX'}] dataset
 %   orientation used when computing the spot
-% @li .Target - [char, {'selection','mask'}] destination layer
-% @li .showWaitbar - [logical] show or not the progress bar
-% @li .id -> [@em optional] dataset index 1-9, default = obj.mibModel.getActiveId()
+%     - .Target - [char, {'selection','mask'}] destination layer
+%     - .showWaitbar - [logical] show or not the progress bar
+%     - .id *(optional)* dataset index 1-9, default = obj.mibModel.getActiveId()
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.segmentationSpot(50, 75, '');  // add spot at dataset [y,x]=[50,75] @endcode
-% @code obj.segmentationSpot(50, 75, 'control');  // erase spot @endcode
-% @code
-% BatchOpt.Shape = {'circle'};
-% BatchOpt.Radius = '5';
-% BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '';
-% BatchOpt.Mode = {'add'};
-% BatchOpt.Check3D = false;
-% BatchOpt.Target = {'selection'};
-% BatchOpt.showWaitbar = false;
-% obj.segmentationSpot(50, 75, '', BatchOpt);   // batch / scripted call
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationSpot(50, 75, '');  // add spot at dataset [y,x]=[50,75]
+%
+%   Example 2::
+%
+%     obj.segmentationSpot(50, 75, 'control');  // erase spot
+%
+%   Example 3::
+%
+%     BatchOpt.Shape = {'circle'};
+%     BatchOpt.Radius = '5';
+%     BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '';
+%     BatchOpt.Mode = {'add'};
+%     BatchOpt.Check3D = false;
+%     BatchOpt.Target = {'selection'};
+%     BatchOpt.showWaitbar = false;
+%     obj.segmentationSpot(50, 75, '', BatchOpt);   // batch / scripted call
+%
 
 % Updates
 %

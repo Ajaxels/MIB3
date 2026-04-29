@@ -15,68 +15,71 @@
 % Date: 2025
 
 classdef JpgSaver < io.savers.BaseSaver
-    % classdef JpgSaver < io.savers.BaseSaver
-    % Saver for JPEG output — one file per Z-slice (always a 2-D sequence).
-    %
-    % JPEG is a lossy format suitable for display purposes; it is NOT
-    % recommended for quantitative analysis.  uint16 multichannel data
-    % cannot be saved as JPEG (MATLAB limitation); use uint8 RGB only.
-    %
-    % Handled format string:
-    %   'Joint Photographic Experts Group (*.jpg)'
-    %
-    % DATA DIMENSIONS
-    %   Input  data : [H, W, D, C, T]
-    %   imwrite call: [H, W, C] per 2-D slice (C ≤ 3, class == uint8)
-    %
-    % NOTES
-    %   * options.Quality  (0–100, default 90): JPEG quality factor.
-    %   * options.Compression ('lossy'|'lossless', default 'lossy').
-    %   * JPEG does not support indexed colourmaps; 'indexed' colour images
-    %     will be saved using the raw index values as greyscale.
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Direct saver use
-    %   saver = io.SaverFactory.create('Joint Photographic Experts Group (*.jpg)');
-    %
-    %   opts.Format      = 'Joint Photographic Experts Group (*.jpg)';
-    %   opts.Quality     = 90;
-    %   opts.Compression = 'lossy';
-    %   opts.showWaitbar = false;
-    %   opts.silent      = true;
-    %   opts.overwrite   = true;
-    %   opts.FilenameGenerator = 'Use sequential filename';
-    %
-    %   meta.filename         = 'source.tif';
-    %   meta.colorType        = 'multichannel';
-    %   meta.lutColors        = eye(3);
-    %   meta.dataClass        = 'uint8';
-    %   meta.maxInt           = 255;
-    %   meta.sliceName        = {};
-    %   meta.imageDescription = '';
-    %
-    %   data = uint8(rand(256,256,10,3,1)*255);   % [H W D C T], RGB
-    %   fnOut = saver.save(data, meta, '/output/slice.jpg', opts);
-    %   % Generates /output/slice_01.jpg … /output/slice_10.jpg
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Via MibModel with quality control
-    %   BatchOpt.LayerType       = {'image'};
-    %   BatchOpt.Format          = {'Joint Photographic Experts Group (*.jpg)'};
-    %   BatchOpt.Quality         = '90';
-    %   BatchOpt.Compression     = 'lossy';
-    %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
-    %   BatchOpt.DestinationDirectory  = '/output';
-    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
-    %   BatchOpt.showWaitbar     = false;
-    %   BatchOpt.mibBatchTooltip.LayerType = '';
-    %   model.save('image', [], BatchOpt);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.PngSaver
+% JPGSAVER - Saver for JPEG output — one file per Z-slice (always a 2-D sequence).
+%
+% JPEG is a lossy format suitable for display purposes; it is NOT
+% recommended for quantitative analysis.  uint16 multichannel data
+% cannot be saved as JPEG (MATLAB limitation); use uint8 RGB only.
+%
+% Handled format string:
+% 'Joint Photographic Experts Group (``*.jpg``)'
+%
+% DATA DIMENSIONS
+% Input  data : [H, W, D, C, T]
+% imwrite call: [H, W, C] per 2-D slice (C ≤ 3, class == uint8)
+%
+% NOTES
+% * options.Quality  (0–100, default 90): JPEG quality factor.
+% * options.Compression ('lossy'|'lossless', default 'lossy').
+% * JPEG does not support indexed colourmaps; 'indexed' colour images
+% will be saved using the raw index values as greyscale.
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Direct saver use
+%     saver = io.SaverFactory.create('Joint Photographic Experts Group (``*.jpg``)');
+%
+%     opts.Format      = 'Joint Photographic Experts Group (``*.jpg``)';
+%     opts.Quality     = 90;
+%     opts.Compression = 'lossy';
+%     opts.showWaitbar = false;
+%     opts.silent      = true;
+%     opts.overwrite   = true;
+%     opts.FilenameGenerator = 'Use sequential filename';
+%
+%     meta.filename         = 'source.tif';
+%     meta.colorType        = 'multichannel';
+%     meta.lutColors        = eye(3);
+%     meta.dataClass        = 'uint8';
+%     meta.maxInt           = 255;
+%     meta.sliceName        = {};
+%     meta.imageDescription = '';
+%
+%     data = uint8(rand(256,256,10,3,1)*255);   % [H W D C T], RGB
+%     fnOut = saver.save(data, meta, '/output/slice.jpg', opts);
+%     % Generates /output/slice_01.jpg … /output/slice_10.jpg
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Via MibModel with quality control
+%     BatchOpt.LayerType       = {'image'};
+%     BatchOpt.Format          = {'Joint Photographic Experts Group (``*.jpg``)'};
+%     BatchOpt.Quality         = '90';
+%     BatchOpt.Compression     = 'lossy';
+%     BatchOpt.OutputDirectoryPolicy = {'Full path'};
+%     BatchOpt.DestinationDirectory  = '/output';
+%     BatchOpt.FilenamePolicy  = {'Use existing name'};
+%     BatchOpt.showWaitbar     = false;
+%     BatchOpt.mibBatchTooltip.LayerType = '';
+%     model.save('image', [], BatchOpt);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.PngSaver
 
     methods
 
@@ -91,23 +94,26 @@ classdef JpgSaver < io.savers.BaseSaver
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write JPEG 2-D sequence (one file per Z-slice × time point).
+            % SAVE - Write JPEG 2-D sequence (one file per Z-slice × time point).
             %
-            % Parameters:
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
+            %
+            % Input Arguments:
             %   data     — [H, W, D, C, T]  uint8 (or uint16 greyscale)
             %   metadata — struct; used fields:
-            %     .colorType        — data type (multichannel RGB must be uint8)
-            %     .sliceName        — (optional) per-slice source filenames
-            %     .imageDescription — (optional) JPEG Comment tag
+            %   .colorType        — data type (multichannel RGB must be uint8)
+            %   .sliceName        — (optional) per-slice source filenames
+            %   .imageDescription — (optional) JPEG Comment tag
             %   filename — full path template, e.g. '/out/frame.jpg'
             %   options  — struct; additionally used:
-            %     .Quality     — (double 0–100, default 90)
-            %     .Compression — (char) 'lossy' | 'lossless', default 'lossy'
+            %   .Quality     — (double 0–100, default 90)
+            %   .Compression — (char) 'lossy' | 'lossless', default 'lossy'
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — cell of char with all saved paths,
-            %           or single char if only one slice
+            %   or single char if only one slice
+            %
 
             fnOut = [];
 

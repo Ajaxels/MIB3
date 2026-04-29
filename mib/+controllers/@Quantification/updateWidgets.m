@@ -1,20 +1,24 @@
 function updateWidgets(obj)
-% function updateWidgets(obj)
-% Refresh all GUI widgets from the current model state and BatchOpt.
+% UPDATEWIDGETS - Refresh all GUI widgets from the current model state and BatchOpt.
+%
+% Syntax:
+%   function updateWidgets(obj)
 %
 % Called at startup (after the view is created) and whenever the active
 % dataset changes.  Repopulates:
-% @li Material dropdown — Mask, Exterior, and all model materials
-% @li ColorChannel1/ColorChannel2 dropdowns
-% @li DatasetType, ObjectShape, DetectionType, Property, Connectivity, Units dropdowns
-% @li Multiple checkbox and MultipleProperty string
-% @li Sorting popup
-% @li Slice/time-point slider state
-% @li statTable enable/disable state via enableStatTable
+%   - Material dropdown — Mask, Exterior, and all model materials
+%   - ColorChannel1/ColorChannel2 dropdowns
+%   - DatasetType, ObjectShape, DetectionType, Property, Connectivity, Units dropdowns
+%   - Multiple checkbox and MultipleProperty string
+%   - Sorting popup
+%   - Slice/time-point slider state
+%   - statTable enable/disable state via enableStatTable
 %
-%|
-% @b Examples:
-% @code obj.updateWidgets();  // full refresh, e.g. on dataset change @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.updateWidgets();  // full refresh, e.g. on dataset change
+%
 
 % Updates
 %

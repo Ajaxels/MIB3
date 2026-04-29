@@ -1,6 +1,8 @@
 function units_Callback(obj)
-% function units_Callback(obj)
-% Handle selection change in the Units dropdown.
+% UNITS_CALLBACK - Handle selection change in the Units dropdown.
+%
+% Syntax:
+%   function units_Callback(obj)
 %
 % Warns the user when switching to physical units in 3D mode with
 % anisotropic voxels (x≠z or y≠z), because several 3D measurements
@@ -8,10 +10,15 @@ function units_Callback(obj)
 % geometrically valid for isotropic voxels.  The warning is shown once per
 % session (obj.anisotropicVoxelsAgree flag).
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.Units.ValueChangedFcn = @(~,~) obj.units_Callback(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.Units.ValueChangedFcn = @(~,~) obj.units_Callback();
+%
 
 % Updates
 %

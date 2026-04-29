@@ -1,6 +1,9 @@
 function recenterGui(obj)
-% function recenterGui(obj)
-% recenter MIB to be on the center of the screen
+% RECENTERGUI - recenter MIB to be on the center of the screen.
+%
+% Syntax:
+%   function recenterGui(obj)
+%
 arguments (Input)
     obj views.MibView
 end

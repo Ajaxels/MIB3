@@ -1,12 +1,15 @@
 function gui_WindowKeyPressFcn(obj, hWidget, hData)
-% function gui_WindowKeyPressFcn(obj)
-% Callback for a key press in MIB
+% GUI_WINDOWKEYPRESSFCN - Callback for a key press in MIB.
+%
+% Syntax:
+%   function gui_WindowKeyPressFcn(obj, hWidget, hData)
+%
 % Linked via: obj.UIFigure.WindowKeyPressFcn = @(~, ~)obj.gui_WindowKeyPressFcn();
 %
-% Parameters:
-% obj: handle to MibImageDocument instance
+% Input Arguments:
+%   - **obj** — handle to MibImageDocument instance
 %
-% Return values:
+% Output Arguments:
 %
 
 % Read key data from the event object (hData), NOT from hFigure.CurrentKey.

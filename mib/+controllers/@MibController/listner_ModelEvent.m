@@ -1,15 +1,18 @@
 function listner_ModelEvent(obj, model, evnt)
-% function listner2_ModelEvent(obj, model, evnt)
-% listener callback function for detection of MibModel events
+% LISTNER_MODELEVENT - listener callback function for detection of MibModel events.
+%
+% Syntax:
+%   function listner_ModelEvent(obj, model, evnt)
+%
 % Requires to make eventdata instance of the ToggleEventData class
-
-%|
-% @b Examples:
-% @code
-% notifyEvent.Name = "updateSegmentationTable";
-% eventdata = ToggleEventData(notifyEvent);\n' ...
-% notify(obj, "modelNotify", eventdata);
-% @endcode
+%
+% Usage:
+%   Example 1::
+%
+%     notifyEvent.Name = "updateSegmentationTable";
+%     eventdata = ToggleEventData(notifyEvent);\n' ...
+%     notify(obj, "modelNotify", eventdata);
+%
 
 % arguments (Input)
 %     obj controllers.MibController

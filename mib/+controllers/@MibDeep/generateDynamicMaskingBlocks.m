@@ -1,18 +1,21 @@
 function bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)
-    % function bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)
-    % generate blocks using dynamic masking parameters acquired in obj.DynamicMaskOpt
-    %
-    % Parameters:
-    % vol:  blocked image to process
-    % blockSize: block size
-    % noColors: number of color channels in the blocked image
-    %
-    % Return values:
-    % bls: calculated  blockLocationSet
-    %    .ImageNumber
-    %    .BlockOrigin
-    %    .BlockSize
-    %    .Levels
+% GENERATEDYNAMICMASKINGBLOCKS - generate blocks using dynamic masking parameters acquired in obj.DynamicMaskOpt.
+%
+% Syntax:
+%   function bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)
+%
+% Input Arguments:
+%   - **vol** — blocked image to process
+%   - **blockSize** — block size
+%   - **noColors** — number of color channels in the blocked image
+%
+% Output Arguments:
+%   - **bls** — calculated  blockLocationSet
+%     .ImageNumber
+%     .BlockOrigin
+%     .BlockSize
+%     .Levels
+%
 
     % generate the mask
     switch obj.DynamicMaskOpt.Method

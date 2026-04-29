@@ -17,61 +17,67 @@
 % Source: MIB2_RENAMED_FOR_MIB3/ImportExportTools/IMOD/mibExportModelToImodModel.m
 
 function [Model, selection] = mibExportModelToImodModel(O, Options)
-% function [Model, selection] = mibExportModelToImodModel(O, Options)
-% Export model to Imod model type
+% MIBEXPORTMODELTOIMODMODEL - Export model to Imod model type.
 %
-% @note Requires matTomo function sets, available in mib/external/MatTomo
+% Syntax:
+%   function [Model, selection] = mibExportModelToImodModel(O, Options)
 %
-% Parameters:
-% O: -> a model [1:height,1:width,1:thickness]
-% Options: -> options structure:
-%  - .modelFilename - filename to save the model, use 'mod' extension.
-%  - .pixSize.x - physical width of the voxels
-%  - .pixSize.y - physical height of the voxels
-%  - .pixSize.z - physical thickness of the voxels
-%  - .xyScaleFactor - step when picking voxels from contours; e.g. 5 = take each 5th point
-%  - .zScaleFactor - Z step when picking voxels from contours; 1 = every z-section
-%  - .colorList -  a matrix with colors for the materials as [materialId][Red, Green, Blue], (0-1)
-%  - .ModelMaterialNames - a cell array with names of materials
-%  - .generateSelectionSw - when @b 1 generate the 'Selection layer' with contour points
-%  - .showWaitbar   — if @b 1 - show the wait bar, if @b 0 - do not show
-%  - .ParentFigure  — [@em optional] handle to the main MIB application window.
-%                     When provided, the progress bar is rendered as a
-%                     uiprogressdlg attached to that window (recommended for
-%                     GUI use).  When absent or empty the legacy waitbar is
-%                     used as a fallback.
+% **Note:** Requires matTomo function sets, available in mib/external/MatTomo
 %
-% Return values:
-% Model: -> IMOD model object
-% selection: -> selection layer [1:height,1:width,1:thickness]
+% Input Arguments:
+%   - **O** — a model [1:height,1:width,1:thickness]
+%   - **Options** — options structure:
+%     - .modelFilename - filename to save the model, use 'mod' extension.
+%     - .pixSize.x - physical width of the voxels
+%     - .pixSize.y - physical height of the voxels
+%     - .pixSize.z - physical thickness of the voxels
+%     - .xyScaleFactor - step when picking voxels from contours; e.g. 5 = take each 5th point
+%     - .zScaleFactor - Z step when picking voxels from contours; 1 = every z-section
+%     - .colorList -  a matrix with colors for the materials as [materialId][Red, Green, Blue], (0-1)
+%     - .ModelMaterialNames - a cell array with names of materials
+%     - .generateSelectionSw - when **1** generate the 'Selection layer' with contour points
+%     - .showWaitbar   — if **1** - show the wait bar, if **0** - do not show
+%     - .ParentFigure  — *(optional)* handle to the main MIB application window.
+%     When provided, the progress bar is rendered as a
+%     uiprogressdlg attached to that window (recommended for
+%     GUI use).  When absent or empty the legacy waitbar is
+%     used as a fallback.
 %
-% Example:
-%   @code
-%   %% Standalone / scripted use (no GUI parent):
-%   savingOptions.modelFilename       = '/output/Labels.mod';
-%   savingOptions.pixSize             = dataset.pixSize;
-%   savingOptions.xyScaleFactor       = 5;
-%   savingOptions.zScaleFactor        = 1;
-%   savingOptions.colorList           = labels.materialColors;
-%   savingOptions.ModelMaterialNames  = labels.materialNames;
-%   savingOptions.generateSelectionSw = false;
-%   savingOptions.showWaitbar         = false;
-%   io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
-%   @endcode
+% Output Arguments:
+%   - **Model** — IMOD model object
+%   - **selection** — selection layer [1:height,1:width,1:thickness]
 %
-%   @code
-%   %% GUI use — attach progress dialog to the MIB window:
-%   savingOptions.modelFilename       = '/output/Labels.mod';
-%   savingOptions.pixSize             = dataset.pixSize;
-%   savingOptions.xyScaleFactor       = 5;
-%   savingOptions.zScaleFactor        = 1;
-%   savingOptions.colorList           = labels.materialColors;
-%   savingOptions.ModelMaterialNames  = labels.materialNames;
-%   savingOptions.generateSelectionSw = false;
-%   savingOptions.showWaitbar         = true;
-%   savingOptions.ParentFigure        = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%   io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
-%   @endcode
+%   - **Example** —
+%
+%   .. code-block:: matlab
+%
+%       %% Standalone / scripted use (no GUI parent):
+%       savingOptions.modelFilename       = '/output/Labels.mod';
+%       savingOptions.pixSize             = dataset.pixSize;
+%       savingOptions.xyScaleFactor       = 5;
+%       savingOptions.zScaleFactor        = 1;
+%       savingOptions.colorList           = labels.materialColors;
+%       savingOptions.ModelMaterialNames  = labels.materialNames;
+%       savingOptions.generateSelectionSw = false;
+%       savingOptions.showWaitbar         = false;
+%       io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
+%
+%
+%
+%   .. code-block:: matlab
+%
+%       %% GUI use — attach progress dialog to the MIB window:
+%       savingOptions.modelFilename       = '/output/Labels.mod';
+%       savingOptions.pixSize             = dataset.pixSize;
+%       savingOptions.xyScaleFactor       = 5;
+%       savingOptions.zScaleFactor        = 1;
+%       savingOptions.colorList           = labels.materialColors;
+%       savingOptions.ModelMaterialNames  = labels.materialNames;
+%       savingOptions.generateSelectionSw = false;
+%       savingOptions.showWaitbar         = true;
+%       savingOptions.ParentFigure        = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%       io.IMOD.mibExportModelToImodModel(modelData_hwd, savingOptions);
+%
 
 % Updates
 % 11.04.2016, IB, added showWaitbar option

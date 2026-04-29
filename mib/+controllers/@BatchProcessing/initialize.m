@@ -1,40 +1,40 @@
 function initialize(obj)
-% function initialize(obj)
-% build the obj.Sections catalogue of all available batch actions
+% INITIALIZE - build the obj.Sections catalogue of all available batch actions.
+%
+% Syntax:
+%   function initialize(obj)
 %
 % Populates obj.Sections as a struct array where each element represents
 % one section visible in the section dropdown:
-% @li Sections(id).Name              - display name shown in selectProtocolSection
-% @li Sections(id).Actions(id2).Name - action name shown in selectProtocolAction
-% @li Sections(id).Actions(id2).Command - MATLAB expression evaluated
-%     by doBatchStep; the variable @em Batch is the BatchOpt struct
+%   - Sections(id).Name              - display name shown in selectProtocolSection
+%   - Sections(id).Actions(id2).Name - action name shown in selectProtocolAction
+%   - Sections(id).Actions(id2).Command - MATLAB expression evaluated
+% by doBatchStep; the variable *Batch* is the BatchOpt struct
 %
 % Called once from the constructor before the view is created so that
 % the section popup can be populated immediately.
 %
 % Currently defined sections (14 total):
-% @li 'Menu -> Home'             - load/save, loops, directory/file ops
-% @li 'Menu -> Dataset'          - alignment, crop, resample, transform, etc.
-% @li 'Menu -> Image'            - intensity, colour, mode, morphology
-% @li 'Menu -> Models'           - model management
-% @li 'Menu -> Mask'             - mask management
-% @li 'Menu -> Selection'        - selection operations
-% @li 'Menu -> Plugins'          - plugins
-% @li 'Segmentation panel'       - segmentation tools
-% @li 'Semi-automatic segmentation' - thresholding, watershed, region-growing
-% @li 'Menu -> Tools'            - rendering, stitch, drift correction, etc.
-% @li 'Annotations'              - annotation tools
-% @li 'Lines 3D'                 - 3D skeleton tools
-% @li 'DeepMIB'                  - deep learning
-% @li 'Service steps'            - STOP EXECUTION
+%   - 'Menu Home'             - load/save, loops, directory/file ops
+%   - 'Menu Dataset'          - alignment, crop, resample, transform, etc.
+%   - 'Menu Image'            - intensity, colour, mode, morphology
+%   - 'Menu Models'           - model management
+%   - 'Menu Mask'             - mask management
+%   - 'Menu Selection'        - selection operations
+%   - 'Menu Plugins'          - plugins
+%   - 'Segmentation panel'       - segmentation tools
+%   - 'Semi-automatic segmentation' - thresholding, watershed, region-growing
+%   - 'Menu Tools'            - rendering, stitch, drift correction, etc.
+%   - 'Annotations'              - annotation tools
+%   - 'Lines 3D'                 - 3D skeleton tools
+%   - 'DeepMIB'                  - deep learning
+%   - 'Service steps'            - STOP EXECUTION
 %
-%|
-% @b Examples:
-% @code obj.initialize(); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.initialize();
 %
-% initialize - build the obj.Sections structure with all available actions
 secIndex = 1;
 actionId = 1;
 obj.Sections(secIndex).Name = 'Ribbon -> Home';

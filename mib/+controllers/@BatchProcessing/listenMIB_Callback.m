@@ -1,12 +1,13 @@
 function listenMIB_Callback(obj)
-% function listenMIB_Callback(obj)
-% enable or disable the SyncBatch listener based on the listenMIB checkbox state
+% LISTENMIB_CALLBACK - enable or disable the SyncBatch listener based on the listenMIB checkbox state.
 %
-%|
-% @b Examples:
-% @code obj.listenMIB_Callback(); @endcode
+% Syntax:
+%   function listenMIB_Callback(obj)
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.listenMIB_Callback();
 %
 
 if obj.view.handles.listenMIB.Value == true

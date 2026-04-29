@@ -1,6 +1,8 @@
 function fileOperationsAction_Callback(obj, BatchOptInput)
-% function fileOperationsAction_Callback(obj, BatchOptInput)
-% build or apply the BatchOpt structure for a File Operations protocol step
+% FILEOPERATIONSACTION_CALLBACK - build or apply the BatchOpt structure for a File Operations protocol step.
+%
+% Syntax:
+%   function fileOperationsAction_Callback(obj, BatchOptInput)
 %
 % When called with no second argument (interactive mode) the function
 % constructs a default BatchOpt and returns.  When called with
@@ -9,25 +11,27 @@ function fileOperationsAction_Callback(obj, BatchOptInput)
 % merges supplied fields over the defaults via updateBatchOptCombineFields_Shared.
 %
 % Supported file operations (Operation field):
-% @li 'Copy'   - copy files matching FilenameMask from CurrentDirectory to TargetDirectory
-% @li 'Delete' - delete files matching FilenameMask in CurrentDirectory
-% @li 'Move'   - move files matching FilenameMask from CurrentDirectory to TargetDirectory
+%   - 'Copy'   - copy files matching FilenameMask from CurrentDirectory to TargetDirectory
+%   - 'Delete' - delete files matching FilenameMask in CurrentDirectory
+%   - 'Move'   - move files matching FilenameMask from CurrentDirectory to TargetDirectory
 %
 % Directory resolution is controlled independently for source and target via
 % CurrentDirectoryMode / TargetDirectoryMode (Absolute, Relative to current
 % MIB path, Inherit from Directory loop).
 %
-% Parameters:
-% BatchOptInput: [optional]
-%   @li NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
-%   @li struct - override defaults with supplied fields and apply
+% Input Arguments:
+%   - **BatchOptInput** — [optional]
+%     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
+%     - struct - override defaults with supplied fields and apply
 %
-%|
-% @b Examples:
-% @code obj.fileOperationsAction_Callback(NaN); // populate parameter table @endcode
-% @code obj.fileOperationsAction_Callback(BatchOpt); // apply saved settings @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.fileOperationsAction_Callback(NaN); // populate parameter table
+%
+%   Example 2::
+%
+%     obj.fileOperationsAction_Callback(BatchOpt); // apply saved settings
 %
 
 BatchOpt.Operation = {'Delete'};   % specify the operation

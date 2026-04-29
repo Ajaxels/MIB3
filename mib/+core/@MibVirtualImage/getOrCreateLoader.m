@@ -1,18 +1,21 @@
 function loader = getOrCreateLoader(obj, fileIdx)
-% function loader = getOrCreateLoader(obj, fileIdx)
-% Return the virtual loader for the given file index, creating it if needed.
+% GETORCREATELOADER - Return the virtual loader for the given file index, creating it if needed.
+%
+% Syntax:
+%   function loader = getOrCreateLoader(obj, fileIdx)
 %
 % Loaders are created lazily on first access and cached in obj.loaders{fileIdx}.
 % The loader type is determined by obj.Virtual.objectType{fileIdx}:
-%   'matlab.hdf5' / 'hdf5_image'  ->  io.loaders.HDF5VirtualLoader
-%   'bioformats'                   ->  io.loaders.BioFormatsVirtualLoader
-%   'zarr3'                        ->  io.loaders.Zarr3VirtualLoader
+% 'matlab.hdf5' / 'hdf5_image' io.loaders.HDF5VirtualLoader
+% 'bioformats' io.loaders.BioFormatsVirtualLoader
+% 'zarr3' io.loaders.Zarr3VirtualLoader
 %
-% Parameters:
-% fileIdx : [numeric] 1-based index into obj.data{} / obj.Virtual arrays
+% Input Arguments:
+%   - **fileIdx** — [numeric] 1-based index into obj.data{} / obj.Virtual arrays
 %
-% Return values:
-% loader  : loader object (HDF5VirtualLoader or BioFormatsVirtualLoader)
+% Output Arguments:
+%   - **loader** — loader object (HDF5VirtualLoader or BioFormatsVirtualLoader)
+%
 
 %% Updates
 %

@@ -1,7 +1,10 @@
 function customTrainingProgressWindow_Callback(obj, event)
-    % function customTrainingProgressWindow_Callback(obj, event)
-    % callback for click on
-    % obj.view.handles.O_CustomTrainingProgressWindow checkbox
+% CUSTOMTRAININGPROGRESSWINDOW_CALLBACK - callback for click on.
+%
+% Syntax:
+%   function customTrainingProgressWindow_Callback(obj, event)
+%
+% obj.view.handles.O_CustomTrainingProgressWindow checkbox
 
     if obj.view.handles.O_CustomTrainingProgressWindow.Value
         obj.view.handles.O_RefreshRateIter.Enable = 'on';

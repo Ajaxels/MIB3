@@ -1,35 +1,46 @@
 function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
-% function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
-% Clear the layer, a wrapper function that is using 
-% @li obj.labels.clearLayer, for core.MibLabels63
-% @li obj.(layer).clearLayer, for other types
+% CLEARLAYER - Clear the layer, a wrapper function that is using.
 %
-% Parameters:
-% layer: a string with the target layer, can be []
-% @li [] -> 'selection'
-% @li 'selection' -> clear the selection layer
-% @li 'mask' -> clear the mask layer
-% @li 'labels' -> clear the labels layer
-% @li 'everything' -> clear selection, mask, labels layers for core.MibLabels63 class only
-% @li 'image' -> clear the image layer
-% y: [@em optional], a vector of y-values, can be []
-%       @li when @b [], y = '4D', to clear complete dataset
-%       @li vector of Y-min Y-max values - [minY, maxY]; 
-%       @li char '2D', '3D', '4D' with the mode
-% x: [@em optional], can be @b [], vector of X-min and X-max values [minX, maxX]
-% z: [@em optional] vector of Z-min, Z-max, for example [minZ, maxZ]
-% t: [@em optional] vector of T-min, T-max values, for example [minT, maxT]
-% blockModeSwitch: [@em optional, logical] enable/disable the block mode 
-%   @li [] - use the currently selected value "obj.blockModeSwitch"
-%   @li true - enable the block mode switch, clear only the shown area of the dataset
-%   @li false - disable the block mode switch, clear the full dataset
+% Syntax:
+%   function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
 %
-% Return values:
-% 
-
-%| 
-% Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.clearLayer('selection'); // call from mibController, clear the Selection layer completely @endcode
+% - obj.labels.clearLayer, for core.MibLabels63
+% - obj.(layer).clearLayer, for other types
+%
+% Input Arguments:
+%   - **layer** — a string with the target layer:
+%
+%     - ``[]`` or ``'selection'`` — *(default)* clear the selection layer
+%     - ``'mask'`` — clear the mask layer
+%     - ``'labels'`` — clear the labels layer
+%     - ``'everything'`` — clear selection, mask, labels layers (``core.MibLabels63`` class only)
+%     - ``'image'`` — clear the image layer
+%
+%   - **y** — *(optional)*, a vector of y-values, can be []:
+%
+%     - ``[]`` — *(default)* clear complete dataset (``'4D'`` mode)
+%     - ``[minY, maxY]`` — vector of Y-min, Y-max values
+%     - ``'2D'``, ``'3D'``, ``'4D'`` — char string specifying the clear mode
+%
+%   - **x** — *(optional)*, can be ``[]``, vector of X-min and X-max values ``[minX, maxX]``
+%   - **z** — *(optional)* vector of Z-min, Z-max, for example ``[minZ, maxZ]``
+%   - **t** — *(optional)* vector of T-min, T-max values, for example ``[minT, maxT]``
+%   - **blockModeSwitch** — [*optional,* logical] enable/disable the block mode:
+%
+%     - ``[]`` — use the currently selected value ``obj.blockModeSwitch`` *(default)*
+%     - ``true`` — enable block mode, clear only the shown area of the dataset
+%     - ``false`` — disable block mode, clear the full dataset
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.clearLayer('selection');% call from mibController, clear the Selection layer completely
+%
 
 if nargin < 7; blockModeSwitch = obj.blockModeSwitch; end
 if nargin < 6; t = []; end

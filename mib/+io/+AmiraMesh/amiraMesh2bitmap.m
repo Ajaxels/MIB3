@@ -1,24 +1,27 @@
 function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
-% function [bitmap, par] = amiraMesh2bitmap(filename, options)
-% Converts Amira Mesh to bitmap matrix [1:height, 1:width, 1:no_stacks, 1:colors]
+% AMIRAMESH2BITMAP - Converts Amira Mesh to bitmap matrix [1:height, 1:width, 1:no_stacks, 1:colors].
 %
-% Parameters:
-% filename: (@em optional), a filename of amira mesh file, when omitted a file selection dialog is started.
-% options: a structure with extra options
-% - .hWaitbar -> handles to the existing waitbar
-% - .maxZ -> maximal number of z-slices in the dataset
-% - .depth_start - > [@em optional], to take only specified sections
-% - .depth_end - > [@em optional], to take only specified sections
-% - .depth_step -> [@em optional], Z-step to take not all sections
-% - .xy_step -> [@em optional], XY-step, i.e. binning factor
-% - .resizeMethod -> [@em optional], resize Method for binning the XY-dimension
-% - .getMeta -> [@em optional], logical, default=true, acquire meta data
-% - .verbose -> [@em optional], logical, default=true, make a printf message of the loaded file
+% Syntax:
+%   function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
 %
-% Return values:
-% bitmap: - dataset, [1:height, 1:width, 1:colors, 1:no_stacks]
-% par: - structure with parameters from Amira Mesh file
-% status: - logical switch indicating success of the function
+% Input Arguments:
+%   - **filename** — (*optional),* a filename of amira mesh file, when omitted a file selection dialog is started.
+%   - **options** — a structure with extra options
+%     - .hWaitbar handles to the existing waitbar
+%     - .maxZ maximal number of z-slices in the dataset
+%     - .depth_start - > *(optional)*, to take only specified sections
+%     - .depth_end - > *(optional)*, to take only specified sections
+%     - .depth_step *(optional)*, Z-step to take not all sections
+%     - .xy_step *(optional)*, XY-step, i.e. binning factor
+%     - .resizeMethod *(optional)*, resize Method for binning the XY-dimension
+%     - .getMeta *(optional)*, logical, default=true, acquire meta data
+%     - .verbose *(optional)*, logical, default=true, make a printf message of the loaded file
+%
+% Output Arguments:
+%   - **bitmap** — - dataset, [1:height, 1:width, 1:colors, 1:no_stacks]
+%   - **par** — - structure with parameters from Amira Mesh file
+%   - **status** — - logical switch indicating success of the function
+%
 
 % Updates
 % ver 1.01 - 10.02.2012, memory performance improvement, added waitbar
@@ -291,7 +294,11 @@ if options.verbose; disp(['amiraMesh2bitmap: ' filename ' was loaded!']); end
 end
 
 function parValueText = loopHeader(fid, parValueText, level)
-% collect inbedded containers as a plain text
+% LOOPHEADER - collect inbedded containers as a plain text.
+%
+% Syntax:
+%   function parValueText = loopHeader(fid, parValueText, level)
+%
 while level >= 1
     tline = strtrim(fgetl(fid));
 

@@ -1,32 +1,38 @@
 function updateSliceNumber(obj, BatchOptIn)
-% function updateSliceNumber(obj, BatchOptIn)
-% Change the currently displayed slice number in the active image document
+% UPDATESLICENUMBER - Change the currently displayed slice number in the active image document.
+%
+% Syntax:
+%   function updateSliceNumber(obj, BatchOptIn)
 %
 % Wrapper that exposes slice navigation to the MIB batch processing
 % system. Validates the requested slice number (clamping it to the valid
 % range) and then delegates to the active MibImageDocument's
 % sliceNumber_Callback, which updates the slider and redraws the image.
 %
-% Parameters:
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
-%   returns default options via the "SyncBatch" event
-% @li .SliceNumber - [char, {'1'}] slice number to display as a string;
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%     returns default options via the "SyncBatch" event
+%     - .SliceNumber - [char, {'1'}] slice number to display as a string;
 %   use '0' to jump to the last slice of the dataset
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-%|
-% @b Examples:
-% @code obj.updateSliceNumber();                                          % interactive: reads value from the slice-number widget @endcode
-% @code
-% BatchOpt.SliceNumber = '5';
-% obj.updateSliceNumber(BatchOpt);                                        % batch/scripted call: jump to slice 5
-% @endcode
-% @code
-% BatchOpt.SliceNumber = '0';
-% obj.updateSliceNumber(BatchOpt);                                        % batch/scripted call: jump to the last slice
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.updateSliceNumber();                                          % interactive: reads value from the slice-number widget
+%
+%   Example 2::
+%
+%     BatchOpt.SliceNumber = '5';
+%     obj.updateSliceNumber(BatchOpt);                                        % batch/scripted call: jump to slice 5
+%
+%   Example 3::
+%
+%     BatchOpt.SliceNumber = '0';
+%     obj.updateSliceNumber(BatchOpt);                                        % batch/scripted call: jump to the last slice
+%
 
 % Updates
 

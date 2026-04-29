@@ -1,13 +1,17 @@
 function bioFormats_Callback(obj)
-% function bioFormats_Callback(obj)
-% callback for selection of the bio-formats reader by press on
+% BIOFORMATS_CALLBACK - callback for selection of the bio-formats reader by press on.
+%
+% Syntax:
+%   function bioFormats_Callback(obj)
+%
 % obj.view.handles.panels.dirContents.handles.bioFormats, updates the
 % contents of obj.view.handles.panels.dirContents.handles.fileFilters and
 % refresh the list of files in obj.view.handles.panels.dirContents.handles.fileList
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibDirContents

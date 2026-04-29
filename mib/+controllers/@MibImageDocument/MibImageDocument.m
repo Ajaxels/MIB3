@@ -1,27 +1,26 @@
 classdef MibImageDocument < handle
-    % classdef MibImageDocument
-    % Controller for a single image document (FigureDocument + ImageViewDocument component)
-    %
-    % This class encapsulates a single image document view in MIB, managing
-    % the FigureDocument container, ImageViewDocument component, and all associated
-    % callbacks including mouse interactions and brush cursor visualization.
-    %
-    % Example:
-    %   % Create new image document
-    %   doc = controllers.MibImageDocument(obj.mibController, obj.view, ...
-    %       'Dataset 1', docGroupTag, 1, obj.mibModel);
-    %
-    %   % Add to document group
-    %   obj.view.gui.add(doc.figureDoc);
-    %
-    %   % Update description
-    %   doc.setDescription('Buffer 1: myimage.tif');
-    %
-    %   % Update brush cursor
-    %   doc.updateBrushCursor([100, 100], ':');
-    %
-    %   % access tothe class
-    %   obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}
+% MIBIMAGEDOCUMENT - Controller for a single image document (FigureDocument + ImageViewDocument component).
+%
+% This class encapsulates a single image document view in MIB, managing
+% the FigureDocument container, ImageViewDocument component, and all associated
+% callbacks including mouse interactions and brush cursor visualization.
+%
+% Example:
+% % Create new image document
+% doc = controllers.MibImageDocument(obj.mibController, obj.view, ...
+% 'Dataset 1', docGroupTag, 1, obj.mibModel);
+%
+% % Add to document group
+% obj.view.gui.add(doc.figureDoc);
+%
+% % Update description
+% doc.setDescription('Buffer 1: myimage.tif');
+%
+% % Update brush cursor
+% doc.updateBrushCursor([100, 100], ':');
+%
+% % access tothe class
+% obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}
 
 
     properties
@@ -169,26 +168,30 @@ classdef MibImageDocument < handle
         updateMeasureText(obj, pos)        % Refresh the quick-measurement text label (called on zoom/pan/drag/dataset-change)
 
         function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
-            % Create a new MibImageDocument controller
+            % MIBIMAGEDOCUMENT - Create a new MibImageDocument controller.
+            %
+            % Syntax:
+            %   function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
             %
             % Creates a FigureDocument with an embedded ImageViewDocument component,
             % configures axes properties, and sets up all necessary callbacks
             % for mouse interactions and navigation controls.
             %
-            % Parameters:
-            %   mainCtrl: controllers.MibController, main MIB controller
-            %   view: MibView, main MIB view
-            %   title: char, title for the document tab
-            %   docGroupTag: char, document group tag for MDI grouping
-            %   setOfDatasetsIndex: double, index of this document (typically current set number)
-            %   model: models.MibModel, main MIB model
+            % Input Arguments:
+            %   - **mainCtrl** — controllers.MibController, main MIB controller
+            %   - **view** — MibView, main MIB view
+            %   - **title** — char, title for the document tab
+            %   - **docGroupTag** — char, document group tag for MDI grouping
+            %   - **setOfDatasetsIndex** — double, index of this document (typically current set number)
+            %   - **model** — models.MibModel, main MIB model
             %
-            % Return values:
-            %   obj: controllers.MibImageDocument, the created controller instance
+            % Output Arguments:
+            %   - **obj** — controllers.MibImageDocument, the created controller instance
             %
-            % Example:
+            % Usage:
             %   docCtrl = controllers.MibImageDocument(obj.mibController, ...
-            %       obj.view, 'Buffer 1', 'imageViewGroup', 1, obj.mibModel);
+            %   obj.view, 'Buffer 1', 'imageViewGroup', 1, obj.mibModel);
+            %
 
             %% Init properties
             obj.mibController = mainCtrl;
@@ -236,25 +239,28 @@ classdef MibImageDocument < handle
         end
 
         function delete(obj)
-            % function delete(obj)
-            % Destructor for MibImageDocument
+            % DELETE - Destructor for MibImageDocument.
+            %
+            % Syntax:
+            %   function delete(obj)
             %
             % Properly cleans up resources when the document is deleted.
             % Removes the FigureDocument, brush cursor, and ImageViewDocument component.
             % This method is automatically called when the object is deleted.
             %
-            % Parameters:
+            % Input Arguments:
             %   none
             %
-            % Return values:
+            % Output Arguments:
             %   none
             %
-            % Example:
+            % Usage:
             %   % Explicit deletion
             %   delete(obj.mibController.cImageDoc{setOfDatasetsIndex});
             %
             %   % Automatic deletion when removed from array
             %   obj.mibController.cImageDoc(setOfDatasetsIndex) = [];
+            %
 
             try
                 % Delete brush cursor if it exists

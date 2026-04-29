@@ -1,30 +1,37 @@
 function [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)
-% function [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)
-% Convert coordinates under the mouse cursor to the coordinates of the dataset
+% CONVERTMOUSETODATACOORDINATES - Convert coordinates under the mouse cursor to the coordinates of the dataset.
 %
-% Parameters:
-% x: x - coordinate
-% y: y - coordinate
-% mode:  [@em optional] a string that defines a mode of the shown image, @b default is 'shown'
-% @li 'shown' - the most common one, convert coordinates of the mouse
-% above the image to the coordinates of the dataset
-% @li 'full' - suppose to do the conversion for the situation when the full
-% image is rendered in the handles.imageAxes, never used...?
-% @li 'blockmode' - when the blockface mode is switched on the function
-% returns coordinates under the mouse for the Block
-% permuteSw: [@em optional], can be @em empty
-% @li when @b 0 returns the coordinates for the dataset in the original xy-orientation;
-% @li when @b 1 (@b default) returns coordinates for the dataset so that the currently selected orientation becomes @b xy
+% Syntax:
+%   function [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)
 %
-% Return values:
-% xOut: x - coordinate with the dataset
-% yOut: y - coordinate with the dataset
-% zOut: z - coordinate with the dataset
-% tOut: t - time coordinate
-
-%| 
-% @b Examples:
-% @code [xOut, yOut] = obj.mibModel.convertMouseToDataCoordinates(x, y);  // Call from MibController: do conversion' @endcode
+% Input Arguments:
+%   - **x** — x - coordinate
+%   - **y** — y - coordinate
+%   - **mode** — *(optional)* string; default ``'shown'``:
+%
+%     - ``'shown'`` — convert coordinates of the mouse above the image to dataset coordinates
+%     - ``'full'`` — conversion for when the full image is rendered in ``handles.imageAxes``
+%     - ``'blockmode'`` — returns coordinates under the mouse for the Block (blockface mode)
+%
+%   - **permuteSw** — *(optional)*, can be ``[]``:
+%
+%     - ``0`` — returns coordinates for the dataset in the original XY orientation
+%     - ``1`` — *(default)* returns coordinates so that the currently selected orientation becomes XY
+%
+% Output Arguments:
+%   - **xOut** — x - coordinate with the dataset
+%   - **yOut** — y - coordinate with the dataset
+%   - **zOut** — z - coordinate with the dataset
+%   - **tOut** — t - time coordinate
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [xOut, yOut] = obj.mibModel.convertMouseToDataCoordinates(x, y);
+%
 
 % Updates
 % 

@@ -1,118 +1,129 @@
 classdef HDF5Saver < io.savers.BaseSaver
-    % classdef HDF5Saver < io.savers.BaseSaver
-    % Saver for Hierarchical Data Format (HDF5) output.
-    %
-    % Handles three format variants:
-    %   'Hierarchical Data Format (*.h5)'                — standard HDF5 file
-    %   'Hierarchical Data Format with XML header (*.xml)' — HDF5 with an
-    %       accompanying XML header (Ilastik/MIB-compatible, matlab.hdf5)
-    %   'Big Data Viewer HDF5 (*.h5)'                    — Fiji BigDataViewer
-    %       format with int16 data, image pyramid, and mandatory XML header
-    %
-    % Both image data and mask/labels layers can be saved.  The layer type is
-    % controlled by options.layerType ('image' | 'mask' | 'labels').
-    %
-    % The saver delegates the actual I/O to:
-    %   io.HDF5.image2hdf5()            for the first two formats
-    %   io.HDF5.saveBigDataViewerFormat() for the BDV format
-    % For any XML variant io.HDF5.saveXMLheader() is called afterwards.
-    %
-    % DATA DIMENSIONS
-    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
-    %
-    % NOTES
-    %   * Sub-sampling (options.SubSampling) is a [3 x L] matrix where
-    %     each column is [xFactor; yFactor; zFactor] for one pyramid level.
-    %     Default (silent mode): [1;1;1] — no downsampling.
-    %   * ChunkSize defaults to min([64, H, W, D]) for each spatial dim.
-    %   * Deflate=0 disables zlib compression; use 1–9 for increasing
-    %     compression ratio vs. speed trade-off.
-    %   * BDV format always forces an XML header and converts data to int16.
-    %   * When options.silent is true the saver uses all defaults without
-    %     showing any dialogs.
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Direct saver use — save 5-D image to HDF5
-    %   saver = io.SaverFactory.create('Hierarchical Data Format (*.h5)');
-    %
-    %   opts.Format         = 'Hierarchical Data Format (*.h5)';
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.layerType      = 'image';
-    %
-    %   meta.filename       = 'source_stack.tif';
-    %   meta.colorType      = 'grayscale';
-    %   meta.lutColors      = [1 1 1];
-    %   meta.dataClass      = 'uint16';
-    %   meta.maxInt         = 65535;
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                                'units','um','t',1,'tunits','s');
-    %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
-    %   meta.imageDescription = 'My EM dataset';
-    %
-    %   data = uint16(rand(512,512,50,1,1) * 65535);  % [H W D C T]
-    %   fnOut = saver.save(data, meta, '/output/myStack.h5', opts);
-    %   fprintf('Saved: %s\n', fnOut);
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Save in Fiji BigDataViewer format (int16, image pyramid, XML)
-    %   saver = io.SaverFactory.create('Big Data Viewer HDF5 (*.h5)');
-    %
-    %   opts.Format         = 'Big Data Viewer HDF5 (*.h5)';
-    %   opts.showWaitbar    = true;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.SubSampling    = [1 2 4; 1 2 4; 1 2 4];  % 3-level pyramid
-    %   opts.ChunkSize      = [64;64;64];
-    %   opts.Deflate        = 0;
-    %
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                                'units','um','t',1,'tunits','s');
-    %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
-    %
-    %   data = uint16(rand(512,512,50,1,1) * 65535);
-    %   fnOut = saver.save(data, meta, '/output/myStack.h5', opts);
-    %   % Produces myStack.h5 + myStack.xml
-    %   @endcode
-    %
-    %   @code
-    %   %% 3. Via MibModel batch — save labels as HDF5
-    %   BatchOpt.LayerType       = {'labels'};
-    %   BatchOpt.Format          = {'Hierarchical Data Format (*.h5)'};
-    %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
-    %   BatchOpt.DestinationDirectory  = '/output/dir';
-    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
-    %   BatchOpt.showWaitbar     = false;
-    %   BatchOpt.mibBatchTooltip.LayerType = '';
-    %   model.save('labels', [], BatchOpt);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
-    %   io.HDF5.image2hdf5, io.HDF5.saveBigDataViewerFormat,
-    %   io.HDF5.saveXMLheader,
-    %   core.MibImage.save, core.MibDataset.save, models.MibModel.save
+% HDF5SAVER - Saver for Hierarchical Data Format (HDF5) output.
+%
+% Handles three format variants:
+% 'Hierarchical Data Format (``*.h5``)'                — standard HDF5 file
+% 'Hierarchical Data Format with XML header (``*.xml``)' — HDF5 with an
+% accompanying XML header (Ilastik/MIB-compatible, matlab.hdf5)
+% 'Big Data Viewer HDF5 (``*.h5``)'                    — Fiji BigDataViewer
+% format with int16 data, image pyramid, and mandatory XML header
+%
+% Both image data and mask/labels layers can be saved.  The layer type is
+% controlled by options.layerType ('image' | 'mask' | 'labels').
+%
+% The saver delegates the actual I/O to:
+% io.HDF5.image2hdf5()            for the first two formats
+% io.HDF5.saveBigDataViewerFormat() for the BDV format
+% For any XML variant io.HDF5.saveXMLheader() is called afterwards.
+%
+% DATA DIMENSIONS
+% Input  data : [H, W, D, C, T]  (MIB3 native order)
+%
+% NOTES
+% * Sub-sampling (options.SubSampling) is a [3 x L] matrix where
+% each column is [xFactor; yFactor; zFactor] for one pyramid level.
+% Default (silent mode): [1;1;1] — no downsampling.
+% * ChunkSize defaults to min([64, H, W, D]) for each spatial dim.
+% * Deflate=0 disables zlib compression; use 1–9 for increasing
+% compression ratio vs. speed trade-off.
+% * BDV format always forces an XML header and converts data to int16.
+% * When options.silent is true the saver uses all defaults without
+% showing any dialogs.
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Direct saver use — save 5-D image to HDF5
+%     saver = io.SaverFactory.create('Hierarchical Data Format (``*.h5``)');
+%
+%     opts.Format         = 'Hierarchical Data Format (``*.h5``)';
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.layerType      = 'image';
+%
+%     meta.filename       = 'source_stack.tif';
+%     meta.colorType      = 'grayscale';
+%     meta.lutColors      = [1 1 1];
+%     meta.dataClass      = 'uint16';
+%     meta.maxInt         = 65535;
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                                  'units','um','t',1,'tunits','s');
+%     meta.boundingBox    = [0 33.3 0 33.3 0 10];
+%     meta.imageDescription = 'My EM dataset';
+%
+%     data = uint16(rand(512,512,50,1,1) * 65535);  % [H W D C T]
+%     fnOut = saver.save(data, meta, '/output/myStack.h5', opts);
+%     fprintf('Saved: %s\n', fnOut);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Save in Fiji BigDataViewer format (int16, image pyramid, XML)
+%     saver = io.SaverFactory.create('Big Data Viewer HDF5 (``*.h5``)');
+%
+%     opts.Format         = 'Big Data Viewer HDF5 (``*.h5``)';
+%     opts.showWaitbar    = true;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.SubSampling    = [1 2 4; 1 2 4; 1 2 4];  % 3-level pyramid
+%     opts.ChunkSize      = [64;64;64];
+%     opts.Deflate        = 0;
+%
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                                  'units','um','t',1,'tunits','s');
+%     meta.boundingBox    = [0 33.3 0 33.3 0 10];
+%
+%     data = uint16(rand(512,512,50,1,1) * 65535);
+%     fnOut = saver.save(data, meta, '/output/myStack.h5', opts);
+%     % Produces myStack.h5 + myStack.xml
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 3. Via MibModel batch — save labels as HDF5
+%     BatchOpt.LayerType       = {'labels'};
+%     BatchOpt.Format          = {'Hierarchical Data Format (``*.h5``)'};
+%     BatchOpt.OutputDirectoryPolicy = {'Full path'};
+%     BatchOpt.DestinationDirectory  = '/output/dir';
+%     BatchOpt.FilenamePolicy  = {'Use existing name'};
+%     BatchOpt.showWaitbar     = false;
+%     BatchOpt.mibBatchTooltip.LayerType = '';
+%     model.save('labels', [], BatchOpt);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
+% io.HDF5.image2hdf5, io.HDF5.saveBigDataViewerFormat,
+% io.HDF5.saveXMLheader,
+% core.MibImage.save, core.MibDataset.save, models.MibModel.save
 
     methods
 
         function obj = HDF5Saver(options)
-            % function obj = HDF5Saver(options)
-            % Constructor — accepts an optional options struct.
+            % HDF5SAVER - Constructor — accepts an optional options struct.
             %
-            % Parameters:
+            % Syntax:
+            %   function obj = HDF5Saver(options)
+            %
+            % Input Arguments:
             %   options — (struct, optional) saver-level options (usually empty;
-            %             per-save options are passed to save() instead)
+            %   per-save options are passed to save() instead)
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
-            % function formats = getSupportedFormats(~)
-            % Return format strings handled by HDF5Saver.
+            % GETSUPPORTEDFORMATS - Return format strings handled by HDF5Saver.
+            %
+            % Syntax:
+            %   function formats = getSupportedFormats(~)
+            %
             formats = { ...
                 'Hierarchical Data Format (*.h5)'; ...
                 'Hierarchical Data Format with XML header (*.xml)'; ...
@@ -120,36 +131,39 @@ classdef HDF5Saver < io.savers.BaseSaver
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write data as an HDF5 file (standard, XML-header, or BDV variant).
+            % SAVE - Write data as an HDF5 file (standard, XML-header, or BDV variant).
             %
-            % Parameters:
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
+            %
+            % Input Arguments:
             %   data     — [H, W, D, C, T] numeric array
             %   metadata — struct; used fields:
-            %     .colorType        — 'grayscale' | 'multichannel' | 'indexed'
-            %     .lutColors        — [C x 3] per-channel LUT colours (0..1)
-            %     .dataClass        — 'uint8' | 'uint16' | ...
-            %     .maxInt           — maximum intensity value
-            %     .pixSize          — struct {.x .y .z .units .t .tunits}
-            %     .boundingBox      — [xmin xmax ymin ymax zmin zmax]
-            %     .imageDescription — (char) dataset description string
+            %   .colorType        — 'grayscale' | 'multichannel' | 'indexed'
+            %   .lutColors        — [C x 3] per-channel LUT colours (0..1)
+            %   .dataClass        — 'uint8' | 'uint16' | ...
+            %   .maxInt           — maximum intensity value
+            %   .pixSize          — struct {.x .y .z .units .t .tunits}
+            %   .boundingBox      — [xmin xmax ymin ymax zmin zmax]
+            %   .imageDescription — (char) dataset description string
             %   filename — full output path, e.g. '/out/stack.h5',
-            %              '/out/stack.xml' for the XML-header variant, or
-            %              '/out/stack.h5'  for the BDV variant
+            %   '/out/stack.xml' for the XML-header variant, or
+            %   '/out/stack.h5'  for the BDV variant
             %   options  — struct; used fields:
-            %     .Format           — format string (selects saving mode)
-            %     .layerType        — 'image' | 'mask' | 'labels' (default 'image')
-            %     .showWaitbar      — logical
-            %     .silent           — logical, suppress dialogs and use defaults
-            %     .overwrite        — logical
-            %     .SubSampling      — [3 x L] sub-sampling factors per level
-            %     .ChunkSize        — [3 x 1] HDF5 chunk size [y x z]
-            %     .Deflate          — integer 0-9 (zlib level)
-            %     .DimOrder         — 'yxzct' | 'yxczt' (HDF5 only)
-            %     .ResamplingMethod — 'nearest'|'bicubic'|'bilinear' (BDV only)
+            %   .Format           — format string (selects saving mode)
+            %   .layerType        — 'image' | 'mask' | 'labels' (default 'image')
+            %   .showWaitbar      — logical
+            %   .silent           — logical, suppress dialogs and use defaults
+            %   .overwrite        — logical
+            %   .SubSampling      — [3 x L] sub-sampling factors per level
+            %   .ChunkSize        — [3 x 1] HDF5 chunk size [y x z]
+            %   .Deflate          — integer 0-9 (zlib level)
+            %   .DimOrder         — 'yxzct' | 'yxczt' (HDF5 only)
+            %   .ResamplingMethod — 'nearest'|'bicubic'|'bilinear' (BDV only)
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — (char) path of saved .h5 or .xml file, [] on failure
+            %
 
             fnOut = [];
 
@@ -343,7 +357,11 @@ classdef HDF5Saver < io.savers.BaseSaver
     methods (Access = private)
 
         function HDFoptions = buildCommonHDFOptions(~, options, metadata, baseName, nH, nW, nD, nC, nT)
-            % Assemble the HDFoptions struct shared by both save paths.
+            % BUILDCOMMONHDFOPTIONS - Assemble the HDFoptions struct shared by both save paths.
+            %
+            % Syntax:
+            %   function HDFoptions = buildCommonHDFOptions(~, options, metadata, baseName, nH, nW, nD, nC, nT)
+            %
             HDFoptions.Deflate      = options.Deflate;
             HDFoptions.showWaitbar  = options.showWaitbar;
             HDFoptions.overwrite    = options.overwrite;

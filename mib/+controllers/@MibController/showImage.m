@@ -1,43 +1,45 @@
 function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
-% function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
-% showImage - Display image in the main image axes
+% SHOWIMAGE - Display image in the main image axes.
+%
+% Syntax:
+%   function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
 %
 % Main visualization function that renders the RGB image with all layers
 % (image, model, mask, selection, annotations) to the image axes panel
 %
 % Syntax:
-%   obj.showImage()
-%   obj.showImage(resizeToMagnification)
-%   obj.showImage(resizeToMagnification, sImgIn)
+% obj.showImage()
+% obj.showImage(resizeToMagnification)
+% obj.showImage(resizeToMagnification, sImgIn)
 %
-% Parameters:
-%   resizeToMagnification: [@em optional, logical] display mode:
-%           true - resize to current magnification [@b default]          
-%           false - return in original 100% resolution
-%   setOfDatasetsIndex: [@em optional, numerical] id of the set use for show image, when empty use the current one
-%   sImgIn: [@em optional] custom 2D RGB image to display (height, width, colors)
-%           When provided with resizeToMagnification=0, shows in same scale/position as current dataset
-%           When provided with resizeToMagnification=1, shows in full resolution
+% Input Arguments:
+%   - **resizeToMagnification** — [*optional,* logical] display mode:
+%     true - resize to current magnification [**default]**
+%     false - return in original 100% resolution
+%   - **setOfDatasetsIndex** — [*optional,* numerical] id of the set use for show image, when empty use the current one
+%   - **sImgIn** — *(optional)* custom 2D RGB image to display (height, width, colors)
+%     When provided with resizeToMagnification=0, shows in same scale/position as current dataset
+%     When provided with resizeToMagnification=1, shows in full resolution
 %
-%| 
-% @b Examples:
-% @code 
-% // standard call to redraw image in the image view panel
-% notify(obj.mibModel, 'ShowImage');
-% @endcode
+% Usage:
+%   Example 1::
 %
-% @code 
-% // custom call to resizeToMagnification and redraw image in the image view panel
-% Options.resizeToMagnification = true;
-% eventdata = core.ToggleEventData(Options);
-% notify(obj, 'ShowImage', eventdata);
-% @endcode
+%     // standard call to redraw image in the image view panel
+%     notify(obj.mibModel, 'ShowImage');
 %
-% @code 
-% // direct call from controllers.MibController class
-% obj.showImage();
-% @endcode
 %
+%   Example 2::
+%
+%     // custom call to resizeToMagnification and redraw image in the image view panel
+%     Options.resizeToMagnification = true;
+%     eventdata = core.ToggleEventData(Options);
+%     notify(obj, 'ShowImage', eventdata);
+%
+%
+%   Example 3::
+%
+%     // direct call from controllers.MibController class
+%     obj.showImage();
 %
 
 %% Parse input parameters

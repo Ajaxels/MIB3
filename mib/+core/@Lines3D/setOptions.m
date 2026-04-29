@@ -1,9 +1,12 @@
 function setOptions(obj, options)
-% function setOptions(obj, options)
-% update options of the class
+% SETOPTIONS - update options of the class.
 %
-% Parameters:
-% options: a structure with options to set
+% Syntax:
+%   function setOptions(obj, options)
+%
+% Input Arguments:
+%   - **options** — a structure with options to set
+%
 
 if nargin < 2; return; end
 

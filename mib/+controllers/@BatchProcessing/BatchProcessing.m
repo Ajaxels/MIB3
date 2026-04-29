@@ -1,10 +1,9 @@
 classdef BatchProcessing < handle
-    % classdef BatchProcessing < handle
-    % Controller for the Batch Processing tool — MIB3 port of mibBatchController.
-    %
-    % @code
-    % obj.startController('controllers.BatchProcessing'); // as GUI tool
-    % @endcode
+% BATCHPROCESSING - Controller for the Batch Processing tool — MIB3 port of mibBatchController.
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.BatchProcessing'); // as GUI tool
 
     properties
         mibController
@@ -83,23 +82,24 @@ classdef BatchProcessing < handle
         updateSelectedActionTable(obj, BatchOpt)                                                      % update selected action table from BatchOpt
 
         function obj = BatchProcessing(mibModel, varargin)
-            % function obj = BatchProcessing(mibModel, varargin)
-            % Constructor — create a BatchProcessing controller and open its GUI window
+            % BATCHPROCESSING - Constructor — create a BatchProcessing controller and open its GUI window.
+            %
+            % Syntax:
+            %   function obj = BatchProcessing(mibModel, varargin)
             %
             % Builds the obj.Sections action catalogue (via initialize()), creates the
             % AppDesigner view, adjusts fonts, positions the window to the left of the
             % main MIB window, wires all GUI callbacks, registers three model listeners,
             % and makes the window visible.
             %
-            % Parameters:
-            % mibModel: handle to the application MibModel instance
-            % varargin{1}: handle to the parent MibController
+            % Input Arguments:
+            %   - **mibModel** — handle to the application MibModel instance
+            %   - **varargin{1}** — handle to the parent MibController
             %
-            %|
-            % @b Examples:
-            % @code obj.startController('controllers.BatchProcessing'); @endcode
+            % Usage:
+            %   Example 1::
             %
-            % Updates
+            %     obj.startController('controllers.BatchProcessing');
             %
             obj.mibModel = mibModel;    % assign model
             obj.mibController = varargin{1};    % obtain mibController
@@ -162,27 +162,27 @@ classdef BatchProcessing < handle
         end
 
         function listener_Callbacks(obj, src, evnt)
-            % function listener_Callbacks(obj, src, evnt)
-            % dispatch MibModel events to the appropriate GUI update methods
+            % LISTENER_CALLBACKS - dispatch MibModel events to the appropriate GUI update methods.
+            %
+            % Syntax:
+            %   function listener_Callbacks(obj, src, evnt)
             %
             % Handles three model events:
-            % @li UpdateGuiWidgets - refresh all GUI widgets via updateWidgets()
-            % @li SyncBatch        - populate the parameter table with the BatchOpt
-            %     returned by the last action; auto-add to protocol when the
-            %     autoAddToProtocol checkbox is checked
-            % @li StopProtocol     - set stopProtocolSwitch and reset the Run button
+            % - UpdateGuiWidgets - refresh all GUI widgets via updateWidgets()
+            % - SyncBatch        - populate the parameter table with the BatchOpt
+            % returned by the last action; auto-add to protocol when the
+            % autoAddToProtocol checkbox is checked
+            % - StopProtocol     - set stopProtocolSwitch and reset the Run button
             %
-            % Parameters:
-            % src:  source object that fired the event (unused, required by MATLAB)
-            % evnt: event data; for SyncBatch, evnt.Parameter carries the BatchOpt struct
+            % Input Arguments:
+            %   - **src** — source object that fired the event (unused, required by MATLAB)
+            %   - **evnt** — event data; for SyncBatch, evnt.Parameter carries the BatchOpt struct
             %
-            %|
-            % @b Examples:
-            % @code obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.listener_Callbacks(src, evnt)); @endcode
+            % Usage:
+            %   Example 1::
             %
-            % Updates
+            %     obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.listener_Callbacks(src, evnt));
             %
-            % listener_Callbacks - process model events (UpdateGuiWidgets, SyncBatch, StopProtocol)
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view) || ~isvalid(obj.view.gui); return; end
             switch evnt.EventName
                 case 'UpdateGuiWidgets'
@@ -208,14 +208,15 @@ classdef BatchProcessing < handle
         end
 
         function closeWindow(obj)
-            % function closeWindow(obj)
-            % close the BatchProcessing window and clean up listeners
+            % CLOSEWINDOW - close the BatchProcessing window and clean up listeners.
             %
-            %|
-            % @b Examples:
-            % @code obj.closeWindow(); @endcode
+            % Syntax:
+            %   function closeWindow(obj)
             %
-            % Updates
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.closeWindow();
             %
 
             if isvalid(obj.view.gui)
@@ -231,32 +232,32 @@ classdef BatchProcessing < handle
         end
 
         function addCallbacks(obj)
-            % function addCallbacks(obj)
-            % attach ValueChangedFcn / ButtonPushedFcn callbacks to every GUI widget
+            % ADDCALLBACKS - attach ValueChangedFcn / ButtonPushedFcn callbacks to every GUI widget.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
             %
             % Called once from the constructor after the view has been created.
             % Wires the following widgets:
-            % @li selectProtocolSection / selectProtocolAction          - selectProtocolSection_Callback
-            % @li protocolList                        - protocolList_SelectionCallback
-            % @li runProtocol                      - runProtocol_Callback('complete')
-            % @li runProtocolFromSelected          - runProtocol_Callback('from')
-            % @li runProtocolStep                          - runProtocol_Callback('step')
-            % @li runProtocolStepAdvance                   - runProtocol_Callback('stepadvance')
-            % @li helpBtn                             - helpBtn_Callback
-            % @li loadProtocol / saveProtocol / deleteProtocol - respective methods
-            % @li undo / redo                   - backupProtocolRestore('undo'/'redo')
-            % @li addToListButton / insertIntoProtocol / updateProtocol - protocolActions_Callback
-            % @li listenMIB                           - listenMIB_Callback
-            % @li selectedActionTableCell*            - selectedActionTableItem_Update
-            % @li selectedActionTable                 - displaySelectedActionTableItems
+            % - selectProtocolSection / selectProtocolAction          - selectProtocolSection_Callback
+            % - protocolList                        - protocolList_SelectionCallback
+            % - runProtocol                      - runProtocol_Callback('complete')
+            % - runProtocolFromSelected          - runProtocol_Callback('from')
+            % - runProtocolStep                          - runProtocol_Callback('step')
+            % - runProtocolStepAdvance                   - runProtocol_Callback('stepadvance')
+            % - helpBtn                             - helpBtn_Callback
+            % - loadProtocol / saveProtocol / deleteProtocol - respective methods
+            % - undo / redo                   - backupProtocolRestore('undo'/'redo')
+            % - addToListButton / insertIntoProtocol / updateProtocol - protocolActions_Callback
+            % - listenMIB                           - listenMIB_Callback
+            % - selectedActionTableCell*            - selectedActionTableItem_Update
+            % - selectedActionTable                 - displaySelectedActionTableItems
             %
-            %|
-            % @b Examples:
-            % @code obj.addCallbacks(); @endcode
+            % Usage:
+            %   Example 1::
             %
-            % Updates
+            %     obj.addCallbacks();
             %
-            % addCallbacks - wire all GUI widget callbacks
             h = obj.view.handles;
 
             % section / action dropdowns
@@ -299,35 +300,34 @@ classdef BatchProcessing < handle
         end
 
         function createContextMenus(obj)
-            % function createContextMenus(obj)
-            % create and attach the right-click context menu to selectedActionTable
+            % CREATECONTEXTMENUS - create and attach the right-click context menu to selectedActionTable.
+            %
+            % Syntax:
+            %   function createContextMenus(obj)
             %
             % Builds two context menus:
             %
             % protocolList context menu (calls protocolActions_Callback):
-            % @li 'Show settings'               - display settings of the selected step
-            % @li 'Duplicate'                   - duplicate the selected step
-            % @li 'Insert STOP EXECUTION event' - insert a stop step before the selected step
-            % @li 'Move up'                     - move the selected step one position up
-            % @li 'Move down'                   - move the selected step one position down
-            % @li 'Delete from protocol'        - remove the selected step from the protocol
+            % - 'Show settings'               - display settings of the selected step
+            % - 'Duplicate'                   - duplicate the selected step
+            % - 'Insert STOP EXECUTION event' - insert a stop step before the selected step
+            % - 'Move up'                     - move the selected step one position up
+            % - 'Move down'                   - move the selected step one position down
+            % - 'Delete from protocol'        - remove the selected step from the protocol
             %
             % selectedActionTable context menu (calls selectedActionTable_ContextCallback):
-            % @li 'Add parameter'           - append a new numeric/logical field to CurrentBatch
-            % @li 'Delete parameter'        - remove the highlighted field from CurrentBatch
-            % @li 'Add directories'         - extend the directory list of a DIR LOOP step
-            % @li 'Modify directory'        - replace the selected directory with a new path
-            % @li 'Remove directories'      - remove checked entries from a DIR LOOP list
-            % @li 'Set second column width' - resize the value column of the parameter table
+            % - 'Add parameter'           - append a new numeric/logical field to CurrentBatch
+            % - 'Delete parameter'        - remove the highlighted field from CurrentBatch
+            % - 'Add directories'         - extend the directory list of a DIR LOOP step
+            % - 'Modify directory'        - replace the selected directory with a new path
+            % - 'Remove directories'      - remove checked entries from a DIR LOOP list
+            % - 'Set second column width' - resize the value column of the parameter table
             %
-            %|
-            % @b Examples:
-            % @code obj.createContextMenus(); @endcode
+            % Usage:
+            %   Example 1::
             %
-            % Updates
+            %     obj.createContextMenus();
             %
-            % createContextMenus - create programmatic context menus for selectedActionTable
-            % context menu for protocolList
             cmProtocol = uicontextmenu(obj.view.gui);
             uimenu(cmProtocol, 'Label', 'Show settings',               'MenuSelectedFcn', @(~,~) obj.protocolActions_Callback('show'));
             uimenu(cmProtocol, 'Label', 'Duplicate',                   'MenuSelectedFcn', @(~,~) obj.protocolActions_Callback('duplicate'),   'Separator', 'on');
@@ -349,8 +349,10 @@ classdef BatchProcessing < handle
         end
 
         function fitTableColumns(obj)
-            % function fitTableColumns(obj)
-            % split selectedActionTable columns to fill the table container width
+            % FITTABLECOLUMNS - split selectedActionTable columns to fill the table container width.
+            %
+            % Syntax:
+            %   function fitTableColumns(obj)
             %
             % Called from the selectProtocolSectionPanel SizeChangedFcn so that columns
             % always fill the available width after window resize, and from
@@ -358,11 +360,10 @@ classdef BatchProcessing < handle
             % Column 1 (parameter names) gets ~38 % of the inner width;
             % column 2 (values) takes the remainder.
             %
-            %|
-            % @b Examples:
-            % @code obj.fitTableColumns(); @endcode
+            % Usage:
+            %   Example 1::
             %
-            % Updates
+            %     obj.fitTableColumns();
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view) || ~isvalid(obj.view.gui); return; end
             w = obj.view.handles.selectedActionTable.InnerPosition(3);
@@ -372,14 +373,15 @@ classdef BatchProcessing < handle
         end
 
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % refresh the section and action dropdowns to reflect current state
+            % UPDATEWIDGETS - refresh the section and action dropdowns to reflect current state.
             %
-            %|
-            % @b Examples:
-            % @code obj.updateWidgets(); @endcode
+            % Syntax:
+            %   function updateWidgets(obj)
             %
-            % Updates
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.updateWidgets();
             %
 
             sectionItems = {obj.Sections.Name}';

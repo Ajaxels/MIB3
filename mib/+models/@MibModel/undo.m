@@ -1,54 +1,60 @@
 function undo(obj, newIndex)
-% function undo(obj, newIndex)
-% Undo/redo the recent changes (Ctrl+Z shortcut)
+% UNDO - Undo/redo the recent changes (Ctrl+Z shortcut).
+%
+% Syntax:
+%   function undo(obj, newIndex)
 %
 % Restores a previously stored dataset state from the Backup history.
 % Works with all layer types: image, selection, mask, model, everything,
 % annotations, lines3d, measurements, and mibDataset.
 %
-% Parameters:
-% newIndex: [@em optional] index of the dataset to restore. When omitted
-%   (or NaN), restores the last stored dataset (Ctrl+Z behavior). When
-%   provided, navigates the undo history to the specified index (toolbar
-%   arrow button behavior).
+% Input Arguments:
+%   - **newIndex** — *(optional)* index of the dataset to restore. When omitted
+%     (or NaN), restores the last stored dataset (Ctrl+Z behavior). When
+%     provided, navigates the undo history to the specified index (toolbar
+%     arrow button behavior).
 %
-% Return values:
-
-%|
-% @b Examples:
-% @code
-% % Undo last action (Ctrl+Z shortcut handler in mibController)
-% if obj.mibModel.Backup.enableSwitch == 0; return; end
-% if obj.mibModel.Backup.prevUndoIndex == 0; return; end
-% obj.mibModel.undo();
-% obj.showImage();
-% @endcode
-% @code
-% % Navigate to a specific index in the undo history (toolbar arrow button)
-% obj.mibModel.undo(3);
-% obj.showImage();
-% @endcode
-% @code
-% % Typical backup + undo workflow from a controller:
-% % 1. Before modifying selection, store backup
-% obj.mibModel.backup('selection', 0);
-% % 2. Modify selection...
-% obj.mibModel.I{obj.mibModel.id}.setData2D(newSelection, 'selection', sliceNo, [], NaN);
-% % 3. Later, user presses Ctrl+Z
-% obj.mibModel.undo();   // restores the selection to the state before step 2
-% @endcode
-% @code
-% % Undo with 3D data — backup and undo work symmetrically:
-% obj.mibModel.backup('mask', 1);           // store 3D mask
-% % ... perform 3D mask operation ...
-% obj.mibModel.undo();                      // restores the 3D mask
-% @endcode
-% @code
-% % Undo for image type — also restores metadata (dimensions, pixSize, viewPort)
-% obj.mibModel.backup('image', 0);          // stores image slice + metadata
-% % ... apply filter to current slice ...
-% obj.mibModel.undo();                      // restores original image + metadata
-% @endcode
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — undo last action (Ctrl+Z shortcut handler in mibController)
+%
+%   .. code-block:: matlab
+%
+%      if obj.mibModel.Backup.enableSwitch == 0; return; end
+%      if obj.mibModel.Backup.prevUndoIndex == 0; return; end
+%      obj.mibModel.undo();
+%      obj.showImage();
+%
+%   **Example 2** — navigate to a specific index in the undo history (toolbar arrow button)
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.undo(3);
+%      obj.showImage();
+%
+%   **Example 3** — typical backup + undo workflow from a controller
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('selection', 0);
+%      obj.mibModel.I{obj.mibModel.id}.setData2D(newSelection, 'selection', sliceNo, [], NaN);
+%      obj.mibModel.undo();
+%
+%   **Example 4** — undo with 3D data — backup and undo work symmetrically
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('mask', 1);
+%      obj.mibModel.undo();
+%
+%   **Example 5** — undo for image type — also restores metadata (dimensions, pixSize, viewPort)
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('image', 0);
+%      obj.mibModel.undo();
+%
 
 % Updates
 %

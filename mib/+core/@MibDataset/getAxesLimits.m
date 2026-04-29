@@ -1,17 +1,30 @@
 function [axesX, axesY] = getAxesLimits(obj)
-% function [axesX, axesY] = getAxesLimits(obj)
-% get axes limits for the dataset
+% GETAXESLIMITS - get axes limits for the dataset.
 %
-% Parameters:
+% Syntax:
+%   function [axesX, axesY] = getAxesLimits(obj)
 %
-% Return values:
-% axesX: a vector [min, max] for the X
-% axesY: a vector [min, max] for the Y
-
-%| 
-% @b Examples:
-% @code [axesX, axesY] = obj.mibModel.I{obj.mibModel.id}.getAxesLimits();     // call from mibController: get axes limits for the currently shown dataset @endcode
-% @code [axesX, axesY] = obj.mibModel.I{2}.getAxesLimits();     // call from mibController: get axes limits for dataset 2 (global index) @endcode
+% Input Arguments:
+%
+% Output Arguments:
+%   - **axesX** — a vector [min, max] for the X
+%   - **axesY** — a vector [min, max] for the Y
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [axesX, axesY] = obj.mibModel.I{obj.mibModel.id}.getAxesLimits();% call from mibController: get axes limits for the currently shown dataset
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     [axesX, axesY] = obj.mibModel.I{2}.getAxesLimits();% call from mibController: get axes limits for dataset 2 (global index)
+%
 
 % Updates
 % 

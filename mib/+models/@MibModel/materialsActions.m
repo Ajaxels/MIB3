@@ -1,61 +1,72 @@
 function status = materialsActions(obj, action, BatchOptIn)
-% function status = materialsActions(obj, action, BatchOptIn)
-% Collection of actions related to materials of the model
+% MATERIALSACTIONS - Collection of actions related to materials of the model.
+%
+% Syntax:
+%   function status = materialsActions(obj, action, BatchOptIn)
 %
 % Dispatches to the appropriate low-level method on MibDataset or MibLabels
 % depending on the requested action: rename, add, insert, swap, reorder,
 % or remove.  Each action supports both interactive mode (with dialogs) and
 % batch mode (via BatchOptIn).
 %
-% Parameters:
-% action: char, desired action.  Provide only this parameter for
-%   interactive behaviour.  One of:
-% @li 'Rename material' - rename a single material (index 0 renames all
-%   from a comma-separated list)
-% @li 'Add material' - append a new material at the end of the list;
-%   delegates to obj.addMaterial
-% @li 'Insert material' - insert a new material at an arbitrary position,
-%   shifting existing materials downward
-% @li 'Swap materials' - exchange two materials (pixel data + metadata)
-% @li 'Reorder materials' - rearrange all materials according to a
-%   permutation vector (small models only, maxMaterials < 256)
-% @li 'Export material' - [not yet ported] export a material to the
-%   MATLAB workspace
-% @li 'Save material to file' - [not yet ported] save a material to a
-%   file on disk
-% @li 'Remove material' - delete one or more materials; delegates to
-%   obj.removeMaterial
-% BatchOptIn: [@em optional] a structure for batch processing mode; when
-%   NaN, returns a structure with default options via "SyncBatch" event
-% @li .Action - cell string with these options:
-%   'Rename material', 'Add material', 'Insert material',
-%   'Swap materials', 'Reorder materials', 'Export material',
-%   'Save material to file', 'Remove material'
-% @li .MaterialIndex1 - char, primary index(indices) of materials to
-%   perform required action; [@em default] index of the currently selected
-%   material in the segmentation table
-% @li .MaterialIndex2 - char, secondary index of materials for swapping
-%   of materials; [@em default] index of the selected AddTo material
-% @li .MaterialName - char, new name for the material; [@em default '']
-% @li .showWaitbar - logical, show or not the waitbar; [@em default true]
-% @li .id -> [@em optional], dataset index 1-9, default = obj.id
+% Input Arguments:
+%   - **action** — char, desired action.  Provide only this parameter for
+%     interactive behaviour.  One of:
 %
-% Return values:
-% status: logical, true when the action completed successfully
-
-%|
-% @b Examples:
-% @code
-% BatchOptIn.Action = {'Rename material'};
-% BatchOptIn.MaterialIndex1 = '3';
-% BatchOptIn.MaterialName = 'material3';
-% obj.mibModel.materialsActions([], BatchOptIn);  // rename material 3
-% @endcode
-% @code
-% BatchOptIn.Action = {'Remove material'};
-% BatchOptIn.MaterialIndex1 = '2:4 10';
-% obj.mibModel.materialsActions([], BatchOptIn);  // remove materials 2,3,4,10
-% @endcode
+%     - ``'Rename material'`` — rename a single material (index 0 renames all
+%       from a comma-separated list)
+%     - ``'Add material'`` — append a new material at the end of the list;
+%       delegates to obj.addMaterial
+%     - ``'Insert material'`` — insert a new material at an arbitrary position,
+%       shifting existing materials downward
+%     - ``'Swap materials'`` — exchange two materials (pixel data + metadata)
+%     - ``'Reorder materials'`` — rearrange all materials according to a
+%       permutation vector (small models only, maxMaterials < 256)
+%     - ``'Export material'`` — [not yet ported] export a material to the
+%       MATLAB workspace
+%     - ``'Save material to file'`` — [not yet ported] save a material to a
+%       file on disk
+%     - ``'Remove material'`` — delete one or more materials; delegates to
+%       obj.removeMaterial
+%
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when
+%     NaN, returns a structure with default options via "SyncBatch" event
+%
+%     - ``.Action`` — cell string with these options:
+%       ``'Rename material'``, ``'Add material'``, ``'Insert material'``,
+%       ``'Swap materials'``, ``'Reorder materials'``, ``'Export material'``,
+%       ``'Save material to file'``, ``'Remove material'``
+%     - ``.MaterialIndex1`` — char, primary index(indices) of materials to
+%       perform required action; [*default]* index of the currently selected
+%       material in the segmentation table
+%     - ``.MaterialIndex2`` — char, secondary index of materials for swapping
+%       of materials; [*default]* index of the selected AddTo material
+%     - ``.MaterialName`` — char, new name for the material; [*default* ``''``]
+%     - ``.showWaitbar`` — logical, show or not the waitbar; [*default* true]
+%     - ``.id`` — *(optional)*, dataset index 1-9, default = obj.id
+%
+%
+% Output Arguments:
+%   - **status** — logical, true when the action completed successfully
+%
+% Usage:
+%   **Example 1** — rename material 3
+%
+%   .. code-block:: matlab
+%
+%      BatchOptIn.Action = {'Rename material'};
+%      BatchOptIn.MaterialIndex1 = '3';
+%      BatchOptIn.MaterialName = 'material3';
+%      obj.mibModel.materialsActions([], BatchOptIn);
+%
+%   **Example 2** — remove materials 2,3,4,10
+%
+%   .. code-block:: matlab
+%
+%      BatchOptIn.Action = {'Remove material'};
+%      BatchOptIn.MaterialIndex1 = '2:4 10';
+%      obj.mibModel.materialsActions([], BatchOptIn);
+%
 
 % Updates
 % Ported from MIB2 mibModel.materialsActions

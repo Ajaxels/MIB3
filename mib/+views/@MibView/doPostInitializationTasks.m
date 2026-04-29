@@ -1,9 +1,9 @@
 function doPostInitializationTasks(obj)
-% function doPostInitializationTasks(obj)
-%   Do some post-initialization tasks that require that the main GUI window is visible
-%   such as
-%   - selecting an active panel
-%   - adding dropdowns to the QABs
+% DOPOSTINITIALIZATIONTASKS -
+%
+% Syntax:
+%   function doPostInitializationTasks(obj)
+%
 
 arguments (Input)
     obj views.MibView

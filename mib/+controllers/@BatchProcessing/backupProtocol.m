@@ -1,15 +1,16 @@
 function backupProtocol(obj)
-% function backupProtocol(obj)
-% save a snapshot of the current protocol into the undo history
+% BACKUPPROTOCOL - save a snapshot of the current protocol into the undo history.
+%
+% Syntax:
+%   function backupProtocol(obj)
 %
 % The history depth is limited to obj.protocolBackupsMaxNumber entries.
 % Any redo snapshots ahead of the current position are discarded.
 %
-%|
-% @b Examples:
-% @code obj.backupProtocol(); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.backupProtocol();
 %
 
 obj.protocolBackupsCurrNumber = obj.protocolBackupsCurrNumber + 1;

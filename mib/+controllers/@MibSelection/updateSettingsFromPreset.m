@@ -1,17 +1,21 @@
 function updateSettingsFromPreset(obj, presetId)
-% function updateSettingsFromPreset(obj, presetId)
-% Update settings of the selected segmentation tool from a stored preset;
+% UPDATESETTINGSFROMPRESET - Update settings of the selected segmentation tool from a stored preset;.
+%
+% Syntax:
+%   function updateSettingsFromPreset(obj, presetId)
+%
 % callback on click of preset1/2/3 buttons or 1/2/3 keyboard shortcuts.
 %
-% Parameters:
-% presetId: [numeric] preset index, 1 to 3
+% Input Arguments:
+%   - **presetId** — [numeric] preset index, 1 to 3
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.updateSettingsFromPreset(1);  // restore preset 1 settings @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.updateSettingsFromPreset(1);  // restore preset 1 settings
+%
 
 % Updates
 %

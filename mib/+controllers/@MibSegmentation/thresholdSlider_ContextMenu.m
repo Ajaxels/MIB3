@@ -1,20 +1,25 @@
 function thresholdSlider_ContextMenu(obj, menuEntry, selectedData)
-% function thresholdSlider_ContextMenu(obj, menuEntry, selectedData)
-% Callbacks for the context menu of the threshold Low/High sliders
+% THRESHOLDSLIDER_CONTEXTMENU - Callbacks for the context menu of the threshold Low/High sliders.
+%
+% Syntax:
+%   function thresholdSlider_ContextMenu(obj, menuEntry, selectedData)
+%
 % (obj.handles.thresholdLow, obj.handles.thresholdHigh)
 %
-% Parameters:
-% menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-% selectedData: handle to 'matlab.ui.eventdata.MenuSelectedData' class;
-%   selectedData.ContextObject identifies the slider that was right-clicked
+% Input Arguments:
+%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
+%   - **selectedData** — handle to 'matlab.ui.eventdata.MenuSelectedData' class;
+%     selectedData.ContextObject identifies the slider that was right-clicked
 %
-% Available menu options from 'menuEntry.Tag':
-% @li 'thresholdSliderContextDefault' - reset slider step to default (1)
-% @li 'thresholdSliderContextSetStep' - set custom slider step via dialog
+%   Available menu options from 'menuEntry.Tag':
+%     - 'thresholdSliderContextDefault' - reset slider step to default (1)
+%     - 'thresholdSliderContextSetStep' - set custom slider step via dialog
 %
-%|
-% @b Examples:
-% @code obj.thresholdSlider_ContextMenu(menuEntry, selectedData);  // called from context menu @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.thresholdSlider_ContextMenu(menuEntry, selectedData);  // called from context menu
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

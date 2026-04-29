@@ -1,30 +1,34 @@
 function gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)
-% function gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)
-% Commit the drag-and-drop shift on mouse button release
+% GUI_WINDOWBUTTONUPDRAGANDDROPFCN - Commit the drag-and-drop shift on mouse button release.
 %
-% Parameters:
-% mode: char, mode for the drag and drop action
-% @li '2D, Slice' - drag all selection on the current slice
-% @li 'Object2D' - drag the selected object only on the current slice
-% @li '3D, Stack' - drag all selection for all slices
-% @li 'Object3D' - drag the selected 3D object
-% diffX: [@em optional] double, shift in X direction (pixels); when empty,
-%   calculated from mouse position
-% diffY: [@em optional] double, shift in Y direction (pixels); when empty,
-%   calculated from mouse position
-% BatchOptIn: [@em optional] struct for batch processing mode
-% @li .Target - Layer to be moved
-% @li .Mode - Part of the dataset to be moved
-% @li .shiftX - X-shift in pixels
-% @li .shiftY - Y-shift in pixels
-% @li .showWaitbar - Show or not the progress bar
+% Syntax:
+%   function gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)
 %
-% Return values:
+% Input Arguments:
+%   - **mode** — char, mode for the drag and drop action
+%     - '2D, Slice' - drag all selection on the current slice
+%     - 'Object2D' - drag the selected object only on the current slice
+%     - '3D, Stack' - drag all selection for all slices
+%     - 'Object3D' - drag the selected 3D object
+%   - **diffX** — *(optional)* double, shift in X direction (pixels); when empty,
+%     calculated from mouse position
+%   - **diffY** — *(optional)* double, shift in Y direction (pixels); when empty,
+%     calculated from mouse position
+%   - **BatchOptIn** — *(optional)* struct for batch processing mode
+%     - .Target - Layer to be moved
+%     - .Mode - Part of the dataset to be moved
+%     - .shiftX - X-shift in pixels
+%     - .shiftY - Y-shift in pixels
+%     - .showWaitbar - Show or not the progress bar
+%
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.gui_WindowButtonUpDragAndDropFcn('2D, Slice', 5, -3);  // shift 5px right, 3px up @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.gui_WindowButtonUpDragAndDropFcn('2D, Slice', 5, -3);  // shift 5px right, 3px up
+%
 
 % Updates
 %

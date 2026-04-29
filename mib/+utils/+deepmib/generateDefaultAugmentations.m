@@ -1,21 +1,29 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 06.11.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function augmentationSettings = generateDefaultAugmentations(mode)
-% function augmentationSettings = generateDefaultAugmentations(mode)
-% generate default augmentation settings from MIB 2.8455
+% GENERATEDEFAULTAUGMENTATIONS - generate default augmentation settings from MIB 2.8455.
 %
-% Parameters:
-% mode: string '2D', '3D' specifying type of augmentation settings
+% Syntax:
+%   function augmentationSettings = generateDefaultAugmentations(mode)
 %
-% Return values:
-% augmentationSettings: structure with augmentation settings
-
-% %|
-% @b Examples:
-% @code utils.deepmib.generateDefaultAugmentations('2D');  // generate default augmentation settings for 2D training @endcode
-% @code utils.deepmib.generateDefaultAugmentations('3D');   // generate default augmentation settings for 2.5D and 3D training @endcode
+% Input Arguments:
+%   - **mode** — string '2D', '3D' specifying type of augmentation settings
+%
+% Output Arguments:
+%   - **augmentationSettings** — structure with augmentation settings
+%
+% Usage:
+%
+%   **Example 1** — generate default 2D augmentation settings
+%
+%   .. code-block:: matlab
+%
+%      utils.deepmib.generateDefaultAugmentations('2D');
+%
+%   **Example 2** — generate default 2.5D / 3D augmentation settings
+%
+%   .. code-block:: matlab
+%
+%      utils.deepmib.generateDefaultAugmentations('3D');
+%
 
 augmentationSettings = struct();
 augmentationSettings.Fraction = 1;

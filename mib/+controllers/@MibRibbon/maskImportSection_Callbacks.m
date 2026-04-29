@@ -1,10 +1,13 @@
 function maskImportSection_Callbacks(obj, hWidget, hData)
-% function maskImportSection_Callbacks(obj, hWidget, hData)
-% callback on press of buttons in the Import section of the Mask ribbon
+% MASKIMPORTSECTION_CALLBACKS - callback on press of buttons in the Import section of the Mask ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function maskImportSection_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

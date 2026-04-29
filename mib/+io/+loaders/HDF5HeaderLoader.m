@@ -1,7 +1,7 @@
 classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
-    % classdef HDF5HeaderLoader
-    % Loader for HDF5 files with XML headers, based on
-    % io.loaders.BaseImageLoader base class
+% HDF5HEADERLOADER - Loader for HDF5 files with XML headers, based on.
+%
+% io.loaders.BaseImageLoader base class
 
     % This loader handles HDF5 files referenced by XML headers.
     % It supports two HDF5 formats:
@@ -11,8 +11,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
     methods
         function obj = HDF5HeaderLoader(options)
-            % function obj = HDF5HeaderLoader(options)
-            % Constructor for HDF5HeaderLoader class
+            % HDF5HEADERLOADER - Constructor for HDF5HeaderLoader class.
+            %
+            % Syntax:
+            %   function obj = HDF5HeaderLoader(options)
+            %
 
             % Parameters:
             %   options: [@em optional, struct] options structure
@@ -46,8 +49,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, metaStr] = parseXMLHeader(obj, filename)
-            % function [imginfo, metaStr] = parseXMLHeader(obj, filename)
-            % Parse XML header for HDF5 formats (BigDataViewer, MATLAB HDF5)
+            % PARSEXMLHEADER - Parse XML header for HDF5 formats (BigDataViewer, MATLAB HDF5).
+            %
+            % Syntax:
+            %   function [imginfo, metaStr] = parseXMLHeader(obj, filename)
+            %
 
             % This method reads and parses XML header files that reference HDF5
             % datasets. It extracts metadata including dimensions, pixel sizes,
@@ -232,8 +238,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for HDF5 files with XML headers
+            % LOADMETADATA - Load metadata for HDF5 files with XML headers.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %
 
             % This method parses XML headers to extract HDF5 dataset metadata.
             % It supports both MATLAB HDF5 and BigDataViewer formats. The XML
@@ -555,8 +564,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Load image data from HDF5 files
+            % LOADIMAGES - Load image data from HDF5 files.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %
 
             % This method loads actual image data from HDF5 files using h5read.
             % It supports both MATLAB HDF5 and BigDataViewer formats, handles
@@ -788,8 +800,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadBigDataViewerFormat(obj, filename, options, imginfo)
-            % function [img, imginfo] = loadBigDataViewerFormat(obj, filename, options, imginfo)
-            % Read BigDataViewer format HDF5 files from Fiji
+            % LOADBIGDATAVIEWERFORMAT - Read BigDataViewer format HDF5 files from Fiji.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadBigDataViewerFormat(obj, filename, options, imginfo)
+            %
 
             % This method reads HDF5 files in BigDataViewer format, which uses
             % a hierarchical structure with time points, color channels, and

@@ -1,26 +1,36 @@
 function updateVisualizationMode(obj, mode)
-% function updateVisualizationMode(obj, mode)
-% Function to set type of image interpolation for the visualization (from Image Ribbon)
+% UPDATEVISUALIZATIONMODE - Function to set type of image interpolation for the visualization (from Image Ribbon).
+%
+% Syntax:
+%   function updateVisualizationMode(obj, mode)
 %
 % When the ''mode'' variable is omitted the function works as a standard
 % callback and changes the type of image interpolation: ''bicubic'', ''nearest'', ''automatic''
 % However, when ''mode'' is specified, the provided mode is used
 %
-% Parameters:
-% mode: [@em optional, char]
-% @li when @b'''' or not provided, change the mode using the sequence: ''bicubic'', ''nearest'', ''automatic''
-% @li when @b ''keepcurrent'' set the state of the button to the currently selected type of the interpolation in @em obj.mibModel.preferences.System.ImageResizeMethod
-% @li when @b ''bicubic'' set the visualization mode to bicubic interpolation
-% @li when @b ''nearest'' set the visualization mode to nearest-neighborhood interpolation
-% @li when @b ''auto'' set the visualization mode to the automatic mode using bicubic for zoom-out and nearest for zoom-in
+% Input Arguments:
+%   - **mode** — [*optional,* char]
+%     - when @b'''' or not provided, change the mode using the sequence: ''bicubic'', ''nearest'', ''automatic''
+%     - when **''keepcurrent''** set the state of the button to the currently selected type of the interpolation in *obj.mibModel.preferences.System.ImageResizeMethod*
+%     - when **''bicubic''** set the visualization mode to bicubic interpolation
+%     - when **''nearest''** set the visualization mode to nearest-neighborhood interpolation
+%     - when **''auto''** set the visualization mode to the automatic mode using bicubic for zoom-out and nearest for zoom-in
 %
-% Return values:
-% 
-
-%| @b Examples:
-% @code obj.updateVisualizationMode();     // call from mibController; toggle to the next visualization mode @endcode
-% @code obj.updateVisualizationMode('keepcurrent');     // call from mibController; update the image interpolation button icon @endcode
-% @code obj.updateVisualizationMode('bicubic');     // call from mibController; select the bicubic interpolation @endcode
+% Output Arguments:
+%
+% Usage:
+%   Example 1::
+%
+%     obj.updateVisualizationMode();     // call from mibController; toggle to the next visualization mode
+%
+%   Example 2::
+%
+%     obj.updateVisualizationMode('keepcurrent');     // call from mibController; update the image interpolation button icon
+%
+%   Example 3::
+%
+%     obj.updateVisualizationMode('bicubic');     // call from mibController; select the bicubic interpolation
+%
 
 % Updates
 % 

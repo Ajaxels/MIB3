@@ -1,6 +1,9 @@
 function update_fromModel(obj)
-% function update_fromModel(obj)
-% update widgets of the Segmentation panel from obj.mibModel
+% UPDATE_FROMMODEL - update widgets of the Segmentation panel from obj.mibModel.
+%
+% Syntax:
+%   function update_fromModel(obj)
+%
 
 % update widgets of the segmentation panel from preferences
 

@@ -1,30 +1,38 @@
 function segmentBlackWhiteThreshold(obj, BatchOptIn)
-% function segmentBlackWhiteThreshold(obj, BatchOptIn)
-% Perform black and white thresholding for the @em BW @em Threshold tool
+% SEGMENTBLACKWHITETHRESHOLD - Perform black and white thresholding for the *BW* *Threshold* tool.
+%
+% Syntax:
+%   function segmentBlackWhiteThreshold(obj, BatchOptIn)
+%
 % of the Segmentation panel
 %
-% Parameters:
-% BatchOptIn: [@em optional] a structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event
-% @li .Mode - Apply thresholding for the current slice (2D), current stack (3D) or the whole dataset(4D)
-% @li .MinValue - Minimum intensity or Sensitivity value for thresholding
-% @li .MaxValue - Maximum intensity or Width value for thresholding
-% @li .ColorChannel - Color channel to be used for thresholding
-% @li .FixSelectionToMask - Apply thresholding only to the masked area
-% @li .FixSelectionToMaterial - Apply thresholding only to the area of the selected material
-% @li .Adaptive - Enable adaptive thresholding; use MinValue to specify Sensitivity and MaxValue to specify Width
-% @li .AdaptiveInvert - [Adaptive only] invert dataset before adaptive thresholding
-% @li .AdaptiveForegroundPolarity - [Adaptive only] determine which pixels are considered foreground pixels
-% @li .Target - Destination layer for the thresholding
-% @li .showWaitbar - Show or not the progress bar during execution
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event
+%     - .Mode - Apply thresholding for the current slice (2D), current stack (3D) or the whole dataset(4D)
+%     - .MinValue - Minimum intensity or Sensitivity value for thresholding
+%     - .MaxValue - Maximum intensity or Width value for thresholding
+%     - .ColorChannel - Color channel to be used for thresholding
+%     - .FixSelectionToMask - Apply thresholding only to the masked area
+%     - .FixSelectionToMaterial - Apply thresholding only to the area of the selected material
+%     - .Adaptive - Enable adaptive thresholding; use MinValue to specify Sensitivity and MaxValue to specify Width
+%     - .AdaptiveInvert - [Adaptive only] invert dataset before adaptive thresholding
+%     - .AdaptiveForegroundPolarity - [Adaptive only] determine which pixels are considered foreground pixels
+%     - .Target - Destination layer for the thresholding
+%     - .showWaitbar - Show or not the progress bar during execution
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.segmentBlackWhiteThreshold();  // apply thresholding with current widget settings @endcode
-% @code obj.segmentBlackWhiteThreshold(BatchOpt);  // batch mode with provided options @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentBlackWhiteThreshold();  // apply thresholding with current widget settings
+%
+%   Example 2::
+%
+%     obj.segmentBlackWhiteThreshold(BatchOpt);  // batch mode with provided options
+%
 
 % Updates
 %

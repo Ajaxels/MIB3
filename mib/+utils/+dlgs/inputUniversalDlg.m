@@ -1,156 +1,174 @@
 function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
-% [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
-% uifigure + uigridlayout version of mibInputMultiDlg with extra widget types
+% INPUTUNIVERSALDLG - Multi-widget input dialog built on ``uifigure`` + ``uigridlayout``.
 %
-% Parameters:
-% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
-%   used to center the dialog. Pass [] to use the cached handle from a prior call.
-%   To supply the MIB installation path use options.mibPath.
-% header: [@em optional] char, header text displayed above the dialog content (bold label).
-%   Replaces options.Header; options.Header is ignored when header is non-empty.
-% prompts: a cell array {n x 1} with the prompts for each input field of the dialog.
-% defaultAns: a cell array {n x 1} with default values for each entry.
-% The following types are supported per element
-% - '' or 'some text' or string scalar -> text box (uieditfield text).
-% - numeric scalar or empty numeric -> numeric edit field (uieditfield numeric).
-% - struct('Spinner', true, 'Value', v, 'Limits', [min max], 'Step', s, 'Round', true/false) -> spinner (uispinner).
-% - cell array of strings or char -> combo box (uidropdown), with last element numeric as default index.
-% - true/false -> checkbox (uicheckbox).
-% - NaN (numeric NaN) -> placeholder row: only the prompt is shown without an input widget.
-% - string starting with '<html>' -> uihtml component for rich text display.
+% Supports text fields, numeric fields, spinners, dropdowns, checkboxes,
+% placeholders, and HTML display widgets. Replaces ``mibInputMultiDlg``.
 %
-% dlgTitle: dialog window title string.
+% Syntax:
 %
-% options: optional struct with fields:
-% .Columns - integer number of columns (default 1).
-% .DefaultKey - which button to trigger on Enter/Return key: 'OK' (default) or 'Cancel'.
-% .DoNotShowAgain - logical, show "Do not show again" checkbox (default false).
-% .DoNotShowAgainText - text for the "Do not show again" checkbox (default 'Do not show again').
-% .Focus - 1-based index of widget to focus on open; 0 = focus OK button (default 0).
-% .Header - string, text displayed above widgets; superseded by the header parameter when non-empty.
-% .HeaderLines - integer number of lines reserved for Header.
-% .HelpBtnText - text for Help button (default 'Help').
-% .HelpUrl - string URL or command; if provided, shows Help button.
-% .Icon - 'puffin_question' (default), 'puffin_warning', 'puffin_info', 'puffin_error', 'puffin_measure', 'puffin_waiting', 'question', 'celebrate', 'call4help', 'warning'.
-% .IconWidth - width of icon column in pixels (default [], i.e. use the size of the image).
-% .LabelPosition - 'left' (default, horizontal layout) or 'top' (vertical layout, labels above widgets).
-% .LastItemColumns - 1 to force last entry to span all columns, 0 otherwise (default 0).
-% .MainColumnWidths - cell array of main grid column widths, e.g., {'1x', '2x'} for 2 columns (default: equal '1x' for all).
-% .mibPath - path to MIB installation
-% .MsgBoxOnly - logical, show dialog as a message box with only OK button and single html content (default false).
-% .OkBtnText - text for OK button (default 'OK').
-% .ParentFigure - handle to parent figure; if provided, dialog is centered on parent window (default: []).
-% .PromptLines - scalar or array (numel(prompts)) of integers specifying wrapped title line heights for prompts.
-% .SectionsColumnWidths - cell array specifying label/widget column proportions for each main column,
-%                         used only when LabelPosition='left'. E.g., for 2 main columns: {'1x', '2x', '1x', '2x'} means
-%                         col1 has label:widget = 1x:2x, col2 has label:widget = 1x:2x (default: all 'fit' and '1x').
-% .WindowHeight - dialog height in pixels (default: auto-calculated based on content, min 200, max 800).
-% .WindowStyle - 'normal' (default) or 'modal'.
-% .WindowWidth - dialog width in pixels (default 560).
+% .. code-block:: matlab
 %
-% Return values:
-% answer: a cell array with entered values (or empty when canceled). For dropdowns, value is the selected string; numeric edit returns double; spinner returns double; checkbox returns logical.
-% selectedIndices: a vector of selected indices for dropdowns; 1 for non-dropdown items; empty when canceled.
-% dontShowAgain: logical state of the "Do not show again" checkbox (false when canceled).
+%    [answer, selectedIndices, dontShowAgain] = ...
+%        inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle)
+%    [answer, selectedIndices, dontShowAgain] = ...
+%        inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
 %
-% Example 1 (input dialog with horizontal layout - label on the left):
-% prompts = {
-%     'Enter a text:'
-%     'Select an option'
-%     'Are you sure?'
-%     'placeholder, remove text to make empty'
-%     'Long prompt that wraps and occupies multiple lines'
-%     'Multi-line text input (3 lines):'  % <-- This will get a text area
-%     'Numeric value'
-%     'Iterations (spinner)'
-% };
-% defAns = {
-%     'my test string'                                        % text edit
-%     {'Option 1','Option 2','Option 3', 2}                   % dropdown, default index 2
-%     true                                                     % checkbox
-%     NaN                                                      % placeholder row
-%     ''                                                       % text edit with long label
-%     sprintf('Line 1\nLine 2\nLine 3')                       % multi-line text (3 lines)
-%     3.14                                                     % numeric edit field
-%     struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d units') % spinner
-% };
-% options.PromptLines  = [1 1 1 1 2 3 1 1];  %
-% dlgTitle = 'multi line input dialog';
-% options.WindowStyle  = 'normal';
-% options.HeaderLines  = 2;
-% options.WindowWidth  = 672;
-% options.WindowHeight = 350;
-% options.IconWidth    = [];
-% options.Columns      = 2;
-% options.MainColumnWidths = {'1x', '2x'};
-% options.LabelPosition = 'left'; % or top
-% options.SectionsColumnWidths = {'1x', '2x', '1x', '3x'};
-% options.Focus        = 1;
-% options.HelpUrl      = 'http://mib.helsinki.fi';
-% options.LastItemColumns = 1;
-% options.MsgBoxOnly   = false;
-% options.Icon         = 'question_48px';
-% options.OkBtnText    = 'Proceed';
-% options.HelpBtnText  = 'Help';
-% options.DoNotShowAgain = true;
-% options.DoNotShowAgainText    = 'Do not show again';
-% options.DefaultKey   = 'OK';
-% options.ParentFigure = obj.view.gui;
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, 'My test Input dialog', prompts, defAns, dlgTitle, options);
-% if isempty(answer); return; end
+% Input Arguments:
+%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%     used to centre the dialog. Pass ``[]`` to use the cached handle from a prior call.
+%   - **header** *(optional)* — [char] bold label shown above all widgets.
+%     Supersedes ``options.Header`` when non-empty.
+%   - **prompts** — ``{n x 1}`` cell array of prompt strings, one per widget row.
+%   - **defAns** — ``{n x 1}`` cell array of default values; supported types per element:
 %
-% Example 2 (input dialog with vertical layout - label on top):
-% prompts = {
-%     'Enter a text:'
-%     'Select an option'
-%     'Are you sure?'
-%     'Numeric value'
-% };
-% defAns = {
-%     'my test string'                                        % text edit
-%     {'Option 1','Option 2','Option 3', 2}                   % dropdown, default index 2
-%     true                                                     % checkbox
-%     3.14                                                     % numeric edit field
-% };
-% dlgTitle = 'Vertical layout dialog';
-% options.mibPath = obj.mibModel.mibPath;
-% options.WindowStyle  = 'normal';
-% options.Header       = 'Vertical Layout Example';
-% options.WindowWidth  = 400;
-% options.LabelPosition = 'top';
-% options.Columns      = 1;
-% options.Icon         = 'question_48px';
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, options);
-% if isempty(answer); return; end
+%     - ``''``, ``'text'``, or string scalar → text edit (``uieditfield``)
+%     - numeric scalar or ``[]`` → numeric edit field (``uieditfield``)
+%     - ``struct('Spinner',true,'Value',v,'Limits',[lo hi],'Step',s,'Round',tf)``
+%       → spinner (``uispinner``)
+%     - cell array of strings with a numeric last element (default index)
+%       → dropdown (``uidropdown``)
+%     - ``true`` / ``false`` → checkbox (``uicheckbox``)
+%     - ``NaN`` → placeholder row (prompt only, no widget)
+%     - string starting with ``'<html>'`` → rich-text display (``uihtml``)
 %
-% Example 3 (warning with bold header + plain body text — auto-wrapped to HTML):
-% % Pass header text as the second argument; icon defaults to 'puffin_error' in MsgBoxOnly mode.
-% options.MsgBoxOnly = true;
-% options.Icon       = 'puffin_warning';
-% options.HeaderLines = 1;
-% % Body text is plain — inputUniversalDlg wraps it automatically in
-% % <html><p style="font-size:10pt">...</p></html>
-% utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
-%     {'Please enable the "Enable selection" option in Preferences (Ribbon->Home->Preferences) and try again.'}, ...
-%     'Models are disabled', options);
+%   - **dlgTitle** — [char|string] dialog window title.
+%   - **options** *(optional)* — struct with configuration fields:
 %
-% Example 4 (rich HTML body — use explicit HTML only when formatting like bold or
-% lists is required; include font-size:10pt yourself since auto-wrap is skipped):
-% options.MsgBoxOnly = true;
-% options.Icon       = 'puffin_info';
-% options.HeaderLines = 1;
-% options.DoNotShowAgain = true;
-% options.DoNotShowAgainText = 'Do not show this again';
-% htmlBody = '<html><p style="font-size:10pt">This message has <b>rich text</b> and a list:<ul><li>Item 1</li><li>Item 2</li></ul></p></html>';
-% [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Please Read', {''}, {htmlBody}, 'Information', options);
+%     - ``.Columns`` — [integer] number of widget columns (default: ``1``)
+%     - ``.DefaultKey`` — [char] button triggered by Enter: ``'OK'`` (default) or ``'Cancel'``
+%     - ``.DoNotShowAgain`` — [logical] show "Do not show again" checkbox (default: ``false``)
+%     - ``.DoNotShowAgainText`` — [char] checkbox label (default: ``'Do not show again'``)
+%     - ``.Focus`` — [integer] 1-based index of widget to focus on open;
+%       ``0`` = focus the OK button (default: ``0``)
+%     - ``.Header`` — [char] text above widgets; superseded by the ``header`` parameter
+%     - ``.HeaderLines`` — [integer] number of lines reserved for the header
+%     - ``.HelpBtnText`` — [char] Help button label (default: ``'Help'``)
+%     - ``.HelpUrl`` — [char] URL or command; when provided, the Help button is shown
+%     - ``.Icon`` — [char] icon identifier (default: ``'puffin_question'``):
+%       ``'puffin_question'``, ``'puffin_warning'``, ``'puffin_info'``,
+%       ``'puffin_error'``, ``'puffin_measure'``, ``'puffin_waiting'``,
+%       ``'question'``, ``'celebrate'``, ``'call4help'``, ``'warning'``
+%     - ``.IconWidth`` — [numeric] icon column width in pixels
+%       (default: ``[]``, i.e. use the image's natural width)
+%     - ``.LabelPosition`` — [char] ``'left'`` (default, label beside widget)
+%       or ``'top'`` (label above widget)
+%     - ``.LastItemColumns`` — [integer] ``1`` to force the last widget to span all
+%       columns, ``0`` otherwise (default: ``0``)
+%     - ``.MainColumnWidths`` — cell array of main-grid column widths,
+%       e.g. ``{'1x', '2x'}`` for 2 columns (default: ``'1x'`` for all)
+%     - ``.mibPath`` — [char] path to MIB installation
+%     - ``.MsgBoxOnly`` — [logical] show as a message-box with a single OK button
+%       and one HTML content widget (default: ``false``)
+%     - ``.OkBtnText`` — [char] OK button label (default: ``'OK'``)
+%     - ``.ParentFigure`` — [handle] parent figure for centering (default: ``[]``)
+%     - ``.PromptLines`` — scalar or array of integers specifying wrapped prompt
+%       label line heights (one value per prompt)
+%     - ``.SectionsColumnWidths`` — cell array of label/widget column proportions for
+%       each main column when ``LabelPosition='left'``;
+%       e.g. ``{'1x','2x','1x','2x'}`` gives ``label:widget = 1x:2x`` for both columns
+%       (default: ``'fit'`` for labels and ``'1x'`` for widgets)
+%     - ``.WindowHeight`` — [numeric] dialog height in pixels
+%       (default: auto-calculated, min 200, max 800)
+%     - ``.WindowStyle`` — [char] ``'normal'`` (default) or ``'modal'``
+%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 560)
 %
-% Example 5 (minimalist warning — entire message in header param, no body):
-% % Icon defaults to 'puffin_error' in MsgBoxOnly mode unless overridden.
-% options.MsgBoxOnly = true;
-% options.Icon       = 'puffin_warning';
-% options.Header = 'Warning!';
-% options.HeaderLines = 3;
-% utils.dlgs.inputUniversalDlg(obj.mibGUI, sprintf('!!! Warning !!!\n\nThe output format was not selected!'), {}, {}, 'Warning', options);
+% Output Arguments:
+%   - **answer** — ``{n x 1}`` cell array of entered values; ``[]`` when cancelled.
+%     Dropdowns return the selected string; numeric edits return ``double``;
+%     spinners return ``double``; checkboxes return ``logical``.
+%   - **selectedIndices** — vector of selected indices for dropdowns;
+%     ``1`` for non-dropdown items; ``[]`` when cancelled.
+%   - **dontShowAgain** — [logical] state of the "Do not show again" checkbox
+%     (``false`` when cancelled).
+%
+% **Example 1** — Horizontal layout (label on the left, 2 columns, all widget types)
+%
+% .. code-block:: matlab
+%
+%    prompts = {'Enter a text:'; 'Select an option'; 'Are you sure?'; ...
+%               'placeholder row'; 'Long prompt wrapping over two lines'; ...
+%               'Multi-line text (3 lines):'; 'Numeric value'; 'Iterations (spinner)'};
+%    defAns  = {'my test string'; ...
+%               {'Option 1','Option 2','Option 3', 2}; ...  % dropdown, default index 2
+%               true; NaN; ''; ...                          % checkbox, placeholder, editfield
+%               sprintf('Line 1\nLine 2\nLine 3'); ...      % multi-line text
+%               3.14; ...                                    % numeric edit field
+%               struct('Spinner',true,'Value',5,'Limits',[1 100],'Step',1, ...
+%                      'Round',true,'ValueDisplayFormat','%d units')};
+%    options.PromptLines  = [1 1 1 1 2 3 1 1];
+%    options.WindowStyle  = 'normal';
+%    options.HeaderLines  = 2;
+%    options.WindowWidth  = 672;
+%    options.WindowHeight = 350;
+%    options.Columns      = 2;
+%    options.MainColumnWidths = {'1x', '2x'};
+%    options.LabelPosition = 'left';
+%    options.SectionsColumnWidths = {'1x', '2x', '1x', '3x'};
+%    options.Focus        = 1;
+%    options.HelpUrl      = 'http://mib.helsinki.fi';
+%    options.LastItemColumns = 1;
+%    options.Icon         = 'question_48px';
+%    options.OkBtnText    = 'Proceed';
+%    options.HelpBtnText  = 'Help';
+%    options.DoNotShowAgain = true;
+%    options.DefaultKey   = 'OK';
+%    options.ParentFigure = obj.view.gui;
+%    [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+%        'My test Input dialog', prompts, defAns, 'Test Dialog', options);
+%    if isempty(answer); return; end
+%
+% **Example 2** — Vertical layout (label on top, 1 column)
+%
+% .. code-block:: matlab
+%
+%    prompts = {'Enter a text:'; 'Select an option'; 'Are you sure?'; 'Numeric value'};
+%    defAns  = {'my test string'; {'Option 1','Option 2','Option 3', 2}; true; 3.14};
+%    options.WindowStyle  = 'normal';
+%    options.Header       = 'Vertical Layout Example';
+%    options.WindowWidth  = 400;
+%    options.LabelPosition = 'top';
+%    options.Icon         = 'question_48px';
+%    [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+%        '', prompts, defAns, 'Vertical layout dialog', options);
+%    if isempty(answer); return; end
+%
+% **Example 3** — Warning message box (plain-text body, auto-wrapped to HTML)
+%
+% .. code-block:: matlab
+%
+%    options.MsgBoxOnly  = true;
+%    options.Icon        = 'puffin_warning';
+%    options.HeaderLines = 1;
+%    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
+%        {'Please enable "Enable selection" in Preferences and try again.'}, ...
+%        'Models are disabled', options);
+%
+% **Example 4** — Message box with rich HTML body
+%
+% .. code-block:: matlab
+%
+%    options.MsgBoxOnly         = true;
+%    options.Icon               = 'puffin_info';
+%    options.HeaderLines        = 1;
+%    options.DoNotShowAgain     = true;
+%    options.DoNotShowAgainText = 'Do not show this again';
+%    htmlBody = ['<html><p style="font-size:10pt">This message has ' ...
+%                '<b>rich text</b> and a list:<ul><li>Item 1</li>' ...
+%                '<li>Item 2</li></ul></p></html>'];
+%    [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
+%        'Please Read', {''}, {htmlBody}, 'Information', options);
+%
+% **Example 5** — Minimalist warning with everything in the header
+%
+% .. code-block:: matlab
+%
+%    options.MsgBoxOnly  = true;
+%    options.Icon        = 'puffin_warning';
+%    options.HeaderLines = 3;
+%    utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
+%        sprintf('!!! Warning !!!\n\nThe output format was not selected!'), ...
+%        {}, {}, 'Warning', options);
+%
 
 
 arguments

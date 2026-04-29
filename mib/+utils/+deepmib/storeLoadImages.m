@@ -1,21 +1,26 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function imOut = storeLoadImages(fn, getDataOptions)
-% function imOut = storeLoadImages(fn, getDataOptions)
-% supporting function for mibDeepController
-% load image function for the imagedatastore
+% STORELOADIMAGES - Load an image file for use with ``imageDatastore`` in DeepMIB.
 %
-% Parameters:
-% fn: [string] with the full filename
-% getDataOptions: additional structure with options
-% .mibBioformatsCheck - [logical] switch indicating use (true) or not use
-% (false) of the BioFormats file reader
-% .BioFormatsIndices - [numerical] index of series to be used with the
-% BioFormats reader or index within TIF file for standard reader
-% .Workflow - [string] used workflow, taken from obj.BatchOpt.Workflow{1}
-% .randomCrop - []
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      imOut = storeLoadImages(fn, getDataOptions)
+%
+% Input Arguments:
+%   - **fn** — [string] full path to the image file
+%   - **getDataOptions** — struct with load options:
+%
+%     - ``.mibBioformatsCheck`` — [logical] ``true`` to use the BioFormats reader,
+%       ``false`` for the standard reader
+%     - ``.BioFormatsIndices`` — [numeric] series index for BioFormats, or slice
+%       index within a TIF file (default: ``1``)
+%     - ``.Workflow`` — [char] active workflow (``obj.BatchOpt.Workflow{1}``)
+%     - ``.randomCrop`` — ``[cropH cropW]`` for random cropping; ``[0 0]`` to disable
+%
+% Output Arguments:
+%   - **imOut** — loaded image array
+%
 
 if nargin < 2
     getDataOptions = struct();

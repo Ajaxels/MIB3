@@ -1,6 +1,8 @@
 function createContextMenus(obj)
-% function createContextMenus(obj)
-% Build the right-click context menu for statTable programmatically.
+% CREATECONTEXTMENUS - Build the right-click context menu for statTable programmatically.
+%
+% Syntax:
+%   function createContextMenus(obj)
 %
 % Creates a uicontextmenu attached to obj.view.gui and assigns it to
 % the statTable widget.  Items cover: selection actions (New/Add/Remove),
@@ -8,9 +10,11 @@ function createContextMenus(obj)
 % (Mean/Sum/Min/Max), crop to file/MATLAB, object-to-model conversion,
 % and histogram plotting.
 %
-%|
-% @b Examples:
-% @code obj.createContextMenus();  // called once from addCallbacks @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.createContextMenus();  // called once from addCallbacks
+%
 
 % Updates
 %

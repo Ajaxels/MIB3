@@ -1,24 +1,27 @@
 function gui_Callbacks(obj, hWidget, hData, mode)
-% function gui_Callbacks(obj, hWidget, hData, mode)
-% callbacks for widgets of the Image View documents obj.cImageDoc{setId} 
+% GUI_CALLBACKS - callbacks for widgets of the Image View documents obj.cImageDoc{setId}.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
-% mode: char, optional identifier the widget, used when the same operation
-% is called from menu, when empty or missing hWidget.Tag is used as an identifier
-% 'lastSlice' -> go to the last slice of the dataset
-% 'nextSlice' -> go to the next slice
-% 'sliceNumberSlider' -> change the slice number using a slider
-% 'prevSlice' -> go to the previous slice
-% 'firstSlice' -> go to the first slice
-% 'sliceNumber' -> edit the current slice number
-% 'frameNumber' -> edit the current time frame
-% 'firstFrame' -> go to the first time frame
-% 'prevFrame' -> go to the previous frame
-% 'frameNumberSlider' -> chenge time frames using a slider
-% 'nextFrame' -> go to the next frame
-% 'lastFrame' -> go to the last frame
+% Syntax:
+%   function gui_Callbacks(obj, hWidget, hData, mode)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting data class
+%   - **mode** — char, optional identifier the widget, used when the same operation
+%     is called from menu, when empty or missing hWidget.Tag is used as an identifier
+%     'lastSlice' go to the last slice of the dataset
+%     'nextSlice' go to the next slice
+%     'sliceNumberSlider' change the slice number using a slider
+%     'prevSlice' go to the previous slice
+%     'firstSlice' go to the first slice
+%     'sliceNumber' edit the current slice number
+%     'frameNumber' edit the current time frame
+%     'firstFrame' go to the first time frame
+%     'prevFrame' go to the previous frame
+%     'frameNumberSlider' chenge time frames using a slider
+%     'nextFrame' go to the next frame
+%     'lastFrame' go to the last frame
+%
 
 arguments (Input)
     obj controllers.MibImageDocument

@@ -1,6 +1,8 @@
 function addMaterial(obj, BatchOptIn)
-% function addMaterial(obj, BatchOptIn)
-% Add a material to the current model — wrapper around core.MibDataset.addMaterial
+% ADDMATERIAL - Add a material to the current model — wrapper around core.MibDataset.addMaterial.
+%
+% Syntax:
+%   function addMaterial(obj, BatchOptIn)
 %
 % For models with 63 or 255 materials: prompts the user for a material
 % name, verifies that the model type can accommodate one more material, then
@@ -15,26 +17,34 @@ function addMaterial(obj, BatchOptIn)
 % exist.  After a successful addition, UpdateGuiWidgets and ShowImage
 % events are fired so the segmentation table and image view refresh.
 %
-% Parameters:
-% BatchOptIn: a structure for batch processing mode; when NaN, returns a
-%   structure with default options via "SyncBatch" event
-% @li .MaterialName - char, name of the new material (used for types 63
-%   and 255; for larger types the value is overridden with the next unused
-%   index string) [@em default 'NewMaterial']
-% @li .showWaitbar - logical, show or not the waitbar [@em default false]
-% @li .id -> [@em optional], dataset index from 1 to 9, default = obj.id
+% Input Arguments:
+%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns a
+%     structure with default options via "SyncBatch" event
 %
-% Return values:
+%     - ``.MaterialName`` — char, name of the new material (used for types 63
+%       and 255; for larger types the value is overridden with the next unused
+%       index string) [*default* 'NewMaterial']
+%     - ``.showWaitbar`` — logical, show or not the waitbar [*default* false]
+%     - ``.id`` — *(optional)*, dataset index from 1 to 9, default = obj.id
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.addMaterial();     // interactive add with name dialog @endcode
-% @code
-% BatchOpt.MaterialName = 'Nucleus';
-% BatchOpt.showWaitbar  = false;
-% obj.mibModel.addMaterial(BatchOpt);   // scripted / batch call
-% @endcode
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — interactive add with name dialog
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.addMaterial();
+%
+%   **Example 2** — scripted / batch call
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.MaterialName = 'Nucleus';
+%      BatchOpt.showWaitbar  = false;
+%      obj.mibModel.addMaterial(BatchOpt);
+%
 
 % Updates
 % Ported from MIB2 mibController.mibAddMaterialBtn_Callback

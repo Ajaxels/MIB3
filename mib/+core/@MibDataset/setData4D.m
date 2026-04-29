@@ -1,66 +1,99 @@
 function result = setData4D(obj, dataset, type, orient, col_channel, options)
-% result = setData4D(obj, dataset, type, orient, col_channel, options)
+% SETDATA4D - result = setData4D(obj, dataset, type, orient, col_channel, options).
+%
+% Syntax:
+%   function result = setData4D(obj, dataset, type, orient, col_channel, options)
+%
 % Set complete 4D dataset with colors [height:width:depth:colors:time]
 %
-% Parameters:
-% dataset: 4D dataset with colors
-%   @li if options.roiId is @b not @b used, @em slice can be either 
-%       a cell for images ({1}[1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: {1}[1:height, 1:width, 1:depth, 1:time]) or 
-%       a matrix for images ([1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: [1:height, 1:width, 1:depth, 1:time])
-%   @li if options.roiId is @b used, @em slice should be 
-%       a cell array ({roiId}[1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: {roiId}[1:height, 1:width, 1:depth, 1:time])
-% type: type of the dataset layer to retrieve
-%   @li 'image' - [@b default] the image layer
-%   @li 'labels' - labels layer with segmentation
-%   @li 'mask' - mask layer, supporting segmentation
-%   @li 'selection' - selection layer, a temporary layer for segmentation
-%   @li 'everything' - ('model','mask' and 'selection' for "obj.labels.maxMaterials == 63" only)
-% orient: [@em optional, can be []]
-%   @li when @b [] updates the transposed dataset to the currently shown orientation
-%   @li when @b 1 updates the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
-%   @li when @b 2 updates the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
-%   @li when @b 3 updates the original dataset to the yx configuration, [y,x,z,c,t]
-% col_channel: [@em optional, can be [], when [] -> update the currently selected color channels, can be @em NaN]
-%   @li when @b type is 'image', col_channel is a vector with numbers of color channels to update, 
-%       when @b [] [@em default] update color channels selected in the obj.slices{4} variable, 
-%       when @b NaN - update all color channels of the dataset
-%       when @b Index - update color channels with provided index(s)
-%   @li when @b type is 'labels' col_channel 
-%       when @b [] [@em default] - to update all materials of the model
-%       when @b NaN - to update all materials of the model
-%       when @b Index - [integer] update specific material, in this case the selected material in @b slice will have index = 1.
-% options: [@em optional], a structure with extra parameters
-%   @li .blockModeSwitch -> [@em logical] override the block mode switch obj.blockModeSwitch; 
-%           use or not the block mode (@b false - return full dataset, @b true - return only the shown part)
-%   @li .roiId -> [@em integer] use or not the ROI mode 
-%          when @b missing or less than 0, return full dataset, without ROI
-%          when @b [] - currently selected 
-%          when @b 0 - return all ROIs of the dataset
-%          when @b Index - return ROI with the index
-%          (@b Attention: see also fillBg parameter!)
-%   @li .fillBg -> filling color for ROI
-%          when @em NaN (@b default) -> crops the dataset as a rectangle; 
-%          when @em a @em number fills the areas out of the ROI area with this intensity number
-% @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to take after transpose, height (sets .blockModeSwitch to 0)
-% @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to take after transpose, width (sets .blockModeSwitch to 0)
-% @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to take after transpose, depth (sets .blockModeSwitch to 0)
-% @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to take after transpose, time
-% @li .replaceDatasetSwitch -> [@em optional], force to replace dataset completely with a new dataset
-% @li .keepModel -> [@em optional], do not resize the model/selection
-%       layers when type='image' and submitting complete dataset; 
-%       as result the selection/model layers have to be modified manually layer. 
+% Input Arguments:
+%   - **dataset** — 4D dataset with colors
+%   - if options.roiId is **not** **used,** *slice* can be either
+%     a cell for images ({1}[1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: {1}[1:height, 1:width, 1:depth, 1:time]) or
+%     a matrix for images ([1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: [1:height, 1:width, 1:depth, 1:time])
+%   - if options.roiId is **used,** *slice* should be
+%     a cell array ({roiId}[1:height, 1:width, 1:depth, 1:colors, 1:time]; for all other types: {roiId}[1:height, 1:width, 1:depth, 1:time])
+%   - **type** — type of the dataset layer to retrieve:
+%
+%     - ``'image'`` — [*default*] the image layer
+%     - ``'labels'`` — labels layer with segmentation
+%     - ``'mask'`` — mask layer, supporting segmentation
+%     - ``'selection'`` — selection layer, a temporary layer for segmentation
+%     - ``'everything'`` — (``'model'``, ``'mask'`` and ``'selection'`` for ``obj.labels.maxMaterials == 63`` only)
+%
+%   - **orient** — [*optional,* can be []]
+%
+%     - ``[]`` — updates transposed dataset in the currently shown orientation *(default)*
+%     - ``1`` — updates transposed dataset in the zx configuration: [y,x,z,c,t] → [x,z,y,c,t]
+%     - ``2`` — updates transposed dataset in the zy configuration: [y,x,z,c,t] → [y,z,x,c,t]
+%     - ``3`` — updates the original dataset in the yx configuration: [y,x,z,c,t]
+%
+%   - **col_channel** — [*optional*] color channel(s) to update; can be ``[]`` or ``NaN``:
+%
+%     - when **type** is ``'image'``: a vector of color channel indices:
+%
+%       - ``[]`` — *(default)* update color channels from ``obj.slices{4}``
+%       - ``NaN`` — update all color channels of the dataset
+%       - index — update specific color channel(s) with provided index(s)
+%
+%     - when **type** is ``'labels'``: the material selection:
+%
+%       - ``[]`` — *(default)* update all materials of the model
+%       - ``NaN`` — update all materials of the model
+%       - index — update specific material; the selected material in **slice** will have index = 1
+%   - **options** — *(optional)*, a structure with extra parameters
+%
+%     - ``.blockModeSwitch`` [*logical]* override the block mode switch obj.blockModeSwitch;
+%       use or not the block mode (**false** - return full dataset, **true** - return only the shown part)
+%     - ``.roiId`` [*integer]* use or not the ROI mode
+%       when **missing** or less than 0, return full dataset, without ROI
+%       when **[]** - currently selected
+%       when **0** - return all ROIs of the dataset
+%       when **Index** - return ROI with the index
+%       (**Attention:** see also fillBg parameter!)
+%     - ``.fillBg`` filling color for ROI
+%       when *NaN* (**default)** crops the dataset as a rectangle;
+%       when *a* *number* fills the areas out of the ROI area with this intensity number
+%     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to take after transpose, height (sets .blockModeSwitch to 0)
+%     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to take after transpose, width (sets .blockModeSwitch to 0)
+%     - ``.z`` *(optional)*, [zmin, zmax] coordinates of the dataset to take after transpose, depth (sets .blockModeSwitch to 0)
+%     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to take after transpose, time
+%     - ``.replaceDatasetSwitch`` *(optional)*, force to replace dataset completely with a new dataset
+%     - ``.keepModel`` *(optional)*, do not resize the model/selection
+%       layers when type='image' and submitting complete dataset;
+%       as result the selection/model layers have to be modified manually layer.
 %       Used in mibResampleController. Default = true;
 %
-% Return values:
-% result: true-success, false-fail, result of function execution
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.setData4D(dataset, 'image');      // Call from mibController: update the complete dataset in the shown orientation @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.setData4D(dataset, 'image', NaN, NaN, options.blockModeSwitch=1); // Call from mibController: update the croped to the viewing window dataset, with shown colors @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.setData4D(dataset, 'image', 3, 2); // Call from mibController: update complete dataset in the XY orientation with only second color channel @endcode
-% @attention @b sensitive to the @code obj.cQuickAccessBar.view.handles.blockMode; to override the blockMode use options.blockModeSwitch=false @endcode
-% @attention @b NOT @b sensitive to the shown ROI (obj.cQuickAccessBar.view.handles.roiMode), if areas under ROIs are required use options.roiId and options.fillBg parameters
+% Output Arguments:
+%   - **result** — true-success, false-fail, result of function execution
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.setData4D(dataset, 'image');% Call from mibController: update the complete dataset in the shown orientation
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.setData4D(dataset, 'image', NaN, NaN, options.blockModeSwitch=1);% Call from mibController: update the croped to the viewing window dataset, with shown colors
+%
+%   **Example 3**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.setData4D(dataset, 'image', 3, 2);% Call from mibController: update complete dataset in the XY orientation with only second color channel
+%
+%
+%   **Attention:** **sensitive** to the ``obj.cQuickAccessBar.view.handles.blockMode; to override the blockMode use options.blockModeSwitch=false``
+%
+%   **Attention:** **NOT** **sensitive** to the shown ROI (obj.cQuickAccessBar.view.handles.roiMode), if areas under ROIs are required use options.roiId and options.fillBg parameters
+%
 
 % Updates
 % 

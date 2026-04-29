@@ -1,6 +1,9 @@
 function updateScoreExportSettings(obj)
-    % function updateScoreExportSettings(obj)
-    % update export settings for score files
+% UPDATESCOREEXPORTSETTINGS - update export settings for score files.
+%
+% Syntax:
+%   function updateScoreExportSettings(obj)
+%
 
     prompts = {sprintf('Export exterior material')};
     defAns = {obj.ScoreExportOpt.IncludeExterior};

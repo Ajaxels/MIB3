@@ -1,5 +1,6 @@
 classdef MibController < handle
-    % % main controller for MIB
+% MIBCONTROLLER - % main controller for MIB.
+%
 
     properties
         % GUI controllers for the main MIB GUI panels and ribbons
@@ -62,8 +63,11 @@ classdef MibController < handle
 
     methods (Static)
         function purgeControllers(obj, src, evnt)
-            % function purgeControllers(obj, src, evnt)
-            % remove child controller
+            % PURGECONTROLLERS - remove child controller.
+            %
+            % Syntax:
+            %   function purgeControllers(obj, src, evnt)
+            %
             utils.purgeChildController(obj, src);
         end
     end
@@ -133,15 +137,18 @@ classdef MibController < handle
         updateVisualizationMode(obj, mode)        % Function to set type of image interpolation for the visualization (from Image Ribbon)
 
         function obj = MibController(mibModel, mibVersion)
-            % function obj = MibController(mibModel, mibVersion)
-            % MibController class constructor
+            % MIBCONTROLLER - MibController class constructor.
+            %
+            % Syntax:
+            %   function obj = MibController(mibModel, mibVersion)
             %
             % Constructor for the MibController class. Create a new instance of
             % the class with default parameters
             %
-            % Parameters:
-            % mibModel: a handle to mibModel class
-            % mibVersion: a string with the current version of MIB
+            % Input Arguments:
+            %   - **mibModel** — a handle to mibModel class
+            %   - **mibVersion** — a string with the current version of MIB
+            %
 
             % define some global variables
             obj.childControllers = {};   % initialize child controllers

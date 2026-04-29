@@ -1,32 +1,47 @@
 function [outputLabeledImageBlock, scoreBlock] = segmentBlockedImage(block, net, dataDimension, patchwiseWorkflowSwitch, generateScoreFiles, executionEnvironment, padShift)
-% test function for utilization of blockedImage for prediction
-% The input block will be a batch of blocks from the a blockedImage.
+% SEGMENTBLOCKEDIMAGE - Segment a blocked image using a trained network.
 %
-% Parameters:
-% block: a structure with a block that is provided by
-% blockedImage/apply. The first and second iterations have
-% batch size==1, while the following have the batch size equal
-% to the selected. Below fields of the structure,
-%      .BlockSub: [1 1 1]
-%      .Start: [1 1 1]
-%      .End: [224 224 3]
-%      .Level: 1
-%      .ImageNumber: 1
-%      .BorderSize: [0 0 0]
-%      .BlockSize: [224 224 3]
-%      .BatchSize: 1
-%      .Data: [224×224×3 uint8]
-% net: a trained DAGNetwork
-% dataDimension: numeric switch that identify dataset dimension, can be 2, 2.5, 3
-% patchwiseWorkflowSwitch: logical switch indicating the patch-wise mode, when true->use patch mode, when false->use semantic segmentation
-% generateScoreFiles: variable to generate score files with probabilities of classes
-% 0-> do not generate
-% 1-> 'Use AM format'
-% 2-> 'Use Matlab non-compressed format'
-% 3-> 'Use Matlab compressed format'
-% 4-> 'Use Matlab non-compressed format (range 0-1)'
-% executionEnvironment: string with the environment to execute prediction
-% padShift: numeric, (y,x,z or y,x) value for the padding, used during the overlap mode to crop the output patch for export
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      [outputLabeledImageBlock, scoreBlock] = segmentBlockedImage( ...
+%          block, net, dataDimension, patchwiseWorkflowSwitch, ...
+%          generateScoreFiles, executionEnvironment, padShift)
+%
+% The input block is provided as a batch of blocks from a ``blockedImage``.
+%
+% Input Arguments:
+%   - **block** — struct provided by ``blockedImage/apply``; the first two iterations
+%     have ``BatchSize == 1``, subsequent ones use the user-selected batch size:
+%
+%     - ``.BlockSub`` — block subscript index, e.g. ``[1 1 1]``
+%     - ``.Start`` — block start position in the image, e.g. ``[1 1 1]``
+%     - ``.End`` — block end position, e.g. ``[224 224 3]``
+%     - ``.Level`` — resolution level
+%     - ``.ImageNumber`` — index of the source image
+%     - ``.BorderSize`` — border padding, e.g. ``[0 0 0]``
+%     - ``.BlockSize`` — block dimensions, e.g. ``[224 224 3]``
+%     - ``.BatchSize`` — number of blocks in the batch
+%     - ``.Data`` — pixel data array, e.g. ``[224×224×3 uint8]``
+%
+%   - **net** — trained ``DAGNetwork`` or ``dlnetwork``
+%   - **dataDimension** — [numeric] dataset dimensionality: ``2``, ``2.5``, or ``3``
+%   - **patchwiseWorkflowSwitch** — [logical] ``true`` for patch-wise classification,
+%     ``false`` for semantic segmentation
+%   - **generateScoreFiles** — [integer] score file format to generate:
+%
+%     - ``0`` — do not generate score files
+%     - ``1`` — AM format
+%     - ``2`` — MATLAB non-compressed format
+%     - ``3`` — MATLAB compressed format
+%     - ``4`` — MATLAB non-compressed format (range 0–1)
+%
+%   - **executionEnvironment** — [char] execution environment for prediction
+%     (e.g. ``'auto'``, ``'gpu'``, ``'cpu'``)
+%   - **padShift** — [numeric] ``[y, x]`` or ``[y, x, z]`` padding to crop output
+%     during overlap-mode prediction
+%
 
 batchSizeDimension = numel(block.BlockSize) + 1;
 batchSize = size(block.Data, batchSizeDimension);

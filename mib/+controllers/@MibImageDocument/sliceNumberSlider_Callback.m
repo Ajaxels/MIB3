@@ -1,49 +1,51 @@
 function sliceNumberSlider_Callback(obj, sliderValue)
-% function sliceNumberSlider_Callback(obj, sliderValue)
-% Change the currently displayed slice using the slice-number slider.
+% SLICENUMBERSLIDER_CALLBACK - Change the currently displayed slice using the slice-number slider.
+%
+% Syntax:
+%   function sliceNumberSlider_Callback(obj, sliderValue)
 %
 % Syntax
-%   sliceNumberSlider_Callback(obj)
-%   sliceNumberSlider_Callback(obj, sliderValue)
+% sliceNumberSlider_Callback(obj)
+% sliceNumberSlider_Callback(obj, sliderValue)
 %
 % Description
-%   This callback is triggered when the user changes the slice number slider in the
-%   Image View panel. The function:
-%   1) Reads the slider value (or uses the provided value),
-%   2) Rounds it to an integer slice index (the slider maximum may be stored as a
-%      float with +0.001),
-%   3) Updates the current slice range in the model for the active dataset,
-%      depending on dataset orientation (XZ / YZ / YX),
-%   4) Refreshes the displayed image,
-%   5) Notifies the rest of the app that the slice has changed.
+% This callback is triggered when the user changes the slice number slider in the
+% Image View panel. The function:
+% 1) Reads the slider value (or uses the provided value),
+% 2) Rounds it to an integer slice index (the slider maximum may be stored as a
+% float with +0.001),
+% 3) Updates the current slice range in the model for the active dataset,
+% depending on dataset orientation (XZ / YZ / YX),
+% 4) Refreshes the displayed image,
+% 5) Notifies the rest of the app that the slice has changed.
 %
-%   For orientation == 3 ('YX'), if slice names are available, the title of the
-%   Image View axes may be updated to include the slice/layer name.
+% For orientation == 3 ('YX'), if slice names are available, the title of the
+% Image View axes may be updated to include the slice/layer name.
 %
 % Inputs
-%   obj         Controller instance (typically controllers.MibImageDocument) that
-%               owns GUI handles and references the model/controller stack.
-%   sliderValue (optional) Numeric value of the slider position. When omitted,
-%               the value is read from obj.handles.sliceNumberSlider.Value. 
+% obj         Controller instance (typically controllers.MibImageDocument) that
+% owns GUI handles and references the model/controller stack.
+% sliderValue (optional) Numeric value of the slider position. When omitted,
+% the value is read from obj.handles.sliceNumberSlider.Value.
 %
 % Behavior / Side effects
-%   - Updates GUI edit field: obj.handles.sliceNumber.Value = sliceNumber. 
-%   - Updates model slice selection:
-%       orientation == 1 (XZ): obj.mibModel.I{datasetId}.slices{1} = [N N] 
-%       orientation == 2 (YZ): obj.mibModel.I{datasetId}.slices{2} = [N N]
-%       orientation == 3 (YX): obj.mibModel.I{datasetId}.slices{3} = [N N] 
-%   - Triggers redraw: obj.mibController.showImage().
-%   - Emits event: notify(obj.mibModel, 'SliceChanged').
-%   - In DeveloperMode, prints a diagnostic message to stdout. 
+% - Updates GUI edit field: obj.handles.sliceNumber.Value = sliceNumber.
+% - Updates model slice selection:
+% orientation == 1 (XZ): obj.mibModel.I{datasetId}.slices{1} = [N N]
+% orientation == 2 (YZ): obj.mibModel.I{datasetId}.slices{2} = [N N]
+% orientation == 3 (YX): obj.mibModel.I{datasetId}.slices{3} = [N N]
+% - Triggers redraw: obj.mibController.showImage().
+% - Emits event: notify(obj.mibModel, 'SliceChanged').
+% - In DeveloperMode, prints a diagnostic message to stdout.
 %
 % Notes
-%   - sliceNumber is computed as round(sliderValue) to avoid fractional slice
-%     indices caused by slider numeric limits stored as floats. 
-%   - Slice-name title update is only attempted when dataset.image.sliceName is
-%     not empty; indices are clamped to the available number of names. 
+% - sliceNumber is computed as round(sliderValue) to avoid fractional slice
+% indices caused by slider numeric limits stored as floats.
+% - Slice-name title update is only attempted when dataset.image.sliceName is
+% not empty; indices are clamped to the available number of names.
 %
 % See also
-%   showImage, notify
+% showImage, notify
 
 if nargin < 2; sliderValue = obj.handles.sliceNumberSlider.Value; end
 

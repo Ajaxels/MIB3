@@ -1,28 +1,32 @@
 function [result] = bfopen3(r, seriesNumber, sliceNo, options)
-% A script for opening microscopy images in MATLAB using Bio-Formats.
+% BFOPEN3 - A script for opening microscopy images in MATLAB using Bio-Formats.
+%
+% Syntax:
+%   function [result] = bfopen3(r, seriesNumber, sliceNo, options)
+%
 % modified from the original bfopen.m by Ilya Belevich
-% 
+%
 % The function returns selected dataset.
 % [result] = bfopen3(r, seriesNumber)
 % IN:
-%   r - handle to a dataset opened with
-%      r = loci.formats.ChannelFiller();
-%      r = loci.formats.ChannelSeparator(r);
-%      r = loci.formats.gui.BufferedImageReader(r);
-%      r.setId(handles.filename);
-%   seriesNumber - number of selected serie starting from 1
-%   sliceNo - [optional] desired slice number from the series
-%   options - [optional] a structure with a subset of the image to obtain.
-%   Warning! not yet completely tested
-%       .x1 - starting x position
-%       .y1 - starting y position
-%       .dx - width
-%       .dy - height
+% r - handle to a dataset opened with
+% r = loci.formats.ChannelFiller();
+% r = loci.formats.ChannelSeparator(r);
+% r = loci.formats.gui.BufferedImageReader(r);
+% r.setId(handles.filename);
+% seriesNumber - number of selected serie starting from 1
+% sliceNo - [optional] desired slice number from the series
+% options - [optional] a structure with a subset of the image to obtain.
+% Warning! not yet completely tested
+% .x1 - starting x position
+% .y1 - starting y position
+% .dx - width
+% .dy - height
 % OUT:
-%   result -> Structure with the selected serie
-%       .img -> Image with [heigh width color z-stack] dimensions
-%       .ColorType -> 'grayscale', 'truecolor', 'indexed'
-%       .ColorMap -> color map for the indexed image
+% result Structure with the selected serie
+% .img Image with [heigh width color z-stack] dimensions
+% .ColorType 'grayscale', 'truecolor', 'indexed'
+% .ColorMap color map for the indexed image
 % Portions of this code were adapted from:
 % http://www.mathworks.com/support/solutions/en/data/1-2WPAYR/
 %
@@ -31,16 +35,16 @@ function [result] = bfopen3(r, seriesNumber, sliceNo, options)
 % due to overhead from copying arrays.
 %
 % Thanks to all who offered suggestions and improvements:
-%     * Ville Rantanen
-%     * Brett Shoelson
-%     * Martin Offterdinger
-%     * Tony Collins
-%     * Cris Luengo
-%     * Arnon Lieber
-%     * Jimmy Fong
+% * Ville Rantanen
+% * Brett Shoelson
+% * Martin Offterdinger
+% * Tony Collins
+% * Cris Luengo
+% * Arnon Lieber
+% * Jimmy Fong
 %
 % NB: Internet Explorer sometimes erroneously renames the Bio-Formats library
-%     to loci_tools.zip. If this happens, rename it back to loci_tools.jar.
+% to loci_tools.zip. If this happens, rename it back to loci_tools.jar.
 %
 % 05.09.2013 Ilya Belevich, added sliceNo to load only a single slice
 

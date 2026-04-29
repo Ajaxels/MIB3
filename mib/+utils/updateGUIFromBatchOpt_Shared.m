@@ -1,11 +1,32 @@
 function View = updateGUIFromBatchOpt_Shared(View, BatchOpt)
-% function obj = updateGUIFromBatchOpt_Shared(obj, BatchOpt)
-% a common function used by all tools compatible with the Batch mode to
-% setup widgets of GUI from the BatchOpt structure
-% 
-% Parameters:
-% View: View class of the controller
-% BatchOpt: controlling BatchOpt structure
+% UPDATEGUIFROMBATCHOPT_SHARED - Populate GUI widgets from a BatchOpt struct.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      View = updateGUIFromBatchOpt_Shared(View, BatchOpt)
+%
+% Used by all Batch-mode-compatible tools to initialise the dialog
+% widgets from a BatchOpt struct — e.g. when opening a dialog with a
+% previously saved configuration.  Handles edit fields, checkboxes,
+% dropdowns, radio button groups, tab groups, spinners, and numeric edit fields.
+%
+% Input Arguments:
+%   - **View** — View class of the controller (must expose ``View.Figure``)
+%   - **BatchOpt** — BatchOpt struct whose fields drive the widget update
+%
+% Output Arguments:
+%   - **View** — View class with updated widget values
+%
+% Usage:
+%
+%   **Example 1** — restore widget state when opening a dialog
+%
+%   .. code-block:: matlab
+%
+%      obj.View = utils.updateGUIFromBatchOpt_Shared(obj.View, obj.BatchOpt);
+%
 
 fieldNames = fieldnames(BatchOpt);
 for fieldId = 1:numel(fieldNames)

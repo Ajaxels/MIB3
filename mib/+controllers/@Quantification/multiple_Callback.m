@@ -1,16 +1,23 @@
 function multiple_Callback(obj)
-% function multiple_Callback(obj)
-% Handle the Multiple properties checkbox toggle.
+% MULTIPLE_CALLBACK - Handle the Multiple properties checkbox toggle.
+%
+% Syntax:
+%   function multiple_Callback(obj)
 %
 % When checked, enables the "Define properties" button (defineProperties) so the
 % user can specify a list of properties for simultaneous calculation.
 % When unchecked, disables defineProperties and syncs BatchOpt.Property from the
 % single-property dropdown.
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.Multiple.ValueChangedFcn = @(~,~) obj.multiple_Callback(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.Multiple.ValueChangedFcn = @(~,~) obj.multiple_Callback();
+%
 
 % Updates
 %

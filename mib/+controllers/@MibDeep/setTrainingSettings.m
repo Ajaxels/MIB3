@@ -1,6 +1,9 @@
 function setTrainingSettings(obj)
-% function setTrainingSettings(obj)
-    % update settings for training of networks
+% SETTRAININGSETTINGS - update settings for training of networks.
+%
+% Syntax:
+%   function setTrainingSettings(obj)
+%
     prompts = {'solverName, solver for training network'; ...
         'MaxEpochs, maximum number of epochs to use for training [30]'; ...
         'Shuffle, options for data shuffling [once]'; ...

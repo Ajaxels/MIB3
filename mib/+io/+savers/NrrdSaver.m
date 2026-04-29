@@ -1,141 +1,153 @@
 classdef NrrdSaver < io.savers.BaseSaver
-    % classdef NrrdSaver < io.savers.BaseSaver
-    % Saver for NRRD (Nearly Raw Raster Data) format output.
-    %
-    % Handles two format variants:
-    %   'NRRD Data Format (*.nrrd)'      — standard NRRD volume
-    %   'NRRD for 3D Slicer (*.nrrd)'   — NRRD with 3D Slicer-compatible
-    %       metadata (RAS space, voxel-to-world transform, etc.)
-    %
-    % Both image and label/mask volumes can be saved.  The layer type is
-    % inferred from options.layerType (default 'image').  For multi-channel
-    % or time-series data only the first channel (C=1) and first time point
-    % (T=1) are passed to the underlying helper; a warning is issued if C>1.
-    %
-    % The saver delegates the actual I/O to the legacy helper bitmap2nrrd(),
-    % which is ported from MIB2.
-    %
-    % DATA DIMENSIONS
-    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
-    %   bitmap2nrrd() expects [H, W, D] — obtained by squeezing the first
-    %       channel and time point.
-    %
-    % BOUNDING BOX
-    %   The bounding box is read from metadata.boundingBox as
-    %       [xmin xmax ymin ymax zmin zmax].
-    %   If not present, zeros(1,6) is used as a default.
-    %
-    % FILENAME GENERATOR
-    %   options.FilenameGenerator controls how the output file is named:
-    %     'Use sequential filename' (default) — numbered naming
-    %     'Use original filename'             — derived from metadata.sliceName
-    %
-    % TODO: port bitmap2nrrd from
-    %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/nrrd/bitmap2nrrd.m
-    %   to mib/+io/+NRRD/bitmap2nrrd.m
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Save image volume as standard NRRD
-    %   saver = io.SaverFactory.create('NRRD Data Format (*.nrrd)');
-    %
-    %   opts.Format            = 'NRRD Data Format (*.nrrd)';
-    %   opts.showWaitbar       = false;
-    %   opts.silent            = true;
-    %   opts.overwrite         = true;
-    %   opts.layerType         = 'image';
-    %   opts.FilenameGenerator = 'Use sequential filename';
-    %
-    %   meta.filename    = 'source_stack.tif';
-    %   meta.colorType   = 'grayscale';
-    %   meta.lutColors   = [1 1 1];
-    %   meta.dataClass   = 'uint16';
-    %   meta.maxInt      = 65535;
-    %   meta.pixSize     = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                             'units','um','t',1,'tunits','s');
-    %   meta.boundingBox = [0 33.3 0 33.3 0 10];
-    %
-    %   data = uint16(rand(512,512,50,1,1)*65535);  % [H W D C T]
-    %   fnOut = saver.save(data, meta, '/output/myStack.nrrd', opts);
-    %   fprintf('Saved: %s\n', fnOut);
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Save labels as NRRD for 3D Slicer
-    %   saver = io.SaverFactory.create('NRRD for 3D Slicer (*.nrrd)');
-    %
-    %   opts.Format      = 'NRRD for 3D Slicer (*.nrrd)';
-    %   opts.showWaitbar = false;
-    %   opts.silent      = true;
-    %   opts.overwrite   = true;
-    %   opts.layerType   = 'labels';
-    %
-    %   meta.filename    = 'source_stack.tif';
-    %   meta.pixSize     = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                             'units','um','t',1,'tunits','s');
-    %   meta.boundingBox = [0 33.3 0 33.3 0 10];
-    %
-    %   labels = uint8(rand(512,512,50,1,1)*3);  % [H W D C T]
-    %   fnOut = saver.save(labels, meta, '/output/Labels_Slicer.nrrd', opts);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
-    %   core.MibImage.save, core.MibDataset.save, models.MibModel.save
+% NRRDSAVER - Saver for NRRD (Nearly Raw Raster Data) format output.
+%
+% Handles two format variants:
+% 'NRRD Data Format (``*.nrrd``)'      — standard NRRD volume
+% 'NRRD for 3D Slicer (``*.nrrd``)'   — NRRD with 3D Slicer-compatible
+% metadata (RAS space, voxel-to-world transform, etc.)
+%
+% Both image and label/mask volumes can be saved.  The layer type is
+% inferred from options.layerType (default 'image').  For multi-channel
+% or time-series data only the first channel (C=1) and first time point
+% (T=1) are passed to the underlying helper; a warning is issued if C>1.
+%
+% The saver delegates the actual I/O to the legacy helper bitmap2nrrd(),
+% which is ported from MIB2.
+%
+% DATA DIMENSIONS
+% Input  data : [H, W, D, C, T]  (MIB3 native order)
+% bitmap2nrrd() expects [H, W, D] — obtained by squeezing the first
+% channel and time point.
+%
+% BOUNDING BOX
+% The bounding box is read from metadata.boundingBox as
+% [xmin xmax ymin ymax zmin zmax].
+% If not present, zeros(1,6) is used as a default.
+%
+% FILENAME GENERATOR
+% options.FilenameGenerator controls how the output file is named:
+% 'Use sequential filename' (default) — numbered naming
+% 'Use original filename'             — derived from metadata.sliceName
+%
+% TODO: port bitmap2nrrd from
+% MIB2_RENAMED_FOR_MIB3/ImportExportTools/nrrd/bitmap2nrrd.m
+% to mib/+io/+NRRD/bitmap2nrrd.m
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Save image volume as standard NRRD
+%     saver = io.SaverFactory.create('NRRD Data Format (``*.nrrd``)');
+%
+%     opts.Format            = 'NRRD Data Format (``*.nrrd``)';
+%     opts.showWaitbar       = false;
+%     opts.silent            = true;
+%     opts.overwrite         = true;
+%     opts.layerType         = 'image';
+%     opts.FilenameGenerator = 'Use sequential filename';
+%
+%     meta.filename    = 'source_stack.tif';
+%     meta.colorType   = 'grayscale';
+%     meta.lutColors   = [1 1 1];
+%     meta.dataClass   = 'uint16';
+%     meta.maxInt      = 65535;
+%     meta.pixSize     = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                               'units','um','t',1,'tunits','s');
+%     meta.boundingBox = [0 33.3 0 33.3 0 10];
+%
+%     data = uint16(rand(512,512,50,1,1)*65535);  % [H W D C T]
+%     fnOut = saver.save(data, meta, '/output/myStack.nrrd', opts);
+%     fprintf('Saved: %s\n', fnOut);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Save labels as NRRD for 3D Slicer
+%     saver = io.SaverFactory.create('NRRD for 3D Slicer (``*.nrrd``)');
+%
+%     opts.Format      = 'NRRD for 3D Slicer (``*.nrrd``)';
+%     opts.showWaitbar = false;
+%     opts.silent      = true;
+%     opts.overwrite   = true;
+%     opts.layerType   = 'labels';
+%
+%     meta.filename    = 'source_stack.tif';
+%     meta.pixSize     = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                               'units','um','t',1,'tunits','s');
+%     meta.boundingBox = [0 33.3 0 33.3 0 10];
+%
+%     labels = uint8(rand(512,512,50,1,1)*3);  % [H W D C T]
+%     fnOut = saver.save(labels, meta, '/output/Labels_Slicer.nrrd', opts);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
+% core.MibImage.save, core.MibDataset.save, models.MibModel.save
 
     methods
 
         function obj = NrrdSaver(options)
-            % function obj = NrrdSaver(options)
-            % Constructor — accepts an optional options struct.
+            % NRRDSAVER - Constructor — accepts an optional options struct.
             %
-            % Parameters:
+            % Syntax:
+            %   function obj = NrrdSaver(options)
+            %
+            % Input Arguments:
             %   options — (struct, optional) saver-level options (usually empty;
-            %             per-save options are passed to save() instead)
+            %   per-save options are passed to save() instead)
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
-            % function formats = getSupportedFormats(~)
-            % Return format strings handled by NrrdSaver.
+            % GETSUPPORTEDFORMATS - Return format strings handled by NrrdSaver.
+            %
+            % Syntax:
+            %   function formats = getSupportedFormats(~)
+            %
             formats = { ...
                 'NRRD Data Format (*.nrrd)'; ...
                 'NRRD for 3D Slicer (*.nrrd)' };
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write data as a NRRD file.
+            % SAVE - Write data as a NRRD file.
             %
-            % Parameters:
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
+            %
+            % Input Arguments:
             %   data     — [H, W, D, C, T] numeric array.
-            %              Only the first channel (C=1) and first time point
-            %              (T=1) are written; a warning is issued if C>1.
+            %   Only the first channel (C=1) and first time point
+            %   (T=1) are written; a warning is issued if C>1.
             %   metadata — struct; used fields:
-            %     .colorType    — 'grayscale' | 'multichannel' | 'indexed'
-            %     .dataClass    — 'uint8' | 'uint16' | ...
-            %     .maxInt       — maximum intensity value
-            %     .pixSize      — struct {.x .y .z .units .t .tunits}
-            %     .boundingBox  — [xmin xmax ymin ymax zmin zmax];
-            %                     zeros(1,6) used if not present
-            %     .sliceName    — (optional) per-slice source filenames
+            %   .colorType    — 'grayscale' | 'multichannel' | 'indexed'
+            %   .dataClass    — 'uint8' | 'uint16' | ...
+            %   .maxInt       — maximum intensity value
+            %   .pixSize      — struct {.x .y .z .units .t .tunits}
+            %   .boundingBox  — [xmin xmax ymin ymax zmin zmax];
+            %   zeros(1,6) used if not present
+            %   .sliceName    — (optional) per-slice source filenames
             %   filename — full output path, e.g. '/out/stack.nrrd'
             %   options  — struct; used fields:
-            %     .Format           — format string ('NRRD ...' variants)
-            %     .layerType        — 'image' | 'mask' | 'labels'
-            %                         (default 'image')
-            %     .showWaitbar      — logical
-            %     .silent           — logical, suppress dialogs
-            %     .overwrite        — logical
-            %     .FilenameGenerator — 'Use original filename' |
-            %                          'Use sequential filename'
+            %   .Format           — format string ('NRRD ...' variants)
+            %   .layerType        — 'image' | 'mask' | 'labels'
+            %   (default 'image')
+            %   .showWaitbar      — logical
+            %   .silent           — logical, suppress dialogs
+            %   .overwrite        — logical
+            %   .FilenameGenerator — 'Use original filename' |
+            %   'Use sequential filename'
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — (char) path of saved .nrrd file, [] on failure
             %
-            % Example — see class-level documentation above.
+            %   Example — see class-level documentation above.
+            %
 
             fnOut = [];
 

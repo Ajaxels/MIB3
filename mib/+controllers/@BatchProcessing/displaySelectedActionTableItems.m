@@ -1,26 +1,30 @@
 function displaySelectedActionTableItems(obj, evnt)
-% function displaySelectedActionTableItems(obj, evnt)
-% show the appropriate editing widget for the currently highlighted row in selectedActionTable
+% DISPLAYSELECTEDACTIONTABLEITEMS - show the appropriate editing widget for the currently highlighted row in selectedActionTable.
+%
+% Syntax:
+%   function displaySelectedActionTableItems(obj, evnt)
 %
 % Hides all editing widgets, then makes exactly one visible based on the
 % data type of the selected BatchOpt field:
-%   logical   -> selectedActionTableCellCheck
-%   cell (strings) -> selectedActionTableCellPopup
-%   cell (numeric) -> selectedActionTableCellEdit
-%   char      -> selectedActionTableCellEdit
-%   numeric   -> selectedActionTableCellNumericEdit
+% logical selectedActionTableCellCheck
+% cell (strings) selectedActionTableCellPopup
+% cell (numeric) selectedActionTableCellEdit
+% char selectedActionTableCellEdit
+% numeric selectedActionTableCellNumericEdit
 %
-% Parameters:
-% evnt: [optional] CellSelectionCallback event data; when provided the
-%   selected row index is read from evnt.Indices(1,1) and stored in
-%   obj.selectedActionTableIndex before updating the widgets
+% Input Arguments:
+%   - **evnt** — [optional] CellSelectionCallback event data; when provided the
+%     selected row index is read from evnt.Indices(1,1) and stored in
+%     obj.selectedActionTableIndex before updating the widgets
 %
-%|
-% @b Examples:
-% @code obj.displaySelectedActionTableItems(); @endcode
-% @code obj.displaySelectedActionTableItems(evnt); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.displaySelectedActionTableItems();
+%
+%   Example 2::
+%
+%     obj.displaySelectedActionTableItems(evnt);
 %
 
 if nargin > 1 && ~isempty(evnt.Indices)

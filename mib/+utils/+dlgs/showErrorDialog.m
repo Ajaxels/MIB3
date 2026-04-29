@@ -1,69 +1,79 @@
 function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
-% function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
-% Show an error dialog generated in try/catch blocks or any other occasion.
+% SHOWERRORDIALOG - Show an error dialog generated in try/catch blocks or any other occasion.
+%
+% Syntax:
+%   function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
+%
 % Supports custom icons, HTML formatting, scrollable error text, clipboard
 % copy button, and is resizable.
 %
-% Parameters:
-% ParentFigure: handle to the parent window (AppContainer, uifigure, or [])
-%   When empty or a legacy GUIDE figure, falls back to errordlg()
-% err: error source, one of:
-%   - char/string: plain error message text
-%   - MException struct with fields:
-%       .identifier - error identifier string
-%       .message    - error message
-%       .cause      - nested MException cell array
-%   - empty struct: shows only prefix/suffix
-% winTitle: [optional] string with dialog window title (default: 'Error')
-% optionalPrefix: [optional] text shown in bold above the error body (default: '')
-% optionalSuffix: [optional] text shown in italics below the error body (default: '')
-% options: [optional] struct with fields:
-%   .mibPath       - path to MIB installation for icon loading (default: '')
-%   .Icon          - icon name string, one of:
-%                    'puffin_error' (default), 'warning_48px', 'puffin_warning', 'error_48px'
-%                    'puffin_question', 'question_48px', 'celebrate', 'call4help'
-%   .IconWidth     - icon column width in pixels (default: 48, puffins: 96)
-%   .WindowWidth   - dialog width in pixels (default: 420)
-%   .WindowHeight  - dialog height in pixels (default: 220)
-%   .WindowStyle   - 'modal' (default) or 'normal'
-%   .PrefixHeight  - row height in pixels for prefix label (default: 'fit')
-%   .ErrorHeight   - row height in pixels for error textarea (default: '1x')
-%   .SuffixHeight  - row height in pixels for suffix label (default: 'fit')
+% Input Arguments:
+%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or [])
+%     When empty or a legacy GUIDE figure, falls back to errordlg()
+%   - **err** — error source, one of:
 %
-% Return values:
-% (none)
+%     - [char|string] plain error message text
+%     - [MException] struct with fields:
 %
-% Examples:
-% @code
-% % Basic usage in try/catch
-% try
-%     % some code
-% catch err
-%     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Processing Error');
-%     return;
-% end
-% @endcode
+%       - ``.identifier`` — error identifier string
+%       - ``.message`` — error message
+%       - ``.cause`` — nested ``MException`` cell array
 %
-% @code
-% % Plain text with bold prefix and italic suffix
-% utils.dlgs.showErrorDialog(obj.view.gui, 'Something went wrong!', 'Error', ...
-%     'Operation failed:', 'Please check your input.');
-% @endcode
+%     - empty struct: shows only prefix/suffix
 %
-% @code
-% % Custom icon, size, and row heights
-% opts.mibPath      = obj.mibModel.mibPath;
-% opts.Icon         = 'puffin_warning';
-% opts.WindowWidth  = 500;
-% opts.WindowHeight = 300;
-% opts.PrefixHeight = 'fit';
-% opts.ErrorHeight  = '1x';
-% opts.SuffixHeight = 'fit';
-% utils.dlgs.showErrorDialog(obj.view.gui, err, 'Import Error', ...
-%     'Failed to load file:', 'Please contact support.', opts);
-% @endcode
+%   - **winTitle** — [optional] string with dialog window title (default: ``'Error'``)
+%   - **optionalPrefix** — [optional] text shown in bold above the error body (default: ``''``)
+%   - **optionalSuffix** — [optional] text shown in italics below the error body (default: ``''``)
+%   - **options** *(optional)* — struct with fields:
 %
-% Updates
+%     - ``.mibPath`` — [char] path to MIB installation for icon loading (default: ``''``)
+%     - ``.Icon`` — [char] icon name (default: ``'puffin_error'``):
+%       ``'puffin_error'``, ``'puffin_warning'``, ``'puffin_question'``,
+%       ``'warning_48px'``, ``'error_48px'``, ``'question_48px'``,
+%       ``'celebrate'``, ``'call4help'``
+%     - ``.IconWidth`` — [numeric] icon column width in pixels (default: 48, puffins: 96)
+%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 420)
+%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 220)
+%     - ``.WindowStyle`` — [char] ``'modal'`` (default) or ``'normal'``
+%     - ``.PrefixHeight`` — row height for the prefix label (default: ``'fit'``)
+%     - ``.ErrorHeight`` — row height for the error text area (default: ``'1x'``)
+%     - ``.SuffixHeight`` — row height for the suffix label (default: ``'fit'``)
+%
+% Output Arguments:
+%   (none)
+%
+% Usage:
+%   **Example 1** — Basic usage in try/catch
+%
+%   .. code-block:: matlab
+%
+%      try
+%          % some code
+%      catch err
+%          utils.dlgs.showErrorDialog(obj.view.gui, err, 'Processing Error');
+%          return;
+%      end
+%
+%   **Example 2** — Plain text with bold prefix and italic suffix
+%
+%   .. code-block:: matlab
+%
+%      utils.dlgs.showErrorDialog(obj.view.gui, 'Something went wrong!', 'Error', ...
+%          'Operation failed:', 'Please check your input.');
+%
+%   **Example 3** — Custom icon, size, and row heights
+%
+%   .. code-block:: matlab
+%
+%      opts.mibPath      = obj.mibModel.mibPath;
+%      opts.Icon         = 'puffin_warning';
+%      opts.WindowWidth  = 500;
+%      opts.WindowHeight = 300;
+%      opts.PrefixHeight = 'fit';
+%      opts.ErrorHeight  = '1x';
+%      opts.SuffixHeight = 'fit';
+%      utils.dlgs.showErrorDialog(obj.view.gui, err, 'Import Error', ...
+%          'Failed to load file:', 'Please contact support.', opts);
 %
 if nargin < 6; options        = struct(); end
 if nargin < 5; optionalSuffix = ''; end

@@ -1,34 +1,44 @@
 function segmentationLassoManual(obj, BatchOptIn)
-% function segmentationLassoManual(obj, BatchOptIn)
-% Do manual segmentation using the lasso tool in the manual mode
+% SEGMENTATIONLASSOMANUAL - Do manual segmentation using the lasso tool in the manual mode.
+%
+% Syntax:
+%   function segmentationLassoManual(obj, BatchOptIn)
 %
 % Uses coordinate values from the lasso panel edit fields (X1, Y1, Width,
 % Height) to define a rectangular or elliptical selection area. Lasso and
 % Polyline types are not supported in manual mode.
 %
-% Parameters:
-% BatchOptIn: [@em optional] a structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event, or a char modifier
-%   ('control' to subtract, empty to add) for interactive calls
-% @li .Shape - Shape type for the manual selection: Rectangle or Ellipse
-% @li .Mode - Apply selection for the current slice (2D, Slice) or the whole stack (3D, Stack)
-% @li .X1 - X coordinate: top-left corner for Rectangle, center for Ellipse
-% @li .Y1 - Y coordinate: top-left corner for Rectangle, center for Ellipse
-% @li .Width - Half-width of the selection area (semi-axis for Ellipse)
-% @li .Height - Half-height of the selection area (semi-axis for Ellipse)
-% @li .Action - Action to perform with the generated selection: Add or Subtract
-% @li .FixSelectionToMask - Apply selection only to the masked area
-% @li .FixSelectionToMaterial - Apply selection only to the area of the selected material
-% @li .showWaitbar - Show or not the progress bar during execution
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event, or a char modifier
+%     ('control' to subtract, empty to add) for interactive calls
+%     - .Shape - Shape type for the manual selection: Rectangle or Ellipse
+%     - .Mode - Apply selection for the current slice (2D, Slice) or the whole stack (3D, Stack)
+%     - .X1 - X coordinate: top-left corner for Rectangle, center for Ellipse
+%     - .Y1 - Y coordinate: top-left corner for Rectangle, center for Ellipse
+%     - .Width - Half-width of the selection area (semi-axis for Ellipse)
+%     - .Height - Half-height of the selection area (semi-axis for Ellipse)
+%     - .Action - Action to perform with the generated selection: Add or Subtract
+%     - .FixSelectionToMask - Apply selection only to the masked area
+%     - .FixSelectionToMaterial - Apply selection only to the area of the selected material
+%     - .showWaitbar - Show or not the progress bar during execution
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.segmentationLassoManual();             // select area and add to selection @endcode
-% @code obj.segmentationLassoManual('control');    // select area and subtract from selection @endcode
-% @code obj.segmentationLassoManual(BatchOpt);     // batch mode with provided options @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationLassoManual();             // select area and add to selection
+%
+%   Example 2::
+%
+%     obj.segmentationLassoManual('control');    // select area and subtract from selection
+%
+%   Example 3::
+%
+%     obj.segmentationLassoManual(BatchOpt);     // batch mode with provided options
+%
 
 % Updates
 %

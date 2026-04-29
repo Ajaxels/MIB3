@@ -1,26 +1,32 @@
 classdef MibDeepAugmentSettings < handle
-    % @type MibDeepAugmentSettings class is a template class for using with
-    % GUI developed using appdesigner of Matlab
-    %
-    % @code
-    % obj.startController('controllers.MibDeepAugmentSettings', obj, '2D'); // as GUI tool
-    % @endcode
-    % or 
-    % @code 
-    % // a code below was used for mibImageArithmeticController
-    % BatchOpt.Parameter = 'test';  // fill edit boxes as strings
-    % BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-    % BatchOpt.Popup = {'value'};        // value for the popups as a cell
-    % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-    % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('MibDeepAugmentSettings', [], BatchOpt); // start MibDeepAugmentSettings in the batch mode
-    % @endcode
-    % or
-    % @code
-    % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
-    % obj.startController('MibDeepAugmentSettings', [], NaN);
-    % @endcode
+% MIBDEEPAUGMENTSETTINGS - @type MibDeepAugmentSettings class is a template class for using with.
+%
+% GUI developed using appdesigner of Matlab
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.MibDeepAugmentSettings', obj, '2D'); // as GUI tool
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // a code below was used for mibImageArithmeticController
+%   BatchOpt.Parameter = 'test';  // fill edit boxes as strings
+%   BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
+%   BatchOpt.Popup = {'value'};        // value for the popups as a cell
+%   BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
+%   BatchOpt.showWaitbar = true;  // show or not the waitbar
+%   obj.startController('MibDeepAugmentSettings', [], BatchOpt); // start MibDeepAugmentSettings in the batch mode
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // trigger return of the possible Options using returnBatchOpt function
+%   // using notify syncBatch event
+%   obj.startController('MibDeepAugmentSettings', [], NaN);
     
 	% Updates
 	%     
@@ -123,7 +129,11 @@ classdef MibDeepAugmentSettings < handle
         end
         
         function closeWindow(obj)
-            % closing MibDeepAugmentSettings window
+            % CLOSEWINDOW - closing MibDeepAugmentSettings window.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -138,8 +148,11 @@ classdef MibDeepAugmentSettings < handle
         end
         
         function updateWidgets(obj, widgetGroup)
-            % function updateWidgets(obj)
-            % update widgets of this window
+            % UPDATEWIDGETS - update widgets of this window.
+            %
+            % Syntax:
+            %   function updateWidgets(obj, widgetGroup)
+            %
 
             % Parameters:
             % widgetGroup: tag of a widget group that gets affected
@@ -206,8 +219,11 @@ classdef MibDeepAugmentSettings < handle
         end
         
         function enableStateChange(obj, event)
-            % function enableStateChange(obj, event)
-            % callback on press of enable checkboxes - enable or disable
+            % ENABLESTATECHANGE - callback on press of enable checkboxes - enable or disable.
+            %
+            % Syntax:
+            %   function enableStateChange(obj, event)
+            %
             % the selected augmentation
 
             augmenterName = event.Source.Tag(1:strfind(event.Source.Tag, '_')-1);
@@ -216,8 +232,11 @@ classdef MibDeepAugmentSettings < handle
         end
 
         function updateAugmentationParameters(obj, event)
-            % function updateAugmentationParameters(obj, event)
-            % callback on change of spinboxes - change settings for
+            % UPDATEAUGMENTATIONPARAMETERS - callback on change of spinboxes - change settings for.
+            %
+            % Syntax:
+            %   function updateAugmentationParameters(obj, event)
+            %
             % augmentations
 
             switch event.Source.Tag
@@ -236,8 +255,11 @@ classdef MibDeepAugmentSettings < handle
         end
 
         function disableAugmentations(obj)
-            % function disableAugmentations(obj)
-            % disable all augmentations
+            % DISABLEAUGMENTATIONS - disable all augmentations.
+            %
+            % Syntax:
+            %   function disableAugmentations(obj)
+            %
             
             augmentationNames = fieldnames(obj.augOptions);
             for augId = 1:numel(augmentationNames)
@@ -252,7 +274,11 @@ classdef MibDeepAugmentSettings < handle
         end
 
         function resetAugmentations(obj)
-            % resetAugmentations(obj)
+            % RESETAUGMENTATIONS - resetAugmentations(obj).
+            %
+            % Syntax:
+            %   function resetAugmentations(obj)
+            %
             % reset augmentation settings to their default values
             
             obj.augOptions = utils.deepmib.generateDefaultAugmentations(obj.augmentationMode);
@@ -260,8 +286,11 @@ classdef MibDeepAugmentSettings < handle
         end
 
         function setPreviewAugmentationSettings(obj)
-            % function setPreviewAugmentationSettings(obj)
-            % update settings for preview of augmented patches
+            % SETPREVIEWAUGMENTATIONSETTINGS - update settings for preview of augmented patches.
+            %
+            % Syntax:
+            %   function setPreviewAugmentationSettings(obj)
+            %
             
             if ~isfield(obj.mibDeep.PatchPreviewOpt, 'imageSize'); obj.mibDeep.PatchPreviewOpt.imageSize = 160; end
 
@@ -306,17 +335,22 @@ classdef MibDeepAugmentSettings < handle
         end
 
         function previewAugmentations(obj, selectedAugmentation)
-            % previewAugmentations(obj, selectedAugmentation)
-            % preview selected augmentations. 
+            % PREVIEWAUGMENTATIONS - previewAugmentations(obj, selectedAugmentation).
+            %
+            % Syntax:
+            %   function previewAugmentations(obj, selectedAugmentation)
+            %
+            % preview selected augmentations.
             % The order of shown augmentations depends on the Random seed
             % value within the Train tab of DeepMIB, when 0 a random set of
             % augmentations is used each time, otherwise random generator
             % os always intialized using the provided seed.
             %
-            % Parameters:
-            % selectedAugmentation: 'string' with the id of the
-            % augmentation to preview. When empty, all augmentations will
-            % be rendered.
+            % Input Arguments:
+            %   - **selectedAugmentation** — 'string' with the id of the
+            %     augmentation to preview. When empty, all augmentations will
+            %     be rendered.
+            %
             
             global mibPath;
             global mibDeepTrainingProgressStruct
@@ -487,15 +521,21 @@ classdef MibDeepAugmentSettings < handle
         end
 
         function help(obj)
-            % function help(obj)
-            % direct to help
+            % HELP - direct to help.
+            %
+            % Syntax:
+            %   function help(obj)
+            %
             
             web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_tools_deeplearning_train.html'), '-helpbrowser');
         end
 
         function restorePreviousSeed(obj)
-            % function restorePreviousSeed(obj)
-            % restore the previous seed used in random settings
+            % RESTOREPREVIOUSSEED - restore the previous seed used in random settings.
+            %
+            % Syntax:
+            %   function restorePreviousSeed(obj)
+            %
             
             obj.view.handles.RandomSeedEdit.Value = double(obj.lastSeed);
         end
@@ -504,8 +544,11 @@ classdef MibDeepAugmentSettings < handle
         % ------------------------------------------------------------------
         % % Additional functions and callbacks
         function Accept(obj)
-            % function Accept(obj)
-            % accept selected augmentations
+            % ACCEPT - accept selected augmentations.
+            %
+            % Syntax:
+            %   function Accept(obj)
+            %
 
             % disable augmentations with 0/1 variability
             %

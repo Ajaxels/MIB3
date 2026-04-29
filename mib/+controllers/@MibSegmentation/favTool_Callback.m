@@ -1,13 +1,17 @@
 function favTool_Callback(obj, hWidget, hData)
-% function favTool_Callback(obj, hWidget, hData)
-% callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in
+% FAVTOOL_CALLBACK - callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in.
+%
+% Syntax:
+%   function favTool_Callback(obj, hWidget, hData)
+%
 % obj.handles.panels.segmentation panel.
 % Select the current tool as favorite, the favorite tools available upon
 % press of the 'D' keyboard shortcut key
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

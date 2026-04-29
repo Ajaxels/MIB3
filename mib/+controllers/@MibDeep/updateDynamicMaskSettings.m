@@ -1,8 +1,11 @@
 function updateDynamicMaskSettings(obj)
-    % function updateDynamicMaskSettings(obj)
-    % update settings for calculation of dynamic masks during
-    % prediction using blockedimage mode
-    % the settings are stored in obj.DynamicMaskOpt
+% UPDATEDYNAMICMASKSETTINGS - update settings for calculation of dynamic masks during.
+%
+% Syntax:
+%   function updateDynamicMaskSettings(obj)
+%
+% prediction using blockedimage mode
+% the settings are stored in obj.DynamicMaskOpt
 
     % 'Keep above threshold' or 'Keep below threshold'
     prompts = {...

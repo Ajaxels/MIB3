@@ -1,13 +1,16 @@
 function connImaris = connectToImaris(connImaris, mibGUI)
-% function connImaris = connectToImaris(connImaris, mibGUI)
-% Connect to Imaris from MATLAB
+% CONNECTTOIMARIS - Connect to Imaris from MATLAB.
 %
-% Parameters:
-% connImaris: [@em optional] a handle to an existing Imaris connection, or [] to create a fresh connection
-% mibGUI: [@em optional] handle to the main MIB window, used for progress and error dialogs
+% Syntax:
+%   function connImaris = connectToImaris(connImaris, mibGUI)
 %
-% Return values:
-% connImaris: a handle to the Imaris connection, or [] on failure
+% Input Arguments:
+%   - **connImaris** — *(optional)* a handle to an existing Imaris connection, or [] to create a fresh connection
+%   - **mibGUI** — *(optional)* handle to the main MIB window, used for progress and error dialogs
+%
+% Output Arguments:
+%   - **connImaris** — a handle to the Imaris connection, or [] on failure
+%
 
 % @note
 % Uses IceImarisConnector bindings.

@@ -1,24 +1,25 @@
 function gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)
-% function gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)
-% Handle key callbacks during brush superpixel mode
+% GUI_WINDOWKEYPRESSFCN_BRUSHSUPERPIXEL - Handle key callbacks during brush superpixel mode.
+%
+% Syntax:
+%   function gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)
 %
 % Currently supports Ctrl+Z to undo the last selected superpixel
 % during an active superpixel brush stroke.
 %
-% Parameters:
-% eventdata: KeyData structure with fields:
-% @li .Key - name of the key pressed, in lower case
-% @li .Character - character interpretation of the key
-% @li .Modifier - cell array of modifier key names ('control', 'shift', 'alt')
+% Input Arguments:
+%   - **eventdata** — KeyData structure with fields:
+%     - .Key - name of the key pressed, in lower case
+%     - .Character - character interpretation of the key
+%     - .Modifier - cell array of modifier key names ('control', 'shift', 'alt')
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code % typically set as a callback, not called directly:
-% hFig.WindowKeyPressFcn = @(hWidget, hData)obj.gui_WindowKeyPressFcn_BrushSuperpixel(hData); @endcode
+% Usage:
+%   @code % typically set as a callback, not called directly:
+%   hFig.WindowKeyPressFcn = @(hWidget, hData)obj.gui_WindowKeyPressFcn_BrushSuperpixel(hData); @endcode
+%
 
 % Updates
 %

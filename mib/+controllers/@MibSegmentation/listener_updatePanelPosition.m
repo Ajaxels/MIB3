@@ -1,21 +1,24 @@
 function listener_updatePanelPosition(obj, src, evtData)
-% function listener_updatePanelPosition(obj, src, evtData)
-% Listener callback: adapt the Segmentation panel grid layout when the panel is
+% LISTENER_UPDATEPANELPOSITION - Listener callback: adapt the Segmentation panel grid layout when the panel is.
+%
+% Syntax:
+%   function listener_updatePanelPosition(obj, src, evtData)
+%
 % docked to a new region of the AppContainer (bottom, left, or right).
 %
 % The Segmentation panel uses a mainGridLayout with 4 rows/columns:
 %
-%   Left / Right — vertical, 4-row layout:
-%               RowHeight    = {26, '1x', 54, 187}
-%               ColumnWidth  = {'1x'}
-%               topGridLayout    (row 1): horizontal, ColumnWidth = {45,45,22,22,'1x',22,22,20}
-%               middleGridLayout (row 3): 2-col × 2-row, ColumnWidth = {'1x','1x'}, RowHeight = {'1x','1x'}
+% Left / Right — vertical, 4-row layout:
+% RowHeight    = {26, '1x', 54, 187}
+% ColumnWidth  = {'1x'}
+% topGridLayout    (row 1): horizontal, ColumnWidth = {45,45,22,22,'1x',22,22,20}
+% middleGridLayout (row 3): 2-col × 2-row, ColumnWidth = {'1x','1x'}, RowHeight = {'1x','1x'}
 %
-%   Bottom — horizontal, 4-column layout:
-%               ColumnWidth  = {60, 260, '1x', 260}
-%               RowHeight    = {'1x'}
-%               topGridLayout    (col 1): vertical,   RowHeight = {22,22,22,22,'1x','1x',22,22}
-%               middleGridLayout (col 3): 1-col × 4-row, ColumnWidth = {'1x'}, RowHeight = {'1x','1x','1x','1x'}
+% Bottom — horizontal, 4-column layout:
+% ColumnWidth  = {60, 260, '1x', 260}
+% RowHeight    = {'1x'}
+% topGridLayout    (col 1): vertical,   RowHeight = {22,22,22,22,'1x','1x',22,22}
+% middleGridLayout (col 3): 1-col × 4-row, ColumnWidth = {'1x'}, RowHeight = {'1x','1x','1x','1x'}
 
 switch evtData.PropertyName
     case 'Region'

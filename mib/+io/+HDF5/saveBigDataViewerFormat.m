@@ -1,64 +1,71 @@
 function result = saveBigDataViewerFormat(filename, I, options)
-% function result = saveBigDataViewerFormat(filename, I, options)
-% Save a dataset in Fiji BigDataViewer (BDV) HDF5 format.
+% SAVEBIGDATAVIEWERFORMAT - Save a dataset in Fiji BigDataViewer (BDV) HDF5 format.
+%
+% Syntax:
+%   function result = saveBigDataViewerFormat(filename, I, options)
 %
 % Format description:
-%   http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format
+% http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format
 %
 % DATA CONVENTION
-%   Input I must be [W, H, C, D, T] — i.e. X/Y already swapped by the
-%   caller (HDF5Saver permutes [H,W,D,C,T] → [W,H,C,D,T] before calling).
-%   Each colour channel is stored separately under /t{T}/s{C}/{level}/cells
-%   as a 3-D dataset [newW, newH, newZ].
+% Input I must be [W, H, C, D, T] — i.e. X/Y already swapped by the
+% caller (HDF5Saver permutes [H,W,D,C,T] → [W,H,C,D,T] before calling).
+% Each colour channel is stored separately under /t{T}/s{C}/{level}/cells
+% as a 3-D dataset [newW, newH, newZ].
 %
 % NOTES
-%   * BDV requires int16 data; uint8 is promoted to uint16 first, then all
-%     non-int16 types are reinterpreted via typecast.
-%   * Pyramid downsampling uses imresize3 (Image Processing Toolbox R2017a+).
-%   * An XML header is NOT written here; call io.HDF5.saveXMLheader with
-%     options.Format = 'bdv.hdf5' after this function returns.
+% * BDV requires int16 data; uint8 is promoted to uint16 first, then all
+% non-int16 types are reinterpreted via typecast.
+% * Pyramid downsampling uses imresize3 (Image Processing Toolbox R2017a+).
+% * An XML header is NOT written here; call io.HDF5.saveXMLheader with
+% options.Format = 'bdv.hdf5' after this function returns.
 %
-% Parameters:
+% Input Arguments:
 %   filename — full path to the output .h5 file
 %   I        — [W, H, C, D, T] image array (X/Y pre-swapped by caller)
 %   options  — struct with fields:
-%     .ChunkSize        [3 x L] chunk sizes per pyramid level (or [3 x 1]
-%                       replicated to all levels); default [64;64;64]
-%     .Deflate          compression level 0-9; default 0
-%     .SubSampling      [3 x L] downsampling factors per level,
-%                       e.g. [1 2 4; 1 2 4; 1 2 4]; default [1;1;1]
-%     .ResamplingMethod 'nearest'|'bicubic'|'bilinear'; default 'bicubic'
-%     .t                time-point start index (for multi-time writing);
-%                       default 1
-%     .showWaitbar      logical; default true
-%     .ParentFigure     handle to the main MIB window (for uiprogressdlg)
-%     .ImageDescription (char) BoundingBox metadata string
-%     .lutColors        [C x 3] LUT colours (0..1) per channel
+%   .ChunkSize        [3 x L] chunk sizes per pyramid level (or [3 x 1]
+%   replicated to all levels); default [64;64;64]
+%   .Deflate          compression level 0-9; default 0
+%   .SubSampling      [3 x L] downsampling factors per level,
+%   e.g. [1 2 4; 1 2 4; 1 2 4]; default [1;1;1]
+%   .ResamplingMethod 'nearest'|'bicubic'|'bilinear'; default 'bicubic'
+%   .t                time-point start index (for multi-time writing);
+%   default 1
+%   .showWaitbar      logical; default true
+%   .ParentFigure     handle to the main MIB window (for uiprogressdlg)
+%   .ImageDescription (char) BoundingBox metadata string
+%   .lutColors        [C x 3] LUT colours (0..1) per channel
 %
-% Return values:
+% Output Arguments:
 %   result — 1 = success, 0 = failure
 %
-% USAGE EXAMPLES
-%   @code
-%   %% Minimal — single resolution level
-%   opts.SubSampling      = [1;1;1];
-%   opts.ChunkSize        = [64;64;64];
-%   opts.Deflate          = 0;
-%   opts.showWaitbar      = false;
-%   opts.t                = 1;
-%   dataBDV = permute(data_HWDCT, [2 1 4 3 5]);   % [H,W,D,C,T]→[W,H,C,D,T]
-%   io.HDF5.saveBigDataViewerFormat('out.h5', dataBDV, opts);
-%   io.HDF5.saveXMLheader('out.h5', opts);         % writes out.xml
-%   @endcode
+%   USAGE EXAMPLES
 %
-%   @code
-%   %% Three-level pyramid
-%   opts.SubSampling = [1 2 4; 1 2 4; 1 2 4];     % [x;y;z] per level
-%   opts.ChunkSize   = [64 64 64; 64 64 64; 64 64 64]';  % [3 x 3]
-%   @endcode
+%   .. code-block:: matlab
 %
-% SEE ALSO
+%       %% Minimal — single resolution level
+%       opts.SubSampling      = [1;1;1];
+%       opts.ChunkSize        = [64;64;64];
+%       opts.Deflate          = 0;
+%       opts.showWaitbar      = false;
+%       opts.t                = 1;
+%       dataBDV = permute(data_HWDCT, [2 1 4 3 5]);   % [H,W,D,C,T]→[W,H,C,D,T]
+%       io.HDF5.saveBigDataViewerFormat('out.h5', dataBDV, opts);
+%       io.HDF5.saveXMLheader('out.h5', opts);         % writes out.xml
+%
+%
+%
+%   .. code-block:: matlab
+%
+%       %% Three-level pyramid
+%       opts.SubSampling = [1 2 4; 1 2 4; 1 2 4];     % [x;y;z] per level
+%       opts.ChunkSize   = [64 64 64; 64 64 64; 64 64 64]';  % [3 x 3]
+%
+%
+%   SEE ALSO
 %   io.HDF5.saveXMLheader, io.savers.HDF5Saver
+%
 
 % Updates
 %   ported from MIB2 saveBigDataViewerFormat.m (Ilya Belevich) to MIB3 package

@@ -1,19 +1,23 @@
 function updateMeasureText(obj, pos)
-% function updateMeasureText(obj, pos)
-% Refresh the quick-measurement text label for this document's active ROI.
+% UPDATEMEASURETEXT - Refresh the quick-measurement text label for this document's active ROI.
+%
+% Syntax:
+%   function updateMeasureText(obj, pos)
+%
 % Called from MovingROI listener (pos provided) and from model event
-% listeners (pos omitted -> read from roi.Position).
+% listeners (pos omitted read from roi.Position).
 %
 % If the currently displayed dataset differs from the one the ROI was drawn
 % on (e.g. after a buffer/dataset change), the ROI is deleted silently via
 % clearQuickMeasure instead of updating.
 %
-% Parameters:
-% pos: (optional) Nx2 position in physical (XData) coordinates.
-%      When [] or omitted, position is read from quickMeasure.roi.Position.
+% Input Arguments:
+%   - **pos** — (optional) Nx2 position in physical (XData) coordinates.
+%     When [] or omitted, position is read from quickMeasure.roi.Position.
 %
-% Return values:
+% Output Arguments:
 %   none
+%
 
 if isempty(obj.quickMeasure); return; end
 

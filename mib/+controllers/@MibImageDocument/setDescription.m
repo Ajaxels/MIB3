@@ -1,18 +1,21 @@
 function setDescription(obj, description)
-% function setDescription(obj, description)
-% Update the description text of this document
+% SETDESCRIPTION - Update the description text of this document.
+%
+% Syntax:
+%   function setDescription(obj, description)
 %
 % The description appears below the document title and typically
 % shows buffer number and filename information.
 %
-% Parameters:
-%   description: char, description text to display
+% Input Arguments:
+%   - **description** — char, description text to display
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-% Example:
-%   obj.setDescription(sprintf('Buffer %d:\n%s', 1, 'myimage.tif'));
+%   - **Example** —
+%     obj.setDescription(sprintf('Buffer %d:\n%s', 1, 'myimage.tif'));
+%
 
 obj.figureDoc.Description = description;
 end

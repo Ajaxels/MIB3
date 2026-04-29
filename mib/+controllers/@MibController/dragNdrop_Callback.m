@@ -1,11 +1,16 @@
 function status = dragNdrop_Callback(obj, parameterIn)
-% status = dragNdrop_Callback(obj, parameterIn)
+% DRAGNDROP_CALLBACK - status = dragNdrop_Callback(obj, parameterIn).
+%
+% Syntax:
+%   function status = dragNdrop_Callback(obj, parameterIn)
+%
 % callback for filename drag-and-drop operation in MIB
 %
-% Parameters:
-% parameterIn: a cell array, where
-% - the first element is a handle to the webWindow that was a target for the drag-and-drop operation
-% - the second element is a filename that was dragged into MIB
+% Input Arguments:
+%   - **parameterIn** — a cell array, where
+%     - the first element is a handle to the webWindow that was a target for the drag-and-drop operation
+%     - the second element is a filename that was dragged into MIB
+%
 
 % arguments (Input)
 %     obj controllers.MibController

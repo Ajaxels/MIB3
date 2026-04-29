@@ -1,39 +1,60 @@
 function imgOut = resizeImage3d(img, scale, options)
-% function imgOut = resizeImage3d(img, scale, options)
-% Resize 3D dataset
+% RESIZEIMAGE3D - Resize a 3D or 4D image dataset.
 %
-% Parameters:
-% img: a 3D (y,x,z) or 4D (y,x,z,c) dataset for resize
-% scale: a number or a vector [scaleY, scaleX, scaleZ] for each dimension with resizing scaling
-% factor, could be empty when options.width, options.height, options.depth
-% fields are used
-% options: [@em optional], additional options
-% @li .algorithm - a string with resizing algorithm: 'imresize', 'interpn', 'tformarray', see below for notes
-% @li .width - a new width value, overrides the scale parameter
-% @li .height - a new height value, overrides the scale parameter
-% @li .depth - a new depth value, overrides the scale parameter
-% @li .method - interpolation method, specified as a string that identifies
-% a general method or a named interpolation kernel: @b imresize: 'nearest',
-% 'bilinear', 'bicubic', 'box', 'triangle', 'cubic', 'lanczos2', 'osc'
-% 'lanczos3'; @b interpn: 'linear', 'nearest', 'pchip', 'cubic', 'spline';
-% @b tformarray - 'nearest', 'linear','cubic'
-% @li .imgType - a string with type of the dataset '4D' or '3D'
-% @li .showWaitbar -> [@em optional], when 1-default, show the wait bar, when 0 - do not show the waitbar
-% @li .wb - handle to an existing waitbar / uiprogressdlg; when provided it
-%           is updated in place and NOT deleted on exit (the caller owns it)
-% @li .ParentFigure - handle to a parent figure; when .wb is absent and
-%           this is non-empty, a local uiprogressdlg is created and deleted
-%           within this call (ignored when .showWaitbar is 0)
+% Syntax:
 %
-% Return values:
-% imgOut: resampled dataset
+%   .. code-block:: matlab
 %
-% @note Resizing algorithms:
-% @li 'imresize' - [@em default] (fastest) for R2017a and later uses imresize3 function, otherwise use imresize to resize XY dimension after resize the Z-dimension, gives somewhat softer images than other methods;
-% @li 'interpn' - interpolation for 1-D, 2-D, 3-D, and N-D gridded data in
-% ndgrid format, quite fast but requires more memory that other methods
-% @li 'tformarray' - resize using a spatial transformation to N-D array,
-% quite slow but more memory friendly comparing to 'interpn'
+%      imgOut = resizeImage3d(img, scale)
+%      imgOut = resizeImage3d(img, scale, options)
+%
+% Input Arguments:
+%   - **img** — [numeric] 3D ``(y, x, z)`` or 4D ``(y, x, z, c)`` dataset to resize
+%   - **scale** — [numeric] scalar or vector ``[scaleY, scaleX, scaleZ]`` resize factor;
+%     pass ``[]`` when ``options.width`` / ``options.height`` / ``options.depth`` are used instead
+%   - **options** *(optional)* — struct with resizing settings:
+%
+%     - ``.algorithm``    — [char] resizing algorithm: ``'imresize'`` *(default)*, ``'interpn'``, ``'tformarray'``
+%     - ``.width``        — [numeric] target width; overrides the ``scale`` parameter
+%     - ``.height``       — [numeric] target height; overrides the ``scale`` parameter
+%     - ``.depth``        — [numeric] target depth; overrides the ``scale`` parameter
+%     - ``.method``       — [char] interpolation method (depends on algorithm — see note below)
+%     - ``.imgType``      — [char] dataset type: ``'4D'`` or ``'3D'`` (auto-detected when absent)
+%     - ``.showWaitbar``  — [logical] show a progress bar (default: ``1``); set to ``0`` to suppress
+%     - ``.wb``           — handle to an existing ``uiprogressdlg``; updated in place, NOT deleted on exit
+%     - ``.ParentFigure`` — handle to a parent figure; a local progress dialog is created/deleted when ``.wb`` is absent
+%
+% Output Arguments:
+%   - **imgOut** — [numeric] resampled dataset (same class as input)
+%
+% .. note::
+%    **Algorithm and method combinations:**
+%
+%    - ``'imresize'`` *(default, fastest)* — uses ``imresize3`` on R2017a+, otherwise resizes XY then Z.
+%      Methods: ``'nearest'``, ``'bilinear'``, ``'bicubic'`` *(default)*, ``'lanczos2'``, ``'lanczos3'``, etc.
+%    - ``'interpn'`` — N-D gridded interpolation; faster than ``'tformarray'`` but needs more memory.
+%      Methods: ``'linear'``, ``'nearest'``, ``'cubic'`` *(default)*, ``'spline'``, ``'pchip'``.
+%    - ``'tformarray'`` — spatial transform; slowest but most memory-friendly.
+%      Methods: ``'nearest'``, ``'linear'``, ``'cubic'``.
+%
+% Usage:
+%
+%   **Example 1** — resize uniformly to 50 %
+%
+%   .. code-block:: matlab
+%
+%      imgOut = utils.resizeImage3d(img, 0.5);
+%
+%   **Example 2** — resize to specific dimensions with bicubic interpolation
+%
+%   .. code-block:: matlab
+%
+%      opts.width  = 512;
+%      opts.height = 512;
+%      opts.depth  = 64;
+%      opts.method = 'bicubic';
+%      imgOut = utils.resizeImage3d(img, [], opts);
+%
 
 % Updates
 % 11.04.2017, IB added imresize3 if it is available
@@ -213,7 +234,11 @@ end   % resizeImage3d
 
 % ---- local helper -----------------------------------------------------------
 function mibUpdateWaitbar(wb, val)
-% Update a waitbar or uiprogressdlg value without erroring on stale handles.
+% MIBUPDATEWAITBAR - Update a waitbar or uiprogressdlg value without erroring on stale handles.
+%
+% Syntax:
+%   function mibUpdateWaitbar(wb, val)
+%
 try
     if isa(wb, 'matlab.ui.dialog.ProgressDialog')
         wb.Value = val;

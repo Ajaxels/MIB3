@@ -1,6 +1,9 @@
 function startTrainingInstances(obj)
-% function startTrainingInstances(obj)
-% perform training of instance segmentation network
+% STARTTRAININGINSTANCES - perform training of instance segmentation network.
+%
+% Syntax:
+%   function startTrainingInstances(obj)
+%
 
 global counter;     % for patch test
 global mibDeepStopTraining

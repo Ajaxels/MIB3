@@ -1,7 +1,7 @@
 classdef VideoReaderLoader < io.loaders.BaseImageLoader
-    % classdef VideoReaderLoader
-    % Loader for video formats using VideoReader, based on
-    % io.loaders.BaseImageLoader base class
+% VIDEOREADERLOADER - Loader for video formats using VideoReader, based on.
+%
+% io.loaders.BaseImageLoader base class
 
     % This loader handles video formats that can be read using
     % MATLAB's built-in VideoReader function (AVI, MPG, MP4, MOV, etc.).
@@ -10,8 +10,11 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
 
     methods
         function obj = VideoReaderLoader(options)
-            % function obj = VideoReaderLoader(options)
-            % Constructor for VideoReaderLoader class
+            % VIDEOREADERLOADER - Constructor for VideoReaderLoader class.
+            %
+            % Syntax:
+            %   function obj = VideoReaderLoader(options)
+            %
 
             % Parameters:
             %   options: [@em optional, struct] options structure
@@ -41,8 +44,11 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for video files
+            % LOADMETADATA - Load metadata for video files.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %
 
             % This method extracts video metadata using VideoReader for
             % standard video formats. It handles frame count detection,
@@ -251,8 +257,11 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Load image data for video files
+            % LOADIMAGES - Load image data for video files.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %
 
             % This method loads actual video frames using VideoReader.
             % It supports frame range selection, custom region loading,

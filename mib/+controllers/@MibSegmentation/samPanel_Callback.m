@@ -1,21 +1,25 @@
 function samPanel_Callback(obj, hWidget, hData)
-% samPanel_Callback(obj, hWidget, hData)
+% SAMPANEL_CALLBACK - samPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function samPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->SAM tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag - identifier the widget, used when the same operation is called from menu
-% 'samMethod' -> method of SAM usage
-% 'samVersion' -> select version of SAM to use 'SAM 1', 'SAM 2'
-% 'samDataset' -> select type of dataset to apply SAM
-% 'samDestination' -> destination layer for SAM results
-% 'samMode' -> SAM mode, add/replace/subtract
-% 'samSettings' -> open SAM settings dialog
-% 'samList' -> show the list of points (annotations) for the landmark mode
-% 'samClear' -> clear the annotation points
-% 'samSegment' -> do SAM segmentation
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
+%     'samMethod' method of SAM usage
+%     'samVersion' select version of SAM to use 'SAM 1', 'SAM 2'
+%     'samDataset' select type of dataset to apply SAM
+%     'samDestination' destination layer for SAM results
+%     'samMode' SAM mode, add/replace/subtract
+%     'samSettings' open SAM settings dialog
+%     'samList' show the list of points (annotations) for the landmark mode
+%     'samClear' clear the annotation points
+%     'samSegment' do SAM segmentation
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
 %
 
 arguments (Input)

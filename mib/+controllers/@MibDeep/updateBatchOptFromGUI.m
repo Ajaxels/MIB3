@@ -1,12 +1,15 @@
 function updateBatchOptFromGUI(obj, event)
-    % function updateBatchOptFromGUI(obj, event)
-    %
-    % update obj.BatchOpt from widgets of GUI
-    % use an external function (utils\updateBatchOptFromGUI_Shared.m) that is common for all tools
-    % compatible with the Batch mode
-    %
-    % Parameters:
-    % event: event from the callback
+% UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from widgets of GUI.
+%
+% Syntax:
+%   function updateBatchOptFromGUI(obj, event)
+%
+% use an external function (utils\updateBatchOptFromGUI_Shared.m) that is common for all tools
+% compatible with the Batch mode
+%
+% Input Arguments:
+%   - **event** — event from the callback
+%
 
     obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
 

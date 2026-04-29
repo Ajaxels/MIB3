@@ -1,6 +1,9 @@
 function duplicateConfigAndNetwork(obj)
-    % function duplicateConfigAndNetwork(obj)
-    % copy the network file and its config to a new filename
+% DUPLICATECONFIGANDNETWORK - copy the network file and its config to a new filename.
+%
+% Syntax:
+%   function duplicateConfigAndNetwork(obj)
+%
 
     currPath = fileparts(obj.BatchOpt.NetworkFilename);
     [currFile, currPath] = utils.dlgs.mibUiGetFile({'*.mibDeep', 'mibDeep Files (*.mibDeep)'}, ...

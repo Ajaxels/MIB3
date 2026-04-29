@@ -1,6 +1,9 @@
 function selectWorkflow(obj, event)
-    % function selectWorkflow(obj, event)
-    % select deep learning workflow to perform
+% SELECTWORKFLOW - select deep learning workflow to perform.
+%
+% Syntax:
+%   function selectWorkflow(obj, event)
+%
     if nargin < 2; event.Source = obj.view.handles.Workflow; end
     obj.updateBatchOptFromGUI(event);
 

@@ -1,6 +1,8 @@
 function addROI(obj)
-% function addROI(obj)
-% Interactively add a new ROI or create one from manual coordinates.
+% ADDROI - Interactively add a new ROI or create one from manual coordinates.
+%
+% Syntax:
+%   function addROI(obj)
 %
 % Reads the selected ROI type from obj.handles.roiType dropdown
 % ('Rectangle', 'Ellipse', 'Polyline', 'Lasso') and either places the
@@ -11,16 +13,17 @@ function addROI(obj)
 % core.RoiRegion.storeROI, the ROI list is refreshed, and a ShowImage
 % event is fired to repaint the overlay.
 %
-% Parameters:
-%   obj: controllers.MibRoi — the ROI panel controller
+% Input Arguments:
+%   - **obj** — controllers.MibRoi — the ROI panel controller
 %
-% Return values: none
-%|
-% @b Examples:
-% @code
-% // called from gui_Callbacks when roiAdd button is pressed
-% obj.addROI();
-% @endcode
+%   Return values: none
+%
+% Usage:
+%   Example 1::
+%
+%     // called from gui_Callbacks when roiAdd button is pressed
+%     obj.addROI();
+%
 
 % developer mode
 if obj.mibModel.preferences.System.DeveloperMode
@@ -139,7 +142,11 @@ obj.drawingROI.active       = true;
 %fprintf('[addROI] drawingROI.active set to %d\n', obj.drawingROI.active);
 
     function captureDataPos()
-        % Convert current axes-space position to data pixels and cache it.
+        % CAPTUREDATAPOS - Convert current axes-space position to data pixels and cache it.
+        %
+        % Syntax:
+        %   function captureDataPos()
+        %
         if ~isvalid(roi) || obj.drawingROI.repositioning; return; end
         try
             switch roiType

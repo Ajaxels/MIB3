@@ -1,6 +1,5 @@
 classdef PoolWaitbar < handle
-    % classdef PoolWaitbar < handle
-    % Thread-safe progress dialog for parallel loops (parfor / spmd / parfeval).
+    % POOLWAITBAR - Thread-safe progress dialog for parallel loops (parfor / spmd / parfeval).
     %
     % Uses parallel.pool.DataQueue + afterEach to route increment signals
     % from worker threads back to the client (main) thread, where the
@@ -13,41 +12,53 @@ classdef PoolWaitbar < handle
     %
     % Requires: Parallel Computing Toolbox (parallel.pool.DataQueue).
     %
-    %|
-    % @b Basic examples:
-    % @code
-    % % Simplest use: create, run parfor, delete
-    % pwb = core.PoolWaitbar(100, 'Working...', mibGUI, 'My task');
-    % parfor ii = 1:100
-    %     pwb.increment();
-    % end
-    % pwb.deletePoolWaitbar();
-    % @endcode
+    % Usage:
+    %   **Basic** examples:
+    %   **Example 1** — Simplest use: create, run parfor, delete
     %
-    % @code
-    % % Reuse an existing uiprogressdlg
-    % wb = uiprogressdlg(mibGUI, 'Message', 'Phase 1', 'Title', 'Proc');
-    % pwb = core.PoolWaitbar(n, 'Phase 2', wb);
-    % parfor ii = 1:n
-    %     pwb.increment();
-    % end
-    % pwb.deletePoolWaitbar(true);   % keep wb open for the next phase
-    % wb.Value = 1;  delete(wb);
-    % @endcode
+    %   .. code-block:: matlab
     %
-    % @code
-    % % Cancelable dialog – poll getCancelState() between parfor batches
-    % pwb = core.PoolWaitbar(n, 'Processing...', mibGUI, 'Job', true);
-    % pwb.setIncrement(10);         % update every 10 steps
-    % for batchStart = 1:10:n
-    %     if pwb.getCancelState(); break; end
-    %     batchEnd = min(batchStart+9, n);
-    %     parfor ii = batchStart:batchEnd
+    %
+    %     % Simplest use: create, run parfor, delete
+    %     pwb = core.PoolWaitbar(100, 'Working...', mibGUI, 'My task');
+    %     parfor ii = 1:100
     %         pwb.increment();
     %     end
-    % end
-    % pwb.deletePoolWaitbar();
-    % @endcode
+    %     pwb.deletePoolWaitbar();
+    %
+    %
+    %   **Example 2** — Reuse an existing uiprogressdlg
+    %
+    %   .. code-block:: matlab
+    %
+    %
+    %     % Reuse an existing uiprogressdlg
+    %     wb = uiprogressdlg(mibGUI, 'Message', 'Phase 1', 'Title', 'Proc');
+    %     pwb = core.PoolWaitbar(n, 'Phase 2', wb);
+    %     parfor ii = 1:n
+    %         pwb.increment();
+    %     end
+    %     pwb.deletePoolWaitbar(true);   % keep wb open for the next phase
+    %     wb.Value = 1;  delete(wb);
+    %
+    %
+    %   **Example 3** — Cancelable dialog – poll getCancelState() between parfor batches
+    %
+    %   .. code-block:: matlab
+    %
+    %
+    %     % Cancelable dialog – poll getCancelState() between parfor batches
+    %     pwb = core.PoolWaitbar(n, 'Processing...', mibGUI, 'Job', true);
+    %     pwb.setIncrement(10);         % update every 10 steps
+    %     for batchStart = 1:10:n
+    %         if pwb.getCancelState(); break; end
+    %         batchEnd = min(batchStart+9, n);
+    %         parfor ii = batchStart:batchEnd
+    %             pwb.increment();
+    %         end
+    %     end
+    %     pwb.deletePoolWaitbar();
+    %
 
     % Updates
     % 24.03.2026 - created for MIB3; removed classic waitbar support,
@@ -79,9 +90,13 @@ classdef PoolWaitbar < handle
     %% ----------------------------------------------------------------
     methods (Access = private)
         function localIncrement(obj)
-            % localIncrement  Advance Count and refresh the dialog.
-            %   Called on the main thread via afterEach(Queue, ...) each
-            %   time a worker calls increment().
+            % LOCALINCREMENT - Advance Count and refresh the dialog.
+            %
+            % Syntax:
+            %   function localIncrement(obj)
+            %
+            % Called on the main thread via afterEach(Queue, ...) each
+            % time a worker calls increment().
             obj.Count = obj.Count + obj.Increment;
             if isvalid(obj.ClientHandle)
                 obj.ClientHandle.Value = min(obj.Count / obj.N, 1);
@@ -94,35 +109,45 @@ classdef PoolWaitbar < handle
     %% ----------------------------------------------------------------
     methods
         function obj = PoolWaitbar(N, message, parentOrHandle, WindowName, Cancelable)
-            % function obj = PoolWaitbar(N, message, parentOrHandle, WindowName, Cancelable)
-            % Construct a thread-safe progress dialog for parallel loops.
+            % POOLWAITBAR - Construct a thread-safe progress dialog for parallel loops.
             %
-            % Parameters:
-            % N: double, total number of iterations expected
-            % message: [@em optional] char, text shown inside the dialog;
-            %   default 'Please wait...'
-            % parentOrHandle: [@em optional] either
-            %   @li matlab.ui.Figure — parent UIFigure; a new uiprogressdlg
+            % Syntax:
+            %   function obj = PoolWaitbar(N, message, parentOrHandle, WindowName, Cancelable)
+            %
+            % Input Arguments:
+            %   - **N** — double, total number of iterations expected
+            %   - **message** — *(optional)* char, text shown inside the dialog;
+            %     default 'Please wait...'
+            %   - **parentOrHandle** — *(optional)* either:
+            %
+            %     - ``matlab.ui.Figure`` — parent UIFigure; a new ``uiprogressdlg``
             %       is created automatically
-            %   @li matlab.ui.dialog.ProgressDialog — existing dialog to
+            %     - ``matlab.ui.dialog.ProgressDialog`` — existing dialog to
             %       reuse (its Value is reset to 0 and Message/Title updated)
-            %   @li [] — error; a parent is required in MIB3
-            % WindowName: [@em optional] char, dialog title; default ''
-            % Cancelable: [@em optional] logical, add Cancel button;
-            %   default false.  Only used when parentOrHandle is a Figure.
+            %     - ``[]`` — error; a parent is required in MIB3
+            %   - **WindowName** — *(optional)* char, dialog title; default ''
+            %   - **Cancelable** — *(optional)* logical, add Cancel button;
+            %     default false.  Only used when parentOrHandle is a Figure.
             %
-            % Return values:
-            % obj: core.PoolWaitbar instance
+            % Output Arguments:
+            %   - **obj** — core.PoolWaitbar instance
             %
-            %|
-            % @b Examples:
-            % @code
-            % pwb = core.PoolWaitbar(200, 'Eroding...', obj.mibModel.mibGUI, 'Erode');
-            % @endcode
-            % @code
-            % % Reuse an open dialog
-            % pwb = core.PoolWaitbar(200, 'Phase 2', existingWb);
-            % @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     pwb = core.PoolWaitbar(200, 'Eroding...', obj.mibModel.mibGUI, 'Erode');
+            %
+            %   **Example 2** — Reuse an open dialog
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Reuse an open dialog
+            %     pwb = core.PoolWaitbar(200, 'Phase 2', existingWb);
+            %
 
             if nargin < 5; Cancelable = false; end
             if nargin < 4; WindowName = ''; end
@@ -158,136 +183,172 @@ classdef PoolWaitbar < handle
 
         % ----------------------------------------------------------
         function increment(obj)
-            % function increment(obj)
-            % Signal one step of progress from any thread (main or worker).
+            % INCREMENT - Signal one step of progress from any thread (main or worker).
+            %
+            % Syntax:
+            %   function increment(obj)
             %
             % This is the only method that is safe to call inside a parfor
             % body.  It uses send() on the immutable DataQueue; the actual
             % UI update happens asynchronously on the main thread.
             %
-            % Parameters:
+            % Input Arguments:
             %   (none)
             %
-            % Return values:
+            % Output Arguments:
             %   (none)
             %
-            %|
-            % @b Examples:
-            % @code parfor ii = 1:n; pwb.increment(); end @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     parfor ii = 1:n; pwb.increment(); end
+            %
 
             send(obj.Queue, true);
         end
 
         % ----------------------------------------------------------
         function setIncrement(obj, increment)
-            % function setIncrement(obj, increment)
-            % Set the step size added to Count on each increment() call.
+            % SETINCREMENT - Set the step size added to Count on each increment() call.
+            %
+            % Syntax:
+            %   function setIncrement(obj, increment)
             %
             % Use this when the caller wants to call increment() less
             % frequently (e.g., every 10 iterations to reduce overhead).
             %
-            % Parameters:
-            % increment: double, new step size; default 1
+            % Input Arguments:
+            %   - **increment** — double, new step size; default 1
             %
-            % Return values:
+            % Output Arguments:
             %   (none)
             %
-            %|
-            % @b Examples:
-            % @code pwb.setIncrement(10);  // advance bar by 10% each call @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     pwb.setIncrement(10);% advance bar by 10% each call
+            %
 
             obj.Increment = increment;
         end
 
         % ----------------------------------------------------------
         function setCurrentIteration(obj, count)
-            % function setCurrentIteration(obj, count)
-            % Manually set the completed-iteration counter.
+            % SETCURRENTITERATION - Manually set the completed-iteration counter.
+            %
+            % Syntax:
+            %   function setCurrentIteration(obj, count)
             %
             % Useful when restarting progress tracking mid-run or when
             % stitching two sequential phases that share one dialog.
             %
-            % Parameters:
-            % count: double, new value for the internal counter
+            % Input Arguments:
+            %   - **count** — double, new value for the internal counter
             %
-            % Return values:
+            % Output Arguments:
             %   (none)
+            %
 
             obj.Count = count;
         end
 
         % ----------------------------------------------------------
         function count = getCurrentIteration(obj)
-            % function count = getCurrentIteration(obj)
-            % Return the number of iterations completed so far.
+            % GETCURRENTITERATION - Return the number of iterations completed so far.
             %
-            % Parameters:
+            % Syntax:
+            %   function count = getCurrentIteration(obj)
+            %
+            % Input Arguments:
             %   (none)
             %
-            % Return values:
-            % count: double, current iteration counter
+            % Output Arguments:
+            %   - **count** — double, current iteration counter
+            %
 
             count = obj.Count;
         end
 
         % ----------------------------------------------------------
         function updateMaxNumberOfIterations(obj, N)
-            % function updateMaxNumberOfIterations(obj, N)
-            % Replace the total iteration count with a new value.
+            % UPDATEMAXNUMBEROFITERATIONS - Replace the total iteration count with a new value.
             %
-            % Parameters:
-            % N: double, new total number of iterations
+            % Syntax:
+            %   function updateMaxNumberOfIterations(obj, N)
             %
-            % Return values:
+            % Input Arguments:
+            %   - **N** — double, new total number of iterations
+            %
+            % Output Arguments:
             %   (none)
+            %
 
             obj.N = N;
         end
 
         % ----------------------------------------------------------
         function increaseMaxNumberOfIterations(obj, N)
-            % function increaseMaxNumberOfIterations(obj, N)
-            % Increase the total iteration count by N.
+            % INCREASEMAXNUMBEROFITERATIONS - Increase the total iteration count by N.
             %
-            % Parameters:
-            % N: double, amount to add to the current maximum
+            % Syntax:
+            %   function increaseMaxNumberOfIterations(obj, N)
             %
-            % Return values:
+            % Input Arguments:
+            %   - **N** — double, amount to add to the current maximum
+            %
+            % Output Arguments:
             %   (none)
+            %
 
             obj.N = obj.N + N;
         end
 
         % ----------------------------------------------------------
         function result = getMaxNumberOfIterations(obj)
-            % function result = getMaxNumberOfIterations(obj)
-            % Return the total number of expected iterations.
+            % GETMAXNUMBEROFITERATIONS - Return the total number of expected iterations.
             %
-            % Parameters:
+            % Syntax:
+            %   function result = getMaxNumberOfIterations(obj)
+            %
+            % Input Arguments:
             %   (none)
             %
-            % Return values:
-            % result: double, the N value set at construction or updated
+            % Output Arguments:
+            %   - **result** — double, the N value set at construction or updated
+            %
 
             result = obj.N;
         end
 
         % ----------------------------------------------------------
         function updateText(obj, newText)
-            % function updateText(obj, newText)
-            % Update the message shown in the uiprogressdlg.
+            % UPDATETEXT - Update the message shown in the uiprogressdlg.
+            %
+            % Syntax:
+            %   function updateText(obj, newText)
             %
             % Only safe to call from the main thread (not inside parfor).
             %
-            % Parameters:
-            % newText: char, new message string
+            % Input Arguments:
+            %   - **newText** — char, new message string
             %
-            % Return values:
+            % Output Arguments:
             %   (none)
             %
-            %|
-            % @b Examples:
-            % @code pwb.updateText(sprintf('Processing slice %d/%d', z, zMax)); @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     pwb.updateText(sprintf('Processing slice %d/%d', z, zMax));
+            %
 
             if isvalid(obj.ClientHandle)
                 obj.ClientHandle.Message = newText;
@@ -296,14 +357,17 @@ classdef PoolWaitbar < handle
 
         % ----------------------------------------------------------
         function text = getText(obj)
-            % function text = getText(obj)
-            % Return the current message string from the uiprogressdlg.
+            % GETTEXT - Return the current message string from the uiprogressdlg.
             %
-            % Parameters:
+            % Syntax:
+            %   function text = getText(obj)
+            %
+            % Input Arguments:
             %   (none)
             %
-            % Return values:
-            % text: char, current dialog message
+            % Output Arguments:
+            %   - **text** — char, current dialog message
+            %
 
             if isvalid(obj.ClientHandle)
                 text = obj.ClientHandle.Message;
@@ -314,22 +378,29 @@ classdef PoolWaitbar < handle
 
         % ----------------------------------------------------------
         function res = getCancelState(obj)
-            % function res = getCancelState(obj)
-            % Return true if the user pressed Cancel in the dialog.
+            % GETCANCELSTATE - Return true if the user pressed Cancel in the dialog.
+            %
+            % Syntax:
+            %   function res = getCancelState(obj)
             %
             % Only meaningful when the dialog was created with
             % Cancelable = true.  Poll this between parfor batches (on the
             % main thread) — do not call it from inside a parfor body.
             %
-            % Parameters:
+            % Input Arguments:
             %   (none)
             %
-            % Return values:
-            % res: logical, true when Cancel has been requested
+            % Output Arguments:
+            %   - **res** — logical, true when Cancel has been requested
             %
-            %|
-            % @b Examples:
-            % @code if pwb.getCancelState(); break; end @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     if pwb.getCancelState(); break; end
+            %
 
             if isvalid(obj.ClientHandle)
                 res = obj.ClientHandle.CancelRequested;
@@ -340,42 +411,62 @@ classdef PoolWaitbar < handle
 
         % ----------------------------------------------------------
         function wb = getWaitbarHandle(obj)
-            % function wb = getWaitbarHandle(obj)
-            % Return the underlying uiprogressdlg handle.
+            % GETWAITBARHANDLE - Return the underlying uiprogressdlg handle.
+            %
+            % Syntax:
+            %   function wb = getWaitbarHandle(obj)
             %
             % Use this before calling deletePoolWaitbar(true) to retain a
             % reference to the dialog for subsequent updates.
             %
-            % Parameters:
+            % Input Arguments:
             %   (none)
             %
-            % Return values:
-            % wb: matlab.ui.dialog.ProgressDialog handle
+            % Output Arguments:
+            %   - **wb** — matlab.ui.dialog.ProgressDialog handle
             %
-            %|
-            % @b Examples:
-            % @code wb = pwb.getWaitbarHandle(); pwb.deletePoolWaitbar(true); @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     wb = pwb.getWaitbarHandle(); pwb.deletePoolWaitbar(true);
+            %
 
             wb = obj.ClientHandle;
         end
 
         % ----------------------------------------------------------
         function deletePoolWaitbar(obj, keepDialog)
-            % function deletePoolWaitbar(obj, keepDialog)
-            % Tear down the PoolWaitbar, optionally keeping the uiprogressdlg.
+            % DELETEPOOLWAITBAR - Tear down the PoolWaitbar, optionally keeping the uiprogressdlg.
             %
-            % Parameters:
-            % keepDialog: [@em optional] logical; when true the underlying
-            %   uiprogressdlg is NOT deleted so the caller can continue
-            %   using it directly.  Default false (dialog is deleted).
+            % Syntax:
+            %   function deletePoolWaitbar(obj, keepDialog)
             %
-            % Return values:
+            % Input Arguments:
+            %   - **keepDialog** — *(optional)* logical; when true the underlying
+            %     uiprogressdlg is NOT deleted so the caller can continue
+            %     using it directly.  Default false (dialog is deleted).
+            %
+            % Output Arguments:
             %   (none)
             %
-            %|
-            % @b Examples:
-            % @code pwb.deletePoolWaitbar();        // delete everything @endcode
-            % @code pwb.deletePoolWaitbar(true);    // keep dialog open @endcode
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     pwb.deletePoolWaitbar();% delete everything
+            %
+            %   **Example 2**
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     pwb.deletePoolWaitbar(true);% keep dialog open
+            %
 
             if nargin < 2; keepDialog = false; end
 
@@ -394,8 +485,11 @@ classdef PoolWaitbar < handle
 
         % ----------------------------------------------------------
         function delete(obj)
-            % function delete(obj)
-            % Destructor: clean up the DataQueue, Listener, and dialog.
+            % DELETE - Destructor: clean up the DataQueue, Listener, and dialog.
+            %
+            % Syntax:
+            %   function delete(obj)
+            %
 
             if ~isempty(obj.Listener) && isvalid(obj.Listener)
                 delete(obj.Listener);

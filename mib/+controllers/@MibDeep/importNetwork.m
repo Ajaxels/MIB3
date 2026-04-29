@@ -1,6 +1,9 @@
 function importNetwork(obj)
-% function importNetwork(obj)
-% import an externally trained or designed network to be used
+% IMPORTNETWORK - import an externally trained or designed network to be used.
+%
+% Syntax:
+%   function importNetwork(obj)
+%
 % with DeepMIB
 %
 % Example:

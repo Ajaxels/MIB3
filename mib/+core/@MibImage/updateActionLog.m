@@ -1,38 +1,56 @@
 % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
 % Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
+% License: BSD-3 clause (https:% opensource.org/license/bsd-3-clause/)
 
 function updateActionLog(obj, logEntry, action, entryIndex)
-% function updateActionLog(obj, logEntry, action, entryIndex)
-% Append or modify a timestamped entry in the action log (obj.actionLog).
+% UPDATEACTIONLOG - Append or modify a timestamped entry in the action log (obj.actionLog).
 %
-% Parameters:
-% logEntry: [char or string] description of the processing step to record,
-%   e.g. 'ImFilter: Median, HSize:3 3, Orient:4'. Pass '' when only
-%   performing a delete action.
-% action: [@em optional] additional operation to perform:
-%   @li 'insert' - insert new entry before position entryIndex
-%   @li 'delete' - delete entry at position entryIndex (logEntry ignored)
-%   @li 'modify' - overwrite entry at position entryIndex
-%   when omitted, entry is appended to the end
-% entryIndex: [@em optional] 1-based index for 'insert', 'delete', 'modify'
+% Syntax:
+%   function updateActionLog(obj, logEntry, action, entryIndex)
 %
-% Return values:
-% (none) — modifies obj.actionLog in place.
+% Input Arguments:
+%   - **logEntry** — [char or string] description of the processing step to record,
+%     e.g. 'ImFilter: Median, HSize:3 3, Orient:4'. Pass '' when only
+%     performing a delete action.
+%   - **action** — *(optional)* additional operation to perform; when omitted, entry is appended to the end:
 %
-% @b Examples:
-% @code
-% obj.image.updateActionLog('ImFilter: Median, HSize:3 3, Orient:4');
-% @endcode
-% @code
-% obj.image.updateActionLog('MIB demo dataset', 'insert', 2);
-% @endcode
-% @code
-% obj.image.updateActionLog('', 'delete', 4);
-% @endcode
-% @code
-% obj.image.updateActionLog('Updated text', 'modify', 4);
-% @endcode
+%     - ``'insert'`` — insert new entry before position ``entryIndex``
+%     - ``'delete'`` — delete entry at position ``entryIndex`` (``logEntry`` is ignored)
+%     - ``'modify'`` — overwrite entry at position ``entryIndex``
+%   - **entryIndex** — *(optional)* 1-based index for 'insert', 'delete', 'modify'
+%
+% Output Arguments:
+%   (none) — modifies obj.actionLog in place.
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.updateActionLog('ImFilter: Median, HSize:3 3, Orient:4');
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.updateActionLog('MIB demo dataset', 'insert', 2);
+%
+%   **Example 3**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.updateActionLog('', 'delete', 4);
+%
+%   **Example 4**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.updateActionLog('Updated text', 'modify', 4);
+%
 
 % Updates
 % 11.04.2026 - created

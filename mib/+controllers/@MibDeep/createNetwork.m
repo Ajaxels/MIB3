@@ -1,14 +1,18 @@
 function [lgraph, outputPatchSize] = createNetwork(obj, previewSwitch)
-% function lgraph = createNetwork(obj, previewSwitch)
-% generate network
-% Parameters:
-% previewSwitch: logical switch, when 1 - the generated network
-% is only for preview, i.e. weights of classes won't be
-% calculated
+% CREATENETWORK - generate network.
 %
-% Return values:
-% lgraph: network object
-% outputPatchSize: output patch size as [height, width, depth, color]
+% Syntax:
+%   function [lgraph, outputPatchSize] = createNetwork(obj, previewSwitch)
+%
+% Input Arguments:
+%   - **previewSwitch** — logical switch, when 1 - the generated network
+%     is only for preview, i.e. weights of classes won't be
+%     calculated
+%
+% Output Arguments:
+%   - **lgraph** — network object
+%   - **outputPatchSize** — output patch size as [height, width, depth, color]
+%
 
 if nargin < 2; previewSwitch = 0; end
 lgraph = [];

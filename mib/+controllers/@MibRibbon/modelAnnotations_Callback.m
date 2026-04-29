@@ -1,10 +1,13 @@
 function modelAnnotations_Callback(obj, hWidget, hData)
-% function modelAnnotations_Callback(obj, hWidget, hData)
-% callback on press of buttons in the List of annotations button of the Model ribbon
+% MODELANNOTATIONS_CALLBACK - callback on press of buttons in the List of annotations button of the Model ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function modelAnnotations_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

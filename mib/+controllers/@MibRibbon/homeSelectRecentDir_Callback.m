@@ -1,11 +1,15 @@
 function  homeSelectRecentDir_Callback(obj, recentDir)
-% function  homeSelectRecentDir(obj, recentDir)
-% callback on selection of the recent directory 
-% in a list (obj.view.handles.ribbonHome.loadFile.Popup) under the Open image button (obj.view.handles.ribbonHome.loadFile) of 
+% HOMESELECTRECENTDIR_CALLBACK - callback on selection of the recent directory.
+%
+% Syntax:
+%   function  homeSelectRecentDir_Callback(obj, recentDir)
+%
+% in a list (obj.view.handles.ribbonHome.loadFile.Popup) under the Open image button (obj.view.handles.ribbonHome.loadFile) of
 % the Home ribbon (obj.view.handles.ribbonHome)
 %
-% Parameters
-% recentDir: char with the full directory path
+% Input Arguments:
+%   - **recentDir** — char with the full directory path
+%
 
 arguments (Input)
     obj controllers.MibRibbon

@@ -1,28 +1,28 @@
 function gui_WindowButtonUpFcn(obj, brush_switch)
-% function gui_WindowButtonUpFcn(obj, brush_switch)
-% Callback for release of the mouse button.
+% GUI_WINDOWBUTTONUPFCN - Callback for release of the mouse button.
+%
+% Syntax:
+%   function gui_WindowButtonUpFcn(obj, brush_switch)
 %
 % Linked via (example):
-%   hFig.WindowButtonUpFcn = @(~,~)obj.gui_WindowButtonUpFcn();
+% hFig.WindowButtonUpFcn = @(~,~)obj.gui_WindowButtonUpFcn();
 %
 % Performs three tasks in order:
-%   1. If brush data exists (obj.brushSelection is a cell), commits the
-%      drawn brush stroke to the selection layer, applying fill-holes,
-%      material/mask restriction, and add/subtract mode as needed.
-%   2. Clears brush state and updates ROI screen positions.
-%   3. Restores all figure callbacks and pointer that were disabled during
-%      panning or brush operation, then triggers a full image refresh.
+% 1. If brush data exists (obj.brushSelection is a cell), commits the
+% drawn brush stroke to the selection layer, applying fill-holes,
+% material/mask restriction, and add/subtract mode as needed.
+% 2. Clears brush state and updates ROI screen positions.
+% 3. Restores all figure callbacks and pointer that were disabled during
+% panning or brush operation, then triggers a full image refresh.
 %
-% Parameters:
-% brush_switch: char - when 'subtract', the brush stroke is removed from
-%               the current selection instead of being added to it.
-%               Needed for return after the brush eraser mode.
-%               Default: '' (add mode)
+% Input Arguments:
+%   - **brush_switch** — char - when 'subtract', the brush stroke is removed from
+%     the current selection instead of being added to it.
+%     Needed for return after the brush eraser mode.
+%   - **Default** — '' (add mode)
 %
-% Return values:
+% Output Arguments:
 %   (none)
-%
-% Updates
 %
 
 showCongratulations = false; % switch to show the milestone congratulations

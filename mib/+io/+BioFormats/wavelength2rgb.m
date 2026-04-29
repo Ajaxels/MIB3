@@ -15,16 +15,20 @@
 % Date: 25.04.2023
 
 function rgb = wavelength2rgb(wavelength)
-% function rgb = wavelength2rgb(wavelength)
-% Convert wavelength into RGB value (0-255)
+% WAVELENGTH2RGB - Convert wavelength into RGB value (0-255).
+%
+% Syntax:
+%   function rgb = wavelength2rgb(wavelength)
+%
 % The code is adapted from http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm
 %
-% Parameters:
-% wavelength: a number containing wavelength
+% Input Arguments:
+%   - **wavelength** — a number containing wavelength
 %
-% Return values:
-% rgb: an array containing, (red, green, blue) components of the color,
-% range 0-255
+% Output Arguments:
+%   - **rgb** — an array containing, (red, green, blue) components of the color,
+%     range 0-255
+%
 
 % Updates
 % 

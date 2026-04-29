@@ -1,17 +1,22 @@
 function magicwandPanel_Callback(obj, hWidget, hData)
-% magicwandPanel_Callback(obj, hWidget, hData)
+% MAGICWANDPANEL_CALLBACK - magicwandPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function magicwandPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->Magicwand tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag - identifier the widget, used when the same operation is called from menu
-% 'magicMethod' -> select the MagicWand or RegionGrowing mode
-% 'magicRange1' -> define the range 1 parameter
-% 'magicRange2' -> define the range 2 parameter
-% 'magicRadius' -> define effective radius for the MagicWand tool
-% 'magicConnect' -> object connections for making magic wand mask
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
+%     'magicMethod' select the MagicWand or RegionGrowing mode
+%     'magicRange1' define the range 1 parameter
+%     'magicRange2' define the range 2 parameter
+%     'magicRadius' define effective radius for the MagicWand tool
+%     'magicConnect' object connections for making magic wand mask
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

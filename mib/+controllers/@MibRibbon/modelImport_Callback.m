@@ -1,10 +1,13 @@
 function modelImport_Callback(obj, hWidget, hData)
-% function modelImport_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Import section of the Model ribbon
+% MODELIMPORT_CALLBACK - callback on press of buttons in the Import section of the Model ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function modelImport_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

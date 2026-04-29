@@ -1,13 +1,17 @@
 function widgetHandles = addRibbonModel(obj, lazyInit)
-% function widgetHandles = addRibbonModel(obj, lazyInit)
-% build the Model tab group (obj.handles.ribbon.model)
-% and add it to obj.handles.ribbon.global 
+% ADDRIBBONMODEL - build the Model tab group (obj.handles.ribbon.model).
 %
-% Parameters:
-% lazyInit: [@em optional default=false] logical, when true do only
-% place maker initialization of the panel. The full rendering is upon the
-% first call, using
-% "controllers.MibController.globalTabGroup_SelectionCallback" function
+% Syntax:
+%   function widgetHandles = addRibbonModel(obj, lazyInit)
+%
+% and add it to obj.handles.ribbon.global
+%
+% Input Arguments:
+%   - **lazyInit** — [*optional* default=false] logical, when true do only
+%     place maker initialization of the panel. The full rendering is upon the
+%     first call, using
+%     "controllers.MibController.globalTabGroup_SelectionCallback" function
+%
 
 arguments (Input)
     obj views.MibView

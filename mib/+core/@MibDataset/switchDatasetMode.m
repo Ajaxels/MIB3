@@ -1,28 +1,41 @@
 function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithImage)
-% function newMode = switchDatasetMode(obj, newMode, enableSelection, initWithImage)
-% Function to switch between loading datasets to different modes, defined
+% SWITCHDATASETMODE - Function to switch between loading datasets to different modes, defined.
+%
+% Syntax:
+%   function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithImage)
+%
 % in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
 %
-% Parameters:
-% newMode: [@em optional],
-%    @li when @b 0 - uses the memory-resident mode, i.e. when the images loaded to memory
-%    @li when @b 1 - uses the HDD-resident mode (virtual stacking), i.e. when the images kept on a hard drive
-%    @li when @b 2 - uses the BigData mode, the images are loaded on demand
-% enableSelection: [@em optional] a switch to set enableSelection based on mibModel.preferences.System.EnableSelection
-% initWithImage: [@em optional] init the class with this provided image,
-%   @li for "Standard", [numeric matrix] it should be preloaded loaded image,
-%   @li for 'Virtual', [cell array]it is a full path to the dataset
+% Input Arguments:
+%   - **newMode** — *(optional)* target dataset mode:
 %
-% Return values:
-% newModeOut: result of the function,
-% @li [] - nothing was changed
-% @li 0 - switched to the memory-resident mode
-% @li 1 - switched to the virtual stacking mode
-% @li 2 - switched to the BigData mode
-
-%|
-% @b Examples:
-% @code result = obj.mibModel.I{obj.mibModel.Id}.switchDatasetMode(1, obj.mibModel.preferences.System.EnableSelection);  // enable the virtual stacking mode @endcode
+%     - ``0`` — memory-resident mode (Standard), images loaded to memory
+%     - ``1`` — HDD-resident mode (Virtual), images kept on hard drive
+%     - ``2`` — BigData mode, images loaded on demand
+%
+%   - **enableSelection** — *(optional)* logical switch to enable/disable the selection layer;
+%     set based on ``mibModel.preferences.System.EnableSelection``
+%   - **initWithImage** — *(optional)* initialise the class with a provided image:
+%
+%     - for ``'Standard'``: numeric matrix (preloaded image data)
+%     - for ``'Virtual'``: cell array with full path(s) to the dataset
+%
+% Output Arguments:
+%   - **newModeOut** — result of the function:
+%
+%     - ``[]`` — nothing was changed
+%     - ``0`` — switched to the memory-resident (Standard) mode
+%     - ``1`` — switched to the virtual stacking mode
+%     - ``2`` — switched to the BigData mode
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     result = obj.mibModel.I{obj.mibModel.Id}.switchDatasetMode(1, obj.mibModel.preferences.System.EnableSelection);% enable the virtual stacking mode
+%
 
 % Updates
 %

@@ -1,12 +1,13 @@
 classdef SelectHDFSeries < handle
-    % SelectHDFSeries Controller for HDF Series Selection Dialog
-    %   Logic ported from selectHDFSeries.m to support App Designer views.
-    %
-    %   Usage:
-    %       % init the controller for the dialog using hdf5 file and handle to the parent GUI
-    %       controller = SelectHDFSeries('myfile.h5', ParentFigure);
-    %       % run the controller to acquire the user input
-    %       [dataset, metaFlag, dims, transMat] = controller.run();
+% SELECTHDFSERIES - SelectHDFSeries Controller for HDF Series Selection Dialog.
+%
+% Logic ported from selectHDFSeries.m to support App Designer views.
+%
+% Usage:
+% % init the controller for the dialog using hdf5 file and handle to the parent GUI
+% controller = SelectHDFSeries('myfile.h5', ParentFigure);
+% % run the controller to acquire the user input
+% [dataset, metaFlag, dims, transMat] = controller.run();
 
     properties (Access = private)
         view            % handle to the App Designer view
@@ -26,7 +27,11 @@ classdef SelectHDFSeries < handle
 
     methods
         function obj = SelectHDFSeries(filename, ParentFigure, Font)
-            % Constructor
+            % SELECTHDFSERIES - Constructor.
+            %
+            % Syntax:
+            %   function obj = SelectHDFSeries(filename, ParentFigure, Font)
+            %
             % viewObj: Instance of the App Designer app
             % filename: String path to the HDF5 file
             
@@ -51,7 +56,11 @@ classdef SelectHDFSeries < handle
         end
 
         function varargout = run(obj)
-            % RUN logic to block execution and return results
+            % RUN - RUN logic to block execution and return results.
+            %
+            % Syntax:
+            %   function varargout = run(obj)
+            %
             % Matches original selectHDFSeries output signature
             
             %obj.view.gui.WindowStyle = 'modal';
@@ -87,7 +96,11 @@ classdef SelectHDFSeries < handle
 
     methods (Access = private)
         function initView(obj)
-            % Make the view modal
+            % INITVIEW - Make the view modal.
+            %
+            % Syntax:
+            %   function initView(obj)
+            %
             utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
             % add icon
             obj.view.gui.Icon = 'mib_icon_16px.png';
@@ -146,7 +159,11 @@ classdef SelectHDFSeries < handle
         end
 
         function [row, dimTags] = parseDatasetInfo(~, dataset, groupName)
-            % Helper to extract row data and axistags
+            % PARSEDATASETINFO - Helper to extract row data and axistags.
+            %
+            % Syntax:
+            %   function [row, dimTags] = parseDatasetInfo(~, dataset, groupName)
+            %
             
             dsName = dataset.Name;
             if isempty(groupName)
@@ -187,7 +204,11 @@ classdef SelectHDFSeries < handle
         end
 
         function processSelection(obj, rowIndex)
-            % Logic executed when a row is selected
+            % PROCESSSELECTION - Logic executed when a row is selected.
+            %
+            % Syntax:
+            %   function processSelection(obj, rowIndex)
+            %
             if isempty(obj.view.seriesTable.Data) || rowIndex < 1
                 return;
             end
@@ -213,7 +234,11 @@ classdef SelectHDFSeries < handle
         end
         
         function calculateTransMatrix(obj, rowIndex)
-            % Logic to map data dimensions to output dimensions (yxzct)
+            % CALCULATETRANSMATRIX - Logic to map data dimensions to output dimensions (yxzct).
+            %
+            % Syntax:
+            %   function calculateTransMatrix(obj, rowIndex)
+            %
             transMat = NaN;
             
             if rowIndex <= numel(obj.dataDimMap) && ~isempty(obj.dataDimMap{rowIndex})
@@ -257,7 +282,11 @@ classdef SelectHDFSeries < handle
         % ----------------------
 
         function onTableSelection(obj, ~, event)
-            % App Designer table selection is often a struct or event data
+            % ONTABLESELECTION - App Designer table selection is often a struct or event data.
+            %
+            % Syntax:
+            %   function onTableSelection(obj, ~, event)
+            %
             % We need the index.
             
             % For single selection:
@@ -295,7 +324,11 @@ classdef SelectHDFSeries < handle
         end
 
         function onContinue(obj, ~, ~)
-            % Handle Manual Transpose Overrides
+            % ONCONTINUE - Handle Manual Transpose Overrides.
+            %
+            % Syntax:
+            %   function onContinue(obj, ~, ~)
+            %
             if obj.view.handles.reorderDims.Value
                 % Logic to parse manual transpose string (from original code)
                 transStr = lower(obj.view.handles.newDimOrder.Value);

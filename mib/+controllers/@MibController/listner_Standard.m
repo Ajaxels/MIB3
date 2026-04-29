@@ -1,6 +1,9 @@
 function listner_Standard(obj, model, evnt)
-% function listner2_Callback(obj, model, evnt)
-% standard listener callback for event that is provided as evnt.EventName
+% LISTNER_STANDARD - standard listener callback for event that is provided as evnt.EventName.
+%
+% Syntax:
+%   function listner_Standard(obj, model, evnt)
+%
  
 arguments (Input)
     obj controllers.MibController

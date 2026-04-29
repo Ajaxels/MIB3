@@ -1,29 +1,33 @@
 function segmentationSAM(obj, extraOptions, BatchOptIn)
-% segmentationSAM(obj, extraOptions, BatchOptIn)
+% SEGMENTATIONSAM - segmentationSAM(obj, extraOptions, BatchOptIn).
+%
+% Syntax:
+%   function segmentationSAM(obj, extraOptions, BatchOptIn)
+%
 % Perform segmentation using segment-anything model https://segment-anything.com
 %
-% Parameters:
-% extraOptions: [@em optional] structure with additional options
-%  @li .addNextMaterial, [logical], switch to add next material for the "add, +next material" mode
-% BatchOptIn: [@em optional] structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event, see Declaration of the BatchOpt structure below for details, the function
-%   variables are preferred over the BatchOptIn variables
-% @li .Method - Specify method how SAM should be executed
-%       -> "Interactive", by interactively adding point
-%       -> "Landmarks", process the placed points all at once
-%       -> "Automatic everything", automatically segment all objects on the image
-% @li .Dataset - segment the current slice (2D, Slice), current stack (3D, Stack) or the whole dataset(4D, Dataset)
-% @li .Destination - string with MIB layer to apply results of the segmentation (selection, mask, labels)
-% @li .showWaitbar - Show or not the progress bar during execution
+% Input Arguments:
+%   - **extraOptions** — *(optional)* structure with additional options
+%     - .addNextMaterial, [logical], switch to add next material for the "add, +next material" mode
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event, see Declaration of the BatchOpt structure below for details, the function
+%     variables are preferred over the BatchOptIn variables
+%     - .Method - Specify method how SAM should be executed
+%   -> "Interactive", by interactively adding point
+%   -> "Landmarks", process the placed points all at once
+%   -> "Automatic everything", automatically segment all objects on the image
+%     - .Dataset - segment the current slice (2D, Slice), current stack (3D, Stack) or the whole dataset(4D, Dataset)
+%     - .Destination - string with MIB layer to apply results of the segmentation (selection, mask, labels)
+%     - .showWaitbar - Show or not the progress bar during execution
 %
-% Return values:
-% none
-
-%|
-% @b Examples:
-% @code
-% obj.segmentationSAM(extraOptions);
-% @endcode
+% Output Arguments:
+%   none
+%
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationSAM(extraOptions);
+%
 
 if nargin < 2; extraOptions = []; end
 
@@ -449,16 +453,19 @@ notify(obj.mibModel, 'ShowImage');
 end
 
 function imgOut = pointsSAM(imgIn, labelPositions, labelIndices)
-% function imgOut = pointsSAM(imgIn, labelPositions, labelIndices)
-% do interactive prediction of 2D image using ONNX runtime
+% POINTSSAM - do interactive prediction of 2D image using ONNX runtime.
 %
-% Parameters:
-% imgIn: image to segment (height, width, colors)
-% labelPositions: matrix of coordinates for seeds ([seedId; x,y])
-% labelIndices: matrix positive (1) and negative seeds (0)
+% Syntax:
+%   function imgOut = pointsSAM(imgIn, labelPositions, labelIndices)
 %
-% Return values:
-% imgOut: results of the segmentation, 2D image (height, width)
+% Input Arguments:
+%   - **imgIn** — image to segment (height, width, colors)
+%   - **labelPositions** — matrix of coordinates for seeds ([seedId; x,y])
+%   - **labelIndices** — matrix positive (1) and negative seeds (0)
+%
+% Output Arguments:
+%   - **imgOut** — results of the segmentation, 2D image (height, width)
+%
 
 pyrun('predictor.set_image(image)', image=py.numpy.array(imgIn))
 pyrun('image_embedding = predictor.get_image_embedding().cpu().numpy()')

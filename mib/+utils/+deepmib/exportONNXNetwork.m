@@ -1,26 +1,28 @@
 function exportONNXNetwork(Network, filename, varargin)
-%exportONNXNetwork  Export network or graph of layers to ONNX model format.
+% EXPORTONNXNETWORK - Export a trained network or layer graph to ONNX model format.
 %
-% exportONNXNetwork(net,filename) exports the trained network or graph of network layers (net) 
-% with weights to the ONNX format file specified by filename. If filename exists, then exportONNXNetwork overwrites the file.
+% Syntax:
 %
-%  Inputs:
-%  -------
+%   .. code-block:: matlab
 %
-%  Network      - Trained network or graph of network layers, specified as a SeriesNetwork, DAGNetwork, dlnetwork, or layerGraph.
+%      exportONNXNetwork(Network, filename)
+%      exportONNXNetwork(Network, filename, Name, Value, ...)
 %
-%  filename     - Name of file, specified as a character vector or string.
+% Exports ``Network`` with weights to the ONNX file ``filename``.
+% If ``filename`` already exists it is overwritten.
 %
-%  exportONNXNetwork(...,Name,Value) specifies additional name-value pairs described below:
+% Input Arguments:
+%   - **Network** — trained network or layer graph specified as a
+%     ``SeriesNetwork``, ``DAGNetwork``, ``dlnetwork``, or ``layerGraph``
+%   - **filename** — [char|string] output file path
 %
-%  'NetworkName'    - Name of ONNX network to store in the saved file, specified as a character vector or string.
-%                     Default: 'Network'
-%
-%  'OpsetVersion'   - Version of ONNX operator set to use, specified as an integer. Supported versions are 6, 7, 8, 9.
-%                     Default: 8
-%
-%  'BatchSize'      - An integer batch size to export, or [] indicating variable batch size.
-%                     Default: []
+% Name-Value Arguments:
+%   - ``'NetworkName'`` — [char|string] name stored inside the ONNX file
+%     (default: ``'Network'``)
+%   - ``'OpsetVersion'`` — [integer] ONNX operator-set version to use;
+%     supported values: ``6``, ``7``, ``8``, ``9`` (default: ``8``)
+%   - ``'BatchSize'`` — [integer] explicit batch size to export, or ``[]``
+%     for variable batch size (default: ``[]``)
 
 
 % Copyright 2018-2023 The Mathworks, Inc.

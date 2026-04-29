@@ -1,7 +1,10 @@
 function transferLearning(obj)
-    % function transferLearning(obj)
-    % perform fine-tuning of the loaded network to a different
-    % number of classes
+% TRANSFERLEARNING - perform fine-tuning of the loaded network to a different.
+%
+% Syntax:
+%   function transferLearning(obj)
+%
+% number of classes
 
     obj.BatchOpt.Mode{1} = 'Predict';   % change the mode, so that selectNetwork function loads the network
     net = obj.selectNetwork();

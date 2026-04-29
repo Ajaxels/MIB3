@@ -1,6 +1,9 @@
 function countLabels(obj)
-% function countLabels(obj)
-% count occurrences of labels in model files
+% COUNTLABELS - count occurrences of labels in model files.
+%
+% Syntax:
+%   function countLabels(obj)
+%
 % callback for press of the "Count labels" in the Options panel
 % define directory with label files
 if ~isfield(obj.sessionSettings, 'countLabelsDir')

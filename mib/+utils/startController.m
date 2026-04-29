@@ -1,36 +1,43 @@
 function startController(parentObj, controllerName, varargin)
-% utils.startController — launch a child controller from any MIB controller
+% STARTCONTROLLER - launch a child controller from any MIB controller.
+%
+% Syntax:
+%   function startController(parentObj, controllerName, varargin)
 %
 % Works identically to controllers.MibController.startController but can
 % be called from any controller that exposes the following properties:
-%   childControllers      — cell array of open child controller handles
-%   childControllersIds   — cell array of open child controller class names
-%   mibModel              — handle to MibModel
+% childControllers      — cell array of open child controller handles
+% childControllersIds   — cell array of open child controller class names
+% mibModel              — handle to MibModel
 %
 % The child controller must follow the MIB controller contract:
-%   Constructor  MyController(mibModel) or MyController(mibModel, [], BatchOpt)
-%   Event        CloseEvent — fired when the controller closes
-%   Property     view       — empty when running in batch mode (no GUI)
+% Constructor  MyController(mibModel) or MyController(mibModel, [], BatchOpt)
+% Event        CloseEvent — fired when the controller closes
+% Property     view       — empty when running in batch mode (no GUI)
 %
-% Parameters:
-% parentObj:       handle — parent controller that owns the child
-% controllerName:  char   — fully-qualified class name, e.g. 'controllers.ResampleDataset'
-% varargin{1}:     [@em optional] extra arg passed to the child constructor (usually [])
-% varargin{2}:     [@em optional] BatchOpt struct to run in batch mode, or NaN for returnBatchOpt
+% Input Arguments:
+%   - **parentObj** — handle — parent controller that owns the child
+%   - **controllerName** — char   — fully-qualified class name, e.g. 'controllers.ResampleDataset'
+%   - **varargin{1}** — *(optional)* extra arg passed to the child constructor (usually [])
+%   - **varargin{2}** — *(optional)* BatchOpt struct to run in batch mode, or NaN for returnBatchOpt
 %
-%| 
-% @b Examples:
-% @code
-% % Open ResampleDataset GUI (interactive mode):
-% utils.startController(obj, 'controllers.ResampleDataset');
-% @endcode
-% @code
-% % Run ResampleDataset in batch mode (no GUI):
-% BatchOpt.ResamplingMode = {'Dimensions'};
-% BatchOpt.DimensionX = '256';
-% BatchOpt.DimensionY = '256';
-% utils.startController(obj, 'controllers.ResampleDataset', [], BatchOpt);
-% @endcode
+% Usage:
+%
+%   **Example 1** — open ResampleDataset GUI (interactive mode)
+%
+%   .. code-block:: matlab
+%
+%      utils.startController(obj, 'controllers.ResampleDataset');
+%
+%   **Example 2** — run ResampleDataset in batch mode (no GUI)
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.ResamplingMode = {'Dimensions'};
+%      BatchOpt.DimensionX = '256';
+%      BatchOpt.DimensionY = '256';
+%      utils.startController(obj, 'controllers.ResampleDataset', [], BatchOpt);
+%
 
 % Updates
 %

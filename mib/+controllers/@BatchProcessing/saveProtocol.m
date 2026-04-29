@@ -1,12 +1,13 @@
 function saveProtocol(obj)
-% function saveProtocol(obj)
-% save the current protocol to a .mibProtocol (MAT) or .xls file via a dialog
+% SAVEPROTOCOL - save the current protocol to a .mibProtocol (MAT) or .xls file via a dialog.
 %
-%|
-% @b Examples:
-% @code obj.saveProtocol(); @endcode
+% Syntax:
+%   function saveProtocol(obj)
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.saveProtocol();
 %
 
 if isempty(obj.Protocol); return; end

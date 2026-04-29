@@ -1,16 +1,27 @@
 function primaryDict = concatenateDictionaries(primaryDict, secondaryDict)
-    % function primaryDict = concatenateDictionaries(primaryDict, secondaryDict)
-    % update keys of primaryDict using the keys of secondaryDict
-    %
-    % Parameters:
-    % primaryDict: primary dictionary that should be updated
-    % secondaryDict: secondary dictionary that should be concatenated into the primary dictionary
-    %
-    % Return value:
-    % primaryDict: updated primary dictionary
-    %|
-    % @b Examples:
-    % @code obj.mibModel.preferences = utils.concatenateDictionaries(obj.mibModel.preferences, mib_pars.preferences); //updates keys of obj.mibModel.preferences with keys from mib_pars.preferences @endcode
+% CONCATENATEDICTIONARIES - Update keys of primaryDict using the keys of secondaryDict.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      primaryDict = concatenateDictionaries(primaryDict, secondaryDict)
+%
+% Input Arguments:
+%   - **primaryDict** — primary dictionary that should be updated
+%   - **secondaryDict** — secondary dictionary that should be concatenated into the primary dictionary
+%
+% Output Arguments:
+%   - **primaryDict** — updated primary dictionary
+%
+% Usage:
+%
+%   **Example 1** — update preferences dictionary from a saved session
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.preferences = utils.concatenateDictionaries(obj.mibModel.preferences, mib_pars.preferences);
+%
     
     % Updates
     %

@@ -1,10 +1,13 @@
 function homeExport_Callback(obj, hWidget, hData)
-% function homeExport_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Export section of the Home ribbon
+% HOMEEXPORT_CALLBACK - callback on press of buttons in the Export section of the Home ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function homeExport_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

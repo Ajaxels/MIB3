@@ -15,28 +15,34 @@
 % Date: 25.04.2023
 
 classdef WelcomeTips < handle
-    % @type WelcomeTips class is a template class for using with
-    % GUI developed using appdesigner of Matlab
-    %
-    % @code
-    % obj.startController('WelcomeTips'); // as GUI tool
-    % @endcode
-    % or 
-    % @code 
-    % // a code below was used for mibImageArithmeticController
-    % BatchOpt.Parameter = 'test';  // fill edit boxes as strings
-    % BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-    % BatchOpt.Popup = {'value'};        // value for the popups as a cell
-    % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-    % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('WelcomeTips', [], BatchOpt); // start WelcomeTips in the batch mode
-    % @endcode
-    % or
-    % @code
-    % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify SyncBatch event
-    % obj.startController('WelcomeTips', [], NaN);
-    % @endcode
+% WELCOMETIPS - @type WelcomeTips class is a template class for using with.
+%
+% GUI developed using appdesigner of Matlab
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('WelcomeTips'); // as GUI tool
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // a code below was used for mibImageArithmeticController
+%   BatchOpt.Parameter = 'test';  // fill edit boxes as strings
+%   BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
+%   BatchOpt.Popup = {'value'};        // value for the popups as a cell
+%   BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
+%   BatchOpt.showWaitbar = true;  // show or not the waitbar
+%   obj.startController('WelcomeTips', [], BatchOpt); // start WelcomeTips in the batch mode
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // trigger return of the possible Options using returnBatchOpt function
+%   // using notify SyncBatch event
+%   obj.startController('WelcomeTips', [], NaN);
     
 	% Updates
 	%     
@@ -118,8 +124,11 @@ classdef WelcomeTips < handle
         end
         
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % update widgets of this window
+            % UPDATEWIDGETS - update widgets of this window.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
            
             fnIndex = max([1, obj.mibModel.preferences.Tips.CurrentTipIndex]);
             
@@ -140,8 +149,11 @@ classdef WelcomeTips < handle
         end
 
         function nextTipBtn_Callback(obj)
-            % function nextTipBtn_Callback(obj)
-            % display the next tip
+            % NEXTTIPBTN_CALLBACK - display the next tip.
+            %
+            % Syntax:
+            %   function nextTipBtn_Callback(obj)
+            %
             
             obj.mibModel.preferences.Tips.CurrentTipIndex = obj.mibModel.preferences.Tips.CurrentTipIndex + 1;
             if obj.mibModel.preferences.Tips.CurrentTipIndex > numel(obj.mibModel.preferences.Tips.Files)
@@ -151,8 +163,11 @@ classdef WelcomeTips < handle
         end
         
         function previousTipBtn_Callback(obj)
-            % function previousTipBtn_Callback(obj)
-            % display the previous tip
+            % PREVIOUSTIPBTN_CALLBACK - display the previous tip.
+            %
+            % Syntax:
+            %   function previousTipBtn_Callback(obj)
+            %
             
             obj.mibModel.preferences.Tips.CurrentTipIndex = obj.mibModel.preferences.Tips.CurrentTipIndex - 1;
             if obj.mibModel.preferences.Tips.CurrentTipIndex == 0

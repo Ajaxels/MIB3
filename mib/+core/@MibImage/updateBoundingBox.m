@@ -1,35 +1,45 @@
 function updateBoundingBox(obj, newBB, xyzShift, imgDims)
-% function updateBoundingBox(obj, newBB, xyzShift, imgDims)
-% Update the bounding box of the dataset stored in obj.boundingBox
+% UPDATEBOUNDINGBOX - Update the bounding box of the dataset stored in obj.boundingBox.
+%
+% Syntax:
+%   function updateBoundingBox(obj, newBB, xyzShift, imgDims)
 %
 % The bounding box describes the physical extent of the dataset in 3D
 % space. It is stored directly in the obj.boundingBox property as
 % [xmin xmax ymin ymax zmin zmax] in micrometres.
 %
-% Parameters:
-% newBB: new bounding box vector [xmin xmax ymin ymax zmin zmax] in
-%   obj.pixSize.units. Pass [] (empty) to shift the existing bounding
-%   box instead of replacing it entirely.
-% xyzShift: [optional] vector [dx dy dz] with shifts in
-%   obj.pixSize.units to apply to the current bounding box origin when
-%   newBB is empty. When omitted the origin remains unchanged.
-% imgDims: [optional] vector [height width depth] with image dimensions
-%   used to compute the new extent. When omitted obj.height, obj.width
-%   and obj.depth are used.
+% Input Arguments:
+%   - **newBB** — new bounding box vector [xmin xmax ymin ymax zmin zmax] in
+%     obj.pixSize.units. Pass [] (empty) to shift the existing bounding
+%     box instead of replacing it entirely.
+%   - **xyzShift** — [optional] vector [dx dy dz] with shifts in
+%     obj.pixSize.units to apply to the current bounding box origin when
+%     newBB is empty. When omitted the origin remains unchanged.
+%   - **imgDims** — [optional] vector [height width depth] with image dimensions
+%     used to compute the new extent. When omitted obj.height, obj.width
+%     and obj.depth are used.
 %
-% Return values:
-% (none) — obj.boundingBox and obj.pixSize.x/y/z are updated in place
+% Output Arguments:
+%   (none) — obj.boundingBox and obj.pixSize.x/y/z are updated in place
 %
-% @b Examples:
-% @code
-% % shift the bounding box by 10 units in X, 5 in Y, 0 in Z:
-% xyzShift = [10 5 0];
-% mibImage.updateBoundingBox([], xyzShift);
-% @endcode
-% @code
-% % assign an explicit bounding box:
-% mibImage.updateBoundingBox([15 50 10 150 1 15]);
-% @endcode
+% Usage:
+%   **Example 1** — shift the bounding box by 10 units in X, 5 in Y, 0 in Z
+%
+%   .. code-block:: matlab
+%
+%
+%     % shift the bounding box by 10 units in X, 5 in Y, 0 in Z:
+%     xyzShift = [10 5 0];
+%     mibImage.updateBoundingBox([], xyzShift);
+%
+%   **Example 2** — assign an explicit bounding box
+%
+%   .. code-block:: matlab
+%
+%
+%     % assign an explicit bounding box:
+%     mibImage.updateBoundingBox([15 50 10 150 1 15]);
+%
 
 % Updates
 %

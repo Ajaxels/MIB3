@@ -1,105 +1,138 @@
 function backup(obj, type, switch3d, getDataOptions)
-% function backup(obj, type, switch3d, getDataOptions)
-% Store the dataset for Undo
+% BACKUP - Store the dataset for Undo.
+%
+% Syntax:
+%   function backup(obj, type, switch3d, getDataOptions)
 %
 % The dataset is stored in the MibBackup class (obj.Backup).
 %
-% Parameters:
-% type: 'image', 'selection', 'mask', 'model' (swapped to labels), 'labels',
-%   'everything' (for MibLabels63 only), 'lines3d',
-%   'annotations', 'measurements', 'mibDataset'
-% switch3d: a switch to define a 2D or 3D mode to store the dataset
-% @li @b 0 - 2D slice
-% @li @b 1 - 3D dataset
-% getDataOptions: [@em optional] a structure with extra parameters
-% @li .blockModeSwitch -> [@em optional], crop the stored dataset to the visible portion of the data, when true, overrides .y and .x fields
-% @li .y -> [@em optional], [ymin, ymax] of the part of the dataset to store
-% @li .x -> [@em optional], [xmin, xmax] of the part of the dataset to store
-% @li .z -> [@em optional], [zmin, zmax] of the part of the dataset to store
-% @li .t -> [@em optional], [tmin, tmax] of the part of the dataset to store
-% @li .roiId -> [@em optional], use or not the ROI mode (@b when missing or less than 0, return full dataset; @b 0 - return all shown ROIs dataset, @b Index or [] - return ROI with this index or currently selected)
-% @li .id -> [@em optional], index of the dataset to backup
-% @li .LinkedVariable - [@em optional] an additional structure with parameters that should be stored
-%     .LinkedVariable.Fieldname - string that specifies variable name seen
-%     from mibController, for example:
-%     getDataOptions.LinkedVariable.Points = 'obj.mibModel.sessionSettings.SAMsegmenter.Points';
-% @li .LinkedData - [@em optional] an additional structure with data that
-%     should be stored, Fieldname should match Fieldname in .LinkedVariable
-%     .LinkedData.Fieldname.Value1 - values1 to be stored
-%     .LinkedData.Fieldname.Value2 - values2 to be stored
-%     for example:
-%       getDataOptions.LinkedData.Points.Position = [];
-%       getDataOptions.LinkedData.Points.Value = [];
+% Input Arguments:
+%   - **type** — 'image', 'selection', 'mask', 'model' (swapped to labels), 'labels',
+%     'everything' (for MibLabels63 only), 'lines3d',
+%     'annotations', 'measurements', 'mibDataset'
+%   - **switch3d** — a switch to define a 2D or 3D mode to store the dataset
 %
-% Return values:
-
-%|
-% @b Examples:
-% @code
-% % Store the current 2D selection slice before modifying it
-% obj.mibModel.backup('selection', 0);
-% @endcode
-% @code
-% % Store the full 3D selection volume before a 3D operation
-% obj.mibModel.backup('selection', 1);
-% @endcode
-% @code
-% % Store the mask layer for the current 2D slice
-% obj.mibModel.backup('mask', 0);
-% @endcode
-% @code
-% % Store the model layer as 3D before batch processing
-% obj.mibModel.backup('labels', 1);
-% @endcode
-% @code
-% % For type-63 models, 'selection'/'mask'/'labels' are automatically
-% % converted to 'everything' (all three layers are packed together)
-% obj.mibModel.backup('selection', 0);  // internally stores 'everything'
-% @endcode
-% @code
-% % Store image data (2D slice) — also saves full image metadata
-% obj.mibModel.backup('image', 0);
-% @endcode
-% @code
-% % Store image data (3D volume)
-% obj.mibModel.backup('image', 1);
-% @endcode
-% @code
-% % Store annotations before editing them
-% obj.mibModel.backup('annotations', 0);
-% @endcode
-% @code
-% % Store 3D lines/skeletons before modification
-% obj.mibModel.backup('lines3d', 0);
-% @endcode
-% @code
-% % Store the entire MibDataset (deep copy) for complex operations
-% obj.mibModel.backup('mibDataset', 1);
-% @endcode
-% @code
-% % Store only the visible block (block mode) of the selection
-% backupOpt.blockModeSwitch = true;
-% obj.mibModel.backup('selection', 0, backupOpt);
-% @endcode
-% @code
-% % Store a specific sub-region of the dataset
-% backupOpt.x = [100, 200];
-% backupOpt.y = [50, 150];
-% backupOpt.z = [10, 10];
-% obj.mibModel.backup('selection', 0, backupOpt);
-% @endcode
-% @code
-% % Store backup for a specific dataset (not the currently shown one)
-% backupOpt.id = 2;
-% obj.mibModel.backup('selection', 1, backupOpt);
-% @endcode
-% @code
-% % Store with LinkedData for SAM segmenter undo support
-% backupOpt.LinkedData.Points.Position = [10, 10];
-% backupOpt.LinkedData.Points.Value = [5];
-% backupOpt.LinkedVariable.Points = 'obj.sessionSettings.SAMsegmenter.Points';
-% obj.mibModel.backup('selection', 0, backupOpt);
-% @endcode
+%     - ``0`` — 2D slice
+%     - ``1`` — 3D dataset
+%
+%   - **getDataOptions** — *(optional)* a structure with extra parameters
+%
+%     - ``.blockModeSwitch`` — *(optional)*, crop the stored dataset to the visible
+%       portion of the data, when true, overrides .y and .x fields
+%     - ``.y`` — *(optional)*, [ymin, ymax] of the part of the dataset to store
+%     - ``.x`` — *(optional)*, [xmin, xmax] of the part of the dataset to store
+%     - ``.z`` — *(optional)*, [zmin, zmax] of the part of the dataset to store
+%     - ``.t`` — *(optional)*, [tmin, tmax] of the part of the dataset to store
+%     - ``.roiId`` — *(optional)*, use or not the ROI mode (**when** missing or less
+%       than 0, return full dataset; **0** — return all shown ROIs dataset;
+%       **Index** or ``[]`` — return ROI with this index or currently selected)
+%     - ``.id`` — *(optional)*, index of the dataset to backup
+%     - ``.LinkedVariable`` — *(optional)* additional structure with variable names to
+%       store; ``.LinkedVariable.Fieldname`` specifies the variable name as seen from
+%       mibController, e.g.
+%       ``getDataOptions.LinkedVariable.Points = 'obj.mibModel.sessionSettings.SAMsegmenter.Points';``
+%     - ``.LinkedData`` — *(optional)* additional structure with data values to store;
+%       Fieldname must match Fieldname in ``.LinkedVariable``, e.g.
+%       ``getDataOptions.LinkedData.Points.Position = [];`` and
+%       ``getDataOptions.LinkedData.Points.Value = [];``
+%
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — store the current 2D selection slice before modifying it
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('selection', 0);
+%
+%   **Example 2** — store the full 3D selection volume before a 3D operation
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('selection', 1);
+%
+%   **Example 3** — store the mask layer for the current 2D slice
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('mask', 0);
+%
+%   **Example 4** — store the model layer as 3D before batch processing
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('labels', 1);
+%
+%   **Example 5** — for type-63 models, 'selection'/'mask'/'labels' are automatically
+%   converted to 'everything' (all three layers packed together)
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('selection', 0);
+%
+%   **Example 6** — store image data (2D slice) — also saves full image metadata
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('image', 0);
+%
+%   **Example 7** — store image data (3D volume)
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('image', 1);
+%
+%   **Example 8** — store annotations before editing them
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('annotations', 0);
+%
+%   **Example 9** — store 3D lines/skeletons before modification
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('lines3d', 0);
+%
+%   **Example 10** — store the entire MibDataset (deep copy) for complex operations
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.backup('mibDataset', 1);
+%
+%   **Example 11** — store only the visible block (block mode) of the selection
+%
+%   .. code-block:: matlab
+%
+%      backupOpt.blockModeSwitch = true;
+%      obj.mibModel.backup('selection', 0, backupOpt);
+%
+%   **Example 12** — store a specific sub-region of the dataset
+%
+%   .. code-block:: matlab
+%
+%      backupOpt.x = [100, 200];
+%      backupOpt.y = [50, 150];
+%      backupOpt.z = [10, 10];
+%      obj.mibModel.backup('selection', 0, backupOpt);
+%
+%   **Example 13** — store backup for a specific dataset (not the currently shown one)
+%
+%   .. code-block:: matlab
+%
+%      backupOpt.id = 2;
+%      obj.mibModel.backup('selection', 1, backupOpt);
+%
+%   **Example 14** — store with LinkedData for SAM segmenter undo support
+%
+%   .. code-block:: matlab
+%
+%      backupOpt.LinkedData.Points.Position = [10, 10];
+%      backupOpt.LinkedData.Points.Value = [5];
+%      backupOpt.LinkedVariable.Points = 'obj.sessionSettings.SAMsegmenter.Points';
+%      obj.mibModel.backup('selection', 0, backupOpt);
+%
 
 % Updates
 %

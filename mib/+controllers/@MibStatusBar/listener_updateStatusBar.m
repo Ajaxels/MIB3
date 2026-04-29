@@ -1,19 +1,22 @@
 function listener_updateStatusBar(obj, src, evtData)
-% function listener_updateStatusBar(obj, src, evtData)
-% Call for update of the status bar widgets, used upon change of directory
+% LISTENER_UPDATESTATUSBAR - Call for update of the status bar widgets, used upon change of directory.
+%
+% Syntax:
+%   function listener_updateStatusBar(obj, src, evtData)
+%
 % in Batch Processing
 % executed upon catch of MibModel->"UpdateStatusBar" event
 %
-% Parameters:
-% src: handle to MibModel
-% evtData: event data, an instance of core.ToggleEventData class with the following fields:
-% .Parameters field containing a structure with the
-%    .evtData.Parameters.
-% .Source -> handle to MibModel
-% .EventName -> string with the event name that triggered the callback
+% Input Arguments:
+%   - **src** — handle to MibModel
+%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
+%     .Parameters field containing a structure with the
+%     .evtData.Parameters.
+%     .Source handle to MibModel
+%     .EventName string with the event name that triggered the callback
 %
-% Return values:
-% 
+% Output Arguments:
+%
 
 % if ~isprop(evtData, 'Parameters')
 %     settings = struct('resizeToMagnification', true, 'setOfDatasetsIndex', []);

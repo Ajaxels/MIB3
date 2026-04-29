@@ -1,20 +1,28 @@
 function initializePreferences(obj)
-% function initializePreferences(obj)
-% initializePreferences - initialize and update MIB preferences from a file
+% INITIALIZEPREFERENCES - Initialize and update MIB preferences from a file.
 %
 % Syntax:
-%   obj.initializePreferences(obj.mibPath, mibVersionNumeric)
 %
-% Description:
-%   Initializes MIB preferences by loading saved preferences from the
-%   user's preferences directory. Handles preference upgrades when
-%   version changes occur, applies override settings when available,
-%   and restores user statistics.
+%   .. code-block:: matlab
 %
-% Example:
-%   obj.initializePreferences();
+%      obj.initializePreferences()
 %
-% See also: utils.defaults.generatePreferences, utils.getPrefDir, controllers.Preferences.defaultBtn_Callback()
+% Initializes MIB preferences by loading saved preferences from the
+% user's preferences directory. Handles preference upgrades when
+% version changes occur, applies override settings when available,
+% and restores user statistics.
+%
+% Input Arguments:
+%   none
+%
+% Usage:
+%   **Example 1** — called internally during MibModel initialization
+%
+%   .. code-block:: matlab
+%
+%      obj.initializePreferences();
+%
+% See also: utils.defaults.generatePreferences, utils.getPrefDir, controllers.Preferences.defaultBtn_Callback
 
 arguments (Input)
     obj models.MibModel

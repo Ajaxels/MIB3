@@ -1,15 +1,19 @@
 function imgOut = channelWisePreProcess(obj, imgIn)
-% function imgOut = channelWisePreProcess(obj, imgIn)
-    % function imgOut = channelWisePreProcess(obj, imgIn)
-    % Normalize images
-    % As input has 4 channels (modalities), remove the mean and divide by the
-    % standard deviation of each modality independently.
-    %
-    % Parameters:
-    % imgIn: input image, as matrix [heigth, width, color, depth]
-    %
-    % Return values:
-    % imgOut: resulting image, stretched between 0 and 1
+% CHANNELWISEPREPROCESS - function imgOut = channelWisePreProcess(obj, imgIn).
+%
+% Syntax:
+%   function imgOut = channelWisePreProcess(obj, imgIn)
+%
+% Normalize images
+% As input has 4 channels (modalities), remove the mean and divide by the
+% standard deviation of each modality independently.
+%
+% Input Arguments:
+%   - **imgIn** — input image, as matrix [heigth, width, color, depth]
+%
+% Output Arguments:
+%   - **imgOut** — resulting image, stretched between 0 and 1
+%
 
     imgIn = single(imgIn);
 

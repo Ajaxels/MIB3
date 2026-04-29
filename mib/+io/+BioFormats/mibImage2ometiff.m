@@ -1,50 +1,53 @@
 function [result, options] = mibImage2ometiff(filename, imageS, options)
-% function [result, options] = mibImage2ometiff(filename, imageS, options)
-% Save image in OME.TIF format — either as a single 5D file or a 2D sequence.
+% MIBIMAGE2OMETIFF - Save image in OME.TIF format — either as a single 5D file or a 2D sequence.
 %
-% Parameters:
-% filename: full path for the output file (extension forced to .ome.tiff)
-% imageS: dataset [height, width, color_channels, z_slices, time]
-% options: [@em optional] struct with fields:
-%  .pixSize        — MIB pixel-size struct (.x .y .z .t .units .tunits);
-%                    default: all 1, units 'um', tunits 's'
-%  .lutColors      — [C x 3] LUT colour matrix (unused in 2D imwrite path)
-%  .ImageDescription — char or cell-string description embedded in the file;
-%                    default: ''
-%  .DatasetType    — 'image' (default) or 'model'
-%  .Saving3d       — '5D' (default): write all slices into one OME-TIFF via
-%                    bfsave; '2D': write each z-slice as a separate .tif file
-%  .overwrite      — 1 = skip the "file exists" prompt (default: 0)
-%  .Compression    — 'none' (default), 'lzw', 'packbits' (2D path only)
-%  .showWaitbar    — 1 (default) show progress bar; 0 suppress
-%  .ParentFigure   — handle to the MIB application window; when provided the
-%                    progress bar is rendered as a uiprogressdlg attached to
-%                    that window.  When absent the legacy waitbar is used.
-%  .silent         — logical (default false); when true all interactive
-%                    dialogs are suppressed
-%  .sequentialFn   — controls 2D output naming:
-%                      true  (default when NaN) : sequential names,
-%                            e.g. image_01.ome.tiff, image_02.ome.tiff
-%                      false : use original per-slice names from .SliceName;
-%                              falls back to sequential when .SliceName is
-%                              absent or empty
-%                      NaN   : decide at runtime — currently defaults to true
-%                    Normally set by the calling saver (OmeTiffSaver) based
-%                    on the user's dialog choice; direct callers may set it
-%                    explicitly to bypass the default.
-%  .SliceName      — cell array of per-slice source filenames (without path);
-%                    used by the 'original filename' branch when
-%                    sequentialFn = false
-%  .cmap           — colormap matrix for indexed images; NaN (default) means
-%                    grayscale / RGB
-%  .Resolution     — [xDPI yDPI] written into 2D .tif files; derived
-%                    automatically from pixSize when absent
-%  .DimensionOrder — dimension order string passed to bfsave / createMinimalOMEXMLMetadata;
-%                    default 'XYZCT'
+% Syntax:
+%   function [result, options] = mibImage2ometiff(filename, imageS, options)
 %
-% Return values:
-% result: 1 on success, 0 on failure
-% options: the options struct as used (with all defaults filled in)
+% Input Arguments:
+%   - **filename** — full path for the output file (extension forced to .ome.tiff)
+%   - **imageS** — dataset [height, width, color_channels, z_slices, time]
+%   - **options** — *(optional)* struct with fields:
+%     .pixSize        — MIB pixel-size struct (.x .y .z .t .units .tunits);
+%   - **default** — all 1, units 'um', tunits 's'
+%     .lutColors      — [C x 3] LUT colour matrix (unused in 2D imwrite path)
+%     .ImageDescription — char or cell-string description embedded in the file;
+%   - **default** — ''
+%     .DatasetType    — 'image' (default) or 'model'
+%     .Saving3d       — '5D' (default): write all slices into one OME-TIFF via
+%     bfsave; '2D': write each z-slice as a separate .tif file
+%     .overwrite      — 1 = skip the "file exists" prompt (default: 0)
+%     .Compression    — 'none' (default), 'lzw', 'packbits' (2D path only)
+%     .showWaitbar    — 1 (default) show progress bar; 0 suppress
+%     .ParentFigure   — handle to the MIB application window; when provided the
+%     progress bar is rendered as a uiprogressdlg attached to
+%     that window.  When absent the legacy waitbar is used.
+%     .silent         — logical (default false); when true all interactive
+%     dialogs are suppressed
+%     .sequentialFn   — controls 2D output naming:
+%     true  (default when NaN) : sequential names,
+%     e.g. image_01.ome.tiff, image_02.ome.tiff
+%   - **false** — use original per-slice names from .SliceName;
+%     falls back to sequential when .SliceName is
+%     absent or empty
+%   - **NaN** — decide at runtime — currently defaults to true
+%     Normally set by the calling saver (OmeTiffSaver) based
+%     on the user's dialog choice; direct callers may set it
+%     explicitly to bypass the default.
+%     .SliceName      — cell array of per-slice source filenames (without path);
+%     used by the 'original filename' branch when
+%     sequentialFn = false
+%     .cmap           — colormap matrix for indexed images; NaN (default) means
+%     grayscale / RGB
+%     .Resolution     — [xDPI yDPI] written into 2D .tif files; derived
+%     automatically from pixSize when absent
+%     .DimensionOrder — dimension order string passed to bfsave / createMinimalOMEXMLMetadata;
+%     default 'XYZCT'
+%
+% Output Arguments:
+%   - **result** — 1 on success, 0 on failure
+%   - **options** — the options struct as used (with all defaults filled in)
+%
 
 % use SCIFIO to open ome-tiff in Fiji
 % https://imagej.net/SCIFIO

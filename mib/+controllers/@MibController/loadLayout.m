@@ -1,23 +1,26 @@
 function status = loadLayout(obj, mode, layoutFilename)
-% function status = loadLayout(obj, mode, layoutFilename)
-% Restore MIB layout from a JSON file
+% LOADLAYOUT - Restore MIB layout from a JSON file.
 %
-% Parameters:
-% mode: char [optional, default='localDefault'] mode to restore MIB layout
-% @li 'localDefault' - default layout for local installation of MIB, restored from utils.getPrefDir, 'mibDefaultLayout.json'
-% @li 'custom' - restore layout from utils.getPrefDir
-% @li 'globalDefault' - restore the default MIB layout configuration from MIB\assets\defaultLayout.json
-% layoutFilename: [OPTIONAL] char with the full path to the file to the
-% layout JSON file. This file can be generated using utils.storeLayout function
-
-%|
-% @b Examples:
-% @code
-% status = obj.loadLayout(obj); // call from MibController class, restore the default layout
-% @endcode
-% @code
-% status = obj.loadLayout(obj, 'custom', 'c:\temp\mibLayout.json'); // call from MibController class, restore layout from mibLayout.json
-% @endcode
+% Syntax:
+%   function status = loadLayout(obj, mode, layoutFilename)
+%
+% Input Arguments:
+%   - **mode** — char [optional, default='localDefault'] mode to restore MIB layout
+%     - 'localDefault' - default layout for local installation of MIB, restored from utils.getPrefDir, 'mibDefaultLayout.json'
+%     - 'custom' - restore layout from utils.getPrefDir
+%     - 'globalDefault' - restore the default MIB layout configuration from MIB\assets\defaultLayout.json
+%   - **layoutFilename** — [OPTIONAL] char with the full path to the file to the
+%     layout JSON file. This file can be generated using utils.storeLayout function
+%
+% Usage:
+%   Example 1::
+%
+%     status = obj.loadLayout(obj); // call from MibController class, restore the default layout
+%
+%   Example 2::
+%
+%     status = obj.loadLayout(obj, 'custom', 'c:\temp\mibLayout.json'); // call from MibController class, restore layout from mibLayout.json
+%
 
 %
 % Updates

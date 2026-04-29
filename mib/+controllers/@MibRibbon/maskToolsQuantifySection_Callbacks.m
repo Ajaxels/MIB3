@@ -1,10 +1,13 @@
 function maskToolsQuantifySection_Callbacks(obj, hWidget, hData)
-% function maskToolsQuantifySection_Callbacks(obj, hWidget, hData)
-% callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
+% MASKTOOLSQUANTIFYSECTION_CALLBACKS - callback on press of buttons in the Tools and Quantification sections of the Mask ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function maskToolsQuantifySection_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

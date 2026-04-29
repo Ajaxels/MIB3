@@ -1,11 +1,15 @@
 function updateFileList_Callback(obj, selectedFilename)
-% function updateFileList_Callback(obj, selectedFilename)
-% callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update
+% UPDATEFILELIST_CALLBACK - callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update.
+%
+% Syntax:
+%   function updateFileList_Callback(obj, selectedFilename)
+%
 % the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList"
 % using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 %
-% Parameters:
-% selectedFilename: [@em optional] char with the selected filename to highlight
+% Input Arguments:
+%   - **selectedFilename** — *(optional)* char with the selected filename to highlight
+%
 
 % arguments (Input)
 %     obj controllers.MibDirContents

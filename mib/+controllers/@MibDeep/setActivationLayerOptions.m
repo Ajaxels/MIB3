@@ -1,6 +1,9 @@
 function setActivationLayerOptions(obj)
-    % function setActivationLayerOptions(obj)
-    % update options for the activation layers
+% SETACTIVATIONLAYEROPTIONS - update options for the activation layers.
+%
+% Syntax:
+%   function setActivationLayerOptions(obj)
+%
     switch obj.BatchOpt.T_ActivationLayer{1}
         case 'clippedReluLayer'
             prompts = {'Ceiling for input clipping, positive scalar [default=10]'};

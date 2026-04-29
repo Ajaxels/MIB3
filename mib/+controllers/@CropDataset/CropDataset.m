@@ -1,10 +1,12 @@
 classdef CropDataset < handle
-    % @type CropDataset class is responsible for showing the dataset
-    % crop window, available from MIB -> Ribbon -> Dataset -> Crop
-    %
-    % @code
-    % obj.startController('controllers.CropDataset'); // as GUI tool
-    % @endcode
+% CROPDATASET - @type CropDataset class is responsible for showing the dataset.
+%
+% crop window, available from MIB Ribbon Dataset Crop
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.CropDataset'); // as GUI tool
 
     % Updates
     % ported to MIB3 AppDesigner framework
@@ -41,7 +43,11 @@ classdef CropDataset < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, src, evnt)
-            % Guard: if the view window was closed, clean up listeners and return.
+            % VIEWLISTNER_CALLBACK2 - Guard: if the view window was closed, clean up listeners and return.
+            %
+            % Syntax:
+            %   function ViewListner_Callback2(obj, src, evnt)
+            %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
                     delete(obj.listener{i});
@@ -57,21 +63,34 @@ classdef CropDataset < handle
 
     methods
         function obj = CropDataset(mibModel, varargin)
-            % obj = CropDataset(mibModel, varargin)
+            % CROPDATASET - obj = CropDataset(mibModel, varargin).
+            %
+            % Syntax:
+            %   function obj = CropDataset(mibModel, varargin)
+            %
             % Constructor of the CropDataset controller
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: [@em optional] handle to controllers.MibController
-            %   (canonical, split-panel safe) OR an axes handle (legacy)
-            %   OR a BatchOpt struct / NaN (batch mode with no controller)
-            % varargin{2}: [@em optional] BatchOpt struct / NaN when varargin{1}
-            %   is a controller or axes handle
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — *(optional)* handle to controllers.MibController
+            %     (canonical, split-panel safe) OR an axes handle (legacy)
+            %     OR a BatchOpt struct / NaN (batch mode with no controller)
+            %   - **varargin{2}** — *(optional)* BatchOpt struct / NaN when varargin{1}
+            %     is a controller or axes handle
             %
-            % @b Examples:
-            % @code obj.startController('controllers.CropDataset'); @endcode
-            % @code obj.startController('controllers.CropDataset', obj); @endcode
-            % @code obj.startController('controllers.CropDataset', obj, BatchOpt); @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.startController('controllers.CropDataset');
+            %
+            %   Example 2::
+            %
+            %     obj.startController('controllers.CropDataset', obj);
+            %
+            %   Example 3::
+            %
+            %     obj.startController('controllers.CropDataset', obj, BatchOpt);
+            %
 
             obj.mibModel = mibModel;
             id = obj.mibModel.getActiveId();
@@ -230,8 +249,11 @@ classdef CropDataset < handle
         end
 
         function closeWindow(obj)
-            % function closeWindow(obj)
-            % closing CropDataset window
+            % CLOSEWINDOW - closing CropDataset window.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
 
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
@@ -245,8 +267,11 @@ classdef CropDataset < handle
         end
 
         function addCallbacks(obj)
-            % function addCallbacks(obj)
-            % assign callbacks to all interactive widgets; called once from
+            % ADDCALLBACKS - assign callbacks to all interactive widgets; called once from.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
+            %
             % the constructor after the view is created
 
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
@@ -275,11 +300,14 @@ classdef CropDataset < handle
         end
 
         function returnBatchOpt(obj, BatchOptOut)
-            % function returnBatchOpt(obj, BatchOptOut)
-            % return structure with Batch Options via the 'SyncBatch' event
+            % RETURNBATCHOPT - return structure with Batch Options via the 'SyncBatch' event.
             %
-            % Parameters:
-            % BatchOptOut: [@em optional] local BatchOpt to send; defaults to obj.BatchOpt
+            % Syntax:
+            %   function returnBatchOpt(obj, BatchOptOut)
+            %
+            % Input Arguments:
+            %   - **BatchOptOut** — *(optional)* local BatchOpt to send; defaults to obj.BatchOpt
+            %
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end
@@ -288,18 +316,24 @@ classdef CropDataset < handle
         end
 
         function updateBatchOptFromGUI(obj, hObject)
-            % function updateBatchOptFromGUI(obj, hObject)
-            % update obj.BatchOpt from a GUI widget
+            % UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from a GUI widget.
             %
-            % Parameters:
-            % hObject: handle to the widget that changed
+            % Syntax:
+            %   function updateBatchOptFromGUI(obj, hObject)
+            %
+            % Input Arguments:
+            %   - **hObject** — handle to the widget that changed
+            %
 
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % update all widgets of the current window
+            % UPDATEWIDGETS - update all widgets of the current window.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
 
             id = obj.mibModel.id;
             dataset = obj.mibModel.I{id};
@@ -358,11 +392,14 @@ classdef CropDataset < handle
         end
 
         function radio_Callback(obj, hObject)
-            % function radio_Callback(obj, hObject)
-            % callback for selection of crop mode
+            % RADIO_CALLBACK - callback for selection of crop mode.
             %
-            % Parameters:
-            % hObject: handle to the selected radio button (Interactive, Manual, or ROI)
+            % Syntax:
+            %   function radio_Callback(obj, hObject)
+            %
+            % Input Arguments:
+            %   - **hObject** — handle to the selected radio button (Interactive, Manual, or ROI)
+            %
 
             mode = hObject.Tag;
             id = obj.mibModel.getActiveId();
@@ -410,8 +447,11 @@ classdef CropDataset < handle
         end
 
         function editboxes_Callback(obj)
-            % function editboxes_Callback(obj)
-            % update obj.BatchOpt and obj.roiPos from the Width/Height/Depth/Time fields
+            % EDITBOXES_CALLBACK - update obj.BatchOpt and obj.roiPos from the Width/Height/Depth/Time fields.
+            %
+            % Syntax:
+            %   function editboxes_Callback(obj)
+            %
 
             obj.BatchOpt.Width  = obj.view.handles.Width.Value;
             obj.BatchOpt.Height = obj.view.handles.Height.Value;
@@ -433,8 +473,11 @@ classdef CropDataset < handle
         end
 
         function SelectROI_Callback(obj)
-            % function SelectROI_Callback(obj)
-            % callback for change of the SelectROI dropdown
+            % SELECTROI_CALLBACK - callback for change of the SelectROI dropdown.
+            %
+            % Syntax:
+            %   function SelectROI_Callback(obj)
+            %
 
             % convert dropdown string value to 0-based ROI index
             val = obj.view.handles.SelectROI.ValueIndex - 1;
@@ -472,8 +515,11 @@ classdef CropDataset < handle
         end
 
         function resetBtn_Callback(obj)
-            % function resetBtn_Callback(obj)
-            % reset crop fields to full image dimensions
+            % RESETBTN_CALLBACK - reset crop fields to full image dimensions.
+            %
+            % Syntax:
+            %   function resetBtn_Callback(obj)
+            %
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -491,8 +537,11 @@ classdef CropDataset < handle
         end
 
         function selectZarrLevel(obj)
-            % function selectZarrLevel(obj)
-            % update Zarr downsampling info label based on the selected pyramid level
+            % SELECTZARRLEVEL - update Zarr downsampling info label based on the selected pyramid level.
+            %
+            % Syntax:
+            %   function selectZarrLevel(obj)
+            %
 
             id = obj.mibModel.getActiveId();
 
@@ -512,16 +561,22 @@ classdef CropDataset < handle
         end
 
         function ZarrPyramidLevel_Callback(obj, hObject)
-            % function ZarrPyramidLevel_Callback(obj, hObject)
-            % callback for the Zarr pyramid level dropdown
+            % ZARRPYRAMIDLEVEL_CALLBACK - callback for the Zarr pyramid level dropdown.
+            %
+            % Syntax:
+            %   function ZarrPyramidLevel_Callback(obj, hObject)
+            %
 
             obj.selectZarrLevel();
             obj.updateBatchOptFromGUI(hObject);
         end
 
         function cropToBtn_Callback(obj)
-            % function cropToBtn_Callback(obj)
-            % select a destination buffer and perform crop there
+            % CROPTOBTN_CALLBACK - select a destination buffer and perform crop there.
+            %
+            % Syntax:
+            %   function cropToBtn_Callback(obj)
+            %
 
             if strcmp(obj.BatchOpt.Width, 'Multi')
                 dlgOpt.MsgBoxOnly  = true;
@@ -567,11 +622,14 @@ classdef CropDataset < handle
         end
 
         function cropBtn_Callback(obj, hObject)
-            % function cropBtn_Callback(obj, hObject)
-            % perform the crop operation
+            % CROPBTN_CALLBACK - perform the crop operation.
             %
-            % Parameters:
-            % hObject: [@em optional] handle to the pressed button (cropBtn or croptoBtn)
+            % Syntax:
+            %   function cropBtn_Callback(obj, hObject)
+            %
+            % Input Arguments:
+            %   - **hObject** — *(optional)* handle to the pressed button (cropBtn or croptoBtn)
+            %
 
             if nargin > 1
                 if strcmp(hObject.Tag, 'cropBtn')
@@ -817,8 +875,11 @@ classdef CropDataset < handle
         end
 
         function helpButton_Callback(obj)
-            % function helpButton_Callback(obj)
-            % open the help page for the Crop Dataset dialog
+            % HELPBUTTON_CALLBACK - open the help page for the Crop Dataset dialog.
+            %
+            % Syntax:
+            %   function helpButton_Callback(obj)
+            %
 
             web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/dataset/dataset-crop.html'), '-browser');
         end
@@ -827,7 +888,11 @@ classdef CropDataset < handle
 
     methods (Static, Access = private)
         function captureCropDataPos(roi, cRoi, mibModel)
-            % Store the current drawrectangle position in data-pixel coordinates.
+            % CAPTURECROPDATAPOS - Store the current drawrectangle position in data-pixel coordinates.
+            %
+            % Syntax:
+            %   function captureCropDataPos(roi, cRoi, mibModel)
+            %
             % Called from MovingROI/ROIMoved listeners during interactive crop drawing.
             % Writes result into cRoi.drawingROI.dataPos (2×2: [xmin ymin; xmax ymax]).
             if isempty(roi) || ~isvalid(roi); return; end

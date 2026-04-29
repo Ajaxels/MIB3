@@ -1,9 +1,12 @@
 function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
-% function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
-% prepare trainig options for training of the instance segmentation network
+% PREPRARETRAININGOPTIONSINSTANCES - prepare trainig options for training of the instance segmentation network.
 %
-% Parameters:
-% valDS: datastore with images for validation
+% Syntax:
+%   function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
+%
+% Input Arguments:
+%   - **valDS** — datastore with images for validation
+%
 
 global mibDeepTrainingProgressStruct
 

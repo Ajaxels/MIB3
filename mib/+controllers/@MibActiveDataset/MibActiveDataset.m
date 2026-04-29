@@ -1,6 +1,6 @@
 classdef MibActiveDataset
-    % classdef MibActiveDataset
-    % controller for methods of the Datasets panel in MIB
+% MIBACTIVEDATASET - controller for methods of the Datasets panel in MIB.
+%
 
     properties
         mibController   % controllers.MibController
@@ -26,7 +26,11 @@ classdef MibActiveDataset
         update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
 
         function obj = MibActiveDataset(mainCtrl, view, guiHandles, model)
-            %% Init properties
+            % MIBACTIVEDATASET - % Init properties.
+            %
+            % Syntax:
+            %   function obj = MibActiveDataset(mainCtrl, view, guiHandles, model)
+            %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
             obj.gui = guiHandles;               % handle to the GUI of the panel (views.components.Datasets)

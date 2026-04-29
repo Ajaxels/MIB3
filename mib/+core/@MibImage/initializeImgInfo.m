@@ -1,7 +1,8 @@
 function imginfo = initializeImgInfo(varargin)
-% function imginfo = initializeImgInfo(varargin)
-% Create the standard MibImage metadata dictionary, optionally overriding
-% defaults via Name-Value pairs.
+% INITIALIZEIMGINFO - Create the standard MibImage metadata dictionary, optionally overriding defaults via Name-Value pairs.
+%
+% Syntax:
+%   function imginfo = initializeImgInfo(varargin)
 %
 % This is the CANONICAL factory for the imginfo dictionary used throughout
 % MIB3 to carry image metadata between loaders, core data classes, and
@@ -12,114 +13,120 @@ function imginfo = initializeImgInfo(varargin)
 % with a well-defined default, regardless of which component creates the dict.
 %
 % IMAGEDESCRPTION / ACTIONLOG SPLIT
-%   The full ImageDescription string stored in TIFF and other formats has
-%   the structure:
+% The full ImageDescription string stored in TIFF and other formats has
+% the structure:
 %
-%       'BoundingBox x1 x2 y1 y2 z1 z2|LogEntry1|LogEntry2|...'
+% 'BoundingBox x1 x2 y1 y2 z1 z2|LogEntry1|LogEntry2|...'
 %
-%   MIB3 stores the two parts separately inside the dictionary:
-%     - "ImageDescription"  ->  BoundingBox string only (before first '|')
-%     - "ActionLog"         ->  cell array of log entries (after first '|')
+% MIB3 stores the two parts separately inside the dictionary:
+% - "ImageDescription" BoundingBox string only (before first '|')
+% - "ActionLog" cell array of log entries (after first '|')
 %
-%   When a loader reads the raw combined string from a file it should call
-%   core.MibImage.splitImageDescription() and pass the two parts as
-%   separate Name-Value pairs to this function.
+% When a loader reads the raw combined string from a file it should call
+% core.MibImage.splitImageDescription() and pass the two parts as
+% separate Name-Value pairs to this function.
 %
-% Parameters:
-%   varargin — optional Name-Value pairs overriding any subset of the keys
-%              listed below.  Unrecognised keys are stored in the dictionary
-%              unchanged, so format-specific metadata (e.g. TIFF tags) can
-%              be carried through without special-casing.
+% Input Arguments:
+%   - **varargin** — optional Name-Value pairs overriding any subset of the default keys.
+%     Unrecognised keys are stored in the dictionary unchanged, allowing format-specific
+%     metadata (e.g. TIFF tags) to be carried through without special-casing.
 %
-%   Key                  Type        Default          Description
-%   ---                  ----        -------          -----------
-%   'Filename'           char        'none.tif'       Full path to the source file
-%   'Height'             double      512              Image height in pixels
-%   'Width'              double      512              Image width in pixels
-%   'Colors'             double      1                Number of colour channels
-%   'Colormap'           double[]    []               Colormap for indexed images
-%   'Depth'              double      1                Number of z-slices
-%   'Time'               double      1                Number of time points
-%   'imgClass'           char        'uint8'          MATLAB image class
-%   'ColorType'          char        'grayscale'      'grayscale'|'multichannel'|
-%                                                     'hsvcolor'|'indexed'
-%   'ImageDescription'   char        ''               BoundingBox string only
-%                                                     (part BEFORE the first '|')
-%   'ActionLog'          cell        {}               Per-operation log entries
-%                                                     (parts AFTER the first '|',
-%                                                     one entry per cell)
-%   'MaxInt'             double      255              Maximum representable intensity
-%   'SliceName'          cell        {}               Per-slice source filenames
-%   'pixSize'            struct                       Voxel / time-step sizes
-%                                                     (from utils.defaults.initializePixSize):
-%                                                       .x      pixel width  [um]  = 1
-%                                                       .y      pixel height [um]  = 1
-%                                                       .z      slice thickness [um] = 1
-%                                                       .t      time step [s]      = 1
-%                                                       .units  spatial units      = 'um'
-%                                                       .tunits time units         = 's'
-%   'viewPort'           struct                       Display stretch parameters:
-%                                                       .min    = 0
-%                                                       .max    = 255
-%                                                       .gamma  = 1
-%   'lutColors'          double Nx3  (auto)           LUT colours, values 0..1,
-%                                                     one row per colour channel
+%     Supported keys (with defaults):
 %
-% Return values:
-%   imginfo — dictionary with all standard MibImage metadata fields.
-%             Caller-supplied Name-Value pairs override the defaults.
+%     - ``'Filename'`` — (char) full path to the source file; default ``'none.tif'``
+%     - ``'Height'`` — (double) image height in pixels; default ``512``
+%     - ``'Width'`` — (double) image width in pixels; default ``512``
+%     - ``'Colors'`` — (double) number of colour channels; default ``1``
+%     - ``'Colormap'`` — (double[]) colormap for indexed images; default ``[]``
+%     - ``'Depth'`` — (double) number of z-slices; default ``1``
+%     - ``'Time'`` — (double) number of time points; default ``1``
+%     - ``'imgClass'`` — (char) MATLAB image class; default ``'uint8'``
+%     - ``'ColorType'`` — (char) ``'grayscale'`` | ``'multichannel'`` | ``'hsvcolor'`` | ``'indexed'``; default ``'grayscale'``
+%     - ``'ImageDescription'`` — (char) BoundingBox string (part before the first ``'|'``); default ``''``
+%     - ``'ActionLog'`` — (cell) per-operation log entries (parts after the first ``'|'``); default ``{}``
+%     - ``'MaxInt'`` — (double) maximum representable intensity; default ``255``
+%     - ``'SliceName'`` — (cell) per-slice source filenames; default ``{}``
+%     - ``'pixSize'`` — (struct) voxel/time-step sizes from ``utils.defaults.initializePixSize()``:
 %
-% USAGE EXAMPLES
-%   @code
-%   %% 1. Empty dictionary with all defaults
-%   imginfo = core.MibImage.initializeImgInfo();
-%   @endcode
+%       - ``.x`` — pixel width [µm]; default ``1``
+%       - ``.y`` — pixel height [µm]; default ``1``
+%       - ``.z`` — slice thickness [µm]; default ``1``
+%       - ``.t`` — time step [s]; default ``1``
+%       - ``.units`` — spatial units; default ``'um'``
+%       - ``.tunits`` — time units; default ``'s'``
 %
-%   @code
-%   %% 2. Provide filename and physical voxel size only
-%   pixSz = struct('x',0.013,'y',0.013,'z',0.025,'t',1,'units','um','tunits','s');
-%   imginfo = core.MibImage.initializeImgInfo( ...
-%       'Filename', '/data/em_volume.tif', ...
-%       'pixSize',  pixSz);
-%   @endcode
+%     - ``'viewPort'`` — (struct) display stretch parameters:
 %
-%   @code
-%   %% 3. Loader workflow: split the raw ImageDescription tag first
-%   rawDesc = 'BoundingBox 0 511.5 0 511.5 0 49.5|MIB(2601041823): opened|MIB(2603131934): filtered';
-%   [imgDesc, actionLog] = core.MibImage.splitImageDescription(rawDesc);
+%       - ``.min`` — default ``0``
+%       - ``.max`` — default ``255``
+%       - ``.gamma`` — default ``1``
 %
-%   imginfo = core.MibImage.initializeImgInfo( ...
-%       'Filename',         '/data/stack.tif', ...
-%       'ImageDescription', imgDesc, ...
-%       'ActionLog',        actionLog, ...
-%       'pixSize',          struct('x',0.013,'y',0.013,'z',0.025, ...
-%                                 't',1,'units','um','tunits','s'));
-%   @endcode
+%     - ``'lutColors'`` — (double Nx3) LUT colours, values 0..1, one row per colour channel
 %
-%   @code
-%   %% 4. Full dimension metadata (useful in custom loaders)
-%   imginfo = core.MibImage.initializeImgInfo( ...
-%       'Filename',   '/data/multichannel.tif', ...
-%       'Height',     1024, ...
-%       'Width',      1024, ...
-%       'Depth',      50,   ...
-%       'Colors',     3,    ...
-%       'ColorType',  'multichannel', ...
-%       'imgClass',   'uint16', ...
-%       'MaxInt',     65535);
-%   @endcode
+% Output Arguments:
+%   - **imginfo** — dictionary with all standard MibImage metadata fields.
+%     Caller-supplied Name-Value pairs override the defaults.
 %
-%   @code
-%   %% 5. Add a format-specific tag (stored as-is, no error)
-%   imginfo = core.MibImage.initializeImgInfo( ...
-%       'Filename',          '/data/scan.tif', ...
-%       'TiffBitsPerSample', 16);
-%   @endcode
+% Usage:
+%   **Example 1** — Empty dictionary with all defaults
 %
-% SEE ALSO
-%   core.MibImage.splitImageDescription, core.MibImage.buildImageDescription,
-%   utils.defaults.initializePixSize, core.MibDataset.initialize,
-%   core.MibImage.initialize
+%   .. code-block:: matlab
+%
+%
+%       imginfo = core.MibImage.initializeImgInfo();
+%
+%   **Example 2** — Provide filename and physical voxel size only
+%
+%   .. code-block:: matlab
+%
+%
+%       pixSz = struct('x',0.013,'y',0.013,'z',0.025,'t',1,'units','um','tunits','s');
+%       imginfo = core.MibImage.initializeImgInfo( ...
+%           'Filename', '/data/em_volume.tif', ...
+%           'pixSize',  pixSz);
+%
+%   **Example 3** — Loader workflow: split the raw ImageDescription tag first
+%
+%   .. code-block:: matlab
+%
+%
+%       rawDesc = 'BoundingBox 0 511.5 0 511.5 0 49.5|MIB(2601041823): opened|MIB(2603131934): filtered';
+%       [imgDesc, actionLog] = core.MibImage.splitImageDescription(rawDesc);
+%
+%       imginfo = core.MibImage.initializeImgInfo( ...
+%           'Filename',         '/data/stack.tif', ...
+%           'ImageDescription', imgDesc, ...
+%           'ActionLog',        actionLog, ...
+%           'pixSize',          struct('x',0.013,'y',0.013,'z',0.025, ...
+%                                     't',1,'units','um','tunits','s'));
+%
+%   **Example 4** — Full dimension metadata (useful in custom loaders)
+%
+%   .. code-block:: matlab
+%
+%
+%       imginfo = core.MibImage.initializeImgInfo( ...
+%           'Filename',   '/data/multichannel.tif', ...
+%           'Height',     1024, ...
+%           'Width',      1024, ...
+%           'Depth',      50,   ...
+%           'Colors',     3,    ...
+%           'ColorType',  'multichannel', ...
+%           'imgClass',   'uint16', ...
+%           'MaxInt',     65535);
+%
+%   **Example 5** — Add a format-specific tag (stored as-is, no error)
+%
+%   .. code-block:: matlab
+%
+%
+%       imginfo = core.MibImage.initializeImgInfo( ...
+%           'Filename',          '/data/scan.tif', ...
+%           'TiffBitsPerSample', 16);
+%
+% See also:
+%   core.MibImage.splitImageDescription, core.MibImage.buildImageDescription, utils.defaults.initializePixSize, core.MibDataset.initialize, core.MibImage.initialize
+%
 
 % --- build the default dictionary ---
 imginfo = dictionary( ...

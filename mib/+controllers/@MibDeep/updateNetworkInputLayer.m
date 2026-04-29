@@ -1,7 +1,10 @@
 function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
-    % function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
-    % update the input layer settings for lgraph
-    % paramters are taken from obj.InputLayerOpt
+% UPDATENETWORKINPUTLAYER - update the input layer settings for lgraph.
+%
+% Syntax:
+%   function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
+%
+% paramters are taken from obj.InputLayerOpt
 
     selectedWorkflow = obj.BatchOpt.Workflow{1};
     colorDimension = 4;

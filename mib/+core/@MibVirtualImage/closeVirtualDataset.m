@@ -1,15 +1,17 @@
 function closeVirtualDataset(obj)
-% function closeVirtualDataset(obj)
-% Close open virtual readers and loader objects to release file handles.
+% CLOSEVIRTUALDATASET - Close open virtual readers and loader objects to release file handles.
+%
+% Syntax:
+%   function closeVirtualDataset(obj)
 %
 % Closes any BioFormatsVirtualLoader readers held in obj.loaders, then
 % clears the loaders cache.  Also handles the legacy case where BioFormats
 % Memoizer handles were stored directly in obj.data{}.
 %
-% Parameters:
+% Input Arguments:
 %
-% Return values:
-%% Updates
+% Output Arguments:
+%   % Updates
 %
 
 % --- close cached loader objects ------------------------------------------

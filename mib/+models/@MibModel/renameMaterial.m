@@ -1,6 +1,8 @@
 function renameMaterial(obj, BatchOptIn)
-% function renameMaterial(obj, BatchOptIn)
-% Rename one or all materials of the current model
+% RENAMEMATERIAL - Rename one or all materials of the current model.
+%
+% Syntax:
+%   function renameMaterial(obj, BatchOptIn)
 %
 % For small models (63 or 255 materials): prompts the user for a new
 % name for the selected material.  Use MaterialIndex '0' with a
@@ -9,34 +11,45 @@ function renameMaterial(obj, BatchOptIn)
 % For large models (65535 or 4294967295 materials): only numeric names
 % are accepted.
 %
-% Parameters:
-% BatchOptIn: [@em optional] a structure for batch processing mode; when
-%   NaN, returns a structure with default options via "SyncBatch" event
-% @li .MaterialIndex - char, 1-based index of the material to rename;
-%   use '0' to rename all materials at once (MaterialName must then be a
-%   comma-separated list); [@em default] index of the currently selected
-%   material in the segmentation table
-% @li .MaterialName - char, new name for the material, or
-%   comma-separated list when MaterialIndex is '0'; [@em default '']
-% @li .showWaitbar - logical, show or not the waitbar; [@em default true]
-% @li .id -> [@em optional], dataset index 1-9, default = obj.id
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when
+%     NaN, returns a structure with default options via "SyncBatch" event
 %
-% Return values:
+%     - ``.MaterialIndex`` — char, 1-based index of the material to rename;
+%       use ``'0'`` to rename all materials at once (MaterialName must then be a
+%       comma-separated list); [*default]* index of the currently selected
+%       material in the segmentation table
+%     - ``.MaterialName`` — char, new name for the material, or
+%       comma-separated list when MaterialIndex is ``'0'``; [*default* ``''``]
+%     - ``.showWaitbar`` — logical, show or not the waitbar; [*default* true]
+%     - ``.id`` — *(optional)*, dataset index 1-9, default = obj.id
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.renameMaterial();     // interactive rename with dialog @endcode
-% @code
-% BatchOpt.MaterialIndex = '3';
-% BatchOpt.MaterialName = 'Nucleus';
-% obj.mibModel.renameMaterial(BatchOpt);   // scripted / batch call
-% @endcode
-% @code
-% BatchOpt.MaterialIndex = '0';
-% BatchOpt.MaterialName = 'A,B,C';
-% obj.mibModel.renameMaterial(BatchOpt);   // rename all three materials
-% @endcode
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — interactive rename with dialog
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.renameMaterial();
+%
+%   **Example 2** — scripted / batch call
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.MaterialIndex = '3';
+%      BatchOpt.MaterialName = 'Nucleus';
+%      obj.mibModel.renameMaterial(BatchOpt);
+%
+%   **Example 3** — rename all three materials
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.MaterialIndex = '0';
+%      BatchOpt.MaterialName = 'A,B,C';
+%      obj.mibModel.renameMaterial(BatchOpt);
+%
 
 % Updates
 % Ported from MIB2 mibModel.materialsActions 'Rename material' case

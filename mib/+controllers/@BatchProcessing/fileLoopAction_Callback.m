@@ -1,6 +1,8 @@
 function fileLoopAction_Callback(obj, BatchOptInput)
-% function fileLoopAction_Callback(obj, BatchOptInput)
-% build or apply the BatchOpt structure for a File Loop protocol step
+% FILELOOPACTION_CALLBACK - build or apply the BatchOpt structure for a File Loop protocol step.
+%
+% Syntax:
+%   function fileLoopAction_Callback(obj, BatchOptInput)
 %
 % When called with no second argument (interactive mode) the function
 % constructs a default BatchOpt and returns.  When called with
@@ -10,23 +12,25 @@ function fileLoopAction_Callback(obj, BatchOptInput)
 % updateBatchOptCombineFields_Shared.
 %
 % The resulting BatchOpt specifies:
-% @li DirectoryName   - source directory; choices include 'Current MIB path',
-%     'Inherit from Directory loop', or an absolute path
-% @li FilenameFilter  - wildcard applied inside the directory (default '*.*')
-% @li FileLoopWaitbar - [logical] when true only the file-level waitbar is
-%     displayed; all per-step waitbars are suppressed
+%   - DirectoryName   - source directory; choices include 'Current MIB path',
+% 'Inherit from Directory loop', or an absolute path
+%   - FilenameFilter  - wildcard applied inside the directory (default '*.*')
+%   - FileLoopWaitbar - [logical] when true only the file-level waitbar is
+% displayed; all per-step waitbars are suppressed
 %
-% Parameters:
-% BatchOptInput: [optional]
-%   @li NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
-%   @li struct - override defaults with supplied fields and apply
+% Input Arguments:
+%   - **BatchOptInput** — [optional]
+%     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
+%     - struct - override defaults with supplied fields and apply
 %
-%|
-% @b Examples:
-% @code obj.fileLoopAction_Callback(NaN); // populate parameter table @endcode
-% @code obj.fileLoopAction_Callback(BatchOpt); // apply saved settings @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.fileLoopAction_Callback(NaN); // populate parameter table
+%
+%   Example 2::
+%
+%     obj.fileLoopAction_Callback(BatchOpt); // apply saved settings
 %
 
 BatchOpt.DirectoryName = {'Current MIB path'};   % specify the target directory

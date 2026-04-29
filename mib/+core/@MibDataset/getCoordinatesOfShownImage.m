@@ -1,27 +1,35 @@
 function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3)
-% function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3)
-% Return minimal and maximal coordinates (XY) of the image that is
+% GETCOORDINATESOFSHOWNIMAGE - Return minimal and maximal coordinates (XY) of the image that is.
+%
+% Syntax:
+%   function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3)
+%
 % currently shown.
 %
-% Parameters:
-% transposeTo3: - [@em optional] when 
-%           true, transpose dataset to the orientation 3, when looking on the XY plane of the dataset
-%           false, do not transpose
-% 
-% Return values:
-% yMin: - minimal Y coordinate
-% yMax: - maximal Y coordinate
-% xMin: - minimal Y coordinate
-% xMax: - maximal Y coordinate
-% zMin: - minimal Z coordinate
-% zMax: - maximal Z coordinate
+% Input Arguments:
+%   - **transposeTo3** — - *(optional)* when
+%     true, transpose dataset to the orientation 3, when looking on the XY plane of the dataset
+%     false, do not transpose
 %
-% @b Note:
-% it is also possible to get coordinates from .slices field of mibImage class
-
-%| 
-% @b Examples:
-% @code [yMin, yMax, xMin, xMax] = obj.mibModel.I{obj.mibModel.id}.getCoordinatesOfShownImage();  // get coordinates @endcode
+% Output Arguments:
+%   - **yMin** — - minimal Y coordinate
+%   - **yMax** — - maximal Y coordinate
+%   - **xMin** — - minimal Y coordinate
+%   - **xMax** — - maximal Y coordinate
+%   - **zMin** — - minimal Z coordinate
+%   - **zMax** — - maximal Z coordinate
+%
+%   **Note:**
+%   it is also possible to get coordinates from .slices field of mibImage class
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [yMin, yMax, xMin, xMax] = obj.mibModel.I{obj.mibModel.id}.getCoordinatesOfShownImage();% get coordinates
+%
 
 % Updates
 

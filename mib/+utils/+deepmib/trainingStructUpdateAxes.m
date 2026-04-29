@@ -1,10 +1,12 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function trainingStructUpdateAxes(hMenu, actionData, parameter)
-% function trainingStructUpdateAxes(hMenu, actionData, parameter)
-% function to handle callbacks from the context menu for mibDeepTrainingProgressStruct.UILossAxes
+% TRAININGSTRUCTUPDATEAXES - Handle context-menu callbacks for ``mibDeepTrainingProgressStruct.UILossAxes``.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      trainingStructUpdateAxes(hMenu, actionData, parameter)
+%
 global mibPath;
 global mibDeepTrainingProgressStruct
 

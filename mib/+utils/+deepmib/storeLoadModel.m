@@ -1,14 +1,18 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function model = storeLoadModel(filename)
-% function model = storeLoadModel(filename)
-% supporting function for mibDeepController
-% to be used with pixelLabelDatastore to load MIB models
+% STORELOADMODEL - Load a MIB label model from a MAT file for use with ``pixelLabelDatastore``.
 %
-% Parameters:
-% filename: filename to load the model
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      model = storeLoadModel(filename)
+%
+% Input Arguments:
+%   - **filename** — [string] full path to the MAT file containing the model
+%
+% Output Arguments:
+%   - **model** — loaded model array
+%
 
 res = load(filename, '-mat');
 model = res.(res.modelVariable);

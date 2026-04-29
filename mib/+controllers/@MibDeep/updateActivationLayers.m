@@ -1,6 +1,9 @@
 function lgraph = updateActivationLayers(obj, lgraph)
-% function lgraph = updateActivationLayers(obj, lgraph)
-% update the activation layers depending on settings in
+% UPDATEACTIVATIONLAYERS - update the activation layers depending on settings in.
+%
+% Syntax:
+%   function lgraph = updateActivationLayers(obj, lgraph)
+%
 % obj.BatchOpt.T_ActivationLayer and obj.ActivationLayerOpt
 
 % redefine the activation layers

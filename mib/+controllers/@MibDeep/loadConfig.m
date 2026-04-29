@@ -1,9 +1,12 @@
 function loadConfig(obj, configName)
-% function loadConfig(obj, configName)
-% load config file with Deep MIB settings
+% LOADCONFIG - load config file with Deep MIB settings.
 %
-% Parameters:
-% configName: full filename for the config file to load
+% Syntax:
+%   function loadConfig(obj, configName)
+%
+% Input Arguments:
+%   - **configName** — full filename for the config file to load
+%
 
 if nargin < 2
     [file, projectPath] = utils.dlgs.mibUiGetFile({'*.mibCfg;', 'Deep MIB config files (*.mibCfg)';

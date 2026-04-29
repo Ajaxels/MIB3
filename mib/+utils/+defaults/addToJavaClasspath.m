@@ -1,10 +1,26 @@
 function addToJavaClasspath(classpath, directory)
-% function addToJavaClasspath(classpath, directory)
-% add java to java class path of MATLAB
+% ADDTOJAVACLASSPATH - Add JAR files from a directory to the MATLAB Java classpath.
 %
-% Parameters:
+% Syntax:
 %
-% Return values:
+%   .. code-block:: matlab
+%
+%      addToJavaClasspath(classpath, directory)
+%
+% Scans ``directory`` for ``*.jar`` files and appends any that are not already
+% in ``classpath`` using ``javaaddpath``.
+%
+% Input Arguments:
+%   - **classpath** — [cell of char] current Java classpath entries (from ``javaclasspath``)
+%   - **directory** — [char] full path to the directory containing JAR files
+%
+% Usage:
+%
+%   **Example 1** — add BioFormats JARs during MIB startup
+%
+%   .. code-block:: matlab
+%
+%      addToJavaClasspath(javaclasspath, fullfile(mibPath, 'jars'));
 %
 
 %
@@ -28,7 +44,11 @@ end
 end
 
 function test = not_yet_in_classpath(classpath, filename)
-% Test whether the library was already imported
+% NOT_YET_IN_CLASSPATH - Test whether the library was already imported.
+%
+% Syntax:
+%   function test = not_yet_in_classpath(classpath, filename)
+%
 
 expression = strcat([filesep filename]);
 test = isempty(cell2mat(strfind(classpath, expression)));

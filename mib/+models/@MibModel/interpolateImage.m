@@ -1,40 +1,45 @@
 function interpolateImage(obj, imgType, intType, BatchOptIn)
-% function interpolateImage(obj, imgType, intType, BatchOptIn)
-% Interpolate the 'mask', 'selection', or 'labels' layer between slices.
+% INTERPOLATEIMAGE - Interpolate the 'mask', 'selection', or 'labels' layer between slices.
+%
+% Syntax:
+%   function interpolateImage(obj, imgType, intType, BatchOptIn)
 %
 % Applies either shape interpolation (suitable for filled blobs) or line
 % interpolation (suitable for open-line / membrane annotations) to the
 % binary representation of the chosen layer at the current time point.
 % Intermediate slices between any two annotated slices are filled in.
 %
-% Parameters:
-% imgType: [@em optional] string, layer to interpolate; default 'selection'
-% @li 'selection' - smooth the Selection layer
-% @li 'mask'      - smooth the Mask layer
-% @li 'labels'    - smooth a material of the Labels (segmentation model) layer
-% intType: [@em optional] string, interpolation algorithm; default from preferences
-% @li 'shape' - contour-based interpolation, best for filled shapes/blobs
-% @li 'line'  - endpoint-based interpolation, best for open lines/membranes
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
-%   returns a structure with default options via the "SyncBatch" event
-% @li .Target           - cell string, {'mask','selection','labels'} - layer to interpolate
-% @li .InterpolationType - cell string, {'shape','line'} - algorithm
-% @li .MaterialIndex    - string [@em only for labels], index of the material
-% @li .showWaitbar      - logical, show or not the waitbar
-% @li .id               -> [@em optional], dataset index 1–9, default = obj.id
+% Input Arguments:
+%   - **imgType** — *(optional)* string, layer to interpolate; default ``'selection'``:
 %
-% Return values:
-% (none) — returns early on cancel, invalid input, or unsupported mode.
+%     - ``'selection'`` — smooth the Selection layer
+%     - ``'mask'`` — smooth the Mask layer
+%     - ``'labels'`` — smooth a material of the Labels (segmentation model) layer
 %
-%|
-% @b Examples:
-% @code obj.mibModel.interpolateImage('selection', 'shape');  // shape-interpolate current selection @endcode
-% @code
-% BatchOpt.Target = {'mask'};
-% BatchOpt.InterpolationType = {'line'};
-% BatchOpt.MaterialIndex = '1';
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.interpolateImage([], [], BatchOpt);  // batch call @endcode
+%   - **intType** — *(optional)* string, interpolation algorithm; default from preferences:
+%
+%     - ``'shape'`` — contour-based interpolation, best for filled shapes/blobs
+%     - ``'line'`` — endpoint-based interpolation, best for open lines/membranes
+%
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when ``NaN``,
+%     returns a structure with default options via the "SyncBatch" event:
+%
+%     - ``.Target`` — cell string, ``{'mask','selection','labels'}`` layer to interpolate
+%     - ``.InterpolationType`` — cell string, ``{'shape','line'}`` algorithm
+%     - ``.MaterialIndex`` — string [*only* for ``'labels'``], index of the material
+%     - ``.showWaitbar`` — logical, show or not the waitbar
+%     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.id``
+%
+% Output Arguments:
+%   (none) — returns early on cancel, invalid input, or unsupported mode.
+%
+% Usage:
+%   **Example 1** — shape-interpolate current selection
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.interpolateImage('selection', 'shape');
+%
 
 % Updates
 %

@@ -1,32 +1,38 @@
 function updateFrameNumber(obj, BatchOptIn)
-% function updateFrameNumber(obj, BatchOptIn)
-% Change the currently displayed time frame in the active image document
+% UPDATEFRAMENUMBER - Change the currently displayed time frame in the active image document.
+%
+% Syntax:
+%   function updateFrameNumber(obj, BatchOptIn)
 %
 % Wrapper that exposes time-frame navigation to the MIB batch processing
 % system. Validates the requested frame number (clamping it to the valid
 % range) and then delegates to the active MibImageDocument's
 % frameNumber_Callback, which updates the slider and redraws the image.
 %
-% Parameters:
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
-%   returns default options via the "SyncBatch" event
-% @li .FrameNumber - [char, {'1'}] frame/time number to display as a string;
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%     returns default options via the "SyncBatch" event
+%     - .FrameNumber - [char, {'1'}] frame/time number to display as a string;
 %   use '0' to jump to the last time point of the dataset
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-%|
-% @b Examples:
-% @code obj.updateFrameNumber();                                          % interactive: reads value from the frame-number widget @endcode
-% @code
-% BatchOpt.FrameNumber = '3';
-% obj.updateFrameNumber(BatchOpt);                                        % batch/scripted call: jump to frame 3
-% @endcode
-% @code
-% BatchOpt.FrameNumber = '0';
-% obj.updateFrameNumber(BatchOpt);                                        % batch/scripted call: jump to the last frame
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.updateFrameNumber();                                          % interactive: reads value from the frame-number widget
+%
+%   Example 2::
+%
+%     BatchOpt.FrameNumber = '3';
+%     obj.updateFrameNumber(BatchOpt);                                        % batch/scripted call: jump to frame 3
+%
+%   Example 3::
+%
+%     BatchOpt.FrameNumber = '0';
+%     obj.updateFrameNumber(BatchOpt);                                        % batch/scripted call: jump to the last frame
+%
 
 % Updates
 

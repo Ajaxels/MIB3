@@ -1,21 +1,24 @@
 function removeROI(obj)
-% function removeROI(obj)
-% Remove selected ROI(s) from the current dataset.
+% REMOVEROI - Remove selected ROI(s) from the current dataset.
+%
+% Syntax:
+%   function removeROI(obj)
 %
 % When 'All' is selected in the ROI list, removes every ROI after
 % user confirmation.  Otherwise removes only the selected ROI.
 % The ROI list is refreshed and the image is repainted.
 %
-% Parameters:
-%   obj: controllers.MibRoi — the ROI panel controller
+% Input Arguments:
+%   - **obj** — controllers.MibRoi — the ROI panel controller
 %
-% Return values: none
-%|
-% @b Examples:
-% @code
-% // called from gui_Callbacks when roiRemove button is pressed
-% obj.removeROI();
-% @endcode
+%   Return values: none
+%
+% Usage:
+%   Example 1::
+%
+%     // called from gui_Callbacks when roiRemove button is pressed
+%     obj.removeROI();
+%
 
 % developer mode
 if obj.mibModel.preferences.System.DeveloperMode

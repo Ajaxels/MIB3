@@ -1,14 +1,15 @@
 function loadProtocol(obj)
-% function loadProtocol(obj)
-% load a protocol from a .mibProtocol file via a dialog
+% LOADPROTOCOL - load a protocol from a .mibProtocol file via a dialog.
+%
+% Syntax:
+%   function loadProtocol(obj)
 %
 % Stores an undo snapshot before replacing the current protocol.
 %
-%|
-% @b Examples:
-% @code obj.loadProtocol(); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.loadProtocol();
 %
 
 if isempty(obj.mibModel.I{obj.mibModel.id}.image.filename)

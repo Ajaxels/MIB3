@@ -1,25 +1,28 @@
 function listener_updatePanelPosition(obj, src, evtData)
-% function listener_updatePanelPosition(obj, src, evtData)
-% Listener callback: adapt the Directory contents panel grid layout when the
+% LISTENER_UPDATEPANELPOSITION - Listener callback: adapt the Directory contents panel grid layout when the.
+%
+% Syntax:
+%   function listener_updatePanelPosition(obj, src, evtData)
+%
 % panel is docked to a new region of the AppContainer (bottom, left, or right).
 %
 % The Directory contents panel uses a mainGridLayout with 3 rows × 6 columns:
 %
-%   Left / Right — vertical, 3-row × 6-column layout:
-%               RowHeight    = {'1x', 22, 2}
-%               ColumnWidth  = {34, 84, 40, '1x', 50, 18}
-%               ColumnSpacing = 5, RowSpacing = 6, Padding = [8 8 8 8]
-%               Row 1 — fileList, spanning cols [1 6]
-%               Row 2 — 5 toolbar widgets at cols 1, 2, 3, 5, 6 (col 4 = spacer)
-%               Row 3 — dividerPanel, spanning cols [1 6]
+% Left / Right — vertical, 3-row × 6-column layout:
+% RowHeight    = {'1x', 22, 2}
+% ColumnWidth  = {34, 84, 40, '1x', 50, 18}
+% ColumnSpacing = 5, RowSpacing = 6, Padding = [8 8 8 8]
+% Row 1 — fileList, spanning cols [1 6]
+% Row 2 — 5 toolbar widgets at cols 1, 2, 3, 5, 6 (col 4 = spacer)
+% Row 3 — dividerPanel, spanning cols [1 6]
 %
-%   Bottom — 6-row × 3-column layout:
-%               ColumnWidth  = {'1x', 130, 2}
-%               RowHeight    = {22, 22, 22, '1x', 22, 22}
-%               ColumnSpacing = 5, RowSpacing = 6, Padding = [8 8 8 8]
-%               Col 1 — fileList, spanning rows [1 6]
-%               Col 2 — 5 toolbar widgets at rows 1,2,3,5,6 (row 4 = spacer)
-%               Col 3 — dividerPanel, spanning rows [1 6]
+% Bottom — 6-row × 3-column layout:
+% ColumnWidth  = {'1x', 130, 2}
+% RowHeight    = {22, 22, 22, '1x', 22, 22}
+% ColumnSpacing = 5, RowSpacing = 6, Padding = [8 8 8 8]
+% Col 1 — fileList, spanning rows [1 6]
+% Col 2 — 5 toolbar widgets at rows 1,2,3,5,6 (row 4 = spacer)
+% Col 3 — dividerPanel, spanning rows [1 6]
 
 switch evtData.PropertyName
     case 'Region'

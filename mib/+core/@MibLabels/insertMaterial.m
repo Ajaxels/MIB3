@@ -1,34 +1,46 @@
 function insertMaterial(obj, index, name, wb)
-% function insertMaterial(obj, index, name, wb)
-% Insert a material at the specified position
+% INSERTMATERIAL - Insert a material at the specified position.
+%
+% Syntax:
+%   function insertMaterial(obj, index, name, wb)
 %
 % For small models (maxMaterials < 256):
-%   - When appending at the end (index == nMats+1): only adds the name
-%     and a colour entry, no pixel shift is needed.
-%   - When inserting in the middle: shifts all pixel values >= index
-%     upward by 1 across every time-point in obj.data{1}, then inserts
-%     the name at the correct position and appends a colour if the
-%     colour array is shorter than the name list.
+% - When appending at the end (index == nMats+1): only adds the name
+% and a colour entry, no pixel shift is needed.
+% - When inserting in the middle: shifts all pixel values >= index
+% upward by 1 across every time-point in obj.data{1}, then inserts
+% the name at the correct position and appends a colour if the
+% colour array is shorter than the name list.
 %
 % For large models (maxMaterials >= 256):
-%   Shifts pixel values >= index upward by 1, then increments
-%   obj.materialsCount.  No name/colour changes (large models use only
-%   placeholder names).
+% Shifts pixel values >= index upward by 1, then increments
+% obj.materialsCount.  No name/colour changes (large models use only
+% placeholder names).
 %
-% Parameters:
-% index: double, 1-based position where the new material is inserted.
-% name: char, name of the new material (used for small models; ignored
-%   for large models).
-% wb: [@em optional] handle to a uiprogressdlg for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **index** — double, 1-based position where the new material is inserted.
+%   - **name** — char, name of the new material (used for small models; ignored
+%     for large models).
+%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(3, 'Nucleus');       // insert at position 3 @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(5, 'New', wb);       // with progress bar @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(3, 'Nucleus');% insert at position 3
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.insertMaterial(5, 'New', wb);% with progress bar
+%
 
 % Updates
 %

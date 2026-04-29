@@ -1,30 +1,34 @@
 function segmentationSAM2(obj, extraOptions, BatchOptIn)
-% segmentationSAM2(obj, extraOptions, BatchOptIn)
+% SEGMENTATIONSAM2 - segmentationSAM2(obj, extraOptions, BatchOptIn).
+%
+% Syntax:
+%   function segmentationSAM2(obj, extraOptions, BatchOptIn)
+%
 % Perform segmentation using segment-anything-2 model https://github.com/facebookresearch/segment-anything-2
 %
-% Parameters:
-% extraOptions: [@em optional] structure with additional options
-%  @li .addNextMaterial, [logical], switch to add next material for the "add, +next material" mode
-% BatchOptIn: [@em optional] structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event, see Declaration of the BatchOpt structure below for details, the function
-%   variables are preferred over the BatchOptIn variables
-% @li .Method - Specify method how SAM should be executed
-%       -> "Interactive", by interactively adding point
-%       -> "Interactive 3D", by interactively adding point for 3D video segmentation
-%       -> "Landmarks", process the placed points all at once
-%       -> "Automatic everything", automatically segment all objects on the image
-% @li .Dataset - segment the current slice (2D, Slice), current stack (3D, Stack) or the whole dataset(4D, Dataset)
-% @li .Destination - string with MIB layer to apply results of the segmentation (selection, mask, labels)
-% @li .showWaitbar - Show or not the progress bar during execution
+% Input Arguments:
+%   - **extraOptions** — *(optional)* structure with additional options
+%     - .addNextMaterial, [logical], switch to add next material for the "add, +next material" mode
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event, see Declaration of the BatchOpt structure below for details, the function
+%     variables are preferred over the BatchOptIn variables
+%     - .Method - Specify method how SAM should be executed
+%   -> "Interactive", by interactively adding point
+%   -> "Interactive 3D", by interactively adding point for 3D video segmentation
+%   -> "Landmarks", process the placed points all at once
+%   -> "Automatic everything", automatically segment all objects on the image
+%     - .Dataset - segment the current slice (2D, Slice), current stack (3D, Stack) or the whole dataset(4D, Dataset)
+%     - .Destination - string with MIB layer to apply results of the segmentation (selection, mask, labels)
+%     - .showWaitbar - Show or not the progress bar during execution
 %
-% Return values:
-% none
-
-%|
-% @b Examples:
-% @code
-% obj.segmentationSAM2(extraOptions);
-% @endcode
+% Output Arguments:
+%   none
+%
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationSAM2(extraOptions);
+%
 
 if nargin < 2; extraOptions = []; end
 
@@ -641,25 +645,29 @@ if localWaitbar; close(wb); end
 end
 
 function [imgIn, padSize] = checkAndPreprocessImage(imgIn, methodToUse, currViewPort, colCh, liveStretch, is3Ddata)
-% function [imgIn, padSize] = checkAndPreprocessImage(imgIn, methodToUse, currViewPort, colCh, liveStretch, is3Ddata)
-% check for correct number of color channels, adjust
+% CHECKANDPREPROCESSIMAGE - check for correct number of color channels, adjust.
+%
+% Syntax:
+%   function [imgIn, padSize] = checkAndPreprocessImage(imgIn, methodToUse, currViewPort, colCh, liveStretch, is3Ddata)
+%
 % contast, do image padding and convert to RGB
 %
-% Parameters:
-% imgIn: matrix [height, width, depth, colors] to check and process
-% methodToUse: index of the SAM2 method that was used, 1-Interactive, 2-Interactive 3D, 3-Landmarks, 4-Automatic
-% currViewPort: current viewport settings, comes from dataset.image.viewPort as
-%   .min
-%   .max
-%   .gamma
-% colCh: selected color channels
-% liveStretch: [logical] switch to automatically stretch the contrast
-% is3Ddata: [@em optional] logical, when true the input is a 3D dataset
-%   where dim3=depth; when false (default) dim3=colors (2D image)
+% Input Arguments:
+%   - **imgIn** — matrix [height, width, depth, colors] to check and process
+%   - **methodToUse** — index of the SAM2 method that was used, 1-Interactive, 2-Interactive 3D, 3-Landmarks, 4-Automatic
+%   - **currViewPort** — current viewport settings, comes from dataset.image.viewPort as
+%     .min
+%     .max
+%     .gamma
+%   - **colCh** — selected color channels
+%   - **liveStretch** — [logical] switch to automatically stretch the contrast
+%   - **is3Ddata** — *(optional)* logical, when true the input is a 3D dataset
+%     where dim3=depth; when false (default) dim3=colors (2D image)
 %
-% Return values:
-% imgIn: converted image as [height, width, depth, colors]
-% padSize: size of padding used for the Interactive mode
+% Output Arguments:
+%   - **imgIn** — converted image as [height, width, depth, colors]
+%   - **padSize** — size of padding used for the Interactive mode
+%
 
 if nargin < 6; is3Ddata = false; end
 
@@ -730,18 +738,22 @@ end
 end
 
 function imgOut = pointsSAM(imgIn, labelPositions, labelIndices, castDataType)
-% function imgOut = pointsSAM(imgIn, labelPositions, labelIndices, castDataType)
-% do interactive prediction of 2D image in imgIn using seeds in
+% POINTSSAM - do interactive prediction of 2D image in imgIn using seeds in.
+%
+% Syntax:
+%   function imgOut = pointsSAM(imgIn, labelPositions, labelIndices, castDataType)
+%
 % labelPositions and labelIndices
 %
-% Parameters:
-% imgIn: image to segment (height, width, colors)
-% labelPositions: matrix of coordinates for seeds ([seedId; x,y])
-% labelIndices: matrix positive (1) and negative seeds (0)
-% castDataType: string with class to cast output imgOut
+% Input Arguments:
+%   - **imgIn** — image to segment (height, width, colors)
+%   - **labelPositions** — matrix of coordinates for seeds ([seedId; x,y])
+%   - **labelIndices** — matrix positive (1) and negative seeds (0)
+%   - **castDataType** — string with class to cast output imgOut
 %
-% Return values:
-% imgOut: results of the segmentation, 2D image (height, width)
+% Output Arguments:
+%   - **imgOut** — results of the segmentation, 2D image (height, width)
+%
 
 if nargin < 4; castDataType = 'uint8'; end
 
@@ -794,17 +806,20 @@ pyrun([
 end
 
 function dataset = pointsVideoSAM(dataset, labelPositions, labelValues, castDataType)
-% function dataset = pointsVideoSAM(dataset, labelPositions, labelValues, castDataType)
-% do SAM2 segmentation using the provided list of points using predictor for video
+% POINTSVIDEOSAM - do SAM2 segmentation using the provided list of points using predictor for video.
 %
-% Parameters:
-% dataset: 3D dataset to predict as [height, width, depth, colors]
-% labelPositions: list of seeds from the first slice of the dataset
-% labelValues: values of the seeds: 1-positiva, 0-negative
-% castDataType: string with class to cast output imgOut
+% Syntax:
+%   function dataset = pointsVideoSAM(dataset, labelPositions, labelValues, castDataType)
 %
-% Return values:
-% dataset: results of the segmentation, 3D image (height, width, depth)
+% Input Arguments:
+%   - **dataset** — 3D dataset to predict as [height, width, depth, colors]
+%   - **labelPositions** — list of seeds from the first slice of the dataset
+%   - **labelValues** — values of the seeds: 1-positiva, 0-negative
+%   - **castDataType** — string with class to cast output imgOut
+%
+% Output Arguments:
+%   - **dataset** — results of the segmentation, 3D image (height, width, depth)
+%
 
 [height, width, depth, colors] = size(dataset);
 

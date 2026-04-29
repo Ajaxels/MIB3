@@ -1,12 +1,13 @@
 function deleteProtocol(obj)
-% function deleteProtocol(obj)
-% delete the current protocol (stores an undo snapshot first)
+% DELETEPROTOCOL - delete the current protocol (stores an undo snapshot first).
 %
-%|
-% @b Examples:
-% @code obj.deleteProtocol(); @endcode
+% Syntax:
+%   function deleteProtocol(obj)
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.deleteProtocol();
 %
 
 obj.backupProtocol();   % store the current protocol

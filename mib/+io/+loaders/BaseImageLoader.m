@@ -1,12 +1,11 @@
 classdef (Abstract) BaseImageLoader < handle
-    % classdef BaseImageLoader
-    % Abstract base class for image format loaders
-    %
-    % This abstract class provides common functionality shared across all
-    % image format loaders in MIB. It defines the interface that all loaders
-    % must implement and provides utility methods for handling custom sections,
-    % bounding box calculations, and slice name generation. Child classes must
-    % implement format-specific loading logic.
+% UNKNOWN - Abstract base class for image format loaders.
+%
+% This abstract class provides common functionality shared across all
+% image format loaders in MIB. It defines the interface that all loaders
+% must implement and provides utility methods for handling custom sections,
+% bounding box calculations, and slice name generation. Child classes must
+% implement format-specific loading logic.
     
     properties
         Options struct  % Options structure passed during construction
@@ -55,17 +54,21 @@ classdef (Abstract) BaseImageLoader < handle
     
     methods (Access = protected)
         function initBaseProps(obj, options)
-            % function initBaseProps(obj, options)
-            % Extract mibPath and ParentFigure from an options struct into
+            % INITBASEPROPS - Extract mibPath and ParentFigure from an options struct into.
+            %
+            % Syntax:
+            %   function initBaseProps(obj, options)
+            %
             % the corresponding properties.  Call this at the end of every
             % concrete loader constructor after obj.Options has been set.
             %
-            % Parameters:
+            % Input Arguments:
             %   options — struct; recognised fields:
-            %     .mibPath      — (char) path to MIB installation directory
-            %     .ParentFigure — handle to main MIB window for uiprogressdlg
+            %   .mibPath      — (char) path to MIB installation directory
+            %   .ParentFigure — handle to main MIB window for uiprogressdlg
             %
-            % Both fields are optional; absent or empty values are silently ignored.
+            %   Both fields are optional; absent or empty values are silently ignored.
+            %
             if nargin < 2 || isempty(options); return; end
             if isfield(options, 'mibPath') && ~isempty(options.mibPath)
                 obj.mibPath = options.mibPath;
@@ -76,20 +79,24 @@ classdef (Abstract) BaseImageLoader < handle
         end
 
         function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
-            % function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
-            % Create a uiprogressdlg attached to obj.ParentFigure, or return []
+            % CREATEPROGRESSDIALOG - Create a uiprogressdlg attached to obj.ParentFigure, or return [].
+            %
+            % Syntax:
+            %   function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            %
             % when no valid parent is available (standalone / headless use).
             %
-            % Parameters:
+            % Input Arguments:
             %   title         — (char) dialog title bar text
             %   message       — (char) dialog body message
             %   cancelable    — (logical, default false) show Cancel button
             %   indeterminate — (logical, default false) indeterminate spinner mode
             %
-            % Return values:
+            % Output Arguments:
             %   wb — matlab.ui.dialog.ProgressDialog handle, or [] when no
-            %        parent figure is available.  Callers must guard all
-            %        wb access with  if ~isempty(wb) ... end.
+            %   parent figure is available.  Callers must guard all
+            %   wb access with  if ~isempty(wb) ... end.
+            %
             if nargin < 4; cancelable    = false; end
             if nargin < 5; indeterminate = false; end
 
@@ -113,54 +120,57 @@ classdef (Abstract) BaseImageLoader < handle
         end
 
         function [files, imginfo, cancelled] = handleCustomSections(~, files, imginfo, options)
-            % function [files, imginfo, cancelled] = handleCustomSections(obj, files, imginfo, options)
-            % Handle custom section loading dialog and adjustments
+            % HANDLECUSTOMSECTIONS - Handle custom section loading dialog and adjustments.
+            %
+            % Syntax:
+            %   function [files, imginfo, cancelled] = handleCustomSections(~, files, imginfo, options)
             %
             % This method displays a dialog for selecting a custom region to load
             % and adjusts the files structure, pixel size, and metadata accordingly.
             % It supports XY binning, Z range selection, and file subsampling.
             %
-            % Parameters:
-            %   files: structure array with file information
-            %       @li .filename - [char] full filename
-            %       @li .width - [numeric] image width
-            %       @li .height - [numeric] image height
-            %       @li .noLayers - [numeric] number of image frames
-            %   imginfo: dictionary with image metadata, including
-            %       pixSize: structure with voxel dimensions
-            %           @li .x - [numeric] pixel width in units
-            %           @li .y - [numeric] pixel height in units
-            %           @li .z - [numeric] slice thickness in units
-            %           @li .units - [char] physical units
-            %   options: [@em struct] options structure
-            %       @li .customSections - [logical] load part of the dataset
-            %       @li .customSectionsSettings - [struct] custom section settings (optional)
-            %           @li .xMin - [numeric] min X coordinate
-            %           @li .xMax - [numeric] max X coordinate
-            %           @li .yMin - [numeric] min Y coordinate
-            %           @li .yMax - [numeric] max Y coordinate
-            %           @li .zMin - [numeric] min Z coordinate
-            %           @li .zMax - [numeric] max Z coordinate
-            %           @li .xyStep - [numeric] XY binning step
-            %       @li .mibPath - [char] path to MIB directory
-            %       @li .ParentFigure - handle to the parent window
-            %       @li .waitbar - [logical] show or not the waitbar
+            % Input Arguments:
+            %   - **files** — structure array with file information
+            %   - .filename - [char] full filename
+            %   - .width - [numeric] image width
+            %   - .height - [numeric] image height
+            %   - .noLayers - [numeric] number of image frames
+            %   - **imginfo** — dictionary with image metadata, including
+            %   - **pixSize** — structure with voxel dimensions
+            %   - .x - [numeric] pixel width in units
+            %   - .y - [numeric] pixel height in units
+            %   - .z - [numeric] slice thickness in units
+            %   - .units - [char] physical units
+            %   - **options** — [*struct]* options structure
+            %   - .customSections - [logical] load part of the dataset
+            %   - .customSectionsSettings - [struct] custom section settings (optional)
+            %   - .xMin - [numeric] min X coordinate
+            %   - .xMax - [numeric] max X coordinate
+            %   - .yMin - [numeric] min Y coordinate
+            %   - .yMax - [numeric] max Y coordinate
+            %   - .zMin - [numeric] min Z coordinate
+            %   - .zMax - [numeric] max Z coordinate
+            %   - .xyStep - [numeric] XY binning step
+            %   - .mibPath - [char] path to MIB directory
+            %   - .ParentFigure - handle to the parent window
+            %   - .waitbar - [logical] show or not the waitbar
             %
-            % Return values:
-            %   files: updated structure array with custom section parameters
-            %       @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
-            %       @li .zMin, .zMax - [numeric] slice range
-            %       @li .xyStep - [numeric] XY step for binning
-            %       @li .width, .height, .noLayers - [numeric] adjusted dimensions
-            %   imginfo: updated dictionary with image metadata
-            %   pixSize: updated structure with adjusted voxel dimensions
-            %   cancelled: [logical] true if user cancelled the dialog
+            % Output Arguments:
+            %   - **files** — updated structure array with custom section parameters
+            %   - .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
+            %   - .zMin, .zMax - [numeric] slice range
+            %   - .xyStep - [numeric] XY step for binning
+            %   - .width, .height, .noLayers - [numeric] adjusted dimensions
+            %   - **imginfo** — updated dictionary with image metadata
+            %   - **pixSize** — updated structure with adjusted voxel dimensions
+            %   - **cancelled** — [logical] true if user cancelled the dialog
             %
-            % Example:
-            %   @code
-            %   [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
-            %   if cancelled; return; end
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
+            %       if cancelled; return; end
+            %
             
             cancelled = false;
             
@@ -263,32 +273,35 @@ classdef (Abstract) BaseImageLoader < handle
         end
         
         function imginfo = handleDimensionMismatches(~, files, imginfo)
-            % function imginfo = handleDimensionMismatches(obj, files, imginfo)
-            % Handle dimension mismatches and recalculate bounding box
+            % HANDLEDIMENSIONMISMATCHES - Handle dimension mismatches and recalculate bounding box.
+            %
+            % Syntax:
+            %   function imginfo = handleDimensionMismatches(~, files, imginfo)
             %
             % This method updates the ImageDescription field with correct bounding
             % box coordinates when files have different dimensions or when custom
             % sections are loaded. It ensures spatial consistency across the dataset.
             %
-            % Parameters:
-            %   files: structure array with file information
-            %       @li .width - [numeric] image width
-            %       @li .height - [numeric] image height
-            %       @li .noLayers - [numeric] number of layers
-            %       @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
-            %       @li .zMin, .zMax - [numeric] slice range (optional)
-            %   imginfo: dictionary with image metadata
-            %       @li "ImageDescription" - [char] description with BoundingBox info
-            %       @li "pixSize" - structure with voxel dimensions
-            %           @li .x, .y, .z - [numeric] pixel dimensions in units
+            % Input Arguments:
+            %   - **files** — structure array with file information
+            %   - .width - [numeric] image width
+            %   - .height - [numeric] image height
+            %   - .noLayers - [numeric] number of layers
+            %   - .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
+            %   - .zMin, .zMax - [numeric] slice range (optional)
+            %   - **imginfo** — dictionary with image metadata
+            %   - "ImageDescription" - [char] description with BoundingBox info
+            %   - "pixSize" - structure with voxel dimensions
+            %   - .x, .y, .z - [numeric] pixel dimensions in units
             %
-            % Return values:
-            %   imginfo: updated dictionary with recalculated BoundingBox in ImageDescription
+            % Output Arguments:
+            %   - **imginfo** — updated dictionary with recalculated BoundingBox in ImageDescription
             %
-            % Example:
-            %   @code
-            %   imginfo = obj.handleDimensionMismatches(files, imginfo);
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       imginfo = obj.handleDimensionMismatches(files, imginfo);
+            %
             
             % get pixSize
             pixSize = imginfo{"pixSize"};
@@ -356,28 +369,31 @@ classdef (Abstract) BaseImageLoader < handle
         end
         
         function imginfo = generateSliceNames(~, files, imginfo)
-            % function imginfo = generateSliceNames(~, files, imginfo)
-            % Generate slice names from filenames
+            % GENERATESLICENAMES - Generate slice names from filenames.
+            %
+            % Syntax:
+            %   function imginfo = generateSliceNames(~, files, imginfo)
             %
             % This method creates a cell array of slice names based on the source
             % filenames. Each slice is named after the file it originated from,
             % which helps track data provenance in multi-file datasets.
             %
-            % Parameters:
-            %   files: structure array with file information
-            %       @li .filename - [char] full filename
-            %       @li .noLayers - [numeric] number of layers per file
-            %   imginfo: dictionary with image metadata
+            % Input Arguments:
+            %   - **files** — structure array with file information
+            %   - .filename - [char] full filename
+            %   - .noLayers - [numeric] number of layers per file
+            %   - **imginfo** — dictionary with image metadata
             %
-            % Return values:
-            %   imginfo: updated dictionary with "SliceName" field
-            %       @li "SliceName" - [cell array] slice names for each layer
+            % Output Arguments:
+            %   - **imginfo** — updated dictionary with "SliceName" field
+            %   - "SliceName" - [cell array] slice names for each layer
             %
-            % Example:
-            %   @code
-            %   imginfo = obj.generateSliceNames(files, imginfo);
-            %   disp(imginfo{"SliceName"}{1});  % Display first slice name
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       imginfo = obj.generateSliceNames(files, imginfo);
+            %       disp(imginfo{"SliceName"}{1});  % Display first slice name
+            %
             
             if numel(files) > 1
                 totalLayers = sum([files.noLayers]);
@@ -398,24 +414,28 @@ classdef (Abstract) BaseImageLoader < handle
         end
         
         function imginfo = finalizeImgInfo(~, imginfo, files, filename)
-            % function imginfo = finalizeImgInfo(~, imginfo, files, filename)
-            % Finalize imginfo dictionary with some missing values
-            % Parameters:
-            %   imginfo: dictionary with image metadata
-            %       @li "MaxInt" - [numeric] max value available for the data class
-            %       @li "Colors" - [numeric] number of color channels
-            %       @li "imgClass" - [char] image class, uint8, uint16, etc
-            %       @li "Depth" - [numeric] total number of sections
-            %       @li "Filename" - [char] final filename for the combined dataset
-            %   files: structure array with file information
-            %       @li .width - [numeric] image width
-            %       @li .height - [numeric] image height
-            %       @li .noLayers - [numeric] number of layers
-            %       @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
-            %       @li .zMin, .zMax - [numeric] slice range (optional)
+            % FINALIZEIMGINFO - Finalize imginfo dictionary with some missing values.
             %
-            % Return values:
-            %   imginfo: updated dictionary
+            % Syntax:
+            %   function imginfo = finalizeImgInfo(~, imginfo, files, filename)
+            %
+            % Input Arguments:
+            %   - **imginfo** — dictionary with image metadata
+            %   - "MaxInt" - [numeric] max value available for the data class
+            %   - "Colors" - [numeric] number of color channels
+            %   - "imgClass" - [char] image class, uint8, uint16, etc
+            %   - "Depth" - [numeric] total number of sections
+            %   - "Filename" - [char] final filename for the combined dataset
+            %   - **files** — structure array with file information
+            %   - .width - [numeric] image width
+            %   - .height - [numeric] image height
+            %   - .noLayers - [numeric] number of layers
+            %   - .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
+            %   - .zMin, .zMax - [numeric] slice range (optional)
+            %
+            % Output Arguments:
+            %   - **imginfo** — updated dictionary
+            %
             
             % update Max value depending on the class
             switch files(1).imgClass
@@ -458,27 +478,30 @@ classdef (Abstract) BaseImageLoader < handle
         end
 
         function merged = mergeOptions(~, opts1, opts2)
-            % function merged = mergeOptions(~, opts1, opts2)
-            % Merge two options structures, with opts2 taking precedence
+            % MERGEOPTIONS - Merge two options structures, with opts2 taking precedence.
+            %
+            % Syntax:
+            %   function merged = mergeOptions(~, opts1, opts2)
             %
             % This utility method combines two options structures, where fields
             % in opts2 override those in opts1. This allows runtime options to
             % override constructor options.
             %
-            % Parameters:
-            %   opts1: [@em struct] first options structure (lower priority)
-            %   opts2: [@em struct] second options structure (higher priority)
+            % Input Arguments:
+            %   - **opts1** — [*struct]* first options structure (lower priority)
+            %   - **opts2** — [*struct]* second options structure (higher priority)
             %
-            % Return values:
-            %   merged: [@em struct] merged options structure
+            % Output Arguments:
+            %   - **merged** — [*struct]* merged options structure
             %
-            % Example:
-            %   @code
-            %   opts1.waitbar = false;
-            %   opts2.waitbar = true;
-            %   merged = obj.mergeOptions(opts1, opts2);
-            %   % merged.waitbar will be true
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       opts1.waitbar = false;
+            %       opts2.waitbar = true;
+            %       merged = obj.mergeOptions(opts1, opts2);
+            %       % merged.waitbar will be true
+            %
             
             merged = opts1;
             if isempty(opts2); return; end
@@ -490,17 +513,20 @@ classdef (Abstract) BaseImageLoader < handle
         end
 
         function [img, imginfo] = finalizeImageLoading(obj, img, imginfo, options)
-            % function [img, imginfo] = finalizeImageLoading(obj, img, imginfo, options)
-            % finalize image loading by stretching uint32 image (depending
+            % FINALIZEIMAGELOADING - finalize image loading by stretching uint32 image (depending.
+            %
+            % Syntax:
+            %   function [img, imginfo] = finalizeImageLoading(obj, img, imginfo, options)
+            %
             % on options.imgStretch and updating imginfo('ColorType')
             %
             % img: matrix with the image
             % imginfo: dictionary with image information, the following fields are updated
-            %   @li "ColorType" -> [char] color type of the image, 'grayscale', 'multichannel', 'indexed'
-            %   @li "Colormap" -> [numeric] colormap for indexed images
-            %  additionally in obj.stretch32bitImage when options.imgStretch == true
-            %   @li "MaxInt" -> [numberic] max possible value
-            %   @li "imgClass" -> [char] image class, "uint16"
+            % - "ColorType" [char] color type of the image, 'grayscale', 'multichannel', 'indexed'
+            % - "Colormap" [numeric] colormap for indexed images
+            % additionally in obj.stretch32bitImage when options.imgStretch == true
+            % - "MaxInt" [numberic] max possible value
+            % - "imgClass" [char] image class, "uint16"
 
             % Handle uint32 to uint16 conversion
             if isa(img, 'uint32') && options.imgStretch
@@ -537,14 +563,17 @@ classdef (Abstract) BaseImageLoader < handle
         end
 
         function [img, imginfo] = stretch32bitImage(obj, img, imginfo)
-            % function [img, imginfo] = stretch32bitImage(~, img, imginfo)
-            % stretch uint32 image into uint16 container
-            % 
-            % Parameters:
-            % img: matrix with the image
-            % imginfo: dictionary with image information, the following fields are updated
-            %   @li "MaxInt" -> [numberic] max possible value
-            %   @li "imgClass" -> [char] image class, "uint16"
+            % STRETCH32BITIMAGE - stretch uint32 image into uint16 container.
+            %
+            % Syntax:
+            %   function [img, imginfo] = stretch32bitImage(obj, img, imginfo)
+            %
+            % Input Arguments:
+            %   - **img** — matrix with the image
+            %   - **imginfo** — dictionary with image information, the following fields are updated
+            %   - "MaxInt" [numberic] max possible value
+            %   - "imgClass" [char] image class, "uint16"
+            %
            
 
             minVal = double(min(img(:)));

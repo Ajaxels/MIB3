@@ -1,6 +1,8 @@
 function quantification_Callback(obj, batchModeSwitch)
-% function quantification_Callback(obj, batchModeSwitch)
-% Run the shape/intensity quantification analysis and populate statTable.
+% QUANTIFICATION_CALLBACK - Run the shape/intensity quantification analysis and populate statTable.
+%
+% Syntax:
+%   function quantification_Callback(obj, batchModeSwitch)
 %
 % The main computation engine of the Quantification controller.  Dispatches
 % to 3D or 2D code paths depending on BatchOpt.ObjectShape, then iterates over
@@ -8,25 +10,30 @@ function quantification_Callback(obj, batchModeSwitch)
 % obj.STATS.  After the run, statTable and histogram are updated.
 %
 % Supported properties (3D): Volume, FilledArea, HolesArea, EndpointsLength,
-%   MajorAxisLength, SecondAxisLength, ThirdAxisLength, MeridionalEccentricity,
-%   EquatorialEccentricity, ConvexVolume, EquivDiameter, Extent, Solidity,
-%   SurfaceArea, Correlation, and all intensity properties.
+% MajorAxisLength, SecondAxisLength, ThirdAxisLength, MeridionalEccentricity,
+% EquatorialEccentricity, ConvexVolume, EquivDiameter, Extent, Solidity,
+% SurfaceArea, Correlation, and all intensity properties.
 %
 % Supported properties (2D): Area, ConvexArea, CurveLength, Eccentricity,
-%   EquivDiameter, EndpointsLength, EulerNumber, Extent, FilledArea,
-%   FirstAxisLength, HolesArea, MajorAxisLength, MinorAxisLength,
-%   Orientation, Perimeter, SecondAxisLength, Solidity, Correlation,
-%   and all intensity properties.
+% EquivDiameter, EndpointsLength, EulerNumber, Extent, FilledArea,
+% FirstAxisLength, HolesArea, MajorAxisLength, MinorAxisLength,
+% Orientation, Perimeter, SecondAxisLength, Solidity, Correlation,
+% and all intensity properties.
 %
-% Parameters:
-% batchModeSwitch: [@em optional] logical; 1 = headless batch mode (no
-%   GUI updates, no statTable write, auto-exports if configured);
-%   default 0
+% Input Arguments:
+%   - **batchModeSwitch** — *(optional)* logical; 1 = headless batch mode (no
+%     GUI updates, no statTable write, auto-exports if configured);
+%     default 0
 %
-%|
-% @b Examples:
-% @code obj.quantification_Callback();     // interactive run @endcode
-% @code obj.quantification_Callback(1);    // batch / scripted run @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.quantification_Callback();     // interactive run
+%
+%   Example 2::
+%
+%     obj.quantification_Callback(1);    // batch / scripted run
+%
 
 % Updates
 %
@@ -661,7 +668,11 @@ end
 
 % -------------------------------------------------------------------------
 function mibSetWb(wb, isUiDlg, val, msg)
-% local helper: update progress dialog regardless of type
+% MIBSETWB - local helper: update progress dialog regardless of type.
+%
+% Syntax:
+%   function mibSetWb(wb, isUiDlg, val, msg)
+%
 if isempty(wb); return; end
 
 if isUiDlg

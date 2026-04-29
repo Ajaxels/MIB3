@@ -1,27 +1,34 @@
 function highlightSelection(obj, object_list, mode, sliceNumbers)
-% function highlightSelection(obj, object_list, mode, sliceNumbers)
-% Highlight selected quantification objects in the selection layer.
+% HIGHLIGHTSELECTION - Highlight selected quantification objects in the selection layer.
+%
+% Syntax:
+%   function highlightSelection(obj, object_list, mode, sliceNumbers)
 %
 % Writes to the MIB selection layer for the objects given in object_list.
 % For 2D slice mode or a single object, the selection is written slice-by-
 % slice.  For 3D datasets the entire PixelIdxList is written at once.
 %
-% Parameters:
-% object_list: numeric vector of object indices into obj.STATS
-% mode: [@em optional] string — highlight action
-% @li 'Add'      - add objects to existing selection
-% @li 'Remove'   - remove objects from existing selection
-% @li 'Replace'  - replace selection with these objects
-% @li 'obj2model' - assign each object as a separate model material
+% Input Arguments:
+%   - **object_list** — numeric vector of object indices into obj.STATS
+%   - **mode** — *(optional)* string — highlight action
+%     - 'Add'      - add objects to existing selection
+%     - 'Remove'   - remove objects from existing selection
+%     - 'Replace'  - replace selection with these objects
+%     - 'obj2model' - assign each object as a separate model material
 %   (replaces the current model; shows a confirmation dialog first)
 %   Default is read from obj.view.handles.selectionModePanel.SelectedObject.Text
-% sliceNumbers: [@em optional] numeric vector, one slice index per object;
-%   used to restrict data reading to the relevant slice in 3D datasets
+%   - **sliceNumbers** — *(optional)* numeric vector, one slice index per object;
+%     used to restrict data reading to the relevant slice in 3D datasets
 %
-%|
-% @b Examples:
-% @code obj.highlightSelection([3, 7], 'Add');                     // add objects 3 and 7 @endcode
-% @code obj.highlightSelection(object_list, 'Replace', sliceNums); // replace selection @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.highlightSelection([3, 7], 'Add');                     // add objects 3 and 7
+%
+%   Example 2::
+%
+%     obj.highlightSelection(object_list, 'Replace', sliceNums); // replace selection
+%
 
 % Updates
 %

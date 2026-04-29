@@ -1,18 +1,22 @@
 function backupProtocolRestore(obj, mode)
-% function backupProtocolRestore(obj, mode)
-% restore the protocol from the undo/redo history
+% BACKUPPROTOCOLRESTORE - restore the protocol from the undo/redo history.
 %
-% Parameters:
-% mode: a string with direction of restoration
-%  'undo' - restore the previous state
-%  'redo' - restore the next state
+% Syntax:
+%   function backupProtocolRestore(obj, mode)
 %
-%|
-% @b Examples:
-% @code obj.backupProtocolRestore('undo'); @endcode
-% @code obj.backupProtocolRestore('redo'); @endcode
+% Input Arguments:
+%   - **mode** — a string with direction of restoration
+%     'undo' - restore the previous state
+%     'redo' - restore the next state
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.backupProtocolRestore('undo');
+%
+%   Example 2::
+%
+%     obj.backupProtocolRestore('redo');
 %
 
 if nargin < 2; mode = 'undo'; end

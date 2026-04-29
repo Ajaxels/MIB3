@@ -1,6 +1,8 @@
 function fnOut = save(obj, filename, options)
-% function fnOut = save(obj, filename, options)
-% Save image data from a MibImage object to a file.
+% SAVE - Save image data from a MibImage object to a file.
+%
+% Syntax:
+%   function fnOut = save(obj, filename, options)
 %
 % This is the LOWEST-LEVEL save entry point.  It works completely
 % standalone: no MibDataset or MibModel is required.  Useful for
@@ -8,131 +10,135 @@ function fnOut = save(obj, filename, options)
 % without loading it through the full MIB application.
 %
 % The method:
-%   1. Derives the output format from options.Format (or from the file
-%      extension if options.Format is absent).
-%   2. Assembles a metadata struct from the object's own properties.
-%   3. Calls io.SaverFactory.create(format) to get the right saver.
-%   4. Delegates the actual I/O to saver.save(data, metadata, filename, options).
+% 1. Derives the output format from options.Format (or from the file
+% extension if options.Format is absent).
+% 2. Assembles a metadata struct from the object's own properties.
+% 3. Calls io.SaverFactory.create(format) to get the right saver.
+% 4. Delegates the actual I/O to saver.save(data, metadata, filename, options).
 %
 % NOTE ON pixSize:
-%   MibImage does NOT store pixel/voxel size — that information lives at
-%   the MibDataset level.  If you need physically correct metadata in the
-%   output file (e.g. for Amira, NRRD, or OME-TIFF), supply
-%   options.pixSize explicitly:
-%       opts.pixSize = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-%   When options.pixSize is absent a default of 1×1×1 µm is used.
+% MibImage does NOT store pixel/voxel size — that information lives at
+% the MibDataset level.  If you need physically correct metadata in the
+% output file (e.g. for Amira, NRRD, or OME-TIFF), supply
+% options.pixSize explicitly:
+% opts.pixSize = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+% When options.pixSize is absent a default of 1×1×1 µm is used.
 %
-% Parameters:
-%   obj      — MibImage instance
-%   filename — (char) full output path INCLUDING extension, e.g.
-%              '/data/out/myStack.tif'  or  'C:\data\output.h5'
-%              The directory must already exist (created automatically if
-%              missing).
-%              When filename has no path component the current directory
-%              is used.
-%   options  — (struct, optional) saving options:
-%     .Format         — (char) format descriptor as listed in
-%                       io.SaverFactory.getFormats('image'), e.g.
-%                       'TIF format uncompressed (*.tif)'
-%                       When absent the format is inferred from the
-%                       file extension.
-%     .Saving3DPolicy — (char) '3D stack' | '2D sequence', default '3D stack'
-%     .showWaitbar    — (logical) display progress bar, default true
-%     .silent         — (logical) suppress all dialogs, default false
-%     .overwrite      — (logical) silently overwrite existing files, default true
-%     .Compression    — (char) 'none' | 'lzw' | 'packbits' (for TIF)
-%                             'lossy' | 'lossless'           (for JPG)
-%     .Quality        — (double 0-100) JPEG quality, default 90
-%     .FilenameGenerator — (char) 'Use original filename' |
-%                                  'Use sequential filename'
-%     .pixSize        — (struct) voxel size {.x .y .z .t .units .tunits};
-%                       injected by MibDataset.save() automatically when
-%                       calling through that layer
-%     .ParentFigure   — handle to the main MIB application window; passed
-%                       to io.SaverFactory.create() so the saver and any
-%                       helper functions (e.g. bitmap2amiraMesh) can create
-%                       uiprogressdlg dialogs properly parented to the GUI.
-%                       Injected by MibModel.saveImage(); omit for standalone use.
-%     .mibPath        — (char) path to MIB installation directory; forwarded
-%                       to the saver for resource/icon lookup.
-%                       Injected by MibModel.saveImage(); omit for standalone use.
+% Input Arguments:
+%   - **obj** — ``MibImage`` instance
+%   - **filename** — (char) full output path including extension, e.g.
+%     ``'/data/out/myStack.tif'`` or ``'C:\data\output.h5'``.
+%     The directory must already exist.
+%     When filename has no path component the current directory is used.
+%   - **options** — *(optional)* struct with saving options:
 %
-% Return values:
-%   fnOut — (char or cell of char) path(s) of saved file(s).
-%           Returns [] on failure or cancellation.
+%     - ``.Format`` — (char) format descriptor as listed in
+%       ``io.SaverFactory.getFormats('image')``, e.g.
+%       ``'TIF format uncompressed (*.tif)'``.
+%       When absent the format is inferred from the file extension.
+%     - ``.Saving3DPolicy`` — (char) ``'3D stack'`` | ``'2D sequence'``, default ``'3D stack'``
+%     - ``.showWaitbar`` — (logical) display progress bar, default ``true``
+%     - ``.silent`` — (logical) suppress all dialogs, default ``false``
+%     - ``.overwrite`` — (logical) silently overwrite existing files, default ``true``
+%     - ``.Compression`` — (char) ``'none'`` | ``'lzw'`` | ``'packbits'`` (for TIF);
+%       ``'lossy'`` | ``'lossless'`` (for JPG)
+%     - ``.Quality`` — (double 0-100) JPEG quality, default ``90``
+%     - ``.FilenameGenerator`` — (char) ``'Use original filename'`` | ``'Use sequential filename'``
+%     - ``.pixSize`` — (struct) voxel size ``{.x .y .z .t .units .tunits}``;
+%       injected by ``MibDataset.save()`` automatically when calling through that layer
+%     - ``.ParentFigure`` — handle to the main MIB application window; passed to
+%       ``io.SaverFactory.create()`` so the saver and any helper functions can create
+%       ``uiprogressdlg`` dialogs properly parented to the GUI.
+%       Injected by ``MibModel.saveImage()``; omit for standalone use.
+%     - ``.mibPath`` — (char) path to MIB installation directory; forwarded to the saver
+%       for resource/icon lookup.
+%       Injected by ``MibModel.saveImage()``; omit for standalone use.
 %
-% USAGE EXAMPLES
-%   @code
-%   %% 1. Simplest case — save existing MibImage to TIF
-%   img = core.MibImage(uint8(rand(256,256,50,1,1)*255));
-%   img.filename = '/data/input.tif';
+% Output Arguments:
+%   - **fnOut** — (char or cell of char) path(s) of saved file(s).
+%     Returns ``[]`` on failure or cancellation.
 %
-%   % get the list of possible formats for images: "formats = io.SaverFactory.getFormats('image')"
-%   opts.Format         = 'TIF format uncompressed (*.tif)';
-%   opts.Saving3DPolicy = '3D stack';
-%   opts.showWaitbar    = false;
-%   opts.silent         = true;
-%   opts.overwrite      = true;
-%   opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+% Usage:
+%   **Example 1** — Simplest case: save existing MibImage to TIF
 %
-%   fnOut = img.save('/output/stack.tif', opts);
-%   fprintf('Saved to: %s\n', fnOut);
-%   @endcode
+%   .. code-block:: matlab
 %
-%   @code
-%   %% 2. Save as LZW-compressed TIF, 2D sequence
-%   opts.Format            = 'TIF format LZW compression (*.tif)';
-%   opts.Saving3DPolicy    = '2D sequence';
-%   opts.FilenameGenerator = 'Use sequential filename';
-%   opts.showWaitbar       = true;
-%   opts.silent            = true;
-%   opts.overwrite         = true;
-%   opts.pixSize           = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
 %
-%   fnOut = img.save('/output/slice.tif', opts);
-%   % Produces: /output/slice_001.tif, /output/slice_002.tif, ...
-%   @endcode
+%       img = core.MibImage(uint8(rand(256,256,50,1,1)*255));
+%       img.filename = '/data/input.tif';
 %
-%   @code
-%   %% 3. Save as PNG without explicit Format (inferred from extension)
-%   opts.showWaitbar = false;
-%   opts.silent      = true;
-%   opts.overwrite   = true;
-%   fnOut = img.save('/output/slice.png', opts);
-%   @endcode
+%       % get the list of possible formats for images: "formats = io.SaverFactory.getFormats('image')"
+%       opts.Format         = 'TIF format uncompressed (*.tif)';
+%       opts.Saving3DPolicy = '3D stack';
+%       opts.showWaitbar    = false;
+%       opts.silent         = true;
+%       opts.overwrite      = true;
+%       opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
 %
-%   @code
-%   %% 4. Save 16-bit EM data as HDF5 with voxel metadata
-%   imgEM = core.MibImage(uint16(rand(1024,1024,200,1,1)*65535));
-%   imgEM.filename = 'em_volume.h5';
+%       fnOut = img.save('/output/stack.tif', opts);
+%       fprintf('Saved to: %s\n', fnOut);
 %
-%   opts.Format      = 'Hierarchical Data Format (*.h5)';
-%   opts.showWaitbar = true;
-%   opts.silent      = true;
-%   opts.overwrite   = true;
-%   opts.pixSize     = struct('x',0.004,'y',0.004,'z',0.03,'units','um','t',1,'tunits','s');
+%   **Example 2** — Save as LZW-compressed TIF, 2D sequence
 %
-%   fnOut = imgEM.save('/output/em_volume.h5', opts);
-%   @endcode
+%   .. code-block:: matlab
 %
-%   @code
-%   %% 5. Save from inside a controller that has access to the MIB GUI
-%   %   (ParentFigure and mibPath enable uiprogressdlg + icon lookup)
-%   opts.Format         = 'Amira Mesh binary (*.am)';
-%   opts.Saving3DPolicy = '3D stack';
-%   opts.showWaitbar    = true;
-%   opts.silent         = true;
-%   opts.overwrite      = true;
-%   opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-%   opts.ParentFigure   = obj.mibModel.mibGUI;   % enables uiprogressdlg
-%   opts.mibPath        = obj.mibModel.mibPath;  % enables icon lookup
 %
-%   fnOut = img.save('/output/stack.am', opts);
-%   @endcode
+%       opts.Format            = 'TIF format LZW compression (*.tif)';
+%       opts.Saving3DPolicy    = '2D sequence';
+%       opts.FilenameGenerator = 'Use sequential filename';
+%       opts.showWaitbar       = true;
+%       opts.silent            = true;
+%       opts.overwrite         = true;
+%       opts.pixSize           = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
 %
-% SEE ALSO
-%   core.MibLabels.save, core.MibDataset.saveImage, models.MibModel.saveImage,
-%   io.SaverFactory, io.savers.BaseSaver
+%       fnOut = img.save('/output/slice.tif', opts);
+%       % Produces: /output/slice_001.tif, /output/slice_002.tif, ...
+%
+%   **Example 3** — Save as PNG without explicit Format (inferred from extension)
+%
+%   .. code-block:: matlab
+%
+%
+%       opts.showWaitbar = false;
+%       opts.silent      = true;
+%       opts.overwrite   = true;
+%       fnOut = img.save('/output/slice.png', opts);
+%
+%   **Example 4** — Save 16-bit EM data as HDF5 with voxel metadata
+%
+%   .. code-block:: matlab
+%
+%
+%       imgEM = core.MibImage(uint16(rand(1024,1024,200,1,1)*65535));
+%       imgEM.filename = 'em_volume.h5';
+%
+%       opts.Format      = 'Hierarchical Data Format (*.h5)';
+%       opts.showWaitbar = true;
+%       opts.silent      = true;
+%       opts.overwrite   = true;
+%       opts.pixSize     = struct('x',0.004,'y',0.004,'z',0.03,'units','um','t',1,'tunits','s');
+%
+%       fnOut = imgEM.save('/output/em_volume.h5', opts);
+%
+%   **Example 5** — Save from inside a controller with access to the MIB GUI
+%
+%   .. code-block:: matlab
+%
+%
+%       opts.Format         = 'Amira Mesh binary (*.am)';
+%       opts.Saving3DPolicy = '3D stack';
+%       opts.showWaitbar    = true;
+%       opts.silent         = true;
+%       opts.overwrite      = true;
+%       opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%       opts.ParentFigure   = obj.mibModel.mibGUI;   % enables uiprogressdlg
+%       opts.mibPath        = obj.mibModel.mibPath;  % enables icon lookup
+%
+%       fnOut = img.save('/output/stack.am', opts);
+%
+% See also:
+%   core.MibLabels.save, core.MibDataset.saveImage, models.MibModel.saveImage, io.SaverFactory, io.savers.BaseSaver
+%
 
 fnOut = [];
 

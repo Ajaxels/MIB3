@@ -1,6 +1,9 @@
 function singleModelTrainingFileValueChanged(obj, event)
-    % function singleModelTrainingFileValueChanged(obj, event)
-    % callback for press of SingleModelTrainingFile
+% SINGLEMODELTRAININGFILEVALUECHANGED - callback for press of SingleModelTrainingFile.
+%
+% Syntax:
+%   function singleModelTrainingFileValueChanged(obj, event)
+%
 
     if nargin < 2; event.Source = obj.view.handles.SingleModelTrainingFile; end
 

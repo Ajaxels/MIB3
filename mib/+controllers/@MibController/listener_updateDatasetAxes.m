@@ -1,49 +1,50 @@
 function listener_updateDatasetAxes(obj, src, evtData)
-% function listener_updateDatasetAxes(obj, src, evtData)
-% Update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+% LISTENER_UPDATEDATASETAXES - Update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing.
+%
+% Syntax:
+%   function listener_updateDatasetAxes(obj, src, evtData)
+%
 % executed upon catch of MibModel->"UpdateDatasetAxes" event
 %
-% Parameters:
-% src: handle to MibModel
-% evtData: event data, an instance of core.ToggleEventData class with the following fields:
-% .Parameters field containing a structure with the
-%    .evtData.Parameters.mode - update mode,
-%         @li 'resize' -> [@em default] keep current magFactor, adjust FOV to fill new axes size (panel resize)
-%         @li 'fitToScreen' -> fit entire image to axes (explicit "Fit to screen" request or first load)
-%         @li 'zoom' -> scale during the zoom
-%    .evtData.Parameters.index -> [@b optional] index of obj.I to update, when @em [] updates the currently selected dataset
-%    .evtData.Parameters.newMagFactor -> a value of the new magnification factor, only for the 'zoom' mode
-% .Source -> handle to MibModel
-% .EventName -> string with the event name that triggered the callback
-% see example in MibModel.datasetsSetsOps-> 'Add set'
+% Input Arguments:
+%   - **src** — handle to MibModel
+%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
+%     .Parameters field containing a structure with the
+%     .evtData.Parameters.mode - update mode,
+%     - 'resize' [*default]* keep current magFactor, adjust FOV to fill new axes size (panel resize)
+%     - 'fitToScreen' fit entire image to axes (explicit "Fit to screen" request or first load)
+%     - 'zoom' scale during the zoom
+%   .evtData.Parameters.index [**optional]** index of obj.I to update, when *[]* updates the currently selected dataset
+%   .evtData.Parameters.newMagFactor a value of the new magnification factor, only for the 'zoom' mode
+%   .Source handle to MibModel
+%   .EventName string with the event name that triggered the callback
+%   see example in MibModel.datasetsSetsOps-> 'Add set'
 %
-% Return values:
-% 
-
-%| 
-% @b Examples:
-% @code 
-% // call from controllers.MibController; update the axes using new magnification value of the first dataset in the global index count
-% Options.mode = 'zoom';
-% Options.newMagFactor = 2;
-% Options.index = 1;
-% eventdata = core.ToggleEventData(Options);
-% notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
-% @endcode 
+% Output Arguments:
 %
-% @code
-% // call from controllers.MibController; to fit the screen @endcode
-% Options.mode = 'resize';
-% eventdata = core.ToggleEventData(Options);
-% notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
-% @endcode 
-% @code
-% // update the current dataset using the "resize" mode
-% notify(obj.mibModel, 'UpdateDatasetAxes');
-% @endcode 
+% Usage:
+%   Example 1::
 %
-% Updates
-% 
+%     // call from controllers.MibController; update the axes using new magnification value of the first dataset in the global index count
+%     Options.mode = 'zoom';
+%     Options.newMagFactor = 2;
+%     Options.index = 1;
+%     eventdata = core.ToggleEventData(Options);
+%     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+%
+%
+%   Example 2::
+%
+%     // call from controllers.MibController; to fit the screen @endcode
+%     Options.mode = 'resize';
+%     eventdata = core.ToggleEventData(Options);
+%     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+%
+%   Example 3::
+%
+%     // update the current dataset using the "resize" mode
+%     notify(obj.mibModel, 'UpdateDatasetAxes');
+%
 
 % update the missing fields
 if ~isprop(evtData, 'Parameters')

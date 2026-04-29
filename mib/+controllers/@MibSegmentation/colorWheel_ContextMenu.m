@@ -1,33 +1,37 @@
 function colorWheel_ContextMenu(obj, menuEntry, selectedData)
-% function colorWheel_ContextMenu(obj, menuEntry, selectedData)
-% callbacks for the context menu of the color wheel button
+% COLORWHEEL_CONTEXTMENU - callbacks for the context menu of the color wheel button.
+%
+% Syntax:
+%   function colorWheel_ContextMenu(obj, menuEntry, selectedData)
+%
 % (obj.view.handles.panels.segmentation.handles.colorWheel)
 %
-% Parameters:
-% menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-% selectedData: handle to the pressed
-% 'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-% button that has the context menu (selectedData.ContextObject)
+% Input Arguments:
+%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
+%   - **selectedData** — handle to the pressed
+%     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
+%     button that has the context menu (selectedData.ContextObject)
 %
-% Available menu options available from 'menuEntry.Tag':
-% colorWheelContextSchemeDef -> Default, 6 colors 
-% colorWheelContextSchemeDist -> Distinct colors, 20 colors
-% colorWheelContextSchemeRandom -> Random colors
-% colorWheelContextSchemeSwap -> Swap colors
-% colorWheelContextSchemeQMC -> Qualitative, Monte Carlo -> Half Baked, 3-12 colors
-% colorWheelContextSchemeDDD -> Diverging, Deep Bronze->Deep Teal, 3-11 colors
-% colorWheelContextSchemeDRK -> Diverging, Ripe Plum->Kaitoke Green, 3-11 colors
-% colorWheelContextSchemeDBG -> Diverging, Bordeaux->Green Vogue, 3-11 colors
-% colorWheelContextSchemeDCB -> Diverging, Carmine->Bay of Many, 3-11 colors
-% colorWheelContextSchemeSKG -> Sequential, Kaitoke Green, 3-9 colors
-% colorWheelContextSchemeSCB -> Sequential, Catalina Blue, 3-9 colors
-% colorWheelContextSchemeSM -> Sequential, Maroon, 3-9 colors
-% colorWheelContextSchemeSAB -> Sequential, Astronaut Blue, 3-9 colors
-% colorWheelContextSchemeSD -> Sequential, Downriver, 3-9 colors
-% colorWheelContextSchemeMJ -> MATLAB, Jet
-% colorWheelContextSchemeMH -> MATLAB, HSV
-% colorWheelContextSchemeSetDef -> Make current scheme as default
-% colorWheelContextSchemeUpdate -> Update colors from default
+%   Available menu options available from 'menuEntry.Tag':
+%   colorWheelContextSchemeDef Default, 6 colors
+%   colorWheelContextSchemeDist Distinct colors, 20 colors
+%   colorWheelContextSchemeRandom Random colors
+%   colorWheelContextSchemeSwap Swap colors
+%   colorWheelContextSchemeQMC Qualitative, Monte Carlo Half Baked, 3-12 colors
+%   colorWheelContextSchemeDDD Diverging, Deep Bronze->Deep Teal, 3-11 colors
+%   colorWheelContextSchemeDRK Diverging, Ripe Plum->Kaitoke Green, 3-11 colors
+%   colorWheelContextSchemeDBG Diverging, Bordeaux->Green Vogue, 3-11 colors
+%   colorWheelContextSchemeDCB Diverging, Carmine->Bay of Many, 3-11 colors
+%   colorWheelContextSchemeSKG Sequential, Kaitoke Green, 3-9 colors
+%   colorWheelContextSchemeSCB Sequential, Catalina Blue, 3-9 colors
+%   colorWheelContextSchemeSM Sequential, Maroon, 3-9 colors
+%   colorWheelContextSchemeSAB Sequential, Astronaut Blue, 3-9 colors
+%   colorWheelContextSchemeSD Sequential, Downriver, 3-9 colors
+%   colorWheelContextSchemeMJ MATLAB, Jet
+%   colorWheelContextSchemeMH MATLAB, HSV
+%   colorWheelContextSchemeSetDef Make current scheme as default
+%   colorWheelContextSchemeUpdate Update colors from default
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

@@ -1,23 +1,24 @@
 function gui_Brush_scrollWheelFcn(obj, eventdata)
-% function gui_Brush_scrollWheelFcn(obj, eventdata)
-% Handle mouse scroll wheel during adaptive superpixel brush mode
+% GUI_BRUSH_SCROLLWHEELFCN - Handle mouse scroll wheel during adaptive superpixel brush mode.
+%
+% Syntax:
+%   function gui_Brush_scrollWheelFcn(obj, eventdata)
 %
 % Adjusts the adaptive dilation factor (brushSelection{3}.factor) up or
 % down when the scroll wheel is used during an active superpixel brush
 % stroke with adaptive mode enabled.
 %
-% Parameters:
-% eventdata: ScrollWheelData with field .VerticalScrollCount
-%   negative = scroll up (increase factor), positive = scroll down (decrease)
+% Input Arguments:
+%   - **eventdata** — ScrollWheelData with field .VerticalScrollCount
+%     negative = scroll up (increase factor), positive = scroll down (decrease)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code % typically set as a callback, not called directly:
-% hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_Brush_scrollWheelFcn(eventdata); @endcode
+% Usage:
+%   @code % typically set as a callback, not called directly:
+%   hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_Brush_scrollWheelFcn(eventdata); @endcode
+%
 
 % Updates
 %

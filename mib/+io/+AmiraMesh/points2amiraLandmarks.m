@@ -15,13 +15,17 @@
 % Date: 25.04.2023
 
 function res = points2amiraLandmarks(filename, points, options)
-% generate amira Hypersurface Ascii file
+% POINTS2AMIRALANDMARKS - generate amira Hypersurface Ascii file.
+%
+% Syntax:
+%   function res = points2amiraLandmarks(filename, points, options)
+%
 % in:
 % filename - filename to save data
 % points - a matrix with points [point number, x, y, z]
 % options - a structure with additional options
-%   .overwrite - 1-automatically overwrite existing files
-%   .format - a string with format: 'binary' or 'ascii'
+% .overwrite - 1-automatically overwrite existing files
+% .format - a string with format: 'binary' or 'ascii'
    
 res = 0;
 

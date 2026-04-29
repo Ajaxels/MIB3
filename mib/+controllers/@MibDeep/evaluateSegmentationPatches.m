@@ -1,6 +1,9 @@
 function evaluateSegmentationPatches(obj)
-% function evaluateSegmentationPatches(obj)
-% evaluate segmentation results for the patches in the
+% EVALUATESEGMENTATIONPATCHES - evaluate segmentation results for the patches in the.
+%
+% Syntax:
+%   function evaluateSegmentationPatches(obj)
+%
 % patch-wise mode
 
 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'patchPredictionResults.mat');

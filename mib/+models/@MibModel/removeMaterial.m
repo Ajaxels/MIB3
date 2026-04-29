@@ -1,6 +1,8 @@
 function removeMaterial(obj, BatchOptIn)
-% function removeMaterial(obj, BatchOptIn)
-% Remove one or more materials from the current model — wrapper around core.MibDataset.removeMaterial
+% REMOVEMATERIAL - Remove one or more materials from the current model — wrapper around core.MibDataset.removeMaterial.
+%
+% Syntax:
+%   function removeMaterial(obj, BatchOptIn)
 %
 % For models with 63 or 255 materials: prompts the user for material
 % indices to remove, remaps the remaining materials to contiguous indices
@@ -16,30 +18,38 @@ function removeMaterial(obj, BatchOptIn)
 % successful removal, UpdateGuiWidgets and ShowImage events are fired so
 % the segmentation table and image view refresh.
 %
-% Parameters:
-% BatchOptIn: a structure for batch processing mode; when NaN, returns a
-%   structure with default options via "SyncBatch" event
-% @li .MaterialIndices - char, space- or comma-separated list of material
-%   indices to remove, e.g. '2' or '1 3' or '2,4,6:8'; [@em default ''],
-%   pre-populated with the currently selected material index when one is
-%   selected in the segmentation table.  For large model types
-%   (65535/4294967295) in batch mode the corresponding pixel values are
-%   zeroed; the squeeze-and-renumber operation is available in interactive
-%   mode only.
-% @li .showWaitbar - logical, show or not the waitbar [@em default true]
-% @li .id -> [@em optional], dataset index from 1 to 9, default = obj.id
+% Input Arguments:
+%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns a
+%     structure with default options via "SyncBatch" event
 %
-% Return values:
+%     - ``.MaterialIndices`` — char, space- or comma-separated list of material
+%       indices to remove, e.g. ``'2'`` or ``'1 3'`` or ``'2,4,6:8'``; [*default* ``''``],
+%       pre-populated with the currently selected material index when one is
+%       selected in the segmentation table.  For large model types
+%       (65535/4294967295) in batch mode the corresponding pixel values are
+%       zeroed; the squeeze-and-renumber operation is available in interactive
+%       mode only.
+%     - ``.showWaitbar`` — logical, show or not the waitbar [*default* true]
+%     - ``.id`` — *(optional)*, dataset index from 1 to 9, default = obj.id
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.removeMaterial();     // interactive remove with index dialog @endcode
-% @code
-% BatchOpt.MaterialIndices = '2 4';
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.removeMaterial(BatchOpt);   // scripted / batch call
-% @endcode
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — interactive remove with index dialog
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.removeMaterial();
+%
+%   **Example 2** — scripted / batch call
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.MaterialIndices = '2 4';
+%      BatchOpt.showWaitbar = false;
+%      obj.mibModel.removeMaterial(BatchOpt);
+%
 
 % Updates
 % Ported from MIB2 mibController.mibRemoveMaterialBtn_Callback

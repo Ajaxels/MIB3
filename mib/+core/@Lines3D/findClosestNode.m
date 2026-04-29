@@ -1,12 +1,15 @@
 function nodeId = findClosestNode(obj, x, y, z, orientation)
-% function nodeId = findClosestNode(obj, x, y, z, orientation)
-% find the closest node to a point with coordinates x, y, z
+% FINDCLOSESTNODE - find the closest node to a point with coordinates x, y, z.
 %
-% Parameters:
-% x: x coordinate of a point next to the node
-% y: y coordinate of a point next to the node
-% z: z coordinate of a point next to the node
-% orientation: [@em optional] a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+% Syntax:
+%   function nodeId = findClosestNode(obj, x, y, z, orientation)
+%
+% Input Arguments:
+%   - **x** — x coordinate of a point next to the node
+%   - **y** — y coordinate of a point next to the node
+%   - **z** — z coordinate of a point next to the node
+%   - **orientation** — *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+%
 
 if nargin < 5; orientation = 3; end
 

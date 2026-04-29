@@ -1,11 +1,13 @@
 function clearSelection(obj)
-% function clearSelection(obj)
-% Clear the Selection layer for the current dataset
+% CLEARSELECTION - Clear the Selection layer for the current dataset.
+%
+% Syntax:
+%   function clearSelection(obj)
 %
 % Reads modifier keys held at call time to decide the clear scope:
-% @li no modifier           -> '2D, Slice'   (current slice only)
-% @li Alt or Shift          -> '3D, Stack'   (full z-stack at current t)
-% @li Alt + Shift           -> '4D, Dataset' (entire dataset)
+%   - no modifier '2D, Slice'   (current slice only)
+%   - Alt or Shift '3D, Stack'   (full z-stack at current t)
+%   - Alt + Shift '4D, Dataset' (entire dataset)
 %
 % When only one time point is present, '4D, Dataset' is demoted to
 % '3D, Stack' automatically.
@@ -14,16 +16,17 @@ function clearSelection(obj)
 % appropriate scope string; all backup, waitbar, and event handling is
 % done there.
 %
-% Parameters:
+% Input Arguments:
 %   (none)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%| 
-% @b Examples:
-% @code obj.clearSelection();   // called from the Clear button callback or keyboard shortcut @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.clearSelection();   // called from the Clear button callback or keyboard shortcut
+%
 
 % Updates
 %

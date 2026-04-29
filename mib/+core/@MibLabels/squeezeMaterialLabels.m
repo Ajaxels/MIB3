@@ -1,6 +1,8 @@
 function squeezeMaterialLabels(obj, wb)
-% function squeezeMaterialLabels(obj, wb)
-% Renumber all label indices to a contiguous range starting at 1
+% SQUEEZEMATERIALLABELS - Renumber all label indices to a contiguous range starting at 1.
+%
+% Syntax:
+%   function squeezeMaterialLabels(obj, wb)
 %
 % Iterates over every time-point and replaces the sparse set of unique
 % label values with consecutive integers 1, 2, 3, ...  Background (0) is
@@ -11,17 +13,27 @@ function squeezeMaterialLabels(obj, wb)
 % highest index across all time-points.  The caller should typically invoke
 % MibModel.addMaterial() to re-register the next available material index.
 %
-% Parameters:
-% wb: [@em optional] handle to a uiprogressdlg used for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **wb** — *(optional)* handle to a uiprogressdlg used for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.labels.squeezeMaterialLabels();      // squeeze without progress @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.labels.squeezeMaterialLabels(wb);    // squeeze with progress bar @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.squeezeMaterialLabels();% squeeze without progress
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.squeezeMaterialLabels(wb);% squeeze with progress bar
+%
 
 % Updates
 %

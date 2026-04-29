@@ -1,28 +1,37 @@
 function segmentationLines3D(obj, y, x, z, modifier)
-% segmentationLines3D(obj, y, x, z, modifier)
+% SEGMENTATIONLINES3D - segmentationLines3D(obj, y, x, z, modifier).
+%
+% Syntax:
+%   function segmentationLines3D(obj, y, x, z, modifier)
+%
 % Handle mouse clicks for 3D line skeleton annotation.
 %
 % Reads the action from the Lines3D segmentation-panel dropdowns
 % (click / shift-click / ctrl-click / alt-click) and delegates to the
-% corresponding method of @em core.Lines3D.
+% corresponding method of *core.Lines3D.*
 %
-% Parameters:
-% y: double, y-coordinate of the clicked point in full-dataset pixels
-% x: double, x-coordinate of the clicked point in full-dataset pixels
-% z: double, z-coordinate (slice index) of the clicked point
-% modifier: cell array of chars or char, modifier key held during click
-% @li empty '' or {} - use the default click action
-% @li 'shift'   - use the shift-click action
-% @li 'control' - use the ctrl-click action
-% @li 'alt'     - use the alt-click action
+% Input Arguments:
+%   - **y** — double, y-coordinate of the clicked point in full-dataset pixels
+%   - **x** — double, x-coordinate of the clicked point in full-dataset pixels
+%   - **z** — double, z-coordinate (slice index) of the clicked point
+%   - **modifier** — cell array of chars or char, modifier key held during click
+%     - empty '' or {} - use the default click action
+%     - 'shift'   - use the shift-click action
+%     - 'control' - use the ctrl-click action
+%     - 'alt'     - use the alt-click action
 %
-% Return values:
+% Output Arguments:
 %   (none)
-
-%|
-% @b Examples:
-% @code obj.segmentationLines3D(50, 75, 10, {}); @endcode
-% @code obj.segmentationLines3D(50, 75, 10, {'shift'}); @endcode
+%
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationLines3D(50, 75, 10, {});
+%
+%   Example 2::
+%
+%     obj.segmentationLines3D(50, 75, 10, {'shift'});
+%
 
 % check for switch that disables segmentation tools
 if obj.mibModel.disableSegmentation; return; end

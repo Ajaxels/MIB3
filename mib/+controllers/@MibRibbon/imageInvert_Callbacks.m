@@ -1,10 +1,13 @@
 function imageInvert_Callbacks(obj, hWidget, hData)
-% function imageInvert_Callbacks(obj, hWidget, hData)
-% callback on press of the Invert buttons in the Image ribbon
+% IMAGEINVERT_CALLBACKS - callback on press of the Invert buttons in the Image ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function imageInvert_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

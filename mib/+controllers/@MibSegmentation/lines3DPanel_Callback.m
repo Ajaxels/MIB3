@@ -1,19 +1,23 @@
 function lines3DPanel_Callback(obj, hWidget, hData)
-% lines3DPanel_Callback(obj, hWidget, hData)
+% LINES3DPANEL_CALLBACK - lines3DPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function lines3DPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->3D lines tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag -> identifier the widget, used when the same operation
-% is called from menu, when empty or missing hWidget.Tag is used as an identifier
-% 'linesTableView' -> open a dialog with tables showing line edges and vertices
-% 'linesShowLines' -> show or hide the 3D lines
-% 'linesClick' -> define the default operation on mouse click
-% 'linesShiftClick' -> define the default operation on Shift+mouse click
-% 'linesCtrlClick' -> define the default operation on Ctrl+mouse click
-% 'linesAltClick' -> define the default operation on Alt+mouse click
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag identifier the widget, used when the same operation
+%     is called from menu, when empty or missing hWidget.Tag is used as an identifier
+%     'linesTableView' open a dialog with tables showing line edges and vertices
+%     'linesShowLines' show or hide the 3D lines
+%     'linesClick' define the default operation on mouse click
+%     'linesShiftClick' define the default operation on Shift+mouse click
+%     'linesCtrlClick' define the default operation on Ctrl+mouse click
+%     'linesAltClick' define the default operation on Alt+mouse click
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
 %
 
 arguments (Input)

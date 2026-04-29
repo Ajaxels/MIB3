@@ -1,15 +1,22 @@
 function slice_no = getCurrentSliceNumber(obj)
-% function slice_no = getCurrentSliceNumber(obj)
-% Get slice number of the currently shown image
+% GETCURRENTSLICENUMBER - Get slice number of the currently shown image.
 %
-% Parameters:
+% Syntax:
+%   function slice_no = getCurrentSliceNumber(obj)
 %
-% Return values:
-% slice_no: index of the currently shown slice
-
-%| 
-% @b Examples:
-% @code slice_no = obj.mibModel.I{obj.mibModel.id}.getCurrentSliceNumber();      // Call from MibController @endcode
+% Input Arguments:
+%
+% Output Arguments:
+%   - **slice_no** — index of the currently shown slice
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     slice_no = obj.mibModel.I{obj.mibModel.id}.getCurrentSliceNumber();% Call from MibController
+%
 
 % Updates
 % 

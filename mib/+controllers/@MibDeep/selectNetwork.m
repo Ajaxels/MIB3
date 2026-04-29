@@ -1,13 +1,17 @@
 function net = selectNetwork(obj, networkName)
-    % function net = selectNetwork(obj, networkName)
-    % select a filename for a new network in the Train mode, or
-    % select a network to use for the Predict mode
-    %
-    % Parameters:
-    % networkName: optional parameter with the network full filename
-    %
-    % Return values:
-    % net: trained network
+% SELECTNETWORK - select a filename for a new network in the Train mode, or.
+%
+% Syntax:
+%   function net = selectNetwork(obj, networkName)
+%
+% select a network to use for the Predict mode
+%
+% Input Arguments:
+%   - **networkName** — optional parameter with the network full filename
+%
+% Output Arguments:
+%   - **net** — trained network
+%
 
     if nargin < 2; networkName = '';  end
     net = [];

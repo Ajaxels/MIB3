@@ -1,12 +1,15 @@
 function [noTrees, nodeByTree] = updateNumberOfTrees(obj)
-% function [noTrees, nodeByTree] = updateNumberOfTrees(obj)
-% update number of trees in the graph and get array of nodes by tree index
+% UPDATENUMBEROFTREES - update number of trees in the graph and get array of nodes by tree index.
 %
-% Parameters:
+% Syntax:
+%   function [noTrees, nodeByTree] = updateNumberOfTrees(obj)
 %
-% Return values:
-% noTrees: total number of isolated trees of the graph
-% nodeByTree: vector of nodes, where values indicate corresponding tree of the node
+% Input Arguments:
+%
+% Output Arguments:
+%   - **noTrees** — total number of isolated trees of the graph
+%   - **nodeByTree** — vector of nodes, where values indicate corresponding tree of the node
+%
 
 noTrees = 0;
 nodeByTree = [];

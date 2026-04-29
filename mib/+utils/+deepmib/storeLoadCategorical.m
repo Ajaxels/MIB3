@@ -1,11 +1,17 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function data = storeLoadCategorical(filename)
-% function data = storeLoadCategorical(filename)
-% supporting function for mibDeepController
-% read categorical dataset and return it as a cell similar to pixelLabelDatastore
+% STORELOADCATEGORICAL - Load a categorical dataset from a MAT file for use with ``pixelLabelDatastore``.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      data = storeLoadCategorical(filename)
+%
+% Input Arguments:
+%   - **filename** — [string] full path to the MAT file
+%
+% Output Arguments:
+%   - **data** — cell array containing the loaded categorical variable
 
 inp = load(filename, '-mat');
 if isfield(inp, 'imgVariable')

@@ -1,6 +1,8 @@
 function updateInterpolationSettings(obj)
-% function updateInterpolationSettings(obj)
-% Show a dialog to modify the selection interpolation settings for the brush tool.
+% UPDATEINTERPOLATIONSETTINGS - Show a dialog to modify the selection interpolation settings for the brush tool.
+%
+% Syntax:
+%   function updateInterpolationSettings(obj)
 %
 % Presents an input dialog (via utils.dlgs.inputUniversalDlg) allowing the
 % user to choose the interpolation type ('Shape' or 'Line'), the number of
@@ -10,16 +12,18 @@ function updateInterpolationSettings(obj)
 % button in the Selection ribbon is refreshed via
 % obj.mibController.updateInterpolationMode(true).
 %
-% Parameters:
-% (none beyond implicit obj)
+% Input Arguments:
+%   (none beyond implicit obj)
 %
-% Return values:
-% (none) — returns early when the user cancels the dialog or when a
-% validated value is out of range.
+% Output Arguments:
+%   (none) — returns early when the user cancels the dialog or when a
+%   validated value is out of range.
 %
-%|
-% @b Examples:
-% @code   obj.cSegmentation.updateInterpolationSettings();  // called from MibController @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.cSegmentation.updateInterpolationSettings();  // called from MibController
+%
 
 % Updates
 %

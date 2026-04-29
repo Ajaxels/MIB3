@@ -1,15 +1,22 @@
 function timePnt = getCurrentTimePoint(obj)
-% function timePnt = getCurrentTimePoint(obj)
-% Get time point of the currently shown image.
+% GETCURRENTTIMEPOINT - Get time point of the currently shown image.
 %
-% Parameters:
+% Syntax:
+%   function timePnt = getCurrentTimePoint(obj)
 %
-% Return values:
-% timePnt: index of the currently shown slice
-
-%| 
-% @b Examples:
-% @code timePnt = obj.mibModel.I{obj.mibModel.id}.getCurrentTimePoint();      // get the time point  @endcode
+% Input Arguments:
+%
+% Output Arguments:
+%   - **timePnt** — index of the currently shown slice
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     timePnt = obj.mibModel.I{obj.mibModel.id}.getCurrentTimePoint();% get the time point
+%
 
 % Updates
 % 

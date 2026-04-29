@@ -1,12 +1,15 @@
 function gui_WindowDragAndDropMotionFcn(obj, brushSelection)
-% function gui_WindowDragAndDropMotionFcn(obj, brushSelection)
-% Visual feedback during drag-and-drop: brightens displaced pixels
+% GUI_WINDOWDRAGANDDROPMOTIONFCN - Visual feedback during drag-and-drop: brightens displaced pixels.
 %
-% Parameters:
-% brushSelection: uint8 matrix, image of the selected layer area
+% Syntax:
+%   function gui_WindowDragAndDropMotionFcn(obj, brushSelection)
 %
-% Return values:
+% Input Arguments:
+%   - **brushSelection** — uint8 matrix, image of the selected layer area
+%
+% Output Arguments:
 %   (none)
+%
 
 % Updates
 %

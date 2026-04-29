@@ -1,14 +1,23 @@
 function sessionSettings = generateSessionSettings()
-% sessionSettings = generateSessionSettings()
-% generate default session settings for MIB
-% Parameters:
+% GENERATESESSIONSETTINGS - Generate the default MIB session settings structure.
 %
-% Return values:
-% sessionSettings: structure with default session settings
-
-%|
-% @b Examples:
-% @code obj.mibModel.sessionSettings = utils.defaults.generateSessionSettings(); @endcode
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      sessionSettings = generateSessionSettings()
+%
+% Output Arguments:
+%   - **sessionSettings** — struct with default session settings for MIB
+%
+% Usage:
+%
+%   **Example 1** — initialise session settings at startup
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.sessionSettings = utils.defaults.generateSessionSettings();
+%
 
 %% Define session settings structure
 % define default parameters for filters

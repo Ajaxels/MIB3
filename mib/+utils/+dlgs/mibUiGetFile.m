@@ -1,34 +1,38 @@
 function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
-% function [file, path, indx] = utils.dlgs.mibUiGetFile(filter, title, defname, mode)
-% a wrapper function to provide a modified uigetfile dialog for MacOS
+% MIBUIGETFILE - a wrapper function to provide a modified uigetfile dialog for MacOS.
+%
+% Syntax:
+%   function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
+%
 % Catalina. The general syntax is the same as for uigetfile, except missing
 % 'MultiSelect' key
-% 
-% 
-% Parameters:
-% filter: file filter, specified as a character vector, cell array of character vectors, or a string array
-% For example:
-% {'*.fig','Figures (*.fig)'; ...
-%  '*.mat','MAT-files (*.mat)'; ...
-%  '*.png; *.jpg','Images (*.png, *.jpg)'; ...
-%  '*.*',  'All Files (*.*)'}
-% title: string, dialog box title
-% defname: default file name field value, specified as a character vector or a string scalar. The defname value can specify a path, or a path and a file name
-% mode: multiselect mode, ''off'' (default) or ''on''
 %
-% Return values:
-% file: file name that the user specified in the dialog box, returned as a cell array
-% path: path to the specified file or files, returned as a character vector
-% indx: selected filter index, returned as an integer
-
-%| 
-% @b Examples:
-% @code
-% fileFilter = {'*.mat','MAT-files (*.mat)'; ...
-%               '*.*',  'All Files (*.*)'};
-% [file, path, indx] = utils.dlgs.mibUiGetFile(fileFilter, 'Select files', 'c:\', 'on');
-% if isequal(file, 0); return; end
-% @endcode
+% Input Arguments:
+%   - **filter** — file filter, specified as a character vector, cell array of character vectors, or a string array
+%     For example:
+%     {'*.fig','Figures (``*.fig``)'; ...
+%     '*.mat','MAT-files (``*.mat``)'; ...
+%     '*.png; *.jpg','Images (*.png, *.jpg)'; ...
+%     '*.*',  'All Files (*.*)'}
+%   - **title** — string, dialog box title
+%   - **defname** — default file name field value, specified as a character vector or a string scalar. The defname value can specify a path, or a path and a file name
+%   - **mode** — multiselect mode, ''off'' (default) or ''on''
+%
+% Output Arguments:
+%   - **file** — file name that the user specified in the dialog box, returned as a cell array
+%   - **path** — path to the specified file or files, returned as a character vector
+%   - **indx** — selected filter index, returned as an integer
+%
+% Usage:
+%   **Example 1** — Select files with filter
+%
+%   .. code-block:: matlab
+%
+%      fileFilter = {'*.mat','MAT-files (``*.mat``)'; ...
+%                    '*.*',  'All Files (*.*)'};
+%      [file, path, indx] = utils.dlgs.mibUiGetFile(fileFilter, 'Select files', 'c:\', 'on');
+%      if isequal(file, 0); return; end
+%
 
 if nargin < 4; mode = 'off'; end
 if nargin < 3; defname = ''; end

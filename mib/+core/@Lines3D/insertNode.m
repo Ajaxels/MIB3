@@ -1,12 +1,15 @@
 function insertNode(obj, nodeId, x, y, z)
-% function insertNode(obj, nodeId, x, y, z)
-% insert node to a tree after nodeId, the inserted node becomes an active node
+% INSERTNODE - insert node to a tree after nodeId, the inserted node becomes an active node.
 %
-% Parameters:
-% nodeId: index of the node after which a new node should be inserted
-% x: new x coordinate
-% y: new y coordinate
-% z: new z coordinate
+% Syntax:
+%   function insertNode(obj, nodeId, x, y, z)
+%
+% Input Arguments:
+%   - **nodeId** — index of the node after which a new node should be inserted
+%   - **x** — new x coordinate
+%   - **y** — new y coordinate
+%   - **z** — new z coordinate
+%
 
 if nargin < 5; error('not enough parameters!'); end
 if isempty(obj.G); return; end

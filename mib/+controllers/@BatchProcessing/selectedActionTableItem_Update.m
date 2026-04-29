@@ -1,21 +1,22 @@
 function selectedActionTableItem_Update(obj, hObject)
-% function selectedActionTableItem_Update(obj, hObject)
-% write an edited parameter value back to obj.CurrentBatch and the table cell
+% SELECTEDACTIONTABLEITEM_UPDATE - write an edited parameter value back to obj.CurrentBatch and the table cell.
+%
+% Syntax:
+%   function selectedActionTableItem_Update(obj, hObject)
 %
 % Called by ValueChangedFcn of the four editing widgets:
 % selectedActionTableCellEdit, selectedActionTableCellNumericEdit,
 % selectedActionTableCellPopup, selectedActionTableCellCheck.
 %
-% Parameters:
-% hObject: handle to the widget that triggered the callback; Tag must be
-%   one of 'selectedActionTableCellPopup', 'selectedActionTableCellCheck',
-%   'selectedActionTableCellEdit', or 'selectedActionTableCellNumericEdit'
+% Input Arguments:
+%   - **hObject** — handle to the widget that triggered the callback; Tag must be
+%     one of 'selectedActionTableCellPopup', 'selectedActionTableCellCheck',
+%     'selectedActionTableCellEdit', or 'selectedActionTableCellNumericEdit'
 %
-%|
-% @b Examples:
-% @code obj.selectedActionTableItem_Update(obj.view.handles.selectedActionTableCellEdit); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.selectedActionTableItem_Update(obj.view.handles.selectedActionTableCellEdit);
 %
 
 if obj.selectedActionTableIndex == 0; return; end

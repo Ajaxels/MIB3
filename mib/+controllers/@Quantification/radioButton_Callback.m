@@ -1,23 +1,30 @@
 function radioButton_Callback(obj, hObject)
-% function radioButton_Callback(obj, hObject)
-% Handle Shape2D / Shape3D / Object / Intensity radio button changes.
+% RADIOBUTTON_CALLBACK - Handle Shape2D / Shape3D / Object / Intensity radio button changes.
+%
+% Syntax:
+%   function radioButton_Callback(obj, hObject)
 %
 % Rebuilds the Property dropdown items appropriate for the new mode/shape
 % combination and restores the last-used property index for that mode.
 % Additionally:
-% @li Switching to Shape2D resets Property to 'Area' and clears Multiple
-% @li Switching to Shape3D resets Property to 'Volume', clears Multiple,
-%     and refreshes the Units warning for anisotropic voxels
-% @li Switching Object/Intensity toggles ColorChannel1 visibility
+%   - Switching to Shape2D resets Property to 'Area' and clears Multiple
+%   - Switching to Shape3D resets Property to 'Volume', clears Multiple,
+% and refreshes the Units warning for anisotropic voxels
+%   - Switching Object/Intensity toggles ColorChannel1 visibility
 %
-% Parameters:
-% hObject: handle to the radio button widget that fired the callback;
-%   Tag is used to distinguish Shape2D/Shape3D from Object/Intensity
+% Input Arguments:
+%   - **hObject** — handle to the radio button widget that fired the callback;
+%     Tag is used to distinguish Shape2D/Shape3D from Object/Intensity
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.Shape2D.ValueChangedFcn = @(hObj,~) obj.radioButton_Callback(hObj); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.Shape2D.ValueChangedFcn = @(hObj,~) obj.radioButton_Callback(hObj);
+%
 
 % Updates
 %

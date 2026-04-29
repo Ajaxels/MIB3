@@ -165,9 +165,18 @@ BatchOpt.id = obj.getActiveId();  % CORRECT — always uses Sets.selectedSet
 
 ## Documentation
 
-See `.claude/doc_template.md` for the full documentation block template.
+All MATLAB docblocks use **RST format** compatible with `sphinxcontrib-matlabdomain` (Sphinx).
+See `development/docs_api_sphinx.md` for the complete style guide and `docs_api/README.md` for build instructions.
 
-Key rules: first comment repeats the function signature; `[@em optional]` for optional params; `@li` for struct fields; always include `@b Examples:` with a realistic call.
+Quick rules:
+- **Header line:** `% FUNCTIONNAME - One-line description.` — all-caps name, no function call in the text
+- **Syntax:** `.. code-block:: matlab` (never bare `::`)
+- **Parameter names:** `**bold**` with em-dash `—` separator
+- **Struct fields:** nested RST bullets with backtick field names — `` ``.fieldName`` — description ``
+- **Optional params:** `*(optional)*` after the bold name
+- **Examples:** `**Example N** — title` heading + `.. code-block:: matlab`
+- **Inline code / defaults:** double backticks `` ``value`` ``
+- **No Doxygen:** replace `@b`, `@li`, `[@em optional]`, `@ Note:` with RST equivalents
 
 ---
 

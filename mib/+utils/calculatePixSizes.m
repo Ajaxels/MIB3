@@ -1,16 +1,31 @@
 function pixSize = calculatePixSizes(resolution, unitFrom, unitTo)
-% function pixSize = calculatePixSizes(resolution, unitFrom, unitTo)
-% Recalculate pixel size (width, height) of the dataset to new units
+% CALCULATEPIXSIZES - Recalculate pixel size (width, height) of the dataset to new units.
 %
-% Parameters:
-% resolution: a vector with current resolution of the dataset [XResolution, YResolution]
-% unitFrom: source units - ''m'', ''cm'', ''mm'', ''um'', ''nm''
-% unitTo: desired units - ''Inch'', ''Centimeter'', ''Meter''
+% Syntax:
 %
-% Return values:
-% pixSize: a structure with voxel sizes, the two fields are updated,
-% .x - physical width of the pixel
-% .y - physical height of the pixel
+%   .. code-block:: matlab
+%
+%      pixSize = calculatePixSizes(resolution, unitFrom, unitTo)
+%
+% Input Arguments:
+%   - **resolution** — [numeric] current resolution of the dataset ``[XResolution, YResolution]``
+%   - **unitFrom** — [char] source units: ``'Inch'``, ``'Centimeter'``, ``'Meter'``
+%   - **unitTo** — [char] desired units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``
+%
+% Output Arguments:
+%   - **pixSize** — struct with updated pixel sizes:
+%
+%     - ``.x`` — physical width of the pixel
+%     - ``.y`` — physical height of the pixel
+%
+% Usage:
+%
+%   **Example 1** — convert 72 dpi resolution to micrometres
+%
+%   .. code-block:: matlab
+%
+%      pixSize = utils.calculatePixSizes([72, 72], 'Inch', 'um');
+%
 
 % Updates
 % 

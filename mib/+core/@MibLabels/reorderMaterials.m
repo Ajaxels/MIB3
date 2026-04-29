@@ -1,21 +1,27 @@
 function reorderMaterials(obj, newOrder)
-% function reorderMaterials(obj, newOrder)
-% Reorder material names and colours according to newOrder
+% REORDERMATERIALS - Reorder material names and colours according to newOrder.
+%
+% Syntax:
+%   function reorderMaterials(obj, newOrder)
 %
 % The caller is responsible for remapping the corresponding pixel values
 % beforehand (see MibDataset.reorderMaterials).
 %
-% Parameters:
-% newOrder: double vector, permutation of 1:numel(materialNames)
-%   specifying the new arrangement.  For example [3 1 2] moves material 3
-%   to position 1, material 1 to position 2, material 2 to position 3.
+% Input Arguments:
+%   - **newOrder** — double vector, permutation of 1:numel(materialNames)
+%     specifying the new arrangement.  For example [3 1 2] moves material 3
+%     to position 1, material 1 to position 2, material 2 to position 3.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.labels.reorderMaterials([3 1 2]);  // rotate materials @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.reorderMaterials([3 1 2]);% rotate materials
+%
 
 % Updates
 %

@@ -1,6 +1,9 @@
 function previewDynamicMask(obj)
-    % function previewDynamicMask(obj)
-    % preview results for the dynamic mode
+% PREVIEWDYNAMICMASK - preview results for the dynamic mode.
+%
+% Syntax:
+%   function previewDynamicMask(obj)
+%
 
     wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', ...
         'Title', 'Generating blocks');

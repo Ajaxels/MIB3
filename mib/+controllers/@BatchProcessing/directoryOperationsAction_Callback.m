@@ -1,6 +1,8 @@
 function directoryOperationsAction_Callback(obj, BatchOptInput)
-% function directoryOperationsAction_Callback(obj, BatchOptInput)
-% build or apply the BatchOpt structure for a Directory Operations protocol step
+% DIRECTORYOPERATIONSACTION_CALLBACK - build or apply the BatchOpt structure for a Directory Operations protocol step.
+%
+% Syntax:
+%   function directoryOperationsAction_Callback(obj, BatchOptInput)
 %
 % When called with no second argument (interactive mode) the function
 % constructs a default BatchOpt and returns.  When called with
@@ -9,27 +11,29 @@ function directoryOperationsAction_Callback(obj, BatchOptInput)
 % merges supplied fields over the defaults via updateBatchOptCombineFields_Shared.
 %
 % Supported operations (Operation field):
-% @li 'Change current MIB directory' - set obj.mibModel.currentDirectory
-% @li 'Create new'                   - create the resolved directory if absent
-% @li 'Delete directory'             - remove the resolved (empty) directory
+%   - 'Change current MIB directory' - set obj.mibModel.currentDirectory
+%   - 'Create new'                   - create the resolved directory if absent
+%   - 'Delete directory'             - remove the resolved (empty) directory
 %
 % Directory resolution mode (Mode field):
-% @li 'Absolute'                    - use DirectoryName verbatim
-% @li 'Relative to current MIB path'- resolve relative to currentDirectory
-% @li 'Inherit from Directory loop' - use directory from the enclosing loop
-% @li 'Inherit dirs +Dirname'       - append DirectoryName to the loop directory
+%   - 'Absolute'                    - use DirectoryName verbatim
+%   - 'Relative to current MIB path'- resolve relative to currentDirectory
+%   - 'Inherit from Directory loop' - use directory from the enclosing loop
+%   - 'Inherit dirs +Dirname'       - append DirectoryName to the loop directory
 %
-% Parameters:
-% BatchOptInput: [optional]
-%   @li NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
-%   @li struct - override defaults with supplied fields and apply
+% Input Arguments:
+%   - **BatchOptInput** — [optional]
+%     - NaN    - send default BatchOpt to BatchProcessing via SyncBatch event
+%     - struct - override defaults with supplied fields and apply
 %
-%|
-% @b Examples:
-% @code obj.directoryOperationsAction_Callback(NaN); // populate parameter table @endcode
-% @code obj.directoryOperationsAction_Callback(BatchOpt); // apply saved settings @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.directoryOperationsAction_Callback(NaN); // populate parameter table
+%
+%   Example 2::
+%
+%     obj.directoryOperationsAction_Callback(BatchOpt); // apply saved settings
 %
 
 BatchOpt.Operation = {'Change current MIB directory'};   % specify the operation

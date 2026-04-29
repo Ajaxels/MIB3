@@ -1,6 +1,9 @@
 function initializeMibView(obj)
-% function initializeMibView(obj)
-% Initialize the main MIB view
+% INITIALIZEMIBVIEW - Initialize the main MIB view.
+%
+% Syntax:
+%   function initializeMibView(obj)
+%
 
 arguments (Input)
     obj views.MibView

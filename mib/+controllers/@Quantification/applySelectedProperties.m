@@ -1,19 +1,23 @@
 function applySelectedProperties(obj, propertyList)
-% function applySelectedProperties(obj, propertyList)
-% Apply the property list returned by the QuantificationProperties dialog.
+% APPLYSELECTEDPROPERTIES - Apply the property list returned by the QuantificationProperties dialog.
+%
+% Syntax:
+%   function applySelectedProperties(obj, propertyList)
 %
 % Called by the QuantificationProperties child controller when the user
 % confirms the selection.  Sorts the list, warns if CurveLength or
 % EndpointsLength requires 8-connectivity, switches Object/Intensity
 % mode if needed, and updates BatchOpt.Property / MultipleProperty.
 %
-% Parameters:
-% propertyList: cell array of selected property names,
-%   e.g. @code {'Area', 'Perimeter', 'MeanIntensity'} @endcode
+% Input Arguments:
+%   - **propertyList** — cell array of selected property names,
+%     e.g. ``{'Area', 'Perimeter', 'MeanIntensity'}``
 %
-%|
-% @b Examples:
-% @code obj.applySelectedProperties({'Area', 'Perimeter', 'MeanIntensity'}); @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.applySelectedProperties({'Area', 'Perimeter', 'MeanIntensity'});
+%
 
 % Updates
 %

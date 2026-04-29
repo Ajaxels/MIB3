@@ -1,19 +1,45 @@
 function status = datasetsSetsOps(obj, BatchOptIn)
-% status = datasetsSetsOps(obj, BatchOptIn)
-% operations with sets of the  model. Compatible with the batch mode.
+% DATASETSSETSOPS - Operations with sets of the model.
 %
-% Parameters:
-% BatchOptIn: structure with parameters.
-% .Mode - a cell with the following modes
-% -> 'Select set' - select the set in obj.view.handles.panels.activeDataset.handles.sets dropdown
-% -> 'Add set' - add a new set (10 new datasets) into the model
-% -> 'Rename set' - rename the set
-% -> 'Sort sets' - sort the sets
-% -> 'Remove set' - remove the set
-% .SetName - set name to select, rename, remove; when empty a dialog asking for the set name appears
+% Syntax:
 %
-% Return values:
-% status: logical, resulting status of the function true/false
+%   .. code-block:: matlab
+%
+%      status = obj.datasetsSetsOps()
+%      status = obj.datasetsSetsOps(BatchOptIn)
+%
+% Compatible with the batch processing mode.
+%
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* structure with parameters; when NaN,
+%     returns default options via "SyncBatch" event
+%   - ``.Mode`` — cell string, operation to perform:
+%   - ``'Select set'`` — select the set in the Datasets panel dropdown
+%   - ``'Add set'`` — add a new set (10 new datasets) into the model
+%   - ``'Rename set'`` — rename the current set
+%   - ``'Remove set'`` — remove the current set
+%   - ``.SetName`` — char, set name to select, rename, or remove; when empty a dialog appears
+%
+% Output Arguments:
+%   - **status** — logical, ``true`` when the operation completed successfully
+%
+% Usage:
+%   **Example 1** — select a set by name
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Mode    = {'Select set'};
+%      BatchOpt.SetName = 'Set 2';
+%      obj.mibModel.datasetsSetsOps(BatchOpt);
+%
+%   **Example 2** — add a new set
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Mode    = {'Add set'};
+%      BatchOpt.SetName = 'Experiment B';
+%      obj.mibModel.datasetsSetsOps(BatchOpt);
+%
 
 status = false;
 

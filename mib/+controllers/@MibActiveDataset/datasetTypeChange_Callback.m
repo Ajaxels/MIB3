@@ -1,15 +1,19 @@
 function datasetTypeChange_Callback(obj, hWidget, hData)
-% function datasetTypeChange_Callback(obj, hWidget, hData)
-% callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored
+% DATASETTYPECHANGE_CALLBACK - callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored.
+%
+% Syntax:
+%   function datasetTypeChange_Callback(obj, hWidget, hData)
+%
 % in the selected buffer/container.
 % Available options
-% - Standard -> standard MIB dataset, loaded completely into memory
-% - Virtual -> the virtual mode, when the data is loaded from disk on demand
-% - BigData -> to work with pyramidal/chunked data formats [for future development]
+% - Standard standard MIB dataset, loaded completely into memory
+% - Virtual the virtual mode, when the data is loaded from disk on demand
+% - BigData to work with pyramidal/chunked data formats [for future development]
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibActiveDataset

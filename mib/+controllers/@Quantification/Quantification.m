@@ -1,11 +1,12 @@
 classdef Quantification < handle
-    % classdef Quantification < handle
-    % controller for the Quantification (image statistics) window
-    % available via MIB -> Menu -> Models -> Model statistics
-    %
-    % @code
-    % obj.startController('controllers.Quantification');
-    % @endcode
+% QUANTIFICATION - controller for the Quantification (image statistics) window.
+%
+% available via MIB Menu Models Model statistics
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.Quantification');
 
     properties
         mibModel
@@ -62,13 +63,16 @@ classdef Quantification < handle
     methods (Static)
 
         function ViewListner_Callback2(obj, src, evnt)
-            % function ViewListner_Callback2(obj, src, evnt)
-            % static listener callback for mibModel events
+            % VIEWLISTNER_CALLBACK2 - static listener callback for mibModel events.
             %
-            % Parameters:
-            % obj: handle to Quantification controller
-            % src: event source
-            % evnt: event data with EventName field
+            % Syntax:
+            %   function ViewListner_Callback2(obj, src, evnt)
+            %
+            % Input Arguments:
+            %   - **obj** — handle to Quantification controller
+            %   - **src** — event source
+            %   - **evnt** — event data with EventName field
+            %
 
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
@@ -92,69 +96,23 @@ classdef Quantification < handle
     end % methods (Static)
 
     methods
-
-        % declaration of functions in the external files, keep empty line in between for the doc generator
-
-        addCallbacks(obj) % wire all widget callbacks from the constructor
-
-        applySelectedProperties(obj, propertyList) % apply property list from QuantificationProperties dialog
-
-        closeWindow(obj) % close the Quantification dialog and release all resources
-
-        createContextMenus(obj) % build the right-click context menu for statTable
-
-        enableStatTable(obj) % enable or disable statTable depending on whether results are available
-
-        exportButton_Callback(obj, batchModeSwitch) % export results to Excel, CSV, MAT, or MATLAB workspace
-
-        gui_WindowButtonDownFcn(obj) % handle mouse button press events on the histogram axes
-
-        highlightRange_Callback(obj) % highlight objects whose value falls within the highlight1/highlight2 range
-
-        highlightSelection(obj, object_list, mode, sliceNumbers) % highlight selected objects in the selection layer
-
-        histScale_Callback(obj) % toggle histogram Y axis between log and linear scale
-
-        material_Callback(obj) % handle selection change in the Material dropdown
-
-        multiple_Callback(obj) % handle the Multiple properties checkbox toggle
-
-        multipleBtn_Callback(obj) % open property selection dialog for multi-property analysis
-
-        property_Callback(obj) % handle selection change in the Property dropdown
-
-        quantification_Callback(obj, batchModeSwitch) % run shape/intensity quantification and populate statTable
-
-        radioButton_Callback(obj, hObject) % handle Shape2D/Shape3D/Object/Intensity radio button changes
-
-        returnBatchOpt(obj, BatchOptOut) % publish BatchOpt to the macro recorder via SyncBatch event
-
-        data = sortBtn_Callback(obj, data) % sort statTable data according to current sorting settings
-
-        statTable_CellSelectionCallback(obj, indices, parameter) % handle cell selection in statTable and optionally highlight
-
-        tableContextMenu_cb(obj, parameter) % handle context menu actions on statTable rows
-
-        units_Callback(obj) % handle selection change in the Units dropdown
-
-        updateBatchOptFromGUI(obj, hObject, ~) % sync BatchOpt from a changed widget
-
-        updateSortingSettings(obj) % sync sort direction and column index from the sortTable dropdown
-
-        updateWidgets(obj) % refresh all GUI widgets from current model state and BatchOpt
-
         function obj = Quantification(mibModel, varargin)
-            % function obj = Quantification(mibModel, varargin)
-            % constructor for Quantification controller
+            % QUANTIFICATION - constructor for Quantification controller.
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: [@em optional] handle to parent MibController (for startController compatibility)
-            % varargin{2}: [@em optional] BatchOpt struct; pass NaN to return default BatchOpt via SyncBatch
-            % varargin{3}: [@em optional] contIndex - material index to pre-select (-1=Mask, 0=Exterior, 1,2,...=material)
+            % Syntax:
+            %   function obj = Quantification(mibModel, varargin)
             %
-            % @b Examples:
-            % @code obj.startController('controllers.Quantification'); @endcode
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — *(optional)* handle to parent MibController (for startController compatibility)
+            %   - **varargin{2}** — *(optional)* BatchOpt struct; pass NaN to return default BatchOpt via SyncBatch
+            %   - **varargin{3}** — *(optional)* contIndex - material index to pre-select (-1=Mask, 0=Exterior, 1,2,...=material)
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.startController('controllers.Quantification');
+            %
 
             id = mibModel.getActiveId();
 

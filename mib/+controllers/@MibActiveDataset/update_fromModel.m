@@ -1,24 +1,27 @@
 function update_fromModel(obj, src, evtData)
-% function update_fromModel(obj, src, evtData)
-% update widgets of the Datasets panel from obj.mibModel
-% 
+% UPDATE_FROMMODEL - update widgets of the Datasets panel from obj.mibModel.
+%
+% Syntax:
+%   function update_fromModel(obj, src, evtData)
+%
 % This function is triggered either as a controllers.MibActiveDataset.listener to
 % MibModel->DatasetsPanelUpdate event or as a method of
 % controllers.MibActiveDataset.datasetsPanelUpdate() to update widgets of the Datasets
 % panel (obj.view.handles.panels.activeDataset / obj.handles)
 %
-% Parameters:
-% src: handle to MibModel when called as a listener, from controllers.MibActiveDataset it is not provided
-% evtData: event data information, when called as a listener, from controllers.MibActiveDataset it is not provided
+% Input Arguments:
+%   - **src** — handle to MibModel when called as a listener, from controllers.MibActiveDataset it is not provided
+%   - **evtData** — event data information, when called as a listener, from controllers.MibActiveDataset it is not provided
 %
-%|
-% @b Examples:
-% @code
-% obj.update_fromModel(); // call from controllers.MibActiveDataset, update widgets of the Datasets panel using MibModel values
-% @endcode
-% @code
-% notify(obj, 'DatasetsPanelUpdate'); // call from MibModel, update widgets of the Datasets panel using MibModel values
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.update_fromModel(); // call from controllers.MibActiveDataset, update widgets of the Datasets panel using MibModel values
+%
+%   Example 2::
+%
+%     notify(obj, 'DatasetsPanelUpdate'); // call from MibModel, update widgets of the Datasets panel using MibModel values
+%
 
 % arguments
 %     obj controllers.MibActiveDataset

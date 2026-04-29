@@ -1,6 +1,9 @@
 function lgraph = updateConvolutionLayers(obj, lgraph)
-% function lgraph = updateConvolutionLayers(obj, lgraph)
-% update the convolution layers by providing new set of weight
+% UPDATECONVOLUTIONLAYERS - update the convolution layers by providing new set of weight.
+%
+% Syntax:
+%   function lgraph = updateConvolutionLayers(obj, lgraph)
+%
 % initializers
 
 weightsInitializer = 'glorot';

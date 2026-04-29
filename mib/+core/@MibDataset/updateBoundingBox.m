@@ -1,6 +1,8 @@
 function updateBoundingBox(obj, newBB, xyzShift, imgDims)
-% function updateBoundingBox(obj, newBB, xyzShift, imgDims)
-% Delegate bounding-box update to the image layer.
+% UPDATEBOUNDINGBOX - Delegate bounding-box update to the image layer.
+%
+% Syntax:
+%   function updateBoundingBox(obj, newBB, xyzShift, imgDims)
 %
 % After the call obj.image.pixSize and obj.image.boundingBox are updated.
 % The other layers (labels, mask, selection) share the same pixSize because

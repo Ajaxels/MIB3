@@ -1,10 +1,13 @@
 function maskExportSection_Callbacks(obj, hWidget, hData)
-% function maskExportSection_Callbacks(obj, hWidget, hData)
-% callback on press of buttons in the Export section of the Mask ribbon
+% MASKEXPORTSECTION_CALLBACKS - callback on press of buttons in the Export section of the Mask ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function maskExportSection_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

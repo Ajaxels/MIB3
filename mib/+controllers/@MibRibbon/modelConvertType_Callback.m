@@ -1,10 +1,13 @@
 function modelConvertType_Callback(obj, hWidget, hData)
-% function modelConvertType_Callback(obj, hWidget, hData)
-% callback on press of the convert model type buttons in the Model ribbon
+% MODELCONVERTTYPE_CALLBACK - callback on press of the convert model type buttons in the Model ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function modelConvertType_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

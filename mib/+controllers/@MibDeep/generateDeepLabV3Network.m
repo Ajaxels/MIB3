@@ -15,19 +15,23 @@
 % Date: 25.04.2023
 
 function net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
-% function generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
-% generate DeepLab v3+ convolutional neural network for semantic image
+% GENERATEDEEPLABV3NETWORK - generate DeepLab v3+ convolutional neural network for semantic image.
+%
+% Syntax:
+%   function net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
+%
 % segmentation of 2D RGB images
 %
-% Parameters:
-% imageSize: vector [height, width, colors] defining input patch size,
-% should be larger than [224 224] for resnet18, colors should be 3
-% numClasses: number of output classes (including exterior) for the output results
-% targetNetwork: string defining the base architecture for the initialization
-%   'resnet18' - resnet18 network
-%   'resnet50' - resnet50 network
-%   'xception' - xception network (requires matlab)
-%   'inceptionresnetv2' - inceptionresnetv2 network (required matlab)
+% Input Arguments:
+%   - **imageSize** — vector [height, width, colors] defining input patch size,
+%     should be larger than [224 224] for resnet18, colors should be 3
+%   - **numClasses** — number of output classes (including exterior) for the output results
+%   - **targetNetwork** — string defining the base architecture for the initialization
+%     'resnet18' - resnet18 network
+%     'resnet50' - resnet50 network
+%     'xception' - xception network (requires matlab)
+%     'inceptionresnetv2' - inceptionresnetv2 network (required matlab)
+%
 
 % Updates
 % 

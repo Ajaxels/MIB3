@@ -1,21 +1,26 @@
 function recalculateObjects(obj)
-% function recalculateObjects(obj)
-% Recalculate objects for Mask or Model layer for use with the Object
+% RECALCULATEOBJECTS - Recalculate objects for Mask or Model layer for use with the Object.
+%
+% Syntax:
+%   function recalculateObjects(obj)
+%
 % Picker tool in 3D
 %
 % Populates the maskStats structure of the active dataset with connected
 % component information (label matrix and bounding boxes, or PixelIdxList
 % for models with >65535 materials).
 %
-% Parameters:
+% Input Arguments:
 %   (none)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.recalculateObjects();     // recalculate object stats @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.recalculateObjects();     // recalculate object stats
+%
 
 % Updates
 %

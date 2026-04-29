@@ -1,10 +1,12 @@
 classdef DisplayAdjust < handle
-    % @type DisplayAdjust class is responsible for the Display Adjustment
-    % window, available from Ribbon -> Image -> Adjust display
-    %
-    % @code
-    % obj.startController('controllers.DisplayAdjust'); // as GUI tool
-    % @endcode
+% DISPLAYADJUST - @type DisplayAdjust class is responsible for the Display Adjustment.
+%
+% window, available from Ribbon Image Adjust display
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.DisplayAdjust'); // as GUI tool
 
     % Updates
     %
@@ -29,7 +31,11 @@ classdef DisplayAdjust < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, ~, evnt)
-            % Static listener dispatched by mibModel events
+            % VIEWLISTNER_CALLBACK2 - Static listener dispatched by mibModel events.
+            %
+            % Syntax:
+            %   function ViewListner_Callback2(obj, ~, evnt)
+            %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
                     delete(obj.listener{i});
@@ -54,13 +60,16 @@ classdef DisplayAdjust < handle
     methods
         % -----------------------------------------------------------------
         function obj = DisplayAdjust(mibModel, varargin)
-            % function obj = DisplayAdjust(mibModel, varargin)
-            % Constructor for the DisplayAdjust controller
+            % DISPLAYADJUST - Constructor for the DisplayAdjust controller.
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: [optional] a controller handle
-            % varargin{2}: [optional] BatchOpt struct; if NaN, returns default BatchOpt
+            % Syntax:
+            %   function obj = DisplayAdjust(mibModel, varargin)
+            %
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — [optional] a controller handle
+            %   - **varargin{2}** — [optional] BatchOpt struct; if NaN, returns default BatchOpt
+            %
 
             obj.mibModel = mibModel;
 
@@ -202,8 +211,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function closeWindow(obj)
-            % function closeWindow(obj)
-            % close the DisplayAdjust window and clean up
+            % CLOSEWINDOW - close the DisplayAdjust window and clean up.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
 
             if ~isempty(obj.updateTimer) && isvalid(obj.updateTimer)
                 stop(obj.updateTimer);
@@ -220,8 +232,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function returnBatchOpt(obj, BatchOptOut)
-            % function returnBatchOpt(obj, BatchOptOut)
-            % return BatchOpt structure to mibBatchController via SyncBatch
+            % RETURNBATCHOPT - return BatchOpt structure to mibBatchController via SyncBatch.
+            %
+            % Syntax:
+            %   function returnBatchOpt(obj, BatchOptOut)
+            %
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end
@@ -231,8 +246,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function addCallbacks(obj)
-            % function addCallbacks(obj)
-            % wire all widget callbacks; called once from the constructor
+            % ADDCALLBACKS - wire all widget callbacks; called once from the constructor.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
+            %
 
             h = obj.view.handles;
 
@@ -271,8 +289,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function addFindBtnContextMenus(obj)
-            % function addFindBtnContextMenus(obj)
-            % add right-click context menus to findMinBtn and findMaxBtn
+            % ADDFINDBTNCONTEXTMENUS - add right-click context menus to findMinBtn and findMaxBtn.
+            %
+            % Syntax:
+            %   function addFindBtnContextMenus(obj)
+            %
 
             h = obj.view.handles;
             thresholds = {0, 0.1, 0.25, 0.5, 1, 2.5, NaN};
@@ -299,8 +320,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % refresh all GUI widgets from the model (called on UpdateGuiWidgets)
+            % UPDATEWIDGETS - refresh all GUI widgets from the model (called on UpdateGuiWidgets).
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
 
             id = obj.mibModel.getActiveId();
             nColors = obj.mibModel.I{id}.image.colors;
@@ -327,8 +351,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateSliders(obj)
-            % function updateSliders(obj)
-            % synchronise slider ranges and edit-spinner values from viewPort
+            % UPDATESLIDERS - synchronise slider ranges and edit-spinner values from viewPort.
+            %
+            % Syntax:
+            %   function updateSliders(obj)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -367,8 +394,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateHist(obj)
-            % function updateHist(obj)
-            % recompute histogram for the current slice and selected channel
+            % UPDATEHIST - recompute histogram for the current slice and selected channel.
+            %
+            % Syntax:
+            %   function updateHist(obj)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -446,8 +476,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateSettings(obj)
-            % function updateSettings(obj)
-            % write slider values into viewPort for the active channel(s)
+            % UPDATESETTINGS - write slider values into viewPort for the active channel(s).
+            %
+            % Syntax:
+            %   function updateSettings(obj)
+            %
 
             id = obj.mibModel.getActiveId();
             h  = obj.view.handles;
@@ -464,16 +497,22 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function colorChannelCombo_Callback(obj)
-            % function colorChannelCombo_Callback(obj)
-            % update sliders when user selects a different channel
+            % COLORCHANNELCOMBO_CALLBACK - update sliders when user selects a different channel.
+            %
+            % Syntax:
+            %   function colorChannelCombo_Callback(obj)
+            %
 
             obj.updateSliders();
         end
 
         % -----------------------------------------------------------------
         function minSlider_Callback(obj)
-            % function minSlider_Callback(obj)
-            % enforce min < max, sync edit field, update image
+            % MINSLIDER_CALLBACK - enforce min < max, sync edit field, update image.
+            %
+            % Syntax:
+            %   function minSlider_Callback(obj)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -494,8 +533,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minEdit_Callback(obj)
-            % function minEdit_Callback(obj)
-            % validate user entry in minEdit spinner, then behave like slider
+            % MINEDIT_CALLBACK - validate user entry in minEdit spinner, then behave like slider.
+            %
+            % Syntax:
+            %   function minEdit_Callback(obj)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -519,8 +561,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxSlider_Callback(obj)
-            % function maxSlider_Callback(obj)
-            % enforce max > min, sync edit field, update image
+            % MAXSLIDER_CALLBACK - enforce max > min, sync edit field, update image.
+            %
+            % Syntax:
+            %   function maxSlider_Callback(obj)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -541,8 +586,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxEdit_Callback(obj)
-            % function maxEdit_Callback(obj)
-            % validate user entry in maxEdit spinner, then behave like slider
+            % MAXEDIT_CALLBACK - validate user entry in maxEdit spinner, then behave like slider.
+            %
+            % Syntax:
+            %   function maxEdit_Callback(obj)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -567,8 +615,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function gammaSlider_Callback(obj)
-            % function gammaSlider_Callback(obj)
-            % update gamma in viewPort, refresh image and histogram
+            % GAMMASLIDER_CALLBACK - update gamma in viewPort, refresh image and histogram.
+            %
+            % Syntax:
+            %   function gammaSlider_Callback(obj)
+            %
 
             h = obj.view.handles;
             h.gammaEdit.Value = h.gammaSlider.Value;
@@ -579,8 +630,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function gammaEdit_Callback(obj)
-            % function gammaEdit_Callback(obj)
-            % clamp gamma to [0.1 5], sync slider, update image
+            % GAMMAEDIT_CALLBACK - clamp gamma to [0.1 5], sync slider, update image.
+            %
+            % Syntax:
+            %   function gammaEdit_Callback(obj)
+            %
 
             h = obj.view.handles;
             val = max(0.1, min(5, h.gammaEdit.Value));
@@ -591,8 +645,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minSlider_Changing(obj, event)
-            % function minSlider_Changing(obj, event)
-            % live update while min slider is being dragged
+            % MINSLIDER_CHANGING - live update while min slider is being dragged.
+            %
+            % Syntax:
+            %   function minSlider_Changing(obj, event)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -616,8 +673,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxSlider_Changing(obj, event)
-            % function maxSlider_Changing(obj, event)
-            % live update while max slider is being dragged
+            % MAXSLIDER_CHANGING - live update while max slider is being dragged.
+            %
+            % Syntax:
+            %   function maxSlider_Changing(obj, event)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -641,8 +701,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function gammaSlider_Changing(obj, event)
-            % function gammaSlider_Changing(obj, event)
-            % live update while gamma slider is being dragged
+            % GAMMASLIDER_CHANGING - live update while gamma slider is being dragged.
+            %
+            % Syntax:
+            %   function gammaSlider_Changing(obj, event)
+            %
 
             id      = obj.mibModel.getActiveId();
             channel = obj.getChannelIndex();
@@ -661,8 +724,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function throttledShowImage(obj)
-            % function throttledShowImage(obj)
-            % restart the deferred-render timer on every slider event;
+            % THROTTLEDSHOWIMAGE - restart the deferred-render timer on every slider event;.
+            %
+            % Syntax:
+            %   function throttledShowImage(obj)
+            %
             % ShowImage fires 80ms after the last event (outside the callback)
 
             if ~isempty(obj.updateTimer) && isvalid(obj.updateTimer)
@@ -675,8 +741,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function imHist_ButtonDownFcn(obj)
-            % function imHist_ButtonDownFcn(obj)
-            % left-click sets min, right-click sets max via histogram axes
+            % IMHIST_BUTTONDOWNFCN - left-click sets min, right-click sets max via histogram axes.
+            %
+            % Syntax:
+            %   function imHist_ButtonDownFcn(obj)
+            %
 
             h = obj.view.handles;
             xy      = h.imHist.CurrentPoint;
@@ -699,15 +768,18 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minval = findMinBtn_Callback(obj, colorCh, threshold)
-            % function minval = findMinBtn_Callback(obj, colorCh, threshold)
-            % detect minimum intensity; threshold (%) excluded from low end
+            % FINDMINBTN_CALLBACK - detect minimum intensity; threshold (%) excluded from low end.
             %
-            % Parameters:
-            % colorCh: [optional] channel index; default = selected channel
-            % threshold: [optional] % to exclude (0-2.5); NaN = ask user
+            % Syntax:
+            %   function minval = findMinBtn_Callback(obj, colorCh, threshold)
             %
-            % Return values:
-            % minval: detected minimum value(s)
+            % Input Arguments:
+            %   - **colorCh** — [optional] channel index; default = selected channel
+            %   - **threshold** — [optional] % to exclude (0-2.5); NaN = ask user
+            %
+            % Output Arguments:
+            %   - **minval** — detected minimum value(s)
+            %
 
             if nargin < 3; threshold = 0; end
             if nargin < 2 || isempty(colorCh); colorCh = obj.getChannelIndex(); end
@@ -777,15 +849,18 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxval = findMaxBtn_Callback(obj, colorCh, threshold)
-            % function maxval = findMaxBtn_Callback(obj, colorCh, threshold)
-            % detect maximum intensity; threshold (%) excluded from high end
+            % FINDMAXBTN_CALLBACK - detect maximum intensity; threshold (%) excluded from high end.
             %
-            % Parameters:
-            % colorCh: [optional] channel index; default = selected channel
-            % threshold: [optional] % to exclude from high end; NaN = ask user
+            % Syntax:
+            %   function maxval = findMaxBtn_Callback(obj, colorCh, threshold)
             %
-            % Return values:
-            % maxval: detected maximum value(s)
+            % Input Arguments:
+            %   - **colorCh** — [optional] channel index; default = selected channel
+            %   - **threshold** — [optional] % to exclude from high end; NaN = ask user
+            %
+            % Output Arguments:
+            %   - **maxval** — detected maximum value(s)
+            %
 
             if nargin < 3; threshold = 0; end
             if nargin < 2 || isempty(colorCh); colorCh = obj.getChannelIndex(); end
@@ -857,8 +932,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function applyBtn_Callback(obj)
-            % function applyBtn_Callback(obj)
-            % bake the current display range into ALL slices of the dataset
+            % APPLYBTN_CALLBACK - bake the current display range into ALL slices of the dataset.
+            %
+            % Syntax:
+            %   function applyBtn_Callback(obj)
+            %
 
             id = obj.mibModel.getActiveId();
 
@@ -920,8 +998,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function stretchCurrent_Callback(obj)
-            % function stretchCurrent_Callback(obj)
-            % bake the current display range into the CURRENT slice only
+            % STRETCHCURRENT_CALLBACK - bake the current display range into the CURRENT slice only.
+            %
+            % Syntax:
+            %   function stretchCurrent_Callback(obj)
+            %
 
             id = obj.mibModel.getActiveId();
 
@@ -957,8 +1038,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function autoHistCheck_Callback(obj)
-            % function autoHistCheck_Callback(obj)
-            % enable/disable automatic histogram refresh on slice/frame change
+            % AUTOHISTCHECK_CALLBACK - enable/disable automatic histogram refresh on slice/frame change.
+            %
+            % Syntax:
+            %   function autoHistCheck_Callback(obj)
+            %
 
             val = obj.view.handles.autoHistCheck.Value;
             obj.listener{2}.Enabled = val;
@@ -968,8 +1052,11 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function adjHelpBtn_Callback(obj)
-            % function adjHelpBtn_Callback(obj)
-            % open the help page in the system browser
+            % ADJHELPBTN_CALLBACK - open the help page in the system browser.
+            %
+            % Syntax:
+            %   function adjHelpBtn_Callback(obj)
+            %
 
             web(fullfile(fileparts(obj.mibModel.mibPath), ...
                 'docs/html/user-interface/panels/viewsettings/viewsettings-adjustments.html'), ...
@@ -978,11 +1065,14 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function idx = getChannelIndex(obj)
-            % function idx = getChannelIndex(obj)
-            % return the 1-based channel index from colorChannelCombo
+            % GETCHANNELINDEX - return the 1-based channel index from colorChannelCombo.
             %
-            % Return values:
-            % idx: integer channel index; falls back to 1 on mismatch
+            % Syntax:
+            %   function idx = getChannelIndex(obj)
+            %
+            % Output Arguments:
+            %   - **idx** — integer channel index; falls back to 1 on mismatch
+            %
 
             h   = obj.view.handles;
             idx = find(strcmp(h.colorChannelCombo.Items, h.colorChannelCombo.Value), 1);

@@ -1,7 +1,7 @@
 classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
-    % classdef HDF5NoHeaderLoader
-    % Loader for HDF5 files without XML headers, based on
-    % io.loaders.BaseImageLoader base class
+% HDF5NOHEADERLOADER - Loader for HDF5 files without XML headers, based on.
+%
+% io.loaders.BaseImageLoader base class
 
     % This loader handles standard HDF5 files directly.
     % It supports:
@@ -12,8 +12,11 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
 
     methods
         function obj = HDF5NoHeaderLoader(options)
-            % function obj = HDF5NoHeaderLoader(options)
-            % Constructor for HDF5NoHeaderLoader class
+            % HDF5NOHEADERLOADER - Constructor for HDF5NoHeaderLoader class.
+            %
+            % Syntax:
+            %   function obj = HDF5NoHeaderLoader(options)
+            %
 
             % Parameters:
             %   options: [@em optional, struct] options structure
@@ -47,8 +50,11 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for HDF5 files
+            % LOADMETADATA - Load metadata for HDF5 files.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %
 
             % This method inspects HDF5 files to extract dataset metadata.
             % It prompts the user to select the dataset if multiple are present,
@@ -338,8 +344,11 @@ classdef HDF5NoHeaderLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-             % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Load image data from HDF5 files
+             % LOADIMAGES - Load image data from HDF5 files.
+             %
+             % Syntax:
+             %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+             %
 
             % This method loads actual image data using h5read.
             % It handles single/double conversion to integers and dimension

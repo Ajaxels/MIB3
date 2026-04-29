@@ -1,40 +1,55 @@
 function dataset = getDataVirt(obj, type, orient, colChannel, options)
-% function dataset = getDataVirt(obj, type, orient, colChannel, options)
-% Read a virtual dataset (BioFormats or HDF5) from disk on demand.
+% GETDATAVIRT - Read a virtual dataset (BioFormats or HDF5) from disk on demand.
+%
+% Syntax:
+%   function dataset = getDataVirt(obj, type, orient, colChannel, options)
 %
 % Ported from MIB2/@MibImage/getDataVirt with the following adaptations:
-%   - obj.data{} instead of obj.img{}
-%   - obj.dataClass instead of obj.meta('imgClass')
-%   - YX orientation is 3 (MIB3) not 4 (MIB2)
-%   - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
-%   - colChannel [] means all channels (MIB3) instead of NaN (MIB2)
-%   - Reading delegated to io.loaders.HDF5VirtualLoader /
-%     io.loaders.BioFormatsVirtualLoader (created lazily, cached in obj.loaders)
+% - obj.data{} instead of obj.img{}
+% - obj.dataClass instead of obj.meta('imgClass')
+% - YX orientation is 3 (MIB3) not 4 (MIB2)
+% - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
+% - colChannel [] means all channels (MIB3) instead of NaN (MIB2)
+% - Reading delegated to io.loaders.HDF5VirtualLoader /
+% io.loaders.BioFormatsVirtualLoader (created lazily, cached in obj.loaders)
 %
-% Parameters:
-% type: type of layer to retrieve — only 'image' is supported
-% orient: [@em optional], orientation of returned dataset
-%   @li 1 — xz: output [x, z, y, c, t]
-%   @li 2 — yz: output [y, z, x, c, t]
-%   @li 3 — yx: output [y, x, z, c, t]  (@b default)
-% colChannel: [@em optional], vector of colour channel indices;
-%             [] = all channels
-% options: [@em optional], struct with optional fields:
-%   @li .y  — [ymin ymax] pixel range
-%   @li .x  — [xmin xmax] pixel range
-%   @li .z  — [zmin zmax] slice range
-%   @li .t  — [tmin tmax] time-point range
-%   @li .level        — pyramid level index (default 1 = full resolution)
-%   @li .showWaitbar  — override waitbar display ([] = auto)
+% Input Arguments:
+%   - **type** — type of layer to retrieve — only 'image' is supported
+%   - **orient** — *(optional)*, orientation of returned dataset
+%   - 1 — xz: output [x, z, y, c, t]
+%   - 2 — yz: output [y, z, x, c, t]
+%   - 3 — yx: output [y, x, z, c, t]  (**default)**
+%   - **colChannel** — *(optional)*, vector of colour channel indices;
+%     [] = all channels
+%   - **options** — *(optional)*, struct with optional fields:
 %
-% Return values:
-% dataset: 5D array [y, x, z, c, t] for orient==3;
-%          [x, z, y, c, t] for orient==1;
-%          [y, z, x, c, t] for orient==2
-%|
-% @b Examples:
-% @code dataset = obj.getDataVirt('image');                       // full YX dataset @endcode
-% @code dataset = obj.getDataVirt('image', 3, 2, options);       // channel 2, YX @endcode
+%     - ``.y``  — [ymin ymax] pixel range
+%     - ``.x``  — [xmin xmax] pixel range
+%     - ``.z``  — [zmin zmax] slice range
+%     - ``.t``  — [tmin tmax] time-point range
+%     - ``.level``        — pyramid level index (default 1 = full resolution)
+%     - ``.showWaitbar``  — override waitbar display ([] = auto)
+%
+% Output Arguments:
+%   - **dataset** — 5D array [y, x, z, c, t] for orient==3;
+%     [x, z, y, c, t] for orient==1;
+%     [y, z, x, c, t] for orient==2
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getDataVirt('image');% full YX dataset
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getDataVirt('image', 3, 2, options);% channel 2, YX
+%
 
 %% Updates
 %

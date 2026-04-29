@@ -1,11 +1,14 @@
 function qab = addQuickAccessBar(obj)
-% function qab = addQAB(obj)
-% add quick access buttons to MIB
-% 
-% Parameters:
+% ADDQUICKACCESSBAR - add quick access buttons to MIB.
 %
-% Return values:
-% qab: structure with the generated handles
+% Syntax:
+%   function qab = addQuickAccessBar(obj)
+%
+% Input Arguments:
+%
+% Output Arguments:
+%   - **qab** — structure with the generated handles
+%
 
 arguments (Input)
     obj views.MibView

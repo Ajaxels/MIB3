@@ -1,28 +1,36 @@
 function result = saveXMLheader(filename, options)
-% function result = saveXMLheader(filename, options)
-% Save XML header for the HDF5 formats (for example, Fiji Big Data Viewer)
+% SAVEXMLHEADER - Save XML header for the HDF5 formats (for example, Fiji Big Data Viewer).
 %
-% Parameters:
-% filename: name of the file: myfile.xml
-% options: a structure with parameters
-% .Format - a string, template for storing data "bdv.hdf5", 'ilastik.hdf5', 'matlab.hdf5'
-% .height - height of the dataset
-% .width - width of the dataset
-% .colors - number of colors in the dataset
-% .depth - number of z-stacks of the dataset
-% .time - number of time points
-% .pixSize - a structure with pixel size of the dataset (.x .y .z .units)
-% .lutColor - [@em optional], a matrix with definition of color channels [1:colorChannel, R G B], (0-1); or colors for materials of the model
-% .ImageDescription - [@em optional], a string with description of the dataset
-% .DatasetName - [@em optional], name of the dataset in the H5 file (not used with Big Data Viewer)
-% .ModelMaterialNames [@em optional], a cell array with names of materials
+% Syntax:
+%   function result = saveXMLheader(filename, options)
 %
-% Return values:
-% result: @b 0 - fail, @b 1 - success
-
-%|
-% @b Examples:
-% @code io.HDF5.saveXMLheader('c:\data\mydataset.xml', options);  // save xml file @endcode
+% Input Arguments:
+%   - **filename** — name of the file: myfile.xml
+%   - **options** — a structure with parameters:
+%
+%     - ``.Format`` — (char) template for storing data; ``'bdv.hdf5'`` | ``'ilastik.hdf5'`` | ``'matlab.hdf5'``
+%     - ``.height`` — height of the dataset
+%     - ``.width`` — width of the dataset
+%     - ``.colors`` — number of color channels in the dataset
+%     - ``.depth`` — number of z-stacks
+%     - ``.time`` — number of time points
+%     - ``.pixSize`` — struct with pixel size fields ``.x``, ``.y``, ``.z``, ``.units``
+%     - ``.lutColor`` — *(optional)* matrix with color channel definitions ``[1:colorChannel, R G B]`` (0-1)
+%     - ``.ImageDescription`` — *(optional)* string with description of the dataset
+%     - ``.DatasetName`` — *(optional)* name of the dataset in the H5 file (not used with Big Data Viewer)
+%     - ``.ModelMaterialNames`` — *(optional)* cell array with names of materials
+%
+% Output Arguments:
+%   - **result** — **0** - fail, **1** - success
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     io.HDF5.saveXMLheader('c:\data\mydataset.xml', options);
+%
 
 % Updates
 %

@@ -1,12 +1,29 @@
 function path = getInstallationPath(softwareName)
-% function path = getInstallationPath(softwareName)
-% get the installation path of the program
+% GETINSTALLATIONPATH - Get the installation directory of a deployed MATLAB application.
 %
-% Parameters:
-% softwareName : [string] name of the software (m-file) to find location
+% Syntax:
 %
-% Return values:
-% path : [string] the full path to the installation location of softwareName
+%   .. code-block:: matlab
+%
+%      path = getInstallationPath(softwareName)
+%
+% In the development environment, uses ``which(softwareName)`` to locate the file.
+% In deployed mode, uses ``ctfroot`` / process-inspection fallbacks.
+%
+% Input Arguments:
+%   - **softwareName** — [char] name of the software entry-point m-file (e.g. ``'mib3'``)
+%
+% Output Arguments:
+%   - **path** — [char] full path to the installation directory; ``[]`` on failure
+%
+% Usage:
+%
+%   **Example 1** — get MIB installation directory
+%
+%   .. code-block:: matlab
+%
+%      installDir = utils.getInstallationPath('mib3');
+%
 
 arguments (Input)
     softwareName (1,:) char

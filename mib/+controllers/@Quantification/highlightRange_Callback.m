@@ -1,6 +1,9 @@
 function highlightRange_Callback(obj)
-% function highlightRange_Callback(obj)
-% Highlight all objects whose Value column falls within the range
+% HIGHLIGHTRANGE_CALLBACK - Highlight all objects whose Value column falls within the range.
+%
+% Syntax:
+%   function highlightRange_Callback(obj)
+%
 % specified in the highlight1 and highlight2 edit boxes.
 %
 % Reads the lower and upper range limits from the highlight1 and
@@ -9,10 +12,15 @@ function highlightRange_Callback(obj)
 % objects in the selection layer.  Object IDs are taken from the table
 % RowName, which encodes the canonical object index.
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.highlightRange.ButtonPushedFcn = @(~,~) obj.highlightRange_Callback(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.highlightRange.ButtonPushedFcn = @(~,~) obj.highlightRange_Callback();
+%
 
 % Updates
 %

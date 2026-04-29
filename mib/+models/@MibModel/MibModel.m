@@ -1,6 +1,6 @@
 classdef MibModel < handle
-    % classdef MibModel < handle
-    % the main model class of MIB
+    % MIBMODEL - the main model class of MIB.
+    %
 
     properties
         I
@@ -208,16 +208,19 @@ classdef MibModel < handle
         undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
 
         function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
-            % function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
-            % Construct an instance of this class
+            % MIBMODEL - Construct an instance of this class.
             %
-            % Parameters:
-            % cpuParallelLimit: integer, maximal number of possible workers for parallel processing
-            % mibPath: char with the location of MIB3
-            % mibVersion: char with the MIB version as
-            %       ATTENTION! it is important to have the version number between "ver." and "/" 
-            %       Release syntax example: "ver. 2025.11 / 04.11.2025"
-            %       Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
+            % Syntax:
+            %   function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
+            %
+            % Input Arguments:
+            %   - **cpuParallelLimit** — integer, maximal number of possible workers for parallel processing
+            %   - **mibPath** — char with the location of MIB3
+            %   - **mibVersion** — char with the MIB version as
+            %     ATTENTION! it is important to have the version number between "ver." and "/"
+            %     Release syntax example: "ver. 2025.11 / 04.11.2025"
+            %     Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
+            %
             
             arguments
                 % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html

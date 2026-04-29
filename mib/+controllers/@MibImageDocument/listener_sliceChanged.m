@@ -1,12 +1,14 @@
 function listener_sliceChanged(obj)
-% function listener_sliceChanged(obj)
-% Listener callback for the MibModel 'SliceChanged' event.
+% LISTENER_SLICECHANGED - Listener callback for the MibModel 'SliceChanged' event.
+%
+% Syntax:
+%   function listener_sliceChanged(obj)
 %
 % Synchronises the slice-number edit box and slider of this image document
 % with the current z-slice stored in the model, then redraws the image.
 %
 % Called automatically when any code fires:
-%   notify(obj.mibModel, 'SliceChanged');
+% notify(obj.mibModel, 'SliceChanged');
 %
 % The method guards against processing changes that belong to a different
 % document in split-panel mode (selectedSet ~= setOfDatasetsIndex).
@@ -15,19 +17,19 @@ function listener_sliceChanged(obj)
 % sliceNumber_Callback or sliceNumberSlider_Callback — those callbacks
 % fire 'SliceChanged' themselves, which would create an infinite loop.
 %
-% Parameters:
+% Input Arguments:
 %   none  (called via @(~,~) obj.listener_sliceChanged())
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-%|
-% @b Examples:
-% @code
-% % wired in setupCallbacks:
-% obj.listeners{end+1} = addlistener(obj.mibModel, 'SliceChanged', ...
-%     @(~,~) obj.listener_sliceChanged());
-% @endcode
+% Usage:
+%   Example 1 - wired in setupCallbacks::
+%
+%     % wired in setupCallbacks:
+%     obj.listeners{end+1} = addlistener(obj.mibModel, 'SliceChanged', ...
+%         @(~,~) obj.listener_sliceChanged());
+%
 
 % Only act for the dataset displayed by this document
 if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end

@@ -1,6 +1,9 @@
 function setSegmentationLayer(obj)
-    % function setSegmentationLayer(obj)
-    % callback for modification of the Segmentation Layer dropdown
+% SETSEGMENTATIONLAYER - callback for modification of the Segmentation Layer dropdown.
+%
+% Syntax:
+%   function setSegmentationLayer(obj)
+%
 
     switch obj.view.handles.T_SegmentationLayer.Value
         case {'focalLossLayer', 'dicePixelCustomClassificationLayer'}

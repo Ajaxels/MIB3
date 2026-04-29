@@ -1,9 +1,10 @@
 function restrictMask_Callback(obj)
-% function restrictMask_Callback(obj)
-% callbacks for press of obj.handles.restrictMask in
-% obj.handles.panels.segmentation panel. Restrict selection to the mask layer
+% RESTRICTMASK_CALLBACK - callbacks for press of obj.handles.restrictMask in.
 %
-% Parameters:
+% Syntax:
+%   function restrictMask_Callback(obj)
+%
+% obj.handles.panels.segmentation panel. Restrict selection to the mask layer
 
 arguments (Input)
     obj controllers.MibSegmentation

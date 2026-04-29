@@ -1,22 +1,27 @@
 function thresholdingPanel_Callback(obj, hWidget, hData)
-% thresholdingPanel_Callback(obj, hWidget, hData)
+% THRESHOLDINGPANEL_CALLBACK - thresholdingPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function thresholdingPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->Black and white thresholding tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag -> identifier the widget, used when the same operation is called from menu
-% 'thresholdAdaptive' -> turn on the adaptive thresholding
-% 'thresholdType' -> choose the thresholding type
-% 'thresholdInvert' -> invert image for thresholding using the adaptive mode
-% 'threshold3D' -> apply thresholding in 3D
-% 'threshold4D' -> apply threhsolding in 4D
-% 'thresholdLow' -> define the low threshold value using the slider
-% 'thresholdHigh' -> define the low threshold value using the slider
-% 'thresholdLowValue' -> define the low threshold value using the numeric edit field
-% 'thresholdHighValue' -> define the high threshold value using the numeric edit field
-% 'threshold' -> apply the thresholding operation
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag identifier the widget, used when the same operation is called from menu
+%     'thresholdAdaptive' turn on the adaptive thresholding
+%     'thresholdType' choose the thresholding type
+%     'thresholdInvert' invert image for thresholding using the adaptive mode
+%     'threshold3D' apply thresholding in 3D
+%     'threshold4D' apply threhsolding in 4D
+%     'thresholdLow' define the low threshold value using the slider
+%     'thresholdHigh' define the low threshold value using the slider
+%     'thresholdLowValue' define the low threshold value using the numeric edit field
+%     'thresholdHighValue' define the high threshold value using the numeric edit field
+%     'threshold' apply the thresholding operation
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

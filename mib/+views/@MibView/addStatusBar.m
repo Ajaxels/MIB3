@@ -1,6 +1,9 @@
 function statusHandles = addStatusBar(obj)
-% function statusHandles = addStatusBar(obj)
-% Add status bar to MIB as matlab.ui.internal.statusbar.StatusBar()
+% ADDSTATUSBAR - Add status bar to MIB as matlab.ui.internal.statusbar.StatusBar().
+%
+% Syntax:
+%   function statusHandles = addStatusBar(obj)
+%
 % stored in statusHandles.*
 
 arguments (Input)

@@ -1,33 +1,50 @@
 function exportDataset(obj, layerType, BatchOptIn)
-% function exportDataset(obj, layerType, BatchOptIn)
-% Export image, mask, or labels layer to the MATLAB main workspace.
+% EXPORTDATASET - Export image, mask, or labels layer to the MATLAB main workspace.
 %
-% Parameters:
-% layerType: a string specifying which layer to export
-% @li 'image' - export image data with metadata (and colormap if indexed)
-% @li 'mask' - export mask layer as a uint8 array
-% @li 'model' - export model (labels) as a struct with material info
-% BatchOptIn: [@em optional] a structure for batch processing mode; when NaN
-%   returns a structure with default options via "SyncBatch" event
-% @li .LayerType - cell string, {'image'|'mask'|'model'} layer to export
-% @li .ImageVariable - string, [image only] workspace variable name for image data, default 'I'
-% @li .ColormapVariable - string, [image only, indexed color] variable name for colormap, default 'cmap'
-% @li .MaskVariable - string, [mask only] workspace variable name for mask, default 'M'
-% @li .LabelsVariable - string, [model only] workspace variable name for labels struct, default 'O'
-% @li .MaterialIndex - string, [model only] index of material to export; empty = whole model
-% @li .MaterialOutputIndex - string, [model only] value assigned to single material export, default '1'
-% @li .showWaitbar - logical, show or not the waitbar
-% @li .id - [@em optional] index of the dataset
-
-%|
-% @b Examples:
-% @code obj.mibModel.exportDataset('image'); // export image interactively @endcode
-% @code obj.mibModel.exportDataset('mask');  // export mask interactively @endcode
-% @code
-% BatchOpt.MaskVariable = 'myMask';
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.exportDataset('mask', BatchOpt); // export mask in batch mode
-% @endcode
+% Syntax:
+%   function exportDataset(obj, layerType, BatchOptIn)
+%
+% Input Arguments:
+%   - **layerType** — a string specifying which layer to export:
+%
+%     - ``'image'`` — export image data with metadata (and colormap if indexed)
+%     - ``'mask'`` — export mask layer as a uint8 array
+%     - ``'model'`` — export model (labels) as a struct with material info
+%
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%     returns a structure with default options via "SyncBatch" event:
+%
+%     - ``.LayerType`` — cell string, ``{'image'|'mask'|'model'}`` layer to export
+%     - ``.ImageVariable`` — string, [image only] workspace variable name for image data, default ``'I'``
+%     - ``.ColormapVariable`` — string, [image only, indexed color] variable name for colormap, default ``'cmap'``
+%     - ``.MaskVariable`` — string, [mask only] workspace variable name for mask, default ``'M'``
+%     - ``.LabelsVariable`` — string, [model only] workspace variable name for labels struct, default ``'O'``
+%     - ``.MaterialIndex`` — string, [model only] index of material to export; empty = whole model
+%     - ``.MaterialOutputIndex`` — string, [model only] value assigned to single material export, default ``'1'``
+%     - ``.showWaitbar`` — logical, show or not the waitbar
+%     - ``.id`` — *(optional)* index of the dataset
+%
+% Usage:
+%   **Example 1** — export image interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.exportDataset('image');
+%
+%   **Example 2** — export mask interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.exportDataset('mask');
+%
+%   **Example 3** — export mask in batch mode
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.MaskVariable = 'myMask';
+%      BatchOpt.showWaitbar = false;
+%      obj.mibModel.exportDataset('mask', BatchOpt);
+%
 
 % Updates
 %

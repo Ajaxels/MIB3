@@ -1,27 +1,33 @@
 function fontSizeUpdate(hFig, Font)
-% function fontSizeUpdate(hFig, fontSize)
-% Update font size for text widgets
+% FONTSIZEUPDATE - Update font size and family for all text widgets in a figure.
 %
-% Parameters:
-% hFig: handle to the figure
-% Font: - structure with font settings, possible fields
-%   .FontName -> 'Arial'
-%   .FontWeight -> 'normal'
-%   .FontAngle -> 'normal'
-%   .FontUnits -> 'points'
-%   .FontSize -> 10
+% Syntax:
 %
-% Return values:
-% 
-
-%| 
-% @b Examples:
-% @code 
-% if obj.view.handles.UserInterfacePanel.FontSize ~= Font.FontSize ...
-%        || ~strcmp(obj.view.handles.UserInterfacePanel.FontName, Font.FontName)
-%   utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);     // update the font properties from a child controller  
-% end
-% @endcode
+%   .. code-block:: matlab
+%
+%      fontSizeUpdate(hFig, Font)
+%
+% Input Arguments:
+%   - **hFig** — handle to the figure whose widgets should be updated
+%   - **Font** — struct with font settings:
+%
+%     - ``.FontName``   — [char] font name (e.g. ``'Arial'``)
+%     - ``.FontWeight`` — [char] ``'normal'`` or ``'bold'``
+%     - ``.FontAngle``  — [char] ``'normal'`` or ``'italic'``
+%     - ``.FontUnits``  — [char] units string (e.g. ``'points'``)
+%     - ``.FontSize``   — [numeric] font size in the given units
+%
+% Usage:
+%
+%   **Example 1** — update font from a child controller when font preferences change
+%
+%   .. code-block:: matlab
+%
+%      if obj.view.handles.UserInterfacePanel.FontSize ~= Font.FontSize ...
+%             || ~strcmp(obj.view.handles.UserInterfacePanel.FontName, Font.FontName)
+%          utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);
+%      end
+%
 
 % Updates
 % 
@@ -94,17 +100,20 @@ end
 end
 
 function processChildren(h, Font)
-% function processChildren(h, Font)
-% iterate children of h and update their font name and size
+% PROCESSCHILDREN - iterate children of h and update their font name and size.
 %
-% Parameters:
-% h: handle to a child
-% Font: - structure with font settings, possible fields
-%   .FontName -> 'Arial'
-%   .FontWeight -> 'normal'
-%   .FontAngle -> 'normal'
-%   .FontUnits -> 'points'
-%   .FontSize -> 10
+% Syntax:
+%   function processChildren(h, Font)
+%
+% Input Arguments:
+%   - **h** — handle to a child
+%   - **Font** — - structure with font settings, possible fields
+%     .FontName 'Arial'
+%     .FontWeight 'normal'
+%     .FontAngle 'normal'
+%     .FontUnits 'points'
+%     .FontSize 10
+%
 
 children = h.Children;
 for i=1:numel(children)

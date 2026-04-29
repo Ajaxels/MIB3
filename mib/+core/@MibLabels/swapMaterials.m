@@ -1,20 +1,26 @@
 function swapMaterials(obj, index1, index2)
-% function swapMaterials(obj, index1, index2)
-% Swap material names and colours between two positions
+% SWAPMATERIALS - Swap material names and colours between two positions.
+%
+% Syntax:
+%   function swapMaterials(obj, index1, index2)
 %
 % The caller is responsible for swapping the corresponding pixel values
 % beforehand (see MibDataset.swapMaterials).
 %
-% Parameters:
-% index1: double, 1-based index of the first material.
-% index2: double, 1-based index of the second material.
+% Input Arguments:
+%   - **index1** — double, 1-based index of the first material.
+%   - **index2** — double, 1-based index of the second material.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.labels.swapMaterials(1, 3);  // swap materials 1 and 3 @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.swapMaterials(1, 3);% swap materials 1 and 3
+%
 
 % Updates
 %

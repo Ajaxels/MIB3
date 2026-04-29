@@ -1,6 +1,8 @@
 function dataset = getData(obj, layerType, orient, colChannel, options)
-% function dataset = getData(obj, layerType, orient, colChannel, options)
-% Override of MibImage.getData for virtual (disk-resident) datasets.
+% GETDATA - Override of MibImage.getData for virtual (disk-resident) datasets.
+%
+% Syntax:
+%   function dataset = getData(obj, layerType, orient, colChannel, options)
 %
 % Dispatches to getDataZarr when a pyramid is present, otherwise to
 % getDataVirt (BioFormats / HDF5 virtual stack).
@@ -9,27 +11,41 @@ function dataset = getData(obj, layerType, orient, colChannel, options)
 % 'labels', 'mask', 'selection' or 'everything' return a zero-filled
 % array of the appropriate size.
 %
-% Parameters:
-% layerType: char, layer to retrieve — only 'image' is functional;
-%            'labels', 'mask', 'selection', 'everything' return zeros
-% orient: [@em optional, can be [], default = 3 (YX)]
-%   @li 1 — xz view: [y,x,z,c,t] -> [x,z,y,c,t]
-%   @li 2 — yz view: [y,x,z,c,t] -> [y,z,x,c,t]
-%   @li 3 — yx view: [y,x,z,c,t]  (default, no permutation)
-% colChannel: [@em optional, can be []], vector of colour indices;
-%             [] means all channels
-% options: [@em optional], struct with optional fields:
-%   @li .y, .x, .z, .t    — [min, max] coordinate ranges
-%   @li .level            — pyramid level index (for zarr, default 1)
-%   @li .magFactor        — magnification factor (for zarr, default 1)
-%   @li .showWaitbar      — show / suppress the progress waitbar
+% Input Arguments:
+%   - **layerType** — char, layer to retrieve — only 'image' is functional;
+%     'labels', 'mask', 'selection', 'everything' return zeros
+%   - **orient** — *(optional)*, can be ``[]``; default ``3`` (YX):
 %
-% Return values:
-% dataset: 5D array [y, x, z, c, t] (MIB3 convention)
-%|
-% @b Examples:
-% @code dataset = obj.getData([], [], [], struct());     // full YX image @endcode
-% @code dataset = obj.getData('image', 3, 2, options);  // channel 2, YX view @endcode
+%     - ``1`` — XZ view: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` — YZ view: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` — YX view: ``[y,x,z,c,t]`` *(default, no permutation)*
+%   - **colChannel** — [*optional,* can be []], vector of colour indices;
+%     [] means all channels
+%   - **options** — *(optional)*, struct with optional fields:
+%
+%     - ``.y``, ``.x``, ``.z``, ``.t``    — [min, max] coordinate ranges
+%     - ``.level``            — pyramid level index (for zarr, default 1)
+%     - ``.magFactor``        — magnification factor (for zarr, default 1)
+%     - ``.showWaitbar``      — show / suppress the progress waitbar
+%
+% Output Arguments:
+%   - **dataset** — 5D array [y, x, z, c, t] (MIB3 convention)
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getData([], [], [], struct());% full YX image
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getData('image', 3, 2, options);% channel 2, YX view
+%
 
 %% Updates
 %

@@ -1,6 +1,8 @@
 function renameMaterial(obj, index, newName)
-% function renameMaterial(obj, index, newName)
-% Rename one or all materials in the model metadata
+% RENAMEMATERIAL - Rename one or all materials in the model metadata.
+%
+% Syntax:
+%   function renameMaterial(obj, index, newName)
 %
 % For small models (maxMaterials < 256) the material name at position
 % index is replaced with newName.  When index is 0, all materials are
@@ -9,20 +11,30 @@ function renameMaterial(obj, index, newName)
 % For large models (maxMaterials >= 256) the name is set at the given
 % index; the caller is responsible for supplying a numeric string.
 %
-% Parameters:
-% index: double, 1-based material index to rename.  Use 0 to rename all
-%   materials at once (newName must then be a comma-separated list of
-%   names matching the number of existing materials).
-% newName: char, new material name (single name) or comma-separated list
-%   (when index == 0).
+% Input Arguments:
+%   - **index** — double, 1-based material index to rename.  Use 0 to rename all
+%     materials at once (newName must then be a comma-separated list of
+%     names matching the number of existing materials).
+%   - **newName** — char, new material name (single name) or comma-separated list
+%     (when index == 0).
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.labels.renameMaterial(3, 'Nucleus');   // rename material 3 @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.labels.renameMaterial(0, 'A,B,C');     // rename all three materials @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.renameMaterial(3, 'Nucleus');% rename material 3
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.labels.renameMaterial(0, 'A,B,C');% rename all three materials
+%
 
 % Updates
 %

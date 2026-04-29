@@ -1,13 +1,17 @@
 function splitAtNode(obj, x, y, z, orientation)
-% function splitAtNode(obj, x, y, z, orientation)
-% split tree at the node that is closest to the point with coordinates x, y, z
+% SPLITATNODE - split tree at the node that is closest to the point with coordinates x, y, z.
+%
+% Syntax:
+%   function splitAtNode(obj, x, y, z, orientation)
+%
 % the node and its edges will be removed
 %
-% Parameters:
-% x: x coordinate of a point next to the node
-% y: y coordinate of a point next to the node
-% z: z coordinate of a point next to the node
-% orientation: [@em optional] a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+% Input Arguments:
+%   - **x** — x coordinate of a point next to the node
+%   - **y** — y coordinate of a point next to the node
+%   - **z** — z coordinate of a point next to the node
+%   - **orientation** — *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+%
 
 if nargin < 5; orientation = 3; end
 

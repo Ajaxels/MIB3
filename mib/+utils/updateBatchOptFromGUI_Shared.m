@@ -1,28 +1,32 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function BatchOpt = updateBatchOptFromGUI_Shared(BatchOpt, hObject)
-% function BatchOpt = updateBatchOptFromGUI_Shared(BatchOpt, hObject)
-% a common function used by all tools compatible with the Batch mode to
-% update BatchOpt structure fields from GUI widgets
+% UPDATEBATCHOPTFROMGUI_SHARED - Update a BatchOpt struct field from a GUI widget value.
 %
-% Parameters
-% BatchOpt: current structure with BatchOpt settings
-% hObject: handle to particular GUI object that should update corresponding
-% field in the BatchOpt structure
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt = updateBatchOptFromGUI_Shared(BatchOpt, hObject)
+%
+% Used by all Batch-mode-compatible tools to synchronise a single widget
+% change into the corresponding BatchOpt field.  Handles edit fields,
+% checkboxes, dropdowns, radio button groups, tab groups, spinners, and
+% numeric edit fields.
+%
+% Input Arguments:
+%   - **BatchOpt** — current BatchOpt struct for the controller
+%   - **hObject** — handle to the GUI widget that triggered the change
+%
+% Output Arguments:
+%   - **BatchOpt** — updated BatchOpt struct
+%
+% Usage:
+%
+%   **Example 1** — wire a widget callback to keep BatchOpt in sync
+%
+%   .. code-block:: matlab
+%
+%      obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, src);
+%
 
 switch hObject.Type
     case 'uibuttongroup'

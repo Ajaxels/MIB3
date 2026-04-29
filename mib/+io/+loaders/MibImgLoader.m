@@ -1,36 +1,39 @@
 classdef MibImgLoader < io.loaders.BaseImageLoader
-    % classdef MibImgLoader
-    % Loader for mibImg files (MAT-files with specific structure), based on
-    % io.loaders.BaseImageLoader base class
-    %
-    % This loader handles .mibImg files which are standard MATLAB .mat files
-    % containing a 'res' structure with image data and metadata.
+% MIBIMGLOADER - Loader for mibImg files (MAT-files with specific structure), based on.
+%
+% io.loaders.BaseImageLoader base class
+%
+% This loader handles .mibImg files which are standard MATLAB .mat files
+% containing a 'res' structure with image data and metadata.
 
     methods
         function obj = MibImgLoader(options)
-            % function obj = MibImgLoader(options)
-            % Constructor for MibImgLoader class
+            % MIBIMGLOADER - Constructor for MibImgLoader class.
             %
-            % Parameters:
-            %   options: [@em optional, struct] options structure
-            %     @li .waitbar - [logical] show or not the waitbar
-            %     @li .mibPath - [char] path to MIB directory
-            %     @li .customSections - [logical] load custom sections only
-            %     @li .customSectionsSettings - [struct] custom section parameters
-            %     @li .imgStretch - [logical] stretch uint32 images to uint16
-            %     @li .silentMode - [logical] do not ask user questions
-            %     @li .verbose - [logical] show timing information
-            %     @li .Font - [struct] font settings for dialogs
-            %     @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            % Syntax:
+            %   function obj = MibImgLoader(options)
             %
-            % Return values:
-            %   obj: instance of the MibImgLoader class
+            % Input Arguments:
+            %   - **options** — [*optional,* struct] options structure
+            %   - .waitbar - [logical] show or not the waitbar
+            %   - .mibPath - [char] path to MIB directory
+            %   - .customSections - [logical] load custom sections only
+            %   - .customSectionsSettings - [struct] custom section parameters
+            %   - .imgStretch - [logical] stretch uint32 images to uint16
+            %   - .silentMode - [logical] do not ask user questions
+            %   - .verbose - [logical] show timing information
+            %   - .Font - [struct] font settings for dialogs
+            %   - .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
             %
-            % Example:
-            %   @code
-            %   options.waitbar = true;
-            %   loader = io.loaders.MibImgLoader(options);
-            %   @endcode
+            % Output Arguments:
+            %   - **obj** — instance of the MibImgLoader class
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %       options.waitbar = true;
+            %       loader = io.loaders.MibImgLoader(options);
+            %
 
             obj.Options = struct();
             obj.Options.Font = struct('FontName', 'Helvetica', 'FontSize', 12);
@@ -41,43 +44,46 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for mibImg files
+            % LOADMETADATA - Load metadata for mibImg files.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
             %
             % This method inspects .mibImg (MAT) files to extract dataset metadata.
             % It reads the 'res' structure to determine dimensions, data type, and
             % dimension ordering.
             %
-            % Parameters:
-            %   filenames: cell array with filenames of mibImg files
-            %   options: [@em struct] options for metadata loading
-            %     @li .waitbar - [logical] show or not the waitbar
-            %     @li .customSections - [logical] load part of the dataset
-            %     @li .Font - [struct] font settings for dialogs
+            % Input Arguments:
+            %   - **filenames** — cell array with filenames of mibImg files
+            %   - **options** — [*struct]* options for metadata loading
+            %   - .waitbar - [logical] show or not the waitbar
+            %   - .customSections - [logical] load part of the dataset
+            %   - .Font - [struct] font settings for dialogs
             %
-            % Return values:
-            %   imginfo: dictionary with image metadata
-            %     @li "Height" - image height in pixels
-            %     @li "Width" - image width in pixels
-            %     @li "Colors" - number of color channels
-            %     @li "Depth" - number of z-slices
-            %     @li "Time" - number of time points
-            %     @li "imgClass" - image class (uint8, uint16, etc.)
-            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
-            %     @li "ImageDescription" - description with BoundingBox info
-            %     @li "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
-            %     @li "Levels" - number of pyramid levels (for BDV only)
-            %     @li "ReturnedLevel" - selected pyramid level (for BDV only)
-            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
-            %     @li other format-specific metadata fields
-            %   files: structure array with file information
+            % Output Arguments:
+            %   - **imginfo** — dictionary with image metadata
+            %   - "Height" - image height in pixels
+            %   - "Width" - image width in pixels
+            %   - "Colors" - number of color channels
+            %   - "Depth" - number of z-slices
+            %   - "Time" - number of time points
+            %   - "imgClass" - image class (uint8, uint16, etc.)
+            %   - "ColorType" - 'grayscale', 'truecolor', or 'indexed'
+            %   - "ImageDescription" - description with BoundingBox info
+            %   - "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
+            %   - "Levels" - number of pyramid levels (for BDV only)
+            %   - "ReturnedLevel" - selected pyramid level (for BDV only)
+            %   - "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
+            %   - other format-specific metadata fields
+            %   - **files** — structure array with file information
             %
-            % Example:
-            %   @code
-            %   loader = io.loaders.MibImgLoader();
-            %   filenames = {'dataset.mibImg'};
-            %   [imginfo, files] = loader.loadMetadata(filenames, options);
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       loader = io.loaders.MibImgLoader();
+            %       filenames = {'dataset.mibImg'};
+            %       [imginfo, files] = loader.loadMetadata(filenames, options);
+            %
 
             % Merge constructor options with runtime options
             if nargin < 3; options = obj.Options; end
@@ -225,20 +231,23 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Load image data from mibImg files
+            % LOADIMAGES - Load image data from mibImg files.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
             %
             % This method loads the 'res' structure and extracts the image data,
             % handling dimension permutation if necessary (to ensure YXCZT order).
             %
-            % Parameters:
-            %   files: structure array from loadMetadata
-            %   imginfo: dictionary from loadMetadata
-            %   options: [@em struct] options for image loading
+            % Input Arguments:
+            %   - **files** — structure array from loadMetadata
+            %   - **imginfo** — dictionary from loadMetadata
+            %   - **options** — [*struct]* options for image loading
             %
-            % Return values:
-            %   img: loaded image dataset
-            %   imginfo: updated dictionary
+            % Output Arguments:
+            %   - **img** — loaded image dataset
+            %   - **imginfo** — updated dictionary
+            %
 
             % Merge constructor options with runtime options
             if nargin < 4; options = obj.Options; end

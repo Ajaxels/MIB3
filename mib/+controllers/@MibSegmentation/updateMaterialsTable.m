@@ -1,22 +1,24 @@
 function updateMaterialsTable(obj, position)
-% function updateMaterialsTable(obj, position)
-% Update materials table with colors and formatting
+% UPDATEMATERIALSTABLE - Update materials table with colors and formatting.
+%
+% Syntax:
+%   function updateMaterialsTable(obj, position)
 %
 % Description:
-%   Updates the materials table with current model data including:
-%   - Material colors as background
-%   - Font colors based on selection mode
-%   - Show/hide checkboxes
-%   - Special rows for Mask and Exterior
+% Updates the materials table with current model data including:
+% - Material colors as background
+% - Font colors based on selection mode
+% - Show/hide checkboxes
+% - Special rows for Mask and Exterior
 %
-% Parameters:
+% Input Arguments:
 %   obj - Controller object with obj.mibModel and view
 %   position - Scroll position control:
-%              [] - Keep current scroll position (default)
-%              number - Scroll to specific row index
-%              Inf - Scroll to the end of the table
+%   [] - Keep current scroll position (default)
+%   number - Scroll to specific row index
+%   Inf - Scroll to the end of the table
 %
-% Examples:
+% Usage:
 %   % Update table and keep current position
 %   obj.updateMaterialsTable([]);
 %
@@ -25,6 +27,7 @@ function updateMaterialsTable(obj, position)
 %
 %   % Update table and scroll to bottom
 %   obj.updateMaterialsTable(Inf);
+%
 
 if nargin < 2; position = []; end
 

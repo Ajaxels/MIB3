@@ -1,19 +1,30 @@
 function setAxesLimits(obj, axesX, axesY, id)
-% function setAxesLimits(obj, axesX, axesY, id)
-% set axes limits for the currently shown or id dataset
+% SETAXESLIMITS - set axes limits for the currently shown or id dataset.
 %
-% Parameters:
-% id: [@b optional], id of the dataset, otherwise the currently shown
-% dataset (obj.id)
+% Syntax:
+%   function setAxesLimits(obj, axesX, axesY, id)
 %
-% Return values:
-% axesX: a vector [min, max] for X
-% axesY: a vector [min, max] for Y
-
-%| 
-% @b Examples:
-% @code [axesX, axesY] = obj.mibModel.setAxesLimits([1 512],  [1 512]);     // call from mibController: set axes limits for the currently shown dataset @endcode
-% @code [axesX, axesY] = obj.mibModel.setAxesLimits([1 512],  [1 512], 2);     // call from mibController: set axes limits for dataset 2 @endcode
+% Input Arguments:
+%   - **id** — *(optional)* id of the dataset, otherwise the currently shown
+%     dataset (obj.id)
+%
+% Output Arguments:
+%   - **axesX** — a vector [min, max] for X
+%   - **axesY** — a vector [min, max] for Y
+%
+% Usage:
+%   **Example 1** — set axes limits for the currently shown dataset
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.setAxesLimits([1 512], [1 512]);
+%
+%   **Example 2** — set axes limits for dataset 2
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.setAxesLimits([1 512], [1 512], 2);
+%
 
 % Updates
 % 

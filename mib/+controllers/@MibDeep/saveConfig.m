@@ -1,9 +1,12 @@
 function saveConfig(obj, configName)
-    % function saveConfig(obj, filename)
-    % save Deep MIB configuration to a file
-    %
-    % Parameters:
-    % configName: [optional] string, full filename to the config file
+% SAVECONFIG - save Deep MIB configuration to a file.
+%
+% Syntax:
+%   function saveConfig(obj, configName)
+%
+% Input Arguments:
+%   - **configName** — [optional] string, full filename to the config file
+%
 
     if nargin < 2
         [projectPath, file] = fileparts(obj.BatchOpt.NetworkFilename);

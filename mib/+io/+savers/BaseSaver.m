@@ -1,55 +1,54 @@
 classdef (Abstract) BaseSaver < handle
-    % classdef BaseSaver < handle
-    % Abstract base class for all MIB3 image format savers.
-    %
-    % This class defines the standard interface that every concrete saver
-    % must implement, and provides protected utility methods shared across
-    % all formats.  The design mirrors io.loaders.BaseImageLoader so that
-    % the loading and saving layers are symmetric.
-    %
-    % DATA CONVENTION
-    %   All data passed to save() uses the MIB3 native dimension order:
-    %       data = [Height, Width, Depth, Colors, Time]  (5-D)
-    %   Each saver is responsible for any permutation required by the
-    %   underlying file-format library (e.g. imwrite expects [H W C D]).
-    %
-    % METADATA CONVENTION
-    %   metadata is a plain struct populated by MibImage.save() or
-    %   MibLabels.save() from the object's own properties.  MibDataset
-    %   additionally injects .pixSize before delegating.
-    %   Required fields:
-    %     .filename    — (char) source image filename
-    %     .colorType   — (char) 'grayscale' | 'multichannel' | 'indexed'
-    %     .lutColors   — (double [C x 3]) per-channel LUT, values 0..1
-    %     .dataClass   — (char) 'uint8' | 'uint16' | 'uint32' | ...
-    %     .maxInt      — (double) maximum representable intensity
-    %     .sliceName   — (cell of char) per-slice source filenames
-    %   Optional fields injected by MibDataset:
-    %     .pixSize       — struct {.x .y .z .t .units .tunits}
-    %     .boundingBox   — [xmin xmax ymin ymax zmin zmax]
-    %     .imageDescription — (char) full ImageDescription tag
-    %     .xResolution   — scalar pixels/unit horizontal
-    %     .yResolution   — scalar pixels/unit vertical
-    %   Label-specific fields injected by MibLabels.save():
-    %     .materialNames  — cell array of material name strings
-    %     .materialColors — [M x 3] per-material RGB (0..1)
-    %     .labelsVariable — (char) variable name used inside .model/.mat
-    %   Mask-specific fields injected by MibDataset.save():
-    %     .maskFilename  — (char) mask output filename
-    %     .maskColor     — [1 x 3] mask overlay colour (0..1)
-    %
-    % USAGE (from user scripts)
-    %   The preferred entry points are the high-level methods:
-    %     core.MibImage.save(filename, options)
-    %     core.MibDataset.save(layerType, filename, options)
-    %     models.MibModel.save(layerType, filename, BatchOptIn)
-    %
-    %   Direct use of a saver is possible for advanced workflows:
-    %     saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
-    %     fnOut = saver.save(data, metadata, '/tmp/out.tif', options);
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.loaders.BaseImageLoader
+% UNKNOWN - Abstract base class for all MIB3 image format savers.
+%
+% This class defines the standard interface that every concrete saver
+% must implement, and provides protected utility methods shared across
+% all formats.  The design mirrors io.loaders.BaseImageLoader so that
+% the loading and saving layers are symmetric.
+%
+% DATA CONVENTION
+% All data passed to save() uses the MIB3 native dimension order:
+% data = [Height, Width, Depth, Colors, Time]  (5-D)
+% Each saver is responsible for any permutation required by the
+% underlying file-format library (e.g. imwrite expects [H W C D]).
+%
+% METADATA CONVENTION
+% metadata is a plain struct populated by MibImage.save() or
+% MibLabels.save() from the object's own properties.  MibDataset
+% additionally injects .pixSize before delegating.
+% Required fields:
+% .filename    — (char) source image filename
+% .colorType   — (char) 'grayscale' | 'multichannel' | 'indexed'
+% .lutColors   — (double [C x 3]) per-channel LUT, values 0..1
+% .dataClass   — (char) 'uint8' | 'uint16' | 'uint32' | ...
+% .maxInt      — (double) maximum representable intensity
+% .sliceName   — (cell of char) per-slice source filenames
+% Optional fields injected by MibDataset:
+% .pixSize       — struct {.x .y .z .t .units .tunits}
+% .boundingBox   — [xmin xmax ymin ymax zmin zmax]
+% .imageDescription — (char) full ImageDescription tag
+% .xResolution   — scalar pixels/unit horizontal
+% .yResolution   — scalar pixels/unit vertical
+% Label-specific fields injected by MibLabels.save():
+% .materialNames  — cell array of material name strings
+% .materialColors — [M x 3] per-material RGB (0..1)
+% .labelsVariable — (char) variable name used inside .model/.mat
+% Mask-specific fields injected by MibDataset.save():
+% .maskFilename  — (char) mask output filename
+% .maskColor     — [1 x 3] mask overlay colour (0..1)
+%
+% USAGE (from user scripts)
+% The preferred entry points are the high-level methods:
+% core.MibImage.save(filename, options)
+% core.MibDataset.save(layerType, filename, options)
+% models.MibModel.save(layerType, filename, BatchOptIn)
+%
+% Direct use of a saver is possible for advanced workflows:
+% saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
+% fnOut = saver.save(data, metadata, '/tmp/out.tif', options);
+%
+% SEE ALSO
+% io.SaverFactory, io.loaders.BaseImageLoader
 
     properties
         Options struct   % Options struct passed during construction (may be empty)
@@ -85,7 +84,7 @@ classdef (Abstract) BaseSaver < handle
         %              buildOutputPath() to assemble the path.
         %   options  — (struct) runtime options:
         %     .Format           — (char) format string matching SaverFactory
-        %                         registry, e.g. 'TIF format uncompressed (*.tif)'
+        %                         registry, e.g. 'TIF format uncompressed (``*.tif``)'
         %     .Saving3DPolicy   — (char) '3D stack' | '2D sequence'
         %     .showWaitbar      — (logical) display progress bar
         %     .silent           — (logical) suppress all dialogs
@@ -104,8 +103,8 @@ classdef (Abstract) BaseSaver < handle
         %
         % Example:
         %   @code
-        %   saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
-        %   opts.Format         = 'TIF format uncompressed (*.tif)';
+        %   saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
+        %   opts.Format         = 'TIF format uncompressed (``*.tif``)';
         %   opts.Saving3DPolicy = '3D stack';
         %   opts.showWaitbar    = false;
         %   opts.silent         = true;
@@ -132,14 +131,14 @@ classdef (Abstract) BaseSaver < handle
         %
         % Return values:
         %   formats — (cell of char) format strings, e.g.
-        %             {'TIF format uncompressed (*.tif)',
-        %              'TIF format LZW compression (*.tif)'}
+        %             {'TIF format uncompressed (``*.tif``)',
+        %              'TIF format LZW compression (``*.tif``)'}
         %
         % Example:
         %   @code
         %   saver   = io.savers.TiffSaver();
         %   formats = saver.getSupportedFormats();
-        %   % formats{1} == 'TIF format uncompressed (*.tif)'
+        %   % formats{1} == 'TIF format uncompressed (``*.tif``)'
         %   @endcode
     end
 
@@ -149,8 +148,11 @@ classdef (Abstract) BaseSaver < handle
     methods (Access = protected)
 
         function initBaseProps(obj, options)
-            % function initBaseProps(obj, options)
-            % Extract mibPath and ParentFigure from options into dedicated
+            % INITBASEPROPS - Extract mibPath and ParentFigure from options into dedicated.
+            %
+            % Syntax:
+            %   function initBaseProps(obj, options)
+            %
             % properties.  Call at the end of every concrete saver constructor.
             if nargin < 2 || isempty(options); return; end
             if isfield(options, 'mibPath') && ~isempty(options.mibPath)
@@ -165,8 +167,11 @@ classdef (Abstract) BaseSaver < handle
         end
 
         function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
-            % function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
-            % Create a uiprogressdlg attached to obj.ParentFigure, or return []
+            % CREATEPROGRESSDIALOG - Create a uiprogressdlg attached to obj.ParentFigure, or return [].
+            %
+            % Syntax:
+            %   function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            %
             % when no valid parent is available (standalone / headless use).
             % All wb access by callers must be guarded with  if ~isempty(wb).
             if nargin < 4; cancelable    = false; end
@@ -206,27 +211,30 @@ classdef (Abstract) BaseSaver < handle
         end
 
         function fullpath = buildOutputPath(~, destDir, fname)
-            % function fullpath = buildOutputPath(~, destDir, fname)
-            % Combine a destination directory and a filename into a full path.
+            % BUILDOUTPUTPATH - Combine a destination directory and a filename into a full path.
+            %
+            % Syntax:
+            %   function fullpath = buildOutputPath(~, destDir, fname)
             %
             % If destDir is empty the filename is returned unchanged (useful
             % when the caller already embedded the directory in fname).
             %
-            % Parameters:
+            % Input Arguments:
             %   destDir — (char) directory portion; may be empty ('')
             %   fname   — (char) filename, with or without leading directory
             %
-            % Return values:
+            % Output Arguments:
             %   fullpath — (char) combined path
             %
-            % Example:
-            %   @code
-            %   p = obj.buildOutputPath('/data/out', 'stack.tif');
-            %   % p == '/data/out/stack.tif'
+            % Usage:
+            %   Example 1::
             %
-            %   p = obj.buildOutputPath('', '/already/full/path.tif');
-            %   % p == '/already/full/path.tif'
-            %   @endcode
+            %       p = obj.buildOutputPath('/data/out', 'stack.tif');
+            %       % p == '/data/out/stack.tif'
+            %
+            %       p = obj.buildOutputPath('', '/already/full/path.tif');
+            %       % p == '/already/full/path.tif'
+            %
             if isempty(destDir)
                 fullpath = fname;
             else
@@ -235,58 +243,67 @@ classdef (Abstract) BaseSaver < handle
         end
 
         function imgOut = permuteMib3ToHWCD(~, data, t)
-            % function imgOut = permuteMib3ToHWCD(~, data, t)
-            % Convert MIB3 native layout [H,W,D,C,T] to legacy [H,W,C,D]
+            % PERMUTEMIB3TOHWCD - Convert MIB3 native layout [H,W,D,C,T] to legacy [H,W,C,D].
+            %
+            % Syntax:
+            %   function imgOut = permuteMib3ToHWCD(~, data, t)
+            %
             % for a single time point, as expected by legacy helpers such
             % as the TIFF/PNG/JPG writers ported from MIB2.
             %
-            % Parameters:
+            % Input Arguments:
             %   data — (numeric) full 5-D array [H, W, D, C, T]
             %   t    — (integer) 1-based time index
             %
-            % Return values:
+            % Output Arguments:
             %   imgOut — (numeric) [H, W, C, D] slice for time t
             %
-            % Example:
-            %   @code
-            %   % data is [512 512 10 3 2] (H W D C T)
-            %   slice_t1 = obj.permuteMib3ToHWCD(data, 1);
-            %   % slice_t1 is [512 512 3 10]
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       % data is [512 512 10 3 2] (H W D C T)
+            %       slice_t1 = obj.permuteMib3ToHWCD(data, 1);
+            %       % slice_t1 is [512 512 3 10]
+            %
             imgOut = permute(data(:, :, :, :, t), [1 2 4 3]);  % [H, W, C, D]
         end
 
         function [pathStr, baseName, ext] = splitFilename(~, filename)
-            % function [pathStr, baseName, ext] = splitFilename(~, filename)
-            % Wrapper around fileparts with lower-cased extension.
+            % SPLITFILENAME - Wrapper around fileparts with lower-cased extension.
             %
-            % Parameters:
+            % Syntax:
+            %   function [pathStr, baseName, ext] = splitFilename(~, filename)
+            %
+            % Input Arguments:
             %   filename — (char) full path to decompose
             %
-            % Return values:
+            % Output Arguments:
             %   pathStr  — (char) directory portion
             %   baseName — (char) file stem without extension
             %   ext      — (char) lower-case extension including dot
             %
-            % Example:
-            %   @code
-            %   [p, n, e] = obj.splitFilename('/data/stack.TIF');
-            %   % p == '/data', n == 'stack', e == '.tif'
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       [p, n, e] = obj.splitFilename('/data/stack.TIF');
+            %       % p == '/data', n == 'stack', e == '.tif'
+            %
             [pathStr, baseName, ext] = fileparts(filename);
             ext = lower(ext);
         end
 
         function sliceNames = buildSliceNames(obj, baseName, pathStr, depth, ext, options, metadata)
-            % function sliceNames = buildSliceNames(obj, baseName, pathStr, depth, ext, options, metadata)
-            % Build a cell array of per-slice output filenames for 2D sequences.
+            % BUILDSLICENAMES - Build a cell array of per-slice output filenames for 2D sequences.
+            %
+            % Syntax:
+            %   function sliceNames = buildSliceNames(obj, baseName, pathStr, depth, ext, options, metadata)
             %
             % Respects the options.FilenameGenerator policy:
-            %   'Use original filename' — derives names from metadata.sliceName
-            %                             when available; falls back to sequential
-            %   'Use sequential filename' (default) — generates numbered names
+            % 'Use original filename' — derives names from metadata.sliceName
+            % when available; falls back to sequential
+            % 'Use sequential filename' (default) — generates numbered names
             %
-            % Parameters:
+            % Input Arguments:
             %   baseName — (char) stem used for sequential naming
             %   pathStr  — (char) destination directory
             %   depth    — (integer) number of slices (Z)
@@ -294,16 +311,17 @@ classdef (Abstract) BaseSaver < handle
             %   options  — (struct) must contain .FilenameGenerator (char)
             %   metadata — (struct) may contain .sliceName (cell of char)
             %
-            % Return values:
+            % Output Arguments:
             %   sliceNames — (cell of char) [depth x 1] full output paths
             %
-            % Example:
-            %   @code
-            %   % Sequential naming for 5 slices
-            %   opts.FilenameGenerator = 'Use sequential filename';
-            %   names = obj.buildSliceNames('myStack', '/out', 5, '.png', opts, meta);
-            %   % names == {'/out/myStack_01.png'; ...'/out/myStack_05.png'}
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       % Sequential naming for 5 slices
+            %       opts.FilenameGenerator = 'Use sequential filename';
+            %       names = obj.buildSliceNames('myStack', '/out', 5, '.png', opts, meta);
+            %       % names == {'/out/myStack_01.png'; ...'/out/myStack_05.png'}
+            %
             useOriginal = isfield(options, 'FilenameGenerator') && ...
                 strcmp(options.FilenameGenerator, 'Use original filename') && ...
                 isfield(metadata, 'sliceName') && ...

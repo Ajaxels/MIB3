@@ -1,117 +1,124 @@
 classdef MatlabSaver < io.savers.BaseSaver
-    % classdef MatlabSaver < io.savers.BaseSaver
-    % Saver for MIB native MATLAB-based binary formats.
-    %
-    % Handles all native serialisation formats used by MIB:
-    %
-    %   'Matlab format (*.model)'            — MIB2/MIB3 native segmentation model.
-    %       Variables saved: <modelVariable>, modelMaterialNames,
-    %       modelMaterialColors, BoundingBox, modelVariable, modelType,
-    %       [labelText, labelValue, labelPosition if annotations present]
-    %
-    %   'Matlab format 2D sequence (*.model)' — one .model file per Z-slice;
-    %       useful for very large datasets where a full 3-D .model is too large.
-    %
-    %   'Matlab format for MIB ver. 1 (*.mat)' — legacy format for MIB v1
-    %       compatibility.  Variables: <modelVariable>, material_list,
-    %       color_list, bounding_box, model_var.
-    %
-    %   'Matlab categorical format (*.mibCat)' — saves labels as a MATLAB
-    %       categorical array, 3-D stack or 2-D sequence.
-    %       Variables: imgOut (categorical), imgVariable, options.
-    %
-    %   'Matlab format (*.mask)'             — binary mask in a MAT-file.
-    %       Variable saved: maskImg (logical [H W D]).
-    %
-    % DATA DIMENSIONS
-    %   Input data : [H, W, D, C, T]  — C=1 expected for all Matlab formats
-    %                                    (labels/masks are always single channel)
-    %
-    % METADATA FIELDS USED
-    %   .materialNames  — cell array of material name strings (labels formats)
-    %   .materialColors — [M x 3] material RGB colours (labels formats)
-    %   .labelsVariable — (char) variable name to use inside the .model file,
-    %                     default 'mibModel'
-    %   .modelType      — (integer) model type (e.g. 255, 63)
-    %   .pixSize        — struct with voxel dimensions
-    %   .boundingBox    — [xmin xmax ymin ymax zmin zmax]
-    %   .annotations    — (optional) struct with .labelText, .labelValue,
-    %                     .labelPosition from obj.annotations.getLabels()
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Save a segmentation model (MIB native format)
-    %   saver = io.SaverFactory.create('Matlab format (*.model)');
-    %
-    %   opts.Format      = 'Matlab format (*.model)';
-    %   opts.showWaitbar = true;
-    %   opts.silent      = true;
-    %   opts.overwrite   = true;
-    %
-    %   meta.filename       = 'myImage.tif';
-    %   meta.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
-    %   meta.materialColors = [0 0 1; 0 1 0; 1 0 0];  % R, G, B per material
-    %   meta.labelsVariable = 'mibModel';
-    %   meta.modelType      = 255;        % uint8 labels
-    %   meta.dataClass      = 'uint8';
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-    %   meta.boundingBox    = [0 41.6 0 41.6 0 6];
-    %
-    %   labels = uint8(rand(256,256,30,1,1) * 3);  % values 0,1,2,3
-    %   fnOut = saver.save(labels, meta, '/output/Labels_myImage.model', opts);
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Save mask in native MIB mask format
-    %   saver = io.SaverFactory.create('Matlab format (*.mask)');
-    %
-    %   opts.Format      = 'Matlab format (*.mask)';
-    %   opts.showWaitbar = false;
-    %   opts.overwrite   = true;
-    %
-    %   meta.filename    = 'myImage.tif';
-    %   meta.dataClass   = 'uint8';
-    %   meta.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-    %
-    %   mask = uint8(rand(256,256,30,1,1) > 0.8);  % binary mask
-    %   fnOut = saver.save(mask, meta, '/output/Mask_myImage.mask', opts);
-    %   @endcode
-    %
-    %   @code
-    %   %% 3. Save as categorical format (for deep learning pipelines)
-    %   saver = io.SaverFactory.create('Matlab categorical format (*.mibCat)');
-    %
-    %   opts.Format         = 'Matlab categorical format (*.mibCat)';
-    %   opts.Saving3DPolicy = '3D stack';   % or '2D sequence'
-    %   opts.FilenamePolicy = 'Use existing name';
-    %   opts.showWaitbar    = false;
-    %   opts.overwrite      = true;
-    %
-    %   meta.materialNames  = {'Exterior'; 'Nucleus'; 'Background'};
-    %   meta.materialColors = [0.5 0.5 0.5; 0 0 1; 0 1 0];
-    %   meta.labelsVariable = 'imgOut';
-    %   meta.dataClass      = 'uint8';
-    %   meta.modelType      = 255;
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-    %
-    %   labels = uint8(rand(256,256,30,1,1) * 3);
-    %   fnOut = saver.save(labels, meta, '/output/Labels.mibCat', opts);
-    %   @endcode
-    %
-    %   @code
-    %   %% 4. Via MibModel (recommended for GUI/batch workflows)
-    %   BatchOpt.LayerType       = {'labels'};
-    %   BatchOpt.Format          = {'Matlab format (*.model)'};
-    %   BatchOpt.OutputDirectoryPolicy = {'Same as image'};
-    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
-    %   BatchOpt.showWaitbar     = true;
-    %   BatchOpt.mibBatchTooltip.LayerType = '';
-    %   model.save('labels', [], BatchOpt);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver,
-    %   core.MibLabels.save, core.MibDataset.save, models.MibModel.save
+% MATLABSAVER - Saver for MIB native MATLAB-based binary formats.
+%
+% Handles all native serialisation formats used by MIB:
+%
+% 'Matlab format (``*.model``)'            — MIB2/MIB3 native segmentation model.
+% Variables saved: <modelVariable>, modelMaterialNames,
+% modelMaterialColors, BoundingBox, modelVariable, modelType,
+% [labelText, labelValue, labelPosition if annotations present]
+%
+% 'Matlab format 2D sequence (``*.model``)' — one .model file per Z-slice;
+% useful for very large datasets where a full 3-D .model is too large.
+%
+% 'Matlab format for MIB ver. 1 (``*.mat``)' — legacy format for MIB v1
+% compatibility.  Variables: <modelVariable>, material_list,
+% color_list, bounding_box, model_var.
+%
+% 'Matlab categorical format (``*.mibCat``)' — saves labels as a MATLAB
+% categorical array, 3-D stack or 2-D sequence.
+% Variables: imgOut (categorical), imgVariable, options.
+%
+% 'Matlab format (``*.mask``)'             — binary mask in a MAT-file.
+% Variable saved: maskImg (logical [H W D]).
+%
+% DATA DIMENSIONS
+% Input data : [H, W, D, C, T]  — C=1 expected for all Matlab formats
+% (labels/masks are always single channel)
+%
+% METADATA FIELDS USED
+% .materialNames  — cell array of material name strings (labels formats)
+% .materialColors — [M x 3] material RGB colours (labels formats)
+% .labelsVariable — (char) variable name to use inside the .model file,
+% default 'mibModel'
+% .modelType      — (integer) model type (e.g. 255, 63)
+% .pixSize        — struct with voxel dimensions
+% .boundingBox    — [xmin xmax ymin ymax zmin zmax]
+% .annotations    — (optional) struct with .labelText, .labelValue,
+% .labelPosition from obj.annotations.getLabels()
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Save a segmentation model (MIB native format)
+%     saver = io.SaverFactory.create('Matlab format (``*.model``)');
+%
+%     opts.Format      = 'Matlab format (``*.model``)';
+%     opts.showWaitbar = true;
+%     opts.silent      = true;
+%     opts.overwrite   = true;
+%
+%     meta.filename       = 'myImage.tif';
+%     meta.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
+%     meta.materialColors = [0 0 1; 0 1 0; 1 0 0];  % R, G, B per material
+%     meta.labelsVariable = 'mibModel';
+%     meta.modelType      = 255;        % uint8 labels
+%     meta.dataClass      = 'uint8';
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%     meta.boundingBox    = [0 41.6 0 41.6 0 6];
+%
+%     labels = uint8(rand(256,256,30,1,1) * 3);  % values 0,1,2,3
+%     fnOut = saver.save(labels, meta, '/output/Labels_myImage.model', opts);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Save mask in native MIB mask format
+%     saver = io.SaverFactory.create('Matlab format (``*.mask``)');
+%
+%     opts.Format      = 'Matlab format (``*.mask``)';
+%     opts.showWaitbar = false;
+%     opts.overwrite   = true;
+%
+%     meta.filename    = 'myImage.tif';
+%     meta.dataClass   = 'uint8';
+%     meta.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%
+%     mask = uint8(rand(256,256,30,1,1) > 0.8);  % binary mask
+%     fnOut = saver.save(mask, meta, '/output/Mask_myImage.mask', opts);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 3. Save as categorical format (for deep learning pipelines)
+%     saver = io.SaverFactory.create('Matlab categorical format (``*.mibCat``)');
+%
+%     opts.Format         = 'Matlab categorical format (``*.mibCat``)';
+%     opts.Saving3DPolicy = '3D stack';   % or '2D sequence'
+%     opts.FilenamePolicy = 'Use existing name';
+%     opts.showWaitbar    = false;
+%     opts.overwrite      = true;
+%
+%     meta.materialNames  = {'Exterior'; 'Nucleus'; 'Background'};
+%     meta.materialColors = [0.5 0.5 0.5; 0 0 1; 0 1 0];
+%     meta.labelsVariable = 'imgOut';
+%     meta.dataClass      = 'uint8';
+%     meta.modelType      = 255;
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%
+%     labels = uint8(rand(256,256,30,1,1) * 3);
+%     fnOut = saver.save(labels, meta, '/output/Labels.mibCat', opts);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 4. Via MibModel (recommended for GUI/batch workflows)
+%     BatchOpt.LayerType       = {'labels'};
+%     BatchOpt.Format          = {'Matlab format (``*.model``)'};
+%     BatchOpt.OutputDirectoryPolicy = {'Same as image'};
+%     BatchOpt.FilenamePolicy  = {'Use existing name'};
+%     BatchOpt.showWaitbar     = true;
+%     BatchOpt.mibBatchTooltip.LayerType = '';
+%     model.save('labels', [], BatchOpt);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver,
+% core.MibLabels.save, core.MibDataset.save, models.MibModel.save
 
     methods
 
@@ -131,15 +138,17 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Serialise data to one of the MIB MATLAB-native formats.
+            % SAVE - Serialise data to one of the MIB MATLAB-native formats.
+            %
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
             %
             % The active format is selected by options.Format:
-            %   'Matlab format (*.mask)'              → saveMask()
-            %   'Matlab format (*.model)'             → saveModel3D()
-            %   'Matlab format 2D sequence (*.model)' → saveModel2DSeq()
-            %   'Matlab format for MIB ver. 1 (*.mat)'→ saveModelV1()
-            %   'Matlab categorical format (*.mibCat)'→ saveModelCat()
+            % 'Matlab format (``*.mask``)'              → saveMask()
+            % 'Matlab format (``*.model``)'             → saveModel3D()
+            % 'Matlab format 2D sequence (``*.model``)' → saveModel2DSeq()
+            % 'Matlab format for MIB ver. 1 (``*.mat``)'→ saveModelV1()
+            % 'Matlab categorical format (``*.mibCat``)'→ saveModelCat()
             %
             % Parameters / Return values — see class-level docs above.
 
@@ -172,7 +181,10 @@ classdef MatlabSaver < io.savers.BaseSaver
     methods (Access = private)
 
         function fnOut = saveMask(~, data, ~, filename, options)
-            % Save binary mask as MAT-file (variable: maskImg).
+            % SAVEMASK - Save binary mask as MAT-file (variable: maskImg).
+            %
+            % Syntax:
+            %   function fnOut = saveMask(~, data, ~, filename, options)
             %
             % Uses save('-struct',...) to avoid eval() and dynamic variable
             % names.  The loaded file contains a top-level variable maskImg.
@@ -191,19 +203,22 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModel3D(obj, data, metadata, filename, options)
-            % Save full 3-D model in MIB2/MIB3 native .model format.
+            % SAVEMODEL3D - Save full 3-D model in MIB2/MIB3 native .model format.
+            %
+            % Syntax:
+            %   function fnOut = saveModel3D(obj, data, metadata, filename, options)
             %
             % Uses save('-struct', 'vars', ...) to store each variable
             % under its proper name without eval().
             %
             % Saved variables (top-level in the .model MAT-file):
-            %   <labelsVariable>        — uint8/uint16 [H W D] label array
-            %   modelMaterialNames      — cell array of material names
-            %   modelMaterialColors     — [M x 3] RGB colours
-            %   BoundingBox             — [xmin xmax ymin ymax zmin zmax]
-            %   modelVariable           — char (= labelsVariable)
-            %   modelType               — integer (255 for uint8 model)
-            %   [labelText, labelValue, labelPosition — if .annotations present]
+            % <labelsVariable>        — uint8/uint16 [H W D] label array
+            % modelMaterialNames      — cell array of material names
+            % modelMaterialColors     — [M x 3] RGB colours
+            % BoundingBox             — [xmin xmax ymin ymax zmin zmax]
+            % modelVariable           — char (= labelsVariable)
+            % modelType               — integer (255 for uint8 model)
+            % [labelText, labelValue, labelPosition — if .annotations present]
             fnOut = [];
             labVar = obj.getLabelsVariable(metadata);
 
@@ -237,7 +252,10 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModel2DSeq(obj, data, metadata, filename, options)
-            % Save a 2-D sequence of .model files (one per Z-slice).
+            % SAVEMODEL2DSEQ - Save a 2-D sequence of .model files (one per Z-slice).
+            %
+            % Syntax:
+            %   function fnOut = saveModel2DSeq(obj, data, metadata, filename, options)
             %
             % Each slice uses save('-struct') so every field becomes a
             % separate top-level variable — same format as saveModel3D.
@@ -285,10 +303,13 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModelV1(obj, data, metadata, filename, options) %#ok<INUSD>
-            % Save in legacy MIB v1 format (.mat) for backward compatibility.
+            % SAVEMODELV1 - Save in legacy MIB v1 format (.mat) for backward compatibility.
+            %
+            % Syntax:
+            %   function fnOut = saveModelV1(obj, data, metadata, filename, options) %#ok<INUSD>
             %
             % Variables (top-level): <labVar>, material_list, color_list,
-            %                        bounding_box, model_var
+            % bounding_box, model_var
             fnOut = [];
             labVar = obj.getLabelsVariable(metadata);
 
@@ -309,7 +330,10 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModelCat(obj, data, metadata, filename, options)
-            % Save as MATLAB categorical array (.mibCat).
+            % SAVEMODELCAT - Save as MATLAB categorical array (.mibCat).
+            %
+            % Syntax:
+            %   function fnOut = saveModelCat(obj, data, metadata, filename, options)
             %
             % The label volume is converted to a categorical with class names
             % derived from metadata.materialNames (prepended with 'Exterior'

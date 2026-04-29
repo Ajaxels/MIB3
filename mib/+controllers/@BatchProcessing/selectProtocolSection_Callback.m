@@ -1,19 +1,20 @@
 function selectProtocolSection_Callback(obj, hObject)
-% function selectProtocolSection_Callback(obj, hObject)
-% handle value change in selectProtocolSection or selectProtocolAction
+% SELECTPROTOCOLSECTION_CALLBACK - handle value change in selectProtocolSection or selectProtocolAction.
+%
+% Syntax:
+%   function selectProtocolSection_Callback(obj, hObject)
 %
 % Fires the selected action command with Batch=NaN to retrieve its default
 % BatchOpt, then refreshes the selectedActionTable.
 %
-% Parameters:
-% hObject: handle to the dropdown widget that triggered the callback;
-%   Tag must be 'selectProtocolSection' or 'selectProtocolAction'
+% Input Arguments:
+%   - **hObject** — handle to the dropdown widget that triggered the callback;
+%     Tag must be 'selectProtocolSection' or 'selectProtocolAction'
 %
-%|
-% @b Examples:
-% @code obj.selectProtocolSection_Callback(obj.view.handles.selectProtocolSection); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.selectProtocolSection_Callback(obj.view.handles.selectProtocolSection);
 %
 
 % disable "add to protocol"

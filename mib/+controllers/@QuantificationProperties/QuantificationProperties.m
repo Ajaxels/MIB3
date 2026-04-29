@@ -1,15 +1,15 @@
 classdef QuantificationProperties < handle
-    % classdef QuantificationProperties < handle
-    % controller for the property selection dialog used by Quantification
-    %
-    % Lets the user pick which shape and intensity properties to calculate
-    % in a multi-property quantification run.  Displays a panel of
-    % checkboxes matching the current 2D or 3D shape mode, plus an
-    % intensity panel.
-    %
-    % @code
-    % obj.startController('controllers.QuantificationProperties', obj, propertyList, obj3d);
-    % @endcode
+% QUANTIFICATIONPROPERTIES - controller for the property selection dialog used by Quantification.
+%
+% Lets the user pick which shape and intensity properties to calculate
+% in a multi-property quantification run.  Displays a panel of
+% checkboxes matching the current 2D or 3D shape mode, plus an
+% intensity panel.
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.QuantificationProperties', obj, propertyList, obj3d);
 
     % Updates
     %
@@ -37,18 +37,22 @@ classdef QuantificationProperties < handle
     methods
 
         function obj = QuantificationProperties(mibModel, varargin)
-            % function obj = QuantificationProperties(mibModel, varargin)
-            % constructor for QuantificationProperties controller
+            % QUANTIFICATIONPROPERTIES - constructor for QuantificationProperties controller.
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: handle to parent Quantification controller
-            % varargin{2}: cell array of pre-selected property names
-            % varargin{3}: logical — true for 3D shape mode
+            % Syntax:
+            %   function obj = QuantificationProperties(mibModel, varargin)
             %
-            %|
-            % @b Examples:
-            % @code obj.startController('controllers.QuantificationProperties', obj, {'Area','Perimeter'}, false); @endcode
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — handle to parent Quantification controller
+            %   - **varargin{2}** — cell array of pre-selected property names
+            %   - **varargin{3}** — logical — true for 3D shape mode
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.startController('controllers.QuantificationProperties', obj, {'Area','Perimeter'}, false);
+            %
 
             % Updates
             %
@@ -94,15 +98,19 @@ classdef QuantificationProperties < handle
         end
 
         function addCallbacks(obj)
-            % function addCallbacks(obj)
-            % Wire all widget callbacks from the constructor.
+            % ADDCALLBACKS - Wire all widget callbacks from the constructor.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
             %
             % Connects button callbacks and the figure close/key-press handlers
             % for the QuantificationProperties dialog.
             %
-            %|
-            % @b Examples:
-            % @code obj.addCallbacks(); @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.addCallbacks();
+            %
 
             % Updates
             %
@@ -119,17 +127,21 @@ classdef QuantificationProperties < handle
         end
 
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % Show the correct shape panel and pre-check checkboxes from propertyList.
+            % UPDATEWIDGETS - Show the correct shape panel and pre-check checkboxes from propertyList.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
             %
             % In 3D mode the shapes2dPanel is hidden and the shapes3dPanel is
             % placed into the main grid layout at the same position.  Disabled
             % 3D-only checkboxes are enabled.  Each property name in
             % obj.propertyList is mapped to the corresponding checkbox and checked.
             %
-            %|
-            % @b Examples:
-            % @code obj.updateWidgets(); @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.updateWidgets();
+            %
 
             % Updates
             %
@@ -178,8 +190,10 @@ classdef QuantificationProperties < handle
         end
 
         function okBtn_Callback(obj)
-            % function okBtn_Callback(obj)
-            % Collect selected properties, pass them to the parent, and close.
+            % OKBTN_CALLBACK - Collect selected properties, pass them to the parent, and close.
+            %
+            % Syntax:
+            %   function okBtn_Callback(obj)
             %
             % Iterates over shape and intensity checkboxes.  For 3D mode the
             % trailing '3d' suffix is stripped from each tag to recover the
@@ -187,9 +201,11 @@ classdef QuantificationProperties < handle
             % list is forwarded to the parent controller via
             % applySelectedProperties before closing the dialog.
             %
-            %|
-            % @b Examples:
-            % @code obj.okBtn_Callback(); @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.okBtn_Callback();
+            %
 
             % Updates
             %
@@ -231,12 +247,16 @@ classdef QuantificationProperties < handle
         end
 
         function cancelBtn_Callback(obj)
-            % function cancelBtn_Callback(obj)
-            % Close the dialog without updating the parent controller.
+            % CANCELBTN_CALLBACK - Close the dialog without updating the parent controller.
             %
-            %|
-            % @b Examples:
-            % @code obj.cancelBtn_Callback(); @endcode
+            % Syntax:
+            %   function cancelBtn_Callback(obj)
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.cancelBtn_Callback();
+            %
 
             % Updates
             %
@@ -245,16 +265,20 @@ classdef QuantificationProperties < handle
         end
 
         function checkallBtn_Callback(obj)
-            % function checkallBtn_Callback(obj)
-            % Check all enabled checkboxes, excluding specialty properties.
+            % CHECKALLBTN_CALLBACK - Check all enabled checkboxes, excluding specialty properties.
+            %
+            % Syntax:
+            %   function checkallBtn_Callback(obj)
             %
             % Skips CurveLength, EndpointsLength (and their 3D variants), and
             % Correlation because these require special connectivity or dual
             % channels.  Disabled checkboxes are also skipped.
             %
-            %|
-            % @b Examples:
-            % @code obj.checkallBtn_Callback(); @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.checkallBtn_Callback();
+            %
 
             % Updates
             %
@@ -284,12 +308,16 @@ classdef QuantificationProperties < handle
         end
 
         function uncheckallBtn_Callback(obj)
-            % function uncheckallBtn_Callback(obj)
-            % Uncheck all checkboxes in all three panels.
+            % UNCHECKALLBTN_CALLBACK - Uncheck all checkboxes in all three panels.
             %
-            %|
-            % @b Examples:
-            % @code obj.uncheckallBtn_Callback(); @endcode
+            % Syntax:
+            %   function uncheckallBtn_Callback(obj)
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.uncheckallBtn_Callback();
+            %
 
             % Updates
             %
@@ -304,15 +332,19 @@ classdef QuantificationProperties < handle
         end
 
         function closeWindow(obj)
-            % function closeWindow(obj)
-            % Close the QuantificationProperties dialog and release all resources.
+            % CLOSEWINDOW - Close the QuantificationProperties dialog and release all resources.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
             %
             % Deletes the GUI figure, removes all event listeners, and fires
             % the CloseEvent so the parent controller can purge this child.
             %
-            %|
-            % @b Examples:
-            % @code obj.closeWindow(); @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.closeWindow();
+            %
 
             % Updates
             %

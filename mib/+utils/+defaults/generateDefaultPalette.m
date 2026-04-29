@@ -1,22 +1,34 @@
 function palette = generateDefaultPalette(paletteName, colorsNo)
-% function palette = generateDefaultPalette(paletteName, colorsNo)
-% generate color palette depending on the provided paletteName and required colorsNo
+% GENERATEDEFAULTPALETTE - Generate a colour palette by name and number of colours.
 %
-% Parameters:
-% paletteName: string with the name of the palette to use, see below for
-% the options
-% colorsNo: numeric, number of required color channels
+% Syntax:
 %
-% Return values:
-% palette: matrix [colorId][R G B] in range from 0 to 1 with colors
-
-%|
-% @b Examples:
-% @code
-% // generate 3 color palette from the default colors
-% palette = utils.defaults.generateDefaultPalette('Default, 6 colors', 3);
-% @endcode
-% Updates
+%   .. code-block:: matlab
+%
+%      palette = generateDefaultPalette(paletteName, colorsNo)
+%
+% Input Arguments:
+%   - **paletteName** — [char] name of the palette to generate; supported values:
+%
+%     - ``'Default, 6 colors'``
+%     - ``'Distinct colors, 20 colors'``
+%     - ``'Qualitative (Monte Carlo->Half Baked), 3-12 colors'``
+%     - ``'Diverging (Merlot->Chardonnay), 3-11 colors'``
+%     - ``'Grayscale'``
+%     - … and others defined in the function body
+%
+%   - **colorsNo** — [numeric] number of required colour channels (default: ``6``)
+%
+% Output Arguments:
+%   - **palette** — [numeric] matrix ``[colorId, [R G B]]`` with values in range 0–1
+%
+% Usage:
+%
+%   **Example 1** — generate a 3-colour default palette
+%
+%   .. code-block:: matlab
+%
+%      palette = utils.defaults.generateDefaultPalette('Default, 6 colors', 3);
 %
 
 if nargin < 2; colorsNo = 6; end

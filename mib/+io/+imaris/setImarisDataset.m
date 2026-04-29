@@ -1,25 +1,28 @@
 function connImaris = setImarisDataset(mibDataset, connImaris, options)
-% function connImaris = setImarisDataset(mibDataset, connImaris, options)
-% Send a dataset layer from MIB to Imaris
+% SETIMARISDATASET - Send a dataset layer from MIB to Imaris.
 %
-% Parameters:
-% mibDataset: an instance of core.MibDataset with the dataset to export
-% connImaris: [@em optional] a handle to an existing Imaris connection
-% options: [@em optional] a structure with additional settings
-% @li .type -> [@em optional] type of dataset layer to send
-%     'image' [@em default], 'labels' (model), 'mask', 'selection'
-% @li .modelIndex -> [@em optional] for 'labels': material index to send
-%     (@em NaN = all materials, integer = single material)
-%     for 'mask' and 'selection': not used (ignored)
-% @li .mode -> [@em optional] '3D' or '4D' export mode; prompted if omitted and time > 1
-% @li .insertInto -> [@em optional] cell with time-point index; -1 = replace whole dataset
-% @li .lutColors -> [@em optional] [nChannels x 3] matrix of RGB colors (0-1) for image channels
-% @li .maskColor -> [@em optional] [1 x 3] RGB color (0-1) for mask display in Imaris; default [1 0 0]
-% @li .showWaitbar -> logical, show or not the waitbar
-% @li .mibGUI -> [@em optional] handle to the main MIB window for dialogs
+% Syntax:
+%   function connImaris = setImarisDataset(mibDataset, connImaris, options)
 %
-% Return values:
-% connImaris: a handle to the Imaris connection
+% Input Arguments:
+%   - **mibDataset** — an instance of core.MibDataset with the dataset to export
+%   - **connImaris** — *(optional)* a handle to an existing Imaris connection
+%   - **options** — *(optional)* a structure with additional settings
+%     - ``.type`` *(optional)* type of dataset layer to send:
+%       ``'image'`` [default], ``'labels'`` (model), ``'mask'``, ``'selection'``
+%     - ``.modelIndex`` *(optional)* for ``'labels'``: material index to send;
+%       ``NaN`` = all materials, integer = single material;
+%       for ``'mask'`` and ``'selection'``: not used (ignored)
+%     - .mode *(optional)* '3D' or '4D' export mode; prompted if omitted and time > 1
+%     - .insertInto *(optional)* cell with time-point index; -1 = replace whole dataset
+%     - .lutColors *(optional)* [nChannels x 3] matrix of RGB colors (0-1) for image channels
+%     - .maskColor *(optional)* [1 x 3] RGB color (0-1) for mask display in Imaris; default [1 0 0]
+%     - .showWaitbar logical, show or not the waitbar
+%     - .mibGUI *(optional)* handle to the main MIB window for dialogs
+%
+% Output Arguments:
+%   - **connImaris** — a handle to the Imaris connection
+%
 
 % @note
 % Uses IceImarisConnector bindings.

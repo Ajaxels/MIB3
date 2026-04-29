@@ -1,22 +1,25 @@
 function roiModify(obj)
-% function roiModify(obj)
-% Interactively modify (redraw) an existing ROI.
+% ROIMODIFY - Interactively modify (redraw) an existing ROI.
+%
+% Syntax:
+%   function roiModify(obj)
 %
 % If "All" is selected in the ROI list a dialog prompts the user to choose
 % which ROI to edit.  The appropriate draw tool is then re-launched with
 % the current ROI position pre-loaded.  After the user confirms
 % (double-click), the ROI data is updated in-place (label preserved).
 %
-% Parameters:
-%   obj: controllers.MibRoi — the ROI panel controller
+% Input Arguments:
+%   - **obj** — controllers.MibRoi — the ROI panel controller
 %
-% Return values: none
-%|
-% @b Examples:
-% @code
-% // called from gui_Callbacks when roiModify is triggered
-% obj.roiModify();
-% @endcode
+%   Return values: none
+%
+% Usage:
+%   Example 1::
+%
+%     // called from gui_Callbacks when roiModify is triggered
+%     obj.roiModify();
+%
 
 % developer mode
 if obj.mibModel.preferences.System.DeveloperMode

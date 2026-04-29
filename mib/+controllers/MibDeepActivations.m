@@ -1,26 +1,32 @@
 classdef MibDeepActivations < handle
-    % @type MibDeepActivations class is a template class for using with
-    % GUI developed using appdesigner of Matlab
-    %
-    % @code
-    % obj.startController('MibDeepActivations'); // as GUI tool
-    % @endcode
-    % or 
-    % @code 
-    % // a code below was used for mibImageArithmeticController
-    % BatchOpt.Parameter = 'test';  // fill edit boxes as strings
-    % BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-    % BatchOpt.Popup = {'value'};        // value for the popups as a cell
-    % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-    % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('MibDeepActivations', [], BatchOpt); // start MibDeepActivations in the batch mode
-    % @endcode
-    % or
-    % @code
-    % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
-    % obj.startController('MibDeepActivations', [], NaN);
-    % @endcode
+% MIBDEEPACTIVATIONS - @type MibDeepActivations class is a template class for using with.
+%
+% GUI developed using appdesigner of Matlab
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('MibDeepActivations'); // as GUI tool
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // a code below was used for mibImageArithmeticController
+%   BatchOpt.Parameter = 'test';  // fill edit boxes as strings
+%   BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
+%   BatchOpt.Popup = {'value'};        // value for the popups as a cell
+%   BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
+%   BatchOpt.showWaitbar = true;  // show or not the waitbar
+%   obj.startController('MibDeepActivations', [], BatchOpt); // start MibDeepActivations in the batch mode
+%
+% or
+%
+% .. code-block:: matlab
+%
+%   // trigger return of the possible Options using returnBatchOpt function
+%   // using notify syncBatch event
+%   obj.startController('MibDeepActivations', [], NaN);
     
 	% Updates
 	%     
@@ -218,7 +224,11 @@ classdef MibDeepActivations < handle
         end
         
         function closeWindow(obj)
-            % closing MibDeepActivations window
+            % CLOSEWINDOW - closing MibDeepActivations window.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -233,8 +243,11 @@ classdef MibDeepActivations < handle
         end
         
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % update widgets of this window
+            % UPDATEWIDGETS - update widgets of this window.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
             
             % updateWidgets normally triggered during change of MIB
             % buffers, make sure that any widgets related changes are
@@ -267,25 +280,33 @@ classdef MibDeepActivations < handle
         end
         
         function updateBatchOptFromGUI(obj, event)
-            % function updateBatchOptFromGUI(obj, event)
+            % UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from widgets of GUI.
             %
-            % update obj.BatchOpt from widgets of GUI
+            % Syntax:
+            %   function updateBatchOptFromGUI(obj, event)
+            %
             % use an external function (Tools\updateBatchOptFromGUI_Shared.m) that is common for all tools
             % compatible with the Batch mode
             %
-            % Parameters:
-            % event: event from the callback
+            % Input Arguments:
+            %   - **event** — event from the callback
+            %
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
         end
         
         function returnBatchOpt(obj, BatchOptOut)
-            % return structure with Batch Options and possible configurations
+            % RETURNBATCHOPT - return structure with Batch Options and possible configurations.
+            %
+            % Syntax:
+            %   function returnBatchOpt(obj, BatchOptOut)
+            %
             % via the notify 'syncBatch' event
-            % Parameters:
-            % BatchOptOut: a local structure with Batch Options generated
-            % during Continue callback. It may contain more fields than
-            % obj.BatchOpt structure
-            % 
+            %
+            % Input Arguments:
+            %   - **BatchOptOut** — a local structure with Batch Options generated
+            %     during Continue callback. It may contain more fields than
+            %     obj.BatchOpt structure
+            %
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             
             if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end  % remove id field
@@ -295,14 +316,17 @@ classdef MibDeepActivations < handle
         end
         
         function status = getNewImage(obj, filename)
-            % function getNewImage(obj, fn)
-            % load a new image from prediction image store 
+            % GETNEWIMAGE - load a new image from prediction image store.
             %
-            % Parameters:
-            % filename: short filename of the image to show
-            % 
-            % Return values:
-            % status: logical switch, 1 - success
+            % Syntax:
+            %   function status = getNewImage(obj, filename)
+            %
+            % Input Arguments:
+            %   - **filename** — short filename of the image to show
+            %
+            % Output Arguments:
+            %   - **status** — logical switch, 1 - success
+            %
             status = 0;
             if nargin < 2; filename = obj.view.Figure.ImageFilename.Value; end
             filenameIndex = find(ismember(obj.view.Figure.ImageFilename.Items, filename)==1);
@@ -347,8 +371,11 @@ classdef MibDeepActivations < handle
         end
         
         function updatePreviewImage(obj)
-            % function updatePreviewImage(obj)
-            % update preview of the original image
+            % UPDATEPREVIEWIMAGE - update preview of the original image.
+            %
+            % Syntax:
+            %   function updatePreviewImage(obj)
+            %
             
             if size(obj.imageOriginal, 3) == 1  % grayscale image
                 imgToPrev = repmat(squeeze(obj.imageOriginal(:, :, 1, obj.BatchOpt.z1{1})), [1 1 3]);
@@ -363,8 +390,11 @@ classdef MibDeepActivations < handle
         end
         
         function ShiftImage(obj, event)
-            % function ShiftImage(obj, event)
-            % callback for change of x1, y1, z1 coordinates to shift the
+            % SHIFTIMAGE - callback for change of x1, y1, z1 coordinates to shift the.
+            %
+            % Syntax:
+            %   function ShiftImage(obj, event)
+            %
             % patch
             
             % make true to generate snapshots of all patche
@@ -396,8 +426,11 @@ classdef MibDeepActivations < handle
         end
         
         function getActivations(obj)
-            % function getActivations(obj)
-            % from the selected image area generate activations
+            % GETACTIVATIONS - from the selected image area generate activations.
+            %
+            % Syntax:
+            %   function getActivations(obj)
+            %
             wb = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', sprintf('Generating previews\nPlease wait...'), 'Title', 'Get activations');
             
             switch obj.net.BatchOpt.Workflow{1}(1:2)
@@ -526,8 +559,11 @@ classdef MibDeepActivations < handle
         end
         
         function showActivations(obj)
-            % function showActivations(obj)
-            % show activations for the current image
+            % SHOWACTIVATIONS - show activations for the current image.
+            %
+            % Syntax:
+            %   function showActivations(obj)
+            %
             
             switch obj.net.BatchOpt.Workflow{1}(1:2)
                 case '3D'
@@ -598,11 +634,14 @@ classdef MibDeepActivations < handle
         end
         
         function changeImage(obj, event)
-            % function changeImage(obj, event)
-            % callback for change image buttons
+            % CHANGEIMAGE - callback for change image buttons.
             %
-            % Parameters:
-            % event: an event structure of appdesigner
+            % Syntax:
+            %   function changeImage(obj, event)
+            %
+            % Input Arguments:
+            %   - **event** — an event structure of appdesigner
+            %
             
             filenameIndex = find(ismember(obj.view.Figure.ImageFilename.Items, obj.view.Figure.ImageFilename.Value)==1);
             switch event.Source.Tag
@@ -617,12 +656,15 @@ classdef MibDeepActivations < handle
         end
         
         function makeCollage(obj, silentMode)
-            % function makeCollage(obj, layerIndex)
-            % make collage image from activations
+            % MAKECOLLAGE - make collage image from activations.
             %
-            % Parameters:
-            % silentMode: logical ask or not for FigName and resize, see
-            % "generateSnapshots = false;" in the ShiftImage function
+            % Syntax:
+            %   function makeCollage(obj, silentMode)
+            %
+            % Input Arguments:
+            %   - **silentMode** — logical ask or not for FigName and resize, see
+            %     "generateSnapshots = false;" in the ShiftImage function
+            %
             
             if nargin < 2; silentMode = []; end
 

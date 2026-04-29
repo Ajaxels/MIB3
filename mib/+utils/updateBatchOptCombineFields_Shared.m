@@ -1,8 +1,31 @@
 function BatchOpt = updateBatchOptCombineFields_Shared(BatchOpt, BatchOptInput)
-% function BatchOpt = updateBatchOptCombineFields_Shared(BatchOpt, BatchOptInput)
-% a common function used by all tools compatible with the Batch mode to
-% combine fields of the input structure BatchOptIn with fields of the
-% default structure BatchOpt
+% UPDATEBATCHOPTCOMBINEFIELDS_SHARED - Merge BatchOpt fields from an input struct into a default struct.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt = updateBatchOptCombineFields_Shared(BatchOpt, BatchOptInput)
+%
+% Used by all tools that support Batch mode to merge caller-supplied options
+% into the controller's full default BatchOpt.  Handles popup-menu cells
+% (preserving the options list), numeric edit fields, and plain values.
+%
+% Input Arguments:
+%   - **BatchOpt** — struct containing the full default BatchOpt for the controller
+%   - **BatchOptInput** — struct supplied by the caller (may be a subset of fields)
+%
+% Output Arguments:
+%   - **BatchOpt** — merged struct with caller values applied over defaults
+%
+% Usage:
+%
+%   **Example 1** — merge user-supplied options into controller defaults
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptInput);
+%
 
 BatchOptInputFields = fieldnames(BatchOptInput);
 for i=1:numel(BatchOptInputFields)

@@ -1,103 +1,114 @@
 classdef TiffSaver < io.savers.BaseSaver
-    % classdef TiffSaver < io.savers.BaseSaver
-    % Saver for TIFF (Tagged Image File Format) output.
-    %
-    % Handles three format variants:
-    %   'TIF format uncompressed (*.tif)'    — no compression, broadest compat.
-    %   'TIF format LZW compression (*.tif)' — lossless LZW, smaller files
-    %   'TIF format (*.tif)'                 — alias used for mask/labels export
-    %
-    % Both 3-D multi-frame TIF (all slices in one file) and 2-D sequence
-    % (one file per slice) modes are supported via options.Saving3DPolicy.
-    %
-    % DATA DIMENSIONS
-    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
-    %   imwrite call: [H, W, C]  per individual Z-slice
-    %                 [H, W, C, D] for the full Z-stack in multi mode
-    %
-    % NOTES
-    %   * TIFF supports at most 3 colour channels via standard imwrite.
-    %     Multichannel data with C > 3 is not supported; use Amira or HDF5.
-    %   * Indexed images (colorType == 'indexed') are saved with the
-    %     colourmap stored in metadata.lutColors (or metadata.colormap).
-    %   * Time series (T > 1) are saved as separate 3-D stack files or
-    %     separate 2-D sequence directories, with '_T001', '_T002' suffixes.
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Lowest level — direct saver use (scripted pipeline)
-    %   saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
-    %
-    %   opts.Format         = 'TIF format uncompressed (*.tif)';
-    %   opts.Saving3DPolicy = '3D stack';    % or '2D sequence'
-    %   opts.Compression    = 'none';        % 'none' | 'lzw' | 'packbits'
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.FilenameGenerator = 'Use sequential filename';
-    %
-    %   meta.filename   = 'source_stack.tif';
-    %   meta.colorType  = 'grayscale';
-    %   meta.lutColors  = [1 1 1];
-    %   meta.dataClass  = 'uint16';
-    %   meta.maxInt     = 65535;
-    %   meta.sliceName  = {};
-    %   meta.pixSize    = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-    %   meta.imageDescription = '';
-    %
-    %   data = uint16(rand(512,512,50,1,1) * 65535);  % [H W D C T]
-    %   fnOut = saver.save(data, meta, '/output/myStack.tif', opts);
-    %   fprintf('Saved: %s\n', fnOut);
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Via MibImage standalone (without MibModel/MibDataset)
-    %   img = core.MibImage(uint8(rand(256,256,30,1,1)*255));
-    %   img.filename = '/data/input.tif';
-    %
-    %   opts.Format         = 'TIF format LZW compression (*.tif)';
-    %   opts.Saving3DPolicy = '3D stack';
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.pixSize        = struct('x',1,'y',1,'z',1,'units','um','t',1,'tunits','s');
-    %   fnOut = img.save('/output/compressed.tif', opts);
-    %   @endcode
-    %
-    %   @code
-    %   %% 3. Via MibModel (BatchOpt-compatible, recommended for GUI workflows)
-    %   BatchOpt.LayerType       = {'image'};
-    %   BatchOpt.Format          = {'TIF format uncompressed (*.tif)'};
-    %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
-    %   BatchOpt.DestinationDirectory  = '/output/dir';
-    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
-    %   BatchOpt.Saving3DPolicy  = {'3D stack'};
-    %   BatchOpt.showWaitbar     = false;
-    %   BatchOpt.mibBatchTooltip.LayerType = '';   % marks as batch mode
-    %   model.save('image', [], BatchOpt);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.PngSaver,
-    %   core.MibImage.save, core.MibDataset.save, models.MibModel.save
+% TIFFSAVER - Saver for TIFF (Tagged Image File Format) output.
+%
+% Handles three format variants:
+% 'TIF format uncompressed (``*.tif``)'    — no compression, broadest compat.
+% 'TIF format LZW compression (``*.tif``)' — lossless LZW, smaller files
+% 'TIF format (``*.tif``)'                 — alias used for mask/labels export
+%
+% Both 3-D multi-frame TIF (all slices in one file) and 2-D sequence
+% (one file per slice) modes are supported via options.Saving3DPolicy.
+%
+% DATA DIMENSIONS
+% Input  data : [H, W, D, C, T]  (MIB3 native order)
+% imwrite call: [H, W, C]  per individual Z-slice
+% [H, W, C, D] for the full Z-stack in multi mode
+%
+% NOTES
+% * TIFF supports at most 3 colour channels via standard imwrite.
+% Multichannel data with C > 3 is not supported; use Amira or HDF5.
+% * Indexed images (colorType == 'indexed') are saved with the
+% colourmap stored in metadata.lutColors (or metadata.colormap).
+% * Time series (T > 1) are saved as separate 3-D stack files or
+% separate 2-D sequence directories, with '_T001', '_T002' suffixes.
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Lowest level — direct saver use (scripted pipeline)
+%     saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
+%
+%     opts.Format         = 'TIF format uncompressed (``*.tif``)';
+%     opts.Saving3DPolicy = '3D stack';    % or '2D sequence'
+%     opts.Compression    = 'none';        % 'none' | 'lzw' | 'packbits'
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.FilenameGenerator = 'Use sequential filename';
+%
+%     meta.filename   = 'source_stack.tif';
+%     meta.colorType  = 'grayscale';
+%     meta.lutColors  = [1 1 1];
+%     meta.dataClass  = 'uint16';
+%     meta.maxInt     = 65535;
+%     meta.sliceName  = {};
+%     meta.pixSize    = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+%     meta.imageDescription = '';
+%
+%     data = uint16(rand(512,512,50,1,1) * 65535);  % [H W D C T]
+%     fnOut = saver.save(data, meta, '/output/myStack.tif', opts);
+%     fprintf('Saved: %s\n', fnOut);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Via MibImage standalone (without MibModel/MibDataset)
+%     img = core.MibImage(uint8(rand(256,256,30,1,1)*255));
+%     img.filename = '/data/input.tif';
+%
+%     opts.Format         = 'TIF format LZW compression (``*.tif``)';
+%     opts.Saving3DPolicy = '3D stack';
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.pixSize        = struct('x',1,'y',1,'z',1,'units','um','t',1,'tunits','s');
+%     fnOut = img.save('/output/compressed.tif', opts);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 3. Via MibModel (BatchOpt-compatible, recommended for GUI workflows)
+%     BatchOpt.LayerType       = {'image'};
+%     BatchOpt.Format          = {'TIF format uncompressed (``*.tif``)'};
+%     BatchOpt.OutputDirectoryPolicy = {'Full path'};
+%     BatchOpt.DestinationDirectory  = '/output/dir';
+%     BatchOpt.FilenamePolicy  = {'Use existing name'};
+%     BatchOpt.Saving3DPolicy  = {'3D stack'};
+%     BatchOpt.showWaitbar     = false;
+%     BatchOpt.mibBatchTooltip.LayerType = '';   % marks as batch mode
+%     model.save('image', [], BatchOpt);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.PngSaver,
+% core.MibImage.save, core.MibDataset.save, models.MibModel.save
 
     methods
 
         function obj = TiffSaver(options)
-            % function obj = TiffSaver(options)
-            % Constructor — accepts an optional options struct.
+            % TIFFSAVER - Constructor — accepts an optional options struct.
             %
-            % Parameters:
+            % Syntax:
+            %   function obj = TiffSaver(options)
+            %
+            % Input Arguments:
             %   options — (struct, optional) saver-level options (usually empty;
-            %             per-save options are passed to save() instead)
+            %   per-save options are passed to save() instead)
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
-            % function formats = getSupportedFormats(~)
-            % Return format strings handled by TiffSaver.
+            % GETSUPPORTEDFORMATS - Return format strings handled by TiffSaver.
+            %
+            % Syntax:
+            %   function formats = getSupportedFormats(~)
+            %
             formats = { ...
                 'TIF format uncompressed (*.tif)'; ...
                 'TIF format LZW compression (*.tif)'; ...
@@ -105,33 +116,36 @@ classdef TiffSaver < io.savers.BaseSaver
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write data as a TIFF file or 2-D TIFF sequence.
+            % SAVE - Write data as a TIFF file or 2-D TIFF sequence.
             %
-            % Parameters:
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
+            %
+            % Input Arguments:
             %   data     — [H, W, D, C, T] numeric array
             %   metadata — struct; used fields:
-            %     .colorType      — 'grayscale' | 'multichannel' | 'indexed'
-            %     .lutColors      — colormap for indexed images [N x 3]
-            %     .sliceName      — cell of char, per-slice source filenames
-            %     .imageDescription — (char) ImageDescription TIFF tag
-            %     .xResolution, .yResolution — pixels/unit scalars
+            %   .colorType      — 'grayscale' | 'multichannel' | 'indexed'
+            %   .lutColors      — colormap for indexed images [N x 3]
+            %   .sliceName      — cell of char, per-slice source filenames
+            %   .imageDescription — (char) ImageDescription TIFF tag
+            %   .xResolution, .yResolution — pixels/unit scalars
             %   filename — full output path, e.g. '/out/stack.tif'
             %   options  — struct; used fields:
-            %     .Format           — format string (selects compression)
-            %     .Saving3DPolicy   — '3D stack' | '2D sequence'
-            %     .showWaitbar      — logical
-            %     .silent           — logical, suppress dialogs
-            %     .FilenameGenerator — 'Use original filename' |
-            %                          'Use sequential filename'
-            %     .Compression      — 'none' | 'lzw' | 'packbits' (overrides Format)
-            %     .overwrite        — logical
+            %   .Format           — format string (selects compression)
+            %   .Saving3DPolicy   — '3D stack' | '2D sequence'
+            %   .showWaitbar      — logical
+            %   .silent           — logical, suppress dialogs
+            %   .FilenameGenerator — 'Use original filename' |
+            %   'Use sequential filename'
+            %   .Compression      — 'none' | 'lzw' | 'packbits' (overrides Format)
+            %   .overwrite        — logical
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — char (3D stack) or cell of char (2D sequence)
-            %           [] on failure
+            %   [] on failure
             %
-            % Example — see class-level documentation above.
+            %   Example — see class-level documentation above.
+            %
 
             fnOut = [];
 
@@ -152,7 +166,7 @@ classdef TiffSaver < io.savers.BaseSaver
             if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
 
             % Determine compression from Format string or explicit field.
-            % 'TIF format (*.tif)' is the labels/mask alias — always LZW.
+            % 'TIF format (``*.tif``)' is the labels/mask alias — always LZW.
             if isfield(options, 'Compression')
                 compression = options.Compression;
             elseif isfield(options, 'Format') && contains(options.Format, 'LZW')
@@ -327,14 +341,16 @@ classdef TiffSaver < io.savers.BaseSaver
 
         function cancelled = writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...
                 compression, resolution, options)
-            % function writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...)
-            % Write a multi-frame TIFF where slice4D is [H, W, C, D].
+            % WRITETIFFSTACK - Write a multi-frame TIFF where slice4D is [H, W, C, D].
+            %
+            % Syntax:
+            %   function cancelled = writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr,  compression, resolution, options)
             %
             % Uses imwrite 'overwrite'/'append' modes to build the stack
             % frame by frame, which allows writing large files without
             % loading them completely into memory.
             %
-            % Parameters:
+            % Input Arguments:
             %   outPath     — (char) full output path
             %   slice4D     — [H, W, C, D] for one time point
             %   cmap        — colormap or NaN
@@ -342,6 +358,7 @@ classdef TiffSaver < io.savers.BaseSaver
             %   compression — (char) 'none' | 'lzw' | 'packbits'
             %   resolution  — [xRes yRes] vector
             %   options     — options struct (for overwrite check)
+            %
 
             cancelled = false;
             nD = size(slice4D, 4);

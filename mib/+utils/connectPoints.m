@@ -1,20 +1,40 @@
 function img = connectPoints(img, pnts, options)
-% function img = connectPoints(img, pnts, options)
-% Generate a bitmap image with lines that connect points (pnts)
+% CONNECTPOINTS - Generate a bitmap image with lines that connect a sequence of points.
 %
-% Parameters:
-% img: image where the lines should be added
-% pnts: matrix with coordinates of the points, [pointNo, [x, y]]
-% options: [@em optional] structure with extra parameters
-% @li .close - when @b 1 the shape will be closed
-% @li .fill - when @b 1 fill the shape
+% Syntax:
 %
-% Return values:
-% img: a bitmap image with drawn lines
+%   .. code-block:: matlab
 %
-%|
-% @b Examples:
-% @code img = utils.connectPoints(img, pnts);     // draw lines connecting points @endcode
+%      img = connectPoints(img, pnts)
+%      img = connectPoints(img, pnts, options)
+%
+% Input Arguments:
+%   - **img** — [uint8] image where the lines should be drawn
+%   - **pnts** — [numeric] matrix with point coordinates ``[pointNo, [x, y]]``
+%   - **options** *(optional)* — struct with extra parameters:
+%
+%     - ``.close`` — [logical] when ``1`` the shape will be closed (default: ``0``)
+%     - ``.fill``  — [logical] when ``1`` fill the enclosed shape (default: ``0``)
+%
+% Output Arguments:
+%   - **img** — [uint8] bitmap image with drawn lines
+%
+% Usage:
+%
+%   **Example 1** — draw open polyline
+%
+%   .. code-block:: matlab
+%
+%      img = utils.connectPoints(img, pnts);
+%
+%   **Example 2** — draw closed filled polygon
+%
+%   .. code-block:: matlab
+%
+%      opts.close = 1;
+%      opts.fill  = 1;
+%      img = utils.connectPoints(img, pnts, opts);
+%
 
 % Updates
 %

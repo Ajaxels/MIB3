@@ -1,13 +1,17 @@
 function widgetHandles = addRibbonImage(obj, lazyInit)
-% function widgetHandles = addRibbonImage(obj, lazyInit)
-% build the Image tab group (obj.handles.ribbon.image)
-% and add it to obj.handles.ribbon.global 
+% ADDRIBBONIMAGE - build the Image tab group (obj.handles.ribbon.image).
 %
-% Parameters:
-% lazyInit: [@em optional default=false] logical, when true do only
-% place maker initialization of the panel. The full rendering is upon the
-% first call, using
-% "controllers.MibController.globalTabGroup_SelectionCallback" function
+% Syntax:
+%   function widgetHandles = addRibbonImage(obj, lazyInit)
+%
+% and add it to obj.handles.ribbon.global
+%
+% Input Arguments:
+%   - **lazyInit** — [*optional* default=false] logical, when true do only
+%     place maker initialization of the panel. The full rendering is upon the
+%     first call, using
+%     "controllers.MibController.globalTabGroup_SelectionCallback" function
+%
 
 arguments (Input)
     obj views.MibView

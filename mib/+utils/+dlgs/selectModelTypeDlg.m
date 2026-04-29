@@ -1,38 +1,18 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 19.03.2026
-
 classdef selectModelTypeDlg < handle
-    % selectModelTypeDlg  Controller for the Select Model Type dialog
-    %
-    % Displays a dialog with four radio buttons that let the user choose
-    % the model type (63 / 255 / 65535 / 4294967295 materials).
-    % A description text area updates to explain the selected type.
-    % Logic ported from MIB2 mibSelectModelTypeDlg.m.
-    %
-    % Usage:
-    %   dlg = utils.dlgs.selectModelTypeDlg(ParentFigure, mibPath);
-    %   modelType = dlg.run();        % blocks until the user closes the dialog
-    %   % modelType is one of {63, 255, 65535, 4294967295} or [] when cancelled
-    %
-    % Examples:
-    %   @code
-    %   dlg = utils.dlgs.selectModelTypeDlg(obj.mibModel.mibGUI, obj.mibModel.mibPath);
-    %   modelType = dlg.run();
-    %   if isempty(modelType); return; end
-    %   @endcode
+% SELECTMODELTYPEDLG - Controller for the Select Model Type dialog.
+%
+% Displays a dialog with four radio buttons that let the user choose
+% the model type (63 / 255 / 65535 / 4294967295 materials).
+% A description text area updates to explain the selected type.
+% Logic ported from MIB2 mibSelectModelTypeDlg.m.
+%
+% Usage:
+%   Example 1::
+%
+%       dlg = utils.dlgs.selectModelTypeDlg(obj.mibModel.mibGUI, obj.mibModel.mibPath);
+%       modelType = dlg.run();
+%       if isempty(modelType); return; end
+%
 
     properties (Access = private)
         view            % handle to views.SelectModelTypeGUI App Designer app
@@ -62,13 +42,17 @@ classdef selectModelTypeDlg < handle
 
     methods
         function obj = selectModelTypeDlg(ParentFigure, mibPath)
-            % selectModelTypeDlg  Constructor
+            % SELECTMODELTYPEDLG - Constructor.
             %
-            % Parameters:
-            % ParentFigure: handle to the parent GUI (AppContainer or uifigure);
-            %   used to center the dialog
-            % mibPath: [@em optional] char, path to the MIB installation directory;
-            %   used to locate icon images.  Pass [] or '' to use auto-detection.
+            % Syntax:
+            %   function obj = selectModelTypeDlg(ParentFigure, mibPath)
+            %
+            % Input Arguments:
+            %   - **ParentFigure** — handle to the parent GUI (AppContainer or uifigure);
+            %     used to center the dialog
+            %   - **mibPath** — *(optional)* char, path to the MIB installation directory;
+            %     used to locate icon images.  Pass [] or '' to use auto-detection.
+            %
 
             if nargin < 2; mibPath = ''; end
             if nargin < 1; ParentFigure = []; end
@@ -86,10 +70,14 @@ classdef selectModelTypeDlg < handle
         end
 
         function modelType = run(obj)
-            % run  Block execution and return the selected model type
+            % RUN - Block execution and return the selected model type.
             %
-            % Return values:
-            % modelType: one of {63, 255, 65535, 4294967295}, or [] if cancelled
+            % Syntax:
+            %   function modelType = run(obj)
+            %
+            % Output Arguments:
+            %   - **modelType** — one of {63, 255, 65535, 4294967295}, or [] if cancelled
+            %
 
             obj.view.Figure.WindowStyle = 'modal';
             obj.view.Figure.Visible = 'on';
@@ -110,7 +98,11 @@ classdef selectModelTypeDlg < handle
     methods (Access = private)
 
         function initView(obj)
-            % initView  Configure the view before it becomes visible
+            % INITVIEW - Configure the view before it becomes visible.
+            %
+            % Syntax:
+            %   function initView(obj)
+            %
 
             fig = obj.view.Figure;
             fig.Name = 'Select model type';
@@ -145,7 +137,11 @@ classdef selectModelTypeDlg < handle
         end
 
         function updateDescription(obj, radioBtn)
-            % updateDescription  Update the description text area for radioBtn
+            % UPDATEDESCRIPTION - Update the description text area for radioBtn.
+            %
+            % Syntax:
+            %   function updateDescription(obj, radioBtn)
+            %
 
             switch radioBtn
                 case obj.view.material63
@@ -169,7 +165,11 @@ classdef selectModelTypeDlg < handle
         end
 
         function onOK(obj)
-            % Read selected radio button and store result
+            % ONOK - Read selected radio button and store result.
+            %
+            % Syntax:
+            %   function onOK(obj)
+            %
             selected = obj.view.modelTypeButtonGroup.SelectedObject;
             switch selected
                 case obj.view.material63

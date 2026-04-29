@@ -1,10 +1,12 @@
 classdef Annotations < handle
-    % @type Annotations class is responsible for the List of Annotations dialog
-    % available from MIB -> Ribbon -> Models -> Annotations -> List of annotations
-    %
-    % @code
-    % obj.startController('controllers.Annotations'); // as GUI tool
-    % @endcode
+% ANNOTATIONS - @type Annotations class is responsible for the List of Annotations dialog.
+%
+% available from MIB Ribbon Models Annotations List of annotations
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.Annotations'); // as GUI tool
 
     % Updates
     % ported to MIB3 AppDesigner framework
@@ -42,7 +44,11 @@ classdef Annotations < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, src, evnt)
-            % Guard: if the view was closed before listener cleanup, clean up and return.
+            % VIEWLISTNER_CALLBACK2 - Guard: if the view was closed before listener cleanup, clean up and return.
+            %
+            % Syntax:
+            %   function ViewListner_Callback2(obj, src, evnt)
+            %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
                     delete(obj.listener{i});
@@ -58,13 +64,16 @@ classdef Annotations < handle
 
     methods
         function obj = Annotations(mibModel, varargin)
-            % function obj = Annotations(mibModel, varargin)
-            % Constructor for the Annotations controller.
+            % ANNOTATIONS - Constructor for the Annotations controller.
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: controller handle (unused, for startController compatibility)
-            % varargin{2}: [@em optional] BatchOpt structure; when NaN returns defaults via SyncBatch
+            % Syntax:
+            %   function obj = Annotations(mibModel, varargin)
+            %
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — controller handle (unused, for startController compatibility)
+            %   - **varargin{2}** — *(optional)* BatchOpt structure; when NaN returns defaults via SyncBatch
+            %
 
             obj.mibModel = mibModel;
 
@@ -162,8 +171,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function closeWindow(obj)
-            % function closeWindow(obj)
-            % Close the Annotations window and clean up listeners.
+            % CLOSEWINDOW - Close the Annotations window and clean up listeners.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
 
             for i = numel(obj.childControllers):-1:1
                 child = obj.childControllers{i};
@@ -185,8 +197,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function addCallbacks(obj)
-            % function addCallbacks(obj)
-            % Wire all widget callbacks. Called once from the constructor.
+            % ADDCALLBACKS - Wire all widget callbacks. Called once from the constructor.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
+            %
 
             % Window X-button triggers proper cleanup
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
@@ -242,8 +257,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % Refresh the annotation table from the current dataset.
+            % UPDATEWIDGETS - Refresh the annotation table from the current dataset.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
 
             id = obj.mibModel.getActiveId();
             obj.BatchOpt.id = id;
@@ -273,8 +291,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function loadBtn_Callback(obj)
-            % function loadBtn_Callback(obj)
-            % Import annotations from a file or from the MATLAB workspace.
+            % LOADBTN_CALLBACK - Import annotations from a file or from the MATLAB workspace.
+            %
+            % Syntax:
+            %   function loadBtn_Callback(obj)
+            %
 
             id = obj.BatchOpt.id;
 
@@ -431,8 +452,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function saveBtn_Callback(obj)
-            % function saveBtn_Callback(obj)
-            % Export annotations to a file or to the MATLAB workspace.
+            % SAVEBTN_CALLBACK - Export annotations to a file or to the MATLAB workspace.
+            %
+            % Syntax:
+            %   function saveBtn_Callback(obj)
+            %
 
             id = obj.BatchOpt.id;
             [labelText, labelValue, labelPosition] = ...
@@ -463,13 +487,16 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function saveAnnotationsToFile(obj, labelText, labelPosition, labelValue)
-            % function saveAnnotationsToFile(obj, labelText, labelPosition, labelValue)
-            % Save annotations to a file chosen by the user.
+            % SAVEANNOTATIONSTOFILE - Save annotations to a file chosen by the user.
             %
-            % Parameters:
-            % labelText: cell array of annotation labels
-            % labelPosition: Nx4 matrix [z x y t] in pixels
-            % labelValue: Nx1 numeric array of annotation values
+            % Syntax:
+            %   function saveAnnotationsToFile(obj, labelText, labelPosition, labelValue)
+            %
+            % Input Arguments:
+            %   - **labelText** — cell array of annotation labels
+            %   - **labelPosition** — Nx4 matrix [z x y t] in pixels
+            %   - **labelValue** — Nx1 numeric array of annotation values
+            %
 
             id = obj.BatchOpt.id;
 
@@ -574,8 +601,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function deleteBtn_Callback(obj)
-            % function deleteBtn_Callback(obj)
-            % Delete all annotations from the current dataset.
+            % DELETEBTN_CALLBACK - Delete all annotations from the current dataset.
+            %
+            % Syntax:
+            %   function deleteBtn_Callback(obj)
+            %
 
             id = obj.BatchOpt.id;
             obj.mibModel.backup('annotations', 0);
@@ -586,11 +616,14 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function annotationTable_CellSelectionCallback(obj, Selection)
-            % function annotationTable_CellSelectionCallback(obj, Selection)
-            % Callback for cell selection change in annotationTable.
+            % ANNOTATIONTABLE_CELLSELECTIONCALLBACK - Callback for cell selection change in annotationTable.
             %
-            % Parameters:
-            % Selection: Nx2 array of [row col] pairs (from SelectionChangedFcn event.Selection)
+            % Syntax:
+            %   function annotationTable_CellSelectionCallback(obj, Selection)
+            %
+            % Input Arguments:
+            %   - **Selection** — Nx2 array of [row col] pairs (from SelectionChangedFcn event.Selection)
+            %
 
             obj.indices = Selection;
             if obj.view.handles.jumpCheck.Value
@@ -600,11 +633,14 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function annotationTable_CellEditCallback(obj, Indices)
-            % function annotationTable_CellEditCallback(obj, Indices)
-            % Callback for cell edit in annotationTable.
+            % ANNOTATIONTABLE_CELLEDITCALLBACK - Callback for cell edit in annotationTable.
             %
-            % Parameters:
-            % Indices: [row col] of the edited cell (from CellEditCallback event.Indices)
+            % Syntax:
+            %   function annotationTable_CellEditCallback(obj, Indices)
+            %
+            % Input Arguments:
+            %   - **Indices** — [row col] of the edited cell (from CellEditCallback event.Indices)
+            %
 
             data      = obj.view.handles.annotationTable.Data;
             rowNames  = obj.view.handles.annotationTable.RowName;
@@ -627,8 +663,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function precisionEdit_Callback(obj)
-            % function precisionEdit_Callback(obj)
-            % Callback for the precision spinner; refresh table with new decimal places.
+            % PRECISIONEDIT_CALLBACK - Callback for the precision spinner; refresh table with new decimal places.
+            %
+            % Syntax:
+            %   function precisionEdit_Callback(obj)
+            %
 
             precision = obj.view.handles.precisionEdit.Value;
             % persist preference
@@ -642,25 +681,28 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function tableContextMenu_cb(obj, parameter)
-            % function tableContextMenu_cb(obj, parameter)
-            % Callbacks for the annotation table context menu.
+            % TABLECONTEXTMENU_CB - Callbacks for the annotation table context menu.
             %
-            % Parameters:
-            % parameter: string selecting the action
-            % @li 'Add'         - add a new annotation
-            % @li 'Modify'      - batch-modify values/coords of selected annotations
-            % @li 'Rename'      - rename selected annotations
-            % @li 'Jump'        - move view to selected annotation
-            % @li 'Count'       - count and sum selected annotations
-            % @li 'Clipboard'   - copy selected rows to clipboard
-            % @li 'ClipboardPaste' - paste clipboard into selected column
-            % @li 'CropPatches' - crop image patches around selected annotations
-            % @li 'Mask'        - rasterise selected annotations into the mask layer
-            % @li 'Interpolate' - interpolate positions between selected annotations
-            % @li 'Export'      - export selected annotations to file
-            % @li 'Imaris'      - export selected annotations to Imaris
-            % @li 'OrderTop' / 'OrderUp' / 'OrderDown' / 'OrderBottom' - reorder
-            % @li 'Delete'      - delete selected annotations
+            % Syntax:
+            %   function tableContextMenu_cb(obj, parameter)
+            %
+            % Input Arguments:
+            %   - **parameter** — string selecting the action
+            %   - 'Add'         - add a new annotation
+            %   - 'Modify'      - batch-modify values/coords of selected annotations
+            %   - 'Rename'      - rename selected annotations
+            %   - 'Jump'        - move view to selected annotation
+            %   - 'Count'       - count and sum selected annotations
+            %   - 'Clipboard'   - copy selected rows to clipboard
+            %   - 'ClipboardPaste' - paste clipboard into selected column
+            %   - 'CropPatches' - crop image patches around selected annotations
+            %   - 'Mask'        - rasterise selected annotations into the mask layer
+            %   - 'Interpolate' - interpolate positions between selected annotations
+            %   - 'Export'      - export selected annotations to file
+            %   - 'Imaris'      - export selected annotations to Imaris
+            %   - 'OrderTop' / 'OrderUp' / 'OrderDown' / 'OrderBottom' - reorder
+            %   - 'Delete'      - delete selected annotations
+            %
 
             id = obj.BatchOpt.id;
             orientation = obj.mibModel.I{id}.orientation;
@@ -1215,8 +1257,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function gui_KeyPressFcn(obj, eventdata)
-            % function gui_KeyPressFcn(obj, eventdata)
-            % Key-press callback for the main figure window.
+            % GUI_KEYPRESSFCN - Key-press callback for the main figure window.
+            %
+            % Syntax:
+            %   function gui_KeyPressFcn(obj, eventdata)
+            %
 
             if ismember('control', eventdata.Modifier)
                 switch lower(eventdata.Key)
@@ -1227,8 +1272,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function annotationTable_KeyPressFcn(obj, eventdata)
-            % function annotationTable_KeyPressFcn(obj, eventdata)
-            % Key-press callback for the annotation table; handles reorder shortcuts.
+            % ANNOTATIONTABLE_KEYPRESSFCN - Key-press callback for the annotation table; handles reorder shortcuts.
+            %
+            % Syntax:
+            %   function annotationTable_KeyPressFcn(obj, eventdata)
+            %
 
             if ismember('control', eventdata.Modifier)
                 if ismember('shift', eventdata.Modifier)
@@ -1247,8 +1295,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function resortTablePopup_Callback(obj)
-            % function resortTablePopup_Callback(obj)
-            % Resort the annotation list by the chosen column.
+            % RESORTTABLEPOPUP_CALLBACK - Resort the annotation list by the chosen column.
+            %
+            % Syntax:
+            %   function resortTablePopup_Callback(obj)
+            %
 
             obj.mibModel.backup('annotations', 1);
             sortBy = lower(obj.view.handles.resortTablePopup.Value);
@@ -1258,8 +1309,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function settingsBtn_Callback(obj)
-            % function settingsBtn_Callback(obj)
-            % Open the annotation display settings dialog.
+            % SETTINGSBTN_CALLBACK - Open the annotation display settings dialog.
+            %
+            % Syntax:
+            %   function settingsBtn_Callback(obj)
+            %
 
             prompts = {'Show annotations for extra slices (positive integer or 0):'; ...
                        'Annotation font size:'; ...
@@ -1301,8 +1355,11 @@ classdef Annotations < handle
 
         % -----------------------------------------------------------------
         function helpBtn_Callback(obj)
-            % function helpBtn_Callback(obj)
-            % Open the Annotations help page in the browser.
+            % HELPBTN_CALLBACK - Open the Annotations help page in the browser.
+            %
+            % Syntax:
+            %   function helpBtn_Callback(obj)
+            %
 
             web(fullfile(fileparts(obj.mibModel.mibPath), ...
                 'docs/html/user-interface/menu/models/annotations.html'), '-browser');

@@ -1,10 +1,23 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function saveTrainingPlot(src, evnt, trainingProgressStruct, outputFilename)
-% function saveTrainingPlot(varargin)
-% save custom training plot to a file
+% SAVETRAININGPLOT - Save the custom training progress plot to an image file.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      saveTrainingPlot(src, evnt, trainingProgressStruct, outputFilename)
+%
+% Input Arguments:
+%   - **src** — source object that triggered the callback (e.g. menu item)
+%   - **evnt** — event data (unused; pass ``[]`` when calling manually)
+%   - **trainingProgressStruct** — ``mibDeepTrainingProgressStruct`` with fields:
+%
+%     - ``.UIFigure`` — handle to the training progress ``uifigure``
+%     - ``.NetworkFilename`` — [char] path to the network file (used to suggest a save name)
+%
+%   - **outputFilename** *(optional)* — [char] full output path; when empty or
+%     omitted a file-save dialog is presented
+%
 
 if nargin < 4; outputFilename = []; end
 

@@ -1,21 +1,29 @@
 function [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)
-% function [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)
-% Return image stretching coefficients to be used for imadjust function to
+% GETIMADJUSTSTRETCHCOEF - Return image stretching coefficients to be used for imadjust function to.
+%
+% Syntax:
+%   function [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)
+%
 % stretch contrast of the image
 %
-% Parameters:
-% channels: [@em optional] color channel or vector of color channels to get
-% coefficients; when skipped return coefficients for all color channels
+% Input Arguments:
+%   - **channels** — *(optional)* color channel or vector of color channels to get
+%     coefficients; when skipped return coefficients for all color channels
 %
-% Return values:
-% lowIn: values matching low_in parameter of imadjust
-% highIn: values matching high_in parameter of imadjust
-% lowOut: values matching low_out parameter of imadjust
-% highOut: values matching high_in parameter of imadjust
-
-%|
-% Examples:
-% @code [lowIn, highIn, lowOut, highOut] = obj.mibModel.I{obj.mibModel.id}.getImAdjustStretchCoef(channel);  // call from mibController; get coefficients @endcode
+% Output Arguments:
+%   - **lowIn** — values matching low_in parameter of imadjust
+%   - **highIn** — values matching high_in parameter of imadjust
+%   - **lowOut** — values matching low_out parameter of imadjust
+%   - **highOut** — values matching high_in parameter of imadjust
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [lowIn, highIn, lowOut, highOut] = obj.mibModel.I{obj.mibModel.id}.getImAdjustStretchCoef(channel);% call from mibController; get coefficients
+%
 
 % Updates
 % 01.11.2017, IB, updated syntax

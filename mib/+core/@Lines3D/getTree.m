@@ -1,15 +1,18 @@
 function [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)
-% function [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)
-% return graph with the tree specified in treeId
+% GETTREE - return graph with the tree specified in treeId.
 %
-% Parameters:
-% treeId: index of tree to get
+% Syntax:
+%   function [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)
 %
-% Return values:
-% Graph: graph object containing tree specified in treeId
-% nodeIds: indices of nodes belonging to this tree
-% EdgesTable: a table with edges that belong to treeId
-% NodesTable: a table with nodes that belong to treeId
+% Input Arguments:
+%   - **treeId** — index of tree to get
+%
+% Output Arguments:
+%   - **Graph** — graph object containing tree specified in treeId
+%   - **nodeIds** — indices of nodes belonging to this tree
+%   - **EdgesTable** — a table with edges that belong to treeId
+%   - **NodesTable** — a table with nodes that belong to treeId
+%
 
 if nargin < 2; return; end
 

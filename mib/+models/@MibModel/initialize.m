@@ -1,22 +1,27 @@
 function initialize(obj)
-% function initialize(obj)
-% Initialize the MibModel class
+% INITIALIZE - Initialize the MibModel class.
 %
 % Syntax:
-%   obj.initialize()
 %
-% Description:
-%   Initializes the MibModel class by setting up default directories,
-%   datasets, and session parameters. Creates the initial dataset set
-%   with dummy datasets and initializes core components like the undo
-%   system and extension registry.
+%   .. code-block:: matlab
 %
-% Parameters:
-%   None
+%      obj.initialize()
 %
-% Example:
-%   obj = models.MibModel();
-%   obj.initialize();
+% Initializes the MibModel class by setting up default directories,
+% datasets, and session parameters. Creates the initial dataset set
+% with dummy datasets and initializes core components like the undo
+% system and extension registry.
+%
+% Input Arguments:
+%   none
+%
+% Usage:
+%   **Example 1** — initialize the model after construction
+%
+%   .. code-block:: matlab
+%
+%      obj = models.MibModel();
+%      obj.initialize();
 %
 
 arguments (Input)

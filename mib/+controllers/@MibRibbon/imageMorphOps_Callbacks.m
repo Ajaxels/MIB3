@@ -1,10 +1,13 @@
 function imageMorphOps_Callbacks(obj, hWidget, hData)
-% function imageMorphOps_Callbacks(obj, hWidget, hData)
-% callback on press of morph-ops buttons in the Image ribbon
+% IMAGEMORPHOPS_CALLBACKS - callback on press of morph-ops buttons in the Image ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function imageMorphOps_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

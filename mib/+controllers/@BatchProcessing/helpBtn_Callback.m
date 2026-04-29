@@ -1,12 +1,13 @@
 function helpBtn_Callback(obj)
-% function helpBtn_Callback(obj)
-% open the batch processing help page in the system browser
+% HELPBTN_CALLBACK - open the batch processing help page in the system browser.
 %
-%|
-% @b Examples:
-% @code obj.helpBtn_Callback(); @endcode
+% Syntax:
+%   function helpBtn_Callback(obj)
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.helpBtn_Callback();
 %
 
 web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-batchprocessing.html'), '-browser');

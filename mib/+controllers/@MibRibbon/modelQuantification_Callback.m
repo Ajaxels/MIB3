@@ -1,10 +1,13 @@
 function modelQuantification_Callback(obj, hWidget, hData)
-% function modelQuantification_Callback(obj, hWidget, hData)
-% callback on press of the Quantification button in the Model ribbon
+% MODELQUANTIFICATION_CALLBACK - callback on press of the Quantification button in the Model ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function modelQuantification_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

@@ -1,37 +1,43 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function [patchOut, info, augList, augPars] = augmentAndCrop2dPatchMultiGPU(patchIn, info, inputPatchSize, outputPatchSize, mode, options)
-% function [patchOut, augList, augPars] = augmentAndCrop2dPatchMultiGPU(patchIn, info, inputPatchSize, outputPatchSize, mode, options)
+% AUGMENTANDCROP2DPATCHMULTIGPU - Augment 2D training patches using operations in ``options.AugOpt2D``
+% and/or crop the response to the network's output size.
 %
-% Augment training data by set of operations encoded in
-% options.AugOpt2D and/or crop the response to the network's output size.
+% Syntax:
 %
-% Parameters:
-% patchIn: a table with InputImage and ResponsePixelLabelImage fields for semantic segmentation or matrix for classification
-% info: additional info about input patch
-% inputPatchSize: input patch size as [height, width, depth, color]
-% outputPatchSize: output patch size as [height, width, depth, classes]
-% mode: string
-% 'show' - do not transform/augment, do not crop, only show
-% 'crop' - do not transform/augment, only crop and show
-% 'aug' - transform/augment, crop and show
-% options: a struture with additional parameters
-%   .Workflow - [string] used workflow, taken from obj.BatchOpt.Workflow{1}
-%   .Aug2DFuncNames - copy of mibDeepController.Aug2DFuncNames
-%   .AugOpt2D - copy of mibDeepController.AugOpt2D
-%   .Aug2DFuncProbability - copy of mibDeepController.Aug2DFuncProbability probabilities of augmentation functions to be triggered
-%   .T_ConvolutionPadding - [string] type of padding, taken from mibDeepController.BatchOpt.T_ConvolutionPadding{1}
+%   .. code-block:: matlab
 %
-% Return values:
-% patchOut: return the image patches in a two-column table as required by the trainNetwork function for
-% single-input networks.
-% info: additional info about input patch
-% augList: cell array with used augmentation operations
-% augPars: matrix with used values, NaN if the value was not
-% used, the second column is the parameter for blend of Hue+Sat
-% jitters
+%      [patchOut, info, augList, augPars] = augmentAndCrop2dPatchMultiGPU( ...
+%          patchIn, info, inputPatchSize, outputPatchSize, mode, options)
+%
+% Input Arguments:
+%   - **patchIn** — table with ``InputImage`` and ``ResponsePixelLabelImage`` fields
+%     (semantic segmentation) or a matrix (classification)
+%   - **info** — additional info struct about the input patch
+%   - **inputPatchSize** — [1×4] input patch size as ``[height, width, depth, color]``
+%   - **outputPatchSize** — [1×4] output patch size as ``[height, width, depth, classes]``
+%   - **mode** — [char] operation mode:
+%
+%     - ``'show'`` — pass through without augmentation or cropping
+%     - ``'crop'`` — crop only, no augmentation
+%     - ``'aug'`` — augment, then crop
+%
+%   - **options** — struct with additional parameters:
+%
+%     - ``.Workflow`` — [string] workflow name (``obj.BatchOpt.Workflow{1}``)
+%     - ``.Aug2DFuncNames`` — copy of ``mibDeepController.Aug2DFuncNames``
+%     - ``.AugOpt2D`` — copy of ``mibDeepController.AugOpt2D``
+%     - ``.Aug2DFuncProbability`` — copy of ``mibDeepController.Aug2DFuncProbability``;
+%       per-function trigger probabilities
+%     - ``.T_ConvolutionPadding`` — [string] convolution padding type
+%       (``mibDeepController.BatchOpt.T_ConvolutionPadding{1}``)
+%
+% Output Arguments:
+%   - **patchOut** — two-column table as required by ``trainNetwork`` for single-input networks
+%   - **info** — additional info struct about the input patch
+%   - **augList** — cell array with the names of applied augmentation operations
+%   - **augPars** — matrix of applied parameter values (``NaN`` when not used);
+%     second column holds the blend parameter for Hue+Sat jitter
+%
 
 global mibDeepTrainingProgressStruct
 

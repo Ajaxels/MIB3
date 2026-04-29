@@ -1,10 +1,13 @@
 function modelRender_Callback(obj, hWidget, hData)
-% function modelRender_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Render button of the Model ribbon
+% MODELRENDER_CALLBACK - callback on press of buttons in the Render button of the Model ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function modelRender_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

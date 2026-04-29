@@ -1,14 +1,21 @@
 function clearContents(obj)
-% function clearContents(obj)
-% Set all elements of the class to default values
+% CLEARCONTENTS - Set all elements of the class to default values.
 %
-% Parameters:
+% Syntax:
+%   function clearContents(obj)
 %
-% Return values:
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.Lines3D.clearContents(); @endcode
+% Input Arguments:
+%
+% Output Arguments:
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.Lines3D.clearContents();
+%
 
 obj.G = [];
 obj.noTrees = 0;

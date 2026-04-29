@@ -1,43 +1,52 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function stopState = customTrainingProgressDisplay(progressStruct, trainingProgressOptions)
-% function stopState = customTrainingProgressDisplay(progressStruct)
-% show custom progress dialog for DeepMIB training
+% CUSTOMTRAININGPROGRESSDISPLAY - Show custom progress dialog for DeepMIB training.
 %
-% Parameters:
-% progressStruct: structure with the progress of the training process
-%   .Epoch
-%   .Iteration: 2
-%   .TimeSinceStart: 4.5219
-%   .TrainingLoss: 0.7802
-%   .ValidationLoss: []
-%   .BaseLearnRate: 0.0100
-%   .TrainingAccuracy: 26.9975
-%   .TrainingRMSE: 164.7408
-%   .ValidationAccuracy: []
-%   .ValidationRMSE: []
-%   .State "iteration"
-% trainingProgressOptions: structure with additional parameters
-%   .O_NumberOfPoints - max number of points in the progress plot to show, taken from mibDeepController.BatchOpt.O_NumberOfPoints{1}
-%   .NetworkFilename - filename of the network file in DeepMIB, taken from mibDeepController.BatchOpt.NetworkFilename
-%   .noColorChannels -> [numerical] str2num(obj.BatchOpt.T_InputPatchSize)(4)
-%   .Workflow = obj.BatchOpt.Workflow{1};
-%   .Architecture = obj.BatchOpt.Architecture{1};
-%   .refreshRateIter = obj.BatchOpt.O_RefreshRateIter{1};
-%   .matlabVersion = obj.mibController.matlabVersion;
-%   .iterPerEpoch - value of iterations per epoch taken from mibDeepController.TrainingProgress.iterPerEpoch
-%   .sendNextReportAtEpoch - value, epoch value to send report to email
-%   .TrainingOpt.MaxEpochs 
-%   .TrainingOpt.solverName
-%   .TrainingOpt.Shuffle 
-%   .TrainingOpt.LearnRateSchedule 
-%   .TrainingOpt.OutputNetwork 
-%   .TrainingOpt.InitialLearnRate
-%   .TrainingOpt.LearnRateDropPeriod 
-%   .TrainingOpt.ValidationPatience
-%   .TrainingOpt.ValidationFrequency 
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      stopState = customTrainingProgressDisplay(progressStruct, trainingProgressOptions)
+%
+% Input Arguments:
+%   - **progressStruct** — struct with current training progress (provided by ``trainNetwork``):
+%
+%     - ``.Epoch`` — current epoch number
+%     - ``.Iteration`` — current iteration number, e.g. ``2``
+%     - ``.TimeSinceStart`` — elapsed time in seconds, e.g. ``4.5219``
+%     - ``.TrainingLoss`` — current training loss, e.g. ``0.7802``
+%     - ``.ValidationLoss`` — validation loss (``[]`` if no validation)
+%     - ``.BaseLearnRate`` — current learning rate, e.g. ``0.0100``
+%     - ``.TrainingAccuracy`` — training accuracy (%), e.g. ``26.9975``
+%     - ``.TrainingRMSE`` — training RMSE (regression tasks), e.g. ``164.7408``
+%     - ``.ValidationAccuracy`` — validation accuracy (``[]`` if no validation)
+%     - ``.ValidationRMSE`` — validation RMSE (``[]`` if no validation)
+%     - ``.State`` — training phase string, e.g. ``'iteration'``
+%
+%   - **trainingProgressOptions** — struct with display/training parameters:
+%
+%     - ``.O_NumberOfPoints`` — [numeric] max points in the progress plot
+%       (``mibDeepController.BatchOpt.O_NumberOfPoints{1}``)
+%     - ``.NetworkFilename`` — [char] network file path
+%       (``mibDeepController.BatchOpt.NetworkFilename``)
+%     - ``.noColorChannels`` — [numeric] number of colour channels
+%       (``str2num(obj.BatchOpt.T_InputPatchSize)(4)``)
+%     - ``.Workflow`` — [char] active workflow (``obj.BatchOpt.Workflow{1}``)
+%     - ``.Architecture`` — [char] network architecture (``obj.BatchOpt.Architecture{1}``)
+%     - ``.refreshRateIter`` — [numeric] UI refresh rate in iterations
+%       (``obj.BatchOpt.O_RefreshRateIter{1}``)
+%     - ``.matlabVersion`` — [numeric] MATLAB release number (``obj.mibController.matlabVersion``)
+%     - ``.iterPerEpoch`` — [numeric] iterations per epoch
+%     - ``.sendNextReportAtEpoch`` — [numeric] epoch at which to send the next e-mail report
+%     - ``.TrainingOpt.MaxEpochs`` — maximum number of training epochs
+%     - ``.TrainingOpt.solverName`` — optimiser name string
+%     - ``.TrainingOpt.Shuffle`` — dataset shuffle strategy
+%     - ``.TrainingOpt.LearnRateSchedule`` — learning-rate schedule type
+%     - ``.TrainingOpt.OutputNetwork`` — which network to save on each checkpoint
+%     - ``.TrainingOpt.InitialLearnRate`` — initial learning rate
+%     - ``.TrainingOpt.LearnRateDropPeriod`` — period (epochs) for learning-rate drop
+%     - ``.TrainingOpt.ValidationPatience`` — early-stop patience (epochs)
+%     - ``.TrainingOpt.ValidationFrequency`` — validation frequency (iterations)
+%
 
 global mibDeepStopTraining
 global mibDeepTrainingProgressStruct

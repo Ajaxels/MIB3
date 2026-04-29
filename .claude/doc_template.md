@@ -1,48 +1,55 @@
 # Documentation Block Template
 
-Every new or ported function/method must include this block:
+Every new or ported function/method must include this block using Sphinx RST-compatible format:
 
 ```matlab
 function result = myMethod(obj, param1, param2, BatchOptIn)
-% function result = myMethod(obj, param1, param2, BatchOptIn)
-% One-line summary of what the method does.
+% MYMETHOD - One-line summary of what the method does.
+%
+% Syntax:
+%   result = myMethod(obj, param1, param2, BatchOptIn)
 %
 % Longer description if needed — explain the algorithm, side-effects,
 % or any non-obvious behaviour.
 %
-% Parameters:
-% param1: [type] description
-%   @li value1 - meaning
-%   @li value2 - meaning
-% param2: [@em optional] [type] description; default value and when it applies
-% BatchOptIn: a structure for batch processing mode; when NaN, returns
-%   default options via "SyncBatch" event
-%   @li .FieldName - [type, {choices}] description
-%   @li .showWaitbar - logical, show or not the waitbar
-%   @li .id -> [@em optional], dataset index 1-9, default = obj.getActiveId()
+% Input Arguments:
+%   - **param1** — [type] description
+%     - .value1 - meaning
+%     - .value2 - meaning
+%   - **param2** — *(optional)* [type] description; default value and when it applies
+%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns
+%     default options via "SyncBatch" event
+%     - .FieldName - [type, {choices}] description
+%     - .showWaitbar - logical, show or not the waitbar
+%     - .id - *(optional)* dataset index 1-9, default = obj.getActiveId()
 %
-% Return values:
-% result: [type] description; empty [] when cancelled or on error
+% Output Arguments:
+%   - **result** — [type] description; empty [] when cancelled or on error
 %
-
-%|
-% @b Examples:
-% @code result = obj.mibModel.myMethod(p1, p2);  // typical call @endcode
-% @code
-% BatchOpt.FieldName = 'value';
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.myMethod(p1, p2, BatchOpt);       // batch / scripted call
-% @endcode
-
-% Updates
-% DD.MM.YYYY - description of a significant change
+% Usage:
+%   Example 1 - Typical call::
+%
+%     result = obj.mibModel.myMethod(p1, p2);
+%
+%   Example 2 - Batch/scripted call::
+%
+%     BatchOpt.FieldName = 'value';
+%     BatchOpt.showWaitbar = false;
+%     obj.mibModel.myMethod(p1, p2, BatchOpt);
+%
+% See also:
+%   relatedFunction1, relatedFunction2
 ```
 
 ## Rules
 
-- First comment line **repeats the function signature** exactly.
-- `[@em optional]` marks optional parameters; always state the default.
-- `@li` for enumerated values or struct fields.
-- At least one `@b Examples:` `@code ... @endcode` with a realistic call.
+- First comment line uses `% FUNCNAME - One-line summary.` format (name in ALL CAPS).
+- For methods/functions, include a `Syntax:` section with the function signature.
+- `*(optional)*` marks optional parameters; always state the default.
+- Sub-fields of struct parameters are indented as `  - .fieldName - description`.
+- At least one `Usage:` example with `Example N - Title::` header and indented code block.
 - BatchOpt-enabled methods: include a batch call example.
 - `core.*` low-level methods: show call via `obj.mibModel.I{obj.mibModel.id}.method(...)`.
+- `classdef` files: no `Syntax:` section; examples use `Example N::` (no title needed).
+- Use `See also:` (not `@see`) for cross-references.
+- No `Updates` section — version history goes in git log, not source code.

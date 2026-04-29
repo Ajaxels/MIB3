@@ -1,10 +1,13 @@
 function gui_Callbacks(obj, hWidget, hData)
-% function gui_Callbacks(obj, hWidget, hData)
-% callbacks for widgets of some the ROI panel obj.view.handles.panels.roi (obj.cRoi.gui)
+% GUI_CALLBACKS - callbacks for widgets of some the ROI panel obj.view.handles.panels.roi (obj.cRoi.gui).
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting data class
+% Syntax:
+%   function gui_Callbacks(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting data class
+%
 
 % mode: char, optional identifier the widget, used when the same operation
 % is called from menu, when empty or missing hWidget.Tag is used as an

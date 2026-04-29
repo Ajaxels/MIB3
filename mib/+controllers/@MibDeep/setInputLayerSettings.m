@@ -1,6 +1,9 @@
 function setInputLayerSettings(obj)
-% function setInputLayerSettings(obj)
-    % update init settings for the input layer of networks
+% SETINPUTLAYERSETTINGS - update init settings for the input layer of networks.
+%
+% Syntax:
+%   function setInputLayerSettings(obj)
+%
     prompts = {...
         sprintf('Data normalization\n"zerocenter" - subtract the mean specified by Mean\n"zscore" - subtract the mean specified by Mean and divide by StandardDeviation\n"rescale-symmetric" - rescale the input to be in the range [-1, 1] using the minimum and maximum values specified by Min and Max, respectively\n"rescale-zero-one" - rescale the input to be in the range [0, 1] using the minimum and maximum values specified by Min and Max, respectively\n"none" - do not normalize the input data'); ...
         sprintf('\nThe following fields may be empty for automatic calculations during training or be an array of values per channel or a numeric scalar\n\nMean [zerocenter or z-score]'); ...

@@ -1,17 +1,27 @@
 function primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
-% function primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
-% update fields of  primaryStruct using the fields of secondaryStruct
+% CONCATENATESTRUCTURES - Update fields of primaryStruct using the fields of secondaryStruct.
 %
-% Parameters:
-% primaryStruct: primary structure that should be updates
-% secondaryStruct: secondary structure that should be concatenated into the primary structure
+% Syntax:
 %
-% Return value:
-% primaryStruct: updated primary structure
-
-%| 
-% @b Examples:
-% @code obj.mibModel.preferences = utils.concatenateStructures(obj.mibModel.preferences, mib_pars.preferences); //updates fields of obj.mibModel.preferences with fields from mib_pars.preferences @endcode
+%   .. code-block:: matlab
+%
+%      primaryStruct = concatenateStructures(primaryStruct, secondaryStruct)
+%
+% Input Arguments:
+%   - **primaryStruct** — primary structure that should be updated
+%   - **secondaryStruct** — secondary structure that should be concatenated into the primary structure
+%
+% Output Arguments:
+%   - **primaryStruct** — updated primary structure
+%
+% Usage:
+%
+%   **Example 1** — update preferences structure from a saved session
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.preferences = utils.concatenateStructures(obj.mibModel.preferences, mib_pars.preferences);
+%
 
 % Updates
 % 

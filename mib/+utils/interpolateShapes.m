@@ -1,35 +1,37 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 function [img, boundingBox] = interpolateShapes(img, max_pnts)
-% function [img, boundingBox] = interpolateShapes(img, max_pnts)
-% Interpolate the shapes between the slices
+% INTERPOLATESHAPES - Interpolate the shapes between the slices.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      [img, boundingBox] = interpolateShapes(img, max_pnts)
 %
 % One of two interpolation methods. The interpolation method can be
-% selected in @em MIB->File->Preferences.
-% @note This method can interpolate only the @b filled shapes.
+% selected in *MIB -> File -> Preferences*.
 %
-% Parameters:
-% img: -> binary image dataset, for example the 'Selection' layer [1:height, 1:width, 1:z]
-% max_pnts: -> maximal number of points used for interpolation.
+% .. note::
+%    This method can interpolate only **filled** shapes; use
+%    ``utils.interpolateLines`` for non-closed line selections.
 %
-% Return values:
-% img: -> binary image dataset, for example the 'Selection' layer [1:height, 1:width, 1:z]
-% boundingBox: -> a bounding box of the area that was used to calculate interpolation, [xMin, xMax, yMin, yMax, zMin, zMax]
-% @see ib_interpolateLines
+% Input Arguments:
+%   - **img** — [uint8] binary image dataset, e.g. the Selection layer ``[height, width, z]``
+%   - **max_pnts** *(optional)* — [numeric] maximum number of points used for interpolation (default: ``140``)
+%
+% Output Arguments:
+%   - **img** — [uint8] binary image dataset with interpolated shapes
+%   - **boundingBox** — [numeric] bounding box of the interpolated area ``[xMin, xMax, yMin, yMax, zMin, zMax]``; ``[]`` when no interpolation was performed
+%
+% Usage:
+%
+%   **Example 1** — interpolate selection shapes across slices
+%
+%   .. code-block:: matlab
+%
+%      selection = obj.mibModel.getData3D('selection', [], 3);
+%      [selection, bb] = utils.interpolateShapes(selection, 140);
+%      obj.mibModel.setData3D(selection, 'selection', [], 3);
+%
 
 % Updates
 %
@@ -156,15 +158,19 @@ boundingBox = [minX, maxX, minY, maxY, min(slices), max(slices)];
 end
 
 function contour = interp_points(contour1, contour2, slice_id1, slice_id2)
-% get interpolated points between two contours
+% INTERP_POINTS - get interpolated points between two contours.
+%
+% Syntax:
+%   function contour = interp_points(contour1, contour2, slice_id1, slice_id2)
+%
 % contour = interp_points(contour1, contour2, slice_id1, slice_id2)
 % OUT:
-% contour -> coordinates of interpolated points between two known contours (point_id, [y x], slice)
+% contour coordinates of interpolated points between two known contours (point_id, [y x], slice)
 % IN:
-% contour1 -> first contour coordinates (point_id, [y x])
-% contour2 -> second contour coordinates (point_id, [y x])
-% slice_id1 -> number of the first slice
-% slice_id2 -> number of the second slice
+% contour1 first contour coordinates (point_id, [y x])
+% contour2 second contour coordinates (point_id, [y x])
+% slice_id1 number of the first slice
+% slice_id2 number of the second slice
 
 z_num = slice_id2 - slice_id1;
 

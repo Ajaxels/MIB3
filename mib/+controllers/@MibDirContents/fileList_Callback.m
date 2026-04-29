@@ -1,10 +1,13 @@
 function fileList_Callback(obj, hWidget, hData)
-% function fileList_Callback(obj, hWidget, hData)
-% callback for double click on a filename in obj.handles.panels.dirContents.handles.fileList
+% FILELIST_CALLBACK - callback for double click on a filename in obj.handles.panels.dirContents.handles.fileList.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting ButtonPushedData class
+% Syntax:
+%   function fileList_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting ButtonPushedData class
+%
 
 arguments (Input)
     obj controllers.MibDirContents

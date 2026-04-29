@@ -1,7 +1,10 @@
 function startPrediction3D(obj)
-    % function startPrediction3D(obj)
-    % predict datasets for 3D networks taken to a separate function
-    % to improve performance
+% STARTPREDICTION3D - predict datasets for 3D networks taken to a separate function.
+%
+% Syntax:
+%   function startPrediction3D(obj)
+%
+% to improve performance
 
     if strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Preprocessing is not required') || ...
             strcmp(obj.BatchOpt.PreprocessingMode{1}, 'Split files for training/validation') || ...

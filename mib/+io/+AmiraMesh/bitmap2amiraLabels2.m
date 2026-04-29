@@ -16,8 +16,10 @@
 % Optimised rewrite of bitmap2amiraLabels (io.AmiraMesh.bitmap2amiraLabels)
 
 function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
-% function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
-% Convert matrix [1:height, 1:width, 1:no_stacks] to Amira Mesh Labels.
+% BITMAP2AMIRALABELS2 - Convert matrix [1:height, 1:width, 1:no_stacks] to Amira Mesh Labels.
+%
+% Syntax:
+%   function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
 %
 % Drop-in replacement for io.AmiraMesh.bitmap2amiraLabels with a
 % dramatically faster binaryRLE encoder.  All three formats (binary,
@@ -26,85 +28,89 @@ function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_lis
 % KEY DIFFERENCES vs bitmap2amiraLabels
 % ======================================
 % 1. RLE ENCODER — vectorised, O(R) loop over runs instead of O(N) loop
-%    over bytes.  For typical segmentation data R << N (often R < N/100),
-%    so the encoder is 100–1000× faster.
+% over bytes.  For typical segmentation data R << N (often R < N/100),
+% so the encoder is 100–1000× faster.
 %
 % 2. minRLE = 2 — the original used minRLE = 1, which encodes a single
-%    repeated byte as [count=1, value] (2 bytes) — actually EXPANDING the
-%    data vs leaving it in a literal block (1 byte).  Break-even is at
-%    run length ≥ 2; anything shorter stays in a literal block.
+% repeated byte as [count=1, value] (2 bytes) — actually EXPANDING the
+% data vs leaving it in a literal block (1 byte).  Break-even is at
+% run length ≥ 2; anything shorter stays in a literal block.
 %
 % 3. NO in-place overwrite — the original wrote compressed output back
-%    into the input `bitmap` array.  This version uses a separate
-%    pre-allocated output buffer, which is cleaner and avoids potential
-%    aliasing bugs.
+% into the input `bitmap` array.  This version uses a separate
+% pre-allocated output buffer, which is cleaner and avoids potential
+% aliasing bugs.
 %
 % 4. ASCII encoder vectorised — `fprintf(fid, '%d\n', data)` is
-%    called on the entire array in one shot instead of per-element.
+% called on the entire array in one shot instead of per-element.
 %
 % 5. uint16/uint32 RLE warning — Amira's HxByteRLE operates on raw
-%    bytes; for multi-byte label types the encoding is ambiguous.
-%    The function warns and falls back to uncompressed binary for
-%    uint16/uint32 when binaryRLE is requested.
+% bytes; for multi-byte label types the encoding is ambiguous.
+% The function warns and falls back to uncompressed binary for
+% uint16/uint32 when binaryRLE is requested.
 %
 % ALGORITHM — binaryRLE (HxByteRLE format)
 % ==========================================
 % Amira's HxByteRLE is a simple run-length encoding over a byte stream:
 %
-%   Compressed block  — [N, V]         where N < 0x80 (bit7=0):
-%                        N copies of byte V
+% Compressed block  — [N, V]         where N < 0x80 (bit7=0):
+% N copies of byte V
 %
-%   Literal block     — [0x80|N, b1, b2, …, bN]  where N ≤ 127:
-%                        N literal bytes follow
+% Literal block     — [0x80|N, b1, b2, …, bN]  where N ≤ 127:
+% N literal bytes follow
 %
 % Encoding strategy:
-%   1. Detect all runs vectorially using diff() — O(N) vectorised, no loop.
-%   2. Loop over runs (not bytes).  For each run of length L and value V:
-%        L ≥ minRLE  → compressed:  emit ceil(L/127) × [chunk, V] pairs
-%        L < minRLE  → literal: accumulate into a 127-byte literal buffer,
-%                      flush when full or when a compressible run arrives.
-%   3. Flush remaining literal bytes at the end.
+% 1. Detect all runs vectorially using diff() — O(N) vectorised, no loop.
+% 2. Loop over runs (not bytes).  For each run of length L and value V:
+% L ≥ minRLE  → compressed:  emit ceil(L/127) × [chunk, V] pairs
+% L < minRLE  → literal: accumulate into a 127-byte literal buffer,
+% flush when full or when a compressible run arrives.
+% 3. Flush remaining literal bytes at the end.
 %
 % COMPLEXITY
-%   Original: O(N) MATLAB loop iterations (N = total bytes)
-%   This version: O(N) vectorised + O(R) loop iterations (R = num runs)
-%   Typical speedup: 100–1000× on real segmentation data.
+% Original: O(N) MATLAB loop iterations (N = total bytes)
+% This version: O(N) vectorised + O(R) loop iterations (R = num runs)
+% Typical speedup: 100–1000× on real segmentation data.
 %
 % PARAMETERS — identical to bitmap2amiraLabels:
-%   filename           — output file path
-%   bitmap             — [H W D] label array (uint8 recommended)
-%   format             — 'binary' | 'binaryRLE' | 'ascii'  (default 'binary')
-%   voxel              — struct with .x .y .z .minx .miny .minz
-%   color_list         — [M×3] material RGB colours (0–1)
-%   modelMaterialNames — cell array of material name strings
-%   overwrite          — 1 = overwrite without asking (default 0)
-%   showWaitbar        — 1 = show progress bar (default 1)
-%   extraOptions       — struct; .TransformationMatrix (char, optional)
-%
-% RETURN VALUES:
+% filename           — output file path
+% bitmap             — [H W D] label array (uint8 recommended)
+% format             — 'binary' | 'binaryRLE' | 'ascii'  (default 'binary')
+% voxel              — struct with .x .y .z .minx .miny .minz
+% color_list         — [M×3] material RGB colours (0–1)
+% modelMaterialNames — cell array of material name strings
+% overwrite          — 1 = overwrite without asking (default 0)
+% showWaitbar        — 1 = show progress bar (default 1)
+% extraOptions       — struct; .TransformationMatrix (char, optional)
+% Output Arguments:
 %   result             — 1 on success, 0 on failure/cancel
 %
-% EXAMPLE — direct use:
-%   @code
-%   pixStr = dataset.pixSize;
-%   pixStr.minx = bb(1);  pixStr.miny = bb(3);  pixStr.minz = bb(5);
-%   result = io.AmiraMesh.bitmap2amiraLabels2( ...
-%       '/output/Labels.am', uint8(labelVolume_hwd), 'binaryRLE', ...
-%       pixStr, materialColors, materialNames, 1, false, struct());
-%   @endcode
+%   EXAMPLE — direct use:
 %
-% EXAMPLE — via saver (preferred):
-%   @code
-%   opts.Format    = 'Amira mesh binary RLE compression SLOW (*.am)';
-%   opts.layerType = 'labels';
-%   opts.silent    = true;
-%   opts.overwrite = true;
-%   dataset.save('labels', '/output/Labels.am', opts);
-%   @endcode
+%   .. code-block:: matlab
 %
-% SEE ALSO
+%       pixStr = dataset.pixSize;
+%       pixStr.minx = bb(1);  pixStr.miny = bb(3);  pixStr.minz = bb(5);
+%       result = io.AmiraMesh.bitmap2amiraLabels2( ...
+%           '/output/Labels.am', uint8(labelVolume_hwd), 'binaryRLE', ...
+%           pixStr, materialColors, materialNames, 1, false, struct());
+%
+%
+%   EXAMPLE — via saver (preferred):
+%
+%   .. code-block:: matlab
+%
+%       opts.Format    = 'Amira mesh binary RLE compression SLOW (``*.am``)';
+%       opts.layerType = 'labels';
+%       opts.silent    = true;
+%       opts.overwrite = true;
+%       dataset.save('labels', '/output/Labels.am', opts);
+%
+%
+%   SEE ALSO
 %   io.AmiraMesh.bitmap2amiraLabels  (original, slower version)
 %   io.savers.AmiraMeshSaver
+%
 
 result = 0;
 curInt = get(0, 'DefaulttextInterpreter');
@@ -305,33 +311,36 @@ end
 %   VECTORISED HxByteRLE ENCODER                                      %
 % ================================================================== %
 function [encoded, nBytes] = encodeHxByteRLE(data)
-% function [encoded, nBytes] = encodeHxByteRLE(data)
-% Encode a uint8 (or multi-byte) column vector using Amira's HxByteRLE.
+% ENCODEHXBYTERLE - Encode a uint8 (or multi-byte) column vector using Amira's HxByteRLE.
+%
+% Syntax:
+%   function [encoded, nBytes] = encodeHxByteRLE(data)
 %
 % ALGORITHM
-%   1. Detect all run boundaries with diff() — fully vectorised, no loop.
-%   2. Loop over RUNS (not bytes).  For typical segmentation data the
-%      number of runs R << N (total bytes), so the loop is fast.
-%   3. Runs ≥ minRLE → compressed blocks of max 127 bytes.
-%      Runs <  minRLE → accumulate in a 127-byte literal buffer.
-%   4. Flush the literal buffer when full or when a long run arrives.
+% 1. Detect all run boundaries with diff() — fully vectorised, no loop.
+% 2. Loop over RUNS (not bytes).  For typical segmentation data the
+% number of runs R << N (total bytes), so the loop is fast.
+% 3. Runs ≥ minRLE → compressed blocks of max 127 bytes.
+% Runs <  minRLE → accumulate in a 127-byte literal buffer.
+% 4. Flush the literal buffer when full or when a long run arrives.
 %
 % COMPRESSED BLOCK:  [count,  value]         count ∈ [1, 127]
 % LITERAL BLOCK:     [0x80|count, b0…bN-1]  count ∈ [1, 127]
 %
-% Parameters:
+% Input Arguments:
 %   data    — (uint8 column vector) input bytes to compress
 %
-% Return values:
+% Output Arguments:
 %   encoded — (uint8 column vector) HxByteRLE bitstream
 %   nBytes  — length of encoded (= number of bytes to write to file)
 %
-% Example:
-%   @code
-%   data    = uint8([1 1 1 1 2 3 3 1 1]);
-%   [enc, n] = encodeHxByteRLE(data(:));
-%   % enc = [4 1 0x82 2 3 2 1]  (4×1, literal [2,3], 2×1)
-%   @endcode
+% Usage:
+%   Example 1::
+%
+%       data    = uint8([1 1 1 1 2 3 3 1 1]);
+%       [enc, n] = encodeHxByteRLE(data(:));
+%       % enc = [4 1 0x82 2 3 2 1]  (4×1, literal [2,3], 2×1)
+%
 
 % Minimum run length to use compressed encoding.
 % Run of 1: compressed = 2 bytes [1, V], literal (merged) = 1 byte → literal wins.

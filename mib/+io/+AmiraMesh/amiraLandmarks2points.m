@@ -15,13 +15,17 @@
 % Date: 07.08.2024
 
 function points = amiraLandmarks2points(filename)
-% read amira landmark coordinates
+% AMIRALANDMARKS2POINTS - read amira landmark coordinates.
 %
-% Parameters:
-% filename - filename to load amira landmark data
+% Syntax:
+%   function points = amiraLandmarks2points(filename)
 %
-% Return values:
-% points: array of points as [x, y, z]
+% Input Arguments:
+%   filename - filename to load amira landmark data
+%
+% Output Arguments:
+%   - **points** — array of points as [x, y, z]
+%
 
 points = [];
 if nargin < 1

@@ -1,6 +1,8 @@
 function result = countMaterials(obj)
-% function result = countMaterials(obj)
-% Calculate and update obj.materialsCount from the current model state
+% COUNTMATERIALS - Calculate and update obj.materialsCount from the current model state.
+%
+% Syntax:
+%   function result = countMaterials(obj)
 %
 % When materialNames is available (non-empty), the count is taken from
 % numel(materialNames).  Otherwise the method scans the pixel data across
@@ -11,15 +13,19 @@ function result = countMaterials(obj)
 % This method should be called after loading or importing a model to
 % ensure that materialsCount is synchronised with the actual data.
 %
-% Parameters:
+% Input Arguments:
 %
-% Return values:
-% result: double, the updated materialsCount value.
+% Output Arguments:
+%   - **result** — double, the updated materialsCount value.
 %
-
-%|
-% @b Examples:
-% @code n = obj.mibModel.I{obj.mibModel.id}.labels.countMaterials();  // recount after load/import @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     n = obj.mibModel.I{obj.mibModel.id}.labels.countMaterials();% recount after load/import
+%
 
 % Updates
 %

@@ -1,16 +1,23 @@
 function multipleBtn_Callback(obj)
-% function multipleBtn_Callback(obj)
-% Open the property selection dialog for multi-property batch analysis.
+% MULTIPLEBTN_CALLBACK - Open the property selection dialog for multi-property batch analysis.
+%
+% Syntax:
+%   function multipleBtn_Callback(obj)
 %
 % Launches the QuantificationProperties child controller which displays
 % checkboxes for all available shape and intensity properties.  When
 % the user confirms, the child calls applySelectedProperties to update
 % BatchOpt.MultipleProperty and the Property dropdown.
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.defineProperties.ButtonPushedFcn = @(~,~) obj.multipleBtn_Callback(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.defineProperties.ButtonPushedFcn = @(~,~) obj.multipleBtn_Callback();
+%
 
 % Updates
 %

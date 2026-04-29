@@ -1,39 +1,46 @@
 function selectedActionTable_ContextCallback(obj, parameter)
-% function selectedActionTable_ContextCallback(obj, parameter)
-% handle right-click context menu actions on the selected-action parameter table
+% SELECTEDACTIONTABLE_CONTEXTCALLBACK - handle right-click context menu actions on the selected-action parameter table.
+%
+% Syntax:
+%   function selectedActionTable_ContextCallback(obj, parameter)
 %
 % Each context menu item performs a structural edit on obj.CurrentBatch or on
 % the table's visual properties.  The function returns early if no row is
 % selected or if obj.CurrentBatch is empty.
 %
 % Supported operations (parameter):
-% @li 'add'               - prompt for a new numeric or logical parameter and
-%                           append it to obj.CurrentBatch
-% @li 'delete'            - remove the currently highlighted parameter from
-%                           obj.CurrentBatch
-% @li 'Add directories'   - open a multi-directory chooser and append the
-%                           selected paths to the DirectoriesList of a
-%                           DIRECTORY LOOP START step
-% @li 'Modify directory'  - open a single-directory chooser to replace the
-%                           currently selected directory entry; works for
-%                           DIRECTORY LOOP START, FILE LOOP START,
-%                           Directory operations, File operations, and generic
-%                           cell/char directory fields
-% @li 'Remove directories'- display a checklist and remove the ticked entries
-%                           from the DirectoriesList of a DIRECTORY LOOP START step
-% @li 'Set second column width' - prompt for a pixel width and apply it to
-%                           the second column of selectedActionTable
+%   - 'add'               - prompt for a new numeric or logical parameter and
+% append it to obj.CurrentBatch
+%   - 'delete'            - remove the currently highlighted parameter from
+% obj.CurrentBatch
+%   - 'Add directories'   - open a multi-directory chooser and append the
+% selected paths to the DirectoriesList of a
+% DIRECTORY LOOP START step
+%   - 'Modify directory'  - open a single-directory chooser to replace the
+% currently selected directory entry; works for
+% DIRECTORY LOOP START, FILE LOOP START,
+% Directory operations, File operations, and generic
+% cell/char directory fields
+%   - 'Remove directories'- display a checklist and remove the ticked entries
+% from the DirectoriesList of a DIRECTORY LOOP START step
+%   - 'Set second column width' - prompt for a pixel width and apply it to
+% the second column of selectedActionTable
 %
-% Parameters:
-% parameter: string matching one of the case labels listed above
+% Input Arguments:
+%   - **parameter** — string matching one of the case labels listed above
 %
-%|
-% @b Examples:
-% @code obj.selectedActionTable_ContextCallback('add'); @endcode
-% @code obj.selectedActionTable_ContextCallback('Modify directory'); @endcode
-% @code obj.selectedActionTable_ContextCallback('Set second column width'); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.selectedActionTable_ContextCallback('add');
+%
+%   Example 2::
+%
+%     obj.selectedActionTable_ContextCallback('Modify directory');
+%
+%   Example 3::
+%
+%     obj.selectedActionTable_ContextCallback('Set second column width');
 %
 
 if obj.selectedActionTableIndex == 0; return; end

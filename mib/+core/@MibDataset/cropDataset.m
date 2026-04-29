@@ -8,42 +8,58 @@
 % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 % GNU General Public License for more details.
 % You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
+% along with this program.  If not, see <https:% www.gnu.org/licenses/>
 
 % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
 % part of Microscopy Image Browser, http:\\mib.helsinki.fi
 % Date: 16.04.2025
 
 function result = cropDataset(obj, cropF, options)
-% function result = cropDataset(obj, cropF, options)
-% Crop image and all corresponding layers of the opened dataset.
+% CROPDATASET - Crop image and all corresponding layers of the opened dataset.
 %
-% Orchestrates cropping across the @em image, @em labels, @em mask and
-% @em selection layers, handles the Virtual → Standard conversion for
+% Syntax:
+%   function result = cropDataset(obj, cropF, options)
+%
+% Orchestrates cropping across the *image,* *labels,* *mask* and
+% *selection* layers, handles the Virtual → Standard conversion for
 % virtual datasets, resets viewing coordinates, and updates the physical
 % bounding box.
 %
-% Parameters:
-% cropF: a vector @code [x1, y1, dx, dy, z1, dz, t1, dt] @endcode in pixels.
-% @li @em x1, @em y1 — top-left corner of the crop region
-% @li @em dx, @em dy — width and height of the crop region
-% @li @em z1, @em dz — first slice index and number of slices
-% @li @em t1, @em dt — first time point and number of time points
-% @li When @em numel(cropF) < 7, @em t1 and @em dt default to @code [1, obj.image.time] @endcode
-% options: [@em optional] structure with additional parameters
-% @li .showWaitbar - logical, show a progress dialog (default: @b true)
-% @li .UIFigure    - handle to the parent UIFigure for the progress dialog;
-%     when empty or absent the dialog is silently skipped
-% @li .pyramidLevel - numeric, OME-Zarr pyramid level for virtual datasets
-%     (default: @b 1)
+% Input Arguments:
+%   - **cropF** — a vector ``[x1, y1, dx, dy, z1, dz, t1, dt]`` in pixels
 %
-% Return values:
-% result: @b 1 on success, @b 0 on cancel or error
-
-%|
-% @b Examples:
-% @code result = obj.mibModel.I{obj.mibModel.id}.cropDataset([10 20 100 200 1 5 1 1]);         // crop Standard dataset @endcode
-% @code result = obj.mibModel.I{bufferId}.cropDataset(crop_factor, BatchOptLoc);               // call from CropDataset controller @endcode
+%     - *x1,* *y1* — top-left corner of the crop region
+%     - *dx,* *dy* — width and height of the crop region
+%     - *z1,* *dz* — first slice index and number of slices
+%     - *t1,* *dt* — first time point and number of time points
+%     - when ``numel(cropF)`` < 7, *t1* and *dt* default to ``[1, obj.image.time]``
+%
+%   - **options** — *(optional)* structure with additional parameters
+%
+%     - ``.showWaitbar`` — logical, show a progress dialog (default: **true)**
+%     - ``.UIFigure`` — handle to the parent UIFigure for the progress dialog;
+%       when empty or absent the dialog is silently skipped
+%     - ``.pyramidLevel`` — numeric, OME-Zarr pyramid level for virtual datasets
+%       (default: **1)**
+%
+% Output Arguments:
+%   - **result** — **1** on success, **0** on cancel or error
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     result = obj.mibModel.I{obj.mibModel.id}.cropDataset([10 20 100 200 1 5 1 1]);% crop Standard dataset
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     result = obj.mibModel.I{bufferId}.cropDataset(crop_factor, BatchOptLoc);% call from CropDataset controller
+%
 
 % Updates
 % Ported from MIB2 mibImage.cropDataset

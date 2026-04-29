@@ -1,9 +1,12 @@
 function updateNodeStrel(obj, nodeStrelSize)
-% function updateNodeStrel(obj, nodeStrelSize)
-% update strel element for showing nodes as circles
+% UPDATENODESTREL - update strel element for showing nodes as circles.
 %
-% Parameters:
-% nodeStrelSize: radius of the strel element
+% Syntax:
+%   function updateNodeStrel(obj, nodeStrelSize)
+%
+% Input Arguments:
+%   - **nodeStrelSize** — radius of the strel element
+%
 
 if verLessThan('matlab', '9')
     obj.nodeStrel = strel('disk', nodeStrelSize);

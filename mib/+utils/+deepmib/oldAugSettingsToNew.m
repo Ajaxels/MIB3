@@ -1,17 +1,19 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 06.11.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
 function augSettingsNew = oldAugSettingsToNew(augSettingsOld, mode)
-% function augSettingsNew = oldAugSettingsToNew(augSettingsOld, mode)
-% supporting function for DeepMIB, the function converts old augmentation
-% settings to the new set of settings from MIB 2.8455
+% OLDAUGSETTINGSTONEW - Convert old DeepMIB augmentation settings to the new format (MIB 2.8455+).
 %
-% Parameters:
-% augSettingsOld: structure with old augmentation settings 
-% mode: string '2D', '3D' specifying type of augmentation settings
-% Return values:
-% augSettingsNew: structure with new augmentation settings 
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      augSettingsNew = oldAugSettingsToNew(augSettingsOld, mode)
+%
+% Input Arguments:
+%   - **augSettingsOld** — struct with old augmentation settings
+%   - **mode** — [char] augmentation type: ``'2D'`` or ``'3D'``
+%
+% Output Arguments:
+%   - **augSettingsNew** — struct with updated augmentation settings
+%
 
 oldFieldNames = fieldnames(augSettingsOld);
 augSettingsNew = struct();

@@ -1,6 +1,6 @@
 classdef MibRoi < handle
-    % classdef MibRoi
-    % controller for methods of the ROI panel in MIB
+% MIBROI - controller for methods of the ROI panel in MIB.
+%
     
     properties
         mibController   % controllers.MibController

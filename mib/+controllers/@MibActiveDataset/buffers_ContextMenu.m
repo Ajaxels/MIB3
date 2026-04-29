@@ -1,33 +1,38 @@
 function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
-% function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
-% callbacks for the context menu of the buffers
+% BUFFERS_CONTEXTMENU - callbacks for the context menu of the buffers.
+%
+% Syntax:
+%   function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
+%
 % (obj.view.handles.panels.activeDataset.handles.buffer1) buttons.
 % Compatible with batch processing.
 %
-% Parameters:
-% parameter: a string that defines the action:
-% @li @b 'duplicate' - duplicate the dataset to another buffer
-% @li @b 'sync_xy' - synchronize the view with another dataset in XY
-% @li @b 'sync_xyz' - synchronize the view with another dataset in XYZ
-% @li @b 'sync_xyzt' - synchronize the view with another dataset in XYZT
-% @li @b 'link_views' - link or unlink the view between two containers
-% @li @b 'close' - close the current dataset
-% @li @b 'closeSet' - close all datasets in the current set
-% buttonID: integer (1-10), local index of the pressed buffer button;
-%   NaN when called from batch mode without a physical button press
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN returns
-%   a structure with default options via 'SyncBatch' event, see
-%   Declaration of the BatchOpt structure below for details
+% Input Arguments:
+%   - **parameter** — a string that defines the action:
+%     - **'duplicate'** - duplicate the dataset to another buffer
+%     - **'sync_xy'** - synchronize the view with another dataset in XY
+%     - **'sync_xyz'** - synchronize the view with another dataset in XYZ
+%     - **'sync_xyzt'** - synchronize the view with another dataset in XYZT
+%     - **'link_views'** - link or unlink the view between two containers
+%     - **'close'** - close the current dataset
+%     - **'closeSet'** - close all datasets in the current set
+%   - **buttonID** — integer (1-10), local index of the pressed buffer button;
+%     NaN when called from batch mode without a physical button press
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN returns
+%     a structure with default options via 'SyncBatch' event, see
+%     Declaration of the BatchOpt structure below for details
 %
-% @b Examples:
-% @code
-% obj.buffers_ContextMenu('duplicate', 2);   % duplicate buffer 2 interactively
-% @endcode
-% @code
-% BatchOpt.Source = {'Container 1'}; BatchOpt.Destination = {'Container 3'};
-% BatchOpt.showWaitbar = false;
-% obj.buffers_ContextMenu('duplicate', NaN, BatchOpt);   % batch duplicate
-% @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.buffers_ContextMenu('duplicate', 2);   % duplicate buffer 2 interactively
+%
+%   Example 2::
+%
+%     BatchOpt.Source = {'Container 1'}; BatchOpt.Destination = {'Container 3'};
+%     BatchOpt.showWaitbar = false;
+%     obj.buffers_ContextMenu('duplicate', NaN, BatchOpt);   % batch duplicate
+%
 
 % Updates
 % Based on mibBufferToggleContext_Callback (MIB2), ported to MIB3

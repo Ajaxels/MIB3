@@ -1,10 +1,12 @@
 classdef BoundingBox < handle
-    % @type BoundingBox class is responsible for display of the Bounding Box
-    % window, available from MIB -> Menu -> Dataset -> Bounding Box
-    %
-    % @code
-    % obj.startController('controllers.BoundingBox'); // as GUI tool
-    % @endcode
+% BOUNDINGBOX - @type BoundingBox class is responsible for display of the Bounding Box.
+%
+% window, available from MIB Menu Dataset Bounding Box
+%
+%
+% .. code-block:: matlab
+%
+%   obj.startController('controllers.BoundingBox'); // as GUI tool
 
     % Updates
     % 20.05.2019, updated for the batch mode
@@ -35,7 +37,11 @@ classdef BoundingBox < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, src, evnt)
-            % Guard: if the view window was closed (e.g. via X button before
+            % VIEWLISTNER_CALLBACK2 - Guard: if the view window was closed (e.g. via X button before.
+            %
+            % Syntax:
+            %   function ViewListner_Callback2(obj, src, evnt)
+            %
             % CloseRequestFcn was registered, or external deletion), clean up
             % the listeners now and return silently.
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
@@ -148,8 +154,11 @@ classdef BoundingBox < handle
         end
 
         function closeWindow(obj)
-            % function closeWindow(obj)
-            % closing BoundingBox window
+            % CLOSEWINDOW - closing BoundingBox window.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
 
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
@@ -164,8 +173,11 @@ classdef BoundingBox < handle
         end
 
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % update widgets of this window
+            % UPDATEWIDGETS - update widgets of this window.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
 
             obj.BatchOpt.id = obj.mibModel.id;  % = obj.mibModel.getActiveId
             
@@ -211,8 +223,11 @@ classdef BoundingBox < handle
         end
 
         function addCallbacks(obj)
-            % function addCallbacks(obj)
-            % assign ValueChanged/ButtonPushed callbacks to all interactive
+            % ADDCALLBACKS - assign ValueChanged/ButtonPushed callbacks to all interactive.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
+            %
             % widgets of the view; called once from the constructor after
             % the view is created
 
@@ -241,13 +256,16 @@ classdef BoundingBox < handle
         end
 
         function returnBatchOpt(obj, BatchOptOut)
-            % function returnBatchOpt(obj, BatchOptOut)
-            % return structure with Batch Options and possible configurations
+            % RETURNBATCHOPT - return structure with Batch Options and possible configurations.
             %
-            % Parameters:
-            % BatchOptOut: a local structure with Batch Options generated
-            % during Continue callback. It may contain more fields than
-            % obj.BatchOpt structure
+            % Syntax:
+            %   function returnBatchOpt(obj, BatchOptOut)
+            %
+            % Input Arguments:
+            %   - **BatchOptOut** — a local structure with Batch Options generated
+            %     during Continue callback. It may contain more fields than
+            %     obj.BatchOpt structure
+            %
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             if isfield(BatchOptOut, 'id'); BatchOptOut = rmfield(BatchOptOut, 'id'); end  % remove id field
@@ -257,37 +275,44 @@ classdef BoundingBox < handle
         end
 
         function updateBatchOptFromGUI(obj, hObject, valueChangedData)
-            % function updateBatchOptFromGUI(obj, hObject, valueChangedData)
-            % update obj.BatchOpt from a GUI widget
+            % UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from a GUI widget.
+            %
+            % Syntax:
+            %   function updateBatchOptFromGUI(obj, hObject, valueChangedData)
+            %
             % use an external function (utils/updateBatchOptFromGUI_Shared.m)
             % that is common for all tools compatible with the Batch mode
             %
-            % Parameters:
-            % hObject: handle to a widget of the GUI; in AppDesigner
-            %   callbacks this is event.Source
-            % valueChangedData: the EventData object passed by AppDesigner
-            %   ValueChanged callbacks (not used directly here)
+            % Input Arguments:
+            %   - **hObject** — handle to a widget of the GUI; in AppDesigner
+            %     callbacks this is event.Source
+            %   - **valueChangedData** — the EventData object passed by AppDesigner
+            %     ValueChanged callbacks (not used directly here)
+            %
 
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
         function importBtn_Callback(obj, batchModeSw)
-            % function importBtn_Callback(obj, batchModeSw)
-            % import bounding box information from the system clipboard
+            % IMPORTBTN_CALLBACK - import bounding box information from the system clipboard.
+            %
+            % Syntax:
+            %   function importBtn_Callback(obj, batchModeSw)
             %
             % The clipboard is expected to contain key=value pairs (one per
             % line) as exported by Amira / FEI microscope software:
-            %   ScaleX     = <voxel_size_x>
-            %   ScaleY     = <voxel_size_y>
-            %   ScaleZ     = <voxel_size_z>
-            %   xPos       = <stage_center_x_in_um>
-            %   yPos       = <stage_center_y_in_um>
-            %   Z Position = <stage_z_in_um>
-            %   Rotation   = <stage_rotation_deg>
+            % ScaleX     = <voxel_size_x>
+            % ScaleY     = <voxel_size_y>
+            % ScaleZ     = <voxel_size_z>
+            % xPos       = <stage_center_x_in_um>
+            % yPos       = <stage_center_y_in_um>
+            % Z Position = <stage_z_in_um>
+            % Rotation   = <stage_rotation_deg>
             %
-            % Parameters:
-            % batchModeSw: [optional, default=0] set to 1 when called from
-            %   batch mode to suppress GUI widget updates
+            % Input Arguments:
+            %   - **batchModeSw** — [optional, default=0] set to 1 when called from
+            %     batch mode to suppress GUI widget updates
+            %
 
             if nargin < 2; batchModeSw = 0; end
 
@@ -397,8 +422,10 @@ classdef BoundingBox < handle
         end
 
         function applyButton_Callback(obj, batchModeSw)
-            % function applyButton_Callback(obj, batchModeSw)
-            % apply the edited bounding box to the current dataset
+            % APPLYBUTTON_CALLBACK - apply the edited bounding box to the current dataset.
+            %
+            % Syntax:
+            %   function applyButton_Callback(obj, batchModeSw)
             %
             % When only Xmin/Ymin/Zmin are filled in, the bounding box is
             % shifted without changing voxel size.  When Xcenter/Ycenter
@@ -408,9 +435,10 @@ classdef BoundingBox < handle
             % the total extent.  StageRotationBias corrects for a known
             % stage rotation (used e.g. for 3View systems at 45 deg).
             %
-            % Parameters:
-            % batchModeSw: [optional, default=0] set to 1 when called from
-            %   batch mode to suppress GUI widget updates
+            % Input Arguments:
+            %   - **batchModeSw** — [optional, default=0] set to 1 when called from
+            %     batch mode to suppress GUI widget updates
+            %
 
             if nargin < 2; batchModeSw = 0; end
 
@@ -486,15 +514,21 @@ classdef BoundingBox < handle
         end
 
         function helpButton_Callback(obj)
-            % function helpButton_Callback(obj)
-            % open the help page for the Bounding Box dialog in a browser
+            % HELPBUTTON_CALLBACK - open the help page for the Bounding Box dialog in a browser.
+            %
+            % Syntax:
+            %   function helpButton_Callback(obj)
+            %
 
             web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/dataset/dataset-bb.html'), '-browser');
         end
 
         function closeButton_Callback(obj)
-            % function closeButton_Callback(obj)
-            % close the dialog without applying changes
+            % CLOSEBUTTON_CALLBACK - close the dialog without applying changes.
+            %
+            % Syntax:
+            %   function closeButton_Callback(obj)
+            %
 
             obj.closeWindow();
         end

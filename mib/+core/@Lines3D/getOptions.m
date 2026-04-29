@@ -1,9 +1,12 @@
 function options = getOptions(obj)
-% function options = getOptions(obj)
-% get options of the class
+% GETOPTIONS - get options of the class.
 %
-% Return values:
-% options: a structure with options
+% Syntax:
+%   function options = getOptions(obj)
+%
+% Output Arguments:
+%   - **options** — a structure with options
+%
 
 options = struct();
 options.clipExtraThickness = obj.clipExtraThickness;

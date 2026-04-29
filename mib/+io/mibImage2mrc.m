@@ -1,44 +1,50 @@
 function result = mibImage2mrc(O, Options)
-% function result = mibImage2mrc(O, Options)
-% Export volume in MRC format
+% MIBIMAGE2MRC - Export volume in MRC format.
 %
-% @note Requires matTomo function set, available in mib/external/MatTomo
+% Syntax:
+%   function result = mibImage2mrc(O, Options)
 %
-% Parameters:
-% O: a dataset, [1:height,1:width,1:thickness] or [1:height,1:width,1,1:thickness]
-% Options: a structure:
-% @li .volumeFilename  — filename, use 'mrc' extension
-% @li .pixSize.x       — physical width of the voxels
-% @li .pixSize.y       — physical height of the voxels
-% @li .pixSize.z       — physical thickness of the voxels
-% @li .pixSize.units   — physical units
-% @li .showWaitbar     — if @b 1 - show the wait bar, if @b 0 - do not show
-% @li .ParentFigure    — [@em optional] handle to the main MIB application
-%                        window.  When provided, the progress bar is rendered
-%                        as a uiprogressdlg attached to that window
-%                        (recommended for GUI use).  When absent or empty
-%                        the legacy waitbar is used as a fallback.
+% **Note:** Requires matTomo function set, available in mib/external/MatTomo
 %
-% Return values:
-% result: result of the function run, @b 1 - success, @b 0 - fail
+% Input Arguments:
+%   - **O** — a dataset, [1:height,1:width,1:thickness] or [1:height,1:width,1,1:thickness]
+%   - **Options** — a structure:
+%     - .volumeFilename  — filename, use 'mrc' extension
+%     - .pixSize.x       — physical width of the voxels
+%     - .pixSize.y       — physical height of the voxels
+%     - .pixSize.z       — physical thickness of the voxels
+%     - .pixSize.units   — physical units
+%     - .showWaitbar     — if **1** - show the wait bar, if **0** - do not show
+%     - ``.ParentFigure`` — *(optional)* handle to the main MIB application
+%       window.  When provided, the progress bar is rendered
+%       as a uiprogressdlg attached to that window
+%       (recommended for GUI use).  When absent or empty
+%       the legacy waitbar is used as a fallback.
 %
-% Example:
-%   @code
-%   %% Standalone / scripted use (no GUI parent):
-%   mrcOpts.volumeFilename = '/output/volume.mrc';
-%   mrcOpts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
-%   mrcOpts.showWaitbar    = false;
-%   io.mibImage2mrc(imageData_hwd, mrcOpts);
-%   @endcode
+% Output Arguments:
+%   - **result** — result of the function run, **1** - success, **0** - fail
 %
-%   @code
-%   %% GUI use — attach progress dialog to the MIB window:
-%   mrcOpts.volumeFilename = '/output/volume.mrc';
-%   mrcOpts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
-%   mrcOpts.showWaitbar    = true;
-%   mrcOpts.ParentFigure   = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%   io.mibImage2mrc(imageData_hwd, mrcOpts);
-%   @endcode
+%   - **Example** —
+%
+%   .. code-block:: matlab
+%
+%       %% Standalone / scripted use (no GUI parent):
+%       mrcOpts.volumeFilename = '/output/volume.mrc';
+%       mrcOpts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
+%       mrcOpts.showWaitbar    = false;
+%       io.mibImage2mrc(imageData_hwd, mrcOpts);
+%
+%
+%
+%   .. code-block:: matlab
+%
+%       %% GUI use — attach progress dialog to the MIB window:
+%       mrcOpts.volumeFilename = '/output/volume.mrc';
+%       mrcOpts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
+%       mrcOpts.showWaitbar    = true;
+%       mrcOpts.ParentFigure   = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%       io.mibImage2mrc(imageData_hwd, mrcOpts);
+%
 
 result = 0;
 if ~isfield(Options, 'showWaitbar'); Options.showWaitbar = 1; end

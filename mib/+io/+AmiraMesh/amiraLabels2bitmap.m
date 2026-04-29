@@ -15,14 +15,17 @@
 % Date: 25.04.2023
 
 function [bitmap] = amiraLabels2bitmap(filename)
-% function [bitmap] = amiraLabels2bitmap(filename)
-% Converts Amira Mesh Labels to bitmap matrix, for Amira ver. 5.2.2
+% AMIRALABELS2BITMAP - Converts Amira Mesh Labels to bitmap matrix, for Amira ver. 5.2.2.
 %
-% Parameters:
-% filename: (@em optional), filename of Amira Mesh labels, when omitted a file selection dialog is started
+% Syntax:
+%   function [bitmap] = amiraLabels2bitmap(filename)
 %
-% Return values:
-% bitmap: an image of the amira label fields as [1:height, 1:width, 1:colors, 1:no_stacks]
+% Input Arguments:
+%   - **filename** — (*optional),* filename of Amira Mesh labels, when omitted a file selection dialog is started
+%
+% Output Arguments:
+%   - **bitmap** — an image of the amira label fields as [1:height, 1:width, 1:colors, 1:no_stacks]
+%
 
 % Updates
 % ver 1.01 - 18.05.2012 - updated read procedure

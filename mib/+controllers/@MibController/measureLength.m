@@ -1,19 +1,20 @@
 function measureLength(obj, type)
-% function measureLength(obj, type)
-% Quick measurement tool: open the Measure Tool or interactively measure a
+% MEASURELENGTH - Quick measurement tool: open the Measure Tool or interactively measure a.
+%
+% Syntax:
+%   function measureLength(obj, type)
+%
 % straight-line or freehand path length on the currently displayed image.
 % Converted from MIB2 @mibController/menuToolsMeasure_Callback.m
 %
-% Parameters:
-% type: a string selecting the measurement mode
-% @li 'tool'     - open the full interactive Measure Tool controller
-% @li 'line'     - draw a straight line and report its length
-% @li 'freehand' - draw a freehand path and report its length
+% Input Arguments:
+%   - **type** — a string selecting the measurement mode
+%     - 'tool'     - open the full interactive Measure Tool controller
+%     - 'line'     - draw a straight line and report its length
+%     - 'freehand' - draw a freehand path and report its length
 %
-% Return values:
+% Output Arguments:
 %   none
-%
-% Updates
 %
 
 switch type
@@ -92,7 +93,11 @@ end
 
 % -------------------------------------------------------------------------
 function handleMeasureKey(evt, obj, cImageDoc)
-% Temporary WindowKeyPressFcn active while a measurement ROI is alive.
+% HANDLEMEASUREKEY - Temporary WindowKeyPressFcn active while a measurement ROI is alive.
+%
+% Syntax:
+%   function handleMeasureKey(evt, obj, cImageDoc)
+%
     if isempty(cImageDoc.quickMeasure)
         % ROI already gone — just forward to the normal handler
         obj.gui_WindowKeyPressFcn(cImageDoc.UIFigure, evt);
@@ -117,7 +122,11 @@ end
 
 % -------------------------------------------------------------------------
 function onROIClicked(roi, evt, obj, cImageDoc)
-% ROIClicked fires on every click; only act on double-click.
+% ONROICLICKED - ROIClicked fires on every click; only act on double-click.
+%
+% Syntax:
+%   function onROIClicked(roi, evt, obj, cImageDoc)
+%
     if ~strcmp(evt.SelectionType, 'double'); return; end
     if ~isvalid(roi) || isempty(cImageDoc.quickMeasure); return; end
     pos       = roi.Position;
@@ -128,7 +137,11 @@ end
 
 % -------------------------------------------------------------------------
 function doFinalize(pos, datasetId, obj, cImageDoc)
-% Compute path length and show the result dialog.
+% DOFINALIZE - Compute path length and show the result dialog.
+%
+% Syntax:
+%   function doFinalize(pos, datasetId, obj, cImageDoc)
+%
     dataset     = obj.mibModel.I{datasetId};
     magFactor   = dataset.magFactor;
     [axesX, axesY] = dataset.getAxesLimits();

@@ -1,6 +1,7 @@
 classdef MibDataset < matlab.mixin.Copyable    
-    %MIBDATASET Summary of this class goes here
-    %   Detailed explanation goes here
+    % MIBDATASET - MIBDATASET Summary of this class goes here.
+    %
+    % Detailed explanation goes here
 
     properties
         % layers
@@ -33,13 +34,14 @@ classdef MibDataset < matlab.mixin.Copyable
         blockModeSwitch
         % a variable to hold a status of the block mode (mibView.handles.toolbarBlockModeSwitch), 1 - enabled, 0 - disabled
         current_yxz
-        % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes,
-        % @note dimensions: @code [1 1 1] @endcode
+        % a vector to remember last selected slice number of each 'yx', 'zx', 'zy' planes.
+        % Dimensions: ``[1 1 1]``
         datasetType
-        % [char, @default 'Standard'] type of the dataset, one of these
-        %   @li 'Standard' - standard image, one that is loaded to memory completely
-        %   @li 'Virtual' - virtual dataset that is loaded upon demand
-        %   @li 'BigData' - big-data compatible dataset
+        % [char] type of the dataset (default: ``'Standard'``), one of:
+        %
+        % - ``'Standard'`` — standard image, loaded to memory completely
+        % - ``'Virtual'`` — virtual dataset, loaded upon demand
+        % - ``'BigData'`` — big-data compatible dataset
         dim_yxzct
         % a matrix with dimensions of the dataset [height, width, depth, colors, time]
         % equal to size obj.image{1} for non-virtual datasets
@@ -191,71 +193,95 @@ classdef MibDataset < matlab.mixin.Copyable
         updateBoundingBox(obj, newBB, xyzShift, imgDims)  % Delegate bounding-box update to obj.image; ds.image.pixSize is updated in place.
 
         function obj = MibDataset(img, meta, datasetType, modelType)
-            % obj = MibDataset(img, meta, datasetType, modelType)
+            % MIBDATASET - obj = MibDataset(img, meta, datasetType, modelType).
+            %
+            % Syntax:
+            %   function obj = MibDataset(img, meta, datasetType, modelType)
+            %
             % Constructor of MibDataset class
             %
-            % Parameters:
-            % img: matrix with the image to initialize the class, can be empty
-            % meta: a dictionary with default settings for the class, can be empty;
-            %       the following fields are used,
-            %       .filename -> full path to the dataset
-            %       .sliceName -> cell array with slice names, can be empty
-            %       .lutColors -> matrix with LUT colors to use (colChannel, R G B) in range 0-1
-            %       .pixSize -> dictionary with
-            %           @li .x - physical width of a pixel
-            %           @li .y - physical height of a pixel
-            %           @li .z - physical thickness of a pixel
-            %           @li .t - time between the frames for 2D movies
-            %           @li .tunits - time units
-            %           @li .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
-            %       .viewPort -> dictionary with viewing parameters:
-            %           @li .min - a vector with minimal value for intensity stretching for each color channel
-            %           @li .max - a vector with maximal value for intensity stretching for each color channel
-            %           @li .gamma a vector with gamma factor for contrast adjustment for each color channel
-            % datasetType: [char, @default 'Standard']type of the dataset, one of these
-            %   @li 'Standard' - standard image, one that is loaded to memory completely
-            %   @li 'Virtual' - virtual dataset that is loaded upon demand
-            %   @li 'BigData' - big-data compatible dataset
-            % modelType: type of the labels,
-            % .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
-            % .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
-            % .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
+            % Input Arguments:
+            %   - **img** — matrix with the image to initialize the class, can be empty
+            %   - **meta** — a dictionary with default settings for the class, can be empty;
+            %     the following fields are used,
+            %     .filename full path to the dataset
+            %     .sliceName cell array with slice names, can be empty
+            %     .lutColors matrix with LUT colors to use (colChannel, R G B) in range 0-1
+            %     .pixSize dictionary with
+            %   - .x - physical width of a pixel
+            %   - .y - physical height of a pixel
+            %   - .z - physical thickness of a pixel
+            %   - .t - time between the frames for 2D movies
+            %   - .tunits - time units
+            %   - .units - physical units for x, y, z. Possible values: [m, cm, mm, um, nm]
+            %     .viewPort dictionary with viewing parameters:
+            %   - .min - a vector with minimal value for intensity stretching for each color channel
+            %   - .max - a vector with maximal value for intensity stretching for each color channel
+            %   - .gamma a vector with gamma factor for contrast adjustment for each color channel
+            %   - **datasetType** — [char, @default 'Standard']type of the dataset, one of these
+            %   - 'Standard' - standard image, one that is loaded to memory completely
+            %   - 'Virtual' - virtual dataset that is loaded upon demand
+            %   - 'BigData' - big-data compatible dataset
+            %   - **modelType** — type of the labels,
+            %     .'imageOnly' - [@default], init with the provided image, keep other layers as NaN
+            %     .'labels', - init with model with 255 materials; obj.mask, obj.selection have the same dimensions as labels
+            %     .'labels63' - init with model with 63 materials, obj.mask, obj.selection are NaN
             %
-            % @b Examples:
-            % @code
-            % % Minimal: create an empty dataset
-            % ds = core.MibDataset();
-            % @endcode
-            % @code
-            % % Create from a raw uint8 volume (grayscale, 1 z-slice)
-            % vol = imread('myImage.tif');                    % [H, W] or [H, W, C]
-            % ds = core.MibDataset(vol);
-            % @endcode
-            % @code
-            % % Create from a 3D stack with labels support (63 materials)
-            % vol = zeros(512, 512, 1, 40, 'uint8');          % [H, W, C, Z]
-            % ds = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
-            % ds.image.pixSize.x = 0.013;
-            % ds.image.pixSize.y = 0.013;
-            % ds.image.pixSize.z = 0.030;
-            % ds.image.sliceName = {'myStack.tif'};
-            % ds.updateBoundingBox([], [0 0 0]);
-            % @endcode
-            % @code
-            % % Create with metadata pre-filled via dictionary
-            % meta = dictionary();
-            % meta('filename') = 'C:\data\myImage.tif';
-            % ds = core.MibDataset(vol, meta, 'Standard', 'labels63');
-            % @endcode
-            % @code
-            % % Replace the active dataset in the model with a freshly loaded volume
-            % vol = webread('http://example.com/data.raw', weboptions('ContentType','raw'));
-            % vol = reshape(vol, [372 521 1 75]);
-            % obj.mibModel.I{obj.mibModel.id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
-            % obj.mibModel.I{obj.mibModel.id}.image.sliceName = {fullfile(obj.mibModel.currentDirectory, 'data.tif')};
-            % notify(obj.mibModel, 'NewDataset');
-            % notify(obj.mibModel, 'ShowImage');
-            % @endcode
+            % Usage:
+            %   **Example 1** — Minimal: create an empty dataset
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Minimal: create an empty dataset
+            %     ds = core.MibDataset();
+            %
+            %   **Example 2** — Create from a raw uint8 volume (grayscale, 1 z-slice)
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Create from a raw uint8 volume (grayscale, 1 z-slice)
+            %     vol = imread('myImage.tif');                    % [H, W] or [H, W, C]
+            %     ds = core.MibDataset(vol);
+            %
+            %   **Example 3** — Create from a 3D stack with labels support (63 materials)
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Create from a 3D stack with labels support (63 materials)
+            %     vol = zeros(512, 512, 1, 40, 'uint8');          % [H, W, C, Z]
+            %     ds = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
+            %     ds.image.pixSize.x = 0.013;
+            %     ds.image.pixSize.y = 0.013;
+            %     ds.image.pixSize.z = 0.030;
+            %     ds.image.sliceName = {'myStack.tif'};
+            %     ds.updateBoundingBox([], [0 0 0]);
+            %
+            %   **Example 4** — Create with metadata pre-filled via dictionary
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Create with metadata pre-filled via dictionary
+            %     meta = dictionary();
+            %     meta('filename') = 'C:\data\myImage.tif';
+            %     ds = core.MibDataset(vol, meta, 'Standard', 'labels63');
+            %
+            %   **Example 5** — Replace the active dataset in the model with a freshly loaded volume
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     % Replace the active dataset in the model with a freshly loaded volume
+            %     vol = webread('http:% example.com/data.raw', weboptions('ContentType','raw'));
+            %     vol = reshape(vol, [372 521 1 75]);
+            %     obj.mibModel.I{obj.mibModel.id} = core.MibDataset(vol, dictionary(), 'Standard', 'labels63');
+            %     obj.mibModel.I{obj.mibModel.id}.image.sliceName = {fullfile(obj.mibModel.currentDirectory, 'data.tif')};
+            %     notify(obj.mibModel, 'NewDataset');
+            %     notify(obj.mibModel, 'ShowImage');
+            %
 
             if nargin < 4; modelType = 'imageOnly'; end
             if nargin < 3; datasetType = 'Standard'; end

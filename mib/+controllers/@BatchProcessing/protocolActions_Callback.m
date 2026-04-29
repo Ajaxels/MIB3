@@ -1,26 +1,33 @@
 function protocolActions_Callback(obj, options)
-% function protocolActions_Callback(obj, options)
-% add, remove, reorder or update steps in the protocol list
+% PROTOCOLACTIONS_CALLBACK - add, remove, reorder or update steps in the protocol list.
 %
-% Parameters:
-% options: a string specifying the operation:
-%   'add'       - append current action as a new last step
-%   'duplicate' - duplicate the selected step (inserts copy after it)
-%   'insert'    - insert current action before the selected step
-%   'insertstop'- insert a STOP EXECUTION step before the selected step
-%   'update'    - overwrite the selected step with current action settings
-%   'show'      - display settings of the selected step (read-only)
-%   'delete'    - remove the selected step
-%   'moveup'    - swap the selected step with the one above it
-%   'movedown'  - swap the selected step with the one below it
+% Syntax:
+%   function protocolActions_Callback(obj, options)
 %
-%|
-% @b Examples:
-% @code obj.protocolActions_Callback('add'); @endcode
-% @code obj.protocolActions_Callback('delete'); @endcode
-% @code obj.protocolActions_Callback('moveup'); @endcode
+% Input Arguments:
+%   - **options** — a string specifying the operation:
+%     'add'       - append current action as a new last step
+%     'duplicate' - duplicate the selected step (inserts copy after it)
+%     'insert'    - insert current action before the selected step
+%     'insertstop'- insert a STOP EXECUTION step before the selected step
+%     'update'    - overwrite the selected step with current action settings
+%     'show'      - display settings of the selected step (read-only)
+%     'delete'    - remove the selected step
+%     'moveup'    - swap the selected step with the one above it
+%     'movedown'  - swap the selected step with the one below it
 %
-% Updates
+% Usage:
+%   Example 1::
+%
+%     obj.protocolActions_Callback('add');
+%
+%   Example 2::
+%
+%     obj.protocolActions_Callback('delete');
+%
+%   Example 3::
+%
+%     obj.protocolActions_Callback('moveup');
 %
 
 switch options

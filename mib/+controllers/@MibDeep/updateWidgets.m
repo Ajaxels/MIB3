@@ -1,6 +1,9 @@
 function updateWidgets(obj)
-    % function updateWidgets(obj)
-    % update widgets of this window
+% UPDATEWIDGETS - update widgets of this window.
+%
+% Syntax:
+%   function updateWidgets(obj)
+%
 
     % updateWidgets normally triggered during change of MIB
     % buffers, make sure that any widgets related changes are

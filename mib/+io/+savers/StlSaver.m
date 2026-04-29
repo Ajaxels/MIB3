@@ -1,158 +1,172 @@
 classdef StlSaver < io.savers.BaseSaver
-    % classdef StlSaver < io.savers.BaseSaver
-    % Saver for binary STL (Stereolithography) isosurface mesh output.
-    %
-    % Handles one format:
-    %   'STL isosurface as binary (*.stl)' — one binary STL file per
-    %       material, e.g. 'Labels_stack_Nucleus.stl', 'Labels_stack_ER.stl'
-    %
-    % This saver is labels-only.  It extracts a triangular isosurface mesh
-    % for each segmentation material using mibRenderModel(), optionally
-    % reducing (isosurface decimation) and smoothing the mesh, then writes
-    % each surface to a separate binary STL file using stlwrite().
-    %
-    % The result is a set of STL files suitable for visualisation in Blender,
-    % Paraview, or 3-D printing pipelines.
-    %
-    % The saver delegates mesh generation to utils.isosurfaceMibRendering(),
-    % which is ported and refactored from MIB2's mibRenderModel.
-    %
-    % DATA DIMENSIONS
-    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
-    %   mibRenderModel() expects [H, W, D] — squeezed from data(:,:,:,1,1).
-    %
-    % OUTPUT FILENAMES
-    %   Each material is written to:
-    %     <fnBase>_<materialName>.stl
-    %   where fnBase is the output path without extension, e.g.:
-    %     /output/Labels_myStack_Nucleus.stl
-    %     /output/Labels_myStack_ER.stl
-    %
-    % MESH GENERATION OPTIONS (passed inside savingOptions to mibRenderModel)
-    %   savingOptions.reduce    — face-count reduction target (0 = no reduction;
-    %                             default 500 if image width > 500, else 0)
-    %   savingOptions.smooth    — number of Laplacian smoothing iterations
-    %                             (default 5)
-    %   savingOptions.maxFaces  — maximum face count per surface (default 300000)
-    %   savingOptions.slice     — (logical) 0 = full 3-D surface (default)
-    %
-    % MATERIAL SELECTION
-    %   options.MaterialIndex   — [] = all materials (default)
-    %                             scalar = index of a single material to export
-    %
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Export all materials as STL for Blender / 3-D printing
-    %   saver = io.SaverFactory.create('STL isosurface as binary (*.stl)');
-    %
-    %   opts.Format         = 'STL isosurface as binary (*.stl)';
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.layerType      = 'labels';
-    %   opts.MaterialIndex  = [];     % [] = export all materials
-    %   opts.reduce         = 500;    % decimate to 500 faces
-    %   opts.smooth         = 5;      % 5 smoothing iterations
-    %   opts.maxFaces       = 300000;
-    %   opts.slice          = 0;
-    %
-    %   meta.filename       = 'source_stack.tif';
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                                'units','um','t',1,'tunits','s');
-    %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
-    %   meta.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
-    %   meta.materialColors = [0 0 1; 0 1 0; 1 0 0];
-    %
-    %   labels = uint8(rand(512,512,50,1,1)*3);  % [H W D C T]
-    %   fnOut = saver.save(labels, meta, '/output/Labels_myStack.stl', opts);
-    %   % Creates: /output/Labels_myStack_Nucleus.stl
-    %   %          /output/Labels_myStack_ER.stl
-    %   %          /output/Labels_myStack_Mitochondria.stl
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Export only the second material (index 2)
-    %   opts.MaterialIndex = 2;
-    %   fnOut = saver.save(labels, meta, '/output/Labels_myStack.stl', opts);
-    %   % Creates: /output/Labels_myStack_ER.stl
-    %   @endcode
-    %
-    %   @code
-    %   %% 3. Via MibModel batch
-    %   BatchOpt.LayerType       = {'labels'};
-    %   BatchOpt.Format          = {'STL isosurface as binary (*.stl)'};
-    %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
-    %   BatchOpt.DestinationDirectory  = '/output/stl';
-    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
-    %   BatchOpt.showWaitbar     = false;
-    %   BatchOpt.mibBatchTooltip.LayerType = '';
-    %   model.save('labels', [], BatchOpt);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.MrcSaver,
-    %   core.MibDataset.save, models.MibModel.save
+% STLSAVER - Saver for binary STL (Stereolithography) isosurface mesh output.
+%
+% Handles one format:
+% 'STL isosurface as binary (``*.stl``)' — one binary STL file per
+% material, e.g. 'Labels_stack_Nucleus.stl', 'Labels_stack_ER.stl'
+%
+% This saver is labels-only.  It extracts a triangular isosurface mesh
+% for each segmentation material using mibRenderModel(), optionally
+% reducing (isosurface decimation) and smoothing the mesh, then writes
+% each surface to a separate binary STL file using stlwrite().
+%
+% The result is a set of STL files suitable for visualisation in Blender,
+% Paraview, or 3-D printing pipelines.
+%
+% The saver delegates mesh generation to utils.isosurfaceMibRendering(),
+% which is ported and refactored from MIB2's mibRenderModel.
+%
+% DATA DIMENSIONS
+% Input  data : [H, W, D, C, T]  (MIB3 native order)
+% mibRenderModel() expects [H, W, D] — squeezed from data(:,:,:,1,1).
+%
+% OUTPUT FILENAMES
+% Each material is written to:
+% <fnBase>_<materialName>.stl
+% where fnBase is the output path without extension, e.g.:
+% /output/Labels_myStack_Nucleus.stl
+% /output/Labels_myStack_ER.stl
+%
+% MESH GENERATION OPTIONS (passed inside savingOptions to mibRenderModel)
+% savingOptions.reduce    — face-count reduction target (0 = no reduction;
+% default 500 if image width > 500, else 0)
+% savingOptions.smooth    — number of Laplacian smoothing iterations
+% (default 5)
+% savingOptions.maxFaces  — maximum face count per surface (default 300000)
+% savingOptions.slice     — (logical) 0 = full 3-D surface (default)
+%
+% MATERIAL SELECTION
+% options.MaterialIndex   — [] = all materials (default)
+% scalar = index of a single material to export
+%
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Export all materials as STL for Blender / 3-D printing
+%     saver = io.SaverFactory.create('STL isosurface as binary (``*.stl``)');
+%
+%     opts.Format         = 'STL isosurface as binary (``*.stl``)';
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.layerType      = 'labels';
+%     opts.MaterialIndex  = [];     % [] = export all materials
+%     opts.reduce         = 500;    % decimate to 500 faces
+%     opts.smooth         = 5;      % 5 smoothing iterations
+%     opts.maxFaces       = 300000;
+%     opts.slice          = 0;
+%
+%     meta.filename       = 'source_stack.tif';
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                                  'units','um','t',1,'tunits','s');
+%     meta.boundingBox    = [0 33.3 0 33.3 0 10];
+%     meta.materialNames  = {'Nucleus'; 'ER'; 'Mitochondria'};
+%     meta.materialColors = [0 0 1; 0 1 0; 1 0 0];
+%
+%     labels = uint8(rand(512,512,50,1,1)*3);  % [H W D C T]
+%     fnOut = saver.save(labels, meta, '/output/Labels_myStack.stl', opts);
+%     % Creates: /output/Labels_myStack_Nucleus.stl
+%     %          /output/Labels_myStack_ER.stl
+%     %          /output/Labels_myStack_Mitochondria.stl
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Export only the second material (index 2)
+%     opts.MaterialIndex = 2;
+%     fnOut = saver.save(labels, meta, '/output/Labels_myStack.stl', opts);
+%     % Creates: /output/Labels_myStack_ER.stl
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 3. Via MibModel batch
+%     BatchOpt.LayerType       = {'labels'};
+%     BatchOpt.Format          = {'STL isosurface as binary (``*.stl``)'};
+%     BatchOpt.OutputDirectoryPolicy = {'Full path'};
+%     BatchOpt.DestinationDirectory  = '/output/stl';
+%     BatchOpt.FilenamePolicy  = {'Use existing name'};
+%     BatchOpt.showWaitbar     = false;
+%     BatchOpt.mibBatchTooltip.LayerType = '';
+%     model.save('labels', [], BatchOpt);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.MrcSaver,
+% core.MibDataset.save, models.MibModel.save
 
     methods
 
         function obj = StlSaver(options)
-            % function obj = StlSaver(options)
-            % Constructor — accepts an optional options struct.
+            % STLSAVER - Constructor — accepts an optional options struct.
             %
-            % Parameters:
+            % Syntax:
+            %   function obj = StlSaver(options)
+            %
+            % Input Arguments:
             %   options — (struct, optional) saver-level options (usually empty;
-            %             per-save options are passed to save() instead)
+            %   per-save options are passed to save() instead)
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
-            % function formats = getSupportedFormats(~)
-            % Return format strings handled by StlSaver.
+            % GETSUPPORTEDFORMATS - Return format strings handled by StlSaver.
+            %
+            % Syntax:
+            %   function formats = getSupportedFormats(~)
+            %
             formats = {'STL isosurface as binary (*.stl)'};
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write labels data as binary STL isosurface mesh files.
+            % SAVE - Write labels data as binary STL isosurface mesh files.
+            %
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
             %
             % One STL file is produced per material (or one file if
             % options.MaterialIndex is a scalar).  File names follow the
             % pattern: <fnBase>_<materialName>.stl
             %
-            % Parameters:
+            % Input Arguments:
             %   data     — [H, W, D, C, T] numeric label array.
-            %              Only the first channel (C=1) and first time point
-            %              (T=1) are processed.
+            %   Only the first channel (C=1) and first time point
+            %   (T=1) are processed.
             %   metadata — struct; used fields:
-            %     .pixSize        — struct {.x .y .z .units .t .tunits}
-            %     .boundingBox    — [xmin xmax ymin ymax zmin zmax]
-            %     .materialNames  — cell array of material name strings
-            %     .materialColors — [M x 3] material RGB colours (0..1)
+            %   .pixSize        — struct {.x .y .z .units .t .tunits}
+            %   .boundingBox    — [xmin xmax ymin ymax zmin zmax]
+            %   .materialNames  — cell array of material name strings
+            %   .materialColors — [M x 3] material RGB colours (0..1)
             %   filename — full output path template, e.g.
-            %              '/out/Labels_myStack.stl'
+            %   '/out/Labels_myStack.stl'
             %   options  — struct; used fields:
-            %     .Format         — format string
-            %     .layerType      — expected 'labels'; warning if not
-            %     .MaterialIndex  — [] = all materials (default),
-            %                       scalar = index of specific material
-            %     .reduce         — (double) face reduction target;
-            %                       default 500 if width > 500 else 0
-            %     .smooth         — (integer) smoothing iterations (default 5)
-            %     .maxFaces       — (integer) max faces per mesh (default 300000)
-            %     .slice          — (logical) 0 = full 3-D mesh (default 0)
-            %     .showWaitbar    — logical
-            %     .silent         — logical, suppress dialogs
-            %     .overwrite      — logical
+            %   .Format         — format string
+            %   .layerType      — expected 'labels'; warning if not
+            %   .MaterialIndex  — [] = all materials (default),
+            %   scalar = index of specific material
+            %   .reduce         — (double) face reduction target;
+            %   default 500 if width > 500 else 0
+            %   .smooth         — (integer) smoothing iterations (default 5)
+            %   .maxFaces       — (integer) max faces per mesh (default 300000)
+            %   .slice          — (logical) 0 = full 3-D mesh (default 0)
+            %   .showWaitbar    — logical
+            %   .silent         — logical, suppress dialogs
+            %   .overwrite      — logical
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — (cell of char) paths of all saved .stl files,
-            %           or single char when only one material is exported.
-            %           Returns [] on failure.
+            %   or single char when only one material is exported.
+            %   Returns [] on failure.
             %
-            % Example — see class-level documentation above.
+            %   Example — see class-level documentation above.
+            %
 
             fnOut = [];
 

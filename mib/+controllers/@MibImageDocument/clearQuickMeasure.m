@@ -1,14 +1,18 @@
 function clearQuickMeasure(obj)
-% function clearQuickMeasure(obj)
-% Silently remove the active quick-measurement ROI and text label.
+% CLEARQUICKMEASURE - Silently remove the active quick-measurement ROI and text label.
+%
+% Syntax:
+%   function clearQuickMeasure(obj)
+%
 % Also restores WindowKeyPressFcn saved when the measurement was started.
 % Idempotent: safe to call multiple times or from DeletingROI re-entry.
 %
-% Parameters:
+% Input Arguments:
 %   none
 %
-% Return values:
+% Output Arguments:
 %   none
+%
 
 if isempty(obj.quickMeasure); return; end
 

@@ -11,7 +11,8 @@ Supplementary to the root `CLAUDE.md` (architecture, conventions, essential conv
 | [appdesigner_guide.md](appdesigner_guide.md) | Starting any new GUIDE → AppDesigner port: file layout, widget syntax, constructor pattern, checklist |
 | [conversion_reference.md](conversion_reference.md) | Full conversion tables: PoolWaitbar, backup, clearing, data structures, bit packing, misc |
 | [conversion_ui.md](conversion_ui.md) | Modifier keys, image display coords, orientation switching |
-| [doc_template.md](doc_template.md) | Documentation block template and rules |
+| [doc_template.md](doc_template.md) | Legacy Doxygen template — superseded by RST style |
+| [../development/docs_api_sphinx.md](../development/docs_api_sphinx.md) | **RST docblock style guide** — use this for all new/updated docs |
 | [port_batchprocessing.md](port_batchprocessing.md) | Full plan: 31 files, phased steps, `.mlapp` widget list |
 | [port_roi.md](port_roi.md) | ROI architecture, widget handles, `roiToSelection` remaining |
 | [port_loadmodel.md](port_loadmodel.md) | BatchOpt fields, extension→loader map, edge cases |

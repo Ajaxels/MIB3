@@ -1,6 +1,9 @@
 function previewPredictions(obj)
-% function previewPredictions(obj)
-% load images of prediction scores into MIB
+% PREVIEWPREDICTIONS - load images of prediction scores into MIB.
+%
+% Syntax:
+%   function previewPredictions(obj)
+%
 
 scoreDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores');
 

@@ -1,16 +1,23 @@
 function updateSortingSettings(obj)
-% function updateSortingSettings(obj)
-% Sync sort direction and column index from the sortTable dropdown.
+% UPDATESORTINGSETTINGS - Sync sort direction and column index from the sortTable dropdown.
+%
+% Syntax:
+%   function updateSortingSettings(obj)
 %
 % Reads the selected item from sortTable (e.g. 'Value, descend'),
 % updates obj.sortingDirection ('ascend'/'descend') and
 % obj.sortingColIndex (1=ObjId, 2=Value, 3=Slice, 4=TimePnt, 5=RowIndex),
 % then immediately re-sorts the table.
 %
-%|
-% @b Examples:
-% @code % wired in addCallbacks: @endcode
-% @code h.sortTable.ValueChangedFcn = @(~,~) obj.updateSortingSettings(); @endcode
+% Usage:
+%   Example 1::
+%
+%     % wired in addCallbacks:
+%
+%   Example 2::
+%
+%     h.sortTable.ValueChangedFcn = @(~,~) obj.updateSortingSettings();
+%
 
 % Updates
 %

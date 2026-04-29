@@ -1,23 +1,28 @@
 function refreshROIList(obj, previousValue)
-% function refreshROIList(obj, previousValue)
-% Rebuild the ROI list-box items from current hROI.Data and attempt to
+% REFRESHROILIST - Rebuild the ROI list-box items from current hROI.Data and attempt to.
+%
+% Syntax:
+%   function refreshROIList(obj, previousValue)
+%
 % preserve the previously selected value.
 %
-% Parameters:
-%   obj: controllers.MibRoi — the ROI panel controller
-%   previousValue: char — previously selected item in the list
+% Input Arguments:
+%   - **obj** — controllers.MibRoi — the ROI panel controller
+%   - **previousValue** — char — previously selected item in the list
 %
-% Return values: none
-%|
-% @b Examples:
-% @code
-% // refresh list and keep the current selection
-% obj.refreshROIList(obj.handles.roiList.Value);
-% @endcode
-% @code
-% // refresh list and select 'All'
-% obj.refreshROIList('All');
-% @endcode
+%   Return values: none
+%
+% Usage:
+%   Example 1::
+%
+%     // refresh list and keep the current selection
+%     obj.refreshROIList(obj.handles.roiList.Value);
+%
+%   Example 2::
+%
+%     // refresh list and select 'All'
+%     obj.refreshROIList('All');
+%
 
 % developer mode
 if obj.mibModel.preferences.System.DeveloperMode

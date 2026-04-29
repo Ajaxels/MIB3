@@ -1,15 +1,18 @@
 function img = addLinesToImage(obj, img, Box, options)
-% function img = addLinesToImage(obj, img, Box, options)
-% add lines to the image
+% ADDLINESTOIMAGE - add lines to the image.
 %
-% Parameters:
-% img: image where lines should be added
-% Box: a vector with a clipping box [xmin xmax ymin ymax zmin zmax]
-% options: an optional structure with additional parameters
-% .orientation - a number that specifies desired orientation, 3-yx, 1-xz, 2-yz
+% Syntax:
+%   function img = addLinesToImage(obj, img, Box, options)
 %
-% Return values:
-% img: an image with fused lines
+% Input Arguments:
+%   - **img** — image where lines should be added
+%   - **Box** — a vector with a clipping box [xmin xmax ymin ymax zmin zmax]
+%   - **options** — an optional structure with additional parameters
+%     .orientation - a number that specifies desired orientation, 3-yx, 1-xz, 2-yz
+%
+% Output Arguments:
+%   - **img** — an image with fused lines
+%
 
 if nargin < 4; options = struct(); end
 if ~isfield(options, 'orientation'); options.orientation = 3; end

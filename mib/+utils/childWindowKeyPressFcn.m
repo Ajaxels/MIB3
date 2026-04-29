@@ -1,6 +1,11 @@
 function childWindowKeyPressFcn(controller, hWidget, hData)
-% function childWindowKeyPressFcn(controller, hWidget, hData)
-% Shared keyboard shortcut handler for child dialog controllers.
+% CHILDWINDOWKEYPRESSFCN - Shared keyboard shortcut handler for child dialog controllers.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      childWindowKeyPressFcn(controller, hWidget, hData)
 %
 % Provides a safe subset of MIB keyboard shortcuts that work correctly
 % in child dialog windows (Quantification, Annotations, etc.) without
@@ -8,22 +13,24 @@ function childWindowKeyPressFcn(controller, hWidget, hData)
 % preferences so custom bindings are respected.
 %
 % Currently supported actions:
-% @li Undo/Redo last action — calls mibModel.undo() + fires ShowImage
+%   - Undo/Redo last action — calls mibModel.undo() + fires ShowImage
 %
 % Additionally handles Escape independently of KeyShortcuts:
-% @li Escape — calls controller.closeWindow() if the method exists
+%   - Escape — calls controller.closeWindow() if the method exists
 %
-% Parameters:
-% controller: handle to the child controller; must have .mibModel property
-% hWidget: the UIFigure that fired the event (passed by WindowKeyPressFcn)
-% hData: KeyData event object with .Key and .Modifier fields
+% Input Arguments:
+%   - **controller** — handle to the child controller; must have a ``.mibModel`` property
+%   - **hWidget** — the UIFigure that fired the event (passed by WindowKeyPressFcn)
+%   - **hData** — KeyData event object with ``.Key`` and ``.Modifier`` fields
 %
-% How to wire in a child controller's addCallbacks (one line):
-%|
-% @b Examples:
-% @code
-% obj.view.gui.WindowKeyPressFcn = @(h,d) utils.childWindowKeyPressFcn(obj, h, d);
-% @endcode
+% Usage:
+%
+%   **Example 1** — wire in a child controller's ``addCallbacks``
+%
+%   .. code-block:: matlab
+%
+%      obj.view.gui.WindowKeyPressFcn = @(h,d) utils.childWindowKeyPressFcn(obj, h, d);
+%
 
 % Updates
 %

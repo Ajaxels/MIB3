@@ -1,6 +1,9 @@
 function startTraining(obj)
-% function startTraining(obj)
-% perform training of the network
+% STARTTRAINING - perform training of the network.
+%
+% Syntax:
+%   function startTraining(obj)
+%
 
 global counter;     % for patch test
 global mibDeepStopTraining

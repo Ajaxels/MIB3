@@ -1,26 +1,26 @@
 function updateInterpolationMode(obj, keepCurrent)
-% function updateInterpolationMode(obj, options)
-% Function to set the state of the interpolation button in the Selection ribbon
+% UPDATEINTERPOLATIONMODE - Function to set the state of the interpolation button in the Selection ribbon.
+%
+% Syntax:
+%   function updateInterpolationMode(obj, keepCurrent)
 %
 % When the ''options'' variable is omitted the function works as a standard
 % callback and changes the type of interpolation: ''shape'' or ''line''.
 % However, when ''options'' are specified the function sets the state of
 % the button to the currently selected type.
 %
-% Parameters:
-% keepCurrent: [@em optional, logical], 
-% @li true - set the state of the button to the currently
-% selected type of the interpolation (obj.mibModel.preferences.SegmTools.Interpolation.Type)
-% @li false - swaps the interpolation type
+% Input Arguments:
+%   - **keepCurrent** — [*optional,* logical],
+%     - true - set the state of the button to the currently
+%   selected type of the interpolation (obj.mibModel.preferences.SegmTools.Interpolation.Type)
+%     - false - swaps the interpolation type
 %
-% Return values:
-% 
-%| @b Examples:
-% @code obj.mibController.updateInterpolationMode(true);     // call from mibController; update the interpolation button icon, using the currently selected interpolation type @endcode
-% @code obj.mibController.updateInterpolationMode();     // call from mibController; swap the interpolation type @endcode
+% Output Arguments:
 %
-% Updates
-% 
+% Usage:
+%   ``obj.mibController.updateInterpolationMode(true);     // call from mibController; update the interpolation button icon, using the currently selected interpolation type``
+%   ``obj.mibController.updateInterpolationMode();     // call from mibController; swap the interpolation type``
+%
 
 % swap the interpolation types
 if nargin < 2; keepCurrent = false; end

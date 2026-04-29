@@ -1,27 +1,35 @@
 function [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)
-% function [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)
-% Convert coordinates of a pixel in the dataset to the coordinates of the
+% CONVERTDATATOMOUSECOORDINATES - Convert coordinates of a pixel in the dataset to the coordinates of the.
+%
+% Syntax:
+%   function [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)
+%
 % image axes (screen/mouse space).
 %
 % This is the inverse of convertMouseToDataCoordinates.  It takes pixel
 % positions in the dataset coordinate frame and returns the corresponding
 % positions in the axes coordinate frame used for rendering.
 %
-% Parameters:
-% x: numeric — x-coordinate(s) in dataset space
-% y: numeric — y-coordinate(s) in dataset space
-% mode: [@em optional] char — rendering mode, default @b 'shown'
-%   @li 'shown' — standard viewport (most common)
-%   @li 'full'  — full-image rendering during panning
+% Input Arguments:
+%   - **x** — numeric — x-coordinate(s) in dataset space
+%   - **y** — numeric — y-coordinate(s) in dataset space
+%   - **mode** — *(optional)* char — rendering mode, default **'shown'**
+%   - 'shown' — standard viewport (most common)
+%   - 'full'  — full-image rendering during panning
 %
-% Return values:
-% xOut: numeric — x-coordinate(s) in axes space
-% yOut: numeric — y-coordinate(s) in axes space
-
-%|
-% @b Examples:
-% @code [xOut, yOut] = obj.mibModel.convertDataToMouseCoordinates(x, y);  // from MibController @endcode
-% @code [xOut, yOut] = obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown'); // explicit mode @endcode
+% Output Arguments:
+%   - **xOut** — numeric — x-coordinate(s) in axes space
+%   - **yOut** — numeric — y-coordinate(s) in axes space
+%
+% Usage:
+%   Example 1::
+%
+%     [xOut, yOut] = obj.mibModel.convertDataToMouseCoordinates(x, y);  // from MibController
+%
+%   Example 2::
+%
+%     [xOut, yOut] = obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown'); // explicit mode
+%
 
 if nargin < 4; mode = 'shown'; end
 

@@ -1,18 +1,23 @@
 function annotationsPanel_Callback(obj, hWidget, hData)
-% annotationsPanel_Callback(obj, hWidget, hData)
+% ANNOTATIONSPANEL_CALLBACK - annotationsPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function annotationsPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->Annotations tool
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag -> identifier the widget, used when the same operation is called from menu
-% 'annAnnotationList' -> open another window with the annotation list
-% 'annShowPrompt' -> show the annotation prompt when adding a new annotation
-% 'annFocusOnValue' -> when showing the prompt focus on the value field
-% 'annPrecision' -> define floating value precision for the annotation value
-% 'annDeleteAll' -> delete all annotations
-% 'annDisplayAs' -> define how annotations should be visualized
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag identifier the widget, used when the same operation is called from menu
+%     'annAnnotationList' open another window with the annotation list
+%     'annShowPrompt' show the annotation prompt when adding a new annotation
+%     'annFocusOnValue' when showing the prompt focus on the value field
+%     'annPrecision' define floating value precision for the annotation value
+%     'annDeleteAll' delete all annotations
+%     'annDisplayAs' define how annotations should be visualized
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

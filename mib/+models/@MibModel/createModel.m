@@ -1,28 +1,33 @@
 function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
-% function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
-% Create a new model — wrapper around core.MibDataset.createModel
+% CREATEMODEL - Create a new model — wrapper around core.MibDataset.createModel.
 %
-% Parameters:
-% ModelType: [@em optional], can be empty: []; a number with the model type:
-% @li 63 - 63 material model
-% @li 255 - 255 material model
-% @li 65535 - 65535 material model
-% @li 4294967295 - 4294967295 material model
-% ModelMaterialNames: [@em optional] can be empty: []; a cell array with
-%   names of materials; not used for ModelType > 255
-% BatchOptIn: a structure for batch processing mode; when NaN, returns a
-%   structure with default options via "SyncBatch" event
-% @li .ModelType - cell string, {'63', '255', '65535', '4294967295'}
-% @li .ModelMaterialNames - string with semicolon-separated material names
-% @li .showWaitbar - logical, show or not the waitbar
-% @li .id -> [@em optional], dataset index from 1 to 9, default = obj.id
+% Syntax:
+%   function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
 %
-% Return values:
+% Input Arguments:
+%   - **ModelType** — *(optional)*, can be empty: []; a number with the model type:
+%   - 63 - 63 material model
+%   - 255 - 255 material model
+%   - 65535 - 65535 material model
+%   - 4294967295 - 4294967295 material model
+%   - **ModelMaterialNames** — *(optional)* can be empty: []; a cell array with
+%     names of materials; not used for ModelType > 255
+%   - **BatchOptIn** — a structure for batch processing mode; when NaN, returns a
+%     structure with default options via "SyncBatch" event
+%   - .ModelType - cell string, {'63', '255', '65535', '4294967295'}
+%   - .ModelMaterialNames - string with semicolon-separated material names
+%   - .showWaitbar - logical, show or not the waitbar
+%   - .id *(optional)*, dataset index from 1 to 9, default = obj.id
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.createModel();     // create a new model @endcode
+% Output Arguments:
+%
+% Usage:
+%   **Example 1** — create a new model
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.createModel();
+%
 
 % Updates
 % Ported from MIB2 mibModel.createModel

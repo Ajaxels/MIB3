@@ -1,22 +1,29 @@
 function [x, y, z] = convertUnitsToPixels(obj, x, y, z)
-% [x, y, z] = convertUnitsToPixels(obj, x, y, z)
+% CONVERTUNITSTOPIXELS - [x, y, z] = convertUnitsToPixels(obj, x, y, z).
+%
+% Syntax:
+%   function [x, y, z] = convertUnitsToPixels(obj, x, y, z)
+%
 % Convert coordinates from physical imaging units to pixels using pixSize and boundingBox.
 %
-% Parameters:
-% x: double, x-coordinate(s) in physical units (e.g. um)
-% y: double, y-coordinate(s) in physical units (e.g. um)
-% z: double, z-coordinate(s) in physical units (e.g. um)
+% Input Arguments:
+%   - **x** — double, x-coordinate(s) in physical units (e.g. um)
+%   - **y** — double, y-coordinate(s) in physical units (e.g. um)
+%   - **z** — double, z-coordinate(s) in physical units (e.g. um)
 %
-% Return values:
-% x: double, x-coordinate(s) in pixels
-% y: double, y-coordinate(s) in pixels
-% z: double, z-coordinate(s) in pixels
-
-%|
-% @b Examples:
-% @code
-% [xPx, yPx, zPx] = obj.mibModel.I{obj.mibModel.getActiveId()}.convertUnitsToPixels(xU, yU, zU);
-% @endcode
+% Output Arguments:
+%   - **x** — double, x-coordinate(s) in pixels
+%   - **y** — double, y-coordinate(s) in pixels
+%   - **z** — double, z-coordinate(s) in pixels
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     [xPx, yPx, zPx] = obj.mibModel.I{obj.mibModel.getActiveId()}.convertUnitsToPixels(xU, yU, zU);
+%
 
 if nargin < 4; error('convertUnitsToPixels: missing parameters, x, y and z are required'); end
 

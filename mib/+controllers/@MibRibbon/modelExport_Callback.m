@@ -1,10 +1,13 @@
 function modelExport_Callback(obj, hWidget, hData)
-% function modelExport_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Export section of the Model ribbon
+% MODELEXPORT_CALLBACK - callback on press of buttons in the Export section of the Model ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function modelExport_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

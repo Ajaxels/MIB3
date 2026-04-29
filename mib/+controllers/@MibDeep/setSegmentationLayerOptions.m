@@ -1,6 +1,9 @@
 function setSegmentationLayerOptions(obj)
-    % function setSegmentationLayerOptions(obj)
-    % update options for the activation layers
+% SETSEGMENTATIONLAYEROPTIONS - update options for the activation layers.
+%
+% Syntax:
+%   function setSegmentationLayerOptions(obj)
+%
     switch obj.BatchOpt.T_SegmentationLayer{1}
         case 'focalLossLayer'
             prompts = {sprintf('Alpha, balancing parameter of the focal loss function\nThe Alpha value scales the loss function linearly, when decreasing Alpha, increase Gamma\npositive real number, [default=0.25]'); ...

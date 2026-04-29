@@ -1,29 +1,38 @@
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% Date: 25.04.2023
-% License: BSD-3 clause (https://opensource.org/license/bsd-3-clause/)
-
-function result = mibGetMibVersionNumberic(relativePath, absolutePath, templateText)
-% function result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText)
-% convert relative path into absolute path, where the part of the relative
-% path containing text template (templateText) will be replaced with the
-% abosolute path
+function result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText)
+% MIBGETMIBVERSIONNUMBERIC - Convert a relative path back to an absolute path,
+% where ``templateText`` in the relative path is replaced with ``absolutePath``.
 %
-% Parameters:
-% relativePath: string with the relative path, for example "[RELATIVE]\..\..\dir1\subdir1"
-% absolutePath: string with the absolute path, for example "c:\myfiles\dir2\subdir2"
-% templateText: string with the template text to be inserted instead of the relativePath, for example "[RELATIVE]"
-
-%| 
-% @ Note:
-% The reverse operation is done using utils.deepmib.convertAbsoluteToRelativePath function
-
-% @b Examples:
-% @code 
-% relativePath = '[RELATIVE]\..\..\dir1\subdir1'; 
-% absolutePath = 'c:\myfiles\dir2\subdir2'; 
-% templateText = '[RELATIVE]';
-% result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText); // result = "c:\myfiles\dir1\subdir1"
-% @endcode
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText)
+%
+% Input Arguments:
+%   - **relativePath** — [string] relative path containing the template, e.g.
+%     ``'[RELATIVE]\..\..\dir1\subdir1'``
+%   - **absolutePath** — [string] absolute base path, e.g.
+%     ``'c:\myfiles\dir2\subdir2'``
+%   - **templateText** — [string] placeholder to replace, e.g. ``'[RELATIVE]'``
+%
+% Output Arguments:
+%   - **result** — [string] reconstructed absolute path
+%
+% Usage:
+%
+%   .. note::
+%      The reverse operation is done using ``utils.deepmib.convertAbsoluteToRelativePath``.
+%
+%   **Example 1** — convert a relative path back to an absolute one
+%
+%   .. code-block:: matlab
+%
+%      relativePath = '[RELATIVE]\..\..\dir1\subdir1';
+%      absolutePath = 'c:\myfiles\dir2\subdir2';
+%      templateText = '[RELATIVE]';
+%      result = convertRelativeToAbsolutePath(relativePath, absolutePath, templateText);
+%      % result = 'c:\myfiles\dir1\subdir1'
+%
 
 parentDirsIndices = strfind(relativePath, '..');  % get number of times the parent directory needs to be called
 parentDirsNo = numel(parentDirsIndices);  % get number of times the parent directory needs to be called

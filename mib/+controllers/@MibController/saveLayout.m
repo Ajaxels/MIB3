@@ -1,24 +1,23 @@
 function outputPath = saveLayout(obj, mode)
-% function filename = saveLayout(obj, mode)
-% Store the current layout of panels to disk
+% SAVELAYOUT - Store the current layout of panels to disk.
 %
-% Parameters:
-% mode: char [optional, default='localDefault'] mode to store MIB layout
-% @li 'localDefault' - default layout for local installation of MIB, saved to utils.getPrefDir, 'mibDefaultLayout.json'
-% @li 'custom' - save layout to utils.getPrefDir using a custom name
-% @li 'globalDefault' - update the default MIB layout configuration in MIB\assets\defaultLayout.json
+% Syntax:
+%   function outputPath = saveLayout(obj, mode)
 %
-% Return values:
-% filename: char with the full path to the output file with the stored
-% layout. The saved layout can be restored using utils.restoreLayout function.
-
-%|
-% @b Examples:
-% @code
-% filename = obj.storeLayout(obj); // call from MibController class
-% @endcode
+% Input Arguments:
+%   - **mode** — char [optional, default='localDefault'] mode to store MIB layout
+%     - 'localDefault' - default layout for local installation of MIB, saved to utils.getPrefDir, 'mibDefaultLayout.json'
+%     - 'custom' - save layout to utils.getPrefDir using a custom name
+%     - 'globalDefault' - update the default MIB layout configuration in MIB\assets\defaultLayout.json
 %
-% Updates
+% Output Arguments:
+%   - **filename** — char with the full path to the output file with the stored
+%     layout. The saved layout can be restored using utils.restoreLayout function.
+%
+% Usage:
+%   Example 1::
+%
+%     filename = obj.storeLayout(obj); // call from MibController class
 %
 
 arguments (Input)

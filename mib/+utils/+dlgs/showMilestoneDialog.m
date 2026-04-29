@@ -1,49 +1,48 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 25.04.2023
-
 function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
-% function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
-% Show a gamification milestone / current-stats dialog with a celebration
+% SHOWMILESTONEDIALOG - Show a gamification milestone / current-stats dialog with a celebration.
+%
+% Syntax:
+%
+%   .. code-block:: matlab
+%
+%      showMilestoneDialog(ParentFigure, userPrefs, mode)
+%      showMilestoneDialog(ParentFigure, userPrefs, mode, options)
+%
 % video and user performance statistics.
 %
-% Parameters:
-% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
-%   used to center the dialog. Pass [] to use the cached handle from a prior call.
-%   To supply the MIB installation path use options.mibPath.
-% userPrefs: struct - mibModel.preferences.Users (provides tier data and stats)
-% mode:      char   - display mode:
-%            'milestoneReached' - congratulations on reaching a new tier (default)
-%            'currentStats'     - show current score/progress
-% options:   struct (optional) with fields:
-%   .mibPath      - char, path to MIB installation directory (default: '')
-%   .WindowStyle  - 'modal' (default for milestoneReached) or 'normal'
-%   .ParentFigure - uifigure / AppContainer handle for centering
+% Input Arguments:
+%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%     used to center the dialog. Pass ``[]`` to use the cached handle from a prior call.
+%     To supply the MIB installation path use ``options.mibPath``.
+%   - **userPrefs** — struct — ``mibModel.preferences.Users`` (provides tier data and stats)
+%   - **mode** — [char] display mode:
 %
-% Return values:
+%     - ``'milestoneReached'`` — congratulations dialog for reaching a new tier (default)
+%     - ``'currentStats'`` — show current score and progress
+%
+%   - **options** *(optional)* — struct with fields:
+%
+%     - ``.mibPath`` — [char] path to MIB installation directory (default: ``''``)
+%     - ``.WindowStyle`` — [char] ``'modal'`` (default for ``'milestoneReached'``) or ``'normal'``
+%     - ``.ParentFigure`` — [handle] uifigure / AppContainer handle for centering
+%
+% Output Arguments:
 %   (none)  - dialog blocks until dismissed
 %
-% Example (milestone):
-%   utils.dlgs.showMilestoneDialog(obj.view.gui, ...
-%       obj.mibModel.preferences.Users, ...
-%       'milestoneReached');
+% **Example 1** — Show a milestone congratulations dialog
 %
-% Example (current stats):
-%   utils.dlgs.showMilestoneDialog(obj.view.gui, ...
-%       obj.mibModel.preferences.Users, ...
-%       'currentStats');
+% .. code-block:: matlab
+%
+%    utils.dlgs.showMilestoneDialog(obj.view.gui, ...
+%        obj.mibModel.preferences.Users, 'milestoneReached');
+%
+% **Example 2** — Show current score and progress
+%
+% .. code-block:: matlab
+%
+%    utils.dlgs.showMilestoneDialog(obj.view.gui, ...
+%        obj.mibModel.preferences.Users, 'currentStats');
+%
 
 arguments
     ParentFigure = []

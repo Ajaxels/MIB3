@@ -1,6 +1,7 @@
 classdef ResampleDataset < handle
-    % @type ResampleDataset class is responsible for showing the dataset
-    % resample window, available from MIB > Ribbon > Dataset > Resample
+% RESAMPLEDATASET - @type ResampleDataset class is responsible for showing the dataset.
+%
+% resample window, available from MIB > Ribbon > Dataset > Resample
 
     % Updates
     %
@@ -31,11 +32,15 @@ classdef ResampleDataset < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, ~, evnt)
-            % ViewListner_Callback2 — static listener guard
+            % VIEWLISTNER_CALLBACK2 - static listener guard.
             %
-            % Parameters:
-            % obj: handle to ResampleDataset
-            % evnt: event data
+            % Syntax:
+            %   function ViewListner_Callback2(obj, ~, evnt)
+            %
+            % Input Arguments:
+            %   - **obj** — handle to ResampleDataset
+            %   - **evnt** — event data
+            %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
                 return;
@@ -51,16 +56,20 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function obj = ResampleDataset(mibModel, varargin)
-            % ResampleDataset — constructor
+            % RESAMPLEDATASET - constructor.
             %
-            % Parameters:
-            % mibModel: handle to MibModel
-            % varargin{1}: [@em optional] BatchOpt struct or NaN (batch mode)
+            % Syntax:
+            %   function obj = ResampleDataset(mibModel, varargin)
             %
-            % @b Examples:
-            % @code
-            % obj.mibController.startController('controllers.ResampleDataset');
-            % @endcode
+            % Input Arguments:
+            %   - **mibModel** — handle to MibModel
+            %   - **varargin{1}** — *(optional)* BatchOpt struct or NaN (batch mode)
+            %
+            % Usage:
+            %   Example 1::
+            %
+            %     obj.mibController.startController('controllers.ResampleDataset');
+            %
 
             obj.mibModel = mibModel;
             id = obj.mibModel.getActiveId();
@@ -143,7 +152,11 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function closeWindow(obj)
-            % closeWindow — close the ResampleDataset GUI
+            % CLOSEWINDOW - close the ResampleDataset GUI.
+            %
+            % Syntax:
+            %   function closeWindow(obj)
+            %
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 delete(obj.view.gui);
             end
@@ -153,7 +166,11 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function returnBatchOpt(obj, BatchOptOut)
-            % returnBatchOpt — send BatchOpt to mibBatchController
+            % RETURNBATCHOPT - send BatchOpt to mibBatchController.
+            %
+            % Syntax:
+            %   function returnBatchOpt(obj, BatchOptOut)
+            %
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             eventdata = core.ToggleEventData(BatchOptOut);
             notify(obj.mibModel, 'SyncBatch', eventdata);
@@ -161,13 +178,21 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function updateBatchOptFromGUI(obj, hObject)
-            % updateBatchOptFromGUI — sync obj.BatchOpt from a widget
+            % UPDATEBATCHOPTFROMGUI - sync obj.BatchOpt from a widget.
+            %
+            % Syntax:
+            %   function updateBatchOptFromGUI(obj, hObject)
+            %
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
         % ---------------------------------------------------------------
         function addCallbacks(obj)
-            % addCallbacks — wire all GUI widget callbacks
+            % ADDCALLBACKS - wire all GUI widget callbacks.
+            %
+            % Syntax:
+            %   function addCallbacks(obj)
+            %
             h = obj.view.handles;
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
             % radio button group
@@ -195,7 +220,11 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function updateWidgets(obj)
-            % updateWidgets — refresh all GUI widgets from current dataset state
+            % UPDATEWIDGETS - refresh all GUI widgets from current dataset state.
+            %
+            % Syntax:
+            %   function updateWidgets(obj)
+            %
             id = obj.mibModel.getActiveId();
             opts.blockModeSwitch = 0;
             [obj.height, obj.width, obj.depth, colors] = ...
@@ -247,10 +276,14 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function updateEditboxStates(obj, mode)
-            % updateEditboxStates — enable the primary input group for the selected mode
+            % UPDATEEDITBOXSTATES - enable the primary input group for the selected mode.
             %
-            % Parameters:
-            % mode: string — 'Dimensions' | 'Voxels' | 'PercentageXYZ' | 'PercentageXY'
+            % Syntax:
+            %   function updateEditboxStates(obj, mode)
+            %
+            % Input Arguments:
+            %   - **mode** — string — 'Dimensions' | 'Voxels' | 'PercentageXYZ' | 'PercentageXY'
+            %
             h = obj.view.handles;
             isDim  = strcmp(mode, 'Dimensions');
             isVox  = strcmp(mode, 'Voxels');
@@ -266,10 +299,14 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function radio_Callback(obj, hObject)
-            % radio_Callback — handle ResamplingMode button group change
+            % RADIO_CALLBACK - handle ResamplingMode button group change.
             %
-            % Parameters:
-            % hObject: event.NewValue — the newly selected radio button
+            % Syntax:
+            %   function radio_Callback(obj, hObject)
+            %
+            % Input Arguments:
+            %   - **hObject** — event.NewValue — the newly selected radio button
+            %
             obj.BatchOpt.ResamplingMode{1} = hObject.Tag;
             obj.updateEditboxStates(hObject.Tag);
             switch hObject.Tag
@@ -287,16 +324,24 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function helpBtn_Callback(~)
-            % helpBtn_Callback — open online help
+            % HELPBTN_CALLBACK - open online help.
+            %
+            % Syntax:
+            %   function helpBtn_Callback(~)
+            %
             web('https://mib.helsinki.fi/help/user-interface/menu/dataset/index.html#resample', '-browser');
         end
 
         % ---------------------------------------------------------------
         function editbox_Callback(obj, hObject)
-            % editbox_Callback — respond to dimension / voxel / percentage edits
+            % EDITBOX_CALLBACK - respond to dimension / voxel / percentage edits.
             %
-            % Parameters:
-            % hObject: the NumericEditField that changed
+            % Syntax:
+            %   function editbox_Callback(obj, hObject)
+            %
+            % Input Arguments:
+            %   - **hObject** — the NumericEditField that changed
+            %
             id = obj.mibModel.getActiveId();
             pixSize = obj.mibModel.I{id}.image.pixSize;
             h = obj.view.handles;
@@ -386,10 +431,14 @@ classdef ResampleDataset < handle
 
         % ---------------------------------------------------------------
         function resampleBtn_Callback(obj, batchModeSwitch)
-            % resampleBtn_Callback — resample the current dataset
+            % RESAMPLEBTN_CALLBACK - resample the current dataset.
             %
-            % Parameters:
-            % batchModeSwitch: [@em optional] logical; true when called headlessly
+            % Syntax:
+            %   function resampleBtn_Callback(obj, batchModeSwitch)
+            %
+            % Input Arguments:
+            %   - **batchModeSwitch** — *(optional)* logical; true when called headlessly
+            %
 
             if nargin < 2; batchModeSwitch = false; end
             id = obj.mibModel.getActiveId();

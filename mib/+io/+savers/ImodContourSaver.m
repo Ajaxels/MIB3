@@ -1,130 +1,142 @@
 classdef ImodContourSaver < io.savers.BaseSaver
-    % classdef ImodContourSaver < io.savers.BaseSaver
-    % Saver for IMOD contour model format output (*.mod files).
-    %
-    % Handles one format:
-    %   'Contours for IMOD (*.mod)' — writes an IMOD binary model (.mod)
-    %       containing one object per segmentation material.  Each object
-    %       holds the contours (closed polygons) extracted from the label
-    %       volume at each Z-slice.
-    %
-    % This saver is labels-only.  It is intended for workflows where
-    % segmentation results from MIB3 are reviewed, refined, or processed
-    % further using IMOD's 3dmod application.
-    %
-    % The saver delegates to the legacy helper mibExportModelToImodModel(),
-    % which is ported from MIB2.
-    %
-    % DATA DIMENSIONS
-    %   Input  data   : [H, W, D, C, T]  (MIB3 native order)
-    %   mibExportModelToImodModel() expects [H, W, D] — squeezed from data.
-    %
-    % SAVING OPTIONS PASSED TO mibExportModelToImodModel
-    %   savingOptions.modelFilename      — full output path for the .mod file
-    %   savingOptions.pixSize            — struct {.x .y .z .units .t .tunits}
-    %   savingOptions.xyScaleFactor      — (double) scale factor applied to XY
-    %                                       pixel size when building contours;
-    %                                       default 5 in silent mode
-    %   savingOptions.zScaleFactor       — (double) scale factor applied to Z
-    %                                       spacing; default 1 in silent mode
-    %   savingOptions.colorList          — [M x 3] material RGB colours (0..1)
-    %   savingOptions.ModelMaterialNames — cell array of material name strings
-    %   savingOptions.showWaitbar        — logical
-    %   savingOptions.generateSelectionSw — logical, default false in silent mode
-    %
-    % TODO: port mibExportModelToImodModel from
-    %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/IMOD/mibExportModelToImodModel.m
-    %   to mib/+io/+IMOD/mibExportModelToImodModel.m
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Export segmentation contours to IMOD .mod file
-    %   saver = io.SaverFactory.create('Contours for IMOD (*.mod)');
-    %
-    %   opts.Format         = 'Contours for IMOD (*.mod)';
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.layerType      = 'labels';
-    %   opts.xyScaleFactor  = 5;
-    %   opts.zScaleFactor   = 1;
-    %
-    %   meta.filename       = 'source_tomo.tif';
-    %   meta.pixSize        = struct('x',0.35,'y',0.35,'z',1.4, ...
-    %                                'units','nm','t',1,'tunits','s');
-    %   meta.materialNames  = {'Ribosome'; 'Membrane'; 'Nucleus'};
-    %   meta.materialColors = [1 0 0; 0 1 0; 0 0 1];
-    %
-    %   labels = uint8(rand(512,512,200,1,1)*3);  % [H W D C T]
-    %   fnOut = saver.save(labels, meta, '/output/Model_tomo.mod', opts);
-    %   fprintf('Saved: %s\n', fnOut);
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Via MibModel batch — export contours for IMOD annotation review
-    %   BatchOpt.LayerType       = {'labels'};
-    %   BatchOpt.Format          = {'Contours for IMOD (*.mod)'};
-    %   BatchOpt.OutputDirectoryPolicy = {'Full path'};
-    %   BatchOpt.DestinationDirectory  = '/output/imod';
-    %   BatchOpt.FilenamePolicy  = {'Use existing name'};
-    %   BatchOpt.showWaitbar     = false;
-    %   BatchOpt.mibBatchTooltip.LayerType = '';
-    %   model.save('labels', [], BatchOpt);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.MrcSaver,
-    %   core.MibDataset.save, models.MibModel.save
+% IMODCONTOURSAVER - Saver for IMOD contour model format output (``*.mod`` files).
+%
+% Handles one format:
+% 'Contours for IMOD (``*.mod``)' — writes an IMOD binary model (.mod)
+% containing one object per segmentation material.  Each object
+% holds the contours (closed polygons) extracted from the label
+% volume at each Z-slice.
+%
+% This saver is labels-only.  It is intended for workflows where
+% segmentation results from MIB3 are reviewed, refined, or processed
+% further using IMOD's 3dmod application.
+%
+% The saver delegates to the legacy helper mibExportModelToImodModel(),
+% which is ported from MIB2.
+%
+% DATA DIMENSIONS
+% Input  data   : [H, W, D, C, T]  (MIB3 native order)
+% mibExportModelToImodModel() expects [H, W, D] — squeezed from data.
+%
+% SAVING OPTIONS PASSED TO mibExportModelToImodModel
+% savingOptions.modelFilename      — full output path for the .mod file
+% savingOptions.pixSize            — struct {.x .y .z .units .t .tunits}
+% savingOptions.xyScaleFactor      — (double) scale factor applied to XY
+% pixel size when building contours;
+% default 5 in silent mode
+% savingOptions.zScaleFactor       — (double) scale factor applied to Z
+% spacing; default 1 in silent mode
+% savingOptions.colorList          — [M x 3] material RGB colours (0..1)
+% savingOptions.ModelMaterialNames — cell array of material name strings
+% savingOptions.showWaitbar        — logical
+% savingOptions.generateSelectionSw — logical, default false in silent mode
+%
+% TODO: port mibExportModelToImodModel from
+% MIB2_RENAMED_FOR_MIB3/ImportExportTools/IMOD/mibExportModelToImodModel.m
+% to mib/+io/+IMOD/mibExportModelToImodModel.m
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Export segmentation contours to IMOD .mod file
+%     saver = io.SaverFactory.create('Contours for IMOD (``*.mod``)');
+%
+%     opts.Format         = 'Contours for IMOD (``*.mod``)';
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.layerType      = 'labels';
+%     opts.xyScaleFactor  = 5;
+%     opts.zScaleFactor   = 1;
+%
+%     meta.filename       = 'source_tomo.tif';
+%     meta.pixSize        = struct('x',0.35,'y',0.35,'z',1.4, ...
+%                                  'units','nm','t',1,'tunits','s');
+%     meta.materialNames  = {'Ribosome'; 'Membrane'; 'Nucleus'};
+%     meta.materialColors = [1 0 0; 0 1 0; 0 0 1];
+%
+%     labels = uint8(rand(512,512,200,1,1)*3);  % [H W D C T]
+%     fnOut = saver.save(labels, meta, '/output/Model_tomo.mod', opts);
+%     fprintf('Saved: %s\n', fnOut);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Via MibModel batch — export contours for IMOD annotation review
+%     BatchOpt.LayerType       = {'labels'};
+%     BatchOpt.Format          = {'Contours for IMOD (``*.mod``)'};
+%     BatchOpt.OutputDirectoryPolicy = {'Full path'};
+%     BatchOpt.DestinationDirectory  = '/output/imod';
+%     BatchOpt.FilenamePolicy  = {'Use existing name'};
+%     BatchOpt.showWaitbar     = false;
+%     BatchOpt.mibBatchTooltip.LayerType = '';
+%     model.save('labels', [], BatchOpt);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.MrcSaver,
+% core.MibDataset.save, models.MibModel.save
 
     methods
 
         function obj = ImodContourSaver(options)
-            % function obj = ImodContourSaver(options)
-            % Constructor — accepts an optional options struct.
+            % IMODCONTOURSAVER - Constructor — accepts an optional options struct.
             %
-            % Parameters:
+            % Syntax:
+            %   function obj = ImodContourSaver(options)
+            %
+            % Input Arguments:
             %   options — (struct, optional) saver-level options (usually empty;
-            %             per-save options are passed to save() instead)
+            %   per-save options are passed to save() instead)
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
-            % function formats = getSupportedFormats(~)
-            % Return format strings handled by ImodContourSaver.
+            % GETSUPPORTEDFORMATS - Return format strings handled by ImodContourSaver.
+            %
+            % Syntax:
+            %   function formats = getSupportedFormats(~)
+            %
             formats = {'Contours for IMOD (*.mod)'};
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write labels data as an IMOD contour model (.mod) file.
+            % SAVE - Write labels data as an IMOD contour model (.mod) file.
             %
-            % Parameters:
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
+            %
+            % Input Arguments:
             %   data     — [H, W, D, C, T] numeric label array.
-            %              Only the first channel (C=1) and first time point
-            %              (T=1) are used.
+            %   Only the first channel (C=1) and first time point
+            %   (T=1) are used.
             %   metadata — struct; used fields:
-            %     .pixSize        — struct {.x .y .z .units .t .tunits}
-            %     .materialNames  — cell array of material name strings
-            %     .materialColors — [M x 3] material RGB colours (0..1)
+            %   .pixSize        — struct {.x .y .z .units .t .tunits}
+            %   .materialNames  — cell array of material name strings
+            %   .materialColors — [M x 3] material RGB colours (0..1)
             %   filename — full output path, e.g. '/out/Model_tomo.mod'
             %   options  — struct; used fields:
-            %     .Format              — format string
-            %     .layerType           — expected 'labels'; warning if not
-            %     .xyScaleFactor       — (double) XY contour scale factor
-            %                            (default 5 in silent mode)
-            %     .zScaleFactor        — (double) Z scale factor (default 1)
-            %     .generateSelectionSw — (logical) generate selection object
-            %                            (default false in silent mode)
-            %     .showWaitbar         — logical
-            %     .silent              — logical, suppress dialogs
-            %     .overwrite           — logical
+            %   .Format              — format string
+            %   .layerType           — expected 'labels'; warning if not
+            %   .xyScaleFactor       — (double) XY contour scale factor
+            %   (default 5 in silent mode)
+            %   .zScaleFactor        — (double) Z scale factor (default 1)
+            %   .generateSelectionSw — (logical) generate selection object
+            %   (default false in silent mode)
+            %   .showWaitbar         — logical
+            %   .silent              — logical, suppress dialogs
+            %   .overwrite           — logical
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — (char) path of saved .mod file, [] on failure
             %
-            % Example — see class-level documentation above.
+            %   Example — see class-level documentation above.
+            %
 
             fnOut = [];
 

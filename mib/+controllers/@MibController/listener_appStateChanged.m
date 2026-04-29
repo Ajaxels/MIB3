@@ -1,5 +1,9 @@
 function listener_appStateChanged(obj, src, evtData)
-% listener_appStateChanged(obj, src, evtData)
+% LISTENER_APPSTATECHANGED - listener_appStateChanged(obj, src, evtData).
+%
+% Syntax:
+%   function listener_appStateChanged(obj, src, evtData)
+%
 % listener for property change in obj.view.handles.imageViewDocGroup
 % At the moment is used to catch selection of the figure-document in the Image View panel
 

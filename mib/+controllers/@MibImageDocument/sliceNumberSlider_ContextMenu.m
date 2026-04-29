@@ -1,6 +1,9 @@
 function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
-% function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
-% callbacks for the context menu of change of slices slider
+% SLICENUMBERSLIDER_CONTEXTMENU - callbacks for the context menu of change of slices slider.
+%
+% Syntax:
+%   function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
+%
 % obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.sliceNumberSlider
 % or
 % obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.frameNumberSlider

@@ -1,6 +1,8 @@
 function erodeImage(obj, BatchOptIn)
-% function erodeImage(obj, BatchOptIn)
-% Erode the selection, mask, or labels layer.
+% ERODEIMAGE - Erode the selection, mask, or labels layer.
+%
+% Syntax:
+%   function erodeImage(obj, BatchOptIn)
 %
 % Shrinks the binary content of the chosen layer using either a 2D
 % disk-like structuring element (applied slice-by-slice) or a 3D ball
@@ -11,53 +13,64 @@ function erodeImage(obj, BatchOptIn)
 % Parallel 2D erosion is supported via parfor when the Parallel Computing
 % Toolbox is available; use core.PoolWaitbar for thread-safe progress.
 %
-% Parameters:
-% BatchOptIn: [@em optional] structure for batch processing mode; when NaN,
-%   returns default options via the "SyncBatch" event
-% @li .TargetLayer - cell string, {'selection','mask','labels'} layer to erode
-% @li .DatasetType - cell string, {'2D, Slice','3D, Stack','4D, Dataset'} scope
-% @li .ErodeMode   - cell string, {'2D','3D'} strel dimensionality
-% @li .StrelSize   - string, strel radius in pixels; one value (isotropic)
-%     or two values separated by a space (first = XY radius, second = Z radius
-%     for 3D mode or X radius for 2D mode)
-% @li .Difference  - logical, keep only the eroded ring (original minus eroded)
-% @li .MaterialIndex - string, material index for TargetLayer='labels'; use
-%     NaN to erode all materials (not yet implemented — pass a valid index)
-% @li .Use2DParallelComputing - logical, use parfor for 2D slice-by-slice erosion
-% @li .showWaitbar - logical, show or not the progress dialog
-% @li .id          -> [@em optional] dataset index 1-9, default = obj.id
+% Input Arguments:
+%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
+%     returns default options via the "SyncBatch" event
 %
-% Return values:
+%     - ``.TargetLayer`` — cell string, ``{'selection','mask','labels'}`` layer to erode
+%     - ``.DatasetType`` — cell string, ``{'2D, Slice','3D, Stack','4D, Dataset'}`` scope
+%     - ``.ErodeMode`` — cell string, ``{'2D','3D'}`` strel dimensionality
+%     - ``.StrelSize`` — string, strel radius in pixels; one value (isotropic)
+%       or two values separated by a space (first = XY radius, second = Z radius
+%       for 3D mode or X radius for 2D mode)
+%     - ``.Difference`` — logical, keep only the eroded ring (original minus eroded)
+%     - ``.MaterialIndex`` — string, material index for TargetLayer= ``'labels'``; use
+%       ``NaN`` to erode all materials (not yet implemented — pass a valid index)
+%     - ``.Use2DParallelComputing`` — logical, use parfor for 2D slice-by-slice erosion
+%     - ``.showWaitbar`` — logical, show or not the progress dialog
+%     - ``.id`` — *(optional)* dataset index 1-9, default = obj.id
+%
+%
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.erodeImage();  // erode selection on current slice with defaults @endcode
-% @code
-% % Erode the mask layer across the full z-stack with a 5-px radius
-% BatchOpt.TargetLayer = {'mask'};
-% BatchOpt.DatasetType = {'3D, Stack'};
-% BatchOpt.ErodeMode   = {'2D'};
-% BatchOpt.StrelSize   = '5';
-% BatchOpt.Difference  = false;
-% BatchOpt.showWaitbar = true;
-% obj.mibModel.erodeImage(BatchOpt);
-% @endcode
-% @code
-% % 3D ball erosion of labels material 2 across whole dataset
-% BatchOpt.TargetLayer   = {'labels'};
-% BatchOpt.DatasetType   = {'4D, Dataset'};
-% BatchOpt.ErodeMode     = {'3D'};
-% BatchOpt.StrelSize     = '3';
-% BatchOpt.MaterialIndex = '2';
-% BatchOpt.showWaitbar   = false;
-% obj.mibModel.erodeImage(BatchOpt);
-% @endcode
-% @code
-% % Return default BatchOpt to the Batch Processing editor
-% obj.mibModel.erodeImage(NaN);
-% @endcode
+% Usage:
+%   **Example 1** — erode selection on current slice with defaults
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.erodeImage();
+%
+%   **Example 2** — erode the mask layer across the full z-stack with a 5-px radius
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.TargetLayer = {'mask'};
+%      BatchOpt.DatasetType = {'3D, Stack'};
+%      BatchOpt.ErodeMode   = {'2D'};
+%      BatchOpt.StrelSize   = '5';
+%      BatchOpt.Difference  = false;
+%      BatchOpt.showWaitbar = true;
+%      obj.mibModel.erodeImage(BatchOpt);
+%
+%   **Example 3** — 3D ball erosion of labels material 2 across whole dataset
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.TargetLayer   = {'labels'};
+%      BatchOpt.DatasetType   = {'4D, Dataset'};
+%      BatchOpt.ErodeMode     = {'3D'};
+%      BatchOpt.StrelSize     = '3';
+%      BatchOpt.MaterialIndex = '2';
+%      BatchOpt.showWaitbar   = false;
+%      obj.mibModel.erodeImage(BatchOpt);
+%
+%   **Example 4** — return default BatchOpt to the Batch Processing editor
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.erodeImage(NaN);
+%
 
 % Updates
 % 24.03.2026 - ported from MIB2 mibModel.erodeImage; replaced waitbar/

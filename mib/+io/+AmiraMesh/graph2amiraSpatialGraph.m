@@ -15,52 +15,61 @@
 % Date: 25.04.2023
 
 function res = graph2amiraSpatialGraph(filename, G, options)
-% function res = graph2amiraSpatialGraph(filename, G, options)
-% generate Amira Spatial Graph Ascii file
+% GRAPH2AMIRASPATIALGRAPH - generate Amira Spatial Graph Ascii file.
 %
-% Parameters:
-% filename: filename to save data
-% G: a standard matlab graph object, see 'graph' function for details, with the following properties
-% @li .Nodes - a table with following columns,
-%   .XData - x coordinate of the node
-%   .YData - y coordinate of the node
-%   .ZData - z coordinate of the node
-%   .PointsXYZ - alternative way (instead of XData, YData, ZData) to
-%   specify the points. In this case is is a matrix [nodeId][x,y,z]
-%   .Values - [@em optional] values for the nodes
-% @li .Edges - a table with following columns,
-%   .EndNodes - connectivity matrix for the nodes starting from 0
-%   .Points - [@em optional] a cell array with coordinates of points for each of the edges, in minimalistic
-%   case should have at least 2 points, starting and ending; format {edgeId}[pointId, x y z]
-%   .Thickness - [@em optional] a cell array with thickness at each point of a node; format {edgeId}[pointId, thickness]
-% options: - a structure with additional options
-%   .overwrite - 1-automatically overwrite existing files
-%   .format - a string with format: 'binary' or 'ascii'
-%   .NodeFieldName - a cell array (max 2 elements) that specify which Field in the .Nodes to export, in this case Nodes.Values is not needed
-%   .EdgeFieldName - a cell that specify which Field in the .Edges to export, in this case Edges.Thickness is not needed
-%   
-% Return values:
-% res: result of the function run, @b 1 - success, @b 0 - fail
-
-%| 
-% @b Examples:
-% @code 
-% G = graph([1 2 4],[2 3 5]);   // creates a graph with five nodes and three edges: 1-2-4 and 3-5
-% G.Nodes.XData = [1 2 3 4 5]';  // x coordinates of each node
-% G.Nodes.YData = [5 4 3 2 5]';   // y coordinates of each node
-% G.Nodes.ZData = [1 3 4 2 5]';  // z coordinates of each node
-% G.Nodes.Values = [1 2 4 2 5]';  // value for each node
-% G.Nodes.Values2 = [5 4 3 2 1]';  // optional second value for each node
-% G.Edges.Thickness = ones([size(G.Edges,1) 1]);  // thickness value for the edges
-% figure(1);  // test results
-% p = plot(G); 
-% p.XData = G.Nodes.XData;
-% p.YData = G.Nodes.YData;
-% p.ZData = G.Nodes.ZData;
-% options.NodeFieldName = [{'Values'}, {'Values2'}]; // name of variables that should be exported for nodes
-% options.EdgeFieldName = {'Thickness'};    // name of variables that should be exported for edges
-% res = graph2amiraSpatialGraph('test.am', G, options);    // save to a file
-% @endcode
+% Syntax:
+%   function res = graph2amiraSpatialGraph(filename, G, options)
+%
+% Input Arguments:
+%   - **filename** — filename to save data
+%   - **G** — a standard MATLAB ``graph`` object with the following properties:
+%
+%     - ``.Nodes`` — a table with columns:
+%
+%       - ``.XData`` — x coordinate of the node
+%       - ``.YData`` — y coordinate of the node
+%       - ``.ZData`` — z coordinate of the node
+%       - ``.PointsXYZ`` — *(alternative to XData/YData/ZData)* matrix ``[nodeId][x,y,z]``
+%       - ``.Values`` — *(optional)* values for the nodes
+%
+%     - ``.Edges`` — a table with columns:
+%
+%       - ``.EndNodes`` — connectivity matrix for nodes (0-based indexing)
+%       - ``.Points`` — *(optional)* cell array of edge point coordinates; at least 2 per edge; ``{edgeId}[pointId, x y z]``
+%       - ``.Thickness`` — *(optional)* cell array of per-point thickness; ``{edgeId}[pointId, thickness]``
+%
+%   - **options** — a structure with additional options:
+%
+%     - ``.overwrite`` — ``1`` = automatically overwrite existing files
+%     - ``.format`` — (char) ``'binary'`` or ``'ascii'``
+%     - ``.NodeFieldName`` — (cell, max 2 elements) field names in ``.Nodes`` to export (replaces ``.Values``)
+%     - ``.EdgeFieldName`` — (cell) field name in ``.Edges`` to export (replaces ``.Thickness``)
+%
+% Output Arguments:
+%   - **res** — result of the function run, **1** - success, **0** - fail
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     G = graph([1 2 4],[2 3 5]);
+%     G.Nodes.XData = [1 2 3 4 5]';
+%     G.Nodes.YData = [5 4 3 2 5]';
+%     G.Nodes.ZData = [1 3 4 2 5]';
+%     G.Nodes.Values = [1 2 4 2 5]';
+%     G.Nodes.Values2 = [5 4 3 2 1]';
+%     G.Edges.Thickness = ones([size(G.Edges,1) 1]);
+%     figure(1);
+%     p = plot(G);
+%     p.XData = G.Nodes.XData;
+%     p.YData = G.Nodes.YData;
+%     p.ZData = G.Nodes.ZData;
+%     options.NodeFieldName = [{'Values'}, {'Values2'}];
+%     options.EdgeFieldName = {'Thickness'};
+%     res = graph2amiraSpatialGraph('test.am', G, options);
+%
 
 % Updates
 %

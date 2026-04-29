@@ -1,11 +1,15 @@
 function fileFilters_Callback(obj, hWidget, hData)
-% function fileFilters_Callback(obj, hWidget, hData)
-% callback for selection of a file filter in the Directory contents panel, 
+% FILEFILTERS_CALLBACK - callback for selection of a file filter in the Directory contents panel,.
+%
+% Syntax:
+%   function fileFilters_Callback(obj, hWidget, hData)
+%
 % the parent widget is obj.handles.panels.dirContents.handles.fileFilters
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting ButtonPushedData class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting ButtonPushedData class
+%
 
 arguments (Input)
     obj controllers.MibDirContents

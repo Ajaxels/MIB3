@@ -1,15 +1,16 @@
 function protocolList_SelectionCallback(obj)
-% function protocolList_SelectionCallback(obj)
-% handle row selection in the protocol listbox — loads parameters into the action table
+% PROTOCOLLIST_SELECTIONCALLBACK - handle row selection in the protocol listbox — loads parameters into the action table.
+%
+% Syntax:
+%   function protocolList_SelectionCallback(obj)
 %
 % Reads the current listbox selection, updates obj.protocolListIndex, and
 % populates selectedActionTable with the step's BatchOpt fields.
 %
-%|
-% @b Examples:
-% @code obj.protocolList_SelectionCallback(); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     obj.protocolList_SelectionCallback();
 %
 
 % sync protocolListIndex from the listbox selection

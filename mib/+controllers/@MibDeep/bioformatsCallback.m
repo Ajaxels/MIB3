@@ -1,10 +1,14 @@
 function bioformatsCallback(obj, event)
-    % function bioformatsCallback(obj, event)
-    % update available filename extensions upon press of the BioFormats
-    % checkbox
-    %
-    % Parameters:
-    % event: an event structure of appdesigner
+% BIOFORMATSCALLBACK - update available filename extensions upon press of the BioFormats.
+%
+% Syntax:
+%   function bioformatsCallback(obj, event)
+%
+% checkbox
+%
+% Input Arguments:
+%   - **event** — an event structure of appdesigner
+%
 
     extensionFieldName = 'ImageFilenameExtension';
     bioformatsFileName = 'Bioformats';

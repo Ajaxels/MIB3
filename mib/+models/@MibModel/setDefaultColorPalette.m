@@ -1,24 +1,32 @@
 function setDefaultColorPalette(obj, paletteName, colorsNo)
-% function setDefaultColorPalette(obj, paletteName, colorsNo)
-% set default color palette for materials of the model
+% SETDEFAULTCOLORPALETTE - set default color palette for materials of the model.
 %
-% Parameters:
-% paletteName: string with the name of the palette to use, see
+% Syntax:
+%   function setDefaultColorPalette(obj, paletteName, colorsNo)
+%
+% Input Arguments:
+%   - **paletteName** — string with the name of the palette to use, see
 %     utils.defaults.generateDefaultPalette for the full list of options;
 %     two special values are also accepted:
-%     @li 'current2default' - copy current model colors to preferences as default
-%     @li 'default2current' - restore model colors from preferences default
-% colorsNo: [@em optional] numeric, number of required color channels
+%   - 'current2default' - copy current model colors to preferences as default
+%   - 'default2current' - restore model colors from preferences default
+%   - **colorsNo** — *(optional)* numeric, number of required color channels
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.setDefaultColorPalette('Default, 6 colors');     // call from mibController: selects the default color scheme with 6 colors @endcode
-% @code obj.mibModel.setDefaultColorPalette('Qualitative (Monte Carlo->Half Baked), 3-12 colors', 6);     // call from mibController: set "Qualitative (Monte Carlo->Half Baked)" palette with 6 colors @endcode
-% Updates
-% 240605: updated for models with 65535+ materials
+% Usage:
+%   **Example 1** — select the default color scheme with 6 colors
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.setDefaultColorPalette('Default, 6 colors');
+%
+%   **Example 2** — set "Qualitative (Monte Carlo->Half Baked)" palette with 6 colors
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.setDefaultColorPalette('Qualitative (Monte Carlo->Half Baked), 3-12 colors', 6);
+%
 
 id = obj.getActiveId();
 

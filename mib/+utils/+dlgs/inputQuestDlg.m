@@ -1,55 +1,64 @@
 function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, varargin)
-% function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, varargin)
+% INPUTQUESTDLG - Custom MIB question dialog compatible with MATLAB ``questdlg``,
+% extended with an optional ``options`` structure as the last argument.
 %
-% Custom MIB question dialog with the same call syntax as MATLAB questdlg,
-% extended with an optional options structure as the last argument.
+% Syntax:
 %
-% Parameters:
-% ParentFigure: handle to the parent window (AppContainer, uifigure, or []);
-%   used to center the dialog. Pass [] to use the cached handle from a prior call.
-%   To supply the MIB installation path use options.mibPath.
-% question: [char|string|cell] question text; when cell, lines are joined with '\n'. 
+%   .. code-block:: matlab
 %
-% Questdlg-compatible syntax:
-% selection = inputQuestDlg(ParentFigure, question)
-% selection = inputQuestDlg(ParentFigure, question, dlgTitle)
-% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2)
-% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3)
-% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, defaultBtn)              % 2-button form (NO Cancel button)
-% selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)        % 3-button form
+%      % questdlg-compatible forms:
+%      selection = inputQuestDlg(ParentFigure, question)
+%      selection = inputQuestDlg(ParentFigure, question, dlgTitle)
+%      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2)
+%      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3)
+%      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, defaultBtn)
+%      selection = inputQuestDlg(ParentFigure, question, dlgTitle, btn1, btn2, btn3, defaultBtn)
+%      % extended form — options struct as last argument:
+%      [selection, dontShowAgain] = inputQuestDlg(..., options)
 %
-% Extended syntax (optional last argument):
-% [selection, dontShowAgain] = inputQuestDlg(..., options)
+% Input Arguments:
+%   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
+%     used to center the dialog. Pass ``[]`` to use the cached handle from a prior call.
+%     To supply the MIB installation path use ``options.mibPath``.
+%   - **question** — [char|string|cell] question text; when cell, lines are joined with ``\n``.
+%   - **options** *(optional)* — structure with the following fields:
 %
-% options: structure with fields:
-% .mibPath             - [char] path to MIB installation folder (default: '')
-% .WindowWidth         - [numeric] width in pixels (default 420)
-% .WindowHeight        - [numeric] height in pixels (default 140)
-% .WindowStyle         - [char] 'normal' or 'modal' (default 'modal') 
-% .Icon                - [char] 'puffin_question' (default), 'puffin_warning', 'question_48px', 'warning_48px', 'celebrate', 'call4help', 
-% .IconWidth           - [numeric] icon column width (default 48)
-% .ParentFigure        - [handle] parent window to center dialog (default []) 
-% .DefaultKey          - [char] 'default' (default) or 'cancel'; Enter triggers default/cancel
-% .FontSize            - [numeric] question text font size (default 14)
-% .ButtonFontSize      - [numeric] button font size (default 12)
-% .DoNotShowAgain      - [logical] show "Do not show again" checkbox (default false) 
-% .DoNotShowAgainText  - [char] checkbox label (default 'Do not show again') 
+%     - ``.mibPath`` — [char] path to MIB installation folder (default: ``''``)
+%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 420)
+%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 160)
+%     - ``.WindowStyle`` — [char] ``'normal'`` or ``'modal'`` (default: ``'modal'``)
+%     - ``.Icon`` — [char] ``'puffin_question'`` (default), ``'puffin_warning'``,
+%       ``'question_48px'``, ``'warning_48px'``, ``'celebrate'``, ``'call4help'``
+%     - ``.IconWidth`` — [numeric] icon column width in pixels (default: 48)
+%     - ``.ParentFigure`` — [handle] parent window used to centre the dialog (default: ``[]``)
+%     - ``.DefaultKey`` — [char] ``'default'`` or ``'cancel'``; controls which action
+%       the Enter key triggers (default: ``'default'``)
+%     - ``.FontSize`` — [numeric] question text font size (default: 14)
+%     - ``.ButtonFontSize`` — [numeric] button font size (default: 12)
+%     - ``.DoNotShowAgain`` — [logical] show a "Do not show again" checkbox (default: ``false``)
+%     - ``.DoNotShowAgainText`` — [char] checkbox label (default: ``'Do not show again'``)
 %
-% Return values:
-% selection: [char] pressed button label; '' when closed/canceled (and no Cancel button exists). 
-% dontShowAgain: [logical] state of "Do not show again" checkbox (false when disabled/canceled). 
+% Output Arguments:
+%   - **selection** — [char] label of the pressed button; ``''`` when the dialog is
+%     closed or cancelled and no Cancel button exists.
+%   - **dontShowAgain** — [logical] state of the "Do not show again" checkbox
+%     (``false`` when the checkbox is disabled or the dialog is cancelled).
 %
 % Usage example:
-% opt = struct();
-% opt.WindowStyle = 'modal';
-% opt.Icon = 'warning_48px';
-% opt.DoNotShowAgain = true;
-% opt.WindowHeight = 250;
-% [answer, dontShow] = utils.dlgs.inputQuestDlg(obj.view.gui, ...
-%     'Overwrite existing file?', 'Overwrite', 'Yes', 'No', 'No', opt);
-% if strcmp(answer, 'Yes')
-%     % overwrite
-% end
+%
+%   .. code-block:: matlab
+%
+%      opt = struct();
+%      opt.WindowStyle = 'modal';
+%      opt.Icon = 'warning_48px';
+%      opt.DoNotShowAgain = true;
+%      opt.WindowHeight = 250;
+%      [answer, dontShow] = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+%          'Overwrite existing file?', 'Overwrite', 'Yes', 'No', 'No', opt);
+%      if strcmp(answer, 'Yes')
+%          % overwrite the file
+%      end
+%
 
 % ---------- Parse optional options struct (last arg) ----------
 options = struct();

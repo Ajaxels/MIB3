@@ -1,6 +1,8 @@
 function gui_SizeChangedFcn(obj)
-% function gui_SizeChangedFcn(obj)
-% Callback triggered when the document figure size changes
+% GUI_SIZECHANGEDFCN - Callback triggered when the document figure size changes.
+%
+% Syntax:
+%   function gui_SizeChangedFcn(obj)
 %
 % This function handles window resize events for MibImageDocument using a
 % debounced timer approach. When the window is resized, a global timer is
@@ -12,35 +14,37 @@ function gui_SizeChangedFcn(obj)
 % all visible documents are updated to ensure proper display.
 %
 % Syntax:
-%   obj.gui_SizeChangedFcn()
+% obj.gui_SizeChangedFcn()
 %
-% Parameters:
+% Input Arguments:
 %   none - automatically called by MATLAB when figure size changes
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-% Technical details:
+%   Technical details:
 %   - Uses a global timer stored in MibController to coordinate updates
-%     across multiple documents
+%   across multiple documents
 %   - Timer delay: 100ms (adjustable via StartDelay property)
 %   - Prevents callback re-entrance using persistent variables
 %   - Handles AppContainer divider dragging by updating all documents
 %
-%|
-% @b Examples:
-% @code
-% // Automatically triggered by MATLAB when window is resized
-% // No manual call needed - set as SizeChangedFcn callback:
-% obj.handles.gui.SizeChangedFcn = @(src, evt) obj.gui_SizeChangedFcn();
-% @endcode
+% Usage:
+%   Example 1::
 %
-% @code
-% // Manual call to force resize update (not typical)
-% obj.gui_SizeChangedFcn();
-% @endcode
+%     // Automatically triggered by MATLAB when window is resized
+%     // No manual call needed - set as SizeChangedFcn callback:
+%     obj.handles.gui.SizeChangedFcn = @(src, evt) obj.gui_SizeChangedFcn();
 %
-% See also: listener_updateDatasetAxes, showImage, updateBrushCursor
+%
+%   Example 2::
+%
+%     // Manual call to force resize update (not typical)
+%     obj.gui_SizeChangedFcn();
+%
+%
+%   See also: listener_updateDatasetAxes, showImage, updateBrushCursor
+%
 
 % Check if global resize timer property exists in MibController
 if ~isprop(obj.mibController, 'globalResizeTimer')
@@ -69,8 +73,10 @@ start(obj.mibController.globalResizeTimer);
 end
 
 function executeResizeAll(obj)
-% function executeResizeAll(obj)
-% Execute resize operations for all visible documents
+% EXECUTERESIZEALL - Execute resize operations for all visible documents.
+%
+% Syntax:
+%   function executeResizeAll(obj)
 %
 % This nested function is called by the timer after resize activity stops.
 % It updates axes limits and redraws images for all visible documents
@@ -79,11 +85,12 @@ function executeResizeAll(obj)
 % The function includes re-entrance protection to prevent conflicts if
 % somehow called multiple times simultaneously.
 %
-% Parameters:
-%   obj: handle to the MibImageDocument that initiated the resize
+% Input Arguments:
+%   - **obj** — handle to the MibImageDocument that initiated the resize
 %
-% Return values:
+% Output Arguments:
 %   none
+%
 
 persistent inCallback
 

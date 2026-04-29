@@ -1,134 +1,145 @@
 classdef AmiraMeshSaver < io.savers.BaseSaver
-    % classdef AmiraMeshSaver < io.savers.BaseSaver
-    % Saver for Amira Mesh binary format output.
-    %
-    % Handles five format variants:
-    %   'Amira Mesh binary (*.am)'                      — full 3-D volume,
-    %       binary encoding, image layer
-    %   'Amira Mesh binary file sequence (*.am)'        — per-slice .am files,
-    %       binary encoding, image layer
-    %   'Amira mesh binary (*.am)'                      — alias for labels/masks
-    %   'Amira mesh binary RLE compression SLOW (*.am)' — run-length encoded,
-    %       binary, labels/masks only
-    %   'Amira mesh ascii (*.am)'                       — ASCII text encoding,
-    %       labels/masks only
-    %
-    % The active layer type (image vs. mask/labels) is determined by
-    % options.layerType (default 'image').  Image data is passed to the
-    % legacy helper bitmap2amiraMesh(); mask and labels data are passed to
-    % bitmap2amiraLabels().
-    %
-    % DATA DIMENSIONS
-    %   Input  data : [H, W, D, C, T]  (MIB3 native order)
-    %   bitmap2amiraMesh() expects [H, W, C, D] — permuted via
-    %       obj.permuteMib3ToHWCD() for the first time point.
-    %   bitmap2amiraLabels() expects [H, W, D] — squeezed from data.
-    %
-    % PIXEL-SIZE STRUCT (pixStr)
-    %   For bitmap2amiraLabels the pixStr is extended with bounding-box
-    %   origin fields:
-    %     pixStr = metadata.pixSize
-    %     pixStr.minx = boundingBox(1)
-    %     pixStr.miny = boundingBox(3)
-    %     pixStr.minz = boundingBox(5)
-    %
-    % COMPRESSION STRINGS
-    %   Format string                                   compression arg
-    %   'Amira Mesh binary (*.am)'                   → 'binary'
-    %   'Amira Mesh binary file sequence (*.am)'     → 'binary'
-    %   'Amira mesh binary (*.am)'                   → 'binary'
-    %   'Amira mesh binary RLE compression SLOW (*.am)' → 'binaryRLE'
-    %   'Amira mesh ascii (*.am)'                    → 'ascii'
-    %
-    % TODO: port bitmap2amiraMesh from
-    %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraMesh.m
-    %   to mib/+io/+AmiraMesh/bitmap2amiraMesh.m
-    %
-    % TODO: port bitmap2amiraLabels from
-    %   MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraLabels.m
-    %   to mib/+io/+AmiraMesh/bitmap2amiraLabels.m
-    %
-    % USAGE EXAMPLES
-    %   @code
-    %   %% 1. Save image volume as Amira Mesh binary
-    %   saver = io.SaverFactory.create('Amira Mesh binary (*.am)');
-    %
-    %   opts.Format         = 'Amira Mesh binary (*.am)';
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.layerType      = 'image';
-    %
-    %   meta.filename       = 'source_stack.tif';
-    %   meta.colorType      = 'grayscale';
-    %   meta.lutColors      = [1 1 1];
-    %   meta.dataClass      = 'uint8';
-    %   meta.maxInt         = 255;
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                                'units','um','t',1,'tunits','s');
-    %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
-    %
-    %   data = uint8(rand(512,512,50,1,1)*255);  % [H W D C T]
-    %   fnOut = saver.save(data, meta, '/output/myStack.am', opts);
-    %   fprintf('Saved: %s\n', fnOut);
-    %   @endcode
-    %
-    %   @code
-    %   %% 2. Save segmentation labels as Amira mesh binary
-    %   saver = io.SaverFactory.create('Amira mesh binary (*.am)');
-    %
-    %   opts.Format         = 'Amira mesh binary (*.am)';
-    %   opts.showWaitbar    = false;
-    %   opts.silent         = true;
-    %   opts.overwrite      = true;
-    %   opts.layerType      = 'labels';
-    %
-    %   meta.filename       = 'source_stack.tif';
-    %   meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
-    %                                'units','um','t',1,'tunits','s');
-    %   meta.boundingBox    = [0 33.3 0 33.3 0 10];
-    %   meta.materialNames  = {'Nucleus'; 'ER'};
-    %   meta.materialColors = [0 0 1; 0 1 0];
-    %
-    %   labels = uint8(rand(512,512,50,1,1) * 2);  % [H W D C T]
-    %   fnOut = saver.save(labels, meta, '/output/Labels_myStack.am', opts);
-    %   @endcode
-    %
-    %   @code
-    %   %% 3. Save labels with RLE compression
-    %   saver = io.SaverFactory.create( ...
-    %       'Amira mesh binary RLE compression SLOW (*.am)');
-    %
-    %   opts.Format      = 'Amira mesh binary RLE compression SLOW (*.am)';
-    %   opts.layerType   = 'labels';
-    %   opts.showWaitbar = true;
-    %   opts.silent      = true;
-    %   opts.overwrite   = true;
-    %
-    %   fnOut = saver.save(labels, meta, '/output/Labels_RLE.am', opts);
-    %   @endcode
-    %
-    % SEE ALSO
-    %   io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
-    %   core.MibImage.save, core.MibDataset.save, models.MibModel.save
+% AMIRAMESHSAVER - Saver for Amira Mesh binary format output.
+%
+% Handles five format variants:
+% 'Amira Mesh binary (``*.am``)'                      — full 3-D volume,
+% binary encoding, image layer
+% 'Amira Mesh binary file sequence (``*.am``)'        — per-slice .am files,
+% binary encoding, image layer
+% 'Amira mesh binary (``*.am``)'                      — alias for labels/masks
+% 'Amira mesh binary RLE compression SLOW (``*.am``)' — run-length encoded,
+% binary, labels/masks only
+% 'Amira mesh ascii (``*.am``)'                       — ASCII text encoding,
+% labels/masks only
+%
+% The active layer type (image vs. mask/labels) is determined by
+% options.layerType (default 'image').  Image data is passed to the
+% legacy helper bitmap2amiraMesh(); mask and labels data are passed to
+% bitmap2amiraLabels().
+%
+% DATA DIMENSIONS
+% Input  data : [H, W, D, C, T]  (MIB3 native order)
+% bitmap2amiraMesh() expects [H, W, C, D] — permuted via
+% obj.permuteMib3ToHWCD() for the first time point.
+% bitmap2amiraLabels() expects [H, W, D] — squeezed from data.
+%
+% PIXEL-SIZE STRUCT (pixStr)
+% For bitmap2amiraLabels the pixStr is extended with bounding-box
+% origin fields:
+% pixStr = metadata.pixSize
+% pixStr.minx = boundingBox(1)
+% pixStr.miny = boundingBox(3)
+% pixStr.minz = boundingBox(5)
+%
+% COMPRESSION STRINGS
+% Format string                                   compression arg
+% 'Amira Mesh binary (``*.am``)'                   → 'binary'
+% 'Amira Mesh binary file sequence (``*.am``)'     → 'binary'
+% 'Amira mesh binary (``*.am``)'                   → 'binary'
+% 'Amira mesh binary RLE compression SLOW (``*.am``)' → 'binaryRLE'
+% 'Amira mesh ascii (``*.am``)'                    → 'ascii'
+%
+% TODO: port bitmap2amiraMesh from
+% MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraMesh.m
+% to mib/+io/+AmiraMesh/bitmap2amiraMesh.m
+%
+% TODO: port bitmap2amiraLabels from
+% MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraLabels.m
+% to mib/+io/+AmiraMesh/bitmap2amiraLabels.m
+%
+% USAGE EXAMPLES
+%
+% .. code-block:: matlab
+%
+%     %% 1. Save image volume as Amira Mesh binary
+%     saver = io.SaverFactory.create('Amira Mesh binary (``*.am``)');
+%
+%     opts.Format         = 'Amira Mesh binary (``*.am``)';
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.layerType      = 'image';
+%
+%     meta.filename       = 'source_stack.tif';
+%     meta.colorType      = 'grayscale';
+%     meta.lutColors      = [1 1 1];
+%     meta.dataClass      = 'uint8';
+%     meta.maxInt         = 255;
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                                  'units','um','t',1,'tunits','s');
+%     meta.boundingBox    = [0 33.3 0 33.3 0 10];
+%
+%     data = uint8(rand(512,512,50,1,1)*255);  % [H W D C T]
+%     fnOut = saver.save(data, meta, '/output/myStack.am', opts);
+%     fprintf('Saved: %s\n', fnOut);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 2. Save segmentation labels as Amira mesh binary
+%     saver = io.SaverFactory.create('Amira mesh binary (``*.am``)');
+%
+%     opts.Format         = 'Amira mesh binary (``*.am``)';
+%     opts.showWaitbar    = false;
+%     opts.silent         = true;
+%     opts.overwrite      = true;
+%     opts.layerType      = 'labels';
+%
+%     meta.filename       = 'source_stack.tif';
+%     meta.pixSize        = struct('x',0.065,'y',0.065,'z',0.2, ...
+%                                  'units','um','t',1,'tunits','s');
+%     meta.boundingBox    = [0 33.3 0 33.3 0 10];
+%     meta.materialNames  = {'Nucleus'; 'ER'};
+%     meta.materialColors = [0 0 1; 0 1 0];
+%
+%     labels = uint8(rand(512,512,50,1,1) * 2);  % [H W D C T]
+%     fnOut = saver.save(labels, meta, '/output/Labels_myStack.am', opts);
+%
+%
+%
+% .. code-block:: matlab
+%
+%     %% 3. Save labels with RLE compression
+%     saver = io.SaverFactory.create( ...
+%         'Amira mesh binary RLE compression SLOW (``*.am``)');
+%
+%     opts.Format      = 'Amira mesh binary RLE compression SLOW (``*.am``)';
+%     opts.layerType   = 'labels';
+%     opts.showWaitbar = true;
+%     opts.silent      = true;
+%     opts.overwrite   = true;
+%
+%     fnOut = saver.save(labels, meta, '/output/Labels_RLE.am', opts);
+%
+%
+% SEE ALSO
+% io.SaverFactory, io.savers.BaseSaver, io.savers.TiffSaver,
+% core.MibImage.save, core.MibDataset.save, models.MibModel.save
 
     methods
 
         function obj = AmiraMeshSaver(options)
-            % function obj = AmiraMeshSaver(options)
-            % Constructor — accepts an optional options struct.
+            % AMIRAMESHSAVER - Constructor — accepts an optional options struct.
             %
-            % Parameters:
+            % Syntax:
+            %   function obj = AmiraMeshSaver(options)
+            %
+            % Input Arguments:
             %   options — (struct, optional) saver-level options (usually empty;
-            %             per-save options are passed to save() instead)
+            %   per-save options are passed to save() instead)
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
-            % function formats = getSupportedFormats(~)
-            % Return format strings handled by AmiraMeshSaver.
+            % GETSUPPORTEDFORMATS - Return format strings handled by AmiraMeshSaver.
+            %
+            % Syntax:
+            %   function formats = getSupportedFormats(~)
+            %
             formats = { ...
                 'Amira Mesh binary (*.am)'; ...
                 'Amira Mesh binary file sequence (*.am)'; ...
@@ -138,33 +149,36 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
         end
 
         function fnOut = save(obj, data, metadata, filename, options)
-            % function fnOut = save(obj, data, metadata, filename, options)
-            % Write data as an Amira Mesh file (image or labels/mask).
+            % SAVE - Write data as an Amira Mesh file (image or labels/mask).
             %
-            % Parameters:
+            % Syntax:
+            %   function fnOut = save(obj, data, metadata, filename, options)
+            %
+            % Input Arguments:
             %   data     — [H, W, D, C, T] numeric array
             %   metadata — struct; used fields:
-            %     .colorType      — 'grayscale' | 'multichannel' | 'indexed'
-            %     .lutColors      — [C x 3] per-channel LUT colours (0..1)
-            %     .dataClass      — 'uint8' | 'uint16' | ...
-            %     .maxInt         — maximum intensity value
-            %     .pixSize        — struct {.x .y .z .units .t .tunits}
-            %     .boundingBox    — [xmin xmax ymin ymax zmin zmax]
-            %     .materialNames  — cell array of material name strings
-            %                       (labels mode only)
-            %     .materialColors — [M x 3] material RGB colours (labels mode)
+            %   .colorType      — 'grayscale' | 'multichannel' | 'indexed'
+            %   .lutColors      — [C x 3] per-channel LUT colours (0..1)
+            %   .dataClass      — 'uint8' | 'uint16' | ...
+            %   .maxInt         — maximum intensity value
+            %   .pixSize        — struct {.x .y .z .units .t .tunits}
+            %   .boundingBox    — [xmin xmax ymin ymax zmin zmax]
+            %   .materialNames  — cell array of material name strings
+            %   (labels mode only)
+            %   .materialColors — [M x 3] material RGB colours (labels mode)
             %   filename — full output path, e.g. '/out/stack.am'
             %   options  — struct; used fields:
-            %     .Format         — format string (selects encoding)
-            %     .layerType      — 'image' | 'mask' | 'labels' (default 'image')
-            %     .showWaitbar    — logical
-            %     .silent         — logical, suppress dialogs
-            %     .overwrite      — logical
+            %   .Format         — format string (selects encoding)
+            %   .layerType      — 'image' | 'mask' | 'labels' (default 'image')
+            %   .showWaitbar    — logical
+            %   .silent         — logical, suppress dialogs
+            %   .overwrite      — logical
             %
-            % Return values:
+            % Output Arguments:
             %   fnOut — (char) path of saved .am file, [] on failure
             %
-            % Example — see class-level documentation above.
+            %   Example — see class-level documentation above.
+            %
 
             fnOut = [];
 
@@ -353,15 +367,19 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
     methods (Access = private)
 
         function compressionStr = formatToCompression(~, formatStr)
-            % function compressionStr = formatToCompression(~, formatStr)
-            % Map an Amira format string to the compression argument string
+            % FORMATTOCOMPRESSION - Map an Amira format string to the compression argument string.
+            %
+            % Syntax:
+            %   function compressionStr = formatToCompression(~, formatStr)
+            %
             % expected by bitmap2amiraMesh / bitmap2amiraLabels.
             %
-            % Parameters:
+            % Input Arguments:
             %   formatStr — (char) format string from getSupportedFormats()
             %
-            % Return values:
+            % Output Arguments:
             %   compressionStr — 'binary' | 'binaryRLE' | 'ascii'
+            %
             if contains(formatStr, 'RLE', 'IgnoreCase', true)
                 compressionStr = 'binaryRLE';
             elseif contains(formatStr, 'ascii', 'IgnoreCase', true)

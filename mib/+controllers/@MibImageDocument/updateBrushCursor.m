@@ -1,29 +1,32 @@
 function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
-% function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
-% Update brush cursor position and visibility
+% UPDATEBRUSHCURSOR - Update brush cursor position and visibility.
+%
+% Syntax:
+%   function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
 %
 % Creates or updates a circular cursor overlay that visualizes
 % the current brush size. The cursor follows the mouse and
 % changes style based on painting state.
 %
-% Parameters:
-%   xyCoordinate: [x, y] double array, cursor position in axes coordinates
-%                 If empty, gets position from CurrentPoint
-%   lineStyle: char, line style for cursor
-%              ':' = dashed (default, hover mode)
-%              '-' = solid (painting mode)
-%   resetOffset: logical, when true the cursor offset will be reset, needed when magnification is changed
+% Input Arguments:
+%   - **xyCoordinate** — [x, y] double array, cursor position in axes coordinates
+%     If empty, gets position from CurrentPoint
+%   - **lineStyle** — char, line style for cursor
+%     ':' = dashed (default, hover mode)
+%     '-' = solid (painting mode)
+%   - **resetOffset** — logical, when true the cursor offset will be reset, needed when magnification is changed
 %
-% Return values:
+% Output Arguments:
 %   none
 %
-% Example:
-%   % Update cursor at position [100, 150] with dashed style
-%   obj.updateBrushCursor([100, 150], ':', true);
+%   - **Example** —
+%     % Update cursor at position [100, 150] with dashed style
+%     obj.updateBrushCursor([100, 150], ':', true);
 %
 %
 %   % Use solid line during painting
 %   obj.updateBrushCursor([], '-');
+%
 
 if nargin < 4; resetOffset = false; end
 if nargin < 3; lineStyle = []; end

@@ -1,35 +1,42 @@
 function segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)
-% function segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)
-% Do segmentation using the Region Growing method
+% SEGMENTATIONREGIONGROWING - Do segmentation using the Region Growing method.
+%
+% Syntax:
+%   function segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)
 %
 % Based on Fast 3D/2D Region Growing (MEX), written by Christian Wuerslin,
 % Stanford University.
 % Requires: compiled RegionGrowing_mex.cpp
 %
-% Parameters:
-% yxzCoordinate: vector with [y, x, z] coordinates of the starting point;
-%   for the 2D case [y, x] is sufficient
-% BatchOptIn: [@em optional] a structure for batch processing mode, when NaN return
-%   a structure with default options via "syncBatch" event, or a char modifier
-%   for interactive calls
-% @li .Coordinate - Seed point as 'y; x' (2D) or 'y; x; z' (3D)
-% @li .Mode - Apply for the current slice (2D, Slice) or the whole stack (3D, Stack)
-% @li .IntensityVariation - Maximum intensity variation for region growing
-% @li .ColorChannel - Color channel to use
-% @li .Radius - Effective radius limit (0 = no limit)
-% @li .Action - Action: Add, Subtract, or Replace
-% @li .FillHoles - Fill holes in the resulting selection
-% @li .FixSelectionToMask - Apply selection only to the masked area
-% @li .FixSelectionToMaterial - Apply selection only to the area of the selected material
-% @li .showWaitbar - Show or not the progress bar during execution
+% Input Arguments:
+%   - **yxzCoordinate** — vector with [y, x, z] coordinates of the starting point;
+%     for the 2D case [y, x] is sufficient
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode, when NaN return
+%     a structure with default options via "syncBatch" event, or a char modifier
+%     for interactive calls
+%     - .Coordinate - Seed point as 'y; x' (2D) or 'y; x; z' (3D)
+%     - .Mode - Apply for the current slice (2D, Slice) or the whole stack (3D, Stack)
+%     - .IntensityVariation - Maximum intensity variation for region growing
+%     - .ColorChannel - Color channel to use
+%     - .Radius - Effective radius limit (0 = no limit)
+%     - .Action - Action: Add, Subtract, or Replace
+%     - .FillHoles - Fill holes in the resulting selection
+%     - .FixSelectionToMask - Apply selection only to the masked area
+%     - .FixSelectionToMaterial - Apply selection only to the area of the selected material
+%     - .showWaitbar - Show or not the progress bar during execution
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-%|
-% @b Examples:
-% @code obj.segmentationRegionGrowing([50, 75], 'shift');     // region growing from [y,x]=50,75 and add to selection @endcode
-% @code obj.segmentationRegionGrowing([50, 75], BatchOpt);    // batch mode @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationRegionGrowing([50, 75], 'shift');     // region growing from [y,x]=50,75 and add to selection
+%
+%   Example 2::
+%
+%     obj.segmentationRegionGrowing([50, 75], BatchOpt);    // batch mode
+%
 
 % Updates
 %

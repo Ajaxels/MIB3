@@ -1,38 +1,55 @@
 function dataset = getDataZarr(obj, type, orient, colChannel, options)
-% function dataset = getDataZarr(obj, type, orient, colChannel, options)
-% Read a subvolume from a Zarr pyramid dataset with optional slicing.
+% GETDATAZARR - Read a subvolume from a Zarr pyramid dataset with optional slicing.
+%
+% Syntax:
+%   function dataset = getDataZarr(obj, type, orient, colChannel, options)
 %
 % Ported from MIB2/@MibImage/getDataZarr with the following adaptations:
-%   - obj.data{1} instead of obj.img{1}  (zarr root path)
-%   - obj.dataClass instead of obj.meta('imgClass')
-%   - YX orientation is 3 (MIB3) not 4 (MIB2)
-%   - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
-%   - colChannel [] = all channels (MIB3) instead of NaN / 0 (MIB2)
-%   - options.magFactor defaults to 1 (not obj.magFactor which lives in MibDataset)
+% - obj.data{1} instead of obj.img{1}  (zarr root path)
+% - obj.dataClass instead of obj.meta('imgClass')
+% - YX orientation is 3 (MIB3) not 4 (MIB2)
+% - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
+% - colChannel [] = all channels (MIB3) instead of NaN / 0 (MIB2)
+% - options.magFactor defaults to 1 (not obj.magFactor which lives in MibDataset)
 %
-% Parameters:
-% type: type of layer — only 'image' is functional in virtual mode
-% orient: [@em optional], orientation of returned dataset
-%   @li 1 — xz: output [x, z, y, c, t]
-%   @li 2 — yz: output [y, z, x, c, t]
-%   @li 3 — yx: output [y, x, z, c, t]  (@b default)
-% colChannel: [@em optional], vector of 1-based colour channel indices;
-%             [] = all channels
-% options: [@em optional], struct with optional fields:
-%   @li .y, .x, .z  — [min, max] coordinate ranges (1-based, full resolution)
-%   @li .t          — [tmin, tmax] time-point range
-%   @li .magFactor  — magnification factor used to select pyramid level
-%                     (default 1 = full resolution); ignored when pyramidLevel provided
-%   @li .pyramidLevel — explicit pyramid level index (1-based); overrides magFactor
+% Input Arguments:
+%   - **type** — type of layer — only 'image' is functional in virtual mode
+%   - **orient** — *(optional)*, orientation of returned dataset; default ``3``:
 %
-% Return values:
-% dataset: 5D array [y, x, z, c, t] for orient==3;
-%          [x, z, y, c, t] for orient==1;
-%          [y, z, x, c, t] for orient==2
-%|
-% @b Examples:
-% @code dataset = obj.getDataZarr('image');                         // full YX image @endcode
-% @code dataset = obj.getDataZarr('image', 3, [1 2], options);     // channels 1+2 @endcode
+%     - ``1`` — XZ: output ``[x, z, y, c, t]``
+%     - ``2`` — YZ: output ``[y, z, x, c, t]``
+%     - ``3`` — YX: output ``[y, x, z, c, t]`` *(default)*
+%   - **colChannel** — *(optional)*, vector of 1-based colour channel indices;
+%     [] = all channels
+%   - **options** — *(optional)*, struct with optional fields:
+%
+%     - ``.y``, ``.x``, ``.z``  — [min, max] coordinate ranges (1-based, full resolution)
+%     - ``.t``          — [tmin, tmax] time-point range
+%     - ``.magFactor``  — magnification factor used to select pyramid level
+%       (default 1 = full resolution); ignored when pyramidLevel provided
+%
+%     - ``.pyramidLevel`` — explicit pyramid level index (1-based); overrides magFactor
+%
+% Output Arguments:
+%   - **dataset** — 5D array [y, x, z, c, t] for orient==3;
+%     [x, z, y, c, t] for orient==1;
+%     [y, z, x, c, t] for orient==2
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getDataZarr('image');% full YX image
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getDataZarr('image', 3, [1 2], options);% channels 1+2
+%
 
 %% Updates
 %

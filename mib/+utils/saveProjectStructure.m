@@ -1,34 +1,40 @@
 function saveProjectStructure(rootFolder, outputFile, excludeFolders)
-% SAVEPROJECTSTRUCTURE Generate a hierarchical text file of project structure
+% SAVEPROJECTSTRUCTURE - Generate a hierarchical text file listing the project folder structure.
 %
 % Syntax:
-%   saveProjectStructure(rootFolder, outputFile)
-%   saveProjectStructure(rootFolder, outputFile, excludeFolders)
 %
-% Parameters:
-%   rootFolder - String or char array specifying the root directory path
-%                Example: 'C:\Projects\MIB' or pwd
+%   .. code-block:: matlab
 %
-%   outputFile - String or char array specifying output file path
-%                Example: 'project_structure.txt'
+%      saveProjectStructure(rootFolder, outputFile)
+%      saveProjectStructure(rootFolder, outputFile, excludeFolders)
 %
-%   excludeFolders - Cell array of folder names to exclude from listing
-%                    (Optional, default: {'.git', 'assets', 'external'})
-%                    Example: {'assets', 'external', 'temp', 'bin'}
-%                    Note: Folder names are case-sensitive
+% Input Arguments:
+%   - **rootFolder** — [char] root directory path to scan, e.g. ``'C:\Projects\MIB'`` or ``pwd``
+%   - **outputFile** — [char] output file path, e.g. ``'project_structure.txt'``
+%   - **excludeFolders** *(optional)* — [cell of char] folder names to skip (default: ``{'.git', 'assets', 'external'}``).
+%     Matching is case-sensitive against bare folder names.
 %
-% Examples:
-%   % Basic usage - uses default exclusions
-%   utils.saveProjectStructure(pwd, 'structure.txt');
+% Usage:
 %
-%   % Custom exclusions
-%   utils.saveProjectStructure(pwd, 'structure.txt', {'assets', 'docs', 'test_data'});
+%   **Example 1** — scan current directory with default exclusions
 %
-%   % No exclusions (empty cell array)
-%   utils.saveProjectStructure(pwd, 'structure.txt', {});
+%   .. code-block:: matlab
 %
-%   % Specific project path
-%   utils.saveProjectStructure('C:\Matlab\MIB3\mib', 'mib_structure.txt', {'external', 'assets', 'jars', 'plugins','guide'});
+%      utils.saveProjectStructure(pwd, 'structure.txt');
+%
+%   **Example 2** — scan with custom exclusions
+%
+%   .. code-block:: matlab
+%
+%      utils.saveProjectStructure(pwd, 'structure.txt', {'assets', 'docs', 'test_data'});
+%
+%   **Example 3** — scan MIB mib/ subfolder
+%
+%   .. code-block:: matlab
+%
+%      utils.saveProjectStructure('C:\Matlab\MIB3\mib', 'mib_structure.txt', ...
+%          {'external', 'assets', 'jars', 'plugins', 'guide'});
+%
 
     % Set default exclusions if not provided
     if nargin < 3
@@ -55,7 +61,11 @@ function saveProjectStructure(rootFolder, outputFile, excludeFolders)
 end
 
 function listFilesRecursive(folder, fid, indent, excludeFolders)
-    % Get all files and folders
+    % LISTFILESRECURSIVE - Get all files and folders.
+    %
+    % Syntax:
+    %   function listFilesRecursive(folder, fid, indent, excludeFolders)
+    %
     files = dir(folder);
     
     for i = 1:length(files)

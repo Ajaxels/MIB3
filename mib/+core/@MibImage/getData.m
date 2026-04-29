@@ -1,41 +1,55 @@
 function dataset = getData(obj, layerType, orient, colChannel, options) % get complete 5D dataset
-% function dataset = getData(obj, layerType, orient, colChannel, options)
-% Get dataset from MibImage class
+% GETDATA - Get dataset from MibImage class.
 %
-% Parameters:
-% layerType: char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty. 
-%   Values are 'labels', 'mask', 'selection', or 'everything' to get all
-%   layers at once, @em default = 'image'
-% orient: [@em optional, can be [], when [] orient == 3];
-%   @li when @b 1 returns the transposed dataset to the zx configuration, [y,x,z,c,t] -> [x,z,y,c,t]
-%   @li when @b 2 returns the transposed dataset to the zy configuration, [y,x,z,c,t] -> [y,z,x,c,t]
-%   @li when @b 3 returns the original dataset to the yx configuration, [y,x,z,c,t]
-% colChannel: [@em optional, can be [], when [] get all colors/materials],
-%   @li when obj.type == 'image', @b colChannel is a vector with color numbers to take, when [] take all color channels
-%   @li when obj.type == 'labels', @b colChannel is an integer to take material with this specific index (returned with value == 1), when [] - take all materials
-% options: [@em optional], a structure with extra parameters
-%   @li .y -> [@em optional], [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
-%   @li .x -> [@em optional], [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
-%   @li .z -> [@em optional], [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
-%   @li .t -> [@em optional], [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
+% Syntax:
+%   function dataset = getData(obj, layerType, orient, colChannel, options) % get complete 5D dataset
 %
-% Return values:
-% dataset: 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
-
-%|
-% @b Examples:
-% @code dataset = obj.getData(3, []);      // get the complete dataset in the YX orientation @endcode
-% @code
-% options.x = [100 200];
-% options.y = [100 200];
-% options.z = 100;
-% options.t = 1;
-% colChannel = 2;
-% dataset = obj.getData([], [], colChannel, options);      // get subvolume = [100:200, 100:200] at slice 100, color channel 2
-% dataset = obj.getData([], [], colChannel, options);      // get subvolume = [100:200, 100:200] at slice 100, color channel 2
-% dataset = obj.(type).getData([], [], colChannel, options)); // get subvolume from MibDataset, where type='image', 'label', 'mask', 'selection'
-% dataset = obj.mibModel.I{obj.mibModel.id}.(type).getData([], [], colChannel, options)); // get subvolume from MibController, where type='image', 'label', 'mask', 'selection'
-% @endcode
+% Input Arguments:
+%   - **layerType** — char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.
+%     Values are 'labels', 'mask', 'selection', or 'everything' to get all
+%     layers at once, *default* = 'image'
+%   - **orient** — *(optional)*, can be ``[]``; when ``[]`` orient defaults to ``3``:
+%
+%     - ``1`` — returns transposed dataset in ZX configuration: ``[y,x,z,c,t]`` → ``[x,z,y,c,t]``
+%     - ``2`` — returns transposed dataset in ZY configuration: ``[y,x,z,c,t]`` → ``[y,z,x,c,t]``
+%     - ``3`` — returns original dataset in YX configuration: ``[y,x,z,c,t]``
+%
+%   - **colChannel** — *(optional)*, can be ``[]``; when ``[]`` returns all color channels or materials:
+%
+%     - for ``type = 'image'``: vector of color channel indices; ``[]`` = all channels
+%     - for ``type = 'labels'``: integer material index (returned as binary 0/1); ``[]`` = all materials
+%   - **options** — *(optional)*, a structure with extra parameters
+%
+%     - ``.y`` *(optional)*, [ymin, ymax] coordinates of the dataset to take after transpose, can be a single number
+%     - ``.x`` *(optional)*, [xmin, xmax] coordinates of the dataset to take after transpose, can be a single number
+%     - ``.z`` *(optional)*, [zmin, zmax] coordinates of the dataset to take after transpose, can be a single number
+%     - ``.t`` *(optional)*, [tmin, tmax] coordinates of the dataset to take after transpose, can be a single number
+%
+% Output Arguments:
+%   - **dataset** — 5D stack, [1:height, 1:width, 1:depth, 1:colors, 1:time]
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     dataset = obj.getData(3, []);% get the complete dataset in the YX orientation
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     options.x = [100 200];
+%     options.y = [100 200];
+%     options.z = 100;
+%     options.t = 1;
+%     colChannel = 2;
+%     dataset = obj.getData([], [], colChannel, options);% get subvolume = [100:200, 100:200] at slice 100, color channel 2
+%     dataset = obj.(type).getData([], [], colChannel, options);% get subvolume from MibDataset, where type='image', 'label', 'mask', 'selection'
+%     dataset = obj.mibModel.I{obj.mibModel.id}.(type).getData([], [], colChannel, options);% get subvolume from MibController, where type='image', 'label', 'mask', 'selection'
+%
 
 
 % Updates

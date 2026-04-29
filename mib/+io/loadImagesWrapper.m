@@ -1,46 +1,64 @@
 function img = loadImagesWrapper(filename, options)
-% function img = loadImagesWrapper(filename, options)
-% Load a single image file using MIB3 LoaderFactory; returns [H, W, Z, C, T].
+% LOADIMAGESWRAPPER - Load a single image file using MIB3 LoaderFactory; returns [H, W, Z, C, T].
 %
-% Parameters:
-% filename: [char] full path to the image file
-% options: [@em optional, struct] loading options
-%   .mibBioformatsCheck - [logical] use BioFormats reader (default: false)
-%   .BioFormatsIndices - [numeric] BioFormats series index (default: 1)
-%   .verbose - [logical] show timing info (default: false)
+% Syntax:
+%   function img = loadImagesWrapper(filename, options)
 %
-% Return values:
-% img: image array [height, width, depth, color, time]
+% Input Arguments:
+%   - **filename** — [char] full path to the image file
+%   - **options** — *(optional)* struct with loading options:
 %
-% @b Examples:
-% @code
-% % Load a standard TIF image (returns [H, W, 1, C, 1] for a single slice)
-% img = io.loadImagesWrapper('C:\data\image.tif');
-% @endcode
-% @code
-% % Load an Amira mesh file without verbose output
-% img = io.loadImagesWrapper('C:\data\stack.am', struct('verbose', false));
-% @endcode
-% @code
-% % Load a PNG file and check output dimensions
-% img = io.loadImagesWrapper('C:\data\patch.png');
-% fprintf('Size: %d x %d x %d x %d x %d\n', size(img,1), size(img,2), size(img,3), size(img,4), size(img,5));
-% @endcode
-% @code
-% % Load with BioFormats reader, selecting series index 2
-% opts.mibBioformatsCheck = true;
-% opts.BioFormatsIndices = 2;
-% img = io.loadImagesWrapper('C:\data\multiSeries.czi', opts);
-% @endcode
-% @code
-% % Use as a ReadFcn in an imageDatastore
-% opts.verbose = false;
-% opts.mibBioformatsCheck = false;
-% opts.BioFormatsIndices = 1;
-% ds = imageDatastore('C:\data\Images', 'FileExtensions', '.tif', ...
-%     'ReadFcn', @(fn) io.loadImagesWrapper(fn, opts));
-% img = read(ds);   % returns [H, W, Z, C, T]
-% @endcode
+%     - ``.mibBioformatsCheck`` — (logical) use BioFormats reader; default ``false``
+%     - ``.BioFormatsIndices`` — (numeric) BioFormats series index; default ``1``
+%     - ``.verbose`` — (logical) show timing info; default ``false``
+%
+% Output Arguments:
+%   - **img** — image array [height, width, depth, color, time]
+%
+% Usage:
+%   **Example 1** — Load a standard TIF image (returns [H, W, 1, C, 1] for a single slice)
+%
+%   .. code-block:: matlab
+%
+%
+%     img = io.loadImagesWrapper('C:\data\image.tif');
+%
+%   **Example 2** — Load an Amira mesh file without verbose output
+%
+%   .. code-block:: matlab
+%
+%
+%     img = io.loadImagesWrapper('C:\data\stack.am', struct('verbose', false));
+%
+%   **Example 3** — Load a PNG file and check output dimensions
+%
+%   .. code-block:: matlab
+%
+%
+%     img = io.loadImagesWrapper('C:\data\patch.png');
+%     fprintf('Size: %d x %d x %d x %d x %d\n', size(img,1), size(img,2), size(img,3), size(img,4), size(img,5));
+%
+%   **Example 4** — Load with BioFormats reader, selecting series index 2
+%
+%   .. code-block:: matlab
+%
+%
+%     opts.mibBioformatsCheck = true;
+%     opts.BioFormatsIndices = 2;
+%     img = io.loadImagesWrapper('C:\data\multiSeries.czi', opts);
+%
+%   **Example 5** — Use as a ReadFcn in an imageDatastore
+%
+%   .. code-block:: matlab
+%
+%
+%     opts.verbose = false;
+%     opts.mibBioformatsCheck = false;
+%     opts.BioFormatsIndices = 1;
+%     ds = imageDatastore('C:\data\Images', 'FileExtensions', '.tif', ...
+%         'ReadFcn', @(fn) io.loadImagesWrapper(fn, opts));
+%     img = read(ds);   % returns [H, W, Z, C, T]
+%
 
 if nargin < 2; options = struct(); end
 if ~isfield(options, 'mibBioformatsCheck'); options.mibBioformatsCheck = false; end

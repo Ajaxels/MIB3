@@ -1,7 +1,7 @@
 classdef NrrdLoader < io.loaders.BaseImageLoader
-    % classdef NrrdLoader
-    % Loader for NRRD (Nearly Raw Raster Data) files, based on
-    % io.loaders.BaseImageLoader base class
+% NRRDLOADER - Loader for NRRD (Nearly Raw Raster Data) files, based on.
+%
+% io.loaders.BaseImageLoader base class
 
     % This loader handles NRRD files (.nrrd, .nhdr).
     % It supports:
@@ -12,8 +12,11 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
 
     methods
         function obj = NrrdLoader(options)
-            % function obj = NrrdLoader(options)
-            % Constructor for NrrdLoader class
+            % NRRDLOADER - Constructor for NrrdLoader class.
+            %
+            % Syntax:
+            %   function obj = NrrdLoader(options)
+            %
 
             % Parameters:
             %   options: [@em optional, struct] options structure
@@ -45,8 +48,11 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for NRRD files
+            % LOADMETADATA - Load metadata for NRRD files.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %
 
             % This method parses NRRD headers to extract dataset metadata.
             % It handles voxel sizes, space directions, and dimension ordering.
@@ -241,8 +247,11 @@ classdef NrrdLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Load image data from NRRD files
+            % LOADIMAGES - Load image data from NRRD files.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %
 
             % This method loads actual image data.
             % It uses nrrdLoadWithMetadata (Linux/Win) or nhdr_nrrd_read (Mac)

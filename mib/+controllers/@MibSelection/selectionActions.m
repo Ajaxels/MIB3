@@ -1,27 +1,37 @@
 function selectionActions(obj, action)
-% function selectionActions(obj, action)
-% Wrapper for the A / S / R (Add / Subtract / Replace) buttons in the
+% SELECTIONACTIONS - Wrapper for the A / S / R (Add / Subtract / Replace) buttons in the.
+%
+% Syntax:
+%   function selectionActions(obj, action)
+%
 % Selection panel.
 %
 % Determines the destination layer (mask or model) from the currently
 % selected "Add to" material index, reads the dataset scope from modifier
 % keys, then delegates to obj.mibModel.moveLayers.
 %
-% Parameters:
-% action: char, the button that was pressed
-% @li 'add'      - add selection to the active material / mask
-% @li 'subtract' - subtract selection from the active material / mask
-% @li 'replace'  - replace the active material / mask with selection
+% Input Arguments:
+%   - **action** — char, the button that was pressed
+%     - 'add'      - add selection to the active material / mask
+%     - 'subtract' - subtract selection from the active material / mask
+%     - 'replace'  - replace the active material / mask with selection
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.selectionActions('add');      // called from the A button callback @endcode
-% @code obj.selectionActions('subtract'); // called from the S button callback @endcode
-% @code obj.selectionActions('replace');  // called from the R button callback @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.selectionActions('add');      // called from the A button callback
+%
+%   Example 2::
+%
+%     obj.selectionActions('subtract'); // called from the S button callback
+%
+%   Example 3::
+%
+%     obj.selectionActions('replace');  // called from the R button callback
+%
 
 % Updates
 %

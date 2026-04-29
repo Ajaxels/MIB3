@@ -1,34 +1,43 @@
 function segmentationAnnotation(obj, y, x, z, t, modifier, options)
-% function segmentationAnnotation(obj, y, x, z, t, modifier, options)
-% Add or remove a text annotation at the given dataset coordinate
+% SEGMENTATIONANNOTATION - Add or remove a text annotation at the given dataset coordinate.
+%
+% Syntax:
+%   function segmentationAnnotation(obj, y, x, z, t, modifier, options)
 %
 % Adds a new annotation (empty modifier), removes the closest annotation
 % (Ctrl), or interpolates annotations along Z between the last and the
 % current position (Shift).
 %
-% Parameters:
-% y: double, y-coordinate of the annotation point in full-dataset pixels
-% x: double, x-coordinate of the annotation point in full-dataset pixels
-% z: double, z-coordinate (slice index) of the annotation point
-% t: double, t-coordinate (time point) of the annotation point
-% modifier: cell array of chars or char, modifier keys held during click
-% @li empty '' or {} - add annotation to the list
-% @li 'control' / {'control'} - remove the closest annotation
-% @li 'shift'   / {'shift'}   - interpolate annotations between the last
+% Input Arguments:
+%   - **y** — double, y-coordinate of the annotation point in full-dataset pixels
+%   - **x** — double, x-coordinate of the annotation point in full-dataset pixels
+%   - **z** — double, z-coordinate (slice index) of the annotation point
+%   - **t** — double, t-coordinate (time point) of the annotation point
+%   - **modifier** — cell array of chars or char, modifier keys held during click
+%     - empty '' or {} - add annotation to the list
+%     - 'control' / {'control'} - remove the closest annotation
+%     - 'shift'   / {'shift'}   - interpolate annotations between the last
 %   and the current position along Z
-% options: [@em optional] struct with additional settings
-% @li .samInteractiveModel - [logical] when true, triggers
+%   - **options** — *(optional)* struct with additional settings
+%     - .samInteractiveModel - [logical] when true, triggers
 %   segmentationSAM after adding the annotation; default false
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.segmentationAnnotation(50, 75, 10, 1, {});  // add annotation @endcode
-% @code obj.segmentationAnnotation(50, 75, 10, 1, {'control'});  // remove closest @endcode
-% @code obj.segmentationAnnotation(50, 75, 10, 1, {'shift'});    // interpolate @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.segmentationAnnotation(50, 75, 10, 1, {});  // add annotation
+%
+%   Example 2::
+%
+%     obj.segmentationAnnotation(50, 75, 10, 1, {'control'});  // remove closest
+%
+%   Example 3::
+%
+%     obj.segmentationAnnotation(50, 75, 10, 1, {'shift'});    // interpolate
+%
 
 % Updates
 % 28.02.2018, IB, added compatibility with values

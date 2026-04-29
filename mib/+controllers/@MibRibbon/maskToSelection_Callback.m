@@ -1,10 +1,13 @@
 function maskToSelection_Callback(obj, hWidget, hData)
-% function maskToSelection_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Mask to Selection section of the Mask ribbon
+% MASKTOSELECTION_CALLBACK - callback on press of buttons in the Mask to Selection section of the Mask ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function maskToSelection_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

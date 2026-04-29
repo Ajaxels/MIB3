@@ -1,39 +1,42 @@
 function gui_Callbacks(obj, hWidget, hData)
-% function gui_Callbacks(obj, hWidget, hData)
-% callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
+% GUI_CALLBACKS - callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.tag -> char, identifier the widget, used when the same operation
-% is called from menu
-% 'add' -> add selection to material/mask
-% 'subtract' -> subtract selection from material/mask
-% 'replace' -> replace material/mask using the current selection
-% 'clear' -> clear selection
-% 'fill' -> fill selection
-% 'colChannel' -> select color channel
-% 'applySegmentationIn3D' -> apply segmentation tools in 3D
-% 'autoFillSelection' -> auto-fill selection
-% 'preset1' -> apply preset 1 to the selected segmentation tool
-% 'preset2' -> apply preset 2 to the selected segmentation tool
-% 'preset3' -> apply preset 3 to the selected segmentation tool
-% 'erode' -> edode selection
-% 'dilate' -> dilate selection
-% 'strel' -> set strel size for erosion/dilation
-% 'differenceSelection' -> enable the differenceSelection mode for the dilate/erode
-% 'lutColors' -> visualize image using LUT colors
-% 'showModel' -> show model
-% 'showMask' -> show mask
-% 'showAnnotations' -> show annotations
-% 'hideImage' -> hide image
-% 'display' -> start image view settings dialog
-% 'onFly' -> % automatically adjust contrast and brightness
-% 'modelTransparency' -> define model transparency
-% 'maskTransparency' -> define mask transparency
-% 'selectionTransparency' -> define selection transparency
-% 'help' -> show help
+% Syntax:
+%   function gui_Callbacks(obj, hWidget, hData)
 %
-% hData: handle to supporting data class
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.tag char, identifier the widget, used when the same operation
+%     is called from menu
+%     'add' add selection to material/mask
+%     'subtract' subtract selection from material/mask
+%     'replace' replace material/mask using the current selection
+%     'clear' clear selection
+%     'fill' fill selection
+%     'colChannel' select color channel
+%     'applySegmentationIn3D' apply segmentation tools in 3D
+%     'autoFillSelection' auto-fill selection
+%     'preset1' apply preset 1 to the selected segmentation tool
+%     'preset2' apply preset 2 to the selected segmentation tool
+%     'preset3' apply preset 3 to the selected segmentation tool
+%     'erode' edode selection
+%     'dilate' dilate selection
+%     'strel' set strel size for erosion/dilation
+%     'differenceSelection' enable the differenceSelection mode for the dilate/erode
+%     'lutColors' visualize image using LUT colors
+%     'showModel' show model
+%     'showMask' show mask
+%     'showAnnotations' show annotations
+%     'hideImage' hide image
+%     'display' start image view settings dialog
+%     'onFly' % automatically adjust contrast and brightness
+%     'modelTransparency' define model transparency
+%     'maskTransparency' define mask transparency
+%     'selectionTransparency' define selection transparency
+%     'help' show help
+%
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSelection

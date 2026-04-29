@@ -1,53 +1,58 @@
 function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
-% function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
-% Convert matrix [1:height, 1:width, 1:no_stacks] to Amira Mesh Labels
+% BITMAP2AMIRALABELS - Convert matrix [1:height, 1:width, 1:no_stacks] to Amira Mesh Labels.
 %
-% Parameters:
-% filename: filename for Amira Mesh file
-% bitmap: the dataset, [1:height, 1:width, 1:no_stacks]
-% format: [@em optional], saving format: ''binaryRLE'', ''ascii'', ''binary'' (@b default)
-% voxel: [@em optional], a structure with voxel size:
-% - voxel.x - physical width of a voxel
-% - voxel.y - physical height of a voxel
-% - voxel.z - physical thickness of a voxel
-% - voxel.minx - minimal X coordinate of the bounding box
-% - voxel.miny - minimal Y coordinate of the bounding box
-% - voxel.minz - minimal Z coordinate of the bounding box
-% color_list: [@em optional], a matrix with colors for the materials as
-% [materialId][Red, Green, Blue] from 0-1; can be empty
-% modelMaterialNames: [@em optional], cell array with names of the materials, can be empty
-% overwrite: [@em optional], if @b 1 do not check whether file already exists
-% showWaitbar: [@em optional], if @b 1 - show the wait bar, if @b 0 - do not show
-% extraOptions: [@em optional], a structure with additional parameters:
-% .TransformationMatrix - a string with the transformation matrix
-% .ParentFigure   — handle to the main MIB application window.  When
-%                   provided, the progress bar is rendered as a
-%                   uiprogressdlg attached to that window (recommended for
-%                   GUI use).  When absent or empty the legacy waitbar is
-%                   used as a fallback.
+% Syntax:
+%   function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
 %
-% Return values:
-% result: result of the function run, @b 1 - success, @b 0 - fail
+% Input Arguments:
+%   - **filename** — filename for Amira Mesh file
+%   - **bitmap** — the dataset, [1:height, 1:width, 1:no_stacks]
+%   - **format** — *(optional)*, saving format: ''binaryRLE'', ''ascii'', ''binary'' (**default)**
+%   - **voxel** — *(optional)*, a structure with voxel size:
+%     - voxel.x - physical width of a voxel
+%     - voxel.y - physical height of a voxel
+%     - voxel.z - physical thickness of a voxel
+%     - voxel.minx - minimal X coordinate of the bounding box
+%     - voxel.miny - minimal Y coordinate of the bounding box
+%     - voxel.minz - minimal Z coordinate of the bounding box
+%   - **color_list** — *(optional)*, a matrix with colors for the materials as
+%     [materialId][Red, Green, Blue] from 0-1; can be empty
+%   - **modelMaterialNames** — *(optional)*, cell array with names of the materials, can be empty
+%   - **overwrite** — *(optional)*, if **1** do not check whether file already exists
+%   - **showWaitbar** — *(optional)*, if **1** - show the wait bar, if **0** - do not show
+%   - **extraOptions** — *(optional)* a structure with additional parameters:
 %
-% Example:
-%   @code
-%   %% Standalone / scripted use (no GUI parent):
-%   pixStr = dataset.pixSize;
-%   pixStr.minx = boundingBox(1);
-%   pixStr.miny = boundingBox(3);
-%   pixStr.minz = boundingBox(5);
-%   io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, false, struct());
-%   @endcode
+%     - ``.TransformationMatrix`` — (char) the transformation matrix string
+%     - ``.ParentFigure`` — handle to the main MIB UIFigure; when provided, progress bar
+%       is shown as a ``uiprogressdlg`` attached to that window; when absent, legacy ``waitbar`` is used
 %
-%   @code
-%   %% GUI use — attach progress dialog to the MIB window:
-%   pixStr = dataset.pixSize;
-%   pixStr.minx = boundingBox(1);
-%   pixStr.miny = boundingBox(3);
-%   pixStr.minz = boundingBox(5);
-%   extraOpts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%   io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, true, extraOpts);
-%   @endcode
+% Output Arguments:
+%   - **result** — result of the function run, **1** - success, **0** - fail
+%
+% Usage:
+%   **Example 1** — Standalone use (no GUI parent)
+%
+%   .. code-block:: matlab
+%
+%
+%     pixStr = dataset.pixSize;
+%     pixStr.minx = boundingBox(1);
+%     pixStr.miny = boundingBox(3);
+%     pixStr.minz = boundingBox(5);
+%     io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, false, struct());
+%
+%   **Example 2** — GUI use (attach progress dialog to MIB window)
+%
+%   .. code-block:: matlab
+%
+%
+%     pixStr = dataset.pixSize;
+%     pixStr.minx = boundingBox(1);
+%     pixStr.miny = boundingBox(3);
+%     pixStr.minz = boundingBox(5);
+%     extraOpts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%     io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, true, extraOpts);
+%
 
 % Updates
 % 10.08.2010 - added voxel size

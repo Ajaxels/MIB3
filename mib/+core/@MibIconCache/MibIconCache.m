@@ -35,31 +35,39 @@ classdef MibIconCache
 
     methods (Static)
          function img = get(foldername, name, resourceFilePath, assetsDir)
-            % function img = get(foldername, name, resourceFilePath, assetsDir)
-            % Return icon/image by name from a MAT-resource file backed
-            % cache. 
+            % GET - Return icon/image by name from a MAT-resource file backed.
+            %
+            % Syntax:
+            %   function img = get(foldername, name, resourceFilePath, assetsDir)
+            %
+            % cache.
             % In case the cache not yet loaded, it will be loaded as
             % stored in a persistent variable. In case, the resource file
             % is not present it will be automatically generated using
             % obj.buildResourceFile method.
             %
-            % Parameters:
-            % foldername: char with the folder name
-            % @li 'icons' - icons folder
-            % @li 'images' - images folder
-            % name: name of the icon/image without extension
-            % resourceFilePath: full path to the resource file, default
-            % location under "MIB3\mib\assets\mib_icons.res"
-            % assetsDir: path to the assets directory that contains
-            % 'images' and 'icons' folder. Default location "MIB3\mib\assets"
+            % Input Arguments:
+            %   - **foldername** — char with the folder name:
             %
-            % Examples:
-            % <code>
-            % // get image corresponding to "assets/icons/about_24px.png"
-            % img = MibIconCache.get('icons', 'about_24px');
-            % // get image corresponding to "assets/images/mib_question.png"
-            % img = MibIconCache.get('images', 'mib_question');
-            % <endcode>
+            %     - ``'icons'`` — icons folder
+            %     - ``'images'`` — images folder
+            %
+            %   - **name** — name of the icon/image without extension
+            %   - **resourceFilePath** — full path to the resource file, default
+            %     location under "MIB3\mib\assets\mib_icons.res"
+            %   - **assetsDir** — path to the assets directory that contains
+            %     'images' and 'icons' folder. Default location "MIB3\mib\assets"
+            %
+            % Usage:
+            %
+            %   .. code-block:: matlab
+            %
+            %
+            %     %% get image corresponding to "assets/icons/about_24px.png"
+            %     img = MibIconCache.get('icons', 'about_24px');
+            %     %% get image corresponding to "assets/images/mib_question.png"
+            %     img = MibIconCache.get('images', 'mib_question');
+            %
 
             % Normalize inputs
             if nargin < 4; assetsDir = []; end
@@ -151,13 +159,16 @@ classdef MibIconCache
 
 
         function img = getIconData(iconData)
-            % function img = getIconData(iconData)
-            % Extract icon image array from cache data and apply transparency
+            % GETICONDATA - Extract icon image array from cache data and apply transparency.
             %
-            % Parameters:
-            % iconData: a structure with
-            % @li .cdata - matrix ([height, width, col_channel]) with intensity values for the icon
-            % @li .alpha - matrix with the alpha value, can be empty
+            % Syntax:
+            %   function img = getIconData(iconData)
+            %
+            % Input Arguments:
+            %   - **iconData** — a structure with
+            %   - .cdata - matrix ([height, width, col_channel]) with intensity values for the icon
+            %   - .alpha - matrix with the alpha value, can be empty
+            %
 
             if isstruct(iconData)
                 % New format: struct with cdata and alpha
@@ -189,16 +200,21 @@ classdef MibIconCache
         end
 
         function buildResourceFile(assetsDir, resourceFilePath)
-            % function buildResourceFile(assetsDir, resourceFilePath)
-            % Scan
+            % BUILDRESOURCEFILE - Scan.
+            %
+            % Syntax:
+            %   function buildResourceFile(assetsDir, resourceFilePath)
+            %
             % - assetsDir\icons
             % - assetsDir\images
+            %
             % read images and save them to assetsDir\mib_icons.res MAT resource file.
             %
-            % Example:
-            % assetsDir = fullfile(obj.mibPath, 'assets');
-            % resourceFile  = fullfile(obj.mibPath, 'assets', 'mib_icons.res');
-            % MibIconCache.buildResourceFile(assetsDir, resourceFilePath)
+            % Usage:
+            %   assetsDir = fullfile(obj.mibPath, 'assets');
+            %   resourceFile  = fullfile(obj.mibPath, 'assets', 'mib_icons.res');
+            %   MibIconCache.buildResourceFile(assetsDir, resourceFilePath)
+            %
 
             if nargin < 1 || isempty(assetsDir)
                 assetsDir = MibIconCache.getDefaultAssetsDir();
@@ -258,8 +274,11 @@ classdef MibIconCache
         end
 
         function assetsDir = getDefaultAssetsDir()
-            % function assetsDir = getDefaultAssetsDir()
-            % Get the default folder where assets files live
+            % GETDEFAULTASSETSDIR - Get the default folder where assets files live.
+            %
+            % Syntax:
+            %   function assetsDir = getDefaultAssetsDir()
+            %
 
             persistent mibPath
             if isempty(mibPath); mibPath = utils.getInstallationPath('mib3'); end
@@ -268,8 +287,11 @@ classdef MibIconCache
         end
 
         function resourceFilename = getDefaultResourcePath()
-            % function resourceFilename = getDefaultResourcePath()
-            % Get location of the default MAT resource path
+            % GETDEFAULTRESOURCEPATH - Get location of the default MAT resource path.
+            %
+            % Syntax:
+            %   function resourceFilename = getDefaultResourcePath()
+            %
             % (assets\mib_icons.res) for icons and images
 
             persistent mibPath

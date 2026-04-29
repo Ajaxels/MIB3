@@ -1,10 +1,13 @@
 function datasetToolsSlices_Callback(obj, hWidget, hData)
-% function datasetToolsSlices_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Slices button of the Dataset ribbon
+% DATASETTOOLSSLICES_CALLBACK - callback on press of buttons in the Slices button of the Dataset ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function datasetToolsSlices_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

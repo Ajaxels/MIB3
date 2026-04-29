@@ -1,6 +1,8 @@
 function status = doSeriesLoop(obj, startStep, finishStep)
-% function status = doSeriesLoop(obj, startStep, finishStep)
-% iterate over all Bio-Formats series in a multi-series container and execute protocol steps for each
+% DOSERIESLOOP - iterate over all Bio-Formats series in a multi-series container and execute protocol steps for each.
+%
+% Syntax:
+%   function status = doSeriesLoop(obj, startStep, finishStep)
 %
 % Opens the container defined by the 'Load and combine images' step at
 % startStep using the Bio-Formats Memoizer reader, counts the available
@@ -9,20 +11,19 @@ function status = doSeriesLoop(obj, startStep, finishStep)
 % Requires the Bio-Formats MATLAB toolbox and Java to be available.
 % Aborts immediately and returns false if any individual step fails.
 %
-% Parameters:
-% startStep: index of the 'Load and combine images' step (Series-by-series mode)
-%            that defines the container filename; also the first step executed
-%            for each series
-% finishStep: index of the last protocol step executed per series (inclusive)
+% Input Arguments:
+%   - **startStep** — index of the 'Load and combine images' step (Series-by-series mode)
+%     that defines the container filename; also the first step executed
+%     for each series
+%   - **finishStep** — index of the last protocol step executed per series (inclusive)
 %
-% Return values:
-% status: [logical] true on success, false if any step returned an error
+% Output Arguments:
+%   - **status** — [logical] true on success, false if any step returned an error
 %
-%|
-% @b Examples:
-% @code status = obj.doSeriesLoop(startStep, finishStep); @endcode
+% Usage:
+%   Example 1::
 %
-% Updates
+%     status = obj.doSeriesLoop(startStep, finishStep);
 %
 
 status = false;

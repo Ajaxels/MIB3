@@ -1,29 +1,38 @@
 function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
-% function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
-% Insert virtual file references into the virtual dataset along the depth dimension.
+% INSERTSLICE - Insert virtual file references into the virtual dataset along the depth dimension.
+%
+% Syntax:
+%   function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
 %
 % Overrides MibImage.insertSlice for virtual (MibVirtualImage) datasets.
 % Instead of manipulating pixel arrays, this method splices cell arrays of
 % file paths (obj.data) and the Virtual metadata struct (obj.Virtual).
 %
-% Parameters:
-% img: cell array of file-path strings to insert (one entry per slice)
-% insertPosition: 1-based insertion index; 0 or NaN means append to the end
-% dim: 'depth' (default); 'time' is not supported for virtual datasets
-% virtMeta: struct with fields matching obj.Virtual:
-%   @li .filenames, .objectType, .readerId, .seriesName, .slicesPerFile
-% options: [@em optional] struct with fields:
-%   @li .sliceNames - cell array of names for the inserted slices (default {})
+% Input Arguments:
+%   - **img** — cell array of file-path strings to insert (one entry per slice)
+%   - **insertPosition** — 1-based insertion index; 0 or NaN means append to the end
+%   - **dim** — 'depth' (default); 'time' is not supported for virtual datasets
+%   - **virtMeta** — struct with fields matching obj.Virtual:
 %
-% Return values:
+%     - ``.filenames``, ``.objectType``, ``.readerId``, ``.seriesName``, ``.slicesPerFile``
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``.sliceNames`` — cell array of names for the inserted slices (default {})
+%
+% Output Arguments:
 %   none
 %
-% After the call the following properties are updated:
+%   After the call the following properties are updated:
 %   obj.data, obj.Virtual, obj.depth, obj.dim_yxzct, obj.sliceName (when applicable)
-
-%|
-% @b Examples:
-% @code obj.image.insertSlice(newFilePaths, 1, 'depth', meta{'Virtual'}); @endcode
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.image.insertSlice(newFilePaths, 1, 'depth', meta{'Virtual'});
+%
 
 % Updates
 %

@@ -1,21 +1,26 @@
 function lassoPanel_Callback(obj, hWidget, hData)
-% lassoPanel_Callback(obj, hWidget, hData)
+% LASSOPANEL_CALLBACK - lassoPanel_Callback(obj, hWidget, hData).
+%
+% Syntax:
+%   function lassoPanel_Callback(obj, hWidget, hData)
+%
 % Callbacks for widgets in the Segmentation panel->Lasso/Object picker tools
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hWidget.Tag - identifier the widget, used when the same operation is called from menu
-% 'lassoType' -> define type of the lasso selection tool
-% 'lassoMode' -> set the mode add/remove lasso-selection to/from the selection layer
-% 'lassoManually' -> specify the lasso area manually
-% 'lassoSelect' -> select the specified area
-% 'lassoX1' -> define min-X value for the manual lasso placement
-% 'lassoY1' -> define min-Y value for the manual lasso placement
-% 'lassoWidth' -> define width value for the manual lasso placement
-% 'lassoHeight' -> define height value for the manual lasso placement
-% 'objectRecalculate' -> recalculate object properties for 3D selection
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
+%     'lassoType' define type of the lasso selection tool
+%     'lassoMode' set the mode add/remove lasso-selection to/from the selection layer
+%     'lassoManually' specify the lasso area manually
+%     'lassoSelect' select the specified area
+%     'lassoX1' define min-X value for the manual lasso placement
+%     'lassoY1' define min-Y value for the manual lasso placement
+%     'lassoWidth' define width value for the manual lasso placement
+%     'lassoHeight' define height value for the manual lasso placement
+%     'objectRecalculate' recalculate object properties for 3D selection
 %
-% hData: handle to supporting data class
+%   - **hData** — handle to supporting data class
+%
 
 arguments (Input)
     obj controllers.MibSegmentation

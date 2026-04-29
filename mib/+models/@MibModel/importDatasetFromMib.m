@@ -1,30 +1,47 @@
 function importDatasetFromMib(obj, layerType, BatchOptIn)
-% function importDatasetFromMib(obj, layerType, BatchOptIn)
-% Import the mask or model layer from another MIB container into the active dataset.
+% IMPORTDATASETFROMMIB - Import the mask or model layer from another MIB container into the active dataset.
+%
+% Syntax:
+%   function importDatasetFromMib(obj, layerType, BatchOptIn)
 %
 % This is the inverse of exportDatasetToMib: it pulls a layer FROM another
 % container INTO the currently active container.
 %
-% Parameters:
-% layerType: a string specifying which layer to import
-% @li 'mask'  - copy the mask layer from another container
-% @li 'model' - copy the model (labels) layer + material metadata from another container
-% BatchOptIn: [@em optional] a structure for batch processing mode; when NaN
-%   returns a structure with default options via "SyncBatch" event
-% @li .LayerType - cell string, {'mask'|'model'} layer to import
-% @li .Source    - cell string, source container, e.g. {'Container 2'}
-% @li .showWaitbar - logical, show or not the waitbar
-% @li .id - [@em optional] index of the destination dataset
-
-%|
-% @b Examples:
-% @code obj.mibModel.importDatasetFromMib('mask');   // import mask interactively @endcode
-% @code obj.mibModel.importDatasetFromMib('model');  // import model interactively @endcode
-% @code
-% BatchOpt.Source = {'Container 2'};
-% BatchOpt.showWaitbar = false;
-% obj.mibModel.importDatasetFromMib('mask', BatchOpt);  // batch mode
-% @endcode
+% Input Arguments:
+%   - **layerType** — a string specifying which layer to import:
+%
+%     - ``'mask'`` — copy the mask layer from another container
+%     - ``'model'`` — copy the model (labels) layer + material metadata from another container
+%
+%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when ``NaN``
+%     returns a structure with default options via "SyncBatch" event:
+%
+%     - ``.LayerType`` — cell string, ``{'mask'|'model'}`` layer to import
+%     - ``.Source`` — cell string, source container, e.g. ``{'Container 2'}``
+%     - ``.showWaitbar`` — logical, show or not the waitbar
+%     - ``.id`` — *(optional)* index of the destination dataset
+%
+% Usage:
+%   **Example 1** — import mask interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.importDatasetFromMib('mask');
+%
+%   **Example 2** — import model interactively
+%
+%   .. code-block:: matlab
+%
+%      obj.mibModel.importDatasetFromMib('model');
+%
+%   **Example 3** — batch mode
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Source = {'Container 2'};
+%      BatchOpt.showWaitbar = false;
+%      obj.mibModel.importDatasetFromMib('mask', BatchOpt);
+%
 
 % Updates
 %

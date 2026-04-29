@@ -1,18 +1,25 @@
 function returnBatchOpt(obj, BatchOptOut)
-% function returnBatchOpt(obj, BatchOptOut)
-% Publish BatchOpt to the macro recorder via 'SyncBatch' event.
+% RETURNBATCHOPT - Publish BatchOpt to the macro recorder via 'SyncBatch' event.
+%
+% Syntax:
+%   function returnBatchOpt(obj, BatchOptOut)
 %
 % Fires a SyncBatch event carrying the current (or provided) BatchOpt
 % so that the MIB batch controller can record this action.
 %
-% Parameters:
-% BatchOptOut: [@em optional] struct with Batch Options to publish;
-%   defaults to obj.BatchOpt
+% Input Arguments:
+%   - **BatchOptOut** — *(optional)* struct with Batch Options to publish;
+%     defaults to obj.BatchOpt
 %
-%|
-% @b Examples:
-% @code obj.returnBatchOpt();                  // publish current BatchOpt @endcode
-% @code obj.returnBatchOpt(myCustomBatchOpt);  // publish custom BatchOpt @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.returnBatchOpt();                  // publish current BatchOpt
+%
+%   Example 2::
+%
+%     obj.returnBatchOpt(myCustomBatchOpt);  // publish custom BatchOpt
+%
 
 % Updates
 %

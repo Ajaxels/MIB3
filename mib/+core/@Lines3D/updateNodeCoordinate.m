@@ -1,12 +1,15 @@
 function updateNodeCoordinate(obj, nodeId, x, y, z)
-% function updateNodeCoordinate(obj, nodeId, x, y, z)
-% update coordinate of the node
+% UPDATENODECOORDINATE - update coordinate of the node.
 %
-% Parameters:
-% nodeId: index of the node to update
-% x: new x coordinate
-% y: new y coordinate
-% z: new z coordinate
+% Syntax:
+%   function updateNodeCoordinate(obj, nodeId, x, y, z)
+%
+% Input Arguments:
+%   - **nodeId** — index of the node to update
+%   - **x** — new x coordinate
+%   - **y** — new y coordinate
+%   - **z** — new z coordinate
+%
 
 if nargin < 5; error('not enough paramters!'); end
 

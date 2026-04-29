@@ -1,14 +1,17 @@
 function lutTable_CellSelection(obj, hWidget, hData)
-% function lutTable_CellSelection(obj, hWidget, hData)
-% callbacks for cell selection in the LUT table (obj.handles.lutTable) of the Selection and Image View panel
+% LUTTABLE_CELLSELECTION - callbacks for cell selection in the LUT table (obj.handles.lutTable) of the Selection and Image View panel.
 %
-% Parameters:
-% hWidget: handle to the pressed widget (lutTable)
-% hData: handle to supporting data class (CellSelectionChangeData)
-% .Indices: [2 1] -> selected indices
-% .DisplayIndices: [2 1] -> selected indices
-% .Source -> handle to the table (lutTable)
-% .EventName ->'CellSelection'
+% Syntax:
+%   function lutTable_CellSelection(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget (lutTable)
+%   - **hData** — handle to supporting data class (CellSelectionChangeData)
+%     .Indices: [2 1] selected indices
+%     .DisplayIndices: [2 1] selected indices
+%     .Source handle to the table (lutTable)
+%     .EventName ->'CellSelection'
+%
 
 if isempty(hData.Indices); return; end
 indices = hData.Indices;

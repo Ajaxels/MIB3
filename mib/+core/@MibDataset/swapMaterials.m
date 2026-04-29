@@ -1,25 +1,37 @@
 function swapMaterials(obj, material1, material2, wb)
-% function swapMaterials(obj, material1, material2, wb)
-% Swap two materials in the model — low-level data layer
+% SWAPMATERIALS - Swap two materials in the model — low-level data layer.
+%
+% Syntax:
+%   function swapMaterials(obj, material1, material2, wb)
 %
 % Exchanges all pixel values equal to material1 with material2 and vice
 % versa across every time-point, then updates material names and colours
 % via obj.labels.swapMaterials (for small models only; large models
 % have no meaningful name/colour metadata to swap).
 %
-% Parameters:
-% material1: double, 1-based index of the first material.
-% material2: double, 1-based index of the second material.
-% wb: [@em optional] handle to a uiprogressdlg for progress display;
-%   when empty no progress is reported.
+% Input Arguments:
+%   - **material1** — double, 1-based index of the first material.
+%   - **material2** — double, 1-based index of the second material.
+%   - **wb** — *(optional)* handle to a uiprogressdlg for progress display;
+%     when empty no progress is reported.
 %
-% Return values:
+% Output Arguments:
 %
-
-%|
-% @b Examples:
-% @code obj.mibModel.I{obj.mibModel.id}.swapMaterials(1, 3);       // swap materials 1 and 3 @endcode
-% @code obj.mibModel.I{obj.mibModel.id}.swapMaterials(2, 5, wb);   // with progress bar @endcode
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.swapMaterials(1, 3);% swap materials 1 and 3
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.mibModel.I{obj.mibModel.id}.swapMaterials(2, 5, wb);% with progress bar
+%
 
 % Updates
 %

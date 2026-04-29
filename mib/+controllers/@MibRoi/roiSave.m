@@ -1,6 +1,8 @@
 function roiSave(obj)
-% function roiSave(obj)
-% Save ROIs of the current dataset to a .roi (MAT) file
+% ROISAVE - Save ROIs of the current dataset to a .roi (MAT) file.
+%
+% Syntax:
+%   function roiSave(obj)
 %
 % Parameters: none
 % Return values: none

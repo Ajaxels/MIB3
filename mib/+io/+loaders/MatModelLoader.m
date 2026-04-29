@@ -1,27 +1,29 @@
 classdef MatModelLoader < io.loaders.BaseImageLoader
-    % classdef MatModelLoader
-    % Loader for MATLAB-format segmentation model files
-    %
-    % Handles three on-disk formats written by core.MibLabels.save:
-    %   .model  — MIB3/MIB2 native MATLAB format (modelVariable, modelMaterialNames, …)
-    %   .mat    — MIB v1 legacy format (model_var, material_list, color_list, …)
-    %   .mibCat — MATLAB categorical format (imgOut as categorical, options struct)
-    %
-    % The loader caches the raw model array in files(i).data during loadMetadata
-    % to avoid re-reading the file in loadImages.
+% MATMODELLOADER - Loader for MATLAB-format segmentation model files.
+%
+% Handles three on-disk formats written by core.MibLabels.save:
+% .model  — MIB3/MIB2 native MATLAB format (modelVariable, modelMaterialNames, …)
+% .mat    — MIB v1 legacy format (model_var, material_list, color_list, …)
+% .mibCat — MATLAB categorical format (imgOut as categorical, options struct)
+%
+% The loader caches the raw model array in files(i).data during loadMetadata
+% to avoid re-reading the file in loadImages.
 
     methods
         function obj = MatModelLoader(options)
-            % function obj = MatModelLoader(options)
-            % Constructor for MatModelLoader class
+            % MATMODELLOADER - Constructor for MatModelLoader class.
             %
-            % Parameters:
-            %   options: [@em optional, struct] options structure
-            %     @li .mibPath      - [char] path to MIB directory
-            %     @li .ParentFigure - handle to parent figure for dialogs
+            % Syntax:
+            %   function obj = MatModelLoader(options)
             %
-            % Return values:
-            %   obj: instance of MatModelLoader
+            % Input Arguments:
+            %   - **options** — [*optional,* struct] options structure
+            %   - .mibPath      - [char] path to MIB directory
+            %   - .ParentFigure - handle to parent figure for dialogs
+            %
+            % Output Arguments:
+            %   - **obj** — instance of MatModelLoader
+            %
 
             obj.Options = struct();
             if nargin < 1; options = struct(); end
@@ -30,40 +32,43 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % Load metadata for MATLAB-format model files
+            % LOADMETADATA - Load metadata for MATLAB-format model files.
+            %
+            % Syntax:
+            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
             %
             % Reads each MAT/model/mibCat file, determines the labelsVariable,
             % extracts all model metadata (material names, colors, type, annotations),
             % and caches the raw array in files(i).data.
             %
-            % Parameters:
-            %   filenames: cell array with full path filenames to load
-            %   options:   [@em optional, struct] options structure
+            % Input Arguments:
+            %   - **filenames** — cell array with full path filenames to load
+            %   - **options** — [*optional,* struct] options structure
             %
-            % Return values:
-            %   imginfo: dictionary with model metadata; model-specific keys:
-            %     @li "modelMaterialNames"  - cell array of material names
-            %     @li "modelMaterialColors" - Nx3 RGB matrix (values 0..1)
-            %     @li "modelType"           - numeric type (63/255/65535/4294967295)
-            %     @li "labelsVariable"      - variable name used in the MAT file
-            %     @li "labelText"           - annotation text (or [])
-            %     @li "labelPosition"       - annotation positions (or [])
-            %     @li "labelValue"          - annotation values (or [])
-            %     @li "BoundingBox"         - [1x6] bounding box (or [])
-            %     @li "numEntries"          - number of successfully loaded files
-            %   files: structure array with per-file information
-            %     @li .filename  - [char] full path
-            %     @li .height, .width, .noLayers - dimensions
-            %     @li .color, .time - always 1
-            %     @li .imgClass  - MATLAB class of the raw array
-            %     @li .data      - raw model array (cached)
+            % Output Arguments:
+            %   - **imginfo** — dictionary with model metadata; model-specific keys:
+            %   - "modelMaterialNames"  - cell array of material names
+            %   - "modelMaterialColors" - Nx3 RGB matrix (values 0..1)
+            %   - "modelType"           - numeric type (63/255/65535/4294967295)
+            %   - "labelsVariable"      - variable name used in the MAT file
+            %   - "labelText"           - annotation text (or [])
+            %   - "labelPosition"       - annotation positions (or [])
+            %   - "labelValue"          - annotation values (or [])
+            %   - "BoundingBox"         - [1x6] bounding box (or [])
+            %   - "numEntries"          - number of successfully loaded files
+            %   - **files** — structure array with per-file information
+            %   - .filename  - [char] full path
+            %   - .height, .width, .noLayers - dimensions
+            %   - .color, .time - always 1
+            %   - .imgClass  - MATLAB class of the raw array
+            %   - .data      - raw model array (cached)
             %
-            % Example:
-            %   @code
-            %   loader = io.loaders.MatModelLoader();
-            %   [imginfo, files] = loader.loadMetadata({'path/to/Labels.model'});
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       loader = io.loaders.MatModelLoader();
+            %       [imginfo, files] = loader.loadMetadata({'path/to/Labels.model'});
+            %
 
             if nargin < 3; options = obj.Options; end
             options = obj.mergeOptions(obj.Options, options); %#ok<NASGU>
@@ -269,27 +274,30 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
         end
 
         function [img, imginfo] = loadImages(~, files, imginfo, ~)
-            % function [img, imginfo] = loadImages(obj, files, imginfo, options)
-            % Assemble cached model data from files into a 5-D array
+            % LOADIMAGES - Assemble cached model data from files into a 5-D array.
+            %
+            % Syntax:
+            %   function [img, imginfo] = loadImages(~, files, imginfo, ~)
             %
             % Reads the pre-cached data from files(i).data and stacks them
             % along the Z dimension into a [H W D 1 T] array.
             %
-            % Parameters:
-            %   files:   structure array from loadMetadata with .data, .noLayers, etc.
-            %   imginfo: dictionary from loadMetadata
-            %   options: [@em optional, struct] (unused, kept for interface conformance)
+            % Input Arguments:
+            %   - **files** — structure array from loadMetadata with .data, .noLayers, etc.
+            %   - **imginfo** — dictionary from loadMetadata
+            %   - **options** — [*optional,* struct] (unused, kept for interface conformance)
             %
-            % Return values:
-            %   img:     [H W totalZ 1 T] model array
-            %   imginfo: unchanged dictionary
+            % Output Arguments:
+            %   - **img** — [H W totalZ 1 T] model array
+            %   - **imginfo** — unchanged dictionary
             %
-            % Example:
-            %   @code
-            %   loader = io.loaders.MatModelLoader();
-            %   [imginfo, files] = loader.loadMetadata({'Labels.model'});
-            %   [img, imginfo]   = loader.loadImages(files, imginfo);
-            %   @endcode
+            % Usage:
+            %   Example 1::
+            %
+            %       loader = io.loaders.MatModelLoader();
+            %       [imginfo, files] = loader.loadMetadata({'Labels.model'});
+            %       [img, imginfo]   = loader.loadImages(files, imginfo);
+            %
 
             H        = imginfo{"Height"};
             W        = imginfo{"Width"};
@@ -313,14 +321,17 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
 
     methods (Static, Access = private)
         function modelType = autoDetectModelType(data)
-            % function modelType = autoDetectModelType(data)
-            % Detect model type from class and maximum pixel value
+            % AUTODETECTMODELTYPE - Detect model type from class and maximum pixel value.
             %
-            % Parameters:
-            %   data: raw model array
+            % Syntax:
+            %   function modelType = autoDetectModelType(data)
             %
-            % Return values:
-            %   modelType: numeric type (63/255/65535/4294967295)
+            % Input Arguments:
+            %   - **data** — raw model array
+            %
+            % Output Arguments:
+            %   - **modelType** — numeric type (63/255/65535/4294967295)
+            %
 
             switch class(data)
                 case 'uint8'

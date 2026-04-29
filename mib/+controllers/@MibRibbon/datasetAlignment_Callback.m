@@ -1,10 +1,13 @@
 function datasetAlignment_Callback(obj, hWidget, hData)
-% function datasetAlignment_Callback(obj, hWidget, hData)
-% callback on press of buttons in the Alignment section of the Dataset ribbon
+% DATASETALIGNMENT_CALLBACK - callback on press of buttons in the Alignment section of the Dataset ribbon.
 %
-% Parameters:
-% hWidget: handle to the pressed widget
-% hData: handle to supporting EventData class
+% Syntax:
+%   function datasetAlignment_Callback(obj, hWidget, hData)
+%
+% Input Arguments:
+%   - **hWidget** — handle to the pressed widget
+%   - **hData** — handle to supporting EventData class
+%
 
 arguments (Input)
     obj controllers.MibRibbon

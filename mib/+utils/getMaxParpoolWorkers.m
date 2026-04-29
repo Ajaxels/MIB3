@@ -1,23 +1,27 @@
 function cpuParallelLimitMax = getMaxParpoolWorkers()
-% function cpuParallelLimitMax = getMaxParpoolWorkers()
+% GETMAXPARPOOLWORKERS - Define maximum number of parallel workers for deployed versions.
 %
-% define max number of parallel workers for deployed versions
-% define workers for parallel pools
+% Syntax:
 %
-% Parameters:
+%   .. code-block:: matlab
 %
-% Return values:
-% cpuParallelLimitMax: maximal number of workers available for parallel
-% processing
-
-%|
-% @b Examples:
-% @code
-% cpuParallelLimitMax = utils.getMaxParpoolWorkers();
-% @endcode
+%      cpuParallelLimitMax = getMaxParpoolWorkers()
 %
-% Updates
-% 
+% Returns the smaller of the hardware-available worker count and the
+% platform-specific compiled-app limit (8 on Windows, 4 on macOS/Linux).
+% In the MATLAB development environment, returns ``Inf`` (no limit).
+%
+% Output Arguments:
+%   - **cpuParallelLimitMax** — [numeric] maximum number of workers available for parallel processing
+%
+% Usage:
+%
+%   **Example 1** — retrieve the worker limit
+%
+%   .. code-block:: matlab
+%
+%      cpuParallelLimitMax = utils.getMaxParpoolWorkers();
+%
 
 arguments (Output)
     % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html

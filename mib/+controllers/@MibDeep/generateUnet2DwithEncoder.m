@@ -15,23 +15,25 @@
 % Date: 24.10.2024
 
 function [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNetwork)
-% function generateUnet2DwithEncoder(obj, imageSize, encoderNetwork)
-% generate Unet convolutional neural network for semantic image
-% segmentation of 2D RGB images using a specified encoder 
+% GENERATEUNET2DWITHENCODER - generate Unet convolutional neural network for semantic image.
 %
-% Parameters:
-% imageSize: vector [height, width, colors] defining input patch size,
-% should be larger than [224 224] for Resnet18, colors should be 3
-% encoderNetwork: string defining the base architecture for the initialization
-%   'Classic' - classic unet architecture
-%   'Resnet18' - Resnet18 network
-%   'Resnet50' - Resnet50 network
+% Syntax:
+%   function [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNetwork)
 %
-% Return values:
-% net:  Unet dlnetwork, with softmax (Name: 'FinalNetworkSoftmax-Layer') as the final layer
-% outputSize: output size of the network returned as [height, width, number of classes]
-% Updates
-% 
+% segmentation of 2D RGB images using a specified encoder
+%
+% Input Arguments:
+%   - **imageSize** — vector [height, width, colors] defining input patch size,
+%     should be larger than [224 224] for Resnet18, colors should be 3
+%   - **encoderNetwork** — string defining the base architecture for the initialization
+%     'Classic' - classic unet architecture
+%     'Resnet18' - Resnet18 network
+%     'Resnet50' - Resnet50 network
+%
+% Output Arguments:
+%   - **net** — Unet dlnetwork, with softmax (Name: 'FinalNetworkSoftmax-Layer') as the final layer
+%   - **outputSize** — output size of the network returned as [height, width, number of classes]
+%
 
 if nargin < 3; encoderNetwork = 'Classic'; end
 

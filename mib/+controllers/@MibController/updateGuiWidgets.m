@@ -1,53 +1,58 @@
 function updateGuiWidgets(obj, updatePanels)
-% function updateGuiWidgets(obj, updatePanels)
-% Update user interface widgets based on the properties of the currently open dataset
+% UPDATEGUIWIDGETS - Update user interface widgets based on the properties of the currently open dataset.
+%
+% Syntax:
+%   function updateGuiWidgets(obj, updatePanels)
 %
 % Refreshes the named subsets of the GUI; when called with no arguments (or
 % an empty cell array) every panel is refreshed.  Callers that know which
 % panel changed should pass the relevant name(s) to avoid unnecessary work.
 %
-% Parameters:
-% updatePanels: [@em optional] char or cell array of chars identifying the
-%   panel(s) to refresh.  Pass {} or omit to refresh everything.  Valid
-%   name strings:
-%   @li 'ribbonImage'        - Image ribbon tab (bit depth, color type)
-%   @li 'ribbonModel'        - Model ribbon tab (model type radio buttons)
-%   @li 'QuickAccessBar'     - Orientation buttons, ROI, block-mode toggle
-%   @li 'depthSlider'        - Z-slice number slider and edit field
-%   @li 'timeSlider'         - Time-frame slider and edit field
-%   @li 'checkboxes'         - Show mask / model checkboxes, restrict controls
-%   @li 'imView'             - Image view panel title
-%   @li 'activeDataset'      - Dataset buffer buttons in the Datasets panel
-%   @li 'dirContentsDataset' - Directory contents file list and filter
-%   @li 'panelThresholding'  - Black/white threshold sliders
-%   @li 'roi'                - ROI related items
-%   @li 'selectionPanel'     - LUT checkbox and colour table
-%   @li 'statusBar'          - Status bar current-directory field
+% Input Arguments:
+%   - **updatePanels** — *(optional)* char or cell array of chars identifying the
+%     panel(s) to refresh.  Pass {} or omit to refresh everything.  Valid
+%     name strings:
+%     - 'ribbonImage'        - Image ribbon tab (bit depth, color type)
+%     - 'ribbonModel'        - Model ribbon tab (model type radio buttons)
+%     - 'QuickAccessBar'     - Orientation buttons, ROI, block-mode toggle
+%     - 'depthSlider'        - Z-slice number slider and edit field
+%     - 'timeSlider'         - Time-frame slider and edit field
+%     - 'checkboxes'         - Show mask / model checkboxes, restrict controls
+%     - 'imView'             - Image view panel title
+%     - 'activeDataset'      - Dataset buffer buttons in the Datasets panel
+%     - 'dirContentsDataset' - Directory contents file list and filter
+%     - 'panelThresholding'  - Black/white threshold sliders
+%     - 'roi'                - ROI related items
+%     - 'selectionPanel'     - LUT checkbox and colour table
+%     - 'statusBar'          - Status bar current-directory field
 %
-% Return values:
+% Output Arguments:
 %
-%|
-% @b Examples:
-% @code
-% % Refresh ALL panels (e.g. after loading a new dataset):
-% obj.updateGuiWidgets();
-% @endcode
+% Usage:
+%   Example 1 - Refresh ALL panels (e.g. after loading a new dataset)::
 %
-% @code
-% % Refresh only the Model ribbon tab and the checkboxes panel:
-% obj.updateGuiWidgets({'ribbonModel', 'checkboxes'});
-% @endcode
+%     % Refresh ALL panels (e.g. after loading a new dataset):
+%     obj.updateGuiWidgets();
 %
-% @code
-% % Trigger a full refresh via the MibModel event bus:
-% notify(obj.mibModel, 'UpdateGuiWidgets');
-% @endcode
 %
-% @code
-% % Trigger a selective refresh via the MibModel event bus:
-% eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
-% notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
-% @endcode
+%   Example 2 - Refresh only the Model ribbon tab and the checkboxes panel::
+%
+%     % Refresh only the Model ribbon tab and the checkboxes panel:
+%     obj.updateGuiWidgets({'ribbonModel', 'checkboxes'});
+%
+%
+%   Example 3 - Trigger a full refresh via the MibModel event bus::
+%
+%     % Trigger a full refresh via the MibModel event bus:
+%     notify(obj.mibModel, 'UpdateGuiWidgets');
+%
+%
+%   Example 4 - Trigger a selective refresh via the MibModel event bus::
+%
+%     % Trigger a selective refresh via the MibModel event bus:
+%     eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
+%     notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
+%
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibController.updateGuiWidgets triggered\n');

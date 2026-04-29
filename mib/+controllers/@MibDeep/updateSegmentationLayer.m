@@ -1,10 +1,14 @@
 function lgraph = updateSegmentationLayer(obj, lgraph, classNames)
-    % function lgraph = updateSegmentationLayer(obj, lgraph, classNames)
-    % redefine the segmentation layer of lgraph based on
-    % obj.BatchOpt settings
-    %
-    % Parameters:
-    % classNames: cell array with class names, when not provided is 'auto' switch is used
+% UPDATESEGMENTATIONLAYER - redefine the segmentation layer of lgraph based on.
+%
+% Syntax:
+%   function lgraph = updateSegmentationLayer(obj, lgraph, classNames)
+%
+% obj.BatchOpt settings
+%
+% Input Arguments:
+%   - **classNames** — cell array with class names, when not provided is 'auto' switch is used
+%
 
     if nargin < 3; classNames = 'auto'; end
 

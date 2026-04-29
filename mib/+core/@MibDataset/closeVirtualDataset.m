@@ -1,10 +1,12 @@
 function closeVirtualDataset(obj)
-% function closeVirtualDataset(obj)
-% Close opened virtual dataset readers, otherwise the files locked
+% CLOSEVIRTUALDATASET - Close opened virtual dataset readers, otherwise the files locked.
 %
-% Parameters:
+% Syntax:
+%   function closeVirtualDataset(obj)
 %
-% Return values:
+% Input Arguments:
+%
+% Output Arguments:
 %
 
 % Updates

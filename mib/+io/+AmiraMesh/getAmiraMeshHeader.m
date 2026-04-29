@@ -1,18 +1,21 @@
 function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMeshHeader(filename)
-% function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMeshHeader(filename)
-% Get header of Amira Mesh file
+% GETAMIRAMESHHEADER - Get header of Amira Mesh file.
 %
-% Parameters:
-% filename: (@em optional): filename of Amira Mesh file
+% Syntax:
+%   function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMeshHeader(filename)
 %
-% Return values:
-% par: a structure with parameters in format:
-%   .Name -> parameter name
-%   .Value -> parameter value
-% img_info: -> MATLAB dictionary (configureDictionary("string","cell")); access values with {} indexing
-% dim_xyczt: -> dimensions of the dataset
-% materialNames: -> detected material names (cell array, Exterior excluded)
-% materialColors: -> detected material colors [Nx3] RGB (0..1), Exterior excluded
+% Input Arguments:
+%   - **filename** — (*optional):* filename of Amira Mesh file
+%
+% Output Arguments:
+%   - **par** — a structure with parameters in format:
+%     .Name parameter name
+%     .Value parameter value
+%   - **img_info** — MATLAB dictionary (configureDictionary("string","cell")); access values with {} indexing
+%   - **dim_xyczt** — dimensions of the dataset
+%   - **materialNames** — detected material names (cell array, Exterior excluded)
+%   - **materialColors** — detected material colors [Nx3] RGB (0..1), Exterior excluded
+%
 
 % Updates
 % 09.01.2018, IB added extraction of embedded containers in the amiramesh headers
@@ -272,7 +275,11 @@ dim_xyczt = [width height max(colorChannels) depth 1];
 end
 
 function parValueText = loopHeader(fid, parValueText, level)
-% collect inbedded containers as a plain text
+% LOOPHEADER - collect inbedded containers as a plain text.
+%
+% Syntax:
+%   function parValueText = loopHeader(fid, parValueText, level)
+%
 while level >= 1
     tline = strtrim(fgetl(fid));
 

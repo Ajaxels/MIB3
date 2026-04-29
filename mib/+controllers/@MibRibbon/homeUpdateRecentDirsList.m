@@ -1,8 +1,11 @@
 function homeUpdateRecentDirsList(obj)
-% function homeUpdateRecentDirsList(obj)
-% update the recent directories list (obj.view.handles.ribbonHome.loadFile.Popup) under the Open image button (obj.view.handles.ribbonHome.loadFile) of 
+% HOMEUPDATERECENTDIRSLIST - update the recent directories list (obj.view.handles.ribbonHome.loadFile.Popup) under the Open image button (obj.view.handles.ribbonHome.loadFile) of.
+%
+% Syntax:
+%   function homeUpdateRecentDirsList(obj)
+%
 % the Home ribbon (obj.view.handles.ribbonHome)
-% 
+%
 % Triggered on listening to MibModel->UpdateRecentDirsList event (notify(obj.mibModel, 'UpdateRecentDirsList');
 % called in models.MibModel.loadImages function
 

@@ -1,29 +1,32 @@
 function fillSelection(obj)
-% function fillSelection(obj)
-% Fill holes in the Selection layer for the current dataset.
+% FILLSELECTION - Fill holes in the Selection layer for the current dataset.
+%
+% Syntax:
+%   function fillSelection(obj)
 %
 % Reads modifier keys to determine the dataset scope, then reads the
 % restrictSelectionToMaterial state from the dataset and delegates to
 % obj.mibModel.fillSelectionOrMask.
 %
 % Modifier-key scope rules (same as erodeSelection, dilateSelection, clearSelection):
-% @li no modifier       -> '2D, Slice'  (current slice only)
-% @li Alt or Shift      -> '3D, Stack'  (full z-stack at current t)
-% @li Alt + Shift       -> '4D, Dataset' (entire dataset)
+%   - no modifier '2D, Slice'  (current slice only)
+%   - Alt or Shift '3D, Stack'  (full z-stack at current t)
+%   - Alt + Shift '4D, Dataset' (entire dataset)
 %
 % When only one time point is present, '4D, Dataset' is demoted to
 % '3D, Stack' automatically.
 %
-% Parameters:
+% Input Arguments:
 %   (none)
 %
-% Return values:
+% Output Arguments:
 %   (none)
 %
-
-%|
-% @b Examples:
-% @code obj.fillSelection();  // called from the Fill button callback or keyboard shortcut @endcode
+% Usage:
+%   Example 1::
+%
+%     obj.fillSelection();  // called from the Fill button callback or keyboard shortcut
+%
 
 % Updates
 %

@@ -1,25 +1,40 @@
 function initialize(obj, data, meta)
-% function initialize(obj, data, meta)
-% Initialize MibVirtualImage with a dummy placeholder or provided file paths.
+% INITIALIZE - Initialize MibVirtualImage with a dummy placeholder or provided file paths.
+%
+% Syntax:
+%   function initialize(obj, data, meta)
 %
 % Overrides MibImage.initialize for virtual (disk-resident) datasets.
 % Unlike the base class, dimensions are derived from 'meta' rather than
 % from the data array, and obj.data{} stores file-path strings rather
 % than pixel arrays.
 %
-% Parameters:
-% data: [@em optional]
-%   @li when @b [] (default) — placeholders are set using assets/images/default.h5
-%   @li when a @b cell array of file-path strings — stored directly in obj.data{}
-%   @li when a @b numeric array — treated as a standard image (unusual; calls parent)
-% meta: [@em optional], a dictionary with dataset metadata (same fields as MibImage.initialize)
+% Input Arguments:
+%   - **data** — *(optional)*:
 %
-% Return values:
-% (none — modifies obj in place)
-%|
-% @b Examples:
-% @code obj.initialize();                    // blank virtual placeholder @endcode
-% @code obj.initialize({'/data/file.h5'}, meta); // load file paths @endcode
+%     - ``[]`` *(default)* — placeholders are set using ``assets/images/default.h5``
+%     - **cell** array of file-path strings — stored directly in ``obj.data{}``
+%     - **numeric** array — treated as a standard image (unusual; calls parent)
+%   - **meta** — *(optional)*, a dictionary with dataset metadata (same fields as MibImage.initialize)
+%
+% Output Arguments:
+%   (none — modifies obj in place)
+%
+% Usage:
+%   **Example 1**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.initialize();% blank virtual placeholder
+%
+%   **Example 2**
+%
+%   .. code-block:: matlab
+%
+%
+%     obj.initialize({'/data/file.h5'}, meta);% load file paths
+%
 
 %% Updates
 %
