@@ -2,7 +2,9 @@ function selectionConverts_Callbacks(obj, hWidget, hData)
 % SELECTIONCONVERTS_CALLBACKS - callback on press of buttons in the Selection to Mask section of the Selection ribbon.
 %
 % Syntax:
-%   function selectionConverts_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.selectionConverts_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

@@ -1,24 +1,29 @@
 function [result] = bfopen5(r, seriesNumber, sliceNo, options)
-% BFOPEN5 - A script for opening microscopy images in MATLAB using Bio-Formats.
+% BFOPEN5 - Open microscopy images in MATLAB using Bio-Formats with Memoizer support.
 %
 % Syntax:
-%   function [result] = bfopen5(r, seriesNumber, sliceNo, options)
+%   .. code-block:: matlab
 %
-% modified from the original bfopen.m by Ilya Belevich
+%      result = io.BioFormats.bfopen5(r, seriesNumber)
+%      result = io.BioFormats.bfopen5(r, seriesNumber, sliceNo, options)
 %
-% The function returns selected dataset.
-% [result] = bfopen4(r, seriesNumber, sliceNo, options)
+% Modified from the original bfopen.m by Ilya Belevich.
+% Returns the selected dataset from a Bio-Formats Memoizer reader.
 %
 % Input Arguments:
-%   - **r** — @bhandle to Memoizer opened as
-%     r = loci.formats.Memoizer(bfGetReader(), 0);
-%     r.setId(filename);
-%     r.close();   [optionally]
-%     when the Memoizer class used it won't get closed at the end of the function
-%     or @bfilename filename to use with setId
-%   - **seriesNumber** — - number of selected serie starting from 1
-%   - **sliceNo** — - [optional] desired slice number from the series
-%   - **options** — *(optional)* a structure with a subset of the image to obtain:
+%   - **r** — handle to a Memoizer opened as:
+%
+%     .. code-block:: matlab
+%
+%        r = loci.formats.Memoizer(bfGetReader(), 0);
+%        r.setId(filename);
+%        r.close();   % optionally
+%
+%     When the Memoizer class is used, ``r`` won't be closed at the end of the
+%     function. Alternatively, pass a ``filename`` string to use with ``setId``.
+%   - **seriesNumber** — series number to load, starting from ``1``
+%   - **sliceNo** — *(optional)* desired slice number from the series
+%   - **options** — *(optional)* struct with fields:
 %
 %     - ``.bioFormatsMemoizerMemoDir`` — directory to store Memoizer memo files
 %     - ``.dimensionOrder`` — (char) output order of dimensions:
@@ -38,34 +43,38 @@ function [result] = bfopen5(r, seriesNumber, sliceNo, options)
 %     - ``.waitbarUpdateFrequency`` — *(optional)* frequency to update the waitbar
 %
 % Output Arguments:
-%   - **result** — structure with the selected series:
+%   - **result** — struct with the selected series:
 %
-%     - ``.img`` — image array ``[height, width, depth, color, time]``; dims re-projected per ``options.dimensionOrder``
-%     - ``.ColorType`` — ``'grayscale'`` | ``'truecolor'`` | ``'indexed'``
-%     - ``.ColorMap`` — color map for indexed images
+%     - ``.img`` — image array ``[height, width, depth, color, time]``; dims
+%       re-projected per ``options.dimensionOrder``
+%     - ``.ColorType`` — ``'grayscale'``, ``'multichannel'``, or ``'indexed'``
+%     - ``.ColorMap`` — colormap for indexed images
 %
+% .. note::
 %   Portions of this code were adapted from:
-%   - http://www.mathworks.com/support/solutions/en/data/1-2WPAYR/
+%   http://www.mathworks.com/support/solutions/en/data/1-2WPAYR/
 %
-%   This method is ~1.5x-2.5x slower than Bio-Formats's command line
-%   showinf tool (MATLAB 7.0.4.365 R14 SP2 vs. java 1.6.0_20),
+%   This method is ~1.5×–2.5× slower than Bio-Formats's command line showinf tool,
 %   due to overhead from copying arrays.
 %
-%   Thanks to all who offered suggestions and improvements:
-%   * Ville Rantanen
-%   * Brett Shoelson
-%   * Martin Offterdinger
-%   * Tony Collins
-%   * Cris Luengo
-%   * Arnon Lieber
-%   * Jimmy Fong
+%   Internet Explorer sometimes erroneously renames the Bio-Formats library to
+%   ``loci_tools.zip`` — if this happens, rename it back to ``loci_tools.jar``.
 %
-%   - **NB** — Internet Explorer sometimes erroneously renames the Bio-Formats library
+%   Thanks to all who offered suggestions and improvements:
+%     * Ville Rantanen
+%     * Brett Shoelson
+%     * Martin Offterdinger
+%     * Tony Collins
+%     * Cris Luengo
+%     * Arnon Lieber
+%     * Jimmy Fong
+%   NB: Internet Explorer sometimes erroneously renames the Bio-Formats library
 %     to loci_tools.zip. If this happens, rename it back to loci_tools.jar.
 %
-%   30.01.2019 Ilya Belevich, adaptation for use with Memoizer
-%   13.12.2023 Ilya Belevich, added cancel upon waitbar cancel click
-%   07.01.2026 Ilya Belevich, switched to [Y X Z C T] outputs, renamed .ColorType truecolor->multichannel
+% Updates:
+%   - 30.01.2019 Ilya Belevich, adaptation for use with Memoizer
+%   - 13.12.2023 Ilya Belevich, added cancel upon waitbar cancel click
+%   - 07.01.2026 Ilya Belevich, switched to [Y X Z C T] outputs, renamed .ColorType truecolor->multichannel
 %
 
 if nargin < 4;     options = struct;   end

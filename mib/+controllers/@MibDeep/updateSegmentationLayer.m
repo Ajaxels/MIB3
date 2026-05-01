@@ -2,7 +2,9 @@ function lgraph = updateSegmentationLayer(obj, lgraph, classNames)
 % UPDATESEGMENTATIONLAYER - redefine the segmentation layer of lgraph based on.
 %
 % Syntax:
-%   function lgraph = updateSegmentationLayer(obj, lgraph, classNames)
+%   .. code-block:: matlab
+%
+%       lgraph = obj.updateSegmentationLayer(lgraph, classNames)
 %
 % obj.BatchOpt settings
 %

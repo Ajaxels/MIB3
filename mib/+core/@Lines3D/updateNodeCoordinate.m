@@ -2,7 +2,9 @@ function updateNodeCoordinate(obj, nodeId, x, y, z)
 % UPDATENODECOORDINATE - update coordinate of the node.
 %
 % Syntax:
-%   function updateNodeCoordinate(obj, nodeId, x, y, z)
+%   .. code-block:: matlab
+%
+%       obj.updateNodeCoordinate(nodeId, x, y, z)
 %
 % Input Arguments:
 %   - **nodeId** — index of the node to update

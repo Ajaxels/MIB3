@@ -2,7 +2,9 @@ function  homeSelectRecentDir_Callback(obj, recentDir)
 % HOMESELECTRECENTDIR_CALLBACK - callback on selection of the recent directory.
 %
 % Syntax:
-%   function  homeSelectRecentDir_Callback(obj, recentDir)
+%   .. code-block:: matlab
+%
+%       obj.homeSelectRecentDir_Callback(recentDir)
 %
 % in a list (obj.view.handles.ribbonHome.loadFile.Popup) under the Open image button (obj.view.handles.ribbonHome.loadFile) of
 % the Home ribbon (obj.view.handles.ribbonHome)

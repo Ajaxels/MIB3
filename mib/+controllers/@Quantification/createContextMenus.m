@@ -2,7 +2,9 @@ function createContextMenus(obj)
 % CREATECONTEXTMENUS - Build the right-click context menu for statTable programmatically.
 %
 % Syntax:
-%   function createContextMenus(obj)
+%   .. code-block:: matlab
+%
+%       obj.createContextMenus()
 %
 % Creates a uicontextmenu attached to obj.view.gui and assigns it to
 % the statTable widget.  Items cover: selection actions (New/Add/Remove),

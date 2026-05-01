@@ -2,7 +2,9 @@ function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
 % FILLSELECTIONORMASK - Fill holes in the selection or mask layer.
 %
 % Syntax:
-%   function fillSelectionOrMask(obj, targetLayer, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.fillSelectionOrMask(targetLayer, BatchOptIn)
 %
 % Applies imfill('holes') slice-by-slice across the chosen scope.
 % Optionally the filled result is clipped to the pixels belonging to a

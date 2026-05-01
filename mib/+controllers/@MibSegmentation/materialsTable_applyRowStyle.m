@@ -2,7 +2,9 @@ function materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex,
 % MATERIALSTABLE_APPLYROWSTYLE - Apply highlighting style to material row.
 %
 % Syntax:
-%   function materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)
+%   .. code-block:: matlab
+%
+%       obj.materialsTable_applyRowStyle(rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)
 %
 % Input Arguments:
 %   obj - Controller object

@@ -2,7 +2,9 @@ function fnOut = saveImage(obj, layerType, filename, options)
 % SAVEIMAGE - Save a data layer from a MibDataset to a file.
 %
 % Syntax:
-%   function fnOut = saveImage(obj, layerType, filename, options)
+%   .. code-block:: matlab
+%
+%       fnOut = obj.saveImage(layerType, filename, options)
 %
 % This is the INTERMEDIATE-LEVEL save entry point.  It sits between
 % models.MibModel.saveImage() (which handles batch processing, filename
@@ -10,55 +12,52 @@ function fnOut = saveImage(obj, layerType, filename, options)
 % core.MibImage.save() / core.MibLabels.save() methods.
 %
 % Responsibilities of MibDataset.saveImage():
-% 1. Validate that the requested layer exists (e.g. mask must exist).
-% 2. Inject dataset-level metadata that the layer objects lack:
-% .pixSize      from obj.image.pixSize
-% .boundingBox  from obj.image.boundingBox
-% .layerType    for format-dispatch (AmiraMesh, HDF5, etc.)
-% 3. Delegate to the appropriate layer object:
-% 'image'  → obj.image.save(filename, options)
-% 'labels' → obj.labels.save(filename, options)
-% 'mask'   → directly assemble data + dispatch via SaverFactory
-% (mask is stored as a raw numeric array, not as a
-% MibImage subclass with a save() method)
+%   1. Validate that the requested layer exists (e.g., mask must exist).
+%   2. Inject dataset-level metadata that the layer objects lack:
+%
+%      - ``.pixSize`` — from ``obj.image.pixSize``
+%      - ``.boundingBox`` — from ``obj.image.boundingBox``
+%      - ``.layerType`` — for format-dispatch (AmiraMesh, HDF5, etc.)
+%
+%   3. Delegate to the appropriate layer object:
+%
+%      - ``'image'`` — routes to ``obj.image.save(filename, options)``
+%      - ``'labels'`` — routes to ``obj.labels.save(filename, options)``
+%      - ``'mask'`` — directly assemble data + dispatch via ``SaverFactory`` (stored as raw numeric array, not ``MibImage`` subclass)
 %
 % This method works WITHOUT a MibModel — it is the natural entry point
 % for scripted pipelines that load or create a MibDataset object directly.
 %
 % Input Arguments:
-%   - **layerType** — (char) which layer to save:
+%   - **layerType** — [char] which layer to save:
 %
 %     - ``'image'`` — pixel intensity data (``obj.image``)
 %     - ``'labels'`` — segmentation model (``obj.labels``)
 %     - ``'mask'`` — binary mask layer (``obj.mask``)
 %
-%   - **filename** — (char) full output path including extension, e.g. ``'/data/stack.tif'`` or
-%     ``'C:\data\Labels_stack.model'``; when ``[]`` or ``''`` falls back to the dataset's own
-%     filename (with an appropriate prefix/suffix)
-%   - **options** — *(optional)* struct passed through to the layer saver:
+%   - **filename** — [char] full output path including extension (e.g., ``'/data/stack.tif'``,
+%     ``'C:\data\Labels_stack.model'``); when ``[]`` or ``''``, falls back to dataset's own filename
+%     with appropriate prefix/suffix
+%   - **options** *(optional)* — [struct] passed through to the layer saver:
 %
-%     - ``.Format`` — (char) format string; inferred from extension when absent
-%     - ``.Saving3DPolicy`` — (char) ``'3D stack'`` *(default)* or ``'2D sequence'``
-%     - ``.showWaitbar`` — (logical) default ``true``
-%     - ``.silent`` — (logical) default ``false``
-%     - ``.overwrite`` — (logical) default ``true``
-%     - ``.FilenameGenerator`` — (char) filename policy for 2-D sequences
-%     - ``.MaterialIndex`` — (double or ``[]``) for labels: ``[]`` = all materials, integer = single material
-%     - ``.Compression`` — (char) compression type (TIF/JPG)
-%     - ``.Quality`` — (double) JPEG quality 0–100
-%     - ``.ParentFigure`` — handle to the main MIB application window; injected automatically by
-%       ``MibModel.saveImage()`` when called from the GUI; omit (or leave ``[]``) for standalone/scripted use
-%     - ``.mibPath`` — (char) path to MIB installation directory; used by savers for resource lookup;
-%       injected automatically by ``MibModel.saveImage()``
-%     - ``.MaskColor`` — [1×3] mask overlay RGB colour (0..1), default ``[1 0 1]`` *(mask-specific)*
-%     - ``.annotations`` — (struct) ``{.labelText .labelValue .labelPosition}`` to include annotation
-%       data in ``.model`` files *(labels-specific)*
+%     - ``.Format`` — [char] format string; inferred from extension when absent
+%     - ``.Saving3DPolicy`` — [char] ``'3D stack'`` (default) or ``'2D sequence'``
+%     - ``.showWaitbar`` — [logical] default ``true``
+%     - ``.silent`` — [logical] default ``false``
+%     - ``.overwrite`` — [logical] default ``true``
+%     - ``.FilenameGenerator`` — [char] filename policy for 2-D sequences
+%     - ``.MaterialIndex`` — [numeric or ``[]``] for labels: ``[]`` = all materials, integer = single material
+%     - ``.Compression`` — [char] compression type (TIF/JPG)
+%     - ``.Quality`` — [numeric] JPEG quality ``0–100``
+%     - ``.ParentFigure`` — [handle] main MIB application window; injected automatically by ``MibModel.saveImage()`` when called from GUI; omit for standalone/scripted use
+%     - ``.mibPath`` — [char] path to MIB installation directory; used by savers for resource lookup; injected automatically by ``MibModel.saveImage()``
+%     - ``.MaskColor`` — [numeric] mask overlay RGB colour ``[R G B]`` in range ``[0–1]`` (default: ``[1 0 1]``); mask-specific
+%     - ``.annotations`` — [struct] with fields ``.labelText``, ``.labelValue``, ``.labelPosition`` to include annotation data in ``.model`` files; labels-specific
 %
 % Output Arguments:
-%   - **fnOut** — (char or cell of char) saved path(s); ``[]`` on failure
+%   - **fnOut** — [char or cell] saved path(s); ``[]`` on failure
 %
-% Usage:
-%   **Example 1** — Save image layer as a 3-D TIFF stack
+% **Example 1** — Save image layer as a 3-D TIFF stack:
 %
 %   .. code-block:: matlab
 %
@@ -72,7 +71,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('image', '/output/stack.tif', opts);
 %       fprintf('Saved: %s\n', fnOut);
 %
-%   **Example 2** — Save segmentation model in MIB native format
+% **Example 2** — Save segmentation model in MIB native format:
 %
 %   .. code-block:: matlab
 %
@@ -84,7 +83,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_stack.model', opts);
 %
-%   **Example 3** — Save binary mask as TIFF 2-D sequence
+% **Example 3** — Save binary mask as TIFF 2-D sequence:
 %
 %   .. code-block:: matlab
 %
@@ -99,7 +98,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('mask', '/output/Mask_slice.tif', opts);
 %
-%   **Example 4** — Save labels, export single material only
+% **Example 4** — Save labels, export single material only:
 %
 %   .. code-block:: matlab
 %
@@ -112,7 +111,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_mat2.tif', opts);
 %
-%   **Example 5** — Save labels with annotations
+% **Example 5** — Save labels with annotations:
 %
 %   .. code-block:: matlab
 %
@@ -126,7 +125,7 @@ function fnOut = saveImage(obj, layerType, filename, options)
 %       opts.mibPath        = obj.mibPath;
 %       fnOut = obj.mibModel.I{BatchOpt.id}.saveImage('labels', '/output/Labels_annotated.model', opts);
 %
-%   **Example 6** — Fall back on dataset filename when none provided
+% **Example 6** — Fall back on dataset filename when none provided:
 %
 %   .. code-block:: matlab
 %

@@ -2,7 +2,9 @@ function addCallbacks(obj)
 % ADDCALLBACKS - Wire all widget callbacks once from the constructor.
 %
 % Syntax:
-%   function addCallbacks(obj)
+%   .. code-block:: matlab
+%
+%       obj.addCallbacks()
 %
 % Called once at the end of the Quantification constructor.
 % Every widget that needs a callback is wired here so the constructor

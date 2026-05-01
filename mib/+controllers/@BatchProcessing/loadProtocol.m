@@ -2,7 +2,9 @@ function loadProtocol(obj)
 % LOADPROTOCOL - load a protocol from a .mibProtocol file via a dialog.
 %
 % Syntax:
-%   function loadProtocol(obj)
+%   .. code-block:: matlab
+%
+%       obj.loadProtocol()
 %
 % Stores an undo snapshot before replacing the current protocol.
 %

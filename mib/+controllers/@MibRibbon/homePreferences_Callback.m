@@ -2,7 +2,9 @@ function homePreferences_Callback(obj, hWidget, hData)
 % HOMEPREFERENCES_CALLBACK - callback on press of the preferences section buttons in the Home ribbon.
 %
 % Syntax:
-%   function homePreferences_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homePreferences_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

@@ -2,7 +2,9 @@ function closeWindow(obj)
 % CLOSEWINDOW - Close the Quantification dialog and release all resources.
 %
 % Syntax:
-%   function closeWindow(obj)
+%   .. code-block:: matlab
+%
+%       obj.closeWindow()
 %
 % Deletes the AppDesigner figure, removes all event listeners, and fires
 % the 'CloseEvent' so the parent MibController can purge this child

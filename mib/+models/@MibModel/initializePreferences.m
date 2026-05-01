@@ -2,7 +2,6 @@ function initializePreferences(obj)
 % INITIALIZEPREFERENCES - Initialize and update MIB preferences from a file.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      obj.initializePreferences()

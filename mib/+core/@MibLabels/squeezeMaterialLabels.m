@@ -2,7 +2,9 @@ function squeezeMaterialLabels(obj, wb)
 % SQUEEZEMATERIALLABELS - Renumber all label indices to a contiguous range starting at 1.
 %
 % Syntax:
-%   function squeezeMaterialLabels(obj, wb)
+%   .. code-block:: matlab
+%
+%       obj.squeezeMaterialLabels(wb)
 %
 % Iterates over every time-point and replaces the sparse set of unique
 % label values with consecutive integers 1, 2, 3, ...  Background (0) is

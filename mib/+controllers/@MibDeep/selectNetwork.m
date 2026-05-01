@@ -2,7 +2,9 @@ function net = selectNetwork(obj, networkName)
 % SELECTNETWORK - select a filename for a new network in the Train mode, or.
 %
 % Syntax:
-%   function net = selectNetwork(obj, networkName)
+%   .. code-block:: matlab
+%
+%       net = obj.selectNetwork(networkName)
 %
 % select a network to use for the Predict mode
 %

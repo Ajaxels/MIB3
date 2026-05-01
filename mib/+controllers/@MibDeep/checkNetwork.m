@@ -2,7 +2,9 @@ function checkNetwork(obj, fn)
 % CHECKNETWORK - generate and check network using settings in the Train tab.
 %
 % Syntax:
-%   function checkNetwork(obj, fn)
+%   .. code-block:: matlab
+%
+%       obj.checkNetwork(fn)
 %
 % Input Arguments:
 %   - **fn** — optional string with filename (``*.mibDeep``) to preview its

@@ -2,7 +2,9 @@ function displaySelectedActionTableItems(obj, evnt)
 % DISPLAYSELECTEDACTIONTABLEITEMS - show the appropriate editing widget for the currently highlighted row in selectedActionTable.
 %
 % Syntax:
-%   function displaySelectedActionTableItems(obj, evnt)
+%   .. code-block:: matlab
+%
+%       obj.displaySelectedActionTableItems(evnt)
 %
 % Hides all editing widgets, then makes exactly one visible based on the
 % data type of the selected BatchOpt field:

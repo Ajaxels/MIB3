@@ -1,32 +1,42 @@
 function updateMaterialsTable(obj, position)
-% UPDATEMATERIALSTABLE - Update materials table with colors and formatting.
+% UPDATEMATERIALSTABLE - Update materials table rendering with colors and styling.
 %
 % Syntax:
-%   function updateMaterialsTable(obj, position)
+%   .. code-block:: matlab
 %
-% Description:
-% Updates the materials table with current model data including:
-% - Material colors as background
-% - Font colors based on selection mode
-% - Show/hide checkboxes
-% - Special rows for Mask and Exterior
+%      obj.updateMaterialsTable(position)
+%
+% Updates the materials table (``obj.handles.materialsTable``) with current model data.
+% Applies material colors as backgrounds, sets font colors based on selection state,
+% manages visibility checkboxes, and formats special rows (Mask, Exterior).
 %
 % Input Arguments:
-%   obj - Controller object with obj.mibModel and view
-%   position - Scroll position control:
-%   [] - Keep current scroll position (default)
-%   number - Scroll to specific row index
-%   Inf - Scroll to the end of the table
+%   - **position** — *(optional)* [empty | numeric | Inf] scroll position control (default: ``[]``):
 %
-% Usage:
-%   % Update table and keep current position
-%   obj.updateMaterialsTable([]);
+%     - ``[]`` — keep current scroll position
+%     - numeric value — scroll to specific row index
+%     - ``Inf`` — scroll to end of table (last material)
 %
-%   % Update table and scroll to row 5
-%   obj.updateMaterialsTable(5);
+% Output Arguments:
+%   None
 %
-%   % Update table and scroll to bottom
-%   obj.updateMaterialsTable(Inf);
+% **Example 1** — update table and keep current position:
+%
+%   .. code-block:: matlab
+%
+%      obj.updateMaterialsTable([])
+%
+% **Example 2** — update table and scroll to row 5:
+%
+%   .. code-block:: matlab
+%
+%      obj.updateMaterialsTable(5)
+%
+% **Example 3** — update table and scroll to bottom:
+%
+%   .. code-block:: matlab
+%
+%      obj.updateMaterialsTable(Inf)
 %
 
 if nargin < 2; position = []; end

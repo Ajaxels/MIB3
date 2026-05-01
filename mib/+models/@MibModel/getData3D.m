@@ -2,7 +2,9 @@ function dataset = getData3D(obj, type, time, orient, col_channel, options)
 % GETDATA3D - Get a 3D dataset from the current (or specified) dataset; wrapper around core.MibDataset.getData3D.
 %
 % Syntax:
-%   function dataset = getData3D(obj, type, time, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData3D(type, time, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.getData3D(...) instead of

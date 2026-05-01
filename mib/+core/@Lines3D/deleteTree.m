@@ -2,7 +2,9 @@ function deleteTree(obj, treeId)
 % DELETETREE - delete tree from the graph.
 %
 % Syntax:
-%   function deleteTree(obj, treeId)
+%   .. code-block:: matlab
+%
+%       obj.deleteTree(treeId)
 %
 % Input Arguments:
 %   - **treeId** — index of the tree to delete, or string with name of the tree

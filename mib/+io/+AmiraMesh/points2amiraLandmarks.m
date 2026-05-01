@@ -15,17 +15,25 @@
 % Date: 25.04.2023
 
 function res = points2amiraLandmarks(filename, points, options)
-% POINTS2AMIRALANDMARKS - generate amira Hypersurface Ascii file.
+% POINTS2AMIRALANDMARKS - Generate Amira Hypersurface ASCII landmark file.
 %
 % Syntax:
-%   function res = points2amiraLandmarks(filename, points, options)
+%   .. code-block:: matlab
 %
-% in:
-% filename - filename to save data
-% points - a matrix with points [point number, x, y, z]
-% options - a structure with additional options
-% .overwrite - 1-automatically overwrite existing files
-% .format - a string with format: 'binary' or 'ascii'
+%      res = io.AmiraMesh.points2amiraLandmarks(filename, points)
+%      res = io.AmiraMesh.points2amiraLandmarks(filename, points, options)
+%
+% Input Arguments:
+%   - **filename** — filename to save data
+%   - **points** — matrix with points [pointId, x, y, z]
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``.overwrite`` — ``1`` = automatically overwrite existing files
+%     - ``.format`` — (char) ``'binary'`` or ``'ascii'`` (default: ``'ascii'``)
+%
+% Output Arguments:
+%   - **res** — ``1`` = success, ``0`` = failure
+%
    
 res = 0;
 

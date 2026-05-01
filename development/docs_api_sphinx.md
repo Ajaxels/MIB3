@@ -15,11 +15,10 @@ function [out1, out2] = functionName(in1, in2, options)
 % FUNCTIONNAME - One-line description (all-caps name, no function call in text).
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
-%      [out1, out2] = functionName(in1, in2)
-%      [out1, out2] = functionName(in1, in2, options)
+%      [out1, out2] = obj.functionName(in1, in2)
+%      [out1, out2] = obj.functionName(in1, in2, options)
 %
 % Optional longer description paragraph.  Separated from Syntax by a blank
 % comment line.  May span multiple lines.
@@ -36,21 +35,19 @@ function [out1, out2] = functionName(in1, in2, options)
 %   - **out1** — [type] description
 %   - **out2** — [type] description
 %
-% Usage:
-%
-%   **Example 1** — short title describing what the example shows
+% **Example 1** — short title describing what the example shows:
 %
 %   .. code-block:: matlab
 %
-%      result = functionName(a, b);
+%      result = obj.functionName(a, b);
 %      disp(result);
 %
-%   **Example 2** — another scenario
+% **Example 2** — another scenario:
 %
 %   .. code-block:: matlab
 %
 %      opts.fieldName = true;
-%      result = functionName(a, b, opts);
+%      result = obj.functionName(a, b, opts);
 ```
 
 ---
@@ -78,7 +75,6 @@ function [out1, out2] = functionName(in1, in2, options)
 
 ```matlab
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      [out1, out2] = functionName(arg1, arg2)
@@ -87,8 +83,20 @@ function [out1, out2] = functionName(in1, in2, options)
 
 - Always uses `.. code-block:: matlab` — **never** bare `::` followed by indented text.
 - Show all meaningful calling forms (required args only, then with optional args).
+- **No blank `%` line between `% Syntax:` and `%   .. code-block:: matlab`** — the
+  absence of the blank line makes `Syntax:` a definition-list term in RST, which
+  causes Sphinx to render it as a highlighted label rather than plain paragraph text.
 - Code must be indented **3 spaces** inside the directive block (6 characters
   after `% `, which becomes 3 after RST stripping the leading `% `).
+- For **class methods** (`function output = method(obj, arg1)`), use the `obj.`
+  calling form in the code block — omit `obj` from the parameter list:
+  ```matlab
+  % Syntax:
+  %   .. code-block:: matlab
+  %
+  %      obj.methodName(arg1, arg2)
+  %      output = obj.methodName(arg1, arg2, options)
+  ```
 - **Do not use** `...` line continuation inside code blocks — the Pygments MATLAB
   lexer treats `...` followed by text as a comment, breaking syntax highlighting.
   Split long calls differently if needed.
@@ -168,28 +176,36 @@ Same format as Input Arguments:
 ### Usage / Examples
 
 ```matlab
-% Usage:
-%
-%   **Example 1** — short title describing the scenario
+% **Example 1** — short title describing the scenario:
 %
 %   .. code-block:: matlab
 %
-%      result = functionName(input1, input2);
+%      result = obj.functionName(input1, input2);
 %      disp(result)
 %
-%   **Example 2** — another scenario
+% **Example 2** — another scenario:
 %
 %   .. code-block:: matlab
 %
 %      opts.fieldName = true;
-%      result = functionName(input1, input2, opts);
+%      result = obj.functionName(input1, input2, opts);
 ```
 
-- Section heading: `Usage:` (preferred) or `@b Examples:` — both parsed.
-- Each example starts with `**Example N** — description` (bold title, em-dash, text).
+- Examples appear **at the top level** — no enclosing `Usage:` section wrapper.
+  Each example heading is `**Example N** — description:` with `N` starting at 1.
+- When there is only one example, the number may be omitted: `**Example** — ...`.
 - Blank `%` line before and after each `.. code-block:: matlab`.
 - Code indented 3 spaces inside the directive.
 - Use `%` for inline MATLAB comments inside code blocks (not `//`).
+- Alternative for a single short example without a heading — use `Usage example:` as
+  a label (as in `inputQuestDlg.m`):
+  ```matlab
+  % Usage example:
+  %
+  %   .. code-block:: matlab
+  %
+  %      result = obj.functionName(a, b);
+  ```
 
 ---
 
@@ -212,6 +228,7 @@ Content is indented **3 spaces** under the directive keyword.
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
+| `Syntax:` not highlighted — renders as plain text | Blank `%` line between `% Syntax:` and `%   .. code-block::` | Remove the blank line so RST treats `Syntax:` as a definition-list term |
 | Example not rendered as a code block | Missing blank `%` line before or after `.. code-block::` | Add blank `%` lines |
 | `...` shown as a comment in code block | Pygments MATLAB lexer quirk | Avoid `...` in example code |
 | Struct fields not indented as sub-list | Missing blank `%` line between parent bullet and field list | Add blank `%` line |
@@ -234,7 +251,7 @@ Quick mapping of old Doxygen tags to RST equivalents:
 | `[@em optional]` after param name | `*(optional)*` after bold name |
 | `@li item` | `- item` |
 | `@ Note:` | `.. note::` |
-| `% Example N::` | `**Example N** — title` + blank line + `.. code-block:: matlab` |
+| `% Example N::` | `**Example N** — title:` at top level + blank line + `.. code-block:: matlab` |
 | `.fieldName - description` | `` - ``.fieldName`` — description `` |
 | Function call in header (`% FUNC - funcName(a,b).`) | Plain description (`% FUNC - What the function does.`) |
 
@@ -318,5 +335,5 @@ This renders as a flat list with 4 items; Sphinx warning: "Bullet list ends with
 ## Canonical reference file
 
 `mib/+utils/+dlgs/inputQuestDlg.m` is the canonical reference for the target
-docblock style — fully converted, includes options struct, multiple examples, and
-a `.. note::` block.  When uncertain about formatting, compare against it.
+docblock style — fully converted, includes an options struct with sub-bullets and
+a `Usage example:` code block.  When uncertain about formatting, compare against it.

@@ -2,7 +2,9 @@ function protocolList_SelectionCallback(obj)
 % PROTOCOLLIST_SELECTIONCALLBACK - handle row selection in the protocol listbox — loads parameters into the action table.
 %
 % Syntax:
-%   function protocolList_SelectionCallback(obj)
+%   .. code-block:: matlab
+%
+%       obj.protocolList_SelectionCallback()
 %
 % Reads the current listbox selection, updates obj.protocolListIndex, and
 % populates selectedActionTable with the step's BatchOpt fields.

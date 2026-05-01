@@ -2,47 +2,48 @@ function result = bitmap2nrrd(filename, bitmap, bb, options)
 % BITMAP2NRRD - Save bitmap matrix to NRRD format.
 %
 % Syntax:
-%   function result = bitmap2nrrd(filename, bitmap, bb, options)
+%   .. code-block:: matlab
 %
-% Format description:
-% http://teem.sourceforge.net/nrrd/format.html
+%      io.NRRD.bitmap2nrrd(filename, bitmap, bb, options)
+%
+% Format description: http://teem.sourceforge.net/nrrd/format.html
 %
 % Input Arguments:
 %   - **filename** — filename for NRRD
-%   - **bitmap** — a dataset, [1:height, 1:width, 1:colors, 1:no_stacks]
+%   - **bitmap** — a dataset, [height, width, colors, depth]
 %   - **bb** — bounding box information, a vector [minX, maxX, minY, maxY, minZ, maxZ]
-%   - **options** — a structure with some optional parameters
-%     - .overwrite      — if **1** do not check whether file with provided filename already exists
-%     - .showWaitbar    — if **1** - show the wait bar, if **0** - do not show
-%     - .ParentFigure   — *(optional)* handle to the main MIB application window.
-%     When provided, the progress bar is rendered as a
-%     uiprogressdlg attached to that window (recommended for
-%     GUI use).  When absent or empty the legacy waitbar is
-%     used as a fallback.
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``overwrite`` — [logical] if ``true`` do not check whether file with provided
+%       filename already exists; default: ``false``
+%     - ``showWaitbar`` — [logical] if ``true`` show the progress bar, if ``false``
+%       do not show; default: ``true``
+%     - ``ParentFigure`` — *(optional)* handle to the main MIB application window.
+%       When provided, the progress bar is rendered as ``uiprogressdlg`` attached to
+%       that window (recommended for GUI use). When absent or empty the legacy
+%       ``waitbar`` is used as a fallback
 %
 % Output Arguments:
-%   - **result** — result of the function run, **1** - success, **0** - fail
+%   - **result** — ``1`` = success, ``0`` = failure
 %
-%   - **Example** —
-%
-%   .. code-block:: matlab
-%
-%       %% Standalone / scripted use (no GUI parent):
-%       bb = dataset.image.boundingBox;  % [xmin xmax ymin ymax zmin zmax]
-%       opts.overwrite   = 1;
-%       opts.showWaitbar = false;
-%       io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
-%
-%
+% **Example 1** — standalone / scripted use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
-%       %% GUI use — attach progress dialog to the MIB window:
-%       bb = dataset.image.boundingBox;
-%       opts.overwrite    = 1;
-%       opts.showWaitbar  = true;
-%       opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%       io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
+%      bb = dataset.image.boundingBox;  % [xmin xmax ymin ymax zmin zmax]
+%      opts.overwrite   = 1;
+%      opts.showWaitbar = false;
+%      io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
+%
+% **Example 2** — GUI use (attach progress dialog to the MIB window):
+%
+%   .. code-block:: matlab
+%
+%      bb = dataset.image.boundingBox;
+%      opts.overwrite    = 1;
+%      opts.showWaitbar  = true;
+%      opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%      io.NRRD.bitmap2nrrd('/output/volume.nrrd', imgData_hwd, bb, opts);
 %
 
 result = 0;

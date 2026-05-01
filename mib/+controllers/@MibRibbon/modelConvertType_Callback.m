@@ -2,7 +2,9 @@ function modelConvertType_Callback(obj, hWidget, hData)
 % MODELCONVERTTYPE_CALLBACK - callback on press of the convert model type buttons in the Model ribbon.
 %
 % Syntax:
-%   function modelConvertType_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelConvertType_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

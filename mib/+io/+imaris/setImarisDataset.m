@@ -2,42 +2,49 @@ function connImaris = setImarisDataset(mibDataset, connImaris, options)
 % SETIMARISDATASET - Send a dataset layer from MIB to Imaris.
 %
 % Syntax:
-%   function connImaris = setImarisDataset(mibDataset, connImaris, options)
+%   .. code-block:: matlab
+%
+%      connImaris = io.imaris.setImarisDataset(mibDataset, connImaris)
+%      connImaris = io.imaris.setImarisDataset(mibDataset, connImaris, options)
 %
 % Input Arguments:
-%   - **mibDataset** — an instance of core.MibDataset with the dataset to export
-%   - **connImaris** — *(optional)* a handle to an existing Imaris connection
-%   - **options** — *(optional)* a structure with additional settings
-%     - ``.type`` *(optional)* type of dataset layer to send:
-%       ``'image'`` [default], ``'labels'`` (model), ``'mask'``, ``'selection'``
-%     - ``.modelIndex`` *(optional)* for ``'labels'``: material index to send;
+%   - **mibDataset** — instance of ``core.MibDataset`` with the dataset to export
+%   - **connImaris** — *(optional)* handle to an existing Imaris connection
+%   - **options** — *(optional)* struct with additional settings:
+%
+%     - ``.type`` — *(optional)* type of dataset layer to send:
+%       ``'image'`` (default), ``'labels'`` (model), ``'mask'``, ``'selection'``
+%     - ``.modelIndex`` — *(optional)* for ``'labels'``: material index to send;
 %       ``NaN`` = all materials, integer = single material;
-%       for ``'mask'`` and ``'selection'``: not used (ignored)
-%     - .mode *(optional)* '3D' or '4D' export mode; prompted if omitted and time > 1
-%     - .insertInto *(optional)* cell with time-point index; -1 = replace whole dataset
-%     - .lutColors *(optional)* [nChannels x 3] matrix of RGB colors (0-1) for image channels
-%     - .maskColor *(optional)* [1 x 3] RGB color (0-1) for mask display in Imaris; default [1 0 0]
-%     - .showWaitbar logical, show or not the waitbar
-%     - .mibGUI *(optional)* handle to the main MIB window for dialogs
+%       ignored for ``'mask'`` and ``'selection'``
+%     - ``.mode`` — *(optional)* ``'3D'`` or ``'4D'`` export mode; prompted if
+%       omitted and time > 1
+%     - ``.insertInto`` — *(optional)* cell with time-point index; ``-1`` = replace
+%       the whole dataset
+%     - ``.lutColors`` — *(optional)* [nChannels×3] RGB colour matrix (0–1) for
+%       image channels
+%     - ``.maskColor`` — *(optional)* [1×3] RGB colour (0–1) for mask display in
+%       Imaris (default: ``[1 0 0]``)
+%     - ``.showWaitbar`` — [logical] show or hide the progress bar
+%     - ``.mibGUI`` — *(optional)* handle to the main MIB UIFigure for dialogs
 %
 % Output Arguments:
-%   - **connImaris** — a handle to the Imaris connection
+%   - **connImaris** — handle to the Imaris connection
 %
-
-% @note
-% Uses IceImarisConnector bindings.
-% @b Requires:
-% 1. Set system environment variable IMARISPATH to the Imaris installation directory
-% 2. Restart MATLAB
-
-%|
-% @b Examples:
-% @code
-% imarisOpts.type = 'image';
-% imarisOpts.lutColors = obj.mibModel.I{id}.image.lutColors;
-% imarisOpts.mibGUI = obj.mibGUI;
-% obj.mibModel.connImaris = io.imaris.setImarisDataset(obj.mibModel.I{id}, obj.mibModel.connImaris, imarisOpts);
-% @endcode
+% .. note::
+%    Uses IceImarisConnector bindings. Requires:
+%
+%    1. Set system environment variable ``IMARISPATH`` to the Imaris installation directory
+%    2. Restart MATLAB
+%
+% **Example** — send image data to Imaris:
+%
+%   .. code-block:: matlab
+%
+%      imarisOpts.type = 'image';
+%      imarisOpts.lutColors = obj.mibModel.I{id}.image.lutColors;
+%      imarisOpts.mibGUI = obj.mibGUI;
+%      obj.mibModel.connImaris = io.imaris.setImarisDataset(obj.mibModel.I{id}, obj.mibModel.connImaris, imarisOpts);
 
 % Updates
 % MIB3 port: mibImage (mibImage class) replaced by mibDataset (core.MibDataset).

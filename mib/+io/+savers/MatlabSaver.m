@@ -123,12 +123,39 @@ classdef MatlabSaver < io.savers.BaseSaver
     methods
 
         function obj = MatlabSaver(options)
+            % MATLABSAVER - Constructor for MatlabSaver class.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.MatlabSaver(options)
+            %
+            % Input Arguments:
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the MatlabSaver class
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
+            % GETSUPPORTEDFORMATS - Return format strings handled by MatlabSaver.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for MATLAB-based output
+            %
             formats = { ...
                 'Matlab format (*.model)'; ...
                 'Matlab format 2D sequence (*.model)'; ...
@@ -141,16 +168,28 @@ classdef MatlabSaver < io.savers.BaseSaver
             % SAVE - Serialise data to one of the MIB MATLAB-native formats.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
             %
-            % The active format is selected by options.Format:
-            % 'Matlab format (``*.mask``)'              → saveMask()
-            % 'Matlab format (``*.model``)'             → saveModel3D()
-            % 'Matlab format 2D sequence (``*.model``)' → saveModel2DSeq()
-            % 'Matlab format for MIB ver. 1 (``*.mat``)'→ saveModelV1()
-            % 'Matlab categorical format (``*.mibCat``)'→ saveModelCat()
+            %      fnOut = obj.save(data, metadata, filename, options)
             %
-            % Parameters / Return values — see class-level docs above.
+            % The active format is selected by ``options.Format``:
+            %
+            % - ``'Matlab format (``*.mask``)'`` → ``saveMask()``
+            % - ``'Matlab format (``*.model``)'`` → ``saveModel3D()``
+            % - ``'Matlab format 2D sequence (``*.model``)'`` → ``saveModel2DSeq()``
+            % - ``'Matlab format for MIB ver. 1 (``*.mat``)'`` → ``saveModelV1()``
+            % - ``'Matlab categorical format (``*.mibCat``)'`` → ``saveModelCat()``
+            %
+            % Input Arguments:
+            %   - **data** — [H, W, D, C, T] label/mask array
+            %   - **metadata** — struct with image metadata (see class-level docs)
+            %   - **filename** — full output path for the serialized file
+            %   - **options** — struct with format selection and save options
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char] or [cell] path(s) of saved file(s), ``[]`` on failure
+            %
+            % **See Also** — class-level documentation for detailed parameter descriptions.
 
             fnOut = [];
             if ~isfield(options,'showWaitbar'); options.showWaitbar = true;  end
@@ -181,13 +220,24 @@ classdef MatlabSaver < io.savers.BaseSaver
     methods (Access = private)
 
         function fnOut = saveMask(~, data, ~, filename, options)
-            % SAVEMASK - Save binary mask as MAT-file (variable: maskImg).
+            % SAVEMASK - Save binary mask as MAT-file (variable: ``maskImg``).
             %
             % Syntax:
-            %   function fnOut = saveMask(~, data, ~, filename, options)
+            %   .. code-block:: matlab
             %
-            % Uses save('-struct',...) to avoid eval() and dynamic variable
-            % names.  The loaded file contains a top-level variable maskImg.
+            %      fnOut = obj.saveMask(data, [], filename, options)
+            %
+            % Uses ``save('-struct',...)`` to avoid ``eval()`` and dynamic variable
+            % names. The loaded file contains a top-level variable ``maskImg``.
+            %
+            % Input Arguments:
+            %   - **data** — [H, W, D, C, T] mask array
+            %   - **filename** — full output path (``*.mask``)
+            %   - **options** — struct with ``showWaitbar`` and ``overwrite`` fields
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char] path of saved file
+            %
             fnOut = [];
             wb = [];
             if options.showWaitbar
@@ -203,22 +253,35 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModel3D(obj, data, metadata, filename, options)
-            % SAVEMODEL3D - Save full 3-D model in MIB2/MIB3 native .model format.
+            % SAVEMODEL3D - Save full 3-D model in MIB2/MIB3 native ``.model`` format.
             %
             % Syntax:
-            %   function fnOut = saveModel3D(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
             %
-            % Uses save('-struct', 'vars', ...) to store each variable
-            % under its proper name without eval().
+            %      fnOut = obj.saveModel3D(data, metadata, filename, options)
             %
-            % Saved variables (top-level in the .model MAT-file):
-            % <labelsVariable>        — uint8/uint16 [H W D] label array
-            % modelMaterialNames      — cell array of material names
-            % modelMaterialColors     — [M x 3] RGB colours
-            % BoundingBox             — [xmin xmax ymin ymax zmin zmax]
-            % modelVariable           — char (= labelsVariable)
-            % modelType               — integer (255 for uint8 model)
-            % [labelText, labelValue, labelPosition — if .annotations present]
+            % Uses ``save('-struct', 'vars', ...)`` to store each variable
+            % under its proper name without ``eval()``.
+            %
+            % **Saved variables** (top-level in the ``.model`` MAT-file):
+            %
+            % - ``<labelsVariable>`` — uint8/uint16 [H W D] label array
+            % - ``modelMaterialNames`` — cell array of material names
+            % - ``modelMaterialColors`` — [M x 3] RGB colours
+            % - ``BoundingBox`` — [xmin xmax ymin ymax zmin zmax]
+            % - ``modelVariable`` — char (= labelsVariable)
+            % - ``modelType`` — integer (255 for uint8 model)
+            % - ``labelText``, ``labelValue``, ``labelPosition`` — if ``.annotations`` present
+            %
+            % Input Arguments:
+            %   - **data** — [H, W, D, C, T] label array
+            %   - **metadata** — struct with model metadata
+            %   - **filename** — full output path (``*.model``)
+            %   - **options** — struct with ``showWaitbar`` and other save options
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char] path of saved file
+            %
             fnOut = [];
             labVar = obj.getLabelsVariable(metadata);
 
@@ -252,13 +315,25 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModel2DSeq(obj, data, metadata, filename, options)
-            % SAVEMODEL2DSEQ - Save a 2-D sequence of .model files (one per Z-slice).
+            % SAVEMODEL2DSEQ - Save a 2-D sequence of ``.model`` files (one per Z-slice).
             %
             % Syntax:
-            %   function fnOut = saveModel2DSeq(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
             %
-            % Each slice uses save('-struct') so every field becomes a
-            % separate top-level variable — same format as saveModel3D.
+            %      fnOut = obj.saveModel2DSeq(data, metadata, filename, options)
+            %
+            % Each slice uses ``save('-struct')`` so every field becomes a
+            % separate top-level variable — same format as ``saveModel3D()``.
+            %
+            % Input Arguments:
+            %   - **data** — [H, W, D, C, T] label array
+            %   - **metadata** — struct with model metadata
+            %   - **filename** — full path template (``*.model``)
+            %   - **options** — struct with ``showWaitbar`` and filename policy
+            %
+            % Output Arguments:
+            %   - **fnOut** — cell array of saved file paths
+            %
             fnOut = [];
             labVar = obj.getLabelsVariable(metadata);
             [pathStr, baseName, ext] = obj.splitFilename(filename);
@@ -303,13 +378,25 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModelV1(obj, data, metadata, filename, options) %#ok<INUSD>
-            % SAVEMODELV1 - Save in legacy MIB v1 format (.mat) for backward compatibility.
+            % SAVEMODELV1 - Save in legacy MIB v1 format (``.mat``) for backward compatibility.
             %
             % Syntax:
-            %   function fnOut = saveModelV1(obj, data, metadata, filename, options) %#ok<INUSD>
+            %   .. code-block:: matlab
             %
-            % Variables (top-level): <labVar>, material_list, color_list,
-            % bounding_box, model_var
+            %      fnOut = obj.saveModelV1(data, metadata, filename, options)
+            %
+            % **Saved variables** (top-level): ``<labVar>``, ``material_list``, ``color_list``,
+            % ``bounding_box``, ``model_var``
+            %
+            % Input Arguments:
+            %   - **data** — [H, W, D, C, T] label array
+            %   - **metadata** — struct with model metadata
+            %   - **filename** — full output path (``*.mat``)
+            %   - **options** — struct with save options (``showWaitbar``, ``overwrite``)
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char] path of saved file
+            %
             fnOut = [];
             labVar = obj.getLabelsVariable(metadata);
 
@@ -330,19 +417,31 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function fnOut = saveModelCat(obj, data, metadata, filename, options)
-            % SAVEMODELCAT - Save as MATLAB categorical array (.mibCat).
+            % SAVEMODELCAT - Save as MATLAB categorical array (``.mibCat``).
             %
             % Syntax:
-            %   function fnOut = saveModelCat(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.saveModelCat(data, metadata, filename, options)
             %
             % The label volume is converted to a categorical with class names
-            % derived from metadata.materialNames (prepended with 'Exterior'
+            % derived from ``metadata.materialNames`` (prepended with ``'Exterior'``
             % for index 0 if not already present).
             %
-            % options.Saving3DPolicy controls whether the output is a
-            % single 3-D .mibCat file or a 2-D sequence.
-            % options.FilenamePolicy controls filename generation for 2-D sequences.
-            % When both are absent and silent=false a dialog is shown (mirrors MIB2).
+            % ``options.Saving3DPolicy`` controls whether the output is a
+            % single 3-D ``.mibCat`` file or a 2-D sequence.
+            % ``options.FilenamePolicy`` controls filename generation for 2-D sequences.
+            % When both are absent and ``silent=false`` a dialog is shown (mirrors MIB2).
+            %
+            % Input Arguments:
+            %   - **data** — [H, W, D, C, T] label array
+            %   - **metadata** — struct with model metadata (materialNames, materialColors, etc.)
+            %   - **filename** — full output path (``*.mibCat``)
+            %   - **options** — struct with ``Saving3DPolicy``, ``FilenamePolicy``, ``silent``, ``showWaitbar``
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char] or [cell] path(s) of saved file(s)
+            %
             fnOut = [];
 
             % Capture before defaults: FilenamePolicy is only present in
@@ -430,9 +529,19 @@ classdef MatlabSaver < io.savers.BaseSaver
             fprintf('MatlabSaver: categorical model saved → %s\n', filename);
         end
 
-        % --- small metadata helpers ---
+        % ================================================================== %
+        %   Small metadata helper methods                                    %
+        % ================================================================== %
 
         function v = getLabelsVariable(~, metadata)
+            % GETLABELSVARIABLE - Extract labels variable name with MATLAB compliance.
+            %
+            % Input Arguments:
+            %   - **metadata** — struct with ``labelsVariable`` field
+            %
+            % Output Arguments:
+            %   - **v** — [char] variable name (``'mibModel'`` if not specified)
+            %
             if isfield(metadata,'labelsVariable') && ~isempty(metadata.labelsVariable)
                 v = strrep(metadata.labelsVariable, '-', '_');
             else
@@ -441,6 +550,14 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function v = getMaterialNames(~, metadata)
+            % GETMATERIALNAMES - Extract material name list with defaults.
+            %
+            % Input Arguments:
+            %   - **metadata** — struct with ``materialNames`` field
+            %
+            % Output Arguments:
+            %   - **v** — cell array of material names (``{'Material 1'}`` if not specified)
+            %
             if isfield(metadata,'materialNames') && ~isempty(metadata.materialNames)
                 v = metadata.materialNames(:);
             else
@@ -449,6 +566,14 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function v = getMaterialColors(~, metadata)
+            % GETMATERIALCOLORS - Extract material RGB colors with defaults.
+            %
+            % Input Arguments:
+            %   - **metadata** — struct with ``materialColors`` field
+            %
+            % Output Arguments:
+            %   - **v** — [M x 3] RGB colours (random if not specified)
+            %
             if isfield(metadata,'materialColors') && ~isempty(metadata.materialColors)
                 v = metadata.materialColors;
             else
@@ -457,6 +582,14 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function v = getBoundingBox(~, metadata)
+            % GETBOUNDINGBOX - Extract bounding box with defaults.
+            %
+            % Input Arguments:
+            %   - **metadata** — struct with ``boundingBox`` field
+            %
+            % Output Arguments:
+            %   - **v** — [1 x 6] bounding box [xmin xmax ymin ymax zmin zmax]
+            %
             if isfield(metadata,'boundingBox') && ~isempty(metadata.boundingBox)
                 v = metadata.boundingBox;
             else
@@ -465,6 +598,14 @@ classdef MatlabSaver < io.savers.BaseSaver
         end
 
         function v = getModelType(~, metadata)
+            % GETMODELTYPE - Extract or infer model type from metadata.
+            %
+            % Input Arguments:
+            %   - **metadata** — struct with ``modelType`` or ``dataClass`` fields
+            %
+            % Output Arguments:
+            %   - **v** — [numeric] model type (``255`` for uint8, ``65535`` for uint16)
+            %
             if isfield(metadata,'modelType') && ~isempty(metadata.modelType)
                 v = metadata.modelType;
             elseif isfield(metadata,'dataClass')

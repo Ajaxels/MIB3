@@ -2,7 +2,9 @@ function fillSelection(obj)
 % FILLSELECTION - Fill holes in the Selection layer for the current dataset.
 %
 % Syntax:
-%   function fillSelection(obj)
+%   .. code-block:: matlab
+%
+%      obj.fillSelection()
 %
 % Reads modifier keys to determine the dataset scope, then reads the
 % restrictSelectionToMaterial state from the dataset and delegates to

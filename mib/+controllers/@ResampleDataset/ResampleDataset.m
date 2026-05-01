@@ -35,7 +35,9 @@ classdef ResampleDataset < handle
             % VIEWLISTNER_CALLBACK2 - static listener guard.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, ~, evnt)
+            %   .. code-block:: matlab
+            %
+            %       obj.ViewListner_Callback2(~, evnt)
             %
             % Input Arguments:
             %   - **obj** — handle to ResampleDataset
@@ -59,7 +61,10 @@ classdef ResampleDataset < handle
             % RESAMPLEDATASET - constructor.
             %
             % Syntax:
-            %   function obj = ResampleDataset(mibModel, varargin)
+            %   .. code-block:: matlab
+            %
+            %       obj = ResampleDataset(mibModel)
+            %       obj = ResampleDataset(mibModel, BatchOpt)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
@@ -155,7 +160,9 @@ classdef ResampleDataset < handle
             % CLOSEWINDOW - close the ResampleDataset GUI.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.closeWindow()
             %
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 delete(obj.view.gui);
@@ -169,7 +176,10 @@ classdef ResampleDataset < handle
             % RETURNBATCHOPT - send BatchOpt to mibBatchController.
             %
             % Syntax:
-            %   function returnBatchOpt(obj, BatchOptOut)
+            %   .. code-block:: matlab
+            %
+            %       obj.returnBatchOpt()
+            %       obj.returnBatchOpt(BatchOptOut)
             %
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
             eventdata = core.ToggleEventData(BatchOptOut);
@@ -181,7 +191,9 @@ classdef ResampleDataset < handle
             % UPDATEBATCHOPTFROMGUI - sync obj.BatchOpt from a widget.
             %
             % Syntax:
-            %   function updateBatchOptFromGUI(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateBatchOptFromGUI(hObject)
             %
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
@@ -191,7 +203,9 @@ classdef ResampleDataset < handle
             % ADDCALLBACKS - wire all GUI widget callbacks.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacks()
             %
             h = obj.view.handles;
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
@@ -223,7 +237,9 @@ classdef ResampleDataset < handle
             % UPDATEWIDGETS - refresh all GUI widgets from current dataset state.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateWidgets()
             %
             id = obj.mibModel.getActiveId();
             opts.blockModeSwitch = 0;
@@ -279,7 +295,9 @@ classdef ResampleDataset < handle
             % UPDATEEDITBOXSTATES - enable the primary input group for the selected mode.
             %
             % Syntax:
-            %   function updateEditboxStates(obj, mode)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateEditboxStates(mode)
             %
             % Input Arguments:
             %   - **mode** — string — 'Dimensions' | 'Voxels' | 'PercentageXYZ' | 'PercentageXY'
@@ -302,7 +320,9 @@ classdef ResampleDataset < handle
             % RADIO_CALLBACK - handle ResamplingMode button group change.
             %
             % Syntax:
-            %   function radio_Callback(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.radio_Callback(hObject)
             %
             % Input Arguments:
             %   - **hObject** — event.NewValue — the newly selected radio button
@@ -327,7 +347,9 @@ classdef ResampleDataset < handle
             % HELPBTN_CALLBACK - open online help.
             %
             % Syntax:
-            %   function helpBtn_Callback(~)
+            %   .. code-block:: matlab
+            %
+            %       obj.helpBtn_Callback()
             %
             web('https://mib.helsinki.fi/help/user-interface/menu/dataset/index.html#resample', '-browser');
         end
@@ -337,7 +359,9 @@ classdef ResampleDataset < handle
             % EDITBOX_CALLBACK - respond to dimension / voxel / percentage edits.
             %
             % Syntax:
-            %   function editbox_Callback(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.editbox_Callback(hObject)
             %
             % Input Arguments:
             %   - **hObject** — the NumericEditField that changed
@@ -434,7 +458,10 @@ classdef ResampleDataset < handle
             % RESAMPLEBTN_CALLBACK - resample the current dataset.
             %
             % Syntax:
-            %   function resampleBtn_Callback(obj, batchModeSwitch)
+            %   .. code-block:: matlab
+            %
+            %       obj.resampleBtn_Callback()
+            %       obj.resampleBtn_Callback(batchModeSwitch)
             %
             % Input Arguments:
             %   - **batchModeSwitch** — *(optional)* logical; true when called headlessly

@@ -2,7 +2,9 @@ function initialize(obj, data, meta)
 % INITIALIZE - Initialize MibVirtualImage with a dummy placeholder or provided file paths.
 %
 % Syntax:
-%   function initialize(obj, data, meta)
+%   .. code-block:: matlab
+%
+%       obj.initialize(data, meta)
 %
 % Overrides MibImage.initialize for virtual (disk-resident) datasets.
 % Unlike the base class, dimensions are derived from 'meta' rather than

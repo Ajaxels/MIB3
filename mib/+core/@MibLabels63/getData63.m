@@ -2,7 +2,9 @@ function dataset = getData63(obj, type, orient, materialIndex, options) % get co
 % GETDATA63 - Get dataset from MibLabels63 class.
 %
 % Syntax:
-%   function dataset = getData63(obj, type, orient, materialIndex, options) % get complete 5D dataset
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData63(type, orient, materialIndex, options) % get complete 5D dataset
 %
 % Input Arguments:
 %   - **type** — char with the type of layer to obtain, 'labels', 'mask', 'selection', or 'everything' to get all layers at once

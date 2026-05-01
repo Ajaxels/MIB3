@@ -2,7 +2,9 @@ function previewDynamicMask(obj)
 % PREVIEWDYNAMICMASK - preview results for the dynamic mode.
 %
 % Syntax:
-%   function previewDynamicMask(obj)
+%   .. code-block:: matlab
+%
+%       obj.previewDynamicMask()
 %
 
     wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', ...

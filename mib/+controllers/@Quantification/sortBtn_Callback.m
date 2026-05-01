@@ -2,7 +2,10 @@ function data = sortBtn_Callback(obj, data)
 % SORTBTN_CALLBACK - Sort the statTable data matrix according to the current sorting settings.
 %
 % Syntax:
-%   function data = sortBtn_Callback(obj, data)
+%   .. code-block:: matlab
+%
+%       data = obj.sortBtn_Callback()
+%       data = obj.sortBtn_Callback(data)
 %
 % Reads obj.sortingColIndex and obj.sortingDirection (set by
 % updateSortingSettings) and reorders rows accordingly.  When called with

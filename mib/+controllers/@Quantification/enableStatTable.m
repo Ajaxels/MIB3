@@ -2,7 +2,9 @@ function enableStatTable(obj)
 % ENABLESTATTABLE - Enable or disable statTable depending on whether results are available.
 %
 % Syntax:
-%   function enableStatTable(obj)
+%   .. code-block:: matlab
+%
+%       obj.enableStatTable()
 %
 % for the active dataset.
 %

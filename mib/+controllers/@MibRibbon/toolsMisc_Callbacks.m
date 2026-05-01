@@ -2,7 +2,9 @@ function toolsMisc_Callbacks(obj, hWidget, hData)
 % TOOLSMISC_CALLBACKS - callback on press of buttons in the Misc section of the Tools ribbon.
 %
 % Syntax:
-%   function toolsMisc_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.toolsMisc_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

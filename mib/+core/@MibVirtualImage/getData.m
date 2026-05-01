@@ -2,7 +2,9 @@ function dataset = getData(obj, layerType, orient, colChannel, options)
 % GETDATA - Override of MibImage.getData for virtual (disk-resident) datasets.
 %
 % Syntax:
-%   function dataset = getData(obj, layerType, orient, colChannel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData(layerType, orient, colChannel, options)
 %
 % Dispatches to getDataZarr when a pyramid is present, otherwise to
 % getDataVirt (BioFormats / HDF5 virtual stack).

@@ -1,13 +1,18 @@
 classdef SelectHDFSeries < handle
-% SELECTHDFSERIES - SelectHDFSeries Controller for HDF Series Selection Dialog.
+% SELECTHDFSERIES - Controller for HDF5 series/dataset selection dialog.
 %
-% Logic ported from selectHDFSeries.m to support App Designer views.
+% Ported from legacy selectHDFSeries.m to support App Designer views.
+% Provides interactive dialog for users to browse and select datasets
+% from HDF5 files, with dimension reordering and metadata options.
 %
-% Usage:
-% % init the controller for the dialog using hdf5 file and handle to the parent GUI
-% controller = SelectHDFSeries('myfile.h5', ParentFigure);
-% % run the controller to acquire the user input
-% [dataset, metaFlag, dims, transMat] = controller.run();
+% **Typical usage:**
+%
+%   .. code-block:: matlab
+%
+%      % Initialize the controller for HDF5 file selection dialog
+%      controller = utils.dlgs.SelectHDFSeries('myfile.h5', ParentFigure, Font);
+%      % Run the controller to acquire user input
+%      [dataset, metaFlag, dims, transMat] = controller.run();
 
     properties (Access = private)
         view            % handle to the App Designer view
@@ -27,13 +32,21 @@ classdef SelectHDFSeries < handle
 
     methods
         function obj = SelectHDFSeries(filename, ParentFigure, Font)
-            % SELECTHDFSERIES - Constructor.
+            % SELECTHDFSERIES - Constructor for SelectHDFSeries controller.
             %
             % Syntax:
-            %   function obj = SelectHDFSeries(filename, ParentFigure, Font)
+            %   .. code-block:: matlab
             %
-            % viewObj: Instance of the App Designer app
-            % filename: String path to the HDF5 file
+            %      controller = utils.dlgs.SelectHDFSeries(filename, ParentFigure, Font)
+            %
+            % Input Arguments:
+            %   - **filename** — [char|cell] path to HDF5 file. If cell array,
+            %     uses the first element.
+            %   - **ParentFigure** — [handle] parent window for dialog attachment
+            %   - **Font** — [struct] font configuration with ``.FontSize`` and ``.FontName``
+            %
+            % Output Arguments:
+            %   - **obj** — instance of SelectHDFSeries controller
             
             obj.ParentFigure = ParentFigure;
             obj.view = views.SelectHDFSeriesGUI;
@@ -56,12 +69,26 @@ classdef SelectHDFSeries < handle
         end
 
         function varargout = run(obj)
-            % RUN - RUN logic to block execution and return results.
+            % RUN - Block execution until user selection and return results.
             %
             % Syntax:
-            %   function varargout = run(obj)
+            %   .. code-block:: matlab
             %
-            % Matches original selectHDFSeries output signature
+            %      [dataset, metaFlag, dims, transMat] = controller.run()
+            %
+            % Displays the HDF5 series selection dialog modally and waits for
+            % user input (continue or cancel). Returns selection results.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **varargout{1}** — [char] selected dataset path; ``'Cancel'`` if cancelled
+            %   - **varargout{2}** — [logical] metadata inclusion flag
+            %   - **varargout{3}** — [1×5 numeric] dimensions ``[y, x, z, c, t]``
+            %     with ``0`` for unspecified dimensions (legacy behavior)
+            %   - **varargout{4}** — [1×5 numeric] transformation matrix for dimension reordering,
+            %     or ``NaN`` if no reordering requested
             
             %obj.view.gui.WindowStyle = 'modal';
             
@@ -96,10 +123,21 @@ classdef SelectHDFSeries < handle
 
     methods (Access = private)
         function initView(obj)
-            % INITVIEW - Make the view modal.
+            % INITVIEW - Initialize view UI, parse HDF5, and attach callbacks.
             %
             % Syntax:
-            %   function initView(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.initView()
+            %
+            % Parses HDF5 file, populates table with datasets, positions window,
+            % and wires all UI callbacks.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   (none)
             %
             utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
             % add icon
@@ -159,10 +197,24 @@ classdef SelectHDFSeries < handle
         end
 
         function [row, dimTags] = parseDatasetInfo(~, dataset, groupName)
-            % PARSEDATASETINFO - Helper to extract row data and axistags.
+            % PARSEDATASETINFO - Extract dataset info and axis tags for table display.
             %
             % Syntax:
-            %   function [row, dimTags] = parseDatasetInfo(~, dataset, groupName)
+            %   .. code-block:: matlab
+            %
+            %      [row, dimTags] = obj.parseDatasetInfo(dataset, groupName)
+            %
+            % Extracts full path, dimensions, data type, and Ilastik-style axis tags
+            % from HDF5 dataset metadata.
+            %
+            % Input Arguments:
+            %   - **dataset** — struct from ``h5info``, HDF5 dataset metadata
+            %   - **groupName** — [char] parent group path (empty for root datasets)
+            %
+            % Output Arguments:
+            %   - **row** — cell array ``{fullPath, dim1, dim2, dim3, dim4, dim5, dataClass}``
+            %   - **dimTags** — [char] flipped axis tag string from ``axistags`` attribute
+            %     (e.g. ``'ctzyx'`` from Ilastik); empty if not present
             %
             
             dsName = dataset.Name;
@@ -204,10 +256,21 @@ classdef SelectHDFSeries < handle
         end
 
         function processSelection(obj, rowIndex)
-            % PROCESSSELECTION - Logic executed when a row is selected.
+            % PROCESSSELECTION - Update internal state when user selects a dataset row.
             %
             % Syntax:
-            %   function processSelection(obj, rowIndex)
+            %   .. code-block:: matlab
+            %
+            %      obj.processSelection(rowIndex)
+            %
+            % Updates ``selectedDatasetName``, ``selectedDimensions``, UI labels,
+            % and calculates transformation matrix for the selected row.
+            %
+            % Input Arguments:
+            %   - **rowIndex** — [numeric] 1-based row index in seriesTable
+            %
+            % Output Arguments:
+            %   (none)
             %
             if isempty(obj.view.seriesTable.Data) || rowIndex < 1
                 return;
@@ -234,10 +297,22 @@ classdef SelectHDFSeries < handle
         end
         
         function calculateTransMatrix(obj, rowIndex)
-            % CALCULATETRANSMATRIX - Logic to map data dimensions to output dimensions (yxzct).
+            % CALCULATETRANSMATRIX - Calculate dimension permutation matrix for selected dataset.
             %
             % Syntax:
-            %   function calculateTransMatrix(obj, rowIndex)
+            %   .. code-block:: matlab
+            %
+            %      obj.calculateTransMatrix(rowIndex)
+            %
+            % Maps dataset dimensions to output order ``[y, x, z, c, t]`` using
+            % Ilastik-style axis tags. Handles missing dimensions and updates
+            % ``newDimOrder`` UI control.
+            %
+            % Input Arguments:
+            %   - **rowIndex** — [numeric] 1-based row index in seriesTable
+            %
+            % Output Arguments:
+            %   (none)
             %
             transMat = NaN;
             
@@ -282,12 +357,23 @@ classdef SelectHDFSeries < handle
         % ----------------------
 
         function onTableSelection(obj, ~, event)
-            % ONTABLESELECTION - App Designer table selection is often a struct or event data.
+            % ONTABLESELECTION - UITable selection callback; extract row index and process.
             %
             % Syntax:
-            %   function onTableSelection(obj, ~, event)
+            %   .. code-block:: matlab
             %
-            % We need the index.
+            %      obj.onTableSelection(source, event)
+            %
+            % App Designer table selection callback that extracts the selected row
+            % index from event data and calls ``processSelection``.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] table widget (unused)
+            %   - **event** — [struct] table selection event with ``Selection`` field
+            %
+            % Output Arguments:
+            %   (none)
+            %
             
             % For single selection:
             indices = event.Source.Selection; 
@@ -324,10 +410,22 @@ classdef SelectHDFSeries < handle
         end
 
         function onContinue(obj, ~, ~)
-            % ONCONTINUE - Handle Manual Transpose Overrides.
+            % ONCONTINUE - Continue button callback; process manual transpose if enabled.
             %
             % Syntax:
-            %   function onContinue(obj, ~, ~)
+            %   .. code-block:: matlab
+            %
+            %      obj.onContinue(source, event)
+            %
+            % When dimension reordering is enabled, parses the user-supplied dimension
+            % order string and constructs transformation matrix. Then resumes execution.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] button widget (unused)
+            %   - **event** — [struct] button event (unused)
+            %
+            % Output Arguments:
+            %   (none)
             %
             if obj.view.handles.reorderDims.Value
                 % Logic to parse manual transpose string (from original code)

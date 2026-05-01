@@ -2,7 +2,9 @@ function updateFileList_Callback(obj, selectedFilename)
 % UPDATEFILELIST_CALLBACK - callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update.
 %
 % Syntax:
-%   function updateFileList_Callback(obj, selectedFilename)
+%   .. code-block:: matlab
+%
+%       obj.updateFileList_Callback(selectedFilename)
 %
 % the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList"
 % using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"

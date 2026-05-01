@@ -102,14 +102,19 @@ classdef StlSaver < io.savers.BaseSaver
     methods
 
         function obj = StlSaver(options)
-            % STLSAVER - Constructor — accepts an optional options struct.
+            % STLSAVER - Constructor for StlSaver class.
             %
             % Syntax:
-            %   function obj = StlSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.StlSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the StlSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -120,7 +125,15 @@ classdef StlSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by StlSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for STL output
             %
             formats = {'STL isosurface as binary (*.stl)'};
         end
@@ -129,43 +142,42 @@ classdef StlSaver < io.savers.BaseSaver
             % SAVE - Write labels data as binary STL isosurface mesh files.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
             %
-            % One STL file is produced per material (or one file if
-            % options.MaterialIndex is a scalar).  File names follow the
-            % pattern: <fnBase>_<materialName>.stl
+            %      fnOut = obj.save(data, metadata, filename, options)
+            %
+            % One STL file is produced per material (or one file if ``options.MaterialIndex``
+            % is a scalar). File names follow the pattern: ``<fnBase>_<materialName>.stl``
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric label array.
-            %   Only the first channel (C=1) and first time point
-            %   (T=1) are processed.
-            %   metadata — struct; used fields:
-            %   .pixSize        — struct {.x .y .z .units .t .tunits}
-            %   .boundingBox    — [xmin xmax ymin ymax zmin zmax]
-            %   .materialNames  — cell array of material name strings
-            %   .materialColors — [M x 3] material RGB colours (0..1)
-            %   filename — full output path template, e.g.
-            %   '/out/Labels_myStack.stl'
-            %   options  — struct; used fields:
-            %   .Format         — format string
-            %   .layerType      — expected 'labels'; warning if not
-            %   .MaterialIndex  — [] = all materials (default),
-            %   scalar = index of specific material
-            %   .reduce         — (double) face reduction target;
-            %   default 500 if width > 500 else 0
-            %   .smooth         — (integer) smoothing iterations (default 5)
-            %   .maxFaces       — (integer) max faces per mesh (default 300000)
-            %   .slice          — (logical) 0 = full 3-D mesh (default 0)
-            %   .showWaitbar    — logical
-            %   .silent         — logical, suppress dialogs
-            %   .overwrite      — logical
+            %   - **data** — [H, W, D, C, T] numeric label array;
+            %     only the first channel (C=1) and first time point (T=1) are processed
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]
+            %     - ``materialNames`` — cell array of material name strings
+            %     - ``materialColors`` — [M × 3] material RGB colours (0–1 range)
+            %
+            %   - **filename** — [char] full output path template, e.g. ``'/out/Labels_myStack.stl'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string
+            %     - ``layerType`` — expected ``'labels'`` or ``'mask'``; warning if not
+            %     - ``MaterialIndex`` — *(optional)* [numeric] material index or array; default: ``[]`` (all materials)
+            %     - ``reduce`` — *(optional)* [double] face reduction target; default: ``500`` if width > 500, else ``0``
+            %     - ``smooth`` — *(optional)* [integer] smoothing iterations; default: ``5``
+            %     - ``maxFaces`` — *(optional)* [integer] max faces per mesh; default: ``300000``
+            %     - ``slice`` — *(optional)* [logical] full 3-D mesh (``0``) or 2-D slices (``1``); default: ``0``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
             %
             % Output Arguments:
-            %   fnOut — (cell of char) paths of all saved .stl files,
-            %   or single char when only one material is exported.
-            %   Returns [] on failure.
+            %   - **fnOut** — cell of char with paths of all saved ``.stl`` files,
+            %     or single char when only one material is exported; ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];

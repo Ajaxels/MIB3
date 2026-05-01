@@ -2,7 +2,9 @@ function setSegmentationLayerOptions(obj)
 % SETSEGMENTATIONLAYEROPTIONS - update options for the activation layers.
 %
 % Syntax:
-%   function setSegmentationLayerOptions(obj)
+%   .. code-block:: matlab
+%
+%       obj.setSegmentationLayerOptions()
 %
     switch obj.BatchOpt.T_SegmentationLayer{1}
         case 'focalLossLayer'

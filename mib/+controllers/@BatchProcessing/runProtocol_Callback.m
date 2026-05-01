@@ -2,7 +2,9 @@ function runProtocol_Callback(obj, parameter)
 % RUNPROTOCOL_CALLBACK - start or stop protocol execution in response to a toolbar button press.
 %
 % Syntax:
-%   function runProtocol_Callback(obj, parameter)
+%   .. code-block:: matlab
+%
+%       obj.runProtocol_Callback(parameter)
 %
 % Orchestrates the top-level execution loop: walks obj.Protocol from the
 % requested start step, dispatches Directory loop blocks to doDirectoryLoop
@@ -15,30 +17,36 @@ function runProtocol_Callback(obj, parameter)
 % obj.stopProtocolSwitch which causes doBatchStep to abort on the next step.
 %
 % Input Arguments:
-%   - **parameter** — string controlling which part of the protocol to execute:
-%     'complete'    - run all steps from the first to the last
-%     'from'        - run from the currently selected step to the end
-%     'step'        - execute only the currently selected step
-%     'stepadvance' - execute the currently selected step then advance
-%     the selection to the next step
+%   - **parameter** — [char] execution scope specifier:
 %
-% Usage:
-%   Example 1::
+%     - ``'complete'`` — run all steps from the first to the last
+%     - ``'from'`` — run from the currently selected step to the end
+%     - ``'step'`` — execute only the currently selected step
+%     - ``'stepadvance'`` — execute the currently selected step then advance the selection to the next step
 %
-%     obj.runProtocol_Callback('complete');
+% **Example 1** — run entire protocol:
 %
-%   Example 2::
+%   .. code-block:: matlab
 %
-%     obj.runProtocol_Callback('from');
+%      obj.runProtocol_Callback('complete');
 %
-%   Example 3::
+% **Example 2** — resume from selected step:
 %
-%     obj.runProtocol_Callback('step');
+%   .. code-block:: matlab
 %
-%   Example 4::
+%      obj.runProtocol_Callback('from');
 %
-%     obj.runProtocol_Callback('stepadvance');
+% **Example 3** — execute single step:
 %
+%   .. code-block:: matlab
+%
+%      obj.runProtocol_Callback('step');
+%
+% **Example 4** — step with auto-advance:
+%
+%   .. code-block:: matlab
+%
+%      obj.runProtocol_Callback('stepadvance');
 
 obj.stopProtocolSwitch = false;
 

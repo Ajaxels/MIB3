@@ -2,7 +2,9 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 % GETDATA4D - Get the a 4D dataset with colors: [height:width:depth:colors:time].
 %
 % Syntax:
-%   function dataset = getData4D(obj, type, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData4D(type, orient, col_channel, options)
 %
 % Input Arguments:
 %   - **type** — type of the dataset layer to retrieve:

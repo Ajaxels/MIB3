@@ -2,7 +2,9 @@ function addROI(obj)
 % ADDROI - Interactively add a new ROI or create one from manual coordinates.
 %
 % Syntax:
-%   function addROI(obj)
+%   .. code-block:: matlab
+%
+%      obj.addROI()
 %
 % Reads the selected ROI type from obj.handles.roiType dropdown
 % ('Rectangle', 'Ellipse', 'Polyline', 'Lasso') and either places the

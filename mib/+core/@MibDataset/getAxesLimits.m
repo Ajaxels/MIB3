@@ -2,7 +2,9 @@ function [axesX, axesY] = getAxesLimits(obj)
 % GETAXESLIMITS - get axes limits for the dataset.
 %
 % Syntax:
-%   function [axesX, axesY] = getAxesLimits(obj)
+%   .. code-block:: matlab
+%
+%       [axesX, axesY] = obj.getAxesLimits()
 %
 % Input Arguments:
 %

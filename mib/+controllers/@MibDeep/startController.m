@@ -2,7 +2,9 @@ function startController(obj, controllerName, varargin)
 % STARTCONTROLLER - Launch a child controller by class name.
 %
 % Syntax:
-%   function startController(obj, controllerName, varargin)
+%   .. code-block:: matlab
+%
+%       obj.startController(controllerName, varargin)
 %
 % Delegates to utils.startController — see that function for full
 % documentation of interactive, batch, and lifecycle behaviour.

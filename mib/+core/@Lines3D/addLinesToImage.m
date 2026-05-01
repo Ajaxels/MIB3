@@ -1,17 +1,27 @@
 function img = addLinesToImage(obj, img, Box, options)
-% ADDLINESTOIMAGE - add lines to the image.
+% ADDLINESTOIMAGE - Render 3D lines onto a 2D image.
 %
 % Syntax:
-%   function img = addLinesToImage(obj, img, Box, options)
+%   .. code-block:: matlab
+%
+%       img = obj.addLinesToImage(img, Box, options)
+%
+% Overlays the 3D graph lines and nodes onto a 2D image slice, applying the configured
+% colors and rendering parameters.
 %
 % Input Arguments:
-%   - **img** — image where lines should be added
-%   - **Box** — a vector with a clipping box [xmin xmax ymin ymax zmin zmax]
-%   - **options** — an optional structure with additional parameters
-%     .orientation - a number that specifies desired orientation, 3-yx, 1-xz, 2-yz
+%   - **img** — [numeric array] 2D or 3D image array where lines should be rendered
+%   - **Box** — [1×6 numeric] clipping box ``[xmin, xmax, ymin, ymax, zmin, zmax]`` defining the region to render
+%   - **options** — *(optional)* [struct] rendering settings:
+%
+%     - ``.orientation`` — [numeric] image plane orientation (default: ``3``):
+%
+%       - ``3`` — YX plane (default)
+%       - ``1`` — XZ plane
+%       - ``2`` — YZ plane
 %
 % Output Arguments:
-%   - **img** — an image with fused lines
+%   - **img** — [numeric array] image with rendered lines and nodes
 %
 
 if nargin < 4; options = struct(); end

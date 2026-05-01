@@ -23,7 +23,9 @@ classdef Annotations < matlab.mixin.Copyable
             % ANNOTATIONS - Constructor for the :class:`Annotations` class.
             %
             % Syntax:
-            %   function obj = Annotations()
+            %   .. code-block:: matlab
+            %
+            %       obj = core.Annotations()
             %
             % Constructor for the Annotations class. Create a new instance of
             % the class with default parameters
@@ -41,7 +43,9 @@ classdef Annotations < matlab.mixin.Copyable
             % CLEARCONTENTS - Set all elements of the class to default values.
             %
             % Syntax:
-            %   function clearContents(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.clearContents()
             %
             % Input Arguments:
             %
@@ -74,7 +78,9 @@ classdef Annotations < matlab.mixin.Copyable
             % ADDLABELS - Add labels with positions to the class.
             %
             % Syntax:
-            %   function addLabels(obj, labels, positions, values)
+            %   .. code-block:: matlab
+            %
+            %       obj.addLabels(labels, positions, values)
             %
             % Input Arguments:
             %   - **labels** — a cell array with labels
@@ -142,7 +148,9 @@ classdef Annotations < matlab.mixin.Copyable
             % CROP - Recalculation of annotation positions during image crop.
             %
             % Syntax:
-            %   function crop(obj, cropF)
+            %   .. code-block:: matlab
+            %
+            %       obj.crop(cropF)
             %
             % Input Arguments:
             %   - **cropF** — a vector [x1, y1, dx, dy, z1, dz, t1, dt] with
@@ -191,7 +199,9 @@ classdef Annotations < matlab.mixin.Copyable
             % GETCURRENTSLICELABELS - [labelsList, labelValues, labelPositions, indices] = getCurrentSliceLabels(obj).
             %
             % Syntax:
-            %   function [labelsList, labelValues, labelPositions, indices] = getCurrentSliceLabels(obj)
+            %   .. code-block:: matlab
+            %
+            %       [labelsList, labelValues, labelPositions, indices] = obj.getCurrentSliceLabels()
             %
             % Get list of labels shown at the current slice
             %
@@ -238,7 +248,9 @@ classdef Annotations < matlab.mixin.Copyable
             % GETLABELS - Get list of labels.
             %
             % Syntax:
-            %   function [labelsList, labelValues, labelPositions, indices] = getLabels(obj, rangeZ, rangeX, rangeY, rangeT)
+            %   .. code-block:: matlab
+            %
+            %       [labelsList, labelValues, labelPositions, indices] = obj.getLabels(rangeZ, rangeX, rangeY, rangeT)
             %
             % Input Arguments:
             %   - **rangeZ** — *(optional)* define range of labels to retrieve for
@@ -341,7 +353,9 @@ classdef Annotations < matlab.mixin.Copyable
             % GETLABELSBYID - Get labels using labelId.
             %
             % Syntax:
-            %   function [labels, values, positions, indices] = getLabelsById(obj, labelId)
+            %   .. code-block:: matlab
+            %
+            %       [labels, values, positions, indices] = obj.getLabelsById(labelId)
             %
             % Input Arguments:
             %   - **labelId** — a variable or a vector with a label to retrieve:
@@ -404,7 +418,9 @@ classdef Annotations < matlab.mixin.Copyable
             % GETLABELSNUMBER - Get total number of labels.
             %
             % Syntax:
-            %   function labelsNumber = getLabelsNumber(obj)
+            %   .. code-block:: matlab
+            %
+            %       labelsNumber = obj.getLabelsNumber()
             %
             % Input Arguments:
             %
@@ -433,7 +449,9 @@ classdef Annotations < matlab.mixin.Copyable
             % GETSLICELABELS - [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, handles, sliceNumber, timePoint).
             %
             % Syntax:
-            %   function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, handles, sliceNumber, timePoint)
+            %   .. code-block:: matlab
+            %
+            %       [labelsList, labelValues, labelPositions, indices] = obj.getSliceLabels(handles, sliceNumber, timePoint)
             %
             % Get list of labels shown at the specified slice
             %
@@ -484,6 +502,11 @@ classdef Annotations < matlab.mixin.Copyable
         function [minZ, labelIds] = getMinValueZ(obj)
             % GETMINVALUEZ - Find and return the minimum Z value for all annotations, as well as their indices.
             %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       [minZ, labelIds] = obj.getMinValueZ()
+            %
             % Input Arguments:
             %
             % Output Arguments:
@@ -497,6 +520,11 @@ classdef Annotations < matlab.mixin.Copyable
 
         function [maxZ, labelIds] = getMaxValueZ(obj)
             % GETMAXVALUEZ - Find and return the maximum Z value for all annotations, as well as their indices.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       [maxZ, labelIds] = obj.getMaxValueZ()
             %
             % Input Arguments:
             %
@@ -514,7 +542,9 @@ classdef Annotations < matlab.mixin.Copyable
             % REMOVELABELS - removeLabels(obj, labels).
             %
             % Syntax:
-            %   function removeLabels(obj, labels)
+            %   .. code-block:: matlab
+            %
+            %       obj.removeLabels(labels)
             %
             % Remove specified labels
             %
@@ -588,7 +618,9 @@ classdef Annotations < matlab.mixin.Copyable
             % RENAMELABELS - Rename specified labels with new text.
             %
             % Syntax:
-            %   function result = renameLabels(obj, oldLabel, newLabelText)
+            %   .. code-block:: matlab
+            %
+            %       result = obj.renameLabels(oldLabel, newLabelText)
             %
             % Input Arguments:
             %   - **oldLabel** — a variable or a vector with an old label to be renamed:
@@ -652,7 +684,9 @@ classdef Annotations < matlab.mixin.Copyable
             % REPLACELABELS - replaceLabels(obj, labels, positions, values).
             %
             % Syntax:
-            %   function replaceLabels(obj, labels, positions, values)
+            %   .. code-block:: matlab
+            %
+            %       obj.replaceLabels(labels, positions, values)
             %
             % Replace existing labels with a new list of labels and their
             % values
@@ -710,7 +744,9 @@ classdef Annotations < matlab.mixin.Copyable
             % UPDATELABELS - Update specified labels with newLabels.
             %
             % Syntax:
-            %   function result = updateLabels(obj, oldLabel, newLabelText, newLabelPos, newLabelValues)
+            %   .. code-block:: matlab
+            %
+            %       result = obj.updateLabels(oldLabel, newLabelText, newLabelPos, newLabelValues)
             %
             % Input Arguments:
             %   - **oldLabel** — a variable or a vector with an old label to be updated:
@@ -784,7 +820,9 @@ classdef Annotations < matlab.mixin.Copyable
             % SAVETOFILE - save Annotations to a file.
             %
             % Syntax:
-            %   function saveToFile(obj, filename, options)
+            %   .. code-block:: matlab
+            %
+            %       obj.saveToFile(filename, options)
             %
             % Input Arguments:
             %   - **filename** — full path to output file
@@ -1008,37 +1046,36 @@ classdef Annotations < matlab.mixin.Copyable
             % SORTLABELS - Resort the list of annotation labels.
             %
             % Syntax:
-            %   function sortLabels(obj, sortBy, direction)
+            %   .. code-block:: matlab
+            %
+            %       obj.sortLabels(sortBy, direction)
             %
             % Input Arguments:
-            %   - **sortBy** — a string with the field to be used for sorting
-            %   - 'name', *default* sort by the label name
-            %   - 'value', sort by value
-            %   - 'x', sort by the X coordinate
-            %   - 'y', sort by the Y coordinate
-            %   - 'z', sort by the Z coordinate
-            %   - 't', sort by the T coordinate
-            %   - **direction** — a string with sorting direction
-            %   - 'ascend', *default* sort in the ascending order
-            %   - 'descend', sort in the descending order
+            %   - **sortBy** — *(optional)* [char] field to be used for sorting; allowed values:
             %
-            % Output Arguments:
+            %     - ``'name'`` — sort by the label name (default)
+            %     - ``'value'`` — sort by value
+            %     - ``'x'`` — sort by the X coordinate
+            %     - ``'y'`` — sort by the Y coordinate
+            %     - ``'z'`` — sort by the Z coordinate
+            %     - ``'t'`` — sort by the T coordinate
             %
-            % Usage:
-            %   **Example 1**
+            %   - **direction** — *(optional)* [char] sorting direction; allowed values:
             %
-            %   .. code-block:: matlab
+            %     - ``'ascend'`` — sort in ascending order (default)
+            %     - ``'descend'`` — sort in descending order
             %
-            %
-            %     obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels();% call from mibController, sort the list by the label name
-            %
-            %   **Example 2**
+            % **Example 1** — sort the list by the label name:
             %
             %   .. code-block:: matlab
             %
+            %       obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels();
             %
-            %     obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels('name', 'descend');% call from mibController, sort the list by the label name using descending order
+            % **Example 2** — sort the list by the label name in descending order:
             %
+            %   .. code-block:: matlab
+            %
+            %       obj.mibModel.I{obj.mibModel.id}.annotations.sortLabels('name', 'descend');
             
             if nargin < 3; direction = 'ascend'; end
             if nargin < 2; sortBy = 'name'; end

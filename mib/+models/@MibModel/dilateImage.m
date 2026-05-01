@@ -2,7 +2,9 @@ function dilateImage(obj, BatchOptIn)
 % DILATEIMAGE - Dilate (expand) the selection, mask, or labels layer.
 %
 % Syntax:
-%   function dilateImage(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.dilateImage(BatchOptIn)
 %
 % Expands the binary content of the chosen layer using either a 2D
 % disk-like structuring element (applied slice-by-slice) or a 3D ball

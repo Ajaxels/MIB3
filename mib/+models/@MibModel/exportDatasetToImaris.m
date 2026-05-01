@@ -2,7 +2,9 @@ function exportDatasetToImaris(obj, layerType, BatchOptIn)
 % EXPORTDATASETTOIMARIS - Export the image, mask, or model layer to Imaris via IceImarisConnector.
 %
 % Syntax:
-%   function exportDatasetToImaris(obj, layerType, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.exportDatasetToImaris(layerType, BatchOptIn)
 %
 % Input Arguments:
 %   - **layerType** — a string specifying which layer to export:

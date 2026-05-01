@@ -2,40 +2,41 @@ function gui_Callbacks(obj, hWidget, hData)
 % GUI_CALLBACKS - callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation.
 %
 % Syntax:
-%   function gui_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%      obj.gui_Callbacks(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.tag char, identifier the widget, used when the same operation
-%     is called from menu
-%     'add' add selection to material/mask
-%     'subtract' subtract selection from material/mask
-%     'replace' replace material/mask using the current selection
-%     'clear' clear selection
-%     'fill' fill selection
-%     'colChannel' select color channel
-%     'applySegmentationIn3D' apply segmentation tools in 3D
-%     'autoFillSelection' auto-fill selection
-%     'preset1' apply preset 1 to the selected segmentation tool
-%     'preset2' apply preset 2 to the selected segmentation tool
-%     'preset3' apply preset 3 to the selected segmentation tool
-%     'erode' edode selection
-%     'dilate' dilate selection
-%     'strel' set strel size for erosion/dilation
-%     'differenceSelection' enable the differenceSelection mode for the dilate/erode
-%     'lutColors' visualize image using LUT colors
-%     'showModel' show model
-%     'showMask' show mask
-%     'showAnnotations' show annotations
-%     'hideImage' hide image
-%     'display' start image view settings dialog
-%     'onFly' % automatically adjust contrast and brightness
-%     'modelTransparency' define model transparency
-%     'maskTransparency' define mask transparency
-%     'selectionTransparency' define selection transparency
-%     'help' show help
+%   - **hWidget** — [Button|CheckBox|DropDown|EditField|Slider] pressed widget with ``.Tag`` property identifying the action:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'add'`` — add selection to material/mask
+%     - ``'subtract'`` — subtract selection from material/mask
+%     - ``'replace'`` — replace material/mask using current selection
+%     - ``'clear'`` — clear selection
+%     - ``'fill'`` — fill selection
+%     - ``'colChannel'`` — select color channel
+%     - ``'applySegmentationIn3D'`` — apply segmentation tools in 3D
+%     - ``'autoFillSelection'`` — auto-fill selection
+%     - ``'preset1'`` — apply preset 1 to selected segmentation tool
+%     - ``'preset2'`` — apply preset 2 to selected segmentation tool
+%     - ``'preset3'`` — apply preset 3 to selected segmentation tool
+%     - ``'erode'`` — erode selection
+%     - ``'dilate'`` — dilate selection
+%     - ``'strel'`` — set strel size for erosion/dilation
+%     - ``'differenceSelection'`` — enable difference mode for dilate/erode
+%     - ``'lutColors'`` — visualize image using LUT colors
+%     - ``'showModel'`` — show model layer
+%     - ``'showMask'`` — show mask layer
+%     - ``'showAnnotations'`` — show annotations
+%     - ``'hideImage'`` — hide image
+%     - ``'display'`` — start image view settings dialog
+%     - ``'onFly'`` — automatically adjust contrast and brightness
+%     - ``'modelTransparency'`` — adjust model transparency
+%     - ``'maskTransparency'`` — adjust mask transparency
+%     - ``'selectionTransparency'`` — adjust selection transparency
+%     - ``'help'`` — show help
+%
+%   - **hData** — [ValueChangedData|ValueChangingData|ButtonPushedData] event data from widget callback
 %
 
 arguments (Input)

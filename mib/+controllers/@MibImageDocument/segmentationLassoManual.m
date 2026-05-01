@@ -1,43 +1,52 @@
 function segmentationLassoManual(obj, BatchOptIn)
-% SEGMENTATIONLASSOMANUAL - Do manual segmentation using the lasso tool in the manual mode.
+% SEGMENTATIONLASSOMANUAL - Do manual segmentation using the lasso tool in manual mode.
 %
 % Syntax:
-%   function segmentationLassoManual(obj, BatchOptIn)
+%   .. code-block:: matlab
 %
-% Uses coordinate values from the lasso panel edit fields (X1, Y1, Width,
-% Height) to define a rectangular or elliptical selection area. Lasso and
-% Polyline types are not supported in manual mode.
+%      obj.segmentationLassoManual()
+%      obj.segmentationLassoManual(BatchOptIn)
+%
+% Uses coordinate values from the lasso panel edit fields (X1, Y1, Width, Height)
+% to define a rectangular or elliptical selection area. Lasso and Polyline types
+% are not supported in manual mode.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode, when NaN return
-%     a structure with default options via "syncBatch" event, or a char modifier
-%     ('control' to subtract, empty to add) for interactive calls
-%     - .Shape - Shape type for the manual selection: Rectangle or Ellipse
-%     - .Mode - Apply selection for the current slice (2D, Slice) or the whole stack (3D, Stack)
-%     - .X1 - X coordinate: top-left corner for Rectangle, center for Ellipse
-%     - .Y1 - Y coordinate: top-left corner for Rectangle, center for Ellipse
-%     - .Width - Half-width of the selection area (semi-axis for Ellipse)
-%     - .Height - Half-height of the selection area (semi-axis for Ellipse)
-%     - .Action - Action to perform with the generated selection: Add or Subtract
-%     - .FixSelectionToMask - Apply selection only to the masked area
-%     - .FixSelectionToMaterial - Apply selection only to the area of the selected material
-%     - .showWaitbar - Show or not the progress bar during execution
+%   - **BatchOptIn** *(optional)* — [struct|char|NaN] batch processing control or modifier key;
+%     when ``NaN``, returns default structure via "syncBatch" event:
+%
+%     - ``.Shape`` — [char] ``'Rectangle'`` or ``'Ellipse'`` — shape for manual selection
+%     - ``.Mode`` — [char] ``'Slice'`` (2D, current) or ``'Stack'`` (3D, whole stack)
+%     - ``.X1`` — [numeric] X coordinate: top-left for Rectangle, center for Ellipse
+%     - ``.Y1`` — [numeric] Y coordinate: top-left for Rectangle, center for Ellipse
+%     - ``.Width`` — [numeric] half-width of selection area (semi-axis for Ellipse)
+%     - ``.Height`` — [numeric] half-height of selection area (semi-axis for Ellipse)
+%     - ``.Action`` — [char] ``'Add'`` or ``'Subtract'`` — action on generated selection
+%     - ``.FixSelectionToMask`` — [logical] apply selection only to masked area
+%     - ``.FixSelectionToMaterial`` — [logical] apply selection only to selected material area
+%     - ``.showWaitbar`` — [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — select area and add to selection:
 %
-%     obj.segmentationLassoManual();             // select area and add to selection
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationLassoManual();
 %
-%     obj.segmentationLassoManual('control');    // select area and subtract from selection
+% **Example 2** — select area and subtract from selection:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     obj.segmentationLassoManual(BatchOpt);     // batch mode with provided options
+%      obj.segmentationLassoManual('control');
+%
+% **Example 3** — batch mode with provided options:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationLassoManual(BatchOpt);
+%
 %
 
 % Updates

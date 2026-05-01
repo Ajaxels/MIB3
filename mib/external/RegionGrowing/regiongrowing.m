@@ -1,4 +1,4 @@
-function lMask = RegionGrowing(dImg, dMaxDif, iSeed)
+function lMask = regiongrowing(dImg, dMaxDif, iSeed)
 %REGIONGROWING A MEXed 2D/3D region growing algorithm.
 %
 %   lMASK = REGIONGROWING(dIMG, dMAXDIF, iSEED) Returns a binary mask

@@ -2,7 +2,9 @@ function varargout = getDatasetDimensions(obj, type, orient, options)
 % GETDATASETDIMENSIONS - Get dimensions of the dataset.
 %
 % Syntax:
-%   function varargout = getDatasetDimensions(obj, type, orient, options)
+%   .. code-block:: matlab
+%
+%       varargout = obj.getDatasetDimensions(type, orient, options)
 %
 % Input Arguments:
 %   - **type** — type of the dataset to retrieve dimensions, 'image' (**default),** 'model', 'mask', 'selection'

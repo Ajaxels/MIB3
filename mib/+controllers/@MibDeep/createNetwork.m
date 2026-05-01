@@ -2,7 +2,9 @@ function [lgraph, outputPatchSize] = createNetwork(obj, previewSwitch)
 % CREATENETWORK - generate network.
 %
 % Syntax:
-%   function [lgraph, outputPatchSize] = createNetwork(obj, previewSwitch)
+%   .. code-block:: matlab
+%
+%       [lgraph, outputPatchSize] = obj.createNetwork(previewSwitch)
 %
 % Input Arguments:
 %   - **previewSwitch** — logical switch, when 1 - the generated network
@@ -169,7 +171,7 @@ try
                     end
                 case 'U-net Anisotropic'
                     %obj.BatchOpt.T_NumAnisotropicBlocks{1} = 1; % define number of 2D convolutional blocks
-                    [lgraph, outputPatchSize] = utils.deepmib.createAnisotropic3dUnet(...
+                    [lgraph, outputPatchSize] = deepmib.createAnisotropic3dUnet(...
                         inputPatchSize, obj.BatchOpt.T_NumberOfClasses{1}, ...
                         obj.BatchOpt.T_FilterSize{1}, obj.BatchOpt.T_NumFirstEncoderFilters{1}, ...
                         obj.BatchOpt.T_ConvolutionPadding{1}, obj.BatchOpt.T_EncoderDepth{1}, ...

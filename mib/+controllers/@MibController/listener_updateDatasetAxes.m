@@ -2,48 +2,48 @@ function listener_updateDatasetAxes(obj, src, evtData)
 % LISTENER_UPDATEDATASETAXES - Update obj.I (MibDataset).axesX and obj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing.
 %
 % Syntax:
-%   function listener_updateDatasetAxes(obj, src, evtData)
+%   .. code-block:: matlab
+%
+%      obj.listener_updateDatasetAxes(src, evtData)
 %
 % executed upon catch of MibModel->"UpdateDatasetAxes" event
 %
 % Input Arguments:
 %   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
-%     .Parameters field containing a structure with the
-%     .evtData.Parameters.mode - update mode,
-%     - 'resize' [*default]* keep current magFactor, adjust FOV to fill new axes size (panel resize)
-%     - 'fitToScreen' fit entire image to axes (explicit "Fit to screen" request or first load)
-%     - 'zoom' scale during the zoom
-%   .evtData.Parameters.index [**optional]** index of obj.I to update, when *[]* updates the currently selected dataset
-%   .evtData.Parameters.newMagFactor a value of the new magnification factor, only for the 'zoom' mode
-%   .Source handle to MibModel
-%   .EventName string with the event name that triggered the callback
-%   see example in MibModel.datasetsSetsOps-> 'Add set'
+%   - **evtData** — event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
+%     is a structure with the following fields:
+%
+%     - ``.mode`` — update mode; one of ``'resize'`` (default, keep magFactor, adjust FOV),
+%       ``'fitToScreen'`` (fit entire image to axes), or ``'zoom'`` (scale during zoom)
+%     - ``.index`` — *(optional)* index of obj.I to update; ``[]`` for the currently selected dataset
+%     - ``.newMagFactor`` — new magnification factor (``'zoom'`` mode only)
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — update axes using a new magnification value for dataset 1:
 %
-%     // call from controllers.MibController; update the axes using new magnification value of the first dataset in the global index count
-%     Options.mode = 'zoom';
-%     Options.newMagFactor = 2;
-%     Options.index = 1;
-%     eventdata = core.ToggleEventData(Options);
-%     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+%   .. code-block:: matlab
 %
+%      Options.mode = 'zoom';
+%      Options.newMagFactor = 2;
+%      Options.index = 1;
+%      eventdata = core.ToggleEventData(Options);
+%      notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 %
-%   Example 2::
+% **Example 2** — resize axes to fit the current panel:
 %
-%     // call from controllers.MibController; to fit the screen @endcode
-%     Options.mode = 'resize';
-%     eventdata = core.ToggleEventData(Options);
-%     notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
+%   .. code-block:: matlab
 %
-%   Example 3::
+%      Options.mode = 'resize';
+%      eventdata = core.ToggleEventData(Options);
+%      notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 %
-%     // update the current dataset using the "resize" mode
-%     notify(obj.mibModel, 'UpdateDatasetAxes');
+% **Example 3** — update using the default resize mode:
+%
+%   .. code-block:: matlab
+%
+%      notify(obj.mibModel, 'UpdateDatasetAxes');
 %
 
 % update the missing fields
@@ -179,9 +179,7 @@ obj.cImageDoc{selectedSet}.brushCursorOffset = [];
 
 %sprintf('axes: %d-%d %d-%d\n', axesX(1), axesX(2), axesY(1), axesY(2))
 
-% notify listeners that the image axes were changed -> mibSnapshotController
-%motifyEvent.Name = 'updteAxesLimits_changed';
-%eventdata = ToggleEventData(motifyEvent);
-%notify(obj.mibModel, 'modelNotify', eventdata);
+% notify listeners that the image axes were changed -> Snapshot controller
+notify(obj.mibModel, 'AxesLimitsChanged');
 
 end

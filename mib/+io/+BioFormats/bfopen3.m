@@ -1,52 +1,61 @@
 function [result] = bfopen3(r, seriesNumber, sliceNo, options)
-% BFOPEN3 - A script for opening microscopy images in MATLAB using Bio-Formats.
+% BFOPEN3 - Open microscopy images in MATLAB using Bio-Formats.
 %
 % Syntax:
-%   function [result] = bfopen3(r, seriesNumber, sliceNo, options)
+%   .. code-block:: matlab
 %
-% modified from the original bfopen.m by Ilya Belevich
+%      result = io.BioFormats.bfopen3(r, seriesNumber)
+%      result = io.BioFormats.bfopen3(r, seriesNumber, sliceNo, options)
 %
-% The function returns selected dataset.
-% [result] = bfopen3(r, seriesNumber)
-% IN:
-% r - handle to a dataset opened with
-% r = loci.formats.ChannelFiller();
-% r = loci.formats.ChannelSeparator(r);
-% r = loci.formats.gui.BufferedImageReader(r);
-% r.setId(handles.filename);
-% seriesNumber - number of selected serie starting from 1
-% sliceNo - [optional] desired slice number from the series
-% options - [optional] a structure with a subset of the image to obtain.
-% Warning! not yet completely tested
-% .x1 - starting x position
-% .y1 - starting y position
-% .dx - width
-% .dy - height
-% OUT:
-% result Structure with the selected serie
-% .img Image with [heigh width color z-stack] dimensions
-% .ColorType 'grayscale', 'truecolor', 'indexed'
-% .ColorMap color map for the indexed image
-% Portions of this code were adapted from:
-% http://www.mathworks.com/support/solutions/en/data/1-2WPAYR/
+% Modified from the original bfopen.m by Ilya Belevich.
+% Returns the selected dataset from a Bio-Formats reader.
 %
-% This method is ~1.5x-2.5x slower than Bio-Formats's command line
-% showinf tool (MATLAB 7.0.4.365 R14 SP2 vs. java 1.6.0_20),
-% due to overhead from copying arrays.
+% Input Arguments:
+%   - **r** — handle to a dataset opened with:
 %
-% Thanks to all who offered suggestions and improvements:
-% * Ville Rantanen
-% * Brett Shoelson
-% * Martin Offterdinger
-% * Tony Collins
-% * Cris Luengo
-% * Arnon Lieber
-% * Jimmy Fong
+%     .. code-block:: matlab
 %
-% NB: Internet Explorer sometimes erroneously renames the Bio-Formats library
-% to loci_tools.zip. If this happens, rename it back to loci_tools.jar.
+%        r = loci.formats.ChannelFiller();
+%        r = loci.formats.ChannelSeparator(r);
+%        r = loci.formats.gui.BufferedImageReader(r);
+%        r.setId(handles.filename);
 %
-% 05.09.2013 Ilya Belevich, added sliceNo to load only a single slice
+%   - **seriesNumber** — series number to load, starting from ``1``
+%   - **sliceNo** — *(optional)* desired slice number from the series
+%   - **options** — *(optional)* struct with fields (not yet fully tested):
+%
+%     - ``.x1`` — starting x position
+%     - ``.y1`` — starting y position
+%     - ``.dx`` — width
+%     - ``.dy`` — height
+%
+% Output Arguments:
+%   - **result** — struct with the selected series:
+%
+%     - ``.img`` — image array [height, width, color, depth]
+%     - ``.ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+%     - ``.ColorMap`` — colormap for indexed images
+%
+% .. note::
+%   This method is ~1.5×–2.5× slower than Bio-Formats's command line showinf tool,
+%   due to overhead from copying arrays.
+%
+%   Internet Explorer sometimes erroneously renames the Bio-Formats library to
+%   ``loci_tools.zip`` — if this happens, rename it back to ``loci_tools.jar``.
+%
+%   Thanks to all who offered suggestions and improvements:
+%     * Ville Rantanen
+%     * Brett Shoelson
+%     * Martin Offterdinger
+%     * Tony Collins
+%     * Cris Luengo
+%     * Arnon Lieber
+%     * Jimmy Fong
+%   NB: Internet Explorer sometimes erroneously renames the Bio-Formats library
+%     to loci_tools.zip. If this happens, rename it back to loci_tools.jar.
+%
+% Updates:
+%   - 05.09.2013 Ilya Belevich, added sliceNo to load only a single slice
 
 if nargin < 4;     options = struct;   end
 if nargin < 3;     sliceNo = NaN;   end

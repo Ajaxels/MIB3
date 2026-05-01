@@ -1,21 +1,22 @@
 function listener_updateStatusBar(obj, src, evtData)
-% LISTENER_UPDATESTATUSBAR - Call for update of the status bar widgets, used upon change of directory.
+% LISTENER_UPDATESTATUSBAR - Update status bar widgets on directory change or UpdateStatusBar event.
 %
 % Syntax:
-%   function listener_updateStatusBar(obj, src, evtData)
+%   .. code-block:: matlab
 %
-% in Batch Processing
-% executed upon catch of MibModel->"UpdateStatusBar" event
+%      obj.listener_updateStatusBar(src, evtData)
+%
+% Listener triggered by ``MibModel`` ``'UpdateStatusBar'`` event (e.g., during Batch Processing directory changes).
 %
 % Input Arguments:
-%   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
-%     .Parameters field containing a structure with the
-%     .evtData.Parameters.
-%     .Source handle to MibModel
-%     .EventName string with the event name that triggered the callback
+%   - **obj** — [MibStatusBar] controller instance
+%   - **src** — [MibModel] source object
+%   - **evtData** — [ToggleEventData] event data with properties:
 %
-% Output Arguments:
+%     - ``.Parameters`` — [struct] optional parameters structure
+%     - ``.Source`` — [MibModel] handle to MibModel
+%     - ``.EventName`` — [char] event name that triggered callback
+%
 %
 
 % if ~isprop(evtData, 'Parameters')

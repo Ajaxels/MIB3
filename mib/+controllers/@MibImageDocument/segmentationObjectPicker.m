@@ -2,7 +2,9 @@ function segmentationObjectPicker(obj, yxzCoordinate, modifier)
 % SEGMENTATIONOBJECTPICKER - Select 2D/3D objects from the Mask or Model layers.
 %
 % Syntax:
-%   function segmentationObjectPicker(obj, yxzCoordinate, modifier)
+%   .. code-block:: matlab
+%
+%      obj.segmentationObjectPicker(yxzCoordinate, modifier)
 %
 % Picks connected objects from the Mask or Model layer and copies them
 % to the Selection layer. Supports multiple sub-modes: Click (direct
@@ -10,24 +12,28 @@ function segmentationObjectPicker(obj, yxzCoordinate, modifier)
 % Mask within Selection (AND operation).
 %
 % Input Arguments:
-%   - **yxzCoordinate** — a vector with [y, x, z] coordinates of the starting point;
-%     for the 2D case [y, x] is sufficient
-%   - **modifier** — a string, to specify what to do with the generated selection
-%     - *empty* - makes new selection (adds to existing)
-%     - *'control'* - removes selection from the existing one
-%     - *'shift'* - used for 3D mode in Mask within Selection, returns a union of mask and selection
+%   - **yxzCoordinate** — [vector] ``[y, x, z]`` coordinates of starting point;
+%     ``[y, x]`` is sufficient for 2D case
+%   - **modifier** — [char] specify action with generated selection:
+%
+%     - ``''`` — make new selection (add to existing)
+%     - ``'control'`` — remove selection from existing
+%     - ``'shift'`` — used for 3D mode in Mask within Selection; returns union of mask and selection
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — select object at [y,x,z]=50,75,1:
 %
-%     obj.segmentationObjectPicker([50, 75, 1], '');           // select object at [y,x,z]=50,75,1
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationObjectPicker([50, 75, 1], '');
 %
-%     obj.segmentationObjectPicker([50, 75, 1], 'control');    // subtract object from selection
+% **Example 2** — subtract object from selection:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationObjectPicker([50, 75, 1], 'control');
 %
 
 % Updates

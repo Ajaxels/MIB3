@@ -2,7 +2,9 @@ function activationLayerChangeCallback(obj)
 % ACTIVATIONLAYERCHANGECALLBACK - callback for modification of the Activation Layer dropdown.
 %
 % Syntax:
-%   function activationLayerChangeCallback(obj)
+%   .. code-block:: matlab
+%
+%       obj.activationLayerChangeCallback()
 %
 
     switch obj.view.handles.T_ActivationLayer.Value

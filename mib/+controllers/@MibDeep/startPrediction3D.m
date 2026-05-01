@@ -2,7 +2,9 @@ function startPrediction3D(obj)
 % STARTPREDICTION3D - predict datasets for 3D networks taken to a separate function.
 %
 % Syntax:
-%   function startPrediction3D(obj)
+%   .. code-block:: matlab
+%
+%       obj.startPrediction3D()
 %
 % to improve performance
 
@@ -94,13 +96,13 @@ function startPrediction3D(obj)
     try
         if preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages'), ...
-                'FileExtensions', '.mibImg', 'ReadFcn', @utils.deepmib.storeLoadImages);
+                'FileExtensions', '.mibImg', 'ReadFcn', @deepmib.storeLoadImages);
         else    % without preprocessing
             fnExtention = lower(['.' obj.BatchOpt.ImageFilenameExtension{1}]);
             imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images'), ...
                 'FileExtensions', fnExtention, ...
                 'IncludeSubfolders', false, ...
-                'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
@@ -501,10 +503,10 @@ function startPrediction3D(obj)
                 bitmap2amiraMesh(filename, scoreImg, [], amiraOpt);
             elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
-                utils.deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
+                deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
             else    % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format'
                 filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
-                utils.deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles-2, saveImageOpt);
+                deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles-2, saveImageOpt);
             end
         end
 

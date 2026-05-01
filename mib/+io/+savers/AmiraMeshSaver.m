@@ -39,14 +39,6 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
 % 'Amira mesh binary RLE compression SLOW (``*.am``)' → 'binaryRLE'
 % 'Amira mesh ascii (``*.am``)'                    → 'ascii'
 %
-% TODO: port bitmap2amiraMesh from
-% MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraMesh.m
-% to mib/+io/+AmiraMesh/bitmap2amiraMesh.m
-%
-% TODO: port bitmap2amiraLabels from
-% MIB2_RENAMED_FOR_MIB3/ImportExportTools/Amira/bitmap2amiraLabels.m
-% to mib/+io/+AmiraMesh/bitmap2amiraLabels.m
-%
 % USAGE EXAMPLES
 %
 % .. code-block:: matlab
@@ -120,14 +112,19 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
     methods
 
         function obj = AmiraMeshSaver(options)
-            % AMIRAMESHSAVER - Constructor — accepts an optional options struct.
+            % AMIRAMESHSAVER - Constructor for AmiraMeshSaver class.
             %
             % Syntax:
-            %   function obj = AmiraMeshSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.AmiraMeshSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the AmiraMeshSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -138,7 +135,15 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by AmiraMeshSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for Amira Mesh output
             %
             formats = { ...
                 'Amira Mesh binary (*.am)'; ...
@@ -152,32 +157,36 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
             % SAVE - Write data as an Amira Mesh file (image or labels/mask).
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array
-            %   metadata — struct; used fields:
-            %   .colorType      — 'grayscale' | 'multichannel' | 'indexed'
-            %   .lutColors      — [C x 3] per-channel LUT colours (0..1)
-            %   .dataClass      — 'uint8' | 'uint16' | ...
-            %   .maxInt         — maximum intensity value
-            %   .pixSize        — struct {.x .y .z .units .t .tunits}
-            %   .boundingBox    — [xmin xmax ymin ymax zmin zmax]
-            %   .materialNames  — cell array of material name strings
-            %   (labels mode only)
-            %   .materialColors — [M x 3] material RGB colours (labels mode)
-            %   filename — full output path, e.g. '/out/stack.am'
-            %   options  — struct; used fields:
-            %   .Format         — format string (selects encoding)
-            %   .layerType      — 'image' | 'mask' | 'labels' (default 'image')
-            %   .showWaitbar    — logical
-            %   .silent         — logical, suppress dialogs
-            %   .overwrite      — logical
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` — [C x 3] per-channel LUT colours (0..1)
+            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` — maximum intensity value
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]
+            %     - ``materialNames`` — cell array of material name strings (labels mode only)
+            %     - ``materialColors`` — [M x 3] material RGB colours (labels mode)
+            %
+            %   - **filename** — full output path, e.g. ``'/out/stack.am'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string (selects encoding)
+            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
             %
             % Output Arguments:
-            %   fnOut — (char) path of saved .am file, [] on failure
+            %   - **fnOut** — [char] path of saved ``.am`` file, ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];
@@ -367,18 +376,21 @@ classdef AmiraMeshSaver < io.savers.BaseSaver
     methods (Access = private)
 
         function compressionStr = formatToCompression(~, formatStr)
-            % FORMATTOCOMPRESSION - Map an Amira format string to the compression argument string.
+            % FORMATTOCOMPRESSION - Map Amira format string to compression argument.
             %
             % Syntax:
-            %   function compressionStr = formatToCompression(~, formatStr)
+            %   .. code-block:: matlab
             %
-            % expected by bitmap2amiraMesh / bitmap2amiraLabels.
+            %      compressionStr = obj.formatToCompression(formatStr)
+            %
+            % Maps format strings to compression strings expected by
+            % ``bitmap2amiraMesh()`` and ``bitmap2amiraLabels()``.
             %
             % Input Arguments:
-            %   formatStr — (char) format string from getSupportedFormats()
+            %   - **formatStr** — [char] format string from ``getSupportedFormats()``
             %
             % Output Arguments:
-            %   compressionStr — 'binary' | 'binaryRLE' | 'ascii'
+            %   - **compressionStr** — ``'binary'`` | ``'binaryRLE'`` | ``'ascii'``
             %
             if contains(formatStr, 'RLE', 'IgnoreCase', true)
                 compressionStr = 'binaryRLE';

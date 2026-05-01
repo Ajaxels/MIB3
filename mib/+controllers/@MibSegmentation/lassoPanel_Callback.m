@@ -1,25 +1,31 @@
 function lassoPanel_Callback(obj, hWidget, hData)
-% LASSOPANEL_CALLBACK - lassoPanel_Callback(obj, hWidget, hData).
+% LASSOPANEL_CALLBACK - Callback for lasso and object picker tool widgets.
 %
 % Syntax:
-%   function lassoPanel_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->Lasso/Object picker tools
+%      obj.lassoPanel_Callback(hWidget, hData)
+%
+% Handles callbacks for lasso and object picker segmentation tool widgets in the Segmentation panel.
+% Supports tool selection, mode switching (add/remove), manual placement, and object property recalculation.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
-%     'lassoType' define type of the lasso selection tool
-%     'lassoMode' set the mode add/remove lasso-selection to/from the selection layer
-%     'lassoManually' specify the lasso area manually
-%     'lassoSelect' select the specified area
-%     'lassoX1' define min-X value for the manual lasso placement
-%     'lassoY1' define min-Y value for the manual lasso placement
-%     'lassoWidth' define width value for the manual lasso placement
-%     'lassoHeight' define height value for the manual lasso placement
-%     'objectRecalculate' recalculate object properties for 3D selection
+%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'lassoType'`` — select lasso tool type (Lasso/Object Picker)
+%     - ``'lassoMode'`` — set add/remove/replace mode for lasso selection
+%     - ``'lassoManually'`` — enable/disable manual lasso area placement
+%     - ``'lassoSelect'`` — execute selection with current lasso parameters
+%     - ``'lassoX1'`` — set minimum X coordinate for manual placement
+%     - ``'lassoY1'`` — set minimum Y coordinate for manual placement
+%     - ``'lassoWidth'`` — set width for manual lasso placement
+%     - ``'lassoHeight'`` — set height for manual lasso placement
+%     - ``'objectRecalculate'`` — recalculate 3D object properties from 2D selection
+%
+%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 %
 
 arguments (Input)

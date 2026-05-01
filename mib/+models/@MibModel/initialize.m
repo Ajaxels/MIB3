@@ -2,7 +2,6 @@ function initialize(obj)
 % INITIALIZE - Initialize the MibModel class.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      obj.initialize()

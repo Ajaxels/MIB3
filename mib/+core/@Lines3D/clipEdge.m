@@ -2,7 +2,9 @@ function [edge, edgeIds] = clipEdge(obj, Box)
 % CLIPEDGE - clip the edge using the Box matrix.
 %
 % Syntax:
-%   function [edge, edgeIds] = clipEdge(obj, Box)
+%   .. code-block:: matlab
+%
+%       [edge, edgeIds] = obj.clipEdge(Box)
 %
 % Input Arguments:
 %   - **Box** — a vector used for cliping the edges [xMin, xMax, yMin, yMax, zMin, zMax]

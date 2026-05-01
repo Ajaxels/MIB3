@@ -2,7 +2,9 @@ function result = setData3D(obj, dataset, type, time, orient, col_channel, optio
 % SETDATA3D - Set a 3D dataset in the current (or specified) dataset; wrapper around core.MibDataset.setData3D.
 %
 % Syntax:
-%   function result = setData3D(obj, dataset, type, time, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       result = obj.setData3D(dataset, type, time, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.setData3D(...) instead of

@@ -2,21 +2,26 @@ function gui_WindowButtonDownFcn(obj)
 % GUI_WINDOWBUTTONDOWNFCN - Callback for mouse button press in the image view.
 %
 % Syntax:
-%   function gui_WindowButtonDownFcn(obj)
+%   .. code-block:: matlab
 %
-% Linked via (example):
-% hFig.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
+%      obj.gui_WindowButtonDownFcn()
+%
+% Linked via:
+%
+%   .. code-block:: matlab
+%
+%      hFig.WindowButtonDownFcn = @(~, ~)obj.gui_WindowButtonDownFcn();
 %
 % Input Arguments:
-%   - **obj** — handle to MibImageDocument instance
+%   (none)
 %
-%   - **Notes** —
-%     - The callback dispatches to either "pan" or "interact" mode depending on
-%     SelectionType + modifier keys and the "swap mouse buttons" state.
-%     - "Pan" temporarily disables other callbacks and attaches motion/up
-%     callbacks to implement click-and-drag panning.
-%     - "Interact" triggers segmentation/annotation tools depending on the
-%     selected segmentation tool.
+% Output Arguments:
+%   (none)
+%
+% **Behavior:**
+%   - Dispatches to either ``'pan'`` or ``'interact'`` mode depending on SelectionType + modifier keys and "swap mouse buttons" state
+%   - ``'Pan'`` mode temporarily disables other callbacks and attaches motion/up callbacks to implement click-and-drag panning
+%   - ``'Interact'`` mode triggers segmentation/annotation tools depending on selected segmentation tool
 %
 
 % ---- Get figure handle + input state ----

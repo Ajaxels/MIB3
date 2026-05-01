@@ -2,7 +2,9 @@ function exportNetwork(obj)
 % EXPORTNETWORK - convert and export network to ONNX or TensorFlow formats.
 %
 % Syntax:
-%   function exportNetwork(obj)
+%   .. code-block:: matlab
+%
+%       obj.exportNetwork()
 %
     
     if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
@@ -89,12 +91,12 @@ function exportNetwork(obj)
     switch exportFormat
         case 'ONNX'
             try
-                utils.deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
+                deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
             catch err
                 % when addSpkgBinPath is not patched a second attempt to export is needed
                 % line 6: should be "if isempty(pathSet) && ~isdeployed"
                 try
-                    utils.deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
+                    deepmib.exportONNXNetwork(lgraph, outputFilename, 'OpsetVersion', opsetVersion);
                 catch err2
                     delete(wb);
                     reply = uiconfirm(obj.view.gui, ...

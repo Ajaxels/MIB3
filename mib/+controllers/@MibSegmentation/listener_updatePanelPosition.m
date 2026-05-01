@@ -1,24 +1,37 @@
 function listener_updatePanelPosition(obj, src, evtData)
-% LISTENER_UPDATEPANELPOSITION - Listener callback: adapt the Segmentation panel grid layout when the panel is.
+% LISTENER_UPDATEPANELPOSITION - Listener callback to adapt Segmentation panel layout when docked position changes.
 %
 % Syntax:
-%   function listener_updatePanelPosition(obj, src, evtData)
+%   .. code-block:: matlab
 %
-% docked to a new region of the AppContainer (bottom, left, or right).
+%      obj.listener_updatePanelPosition(src, evtData)
 %
-% The Segmentation panel uses a mainGridLayout with 4 rows/columns:
+% Dynamically reconfigures the panel's grid layout and widget positions when the Segmentation panel
+% is docked to different regions (left, right, or bottom) of the AppContainer. Optimizes widget
+% arrangement for each docking orientation.
 %
-% Left / Right — vertical, 4-row layout:
-% RowHeight    = {26, '1x', 54, 187}
-% ColumnWidth  = {'1x'}
-% topGridLayout    (row 1): horizontal, ColumnWidth = {45,45,22,22,'1x',22,22,20}
-% middleGridLayout (row 3): 2-col × 2-row, ColumnWidth = {'1x','1x'}, RowHeight = {'1x','1x'}
+% Input Arguments:
+%   - **src** — [matlab.ui.container.Panel] the panel object whose Region property changed
+%   - **evtData** — [matlab.ui.eventdata.PropertyChangedData] property change event data
 %
-% Bottom — horizontal, 4-column layout:
-% ColumnWidth  = {60, 260, '1x', 260}
-% RowHeight    = {'1x'}
-% topGridLayout    (col 1): vertical,   RowHeight = {22,22,22,22,'1x','1x',22,22}
-% middleGridLayout (col 3): 1-col × 4-row, ColumnWidth = {'1x'}, RowHeight = {'1x','1x','1x','1x'}
+% Output Arguments:
+%   None
+%
+% **Layout configurations:**
+%
+% The Segmentation panel uses a ``mainGridLayout`` with 4 rows/columns:
+%
+% **Left / Right docking** — vertical, 4-row layout:
+%   - ``RowHeight`` = ``{26, '1x', 54, 187}``
+%   - ``ColumnWidth`` = ``{'1x'}``
+%   - ``topGridLayout`` (row 1): horizontal arrangement with ``ColumnWidth = {45, 45, 22, 22, '1x', 22, 22, 20}``
+%   - ``middleGridLayout`` (row 3): 2-column × 2-row grid with ``ColumnWidth = {'1x', '1x'}``, ``RowHeight = {'1x', '1x'}``
+%
+% **Bottom docking** — horizontal, 4-column layout:
+%   - ``ColumnWidth`` = ``{60, 260, '1x', 260}``
+%   - ``RowHeight`` = ``{'1x'}``
+%   - ``topGridLayout`` (column 1): vertical arrangement with ``RowHeight = {22, 22, 22, 22, '1x', '1x', 22, 22}``
+%   - ``middleGridLayout`` (column 3): 1-column × 4-row grid with ``ColumnWidth = {'1x'}``, ``RowHeight = {'1x', '1x', '1x', '1x'}``
 
 switch evtData.PropertyName
     case 'Region'

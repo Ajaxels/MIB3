@@ -1,8 +1,10 @@
 function recenterGui(obj)
-% RECENTERGUI - recenter MIB to be on the center of the screen.
+% RECENTERGUI - recenter the MIB window to the center of the display screen.
 %
 % Syntax:
-%   function recenterGui(obj)
+%   .. code-block:: matlab
+%
+%      obj.recenterGui()
 %
 arguments (Input)
     obj views.MibView

@@ -2,7 +2,9 @@ function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
 % GETDATA2D - Get the a 2D slice with colors: height:width:colors.
 %
 % Syntax:
-%   function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData2D(type, slice_no, orient, col_channel, options)
 %
 % Input Arguments:
 %   - **type** — type of the dataset layer to retrieve:

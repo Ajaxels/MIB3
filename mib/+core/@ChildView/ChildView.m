@@ -1,7 +1,9 @@
 classdef ChildView < handle
-    % CHILDVIEW - :class:`ChildView` class is a template of the View type classes for.
+    % CHILDVIEW - Base template class for View-type controller GUI components.
     %
-    % each controller
+    % Provides the foundation for all child dialog and panel views in MIB3.
+    % Handles initialization of AppDesigner GUI components and manages
+    % relationships with controller and model objects.
     
 	% Updates
 	%
@@ -55,15 +57,18 @@ classdef ChildView < handle
         end
         
         function getChildren(obj, guiHandle)
-            % GETCHILDREN - get handles to children of GUI elements and assign them to.
+            % GETCHILDREN - Recursively get handles to GUI element children.
             %
             % Syntax:
-            %   function getChildren(obj, guiHandle)
+            %   .. code-block:: matlab
             %
-            % obj.handles structure
+            %       obj.getChildren(guiHandle)
+            %
+            % Recursively traverses the GUI hierarchy and assigns all child widget handles
+            % to the ``obj.handles`` structure for easy access by tag name.
             %
             % Input Arguments:
-            %   - **guiHandle** — handle of the element to get children
+            %   - **guiHandle** — [handle] parent GUI element whose children to enumerate
             %
             childrenList = guiHandle.Children;
             for i=1:numel(childrenList)     % generate handles structure similar to guide

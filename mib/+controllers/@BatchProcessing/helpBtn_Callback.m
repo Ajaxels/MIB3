@@ -2,7 +2,9 @@ function helpBtn_Callback(obj)
 % HELPBTN_CALLBACK - open the batch processing help page in the system browser.
 %
 % Syntax:
-%   function helpBtn_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.helpBtn_Callback()
 %
 % Usage:
 %   Example 1::

@@ -2,7 +2,6 @@ function lut = generateLUT(noColorChannels)
 % GENERATELUT - Generate default LUT table for color channels.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      lut = generateLUT(noColorChannels)

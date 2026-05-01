@@ -2,7 +2,9 @@ function insertNode(obj, nodeId, x, y, z)
 % INSERTNODE - insert node to a tree after nodeId, the inserted node becomes an active node.
 %
 % Syntax:
-%   function insertNode(obj, nodeId, x, y, z)
+%   .. code-block:: matlab
+%
+%       obj.insertNode(nodeId, x, y, z)
 %
 % Input Arguments:
 %   - **nodeId** — index of the node after which a new node should be inserted

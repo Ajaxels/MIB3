@@ -2,7 +2,9 @@ function clearSelection(obj, sel_switch, BatchOptIn)
 % CLEARSELECTION - Clear the Selection layer for the current dataset.
 %
 % Syntax:
-%   function clearSelection(obj, sel_switch, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.clearSelection(sel_switch, BatchOptIn)
 %
 % Clears all pixels in the Selection layer for the current slice,
 % the whole z-stack, or the entire 4D dataset, depending on the

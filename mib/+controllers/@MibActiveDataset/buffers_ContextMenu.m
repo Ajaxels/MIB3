@@ -1,37 +1,46 @@
 function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
-% BUFFERS_CONTEXTMENU - callbacks for the context menu of the buffers.
+% BUFFERS_CONTEXTMENU - Callback for context menu operations on dataset buffers.
 %
 % Syntax:
-%   function buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)
+%   .. code-block:: matlab
 %
-% (obj.view.handles.panels.activeDataset.handles.buffer1) buttons.
-% Compatible with batch processing.
+%      obj.buffers_ContextMenu(parameter, buttonID, BatchOptIn)
+%
+% Handles context menu operations for the buffer buttons (``buffer1`` through ``buffer10``)
+% in the Datasets panel. Supports both interactive mode (via right-click menu) and batch
+% processing mode. Batch-compatible.
 %
 % Input Arguments:
-%   - **parameter** — a string that defines the action:
-%     - **'duplicate'** - duplicate the dataset to another buffer
-%     - **'sync_xy'** - synchronize the view with another dataset in XY
-%     - **'sync_xyz'** - synchronize the view with another dataset in XYZ
-%     - **'sync_xyzt'** - synchronize the view with another dataset in XYZT
-%     - **'link_views'** - link or unlink the view between two containers
-%     - **'close'** - close the current dataset
-%     - **'closeSet'** - close all datasets in the current set
-%   - **buttonID** — integer (1-10), local index of the pressed buffer button;
-%     NaN when called from batch mode without a physical button press
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN returns
-%     a structure with default options via 'SyncBatch' event, see
-%     Declaration of the BatchOpt structure below for details
+%   - **parameter** — [char] action to perform:
 %
-% Usage:
-%   Example 1::
+%     - ``'duplicate'`` — duplicate selected buffer to another buffer
+%     - ``'sync_xy'`` — synchronize XY view parameters across buffers
+%     - ``'sync_xyz'`` — synchronize XYZ view parameters across buffers
+%     - ``'sync_xyzt'`` — synchronize all dimensions and time across buffers
+%     - ``'link_views'`` — link or unlink views between two buffers
+%     - ``'close'`` — close the current dataset in the buffer
+%     - ``'closeSet'`` — close all datasets in the current set
 %
-%     obj.buffers_ContextMenu('duplicate', 2);   % duplicate buffer 2 interactively
+%   - **buttonID** — [numeric] local buffer index (1–10), or ``NaN`` when called from batch mode without a physical button press
+%   - **BatchOptIn** — *(optional)* [struct] batch processing mode options; when ``NaN``, returns default structure via ``'SyncBatch'`` event
 %
-%   Example 2::
+% Output Arguments:
+%   None
 %
-%     BatchOpt.Source = {'Container 1'}; BatchOpt.Destination = {'Container 3'};
-%     BatchOpt.showWaitbar = false;
-%     obj.buffers_ContextMenu('duplicate', NaN, BatchOpt);   % batch duplicate
+% **Example 1** — duplicate buffer interactively:
+%
+%   .. code-block:: matlab
+%
+%      obj.buffers_ContextMenu('duplicate', 2)
+%
+% **Example 2** — duplicate dataset in batch mode:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Source = {'Container 1'};
+%      BatchOpt.Destination = {'Container 3'};
+%      BatchOpt.showWaitbar = false;
+%      obj.buffers_ContextMenu('duplicate', NaN, BatchOpt)
 %
 
 % Updates

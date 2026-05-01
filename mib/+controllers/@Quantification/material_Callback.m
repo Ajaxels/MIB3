@@ -2,10 +2,14 @@ function material_Callback(obj)
 % MATERIAL_CALLBACK - Handle selection change in the Material dropdown.
 %
 % Syntax:
-%   function material_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.material_Callback()
 %
 % Updates obj.BatchOpt.MaterialIndex and the dialog title bar to reflect
-% the chosen material.  Index encoding:
+% the chosen material.  
+%
+% Index encoding:
 %   - -1 = Mask
 %   - 0 = Exterior
 %   - 1, 2, … = individual model materials (modelType ≤ 255)

@@ -2,7 +2,9 @@ function saveCheckpointNetworkCheck(obj)
 % SAVECHECKPOINTNETWORKCHECK - callback for press of Save checkpoint networks (obj.view.handles.T_SaveProgress).
 %
 % Syntax:
-%   function saveCheckpointNetworkCheck(obj)
+%   .. code-block:: matlab
+%
+%       obj.saveCheckpointNetworkCheck()
 %
     obj.BatchOpt.T_SaveProgress = obj.view.handles.T_SaveProgress.Value;
     if obj.BatchOpt.T_SaveProgress

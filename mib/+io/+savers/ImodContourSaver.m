@@ -31,10 +31,6 @@ classdef ImodContourSaver < io.savers.BaseSaver
 % savingOptions.showWaitbar        — logical
 % savingOptions.generateSelectionSw — logical, default false in silent mode
 %
-% TODO: port mibExportModelToImodModel from
-% MIB2_RENAMED_FOR_MIB3/ImportExportTools/IMOD/mibExportModelToImodModel.m
-% to mib/+io/+IMOD/mibExportModelToImodModel.m
-%
 % USAGE EXAMPLES
 %
 % .. code-block:: matlab
@@ -82,14 +78,19 @@ classdef ImodContourSaver < io.savers.BaseSaver
     methods
 
         function obj = ImodContourSaver(options)
-            % IMODCONTOURSAVER - Constructor — accepts an optional options struct.
+            % IMODCONTOURSAVER - Constructor for ImodContourSaver class.
             %
             % Syntax:
-            %   function obj = ImodContourSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.ImodContourSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the ImodContourSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -100,7 +101,15 @@ classdef ImodContourSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by ImodContourSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for IMOD contour output
             %
             formats = {'Contours for IMOD (*.mod)'};
         end
@@ -109,33 +118,36 @@ classdef ImodContourSaver < io.savers.BaseSaver
             % SAVE - Write labels data as an IMOD contour model (.mod) file.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
+            %
+            % Only the first channel (C=1) and first time point (T=1) are used.
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric label array.
-            %   Only the first channel (C=1) and first time point
-            %   (T=1) are used.
-            %   metadata — struct; used fields:
-            %   .pixSize        — struct {.x .y .z .units .t .tunits}
-            %   .materialNames  — cell array of material name strings
-            %   .materialColors — [M x 3] material RGB colours (0..1)
-            %   filename — full output path, e.g. '/out/Model_tomo.mod'
-            %   options  — struct; used fields:
-            %   .Format              — format string
-            %   .layerType           — expected 'labels'; warning if not
-            %   .xyScaleFactor       — (double) XY contour scale factor
-            %   (default 5 in silent mode)
-            %   .zScaleFactor        — (double) Z scale factor (default 1)
-            %   .generateSelectionSw — (logical) generate selection object
-            %   (default false in silent mode)
-            %   .showWaitbar         — logical
-            %   .silent              — logical, suppress dialogs
-            %   .overwrite           — logical
+            %   - **data** — [H, W, D, C, T] numeric label array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``materialNames`` — cell array of material name strings
+            %     - ``materialColors`` — [M x 3] material RGB colours (0..1)
+            %
+            %   - **filename** — full output path, e.g. ``'/out/Model_tomo.mod'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string
+            %     - ``layerType`` — expected ``'labels'``; warning if not
+            %     - ``xyScaleFactor`` — [double] XY contour scale factor; default: ``5`` in silent mode
+            %     - ``zScaleFactor`` — [double] Z scale factor; default: ``1``
+            %     - ``generateSelectionSw`` — [logical] generate selection object; default: ``false`` in silent mode
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
             %
             % Output Arguments:
-            %   fnOut — (char) path of saved .mod file, [] on failure
+            %   - **fnOut** — [char] path of saved ``.mod`` file, ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];

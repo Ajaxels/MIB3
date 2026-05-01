@@ -15,37 +15,15 @@
 % Date: 25.04.2023
 
 classdef WelcomeTips < handle
-% WELCOMETIPS - @type WelcomeTips class is a template class for using with.
+% WELCOMETIPS - Controller for the Welcome Tips dialog — displays tips at startup.
 %
-% GUI developed using appdesigner of Matlab
+% Syntax:
+%   .. code-block:: matlab
 %
+%      obj.startController('WelcomeTips');
 %
-% .. code-block:: matlab
-%
-%   obj.startController('WelcomeTips'); // as GUI tool
-%
-% or
-%
-% .. code-block:: matlab
-%
-%   // a code below was used for mibImageArithmeticController
-%   BatchOpt.Parameter = 'test';  // fill edit boxes as strings
-%   BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-%   BatchOpt.Popup = {'value'};        // value for the popups as a cell
-%   BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-%   BatchOpt.showWaitbar = true;  // show or not the waitbar
-%   obj.startController('WelcomeTips', [], BatchOpt); // start WelcomeTips in the batch mode
-%
-% or
-%
-% .. code-block:: matlab
-%
-%   // trigger return of the possible Options using returnBatchOpt function
-%   // using notify SyncBatch event
-%   obj.startController('WelcomeTips', [], NaN);
-    
-	% Updates
-	%     
+% The Welcome Tips dialog displays helpful tips to users. It can be launched
+% as a GUI tool or in batch mode by providing a BatchOpt structure.     
     
     properties
         mibModel
@@ -103,6 +81,19 @@ classdef WelcomeTips < handle
         end
         
         function closeWindow(obj)
+            % CLOSEWINDOW - close the Welcome Tips window.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.closeWindow()
+            %
+            % **Example** — close the tips window:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow();
+            %
             obj.mibModel.preferences.Tips.ShowTips = obj.view.handles.showTipsCheck.Value;
             obj.mibModel.preferences.Tips.CurrentTipIndex = obj.mibModel.preferences.Tips.CurrentTipIndex + 1;
             if obj.mibModel.preferences.Tips.CurrentTipIndex > numel(obj.mibModel.preferences.Tips.Files)
@@ -124,11 +115,18 @@ classdef WelcomeTips < handle
         end
         
         function updateWidgets(obj)
-            % UPDATEWIDGETS - update widgets of this window.
+            % UPDATEWIDGETS - update the web browser display with the current tip.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
             %
+            %       obj.updateWidgets()
+            %
+            % **Example** — refresh the tips display:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.updateWidgets();
            
             fnIndex = max([1, obj.mibModel.preferences.Tips.CurrentTipIndex]);
             

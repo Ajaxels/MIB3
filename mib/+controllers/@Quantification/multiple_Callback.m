@@ -2,7 +2,9 @@ function multiple_Callback(obj)
 % MULTIPLE_CALLBACK - Handle the Multiple properties checkbox toggle.
 %
 % Syntax:
-%   function multiple_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.multiple_Callback()
 %
 % When checked, enables the "Define properties" button (defineProperties) so the
 % user can specify a list of properties for simultaneous calculation.

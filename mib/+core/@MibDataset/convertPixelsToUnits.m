@@ -2,7 +2,9 @@ function [x, y, z] = convertPixelsToUnits(obj, x, y, z)
 % CONVERTPIXELSTOUNITS - [x, y, z] = convertPixelsToUnits(obj, x, y, z).
 %
 % Syntax:
-%   function [x, y, z] = convertPixelsToUnits(obj, x, y, z)
+%   .. code-block:: matlab
+%
+%       [x, y, z] = obj.convertPixelsToUnits(x, y, z)
 %
 % Convert pixel coordinates to physical imaging units using pixSize and boundingBox.
 %

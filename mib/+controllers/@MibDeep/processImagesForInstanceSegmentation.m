@@ -2,7 +2,9 @@ function processImagesForInstanceSegmentation(obj, preprocessFor)
 % PROCESSIMAGESFORINSTANCESEGMENTATION - Preprocess labels for 2D instance segmentation for training and prediction.
 %
 % Syntax:
-%   function processImagesForInstanceSegmentation(obj, preprocessFor)
+%   .. code-block:: matlab
+%
+%       obj.processImagesForInstanceSegmentation(preprocessFor)
 %
 % as result, mat-files with the following variables are created:
 % - instanceBoxes, matrix  [N×4 double] containing bounding box coordinates of objects, where N is a number of objects on the image
@@ -144,7 +146,7 @@ if labelsExists
                 case 'MODEL'
                     labelsDS = imageDatastore(fullfile(imageDirIn, 'Labels'), ...
                         'IncludeSubfolders', false, ...
-                        'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                        'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
                     % I = readimage(labelsDS,1);  % read model test
                     % reset(labelsDS);
                 otherwise
@@ -209,7 +211,7 @@ parfor (imgId=1:numImgFiles, parforArg)
             end
 
             % save mat-file
-            utils.deepmib.saveInstanceLabelsParFor(fullfile(outputDir, [fnModOut '.mat']), imgFilelist(imgId).name, instanceBoxes, instanceNames, instanceMasks, compressModels)
+            deepmib.saveInstanceLabelsParFor(fullfile(outputDir, [fnModOut '.mat']), imgFilelist(imgId).name, instanceBoxes, instanceNames, instanceMasks, compressModels)
         else   % 3D case
             
         end

@@ -1,26 +1,31 @@
 function status = segmentationSAM_requirements(obj, samVersionName)
-% SEGMENTATIONSAM_REQUIREMENTS - status = segmentationSAM_requirements(obj, samVersionName).
+% SEGMENTATIONSAM_REQUIREMENTS - Check for files required to run SAM segmentation.
 %
 % Syntax:
-%   function status = segmentationSAM_requirements(obj, samVersionName)
+%   .. code-block:: matlab
 %
-% Check for files required to run segmentation using segment-anything model https://segment-anything.com
+%      status = obj.segmentationSAM_requirements()
+%      status = obj.segmentationSAM_requirements(samVersionName)
+%
+% Check for files required to run segmentation using Segment Anything Model.
+% See https://segment-anything.com and https://github.com/facebookresearch/segment-anything-2
 %
 % Input Arguments:
-%   - **samVersionName** — *(optional)* integer with version of SAM
-%     - 1 the first version SAM (https://segment-anything.com)
-%     - 2 default, the second version SAM-2 (https://github.com/facebookresearch/segment-anything-2)
-%   OR alternatively a char 'SAM1', 'SAM2'
+%   - **samVersionName** *(optional)* — [numeric|char] SAM version to check:
+%
+%     - ``1`` or ``'SAM1'`` — first version SAM (https://segment-anything.com)
+%     - ``2`` or ``'SAM2'`` — second version SAM-2 (default; https://github.com/facebookresearch/segment-anything-2)
 %
 % Output Arguments:
-%   - **status** — [logical], switch indicating success of the function
+%   - **status** — [logical] indicates success of the function
 %
-% Usage:
-%   Example 1::
+% **Example** — check SAM requirements:
 %
-%     status = obj.segmentationSAM_requirements('SAM1');  // check SAM1 requirements
-%     status = obj.segmentationSAM_requirements('SAM2');  // check SAM2 requirements
-%     status = obj.segmentationSAM_requirements(2);  // check SAM2 requirements
+%   .. code-block:: matlab
+%
+%      status = obj.segmentationSAM_requirements('SAM1');  % check SAM1 requirements
+%      status = obj.segmentationSAM_requirements('SAM2');  % check SAM2 requirements
+%      status = obj.segmentationSAM_requirements(2);  % check SAM2 requirements
 %
 
 if nargin < 2; samVersionName = 'SAM2'; end

@@ -2,7 +2,9 @@ function modelRender_Callback(obj, hWidget, hData)
 % MODELRENDER_CALLBACK - callback on press of buttons in the Render button of the Model ribbon.
 %
 % Syntax:
-%   function modelRender_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelRender_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

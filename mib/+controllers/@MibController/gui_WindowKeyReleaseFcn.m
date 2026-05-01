@@ -2,21 +2,26 @@ function gui_WindowKeyReleaseFcn(obj, ~, ~)
 % GUI_WINDOWKEYRELEASEFCN - Callback for key release in MIB.
 %
 % Syntax:
-%   function gui_WindowKeyReleaseFcn(obj, ~, ~)
+%   .. code-block:: matlab
+%
+%      obj.gui_WindowKeyReleaseFcn(src, evtData)
 %
 % Restores the brush radius enlarged by the Ctrl-key eraser mode and
 % resets obj.view.ctrlPressed to 0.  Registered as WindowKeyReleaseFcn on
 % every ImageViewDocument UIFigure (see MibImageDocument.setupCallbacks).
 %
 % Input Arguments:
-%   (event arguments ignored)
+%   - **src** — event source UIFigure (unused, indicated by ``~`` in the signature)
+%   - **evtData** — key-release event data (unused, indicated by ``~`` in the signature)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   @code % registered automatically in MibImageDocument.setupCallbacks:
-%   obj.UIFigure.WindowKeyReleaseFcn = @(h,d)obj.mibController.gui_WindowKeyReleaseFcn(h,d); @endcode
+% **Example** — registered automatically in MibImageDocument.setupCallbacks:
+%
+%   .. code-block:: matlab
+%
+%      obj.UIFigure.WindowKeyReleaseFcn = @(h,d)obj.mibController.gui_WindowKeyReleaseFcn(h,d);
 %
 
 % Updates

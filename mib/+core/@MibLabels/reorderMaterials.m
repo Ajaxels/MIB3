@@ -2,7 +2,9 @@ function reorderMaterials(obj, newOrder)
 % REORDERMATERIALS - Reorder material names and colours according to newOrder.
 %
 % Syntax:
-%   function reorderMaterials(obj, newOrder)
+%   .. code-block:: matlab
+%
+%       obj.reorderMaterials(newOrder)
 %
 % The caller is responsible for remapping the corresponding pixel values
 % beforehand (see MibDataset.reorderMaterials).

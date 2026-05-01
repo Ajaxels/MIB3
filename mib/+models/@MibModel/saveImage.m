@@ -2,7 +2,6 @@ function fnOut = saveImage(obj, layerType, filename, BatchOptIn)
 % SAVEIMAGE - Save image, mask, or labels layer; top-level BatchOpt-compatible wrapper.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      fnOut = obj.saveImage(layerType)

@@ -2,7 +2,9 @@ function datasetCalibration_Callback(obj, hWidget, hData)
 % DATASETCALIBRATION_CALLBACK - callback on press of buttons in the Calibration section of the Dataset ribbon.
 %
 % Syntax:
-%   function datasetCalibration_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetCalibration_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

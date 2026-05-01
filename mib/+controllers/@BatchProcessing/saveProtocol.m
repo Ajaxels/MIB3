@@ -2,7 +2,9 @@ function saveProtocol(obj)
 % SAVEPROTOCOL - save the current protocol to a .mibProtocol (MAT) or .xls file via a dialog.
 %
 % Syntax:
-%   function saveProtocol(obj)
+%   .. code-block:: matlab
+%
+%       obj.saveProtocol()
 %
 % Usage:
 %   Example 1::

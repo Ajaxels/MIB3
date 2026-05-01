@@ -2,7 +2,9 @@ function imageMorphOps_Callbacks(obj, hWidget, hData)
 % IMAGEMORPHOPS_CALLBACKS - callback on press of morph-ops buttons in the Image ribbon.
 %
 % Syntax:
-%   function imageMorphOps_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageMorphOps_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

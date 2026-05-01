@@ -2,7 +2,9 @@ function homeImport_Callback(obj, hWidget, hData)
 % HOMEIMPORT_CALLBACK - callback on press of the import buttons in the Home ribbon.
 %
 % Syntax:
-%   function homeImport_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homeImport_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

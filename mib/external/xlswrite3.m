@@ -1,5 +1,5 @@
-function [success, message]=xlswrite2(file, data, sheet, range)
-% function [success,message]=xlswrite2(file,data,sheet,range)
+function [success, message]=xlswrite3(file, data, sheet, range)
+% function [success,message]=xlswrite3(file,data,sheet,range)
 % XLSWRITE Stores numeric array or cell array in Excel workbook.
 %
 %   [SUCCESS,MESSAGE]=XLSWRITE(FILE,ARRAY,SHEET,RANGE) writes ARRAY to the Excel

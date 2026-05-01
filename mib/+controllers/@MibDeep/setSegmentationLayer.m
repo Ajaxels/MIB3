@@ -2,7 +2,9 @@ function setSegmentationLayer(obj)
 % SETSEGMENTATIONLAYER - callback for modification of the Segmentation Layer dropdown.
 %
 % Syntax:
-%   function setSegmentationLayer(obj)
+%   .. code-block:: matlab
+%
+%       obj.setSegmentationLayer()
 %
 
     switch obj.view.handles.T_SegmentationLayer.Value

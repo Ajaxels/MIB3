@@ -2,7 +2,9 @@ function timePnt = getCurrentTimePoint(obj)
 % GETCURRENTTIMEPOINT - Get time point of the currently shown image.
 %
 % Syntax:
-%   function timePnt = getCurrentTimePoint(obj)
+%   .. code-block:: matlab
+%
+%       timePnt = obj.getCurrentTimePoint()
 %
 % Input Arguments:
 %

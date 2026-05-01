@@ -2,7 +2,9 @@ function exportDatasetToMib(obj, layerType, BatchOptIn)
 % EXPORTDATASETTOMIB - Copy the mask or model layer to another MIB container (buffer).
 %
 % Syntax:
-%   function exportDatasetToMib(obj, layerType, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.exportDatasetToMib(layerType, BatchOptIn)
 %
 % Input Arguments:
 %   - **layerType** — a string specifying which layer to copy:

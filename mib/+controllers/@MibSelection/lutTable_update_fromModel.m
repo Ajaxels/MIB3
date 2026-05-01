@@ -2,7 +2,9 @@ function lutTable_update_fromModel(obj)
 % LUTTABLE_UPDATE_FROMMODEL - Update obj.view.handles.panels.selection.handles.lutTable table and.
 %
 % Syntax:
-%   function lutTable_update_fromModel(obj)
+%   .. code-block:: matlab
+%
+%      obj.lutTable_update_fromModel()
 %
 % obj.view.handles.panels.selection.handles.colChannel color dropdown from
 % obj.mibModel

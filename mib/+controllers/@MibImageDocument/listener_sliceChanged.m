@@ -2,33 +2,35 @@ function listener_sliceChanged(obj)
 % LISTENER_SLICECHANGED - Listener callback for the MibModel 'SliceChanged' event.
 %
 % Syntax:
-%   function listener_sliceChanged(obj)
+%   .. code-block:: matlab
+%
+%      obj.listener_sliceChanged()
 %
 % Synchronises the slice-number edit box and slider of this image document
 % with the current z-slice stored in the model, then redraws the image.
 %
-% Called automatically when any code fires:
-% notify(obj.mibModel, 'SliceChanged');
+% Called automatically when:
+%   .. code-block:: matlab
 %
-% The method guards against processing changes that belong to a different
-% document in split-panel mode (selectedSet ~= setOfDatasetsIndex).
+%      notify(obj.mibModel, 'SliceChanged');
 %
-% Important: this method updates widgets DIRECTLY and must NOT delegate to
-% sliceNumber_Callback or sliceNumberSlider_Callback — those callbacks
-% fire 'SliceChanged' themselves, which would create an infinite loop.
+% **Important notes:**
+%   - This method guards against changes from different documents in split-panel mode (``selectedSet ~= setOfDatasetsIndex``)
+%   - Updates widgets DIRECTLY; does NOT delegate to ``sliceNumber_Callback`` or ``sliceNumberSlider_Callback``
+%     (which would create an infinite loop by firing ``SliceChanged`` themselves)
 %
 % Input Arguments:
-%   none  (called via @(~,~) obj.listener_sliceChanged())
+%   (none — called via ``@(~,~) obj.listener_sliceChanged()``)
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-% Usage:
-%   Example 1 - wired in setupCallbacks::
+% **Example** — wired in ``setupCallbacks``:
 %
-%     % wired in setupCallbacks:
-%     obj.listeners{end+1} = addlistener(obj.mibModel, 'SliceChanged', ...
-%         @(~,~) obj.listener_sliceChanged());
+%   .. code-block:: matlab
+%
+%      obj.listeners{end+1} = addlistener(obj.mibModel, 'SliceChanged', ...
+%          @(~,~) obj.listener_sliceChanged());
 %
 
 % Only act for the dataset displayed by this document

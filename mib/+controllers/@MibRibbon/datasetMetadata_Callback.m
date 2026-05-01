@@ -2,7 +2,9 @@ function datasetMetadata_Callback(obj, hWidget, hData)
 % DATASETMETADATA_CALLBACK - callback on press of buttons in the Metadata section of the Dataset ribbon.
 %
 % Syntax:
-%   function datasetMetadata_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetMetadata_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

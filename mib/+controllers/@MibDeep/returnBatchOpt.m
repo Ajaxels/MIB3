@@ -2,7 +2,9 @@ function returnBatchOpt(obj, BatchOptOut)
 % RETURNBATCHOPT - return structure with Batch Options and possible configurations.
 %
 % Syntax:
-%   function returnBatchOpt(obj, BatchOptOut)
+%   .. code-block:: matlab
+%
+%       obj.returnBatchOpt(BatchOptOut)
 %
 % via the notify 'SyncBatch' event
 %

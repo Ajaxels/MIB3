@@ -2,7 +2,9 @@ function [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels
 % GETIMADJUSTSTRETCHCOEF - Return image stretching coefficients to be used for imadjust function to.
 %
 % Syntax:
-%   function [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)
+%   .. code-block:: matlab
+%
+%       [lowIn, highIn, lowOut, highOut] = obj.getImAdjustStretchCoef(channels)
 %
 % stretch contrast of the image
 %

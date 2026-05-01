@@ -79,18 +79,15 @@ classdef MibView < handle
         recenterGui(obj) % recenter MIB to be on the center of the screen
 
         function obj = MibView(controller)
-           % MIBVIEW - obj = mibView(controller).
+           % MIBVIEW - main view class constructor.
            %
            % Syntax:
-           %   function obj = MibView(controller)
+           %   .. code-block:: matlab
            %
-           % mibView class constructor
-           %
-           % Constructor for the mibView class. Create a new instance of
-           % the class with default parameters
+           %      obj = MibView(controller)
            %
            % Input Arguments:
-           %   - **controller** — handle to mibController class
+           %   - **controller** — handle to ``MibController`` class
            %
 
             obj.controller = controller;

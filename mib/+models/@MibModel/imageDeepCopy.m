@@ -2,7 +2,9 @@ function imageDeepCopy(obj, fromId, toId, options)
 % IMAGEDEEPCOPY - Deep-copy a MibDataset from one container slot to another.
 %
 % Syntax:
-%   function imageDeepCopy(obj, fromId, toId, options)
+%   .. code-block:: matlab
+%
+%       obj.imageDeepCopy(fromId, toId, options)
 %
 % @c copy() (matlab.mixin.Copyable) performs a shallow copy only — all
 % handle sub-properties (*image,* *labels,* *mask,* *selection,*

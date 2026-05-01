@@ -1,17 +1,28 @@
 function listner_ModelEvent(obj, model, evnt)
-% LISTNER_MODELEVENT - listener callback function for detection of MibModel events.
+% LISTNER_MODELEVENT - Listener callback for generic MibModel events dispatched via ``modelNotify``.
 %
 % Syntax:
-%   function listner_ModelEvent(obj, model, evnt)
+%   .. code-block:: matlab
 %
-% Requires to make eventdata instance of the ToggleEventData class
+%      obj.listner_ModelEvent(model, evnt)
 %
-% Usage:
-%   Example 1::
+% Requires making the eventdata instance of the ``core.ToggleEventData`` class.
 %
-%     notifyEvent.Name = "updateSegmentationTable";
-%     eventdata = ToggleEventData(notifyEvent);\n' ...
-%     notify(obj, "modelNotify", eventdata);
+% Input Arguments:
+%   - **model** — handle to MibModel (event source)
+%   - **evnt** — instance of ``core.ToggleEventData``; ``evnt.EventName`` identifies the
+%     event and ``evnt.Parameters`` carries event-specific payload
+%
+% Output Arguments:
+%   (none)
+%
+% **Example 1** — fire a generic model notification:
+%
+%   .. code-block:: matlab
+%
+%      notifyEvent.Name = "updateSegmentationTable";
+%      eventdata = core.ToggleEventData(notifyEvent);
+%      notify(obj, "modelNotify", eventdata);
 %
 
 % arguments (Input)

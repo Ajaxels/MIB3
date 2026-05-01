@@ -2,7 +2,10 @@ function globalTabGroup_SelectionCallback(obj, hWidget)
 % GLOBALTABGROUP_SELECTIONCALLBACK - Callback for selection of a tab in the top ribbon of MIB.
 %
 % Syntax:
-%   function globalTabGroup_SelectionCallback(obj, hWidget)
+%   .. code-block:: matlab
+%
+%      obj.globalTabGroup_SelectionCallback()
+%      obj.globalTabGroup_SelectionCallback(hWidget)
 %
 % used to apply lazy loading of the tabs upon the first selection
 %
@@ -10,14 +13,17 @@ function globalTabGroup_SelectionCallback(obj, hWidget)
 % obj.view.handles.ribbon.global.SelectedTabChangedFcn = @(~, ~)obj.globalTabGroup_SelectionCallback;
 %
 % Input Arguments:
-%   - **hWidget** — [char] indicating the handle of the tab, e.g. 'Dataset',
-%     'Image', 'Model', matching the tab title: obj.view.handles.ribbon.global.SelectedTab.Title
+%   - **hWidget** — char, tab title to select/initialize, e.g. ``'Dataset'``,
+%     ``'Image'``, ``'Model'``; matches ``obj.view.handles.ribbon.global.SelectedTab.Title``
 %
-% Usage:
-%   <code>
-%   // call from MibController to check/init the Image tab in the ribbon
-%   obj.globalTabGroup_SelectionCallback('Image');
-%   <endcode>
+% Output Arguments:
+%   (none)
+%
+% **Example** — check and initialize the Image ribbon tab:
+%
+%   .. code-block:: matlab
+%
+%      obj.globalTabGroup_SelectionCallback('Image');
 %
 
 showDevInfo = false;

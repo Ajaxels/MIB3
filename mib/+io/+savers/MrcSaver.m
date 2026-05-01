@@ -82,14 +82,19 @@ classdef MrcSaver < io.savers.BaseSaver
     methods
 
         function obj = MrcSaver(options)
-            % MRCSAVER - Constructor — accepts an optional options struct.
+            % MRCSAVER - Constructor for MrcSaver class.
             %
             % Syntax:
-            %   function obj = MrcSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.MrcSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the MrcSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -100,7 +105,15 @@ classdef MrcSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by MrcSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for MRC output
             %
             formats = { ...
                 'MRC format for IMOD (*.mrc)'; ...
@@ -111,33 +124,37 @@ classdef MrcSaver < io.savers.BaseSaver
             % SAVE - Write data as an MRC file for IMOD.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
+            %
+            % MRC supports only single-channel data (C=1); a warning is issued and
+            % only the first channel is written if C>1.
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array.
-            %   MRC supports only C=1; a warning is issued and
-            %   only the first channel is written if C>1.
-            %   metadata — struct; used fields:
-            %   .colorType  — 'grayscale' | 'multichannel' | 'indexed'
-            %   .dataClass  — 'uint8' | 'uint16' | ...
-            %   .maxInt     — maximum intensity value
-            %   .pixSize    — struct {.x .y .z .units .t .tunits};
-            %   used for MRC cell/voxel size header
-            %   filename — full output path, e.g. '/out/tomo.mrc'
-            %   options  — struct; used fields:
-            %   .Format           — format string
-            %   .layerType        — 'image' | 'mask' | 'labels'
-            %   (default 'image')
-            %   .showWaitbar      — logical
-            %   .silent           — logical, suppress dialogs
-            %   .overwrite        — logical
-            %   .FilenameGenerator — 'Use original filename' |
-            %   'Use sequential filename'
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` — maximum intensity value
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``};
+            %       used for MRC cell/voxel size header
+            %
+            %   - **filename** — full output path, e.g. ``'/out/tomo.mrc'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string
+            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
             %
             % Output Arguments:
-            %   fnOut — (char) path of saved .mrc file, [] on failure
+            %   - **fnOut** — [char] path of saved ``.mrc`` file, ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];

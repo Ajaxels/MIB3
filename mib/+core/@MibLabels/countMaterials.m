@@ -2,7 +2,9 @@ function result = countMaterials(obj)
 % COUNTMATERIALS - Calculate and update obj.materialsCount from the current model state.
 %
 % Syntax:
-%   function result = countMaterials(obj)
+%   .. code-block:: matlab
+%
+%       result = obj.countMaterials()
 %
 % For small model types (255) the count is taken from
 % numel(materialNames) when available.  For large model types

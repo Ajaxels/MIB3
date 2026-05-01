@@ -2,7 +2,9 @@ function options = getOptions(obj)
 % GETOPTIONS - get options of the class.
 %
 % Syntax:
-%   function options = getOptions(obj)
+%   .. code-block:: matlab
+%
+%       options = obj.getOptions()
 %
 % Output Arguments:
 %   - **options** — a structure with options

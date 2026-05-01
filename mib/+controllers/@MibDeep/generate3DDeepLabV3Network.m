@@ -18,7 +18,9 @@ function net = generate3DDeepLabV3Network(obj, imageSize, numClasses, targetNetw
 % GENERATE3DDEEPLABV3NETWORK - generate a hybrid 2.5D DeepLabv3+ convolutional neural network for semantic image.
 %
 % Syntax:
-%   function net = generate3DDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)
+%   .. code-block:: matlab
+%
+%       net = obj.generate3DDeepLabV3Network(imageSize, numClasses, targetNetwork)
 %
 % segmentation. The training data should be a small substack of 3,5,7 etc
 % slices, where only the middle slice is segmented.

@@ -2,10 +2,12 @@ function result = saveBigDataViewerFormat(filename, I, options)
 % SAVEBIGDATAVIEWERFORMAT - Save a dataset in Fiji BigDataViewer (BDV) HDF5 format.
 %
 % Syntax:
-%   function result = saveBigDataViewerFormat(filename, I, options)
+%   .. code-block:: matlab
 %
-% Format description:
-% http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format
+%      result = io.HDF5.saveBigDataViewerFormat(filename, I)
+%      result = io.HDF5.saveBigDataViewerFormat(filename, I, options)
+%
+% Format description: http://fiji.sc/BigDataViewer#About_the_BigDataViewer_data_format
 %
 % DATA CONVENTION
 % Input I must be [W, H, C, D, T] — i.e. X/Y already swapped by the
@@ -21,50 +23,47 @@ function result = saveBigDataViewerFormat(filename, I, options)
 % options.Format = 'bdv.hdf5' after this function returns.
 %
 % Input Arguments:
-%   filename — full path to the output .h5 file
-%   I        — [W, H, C, D, T] image array (X/Y pre-swapped by caller)
-%   options  — struct with fields:
-%   .ChunkSize        [3 x L] chunk sizes per pyramid level (or [3 x 1]
-%   replicated to all levels); default [64;64;64]
-%   .Deflate          compression level 0-9; default 0
-%   .SubSampling      [3 x L] downsampling factors per level,
-%   e.g. [1 2 4; 1 2 4; 1 2 4]; default [1;1;1]
-%   .ResamplingMethod 'nearest'|'bicubic'|'bilinear'; default 'bicubic'
-%   .t                time-point start index (for multi-time writing);
-%   default 1
-%   .showWaitbar      logical; default true
-%   .ParentFigure     handle to the main MIB window (for uiprogressdlg)
-%   .ImageDescription (char) BoundingBox metadata string
-%   .lutColors        [C x 3] LUT colours (0..1) per channel
+%   - **filename** — full path to the output ``.h5`` file
+%   - **I** — [W, H, C, D, T] image array (X/Y pre-swapped by caller)
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``.ChunkSize`` — [3×L] chunk sizes per pyramid level (or [3×1] replicated
+%       to all levels); default ``[64; 64; 64]``
+%     - ``.Deflate`` — compression level 0–9; default ``0``
+%     - ``.SubSampling`` — [3×L] downsampling factors per level,
+%       e.g. ``[1 2 4; 1 2 4; 1 2 4]``; default ``[1; 1; 1]``
+%     - ``.ResamplingMethod`` — ``'nearest'``, ``'bicubic'``, or ``'bilinear'``
+%       (default: ``'bicubic'``)
+%     - ``.t`` — time-point start index for multi-time writing (default: ``1``)
+%     - ``.showWaitbar`` — [logical] (default: ``true``)
+%     - ``.ParentFigure`` — handle to the main MIB UIFigure (for ``uiprogressdlg``)
+%     - ``.ImageDescription`` — (char) BoundingBox metadata string
+%     - ``.lutColors`` — [C×3] LUT colours (0–1) per channel
 %
 % Output Arguments:
-%   result — 1 = success, 0 = failure
+%   - **result** — ``1`` = success, ``0`` = failure
 %
-%   USAGE EXAMPLES
-%
-%   .. code-block:: matlab
-%
-%       %% Minimal — single resolution level
-%       opts.SubSampling      = [1;1;1];
-%       opts.ChunkSize        = [64;64;64];
-%       opts.Deflate          = 0;
-%       opts.showWaitbar      = false;
-%       opts.t                = 1;
-%       dataBDV = permute(data_HWDCT, [2 1 4 3 5]);   % [H,W,D,C,T]→[W,H,C,D,T]
-%       io.HDF5.saveBigDataViewerFormat('out.h5', dataBDV, opts);
-%       io.HDF5.saveXMLheader('out.h5', opts);         % writes out.xml
-%
-%
+% **Example 1** — minimal, single resolution level:
 %
 %   .. code-block:: matlab
 %
-%       %% Three-level pyramid
-%       opts.SubSampling = [1 2 4; 1 2 4; 1 2 4];     % [x;y;z] per level
-%       opts.ChunkSize   = [64 64 64; 64 64 64; 64 64 64]';  % [3 x 3]
+%      opts.SubSampling = [1;1;1];
+%      opts.ChunkSize   = [64;64;64];
+%      opts.Deflate     = 0;
+%      opts.showWaitbar = false;
+%      opts.t           = 1;
+%      dataBDV = permute(data_HWDCT, [2 1 4 3 5]);   % [H,W,D,C,T]→[W,H,C,D,T]
+%      io.HDF5.saveBigDataViewerFormat('out.h5', dataBDV, opts);
+%      io.HDF5.saveXMLheader('out.h5', opts);         % writes out.xml
 %
+% **Example 2** — three-level pyramid:
 %
-%   SEE ALSO
-%   io.HDF5.saveXMLheader, io.savers.HDF5Saver
+%   .. code-block:: matlab
+%
+%      opts.SubSampling = [1 2 4; 1 2 4; 1 2 4];     % [x;y;z] per level
+%      opts.ChunkSize   = [64 64 64; 64 64 64; 64 64 64]';  % [3 x 3]
+%
+% .. seealso:: ``io.HDF5.saveXMLheader``, ``io.savers.HDF5Saver``
 %
 
 % Updates

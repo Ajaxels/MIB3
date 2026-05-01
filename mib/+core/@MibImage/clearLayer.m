@@ -2,7 +2,9 @@ function clearLayer(obj, layerName, y, x, z, t)
 % CLEARLAYER - Clear the layer using numeric coordinate ranges.
 %
 % Syntax:
-%   function clearLayer(obj, layerName, y, x, z, t)
+%   .. code-block:: matlab
+%
+%       obj.clearLayer(layerName, y, x, z, t)
 %
 % String mode resolution ('2D', '3D', '4D') and block-mode coordinate
 % clamping are handled upstream in MibDataset.clearLayer, which has

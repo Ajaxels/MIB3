@@ -2,7 +2,9 @@ function insertSlice(obj, img, insertPosition, dim, options)
 % INSERTSLICE - Low-level insert of img into obj.data{1} along the depth (z) or time (t) dimension.
 %
 % Syntax:
-%   function insertSlice(obj, img, insertPosition, dim, options)
+%   .. code-block:: matlab
+%
+%       obj.insertSlice(img, insertPosition, dim, options)
 %
 % This is the pure data-manipulation layer: no dialogs, no waitbars, no
 % annotation handling. All validation and user interaction is done by the

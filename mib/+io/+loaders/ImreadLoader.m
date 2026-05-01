@@ -13,29 +13,33 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % IMREADLOADER - Constructor for ImreadLoader class.
             %
             % Syntax:
-            %   function obj = ImreadLoader(options)
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.ImreadLoader(options)
             %
             % Input Arguments:
-            %   - **options** — [*optional,* struct] options structure
-            %   - .waitbar - [logical] show or not the waitbar
-            %   - .mibPath - [char] path to MIB directory
-            %   - .customSections - [logical] load custom sections only
-            %   - .customSectionsSettings - [struct] custom section parameters
-            %   - .imgStretch - [logical] stretch uint32 images to uint16
-            %   - .silentMode - [logical] do not ask user questions
-            %   - .verbose - [logical] show timing information
-            %   - .Font - [struct] font settings for dialogs
-            %   - .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` — [char] path to MIB directory
+            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` — [struct] custom section parameters
+            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` — [logical] show timing information; default: ``false``
+            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
             %   - **obj** — instance of the ImreadLoader class
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — create loader with options:
             %
-            %     options.waitbar = true;
-            %     options.mibPath = 'c:\mib';
-            %     loader = io.loaders.ImreadLoader(options);
+            %   .. code-block:: matlab
+            %
+            %      options.waitbar = true;
+            %      options.mibPath = 'c:\mib';
+            %      loader = io.loaders.ImreadLoader(options);
             %
             
             % default Options settings
@@ -51,7 +55,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % LOADMETADATA - Load metadata for standard image files.
             %
             % Syntax:
-            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %   .. code-block:: matlab
+            %
+            %      [imginfo, files] = obj.loadMetadata(filenames, options)
             %
             % This method extracts image metadata using imfinfo for standard
             % MATLAB-readable image formats. It handles pyramidal TIF detection,
@@ -60,56 +66,61 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             %
             % Input Arguments:
             %   - **filenames** — cell array with filenames of images
-            %   - **options** — [*struct]* options for metadata loading
-            %   - .waitbar - [logical] show or not the waitbar, [**default]** = *false*
-            %   - .customSections - [logical] load part of the dataset, [**default]** = *false*
-            %   - .customSectionsSettings - [struct] custom section settings
-            %   - .xMin - [numeric] min X coordinate
-            %   - .xMax - [numeric] max X coordinate
-            %   - .yMin - [numeric] min Y coordinate
-            %   - .yMax - [numeric] max Y coordinate
-            %   - .zMin - [numeric] min Z coordinate (slice)
-            %   - .zMax - [numeric] max Z coordinate (slice)
-            %   - .xyStep - [numeric] XY binning step
-            %   - .mibPath - [char] path to MIB directory
-            %   - .ParentFigure - handle to the parent window to show progress dialog
-            %   - .Font - [struct] font settings for dialogs
-            %   - .BioFormatsIndices - [numeric] level index for pyramidal TIF
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
+            %     - ``customSectionsSettings`` — [struct] custom section settings
+            %     - ``xMin`` — [numeric] min X coordinate
+            %     - ``xMax`` — [numeric] max X coordinate
+            %     - ``yMin`` — [numeric] min Y coordinate
+            %     - ``yMax`` — [numeric] max Y coordinate
+            %     - ``zMin`` — [numeric] min Z coordinate (slice)
+            %     - ``zMax`` — [numeric] max Z coordinate (slice)
+            %     - ``xyStep`` — [numeric] XY binning step
+            %     - ``mibPath`` — [char] path to MIB directory
+            %     - ``ParentFigure`` — handle to the parent window for progress dialog
+            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``BioFormatsIndices`` — [numeric] level index for pyramidal TIF
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata
-            %   - "Height" - image height in pixels
-            %   - "Width" - image width in pixels
-            %   - "Colors" - number of color channels
-            %   - "Depth" - number of z-slices
-            %   - "Time" - number of time points
-            %   - "imgClass" - image class (uint8, uint16, etc.)
-            %   - "ColorType" - 'grayscale', 'truecolor', or 'indexed'
-            %   - "ImageDescription" - description with BoundingBox info
-            %   - other format-specific metadata fields
-            %   - **files** — structure array with file information for each file
-            %   - .filename - [char] full filename
-            %   - .objecttype - [char] type of the image loader 'imread'
-            %   - .extension - [char] file extension, including the leading dot
-            %   - .height - [numeric] image height
-            %   - .width - [numeric] image width
-            %   - .color - [numeric] number of color channels
-            %   - .noLayers - [numeric] number of image frames
-            %   - .time - [numeric] number of time points
-            %   - .imgClass - [char] image class, 'uint8', 'uint16', 'uint32', 'single'
-            %   - .level - [numeric] pyramid level (for pyramidal TIF)
-            %   - .levelMagScale - [numeric] magnification scale factor
-            %   - .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
-            %   - .xyStep - [numeric] XY step for binning
+            %   - **imginfo** — dictionary with image metadata containing fields:
             %
-            % Usage:
-            %   Example 1::
+            %     - ``Height`` — image height in pixels
+            %     - ``Width`` — image width in pixels
+            %     - ``Colors`` — number of color channels
+            %     - ``Depth`` — number of z-slices
+            %     - ``Time`` — number of time points
+            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` — description with BoundingBox info
+            %     - other format-specific metadata fields
             %
-            %     loader = io.loaders.ImreadLoader();
-            %     options.waitbar = true;
-            %     filenames = {'image1.tif', 'image2.tif'};
-            %     [imginfo, files] = loader.loadMetadata(filenames, options);
-            %     fprintf('Image size: %d x %d x %d\n', imginfo{"Width"}, imginfo{"Height"}, imginfo{"Depth"});
+            %   - **files** — structure array with file information for each file:
+            %
+            %     - ``filename`` — [char] full filename
+            %     - ``objecttype`` — [char] type of the image loader ``'imread'``
+            %     - ``extension`` — [char] file extension, including the leading dot
+            %     - ``height`` — [numeric] image height
+            %     - ``width`` — [numeric] image width
+            %     - ``color`` — [numeric] number of color channels
+            %     - ``noLayers`` — [numeric] number of image frames
+            %     - ``time`` — [numeric] number of time points
+            %     - ``imgClass`` — [char] image class (``'uint8'``, ``'uint16'``, ``'uint32'``, ``'single'``)
+            %     - ``level`` — [numeric] pyramid level (for pyramidal TIF)
+            %     - ``levelMagScale`` — [numeric] magnification scale factor
+            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` — [numeric] region coordinates
+            %     - ``xyStep`` — [numeric] XY step for binning
+            %
+            % **Example 1** — load metadata from standard image files:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.ImreadLoader();
+            %      options.waitbar = true;
+            %      filenames = {'image1.tif', 'image2.tif'};
+            %      [imginfo, files] = loader.loadMetadata(filenames, options);
+            %      fprintf('Image size: %d x %d x %d\n', imginfo{"Width"}, imginfo{"Height"}, imginfo{"Depth"});
             %
 
             % Merge constructor options with runtime options
@@ -444,7 +455,9 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % LOADIMAGES - Load image data for standard image files.
             %
             % Syntax:
-            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %   .. code-block:: matlab
+            %
+            %      [img, imginfo] = obj.loadImages(files, imginfo, options)
             %
             % This method loads actual image data using imread for standard
             % MATLAB image formats. It supports multi-page TIF files, pyramidal
@@ -452,45 +465,50 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % dimension mismatch handling with background filling.
             %
             % Input Arguments:
-            %   - **files** — structure array from loadMetadata with file information
-            %   - .filename - [char] full filename
-            %   - .objecttype - [char] type of the image loader 'imread'
-            %   - .extension - [char] file extension with dot - '.jpg'
-            %   - .height - [numeric] image height
-            %   - .width - [numeric] image width
-            %   - .color - [numeric] number of color channels
-            %   - .noLayers - [numeric] number of image layers/frames
-            %   - .time - [numeric] number of image frames
-            %   - .imgClass - [char] image class, 'uint8', 'uint16', 'uint32'
-            %   - .level - [numeric] pyramid level (optional)
-            %   - .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
-            %   - .zMin, .zMax - [numeric] slice range (optional)
-            %   - .xyStep - [numeric] XY step for binning (optional)
-            %   - .backgroundColor - [numeric] background color value (optional)
+            %   - **files** — structure array from loadMetadata with file information:
+            %
+            %     - ``filename`` — [char] full filename
+            %     - ``objecttype`` — [char] type of the image loader ``'imread'``
+            %     - ``extension`` — [char] file extension with dot (e.g., ``'.jpg'``)
+            %     - ``height`` — [numeric] image height
+            %     - ``width`` — [numeric] image width
+            %     - ``color`` — [numeric] number of color channels
+            %     - ``noLayers`` — [numeric] number of image layers/frames
+            %     - ``time`` — [numeric] number of image frames
+            %     - ``imgClass`` — [char] image class (``'uint8'``, ``'uint16'``, ``'uint32'``)
+            %     - ``level`` — [numeric] pyramid level (optional)
+            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` — [numeric] region coordinates (optional)
+            %     - ``zMin``, ``zMax`` — [numeric] slice range (optional)
+            %     - ``xyStep`` — [numeric] XY step for binning (optional)
+            %     - ``backgroundColor`` — [numeric] background color value (optional)
+            %
             %   - **imginfo** — dictionary from loadMetadata with image metadata
-            %   - **options** — [*struct]* options for image loading
-            %   - .waitbar - [logical] show or not the waitbar, [**default]** = *true*
-            %   - .imgStretch - [logical] stretch uint32 to uint16, [**default]** = *true*
-            %   - .silentMode - [logical] do not ask user questions, [**default]** = *false*
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``true``
+            %     - ``imgStretch`` — [logical] stretch uint32 to uint16; default: ``true``
+            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
             %
             % Output Arguments:
-            %   - **img** — loaded image dataset [1:height, 1:width, 1:depth, 1:color, 1:time]
-            %   - **imginfo** — updated dictionary with final metadata
-            %   - "Height" - final image height
-            %   - "Width" - final image width
-            %   - "Depth" - final number of slices
-            %   - "Time" - number of time points
-            %   - "ColorType" - color type
-            %   - "ColorTable" - colormap for indexed images (optional)
+            %   - **img** — loaded image dataset [height, width, depth, color, time]
+            %   - **imginfo** — updated dictionary with final metadata:
             %
-            % Usage:
-            %   Example 1::
+            %     - ``Height`` — final image height
+            %     - ``Width`` — final image width
+            %     - ``Depth`` — final number of slices
+            %     - ``Time`` — number of time points
+            %     - ``ColorType`` — color type
+            %     - ``ColorTable`` — colormap for indexed images (optional)
             %
-            %     loader = io.loaders.ImreadLoader();
-            %     options.waitbar = true;
-            %     [imginfo, files, pixSize] = loader.loadMetadata({'image.tif'}, options);
-            %     [img, imginfo] = loader.loadImages(files, imginfo, options);
-            %     fprintf('Loaded image size: %s\n', mat2str(size(img)));
+            % **Example 1** — load images from standard image file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.ImreadLoader();
+            %      options.waitbar = true;
+            %      [imginfo, files] = loader.loadMetadata({'image.tif'}, options);
+            %      [img, imginfo] = loader.loadImages(files, imginfo, options);
+            %      fprintf('Loaded image size: %s\n', mat2str(size(img)));
             %
 
             % Merge constructor options with runtime options

@@ -2,7 +2,9 @@ function updateBatchOptFromGUI(obj, event)
 % UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from widgets of GUI.
 %
 % Syntax:
-%   function updateBatchOptFromGUI(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.updateBatchOptFromGUI(event)
 %
 % use an external function (utils\updateBatchOptFromGUI_Shared.m) that is common for all tools
 % compatible with the Batch mode

@@ -2,7 +2,9 @@ function updateProtocolList(obj)
 % UPDATEPROTOCOLLIST - refresh the protocol listbox from obj.Protocol, preserving the current selection.
 %
 % Syntax:
-%   function updateProtocolList(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateProtocolList()
 %
 % Usage:
 %   Example 1::

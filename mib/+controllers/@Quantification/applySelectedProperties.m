@@ -2,7 +2,9 @@ function applySelectedProperties(obj, propertyList)
 % APPLYSELECTEDPROPERTIES - Apply the property list returned by the QuantificationProperties dialog.
 %
 % Syntax:
-%   function applySelectedProperties(obj, propertyList)
+%   .. code-block:: matlab
+%
+%       obj.applySelectedProperties(propertyList)
 %
 % Called by the QuantificationProperties child controller when the user
 % confirms the selection.  Sorts the list, warns if CurveLength or

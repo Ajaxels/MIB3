@@ -2,7 +2,9 @@ function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, 
 % GETCOORDINATESOFSHOWNIMAGE - Return minimal and maximal coordinates (XY) of the image that is.
 %
 % Syntax:
-%   function [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3)
+%   .. code-block:: matlab
+%
+%       [yMin, yMax, xMin, xMax, zMin, zMax] = obj.getCoordinatesOfShownImage(transposeTo3)
 %
 % currently shown.
 %

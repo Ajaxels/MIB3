@@ -1,20 +1,21 @@
-function result = setPixelIdxList(obj, type, dataset, PixelIdxList, options) %#ok<INUSD>
+function result = setPixelIdxList(obj, type, dataset, PixelIdxList, options) 
 % SETPIXELIDXLIST - Write pixel values at a list of linear indices into the active dataset layer.
 %
 % Syntax:
-%   function result = setPixelIdxList(obj, type, dataset, PixelIdxList, options) %#ok<INUSD>
+%   .. code-block:: matlab
+%
+%       result = obj.setPixelIdxList(type, dataset, PixelIdxList, options) %#ok<INUSD>
 %
 % Wrapper method on MibDataset that routes the write request to the correct
 % layer object (obj.image, obj.labels, obj.mask, obj.selection) and then
 % delegates to core.MibImage.setPixelIdxList.
 %
 % Routing rules (mirror setData3D):
-% - type 'image'               → obj.image
-% - type 'labels'/'model'      → obj.labels; sets obj.modelExist = true
-% - type 'mask'                → obj.labels (MibLabels63) or obj.mask (MibLabels);
-% sets obj.maskExist = true
-% - type 'selection'           → obj.labels (MibLabels63) or obj.selection (MibLabels)
-% - type 'everything'          → obj.labels (MibLabels63 only)
+%   - ``'image'`` — routes to ``obj.image``
+%   - ``'labels'`` or ``'model'`` — routes to ``obj.labels``; sets ``obj.modelExist = true``
+%   - ``'mask'`` — routes to ``obj.labels`` (``MibLabels63``) or ``obj.mask`` (``MibLabels``); sets ``obj.maskExist = true``
+%   - ``'selection'`` — routes to ``obj.labels`` (``MibLabels63``) or ``obj.selection`` (``MibLabels``)
+%   - ``'everything'`` — routes to ``obj.labels`` (``MibLabels63`` only)
 %
 % The PixelIdxList must be linear indices into the full 3D volume in XY
 % orientation (i.e. as returned by bwconncomp / regionprops).

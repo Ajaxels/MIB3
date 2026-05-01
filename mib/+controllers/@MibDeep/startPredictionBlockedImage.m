@@ -2,7 +2,9 @@ function startPredictionBlockedImage(obj)
 % STARTPREDICTIONBLOCKEDIMAGE - predict 2D/3D datasets using the blockedImage class.
 %
 % Syntax:
-%   function startPredictionBlockedImage(obj)
+%   .. code-block:: matlab
+%
+%       obj.startPredictionBlockedImage()
 %
 % requires R2021a or newer
 
@@ -128,7 +130,7 @@ function startPredictionBlockedImage(obj)
     try
         if preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages'), ...
-                'FileExtensions', '.mibImg', 'ReadFcn', @utils.deepmib.storeLoadImages);
+                'FileExtensions', '.mibImg', 'ReadFcn', @deepmib.storeLoadImages);
         else    % without preprocessing
             fnExtention = lower(['.' obj.BatchOpt.ImageFilenameExtension{1}]);
             if strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise' )
@@ -137,13 +139,13 @@ function startPredictionBlockedImage(obj)
                     imgDS = imageDatastore(obj.BatchOpt.OriginalPredictionImagesDir, ...
                         'FileExtensions', fnExtention, ...
                         'IncludeSubfolders', false, ...
-                        'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                        'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                 else
                     if isfolder(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images'))
                         imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images'), ...
                             'FileExtensions', fnExtention, ...
                             'IncludeSubfolders', false, ...
-                            'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                            'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                     else
                         % patch-wise segmentation of individual patches
                         % stored under subfolders
@@ -151,7 +153,7 @@ function startPredictionBlockedImage(obj)
                             'FileExtensions', fnExtention, ...
                             'IncludeSubfolders', true, ...
                             "LabelSource", "foldernames", ...
-                            'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                            'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                         if numel(unique(imgDS.Labels)) < 1
                             ME = MException('MyComponent:noSuchVariable:MissingFiles', ...
                                 ['For the patch-wise mode the files needs to be arranged under "Images"/"Labels" subfolders\n' ...
@@ -181,7 +183,7 @@ function startPredictionBlockedImage(obj)
                 imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalPredictionImagesDir, imagesSubfolder), ...
                     'FileExtensions', fnExtention, ...
                     'IncludeSubfolders', false, ...
-                    'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                    'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
             end
         end
     catch err
@@ -564,10 +566,10 @@ function startPredictionBlockedImage(obj)
                     io.AmiraMesh.bitmap2amiraMesh(filename, permute(scoreImg, [1 2 4 3]), [], amiraOpt);
                 elseif generateScoreFiles == 4   %  4=='Use Matlab non-compressed format (range 0-1)'
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mat']);
-                    utils.deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
+                    deepmib.saveImageParFor(filename, scoreImg, false, saveImageOpt);
                 else  % 2=='Use Matlab non-compressed format', 3=='Use Matlab compressed format'
                     filename = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores', ['Score_' fn '.mibImg']);
-                    utils.deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles, saveImageOpt);
+                    deepmib.saveImageParFor(filename, scoreImg, generateScoreFiles, saveImageOpt);
                 end
             end
         else    % patchwisePatchesPredictSwitch == true, patch-wise mode, when each patch is contained in its own subfolder

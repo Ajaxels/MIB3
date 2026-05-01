@@ -2,30 +2,29 @@ function orientationChange(obj, hWidget, moveMouseSw)
 % ORIENTATIONCHANGE - Callback for the orientation toggle buttons in the Quick Access Bar.
 %
 % Syntax:
-%   function orientationChange(obj, hWidget, moveMouseSw)
+%   .. code-block:: matlab
+%
+%      obj.orientationChange(hWidget, moveMouseSw)
 %
 % Switches the viewing plane of the current dataset to YX (XY), XZ, or YZ.
 % Converted from MIB2 @mibController/mibToolbarPlaneToggle.m
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed orientation button (yx_orientation,
-%     xz_orientation, or yz_orientation), or a char with the target
-%     orientation description string (for keyboard-shortcut callers).
-%   - **moveMouseSw** — *(optional)* logical, when true moves the mouse cursor to the
-%     pivot point of the orientation change (used with Alt+1/2/3
-%     keyboard shortcuts so the cursor stays over the image).
-%   - **Default** — false.
+%   - **hWidget** — [matlab.ui.control.Button|char] orientation button handle (``yx_orientation``, ``xz_orientation``, or ``yz_orientation``) or target orientation description string (for keyboard-shortcut callers)
+%   - **moveMouseSw** *(optional)* — [logical] move mouse cursor to orientation change pivot point (default: ``false``); used with Alt+1/2/3 keyboard shortcuts to keep cursor over image
 %
-% Output Arguments:
-%   none
+% **Example 1** — Called from gui_Callbacks when orientation button pressed:
 %
-%   - **Example** —
-%     % Called from gui_Callbacks when an orientation button is pressed:
-%     obj.orientationChange(hWidget);
+%   .. code-block:: matlab
 %
-%   % Called from gui_WindowKeyPressFcn with mouse centering (Alt+1):
-%   obj.mibController.cActiveDataset.cQAB.orientationChange( ...
-%   obj.mibController.view.handles.qab.handles.yx_orientation, true);
+%      obj.orientationChange(hWidget);
+%
+% **Example 2** — Called from gui_WindowKeyPressFcn with mouse centering (Alt+1):
+%
+%   .. code-block:: matlab
+%
+%      obj.mibController.cActiveDataset.cQAB.orientationChange( ...
+%          obj.mibController.view.handles.qab.handles.yx_orientation, true);
 %
 
 if nargin < 3; moveMouseSw = false; end

@@ -2,7 +2,9 @@ function multipleBtn_Callback(obj)
 % MULTIPLEBTN_CALLBACK - Open the property selection dialog for multi-property batch analysis.
 %
 % Syntax:
-%   function multipleBtn_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.multipleBtn_Callback()
 %
 % Launches the QuantificationProperties child controller which displays
 % checkboxes for all available shape and intensity properties.  When

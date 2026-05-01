@@ -1,8 +1,21 @@
 function result = exitProgram(obj, target)
-% EXITPROGRAM -
+% EXITPROGRAM - Close MIB, release resources, and signal the AppContainer to exit.
 %
 % Syntax:
-%   function result = exitProgram(obj, target)
+%   .. code-block:: matlab
+%
+%      result = obj.exitProgram(target)
+%
+% Closes all child controller windows, terminates any active Python session
+% (to free GPU memory), and unloads the OMERO library if present.
+% Registered as ``AppContainer.ExitFcn`` in MibController.initialize.
+%
+% Input Arguments:
+%   - **target** — ``matlab.ui.container.internal.AppContainer`` handle to the
+%     main application container
+%
+% Output Arguments:
+%   - **result** — always ``true``; reserved for future cancel-on-close support
 %
 
 arguments (Input)

@@ -46,7 +46,9 @@ classdef CropDataset < handle
             % VIEWLISTNER_CALLBACK2 - Guard: if the view window was closed, clean up listeners and return.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, src, evnt)
+            %   .. code-block:: matlab
+            %
+            %       obj.ViewListner_Callback2(src, evnt)
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
@@ -66,7 +68,11 @@ classdef CropDataset < handle
             % CROPDATASET - obj = CropDataset(mibModel, varargin).
             %
             % Syntax:
-            %   function obj = CropDataset(mibModel, varargin)
+            %   .. code-block:: matlab
+            %
+            %       obj = CropDataset(mibModel)
+            %       obj = CropDataset(mibModel, mibController)
+            %       obj = CropDataset(mibModel, mibController, BatchOpt)
             %
             % Constructor of the CropDataset controller
             %
@@ -252,7 +258,9 @@ classdef CropDataset < handle
             % CLOSEWINDOW - closing CropDataset window.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.closeWindow()
             %
 
             if isvalid(obj.view.gui)
@@ -270,7 +278,9 @@ classdef CropDataset < handle
             % ADDCALLBACKS - assign callbacks to all interactive widgets; called once from.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacks()
             %
             % the constructor after the view is created
 
@@ -303,7 +313,10 @@ classdef CropDataset < handle
             % RETURNBATCHOPT - return structure with Batch Options via the 'SyncBatch' event.
             %
             % Syntax:
-            %   function returnBatchOpt(obj, BatchOptOut)
+            %   .. code-block:: matlab
+            %
+            %       obj.returnBatchOpt()
+            %       obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
             %   - **BatchOptOut** — *(optional)* local BatchOpt to send; defaults to obj.BatchOpt
@@ -319,7 +332,9 @@ classdef CropDataset < handle
             % UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from a GUI widget.
             %
             % Syntax:
-            %   function updateBatchOptFromGUI(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateBatchOptFromGUI(hObject)
             %
             % Input Arguments:
             %   - **hObject** — handle to the widget that changed
@@ -332,7 +347,9 @@ classdef CropDataset < handle
             % UPDATEWIDGETS - update all widgets of the current window.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateWidgets()
             %
 
             id = obj.mibModel.id;
@@ -395,7 +412,9 @@ classdef CropDataset < handle
             % RADIO_CALLBACK - callback for selection of crop mode.
             %
             % Syntax:
-            %   function radio_Callback(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.radio_Callback(hObject)
             %
             % Input Arguments:
             %   - **hObject** — handle to the selected radio button (Interactive, Manual, or ROI)
@@ -450,7 +469,9 @@ classdef CropDataset < handle
             % EDITBOXES_CALLBACK - update obj.BatchOpt and obj.roiPos from the Width/Height/Depth/Time fields.
             %
             % Syntax:
-            %   function editboxes_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.editboxes_Callback()
             %
 
             obj.BatchOpt.Width  = obj.view.handles.Width.Value;
@@ -476,7 +497,9 @@ classdef CropDataset < handle
             % SELECTROI_CALLBACK - callback for change of the SelectROI dropdown.
             %
             % Syntax:
-            %   function SelectROI_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.SelectROI_Callback()
             %
 
             % convert dropdown string value to 0-based ROI index
@@ -518,7 +541,9 @@ classdef CropDataset < handle
             % RESETBTN_CALLBACK - reset crop fields to full image dimensions.
             %
             % Syntax:
-            %   function resetBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.resetBtn_Callback()
             %
 
             id = obj.mibModel.getActiveId();
@@ -540,7 +565,9 @@ classdef CropDataset < handle
             % SELECTZARRLEVEL - update Zarr downsampling info label based on the selected pyramid level.
             %
             % Syntax:
-            %   function selectZarrLevel(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.selectZarrLevel()
             %
 
             id = obj.mibModel.getActiveId();
@@ -564,7 +591,9 @@ classdef CropDataset < handle
             % ZARRPYRAMIDLEVEL_CALLBACK - callback for the Zarr pyramid level dropdown.
             %
             % Syntax:
-            %   function ZarrPyramidLevel_Callback(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.ZarrPyramidLevel_Callback(hObject)
             %
 
             obj.selectZarrLevel();
@@ -575,7 +604,9 @@ classdef CropDataset < handle
             % CROPTOBTN_CALLBACK - select a destination buffer and perform crop there.
             %
             % Syntax:
-            %   function cropToBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.cropToBtn_Callback()
             %
 
             if strcmp(obj.BatchOpt.Width, 'Multi')
@@ -625,7 +656,10 @@ classdef CropDataset < handle
             % CROPBTN_CALLBACK - perform the crop operation.
             %
             % Syntax:
-            %   function cropBtn_Callback(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %       obj.cropBtn_Callback()
+            %       obj.cropBtn_Callback(hObject)
             %
             % Input Arguments:
             %   - **hObject** — *(optional)* handle to the pressed button (cropBtn or croptoBtn)
@@ -878,7 +912,9 @@ classdef CropDataset < handle
             % HELPBUTTON_CALLBACK - open the help page for the Crop Dataset dialog.
             %
             % Syntax:
-            %   function helpButton_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.helpButton_Callback()
             %
 
             web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/dataset/dataset-crop.html'), '-browser');
@@ -891,7 +927,9 @@ classdef CropDataset < handle
             % CAPTURECROPDATAPOS - Store the current drawrectangle position in data-pixel coordinates.
             %
             % Syntax:
-            %   function captureCropDataPos(roi, cRoi, mibModel)
+            %   .. code-block:: matlab
+            %
+            %       controllers.CropDataset.captureCropDataPos(roi, cRoi, mibModel)
             %
             % Called from MovingROI/ROIMoved listeners during interactive crop drawing.
             % Writes result into cRoi.drawingROI.dataPos (2×2: [xmin ymin; xmax ymax]).

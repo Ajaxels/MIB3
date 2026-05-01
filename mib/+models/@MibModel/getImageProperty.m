@@ -2,7 +2,9 @@ function propertyValue = getImageProperty(obj, propertyName, id)
 % GETIMAGEPROPERTY - Get a property of the currently shown or specified MibDataset.
 %
 % Syntax:
-%   function propertyValue = getImageProperty(obj, propertyName, id)
+%   .. code-block:: matlab
+%
+%       propertyValue = obj.getImageProperty(propertyName, id)
 %
 % A convenience wrapper that reads a named property directly from
 % obj.I{id}.(propertyName).  Useful for code that may not know

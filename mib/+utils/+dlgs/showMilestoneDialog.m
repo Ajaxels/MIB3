@@ -2,7 +2,6 @@ function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
 % SHOWMILESTONEDIALOG - Show a gamification milestone / current-stats dialog with a celebration.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      showMilestoneDialog(ParentFigure, userPrefs, mode)

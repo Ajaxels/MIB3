@@ -2,7 +2,9 @@ function interpolateImage(obj, imgType, intType, BatchOptIn)
 % INTERPOLATEIMAGE - Interpolate the 'mask', 'selection', or 'labels' layer between slices.
 %
 % Syntax:
-%   function interpolateImage(obj, imgType, intType, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.interpolateImage(imgType, intType, BatchOptIn)
 %
 % Applies either shape interpolation (suitable for filled blobs) or line
 % interpolation (suitable for open-line / membrane annotations) to the

@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 2025
-
 classdef JpgSaver < io.savers.BaseSaver
 % JPGSAVER - Saver for JPEG output — one file per Z-slice (always a 2-D sequence).
 %
@@ -61,8 +45,6 @@ classdef JpgSaver < io.savers.BaseSaver
 %     fnOut = saver.save(data, meta, '/output/slice.jpg', opts);
 %     % Generates /output/slice_01.jpg … /output/slice_10.jpg
 %
-%
-%
 % .. code-block:: matlab
 %
 %     %% 2. Via MibModel with quality control
@@ -77,19 +59,45 @@ classdef JpgSaver < io.savers.BaseSaver
 %     BatchOpt.mibBatchTooltip.LayerType = '';
 %     model.save('image', [], BatchOpt);
 %
-%
 % SEE ALSO
 % io.SaverFactory, io.savers.BaseSaver, io.savers.PngSaver
 
     methods
 
         function obj = JpgSaver(options)
+            % JPGSAVER - Constructor for JpgSaver class.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.JpgSaver(options)
+            %
+            % Input Arguments:
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the JpgSaver class
+            %
             if nargin < 1; options = struct(); end
             obj.Options = options;
             obj.initBaseProps(options);
         end
 
         function formats = getSupportedFormats(~)
+            % GETSUPPORTEDFORMATS - Return format strings handled by JpgSaver.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for JPEG output
+            %
             formats = {'Joint Photographic Experts Group (*.jpg)'};
         end
 
@@ -97,22 +105,30 @@ classdef JpgSaver < io.savers.BaseSaver
             % SAVE - Write JPEG 2-D sequence (one file per Z-slice × time point).
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T]  uint8 (or uint16 greyscale)
-            %   metadata — struct; used fields:
-            %   .colorType        — data type (multichannel RGB must be uint8)
-            %   .sliceName        — (optional) per-slice source filenames
-            %   .imageDescription — (optional) JPEG Comment tag
-            %   filename — full path template, e.g. '/out/frame.jpg'
-            %   options  — struct; additionally used:
-            %   .Quality     — (double 0–100, default 90)
-            %   .Compression — (char) 'lossy' | 'lossless', default 'lossy'
+            %   - **data** — [H, W, D, C, T] uint8 (or uint16 greyscale)
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — data type (multichannel RGB must be uint8)
+            %     - ``sliceName`` — (optional) per-slice source filenames
+            %     - ``imageDescription`` — (optional) JPEG Comment tag
+            %
+            %   - **filename** — full path template, e.g. ``'/out/frame.jpg'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Quality`` — [double] 0–100; default: ``90``
+            %     - ``Compression`` — [char] ``'lossy'`` | ``'lossless'``; default: ``'lossy'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``FilenameGenerator`` — [char] filename generation mode
             %
             % Output Arguments:
-            %   fnOut — cell of char with all saved paths,
-            %   or single char if only one slice
+            %   - **fnOut** — cell of char with all saved paths, or single char if only one slice
             %
 
             fnOut = [];

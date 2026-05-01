@@ -2,7 +2,9 @@ function slice_no = getCurrentSliceNumber(obj)
 % GETCURRENTSLICENUMBER - Get slice number of the currently shown image.
 %
 % Syntax:
-%   function slice_no = getCurrentSliceNumber(obj)
+%   .. code-block:: matlab
+%
+%       slice_no = obj.getCurrentSliceNumber()
 %
 % Input Arguments:
 %

@@ -1,16 +1,19 @@
 function widgetHandles = addRibbonTools(obj, lazyInit)
-% ADDRIBBONTOOLS - build the Tools tab group (obj.handles.ribbon.tools).
+% ADDRIBBONTOOLS - build the Tools tab group and add it to the global ribbon.
 %
 % Syntax:
-%   function widgetHandles = addRibbonTools(obj, lazyInit)
+%   .. code-block:: matlab
 %
-% and add it to obj.handles.ribbon.global
+%      widgetHandles = obj.addRibbonTools()
+%      widgetHandles = obj.addRibbonTools(lazyInit)
 %
 % Input Arguments:
-%   - **lazyInit** — [*optional* default=false] logical, when true do only
-%     place maker initialization of the panel. The full rendering is upon the
-%     first call, using
-%     "controllers.MibController.globalTabGroup_SelectionCallback" function
+%   - **lazyInit** *(optional)* — [logical] when ``true``, only a placeholder is
+%     initialized; full rendering occurs on first tab activation via
+%     ``MibController.globalTabGroup_SelectionCallback`` (default: ``false``)
+%
+% Output Arguments:
+%   - **widgetHandles** — [struct] handles to the Tools ribbon section widgets
 %
 
 arguments (Input)

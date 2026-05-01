@@ -2,7 +2,9 @@ function dataset = getData(obj, layerType, orient, colChannel, options) % get co
 % GETDATA - Get dataset from MibImage class.
 %
 % Syntax:
-%   function dataset = getData(obj, layerType, orient, colChannel, options) % get complete 5D dataset
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData(layerType, orient, colChannel, options) % get complete 5D dataset
 %
 % Input Arguments:
 %   - **layerType** — char with the type of layer to obtain, used for MibLabels63 class, otherwise can be empty.

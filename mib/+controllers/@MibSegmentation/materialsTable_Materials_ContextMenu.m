@@ -1,27 +1,33 @@
 function materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)
-% MATERIALSTABLE_MATERIALS_CONTEXTMENU - callbacks for the context menu of.
+% MATERIALSTABLE_MATERIALS_CONTEXTMENU - Callback for materials management context menu.
 %
 % Syntax:
-%   function materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
 %
-% - Segmentation table widget Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
-% - Menu ribbon Models Materials (obj.view.handles.model.materials)
+%      obj.materialsTable_Materials_ContextMenu(menuEntry, selectedData)
+%
+% Handles material management operations from two context menu sources:
+%   - Segmentation table widget ``Materials...`` entry (``obj.handles.materialsTableContextMat``)
+%   - Ribbon menu ``Models → Materials`` (``obj.view.handles.model.materials``)
+%
+% Supports material creation, modification, deletion, reordering, and export operations.
 %
 % Input Arguments:
-%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-%   - **selectedData** — handle to the pressed
-%     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-%     button that has the context menu (selectedData.ContextObject)
+%   - **menuEntry** — [matlab.ui.container.Menu | matlab.ui.internal.toolstrip.base.Action] handle to the pressed context menu entry; operation identified via ``menuEntry.Text``
+%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData | matlab.ui.internal.toolstrip.base.ToolstripEventData] event data from menu
 %
-%   Available menu options available from 'menuEntry.Text':
-%   'Rename material' rename the selected material
-%   'Add material' add a new material to the model
-%   'Insert material' insert a new material to the model
-%   'Swap materials' swap positions of the two materials
-%   'Reorder materials' reorder materials
-%   'Export material' export the selected material
-%   'Save material to file' save the selected material
-%   'Remove materials' remove the selected material
+% Output Arguments:
+%   None
+%
+% **Supported menu operations (menuEntry.Text):**
+%   - ``'Rename material'`` — rename the selected material
+%   - ``'Add material'`` — add new material to the end of the model
+%   - ``'Insert material'`` — insert new material at selected position
+%   - ``'Swap materials'`` — exchange two material positions
+%   - ``'Reorder materials'`` — open dialog to reorder all materials
+%   - ``'Export material'`` — export selected material to file
+%   - ``'Save material to file'`` — save selected material as reusable template
+%   - ``'Remove materials'`` — delete selected material from model
 %
 
 

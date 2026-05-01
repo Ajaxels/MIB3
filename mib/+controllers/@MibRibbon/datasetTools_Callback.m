@@ -2,7 +2,9 @@ function datasetTools_Callback(obj, hWidget, hData)
 % DATASETTOOLS_CALLBACK - callback on press of buttons in the Dataset tools section of the Dataset ribbon.
 %
 % Syntax:
-%   function datasetTools_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetTools_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

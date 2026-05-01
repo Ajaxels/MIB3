@@ -2,7 +2,9 @@ function previewModels(obj, loadImagesSwitch)
 % PREVIEWMODELS - load images for predictions and the resulting modelsinto MIB.
 %
 % Syntax:
-%   function previewModels(obj, loadImagesSwitch)
+%   .. code-block:: matlab
+%
+%       obj.previewModels(loadImagesSwitch)
 %
 % Input Arguments:
 %   - **loadImagesSwitch** — [logical], load or not (assuming that

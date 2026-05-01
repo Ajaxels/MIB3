@@ -2,7 +2,9 @@ function statTable_CellSelectionCallback(obj, indices, parameter)
 % STATTABLE_CELLSELECTIONCALLBACK - Handle cell selection in statTable and optionally highlight objects.
 %
 % Syntax:
-%   function statTable_CellSelectionCallback(obj, indices, parameter)
+%   .. code-block:: matlab
+%
+%       obj.statTable_CellSelectionCallback(indices, parameter)
 %
 % Called both from the table's CellSelectionCallback and from context menu
 % items.  Navigates to the slice containing the selected object and,
@@ -13,8 +15,7 @@ function statTable_CellSelectionCallback(obj, indices, parameter)
 %     as provided by AppDesigner CellSelectionCallback evnt.Indices;
 %     pass [] to use the last saved selection (obj.indices)
 %   - **parameter** — string controlling highlight behaviour
-%     - 'skip' - navigate to slice but only highlight if highlightOnClick
-%   is on; Ctrl+click forces 'Remove'
+%     - 'skip' - navigate to slice but only highlight if highlightOnClick is on; Ctrl+click forces 'Remove'
 %     - 'Add'     - add selected objects to selection layer
 %     - 'Remove'  - remove selected objects from selection layer
 %     - 'Replace' - replace selection layer with selected objects

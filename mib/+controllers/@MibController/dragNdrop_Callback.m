@@ -1,15 +1,21 @@
 function status = dragNdrop_Callback(obj, parameterIn)
-% DRAGNDROP_CALLBACK - status = dragNdrop_Callback(obj, parameterIn).
+% DRAGNDROP_CALLBACK - Callback for filename drag-and-drop operations into MIB.
 %
 % Syntax:
-%   function status = dragNdrop_Callback(obj, parameterIn)
+%   .. code-block:: matlab
 %
-% callback for filename drag-and-drop operation in MIB
+%      status = obj.dragNdrop_Callback(parameterIn)
+%
+% Callback for filename drag-and-drop operation in MIB.
 %
 % Input Arguments:
-%   - **parameterIn** — a cell array, where
-%     - the first element is a handle to the webWindow that was a target for the drag-and-drop operation
+%   - **parameterIn** — cell array, where
+%
+%     - the first element is a handle to the webWindow that was the target for the drag-and-drop operation
 %     - the second element is a filename that was dragged into MIB
+%
+% Output Arguments:
+%   - **status** — logical; ``true`` on success, ``false`` if the file could not be loaded
 %
 
 % arguments (Input)

@@ -1,25 +1,31 @@
 function samPanel_Callback(obj, hWidget, hData)
-% SAMPANEL_CALLBACK - samPanel_Callback(obj, hWidget, hData).
+% SAMPANEL_CALLBACK - Callback for Segment Anything Model (SAM) tool widgets.
 %
 % Syntax:
-%   function samPanel_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->SAM tool
+%      obj.samPanel_Callback(hWidget, hData)
+%
+% Handles callbacks for Segment Anything Model segmentation tool widgets in the Segmentation panel.
+% Supports SAM version selection, segmentation method, prompt management, and result layer configuration.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
-%     'samMethod' method of SAM usage
-%     'samVersion' select version of SAM to use 'SAM 1', 'SAM 2'
-%     'samDataset' select type of dataset to apply SAM
-%     'samDestination' destination layer for SAM results
-%     'samMode' SAM mode, add/replace/subtract
-%     'samSettings' open SAM settings dialog
-%     'samList' show the list of points (annotations) for the landmark mode
-%     'samClear' clear the annotation points
-%     'samSegment' do SAM segmentation
+%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'samMethod'`` — select SAM usage method (interactive, automatic, landmark)
+%     - ``'samVersion'`` — select SAM version (SAM 1 or SAM 2)
+%     - ``'samDataset'`` — select dataset type to apply segmentation
+%     - ``'samDestination'`` — select destination layer for segmentation results
+%     - ``'samMode'`` — set segmentation mode (replace, add, or subtract)
+%     - ``'samSettings'`` — open SAM configuration dialog
+%     - ``'samList'`` — show list of annotation points for landmark mode
+%     - ``'samClear'`` — clear all annotation points/prompts
+%     - ``'samSegment'`` — execute SAM segmentation
+%
+%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 %
 
 arguments (Input)

@@ -2,32 +2,35 @@ function listener_newDataset(obj, src, evtData)
 % LISTENER_NEWDATASET - Update obj.I (MibDataset) by resizing it to fit on the screen.
 %
 % Syntax:
-%   function listener_newDataset(obj, src, evtData)
+%   .. code-block:: matlab
+%
+%      obj.listener_newDataset(src, evtData)
 %
 % executed upon catch of MibModel->"NewDataset" event
 %
 % Input Arguments:
 %   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
-%     .Parameters field containing a structure with the
-%     .evtData.Parameters.index [**optional]** index of obj.I to update, when *[]* updates the currently selected dataset
-%     .Source handle to MibModel
-%     .EventName string with the event name that triggered the callback
-%     see example in MibModel.datasetsSetsOps-> 'Add set'
+%   - **evtData** — event data, an instance of ``core.ToggleEventData``; ``evtData.Parameters``
+%     is a structure with the following fields:
 %
-% Usage:
-%   Example 1::
+%     - ``.index`` — *(optional)* index of obj.I to update; ``[]`` updates the currently selected dataset
 %
-%     // update the current dataset using the "resize" mode
-%     notify(obj.mibModel, 'NewDataset');
+% Output Arguments:
+%   (none)
 %
+% **Example 1** — update the current dataset (resize to fit screen):
 %
-%   Example 2::
+%   .. code-block:: matlab
 %
-%     Options.index = 8;
-%     eventdata = core.ToggleEventData(Options);
-%     // update dataset 8 using the "resize" mode
-%     notify(obj.mibModel, 'NewDataset', eventdata);
+%      notify(obj.mibModel, 'NewDataset');
+%
+% **Example 2** — update dataset 8 specifically:
+%
+%   .. code-block:: matlab
+%
+%      Options.index = 8;
+%      eventdata = core.ToggleEventData(Options);
+%      notify(obj.mibModel, 'NewDataset', eventdata);
 %
 
 % if Parameters was not initialized

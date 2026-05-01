@@ -2,7 +2,10 @@ function returnBatchOpt(obj, BatchOptOut)
 % RETURNBATCHOPT - Publish BatchOpt to the macro recorder via 'SyncBatch' event.
 %
 % Syntax:
-%   function returnBatchOpt(obj, BatchOptOut)
+%   .. code-block:: matlab
+%
+%       obj.returnBatchOpt()
+%       obj.returnBatchOpt(BatchOptOut)
 %
 % Fires a SyncBatch event carrying the current (or provided) BatchOpt
 % so that the MIB batch controller can record this action.

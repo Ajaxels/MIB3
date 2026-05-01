@@ -1,32 +1,43 @@
 function segmentationSAM(obj, extraOptions, BatchOptIn)
-% SEGMENTATIONSAM - segmentationSAM(obj, extraOptions, BatchOptIn).
+% SEGMENTATIONSAM - Perform segmentation using Segment Anything Model (SAM).
 %
 % Syntax:
-%   function segmentationSAM(obj, extraOptions, BatchOptIn)
+%   .. code-block:: matlab
 %
-% Perform segmentation using segment-anything model https://segment-anything.com
+%      obj.segmentationSAM()
+%      obj.segmentationSAM(extraOptions)
+%      obj.segmentationSAM(extraOptions, BatchOptIn)
+%
+% Perform segmentation using Segment Anything Model. See https://segment-anything.com
 %
 % Input Arguments:
-%   - **extraOptions** — *(optional)* structure with additional options
-%     - .addNextMaterial, [logical], switch to add next material for the "add, +next material" mode
-%   - **BatchOptIn** — *(optional)* structure for batch processing mode, when NaN return
-%     a structure with default options via "syncBatch" event, see Declaration of the BatchOpt structure below for details, the function
-%     variables are preferred over the BatchOptIn variables
-%     - .Method - Specify method how SAM should be executed
-%   -> "Interactive", by interactively adding point
-%   -> "Landmarks", process the placed points all at once
-%   -> "Automatic everything", automatically segment all objects on the image
-%     - .Dataset - segment the current slice (2D, Slice), current stack (3D, Stack) or the whole dataset(4D, Dataset)
-%     - .Destination - string with MIB layer to apply results of the segmentation (selection, mask, labels)
-%     - .showWaitbar - Show or not the progress bar during execution
+%   - **extraOptions** *(optional)* — [struct] structure with additional options:
+%
+%     - ``.addNextMaterial`` — [logical] switch to add next material for "add, +next material" mode
+%
+%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%     when ``NaN``, returns default structure via "syncBatch" event.
+%     See Declaration of BatchOpt structure below for details; function
+%     variables are preferred over BatchOptIn variables:
+%
+%     - ``.Method`` — [char] specify how SAM should execute:
+%
+%       - ``'Interactive'`` — add points interactively
+%       - ``'Landmarks'`` — process placed points all at once
+%       - ``'Automatic everything'`` — automatically segment all objects on image
+%
+%     - ``.Dataset`` — [char] segment current slice (``'2D, Slice'``), stack (``'3D, Stack'``), or whole dataset (``'4D, Dataset'``)
+%     - ``.Destination`` — [char] MIB layer for results: ``'selection'``, ``'mask'``, or ``'labels'``
+%     - ``.showWaitbar`` — [logical] show progress bar during execution
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-% Usage:
-%   Example 1::
+% **Example** — perform segmentation:
 %
-%     obj.segmentationSAM(extraOptions);
+%   .. code-block:: matlab
+%
+%      obj.segmentationSAM(extraOptions);
 %
 
 if nargin < 2; extraOptions = []; end

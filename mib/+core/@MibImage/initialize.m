@@ -2,7 +2,9 @@ function initialize(obj, data, meta)
 % INITIALIZE - initialize the class using default or provided values.
 %
 % Syntax:
-%   function initialize(obj, data, meta)
+%   .. code-block:: matlab
+%
+%       obj.initialize(data, meta)
 %
 % Input Arguments:
 %   - **data** — matrix with the image to initialize the class, can be empty

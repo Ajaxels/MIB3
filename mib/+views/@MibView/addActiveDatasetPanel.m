@@ -1,12 +1,17 @@
 function panelHandles = addActiveDatasetPanel(obj)
-% ADDACTIVEDATASETPANEL - add the Datasets panel, add context menus and callbacks for widgets.
+% ADDACTIVEDATASETPANEL - add the Datasets panel with context menus and callbacks.
 %
 % Syntax:
-%   function panelHandles = addActiveDatasetPanel(obj)
+%   .. code-block:: matlab
 %
-% The callbacks are added in the controller of the panel:
-% controllers.MibActiveDataset during its creation in
-% MibController.initialize() MibController.addGuiControllers()
+%      panelHandles = obj.addActiveDatasetPanel()
+%
+% Output Arguments:
+%   - **panelHandles** — [struct] handles to the active dataset panel widgets
+%
+% Notes:
+%   The callbacks are added in the controller of the panel: ``controllers.MibActiveDataset``
+%   during its creation in ``MibController.initialize()`` and ``MibController.addGuiControllers()``
 
 arguments (Input)
     obj views.MibView

@@ -2,7 +2,9 @@ function dataset = getPixelIdxList(obj, type, PixelIdxList)
 % GETPIXELIDXLIST - Get pixel values at a list of linear indices from MibImage or a subclass.
 %
 % Syntax:
-%   function dataset = getPixelIdxList(obj, type, PixelIdxList)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getPixelIdxList(type, PixelIdxList)
 %
 % For standard MibImage and MibLabels the raw data are read directly from
 % obj.data{1}.  For MibLabels63 (bit-packed) the values are unpacked

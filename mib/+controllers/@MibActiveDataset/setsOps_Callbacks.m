@@ -1,32 +1,31 @@
 function setsOps_Callbacks(obj, hWidget, hData, mode)
-% SETSOPS_CALLBACKS - callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles.
+% SETSOPS_CALLBACKS - Callback for dataset set operations (add, rename, remove, select).
 %
 % Syntax:
-%   function setsOps_Callbacks(obj, hWidget, hData, mode)
+%   .. code-block:: matlab
 %
-% Handles the following widgets:
-% - obj.view.handles.panels.activeDataset.handles.sets select set
-% - obj.view.handles.panels.activeDataset.handles.setsContextRename context menu for sets dropdown, rename the selected set
-% - obj.view.handles.panels.activeDataset.handles.setsContextAdd context menu for sets dropdown, add a new set
-% - obj.view.handles.panels.activeDataset.handles.setsContextRemove context menu for sets dropdown, remove the selected set
+%      obj.setsOps_Callbacks(hWidget, hData, mode)
+%
+% Handles dataset set operations triggered by the sets dropdown and context menu items in the
+% Datasets panel. Supports add, rename, remove, select, and sort operations.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget: dropdown or button
-%   - **hData** — handle to supporting data class
-%   - **mode** — char, optional identifier the widget, used when the same operation
-%     is called from menu, when empty or missing hWidget.Tag is used as an identifier:
-%     'sets' selected set
-%     'setsContextAdd' add a new set
-%     'setsContextRename' rename the current set
-%     'setsContextRemove' remove the current set
+%   - **hWidget** — [matlab.ui.container.Menu | matlab.ui.control.DropDown | matlab.ui.control.Button] handle to the widget that triggered the callback
+%   - **hData** — [matlab.ui.eventdata.MenuSelectedData | matlab.ui.eventdata.ValueChangedData | matlab.ui.eventdata.ButtonPushedData] event data from the widget
+%   - **mode** — *(optional)* [char] operation mode identifier; when empty or missing, ``hWidget.Tag`` is used:
 %
-
-% arguments (Input)
-%     obj controllers.MibActiveDataset
-%     hWidget {mustBeA(hWidget, {'matlab.ui.container.Menu', 'matlab.ui.control.DropDown', 'matlab.ui.control.Button'})}
-%     hData {mustBeA(hData, {'matlab.ui.eventdata.MenuSelectedData', 'matlab.ui.eventdata.ValueChangedData', 'matlab.ui.eventdata.ButtonPushedData'})}
-%     mode char = ''
-% end
+%     - ``'sets'`` — change the active dataset set
+%     - ``'setsContextAdd'`` — add a new dataset set
+%     - ``'setsContextRename'`` — rename the currently active set
+%     - ``'setsContextSort'`` — sort dataset sets
+%     - ``'setsContextRemove'`` — remove the currently active set
+%
+% Output Arguments:
+%   None
+%
+% See Also:
+%    ``models.MibModel.datasetsSetsOps``
+%
 
 if nargin < 4; mode = []; end
 

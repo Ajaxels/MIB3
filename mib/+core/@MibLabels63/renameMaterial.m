@@ -2,7 +2,9 @@ function renameMaterial(obj, index, newName)
 % RENAMEMATERIAL - Rename one or all materials in the model metadata.
 %
 % Syntax:
-%   function renameMaterial(obj, index, newName)
+%   .. code-block:: matlab
+%
+%       obj.renameMaterial(index, newName)
 %
 % For small models (maxMaterials < 256) the material name at position
 % index is replaced with newName.  When index is 0, all materials are

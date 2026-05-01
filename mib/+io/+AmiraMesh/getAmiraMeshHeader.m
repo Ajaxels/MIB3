@@ -2,19 +2,26 @@ function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMes
 % GETAMIRAMESHHEADER - Get header of Amira Mesh file.
 %
 % Syntax:
-%   function [par, img_info, dim_xyczt, materialNames, materialColors] = getAmiraMeshHeader(filename)
+%   .. code-block:: matlab
+%
+%      [par, img_info, dim_xyczt] = io.AmiraMesh.getAmiraMeshHeader()
+%      [par, img_info, dim_xyczt, materialNames, materialColors] = io.AmiraMesh.getAmiraMeshHeader(filename)
 %
 % Input Arguments:
-%   - **filename** — (*optional):* filename of Amira Mesh file
+%   - **filename** — *(optional)* filename of Amira Mesh file; when omitted,
+%     a file selection dialog is started
 %
 % Output Arguments:
-%   - **par** — a structure with parameters in format:
-%     .Name parameter name
-%     .Value parameter value
-%   - **img_info** — MATLAB dictionary (configureDictionary("string","cell")); access values with {} indexing
-%   - **dim_xyczt** — dimensions of the dataset
-%   - **materialNames** — detected material names (cell array, Exterior excluded)
-%   - **materialColors** — detected material colors [Nx3] RGB (0..1), Exterior excluded
+%   - **par** — struct array with header parameters; each element has fields:
+%
+%     - ``.Name`` — parameter name string
+%     - ``.Value`` — parameter value
+%
+%   - **img_info** — MATLAB dictionary (``configureDictionary("string","cell")``);
+%     access values with ``{}`` indexing
+%   - **dim_xyczt** — [1×5] dataset dimensions [width, height, colors, depth, time]
+%   - **materialNames** — cell array of detected material names (``Exterior`` excluded)
+%   - **materialColors** — [Nx3] RGB material colours (0–1); ``Exterior`` excluded
 %
 
 % Updates
@@ -275,10 +282,12 @@ dim_xyczt = [width height max(colorChannels) depth 1];
 end
 
 function parValueText = loopHeader(fid, parValueText, level)
-% LOOPHEADER - collect inbedded containers as a plain text.
+% LOOPHEADER - Collect embedded containers as plain text.
 %
 % Syntax:
-%   function parValueText = loopHeader(fid, parValueText, level)
+%   .. code-block:: matlab
+%
+%      parValueText = loopHeader(fid, parValueText, level)
 %
 while level >= 1
     tline = strtrim(fgetl(fid));

@@ -2,7 +2,9 @@ function lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)
 % UPDATEMAXPOOLANDTRANSCONVLAYERS - update maxPool and TransposedConvolution layers depending.
 %
 % Syntax:
-%   function lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)
+%   .. code-block:: matlab
+%
+%       lgraph = obj.updateMaxPoolAndTransConvLayers(lgraph, poolSize)
 %
 % on network downsampling factor only for U-net and SegNet.
 % This function is applied when the network downsampling factor

@@ -2,17 +2,21 @@ function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
 % LUTTABLE_CELLEDITCALLBACK - callbacks for cell edit in the LUT table (obj.handles.lutTable) of the Selection and Image View panel.
 %
 % Syntax:
-%   function lutTable_CellEditCallback(obj, hWidget, hData, keyModifier)
+%   .. code-block:: matlab
+%
+%      obj.lutTable_CellEditCallback(hWidget, hData, keyModifier)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget (lutTable)
-%   - **hData** — CellEditData object with properties:
-%     .Indices: [row, col] - indices of edited cell
-%     .PreviousData - old value before edit
-%     .NewData - new value after edit
-%     .Source - handle to the table
-%     .EventName - 'CellEdit'
-%   - **keyModifier** — a pressed key modifier, [], 'control', 'shift'
+%   - **hWidget** — [uitable] handle to the LUT table widget
+%   - **hData** — [CellEditData] edit event data with properties:
+%
+%     - ``.Indices`` — [1×2 numeric] ``[row, col]`` indices of edited cell
+%     - ``.PreviousData`` — old value before edit
+%     - ``.NewData`` — new value after edit
+%     - ``.Source`` — [uitable] handle to the table
+%     - ``.EventName`` — ``'CellEdit'`` event name
+%
+%   - **keyModifier** — [char|empty] pressed modifier key: ``[]``, ``'control'``, or ``'shift'`` (default: read from Figure.CurrentModifier)
 %
 
 if nargin < 4

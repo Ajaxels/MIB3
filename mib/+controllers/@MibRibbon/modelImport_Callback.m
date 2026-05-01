@@ -2,7 +2,9 @@ function modelImport_Callback(obj, hWidget, hData)
 % MODELIMPORT_CALLBACK - callback on press of buttons in the Import section of the Model ribbon.
 %
 % Syntax:
-%   function modelImport_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelImport_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

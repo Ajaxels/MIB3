@@ -2,7 +2,9 @@ function closeVirtualDataset(obj)
 % CLOSEVIRTUALDATASET - Close open virtual readers and loader objects to release file handles.
 %
 % Syntax:
-%   function closeVirtualDataset(obj)
+%   .. code-block:: matlab
+%
+%       obj.closeVirtualDataset()
 %
 % Closes any BioFormatsVirtualLoader readers held in obj.loaders, then
 % clears the loaders cache.  Also handles the legacy case where BioFormats

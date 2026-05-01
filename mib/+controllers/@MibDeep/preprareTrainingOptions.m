@@ -2,7 +2,9 @@ function TrainingOptions = preprareTrainingOptions(obj, valDS)
 % PREPRARETRAININGOPTIONS - prepare trainig options for the network training.
 %
 % Syntax:
-%   function TrainingOptions = preprareTrainingOptions(obj, valDS)
+%   .. code-block:: matlab
+%
+%       TrainingOptions = obj.preprareTrainingOptions(valDS)
 %
 % Input Arguments:
 %   - **valDS** — datastore with images for validation
@@ -131,11 +133,11 @@ try
                 switch obj.TrainEngine
                     case 'trainNetwork'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                             ], ' ');
                     case 'trainnet'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)deepmib.customTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
                             ], ' ');
                 end
             otherwise
@@ -160,11 +162,11 @@ try
                 switch obj.TrainEngine
                     case 'trainNetwork'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                             ], ' ');
                     case 'trainnet'
                         evalTrainingOptions = join([evalTrainingOptions
-                            "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
+                            "'OutputFcn', @(info)deepmib.customTrainingProgressDisplayTrainNet(info, trainingProgressOptions),"
                             ], ' ');
                 end
 
@@ -181,7 +183,7 @@ try
         end
     else
         evalTrainingOptions = join([evalTrainingOptions
-            "'OutputFcn', @utils.deepmib.stopTrainingWithoutPlots,"
+            "'OutputFcn', @deepmib.stopTrainingWithoutPlots,"
             ], ' ');
     end
 

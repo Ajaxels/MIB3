@@ -2,56 +2,47 @@ function dataset = getDataVirt(obj, type, orient, colChannel, options)
 % GETDATAVIRT - Read a virtual dataset (BioFormats or HDF5) from disk on demand.
 %
 % Syntax:
-%   function dataset = getDataVirt(obj, type, orient, colChannel, options)
+%   .. code-block:: matlab
 %
-% Ported from MIB2/@MibImage/getDataVirt with the following adaptations:
-% - obj.data{} instead of obj.img{}
-% - obj.dataClass instead of obj.meta('imgClass')
-% - YX orientation is 3 (MIB3) not 4 (MIB2)
-% - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
-% - colChannel [] means all channels (MIB3) instead of NaN (MIB2)
-% - Reading delegated to io.loaders.HDF5VirtualLoader /
-% io.loaders.BioFormatsVirtualLoader (created lazily, cached in obj.loaders)
+%       dataset = obj.getDataVirt(type, orient, colChannel, options)
 %
 % Input Arguments:
-%   - **type** — type of layer to retrieve — only 'image' is supported
-%   - **orient** — *(optional)*, orientation of returned dataset
-%   - 1 — xz: output [x, z, y, c, t]
-%   - 2 — yz: output [y, z, x, c, t]
-%   - 3 — yx: output [y, x, z, c, t]  (**default)**
-%   - **colChannel** — *(optional)*, vector of colour channel indices;
-%     [] = all channels
-%   - **options** — *(optional)*, struct with optional fields:
+%   - **type** — [char] layer type to retrieve; only ``'image'`` is supported
+%   - **orient** — *(optional)* [numeric] orientation of returned dataset:
 %
-%     - ``.y``  — [ymin ymax] pixel range
-%     - ``.x``  — [xmin xmax] pixel range
-%     - ``.z``  — [zmin zmax] slice range
-%     - ``.t``  — [tmin tmax] time-point range
-%     - ``.level``        — pyramid level index (default 1 = full resolution)
-%     - ``.showWaitbar``  — override waitbar display ([] = auto)
+%     - ``1`` — ``xz`` plane: output ``[x, z, y, c, t]``
+%     - ``2`` — ``yz`` plane: output ``[y, z, x, c, t]``
+%     - ``3`` — ``yx`` plane: output ``[y, x, z, c, t]`` (default)
+%
+%   - **colChannel** — *(optional)* [numeric vector] colour channel indices;
+%     ``[]`` = all channels
+%   - **options** — *(optional)* [struct] with optional fields:
+%
+%     - ``.y`` — [numeric] ``[ymin ymax]`` pixel range
+%     - ``.x`` — [numeric] ``[xmin xmax]`` pixel range
+%     - ``.z`` — [numeric] ``[zmin zmax]`` slice range
+%     - ``.t`` — [numeric] ``[tmin tmax]`` time-point range
+%     - ``.level`` — [numeric] pyramid level index (default: ``1`` = full resolution)
+%     - ``.showWaitbar`` — [logical or []] override waitbar display; ``[]`` = auto
 %
 % Output Arguments:
-%   - **dataset** — 5D array [y, x, z, c, t] for orient==3;
-%     [x, z, y, c, t] for orient==1;
-%     [y, z, x, c, t] for orient==2
+%   - **dataset** — [numeric array] 5D data in MIB3 order:
 %
-% Usage:
-%   **Example 1**
+%     - ``[y, x, z, c, t]`` for ``orient==3`` (default)
+%     - ``[x, z, y, c, t]`` for ``orient==1``
+%     - ``[y, z, x, c, t]`` for ``orient==2``
 %
-%   .. code-block:: matlab
-%
-%
-%     dataset = obj.getDataVirt('image');% full YX dataset
-%
-%   **Example 2**
+% **Example 1** — read full YX dataset:
 %
 %   .. code-block:: matlab
 %
+%      dataset = obj.getDataVirt('image');
 %
-%     dataset = obj.getDataVirt('image', 3, 2, options);% channel 2, YX
+% **Example 2** — read channel 2 in YX orientation:
 %
-
-%% Updates
+%   .. code-block:: matlab
+%
+%      dataset = obj.getDataVirt('image', 3, 2, options);
 %
 if nargin < 5; options = struct(); end
 if nargin < 4; colChannel = []; end

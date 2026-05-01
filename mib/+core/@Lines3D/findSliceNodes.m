@@ -2,7 +2,9 @@ function [nodes, indices] = findSliceNodes(obj, z, orientation)
 % FINDSLICENODES - find nodes that are shown on the current slice.
 %
 % Syntax:
-%   function [nodes, indices] = findSliceNodes(obj, z, orientation)
+%   .. code-block:: matlab
+%
+%       [nodes, indices] = obj.findSliceNodes(z, orientation)
 %
 % Input Arguments:
 %   - **z** — Z-value to obtain the nodes

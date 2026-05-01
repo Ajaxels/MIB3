@@ -2,7 +2,9 @@ function homeExamples_Callback(obj, BatchOptIn)
 % HOMEEXAMPLES_CALLBACK - callback on press of the Examples buttons in the Home ribbon; imports an example dataset.
 %
 % Syntax:
-%   function homeExamples_Callback(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.homeExamples_Callback(BatchOptIn)
 %
 % Input Arguments:
 %   - **BatchOptIn** — a structure for batch processing mode, when NaN return

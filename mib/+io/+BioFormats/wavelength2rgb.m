@@ -18,7 +18,9 @@ function rgb = wavelength2rgb(wavelength)
 % WAVELENGTH2RGB - Convert wavelength into RGB value (0-255).
 %
 % Syntax:
-%   function rgb = wavelength2rgb(wavelength)
+%   .. code-block:: matlab
+%
+%      rgb = io.BioFormats.wavelength2rgb(wavelength)
 %
 % The code is adapted from http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm
 %

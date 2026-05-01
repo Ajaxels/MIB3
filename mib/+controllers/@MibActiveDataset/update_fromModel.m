@@ -2,7 +2,9 @@ function update_fromModel(obj, src, evtData)
 % UPDATE_FROMMODEL - update widgets of the Datasets panel from obj.mibModel.
 %
 % Syntax:
-%   function update_fromModel(obj, src, evtData)
+%   .. code-block:: matlab
+%
+%       obj.update_fromModel(src, evtData)
 %
 % This function is triggered either as a controllers.MibActiveDataset.listener to
 % MibModel->DatasetsPanelUpdate event or as a method of

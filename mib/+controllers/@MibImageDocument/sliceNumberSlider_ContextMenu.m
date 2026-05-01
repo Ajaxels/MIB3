@@ -1,24 +1,27 @@
 function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
-% SLICENUMBERSLIDER_CONTEXTMENU - callbacks for the context menu of change of slices slider.
+% SLICENUMBERSLIDER_CONTEXTMENU - Callbacks for the context menu of slice/frame slider.
 %
 % Syntax:
-%   function sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
 %
-% obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.sliceNumberSlider
-% or
-% obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.frameNumberSlider
-
-% Parameters:
-% menuEntry: handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-% selectedData: handle to the pressed
-% 'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-% button that has the context menu (selectedData.ContextObject)
+%      obj.sliceNumberSlider_ContextMenu(menuEntry, selectedData)
 %
-% Available menu options available from 'menuEntry.Tag':
-% sliceNumberSliderContextDefault - reset Z slider settings to default values
-% sliceNumberSliderContextSetStep - update Z slider settings with new values
-% frameNumberSliderContextDefault - reset T slider settings to default values
-% frameNumberSliderContextSetStep - update T slider settings with new values
+% Context menu for:
+%   - ``obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.sliceNumberSlider``
+%   - ``obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.frameNumberSlider``
+%
+% Input Arguments:
+%   - **menuEntry** — [matlab.ui.container.Menu] handle to pressed context menu entry
+%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data; use ``selectedData.ContextObject`` to find owning button
+%
+% Output Arguments:
+%   (none)
+%
+% **Available menu options** (via ``menuEntry.Tag``):
+%   - ``'sliceNumberSliderContextDefault'`` — reset Z slider settings to default values
+%   - ``'sliceNumberSliderContextSetStep'`` — update Z slider settings with new values
+%   - ``'frameNumberSliderContextDefault'`` — reset T slider settings to default values
+%   - ``'frameNumberSliderContextSetStep'`` — update T slider settings with new values
 
 
 if obj.mibModel.preferences.System.DeveloperMode

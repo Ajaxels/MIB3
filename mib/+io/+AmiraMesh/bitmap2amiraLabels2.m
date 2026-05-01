@@ -19,7 +19,10 @@ function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_lis
 % BITMAP2AMIRALABELS2 - Convert matrix [1:height, 1:width, 1:no_stacks] to Amira Mesh Labels.
 %
 % Syntax:
-%   function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
+%   .. code-block:: matlab
+%
+%      result = io.AmiraMesh.bitmap2amiraLabels2(filename, bitmap)
+%      result = io.AmiraMesh.bitmap2amiraLabels2(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
 %
 % Drop-in replacement for io.AmiraMesh.bitmap2amiraLabels with a
 % dramatically faster binaryRLE encoder.  All three formats (binary,
@@ -72,44 +75,47 @@ function result = bitmap2amiraLabels2(filename, bitmap, format, voxel, color_lis
 % This version: O(N) vectorised + O(R) loop iterations (R = num runs)
 % Typical speedup: 100–1000× on real segmentation data.
 %
-% PARAMETERS — identical to bitmap2amiraLabels:
-% filename           — output file path
-% bitmap             — [H W D] label array (uint8 recommended)
-% format             — 'binary' | 'binaryRLE' | 'ascii'  (default 'binary')
-% voxel              — struct with .x .y .z .minx .miny .minz
-% color_list         — [M×3] material RGB colours (0–1)
-% modelMaterialNames — cell array of material name strings
-% overwrite          — 1 = overwrite without asking (default 0)
-% showWaitbar        — 1 = show progress bar (default 1)
-% extraOptions       — struct; .TransformationMatrix (char, optional)
+% Input Arguments:
+%   - **filename** — output file path
+%   - **bitmap** — [H, W, D] label array (``uint8`` recommended)
+%   - **format** — *(optional)* saving format: ``'binary'``, ``'binaryRLE'``, or ``'ascii'``
+%     (default: ``'binary'``)
+%   - **voxel** — *(optional)* struct with voxel size fields ``.x``, ``.y``, ``.z``,
+%     ``.minx``, ``.miny``, ``.minz``
+%   - **color_list** — *(optional)* [M×3] material RGB colours (0–1)
+%   - **modelMaterialNames** — *(optional)* cell array of material name strings
+%   - **overwrite** — *(optional)* ``1`` = overwrite without asking (default: ``0``)
+%   - **showWaitbar** — *(optional)* ``1`` = show progress bar (default: ``1``)
+%   - **extraOptions** — *(optional)* struct with fields:
+%
+%     - ``.TransformationMatrix`` — (char) transformation matrix string
+%
 % Output Arguments:
-%   result             — 1 on success, 0 on failure/cancel
+%   - **result** — ``1`` = success, ``0`` = failure/cancel
 %
-%   EXAMPLE — direct use:
-%
-%   .. code-block:: matlab
-%
-%       pixStr = dataset.pixSize;
-%       pixStr.minx = bb(1);  pixStr.miny = bb(3);  pixStr.minz = bb(5);
-%       result = io.AmiraMesh.bitmap2amiraLabels2( ...
-%           '/output/Labels.am', uint8(labelVolume_hwd), 'binaryRLE', ...
-%           pixStr, materialColors, materialNames, 1, false, struct());
-%
-%
-%   EXAMPLE — via saver (preferred):
+% **Example 1** — direct use:
 %
 %   .. code-block:: matlab
 %
-%       opts.Format    = 'Amira mesh binary RLE compression SLOW (``*.am``)';
-%       opts.layerType = 'labels';
-%       opts.silent    = true;
-%       opts.overwrite = true;
-%       dataset.save('labels', '/output/Labels.am', opts);
+%      pixStr = dataset.pixSize;
+%      pixStr.minx = bb(1);  pixStr.miny = bb(3);  pixStr.minz = bb(5);
+%      result = io.AmiraMesh.bitmap2amiraLabels2( ...
+%          '/output/Labels.am', uint8(labelVolume_hwd), 'binaryRLE', ...
+%          pixStr, materialColors, materialNames, 1, false, struct());
 %
+% **Example 2** — via saver (preferred):
 %
-%   SEE ALSO
-%   io.AmiraMesh.bitmap2amiraLabels  (original, slower version)
-%   io.savers.AmiraMeshSaver
+%   .. code-block:: matlab
+%
+%      opts.Format    = 'Amira mesh binary RLE compression SLOW (``*.am``)';
+%      opts.layerType = 'labels';
+%      opts.silent    = true;
+%      opts.overwrite = true;
+%      dataset.save('labels', '/output/Labels.am', opts);
+%
+% .. seealso::
+%    ``io.AmiraMesh.bitmap2amiraLabels`` (original, slower version),
+%    ``io.savers.AmiraMeshSaver``
 %
 
 result = 0;
@@ -314,7 +320,9 @@ function [encoded, nBytes] = encodeHxByteRLE(data)
 % ENCODEHXBYTERLE - Encode a uint8 (or multi-byte) column vector using Amira's HxByteRLE.
 %
 % Syntax:
-%   function [encoded, nBytes] = encodeHxByteRLE(data)
+%   .. code-block:: matlab
+%
+%      [encoded, nBytes] = encodeHxByteRLE(data)
 %
 % ALGORITHM
 % 1. Detect all run boundaries with diff() — fully vectorised, no loop.
@@ -328,18 +336,19 @@ function [encoded, nBytes] = encodeHxByteRLE(data)
 % LITERAL BLOCK:     [0x80|count, b0…bN-1]  count ∈ [1, 127]
 %
 % Input Arguments:
-%   data    — (uint8 column vector) input bytes to compress
+%   - **data** — [uint8] column vector of input bytes to compress
 %
 % Output Arguments:
-%   encoded — (uint8 column vector) HxByteRLE bitstream
-%   nBytes  — length of encoded (= number of bytes to write to file)
+%   - **encoded** — [uint8] column vector HxByteRLE bitstream
+%   - **nBytes** — [numeric] length of ``encoded`` (number of bytes to write to file)
 %
-% Usage:
-%   Example 1::
+% **Example** — compress a small array:
 %
-%       data    = uint8([1 1 1 1 2 3 3 1 1]);
-%       [enc, n] = encodeHxByteRLE(data(:));
-%       % enc = [4 1 0x82 2 3 2 1]  (4×1, literal [2,3], 2×1)
+%   .. code-block:: matlab
+%
+%      data    = uint8([1 1 1 1 2 3 3 1 1]);
+%      [enc, n] = encodeHxByteRLE(data(:));
+%      % enc = [4 1 0x82 2 3 2 1]  (4x1, literal [2,3], 2x1)
 %
 
 % Minimum run length to use compressed encoding.

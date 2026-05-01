@@ -2,7 +2,9 @@ function segmentationTool_Callback(obj, segmToolIndex)
 % SEGMENTATIONTOOL_CALLBACK - callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in.
 %
 % Syntax:
-%   function segmentationTool_Callback(obj, segmToolIndex)
+%   .. code-block:: matlab
+%
+%       obj.segmentationTool_Callback(segmToolIndex)
 %
 % obj.handles.panels.segmentation panel.
 % Select segmentation tool

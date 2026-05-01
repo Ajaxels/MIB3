@@ -2,7 +2,9 @@ function duplicateConfigAndNetwork(obj)
 % DUPLICATECONFIGANDNETWORK - copy the network file and its config to a new filename.
 %
 % Syntax:
-%   function duplicateConfigAndNetwork(obj)
+%   .. code-block:: matlab
+%
+%       obj.duplicateConfigAndNetwork()
 %
 
     currPath = fileparts(obj.BatchOpt.NetworkFilename);

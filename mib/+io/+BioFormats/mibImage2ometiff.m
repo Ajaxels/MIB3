@@ -2,50 +2,51 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 % MIBIMAGE2OMETIFF - Save image in OME.TIF format — either as a single 5D file or a 2D sequence.
 %
 % Syntax:
-%   function [result, options] = mibImage2ometiff(filename, imageS, options)
+%   .. code-block:: matlab
+%
+%      [result, options] = io.BioFormats.mibImage2ometiff(filename, imageS)
+%      [result, options] = io.BioFormats.mibImage2ometiff(filename, imageS, options)
 %
 % Input Arguments:
-%   - **filename** — full path for the output file (extension forced to .ome.tiff)
+%   - **filename** — full path for the output file (extension forced to ``.ome.tiff``)
 %   - **imageS** — dataset [height, width, color_channels, z_slices, time]
 %   - **options** — *(optional)* struct with fields:
-%     .pixSize        — MIB pixel-size struct (.x .y .z .t .units .tunits);
-%   - **default** — all 1, units 'um', tunits 's'
-%     .lutColors      — [C x 3] LUT colour matrix (unused in 2D imwrite path)
-%     .ImageDescription — char or cell-string description embedded in the file;
-%   - **default** — ''
-%     .DatasetType    — 'image' (default) or 'model'
-%     .Saving3d       — '5D' (default): write all slices into one OME-TIFF via
-%     bfsave; '2D': write each z-slice as a separate .tif file
-%     .overwrite      — 1 = skip the "file exists" prompt (default: 0)
-%     .Compression    — 'none' (default), 'lzw', 'packbits' (2D path only)
-%     .showWaitbar    — 1 (default) show progress bar; 0 suppress
-%     .ParentFigure   — handle to the MIB application window; when provided the
-%     progress bar is rendered as a uiprogressdlg attached to
-%     that window.  When absent the legacy waitbar is used.
-%     .silent         — logical (default false); when true all interactive
-%     dialogs are suppressed
-%     .sequentialFn   — controls 2D output naming:
-%     true  (default when NaN) : sequential names,
-%     e.g. image_01.ome.tiff, image_02.ome.tiff
-%   - **false** — use original per-slice names from .SliceName;
-%     falls back to sequential when .SliceName is
-%     absent or empty
-%   - **NaN** — decide at runtime — currently defaults to true
-%     Normally set by the calling saver (OmeTiffSaver) based
-%     on the user's dialog choice; direct callers may set it
-%     explicitly to bypass the default.
-%     .SliceName      — cell array of per-slice source filenames (without path);
-%     used by the 'original filename' branch when
-%     sequentialFn = false
-%     .cmap           — colormap matrix for indexed images; NaN (default) means
-%     grayscale / RGB
-%     .Resolution     — [xDPI yDPI] written into 2D .tif files; derived
-%     automatically from pixSize when absent
-%     .DimensionOrder — dimension order string passed to bfsave / createMinimalOMEXMLMetadata;
-%     default 'XYZCT'
+%
+%     - ``.pixSize`` — MIB pixel-size struct with fields ``.x``, ``.y``, ``.z``, ``.t``,
+%       ``.units``, ``.tunits``; default: all ``1``, units ``'um'``, tunits ``'s'``
+%     - ``.lutColors`` — [C×3] LUT colour matrix (unused in 2D imwrite path)
+%     - ``.ImageDescription`` — (char or cell-string) description embedded in the file
+%       (default: ``''``)
+%     - ``.DatasetType`` — ``'image'`` (default) or ``'model'``
+%     - ``.Saving3d`` — ``'5D'`` (default): write all slices into one OME-TIFF via
+%       ``bfsave``; ``'2D'``: write each z-slice as a separate ``.tif`` file
+%     - ``.overwrite`` — ``1`` = skip the "file exists" prompt (default: ``0``)
+%     - ``.Compression`` — ``'none'`` (default), ``'lzw'``, or ``'packbits'`` (2D path only)
+%     - ``.showWaitbar`` — ``1`` = show progress bar (default); ``0`` = suppress
+%     - ``.ParentFigure`` — handle to the MIB UIFigure; when provided the progress bar
+%       is shown as a ``uiprogressdlg`` attached to that window; when absent the legacy
+%       ``waitbar`` is used
+%     - ``.silent`` — [logical] (default: ``false``); when ``true`` all interactive
+%       dialogs are suppressed
+%     - ``.sequentialFn`` — controls 2D output naming:
+%
+%       - ``true`` (default when ``NaN``) — sequential names, e.g. ``image_01.ome.tiff``
+%       - ``false`` — use original per-slice names from ``.SliceName``; falls back to
+%         sequential when ``.SliceName`` is absent or empty
+%       - ``NaN`` — decide at runtime (currently defaults to ``true``); normally set by
+%         the calling saver (``OmeTiffSaver``) based on the user's dialog choice
+%
+%     - ``.SliceName`` — cell array of per-slice source filenames (without path); used
+%       by the ``false`` branch of ``.sequentialFn``
+%     - ``.cmap`` — colormap matrix for indexed images; ``NaN`` (default) means
+%       grayscale/RGB
+%     - ``.Resolution`` — [xDPI yDPI] written into 2D ``.tif`` files; derived
+%       automatically from ``pixSize`` when absent
+%     - ``.DimensionOrder`` — dimension order string passed to ``bfsave`` /
+%       ``createMinimalOMEXMLMetadata``; default: ``'XYZCT'``
 %
 % Output Arguments:
-%   - **result** — 1 on success, 0 on failure
+%   - **result** — ``1`` = success, ``0`` = failure
 %   - **options** — the options struct as used (with all defaults filled in)
 %
 
@@ -57,37 +58,39 @@ function [result, options] = mibImage2ometiff(filename, imageS, options)
 %        fixed 2D sequential naming (.ome compound extension stripped);
 %        moved naming dialog to OmeTiffSaver (caller)
 
-% Example:
-%   @code
-%   %% Standalone 5D save:
-%   opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
-%   opts.Saving3d    = '5D';
-%   opts.Compression = 'lzw';
-%   opts.showWaitbar = false;
-%   opts.overwrite   = 1;
-%   mibImage2ometiff('/output/stack.ome.tiff', imageData, opts);
-%   @endcode
+% **Example 1** — standalone 5D save:
 %
-%   @code
-%   %% 2D sequence — sequential naming:
-%   opts.pixSize       = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
-%   opts.Saving3d      = '2D';
-%   opts.sequentialFn  = true;
-%   opts.showWaitbar   = true;
-%   opts.overwrite     = 1;
-%   opts.ParentFigure  = obj.mibModel.mibGUI;
-%   mibImage2ometiff('/output/slice.ome.tiff', imageData, opts);
-%   % produces /output/slice_01.ome.tiff, /output/slice_02.ome.tiff, ...
-%   @endcode
+%   .. code-block:: matlab
 %
-%   @code
-%   %% 2D sequence — original naming:
-%   opts.Saving3d      = '2D';
-%   opts.sequentialFn  = false;
-%   opts.SliceName     = {'frame001', 'frame002', 'frame003'};  % no extension
-%   mibImage2ometiff('/output/any.ome.tiff', imageData, opts);
-%   % produces /output/frame001.ome.tiff, /output/frame002.ome.tiff, ...
-%   @endcode
+%      opts.pixSize     = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
+%      opts.Saving3d    = '5D';
+%      opts.Compression = 'lzw';
+%      opts.showWaitbar = false;
+%      opts.overwrite   = 1;
+%      io.BioFormats.mibImage2ometiff('/output/stack.ome.tiff', imageData, opts);
+%
+% **Example 2** — 2D sequence with sequential naming:
+%
+%   .. code-block:: matlab
+%
+%      opts.pixSize      = struct('x',0.065,'y',0.065,'z',0.2,'t',1,'units','um','tunits','s');
+%      opts.Saving3d     = '2D';
+%      opts.sequentialFn = true;
+%      opts.showWaitbar  = true;
+%      opts.overwrite    = 1;
+%      opts.ParentFigure = obj.mibModel.mibGUI;
+%      io.BioFormats.mibImage2ometiff('/output/slice.ome.tiff', imageData, opts);
+%      % produces /output/slice_01.ome.tiff, /output/slice_02.ome.tiff, ...
+%
+% **Example 3** — 2D sequence with original naming:
+%
+%   .. code-block:: matlab
+%
+%      opts.Saving3d     = '2D';
+%      opts.sequentialFn = false;
+%      opts.SliceName    = {'frame001', 'frame002', 'frame003'};  % no extension
+%      io.BioFormats.mibImage2ometiff('/output/any.ome.tiff', imageData, opts);
+%      % produces /output/frame001.ome.tiff, /output/frame002.ome.tiff, ...
 
 result = 0;
 if nargin < 3; options = struct(); end

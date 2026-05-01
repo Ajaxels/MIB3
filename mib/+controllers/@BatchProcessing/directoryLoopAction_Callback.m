@@ -2,7 +2,9 @@ function directoryLoopAction_Callback(obj, BatchOptInput)
 % DIRECTORYLOOPACTION_CALLBACK - build or apply the BatchOpt structure for a Directory Loop protocol step.
 %
 % Syntax:
-%   function directoryLoopAction_Callback(obj, BatchOptInput)
+%   .. code-block:: matlab
+%
+%       obj.directoryLoopAction_Callback(BatchOptInput)
 %
 % When called with no second argument (interactive mode) the function
 % constructs a default BatchOpt and returns without doing anything further.

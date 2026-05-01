@@ -2,7 +2,9 @@ function insertSlice(obj, img, insertPosition, meta, options)
 % INSERTSLICE - Insert a slice or a dataset into the existing volume.
 %
 % Syntax:
-%   function insertSlice(obj, img, insertPosition, meta, options)
+%   .. code-block:: matlab
+%
+%       obj.insertSlice(img, insertPosition, meta, options)
 %
 % This is the interactive wrapper: it handles user dialogs, a waitbar and
 % annotation bookkeeping, then delegates the actual array manipulation to

@@ -1,21 +1,28 @@
 function gui_Callbacks(obj, hWidget, hData)
-% GUI_CALLBACKS - callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation.
+% GUI_CALLBACKS - Callback for general segmentation panel widgets.
 %
 % Syntax:
-%   function gui_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%      obj.gui_Callbacks(hWidget, hData)
+%
+% Handles callbacks for general segmentation panel widgets including model creation/loading,
+% material management, color scheme control, and visualization settings.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag, char, identifier the widget, used when the same operation
-%     'createModel' create a new segmentation model
-%     'loadModel' load model from a file
-%     'addMaterial' add material to the model
-%     'removeMaterial' remove material from the model
-%     'colorWheel' restore default color scheme or generate random colors for 65535+ models
-%     'viewSettings' view visualization settings for model/mask visualization
+%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox] pressed widget; operation identified via ``hWidget.Tag``:
 %
-
-% hData: handle to supporting data class
+%     - ``'createModel'`` — create a new segmentation model
+%     - ``'loadModel'`` — load model from file
+%     - ``'addMaterial'`` — add material to model
+%     - ``'removeMaterial'`` — remove material from model
+%     - ``'colorWheel'`` — restore default color scheme or generate random colors (for 65535+ materials)
+%     - ``'viewSettings'`` — open visualization settings dialog for model/mask
+%
+%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 
 arguments (Input)
     obj controllers.MibSegmentation

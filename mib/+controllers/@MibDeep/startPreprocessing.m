@@ -2,7 +2,9 @@ function startPreprocessing(obj)
 % STARTPREPROCESSING - preprocess imaging for training and prediction.
 %
 % Syntax:
-%   function startPreprocessing(obj)
+%   .. code-block:: matlab
+%
+%       obj.startPreprocessing()
 %
 
     if strcmp(obj.BatchOpt.Workflow{1},  '2D Patch-wise')  % '2D Patch-wise Resnet18' or '2D Patch-wise Resnet50'

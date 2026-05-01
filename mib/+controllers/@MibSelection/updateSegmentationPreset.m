@@ -2,7 +2,9 @@ function updateSegmentationPreset(obj, presetId)
 % UPDATESEGMENTATIONPRESET - Update preset from the current settings of the selected segmentation.
 %
 % Syntax:
-%   function updateSegmentationPreset(obj, presetId)
+%   .. code-block:: matlab
+%
+%      obj.updateSegmentationPreset(presetId)
 %
 % tool; callback on Shift+click of preset1/2/3 buttons or Shift+1/2/3 keyboard shortcuts.
 %

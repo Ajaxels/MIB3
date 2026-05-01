@@ -2,7 +2,6 @@ function KeyShortcuts = generateKeyShortcuts()
 % GENERATEKEYSHORTCUTS - Generate KeyShortcuts structure with default key shortcuts.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      KeyShortcuts = generateKeyShortcuts()

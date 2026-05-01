@@ -2,7 +2,9 @@ function moveMaskToSelectionDataset(obj, action_type, options)
 % MOVEMASKTOSELECTIONDATASET - Move the Mask layer to the Selection layer for the full dataset.
 %
 % Syntax:
-%   function moveMaskToSelectionDataset(obj, action_type, options)
+%   .. code-block:: matlab
+%
+%       obj.moveMaskToSelectionDataset(action_type, options)
 %
 % Fast-path function for moving complete datasets between layers without
 % ROI or block mode. Operates directly on packed data arrays for maximum

@@ -2,7 +2,9 @@ function updateImageDirectoryPath(obj, event)
 % UPDATEIMAGEDIRECTORYPATH - update directories with images for training, prediction and.
 %
 % Syntax:
-%   function updateImageDirectoryPath(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.updateImageDirectoryPath(event)
 %
 % results
     fieldName = event.Source.Tag;

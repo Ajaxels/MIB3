@@ -2,7 +2,9 @@ function status = materialsActions(obj, action, BatchOptIn)
 % MATERIALSACTIONS - Collection of actions related to materials of the model.
 %
 % Syntax:
-%   function status = materialsActions(obj, action, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       status = obj.materialsActions(action, BatchOptIn)
 %
 % Dispatches to the appropriate low-level method on MibDataset or MibLabels
 % depending on the requested action: rename, add, insert, swap, reorder,

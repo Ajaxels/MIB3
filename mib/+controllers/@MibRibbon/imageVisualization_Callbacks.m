@@ -2,7 +2,9 @@ function imageVisualization_Callbacks(obj, hWidget, hData)
 % IMAGEVISUALIZATION_CALLBACKS - callback on press of the Visualization buttons in the Image ribbon.
 %
 % Syntax:
-%   function imageVisualization_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageVisualization_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

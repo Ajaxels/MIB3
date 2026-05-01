@@ -2,7 +2,9 @@ function insertMaterial(obj, index, name, wb)
 % INSERTMATERIAL - Insert a material at the specified position.
 %
 % Syntax:
-%   function insertMaterial(obj, index, name, wb)
+%   .. code-block:: matlab
+%
+%       obj.insertMaterial(index, name, wb)
 %
 % For small models (maxMaterials < 256):
 % - When appending at the end (index == nMats+1): only adds the name

@@ -2,38 +2,38 @@ function gui_ScrollWheelFcn(obj, eventdata)
 % GUI_SCROLLWHEELFCN - Callback for mouse scroll wheel.
 %
 % Syntax:
-%   function gui_ScrollWheelFcn(obj, eventdata)
+%   .. code-block:: matlab
 %
-% Dispatches scroll events to one of three behaviors based on active
-% modifier keys and the MouseWheel mode preference:
+%      obj.gui_ScrollWheelFcn(eventdata)
 %
-% Ctrl + Scroll         - Adjust brush/tool size by 1 unit
-% Ctrl + Shift + Scroll - Adjust brush/tool size by 5 units
-% Alt + Scroll          - Navigate time frames (scroll mode + AltWithScrollWheel pref)
-% Scroll (zoom mode)    - Zoom in/out centred on cursor position (power law, C=1.10)
-% Scroll (scroll mode)  - Navigate Z-slices
+% Dispatches scroll events to various behaviors based on active modifier keys
+% and the MouseWheel mode preference.
 %
-% When adjusting brush size, the cursor is temporarily replaced with a
-% numeric size indicator (capped at display value 99). Brush size is
-% clamped to a minimum of 1.
+% **Scroll behaviors:**
+%   - ``Ctrl + Scroll`` — adjust brush/tool size by 1 unit
+%   - ``Ctrl + Shift + Scroll`` — adjust brush/tool size by 5 units
+%   - ``Alt + Scroll`` — navigate time frames (scroll mode + AltWithScrollWheel pref)
+%   - ``Scroll`` (zoom mode) — zoom in/out centred on cursor (power law, C=1.10)
+%   - ``Scroll`` (scroll mode) — navigate Z-slices
 %
-% Can be triggered by both the standard figure ScrollWheelFcn event and
-% programmatically via key shortcut callbacks using a ToggleEventData
-% object whose .Parameter struct contains VerticalScrollCount and
-% VerticalScrollAmount.
+% When adjusting brush size, cursor is temporarily replaced with numeric size indicator
+% (capped at display value 99). Brush size is clamped to minimum of 1.
 %
-% Inputs:
-% obj       - View controller; holds handles to GUI, mibModel, and
-% segmentation panel widgets
-% eventdata - matlab.ui.eventdata.ScrollData  (normal scroll), OR
-% core.ToggleEventData with .Parameter.VerticalScrollCount /
-% .VerticalScrollAmount  (key shortcut call)
+% Can be triggered by standard figure ``ScrollWheelFcn`` event or programmatically via
+% key shortcut callbacks using ``ToggleEventData`` with ``.Parameter`` struct containing
+% ``VerticalScrollCount`` and ``VerticalScrollAmount``.
 %
-% Example usage:
-% % This callback is automatically triggered by scroll events
-% % User actions:
-% % - Ctrl+Scroll Up: Increase brush size by 1
-% % - Ctrl+Shift+Scroll Down: Decrease brush size by 5
+% Input Arguments:
+%   - **eventdata** — [matlab.ui.eventdata.ScrollData | core.ToggleEventData]
+%     For normal scroll: ``matlab.ui.eventdata.ScrollData``
+%     For key shortcuts: ``core.ToggleEventData`` with ``.Parameter.VerticalScrollCount`` and ``.Parameter.VerticalScrollAmount``
+%
+% Output Arguments:
+%   (none)
+%
+% **Example usage** — automatically triggered by scroll events:
+%   - ``Ctrl+Scroll Up`` — increase brush size by 1
+%   - ``Ctrl+Shift+Scroll Down`` — decrease brush size by 5
 
 imViewFigure = obj.UIFigure;
 % Use obj.mibController.currentModifier rather than UIFigure.CurrentModifier.
@@ -210,10 +210,8 @@ elseif obj.mibModel.preferences.System.MouseWheel(1) == 'z'                 % 'z
     obj.brushCursorOffset = []; % clear brush offset
     obj.mibController.showImage();
     
-    % % notify listeners that the image axes were changed -> mibSnapshotController
-    % motifyEvent.Name = 'UpdateDatasetAxes';
-    % eventdata = ToggleEventData(motifyEvent);
-    % notify(obj.mibModel, 'modelNotify', eventdata);
+    % notify listeners that the image axes were changed -> Snapshot controller
+    notify(obj.mibModel, 'AxesLimitsChanged');
 else    % slice change with the mouse wheel
     % update the slider step
     if ismember('shift', modifier)

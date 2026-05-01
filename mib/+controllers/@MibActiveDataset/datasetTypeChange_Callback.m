@@ -2,7 +2,9 @@ function datasetTypeChange_Callback(obj, hWidget, hData)
 % DATASETTYPECHANGE_CALLBACK - callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored.
 %
 % Syntax:
-%   function datasetTypeChange_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetTypeChange_Callback(hWidget, hData)
 %
 % in the selected buffer/container.
 % Available options

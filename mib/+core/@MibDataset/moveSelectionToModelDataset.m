@@ -2,7 +2,9 @@ function moveSelectionToModelDataset(obj, action_type, options)
 % MOVESELECTIONTOMODELDATASET - Move the Selection layer to the Model layer for the full dataset.
 %
 % Syntax:
-%   function moveSelectionToModelDataset(obj, action_type, options)
+%   .. code-block:: matlab
+%
+%       obj.moveSelectionToModelDataset(action_type, options)
 %
 % Fast-path function for moving complete datasets between layers without
 % ROI or block mode. Operates directly on packed data arrays for maximum
@@ -15,33 +17,30 @@ function moveSelectionToModelDataset(obj, action_type, options)
 %     - ``'remove'`` — remove selection from the model
 %     - ``'replace'`` — replace the selected (Add to) material with selection
 %
-%   - **options** — a structure with additional parameters
+%   - **options** — [struct] structure with additional parameters:
 %
-%     - ``.contSelIndex`` — index of the Select from material
-%     - ``.contAddIndex`` — index of the Add to material
-%     - ``.selected_sw`` — [0/1] limit actions to the selected material only
-%     - ``.maskedAreaSw`` — [0/1] limit actions to the masked areas
-%     - ``.level`` *(optional)*, index of image level from the image pyramid, default = 1
+%     - ``.contSelIndex`` — [numeric] index of the "Select from" material
+%     - ``.contAddIndex`` — [numeric] index of the "Add to" material
+%     - ``.selected_sw`` — [logical] limit actions to the selected material only (``0`` or ``1``)
+%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)
+%     - ``.level`` *(optional)* — [numeric] image level index from pyramid (default: ``1``)
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   **Example 1**
+% **Example** — Move selection to model by adding:
 %
 %   .. code-block:: matlab
 %
+%      options.contSelIndex = obj.getSelectedMaterialIndex();
+%      options.contAddIndex = obj.getSelectedMaterialIndex('AddTo');
+%      options.selected_sw = 0;
+%      options.maskedAreaSw = 0;
+%      obj.moveSelectionToModelDataset('add', options);
 %
-%     options.contSelIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();
-%     options.contAddIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');
-%     options.selected_sw = 0;
-%     options.maskedAreaSw = 0;
-%     obj.mibModel.I{obj.mibModel.id}.moveSelectionToModelDataset('add', options);% add selection to model
-%
-%
-%   **Attention:** **NOT** **sensitive** to the blockModeSwitch
-%
-%   **Attention:** **NOT** **sensitive** to the shown ROI
-%
+%   .. note::
+%      This is a fast-path function that operates on complete 4D datasets only.
+%      It is **not** sensitive to ``blockModeSwitch`` or visible ROI selections.
 
 % Updates
 % 

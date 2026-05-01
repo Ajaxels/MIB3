@@ -2,7 +2,9 @@ function treeNames = getTreeNames(obj, index)
 % GETTREENAMES - return name of trees.
 %
 % Syntax:
-%   function treeNames = getTreeNames(obj, index)
+%   .. code-block:: matlab
+%
+%       treeNames = obj.getTreeNames(index)
 %
 % Input Arguments:
 %   - **index** — *(optional)* indices of the trees

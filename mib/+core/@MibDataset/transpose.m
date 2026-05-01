@@ -2,7 +2,9 @@ function transpose(obj, new_orient)
 % TRANSPOSE - Change orientation of the image to the YX, XZ, or YZ plane.
 %
 % Syntax:
-%   function transpose(obj, new_orient)
+%   .. code-block:: matlab
+%
+%       obj.transpose(new_orient)
 %
 % Converted from MIB2 @mibImage/transpose.m
 %

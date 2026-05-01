@@ -1,36 +1,36 @@
 function listenerUpdateFileList(obj, src, evtData)
-% LISTENERUPDATEFILELIST - Update list of files in "obj.view.handles.panels.dirContents.handles.fileList".
+% LISTENERUPDATEFILELIST - Listener callback to refresh the file list in the Directory Contents panel.
 %
 % Syntax:
-%   function listenerUpdateFileList(obj, src, evtData)
+%   .. code-block:: matlab
 %
-% executed upon catch of MibModel->"UpdateFileList" event
+%      obj.listenerUpdateFileList(src, evtData)
+%
+% Updates the file list widget (``obj.handles.fileList``) when the MibModel ``UpdateFileList`` event
+% is triggered. Optionally highlights a specific filename in the list.
 %
 % Input Arguments:
-%   - **src** — handle to MibModel
-%   - **evtData** — event data, an instance of core.ToggleEventData class with the following fields:
-%     .Parameters field containing a structure with the
-%     .evtData.Parameters.filename - update mode,
-%     - 'filename' *(optional)* provide a filename that should be highlighted in the filelist widget
-%   .Source handle to MibModel
-%   .EventName string with the event name that triggered the callback
-%   see example in MibModel.datasetsSetsOps-> 'Add set'
+%   - **src** — [models.MibModel] model object that triggered the event
+%   - **evtData** — [core.ToggleEventData] event data with optional parameters:
+%
+%     - ``.Parameters.filename`` — *(optional)* [char] filename to highlight in the file list; when omitted, highlights the current dataset filename
 %
 % Output Arguments:
+%   None
 %
-% Usage:
-%   Example 1::
+% **Example 1** — update file list and highlight specific file:
 %
-%     // call from MibModel; update the list of files and highlight "filename.tif"
-%     Options.filename = 'filename.tif';
-%     eventdata = core.ToggleEventData(Options);
-%     notify(obj.mibModel, 'UpdateFileList', eventdata);
+%   .. code-block:: matlab
 %
-%   // call from MibModel; update the list of files
-%   Example 2::
+%      Options.filename = 'sample_001.tif';
+%      eventdata = core.ToggleEventData(Options);
+%      notify(obj.mibModel, 'UpdateFileList', eventdata)
 %
-%     // update the list of files highlighting the current dataset
-%     notify(obj.mibModel, 'UpdateFileList');
+% **Example 2** — update file list with current dataset filename:
+%
+%   .. code-block:: matlab
+%
+%      notify(obj.mibModel, 'UpdateFileList')
 %
 
 % update the missing fields

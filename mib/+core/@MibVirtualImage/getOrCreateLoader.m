@@ -2,7 +2,9 @@ function loader = getOrCreateLoader(obj, fileIdx)
 % GETORCREATELOADER - Return the virtual loader for the given file index, creating it if needed.
 %
 % Syntax:
-%   function loader = getOrCreateLoader(obj, fileIdx)
+%   .. code-block:: matlab
+%
+%       loader = obj.getOrCreateLoader(fileIdx)
 %
 % Loaders are created lazily on first access and cached in obj.loaders{fileIdx}.
 % The loader type is determined by obj.Virtual.objectType{fileIdx}:

@@ -2,7 +2,9 @@ function dataset = getData4D(obj, type, orient, col_channel, options)
 % GETDATA4D - Get the complete 4D dataset from the current (or specified) dataset; wrapper around core.MibDataset.getData4D.
 %
 % Syntax:
-%   function dataset = getData4D(obj, type, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData4D(type, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.getData4D(...) instead of

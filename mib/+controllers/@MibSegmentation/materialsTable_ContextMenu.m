@@ -1,23 +1,27 @@
 function materialsTable_ContextMenu(obj, menuEntry, selectedData)
-% MATERIALSTABLE_CONTEXTMENU - callbacks for the context menu of the segmentation table widget.
+% MATERIALSTABLE_CONTEXTMENU - Callback for materials table context menu operations.
 %
 % Syntax:
-%   function materialsTable_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
 %
-% (obj.handles.panels.segmentation.handles.materialsTable)
+%      obj.materialsTable_ContextMenu(menuEntry, selectedData)
+%
+% Handles context menu operations on the materials table (``obj.handles.materialsTable``).
+% Supports material visualization, renaming, color selection, quantification, and unlinking.
 %
 % Input Arguments:
-%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-%   - **selectedData** — handle to the pressed
-%     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-%     button that has the context menu (selectedData.ContextObject)
+%   - **menuEntry** — [matlab.ui.container.Menu] handle to the pressed context menu entry; operation identified via ``menuEntry.Tag``
+%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data containing the table object (``selectedData.ContextObject``)
 %
-%   Available menu options available from 'menuEntry.Tag':
-%   materialsTableContextShowSelected show only the selected material
-%   materialsTableContextRename rename the selected material
-%   materialsTableContextSetColor update color for the selected material
-%   materialsTableContextQuant quantify the selected material
-%   materialsTableContextUnlink unlink the selected material from the Add to column
+% Output Arguments:
+%   None
+%
+% **Supported menu operations (menuEntry.Tag):**
+%   - ``'materialsTableContextShowSelected'`` — show only the selected material in view
+%   - ``'materialsTableContextRename'`` — rename the selected material
+%   - ``'materialsTableContextSetColor'`` — open color picker to change material color
+%   - ``'materialsTableContextQuant'`` — open quantification dialog for selected material
+%   - ``'materialsTableContextUnlink'`` — unlink material from "Add to" reference material
 %
 
 arguments (Input)

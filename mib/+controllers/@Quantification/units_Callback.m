@@ -2,7 +2,9 @@ function units_Callback(obj)
 % UNITS_CALLBACK - Handle selection change in the Units dropdown.
 %
 % Syntax:
-%   function units_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.units_Callback()
 %
 % Warns the user when switching to physical units in 3D mode with
 % anisotropic voxels (x≠z or y≠z), because several 3D measurements

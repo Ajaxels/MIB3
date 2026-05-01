@@ -2,7 +2,9 @@ function listener_updateToolbar(obj, src, evtData)
 % LISTENER_UPDATETOOLBAR - Update buttons in MIB toolbar.
 %
 % Syntax:
-%   function listener_updateToolbar(obj, src, evtData)
+%   .. code-block:: matlab
+%
+%      obj.listener_updateToolbar(src, evtData)
 %
 % executed upon catch of MibModel->"UpdateToolbar" event
 %
@@ -17,15 +19,16 @@ function listener_updateToolbar(obj, src, evtData)
 %     see example in MibModel.datasetsSetsOps-> 'Add set'
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — update the state of the fastpan button:
 %
-%     // call from MibModel to update the state of the fastpan button
-%     Options.button = 'fastpan';
-%     Options.state = true;
-%     eventdata = core.ToggleEventData(Options);
-%     notify(obj, 'UpdateToolbar', eventdata);
+%   .. code-block:: matlab
+%
+%      Options.button = 'fastpan';
+%      Options.state = true;
+%      eventdata = core.ToggleEventData(Options);
+%      notify(obj, 'UpdateToolbar', eventdata);
 %
 
 switch evtData.Parameters.button

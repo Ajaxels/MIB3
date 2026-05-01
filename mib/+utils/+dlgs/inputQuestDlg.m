@@ -3,7 +3,6 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 % extended with an optional ``options`` structure as the last argument.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      % questdlg-compatible forms:

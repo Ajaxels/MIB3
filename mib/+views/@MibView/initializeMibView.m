@@ -1,8 +1,10 @@
 function initializeMibView(obj)
-% INITIALIZEMIBVIEW - Initialize the main MIB view.
+% INITIALIZEMIBVIEW - initialize the main MIB view and its components.
 %
 % Syntax:
-%   function initializeMibView(obj)
+%   .. code-block:: matlab
+%
+%      obj.initializeMibView()
 %
 
 arguments (Input)

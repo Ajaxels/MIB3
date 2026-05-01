@@ -2,7 +2,10 @@ function updateFrameNumber(obj, BatchOptIn)
 % UPDATEFRAMENUMBER - Change the currently displayed time frame in the active image document.
 %
 % Syntax:
-%   function updateFrameNumber(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%      obj.updateFrameNumber()
+%      obj.updateFrameNumber(BatchOpt)
 %
 % Wrapper that exposes time-frame navigation to the MIB batch processing
 % system. Validates the requested frame number (clamping it to the valid
@@ -12,26 +15,32 @@ function updateFrameNumber(obj, BatchOptIn)
 % Input Arguments:
 %   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
-%     - .FrameNumber - [char, {'1'}] frame/time number to display as a string;
-%   use '0' to jump to the last time point of the dataset
+%
+%     - ``.FrameNumber`` — [char, default ``'1'``] frame/time number to display as a string;
+%       use ``'0'`` to jump to the last time point of the dataset
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — interactive call (reads from the frame-number widget):
 %
-%     obj.updateFrameNumber();                                          % interactive: reads value from the frame-number widget
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.updateFrameNumber();
 %
-%     BatchOpt.FrameNumber = '3';
-%     obj.updateFrameNumber(BatchOpt);                                        % batch/scripted call: jump to frame 3
+% **Example 2** — batch call: jump to frame 3:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     BatchOpt.FrameNumber = '0';
-%     obj.updateFrameNumber(BatchOpt);                                        % batch/scripted call: jump to the last frame
+%      BatchOpt.FrameNumber = '3';
+%      obj.updateFrameNumber(BatchOpt);
+%
+% **Example 3** — batch call: jump to the last frame:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.FrameNumber = '0';
+%      obj.updateFrameNumber(BatchOpt);
 %
 
 % Updates

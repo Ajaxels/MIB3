@@ -2,60 +2,63 @@ function result = image2hdf5(filename, imageS, options)
 % IMAGE2HDF5 - Save image into hdf5 format.
 %
 % Syntax:
-%   function result = image2hdf5(filename, imageS, options)
+%   .. code-block:: matlab
+%
+%      result = io.HDF5.image2hdf5(filename, imageS)
+%      result = io.HDF5.image2hdf5(filename, imageS, options)
 %
 % Input Arguments:
-%   - **filename** — filename for hdf file
-%   - **imageS** — original dataset [1:height, 1:width, 1:colors, 1:no_stacks] or [1:height, 1:width, 1:no_stacks]
-%   - **options** — *(optional)* a structure with additional parameters
-%     - .ChunkSize - a matrix [y, x, z] of chunk size
-%     - .Deflate - a number 0-9, defines gzip compression level (0-9)
-%     - .overwrite, if **1** do not check whether file with provided filename already exists
-%     - .showWaitbar, **1** - show the progress bar, **0** - do not show
-%     - .ParentFigure - *(optional)* handle to the main MIB application window.
-%     When provided, the progress bar is rendered as a
-%     uiprogressdlg attached to that window (recommended for
-%     GUI use).  When absent or empty the legacy waitbar is
-%     used as a fallback.
-%     - .lutColors, - not yet implemented
-%     - .pixSize, - not yet implemented
-%     - .ImageDescription, - a cell string with dataset description
-%     - .DatasetName, - a cell string or a containers.Map with metadata
-%     - .order, - a string with order of the axes, 'yxczt'
-%     - .height - height of the full dataset, required for the initialization (i.e. when options.t==1);
-%     - .width - width of the full dataset, required for the initialization (i.e. when options.t==1);
-%     - .colors - number of colors of the full dataset, required for the initialization (i.e. when options.t==1);
-%     - .depth - depth of the full dataset, required for the initialization (i.e. when options.t==1);
-%     - .time - time of the full dataset, required for the initialization (i.e. when options.t==1);
-%     - .x - define a minimal X point for data to store
-%     - .y - define a minimal Y point for data to store
-%     - .z - define a minimal Z point for data to store
-%     - .t - define a minimal T point for data to store
-%     - .DatasetType - a string, type of the dataset 'image', 'model', 'mask'
-%     - .DatasetClass - a string, image class of the dataset, uint8, uint16...
+%   - **filename** — filename for the HDF5 file
+%   - **imageS** — dataset [height, width, colors, depth] or [height, width, depth]
+%   - **options** — *(optional)* struct with additional parameters:
+%
+%     - ``.ChunkSize`` — [y, x, z] matrix of chunk size
+%     - ``.Deflate`` — [numeric] gzip compression level 0–9 (default: ``0``)
+%     - ``.overwrite`` — ``1`` = do not check whether file already exists
+%     - ``.showWaitbar`` — ``1`` = show the progress bar, ``0`` = hide it
+%     - ``.ParentFigure`` — *(optional)* handle to the main MIB UIFigure; when provided,
+%       the progress bar is shown as a ``uiprogressdlg`` attached to that window;
+%       when absent or empty, the legacy ``waitbar`` is used as a fallback
+%     - ``.lutColors`` — not yet implemented
+%     - ``.pixSize`` — not yet implemented
+%     - ``.ImageDescription`` — cell string with dataset description
+%     - ``.DatasetName`` — cell string or dictionary with metadata
+%     - ``.order`` — (char) axis order string, e.g. ``'yxzct'`` (default) or ``'yxczt'``
+%     - ``.height`` — height of the full dataset (required for initialisation, i.e. when ``options.t == 1``)
+%     - ``.width`` — width of the full dataset (required for initialisation)
+%     - ``.colors`` — number of colour channels (required for initialisation)
+%     - ``.depth`` — depth of the full dataset (required for initialisation)
+%     - ``.time`` — number of time points (required for initialisation)
+%     - ``.x`` — minimal X coordinate for data to store
+%     - ``.y`` — minimal Y coordinate for data to store
+%     - ``.z`` — minimal Z coordinate for data to store
+%     - ``.t`` — minimal T index for data to store
+%     - ``.DatasetType`` — (char) type of the dataset: ``'image'``, ``'model'``, or ``'mask'``
+%     - ``.DatasetClass`` — (char) image class of the dataset, e.g. ``'uint8'``, ``'uint16'``
 %
 % Output Arguments:
-%   - **result** — result of the function run, **1** - success, **0** - fail
+%   - **result** — ``1`` = success, ``0`` = failure
 %
 
 % Updates
 % 
 
-% Example:
-%   @code
-%   %% Standalone / scripted use (no GUI parent):
-%   opts.showWaitbar = false;
-%   opts.overwrite   = 1;
-%   io.HDF5.image2hdf5('saveme.h5', image_var, opts);
-%   @endcode
+% **Example 1** — standalone use (no GUI parent):
 %
-%   @code
-%   %% GUI use — attach progress dialog to the MIB window:
-%   opts.showWaitbar  = true;
-%   opts.overwrite    = 1;
-%   opts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%   io.HDF5.image2hdf5('saveme.h5', image_var, opts);
-%   @endcode
+%   .. code-block:: matlab
+%
+%      opts.showWaitbar = false;
+%      opts.overwrite   = 1;
+%      io.HDF5.image2hdf5('saveme.h5', image_var, opts);
+%
+% **Example 2** — GUI use (attach progress dialog to MIB window):
+%
+%   .. code-block:: matlab
+%
+%      opts.showWaitbar  = true;
+%      opts.overwrite    = 1;
+%      opts.ParentFigure = obj.mibModel.mibGUI;
+%      io.HDF5.image2hdf5('saveme.h5', image_var, opts);
 
 result = 0;
 if nargin < 3; options = struct(); end

@@ -2,7 +2,9 @@ function output = addColorChannel(obj, img, channelId, lutColors, options)
 % ADDCOLORCHANNEL - Add or replace a color channel in the existing dataset.
 %
 % Syntax:
-%   function output = addColorChannel(obj, img, channelId, lutColors, options)
+%   .. code-block:: matlab
+%
+%       output = obj.addColorChannel(img, channelId, lutColors, options)
 %
 % Input Arguments:
 %   - **img** — image stack [height, width, depth, colors, time] to add/replace

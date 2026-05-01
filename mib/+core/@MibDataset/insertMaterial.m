@@ -2,7 +2,9 @@ function insertMaterial(obj, materialIndex, materialName, wb)
 % INSERTMATERIAL - Insert a new material at the specified position — MibDataset wrapper.
 %
 % Syntax:
-%   function insertMaterial(obj, materialIndex, materialName, wb)
+%   .. code-block:: matlab
+%
+%       obj.insertMaterial(materialIndex, materialName, wb)
 %
 % Delegates to obj.labels.insertMaterial which handles both the pixel
 % data shifting (via direct obj.data{1} access) and the metadata

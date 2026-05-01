@@ -1,36 +1,38 @@
 function selectionActions(obj, action)
-% SELECTIONACTIONS - Wrapper for the A / S / R (Add / Subtract / Replace) buttons in the.
+% SELECTIONACTIONS - Wrapper for Add/Subtract/Replace buttons to move selection to material/mask.
 %
 % Syntax:
-%   function selectionActions(obj, action)
+%   .. code-block:: matlab
 %
-% Selection panel.
+%      obj.selectionActions(action)
 %
-% Determines the destination layer (mask or model) from the currently
-% selected "Add to" material index, reads the dataset scope from modifier
-% keys, then delegates to obj.mibModel.moveLayers.
+% Determines destination layer (mask or model) from selected "Add to" material index,
+% reads dataset scope from modifier keys, then delegates to ``obj.mibModel.moveLayers``.
 %
 % Input Arguments:
-%   - **action** — char, the button that was pressed
-%     - 'add'      - add selection to the active material / mask
-%     - 'subtract' - subtract selection from the active material / mask
-%     - 'replace'  - replace the active material / mask with selection
+%   - **action** — [char] the button that was pressed:
 %
-% Output Arguments:
-%   (none)
+%     - ``'add'`` — add selection to active material/mask
+%     - ``'subtract'`` — subtract selection from active material/mask
+%     - ``'replace'`` — replace active material/mask with selection
 %
-% Usage:
-%   Example 1::
+% **Example 1** — called from Add button:
 %
-%     obj.selectionActions('add');      // called from the A button callback
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.selectionActions('add');
 %
-%     obj.selectionActions('subtract'); // called from the S button callback
+% **Example 2** — called from Subtract button:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     obj.selectionActions('replace');  // called from the R button callback
+%      obj.selectionActions('subtract');
+%
+% **Example 3** — called from Replace button:
+%
+%   .. code-block:: matlab
+%
+%      obj.selectionActions('replace');
 %
 
 % Updates

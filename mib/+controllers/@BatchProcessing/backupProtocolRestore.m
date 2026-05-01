@@ -2,7 +2,9 @@ function backupProtocolRestore(obj, mode)
 % BACKUPPROTOCOLRESTORE - restore the protocol from the undo/redo history.
 %
 % Syntax:
-%   function backupProtocolRestore(obj, mode)
+%   .. code-block:: matlab
+%
+%       obj.backupProtocolRestore(mode)
 %
 % Input Arguments:
 %   - **mode** — a string with direction of restoration

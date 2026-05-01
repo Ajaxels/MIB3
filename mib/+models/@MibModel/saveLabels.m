@@ -2,7 +2,9 @@ function fnOut = saveLabels(obj, filename, BatchOptIn)
 % SAVELABELS - Save the segmentation model (labels layer) for the current dataset.
 %
 % Syntax:
-%   function fnOut = saveLabels(obj, filename, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       fnOut = obj.saveLabels(filename, BatchOptIn)
 %
 % Thin convenience wrapper around obj.saveImage('labels', ...).
 % All BatchOpt machinery (SyncBatch, mibBatchSectionName, FilenamePolicy,

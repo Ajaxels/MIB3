@@ -2,7 +2,9 @@ function maskToSelection_Callback(obj, hWidget, hData)
 % MASKTOSELECTION_CALLBACK - callback on press of buttons in the Mask to Selection section of the Mask ribbon.
 %
 % Syntax:
-%   function maskToSelection_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.maskToSelection_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

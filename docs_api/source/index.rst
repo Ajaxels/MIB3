@@ -35,6 +35,8 @@ MIB3 follows an **MVC** pattern implemented with MATLAB packages:
      - Image I/O factory (loaders and savers for all supported formats).
    * - ``+utils``
      - Dialogs, defaults, deep-learning helpers, and standalone utility functions.
+   * - ``+deepmib``
+     - Supporting functions for DeepMIB
 
 .. toctree::
    :maxdepth: 2
@@ -46,4 +48,5 @@ MIB3 follows an **MVC** pattern implemented with MATLAB packages:
    api/views/index
    api/io/index
    api/utils/index
+   api/deepmib/deepmib
 

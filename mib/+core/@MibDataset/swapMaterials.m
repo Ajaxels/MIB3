@@ -2,7 +2,9 @@ function swapMaterials(obj, material1, material2, wb)
 % SWAPMATERIALS - Swap two materials in the model — low-level data layer.
 %
 % Syntax:
-%   function swapMaterials(obj, material1, material2, wb)
+%   .. code-block:: matlab
+%
+%       obj.swapMaterials(material1, material2, wb)
 %
 % Exchanges all pixel values equal to material1 with material2 and vice
 % versa across every time-point, then updates material names and colours

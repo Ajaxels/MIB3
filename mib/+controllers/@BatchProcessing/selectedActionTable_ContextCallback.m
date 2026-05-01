@@ -2,7 +2,9 @@ function selectedActionTable_ContextCallback(obj, parameter)
 % SELECTEDACTIONTABLE_CONTEXTCALLBACK - handle right-click context menu actions on the selected-action parameter table.
 %
 % Syntax:
-%   function selectedActionTable_ContextCallback(obj, parameter)
+%   .. code-block:: matlab
+%
+%       obj.selectedActionTable_ContextCallback(parameter)
 %
 % Each context menu item performs a structural edit on obj.CurrentBatch or on
 % the table's visual properties.  The function returns early if no row is

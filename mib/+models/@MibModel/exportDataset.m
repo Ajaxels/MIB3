@@ -2,7 +2,9 @@ function exportDataset(obj, layerType, BatchOptIn)
 % EXPORTDATASET - Export image, mask, or labels layer to the MATLAB main workspace.
 %
 % Syntax:
-%   function exportDataset(obj, layerType, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.exportDataset(layerType, BatchOptIn)
 %
 % Input Arguments:
 %   - **layerType** — a string specifying which layer to export:

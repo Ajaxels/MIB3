@@ -104,14 +104,19 @@ classdef HDF5Saver < io.savers.BaseSaver
     methods
 
         function obj = HDF5Saver(options)
-            % HDF5SAVER - Constructor — accepts an optional options struct.
+            % HDF5SAVER - Constructor for HDF5Saver class.
             %
             % Syntax:
-            %   function obj = HDF5Saver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.HDF5Saver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the HDF5Saver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -122,7 +127,15 @@ classdef HDF5Saver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by HDF5Saver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for HDF5 output
             %
             formats = { ...
                 'Hierarchical Data Format (*.h5)'; ...
@@ -134,35 +147,40 @@ classdef HDF5Saver < io.savers.BaseSaver
             % SAVE - Write data as an HDF5 file (standard, XML-header, or BDV variant).
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array
-            %   metadata — struct; used fields:
-            %   .colorType        — 'grayscale' | 'multichannel' | 'indexed'
-            %   .lutColors        — [C x 3] per-channel LUT colours (0..1)
-            %   .dataClass        — 'uint8' | 'uint16' | ...
-            %   .maxInt           — maximum intensity value
-            %   .pixSize          — struct {.x .y .z .units .t .tunits}
-            %   .boundingBox      — [xmin xmax ymin ymax zmin zmax]
-            %   .imageDescription — (char) dataset description string
-            %   filename — full output path, e.g. '/out/stack.h5',
-            %   '/out/stack.xml' for the XML-header variant, or
-            %   '/out/stack.h5'  for the BDV variant
-            %   options  — struct; used fields:
-            %   .Format           — format string (selects saving mode)
-            %   .layerType        — 'image' | 'mask' | 'labels' (default 'image')
-            %   .showWaitbar      — logical
-            %   .silent           — logical, suppress dialogs and use defaults
-            %   .overwrite        — logical
-            %   .SubSampling      — [3 x L] sub-sampling factors per level
-            %   .ChunkSize        — [3 x 1] HDF5 chunk size [y x z]
-            %   .Deflate          — integer 0-9 (zlib level)
-            %   .DimOrder         — 'yxzct' | 'yxczt' (HDF5 only)
-            %   .ResamplingMethod — 'nearest'|'bicubic'|'bilinear' (BDV only)
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` — [C x 3] per-channel LUT colours (0..1)
+            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` — maximum intensity value
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]
+            %     - ``imageDescription`` — [char] dataset description string
+            %
+            %   - **filename** — full output path, e.g. ``'/out/stack.h5'``,
+            %     ``'/out/stack.xml'`` for the XML-header variant, or
+            %     ``'/out/stack.h5'`` for the BDV variant
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string (selects saving mode)
+            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs and use defaults; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``SubSampling`` — [3 x L] sub-sampling factors per level
+            %     - ``ChunkSize`` — [3 x 1] HDF5 chunk size [y x z]
+            %     - ``Deflate`` — integer 0-9 (zlib level)
+            %     - ``DimOrder`` — ``'yxzct'`` | ``'yxczt'`` (HDF5 only)
+            %     - ``ResamplingMethod`` — ``'nearest'`` | ``'bicubic'`` | ``'bilinear'`` (BDV only)
             %
             % Output Arguments:
-            %   fnOut — (char) path of saved .h5 or .xml file, [] on failure
+            %   - **fnOut** — [char] path of saved ``.h5`` or ``.xml`` file, ``[]`` on failure
             %
 
             fnOut = [];
@@ -360,7 +378,18 @@ classdef HDF5Saver < io.savers.BaseSaver
             % BUILDCOMMONHDFOPTIONS - Assemble the HDFoptions struct shared by both save paths.
             %
             % Syntax:
-            %   function HDFoptions = buildCommonHDFOptions(~, options, metadata, baseName, nH, nW, nD, nC, nT)
+            %   .. code-block:: matlab
+            %
+            %      HDFoptions = obj.buildCommonHDFOptions(options, metadata, baseName, nH, nW, nD, nC, nT)
+            %
+            % Input Arguments:
+            %   - **options** — struct with saver options (Deflate, showWaitbar, etc.)
+            %   - **metadata** — struct with image metadata (pixSize, boundingBox, etc.)
+            %   - **baseName** — [char] base filename (without extension)
+            %   - **nH**, **nW**, **nD**, **nC**, **nT** — [numeric] array dimensions
+            %
+            % Output Arguments:
+            %   - **HDFoptions** — struct with HDF5-specific options for ``image2hdf5()`` or ``saveBigDataViewerFormat()``
             %
             HDFoptions.Deflate      = options.Deflate;
             HDFoptions.showWaitbar  = options.showWaitbar;

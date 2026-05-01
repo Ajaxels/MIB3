@@ -2,7 +2,9 @@ function [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)
 % GETTREE - return graph with the tree specified in treeId.
 %
 % Syntax:
-%   function [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)
+%   .. code-block:: matlab
+%
+%       [Graph, nodeIds, EdgesTable, NodesTable] = obj.getTree(treeId)
 %
 % Input Arguments:
 %   - **treeId** — index of tree to get

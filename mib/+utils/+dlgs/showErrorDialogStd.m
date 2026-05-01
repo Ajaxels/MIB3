@@ -1,8 +1,10 @@
-function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffix)
-% SHOWERRORDIALOG - show error that is generated in try/catch blocks or in any other occasion.
+function showErrorDialogStd(guiHandle, err, winTitle, optionalPrefix, optionalSuffix)
+% SHOWERRORDIALOGSTD - show error that is generated in try/catch blocks or in any other occasion.
 %
 % Syntax:
-%   function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffix)
+%   .. code-block:: matlab
+%
+%       function showErrorDialogStd(guiHandle, err, winTitle, optionalPrefix, optionalSuffix)
 %
 % Input Arguments:
 %   - **guiHandle** — handle to appdesigner window (for example, obj.View.gui)
@@ -21,7 +23,7 @@ function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffi
 %     try
 %     // some code
 %     catch err
-%        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing net-variable'); //    when called from MibController
+%        utils.dlgs.showErrorDialogStd(obj.view.gui, err, 'Missing net-variable'); //    when called from MibController
 %        return;
 %     end
 %
@@ -30,7 +32,7 @@ function showErrorDialog(guiHandle, err, winTitle, optionalPrefix, optionalSuffi
 %
 %     errorText = sprintf('!!! Error !!!\n\nSomething went wrong!');
 %     suffix = 'some text at the bottom';
-%     utils.dlgs.showErrorDialog([], errorText, 'Error', [], suffix);
+%     utils.dlgs.showErrorDialogStd([], errorText, 'Error', [], suffix);
 %     return;
 %
 %

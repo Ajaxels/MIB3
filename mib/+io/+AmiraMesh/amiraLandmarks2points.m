@@ -15,16 +15,20 @@
 % Date: 07.08.2024
 
 function points = amiraLandmarks2points(filename)
-% AMIRALANDMARKS2POINTS - read amira landmark coordinates.
+% AMIRALANDMARKS2POINTS - Read Amira landmark coordinates.
 %
 % Syntax:
-%   function points = amiraLandmarks2points(filename)
+%   .. code-block:: matlab
+%
+%      points = io.AmiraMesh.amiraLandmarks2points()
+%      points = io.AmiraMesh.amiraLandmarks2points(filename)
 %
 % Input Arguments:
-%   filename - filename to load amira landmark data
+%   - **filename** — *(optional)* filename of Amira landmark file; when omitted,
+%     a file selection dialog is started
 %
 % Output Arguments:
-%   - **points** — array of points as [x, y, z]
+%   - **points** — [Nx3] array of landmark coordinates [x, y, z]
 %
 
 points = [];

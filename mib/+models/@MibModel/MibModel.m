@@ -110,6 +110,7 @@ classdef MibModel < handle
         UpdateToolbar        % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)
         UpdatedLines3D       % notify controllers about updated Lines3D data, carries core.ToggleEventData with the action string (e.g. 'Add node')
         UpdateUserScore      % update user stats
+        AxesLimitsChanged    % notify listeners that the image axes limits were changed (zoom/pan), used by Snapshot controller
     end
 
     methods

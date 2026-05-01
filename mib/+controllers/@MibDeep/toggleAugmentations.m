@@ -2,7 +2,9 @@ function toggleAugmentations(obj)
 % TOGGLEAUGMENTATIONS - callback for press of the T_augmentation checkbox.
 %
 % Syntax:
-%   function toggleAugmentations(obj)
+%   .. code-block:: matlab
+%
+%       obj.toggleAugmentations()
 %
     if obj.view.handles.T_augmentation.Value == 1
         obj.view.handles.Augmentation2DSettings.Enable = 'on';

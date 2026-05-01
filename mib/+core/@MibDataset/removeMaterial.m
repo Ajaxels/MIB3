@@ -2,7 +2,9 @@ function removeMaterial(obj, materialIndices, wb)
 % REMOVEMATERIAL - Remove materials from the model — low-level data layer.
 %
 % Syntax:
-%   function removeMaterial(obj, materialIndices, wb)
+%   .. code-block:: matlab
+%
+%       obj.removeMaterial(materialIndices, wb)
 %
 % Modifies pixel data across all time-points and then updates the model
 % metadata (materialNames, materialColors, selection state).

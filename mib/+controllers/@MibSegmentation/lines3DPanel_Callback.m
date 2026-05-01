@@ -1,23 +1,28 @@
 function lines3DPanel_Callback(obj, hWidget, hData)
-% LINES3DPANEL_CALLBACK - lines3DPanel_Callback(obj, hWidget, hData).
+% LINES3DPANEL_CALLBACK - Callback for 3D lines tool widgets.
 %
 % Syntax:
-%   function lines3DPanel_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->3D lines tool
+%      obj.lines3DPanel_Callback(hWidget, hData)
+%
+% Handles callbacks for 3D line drawing and editing tool widgets in the Segmentation panel.
+% Supports line visualization, table management, and mouse interaction mode configuration.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag identifier the widget, used when the same operation
-%     is called from menu, when empty or missing hWidget.Tag is used as an identifier
-%     'linesTableView' open a dialog with tables showing line edges and vertices
-%     'linesShowLines' show or hide the 3D lines
-%     'linesClick' define the default operation on mouse click
-%     'linesShiftClick' define the default operation on Shift+mouse click
-%     'linesCtrlClick' define the default operation on Ctrl+mouse click
-%     'linesAltClick' define the default operation on Alt+mouse click
+%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'linesTableView'`` — open line vertices and edges table dialog
+%     - ``'linesShowLines'`` — toggle 3D lines visibility in image
+%     - ``'linesClick'`` — set action for left-click (add node, delete, etc.)
+%     - ``'linesShiftClick'`` — set action for Shift+left-click
+%     - ``'linesCtrlClick'`` — set action for Ctrl+left-click
+%     - ``'linesAltClick'`` — set action for Alt+left-click
+%
+%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 %
 
 arguments (Input)

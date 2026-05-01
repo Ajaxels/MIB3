@@ -2,7 +2,9 @@ function [noTrees, nodeByTree] = updateNumberOfTrees(obj)
 % UPDATENUMBEROFTREES - update number of trees in the graph and get array of nodes by tree index.
 %
 % Syntax:
-%   function [noTrees, nodeByTree] = updateNumberOfTrees(obj)
+%   .. code-block:: matlab
+%
+%       [noTrees, nodeByTree] = obj.updateNumberOfTrees()
 %
 % Input Arguments:
 %

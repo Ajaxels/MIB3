@@ -2,7 +2,9 @@ function fnOut = save(obj, filename, options)
 % SAVE - Save label/segmentation data from a MibLabels63 object to a file.
 %
 % Syntax:
-%   function fnOut = save(obj, filename, options)
+%   .. code-block:: matlab
+%
+%       fnOut = obj.save(filename, options)
 %
 % This method OVERRIDES core.MibImage.save() to inject label-specific
 % metadata (material names, material colours, labels variable name) into

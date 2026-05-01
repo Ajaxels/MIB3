@@ -2,11 +2,19 @@ function [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText,
 % SHOWSPLASHSCREEN - Show MIB splash screen while loading.
 %
 % Syntax:
-%   function [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)
+%   .. code-block:: matlab
+%
+%      [hSplashScreen, hSplashAxes, hLabel] = obj.showSplashScreen()
+%      [hSplashScreen, hSplashAxes, hLabel] = obj.showSplashScreen(titleText, initText)
 %
 % Input Arguments:
 %   - **titleText** — char with the window title
 %   - **initText** — char with the initial status text
+%
+% Output Arguments:
+%   - **hSplashScreen** — handle to the splash screen ``figure``
+%   - **hSplashAxes** — handle to the ``axes`` used to display the splash image
+%   - **hLabel** — handle to the status text ``uicontrol``
 %
 
 arguments (Input)

@@ -2,7 +2,9 @@ function result = countMaterials(obj)
 % COUNTMATERIALS - Calculate and update obj.materialsCount from the current model state.
 %
 % Syntax:
-%   function result = countMaterials(obj)
+%   .. code-block:: matlab
+%
+%       result = obj.countMaterials()
 %
 % When materialNames is available (non-empty), the count is taken from
 % numel(materialNames).  Otherwise the method scans the pixel data across

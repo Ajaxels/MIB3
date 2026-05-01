@@ -2,7 +2,9 @@ function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitc
 % GETDATASETDIMENSIONS - Get dimensions of the dataset as [height, width, depth, colors, time] or a combined vector.
 %
 % Syntax:
-%   function varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)
+%   .. code-block:: matlab
+%
+%       varargout = obj.getDatasetDimensions(orient, splitDims, blockModeSwitch)
 %
 % Input Arguments:
 %   - **orient** — *(optional)*, can be ``[]``; default ``3``:

@@ -1,29 +1,35 @@
 function brushPanel_Callback(obj, hWidget, hData, mode)
-% BRUSHPANEL_CALLBACK - brushPanel_Callback(obj, hWidget, hData).
+% BRUSHPANEL_CALLBACK - Callback for brush, 3D ball, and spot tool widgets.
 %
 % Syntax:
-%   function brushPanel_Callback(obj, hWidget, hData, mode)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
+%      obj.brushPanel_Callback(hWidget, hData, mode)
+%
+% Handles callbacks for brush, 3D ball, and spot segmentation tool widgets in the Segmentation panel.
+% Supports brush size, eraser factor, clustering mode, and interpolation settings configuration.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag identifier the widget, used when the same operation
-%     is called from menu, when empty or missing hWidget.Tag is used as an identifier
-%     'brushRadius' change of the brush size
-%     'eraserFactor' change of the eraser magnifier factor
-%     'interpolationSettings' set the interpolation settings
-%     'brushUseClustering' selection of the clustering mode
-%     'clustersPar1' clustering mode parameter 1:
-%     'clustersPar2' clustering mode parameter 2:
-%   - **hData** — handle to supporting data class
-%   - **mode** — char with the identifier of the widget, see above, the other parameters are empty in this case
+%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag`` (when provided):
 %
-%   - **Example** —
-%     <code>
-%     // make a callback for selection of brush clustering
-%     obj.brushPanel_Callback([], [], obj.handles.brushUseClustering.SelectedObject.Text)
-%     <endcode>
+%     - ``'brushRadius'`` — adjust brush size/radius
+%     - ``'eraserFactor'`` — set eraser magnification factor
+%     - ``'interpolationSettings'`` — open interpolation settings dialog
+%     - ``'brushUseClustering'`` — enable/select clustering mode
+%     - ``'clustersPar1'`` — set clustering mode parameter 1
+%     - ``'clustersPar2'`` — set clustering mode parameter 2
+%
+%   - **hData** — [matlab.ui.eventdata.ValueChangedData] event data from widget
+%   - **mode** — *(optional)* [char] widget identifier; when provided, ``hWidget`` and ``hData`` are ignored
+%
+% Output Arguments:
+%   None
+%
+% **Example** — set brush clustering mode via direct call:
+%
+%   .. code-block:: matlab
+%
+%      obj.brushPanel_Callback([], [], obj.handles.brushUseClustering.SelectedObject.Text)
 %
 if nargin < 4; mode = hWidget.Tag; end
 

@@ -2,7 +2,6 @@ function Prefs = generatePreferences()
 % GENERATEPREFERENCES - Generate the default MIB preferences structure.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      Prefs = generatePreferences()
@@ -456,8 +455,8 @@ Prefs.Deep.SegmentationLayerOpt.focalLossLayer.Alpha = 0.25;
 Prefs.Deep.SegmentationLayerOpt.focalLossLayer.Gamma = 2;
 Prefs.Deep.SegmentationLayerOpt.dicePixelCustom.ExcludeExerior = false;     % exclude exterior class from calculation of the loss function
 
-Prefs.Deep.AugOpt2D = utils.deepmib.generateDefaultAugmentations('2D');
-Prefs.Deep.AugOpt3D = utils.deepmib.generateDefaultAugmentations('3D');
+Prefs.Deep.AugOpt2D = deepmib.generateDefaultAugmentations('2D');
+Prefs.Deep.AugOpt3D = deepmib.generateDefaultAugmentations('3D');
 
 Prefs.Deep.ScoreExportOpt.Precision = 8;   % define precision for the output scores, '8' or '16' bit
 Prefs.Deep.ScoreExportOpt.IncludeExterior = true;  % when false scores for exterior material are excluded from file output

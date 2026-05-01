@@ -2,7 +2,9 @@ function updateInterpolationSettings(obj)
 % UPDATEINTERPOLATIONSETTINGS - Show a dialog to modify the selection interpolation settings for the brush tool.
 %
 % Syntax:
-%   function updateInterpolationSettings(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateInterpolationSettings()
 %
 % Presents an input dialog (via utils.dlgs.inputUniversalDlg) allowing the
 % user to choose the interpolation type ('Shape' or 'Line'), the number of

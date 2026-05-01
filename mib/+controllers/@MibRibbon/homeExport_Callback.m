@@ -2,7 +2,9 @@ function homeExport_Callback(obj, hWidget, hData)
 % HOMEEXPORT_CALLBACK - callback on press of buttons in the Export section of the Home ribbon.
 %
 % Syntax:
-%   function homeExport_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homeExport_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget
@@ -28,6 +30,7 @@ switch mode
     case 'Export to Imaris'     % obj.handles.ribbonHome.exportToImaris
         obj.mibModel.exportDatasetToImaris('image');
     case 'Snapshot'     % obj.handles.ribbonHome.snapshot
+        obj.mibController.startController('controllers.Snapshot');
     case 'Movie'     % obj.handles.ribbonHome.movie
     case {'Render', 'MIB Rendering'}     % obj.handles.ribbonHome.render &  obj.handles.ribbonHome.renderMIB
     case 'MATLAB Volume Viewer'     % obj.handles.ribbonHome.renderMatlab

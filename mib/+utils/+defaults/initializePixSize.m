@@ -2,7 +2,6 @@ function pixSize = initializePixSize(~)
 % INITIALIZEPIXSIZE - Initialize the pixSize structure with default voxel dimensions.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      pixSize = initializePixSize()

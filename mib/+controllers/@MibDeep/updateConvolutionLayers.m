@@ -2,7 +2,9 @@ function lgraph = updateConvolutionLayers(obj, lgraph)
 % UPDATECONVOLUTIONLAYERS - update the convolution layers by providing new set of weight.
 %
 % Syntax:
-%   function lgraph = updateConvolutionLayers(obj, lgraph)
+%   .. code-block:: matlab
+%
+%       lgraph = obj.updateConvolutionLayers(lgraph)
 %
 % initializers
 

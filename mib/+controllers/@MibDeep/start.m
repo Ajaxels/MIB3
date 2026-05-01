@@ -2,7 +2,9 @@ function start(obj, event)
 % START - start calcualtions, depending on the selected tab.
 %
 % Syntax:
-%   function start(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.start(event)
 %
 % preprocessing, training, or prediction is initialized
 

@@ -2,7 +2,9 @@ function datasetToolsTransform_Callback(obj, hWidget, hData)
 % DATASETTOOLSTRANSFORM_CALLBACK - callback on press of buttons in the Transform button of the Dataset ribbon.
 %
 % Syntax:
-%   function datasetToolsTransform_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetToolsTransform_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

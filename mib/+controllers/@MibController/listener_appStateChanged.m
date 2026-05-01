@@ -1,11 +1,22 @@
 function listener_appStateChanged(obj, src, evtData)
-% LISTENER_APPSTATECHANGED - listener_appStateChanged(obj, src, evtData).
+% LISTENER_APPSTATECHANGED - Listener for property changes in the AppContainer document group.
 %
 % Syntax:
-%   function listener_appStateChanged(obj, src, evtData)
+%   .. code-block:: matlab
 %
-% listener for property change in obj.view.handles.imageViewDocGroup
-% At the moment is used to catch selection of the figure-document in the Image View panel
+%      obj.listener_appStateChanged(src, evtData)
+%
+% Listener for property change in obj.view.handles.imageViewDocGroup.
+% At the moment used to catch selection of the figure-document in the Image View panel.
+%
+% Input Arguments:
+%   - **src** — ``matlab.ui.internal.FigureDocumentGroup`` handle to the document group
+%   - **evtData** — ``matlab.ui.container.internal.appcontainer.PropertyChangedEventData``;
+%     ``evtData.PropertyName`` identifies the changed property
+%
+% Output Arguments:
+%   (none)
+%
 
 % arguments
 %     obj controllers.MibController

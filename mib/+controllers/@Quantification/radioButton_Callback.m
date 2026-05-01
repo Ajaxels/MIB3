@@ -2,14 +2,16 @@ function radioButton_Callback(obj, hObject)
 % RADIOBUTTON_CALLBACK - Handle Shape2D / Shape3D / Object / Intensity radio button changes.
 %
 % Syntax:
-%   function radioButton_Callback(obj, hObject)
+%   .. code-block:: matlab
+%
+%       obj.radioButton_Callback(hObject)
 %
 % Rebuilds the Property dropdown items appropriate for the new mode/shape
 % combination and restores the last-used property index for that mode.
+%
 % Additionally:
 %   - Switching to Shape2D resets Property to 'Area' and clears Multiple
-%   - Switching to Shape3D resets Property to 'Volume', clears Multiple,
-% and refreshes the Units warning for anisotropic voxels
+%   - Switching to Shape3D resets Property to 'Volume', clears Multiple, and refreshes the Units warning for anisotropic voxels
 %   - Switching Object/Intensity toggles ColorChannel1 visibility
 %
 % Input Arguments:

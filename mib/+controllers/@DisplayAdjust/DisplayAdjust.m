@@ -1,12 +1,13 @@
 classdef DisplayAdjust < handle
-% DISPLAYADJUST - @type DisplayAdjust class is responsible for the Display Adjustment.
+% DISPLAYADJUST - Controller for the Display Adjustment dialog.
 %
-% window, available from Ribbon Image Adjust display
+% Available from Ribbon → Image → Adjust display.  Provides per-channel
+% min/max/gamma controls and a histogram view for the current dataset.
 %
+% Syntax:
+%   .. code-block:: matlab
 %
-% .. code-block:: matlab
-%
-%   obj.startController('controllers.DisplayAdjust'); // as GUI tool
+%      obj.startController('controllers.DisplayAdjust');
 
     % Updates
     %
@@ -34,7 +35,20 @@ classdef DisplayAdjust < handle
             % VIEWLISTNER_CALLBACK2 - Static listener dispatched by mibModel events.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, ~, evnt)
+            %   .. code-block:: matlab
+            %
+            %      DisplayAdjust.ViewListner_Callback2(obj, src, evnt)
+            %
+            % If the view window is no longer valid, deletes all listeners and
+            % returns silently.
+            %
+            % Input Arguments:
+            %   - **obj** — handle to the DisplayAdjust controller instance
+            %   - **src** — event source handle (unused)
+            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %
+            % Output Arguments:
+            %   (none)
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
@@ -63,12 +77,19 @@ classdef DisplayAdjust < handle
             % DISPLAYADJUST - Constructor for the DisplayAdjust controller.
             %
             % Syntax:
-            %   function obj = DisplayAdjust(mibModel, varargin)
+            %   .. code-block:: matlab
+            %
+            %      obj = DisplayAdjust(mibModel)
+            %      obj = DisplayAdjust(mibModel, controllerHandle, BatchOptIn)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — [optional] a controller handle
-            %   - **varargin{2}** — [optional] BatchOpt struct; if NaN, returns default BatchOpt
+            %   - **varargin{1}** — *(optional)* controller handle (reserved)
+            %   - **varargin{2}** — *(optional)* BatchOpt struct; pass ``NaN`` to
+            %     return the default BatchOpt without opening the GUI
+            %
+            % Output Arguments:
+            %   - **obj** — new DisplayAdjust controller instance
             %
 
             obj.mibModel = mibModel;
@@ -211,10 +232,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function closeWindow(obj)
-            % CLOSEWINDOW - close the DisplayAdjust window and clean up.
+            % CLOSEWINDOW - Close the DisplayAdjust window and release all listeners.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if ~isempty(obj.updateTimer) && isvalid(obj.updateTimer)
@@ -232,10 +258,20 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function returnBatchOpt(obj, BatchOptOut)
-            % RETURNBATCHOPT - return BatchOpt structure to mibBatchController via SyncBatch.
+            % RETURNBATCHOPT - Return the BatchOpt structure to the Batch controller via the SyncBatch event.
             %
             % Syntax:
-            %   function returnBatchOpt(obj, BatchOptOut)
+            %   .. code-block:: matlab
+            %
+            %      obj.returnBatchOpt()
+            %      obj.returnBatchOpt(BatchOptOut)
+            %
+            % Input Arguments:
+            %   - **BatchOptOut** — *(optional)* local BatchOpt structure; when omitted,
+            %     ``obj.BatchOpt`` is used
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
@@ -246,10 +282,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function addCallbacks(obj)
-            % ADDCALLBACKS - wire all widget callbacks; called once from the constructor.
+            % ADDCALLBACKS - Wire all widget callbacks; called once from the constructor.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.addCallbacks()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -289,10 +330,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function addFindBtnContextMenus(obj)
-            % ADDFINDBTNCONTEXTMENUS - add right-click context menus to findMinBtn and findMaxBtn.
+            % ADDFINDBTNCONTEXTMENUS - Add right-click context menus to findMinBtn and findMaxBtn.
             %
             % Syntax:
-            %   function addFindBtnContextMenus(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.addFindBtnContextMenus()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -320,10 +366,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateWidgets(obj)
-            % UPDATEWIDGETS - refresh all GUI widgets from the model (called on UpdateGuiWidgets).
+            % UPDATEWIDGETS - Refresh all GUI widgets from the model.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateWidgets()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id = obj.mibModel.getActiveId();
@@ -351,10 +402,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateSliders(obj)
-            % UPDATESLIDERS - synchronise slider ranges and edit-spinner values from viewPort.
+            % UPDATESLIDERS - Synchronise slider ranges and edit-spinner values from viewPort.
             %
             % Syntax:
-            %   function updateSliders(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateSliders()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -394,10 +450,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateHist(obj)
-            % UPDATEHIST - recompute histogram for the current slice and selected channel.
+            % UPDATEHIST - Recompute histogram for the current slice and selected channel.
             %
             % Syntax:
-            %   function updateHist(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateHist()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -476,10 +537,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function updateSettings(obj)
-            % UPDATESETTINGS - write slider values into viewPort for the active channel(s).
+            % UPDATESETTINGS - Write slider values into viewPort for the active channel(s).
             %
             % Syntax:
-            %   function updateSettings(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateSettings()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id = obj.mibModel.getActiveId();
@@ -497,10 +563,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function colorChannelCombo_Callback(obj)
-            % COLORCHANNELCOMBO_CALLBACK - update sliders when user selects a different channel.
+            % COLORCHANNELCOMBO_CALLBACK - Update sliders when the user selects a different channel.
             %
             % Syntax:
-            %   function colorChannelCombo_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.colorChannelCombo_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             obj.updateSliders();
@@ -508,10 +579,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minSlider_Callback(obj)
-            % MINSLIDER_CALLBACK - enforce min < max, sync edit field, update image.
+            % MINSLIDER_CALLBACK - Enforce min < max, sync edit field, update image.
             %
             % Syntax:
-            %   function minSlider_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.minSlider_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -533,10 +609,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minEdit_Callback(obj)
-            % MINEDIT_CALLBACK - validate user entry in minEdit spinner, then behave like slider.
+            % MINEDIT_CALLBACK - Validate user entry in minEdit spinner, then behave like slider.
             %
             % Syntax:
-            %   function minEdit_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.minEdit_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -561,10 +642,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxSlider_Callback(obj)
-            % MAXSLIDER_CALLBACK - enforce max > min, sync edit field, update image.
+            % MAXSLIDER_CALLBACK - Enforce max > min, sync edit field, update image.
             %
             % Syntax:
-            %   function maxSlider_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.maxSlider_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -586,10 +672,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxEdit_Callback(obj)
-            % MAXEDIT_CALLBACK - validate user entry in maxEdit spinner, then behave like slider.
+            % MAXEDIT_CALLBACK - Validate user entry in maxEdit spinner, then behave like slider.
             %
             % Syntax:
-            %   function maxEdit_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.maxEdit_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -615,10 +706,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function gammaSlider_Callback(obj)
-            % GAMMASLIDER_CALLBACK - update gamma in viewPort, refresh image and histogram.
+            % GAMMASLIDER_CALLBACK - Update gamma in viewPort, refresh image and histogram.
             %
             % Syntax:
-            %   function gammaSlider_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.gammaSlider_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -630,10 +726,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function gammaEdit_Callback(obj)
-            % GAMMAEDIT_CALLBACK - clamp gamma to [0.1 5], sync slider, update image.
+            % GAMMAEDIT_CALLBACK - Clamp gamma to [0.1, 5], sync slider, update image.
             %
             % Syntax:
-            %   function gammaEdit_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.gammaEdit_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -645,10 +746,19 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minSlider_Changing(obj, event)
-            % MINSLIDER_CHANGING - live update while min slider is being dragged.
+            % MINSLIDER_CHANGING - Live update while the min slider is being dragged.
             %
             % Syntax:
-            %   function minSlider_Changing(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.minSlider_Changing(event)
+            %
+            % Input Arguments:
+            %   - **event** — ``ValueChangingData`` from the AppDesigner
+            %     ``ValueChangingFcn`` callback; ``event.Value`` holds the current slider value
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -673,10 +783,19 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxSlider_Changing(obj, event)
-            % MAXSLIDER_CHANGING - live update while max slider is being dragged.
+            % MAXSLIDER_CHANGING - Live update while the max slider is being dragged.
             %
             % Syntax:
-            %   function maxSlider_Changing(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.maxSlider_Changing(event)
+            %
+            % Input Arguments:
+            %   - **event** — ``ValueChangingData`` from the AppDesigner
+            %     ``ValueChangingFcn`` callback; ``event.Value`` holds the current slider value
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -701,10 +820,19 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function gammaSlider_Changing(obj, event)
-            % GAMMASLIDER_CHANGING - live update while gamma slider is being dragged.
+            % GAMMASLIDER_CHANGING - Live update while the gamma slider is being dragged.
             %
             % Syntax:
-            %   function gammaSlider_Changing(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.gammaSlider_Changing(event)
+            %
+            % Input Arguments:
+            %   - **event** — ``ValueChangingData`` from the AppDesigner
+            %     ``ValueChangingFcn`` callback; ``event.Value`` holds the current slider value
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id      = obj.mibModel.getActiveId();
@@ -724,12 +852,19 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function throttledShowImage(obj)
-            % THROTTLEDSHOWIMAGE - restart the deferred-render timer on every slider event;.
+            % THROTTLEDSHOWIMAGE - Restart the deferred-render timer on every slider event.
             %
             % Syntax:
-            %   function throttledShowImage(obj)
+            %   .. code-block:: matlab
             %
-            % ShowImage fires 80ms after the last event (outside the callback)
+            %      obj.throttledShowImage()
+            %
+            % ShowImage fires after a short delay following the last slider event,
+            % keeping the slider responsive during rapid dragging.
+            %
+            % Output Arguments:
+            %   (none)
+            %
 
             if ~isempty(obj.updateTimer) && isvalid(obj.updateTimer)
                 if strcmp(obj.updateTimer.Running, 'on')
@@ -741,10 +876,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function imHist_ButtonDownFcn(obj)
-            % IMHIST_BUTTONDOWNFCN - left-click sets min, right-click sets max via histogram axes.
+            % IMHIST_BUTTONDOWNFCN - Left-click sets min, right-click sets max via histogram axes.
             %
             % Syntax:
-            %   function imHist_ButtonDownFcn(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.imHist_ButtonDownFcn()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -768,17 +908,21 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function minval = findMinBtn_Callback(obj, colorCh, threshold)
-            % FINDMINBTN_CALLBACK - detect minimum intensity; threshold (%) excluded from low end.
+            % FINDMINBTN_CALLBACK - Detect minimum intensity; threshold (%) excluded from low end.
             %
             % Syntax:
-            %   function minval = findMinBtn_Callback(obj, colorCh, threshold)
+            %   .. code-block:: matlab
+            %
+            %      obj.findMinBtn_Callback(colorCh, threshold)
+            %      minval = obj.findMinBtn_Callback(colorCh, threshold)
             %
             % Input Arguments:
-            %   - **colorCh** — [optional] channel index; default = selected channel
-            %   - **threshold** — [optional] % to exclude (0-2.5); NaN = ask user
+            %   - **colorCh** — *(optional)* channel index; default = selected channel
+            %   - **threshold** — *(optional)* percentage of pixels to exclude from the
+            %     low end (0–2.5); ``NaN`` prompts the user for a custom value
             %
             % Output Arguments:
-            %   - **minval** — detected minimum value(s)
+            %   - **minval** — detected minimum intensity value(s)
             %
 
             if nargin < 3; threshold = 0; end
@@ -849,17 +993,21 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function maxval = findMaxBtn_Callback(obj, colorCh, threshold)
-            % FINDMAXBTN_CALLBACK - detect maximum intensity; threshold (%) excluded from high end.
+            % FINDMAXBTN_CALLBACK - Detect maximum intensity; threshold (%) excluded from high end.
             %
             % Syntax:
-            %   function maxval = findMaxBtn_Callback(obj, colorCh, threshold)
+            %   .. code-block:: matlab
+            %
+            %      obj.findMaxBtn_Callback(colorCh, threshold)
+            %      maxval = obj.findMaxBtn_Callback(colorCh, threshold)
             %
             % Input Arguments:
-            %   - **colorCh** — [optional] channel index; default = selected channel
-            %   - **threshold** — [optional] % to exclude from high end; NaN = ask user
+            %   - **colorCh** — *(optional)* channel index; default = selected channel
+            %   - **threshold** — *(optional)* percentage of pixels to exclude from the
+            %     high end (0–2.5); ``NaN`` prompts the user for a custom value
             %
             % Output Arguments:
-            %   - **maxval** — detected maximum value(s)
+            %   - **maxval** — detected maximum intensity value(s)
             %
 
             if nargin < 3; threshold = 0; end
@@ -932,10 +1080,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function applyBtn_Callback(obj)
-            % APPLYBTN_CALLBACK - bake the current display range into ALL slices of the dataset.
+            % APPLYBTN_CALLBACK - Bake the current display range into all slices of the dataset.
             %
             % Syntax:
-            %   function applyBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.applyBtn_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id = obj.mibModel.getActiveId();
@@ -998,10 +1151,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function stretchCurrent_Callback(obj)
-            % STRETCHCURRENT_CALLBACK - bake the current display range into the CURRENT slice only.
+            % STRETCHCURRENT_CALLBACK - Bake the current display range into the current slice only.
             %
             % Syntax:
-            %   function stretchCurrent_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.stretchCurrent_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             id = obj.mibModel.getActiveId();
@@ -1038,10 +1196,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function autoHistCheck_Callback(obj)
-            % AUTOHISTCHECK_CALLBACK - enable/disable automatic histogram refresh on slice/frame change.
+            % AUTOHISTCHECK_CALLBACK - Enable/disable automatic histogram refresh on slice/frame change.
             %
             % Syntax:
-            %   function autoHistCheck_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.autoHistCheck_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             val = obj.view.handles.autoHistCheck.Value;
@@ -1052,10 +1215,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function adjHelpBtn_Callback(obj)
-            % ADJHELPBTN_CALLBACK - open the help page in the system browser.
+            % ADJHELPBTN_CALLBACK - Open the help page for the Display Adjustment dialog in a browser.
             %
             % Syntax:
-            %   function adjHelpBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.adjHelpBtn_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             web(fullfile(fileparts(obj.mibModel.mibPath), ...
@@ -1065,13 +1233,15 @@ classdef DisplayAdjust < handle
 
         % -----------------------------------------------------------------
         function idx = getChannelIndex(obj)
-            % GETCHANNELINDEX - return the 1-based channel index from colorChannelCombo.
+            % GETCHANNELINDEX - Return the 1-based channel index from colorChannelCombo.
             %
             % Syntax:
-            %   function idx = getChannelIndex(obj)
+            %   .. code-block:: matlab
+            %
+            %      idx = obj.getChannelIndex()
             %
             % Output Arguments:
-            %   - **idx** — integer channel index; falls back to 1 on mismatch
+            %   - **idx** — integer channel index; falls back to ``1`` on mismatch
             %
 
             h   = obj.view.handles;

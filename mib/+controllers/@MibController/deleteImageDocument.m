@@ -2,7 +2,9 @@ function deleteImageDocument(obj, docIndex)
 % DELETEIMAGEDOCUMENT - Delete an image document and reindex remaining documents.
 %
 % Syntax:
-%   function deleteImageDocument(obj, docIndex)
+%   .. code-block:: matlab
+%
+%      obj.deleteImageDocument(docIndex)
 %
 % Removes the image document at the specified index, properly cleans up
 % all associated resources (FigureDocument, ImageViewDocument, brush cursor),
@@ -19,27 +21,21 @@ function deleteImageDocument(obj, docIndex)
 %   - **docIndex** — double, index of the document to delete (1-based)
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-%   - **Example** —
-%     % Delete document at index 3
-%     obj.mibController.deleteImageDocument(3);
+% **Example 1** — delete the image document at index 3:
 %
-%   % Delete document when closing a buffer
-%   prevSelectedSet = 2;
-%   obj.mibController.deleteImageDocument(prevSelectedSet);
+%   .. code-block:: matlab
 %
-%   % Delete with validation
-%   setToDelete = 5;
-%   if setToDelete <= numel(obj.mibController.cImageDoc)
-%   obj.mibController.deleteImageDocument(setToDelete);
-%   fprintf('Document %d deleted successfully\n', setToDelete);
-%   end
+%      obj.mibController.deleteImageDocument(3);
 %
-%   % Delete all documents (cleanup)
-%   while ~isempty(obj.mibController.cImageDoc)
-%   obj.mibController.deleteImageDocument(1);
-%   end
+% **Example 2** — delete all documents (cleanup loop):
+%
+%   .. code-block:: matlab
+%
+%      while ~isempty(obj.mibController.cImageDoc)
+%          obj.mibController.deleteImageDocument(1);
+%      end
 %
 
 % Validate index

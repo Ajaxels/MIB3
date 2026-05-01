@@ -10,7 +10,6 @@ deep-learning helpers, and standalone utility functions.
 
    dlgs/index
    defaults
-   deepmib
 
 .. toctree::
    :maxdepth: 1

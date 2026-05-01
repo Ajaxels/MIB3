@@ -2,7 +2,10 @@ function startController(obj, controllerName, varargin)
 % STARTCONTROLLER - launch a child controller by class name.
 %
 % Syntax:
-%   function startController(obj, controllerName, varargin)
+%   .. code-block:: matlab
+%
+%      obj.startController(controllerName)
+%      obj.startController(controllerName, [], BatchOpt)
 %
 % Delegates to utils.startController, which provides the full implementation.
 % Use utils.startController directly when calling from a plugin controller
@@ -23,24 +26,29 @@ function startController(obj, controllerName, varargin)
 %   - **varargin{2}** — *(optional)* BatchOpt struct to run in batch mode, or
 %     **NaN** to trigger returnBatchOpt
 %
-% Usage:
-%   Example 1 - Open a child controller GUI (interactive)::
+% Output Arguments:
+%   (none)
 %
-%     % Open a child controller GUI (interactive):
-%     obj.startController('controllers.ResampleDataset');
+% **Example 1** — open a child controller GUI (interactive):
 %
-%   Example 2 - Run a child controller in batch mode (no GUI)::
+%   .. code-block:: matlab
 %
-%     % Run a child controller in batch mode (no GUI):
-%     BatchOpt.ResamplingMode = {'Dimensions'};
-%     BatchOpt.DimensionX = '256';
-%     BatchOpt.DimensionY = '256';
-%     obj.startController('controllers.ResampleDataset', [], BatchOpt);
+%      obj.startController('controllers.ResampleDataset');
 %
-%   Example 3 - Same call from a plugin controller that has no MibController handle::
+% **Example 2** — run a child controller in batch mode (no GUI):
 %
-%     % Same call from a plugin controller that has no MibController handle:
-%     utils.startController(obj, 'controllers.ResampleDataset', [], BatchOpt);
+%   .. code-block:: matlab
+%
+%      BatchOpt.ResamplingMode = {'Dimensions'};
+%      BatchOpt.DimensionX = '256';
+%      BatchOpt.DimensionY = '256';
+%      obj.startController('controllers.ResampleDataset', [], BatchOpt);
+%
+% **Example 3** — same call from a plugin controller without MibController handle:
+%
+%   .. code-block:: matlab
+%
+%      utils.startController(obj, 'controllers.ResampleDataset', [], BatchOpt);
 %
 
 % Updates

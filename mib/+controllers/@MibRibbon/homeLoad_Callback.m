@@ -2,7 +2,9 @@ function homeLoad_Callback(obj, hWidget, hData)
 % HOMELOAD_CALLBACK - callback on press of the load button in the Home ribbon.
 %
 % Syntax:
-%   function homeLoad_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homeLoad_Callback(hWidget, hData)
 %
 % Handles the following widget(s):
 % - obj.handles.ribbonHome.loadFile

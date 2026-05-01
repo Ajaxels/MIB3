@@ -89,14 +89,19 @@ classdef TiffSaver < io.savers.BaseSaver
     methods
 
         function obj = TiffSaver(options)
-            % TIFFSAVER - Constructor — accepts an optional options struct.
+            % TIFFSAVER - Constructor for TiffSaver class.
             %
             % Syntax:
-            %   function obj = TiffSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.TiffSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the TiffSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -107,7 +112,15 @@ classdef TiffSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by TiffSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for TIFF output
             %
             formats = { ...
                 'TIF format uncompressed (*.tif)'; ...
@@ -119,32 +132,42 @@ classdef TiffSaver < io.savers.BaseSaver
             % SAVE - Write data as a TIFF file or 2-D TIFF sequence.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
+            %
+            % Supports both 3-D multi-frame TIFF (all slices in one file) and
+            % 2-D sequence (one file per slice) modes via ``options.Saving3DPolicy``.
+            % Time-series data (T > 1) is saved with ``_T001``, ``_T002`` suffixes.
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array
-            %   metadata — struct; used fields:
-            %   .colorType      — 'grayscale' | 'multichannel' | 'indexed'
-            %   .lutColors      — colormap for indexed images [N x 3]
-            %   .sliceName      — cell of char, per-slice source filenames
-            %   .imageDescription — (char) ImageDescription TIFF tag
-            %   .xResolution, .yResolution — pixels/unit scalars
-            %   filename — full output path, e.g. '/out/stack.tif'
-            %   options  — struct; used fields:
-            %   .Format           — format string (selects compression)
-            %   .Saving3DPolicy   — '3D stack' | '2D sequence'
-            %   .showWaitbar      — logical
-            %   .silent           — logical, suppress dialogs
-            %   .FilenameGenerator — 'Use original filename' |
-            %   'Use sequential filename'
-            %   .Compression      — 'none' | 'lzw' | 'packbits' (overrides Format)
-            %   .overwrite        — logical
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` — *(optional)* [N × 3] colormap for indexed images
+            %     - ``colormap`` — *(optional)* [N × 3] colormap (alternative to ``lutColors``)
+            %     - ``sliceName`` — *(optional)* cell of char, per-slice source filenames
+            %     - ``imageDescription`` — *(optional)* [char] TIFF ``ImageDescription`` tag
+            %     - ``xResolution`` — *(optional)* [numeric] X resolution in pixels/unit; default: ``72``
+            %     - ``yResolution`` — *(optional)* [numeric] Y resolution in pixels/unit; default: ``72``
+            %
+            %   - **filename** — [char] full output path, e.g. ``'/out/stack.tif'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string (selects compression mode)
+            %     - ``Saving3DPolicy`` — ``'3D stack'`` | ``'2D sequence'``; default: ``'3D stack'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
+            %     - ``Compression`` — *(optional)* ``'none'`` | ``'lzw'`` | ``'packbits'``; overrides Format
             %
             % Output Arguments:
-            %   fnOut — char (3D stack) or cell of char (2D sequence)
-            %   [] on failure
+            %   - **fnOut** — [char] for 3D stack single file, or [cell of char] for 2D sequence;
+            %     ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];
@@ -341,23 +364,29 @@ classdef TiffSaver < io.savers.BaseSaver
 
         function cancelled = writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...
                 compression, resolution, options)
-            % WRITETIFFSTACK - Write a multi-frame TIFF where slice4D is [H, W, C, D].
+            % WRITETIFFSTACK - Write a multi-frame TIFF stack where slice4D is [H, W, C, D].
             %
             % Syntax:
-            %   function cancelled = writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr,  compression, resolution, options)
+            %   .. code-block:: matlab
             %
-            % Uses imwrite 'overwrite'/'append' modes to build the stack
-            % frame by frame, which allows writing large files without
-            % loading them completely into memory.
+            %      cancelled = obj.writeTiffStack(outPath, slice4D, cmap, imgDescArr, ...
+            %                                     compression, resolution, options)
+            %
+            % Uses ``imwrite`` 'overwrite'/'append' modes to build the stack
+            % frame by frame, allowing large files to be written without
+            % loading completely into memory.
             %
             % Input Arguments:
-            %   outPath     — (char) full output path
-            %   slice4D     — [H, W, C, D] for one time point
-            %   cmap        — colormap or NaN
-            %   imgDescArr  — {D x 1} cell of ImageDescription strings
-            %   compression — (char) 'none' | 'lzw' | 'packbits'
-            %   resolution  — [xRes yRes] vector
-            %   options     — options struct (for overwrite check)
+            %   - **outPath** — [char] full output path
+            %   - **slice4D** — [H, W, C, D] image data for one time point
+            %   - **cmap** — colormap matrix or ``NaN`` (no colormap)
+            %   - **imgDescArr** — {D × 1} cell of ImageDescription strings
+            %   - **compression** — [char] ``'none'`` | ``'lzw'`` | ``'packbits'``
+            %   - **resolution** — [xRes yRes] vector with resolution in pixels/unit
+            %   - **options** — struct with fields used (e.g., ``showWaitbar``, ``overwrite``)
+            %
+            % Output Arguments:
+            %   - **cancelled** — [logical] ``true`` if user cancelled during progress dialog
             %
 
             cancelled = false;

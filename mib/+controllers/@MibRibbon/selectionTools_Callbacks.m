@@ -2,7 +2,9 @@ function selectionTools_Callbacks(obj, hWidget, hData)
 % SELECTIONTOOLS_CALLBACKS - callback on press of buttons in the Tools section of the Selection ribbon.
 %
 % Syntax:
-%   function selectionTools_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.selectionTools_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

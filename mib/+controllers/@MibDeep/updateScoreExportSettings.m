@@ -2,7 +2,9 @@ function updateScoreExportSettings(obj)
 % UPDATESCOREEXPORTSETTINGS - update export settings for score files.
 %
 % Syntax:
-%   function updateScoreExportSettings(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateScoreExportSettings()
 %
 
     prompts = {sprintf('Export exterior material')};

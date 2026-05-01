@@ -1,26 +1,23 @@
 classdef SelectLociSeriesDlg < handle
-% SELECTLOCISERIESDLG - SelectLociSeriesDlg Controller for Bio-Formats (LOCI) Series Selection Dialog.
+% SELECTLOCISERIESDLG - Controller for Bio-Formats (LOCI) series selection dialog.
 %
-% The SelectLociSeriesDlg class manages series selection from Bio-Formats compatible files.
-% It provides an interface to select series, preview images, and configure metadata reading.
-% Logic ported from selectLociSeries.m to support App Designer views.
+% Manages interactive series selection from Bio-Formats compatible files. Provides
+% dialog UI for selecting series, previewing images, and configuring metadata reading.
+% Ported from selectLociSeries.m to support App Designer views.
 %
-% Usage:
-% % Initialize the controller for the dialog
-% controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure);
+% **Typical usage:**
 %
-% % Run the controller to acquire user input
-% [seriesIndex, hDataset, metaSwitch, dimxyczt, seriesRealName] = controller.run();
-% Usage:
-%   % Example with new reader
-%   filename = 'sample_image.czi';
-%   controller = utils.dlgs.SelectLociSeriesDlg(filename, [], options.Font, ParentFigure);
-%   [seriesIdx, reader, readMeta, dims, name] = controller.run();
+%   .. code-block:: matlab
 %
-%   % Example with existing Bio-Formats reader
-%   reader = bfGetReader('sample_image.czi');
-%   controller = utils.dlgs.SelectLociSeriesDlg('sample_image.czi', reader, Font, ParentFigure);
-%   [seriesIdx, reader, readMeta, dims, name] = controller.run();
+%      % Initialize controller with new reader
+%      filename = 'sample_image.czi';
+%      controller = utils.dlgs.SelectLociSeriesDlg(filename, [], Font, ParentFigure);
+%      [seriesIdx, reader, readMeta, dims, name] = controller.run();
+%
+%      % Or with existing Bio-Formats reader
+%      reader = bfGetReader('sample_image.czi');
+%      controller = utils.dlgs.SelectLociSeriesDlg(filename, reader, Font, ParentFigure);
+%      [seriesIdx, reader, readMeta, dims, name] = controller.run();
 %
     
     % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
@@ -47,16 +44,21 @@ classdef SelectLociSeriesDlg < handle
     
     methods
         function obj = SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
-            % SELECTLOCISERIESDLG - Constructor.
+            % SELECTLOCISERIESDLG - Constructor for SelectLociSeriesDlg controller.
             %
             % Syntax:
-            %   function obj = SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
+            %   .. code-block:: matlab
+            %
+            %      controller = utils.dlgs.SelectLociSeriesDlg(filename, hDataset, Font, ParentFigure)
             %
             % Input Arguments:
-            %   - **filename** — String path to the Bio-Formats file
-            %   - **hDataset** — Optional Bio-Formats reader object (pass [] to create new)
-            %   - **Font** — Structure with FontName and FontSize fields
-            %   - **ParentFigure** — Handle to the parent GUI figure
+            %   - **filename** — [char] path to Bio-Formats compatible file
+            %   - **hDataset** — [object|empty] Bio-Formats reader object; pass ``[]`` to create new reader
+            %   - **Font** — [struct] font configuration with ``.FontName`` and ``.FontSize`` fields
+            %   - **ParentFigure** — [handle] parent window for dialog attachment
+            %
+            % Output Arguments:
+            %   - **obj** — instance of SelectLociSeriesDlg controller
             %
             
             obj.filename = filename;
@@ -93,17 +95,26 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function varargout = run(obj)
-            % RUN - RUN Execute the dialog logic.
+            % RUN - Display dialog and return user selection results.
             %
             % Syntax:
-            %   function varargout = run(obj)
+            %   .. code-block:: matlab
             %
-            % Returns:
-            % seriesIndex: Selected series index (1-based) or 'Cancel'
-            % hDataset: Bio-Formats reader object
-            % metaSwitch: Flag indicating whether to read metadata
-            % dimxyczt: Dimensions vector [x y c z t]
-            % seriesRealName: Cell array with series name
+            %      [seriesIdx, reader, readMeta, dims, name] = controller.run()
+            %
+            % Displays the series selection dialog modally. If only one series exists,
+            % automatically selects it. Waits for user to continue or cancel.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **varargout{1}** — [numeric|char] selected series index (1-based); ``'Cancel'`` if cancelled
+            %   - **varargout{2}** — [object] Bio-Formats reader object
+            %   - **varargout{3}** — [logical] metadata inclusion flag
+            %   - **varargout{4}** — [1×5 numeric] dimensions ``[x, y, c, z, t]``
+            %   - **varargout{5}** — [cell] selected series name
+            %
             
             % Check if only one series exists - auto-select and return
             if size(obj.tableData, 1) == 1
@@ -138,10 +149,18 @@ classdef SelectLociSeriesDlg < handle
     
     methods (Access = private)
         function loadBioFormatsLibrary(~)
-            % LOADBIOFORMATSLIBRARY - Load Bio-Formats library into MATLAB environment.
+            % LOADBIOFORMATSLIBRARY - Load Bio-Formats Java library into MATLAB classpath.
             %
             % Syntax:
-            %   function loadBioFormatsLibrary(~)
+            %   .. code-block:: matlab
+            %
+            %      obj.loadBioFormatsLibrary()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   (none)
             %
             if ~isdeployed
                 javapath = javaclasspath('-all');
@@ -152,10 +171,21 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function initView(obj)
-            % INITVIEW - Initialize view components, parse file, and setup callbacks.
+            % INITVIEW - Initialize view UI, parse Bio-Formats file, and attach callbacks.
             %
             % Syntax:
-            %   function initView(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.initView()
+            %
+            % Configures preview axes, parses Bio-Formats file, populates table with
+            % series information, wires all UI callbacks, and selects first series.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   (none)
             %
             
             % Setup image preview axes
@@ -199,10 +229,21 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function parseBioFormatsFile(obj)
-            % PARSEBIOFORMATSFILE - Parse Bio-Formats file and extract series information.
+            % PARSEBIOFORMATSFILE - Extract series metadata from Bio-Formats file.
             %
             % Syntax:
-            %   function parseBioFormatsFile(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.parseBioFormatsFile()
+            %
+            % Iterates through all series in the Bio-Formats reader, extracting
+            % series name, dimensions (X, Y, C, Z, T), and dimension order string.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   (none) — updates ``tableData`` and ``dimensionOrder`` properties
             %
             numSeries = obj.reader.getSeriesCount();
             obj.tableData = cell(numSeries, 6);  % prepare data for the table
@@ -227,10 +268,21 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function processSelection(obj, rowIndices)
-            % PROCESSSELECTION - Process series selection.
+            % PROCESSSELECTION - Update state for selected series and refresh preview.
             %
             % Syntax:
-            %   function processSelection(obj, rowIndices)
+            %   .. code-block:: matlab
+            %
+            %      obj.processSelection(rowIndices)
+            %
+            % Updates ``selectedSeriesIndex``, ``selectedDimensions``, ``seriesRealName``,
+            % UI labels, and slice slider limits. Loads and displays preview image.
+            %
+            % Input Arguments:
+            %   - **rowIndices** — [numeric] 1-based row indices from seriesTable
+            %
+            % Output Arguments:
+            %   (none)
             %
             if isempty(obj.tableData) || rowIndices(1) < 1; return; end
             
@@ -283,6 +335,24 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function updateImagePreview(obj, sliceNumber)
+            % UPDATEIMAGEPREVIEW - Load and display preview image for selected series and slice.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateImagePreview(sliceNumber)
+            %
+            % Loads image from selected series and slice using Bio-Formats reader.
+            % Applies optional contrast stretching, handles grayscale/RGB/multichannel
+            % formats, and resizes to fit preview axes.
+            %
+            % Input Arguments:
+            %   - **sliceNumber** — *(optional)* [numeric] Z-slice to display;
+            %     defaults to current slider value
+            %
+            % Output Arguments:
+            %   (none)
+            %
             if nargin < 2
                 sliceNumber = round(obj.view.handles.sliceNumberSlider.Value); 
             end
@@ -327,10 +397,21 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function out = prepareOutput(obj)
-            % PREPAREOUTPUT - Prepare output arguments.
+            % PREPAREOUTPUT - Assemble output values from dialog state.
             %
             % Syntax:
-            %   function out = prepareOutput(obj)
+            %   .. code-block:: matlab
+            %
+            %      out = obj.prepareOutput()
+            %
+            % Packages ``selectedSeriesIndex``, ``hDataset``, ``metadataSwitch``,
+            % ``selectedDimensions``, and ``seriesRealName`` into cell array.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **out** — cell array ``{seriesIdx, reader, readMeta, dims, name}``
             %
             out{1} = obj.selectedSeriesIndex;
             out{2} = obj.hDataset;
@@ -344,10 +425,19 @@ classdef SelectLociSeriesDlg < handle
         % ----------------------
         
         function onTableSelection(obj, ~, event)
-            % ONTABLESELECTION - Handle table row selection.
+            % ONTABLESELECTION - UITable selection callback; extract and process row.
             %
             % Syntax:
-            %   function onTableSelection(obj, ~, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.onTableSelection(source, event)
+            %
+            % Input Arguments:
+            %   - **source** — [handle] table widget (unused)
+            %   - **event** — [struct] table event with ``Indices`` field
+            %
+            % Output Arguments:
+            %   (none)
             %
             if isempty(event.Indices); return; end
             
@@ -356,28 +446,57 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onParametersCheck(obj, src, ~)
-            % ONPARAMETERSCHECK - Handle metadata checkbox change.
+            % ONPARAMETERSCHECK - Metadata checkbox callback; update flag.
             %
             % Syntax:
-            %   function onParametersCheck(obj, src, ~)
+            %   .. code-block:: matlab
+            %
+            %      obj.onParametersCheck(source, event)
+            %
+            % Input Arguments:
+            %   - **source** — [handle] checkbox widget
+            %   - **event** — [struct] checkbox event (unused)
+            %
+            % Output Arguments:
+            %   (none)
             %
             obj.metadataSwitch = src.Value;
         end
         
         function onPreviewCheck(obj, ~, ~)
-            % ONPREVIEWCHECK - Handle preview checkbox change.
+            % ONPREVIEWCHECK - Preview or contrast checkbox callback; refresh display.
             %
             % Syntax:
-            %   function onPreviewCheck(obj, ~, ~)
+            %   .. code-block:: matlab
+            %
+            %      obj.onPreviewCheck(source, event)
+            %
+            % Input Arguments:
+            %   - **source** — [handle] checkbox widget (unused)
+            %   - **event** — [struct] checkbox event (unused)
+            %
+            % Output Arguments:
+            %   (none)
             %
             obj.updateImagePreview();
         end
         
         function onSliceSlider(obj, src, event)
-            % ONSLICESLIDER - Handle slice slider movement.
+            % ONSLICESLIDER - Slice slider callback; throttle updates and refresh preview.
             %
             % Syntax:
-            %   function onSliceSlider(obj, src, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.onSliceSlider(source, event)
+            %
+            % Updates preview at most every 100 ms to avoid excessive rendering.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] slider widget
+            %   - **event** — [struct] slider event with ``Value`` field
+            %
+            % Output Arguments:
+            %   (none)
             %
             persistent lastUpdate;
             if isempty(lastUpdate), lastUpdate = tic; end
@@ -396,10 +515,22 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onSliceEdit(obj, src, ~)
-            % ONSLICEEDIT - Handle slice edit field change.
+            % ONSLICEEDIT - Slice edit field callback; validate and sync with slider.
             %
             % Syntax:
-            %   function onSliceEdit(obj, src, ~)
+            %   .. code-block:: matlab
+            %
+            %      obj.onSliceEdit(source, event)
+            %
+            % Validates slice value is within valid range, syncs slider to edit field,
+            % and updates preview display.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] edit field widget
+            %   - **event** — [struct] edit event (unused)
+            %
+            % Output Arguments:
+            %   (none)
             %
             if strcmp(obj.selectedSeriesIndex, 'Cancel')
                 src.Value = 1;
@@ -419,10 +550,21 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onTableKeyPress(obj, ~, event)
-            % ONTABLEKEYPRESS - Handle key press in table.
+            % ONTABLEKEYPRESS - Table key press callback; forward to global key handler.
             %
             % Syntax:
-            %   function onTableKeyPress(obj, ~, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.onTableKeyPress(source, event)
+            %
+            % Fixes return key behavior in table and delegates to ``onKeyPress``.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] table widget (unused)
+            %   - **event** — [struct] keyboard event
+            %
+            % Output Arguments:
+            %   (none)
             %
             if strcmp(event.Key, 'return')
                 % Fix for return key shifting cell index
@@ -433,10 +575,21 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onKeyPress(obj, ~, event)
-            % ONKEYPRESS - Handle keyboard shortcuts.
+            % ONKEYPRESS - Window key press callback; handle escape and return keys.
             %
             % Syntax:
-            %   function onKeyPress(obj, ~, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.onKeyPress(source, event)
+            %
+            % Keyboard shortcuts: Escape cancels, Return/Enter continues dialog.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] figure window (unused)
+            %   - **event** — [struct] keyboard event with ``Key`` field
+            %
+            % Output Arguments:
+            %   (none)
             %
             if strcmp(event.Key, 'escape')
                 obj.onCancel();
@@ -446,19 +599,39 @@ classdef SelectLociSeriesDlg < handle
         end
         
         function onContinue(obj, ~, ~)
-            % ONCONTINUE - Handle continue button.
+            % ONCONTINUE - Continue button callback; resume execution.
             %
             % Syntax:
-            %   function onContinue(obj, ~, ~)
+            %   .. code-block:: matlab
+            %
+            %      obj.onContinue(source, event)
+            %
+            % Input Arguments:
+            %   - **source** — [handle] button widget (unused)
+            %   - **event** — [struct] button event (unused)
+            %
+            % Output Arguments:
+            %   (none)
             %
             uiresume(obj.view.gui);
         end
         
         function onCancel(obj, ~, ~)
-            % ONCANCEL - Handle cancel button.
+            % ONCANCEL - Cancel button callback; set state and resume execution.
             %
             % Syntax:
-            %   function onCancel(obj, ~, ~)
+            %   .. code-block:: matlab
+            %
+            %      obj.onCancel(source, event)
+            %
+            % Sets ``selectedSeriesIndex`` to ``'Cancel'`` and resumes execution.
+            %
+            % Input Arguments:
+            %   - **source** — [handle] button widget (unused)
+            %   - **event** — [struct] button event (unused)
+            %
+            % Output Arguments:
+            %   (none)
             %
             obj.selectedSeriesIndex = 'Cancel';
             uiresume(obj.view.gui);

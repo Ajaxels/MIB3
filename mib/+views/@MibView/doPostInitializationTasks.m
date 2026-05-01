@@ -1,8 +1,10 @@
 function doPostInitializationTasks(obj)
-% DOPOSTINITIALIZATIONTASKS -
+% DOPOSTINITIALIZATIONTASKS - perform post-initialization tasks after the main GUI window is visible.
 %
 % Syntax:
-%   function doPostInitializationTasks(obj)
+%   .. code-block:: matlab
+%
+%      obj.doPostInitializationTasks()
 %
 
 arguments (Input)

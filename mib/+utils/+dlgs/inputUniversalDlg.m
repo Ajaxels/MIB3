@@ -5,13 +5,12 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % placeholders, and HTML display widgets. Replaces ``mibInputMultiDlg``.
 %
 % Syntax:
+%   .. code-block:: matlab
 %
-% .. code-block:: matlab
-%
-%    [answer, selectedIndices, dontShowAgain] = ...
-%        inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle)
-%    [answer, selectedIndices, dontShowAgain] = ...
-%        inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
+%       [answer, selectedIndices, dontShowAgain] = ...
+%           inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle)
+%       [answer, selectedIndices, dontShowAgain] = ...
+%           inputUniversalDlg(ParentFigure, header, prompts, defAns, dlgTitle, options)
 %
 % Input Arguments:
 %   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);

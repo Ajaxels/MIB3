@@ -2,7 +2,9 @@ function homeUpdateRecentDirsList(obj)
 % HOMEUPDATERECENTDIRSLIST - update the recent directories list (obj.view.handles.ribbonHome.loadFile.Popup) under the Open image button (obj.view.handles.ribbonHome.loadFile) of.
 %
 % Syntax:
-%   function homeUpdateRecentDirsList(obj)
+%   .. code-block:: matlab
+%
+%       obj.homeUpdateRecentDirsList()
 %
 % the Home ribbon (obj.view.handles.ribbonHome)
 %

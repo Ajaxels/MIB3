@@ -2,7 +2,9 @@ function addMaterial(obj, BatchOptIn)
 % ADDMATERIAL - Add a material to the current model — wrapper around core.MibDataset.addMaterial.
 %
 % Syntax:
-%   function addMaterial(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.addMaterial(BatchOptIn)
 %
 % For models with 63 or 255 materials: prompts the user for a material
 % name, verifies that the model type can accommodate one more material, then

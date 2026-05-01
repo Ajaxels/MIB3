@@ -2,7 +2,9 @@ function erodeImage(obj, BatchOptIn)
 % ERODEIMAGE - Erode the selection, mask, or labels layer.
 %
 % Syntax:
-%   function erodeImage(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.erodeImage(BatchOptIn)
 %
 % Shrinks the binary content of the chosen layer using either a 2D
 % disk-like structuring element (applied slice-by-slice) or a 3D ball

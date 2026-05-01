@@ -2,7 +2,9 @@ function initialize(obj)
 % INITIALIZE - build the obj.Sections catalogue of all available batch actions.
 %
 % Syntax:
-%   function initialize(obj)
+%   .. code-block:: matlab
+%
+%       obj.initialize()
 %
 % Populates obj.Sections as a struct array where each element represents
 % one section visible in the section dropdown:
@@ -48,6 +50,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Export image to MATLAB';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.exportDataset("image", Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Export image to Imaris';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.exportDatasetToImaris("image", Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Make snapshot';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Snapshot'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Save dataset';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.saveImage("image", [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'DIRECTORY LOOP START';

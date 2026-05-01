@@ -1,17 +1,14 @@
 classdef CropObjects < handle
-% CROPOBJECTS - @type CropObjects is a child controller for the Crop Image Patches.
+% CROPOBJECTS - Child controller for the Crop Image Patches dialog.
 %
-% dialog, launched from the Annotations context menu.
+% Launched from the Annotations context menu.  Crops image patches
+% centred on annotation positions and saves them to disk or the
+% MATLAB workspace.
 %
+% Syntax:
+%   .. code-block:: matlab
 %
-% .. code-block:: matlab
-%
-%   obj.startController('controllers.CropObjects', obj, false, annotationLabels);
-%
-%
-% **annotationLabels** is a struct with:
-%   - .positions  — [N x 4] matrix of [z, x, y, t] annotation coordinates
-%   - .names      — {N x 1} cell array of annotation label strings
+%      obj.startController('controllers.CropObjects', obj, false, annotationLabels);
 
     % Updates
     % 
@@ -43,10 +40,20 @@ classdef CropObjects < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, ~, evnt)
-            % VIEWLISTNER_CALLBACK2 - Guard: if the view was closed before listener cleanup, bail out.
+            % VIEWLISTNER_CALLBACK2 - Guard: clean up listeners and return silently if the view was closed.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, ~, evnt)
+            %   .. code-block:: matlab
+            %
+            %      CropObjects.ViewListner_Callback2(obj, src, evnt)
+            %
+            % Input Arguments:
+            %   - **obj** — handle to the CropObjects controller instance
+            %   - **src** — event source handle (unused)
+            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %
+            % Output Arguments:
+            %   (none)
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
@@ -66,15 +73,23 @@ classdef CropObjects < handle
             % CROPOBJECTS - Constructor for the CropObjects controller.
             %
             % Syntax:
-            %   function obj = CropObjects(mibModel, parentController, batchModeSwitch, annotationLabels)
+            %   .. code-block:: matlab
+            %
+            %      obj = CropObjects(mibModel, parentController)
+            %      obj = CropObjects(mibModel, parentController, batchModeSwitch, annotationLabels)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
             %   - **parentController** — handle to the parent Annotations controller
-            %   - **batchModeSwitch** — *(optional)* logical, reserved for future batch mode; default false
+            %   - **batchModeSwitch** — *(optional)* logical; when ``true``, runs in
+            %     headless mode without opening the GUI
             %   - **annotationLabels** — *(optional)* struct with annotation crop coordinates
-            %   - .positions  — [Nx4] matrix [z, x, y, t]
-            %   - .names      — {Nx1} cell array of label strings
+            %
+            %     - ``.positions`` — [Nx4] matrix with [z, x, y, t] annotation coordinates
+            %     - ``.names`` — {Nx1} cell array of label strings
+            %
+            % Output Arguments:
+            %   - **obj** — new CropObjects controller instance
             %
 
             if nargin < 4; annotationLabels = []; end
@@ -149,10 +164,15 @@ classdef CropObjects < handle
 
         % -----------------------------------------------------------------
         function closeWindow(obj)
-            % CLOSEWINDOW - Close the dialog and clean up listeners.
+            % CLOSEWINDOW - Close the dialog and release all listeners.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if isvalid(obj.view.gui)
@@ -166,10 +186,15 @@ classdef CropObjects < handle
 
         % -----------------------------------------------------------------
         function addCallbacks(obj)
-            % ADDCALLBACKS - Wire all widget callbacks once from the constructor.
+            % ADDCALLBACKS - Wire all widget callbacks; called once from the constructor.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.addCallbacks()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
@@ -203,7 +228,12 @@ classdef CropObjects < handle
             % SELECTDIRBTN_CALLBACK - Browse for the output directory using a folder picker dialog.
             %
             % Syntax:
-            %   function selectDirBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.selectDirBtn_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             obj.view.handles.cropBtn.Enable = 'off';  % prevent crop while dialog is open
@@ -222,7 +252,12 @@ classdef CropObjects < handle
             % DIREDIT_CALLBACK - Validate a directory path typed manually into dirEdit.
             %
             % Syntax:
-            %   function dirEdit_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.dirEdit_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             folder_name = obj.view.handles.dirEdit.Value;
@@ -244,7 +279,12 @@ classdef CropObjects < handle
             % UPDATEWIDGETS - Refresh all widgets from parentController.BatchOpt.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateWidgets()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -348,7 +388,16 @@ classdef CropObjects < handle
             % UPDATEBATCHOPTFROMGUI - Sync a single widget value back into parentController.BatchOpt.
             %
             % Syntax:
-            %   function updateBatchOptFromGUI(obj, hObject)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateBatchOptFromGUI(hObject)
+            %
+            % Input Arguments:
+            %   - **hObject** — handle to the widget that changed; ``hObject.Tag``
+            %     identifies the BatchOpt field to update
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             BatchOptLocal = obj.parentController.BatchOpt;
@@ -381,10 +430,15 @@ classdef CropObjects < handle
 
         % -----------------------------------------------------------------
         function targetPanel_Callback(obj)
-            % TARGETPANEL_CALLBACK - Callback for target radio button group (File / MATLAB).
+            % TARGETPANEL_CALLBACK - Callback for the target radio button group (File / MATLAB).
             %
             % Syntax:
-            %   function targetPanel_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.targetPanel_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -425,7 +479,12 @@ classdef CropObjects < handle
             % GENERATE3DPATCHES_CALLBACK - Callback for the "crop 3D objects" checkbox.
             %
             % Syntax:
-            %   function generate3DPatches_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.generate3DPatches_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -443,7 +502,12 @@ classdef CropObjects < handle
             % JITTER_CALLBACK - Callback for the jitter enable checkbox.
             %
             % Syntax:
-            %   function jitter_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.jitter_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -462,7 +526,12 @@ classdef CropObjects < handle
             % CROPMODELCHECK_CALLBACK - Callback for the "Crop Model" checkbox.
             %
             % Syntax:
-            %   function cropModelCheck_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.cropModelCheck_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -482,7 +551,12 @@ classdef CropObjects < handle
             % CROPMASKCHECK_CALLBACK - Callback for the "Crop Mask" checkbox.
             %
             % Syntax:
-            %   function cropMaskCheck_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.cropMaskCheck_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             h = obj.view.handles;
@@ -502,7 +576,12 @@ classdef CropObjects < handle
             % CROPBTN_CALLBACK - Callback for the Crop button; resolves output directory then calls generatePatches.
             %
             % Syntax:
-            %   function cropBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.cropBtn_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             BatchOptLocal = obj.parentController.BatchOpt;
@@ -530,13 +609,18 @@ classdef CropObjects < handle
             % GENERATEPATCHES - Crop image patches centred on each annotation and save them.
             %
             % Syntax:
-            %   function generatePatches(obj)
+            %   .. code-block:: matlab
             %
-            % Reads coordinates from obj.annotationLabels.positions [Nx4: z,x,y,t]
-            % and names from obj.annotationLabels.names {Nx1}.
+            %      obj.generatePatches()
             %
-            % Output format and inclusion of model/mask are controlled through
-            % obj.parentController.BatchOpt fields.
+            % Reads coordinates from ``obj.annotationLabels.positions`` [Nx4: z,x,y,t]
+            % and names from ``obj.annotationLabels.names`` {Nx1}.
+            % Output format and inclusion of model/mask are controlled by
+            % ``obj.parentController.BatchOpt`` fields.
+            %
+            % Output Arguments:
+            %   (none)
+            %
 
             BatchOptLocal   = obj.parentController.BatchOpt;
             id  = obj.mibModel.getActiveId();
@@ -859,19 +943,26 @@ classdef CropObjects < handle
             % SAVEAUXLAYER - Save a model or mask subvolume in the requested format.
             %
             % Syntax:
-            %   function saveAuxLayer(obj, data, format, fnBase, pixSize,  xMinPhys, yMinPhys, zMinPhys, colors, names, ~, id, layerType)
+            %   .. code-block:: matlab
+            %
+            %      obj.saveAuxLayer(data, format, fnBase, pixSize, xMinPhys, yMinPhys, zMinPhys, colors, names, saveOpts, id, layerType)
             %
             % Input Arguments:
-            %   - **data** — [H x W x D] uint8 array with model/mask data
-            %   - **format** — char — one of the CropObjectsIncludeModel/Mask option strings
-            %   - **fnBase** — char — base filename without extension (directory already included)
-            %   - **pixSize** — struct — physical voxel size (.x .y .z .units)
-            %     xMinPhys, yMinPhys, zMinPhys: doubles — physical origin of the crop
-            %   - **colors** — [Nx3] color matrix for Amira labels
+            %   - **data** — [H x W x D] uint8 array with model/mask voxel data
+            %   - **format** — [char] one of the ``CropObjectsIncludeModel``/``CropObjectsIncludeMask`` option strings
+            %   - **fnBase** — [char] base filename without extension; directory already included
+            %   - **pixSize** — struct with physical voxel size fields ``.x``, ``.y``, ``.z``, ``.units``
+            %   - **xMinPhys** — [double] physical X origin of the crop region
+            %   - **yMinPhys** — [double] physical Y origin of the crop region
+            %   - **zMinPhys** — [double] physical Z origin of the crop region
+            %   - **colors** — [Nx3] colour matrix for Amira label export
             %   - **names** — {Nx1} cell array of material names
-            %   - **saveOpts** — struct — shared save options (Compression etc.)
-            %   - **id** — int — active dataset index
-            %   - **layerType** — char — 'model' | 'mask' (used for Matlab format extension)
+            %   - **saveOpts** — shared save options struct (unused; reserved for future use)
+            %   - **id** — [numeric] active dataset index
+            %   - **layerType** — [char] ``'model'`` or ``'mask'``
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             pixStr      = pixSize;

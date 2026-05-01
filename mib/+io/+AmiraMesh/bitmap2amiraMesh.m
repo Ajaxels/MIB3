@@ -2,61 +2,63 @@ function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
 % BITMAP2AMIRAMESH - Convert bitmap matrix to Amira Mesh binary format.
 %
 % Syntax:
-%   function result = bitmap2amiraMesh(filename, bitmap, img_info, options)
+%   .. code-block:: matlab
+%
+%      result = io.AmiraMesh.bitmap2amiraMesh(filename, bitmap)
+%      result = io.AmiraMesh.bitmap2amiraMesh(filename, bitmap, img_info, options)
 %
 % Input Arguments:
 %   - **filename** — filename for Amira Mesh file
-%   - **bitmap** — a dataset in MIB3 native order [H, W, D, C, T]
-%     (height, width, depth/slices, colour channels, time points).
-%     Only the first time point (T=1) is written.
-%   - **img_info** — metadata dictionary (MATLAB dictionary, string → cell); pass []
-%     to use defaults.  Recognised keys:
-%     'pixSize'              — pixSize struct (.x .y .z .units ...)
-%     'BoundingBox'          — [xmin xmax ymin ymax zmin zmax]
-%     'colorType'            — 'grayscale' | 'multichannel'
-%     'lutColors'            — [C x 3] colour matrix (0..1)
-%     'ImageDescription'     — (char) optional description string
-%     'TransformationMatrix' — optional transform (char or numeric)
-%   - **options** — a structure with optional parameters:
-%     - .overwrite      — if 1, do not check whether file already exists
-%     - .showWaitbar    — if 1, show the progress bar
-%     - .ParentFigure   — *(optional)* handle to the main MIB application window.
-%     When provided, the progress bar is rendered as a
-%     uiprogressdlg attached to that window (recommended for
-%     GUI use).  When absent or empty the legacy waitbar is
-%     used as a fallback.
-%     - .colors         — [optional] [C x 3] colour matrix (0..1) for multichannel;
-%     overrides img_info lutColors
-%     - .Saving3d       — 'multi'    : save all z-slices in a single file (default)
-%     'sequence' : save one file per z-slice
-%     - .SliceName      — [optional] cell array with per-slice filenames (no path)
-%     - .verbose        — [optional] logical (default: true)
+%   - **bitmap** — dataset in MIB3 native order [H, W, D, C, T]
+%     (height, width, depth/slices, colour channels, time points);
+%     only the first time point (T=1) is written
+%   - **img_info** — *(optional)* metadata dictionary (MATLAB ``dictionary``, string → cell);
+%     pass ``[]`` to use defaults. Recognised keys:
+%
+%     - ``'pixSize'`` — pixSize struct with fields ``.x``, ``.y``, ``.z``, ``.units``
+%     - ``'BoundingBox'`` — [1×6] ``[xmin xmax ymin ymax zmin zmax]``
+%     - ``'colorType'`` — ``'grayscale'`` or ``'multichannel'``
+%     - ``'lutColors'`` — [C×3] colour matrix (0–1)
+%     - ``'ImageDescription'`` — (char) optional description string
+%     - ``'TransformationMatrix'`` — optional transform (char or numeric)
+%
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``.overwrite`` — ``1`` = do not check whether file already exists
+%     - ``.showWaitbar`` — ``1`` = show the progress bar
+%     - ``.ParentFigure`` — *(optional)* handle to the main MIB UIFigure; when provided,
+%       the progress bar is shown as a ``uiprogressdlg`` attached to that window;
+%       when absent or empty, the legacy ``waitbar`` is used as a fallback
+%     - ``.colors`` — *(optional)* [C×3] colour matrix (0–1) for multichannel;
+%       overrides ``img_info`` ``'lutColors'``
+%     - ``.Saving3d`` — ``'multi'`` = save all z-slices in a single file (default);
+%       ``'sequence'`` = save one file per z-slice
+%     - ``.SliceName`` — *(optional)* cell array with per-slice filenames (no path)
+%     - ``.verbose`` — *(optional)* [logical] (default: ``true``)
 %
 % Output Arguments:
-%   - **result** — 1 - success, 0 - fail
+%   - **result** — ``1`` = success, ``0`` = failure
 %
-%   - **Example** —
-%
-%   .. code-block:: matlab
-%
-%       %% Standalone / scripted use (no GUI parent):
-%       opts.overwrite   = 1;
-%       opts.showWaitbar = false;
-%       opts.Saving3d    = 'multi';
-%       opts.colors      = lutColors;
-%       io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
-%
-%
+% **Example 1** — standalone use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
-%       %% GUI use — attach progress dialog to the MIB window:
-%       opts.overwrite      = 1;
-%       opts.showWaitbar    = true;
-%       opts.Saving3d       = 'multi';
-%       opts.colors         = lutColors;
-%       opts.ParentFigure   = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%       io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
+%      opts.overwrite   = 1;
+%      opts.showWaitbar = false;
+%      opts.Saving3d    = 'multi';
+%      opts.colors      = lutColors;
+%      io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
+%
+% **Example 2** — GUI use (attach progress dialog to MIB window):
+%
+%   .. code-block:: matlab
+%
+%      opts.overwrite    = 1;
+%      opts.showWaitbar  = true;
+%      opts.Saving3d     = 'multi';
+%      opts.colors       = lutColors;
+%      opts.ParentFigure = obj.mibModel.mibGUI;
+%      io.AmiraMesh.bitmap2amiraMesh('/output/stack.am', data_hwdct, imgInfoDict, opts);
 %
 
 % Updates
@@ -148,7 +150,9 @@ function saveAmFile(filename, bitmap, img_info, options, wb)
 % SAVEAMFILE - Write one Amira Mesh file.
 %
 % Syntax:
-%   function saveAmFile(filename, bitmap, img_info, options, wb)
+%   .. code-block:: matlab
+%
+%      saveAmFile(filename, bitmap, img_info, options, wb)
 %
 % bitmap: [H, W, D, C, T] — MIB3 native order; only first T is used.
 
@@ -318,7 +322,9 @@ function imgClass = mibAmiraClass(bitmap)
 % MIBAMIRACLASS - Return the Amira type string for the bitmap's data class.
 %
 % Syntax:
-%   function imgClass = mibAmiraClass(bitmap)
+%   .. code-block:: matlab
+%
+%      imgClass = mibAmiraClass(bitmap)
 %
 if isa(bitmap(1), 'uint8')
     imgClass = 'byte';

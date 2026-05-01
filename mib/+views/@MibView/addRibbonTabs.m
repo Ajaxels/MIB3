@@ -1,12 +1,14 @@
 function [ribbonHandles, ribbonWidgets] = addRibbonTabs(obj)
-% ADDRIBBONTABS - Add the global ribbon, which is matlab.ui.internal.toolstrip.TabGroup().
+% ADDRIBBONTABS - add the global ribbon tab group and initialize all ribbon tabs.
 %
 % Syntax:
-%   function [ribbonHandles, ribbonWidgets] = addRibbonTabs(obj)
+%   .. code-block:: matlab
 %
-% stored in
-% - ribbonHandles.*
-% - ribbonHandles.global
+%      [ribbonHandles, ribbonWidgets] = obj.addRibbonTabs()
+%
+% Output Arguments:
+%   - **ribbonHandles** — [struct] all ribbon panel handles
+%   - **ribbonWidgets** — [struct] widget handles for all ribbon tabs
 
 arguments (Input)
     obj views.MibView

@@ -2,7 +2,9 @@ function deleteProtocol(obj)
 % DELETEPROTOCOL - delete the current protocol (stores an undo snapshot first).
 %
 % Syntax:
-%   function deleteProtocol(obj)
+%   .. code-block:: matlab
+%
+%       obj.deleteProtocol()
 %
 % Usage:
 %   Example 1::

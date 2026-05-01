@@ -2,30 +2,37 @@ function title = getTitle(obj)
 % GETTITLE - Get the title of this image document.
 %
 % Syntax:
-%   function title = getTitle(obj)
+%   .. code-block:: matlab
+%
+%      title = obj.getTitle()
 %
 % Returns the current title displayed in the document tab.
 % The title typically shows the dataset name or buffer identifier.
 %
 % Input Arguments:
-%   none
+%   (none)
 %
 % Output Arguments:
-%   - **title** — char, current title of the document
+%   - **title** — [char] current title of the document
 %
-%   - **Example** —
-%     % Get title of current document
-%     currentTitle = obj.mibController.cImageDoc{1}.getTitle();
-%     fprintf('Document title: %s\n', currentTitle);
+% **Example 1** — get title of current document:
 %
-%   % Search for document by title
-%   targetTitle = 'MyDataset';
-%   for i = 1:numel(obj.mibController.cImageDoc)
-%   if strcmp(obj.mibController.cImageDoc{i}.getTitle(), targetTitle)
-%   fprintf('Found at index %d\n', i);
-%   break;
-%   end
-%   end
+%   .. code-block:: matlab
+%
+%      currentTitle = obj.mibController.cImageDoc{1}.getTitle();
+%      fprintf('Document title: %s\n', currentTitle);
+%
+% **Example 2** — search for document by title:
+%
+%   .. code-block:: matlab
+%
+%      targetTitle = 'MyDataset';
+%      for i = 1:numel(obj.mibController.cImageDoc)
+%          if strcmp(obj.mibController.cImageDoc{i}.getTitle(), targetTitle)
+%              fprintf('Found at index %d\n', i);
+%              break;
+%          end
+%      end
 %
 
 title = char(obj.figureDoc.Title);

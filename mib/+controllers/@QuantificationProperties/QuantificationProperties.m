@@ -40,7 +40,10 @@ classdef QuantificationProperties < handle
             % QUANTIFICATIONPROPERTIES - constructor for QuantificationProperties controller.
             %
             % Syntax:
-            %   function obj = QuantificationProperties(mibModel, varargin)
+            %   .. code-block:: matlab
+            %
+            %       obj = QuantificationProperties(mibModel)
+            %       obj = QuantificationProperties(mibModel, parentController)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
@@ -101,7 +104,9 @@ classdef QuantificationProperties < handle
             % ADDCALLBACKS - Wire all widget callbacks from the constructor.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacks()
             %
             % Connects button callbacks and the figure close/key-press handlers
             % for the QuantificationProperties dialog.
@@ -130,7 +135,9 @@ classdef QuantificationProperties < handle
             % UPDATEWIDGETS - Show the correct shape panel and pre-check checkboxes from propertyList.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateWidgets()
             %
             % In 3D mode the shapes2dPanel is hidden and the shapes3dPanel is
             % placed into the main grid layout at the same position.  Disabled
@@ -193,7 +200,9 @@ classdef QuantificationProperties < handle
             % OKBTN_CALLBACK - Collect selected properties, pass them to the parent, and close.
             %
             % Syntax:
-            %   function okBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.okBtn_Callback()
             %
             % Iterates over shape and intensity checkboxes.  For 3D mode the
             % trailing '3d' suffix is stripped from each tag to recover the
@@ -250,7 +259,9 @@ classdef QuantificationProperties < handle
             % CANCELBTN_CALLBACK - Close the dialog without updating the parent controller.
             %
             % Syntax:
-            %   function cancelBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.cancelBtn_Callback()
             %
             % Usage:
             %   Example 1::
@@ -268,7 +279,9 @@ classdef QuantificationProperties < handle
             % CHECKALLBTN_CALLBACK - Check all enabled checkboxes, excluding specialty properties.
             %
             % Syntax:
-            %   function checkallBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.checkallBtn_Callback()
             %
             % Skips CurveLength, EndpointsLength (and their 3D variants), and
             % Correlation because these require special connectivity or dual
@@ -311,7 +324,9 @@ classdef QuantificationProperties < handle
             % UNCHECKALLBTN_CALLBACK - Uncheck all checkboxes in all three panels.
             %
             % Syntax:
-            %   function uncheckallBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.uncheckallBtn_Callback()
             %
             % Usage:
             %   Example 1::
@@ -335,7 +350,9 @@ classdef QuantificationProperties < handle
             % CLOSEWINDOW - Close the QuantificationProperties dialog and release all resources.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.closeWindow()
             %
             % Deletes the GUI figure, removes all event listeners, and fires
             % the CloseEvent so the parent controller can purge this child.

@@ -1,22 +1,28 @@
 function annotationsPanel_Callback(obj, hWidget, hData)
-% ANNOTATIONSPANEL_CALLBACK - annotationsPanel_Callback(obj, hWidget, hData).
+% ANNOTATIONSPANEL_CALLBACK - Callback for annotations tool widgets.
 %
 % Syntax:
-%   function annotationsPanel_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->Annotations tool
+%      obj.annotationsPanel_Callback(hWidget, hData)
+%
+% Handles callbacks for annotations segmentation tool widgets in the Segmentation panel.
+% Supports annotation list management, visualization options, and precision control.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag identifier the widget, used when the same operation is called from menu
-%     'annAnnotationList' open another window with the annotation list
-%     'annShowPrompt' show the annotation prompt when adding a new annotation
-%     'annFocusOnValue' when showing the prompt focus on the value field
-%     'annPrecision' define floating value precision for the annotation value
-%     'annDeleteAll' delete all annotations
-%     'annDisplayAs' define how annotations should be visualized
+%   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'annAnnotationList'`` — open annotation list management window
+%     - ``'annShowPrompt'`` — show/hide prompt when adding new annotations
+%     - ``'annFocusOnValue'`` — focus on value field when showing prompt
+%     - ``'annPrecision'`` — set floating-point precision for annotation values
+%     - ``'annDeleteAll'`` — delete all annotations from dataset
+%     - ``'annDisplayAs'`` — select annotation visualization mode
+%
+%   - **hData** — [matlab.ui.eventdata.ButtonPushedData | matlab.ui.eventdata.ValueChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 %
 
 arguments (Input)

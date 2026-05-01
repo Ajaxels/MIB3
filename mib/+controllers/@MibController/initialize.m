@@ -2,7 +2,12 @@ function initialize(obj)
 % INITIALIZE - Initialize the main MibController class.
 %
 % Syntax:
-%   function initialize(obj)
+%   .. code-block:: matlab
+%
+%      obj.initialize()
+%
+% Output Arguments:
+%   (none)
 %
 
 arguments (Input)

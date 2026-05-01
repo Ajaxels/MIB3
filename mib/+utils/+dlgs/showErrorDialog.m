@@ -2,7 +2,9 @@ function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSu
 % SHOWERRORDIALOG - Show an error dialog generated in try/catch blocks or any other occasion.
 %
 % Syntax:
-%   function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
+%   .. code-block:: matlab
+%
+%       function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSuffix, options)
 %
 % Supports custom icons, HTML formatting, scrollable error text, clipboard
 % copy button, and is resizable.

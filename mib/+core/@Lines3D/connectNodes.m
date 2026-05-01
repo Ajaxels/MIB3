@@ -2,7 +2,9 @@ function connectNodes(obj, s, t)
 % CONNECTNODES - make an edge between two nodes.
 %
 % Syntax:
-%   function connectNodes(obj, s, t)
+%   .. code-block:: matlab
+%
+%       obj.connectNodes(s, t)
 %
 % Input Arguments:
 %   - **s** — index of the first node

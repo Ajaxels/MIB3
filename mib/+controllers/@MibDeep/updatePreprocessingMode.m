@@ -2,7 +2,9 @@ function updatePreprocessingMode(obj)
 % UPDATEPREPROCESSINGMODE - callback for change of selection in the Preprocess for dropdown.
 %
 % Syntax:
-%   function updatePreprocessingMode(obj)
+%   .. code-block:: matlab
+%
+%       obj.updatePreprocessingMode()
 %
 
     obj.BatchOpt.PreprocessingMode{1} = obj.view.handles.PreprocessingMode.Value;

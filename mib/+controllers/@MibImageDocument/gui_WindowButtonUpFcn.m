@@ -2,24 +2,27 @@ function gui_WindowButtonUpFcn(obj, brush_switch)
 % GUI_WINDOWBUTTONUPFCN - Callback for release of the mouse button.
 %
 % Syntax:
-%   function gui_WindowButtonUpFcn(obj, brush_switch)
+%   .. code-block:: matlab
 %
-% Linked via (example):
-% hFig.WindowButtonUpFcn = @(~,~)obj.gui_WindowButtonUpFcn();
+%      obj.gui_WindowButtonUpFcn()
+%      obj.gui_WindowButtonUpFcn(brush_switch)
+%
+% Linked via:
+%
+%   .. code-block:: matlab
+%
+%      hFig.WindowButtonUpFcn = @(~,~)obj.gui_WindowButtonUpFcn();
 %
 % Performs three tasks in order:
-% 1. If brush data exists (obj.brushSelection is a cell), commits the
-% drawn brush stroke to the selection layer, applying fill-holes,
-% material/mask restriction, and add/subtract mode as needed.
-% 2. Clears brush state and updates ROI screen positions.
-% 3. Restores all figure callbacks and pointer that were disabled during
-% panning or brush operation, then triggers a full image refresh.
+%   1. If brush data exists (``obj.brushSelection`` is a cell), commits drawn brush stroke
+%      to selection layer, applying fill-holes, material/mask restriction, and add/subtract mode
+%   2. Clears brush state and updates ROI screen positions
+%   3. Restores all figure callbacks and pointer disabled during panning or brush operation,
+%      then triggers full image refresh
 %
 % Input Arguments:
-%   - **brush_switch** — char - when 'subtract', the brush stroke is removed from
-%     the current selection instead of being added to it.
-%     Needed for return after the brush eraser mode.
-%   - **Default** — '' (add mode)
+%   - **brush_switch** *(optional)* — [char] brush mode: when ``'subtract'``, brush stroke is removed from
+%     current selection instead of being added (needed for eraser mode); default: ``''`` (add mode)
 %
 % Output Arguments:
 %   (none)

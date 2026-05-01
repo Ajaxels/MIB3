@@ -2,7 +2,9 @@ function helpButton_callback(obj)
 % HELPBUTTON_CALLBACK - show Help sections.
 %
 % Syntax:
-%   function helpButton_callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.helpButton_callback()
 %
     switch obj.view.handles.Mode.SelectedTab.Title
         case 'Directories and Preprocessing'

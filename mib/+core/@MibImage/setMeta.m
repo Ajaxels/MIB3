@@ -2,7 +2,9 @@ function setMeta(obj, meta)
 % SETMETA - Apply a metadata dictionary to MibImage properties.
 %
 % Syntax:
-%   function setMeta(obj, meta)
+%   .. code-block:: matlab
+%
+%       obj.setMeta(meta)
 %
 % Updates the object's properties from a dictionary matching the schema
 % of MibImage.initializeImgInfo(). Does NOT touch obj.data — only

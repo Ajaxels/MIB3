@@ -2,7 +2,9 @@ function gpuInfo(obj)
 % GPUINFO - display information about the selected GPU.
 %
 % Syntax:
-%   function gpuInfo(obj)
+%   .. code-block:: matlab
+%
+%       obj.gpuInfo()
 %
 
     selectedIndex = find(ismember(obj.view.Figure.GPUDropDown.Items, obj.view.Figure.GPUDropDown.Value));

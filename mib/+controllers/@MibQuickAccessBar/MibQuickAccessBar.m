@@ -12,17 +12,28 @@ classdef MibQuickAccessBar
 
     methods
 
-        createCentralMarker(obj, centerX, centerY, options)        % create a central marker on the image axes
-        
-        gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of the quick access bar of MIB
-
-        orientationChange(obj, hWidget, moveMouseSw)  % switch viewing plane to YX/XZ/YZ orientation
+        % createCentralMarker(obj, centerX, centerY, options)        % create a central marker on the image axes
+        % 
+        % gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of the quick access bar of MIB
+        % 
+        % orientationChange(obj, hWidget, moveMouseSw)  % switch viewing plane to YX/XZ/YZ orientation
 
         function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
-            % MIBQUICKACCESSBAR - % Init properties.
+            % MIBQUICKACCESSBAR - Initialize Quick Access Bar controller.
             %
             % Syntax:
-            %   function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
+            %   .. code-block:: matlab
+            %
+            %      obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
+            %
+            % Input Arguments:
+            %   - **mainCtrl** — [controllers.MibController] handle to main MIB controller
+            %   - **view** — [views.MibView] handle to main MIB view
+            %   - **guiHandles** — [struct] GUI component handles for the Quick Access Bar
+            %   - **model** — [models.MibModel] handle to MIB model
+            %
+            % Output Arguments:
+            %   - **obj** — [MibQuickAccessBar] initialized Quick Access Bar controller instance
             %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view

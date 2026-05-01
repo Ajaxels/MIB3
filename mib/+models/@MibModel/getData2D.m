@@ -2,7 +2,9 @@ function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
 % GETDATA2D - Get a 2D slice from the current (or specified) dataset; wrapper around core.MibDataset.getData2D.
 %
 % Syntax:
-%   function dataset = getData2D(obj, type, slice_no, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData2D(type, slice_no, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.getData2D(...) instead of

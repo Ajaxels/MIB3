@@ -1,59 +1,56 @@
-function dataset = getPixelIdxList(obj, type, PixelIdxList, options) %#ok<INUSD>
+function dataset = getPixelIdxList(obj, type, PixelIdxList, options) 
 % GETPIXELIDXLIST - Get pixel values at a list of linear indices from the active dataset layer.
 %
 % Syntax:
-%   function dataset = getPixelIdxList(obj, type, PixelIdxList, options) %#ok<INUSD>
+%   .. code-block:: matlab
+%
+%       dataset = obj.getPixelIdxList(type, PixelIdxList, options) %#ok<INUSD>
 %
 % Wrapper method on MibDataset that routes the read request to the correct
 % layer object (obj.image, obj.labels, obj.mask, obj.selection) and then
 % delegates to core.MibImage.getPixelIdxList.
 %
 % Routing rules (mirror getData3D):
-% - type 'image'               → obj.image
-% - type 'labels'/'model'      → obj.labels (returns [] when modelExist==0)
-% - type 'mask'                → obj.labels (MibLabels63) or obj.mask (MibLabels)
-% returns [] when maskExist==0
-% - type 'selection'           → obj.labels (MibLabels63) or obj.selection (MibLabels)
-% - type 'everything'          → obj.labels (MibLabels63 only)
+%   - ``'image'`` — routes to ``obj.image``
+%   - ``'labels'`` or ``'model'`` — routes to ``obj.labels`` (returns ``[]`` when ``modelExist==0``)
+%   - ``'mask'`` — routes to ``obj.labels`` (``MibLabels63``) or ``obj.mask`` (``MibLabels``); returns ``[]`` when ``maskExist==0``
+%   - ``'selection'`` — routes to ``obj.labels`` (``MibLabels63``) or ``obj.selection`` (``MibLabels``)
+%   - ``'everything'`` — routes to ``obj.labels`` (``MibLabels63`` only)
 %
 % The PixelIdxList must be linear indices into the full 3D volume in XY
 % orientation (i.e. as returned by bwconncomp / regionprops).
 %
 % Input Arguments:
-%   - **type** — char, layer type to read:
+%   - **type** — [char] layer type to read:
 %
 %     - ``'image'`` — pixel values from the image layer
-%     - ``'model'`` — synonym for ``'labels'``
 %     - ``'labels'`` — material indices from the labels layer
-%     - ``'mask'`` — mask layer values (0/1)
-%     - ``'selection'`` — selection layer values (0/1)
+%     - ``'model'`` — synonym for ``'labels'``
+%     - ``'mask'`` — mask layer values ``(0/1)``
+%     - ``'selection'`` — selection layer values ``(0/1)``
 %     - ``'everything'`` — raw packed byte (``MibLabels63`` only)
-%   - **PixelIdxList** — numeric vector of linear pixel indices into the full dataset
-%     in the XY orientation (standard MATLAB column-major order)
-%   - **options** — *(optional)* struct; reserved for future use, not used currently
+%
+%   - **PixelIdxList** — [numeric] vector of linear pixel indices into the full dataset in XY
+%     orientation (standard MATLAB column-major order from ``bwconncomp`` / ``regionprops``)
+%   - **options** *(optional)* — [struct] reserved for future use; currently unused
 %
 % Output Arguments:
-%   - **dataset** — numeric column vector of values at the requested indices;
-%     [] when the layer does not exist (modelExist==0 or maskExist==0)
+%   - **dataset** — [numeric] column vector of values at the requested indices; returns ``[]``
+%     when the layer does not exist (``modelExist==0`` or ``maskExist==0``)
 %
-% Usage:
-%   **Example 1** — query selection values inside object 1
-%
-%   .. code-block:: matlab
-%
-%
-%     I = cell2mat(obj.mibModel.getData3D('mask'));
-%     CC = bwconncomp(I, 26);
-%     % query selection values inside object 1:
-%     vals = obj.mibModel.I{id}.getPixelIdxList('selection', CC.PixelIdxList{1});
-%
-%   **Example 2** — reading model material indices for a set of pixels
+% **Example 1** — Query selection values inside connected component 1:
 %
 %   .. code-block:: matlab
 %
+%      I = cell2mat(obj.mibModel.getData3D('mask'));
+%      CC = bwconncomp(I, 26);
+%      vals = obj.mibModel.I{id}.getPixelIdxList('selection', CC.PixelIdxList{1});
 %
-%     % reading model material indices for a set of pixels:
-%     matIdx = obj.mibModel.I{id}.getPixelIdxList('labels', pixIdx);
+% **Example 2** — Read material indices for a set of pixels:
+%
+%   .. code-block:: matlab
+%
+%      matIdx = obj.mibModel.I{id}.getPixelIdxList('labels', pixIdx);
 %
 
 % Updates

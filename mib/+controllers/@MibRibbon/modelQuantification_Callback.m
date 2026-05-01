@@ -2,7 +2,9 @@ function modelQuantification_Callback(obj, hWidget, hData)
 % MODELQUANTIFICATION_CALLBACK - callback on press of the Quantification button in the Model ribbon.
 %
 % Syntax:
-%   function modelQuantification_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelQuantification_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

@@ -2,7 +2,9 @@ function nodeId = findClosestNode(obj, x, y, z, orientation)
 % FINDCLOSESTNODE - find the closest node to a point with coordinates x, y, z.
 %
 % Syntax:
-%   function nodeId = findClosestNode(obj, x, y, z, orientation)
+%   .. code-block:: matlab
+%
+%       nodeId = obj.findClosestNode(x, y, z, orientation)
 %
 % Input Arguments:
 %   - **x** — x coordinate of a point next to the node

@@ -2,22 +2,26 @@ function gui_Brush_scrollWheelFcn(obj, eventdata)
 % GUI_BRUSH_SCROLLWHEELFCN - Handle mouse scroll wheel during adaptive superpixel brush mode.
 %
 % Syntax:
-%   function gui_Brush_scrollWheelFcn(obj, eventdata)
+%   .. code-block:: matlab
 %
-% Adjusts the adaptive dilation factor (brushSelection{3}.factor) up or
+%      obj.gui_Brush_scrollWheelFcn(eventdata)
+%
+% Adjusts the adaptive dilation factor (``brushSelection{3}.factor``) up or
 % down when the scroll wheel is used during an active superpixel brush
 % stroke with adaptive mode enabled.
 %
 % Input Arguments:
-%   - **eventdata** — ScrollWheelData with field .VerticalScrollCount
-%     negative = scroll up (increase factor), positive = scroll down (decrease)
+%   - **eventdata** — [ScrollWheelData] with field ``.VerticalScrollCount``:
+%     negative value = scroll up (increase factor), positive value = scroll down (decrease)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   @code % typically set as a callback, not called directly:
-%   hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_Brush_scrollWheelFcn(eventdata); @endcode
+% **Usage note** — typically set as a callback, not called directly:
+%
+%   .. code-block:: matlab
+%
+%      hFig.WindowScrollWheelFcn = @(~, eventdata)obj.gui_Brush_scrollWheelFcn(eventdata);
 %
 
 % Updates

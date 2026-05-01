@@ -2,7 +2,9 @@ function measureLength(obj, type)
 % MEASURELENGTH - Quick measurement tool: open the Measure Tool or interactively measure a.
 %
 % Syntax:
-%   function measureLength(obj, type)
+%   .. code-block:: matlab
+%
+%      obj.measureLength(type)
 %
 % straight-line or freehand path length on the currently displayed image.
 % Converted from MIB2 @mibController/menuToolsMeasure_Callback.m
@@ -14,7 +16,7 @@ function measureLength(obj, type)
 %     - 'freehand' - draw a freehand path and report its length
 %
 % Output Arguments:
-%   none
+%   (none)
 %
 
 switch type

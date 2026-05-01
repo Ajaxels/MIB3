@@ -1,146 +1,151 @@
 classdef SaverFactory
-% SAVERFACTORY - Factory class that instantiates the appropriate saver for a given.
+% SAVERFACTORY - Factory for instantiating appropriate savers based on output format.
 %
-% output format string.
+% Mirrors ``io.LoaderFactory`` for the writing side of the pipeline. Maps format
+% strings to concrete ``io.savers.XxxSaver`` instances. Maintains separate registries
+% for different data types (image, mask, labels) since the same format (e.g. TIF)
+% may have different defaults and validation rules per category.
 %
-% This class mirrors io.LoaderFactory for the writing side of the
-% pipeline.  The format strings match exactly those used in
-% core.MibDataset.save() and models.MibModel.save() dropdown menus.
+% **Architecture:**
+% ``SaverFactory.create(formatStr)`` instantiates the appropriate saver class.
+% Registries are built on-demand and cached. Format strings exactly match those
+% used in ``core.MibDataset.save()`` and ``models.MibModel.save()`` dropdown menus.
 %
-% ARCHITECTURE
-% SaverFactory maps format strings → concrete io.savers.XxxSaver
-% instances.  Two separate registries exist:
-% getFormats('image')  — formats for pixel-data saving
-% getFormats('mask')   — formats for binary mask saving
-% getFormats('labels') — formats for multi-material label saving
+% **High-level usage** (recommended):
 %
-% The registries are intentionally kept separate because the same
-% format (e.g. TIF) can appear in multiple categories but with
-% different defaults or validation rules.
+%   .. code-block:: matlab
 %
-% USAGE
-% % Typical usage — via high-level methods (recommended):
-% obj.mibModel.saveImage('image',  filename, BatchOptIn);
-% obj.mibModel.saveImage('mask',   filename, BatchOptIn);
-% obj.mibModel.saveImage('labels', filename, BatchOptIn);
+%      obj.mibModel.saveImage('image',  filename, BatchOptIn);
+%      obj.mibModel.saveImage('mask',   filename, BatchOptIn);
+%      obj.mibModel.saveImage('labels', filename, BatchOptIn);
 %
-% % Direct factory use — for advanced/scripted workflows:
-% saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
-% fnOut = saver.save(data, metadata, '/tmp/out.tif', options);
+% **Direct factory use** (advanced/scripted):
 %
-% % Direct factory use from GUI context — pass ParentFigure/mibPath
-% % so that uiprogressdlg attaches to the MIB window:
-% ctorOpts.ParentFigure = obj.mibModel.mibGUI;
-% ctorOpts.mibPath      = obj.mibModel.mibPath;
-% saver = io.SaverFactory.create('Amira Mesh binary (``*.am``)', ctorOpts);
+%   .. code-block:: matlab
 %
-% % List all formats available for a given layer type:
-% imageFormats  = io.SaverFactory.getFormats('image');
-% maskFormats   = io.SaverFactory.getFormats('mask');
-% labelFormats  = io.SaverFactory.getFormats('labels');
+%      saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
+%      fnOut = saver.save(data, metadata, '/tmp/out.tif', options);
 %
-% SEE ALSO
-% io.loaders.LoaderFactory, io.savers.BaseSaver,
-% core.MibDataset.save, models.MibModel.save
+% **GUI context** (pass ParentFigure/mibPath so progress dialogs attach to MIB):
+%
+%   .. code-block:: matlab
+%
+%      ctorOpts.ParentFigure = obj.mibModel.mibGUI;
+%      ctorOpts.mibPath = obj.mibModel.mibPath;
+%      saver = io.SaverFactory.create('Amira Mesh binary (*.am)', ctorOpts);
+%
+% **List all formats** for a given layer type:
+%
+%   .. code-block:: matlab
+%
+%      imageFormats = io.SaverFactory.getFormats('image');
+%      maskFormats = io.SaverFactory.getFormats('mask');
+%      labelFormats = io.SaverFactory.getFormats('labels');
+%
+% **See also:** ``io.LoaderFactory``, ``io.savers.BaseSaver``,
+% ``core.MibDataset.save``, ``models.MibModel.save``
 
     methods (Static)
 
         function saver = create(formatStr, options)
-            % CREATE - Instantiate the saver that handles the requested format.
+            % CREATE - Instantiate the saver that handles the requested output format.
             %
             % Syntax:
-            %   function saver = create(formatStr, options)
+            %
+            %   .. code-block:: matlab
+            %
+            %      saver = io.SaverFactory.create(formatStr, options)
+            %
+            % Instantiates the appropriate ``BaseSaver`` subclass based on the format
+            % string. Format strings must exactly match those from ``getFormats()``.
             %
             % Input Arguments:
-            %   formatStr — (char) format descriptor exactly as it appears in
-            %   the Format dropdown, e.g.
-            %   'TIF format uncompressed (``*.tif``)'
-            %   'Amira mesh binary (``*.am``)'
-            %   'Matlab format (``*.model``)'
-            %   See getFormats() for the complete list.
-            %   options   — (struct, optional) passed to the saver constructor
-            %   via BaseSaver.initBaseProps().  The two most
-            %   important fields to include when calling from a
-            %   GUI context are:
-            %   .ParentFigure — handle to the main MIB window; enables
-            %   uiprogressdlg dialogs attached to the GUI
-            %   (set from obj.mibGUI in MibModel).
-            %   Leave empty or omit for standalone/scripted use.
-            %   .mibPath      — (char) MIB installation directory; used for
-            %   resource and icon lookup by dialogs.
-            %   All other options are typically passed at save() time.
+            %   - **formatStr** — [char] format descriptor as it appears in Format dropdown:
+            %
+            %     - ``'TIF format uncompressed (*.tif)'``
+            %     - ``'Amira mesh binary (*.am)'``
+            %     - ``'Matlab format (*.model)'``
+            %     - (see ``getFormats()`` for the complete list)
+            %
+            %   - **options** — *(optional)* struct passed to saver constructor
+            %     via ``BaseSaver.initBaseProps()``. Important fields when calling from
+            %     GUI context:
+            %
+            %     - ``.ParentFigure`` — [handle] to main MIB window;
+            %       enables ``uiprogressdlg`` dialogs attached to the GUI
+            %       (typically ``obj.mibGUI`` from MibModel). Leave empty for standalone use.
+            %     - ``.mibPath`` — [char] MIB installation directory;
+            %       used for resource and icon lookup by dialogs.
+            %     - All other options are typically passed at ``save()`` time.
             %
             % Output Arguments:
-            %   saver — concrete BaseSaver subclass instance
+            %   - **saver** — concrete ``BaseSaver`` subclass instance
             %
-            %   - **Throws** —
-            %   - **io** — SaverFactory:UnknownFormat — if formatStr is not registered
+            % **Throws:**
+            %   - ``io:SaverFactory:UnknownFormat`` — if ``formatStr`` is not registered
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — standalone scripted use:
             %
-            %       %% 1. Standalone scripted use — no GUI parent needed
-            %       saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
-            %       opts.Format         = 'TIF format uncompressed (``*.tif``)';
-            %       opts.Saving3DPolicy = '3D stack';
-            %       opts.showWaitbar    = false;
-            %       opts.silent         = true;
-            %       opts.Compression    = 'none';
-            %       opts.overwrite      = true;
-            %       meta.filename  = 'source.tif';
-            %       meta.colorType = 'grayscale';
-            %       meta.lutColors = [1 1 1];
-            %       meta.dataClass = 'uint8';
-            %       meta.maxInt    = 255;
-            %       meta.sliceName = {};
-            %       meta.pixSize   = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
-            %       data = uint8(rand(64,64,10,1,1)*255);  % [H W D C T]
-            %       fnOut = saver.save(data, meta, '/tmp/out.tif', opts);
+            %   .. code-block:: matlab
             %
+            %      saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
+            %      opts.Format = 'TIF format uncompressed (*.tif)';
+            %      opts.Saving3DPolicy = '3D stack';
+            %      opts.showWaitbar = false;
+            %      opts.silent = true;
+            %      opts.Compression = 'none';
+            %      opts.overwrite = true;
+            %      meta.filename = 'source.tif';
+            %      meta.colorType = 'grayscale';
+            %      meta.lutColors = [1 1 1];
+            %      meta.dataClass = 'uint8';
+            %      meta.maxInt = 255;
+            %      meta.sliceName = {};
+            %      meta.pixSize = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
+            %      data = uint8(rand(64,64,10,1,1)*255);
+            %      fnOut = saver.save(data, meta, '/tmp/out.tif', opts);
             %
-            %   Example 2::
+            % **Example 2** — GUI context with progress dialogs:
             %
-            %       %% 2. GUI context — pass ParentFigure and mibPath so that
-            %       %      progress dialogs attach to the MIB window and icons
-            %       %      load correctly.  Typically called from a controller:
-            %       ctorOpts.ParentFigure = obj.mibModel.mibGUI;
-            %       ctorOpts.mibPath      = obj.mibModel.mibPath;
-            %       saver = io.SaverFactory.create('Amira Mesh binary (``*.am``)', ctorOpts);
+            %   .. code-block:: matlab
             %
-            %       opts.Format         = 'Amira Mesh binary (``*.am``)';
-            %       opts.Saving3DPolicy = '3D stack';
-            %       opts.showWaitbar    = true;
-            %       opts.silent         = true;
-            %       opts.overwrite      = true;
-            %       opts.ParentFigure   = obj.mibModel.mibGUI;
-            %       opts.mibPath        = obj.mibModel.mibPath;
-            %       opts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
-            %       meta.filename  = 'source.tif';
-            %       meta.colorType = 'grayscale';
-            %       meta.lutColors = [1 0 0];
-            %       meta.dataClass = 'uint8';
-            %       meta.maxInt    = 255;
-            %       meta.sliceName = {};
-            %       data = uint8(rand(128,128,20,1,1)*255);
-            %       fnOut = saver.save(data, meta, '/tmp/stack.am', opts);
+            %      ctorOpts.ParentFigure = obj.mibModel.mibGUI;
+            %      ctorOpts.mibPath = obj.mibModel.mibPath;
+            %      saver = io.SaverFactory.create('Amira Mesh binary (*.am)', ctorOpts);
+            %      opts.Format = 'Amira Mesh binary (*.am)';
+            %      opts.Saving3DPolicy = '3D stack';
+            %      opts.showWaitbar = true;
+            %      opts.silent = true;
+            %      opts.overwrite = true;
+            %      opts.ParentFigure = obj.mibModel.mibGUI;
+            %      opts.mibPath = obj.mibModel.mibPath;
+            %      opts.pixSize = struct('x',0.065,'y',0.065,'z',0.2,'units','um','t',1,'tunits','s');
+            %      meta.filename = 'source.tif';
+            %      meta.colorType = 'grayscale';
+            %      meta.lutColors = [1 0 0];
+            %      meta.dataClass = 'uint8';
+            %      meta.maxInt = 255;
+            %      meta.sliceName = {};
+            %      data = uint8(rand(128,128,20,1,1)*255);
+            %      fnOut = saver.save(data, meta, '/tmp/stack.am', opts);
             %
+            % **Example 3** — save segmentation model in native MIB format:
             %
-            %   Example 3::
+            %   .. code-block:: matlab
             %
-            %       %% 3. Save a segmentation model in native MIB format
-            %       saver = io.SaverFactory.create('Matlab format (``*.model``)');
-            %       opts.Format      = 'Matlab format (``*.model``)';
-            %       opts.showWaitbar = false;
-            %       opts.silent      = true;
-            %       opts.overwrite   = true;
-            %       meta.filename       = 'image.tif';
-            %       meta.materialNames  = {'Nucleus'; 'Mitochondria'};
-            %       meta.materialColors = [0 0 1; 0 1 0];
-            %       meta.labelsVariable = 'mibModel';
-            %       meta.dataClass      = 'uint8';
-            %       meta.pixSize        = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
-            %       labels = uint8(rand(64,64,10,1,1)*2);  % values 0,1,2
-            %       fnOut = saver.save(labels, meta, '/tmp/Labels_image.model', opts);
+            %      saver = io.SaverFactory.create('Matlab format (*.model)');
+            %      opts.Format = 'Matlab format (*.model)';
+            %      opts.showWaitbar = false;
+            %      opts.silent = true;
+            %      opts.overwrite = true;
+            %      meta.filename = 'image.tif';
+            %      meta.materialNames = {'Nucleus'; 'Mitochondria'};
+            %      meta.materialColors = [0 0 1; 0 1 0];
+            %      meta.labelsVariable = 'mibModel';
+            %      meta.dataClass = 'uint8';
+            %      meta.pixSize = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
+            %      labels = uint8(rand(64,64,10,1,1)*2);
+            %      fnOut = saver.save(labels, meta, '/tmp/Labels_image.model', opts);
             %
 
             if nargin < 2; options = struct(); end
@@ -164,33 +169,35 @@ classdef SaverFactory
         % ---------------------------------------------------------------- %
 
         function formats = getFormats(layerType)
-            % GETFORMATS - Return a cell array of format strings available for a layer type.
+            % GETFORMATS - Return available format strings for a given layer type.
             %
             % Syntax:
-            %   function formats = getFormats(layerType)
             %
-            % Use this to populate Format dropdowns in MibModel.save() and
-            % MibDataset.save() without hard-coding the lists elsewhere.
+            %   .. code-block:: matlab
+            %
+            %      formats = io.SaverFactory.getFormats(layerType)
+            %
+            % Returns a sorted cell array of format strings suitable for populating
+            % Format dropdowns in ``MibModel.save()`` and ``MibDataset.save()``.
             %
             % Input Arguments:
-            %   layerType — (char) 'image' | 'mask' | 'labels'
-            %   When omitted or 'all', returns all registered formats.
+            %   - **layerType** — *(optional)* [char], default: ``'all'``
+            %
+            %     - ``'image'`` — formats for pixel-data saving
+            %     - ``'mask'`` — formats for binary mask saving
+            %     - ``'labels'`` — formats for multi-material segmentation
+            %     - ``'all'`` or omitted — returns all registered formats
             %
             % Output Arguments:
-            %   formats — (cell of char) sorted list of format strings
+            %   - **formats** — cell array of [char] sorted format strings
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — get available formats by layer type:
             %
-            %       imageFormats = io.SaverFactory.getFormats('image');
-            %       % imageFormats contains e.g.:
-            %       %   'Amira Mesh binary (``*.am``)'
-            %       %   'Joint Photographic Experts Group (``*.jpg``)'
-            %       %   'TIF format uncompressed (``*.tif``)'
-            %       %   ...
+            %   .. code-block:: matlab
             %
-            %       maskFormats = io.SaverFactory.getFormats('mask');
-            %       labelFormats = io.SaverFactory.getFormats('labels');
+            %      imageFormats = io.SaverFactory.getFormats('image');
+            %      maskFormats = io.SaverFactory.getFormats('mask');
+            %      labelFormats = io.SaverFactory.getFormats('labels');
             %
 
             if nargin < 1; layerType = 'all'; end
@@ -251,39 +258,45 @@ classdef SaverFactory
         % ---------------------------------------------------------------- %
 
         function defaultFormat = getDefaultFormat(layerType, filenameOrExt)
-            % GETDEFAULTFORMAT - Return the default format string for a given layer type,.
+            % GETDEFAULTFORMAT - Return the default format string for a layer type.
             %
             % Syntax:
-            %   function defaultFormat = getDefaultFormat(layerType, filenameOrExt)
             %
-            % optionally guided by a filename or bare file extension.
+            %   .. code-block:: matlab
             %
-            % Used to initialise BatchOpt.Format{1} in MibModel.save().
+            %      defaultFormat = io.SaverFactory.getDefaultFormat(layerType, filenameOrExt)
+            %
+            % Returns a default format string, optionally guided by a filename or
+            % file extension. Used to initialize ``BatchOpt.Format{1}`` in ``MibModel.save()``.
             %
             % Input Arguments:
-            %   layerType     — (char) 'image' | 'mask' | 'labels' | 'everything'
-            %   'everything' is treated identically to 'all' and
-            %   falls back to the TIF default.
-            %   filenameOrExt — (char, optional) full filename (e.g. 'out.tif')
-            %   or bare extension (e.g. 'tif').  When supplied,
-            %   the function first tries to resolve a format from
-            %   the extension; if the extension is unknown it
-            %   falls back to the layer-type default.
+            %   - **layerType** — [char] layer type:
+            %
+            %     - ``'image'`` — default: ``'Amira mesh binary (*.am)'``
+            %     - ``'mask'`` — default: ``'Matlab format (*.mask)'``
+            %     - ``'labels'`` — default: ``'Matlab format (*.model)'``
+            %     - ``'everything'`` — same as ``'all'``, falls back to TIF
+            %
+            %   - **filenameOrExt** — *(optional)* [char] full filename (e.g. ``'out.tif'``)
+            %     or bare extension (e.g. ``'tif'``). When supplied, function first
+            %     tries to resolve format from extension; if unknown, falls back to
+            %     layer-type default.
             %
             % Output Arguments:
-            %   defaultFormat — (char) default format string
+            %   - **defaultFormat** — [char] default format string matching ``getFormats()`` output
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — get default format by layer type and extension:
             %
-            %       def = io.SaverFactory.getDefaultFormat('image');
-            %       % def == 'TIF format uncompressed (``*.tif``)'
-            %       def = io.SaverFactory.getDefaultFormat('image', 'tif');
-            %       % def == 'TIF format uncompressed (``*.tif``)'
-            %       def = io.SaverFactory.getDefaultFormat('image', 'result.png');
-            %       % def == 'Portable Network Graphics (``*.png``)'
-            %       def = io.SaverFactory.getDefaultFormat('labels');
-            %       % def == 'Matlab format (``*.model``)'
+            %   .. code-block:: matlab
+            %
+            %      def = io.SaverFactory.getDefaultFormat('image');
+            %      % def == 'Amira mesh binary (*.am)'
+            %      def = io.SaverFactory.getDefaultFormat('image', 'tif');
+            %      % def == 'TIF format uncompressed (*.tif)'
+            %      def = io.SaverFactory.getDefaultFormat('image', 'result.png');
+            %      % def == 'Portable Network Graphics (*.png)'
+            %      def = io.SaverFactory.getDefaultFormat('labels');
+            %      % def == 'Matlab format (*.model)'
             %
 
             % --- resolve extension ----------------------------------------
@@ -394,20 +407,30 @@ classdef SaverFactory
     methods (Static, Access = private)
 
         function registry = buildRegistry()
-            % BUILDREGISTRY - Build the format-string → saver-class-name dictionary.
+            % BUILDREGISTRY - Build the format-string to saver-class-name dictionary.
             %
             % Syntax:
-            %   function registry = buildRegistry()
             %
-            % The registry is a MATLAB dictionary (string→string).
-            % Using class-name strings (rather than class handles) avoids
-            % loading every saver class at start-up.
+            %   .. code-block:: matlab
             %
-            % To add a new saver:
-            % 1. Create mib/+io/+savers/MyFormatSaver.m
-            % 2. Add an entry here:
-            % registry("My format (``*.xyz``)") = "io.savers.MyFormatSaver";
-            % 3. Add the format string to getFormats() above.
+            %      registry = io.SaverFactory.buildRegistry()
+            %
+            % Constructs a MATLAB dictionary mapping format strings to saver class names.
+            % Using class-name strings (rather than handles) avoids loading every saver
+            % class at startup.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **registry** — ``dictionary(string, string)`` format→class mapping
+            %
+            % **Adding a new saver:**
+            %
+            %   1. Create ``mib/+io/+savers/MyFormatSaver.m``
+            %   2. Add registry entry: ``registry("My format (*.xyz)") = "io.savers.MyFormatSaver";``
+            %   3. Add format string to ``getFormats()`` above.
+            %
 
             registry = configureDictionary("string", "string");
 

@@ -2,7 +2,6 @@ function [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)
 % GETRGBIMAGE - Generate RGB image from all layers for display.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      [imgRGB, imgRAW] = obj.getRGBimage(options)

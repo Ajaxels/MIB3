@@ -2,7 +2,9 @@ function maskToolsQuantifySection_Callbacks(obj, hWidget, hData)
 % MASKTOOLSQUANTIFYSECTION_CALLBACKS - callback on press of buttons in the Tools and Quantification sections of the Mask ribbon.
 %
 % Syntax:
-%   function maskToolsQuantifySection_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.maskToolsQuantifySection_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

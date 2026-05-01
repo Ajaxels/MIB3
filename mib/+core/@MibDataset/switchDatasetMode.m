@@ -2,7 +2,9 @@ function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithI
 % SWITCHDATASETMODE - Function to switch between loading datasets to different modes, defined.
 %
 % Syntax:
-%   function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithImage)
+%   .. code-block:: matlab
+%
+%       newModeOut = obj.switchDatasetMode(newMode, enableSelection, initWithImage)
 %
 % in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
 %

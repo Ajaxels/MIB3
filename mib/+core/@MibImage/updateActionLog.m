@@ -6,7 +6,9 @@ function updateActionLog(obj, logEntry, action, entryIndex)
 % UPDATEACTIONLOG - Append or modify a timestamped entry in the action log (obj.actionLog).
 %
 % Syntax:
-%   function updateActionLog(obj, logEntry, action, entryIndex)
+%   .. code-block:: matlab
+%
+%       obj.updateActionLog(logEntry, action, entryIndex)
 %
 % Input Arguments:
 %   - **logEntry** — [char or string] description of the processing step to record,

@@ -2,7 +2,9 @@ function insertMaterial(obj, index, name, wb)
 % INSERTMATERIAL - Insert a material at the specified position (type-63 bit-packed model).
 %
 % Syntax:
-%   function insertMaterial(obj, index, name, wb)
+%   .. code-block:: matlab
+%
+%       obj.insertMaterial(index, name, wb)
 %
 % For the bit-packed format (maxMaterials = 63), the model occupies bits
 % 1-6 of each uint8 element.  When inserting in the middle, all model

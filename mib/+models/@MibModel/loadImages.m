@@ -2,7 +2,6 @@ function loadImages(obj, parameter, BatchOptIn)
 % LOADIMAGES - Load images and arrange them into a stack.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      obj.loadImages(parameter)

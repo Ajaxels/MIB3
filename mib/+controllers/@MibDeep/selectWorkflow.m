@@ -2,7 +2,9 @@ function selectWorkflow(obj, event)
 % SELECTWORKFLOW - select deep learning workflow to perform.
 %
 % Syntax:
-%   function selectWorkflow(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.selectWorkflow(event)
 %
     if nargin < 2; event.Source = obj.view.handles.Workflow; end
     obj.updateBatchOptFromGUI(event);

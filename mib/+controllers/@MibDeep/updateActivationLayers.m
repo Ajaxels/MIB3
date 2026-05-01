@@ -2,7 +2,9 @@ function lgraph = updateActivationLayers(obj, lgraph)
 % UPDATEACTIVATIONLAYERS - update the activation layers depending on settings in.
 %
 % Syntax:
-%   function lgraph = updateActivationLayers(obj, lgraph)
+%   .. code-block:: matlab
+%
+%       lgraph = obj.updateActivationLayers(lgraph)
 %
 % obj.BatchOpt.T_ActivationLayer and obj.ActivationLayerOpt
 

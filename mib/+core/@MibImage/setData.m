@@ -2,7 +2,9 @@ function result = setData(obj, dataset, layerType, orient, colChannel, options)
 % SETDATA - Set dataset to MibBaseImage class.
 %
 % Syntax:
-%   function result = setData(obj, dataset, layerType, orient, colChannel, options)
+%   .. code-block:: matlab
+%
+%       result = obj.setData(dataset, layerType, orient, colChannel, options)
 %
 % Input Arguments:
 %   - **dataset** — matrix with the dataset to update MibBaseImage.data

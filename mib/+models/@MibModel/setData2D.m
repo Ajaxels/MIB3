@@ -2,7 +2,9 @@ function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, o
 % SETDATA2D - Set a 2D slice in the current (or specified) dataset; wrapper around core.MibDataset.setData2D.
 %
 % Syntax:
-%   function result = setData2D(obj, dataset, type, slice_no, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       result = obj.setData2D(dataset, type, slice_no, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.setData2D(...) instead of

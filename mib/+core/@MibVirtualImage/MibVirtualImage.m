@@ -1,20 +1,29 @@
 classdef MibVirtualImage < core.MibImage
     % MIBVIRTUALIMAGE - Virtual image class for MIB3 — reads slices from disk on demand.
     %
-    % The dataset is NOT loaded into memory; obj.data{} stores either:
-    % - file-path strings  (hdf5 / BioFormats mode)
-    % - loci.formats.Memoizer reader handles (BioFormats mode, when opened)
-    % - a zarr path string in obj.data{1}  (Zarr/pyramid mode)
+    % Subclass of ``core.MibImage`` that defers image data loading to disk.
+    % Data is accessed slice-by-slice from external files (HDF5, BioFormats, Zarr) without
+    % pre-loading the entire dataset into memory.
     %
-    % Dispatch logic in getData():
-    % ~isempty(obj.pyramid.levelNames) getDataZarr
-    % otherwise getDataVirt  (BioFormats / HDF5)
+    % **Data storage:**
+    %   The ``obj.data{}`` cell array stores references, not pixel data:
     %
-    % Key differences vs MIB2:
-    % - dimension order: [y, x, z, c, t]  (MIB3) vs [y, x, c, z, t] (MIB2)
-    % - YX orientation  = 3               (MIB3) vs 4               (MIB2)
-    % - image data      = obj.data{}      (MIB3) vs obj.img{}        (MIB2)
-    % - image class     = obj.dataClass   (MIB3) vs obj.meta('imgClass') (MIB2)
+    %     - File-path strings (HDF5 / BioFormats mode)
+    %     - ``loci.formats.Memoizer`` reader handles (BioFormats mode, when opened)
+    %     - Zarr pyramid path string in ``obj.data{1}`` (Zarr/pyramid mode)
+    %
+    % **Dispatch logic in getData():**
+    %   - When ``~isempty(obj.pyramid.levelNames)`` → calls ``getDataZarr()``
+    %   - Otherwise → calls ``getDataVirt()`` (BioFormats / HDF5)
+    %
+    % **Key differences from MIB2:**
+    %
+    %   | Property | MIB3 | MIB2 |
+    %   |----------|------|------|
+    %   | Dimension order | ``[y, x, z, c, t]`` | ``[y, x, c, z, t]`` |
+    %   | YX orientation | ``3`` | ``4`` |
+    %   | Image data | ``obj.data{}`` | ``obj.img{}`` |
+    %   | Image class | ``obj.dataClass`` | ``obj.meta('imgClass')`` |
 
     properties
         Virtual
@@ -39,27 +48,29 @@ classdef MibVirtualImage < core.MibImage
     end
 
     methods
-        % declaration of functions in external files
-
-        initialize(obj, data, meta)          % Initialize with dummy placeholder or provided file paths (overrides MibImage.initialize)
-
-        dataset = getData(obj, layerType, orient, colChannel, options)    % Get dataset — dispatches to getDataZarr or getDataVirt
-
-        dataset = getDataZarr(obj, type, orient, colChannel, options)        % Read a subvolume from a Zarr pyramid dataset with optional slicing.
-
-        dataset = getDataVirt(obj, type, orient, colChannel, options)        % Read a virtual dataset (BioFormats or HDF5) from disk on demand.
-
-        loader = getOrCreateLoader(obj, fileIdx)   % Return (or lazily create) the virtual loader for file index fileIdx.
-
-        closeVirtualDataset(obj)             % Close open virtual readers and loader objects.
-
-        insertSlice(obj, img, insertPosition, dim, virtMeta, options)    % Insert virtual file references along depth; updates Virtual struct and sliceName
+        % % declaration of functions in external files
+        % 
+        % initialize(obj, data, meta)          % Initialize with dummy placeholder or provided file paths (overrides MibImage.initialize)
+        % 
+        % dataset = getData(obj, layerType, orient, colChannel, options)    % Get dataset — dispatches to getDataZarr or getDataVirt
+        % 
+        % dataset = getDataZarr(obj, type, orient, colChannel, options)        % Read a subvolume from a Zarr pyramid dataset with optional slicing.
+        % 
+        % dataset = getDataVirt(obj, type, orient, colChannel, options)        % Read a virtual dataset (BioFormats or HDF5) from disk on demand.
+        % 
+        % loader = getOrCreateLoader(obj, fileIdx)   % Return (or lazily create) the virtual loader for file index fileIdx.
+        % 
+        % closeVirtualDataset(obj)             % Close open virtual readers and loader objects.
+        % 
+        % insertSlice(obj, img, insertPosition, dim, virtMeta, options)    % Insert virtual file references along depth; updates Virtual struct and sliceName
 
         function obj = MibVirtualImage(data, meta)
             % MIBVIRTUALIMAGE - obj = MibVirtualImage(data, meta).
             %
             % Syntax:
-            %   function obj = MibVirtualImage(data, meta)
+            %   .. code-block:: matlab
+            %
+            %       obj = MibVirtualImage(data, meta)
             %
             % Constructor — delegates to MibImage then initialises Virtual struct.
             %

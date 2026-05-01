@@ -2,7 +2,9 @@ function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
 % UPDATENETWORKINPUTLAYER - update the input layer settings for lgraph.
 %
 % Syntax:
-%   function lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)
+%   .. code-block:: matlab
+%
+%       lgraph = obj.updateNetworkInputLayer(lgraph, inputPatchSize)
 %
 % paramters are taken from obj.InputLayerOpt
 

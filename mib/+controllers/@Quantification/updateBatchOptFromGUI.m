@@ -2,7 +2,9 @@ function updateBatchOptFromGUI(obj, hObject, ~)
 % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a changed widget using the shared utility.
 %
 % Syntax:
-%   function updateBatchOptFromGUI(obj, hObject, ~)
+%   .. code-block:: matlab
+%
+%       obj.updateBatchOptFromGUI(hObject)
 %
 % Delegates to utils.updateBatchOptFromGUI_Shared which reads the widget's
 % Tag and Value and writes the matching BatchOpt field.  The second event

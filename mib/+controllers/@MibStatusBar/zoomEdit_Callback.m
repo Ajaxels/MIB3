@@ -1,45 +1,49 @@
 function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
-% ZOOMEDIT_CALLBACK - Callback for the zoom editbox control in the status bar to change image magnification.
+% ZOOMEDIT_CALLBACK - Callback for zoom editbox control in status bar to change image magnification.
 %
 % Syntax:
-%   function zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)
+%   .. code-block:: matlab
 %
-% Syntax:
-% obj.mibZoomEdit_Callback();
-% obj.mibZoomEdit_Callback([], BatchOptIn);
-% obj.mibZoomEdit_Callback(BatchOptIn);
+%      obj.zoomEdit_Callback()
+%      obj.zoomEdit_Callback(recenterSwitch, BatchOptIn)
 %
-% Description:
-% Handles magnification changes triggered by the 'obj.view.handles.status.zoom' UI control.
+% Handles magnification changes triggered by ``obj.view.handles.status.zoom`` UI control.
 % Supports direct UI interaction and batch processing mode.
 %
 % Input Arguments:
-%   - **recenterSwitch** — *(optional)*, defines whether the image should be recentered after zoom/unzoom. Default=0
-%     BatchOptIn - [struct|NaN, optional] Batch processing options.
-%     When NaN, triggers a 'SyncBatch' event and returns default options.
-%   - **Fields** —
-%     .Mode -[cell] Magnification mode. Options:
-%     - 'Set magnification' (default),
-%     - 'Fit to screen',
-%     - '100%',
-%     - 'Zoom in',
-%     - 'Zoom out'
-%     .MagnificationValue - [string] Target magnification value in percent,
-%     used when Mode is 'Set magnification'
+%   - **recenterSwitch** *(optional)* — [logical] whether to recenter image after zoom (default: ``false``)
+%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing options. When ``NaN``, triggers ``'SyncBatch'`` event and returns defaults:
 %
-%   Example 1 - Set magnification to 50%:
-%   BatchOpt.Mode = {'Set magnification'};
-%   BatchOpt.MagnificationValue = '50';
-%   obj.mibZoomEdit_Callback(BatchOpt);
+%     - ``.Mode`` — [cell] magnification mode:
 %
-%   Example 2 - Fit image to screen:
-%   BatchOpt.Mode = {'Fit to screen'};
-%   obj.mibZoomEdit_Callback(BatchOpt);
+%       - ``'Set magnification'`` — (default)
+%       - ``'Fit to screen'``
+%       - ``'100%'``
+%       - ``'Zoom in'``
+%       - ``'Zoom out'``
 %
-%   Example 3 - Query batch options (returns defaults via SyncBatch event):
-%   obj.mibZoomEdit_Callback(NaN);
+%     - ``.MagnificationValue`` — [char] target magnification in percent (used when Mode is ``'Set magnification'``)
 %
-%   - **Updates** —
+% **Example 1** — Set magnification to 50%:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Mode = {'Set magnification'};
+%      BatchOpt.MagnificationValue = '50';
+%      obj.zoomEdit_Callback([], BatchOpt);
+%
+% **Example 2** — Fit image to screen:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Mode = {'Fit to screen'};
+%      obj.zoomEdit_Callback([], BatchOpt);
+%
+% **Example 3** — Query batch options (returns defaults via SyncBatch event):
+%
+%   .. code-block:: matlab
+%
+%      obj.zoomEdit_Callback([], NaN);
 %
 
 arguments

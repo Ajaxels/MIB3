@@ -2,7 +2,9 @@ function roiLoad(obj)
 % ROILOAD - Load ROIs from a .roi (MAT) file into the current dataset.
 %
 % Syntax:
-%   function roiLoad(obj)
+%   .. code-block:: matlab
+%
+%      obj.roiLoad()
 %
 % Parameters: none
 % Return values: none

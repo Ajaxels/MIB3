@@ -2,7 +2,9 @@ function gui_WindowButtonDownFcn(obj)
 % GUI_WINDOWBUTTONDOWNFCN - Handle mouse button press events on the histogram axes.
 %
 % Syntax:
-%   function gui_WindowButtonDownFcn(obj)
+%   .. code-block:: matlab
+%
+%       obj.gui_WindowButtonDownFcn()
 %
 % Left-click sets the lower histogram limit (obj.histLimits(1));
 % right-click sets the upper limit (obj.histLimits(2)).

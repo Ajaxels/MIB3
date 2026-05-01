@@ -2,7 +2,9 @@ function bioformatsCallback(obj, event)
 % BIOFORMATSCALLBACK - update available filename extensions upon press of the BioFormats.
 %
 % Syntax:
-%   function bioformatsCallback(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.bioformatsCallback(event)
 %
 % checkbox
 %

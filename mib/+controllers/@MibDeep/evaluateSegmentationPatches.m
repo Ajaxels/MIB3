@@ -2,7 +2,9 @@ function evaluateSegmentationPatches(obj)
 % EVALUATESEGMENTATIONPATCHES - evaluate segmentation results for the patches in the.
 %
 % Syntax:
-%   function evaluateSegmentationPatches(obj)
+%   .. code-block:: matlab
+%
+%       obj.evaluateSegmentationPatches()
 %
 % patch-wise mode
 

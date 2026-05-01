@@ -2,7 +2,9 @@ function sendReportsCallback(obj)
 % SENDREPORTSCALLBACK - define parameters for sending progress report to the user's.
 %
 % Syntax:
-%   function sendReportsCallback(obj)
+%   .. code-block:: matlab
+%
+%       obj.sendReportsCallback()
 %
 % email address
 

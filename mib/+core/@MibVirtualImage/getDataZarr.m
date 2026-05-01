@@ -2,15 +2,9 @@ function dataset = getDataZarr(obj, type, orient, colChannel, options)
 % GETDATAZARR - Read a subvolume from a Zarr pyramid dataset with optional slicing.
 %
 % Syntax:
-%   function dataset = getDataZarr(obj, type, orient, colChannel, options)
+%   .. code-block:: matlab
 %
-% Ported from MIB2/@MibImage/getDataZarr with the following adaptations:
-% - obj.data{1} instead of obj.img{1}  (zarr root path)
-% - obj.dataClass instead of obj.meta('imgClass')
-% - YX orientation is 3 (MIB3) not 4 (MIB2)
-% - Output dimension order [y, x, z, c, t] (MIB3) not [y, x, c, z, t] (MIB2)
-% - colChannel [] = all channels (MIB3) instead of NaN / 0 (MIB2)
-% - options.magFactor defaults to 1 (not obj.magFactor which lives in MibDataset)
+%       dataset = obj.getDataZarr( type, orient, colChannel, options)
 %
 % Input Arguments:
 %   - **type** — type of layer — only 'image' is functional in virtual mode

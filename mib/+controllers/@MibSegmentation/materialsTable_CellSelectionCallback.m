@@ -2,7 +2,9 @@ function materialsTable_CellSelectionCallback(obj, cellIndices)
 % MATERIALSTABLE_CELLSELECTIONCALLBACK - Handle cell selection in materials table (obj.handles.materialsTable).
 %
 % Syntax:
-%   function materialsTable_CellSelectionCallback(obj, cellIndices)
+%   .. code-block:: matlab
+%
+%       obj.materialsTable_CellSelectionCallback(cellIndices)
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

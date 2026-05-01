@@ -2,7 +2,9 @@ function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj
 % GETSLICELABELS - [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options).
 %
 % Syntax:
-%   function [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)
+%   .. code-block:: matlab
+%
+%       [labelsList, labelValues, labelPositions, indices] = obj.getSliceLabels(sliceNumber, timePoint, options)
 %
 % Get list of labels (mibImage.annotations) shown at the specified slice
 %

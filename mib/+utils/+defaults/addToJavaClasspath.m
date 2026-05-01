@@ -2,7 +2,6 @@ function addToJavaClasspath(classpath, directory)
 % ADDTOJAVACLASSPATH - Add JAR files from a directory to the MATLAB Java classpath.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      addToJavaClasspath(classpath, directory)

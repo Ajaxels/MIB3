@@ -2,7 +2,9 @@ function helpButtons_Callback(obj, hWidget, hData)
 % HELPBUTTONS_CALLBACK - callback for click on the Help buttons in various panels of MIB.
 %
 % Syntax:
-%   function helpButtons_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%      obj.helpButtons_Callback(hWidget, hData)
 %
 % The function is triggered by clicks on
 % - obj.handles.panels.dirContents.handles.help
@@ -10,6 +12,9 @@ function helpButtons_Callback(obj, hWidget, hData)
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget
 %   - **hData** — handle to supporting data class
+%
+% Output Arguments:
+%   (none)
 %
 
 arguments (Input)

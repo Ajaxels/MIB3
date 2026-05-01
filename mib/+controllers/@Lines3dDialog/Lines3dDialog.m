@@ -52,7 +52,9 @@ classdef Lines3dDialog < handle
             % VIEWLISTNER_CALLBACK2 - ViewListner_Callback2(obj, src, evnt).
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, src, evnt)
+            %   .. code-block:: matlab
+            %
+            %       obj.ViewListner_Callback2(src, evnt)
             %
             % Static callback for model event listeners.
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
@@ -77,16 +79,22 @@ classdef Lines3dDialog < handle
 
     methods
         function obj = Lines3dDialog(mibModel, varargin)
-            % LINES3DDIALOG - Lines3dDialog(mibModel, varargin).
+            % LINES3DDIALOG - Initialize Lines3D table view dialog controller.
             %
             % Syntax:
-            %   function obj = Lines3dDialog(mibModel, varargin)
+            %   .. code-block:: matlab
             %
-            % Constructor for the Lines3dDialog controller.
+            %      obj = Lines3dDialog(mibModel)
+            %      obj = Lines3dDialog(mibModel, BatchOpt)
+            %
+            % Display and edit 3D line trees, nodes and edges via interactive tables.
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — controller handle (unused, for startController compatibility)
+            %   - **mibModel** — [MibModel] handle to main MIB model
+            %   - **varargin{1}** *(optional)* — [handle] controller handle (unused, for startController compatibility)
+            %
+            % Output Arguments:
+            %   - **obj** — [Lines3dDialog] initialized dialog controller instance
             %
 
             obj.mibModel = mibModel;
@@ -134,12 +142,14 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function closeWindow(obj)
-            % CLOSEWINDOW - closeWindow(obj).
+            % CLOSEWINDOW - Close dialog window and clean up resources.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
             %
-            % Close the Lines3dDialog window and clean up listeners.
+            %      obj.closeWindow()
+            %
+            % Close the Lines3dDialog window, delete child controllers, and clean up model listeners.
 
             for i = numel(obj.childControllers):-1:1
                 child = obj.childControllers{i};
@@ -161,12 +171,16 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function addCallbacks(obj)
-            % ADDCALLBACKS - addCallbacks(obj).
+            % ADDCALLBACKS - Wire all widget callbacks for table and button interactions.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
             %
-            % Wire all widget callbacks. Called once from the constructor.
+            %      obj.addCallbacks()
+            %
+            % Connect UI widgets to callback functions. Called once from constructor to set up
+            % callbacks for tables (cell edit, selection), buttons (settings, load, save, delete, visualize),
+            % dropdowns, and context menus.
 
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
 
@@ -218,12 +232,15 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function updateWidgets(obj)
-            % UPDATEWIDGETS - updateWidgets(obj).
+            % UPDATEWIDGETS - Refresh all dialog tables and status indicators.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
             %
-            % Update all tables and status indicators.
+            %      obj.updateWidgets()
+            %
+            % Update trees table, nodes table, and edges table from current dataset. Also refresh
+            % active tree/node status indicators. Called on model events and after user actions.
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -270,12 +287,19 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function updateEdgesViewTable(obj, activeTreeIndex, nodeByTree)
-            % UPDATEEDGESVIEWTABLE - updateEdgesViewTable(obj, activeTreeIndex, nodeByTree).
+            % UPDATEEDGESVIEWTABLE - Populate edges table for the active tree.
             %
             % Syntax:
-            %   function updateEdgesViewTable(obj, activeTreeIndex, nodeByTree)
+            %   .. code-block:: matlab
             %
-            % Update the edges table for the given tree.
+            %      obj.updateEdgesViewTable(activeTreeIndex, nodeByTree)
+            %
+            % Update the edges view table with edges from the specified tree, including
+            % weight and any additional edge fields configured via dropdown.
+            %
+            % Input Arguments:
+            %   - **activeTreeIndex** — [numeric] index of active tree to display
+            %   - **nodeByTree** *(optional)* — [numeric array] assignment of nodes to trees; automatically computed if omitted
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -315,12 +339,22 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree)
-            % UPDATENODESVIEWTABLE - activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree).
+            % UPDATENODESVIEWTABLE - Populate nodes table for the active tree.
             %
             % Syntax:
-            %   function activeIndex = updateNodesViewTable(obj, activeTreeIndex, nodeByTree)
+            %   .. code-block:: matlab
             %
-            % Update the nodes table for the given tree.
+            %      activeIndex = obj.updateNodesViewTable(activeTreeIndex, nodeByTree)
+            %
+            % Update the nodes view table with nodes from the specified tree, including
+            % node name, radius (or other field), and XYZ coordinates. Auto-scroll to active node.
+            %
+            % Input Arguments:
+            %   - **activeTreeIndex** — [numeric] index of active tree to display
+            %   - **nodeByTree** *(optional)* — [numeric array] assignment of nodes to trees; automatically computed if omitted
+            %
+            % Output Arguments:
+            %   - **activeIndex** — [numeric] index of the active node in the displayed table (for auto-scroll)
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -366,12 +400,17 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function edgesViewTable_CellEditCallback(obj, eventdata)
-            % EDGESVIEWTABLE_CELLEDITCALLBACK - edgesViewTable_CellEditCallback(obj, eventdata).
+            % EDGESVIEWTABLE_CELLEDITCALLBACK - Handle cell edits in edges table.
             %
             % Syntax:
-            %   function edgesViewTable_CellEditCallback(obj, eventdata)
+            %   .. code-block:: matlab
             %
-            % Callback for modification of cell in edgesViewTable.
+            %      obj.edgesViewTable_CellEditCallback(eventdata)
+            %
+            % Update edge properties (weight or additional field) when user modifies edgesViewTable cells.
+            %
+            % Input Arguments:
+            %   - **eventdata** — [CellEditData] cell edit event with ``.Indices`` and ``.NewData`` properties
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -389,12 +428,18 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function nodesViewTable_CellEditCallback(obj, eventdata)
-            % NODESVIEWTABLE_CELLEDITCALLBACK - nodesViewTable_CellEditCallback(obj, eventdata).
+            % NODESVIEWTABLE_CELLEDITCALLBACK - Handle cell edits in nodes table.
             %
             % Syntax:
-            %   function nodesViewTable_CellEditCallback(obj, eventdata)
+            %   .. code-block:: matlab
             %
-            % Callback for modification of cell in nodesViewTable.
+            %      obj.nodesViewTable_CellEditCallback(eventdata)
+            %
+            % Update node properties (name, radius/extra field, or XYZ coordinates) when user
+            % modifies nodesViewTable cells. Triggers image re-render for coordinate changes.
+            %
+            % Input Arguments:
+            %   - **eventdata** — [CellEditData] cell edit event with ``.Indices`` and ``.NewData`` properties
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -420,12 +465,16 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function settingsBtn_Callback(obj)
-            % SETTINGSBTN_CALLBACK - settingsBtn_Callback(obj).
+            % SETTINGSBTN_CALLBACK - Open dialog to configure Lines3D visual settings.
             %
             % Syntax:
-            %   function settingsBtn_Callback(obj)
+            %   .. code-block:: matlab
             %
-            % Update visual settings for Lines3D.
+            %      obj.settingsBtn_Callback()
+            %
+            % Prompt user for visual settings: edge color, active tree color, node color,
+            % active node color, edge thickness, node radius, and clipping thickness.
+            % Updates ``obj.mibModel.I{id}.lines3D`` with new settings.
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -480,12 +529,16 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function loadBtn_Callback(obj)
-            % LOADBTN_CALLBACK - loadBtn_Callback(obj).
+            % LOADBTN_CALLBACK - Load or import Lines3D from file or MATLAB workspace.
             %
             % Syntax:
-            %   function loadBtn_Callback(obj)
+            %   .. code-block:: matlab
             %
-            % Load Lines3D from a file or import from Matlab workspace.
+            %      obj.loadBtn_Callback()
+            %
+            % Prompt user to load Lines3D from ``.lines3d`` file or import from base workspace.
+            % Validates graph structure and updates pixel sizes to match current dataset.
+            % Creates backup before loading.
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -597,12 +650,19 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function saveBtn_Callback(obj, treeIds)
-            % SAVEBTN_CALLBACK - saveBtn_Callback(obj, treeIds).
+            % SAVEBTN_CALLBACK - Save or export Lines3D to file or MATLAB workspace.
             %
             % Syntax:
-            %   function saveBtn_Callback(obj, treeIds)
+            %   .. code-block:: matlab
             %
-            % Save Lines3D to a file or export to Matlab workspace.
+            %      obj.saveBtn_Callback()
+            %      obj.saveBtn_Callback(treeIds)
+            %
+            % Export selected trees to ``.lines3d`` file or to base workspace as ``Lines3D`` variable.
+            % Supports optional export to Imaris format.
+            %
+            % Input Arguments:
+            %   - **treeIds** *(optional)* — [numeric array] tree indices to export; if empty, exports all trees
 
             if nargin < 2; treeIds = []; end
 
@@ -723,12 +783,14 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function deleteBtn_Callback(obj)
-            % DELETEBTN_CALLBACK - deleteBtn_Callback(obj).
+            % DELETEBTN_CALLBACK - Delete all Lines3D data after user confirmation.
             %
             % Syntax:
-            %   function deleteBtn_Callback(obj)
+            %   .. code-block:: matlab
             %
-            % Delete all Lines3D data.
+            %      obj.deleteBtn_Callback()
+            %
+            % Prompt user for confirmation, create backup, and clear all Lines3D data from current dataset.
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -746,12 +808,18 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function nodesViewTable_CellSelectionCallback(obj, Indices, forceJump)
-            % NODESVIEWTABLE_CELLSELECTIONCALLBACK - nodesViewTable_CellSelectionCallback(obj, Indices, forceJump).
+            % NODESVIEWTABLE_CELLSELECTIONCALLBACK - Handle cell selection in nodes table.
             %
             % Syntax:
-            %   function nodesViewTable_CellSelectionCallback(obj, Indices, forceJump)
+            %   .. code-block:: matlab
             %
-            % Callback for cell selection in nodesViewTable.
+            %      obj.nodesViewTable_CellSelectionCallback(Indices, forceJump)
+            %
+            % Update internal selection tracking and optionally jump to selected node position if ``jumpCheck`` is enabled.
+            %
+            % Input Arguments:
+            %   - **Indices** — [numeric array] selected cell indices from table
+            %   - **forceJump** *(optional)* — [logical] force jump to node; defaults to value of jumpCheck widget
 
             if nargin < 3; forceJump = 0; end
             if forceJump == 0; forceJump = obj.view.handles.jumpCheck.Value; end
@@ -764,12 +832,18 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function edgesViewTable_CellSelectionCallback(obj, Indices, forceJump)
-            % EDGESVIEWTABLE_CELLSELECTIONCALLBACK - edgesViewTable_CellSelectionCallback(obj, Indices, forceJump).
+            % EDGESVIEWTABLE_CELLSELECTIONCALLBACK - Handle cell selection in edges table.
             %
             % Syntax:
-            %   function edgesViewTable_CellSelectionCallback(obj, Indices, forceJump)
+            %   .. code-block:: matlab
             %
-            % Callback for cell selection in edgesViewTable.
+            %      obj.edgesViewTable_CellSelectionCallback(Indices, forceJump)
+            %
+            % Update internal selection tracking and optionally jump to selected edge's target node.
+            %
+            % Input Arguments:
+            %   - **Indices** — [numeric array] selected cell indices from table
+            %   - **forceJump** *(optional)* — [logical] force jump to edge endpoint; defaults to value of jumpCheck widget
 
             if nargin < 3; forceJump = obj.view.handles.jumpCheck.Value; end
             obj.indicesEdges = Indices;
@@ -784,12 +858,17 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function treesViewTable_CellSelectionCallback(obj, Indices)
-            % TREESVIEWTABLE_CELLSELECTIONCALLBACK - treesViewTable_CellSelectionCallback(obj, Indices).
+            % TREESVIEWTABLE_CELLSELECTIONCALLBACK - Handle cell selection in trees table.
             %
             % Syntax:
-            %   function treesViewTable_CellSelectionCallback(obj, Indices)
+            %   .. code-block:: matlab
             %
-            % Callback for cell selection in treesViewTable.
+            %      obj.treesViewTable_CellSelectionCallback(Indices)
+            %
+            % Update active tree, refresh nodes/edges tables, and mark the selected tree node as active.
+            %
+            % Input Arguments:
+            %   - **Indices** — [numeric array] selected tree row index
 
             if isempty(Indices); return; end
             if isempty(obj.view.handles.nodesViewTable.RowName); return; end
@@ -843,15 +922,18 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function treesViewTable_CellEditCallback(obj, Indices)
-            % TREESVIEWTABLE_CELLEDITCALLBACK - treesViewTable_CellEditCallback(obj, Indices).
+            % TREESVIEWTABLE_CELLEDITCALLBACK - Handle cell edits in trees table (reserved for future use).
             %
             % Syntax:
-            %   function treesViewTable_CellEditCallback(obj, Indices)
+            %   .. code-block:: matlab
             %
-            % Callback for cell edit in treesViewTable.
+            %      obj.treesViewTable_CellEditCallback(Indices)
             %
-            % Note: this method appears to handle annotation edits in the
-            % MIB2 source; ported as-is for completeness.
+            % Callback for cell edit in treesViewTable. Currently reserved for potential
+            % tree renaming or annotation edits in future versions.
+            %
+            % Input Arguments:
+            %   - **Indices** — [numeric array] edited cell indices ``[row, column]``
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -873,12 +955,17 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function treesViewTable_cb(obj, parameter)
-            % TREESVIEWTABLE_CB - treesViewTable_cb(obj, parameter).
+            % TREESVIEWTABLE_CB - Handle context menu actions on trees table.
             %
             % Syntax:
-            %   function treesViewTable_cb(obj, parameter)
+            %   .. code-block:: matlab
             %
-            % Context menu callbacks for treesViewTable.
+            %      obj.treesViewTable_cb(parameter)
+            %
+            % Execute context menu actions: rename, find, visualize, save, or delete selected tree(s).
+            %
+            % Input Arguments:
+            %   - **parameter** — [char] action: ``'rename'``, ``'find'``, ``'visualize'``, ``'save'``, or ``'delete'``
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -961,12 +1048,17 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function edgesViewTable_cb(obj, parameter)
-            % EDGESVIEWTABLE_CB - edgesViewTable_cb(obj, parameter).
+            % EDGESVIEWTABLE_CB - Handle context menu actions on edges table.
             %
             % Syntax:
-            %   function edgesViewTable_cb(obj, parameter)
+            %   .. code-block:: matlab
             %
-            % Context menu callbacks for edgesViewTable.
+            %      obj.edgesViewTable_cb(parameter)
+            %
+            % Execute context menu actions: jump to node or set as active node.
+            %
+            % Input Arguments:
+            %   - **parameter** — [char] action: ``'Jump'`` (jump to node) or ``'Active'`` (set as active node)
 
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
@@ -1000,12 +1092,19 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function nodesViewTable_cb(obj, parameter, nodeId)
-            % NODESVIEWTABLE_CB - nodesViewTable_cb(obj, parameter, nodeId).
+            % NODESVIEWTABLE_CB - Handle context menu actions on nodes table.
             %
             % Syntax:
-            %   function nodesViewTable_cb(obj, parameter, nodeId)
+            %   .. code-block:: matlab
             %
-            % Context menu callbacks for nodesViewTable.
+            %      obj.nodesViewTable_cb(parameter)
+            %      obj.nodesViewTable_cb(parameter, nodeId)
+            %
+            % Execute context menu actions: jump to node, set active, rename, edit pixels, or manage annotations.
+            %
+            % Input Arguments:
+            %   - **parameter** — [char] action: ``'Jump'``, ``'Active'``, ``'Rename'``, ``'Pixels'``, ``'AnnotationsNew'``, ``'AnnotationsAdd'``, ``'AnnotationsDelete'``, or ``'Delete'``
+            %   - **nodeId** *(optional)* — [numeric] specific node to operate on; if omitted, uses selected row
 
             if nargin < 3; nodeId = []; end
 
@@ -1205,12 +1304,19 @@ classdef Lines3dDialog < handle
 
         % -----------------------------------------------------------------
         function visualizeBtn_Callback(obj, treeId)
-            % VISUALIZEBTN_CALLBACK - visualizeBtn_Callback(obj, treeId).
+            % VISUALIZEBTN_CALLBACK - Visualize Lines3D graph in separate 3D figure.
             %
             % Syntax:
-            %   function visualizeBtn_Callback(obj, treeId)
+            %   .. code-block:: matlab
             %
-            % Visualize the graph in 3D using a separate figure.
+            %      obj.visualizeBtn_Callback()
+            %      obj.visualizeBtn_Callback(treeId)
+            %
+            % Create or update a 3D visualization figure showing the graph edges and nodes.
+            % Optionally overlay an orthoslice from the current dataset.
+            %
+            % Input Arguments:
+            %   - **treeId** *(optional)* — [numeric] specific tree ID to visualize; if 0 or omitted, visualizes all trees
 
             if nargin < 2; treeId = 0; end
 

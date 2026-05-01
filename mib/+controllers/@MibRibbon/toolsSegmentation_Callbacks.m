@@ -2,7 +2,9 @@ function toolsSegmentation_Callbacks(obj, hWidget, hData)
 % TOOLSSEGMENTATION_CALLBACKS - callback on press of buttons in the Segmentation section of the Tools ribbon.
 %
 % Syntax:
-%   function toolsSegmentation_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.toolsSegmentation_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

@@ -2,7 +2,9 @@ function segmentationBrush(obj, y, x, modifier)
 % SEGMENTATIONBRUSH - Start segmentation using the brush tool.
 %
 % Syntax:
-%   function segmentationBrush(obj, y, x, modifier)
+%   .. code-block:: matlab
+%
+%      obj.segmentationBrush(y, x, modifier)
 %
 % This method initializes the brush tool for interactive painting on the
 % image. It creates a structural element based on the brush radius,
@@ -11,23 +13,27 @@ function segmentationBrush(obj, y, x, modifier)
 % superpixel-assisted (SLIC/Watershed) modes.
 %
 % Input Arguments:
-%   - **y** — double, y-coordinate of the mouse cursor at the starting point (in shown image coords)
-%   - **x** — double, x-coordinate of the mouse cursor at the starting point (in shown image coords)
-%   - **modifier** — cell array of chars or char, modifier keys held during click
-%     - empty '' - add selection
-%     - 'control' - subtract selection (eraser mode)
+%   - **y** — [double] y-coordinate of the mouse cursor at the starting point (in shown image coords)
+%   - **x** — [double] x-coordinate of the mouse cursor at the starting point (in shown image coords)
+%   - **modifier** — [char|cell] modifier keys held during click:
+%
+%     - empty string ``''`` — add selection
+%     - ``'control'`` — subtract selection (eraser mode)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — start brush from shown position:
 %
-%     obj.segmentationBrush(50, 75, '');  // start brush from shown position [y,x]=50,75
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationBrush(50, 75, '');  % start from [y,x]=50,75
 %
-%     obj.segmentationBrush(50, 75, 'control');  // start eraser from shown position
+% **Example 2** — start eraser from shown position:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationBrush(50, 75, 'control');  % start in eraser mode
 %
 
 % Updates

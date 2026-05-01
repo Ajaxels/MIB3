@@ -1,80 +1,73 @@
 function selectionPanelCheckboxes(obj, BatchOptIn)
-% SELECTIONPANELCHECKBOXES - Batch-compatible method to read or modify the state of checkboxes and.
+% SELECTIONPANELCHECKBOXES - Read or modify checkbox states and color-channel dropdown in Selection panel.
 %
 % Syntax:
-%   function selectionPanelCheckboxes(obj, BatchOptIn)
+%   .. code-block:: matlab
 %
-% the colour-channel dropdown of the Selection and View Settings panel.
+%      obj.selectionPanelCheckboxes(BatchOptIn)
 %
-% Each checkbox field accepts one of three string values:
-% 'Unchanged' — leave the widget as-is (default for all checkboxes)
-% 'Checked'   — tick the checkbox / enable the feature
-% 'Unchecked' — un-tick the checkbox / disable the feature
-%
-% Setting ColorChannel leaves the dropdown at its current value when the
-% field is empty; otherwise supply a numeric string: '0' = All channels,
-% '1' = first channel, '2' = second channel, and so on.
+% Batch-compatible method for the Selection and View Settings panel. Checkbox fields accept
+% three string values: ``'Unchanged'`` (leave as-is, default), ``'Checked'`` (enable feature),
+% or ``'Unchecked'`` (disable feature). ColorChannel: empty string = do not modify;
+% ``'0'`` = All channels; ``'1'``, ``'2'``, etc. = individual channels.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode; when NaN,
-%     returns a structure with default options via the "SyncBatch" event
-%     - .Apply3D        - cell string, {'Unchanged','Checked','Unchecked'} — Apply-in-3D checkbox
-%     - .AutoFillSelection       - cell string, {'Unchanged','Checked','Unchecked'} — Auto-fill checkbox
-%     - .Difference     - cell string, {'Unchanged','Checked','Unchecked'} — Difference mode checkbox (erode/dilate)
-%     - .LutColors      - cell string, {'Unchanged','Checked','Unchecked'} — LUT colors checkbox
-%     - .ShowModel      - cell string, {'Unchanged','Checked','Unchecked'} — Show model overlay checkbox
-%     - .ShowMask       - cell string, {'Unchanged','Checked','Unchecked'} — Show mask overlay checkbox
-%     - .ShowAnnotations - cell string, {'Unchanged','Checked','Unchecked'} — Show annotations/measurements checkbox
-%     - .HideImage      - cell string, {'Unchanged','Checked','Unchecked'} — Hide image checkbox
-%     - .OnFly          - cell string, {'Unchanged','Checked','Unchecked'} — On-fly contrast stretch checkbox
-%     - .ColorChannel   - string, '' = do not modify; '0' = All channels, '1' = Ch 1, etc.
+%   - **BatchOptIn** — [struct] batch options structure with fields:
 %
-% Output Arguments:
-%   (none)
+%     - ``.Apply3D`` — [cell] {``'Unchanged'``|``'Checked'``|``'Unchecked'``} Apply-in-3D checkbox
+%     - ``.AutoFillSelection`` — [cell] checkbox state — Auto-fill checkbox
+%     - ``.Difference`` — [cell] checkbox state — Difference mode checkbox (erode/dilate)
+%     - ``.LutColors`` — [cell] checkbox state — LUT colors checkbox
+%     - ``.ShowModel`` — [cell] checkbox state — Show model overlay checkbox
+%     - ``.ShowMask`` — [cell] checkbox state — Show mask overlay checkbox
+%     - ``.ShowAnnotations`` — [cell] checkbox state — Show annotations/measurements checkbox
+%     - ``.HideImage`` — [cell] checkbox state — Hide image checkbox
+%     - ``.OnFly`` — [cell] checkbox state — On-fly contrast stretch checkbox
+%     - ``.ColorChannel`` — [char] channel selection: ``''`` (do not modify), ``'0'`` (All channels), ``'1'``/``'2'``/… (specific channels)
 %
-% Usage:
-%   Example 1 - Enable Apply-in-3D mode::
+% **Example 1** — Enable Apply-in-3D mode:
 %
-%     % Enable Apply-in-3D mode
-%     BatchOptIn.Apply3D = {'Checked'};
-%     obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
+%   .. code-block:: matlab
 %
+%      BatchOptIn.Apply3D = {'Checked'};
+%      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-%   Example 2 - Show model overlay and switch to colour channel 1::
+% **Example 2** — Show model overlay and switch to color channel 1:
 %
-%     % Show model overlay and switch to colour channel 1
-%     BatchOptIn.ShowModel     = {'Checked'};
-%     BatchOptIn.ColorChannel  = '1';
-%     obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
+%   .. code-block:: matlab
 %
+%      BatchOptIn.ShowModel    = {'Checked'};
+%      BatchOptIn.ColorChannel = '1';
+%      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-%   Example 3 - Hide image and show mask only (e.g. for mask QC)::
+% **Example 3** — Hide image and show mask only (mask QC):
 %
-%     % Hide image and show mask only (e.g. for mask QC)
-%     BatchOptIn.HideImage  = {'Checked'};
-%     BatchOptIn.ShowMask   = {'Checked'};
-%     BatchOptIn.ShowModel  = {'Unchecked'};
-%     obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
+%   .. code-block:: matlab
 %
+%      BatchOptIn.HideImage  = {'Checked'};
+%      BatchOptIn.ShowMask   = {'Checked'};
+%      BatchOptIn.ShowModel  = {'Unchecked'};
+%      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-%   Example 4 - Turn on LUT colors and on-fly contrast stretch simultaneously::
+% **Example 4** — Enable LUT colors and on-fly contrast stretch:
 %
-%     % Turn on LUT colors and on-fly contrast stretch simultaneously
-%     BatchOptIn.LutColors = {'Checked'};
-%     BatchOptIn.OnFly     = {'Checked'};
-%     obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
+%   .. code-block:: matlab
 %
+%      BatchOptIn.LutColors = {'Checked'};
+%      BatchOptIn.OnFly     = {'Checked'};
+%      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
-%   Example 5 - Reset all display flags to off (clean-slate view)::
+% **Example 5** — Reset all display flags (clean-slate view):
 %
-%     % Reset all display flags to off (clean-slate view)
-%     BatchOptIn.ShowModel       = {'Unchecked'};
-%     BatchOptIn.ShowMask        = {'Unchecked'};
-%     BatchOptIn.ShowAnnotations = {'Unchecked'};
-%     BatchOptIn.HideImage       = {'Unchecked'};
-%     BatchOptIn.LutColors       = {'Unchecked'};
-%     BatchOptIn.OnFly           = {'Unchecked'};
-%     obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
+%   .. code-block:: matlab
+%
+%      BatchOptIn.ShowModel       = {'Unchecked'};
+%      BatchOptIn.ShowMask        = {'Unchecked'};
+%      BatchOptIn.ShowAnnotations = {'Unchecked'};
+%      BatchOptIn.HideImage       = {'Unchecked'};
+%      BatchOptIn.LutColors       = {'Unchecked'};
+%      BatchOptIn.OnFly           = {'Unchecked'};
+%      obj.mibController.cSelection.selectionPanelCheckboxes(BatchOptIn);
 %
 %
 %   Example 6 - Populate the Batch Processing parameter table with default options::

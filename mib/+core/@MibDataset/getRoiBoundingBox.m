@@ -2,7 +2,9 @@ function bb = getRoiBoundingBox(obj, roiIndex)
 % GETROIBOUNDINGBOX - Return the bounding box for a ROI at its native orientation.
 %
 % Syntax:
-%   function bb = getRoiBoundingBox(obj, roiIndex)
+%   .. code-block:: matlab
+%
+%       bb = obj.getRoiBoundingBox(roiIndex)
 %
 % Wraps *core.RoiRegion.getBoundingBox* and maps the 4-element
 % ``[xmin xmax ymin ymax]`` result to a 6-element vector
@@ -10,34 +12,28 @@ function bb = getRoiBoundingBox(obj, roiIndex)
 % pixel coordinates (X = columns, Y = rows, Z = depth).
 %
 % The mapping depends on the orientation stored in the ROI:
-% - **3** (YX plane) — X/Y from bounding box, Z spans 1 to full depth
-% - **1** (ZX plane) — ROI X-axis = Z, ROI Y-axis = X; Y spans full height
-% - **2** (ZY plane) — ROI X-axis = Z, ROI Y-axis = Y; X spans full width
+%   - ``3`` (``YX`` plane) — X/Y from bounding box, Z spans ``1`` to full depth
+%   - ``1`` (``ZX`` plane) — ROI X-axis = Z, ROI Y-axis = X; Y spans full height
+%   - ``2`` (``ZY`` plane) — ROI X-axis = Z, ROI Y-axis = Y; X spans full width
 %
 % Input Arguments:
-%   - **roiIndex** — *(optional)* index of the ROI to query.
-%   - When omitted, *obj.selectedROI* is used.
-%   - When negative or empty, returns *[]* immediately.
+%   - **roiIndex** *(optional)* — [numeric] index of the ROI to query; when omitted, ``obj.selectedROI``
+%     is used; when negative or empty, returns ``[]`` immediately
 %
 % Output Arguments:
-%   - **bb** — ``[minX maxX minY maxY minZ maxZ]`` in pixels, or *[]*
-%     when no ROI is selected.
+%   - **bb** — [numeric] ``[minX maxX minY maxY minZ maxZ]`` in pixels, or ``[]`` when no ROI is selected
 %
-% Usage:
-%   **Example 1**
+% **Example 1** — Get bounding box of the selected ROI:
 %
 %   .. code-block:: matlab
 %
+%      bb = obj.getRoiBoundingBox();
 %
-%     bb = obj.mibModel.I{obj.mibModel.id}.getRoiBoundingBox();% call from controller; bounding box of the selected ROI
-%
-%   **Example 2**
+% **Example 2** — Get bounding box of a specific ROI by index:
 %
 %   .. code-block:: matlab
 %
-%
-%     bb = obj.mibModel.I{obj.mibModel.id}.getRoiBoundingBox(2);% call from controller; bounding box of ROI index 2
-%
+%      bb = obj.getRoiBoundingBox(2);
 
 if nargin < 2; roiIndex = obj.selectedROI; end
 if isempty(roiIndex) || roiIndex < 0; bb = []; return; end

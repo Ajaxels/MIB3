@@ -2,21 +2,24 @@ function updateMeasureText(obj, pos)
 % UPDATEMEASURETEXT - Refresh the quick-measurement text label for this document's active ROI.
 %
 % Syntax:
-%   function updateMeasureText(obj, pos)
+%   .. code-block:: matlab
 %
-% Called from MovingROI listener (pos provided) and from model event
-% listeners (pos omitted read from roi.Position).
+%      obj.updateMeasureText()
+%      obj.updateMeasureText(pos)
+%
+% Called from ``MovingROI`` listener (``pos`` provided) and from model event
+% listeners (``pos`` omitted; position read from ``roi.Position``).
 %
 % If the currently displayed dataset differs from the one the ROI was drawn
-% on (e.g. after a buffer/dataset change), the ROI is deleted silently via
-% clearQuickMeasure instead of updating.
+% on (e.g. after buffer/dataset change), the ROI is deleted silently via
+% ``clearQuickMeasure`` instead of updating.
 %
 % Input Arguments:
-%   - **pos** — (optional) Nx2 position in physical (XData) coordinates.
-%     When [] or omitted, position is read from quickMeasure.roi.Position.
+%   - **pos** *(optional)* — [N×2 numeric] position in physical (XData) coordinates;
+%     when ``[]`` or omitted, position is read from ``quickMeasure.roi.Position``
 %
 % Output Arguments:
-%   none
+%   (none)
 %
 
 if isempty(obj.quickMeasure); return; end

@@ -2,7 +2,9 @@ function balanceClasses(obj)
 % BALANCECLASSES - balance classes before training.
 %
 % Syntax:
-%   function balanceClasses(obj)
+%   .. code-block:: matlab
+%
+%       obj.balanceClasses()
 %
 % see example from here:
 % https://se.mathworks.com/help/vision/ref/balancepixellabels.html

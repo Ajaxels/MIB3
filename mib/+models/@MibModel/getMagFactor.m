@@ -2,7 +2,9 @@ function magFactor = getMagFactor(obj, id)
     % GETMAGFACTOR - Get magnification factor for the currently shown or specified dataset.
     %
     % Syntax:
-    %   function magFactor = getMagFactor(obj, id)
+    %   .. code-block:: matlab
+    %
+    %       magFactor = obj.getMagFactor(id)
     %
     % Input Arguments:
     %   - **id** — *(optional)* ID of the dataset, otherwise uses current dataset (obj.id)

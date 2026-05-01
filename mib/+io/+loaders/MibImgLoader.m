@@ -11,28 +11,32 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             % MIBIMGLOADER - Constructor for MibImgLoader class.
             %
             % Syntax:
-            %   function obj = MibImgLoader(options)
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.MibImgLoader(options)
             %
             % Input Arguments:
-            %   - **options** — [*optional,* struct] options structure
-            %   - .waitbar - [logical] show or not the waitbar
-            %   - .mibPath - [char] path to MIB directory
-            %   - .customSections - [logical] load custom sections only
-            %   - .customSectionsSettings - [struct] custom section parameters
-            %   - .imgStretch - [logical] stretch uint32 images to uint16
-            %   - .silentMode - [logical] do not ask user questions
-            %   - .verbose - [logical] show timing information
-            %   - .Font - [struct] font settings for dialogs
-            %   - .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` — [char] path to MIB directory
+            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` — [struct] custom section parameters
+            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` — [logical] show timing information; default: ``false``
+            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
             %
             % Output Arguments:
             %   - **obj** — instance of the MibImgLoader class
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — create loader with options:
             %
-            %       options.waitbar = true;
-            %       loader = io.loaders.MibImgLoader(options);
+            %   .. code-block:: matlab
+            %
+            %      options.waitbar = true;
+            %      loader = io.loaders.MibImgLoader(options);
             %
 
             obj.Options = struct();
@@ -47,7 +51,9 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             % LOADMETADATA - Load metadata for mibImg files.
             %
             % Syntax:
-            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %   .. code-block:: matlab
+            %
+            %      [imginfo, files] = obj.loadMetadata(filenames, options)
             %
             % This method inspects .mibImg (MAT) files to extract dataset metadata.
             % It reads the 'res' structure to determine dimensions, data type, and
@@ -55,34 +61,39 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             %
             % Input Arguments:
             %   - **filenames** — cell array with filenames of mibImg files
-            %   - **options** — [*struct]* options for metadata loading
-            %   - .waitbar - [logical] show or not the waitbar
-            %   - .customSections - [logical] load part of the dataset
-            %   - .Font - [struct] font settings for dialogs
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
+            %     - ``Font`` — [struct] font settings for dialogs
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata
-            %   - "Height" - image height in pixels
-            %   - "Width" - image width in pixels
-            %   - "Colors" - number of color channels
-            %   - "Depth" - number of z-slices
-            %   - "Time" - number of time points
-            %   - "imgClass" - image class (uint8, uint16, etc.)
-            %   - "ColorType" - 'grayscale', 'truecolor', or 'indexed'
-            %   - "ImageDescription" - description with BoundingBox info
-            %   - "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
-            %   - "Levels" - number of pyramid levels (for BDV only)
-            %   - "ReturnedLevel" - selected pyramid level (for BDV only)
-            %   - "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
-            %   - other format-specific metadata fields
+            %   - **imginfo** — dictionary with image metadata containing fields:
+            %
+            %     - ``Height`` — image height in pixels
+            %     - ``Width`` — image width in pixels
+            %     - ``Colors`` — number of color channels
+            %     - ``Depth`` — number of z-slices
+            %     - ``Time`` — number of time points
+            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` — description with BoundingBox info
+            %     - ``Format`` — HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+            %     - ``Levels`` — number of pyramid levels (for BDV only)
+            %     - ``ReturnedLevel`` — selected pyramid level (for BDV only)
+            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %       ``.units``, ``.tunits``
+            %     - other format-specific metadata fields
+            %
             %   - **files** — structure array with file information
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — load metadata from mibImg file:
             %
-            %       loader = io.loaders.MibImgLoader();
-            %       filenames = {'dataset.mibImg'};
-            %       [imginfo, files] = loader.loadMetadata(filenames, options);
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.MibImgLoader();
+            %      filenames = {'dataset.mibImg'};
+            %      [imginfo, files] = loader.loadMetadata(filenames, options);
             %
 
             % Merge constructor options with runtime options
@@ -234,7 +245,9 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             % LOADIMAGES - Load image data from mibImg files.
             %
             % Syntax:
-            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %   .. code-block:: matlab
+            %
+            %      [img, imginfo] = obj.loadImages(files, imginfo, options)
             %
             % This method loads the 'res' structure and extracts the image data,
             % handling dimension permutation if necessary (to ensure YXCZT order).
@@ -242,11 +255,19 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             % Input Arguments:
             %   - **files** — structure array from loadMetadata
             %   - **imginfo** — dictionary from loadMetadata
-            %   - **options** — [*struct]* options for image loading
+            %   - **options** — *(optional)* struct for image loading
             %
             % Output Arguments:
             %   - **img** — loaded image dataset
             %   - **imginfo** — updated dictionary
+            %
+            % **Example 1** — load images from mibImg file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.MibImgLoader();
+            %      [imginfo, files] = loader.loadMetadata({'dataset.mibImg'}, options);
+            %      [img, imginfo] = loader.loadImages(files, imginfo, options);
             %
 
             % Merge constructor options with runtime options

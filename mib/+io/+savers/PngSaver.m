@@ -79,10 +79,19 @@ classdef PngSaver < io.savers.BaseSaver
     methods
 
         function obj = PngSaver(options)
-            % PNGSAVER - Constructor.
+            % PNGSAVER - Constructor for PngSaver class.
             %
             % Syntax:
-            %   function obj = PngSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.PngSaver(options)
+            %
+            % Input Arguments:
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the PngSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -90,6 +99,19 @@ classdef PngSaver < io.savers.BaseSaver
         end
 
         function formats = getSupportedFormats(~)
+            % GETSUPPORTEDFORMATS - Return format strings handled by PngSaver.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for PNG output
+            %
             formats = { ...
                 'Portable Network Graphics (*.png)'; ...
                 'PNG format (*.png)' };
@@ -99,25 +121,40 @@ classdef PngSaver < io.savers.BaseSaver
             % SAVE - Write a PNG 2-D sequence (one file per Z-slice × time point).
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
+            %
+            % PNG stores one 2-D image per Z-slice and optionally per time point.
+            % The stem of the output filename is used as the base for sequential numbering.
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array
-            %   metadata — struct; used fields:
-            %   .colorType    — 'grayscale'|'multichannel'|'indexed'
-            %   .lutColors    — (optional) colormap for indexed images
-            %   .sliceName    — (optional) per-slice source filenames
-            %   .imageDescription — (optional) comment string for PNG files
-            %   .xResolution, .yResolution — (optional) pixels/unit
-            %   filename — full path template, e.g. '/out/slice.png'.
-            %   The stem is used as the base for sequential names.
-            %   options  — struct; used fields described in BaseSaver.save()
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` — *(optional)* [N × 3] colormap for indexed images
+            %     - ``colormap`` — *(optional)* [N × 3] colormap (alternative to ``lutColors``)
+            %     - ``sliceName`` — *(optional)* per-slice source filenames (for 'Use original filename' mode)
+            %     - ``imageDescription`` — *(optional)* [char] comment/description string for PNG files
+            %     - ``xResolution`` — *(optional)* [numeric] X resolution in pixels/unit; default: ``72``
+            %     - ``yResolution`` — *(optional)* [numeric] Y resolution in pixels/unit; default: ``72``
+            %
+            %   - **filename** — [char] full path template, e.g. ``'/out/slice.png'``;
+            %     stem is used as base for sequential names
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
             %
             % Output Arguments:
-            %   fnOut — cell of char [{nD*nT} x 1] with all saved paths,
-            %   or a single char when only one slice was saved
+            %   - **fnOut** — cell of char [{nD × nT} × 1] with all saved paths,
+            %     or single char when only one slice was saved
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];

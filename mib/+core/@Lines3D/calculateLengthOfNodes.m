@@ -1,17 +1,24 @@
 function Graph = calculateLengthOfNodes(obj, Graph, options)
-% CALCULATELENGTHOFNODES - calculate length of nodes.
+% CALCULATELENGTHOFNODES - Calculate edge lengths from coordinate endpoints.
 %
 % Syntax:
-%   function Graph = calculateLengthOfNodes(obj, Graph, options)
+%   .. code-block:: matlab
+%
+%       Graph = obj.calculateLengthOfNodes(Graph, options)
+%
+% Computes the Euclidean distance for edges in the graph, updating or populating
+% the ``.Length`` field based on node coordinates and optional filters.
 %
 % Input Arguments:
-%   - **Graph** — a graph object
-%   - **options** — *(optional)* - an optional structure with
-%     additional parameters
-%     .nodeId - ids of nodes that include edges that should be recalculated
+%   - **Graph** — [graph] a MATLAB graph object with node and edge information
+%   - **options** — *(optional)* [struct] specifies which edges to recalculate:
+%
+%     - ``.nodeId`` — [numeric vector] node IDs; edges incident to these nodes are recalculated
+%     - ``.edgeId`` — [numeric vector] edge IDs to recalculate (alternative to nodeId)
+%     - If neither option is provided, all edges are recalculated
 %
 % Output Arguments:
-%   - **Graph** — the graph object with added/modified Length field
+%   - **Graph** — [graph] the input graph with ``.Length`` field populated or updated
 %
 
 if obj.noTrees == 0; return; end

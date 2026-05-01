@@ -13,30 +13,34 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             % VIDEOREADERLOADER - Constructor for VideoReaderLoader class.
             %
             % Syntax:
-            %   function obj = VideoReaderLoader(options)
+            %   .. code-block:: matlab
             %
-
-            % Parameters:
-            %   options: [@em optional, struct] options structure
-            %     @li .waitbar - [logical] show or not the waitbar
-            %     @li .mibPath - [char] path to MIB directory
-            %     @li .customSections - [logical] load custom sections only
-            %     @li .customSectionsSettings - [struct] custom section parameters
-            %     @li .imgStretch - [logical] stretch uint32 images to uint16
-            %     @li .silentMode - [logical] do not ask user questions
-            %     @li .verbose - [logical] show timing information
-            %     @li .Font - [struct] font settings for dialogs
-            %     @li .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
-
-            % Return values:
-            %   obj: instance of the VideoReaderLoader class
-
-            % Example:
-            %   @code
-            %   options.waitbar = true;
-            %   options.mibPath = 'c:\\mib';
-            %   loader = io.loaders.VideoReaderLoader(options);
-            %   @endcode
+            %      loader = io.loaders.VideoReaderLoader(options)
+            %
+            % Input Arguments:
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` — [char] path to MIB directory
+            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` — [struct] custom section parameters
+            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` — [logical] show timing information; default: ``false``
+            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the VideoReaderLoader class
+            %
+            % **Example 1** — create loader with options:
+            %
+            %   .. code-block:: matlab
+            %
+            %      options.waitbar = true;
+            %      options.mibPath = 'c:\\mib';
+            %      loader = io.loaders.VideoReaderLoader(options);
+            %
 
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -47,65 +51,73 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             % LOADMETADATA - Load metadata for video files.
             %
             % Syntax:
-            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %   .. code-block:: matlab
             %
-
+            %      [imginfo, files] = obj.loadMetadata(filenames, options)
+            %
             % This method extracts video metadata using VideoReader for
             % standard video formats. It handles frame count detection,
             % frame dimensions, and frame rate extraction.
-
-            % Parameters:
-            %   filenames: cell array with filenames of video files
-            %   options: [@em struct] options for metadata loading
-            %     @li .waitbar - [logical] show or not the waitbar, [@b default] = @em false
-            %     @li .customSections - [logical] load part of the dataset, [@b default] = @em false
-            %     @li .customSectionsSettings - [struct] custom section settings
-            %     @li .xMin - [numeric] min X coordinate
-            %     @li .xMax - [numeric] max X coordinate
-            %     @li .yMin - [numeric] min Y coordinate
-            %     @li .yMax - [numeric] max Y coordinate
-            %     @li .zMin - [numeric] min Z coordinate (frame)
-            %     @li .zMax - [numeric] max Z coordinate (frame)
-            %     @li .xyStep - [numeric] XY binning step
-            %     @li .mibPath - [char] path to MIB directory
-            %     @li .ParentFigure - handle to the parent window to show progress dialog
-            %     @li .Font - [struct] font settings for dialogs
-
-            % Return values:
-            %   imginfo: dictionary with image metadata
-            %     @li "Height" - image height in pixels
-            %     @li "Width" - image width in pixels
-            %     @li "Colors" - number of color channels
-            %     @li "Depth" - number of frames
-            %     @li "Time" - number of time points
-            %     @li "imgClass" - image class (uint8, uint16, etc.)
-            %     @li "ColorType" - 'grayscale', 'truecolor', or 'indexed'
-            %     @li "ImageDescription" - description with BoundingBox info
-            %     @li "FrameRate" - frames per second
-            %     @li "Duration" - video duration in seconds
-            %     @li "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
-            %     @li other format-specific metadata fields
-            %   files: structure array with file information for each file
-            %     @li .filename - [char] full filename
-            %     @li .objecttype - [char] type of the image loader 'movie'
-            %     @li .extension - [char] file extension, including the leading dot
-            %     @li .height - [numeric] image height
-            %     @li .width - [numeric] image width
-            %     @li .color - [numeric] number of color channels
-            %     @li .noLayers - [numeric] number of video frames
-            %     @li .time - [numeric] number of time points
-            %     @li .imgClass - [char] image class, 'uint8', 'uint16', 'uint32'
-            %     @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates
-            %     @li .xyStep - [numeric] XY step for binning
-            
-            % Example:
-            %   @code
-            %   loader = io.loaders.VideoReaderLoader();
-            %   options.waitbar = true;
-            %   filenames = {'video1.avi', 'video2.mp4'};
-            %   [imginfo, files] = loader.loadMetadata(filenames, options);
-            %   fprintf('Video size: %d x %d x %d frames\n', imginfo{"Width"}, imginfo{"Height"}, imginfo{"Depth"});
-            %   @endcode
+            %
+            % Input Arguments:
+            %   - **filenames** — cell array with filenames of video files
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
+            %     - ``customSectionsSettings`` — [struct] custom section settings
+            %       - ``xMin`` — [numeric] min X coordinate
+            %       - ``xMax`` — [numeric] max X coordinate
+            %       - ``yMin`` — [numeric] min Y coordinate
+            %       - ``yMax`` — [numeric] max Y coordinate
+            %       - ``zMin`` — [numeric] min Z coordinate (frame)
+            %       - ``zMax`` — [numeric] max Z coordinate (frame)
+            %       - ``xyStep`` — [numeric] XY binning step
+            %     - ``mibPath`` — [char] path to MIB directory
+            %     - ``ParentFigure`` — handle to the parent window to show progress dialog
+            %     - ``Font`` — [struct] font settings for dialogs
+            %
+            % Output Arguments:
+            %   - **imginfo** — dictionary with image metadata containing fields:
+            %
+            %     - ``Height`` — image height in pixels
+            %     - ``Width`` — image width in pixels
+            %     - ``Colors`` — number of color channels
+            %     - ``Depth`` — number of frames
+            %     - ``Time`` — number of time points
+            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` — description with BoundingBox info
+            %     - ``FrameRate`` — frames per second
+            %     - ``Duration`` — video duration in seconds
+            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %       ``.units``, ``.tunits``
+            %     - other format-specific metadata fields
+            %
+            %   - **files** — structure array with file information for each file
+            %
+            %     - ``filename`` — [char] full filename
+            %     - ``objecttype`` — [char] type of the image loader ``'movie'``
+            %     - ``extension`` — [char] file extension, including the leading dot
+            %     - ``height`` — [numeric] image height
+            %     - ``width`` — [numeric] image width
+            %     - ``color`` — [numeric] number of color channels
+            %     - ``noLayers`` — [numeric] number of video frames
+            %     - ``time`` — [numeric] number of time points
+            %     - ``imgClass`` — [char] image class, ``'uint8'``, ``'uint16'``, ``'uint32'``
+            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` — [numeric] region coordinates
+            %     - ``xyStep`` — [numeric] XY step for binning
+            %
+            % **Example 1** — load metadata from video files:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.VideoReaderLoader();
+            %      options.waitbar = true;
+            %      filenames = {'video1.avi', 'video2.mp4'};
+            %      [imginfo, files] = loader.loadMetadata(filenames, options);
+            %      fprintf('Video size: %d x %d x %d frames\n', imginfo{"Width"}, imginfo{"Height"}, imginfo{"Depth"});
+            %
 
             % Merge constructor options with runtime options
             if nargin < 3; options = obj.Options; end
@@ -260,51 +272,58 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             % LOADIMAGES - Load image data for video files.
             %
             % Syntax:
-            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %   .. code-block:: matlab
             %
-
+            %      [img, imginfo] = obj.loadImages(files, imginfo, options)
+            %
             % This method loads actual video frames using VideoReader.
             % It supports frame range selection, custom region loading,
             % and dimension mismatch handling with background filling.
-
-            % Parameters:
-            %   files: structure array from loadMetadata with file information
-            %     @li .filename - [char] full filename
-            %     @li .objecttype - [char] type of the image loader 'movie'
-            %     @li .extension - [char] file extension with dot - '.avi'
-            %     @li .height - [numeric] image height
-            %     @li .width - [numeric] image width
-            %     @li .color - [numeric] number of color channels
-            %     @li .noLayers - [numeric] number of video frames
-            %     @li .time - [numeric] number of time frames
-            %     @li .imgClass - [char] image class, 'uint8', 'uint16', 'uint32'
-            %     @li .xMin, .xMax, .yMin, .yMax - [numeric] region coordinates (optional)
-            %     @li .zMin, .zMax - [numeric] frame range (optional)
-            %     @li .xyStep - [numeric] XY step for binning (optional)
-            %     @li .backgroundColor - [numeric] background color value (optional)
-            %   imginfo: dictionary from loadMetadata with image metadata
-            %   options: [@em struct] options for image loading
-            %     @li .waitbar - [logical] show or not the waitbar, [@b default] = @em true
-            %     @li .imgStretch - [logical] stretch uint32 to uint16, [@b default] = @em true
-            %     @li .silentMode - [logical] do not ask user questions, [@b default] = @em false
-
-            % Return values:
-            %   img: loaded image dataset [1:height, 1:width, 1:depth, 1:color, 1:time]
-            %   imginfo: updated dictionary with final metadata
-            %     @li "Height" - final image height
-            %     @li "Width" - final image width
-            %     @li "Depth" - final number of frames
-            %     @li "Time" - number of time points
-            %     @li "ColorType" - color type
-
-            % Example:
-            %   @code
-            %   loader = io.loaders.VideoReaderLoader();
-            %   options.waitbar = true;
-            %   [imginfo, files, pixSize] = loader.loadMetadata({'video.avi'}, options);
-            %   [img, imginfo] = loader.loadImages(files, imginfo, options);
-            %   fprintf('Loaded video size: %s\n', mat2str(size(img)));
-            %   @endcode
+            %
+            % Input Arguments:
+            %   - **files** — structure array from loadMetadata with file information:
+            %
+            %     - ``filename`` — [char] full filename
+            %     - ``objecttype`` — [char] type of the image loader ``'movie'``
+            %     - ``extension`` — [char] file extension with dot - ``'.avi'``
+            %     - ``height`` — [numeric] image height
+            %     - ``width`` — [numeric] image width
+            %     - ``color`` — [numeric] number of color channels
+            %     - ``noLayers`` — [numeric] number of video frames
+            %     - ``time`` — [numeric] number of time frames
+            %     - ``imgClass`` — [char] image class, ``'uint8'``, ``'uint16'``, ``'uint32'``
+            %     - ``xMin``, ``xMax``, ``yMin``, ``yMax`` — [numeric] region coordinates (optional)
+            %     - ``zMin``, ``zMax`` — [numeric] frame range (optional)
+            %     - ``xyStep`` — [numeric] XY step for binning (optional)
+            %     - ``backgroundColor`` — [numeric] background color value (optional)
+            %
+            %   - **imginfo** — dictionary from loadMetadata with image metadata
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``true``
+            %     - ``imgStretch`` — [logical] stretch uint32 to uint16; default: ``true``
+            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %
+            % Output Arguments:
+            %   - **img** — loaded image dataset [1:height, 1:width, 1:depth, 1:color, 1:time]
+            %   - **imginfo** — updated dictionary with final metadata containing fields:
+            %
+            %     - ``Height`` — final image height
+            %     - ``Width`` — final image width
+            %     - ``Depth`` — final number of frames
+            %     - ``Time`` — number of time points
+            %     - ``ColorType`` — color type
+            %
+            % **Example 1** — load images from video file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.VideoReaderLoader();
+            %      options.waitbar = true;
+            %      [imginfo, files] = loader.loadMetadata({'video.avi'}, options);
+            %      [img, imginfo] = loader.loadImages(files, imginfo, options);
+            %      fprintf('Loaded video size: %s\n', mat2str(size(img)));
+            %
 
             % Merge constructor options with runtime options
             if nargin < 4; options = obj.Options; end

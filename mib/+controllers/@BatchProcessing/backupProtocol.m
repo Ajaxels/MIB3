@@ -2,7 +2,9 @@ function backupProtocol(obj)
 % BACKUPPROTOCOL - save a snapshot of the current protocol into the undo history.
 %
 % Syntax:
-%   function backupProtocol(obj)
+%   .. code-block:: matlab
+%
+%       obj.backupProtocol()
 %
 % The history depth is limited to obj.protocolBackupsMaxNumber entries.
 % Any redo snapshots ahead of the current position are discarded.

@@ -2,7 +2,9 @@ function updateNodeStrel(obj, nodeStrelSize)
 % UPDATENODESTREL - update strel element for showing nodes as circles.
 %
 % Syntax:
-%   function updateNodeStrel(obj, nodeStrelSize)
+%   .. code-block:: matlab
+%
+%       obj.updateNodeStrel(nodeStrelSize)
 %
 % Input Arguments:
 %   - **nodeStrelSize** — radius of the strel element

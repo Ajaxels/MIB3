@@ -2,7 +2,9 @@ function addGuiControllers(obj)
 % ADDGUICONTROLLERS - add GUI components (panels, ribbons) to the main view obj.view.
 %
 % Syntax:
-%   function addGuiControllers(obj)
+%   .. code-block:: matlab
+%
+%      obj.addGuiControllers()
 %
 
 arguments (Input)

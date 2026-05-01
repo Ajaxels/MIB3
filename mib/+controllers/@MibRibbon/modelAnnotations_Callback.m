@@ -2,7 +2,9 @@ function modelAnnotations_Callback(obj, hWidget, hData)
 % MODELANNOTATIONS_CALLBACK - callback on press of buttons in the List of annotations button of the Model ribbon.
 %
 % Syntax:
-%   function modelAnnotations_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelAnnotations_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

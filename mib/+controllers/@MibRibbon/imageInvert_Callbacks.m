@@ -2,7 +2,9 @@ function imageInvert_Callbacks(obj, hWidget, hData)
 % IMAGEINVERT_CALLBACKS - callback on press of the Invert buttons in the Image ribbon.
 %
 % Syntax:
-%   function imageInvert_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageInvert_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

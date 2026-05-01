@@ -1,36 +1,40 @@
 function segmentationLines3D(obj, y, x, z, modifier)
-% SEGMENTATIONLINES3D - segmentationLines3D(obj, y, x, z, modifier).
+% SEGMENTATIONLINES3D - Handle mouse clicks for 3D line skeleton annotation.
 %
 % Syntax:
-%   function segmentationLines3D(obj, y, x, z, modifier)
+%   .. code-block:: matlab
 %
-% Handle mouse clicks for 3D line skeleton annotation.
+%      obj.segmentationLines3D(y, x, z, modifier)
 %
 % Reads the action from the Lines3D segmentation-panel dropdowns
 % (click / shift-click / ctrl-click / alt-click) and delegates to the
-% corresponding method of *core.Lines3D.*
+% corresponding method of ``core.Lines3D``.
 %
 % Input Arguments:
-%   - **y** — double, y-coordinate of the clicked point in full-dataset pixels
-%   - **x** — double, x-coordinate of the clicked point in full-dataset pixels
-%   - **z** — double, z-coordinate (slice index) of the clicked point
-%   - **modifier** — cell array of chars or char, modifier key held during click
-%     - empty '' or {} - use the default click action
-%     - 'shift'   - use the shift-click action
-%     - 'control' - use the ctrl-click action
-%     - 'alt'     - use the alt-click action
+%   - **y** — [double] y-coordinate of clicked point in full-dataset pixels
+%   - **x** — [double] x-coordinate of clicked point in full-dataset pixels
+%   - **z** — [double] z-coordinate (slice index) of clicked point
+%   - **modifier** — [char|cell] modifier key held during click:
+%
+%     - ``''`` or ``{}`` — use default click action
+%     - ``'shift'`` — use shift-click action
+%     - ``'control'`` — use ctrl-click action
+%     - ``'alt'`` — use alt-click action
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — default click action:
 %
-%     obj.segmentationLines3D(50, 75, 10, {});
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationLines3D(50, 75, 10, {});
 %
-%     obj.segmentationLines3D(50, 75, 10, {'shift'});
+% **Example 2** — shift-click action:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationLines3D(50, 75, 10, {'shift'});
 %
 
 % check for switch that disables segmentation tools

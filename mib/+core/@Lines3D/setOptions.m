@@ -2,7 +2,9 @@ function setOptions(obj, options)
 % SETOPTIONS - update options of the class.
 %
 % Syntax:
-%   function setOptions(obj, options)
+%   .. code-block:: matlab
+%
+%       obj.setOptions(options)
 %
 % Input Arguments:
 %   - **options** — a structure with options to set

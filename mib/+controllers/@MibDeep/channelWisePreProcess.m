@@ -2,7 +2,9 @@ function imgOut = channelWisePreProcess(obj, imgIn)
 % CHANNELWISEPREPROCESS - function imgOut = channelWisePreProcess(obj, imgIn).
 %
 % Syntax:
-%   function imgOut = channelWisePreProcess(obj, imgIn)
+%   .. code-block:: matlab
+%
+%       imgOut = obj.channelWisePreProcess(imgIn)
 %
 % Normalize images
 % As input has 4 channels (modalities), remove the mean and divide by the

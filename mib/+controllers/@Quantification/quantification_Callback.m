@@ -2,7 +2,10 @@ function quantification_Callback(obj, batchModeSwitch)
 % QUANTIFICATION_CALLBACK - Run the shape/intensity quantification analysis and populate statTable.
 %
 % Syntax:
-%   function quantification_Callback(obj, batchModeSwitch)
+%   .. code-block:: matlab
+%
+%       obj.quantification_Callback()
+%       obj.quantification_Callback(batchModeSwitch)
 %
 % The main computation engine of the Quantification controller.  Dispatches
 % to 3D or 2D code paths depending on BatchOpt.ObjectShape, then iterates over

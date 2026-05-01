@@ -2,7 +2,9 @@ function result = setData4D(obj, dataset, type, orient, col_channel, options)
 % SETDATA4D - Set the complete 4D dataset in the current (or specified) dataset; wrapper around core.MibDataset.setData4D.
 %
 % Syntax:
-%   function result = setData4D(obj, dataset, type, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       result = obj.setData4D(dataset, type, orient, col_channel, options)
 %
 % This is a thin convenience wrapper so controllers can call
 % obj.mibModel.setData4D(...) instead of

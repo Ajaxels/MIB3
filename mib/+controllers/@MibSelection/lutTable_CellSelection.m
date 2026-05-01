@@ -2,15 +2,18 @@ function lutTable_CellSelection(obj, hWidget, hData)
 % LUTTABLE_CELLSELECTION - callbacks for cell selection in the LUT table (obj.handles.lutTable) of the Selection and Image View panel.
 %
 % Syntax:
-%   function lutTable_CellSelection(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%      obj.lutTable_CellSelection(hWidget, hData)
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget (lutTable)
-%   - **hData** — handle to supporting data class (CellSelectionChangeData)
-%     .Indices: [2 1] selected indices
-%     .DisplayIndices: [2 1] selected indices
-%     .Source handle to the table (lutTable)
-%     .EventName ->'CellSelection'
+%   - **hWidget** — [uitable] handle to the LUT table widget
+%   - **hData** — [CellSelectionChangeData] cell selection event data with properties:
+%
+%     - ``.Indices`` — [M×2 numeric] indices of selected cells ``[row, col]``
+%     - ``.DisplayIndices`` — [M×2 numeric] display indices of selected cells
+%     - ``.Source`` — [uitable] handle to the table (lutTable)
+%     - ``.EventName`` — ``'CellSelection'`` event name
 %
 
 if isempty(hData.Indices); return; end

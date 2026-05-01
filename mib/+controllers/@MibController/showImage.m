@@ -2,44 +2,48 @@ function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
 % SHOWIMAGE - Display image in the main image axes.
 %
 % Syntax:
-%   function showImage(obj, resizeToMagnification, setOfDatasetsIndex, sImgIn)
+%   .. code-block:: matlab
+%
+%      obj.showImage()
+%      obj.showImage(resizeToMagnification)
+%      obj.showImage(resizeToMagnification, setOfDatasetsIndex)
+%      obj.showImage(resizeToMagnification, setOfDatasetsIndex, sImgIn)
 %
 % Main visualization function that renders the RGB image with all layers
-% (image, model, mask, selection, annotations) to the image axes panel
-%
-% Syntax:
-% obj.showImage()
-% obj.showImage(resizeToMagnification)
-% obj.showImage(resizeToMagnification, sImgIn)
+% (image, model, mask, selection, annotations) to the image axes panel.
 %
 % Input Arguments:
-%   - **resizeToMagnification** — [*optional,* logical] display mode:
-%     true - resize to current magnification [**default]**
-%     false - return in original 100% resolution
-%   - **setOfDatasetsIndex** — [*optional,* numerical] id of the set use for show image, when empty use the current one
-%   - **sImgIn** — *(optional)* custom 2D RGB image to display (height, width, colors)
-%     When provided with resizeToMagnification=0, shows in same scale/position as current dataset
-%     When provided with resizeToMagnification=1, shows in full resolution
+%   - **resizeToMagnification** — *(optional)* logical, default: ``true``
 %
-% Usage:
-%   Example 1::
+%     - ``true`` — resize image to current magnification
+%     - ``false`` — display in original 100% resolution
+%   - **setOfDatasetsIndex** — *(optional)* double, id of the dataset set to display;
+%     when empty, uses the currently selected set
+%   - **sImgIn** — *(optional)* custom 2D RGB image array ``[height, width, colors]`` to display
+%     instead of the dataset image
 %
-%     // standard call to redraw image in the image view panel
-%     notify(obj.mibModel, 'ShowImage');
+% Output Arguments:
+%   (none)
 %
+% **Example 1** — standard call to redraw the image via event:
 %
-%   Example 2::
+%   .. code-block:: matlab
 %
-%     // custom call to resizeToMagnification and redraw image in the image view panel
-%     Options.resizeToMagnification = true;
-%     eventdata = core.ToggleEventData(Options);
-%     notify(obj, 'ShowImage', eventdata);
+%      notify(obj.mibModel, 'ShowImage');
 %
+% **Example 2** — request resize-to-magnification via event:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     // direct call from controllers.MibController class
-%     obj.showImage();
+%      Options.resizeToMagnification = true;
+%      eventdata = core.ToggleEventData(Options);
+%      notify(obj, 'ShowImage', eventdata);
+%
+% **Example 3** — direct call from MibController:
+%
+%   .. code-block:: matlab
+%
+%      obj.showImage();
 %
 
 %% Parse input parameters

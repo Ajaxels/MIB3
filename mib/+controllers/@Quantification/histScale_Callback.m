@@ -2,7 +2,9 @@ function histScale_Callback(obj)
 % HISTSCALE_CALLBACK - Toggle the histogram Y axis between logarithmic and linear scale.
 %
 % Syntax:
-%   function histScale_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.histScale_Callback()
 %
 % Reads obj.view.handles.logScale checkbox value: true = log, false = linear.
 % Called on checkbox change and after every histogram redraw.

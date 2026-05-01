@@ -2,7 +2,9 @@ function selectArchitecture(obj, event)
 % SELECTARCHITECTURE - select the target architecture.
 %
 % Syntax:
-%   function selectArchitecture(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.selectArchitecture(event)
 %
 
 if nargin < 2; event.Source = obj.view.handles.Architecture; end

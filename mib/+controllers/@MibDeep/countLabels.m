@@ -2,7 +2,9 @@ function countLabels(obj)
 % COUNTLABELS - count occurrences of labels in model files.
 %
 % Syntax:
-%   function countLabels(obj)
+%   .. code-block:: matlab
+%
+%       obj.countLabels()
 %
 % callback for press of the "Count labels" in the Options panel
 % define directory with label files
@@ -60,13 +62,13 @@ try
     switch labelExtension
         case 'model'
             dsLabels = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-                'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
         case 'mibCat'
             %dsLabels = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-            %    'FileExtensions', '.mibCat', 'ReadFcn', @utils.deepmib.storeLoadImages);
+            %    'FileExtensions', '.mibCat', 'ReadFcn', @deepmib.storeLoadImages);
             dsLabels = imageDatastore(fullPathFilenames, ...
                 'FileExtensions', '.mibCat', 'IncludeSubfolders', false, ...
-                'ReadFcn', @utils.deepmib.storeLoadCategorical);
+                'ReadFcn', @deepmib.storeLoadCategorical);
         otherwise
             dsLabels = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
                 'FileExtensions', lower(['.' labelExtension]));

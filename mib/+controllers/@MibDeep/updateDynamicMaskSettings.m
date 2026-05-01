@@ -2,7 +2,9 @@ function updateDynamicMaskSettings(obj)
 % UPDATEDYNAMICMASKSETTINGS - update settings for calculation of dynamic masks during.
 %
 % Syntax:
-%   function updateDynamicMaskSettings(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateDynamicMaskSettings()
 %
 % prediction using blockedimage mode
 % the settings are stored in obj.DynamicMaskOpt

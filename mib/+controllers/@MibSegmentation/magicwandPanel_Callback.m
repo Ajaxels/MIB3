@@ -1,21 +1,27 @@
 function magicwandPanel_Callback(obj, hWidget, hData)
-% MAGICWANDPANEL_CALLBACK - magicwandPanel_Callback(obj, hWidget, hData).
+% MAGICWANDPANEL_CALLBACK - Callback for magic wand segmentation tool widgets.
 %
 % Syntax:
-%   function magicwandPanel_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->Magicwand tool
+%      obj.magicwandPanel_Callback(hWidget, hData)
+%
+% Handles callbacks for magic wand and region growing tool widgets in the Segmentation panel.
+% Supports method selection, range/radius configuration, and connectivity control.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
-%     'magicMethod' select the MagicWand or RegionGrowing mode
-%     'magicRange1' define the range 1 parameter
-%     'magicRange2' define the range 2 parameter
-%     'magicRadius' define effective radius for the MagicWand tool
-%     'magicConnect' object connections for making magic wand mask
+%   - **hWidget** — [matlab.ui.control.Spinner | matlab.ui.container.ButtonGroup | matlab.ui.control.NumericEditField | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'magicMethod'`` — select Magic Wand or Region Growing segmentation method
+%     - ``'magicRange1'`` — set first intensity range parameter
+%     - ``'magicRange2'`` — set second intensity range parameter
+%     - ``'magicRadius'`` — set effective radius for magic wand detection
+%     - ``'magicConnect'`` — select object connectivity (4-connected or 8-connected)
+%
+%   - **hData** — [matlab.ui.eventdata.ValueChangedData | matlab.ui.eventdata.SelectionChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 %
 
 arguments (Input)

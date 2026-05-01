@@ -2,25 +2,25 @@ function lutTable_ContextMenu(obj, menuEntry, selectedData)
 % LUTTABLE_CONTEXTMENU - callbacks for the context menu of the LUT table widget.
 %
 % Syntax:
-%   function lutTable_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
 %
-% (obj.view.handles.panels.selection.handles.lutTable)
+%      obj.lutTable_ContextMenu(menuEntry, selectedData)
+%
 %
 % Input Arguments:
-%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-%   - **selectedData** — handle to the pressed
-%     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-%     button that has the context menu (selectedData.ContextObject)
+%   - **menuEntry** — [matlab.ui.container.Menu] pressed context menu entry
+%   - **selectedData** — [MenuSelectedData] menu event data; use ``.ContextObject`` to find source widget
 %
-%   Available menu options available from 'menuEntry.Tag':
-%   lutTableContextInsert insert an empty color channel
-%   lutTableContextCopy copy the selected color channel to a new one
-%   lutTableContextInvert invert the selected color channel
-%   lutTableContextRotate rotate the selected color channel
-%   lutTableContextShift shift the selected color channel
-%   lutTableContextSwap swap two color channels
-%   lutTableContextDelete delete the selected color channel
-%   lutTableContextSetLUT select new color for the selected color channel to show the the LUT mode
+% Available menu options (from `menuEntry.Tag`):
+%
+%   - ``'lutTableContextInsert'`` — insert an empty color channel
+%   - ``'lutTableContextCopy'`` — copy selected color channel to a new one
+%   - ``'lutTableContextInvert'`` — invert selected color channel
+%   - ``'lutTableContextRotate'`` — rotate selected color channel
+%   - ``'lutTableContextShift'`` — shift selected color channel
+%   - ``'lutTableContextSwap'`` — swap two color channels
+%   - ``'lutTableContextDelete'`` — delete selected color channel
+%   - ``'lutTableContextSetLUT'`` — select new color for selected color channel (LUT mode)
 %
 
 arguments (Input)

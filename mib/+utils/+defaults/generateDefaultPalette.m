@@ -2,7 +2,6 @@ function palette = generateDefaultPalette(paletteName, colorsNo)
 % GENERATEDEFAULTPALETTE - Generate a colour palette by name and number of colours.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      palette = generateDefaultPalette(paletteName, colorsNo)

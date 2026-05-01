@@ -2,14 +2,19 @@ function gui_WindowKeyPressFcn(obj, hWidget, hData)
 % GUI_WINDOWKEYPRESSFCN - Callback for a key press in MIB.
 %
 % Syntax:
-%   function gui_WindowKeyPressFcn(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%      obj.gui_WindowKeyPressFcn(hWidget, hData)
 %
 % Linked via: obj.UIFigure.WindowKeyPressFcn = @(~, ~)obj.gui_WindowKeyPressFcn();
 %
 % Input Arguments:
-%   - **obj** — handle to MibImageDocument instance
+%   - **hWidget** — handle to the UIFigure that received the key event
+%   - **hData** — ``matlab.ui.eventdata.KeyData`` event data; use ``hData.Key``
+%     and ``hData.Modifier`` to identify the pressed key and modifier state
 %
 % Output Arguments:
+%   (none)
 %
 
 % Read key data from the event object (hData), NOT from hFigure.CurrentKey.

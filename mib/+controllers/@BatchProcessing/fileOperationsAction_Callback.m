@@ -2,7 +2,9 @@ function fileOperationsAction_Callback(obj, BatchOptInput)
 % FILEOPERATIONSACTION_CALLBACK - build or apply the BatchOpt structure for a File Operations protocol step.
 %
 % Syntax:
-%   function fileOperationsAction_Callback(obj, BatchOptInput)
+%   .. code-block:: matlab
+%
+%       obj.fileOperationsAction_Callback(BatchOptInput)
 %
 % When called with no second argument (interactive mode) the function
 % constructs a default BatchOpt and returns.  When called with

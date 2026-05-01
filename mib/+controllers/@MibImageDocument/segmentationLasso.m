@@ -2,29 +2,36 @@ function segmentationLasso(obj, modifier)
 % SEGMENTATIONLASSO - Do segmentation using the lasso tool.
 %
 % Syntax:
-%   function segmentationLasso(obj, modifier)
+%   .. code-block:: matlab
+%
+%      obj.segmentationLasso()
+%      obj.segmentationLasso(modifier)
 %
 % Draws an interactive shape (Lasso, Rectangle, Ellipse, or Polyline) on
 % the image axes and converts the enclosed area into a selection mask.
-% Uses modern MATLAB ROI drawing functions (drawfreehand, drawrectangle,
-% drawellipse, drawpolygon).
+% Uses modern MATLAB ROI drawing functions (``drawfreehand``, ``drawrectangle``,
+% ``drawellipse``, ``drawpolygon``).
 %
 % Input Arguments:
-%   - **modifier** — *(optional)* char, to specify what to do with the generated selection
-%     - *empty* - makes new selection (adds to existing)
-%     - *'control'* - removes selection from the existing one
+%   - **modifier** *(optional)* — [char] specify action on generated selection:
+%
+%     - ``''`` — make new selection (add to existing)
+%     - ``'control'`` — remove selection from existing
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — draw lasso and add to selection:
 %
-%     obj.segmentationLasso();             // draw lasso and add to selection
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationLasso();
 %
-%     obj.segmentationLasso('control');    // draw lasso and subtract from selection
+% **Example 2** — draw lasso and subtract from selection:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationLasso('control');
 %
 
 % Updates

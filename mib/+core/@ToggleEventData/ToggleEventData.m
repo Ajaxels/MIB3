@@ -15,8 +15,11 @@
 % Date: 25.04.2023
 
 classdef (ConstructOnLoad) ToggleEventData < event.EventData
-    % UNKNOWN - a class to pass data together with a notification event.
+    % TOGGLEEVENTDATA - Event data container for passing parameters with notifications.
     %
+    % Wraps arbitrary parameters into event data for propagation through the event
+    % notification system. Inherits from ``event.EventData`` for compatibility with
+    % MATLAB's event framework.
     
     properties
         Parameters
@@ -24,16 +27,18 @@ classdef (ConstructOnLoad) ToggleEventData < event.EventData
     
     methods
         function data = ToggleEventData(newParameter)
-            % TOGGLEEVENTDATA - Parameters:.
+            % TOGGLEEVENTDATA - Constructor for event data wrapper.
             %
             % Syntax:
-            %   function data = ToggleEventData(newParameter)
+            %   .. code-block:: matlab
             %
-            % newParameter: a data that has to be passed to the destination
-            % function with the event
+            %       data = ToggleEventData(newParameter)
+            %
+            % Input Arguments:
+            %   - **newParameter** — [any type] data to be passed to event listeners
             %
             % Output Arguments:
-            %   - **data** — a structure with the provided parameter
+            %   - **data** — [ToggleEventData] event data object with wrapped parameter
             %
             
             data.Parameters = newParameter;

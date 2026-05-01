@@ -1,21 +1,27 @@
 function membranePanel_Callback(obj, hWidget, hData)
-% MEMBRANEPANEL_CALLBACK - membranePanel_Callback(obj, hWidget, hData).
+% MEMBRANEPANEL_CALLBACK - Callback for membrane click tracker tool widgets.
 %
 % Syntax:
-%   function membranePanel_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
 %
-% Callbacks for widgets in the Segmentation panel->Membrane click tracker tool
+%      obj.membranePanel_Callback(hWidget, hData)
+%
+% Handles callbacks for membrane click tracker segmentation tool widgets in the Segmentation panel.
+% Supports tracking parameter configuration, signal type selection, and visualization control.
 %
 % Input Arguments:
-%   - **hWidget** — handle to the pressed widget
-%     hWidget.Tag - identifier the widget, used when the same operation is called from menu
-%     'membraneScale' scale parameter for membrane tracking
-%     'membraneWidth' width of the membrane
-%     'membraneStraightLine' generate straight line instead of tracking
-%     'membraneBlackSignal' signal type: black-on-white / white-on-black signal
-%     'membraneRecenterView' recenter the view after placing a point
+%   - **hWidget** — [matlab.ui.control.CheckBox | matlab.ui.control.Spinner] pressed widget; operation identified via ``hWidget.Tag``:
 %
-%   - **hData** — handle to supporting data class
+%     - ``'membraneScale'`` — set scale parameter for membrane tracking sensitivity
+%     - ``'membraneWidth'`` — set detected membrane thickness/width
+%     - ``'membraneStraightLine'`` — enable/disable straight line mode (vs. tracked membrane)
+%     - ``'membraneBlackSignal'`` — select signal type (black-on-white vs. white-on-black)
+%     - ``'membraneRecenterView'`` — enable/disable automatic view recentering after point placement
+%
+%   - **hData** — [matlab.ui.eventdata.ValueChangedData] event data from widget
+%
+% Output Arguments:
+%   None
 %
 
 arguments (Input)

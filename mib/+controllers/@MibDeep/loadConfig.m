@@ -2,7 +2,9 @@ function loadConfig(obj, configName)
 % LOADCONFIG - load config file with Deep MIB settings.
 %
 % Syntax:
-%   function loadConfig(obj, configName)
+%   .. code-block:: matlab
+%
+%       obj.loadConfig(configName)
 %
 % Input Arguments:
 %   - **configName** — full filename for the config file to load
@@ -52,10 +54,10 @@ if isempty(strfind(res.BatchOpt.NetworkFilename, '[RELATIVE]\'))
 else
     % newer version of configs, where the relative path encoded
     % as "[RELATIVE]\subdir", i.e. with slash
-    res.BatchOpt.NetworkFilename = utils.deepmib.convertRelativeToAbsolutePath(res.BatchOpt.NetworkFilename, projectPath, '[RELATIVE]'); %#ok<*PROP>
-    res.BatchOpt.OriginalTrainingImagesDir = utils.deepmib.convertRelativeToAbsolutePath(res.BatchOpt.OriginalTrainingImagesDir, projectPath, '[RELATIVE]');
-    res.BatchOpt.OriginalPredictionImagesDir = utils.deepmib.convertRelativeToAbsolutePath(res.BatchOpt.OriginalPredictionImagesDir, projectPath, '[RELATIVE]');
-    res.BatchOpt.ResultingImagesDir = utils.deepmib.convertRelativeToAbsolutePath(res.BatchOpt.ResultingImagesDir, projectPath, '[RELATIVE]');
+    res.BatchOpt.NetworkFilename = deepmib.convertRelativeToAbsolutePath(res.BatchOpt.NetworkFilename, projectPath, '[RELATIVE]'); %#ok<*PROP>
+    res.BatchOpt.OriginalTrainingImagesDir = deepmib.convertRelativeToAbsolutePath(res.BatchOpt.OriginalTrainingImagesDir, projectPath, '[RELATIVE]');
+    res.BatchOpt.OriginalPredictionImagesDir = deepmib.convertRelativeToAbsolutePath(res.BatchOpt.OriginalPredictionImagesDir, projectPath, '[RELATIVE]');
+    res.BatchOpt.ResultingImagesDir = deepmib.convertRelativeToAbsolutePath(res.BatchOpt.ResultingImagesDir, projectPath, '[RELATIVE]');
 end
 
 if ~isfield(res.BatchOpt, 'T_ActivationLayer')

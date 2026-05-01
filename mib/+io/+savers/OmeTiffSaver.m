@@ -107,14 +107,19 @@ classdef OmeTiffSaver < io.savers.BaseSaver
     methods
 
         function obj = OmeTiffSaver(options)
-            % OMETIFFSAVER - Constructor — accepts an optional options struct.
+            % OMETIFFSAVER - Constructor for OmeTiffSaver class.
             %
             % Syntax:
-            %   function obj = OmeTiffSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.OmeTiffSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the OmeTiffSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -125,7 +130,15 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by OmeTiffSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for OME-TIFF output
             %
             formats = { ...
                 'OME-TIFF 5D (*.ome.tiff)'; ...
@@ -136,31 +149,36 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             % SAVE - Write data as an OME-TIFF file or 2-D OME-TIFF sequence.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array
-            %   metadata — struct; used fields:
-            %   .colorType        — 'grayscale' | 'multichannel' | 'indexed'
-            %   .lutColors        — [C x 3] per-channel LUT colours (0..1)
-            %   .dataClass        — 'uint8' | 'uint16' | ...
-            %   .maxInt           — maximum intensity value
-            %   .pixSize          — struct {.x .y .z .units .t .tunits}
-            %   .imageDescription — (char) dataset description string
-            %   filename — full output path; the extension is normalised to
-            %   '.ome.tiff' regardless of what is provided
-            %   options  — struct; used fields:
-            %   .Format         — format string (selects 5D vs 2D mode)
-            %   .layerType      — 'image' | 'mask' | 'labels'
-            %   (default 'image')
-            %   .showWaitbar    — logical
-            %   .silent         — logical, suppress dialogs
-            %   .overwrite      — logical
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``lutColors`` — [C × 3] per-channel LUT colours (0–1 range)
+            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` — maximum intensity value
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``imageDescription`` — *(optional)* [char] dataset description string
+            %     - ``sliceName`` — *(optional)* per-slice source filenames (used in 2D mode)
+            %
+            %   - **filename** — [char] full output path; extension is always normalized to ``.ome.tiff``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string (``'OME-TIFF 5D (*.ome.tiff)'`` or ``'OME-TIFF 2D sequence (*.ome.tiff)'``)
+            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'`` (2D mode only)
             %
             % Output Arguments:
-            %   fnOut — (char) path of saved .ome.tiff file, [] on failure
+            %   - **fnOut** — [char] path of saved ``.ome.tiff`` file, ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];

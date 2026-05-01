@@ -2,56 +2,59 @@ function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list
 % BITMAP2AMIRALABELS - Convert matrix [1:height, 1:width, 1:no_stacks] to Amira Mesh Labels.
 %
 % Syntax:
-%   function result = bitmap2amiraLabels(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
+%   .. code-block:: matlab
+%
+%      result = io.AmiraMesh.bitmap2amiraLabels(filename, bitmap)
+%      result = io.AmiraMesh.bitmap2amiraLabels(filename, bitmap, format, voxel, color_list, modelMaterialNames, overwrite, showWaitbar, extraOptions)
 %
 % Input Arguments:
 %   - **filename** — filename for Amira Mesh file
-%   - **bitmap** — the dataset, [1:height, 1:width, 1:no_stacks]
-%   - **format** — *(optional)*, saving format: ''binaryRLE'', ''ascii'', ''binary'' (**default)**
-%   - **voxel** — *(optional)*, a structure with voxel size:
-%     - voxel.x - physical width of a voxel
-%     - voxel.y - physical height of a voxel
-%     - voxel.z - physical thickness of a voxel
-%     - voxel.minx - minimal X coordinate of the bounding box
-%     - voxel.miny - minimal Y coordinate of the bounding box
-%     - voxel.minz - minimal Z coordinate of the bounding box
-%   - **color_list** — *(optional)*, a matrix with colors for the materials as
-%     [materialId][Red, Green, Blue] from 0-1; can be empty
-%   - **modelMaterialNames** — *(optional)*, cell array with names of the materials, can be empty
-%   - **overwrite** — *(optional)*, if **1** do not check whether file already exists
-%   - **showWaitbar** — *(optional)*, if **1** - show the wait bar, if **0** - do not show
-%   - **extraOptions** — *(optional)* a structure with additional parameters:
+%   - **bitmap** — the dataset [height, width, depth]
+%   - **format** — *(optional)* saving format: ``'binaryRLE'``, ``'ascii'``, or ``'binary'``
+%     (default: ``'binary'``)
+%   - **voxel** — *(optional)* struct with voxel size:
 %
-%     - ``.TransformationMatrix`` — (char) the transformation matrix string
+%     - ``.x`` — physical width of a voxel
+%     - ``.y`` — physical height of a voxel
+%     - ``.z`` — physical thickness of a voxel
+%     - ``.minx`` — minimal X coordinate of the bounding box
+%     - ``.miny`` — minimal Y coordinate of the bounding box
+%     - ``.minz`` — minimal Z coordinate of the bounding box
+%
+%   - **color_list** — *(optional)* matrix with material colours as
+%     [materialId, Red, Green, Blue] in range 0–1; can be empty
+%   - **modelMaterialNames** — *(optional)* cell array with material name strings; can be empty
+%   - **overwrite** — *(optional)* ``1`` = do not check whether file already exists
+%   - **showWaitbar** — *(optional)* ``1`` = show the wait bar, ``0`` = hide it
+%   - **extraOptions** — *(optional)* struct with fields:
+%
+%     - ``.TransformationMatrix`` — (char) transformation matrix string
 %     - ``.ParentFigure`` — handle to the main MIB UIFigure; when provided, progress bar
 %       is shown as a ``uiprogressdlg`` attached to that window; when absent, legacy ``waitbar`` is used
 %
 % Output Arguments:
-%   - **result** — result of the function run, **1** - success, **0** - fail
+%   - **result** — ``1`` = success, ``0`` = failure
 %
-% Usage:
-%   **Example 1** — Standalone use (no GUI parent)
-%
-%   .. code-block:: matlab
-%
-%
-%     pixStr = dataset.pixSize;
-%     pixStr.minx = boundingBox(1);
-%     pixStr.miny = boundingBox(3);
-%     pixStr.minz = boundingBox(5);
-%     io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, false, struct());
-%
-%   **Example 2** — GUI use (attach progress dialog to MIB window)
+% **Example 1** — standalone use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
+%      pixStr = dataset.pixSize;
+%      pixStr.minx = boundingBox(1);
+%      pixStr.miny = boundingBox(3);
+%      pixStr.minz = boundingBox(5);
+%      io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, false, struct());
 %
-%     pixStr = dataset.pixSize;
-%     pixStr.minx = boundingBox(1);
-%     pixStr.miny = boundingBox(3);
-%     pixStr.minz = boundingBox(5);
-%     extraOpts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%     io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, true, extraOpts);
+% **Example 2** — GUI use (attach progress dialog to MIB window):
+%
+%   .. code-block:: matlab
+%
+%      pixStr = dataset.pixSize;
+%      pixStr.minx = boundingBox(1);
+%      pixStr.miny = boundingBox(3);
+%      pixStr.minz = boundingBox(5);
+%      extraOpts.ParentFigure = obj.mibModel.mibGUI;   % uiprogressdlg parent
+%      io.AmiraMesh.bitmap2amiraLabels('/output/Labels.am', labelsData, 'binary', pixStr, materialColors, materialNames, 1, true, extraOpts);
 %
 
 % Updates

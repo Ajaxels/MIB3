@@ -2,25 +2,29 @@ function segmentationDragAndDrop(obj, y, x, modifier)
 % SEGMENTATIONDRAGANDDROP - Initiate drag-and-drop of materials, selection, or mask layer.
 %
 % Syntax:
-%   function segmentationDragAndDrop(obj, y, x, modifier)
+%   .. code-block:: matlab
+%
+%      obj.segmentationDragAndDrop(y, x, modifier)
 %
 % Captures the initial selection under the mouse, sets up motion and
 % button-up callbacks for interactive dragging.
 %
 % Input Arguments:
-%   - **y** — double, y-coordinate of the mouse cursor at the starting point
-%   - **x** — double, x-coordinate of the mouse cursor at the starting point
-%   - **modifier** — char, modifier key held during click
-%     - 'shift' - drag all objects on the slice
-%     - 'control' - drag only the single object under the cursor
+%   - **y** — [double] y-coordinate of mouse cursor at starting point
+%   - **x** — [double] x-coordinate of mouse cursor at starting point
+%   - **modifier** — [char] modifier key held during click:
+%
+%     - ``'shift'`` — drag all objects on slice
+%     - ``'control'`` — drag only single object under cursor
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example** — drag object at [y,x]=[50,75]:
 %
-%     obj.segmentationDragAndDrop(50, 75, 'control');  // drag the object at [y,x]=[50,75]
+%   .. code-block:: matlab
+%
+%      obj.segmentationDragAndDrop(50, 75, 'control');
 %
 
 % Updates

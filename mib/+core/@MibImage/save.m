@@ -2,19 +2,22 @@ function fnOut = save(obj, filename, options)
 % SAVE - Save image data from a MibImage object to a file.
 %
 % Syntax:
-%   function fnOut = save(obj, filename, options)
+%   .. code-block:: matlab
+%
+%       fnOut = obj.save(filename, options)
 %
 % This is the LOWEST-LEVEL save entry point.  It works completely
 % standalone: no MibDataset or MibModel is required.  Useful for
 % scripted pipelines that create or modify a MibImage object directly
 % without loading it through the full MIB application.
 %
-% The method:
-% 1. Derives the output format from options.Format (or from the file
-% extension if options.Format is absent).
-% 2. Assembles a metadata struct from the object's own properties.
-% 3. Calls io.SaverFactory.create(format) to get the right saver.
-% 4. Delegates the actual I/O to saver.save(data, metadata, filename, options).
+% **The method:**
+%
+%   1. Derives the output format from ``options.Format`` (or from the file
+%      extension if ``options.Format`` is absent)
+%   2. Assembles a metadata struct from the object's own properties
+%   3. Calls ``io.SaverFactory.create(format)`` to get the right saver
+%   4. Delegates the actual I/O to ``saver.save(data, metadata, filename, options)``
 %
 % NOTE ON pixSize:
 % MibImage does NOT store pixel/voxel size — that information lives at

@@ -2,36 +2,38 @@ function tableContextMenu_cb(obj, parameter)
 % TABLECONTEXTMENU_CB - Handle context menu actions on statTable rows.
 %
 % Syntax:
-%   function tableContextMenu_cb(obj, parameter)
+%   .. code-block:: matlab
+%
+%       obj.tableContextMenu_cb(parameter)
 %
 % Dispatches to the appropriate action based on parameter.  All actions
 % operate on the rows currently selected in obj.indices.
 %
 % Input Arguments:
-%   - **parameter** — string — action identifier
-%     - 'mean' - compute mean of column 2 for selected rows; copy to clipboard
-%     - 'sum'  - compute sum; copy to clipboard
-%     - 'min'  - compute min; copy to clipboard
-%     - 'max'  - compute max; copy to clipboard
-%     - 'copyColumn' - copy selected column(s) to system clipboard
-%     - 'crop' - open controllers.CropObjects with centroids of selected objects
-%     - 'hist' - plot histogram of selected values in the histogram axes
-%     - 'newLabel'    - create new MIB annotations at selected object centroids
-%     - 'addLabel'    - add MIB annotations (keeps existing)
-%     - 'removeLabel' - remove MIB annotations at selected centroids
+%   - **parameter** — [char] action identifier:
 %
-% Usage:
-%   Example 1::
+%     - ``'mean'`` — compute mean of column 2 for selected rows; copy to clipboard
+%     - ``'sum'`` — compute sum; copy to clipboard
+%     - ``'min'`` — compute min; copy to clipboard
+%     - ``'max'`` — compute max; copy to clipboard
+%     - ``'copyColumn'`` — copy selected column(s) to system clipboard
+%     - ``'crop'`` — open controllers.CropObjects with centroids of selected objects
+%     - ``'hist'`` — plot histogram of selected values in the histogram axes
+%     - ``'newLabel'`` — create new MIB annotations at selected object centroids
+%     - ``'addLabel'`` — add MIB annotations (keeps existing)
+%     - ``'removeLabel'`` — remove MIB annotations at selected centroids
 %
-%     obj.tableContextMenu_cb('mean');  // aggregate and copy
+% **Example 1** — compute and copy mean value:
 %
-%   Example 2::
+%   .. code-block:: matlab
 %
-%     obj.tableContextMenu_cb('crop');  // open crop dialog
+%      obj.tableContextMenu_cb('mean');
 %
-
-% Updates
+% **Example 2** — open crop dialog:
 %
+%   .. code-block:: matlab
+%
+%      obj.tableContextMenu_cb('crop');
 
 data = obj.view.handles.statTable.Data;
 if isempty(data); return; end

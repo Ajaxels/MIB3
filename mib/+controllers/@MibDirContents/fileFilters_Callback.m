@@ -2,7 +2,9 @@ function fileFilters_Callback(obj, hWidget, hData)
 % FILEFILTERS_CALLBACK - callback for selection of a file filter in the Directory contents panel,.
 %
 % Syntax:
-%   function fileFilters_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.fileFilters_Callback(hWidget, hData)
 %
 % the parent widget is obj.handles.panels.dirContents.handles.fileFilters
 %

@@ -2,34 +2,45 @@ function updateVisualizationMode(obj, mode)
 % UPDATEVISUALIZATIONMODE - Function to set type of image interpolation for the visualization (from Image Ribbon).
 %
 % Syntax:
-%   function updateVisualizationMode(obj, mode)
+%   .. code-block:: matlab
 %
-% When the ''mode'' variable is omitted the function works as a standard
-% callback and changes the type of image interpolation: ''bicubic'', ''nearest'', ''automatic''
-% However, when ''mode'' is specified, the provided mode is used
+%      obj.updateVisualizationMode()
+%      obj.updateVisualizationMode(mode)
+%
+% When ``mode`` is omitted the function cycles through ``bicubic``,
+% ``nearest``, and ``automatic`` interpolation modes.
+% When ``mode`` is specified the provided mode is applied directly.
 %
 % Input Arguments:
-%   - **mode** — [*optional,* char]
-%     - when @b'''' or not provided, change the mode using the sequence: ''bicubic'', ''nearest'', ''automatic''
-%     - when **''keepcurrent''** set the state of the button to the currently selected type of the interpolation in *obj.mibModel.preferences.System.ImageResizeMethod*
-%     - when **''bicubic''** set the visualization mode to bicubic interpolation
-%     - when **''nearest''** set the visualization mode to nearest-neighborhood interpolation
-%     - when **''auto''** set the visualization mode to the automatic mode using bicubic for zoom-out and nearest for zoom-in
+%   - **mode** — *(optional)* char, default: ``''`` (cycle/toggle)
+%
+%     - ``''`` or not provided — cycle: ``bicubic`` → ``nearest`` → ``automatic``
+%     - ``'keepcurrent'`` — sync the button icon to the mode stored in
+%       ``obj.mibModel.preferences.System.ImageResizeMethod`` without changing it
+%     - ``'bicubic'`` — set bicubic interpolation
+%     - ``'nearest'`` — set nearest-neighbor interpolation
+%     - ``'auto'`` — set automatic mode (bicubic for zoom-out, nearest for zoom-in)
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — cycle to the next visualization mode:
 %
-%     obj.updateVisualizationMode();     // call from mibController; toggle to the next visualization mode
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.updateVisualizationMode();
 %
-%     obj.updateVisualizationMode('keepcurrent');     // call from mibController; update the image interpolation button icon
+% **Example 2** — sync the button icon without changing the mode:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     obj.updateVisualizationMode('bicubic');     // call from mibController; select the bicubic interpolation
+%      obj.updateVisualizationMode('keepcurrent');
+%
+% **Example 3** — select bicubic interpolation:
+%
+%   .. code-block:: matlab
+%
+%      obj.updateVisualizationMode('bicubic');
 %
 
 % Updates

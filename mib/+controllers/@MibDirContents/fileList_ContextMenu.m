@@ -1,28 +1,32 @@
 function fileList_ContextMenu(obj, menuEntry, selectedData)
-% FILELIST_CONTEXTMENU - callbacks for the context menu of the file list widget.
+% FILELIST_CONTEXTMENU - Callback for context menu operations on the file list.
 %
 % Syntax:
-%   function fileList_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
 %
-% (obj.handles.panels.activeDataset.handles.fileList)
+%      obj.fileList_ContextMenu(menuEntry, selectedData)
+%
+% Handles context menu operations on files in the file list (``obj.handles.fileList``).
+% Supports file loading, insertion, color channel operations, and file management (rename, delete, properties).
 %
 % Input Arguments:
-%   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class
-%   - **selectedData** — handle to the pressed
-%     'matlab.ui.eventdata.MenuSelectedData' class, it can be used to find the
-%     button that has the context menu (selectedData.ContextObject)
+%   - **menuEntry** — [matlab.ui.container.Menu] handle to the pressed context menu entry; menu operations are identified via ``menuEntry.Tag``
+%   - **selectedData** — [matlab.ui.eventdata.MenuSelectedData] event data containing the source file list object (``selectedData.ContextObject``)
 %
-%   Available menu options available from 'menuEntry.Tag':
-%   fileListContextCombine - combine selected files and open them all as a dataset in MIB
-%   fileListContextLoadPart - load part of the dataset from the selected file
-%   fileListContextLoadNth - load each N-th file and combine in a MIB dataset
-%   fileListContextInsert - insert selected files into the current dataset
-%   fileListContextColorCombine - combine selected files as color channels and open as a new MIB dataset
-%   fileListContextColorAdd - add selected file(s) as a new color channel to the current MIB dataset
-%   fileListContextColorAddNth - add each N-th selected file as a new color channel to the current MIB dataset
-%   fileListContextRename - rename the selected file
-%   fileListContextDelete - delete the selected file
-%   fileListContextProps - get file properties
+% Output Arguments:
+%   None
+%
+% **Supported menu operations (menuEntry.Tag):**
+%   - ``'fileListContextCombine'`` — combine selected files and open as a single dataset
+%   - ``'fileListContextLoadPart'`` — load a portion (slice range) of a file
+%   - ``'fileListContextLoadNth'`` — load every N-th file and combine into one dataset
+%   - ``'fileListContextInsert'`` — insert selected files into the current dataset
+%   - ``'fileListContextColorCombine'`` — combine selected files as separate color channels
+%   - ``'fileListContextColorAdd'`` — add selected file(s) as a new color channel to current dataset
+%   - ``'fileListContextColorAddNth'`` — add every N-th file as a new color channel
+%   - ``'fileListContextRename'`` — rename the selected file
+%   - ``'fileListContextDelete'`` — delete the selected file
+%   - ``'fileListContextProps'`` — display file properties dialog
 %
 
 arguments (Input)

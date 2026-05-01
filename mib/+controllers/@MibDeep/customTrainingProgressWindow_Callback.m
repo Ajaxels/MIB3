@@ -2,7 +2,9 @@ function customTrainingProgressWindow_Callback(obj, event)
 % CUSTOMTRAININGPROGRESSWINDOW_CALLBACK - callback for click on.
 %
 % Syntax:
-%   function customTrainingProgressWindow_Callback(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.customTrainingProgressWindow_Callback(event)
 %
 % obj.view.handles.O_CustomTrainingProgressWindow checkbox
 

@@ -2,36 +2,36 @@ function highlightSelection(obj, object_list, mode, sliceNumbers)
 % HIGHLIGHTSELECTION - Highlight selected quantification objects in the selection layer.
 %
 % Syntax:
-%   function highlightSelection(obj, object_list, mode, sliceNumbers)
+%   .. code-block:: matlab
+%
+%       obj.highlightSelection(object_list, mode, sliceNumbers)
 %
 % Writes to the MIB selection layer for the objects given in object_list.
 % For 2D slice mode or a single object, the selection is written slice-by-
 % slice.  For 3D datasets the entire PixelIdxList is written at once.
 %
 % Input Arguments:
-%   - **object_list** — numeric vector of object indices into obj.STATS
-%   - **mode** — *(optional)* string — highlight action
-%     - 'Add'      - add objects to existing selection
-%     - 'Remove'   - remove objects from existing selection
-%     - 'Replace'  - replace selection with these objects
-%     - 'obj2model' - assign each object as a separate model material
-%   (replaces the current model; shows a confirmation dialog first)
-%   Default is read from obj.view.handles.selectionModePanel.SelectedObject.Text
-%   - **sliceNumbers** — *(optional)* numeric vector, one slice index per object;
-%     used to restrict data reading to the relevant slice in 3D datasets
+%   - **object_list** — [numeric] vector of object indices into obj.STATS
+%   - **mode** *(optional)* — [char] highlight action (default: read from obj.view.handles.selectionModePanel.SelectedObject.Text):
 %
-% Usage:
-%   Example 1::
+%     - ``'Add'`` — add objects to existing selection
+%     - ``'Remove'`` — remove objects from existing selection
+%     - ``'Replace'`` — replace selection with these objects
+%     - ``'obj2model'`` — assign each object as a separate model material (replaces the current model; shows a confirmation dialog first)
 %
-%     obj.highlightSelection([3, 7], 'Add');                     // add objects 3 and 7
+%   - **sliceNumbers** *(optional)* — [numeric] vector of slice indices, one per object; used to restrict data reading to the relevant slice in 3D datasets
 %
-%   Example 2::
+% **Example 1** — add objects to selection:
 %
-%     obj.highlightSelection(object_list, 'Replace', sliceNums); // replace selection
+%   .. code-block:: matlab
 %
-
-% Updates
+%      obj.highlightSelection([3, 7], 'Add');
 %
+% **Example 2** — replace selection:
+%
+%   .. code-block:: matlab
+%
+%      obj.highlightSelection(object_list, 'Replace', sliceNums);
 
 if nargin < 4; sliceNumbers = []; end
 if nargin < 3 || isempty(mode); mode = obj.view.handles.selectionModePanel.SelectedObject.Text; end

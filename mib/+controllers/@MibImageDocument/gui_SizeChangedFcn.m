@@ -2,48 +2,44 @@ function gui_SizeChangedFcn(obj)
 % GUI_SIZECHANGEDFCN - Callback triggered when the document figure size changes.
 %
 % Syntax:
-%   function gui_SizeChangedFcn(obj)
+%   .. code-block:: matlab
 %
-% This function handles window resize events for MibImageDocument using a
-% debounced timer approach. When the window is resized, a global timer is
-% created or reset. The actual resize operations (updating axes and redrawing
-% images) only execute after 100ms of no resize activity, preventing
-% performance issues and aspect ratio glitches during continuous resizing.
+%      obj.gui_SizeChangedFcn()
+%
+% This function handles window resize events for MibImageDocument using a debounced timer
+% approach. When the window is resized, a global timer is created or reset. The actual resize
+% operations (updating axes and redrawing images) only execute after 100ms of no resize activity,
+% preventing performance issues and aspect ratio glitches during continuous resizing.
 %
 % When any document in an AppContainer is resized (including divider dragging),
 % all visible documents are updated to ensure proper display.
 %
-% Syntax:
-% obj.gui_SizeChangedFcn()
-%
 % Input Arguments:
-%   none - automatically called by MATLAB when figure size changes
+%   (none — automatically called by MATLAB when figure size changes)
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-%   Technical details:
-%   - Uses a global timer stored in MibController to coordinate updates
-%   across multiple documents
-%   - Timer delay: 100ms (adjustable via StartDelay property)
+% **Technical details:**
+%   - Uses global timer stored in MibController to coordinate updates across multiple documents
+%   - Timer delay: 100ms (adjustable via ``StartDelay`` property)
 %   - Prevents callback re-entrance using persistent variables
 %   - Handles AppContainer divider dragging by updating all documents
 %
-% Usage:
-%   Example 1::
+% **Example 1** — automatically triggered when window is resized:
 %
-%     // Automatically triggered by MATLAB when window is resized
-%     // No manual call needed - set as SizeChangedFcn callback:
-%     obj.handles.gui.SizeChangedFcn = @(src, evt) obj.gui_SizeChangedFcn();
+%   .. code-block:: matlab
 %
+%      obj.handles.gui.SizeChangedFcn = @(src, evt) obj.gui_SizeChangedFcn();
 %
-%   Example 2::
+% **Example 2** — manual call to force resize update (not typical):
 %
-%     // Manual call to force resize update (not typical)
-%     obj.gui_SizeChangedFcn();
+%   .. code-block:: matlab
 %
+%      obj.gui_SizeChangedFcn();
 %
-%   See also: listener_updateDatasetAxes, showImage, updateBrushCursor
+% See also:
+%   ``listener_updateDatasetAxes``, ``showImage``, ``updateBrushCursor``
 %
 
 % Check if global resize timer property exists in MibController
@@ -76,20 +72,21 @@ function executeResizeAll(obj)
 % EXECUTERESIZEALL - Execute resize operations for all visible documents.
 %
 % Syntax:
-%   function executeResizeAll(obj)
+%   .. code-block:: matlab
 %
-% This nested function is called by the timer after resize activity stops.
-% It updates axes limits and redraws images for all visible documents
-% to handle both main window resizing and AppContainer divider dragging.
+%      executeResizeAll(obj)
 %
-% The function includes re-entrance protection to prevent conflicts if
-% somehow called multiple times simultaneously.
+% Nested function called by timer after resize activity stops. Updates axes limits and
+% redraws images for all visible documents to handle both main window resizing and
+% AppContainer divider dragging.
+%
+% Includes re-entrance protection to prevent conflicts if called multiple times simultaneously.
 %
 % Input Arguments:
-%   - **obj** — handle to the MibImageDocument that initiated the resize
+%   - **obj** — [handle] MibImageDocument instance that initiated the resize
 %
 % Output Arguments:
-%   none
+%   (none)
 %
 
 persistent inCallback

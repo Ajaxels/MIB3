@@ -2,24 +2,37 @@ function updateInterpolationMode(obj, keepCurrent)
 % UPDATEINTERPOLATIONMODE - Function to set the state of the interpolation button in the Selection ribbon.
 %
 % Syntax:
-%   function updateInterpolationMode(obj, keepCurrent)
+%   .. code-block:: matlab
 %
-% When the ''options'' variable is omitted the function works as a standard
-% callback and changes the type of interpolation: ''shape'' or ''line''.
-% However, when ''options'' are specified the function sets the state of
-% the button to the currently selected type.
+%      obj.updateInterpolationMode()
+%      obj.updateInterpolationMode(keepCurrent)
+%
+% When ``keepCurrent`` is omitted the function works as a standard callback
+% and swaps the interpolation type between ``shape`` and ``line``.
+% When ``keepCurrent`` is ``true`` the button state is synced to the
+% currently selected type without swapping.
 %
 % Input Arguments:
-%   - **keepCurrent** — [*optional,* logical],
-%     - true - set the state of the button to the currently
-%   selected type of the interpolation (obj.mibModel.preferences.SegmTools.Interpolation.Type)
-%     - false - swaps the interpolation type
+%   - **keepCurrent** — *(optional)* logical, default: ``false``
+%
+%     - ``true`` — sync the button icon to the currently selected interpolation type
+%       (``obj.mibModel.preferences.SegmTools.Interpolation.Type``) without swapping
+%     - ``false`` — swap the interpolation type
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   ``obj.mibController.updateInterpolationMode(true);     // call from mibController; update the interpolation button icon, using the currently selected interpolation type``
-%   ``obj.mibController.updateInterpolationMode();     // call from mibController; swap the interpolation type``
+% **Example 1** — sync the button icon to the current type (no swap):
+%
+%   .. code-block:: matlab
+%
+%      obj.mibController.updateInterpolationMode(true);
+%
+% **Example 2** — swap the interpolation type:
+%
+%   .. code-block:: matlab
+%
+%      obj.mibController.updateInterpolationMode();
 %
 
 % swap the interpolation types

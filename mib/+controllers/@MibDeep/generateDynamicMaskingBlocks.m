@@ -2,7 +2,9 @@ function bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)
 % GENERATEDYNAMICMASKINGBLOCKS - generate blocks using dynamic masking parameters acquired in obj.DynamicMaskOpt.
 %
 % Syntax:
-%   function bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)
+%   .. code-block:: matlab
+%
+%       bls = obj.generateDynamicMaskingBlocks(vol, blockSize, noColors)
 %
 % Input Arguments:
 %   - **vol** — blocked image to process

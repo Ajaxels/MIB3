@@ -2,7 +2,9 @@ function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
 % CREATEMODEL - Create a new model — wrapper around core.MibDataset.createModel.
 %
 % Syntax:
-%   function createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.createModel(ModelType, ModelMaterialNames, BatchOptIn)
 %
 % Input Arguments:
 %   - **ModelType** — *(optional)*, can be empty: []; a number with the model type:

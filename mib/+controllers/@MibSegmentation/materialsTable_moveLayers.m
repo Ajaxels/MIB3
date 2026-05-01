@@ -3,7 +3,9 @@ function materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, a
 % MATERIALSTABLE_MOVELAYERS - callbacks for the context menu of the segmentation table to move layers (obj.handles.panels.segmentation.handles.materialsTableContextM2S):.
 %
 % Syntax:
-%   function materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, action_type)
+%   .. code-block:: matlab
+%
+%       obj.materialsTable_moveLayers(obj_type_from, obj_type_to, layers_id, action_type)
 %
 % -> Material to Selection
 % -> Material to Mask

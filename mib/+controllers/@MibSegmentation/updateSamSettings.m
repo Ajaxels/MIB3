@@ -2,7 +2,9 @@ function updateSamSettings(obj)
 % UPDATESAMSETTINGS - Open SAM settings dialog for configuring SAM1 or SAM2 parameters.
 %
 % Syntax:
-%   function updateSamSettings(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateSamSettings()
 %
 % the SAM tool is implemented in @MibImageDocument class
 

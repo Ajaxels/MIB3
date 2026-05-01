@@ -2,7 +2,9 @@ function clearLayer(obj, layer, sel_switch, BatchOptIn)
 % CLEARLAYER - clear the specified layer.
 %
 % Syntax:
-%   function clearLayer(obj, layer, sel_switch, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.clearLayer(layer, sel_switch, BatchOptIn)
 %
 % Input Arguments:
 %   - **layer** — a string with the target layer

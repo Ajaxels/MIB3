@@ -2,59 +2,67 @@ function segmentationSpot(obj, y, x, modifier, BatchOptIn)
 % SEGMENTATIONSPOT - Do segmentation using the spot tool.
 %
 % Syntax:
-%   function segmentationSpot(obj, y, x, modifier, BatchOptIn)
+%   .. code-block:: matlab
+%
+%      obj.segmentationSpot(y, x, modifier)
+%      obj.segmentationSpot(y, x, modifier, BatchOptIn)
 %
 % Places a circular or square spot (selection or mask) at the given image
 % coordinate. Supports 2D and 3D modes, restriction to mask/material, and
 % batch scripting.
 %
 % Input Arguments:
-%   - **y** — double, y-coordinate of the spot centre in full-dataset pixels
-%   - **x** — double, x-coordinate of the spot centre in full-dataset pixels
-%   - **modifier** — cell array of chars or char, modifier keys held during click
-%     - empty '' - add selection
-%     - 'control' - subtract selection (eraser mode)
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when NaN,
-%     returns default options via the 'SyncBatch' event
-%     - .Shape - [char, {'circle','square'}] shape of the spot
-%     - .Radius - [char] spot radius in pixels; two numbers separated by ';'
-%   set independent half-width / half-height
-%     - .X - [char] vector or single X coordinate of the spot centre
-%     - .Y - [char] vector or single Y coordinate of the spot centre
-%     - .Z - [char] vector or single Z slice index; empty = current slice
-%     - .Mode - [char, {'add','erase'}] add or subtract spot
-%     - .Check3D - [logical] apply spot across all z-slices (3-D sphere); default from obj.mibModel.applySegmentationIn3D
-%     - .restrictSelectionToMask - [logical] paint only within the mask
-%     - .restrictSelectionToMaterial - [logical] paint only within the
-%   selected material
-%     - .Orientation - [char, {'XZ','YZ','not available','YX'}] dataset
-%   orientation used when computing the spot
-%     - .Target - [char, {'selection','mask'}] destination layer
-%     - .showWaitbar - [logical] show or not the progress bar
-%     - .id *(optional)* dataset index 1-9, default = obj.mibModel.getActiveId()
+%   - **y** — [double] y-coordinate of spot centre in full-dataset pixels
+%   - **x** — [double] x-coordinate of spot centre in full-dataset pixels
+%   - **modifier** — [char|cell] modifier keys held during click:
+%
+%     - ``''`` — add selection
+%     - ``'control'`` — subtract selection (eraser mode)
+%
+%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%     when ``NaN``, returns default options via ``'SyncBatch'`` event:
+%
+%     - ``.Shape`` — [char] ``'circle'`` or ``'square'`` — shape of spot
+%     - ``.Radius`` — [char] spot radius in pixels; two numbers separated by ``;`` for independent half-width/half-height
+%     - ``.X`` — [char] vector or single X coordinate of spot centre
+%     - ``.Y`` — [char] vector or single Y coordinate of spot centre
+%     - ``.Z`` — [char] vector or single Z slice index; empty = current slice
+%     - ``.Mode`` — [char] ``'add'`` or ``'erase'`` — add or subtract spot
+%     - ``.Check3D`` — [logical] apply spot across all z-slices (3D sphere); default from ``obj.mibModel.applySegmentationIn3D``
+%     - ``.restrictSelectionToMask`` — [logical] paint only within mask
+%     - ``.restrictSelectionToMaterial`` — [logical] paint only within selected material
+%     - ``.Orientation`` — [char] ``'XZ'``, ``'YZ'``, ``'YX'``, or ``'not available'`` — dataset orientation when computing spot
+%     - ``.Target`` — [char] ``'selection'`` or ``'mask'`` — destination layer
+%     - ``.showWaitbar`` — [logical] show progress bar
+%     - ``.id`` *(optional)* — [numeric] dataset index 1–9 (default: ``obj.mibModel.getActiveId()``)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — add spot at dataset [y,x]=[50,75]:
 %
-%     obj.segmentationSpot(50, 75, '');  // add spot at dataset [y,x]=[50,75]
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationSpot(50, 75, '');
 %
-%     obj.segmentationSpot(50, 75, 'control');  // erase spot
+% **Example 2** — erase spot:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     BatchOpt.Shape = {'circle'};
-%     BatchOpt.Radius = '5';
-%     BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '';
-%     BatchOpt.Mode = {'add'};
-%     BatchOpt.Check3D = false;
-%     BatchOpt.Target = {'selection'};
-%     BatchOpt.showWaitbar = false;
-%     obj.segmentationSpot(50, 75, '', BatchOpt);   // batch / scripted call
+%      obj.segmentationSpot(50, 75, 'control');
+%
+% **Example 3** — batch/scripted processing:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.Shape = {'circle'};
+%      BatchOpt.Radius = '5';
+%      BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '';
+%      BatchOpt.Mode = {'add'};
+%      BatchOpt.Check3D = false;
+%      BatchOpt.Target = {'selection'};
+%      BatchOpt.showWaitbar = false;
+%      obj.segmentationSpot(50, 75, '', BatchOpt);
 %
 
 % Updates

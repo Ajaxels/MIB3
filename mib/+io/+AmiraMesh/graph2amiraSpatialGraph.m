@@ -18,7 +18,10 @@ function res = graph2amiraSpatialGraph(filename, G, options)
 % GRAPH2AMIRASPATIALGRAPH - generate Amira Spatial Graph Ascii file.
 %
 % Syntax:
-%   function res = graph2amiraSpatialGraph(filename, G, options)
+%   .. code-block:: matlab
+%
+%      res = io.AmiraMesh.graph2amiraSpatialGraph(filename, G)
+%      res = io.AmiraMesh.graph2amiraSpatialGraph(filename, G, options)
 %
 % Input Arguments:
 %   - **filename** — filename to save data
@@ -46,29 +49,27 @@ function res = graph2amiraSpatialGraph(filename, G, options)
 %     - ``.EdgeFieldName`` — (cell) field name in ``.Edges`` to export (replaces ``.Thickness``)
 %
 % Output Arguments:
-%   - **res** — result of the function run, **1** - success, **0** - fail
+%   - **res** — ``1`` = success, ``0`` = failure
 %
-% Usage:
-%   **Example 1**
+% **Example 1** — save a graph with node coordinates, values, and edge thickness:
 %
 %   .. code-block:: matlab
 %
-%
-%     G = graph([1 2 4],[2 3 5]);
-%     G.Nodes.XData = [1 2 3 4 5]';
-%     G.Nodes.YData = [5 4 3 2 5]';
-%     G.Nodes.ZData = [1 3 4 2 5]';
-%     G.Nodes.Values = [1 2 4 2 5]';
-%     G.Nodes.Values2 = [5 4 3 2 1]';
-%     G.Edges.Thickness = ones([size(G.Edges,1) 1]);
-%     figure(1);
-%     p = plot(G);
-%     p.XData = G.Nodes.XData;
-%     p.YData = G.Nodes.YData;
-%     p.ZData = G.Nodes.ZData;
-%     options.NodeFieldName = [{'Values'}, {'Values2'}];
-%     options.EdgeFieldName = {'Thickness'};
-%     res = graph2amiraSpatialGraph('test.am', G, options);
+%      G = graph([1 2 4],[2 3 5]);
+%      G.Nodes.XData = [1 2 3 4 5]';
+%      G.Nodes.YData = [5 4 3 2 5]';
+%      G.Nodes.ZData = [1 3 4 2 5]';
+%      G.Nodes.Values = [1 2 4 2 5]';
+%      G.Nodes.Values2 = [5 4 3 2 1]';
+%      G.Edges.Thickness = ones([size(G.Edges,1) 1]);
+%      figure(1);
+%      p = plot(G);
+%      p.XData = G.Nodes.XData;
+%      p.YData = G.Nodes.YData;
+%      p.ZData = G.Nodes.ZData;
+%      options.NodeFieldName = [{'Values'}, {'Values2'}];
+%      options.EdgeFieldName = {'Thickness'};
+%      res = graph2amiraSpatialGraph('test.am', G, options);
 %
 
 % Updates

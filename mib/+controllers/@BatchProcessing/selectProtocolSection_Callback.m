@@ -2,7 +2,9 @@ function selectProtocolSection_Callback(obj, hObject)
 % SELECTPROTOCOLSECTION_CALLBACK - handle value change in selectProtocolSection or selectProtocolAction.
 %
 % Syntax:
-%   function selectProtocolSection_Callback(obj, hObject)
+%   .. code-block:: matlab
+%
+%       obj.selectProtocolSection_Callback(hObject)
 %
 % Fires the selected action command with Batch=NaN to retrieve its default
 % BatchOpt, then refreshes the selectedActionTable.

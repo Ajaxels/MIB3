@@ -2,7 +2,9 @@ function buffers_Callback(obj, hWidget, hData, buttonId)
 % BUFFERS_CALLBACK - buffers_Callback(obj, hWidget, hData).
 %
 % Syntax:
-%   function buffers_Callback(obj, hWidget, hData, buttonId)
+%   .. code-block:: matlab
+%
+%       obj.buffers_Callback(hWidget, hData, buttonId)
 %
 % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset
 % stored in a buffer defined by the pressed button

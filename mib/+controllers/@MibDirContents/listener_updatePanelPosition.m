@@ -1,28 +1,39 @@
 function listener_updatePanelPosition(obj, src, evtData)
-% LISTENER_UPDATEPANELPOSITION - Listener callback: adapt the Directory contents panel grid layout when the.
+% LISTENER_UPDATEPANELPOSITION - Listener callback to adapt Directory Contents panel layout when docked position changes.
 %
 % Syntax:
-%   function listener_updatePanelPosition(obj, src, evtData)
+%   .. code-block:: matlab
 %
-% panel is docked to a new region of the AppContainer (bottom, left, or right).
+%      obj.listener_updatePanelPosition(src, evtData)
 %
-% The Directory contents panel uses a mainGridLayout with 3 rows × 6 columns:
+% Dynamically reconfigures the grid layout and widget positions when the Directory Contents panel
+% is docked to different regions (left, right, or bottom) of the AppContainer. Maintains optimized
+% widget arrangement for each docking orientation.
 %
-% Left / Right — vertical, 3-row × 6-column layout:
-% RowHeight    = {'1x', 22, 2}
-% ColumnWidth  = {34, 84, 40, '1x', 50, 18}
-% ColumnSpacing = 5, RowSpacing = 6, Padding = [8 8 8 8]
-% Row 1 — fileList, spanning cols [1 6]
-% Row 2 — 5 toolbar widgets at cols 1, 2, 3, 5, 6 (col 4 = spacer)
-% Row 3 — dividerPanel, spanning cols [1 6]
+% Input Arguments:
+%   - **src** — [matlab.ui.container.Panel] the panel object whose Region property changed
+%   - **evtData** — [matlab.ui.eventdata.PropertyChangedData] property change event data
 %
-% Bottom — 6-row × 3-column layout:
-% ColumnWidth  = {'1x', 130, 2}
-% RowHeight    = {22, 22, 22, '1x', 22, 22}
-% ColumnSpacing = 5, RowSpacing = 6, Padding = [8 8 8 8]
-% Col 1 — fileList, spanning rows [1 6]
-% Col 2 — 5 toolbar widgets at rows 1,2,3,5,6 (row 4 = spacer)
-% Col 3 — dividerPanel, spanning rows [1 6]
+% Output Arguments:
+%   None
+%
+% **Layout configurations:**
+%
+% **Left / Right docking** — vertical arrangement (3 rows × 6 columns):
+%   - ``RowHeight`` = ``{'1x', 22, 2}``
+%   - ``ColumnWidth`` = ``{34, 84, 40, '1x', 50, 18}``
+%   - ``ColumnSpacing`` = ``5``, ``RowSpacing`` = ``6``, ``Padding`` = ``[8 8 8 8]``
+%   - Row 1 — ``fileList`` spanning columns [1–6]
+%   - Row 2 — toolbar (5 widgets at columns 1, 2, 3, 5, 6; column 4 = spacer)
+%   - Row 3 — ``dividerPanel`` spanning columns [1–6]
+%
+% **Bottom docking** — horizontal arrangement (6 rows × 3 columns):
+%   - ``ColumnWidth`` = ``{'1x', 130, 2}``
+%   - ``RowHeight`` = ``{22, 22, 22, '1x', 22, 22}``
+%   - ``ColumnSpacing`` = ``5``, ``RowSpacing`` = ``6``, ``Padding`` = ``[8 8 8 8]``
+%   - Column 1 — ``fileList`` spanning rows [1–6]
+%   - Column 2 — toolbar (5 widgets at rows 1, 2, 3, 5, 6; row 4 = spacer)
+%   - Column 3 — ``dividerPanel`` spanning rows [1–6]
 
 switch evtData.PropertyName
     case 'Region'

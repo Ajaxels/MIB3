@@ -2,7 +2,9 @@ function undo(obj, newIndex)
 % UNDO - Undo/redo the recent changes (Ctrl+Z shortcut).
 %
 % Syntax:
-%   function undo(obj, newIndex)
+%   .. code-block:: matlab
+%
+%       obj.undo(newIndex)
 %
 % Restores a previously stored dataset state from the Backup history.
 % Works with all layer types: image, selection, mask, model, everything,

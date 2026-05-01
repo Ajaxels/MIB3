@@ -27,69 +27,77 @@ classdef MibLabels < core.MibImage
 
     methods
         
-        fnOut = save(obj, filename, options)        % Override of MibImage.save(); adds materialNames/materialColors/labelsVariable to metadata before dispatching to io.SaverFactory
-
-        result = countMaterials(obj)                 % calculate and update materialsCount from materialNames or pixel data; call after load/import
-
-        squeezeMaterialLabels(obj, wb)              % renumber all label indices to contiguous 1..N; for large model types after material deletion
-
-        renameMaterial(obj, index, newName)          % rename one or all materials in the model metadata
-
-        insertMaterial(obj, index, name, wb)     % insert a material at the specified position: shifts pixel data and updates name/colour/materialsCount
-
-        swapMaterials(obj, index1, index2)     % swap material names and colours between two positions
-
-        reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
+        % fnOut = save(obj, filename, options)        % Override of MibImage.save(); adds materialNames/materialColors/labelsVariable to metadata before dispatching to io.SaverFactory
+        % 
+        % result = countMaterials(obj)                 % calculate and update materialsCount from materialNames or pixel data; call after load/import
+        % 
+        % squeezeMaterialLabels(obj, wb)              % renumber all label indices to contiguous 1..N; for large model types after material deletion
+        % 
+        % renameMaterial(obj, index, newName)          % rename one or all materials in the model metadata
+        % 
+        % insertMaterial(obj, index, name, wb)     % insert a material at the specified position: shifts pixel data and updates name/colour/materialsCount
+        % 
+        % swapMaterials(obj, index1, index2)     % swap material names and colours between two positions
+        % 
+        % reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
 
         function obj = MibLabels(img, meta)
-            % MIBLABELS - Constructor of MibLabels — segmentation label storage for.
+            % MIBLABELS - Constructor of MibLabels — segmentation label storage.
             %
             % Syntax:
-            %   function obj = MibLabels(img, meta)
+            %   .. code-block:: matlab
             %
-            % models with up to 255 (or 65535 / 4294967295) materials.
-            % Inherits all properties and methods from core.MibImage.
+            %       obj = MibLabels()
+            %       obj = MibLabels(img)
+            %       obj = MibLabels(img, meta)
             %
-            % Data layout: [H, W, Z, 1, T] — single color channel, depth
-            % in dimension 3.  MibLabels does NOT apply the [H,W,C]→[H,W,1,C]
-            % permute that MibImage uses for colour images.
+            % Initializes a segmentation label container with up to 255 (or 65535 / 4294967295)
+            % materials. Inherits all properties and methods from ``core.MibImage``.
+            %
+            % **Data layout:** ``[H, W, Z, 1, T]`` — single color channel, with depth
+            % in dimension 3. MibLabels does NOT apply the ``[H,W,C]→[H,W,1,C]``
+            % permutation that MibImage uses for colour images.
             %
             % Input Arguments:
-            %   - **img** — *(optional)* 2-D to 5-D uint8/uint16/uint32 array, or [].
-            %     Dim 3 is always treated as depth (Z), never as color.
-            %   - []              — empty placeholder; obj.exists = false
-            %   - [H, W]          — single 2-D label map
-            %   - [H, W, Z]       — 3-D label volume (Z slices)
-            %   - [H, W, Z, 1, T] — full 5-D form (preferred for clarity)
-            %   - **meta** — *(optional)* metadata dictionary from
-            %     core.MibImage.initializeImgInfo().  Pass [] to use defaults.
+            %   - **img** — *(optional)* [numeric array] 2-D to 5-D uint8/uint16/uint32, or ``[]``.
+            %     Dimension 3 is always treated as depth (Z), never as color:
             %
-            %   After construction ALL dimension properties are set from the
-            %   actual array size via MibImage.initialize():
-            %   obj.height, obj.width, obj.depth, obj.colors, obj.time,
-            %   obj.dim_yxzct, obj.maxInt, obj.dataClass
+            %     - ``[]`` — empty placeholder; ``obj.exists = false``
+            %     - ``[H, W]`` — single 2-D label map
+            %     - ``[H, W, Z]`` — 3-D label volume (Z slices)
+            %     - ``[H, W, Z, 1, T]`` — full 5-D form (preferred for clarity)
             %
-            % Usage:
-            %   **Example 1** — 1. 3-D label volume, 3 slices
+            %   - **meta** — *(optional)* [dictionary] metadata from
+            %     ``core.MibImage.initializeImgInfo()``. Pass ``[]`` to use defaults.
+            %
+            % After construction, ALL dimension properties are set from the actual array size:
+            % ``obj.height``, ``obj.width``, ``obj.depth``, ``obj.colors``, ``obj.time``,
+            % ``obj.dim_yxzct``, ``obj.maxInt``, ``obj.dataClass``.
+            %
+            % **Example 1** — create 3-D label volume:
             %
             %   .. code-block:: matlab
             %
+            %      rawLabels = uint8(zeros(254, 378, 3));
+            %      meta = core.MibImage.initializeImgInfo( ...
+            %          'pixSize', obj.image.pixSize, ...
+            %          'Height', 254, 'Width', 378, 'Depth', 3, 'Time', 1, 'Colors', 1);
+            %      lbl = core.MibLabels(rawLabels, meta);
+            %      % lbl.depth == 3, lbl.colors == 1
             %
-            %     % 1. 3-D label volume, 3 slices
-            %     rawLabels = uint8(zeros(254, 378, 3));
-            %     meta = core.MibImage.initializeImgInfo( ...
-            %         'pixSize', obj.image.pixSize, ...
-            %         'Height', 254, 'Width', 378, 'Depth', 3, 'Time', 1, 'Colors', 1);
-            %     lbl = core.MibLabels(rawLabels, meta);
-            %     % lbl.depth == 3, lbl.colors == 1
+            % **Example 2** — create empty placeholder:
             %
-            %     % 2. Empty placeholder
-            %     lbl = core.MibLabels();
-            %     % lbl.exists == false
+            %   .. code-block:: matlab
             %
-            %     % 3. After construction, set maxMaterials for large models
-            %     lbl = core.MibLabels(rawLabels, meta);
-            %     lbl.maxMaterials = 65535;
+            %      lbl = core.MibLabels();
+            %      % lbl.exists == false
+            %
+            % **Example 3** — create and set large model type:
+            %
+            %   .. code-block:: matlab
+            %
+            %      lbl = core.MibLabels(rawLabels, meta);
+            %      lbl.maxMaterials = 65535;
             %
             
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end

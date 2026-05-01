@@ -2,35 +2,39 @@ function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
 % SEGMENTATIONCLICKTRACKER - Trace membranes and draw straight lines in 2D and 3D.
 %
 % Syntax:
-%   function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
+%   .. code-block:: matlab
+%
+%      output = obj.segmentationClickTracker(yxzCoordinate, yx, modifier)
 %
 % Uses the Membrane Click Tracker tool to connect two user-clicked points
 % either by tracing along minimum intensity gradients (fast marching) or by
-% drawing a straight line segment. In 3D mode only straight lines are
-% supported.
+% drawing a straight line segment. In 3D mode only straight lines are supported.
 %
 % Input Arguments:
-%   - **yxzCoordinate** — a vector with [y, x, z] coordinates of the starting point
-%     (matching voxel coordinates of the dataset)
-%   - **yx** — a vector [y, x] with coordinates of the clicked point in the display
-%     coordinate system (before magnification correction)
-%   - **modifier** — a string, to specify what to do with the generated selection
-%     - *empty* - trace membrane from the starting to the selected point
-%     - *'shift'* - defines the starting point of a membrane (2D/3D mode)
+%   - **yxzCoordinate** — [vector] ``[y, x, z]`` coordinates of starting point (voxel coordinates of dataset)
+%   - **yx** — [vector] ``[y, x]`` coordinates of clicked point in display coordinate system (before magnification)
+%   - **modifier** — [char] specify action with generated selection:
+%
+%     - ``''`` — trace membrane from starting to selected point
+%     - ``'shift'`` — define starting point of membrane (2D/3D mode)
 %
 % Output Arguments:
-%   - **output** — a string that defines what next to do in the gui_WindowButtonDownFcn function
-%     - *'continue'* - continue with the script
-%     - *'return'* - stop execution and return
+%   - **output** — [char] define next action in ``gui_WindowButtonDownFcn``:
 %
-% Usage:
-%   Example 1::
+%     - ``'continue'`` — continue with script
+%     - ``'return'`` — stop execution and return
 %
-%     output = obj.segmentationClickTracker([50, 75, 1], [25, 38], 'shift');     // define starting point
+% **Example 1** — define starting point:
 %
-%   Example 2::
+%   .. code-block:: matlab
 %
-%     output = obj.segmentationClickTracker([50, 75, 1], [25, 38], '');          // trace to endpoint
+%      output = obj.segmentationClickTracker([50, 75, 1], [25, 38], 'shift');
+%
+% **Example 2** — trace to endpoint:
+%
+%   .. code-block:: matlab
+%
+%      output = obj.segmentationClickTracker([50, 75, 1], [25, 38], '');
 %
 
 % Updates

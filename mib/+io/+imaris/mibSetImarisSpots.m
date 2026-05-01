@@ -18,32 +18,37 @@ function connImaris = mibSetImarisSpots(spots, connImaris, options)
 % MIBSETIMARISSPOTS - Send a spots from MIB to Imaris.
 %
 % Syntax:
-%   function connImaris = mibSetImarisSpots(spots, connImaris, options)
+%   .. code-block:: matlab
+%
+%      connImaris = io.imaris.mibSetImarisSpots(spots, connImaris)
+%      connImaris = io.imaris.mibSetImarisSpots(spots, connImaris, options)
 %
 % Input Arguments:
-%   - **spots** — a matrix [x, y, z, t] with coordinates of the spots (n x 4)
-%   - **connImaris** — *(optional)* a handle to Imaris connection
-%   - **options** — an optional structure with additional settings
-%     - .radii *(optional)* a vector with radii of the spots (n x 1)
-%     - .color *(optional)* a vector with color for spots: (1x4), (0..1) vector of [R G B A] values
-%     - .name a char with the name of the object
+%   - **spots** — [n×4] matrix of spot coordinates [x, y, z, t]
+%   - **connImaris** — *(optional)* handle to an existing Imaris connection
+%   - **options** — *(optional)* struct with additional settings:
+%
+%     - ``.radii`` — *(optional)* [n×1] vector of spot radii; default: ``width/150``
+%     - ``.color`` — *(optional)* [1×4] RGBA colour vector (0–1); default red ``[1, 0, 0, 1]``
+%     - ``.name`` — (char) name of the spot object (default: ``'mibSpots'``)
+%     - ``.dt`` — *(optional)* time step (default: ``1``)
 %
 % Output Arguments:
-%   - **connImaris** — a handle to Imaris connection
+%   - **connImaris** — handle to the Imaris connection
 %
-
-% @note
-% uses IceImarisConnector bindings
-% @b Requires:
-% 1. set system environment variable IMARISPATH to the installation
-% directory, for example "c:\tools\science\imaris"
-% 2. restart Matlab
-
-%|
-% @b Examples:
-% @code options.lutColors = obj.mibModel.displayedLutColors;   // call from mibController; get colors for the color channels @endcode
-% @code spots = [1, 1, 1, 1];   // add a single spot to position 1,1,1,1
-% @code obj.connImaris = mibSetImarisSpots(spots, obj.connImaris);     // call from mibController; send spots from matlab to imaris @endcode
+% .. note::
+%    Uses IceImarisConnector bindings. Requires:
+%
+%    1. Set system environment variable ``IMARISPATH`` to the Imaris installation
+%       directory, e.g. ``'c:\tools\science\imaris'``
+%    2. Restart MATLAB
+%
+% **Example** — send spot coordinates to Imaris:
+%
+%   .. code-block:: matlab
+%
+%      spots = [1, 1, 1, 1];   % single spot at [x=1, y=1, z=1, t=1]
+%      obj.connImaris = io.imaris.mibSetImarisSpots(spots, obj.connImaris);
 
 % Updates
 % 25.09.2017 IB updated connection to Imaris

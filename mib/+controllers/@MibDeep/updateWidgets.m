@@ -2,7 +2,9 @@ function updateWidgets(obj)
 % UPDATEWIDGETS - update widgets of this window.
 %
 % Syntax:
-%   function updateWidgets(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateWidgets()
 %
 
     % updateWidgets normally triggered during change of MIB

@@ -2,7 +2,9 @@ function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
 % PREPRARETRAININGOPTIONSINSTANCES - prepare trainig options for training of the instance segmentation network.
 %
 % Syntax:
-%   function TrainingOptions = preprareTrainingOptionsInstances(obj, valDS)
+%   .. code-block:: matlab
+%
+%       TrainingOptions = obj.preprareTrainingOptionsInstances(valDS)
 %
 % Input Arguments:
 %   - **valDS** — datastore with images for validation
@@ -98,7 +100,7 @@ try
                 end
 
                 evalTrainingOptions = join([evalTrainingOptions
-                    "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
+                    "'OutputFcn', @(info)deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                     ], ' ');
             otherwise
                 trainingProgressOptions = struct();
@@ -120,7 +122,7 @@ try
                 end
 
                 evalTrainingOptions = join([evalTrainingOptions
-                    "'OutputFcn', @(info)utils.deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
+                    "'OutputFcn', @(info)deepmib.customTrainingProgressDisplay(info, trainingProgressOptions),"
                     ], ' ');
 
                 % testing DispatchInBackground
@@ -136,7 +138,7 @@ try
         end
     else
         evalTrainingOptions = join([evalTrainingOptions
-            "'OutputFcn', @utils.deepmib.stopTrainingWithoutPlots,"
+            "'OutputFcn', @deepmib.stopTrainingWithoutPlots,"
             ], ' ');
     end
 

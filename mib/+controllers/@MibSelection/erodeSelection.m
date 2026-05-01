@@ -2,7 +2,9 @@ function erodeSelection(obj)
 % ERODESELECTION - Shrink (erode) the Selection layer for the current dataset.
 %
 % Syntax:
-%   function erodeSelection(obj)
+%   .. code-block:: matlab
+%
+%      obj.erodeSelection()
 %
 % Reads modifier keys to determine the dataset scope, then reads the
 % Apply-in-3D, Difference and Strel-size widgets from the Selection panel.

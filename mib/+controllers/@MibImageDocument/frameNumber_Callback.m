@@ -1,64 +1,57 @@
 function frameNumber_Callback(obj, parameter, BatchOptIn)
-% FRAMENUMBER_CALLBACK - Callback for changing the time points of the dataset by entering a new time value.
+% FRAMENUMBER_CALLBACK - Callback for changing the time points by entering a new time value.
 %
 % Syntax:
-%   function frameNumber_Callback(obj, parameter, BatchOptIn)
+%   .. code-block:: matlab
+%
+%      obj.frameNumber_Callback()
+%      obj.frameNumber_Callback(parameter)
+%      obj.frameNumber_Callback(parameter, BatchOptIn)
 %
 % Handles input from the frame number edit box in the MIB image document
 % view. Validates and clamps the requested frame number, then delegates
-% the actual frame update to frameNumberSlider_Callback. Also supports
+% the actual frame update to ``frameNumberSlider_Callback``. Also supports
 % MIB batch processing via the BatchOpt mechanism.
 %
-% Syntax:
-% obj.frameNumber_Callback()
-% obj.frameNumber_Callback(parameter)
-% obj.frameNumber_Callback(parameter, BatchOptIn)
-% obj.frameNumber_Callback(parameter, NaN)   % returns batch settings
+% Input Arguments:
+%   - **parameter** *(optional)* — [numeric] requested frame number (if omitted, reads from ``obj.handles.frameNumber.Value``)
+%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing control:
 %
-% Inputs:
-% obj        - MibImageDocument controller instance (handle)
-% parameter  - (optional) numeric. The requested frame number.
-% If omitted or empty, reads from obj.handles.frameNumber.Value.
-% BatchOptIn - (optional) struct or NaN.
-% struct : fields are merged into the default BatchOpt,
-% allowing programmatic/batch override of FrameNumber.
-% NaN    : triggers 'SyncBatch' event and returns immediately,
-% sending current BatchOpt settings to mibBatchController.
-% Omitted: defaults to an empty struct (interactive mode).
+%     - [struct] fields are merged into default BatchOpt, allowing programmatic override of ``FrameNumber``
+%     - ``NaN`` triggers ``'SyncBatch'`` event and returns immediately, sending BatchOpt settings to mibBatchController
+%     - omitted defaults to empty struct (interactive mode)
 %
-% BatchOpt Fields:
-% FrameNumber          - char. Requested frame number as a string.
-% Use '0' to jump to the last time point.
-% mibBatchSectionName  - char. UI section label: 'Panel Image view'
-% mibBatchActionName   - char. Batch action label: 'Change frame/time number'
-% mibBatchTooltip      - struct. Tooltips for each BatchOpt field.
+% Output Arguments:
+%   (none)
 %
-% Frame Number Clamping:
-% - value == 0 or value > maxTime  →  clamped to maxTime (last frame)
-% - value < 0                      →  clamped to 1       (first frame)
-% - otherwise                      →  used as-is
+% **Frame Number Clamping Rules:**
+%   - value ``== 0`` or ``value > maxTime`` → clamped to ``maxTime`` (last frame)
+%   - value ``< 0`` → clamped to ``1`` (first frame)
+%   - otherwise → used as-is
 %
-% Notes:
-% - This function is the edit-box counterpart to frameNumberSlider_Callback.
-% It validates input, then syncs the slider value and calls
-% frameNumberSlider_Callback() to apply the change to the model.
-% - In DeveloperMode, a diagnostic message is printed to the command window.
-% - If BatchOptIn is not a struct and not NaN, an error dialog is shown.
+% **BatchOpt Structure Fields:**
+%   - ``.FrameNumber`` — [char] requested frame number as string; use ``'0'`` to jump to last time point
+%   - ``.mibBatchSectionName`` — [char] UI section label: ``'Panel -> Image view'``
+%   - ``.mibBatchActionName`` — [char] batch action label: ``'Change frame/time number'``
+%   - ``.mibBatchTooltip`` — [struct] tooltips for each BatchOpt field
 %
-% MVC Role:
-% Controller (MibImageDocument) — processes View input (edit box),
-% updates the View (slider), and triggers a Model update via
-% frameNumberSlider_Callback.
+% **Example 1** — navigate to frame 5 programmatically:
 %
-% Example:
-% % Programmatically navigate to frame 5:
-% obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback(5, struct());
+%   .. code-block:: matlab
 %
-% % Jump to the last frame using the shorthand value 0:
-% obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback(0, struct());
+%      obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback(5, struct());
 %
-% % Query available batch settings:
-% obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback([], NaN);
+% **Example 2** — jump to last frame using shorthand value ``0``:
+%
+%   .. code-block:: matlab
+%
+%      obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback(0, struct());
+%
+% **Example 3** — query available batch settings:
+%
+%   .. code-block:: matlab
+%
+%      obj.cImageDoc{obj.mibModel.Sets.selectedSet}.frameNumber_Callback([], NaN);
 
 if nargin < 3; BatchOptIn = struct; end
 if nargin < 2; parameter = []; end

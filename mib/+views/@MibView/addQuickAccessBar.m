@@ -1,13 +1,13 @@
 function qab = addQuickAccessBar(obj)
-% ADDQUICKACCESSBAR - add quick access buttons to MIB.
+% ADDQUICKACCESSBAR - add quick access bar with shortcut buttons.
 %
 % Syntax:
-%   function qab = addQuickAccessBar(obj)
+%   .. code-block:: matlab
 %
-% Input Arguments:
+%      qab = obj.addQuickAccessBar()
 %
 % Output Arguments:
-%   - **qab** — structure with the generated handles
+%   - **qab** — [struct] handles to the quick access bar widgets
 %
 
 arguments (Input)

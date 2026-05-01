@@ -2,7 +2,9 @@ function result = deleteNode(obj, x, y, z, orientation)
 % DELETENODE - delete node that is closest to the point with coordinates x, y, z.
 %
 % Syntax:
-%   function result = deleteNode(obj, x, y, z, orientation)
+%   .. code-block:: matlab
+%
+%       result = obj.deleteNode(x, y, z, orientation)
 %
 % the previous and following nodes get connected after remove of the node
 %

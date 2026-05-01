@@ -2,7 +2,9 @@ function meta = getMeta(obj)
 % GETMETA - Collect MibImage properties into a metadata dictionary.
 %
 % Syntax:
-%   function meta = getMeta(obj)
+%   .. code-block:: matlab
+%
+%       meta = obj.getMeta()
 %
 % Builds a dictionary matching the schema of MibImage.initializeImgInfo()
 % from the current state of the object's properties. This is the inverse

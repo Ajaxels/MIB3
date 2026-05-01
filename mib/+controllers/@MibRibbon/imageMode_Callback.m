@@ -2,7 +2,9 @@ function imageMode_Callback(obj, hWidget, hData)
 % IMAGEMODE_CALLBACK - callback on press of buttons in the Mode section of the Image ribbon.
 %
 % Syntax:
-%   function imageMode_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageMode_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

@@ -2,7 +2,10 @@ function updateSliceNumber(obj, BatchOptIn)
 % UPDATESLICENUMBER - Change the currently displayed slice number in the active image document.
 %
 % Syntax:
-%   function updateSliceNumber(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%      obj.updateSliceNumber()
+%      obj.updateSliceNumber(BatchOpt)
 %
 % Wrapper that exposes slice navigation to the MIB batch processing
 % system. Validates the requested slice number (clamping it to the valid
@@ -12,26 +15,32 @@ function updateSliceNumber(obj, BatchOptIn)
 % Input Arguments:
 %   - **BatchOptIn** — *(optional)* structure for batch processing mode; when NaN,
 %     returns default options via the "SyncBatch" event
-%     - .SliceNumber - [char, {'1'}] slice number to display as a string;
-%   use '0' to jump to the last slice of the dataset
+%
+%     - ``.SliceNumber`` — [char, default ``'1'``] slice number to display as a string;
+%       use ``'0'`` to jump to the last slice of the dataset
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — interactive call (reads from the slice-number widget):
 %
-%     obj.updateSliceNumber();                                          % interactive: reads value from the slice-number widget
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.updateSliceNumber();
 %
-%     BatchOpt.SliceNumber = '5';
-%     obj.updateSliceNumber(BatchOpt);                                        % batch/scripted call: jump to slice 5
+% **Example 2** — batch call: jump to slice 5:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     BatchOpt.SliceNumber = '0';
-%     obj.updateSliceNumber(BatchOpt);                                        % batch/scripted call: jump to the last slice
+%      BatchOpt.SliceNumber = '5';
+%      obj.updateSliceNumber(BatchOpt);
+%
+% **Example 3** — batch call: jump to the last slice:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.SliceNumber = '0';
+%      obj.updateSliceNumber(BatchOpt);
 %
 
 % Updates

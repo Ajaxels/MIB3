@@ -2,7 +2,6 @@ function status = datasetsSetsOps(obj, BatchOptIn)
 % DATASETSSETSOPS - Operations with sets of the model.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      status = obj.datasetsSetsOps()

@@ -2,7 +2,9 @@ function transferLearning(obj)
 % TRANSFERLEARNING - perform fine-tuning of the loaded network to a different.
 %
 % Syntax:
-%   function transferLearning(obj)
+%   .. code-block:: matlab
+%
+%       obj.transferLearning()
 %
 % number of classes
 

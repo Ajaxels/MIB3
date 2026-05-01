@@ -2,7 +2,9 @@ function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
 % INSERTSLICE - Insert virtual file references into the virtual dataset along the depth dimension.
 %
 % Syntax:
-%   function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
+%   .. code-block:: matlab
+%
+%       obj.insertSlice(img, insertPosition, dim, virtMeta, options)
 %
 % Overrides MibImage.insertSlice for virtual (MibVirtualImage) datasets.
 % Instead of manipulating pixel arrays, this method splices cell arrays of

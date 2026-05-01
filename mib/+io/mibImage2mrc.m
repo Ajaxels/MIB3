@@ -1,49 +1,54 @@
 function result = mibImage2mrc(O, Options)
-% MIBIMAGE2MRC - Export volume in MRC format.
+% MIBIMAGE2MRC - Export volume data in MRC format.
 %
 % Syntax:
-%   function result = mibImage2mrc(O, Options)
 %
-% **Note:** Requires matTomo function set, available in mib/external/MatTomo
+%   .. code-block:: matlab
+%
+%      result = io.mibImage2mrc(O, Options)
+%
+% Exports 3D volumetric image data to MRC format (Electron Microscopy Data Bank
+% standard). Requires the MatTomo function set, available in ``mib/external/MatTomo``.
 %
 % Input Arguments:
-%   - **O** — a dataset, [1:height,1:width,1:thickness] or [1:height,1:width,1,1:thickness]
-%   - **Options** — a structure:
-%     - .volumeFilename  — filename, use 'mrc' extension
-%     - .pixSize.x       — physical width of the voxels
-%     - .pixSize.y       — physical height of the voxels
-%     - .pixSize.z       — physical thickness of the voxels
-%     - .pixSize.units   — physical units
-%     - .showWaitbar     — if **1** - show the wait bar, if **0** - do not show
-%     - ``.ParentFigure`` — *(optional)* handle to the main MIB application
-%       window.  When provided, the progress bar is rendered
-%       as a uiprogressdlg attached to that window
-%       (recommended for GUI use).  When absent or empty
-%       the legacy waitbar is used as a fallback.
+%   - **O** — [H, W, D] or [H, W, 1, D] numeric array, volumetric dataset.
+%     Grayscale format required (MRC does not support multichannel images).
+%   - **Options** — struct with configuration:
+%
+%     - ``.volumeFilename`` — [char] output filename; use ``'.mrc'`` extension
+%     - ``.pixSize`` — struct with voxel size information:
+%
+%       - ``.x`` — [numeric] physical width of voxels
+%       - ``.y`` — [numeric] physical height of voxels
+%       - ``.z`` — [numeric] physical thickness of voxels
+%       - ``.units`` — [char] physical units (``'m'``, ``'cm'``, ``'mm'``, ``'um'``, ``'nm'``)
+%
+%     - ``.showWaitbar`` — *(optional)* [logical] default: ``true``
+%       show progress bar during save
+%     - ``.ParentFigure`` — *(optional)* [handle] main MIB window for ``uiprogressdlg``
+%       attachment (recommended for GUI use). When absent, falls back to legacy ``waitbar``.
 %
 % Output Arguments:
-%   - **result** — result of the function run, **1** - success, **0** - fail
+%   - **result** — [logical] ``1`` on success, ``0`` on failure
 %
-%   - **Example** —
-%
-%   .. code-block:: matlab
-%
-%       %% Standalone / scripted use (no GUI parent):
-%       mrcOpts.volumeFilename = '/output/volume.mrc';
-%       mrcOpts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
-%       mrcOpts.showWaitbar    = false;
-%       io.mibImage2mrc(imageData_hwd, mrcOpts);
-%
-%
+% **Example 1** — standalone scripted use (no GUI parent):
 %
 %   .. code-block:: matlab
 %
-%       %% GUI use — attach progress dialog to the MIB window:
-%       mrcOpts.volumeFilename = '/output/volume.mrc';
-%       mrcOpts.pixSize        = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
-%       mrcOpts.showWaitbar    = true;
-%       mrcOpts.ParentFigure   = obj.mibModel.mibGUI;   % uiprogressdlg parent
-%       io.mibImage2mrc(imageData_hwd, mrcOpts);
+%      mrcOpts.volumeFilename = '/output/volume.mrc';
+%      mrcOpts.pixSize = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
+%      mrcOpts.showWaitbar = false;
+%      io.mibImage2mrc(imageData_hwd, mrcOpts);
+%
+% **Example 2** — GUI use with progress dialog attached to MIB window:
+%
+%   .. code-block:: matlab
+%
+%      mrcOpts.volumeFilename = '/output/volume.mrc';
+%      mrcOpts.pixSize = struct('x',0.065,'y',0.065,'z',0.2,'units','um');
+%      mrcOpts.showWaitbar = true;
+%      mrcOpts.ParentFigure = obj.mibModel.mibGUI;
+%      io.mibImage2mrc(imageData_hwd, mrcOpts);
 %
 
 result = 0;

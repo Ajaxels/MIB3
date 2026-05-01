@@ -2,7 +2,9 @@ function [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)
 % CONVERTDATATOMOUSECOORDINATES - Convert coordinates of a pixel in the dataset to the coordinates of the.
 %
 % Syntax:
-%   function [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)
+%   .. code-block:: matlab
+%
+%       [xOut, yOut] = obj.convertDataToMouseCoordinates(x, y, mode)
 %
 % image axes (screen/mouse space).
 %

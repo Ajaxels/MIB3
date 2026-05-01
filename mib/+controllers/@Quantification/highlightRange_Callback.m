@@ -2,7 +2,9 @@ function highlightRange_Callback(obj)
 % HIGHLIGHTRANGE_CALLBACK - Highlight all objects whose Value column falls within the range.
 %
 % Syntax:
-%   function highlightRange_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.highlightRange_Callback()
 %
 % specified in the highlight1 and highlight2 edit boxes.
 %

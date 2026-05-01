@@ -2,7 +2,9 @@ function reorderMaterials(obj, newOrder, wb)
 % REORDERMATERIALS - Reorder materials in the model — low-level data layer.
 %
 % Syntax:
-%   function reorderMaterials(obj, newOrder, wb)
+%   .. code-block:: matlab
+%
+%       obj.reorderMaterials(newOrder, wb)
 %
 % Remaps pixel values according to newOrder across every time-point.
 % Only supported for small models (maxMaterials < 256).  The mapping is

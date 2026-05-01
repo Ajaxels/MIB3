@@ -3,9 +3,11 @@ function moveView(obj, x, y, orient)
 % Center the image view at the provided coordinates: x, y
 %
 % Syntax:
-%   obj.moveView(x);
-%   obj.moveView(x, y);
-%   obj.moveView(x, y, orient);
+%   .. code-block:: matlab
+%
+%       obj.moveView(x);
+%       obj.moveView(x, y);
+%       obj.moveView(x, y, orient);
 %
 % Description:
 %   Pans the image display so that the given pixel coordinate (x, y) becomes

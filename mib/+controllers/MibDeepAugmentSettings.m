@@ -281,7 +281,7 @@ classdef MibDeepAugmentSettings < handle
             %
             % reset augmentation settings to their default values
             
-            obj.augOptions = utils.deepmib.generateDefaultAugmentations(obj.augmentationMode);
+            obj.augOptions = deepmib.generateDefaultAugmentations(obj.augmentationMode);
             obj.updateWidgets();
         end
 
@@ -419,10 +419,10 @@ classdef MibDeepAugmentSettings < handle
                     imgDS = imageDatastore(inputPath, ...
                         'FileExtensions', fnExtention, ...
                         'IncludeSubfolders', false, ...
-                        'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                        'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                 else        % with preprocessing
                     imgDS = imageDatastore(fullfile(obj.mibDeep.BatchOpt.ResultingImagesDir, 'TrainImages'), ...
-                        'FileExtensions', '.mibImg', 'IncludeSubfolders', false, 'ReadFcn', @utils.deepmib.storeLoadImages);
+                        'FileExtensions', '.mibImg', 'IncludeSubfolders', false, 'ReadFcn', @deepmib.storeLoadImages);
                 end
             catch err
                 mibShowErrorDialog(obj.view.gui, err, 'Missing files');
@@ -486,13 +486,13 @@ classdef MibDeepAugmentSettings < handle
                     mibDeepAugmentOpt.AugOpt2D = obj.augOptions;
                     mibDeepAugmentOpt.Aug2DFuncNames = obj.mibDeep.Aug2DFuncNames;
                     mibDeepAugmentOpt.Aug2DFuncProbability = obj.mibDeep.Aug2DFuncProbability;
-                    [augPatch, info, augOperation(z), augParameter(z,:)] = utils.deepmib.augmentAndCrop2dPatchMultiGPU(patchIn, [], inputPatchSize, inputPatchSize, 'aug', mibDeepAugmentOpt); %#ok<ASGLU>
+                    [augPatch, info, augOperation(z), augParameter(z,:)] = deepmib.augmentAndCrop2dPatchMultiGPU(patchIn, [], inputPatchSize, inputPatchSize, 'aug', mibDeepAugmentOpt); %#ok<ASGLU>
                     Iout{z} = augPatch.inpVol{1};
                 else
                     mibDeepAugmentOpt.AugOpt3D = obj.augOptions;
                     mibDeepAugmentOpt.Aug3DFuncNames = obj.mibDeep.Aug3DFuncNames;
                     mibDeepAugmentOpt.Aug3DFuncProbability = obj.mibDeep.Aug3DFuncProbability;
-                    [augPatch, info, augOperation(z), augParameter(z,:)] = utils.deepmib.augmentAndCrop3dPatchMultiGPU(patchIn, [], inputPatchSize, inputPatchSize, 'aug', mibDeepAugmentOpt); %#ok<ASGLU>
+                    [augPatch, info, augOperation(z), augParameter(z,:)] = deepmib.augmentAndCrop3dPatchMultiGPU(patchIn, [], inputPatchSize, inputPatchSize, 'aug', mibDeepAugmentOpt); %#ok<ASGLU>
                     Iout{z} = squeeze(augPatch.inpVol{1}(:,:, ceil(size(augPatch.inpVol{1},3)/2),:));
                 end
 

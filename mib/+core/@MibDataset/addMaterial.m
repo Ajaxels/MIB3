@@ -2,7 +2,11 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 % ADDMATERIAL - Add a material to the model — low-level data layer.
 %
 % Syntax:
-%   function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)
+%   .. code-block:: matlab
+%
+%      [result, newMaterialIndex] = obj.addMaterial(materialName)
+%      [result, newMaterialIndex] = obj.addMaterial(materialName, newMaterialIndex)
+%      [result, newMaterialIndex] = obj.addMaterial(materialName, newMaterialIndex, wb)
 %
 % Creates the model when it does not yet exist.  For small model types
 % (63/255) the new name is appended to the materialNames list and a colour
@@ -14,38 +18,32 @@ function [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterial
 % In all cases obj.labels.materialsCount is incremented by 1 on success.
 %
 % Input Arguments:
-%   - **materialName** — *(optional)* char, name for the new material
-%     [*default* 'NewMaterial'].
-%   - For types 63 / 255 – the human-readable label appended to the list.
-%   - For types 65535 / 4294967295 – overridden with the string
-%     representation of the assigned index.
-%   - **newMaterialIndex** — *(optional)* double, next unused 1-based material
-%     index.  When empty the method uses obj.labels.materialsCount + 1.
-%     Ignored for types 63 / 255.
-%   - **wb** — *(optional)* handle to a uiprogressdlg used for progress display;
-%     when empty no progress is reported.
+%   - **materialName** *(optional)* — [char] name for the new material (default: ``'NewMaterial'``):
+%
+%     - For types 63/255 — human-readable label appended to the list
+%     - For types 65535/4294967295 — overridden with string representation of the assigned index
+%
+%   - **newMaterialIndex** *(optional)* — [double] next unused 1-based material index; when empty
+%     the method uses ``obj.labels.materialsCount + 1``; ignored for types 63/255
+%   - **wb** *(optional)* — [uiprogressdlg] handle to a progress dialog for displaying progress;
+%     when empty no progress is reported
 %
 % Output Arguments:
-%   - **result** — logical, true on success, false when the model is full
-%     (capacity exceeded).
-%   - **newMaterialIndex** — double, the material index that was actually assigned;
-%     relevant for large model types, empty for small types.
+%   - **result** — [logical] ``true`` on success; ``false`` when the model is full (capacity exceeded)
+%   - **newMaterialIndex** — [double] material index that was actually assigned; relevant for
+%     large model types (65535/4294967295); empty for small types (63/255)
 %
-% Usage:
-%   **Example 1**
+% **Example 1** — Add material to a small model (type 63/255):
 %
 %   .. code-block:: matlab
 %
+%      obj.addMaterial('Nucleus');
 %
-%     obj.mibModel.I{obj.mibModel.id}.addMaterial('Nucleus');% type-63 / 255 model
-%
-%   **Example 2**
+% **Example 2** — Add material to a large model with auto-indexing:
 %
 %   .. code-block:: matlab
 %
-%
-%     [ok, idx] = obj.mibModel.I{obj.mibModel.id}.addMaterial('', [], wb);% large model, auto-index
-%
+%      [ok, idx] = obj.addMaterial('', [], wb);
 
 % Updates
 %

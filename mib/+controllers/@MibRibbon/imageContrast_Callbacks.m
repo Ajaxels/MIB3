@@ -2,7 +2,9 @@ function imageContrast_Callbacks(obj, hWidget, hData)
 % IMAGECONTRAST_CALLBACKS - callback on press of the contrast buttons in the Image ribbon.
 %
 % Syntax:
-%   function imageContrast_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageContrast_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

@@ -2,10 +2,14 @@ function updateWidgets(obj)
 % UPDATEWIDGETS - Refresh all GUI widgets from the current model state and BatchOpt.
 %
 % Syntax:
-%   function updateWidgets(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateWidgets()
 %
 % Called at startup (after the view is created) and whenever the active
-% dataset changes.  Repopulates:
+% dataset changes.  
+%
+% Repopulates:
 %   - Material dropdown — Mask, Exterior, and all model materials
 %   - ColorChannel1/ColorChannel2 dropdowns
 %   - DatasetType, ObjectShape, DetectionType, Property, Connectivity, Units dropdowns

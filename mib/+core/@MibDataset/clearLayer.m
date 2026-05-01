@@ -1,46 +1,60 @@
 function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
-% CLEARLAYER - Clear the layer, a wrapper function that is using.
+% CLEARLAYER - Clear data from a layer (wrapper for layer-specific clear methods).
 %
 % Syntax:
-%   function clearLayer(obj, layer, y, x, z, t, blockModeSwitch)
+%   .. code-block:: matlab
 %
-% - obj.labels.clearLayer, for core.MibLabels63
-% - obj.(layer).clearLayer, for other types
+%      obj.clearLayer(layer)
+%      obj.clearLayer(layer, y, x, z, t)
+%      obj.clearLayer(layer, y, x, z, t, blockModeSwitch)
+%
+% Routes to ``obj.labels.clearLayer`` for ``core.MibLabels63`` or ``obj.(layer).clearLayer`` for other types.
 %
 % Input Arguments:
-%   - **layer** — a string with the target layer:
+%   - **layer** — [char] target layer to clear:
 %
-%     - ``[]`` or ``'selection'`` — *(default)* clear the selection layer
+%     - ``'selection'`` or ``[]`` — clear the selection layer (default)
 %     - ``'mask'`` — clear the mask layer
 %     - ``'labels'`` — clear the labels layer
-%     - ``'everything'`` — clear selection, mask, labels layers (``core.MibLabels63`` class only)
+%     - ``'everything'`` — clear selection, mask, labels layers (``core.MibLabels63`` only)
 %     - ``'image'`` — clear the image layer
 %
-%   - **y** — *(optional)*, a vector of y-values, can be []:
+%   - **y** *(optional)* — [numeric or char] y-coordinates or clear mode:
 %
-%     - ``[]`` — *(default)* clear complete dataset (``'4D'`` mode)
-%     - ``[minY, maxY]`` — vector of Y-min, Y-max values
-%     - ``'2D'``, ``'3D'``, ``'4D'`` — char string specifying the clear mode
+%     - ``[]`` — clear complete dataset in ``'4D'`` mode (default)
+%     - ``[minY, maxY]`` — numeric vector of Y-min and Y-max
+%     - ``'2D'`` — clear current slice only
+%     - ``'3D'`` — clear full z-stack at current time
+%     - ``'4D'`` — clear entire 4D dataset
 %
-%   - **x** — *(optional)*, can be ``[]``, vector of X-min and X-max values ``[minX, maxX]``
-%   - **z** — *(optional)* vector of Z-min, Z-max, for example ``[minZ, maxZ]``
-%   - **t** — *(optional)* vector of T-min, T-max values, for example ``[minT, maxT]``
-%   - **blockModeSwitch** — [*optional,* logical] enable/disable the block mode:
+%   - **x** *(optional)* — [numeric] X-min and X-max values ``[minX, maxX]``; ``[]`` for full range
+%   - **z** *(optional)* — [numeric] Z-min and Z-max values ``[minZ, maxZ]``; ``[]`` for full range
+%   - **t** *(optional)* — [numeric] T-min and T-max values ``[minT, maxT]``; ``[]`` for full range
+%   - **blockModeSwitch** *(optional)* — [logical] enable/disable block mode:
 %
-%     - ``[]`` — use the currently selected value ``obj.blockModeSwitch`` *(default)*
-%     - ``true`` — enable block mode, clear only the shown area of the dataset
-%     - ``false`` — disable block mode, clear the full dataset
+%     - ``[]`` — use currently selected value ``obj.blockModeSwitch`` (default)
+%     - ``true`` — enable block mode; clear only the shown area
+%     - ``false`` — disable block mode; clear the full dataset
 %
 % Output Arguments:
 %
-% Usage:
-%   **Example 1**
+% **Example 1** — Clear the selection layer completely:
 %
 %   .. code-block:: matlab
 %
+%      obj.clearLayer('selection');
 %
-%     obj.mibModel.I{obj.mibModel.id}.clearLayer('selection');% call from mibController, clear the Selection layer completely
+% **Example 2** — Clear only the current 2D slice:
 %
+%   .. code-block:: matlab
+%
+%      obj.clearLayer('selection', '2D');
+%
+% **Example 3** — Clear with block mode enabled (visible area only):
+%
+%   .. code-block:: matlab
+%
+%      obj.clearLayer('selection', '4D', [], [], [], true);
 
 if nargin < 7; blockModeSwitch = obj.blockModeSwitch; end
 if nargin < 6; t = []; end

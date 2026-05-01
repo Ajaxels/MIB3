@@ -2,7 +2,9 @@ function favTool_Callback(obj, hWidget, hData)
 % FAVTOOL_CALLBACK - callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in.
 %
 % Syntax:
-%   function favTool_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.favTool_Callback(hWidget, hData)
 %
 % obj.handles.panels.segmentation panel.
 % Select the current tool as favorite, the favorite tools available upon

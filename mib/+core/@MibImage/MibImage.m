@@ -94,41 +94,41 @@ classdef MibImage < matlab.mixin.Copyable
     end
 
     methods
-        % declaration of functions in the external files, keep empty line in between for the doc generator
-        
-        clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
-
-        crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
-
-        output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
-
-        insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data{1} along depth or time; updates sliceName
-
-        dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
-
-        varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
-
-        viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
-
-        meta = getMeta(obj)        % collect properties into a metadata dictionary (inverse of initialize)
-
-        setMeta(obj, meta)        % apply a metadata dictionary to properties (inverse of getMeta)
-
-        [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)        % Return image stretching coefficients to be used for imadjust function to stretch contrast of the image
-
-        initialize(obj, data, meta, type);  % initialize the class using default or provided values
-
-        result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
-
-        dataset = getPixelIdxList(obj, type, PixelIdxList)          % Get pixel values at a list of linear indices; handles MibLabels63 bit-unpacking automatically
-
-        result = setPixelIdxList(obj, type, dataset, PixelIdxList)  % Write pixel values at a list of linear indices; handles MibLabels63 bit-packing automatically
-
-        fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
-
-        updateActionLog(obj, logEntry, action, entryIndex)    % Append, insert, delete, or modify a timestamped entry in obj.actionLog.
-
-        updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
+        % % declaration of functions in the external files, keep empty line in between for the doc generator
+        % 
+        % clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
+        % 
+        % crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
+        % 
+        % output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
+        % 
+        % insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data{1} along depth or time; updates sliceName
+        % 
+        % dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
+        % 
+        % varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
+        % 
+        % viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
+        % 
+        % meta = getMeta(obj)        % collect properties into a metadata dictionary (inverse of initialize)
+        % 
+        % setMeta(obj, meta)        % apply a metadata dictionary to properties (inverse of getMeta)
+        % 
+        % [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)        % Return image stretching coefficients to be used for imadjust function to stretch contrast of the image
+        % 
+        % initialize(obj, data, meta, type);  % initialize the class using default or provided values
+        % 
+        % result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
+        % 
+        % dataset = getPixelIdxList(obj, type, PixelIdxList)          % Get pixel values at a list of linear indices; handles MibLabels63 bit-unpacking automatically
+        % 
+        % result = setPixelIdxList(obj, type, dataset, PixelIdxList)  % Write pixel values at a list of linear indices; handles MibLabels63 bit-packing automatically
+        % 
+        % fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
+        % 
+        % updateActionLog(obj, logEntry, action, entryIndex)    % Append, insert, delete, or modify a timestamped entry in obj.actionLog.
+        % 
+        % updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
 
     end
 
@@ -148,7 +148,9 @@ classdef MibImage < matlab.mixin.Copyable
             % MIBIMAGE - obj = MibImage(data, meta).
             %
             % Syntax:
-            %   function obj = MibImage(data, meta)
+            %   .. code-block:: matlab
+            %
+            %       obj = MibImage(data, meta)
             %
             % MibImage class constructor
             %

@@ -2,22 +2,27 @@ function outputPath = saveLayout(obj, mode)
 % SAVELAYOUT - Store the current layout of panels to disk.
 %
 % Syntax:
-%   function outputPath = saveLayout(obj, mode)
+%   .. code-block:: matlab
+%
+%      outputPath = obj.saveLayout()
+%      outputPath = obj.saveLayout(mode)
 %
 % Input Arguments:
-%   - **mode** — char [optional, default='localDefault'] mode to store MIB layout
-%     - 'localDefault' - default layout for local installation of MIB, saved to utils.getPrefDir, 'mibDefaultLayout.json'
-%     - 'custom' - save layout to utils.getPrefDir using a custom name
-%     - 'globalDefault' - update the default MIB layout configuration in MIB\assets\defaultLayout.json
+%   - **mode** — *(optional)* char, default: ``'localDefault'``
+%
+%     - ``'localDefault'`` — save to ``utils.getPrefDir/mibDefaultLayout.json``
+%     - ``'custom'`` — save to ``utils.getPrefDir`` using a custom name
+%     - ``'globalDefault'`` — overwrite the bundled default in ``MIB/assets/defaultLayout.json``
 %
 % Output Arguments:
-%   - **filename** — char with the full path to the output file with the stored
-%     layout. The saved layout can be restored using utils.restoreLayout function.
+%   - **outputPath** — char with the full path to the saved layout JSON file;
+%     the file can be restored with ``loadLayout``
 %
-% Usage:
-%   Example 1::
+% **Example** — save the current layout as the local default:
 %
-%     filename = obj.storeLayout(obj); // call from MibController class
+%   .. code-block:: matlab
+%
+%      outputPath = obj.saveLayout();
 %
 
 arguments (Input)

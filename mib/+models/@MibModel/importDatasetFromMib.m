@@ -2,7 +2,9 @@ function importDatasetFromMib(obj, layerType, BatchOptIn)
 % IMPORTDATASETFROMMIB - Import the mask or model layer from another MIB container into the active dataset.
 %
 % Syntax:
-%   function importDatasetFromMib(obj, layerType, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.importDatasetFromMib(layerType, BatchOptIn)
 %
 % This is the inverse of exportDatasetToMib: it pulls a layer FROM another
 % container INTO the currently active container.

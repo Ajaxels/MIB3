@@ -2,7 +2,9 @@ function setAxesLimits(obj, axesX, axesY)
 % SETAXESLIMITS - set axes limits for the dataset.
 %
 % Syntax:
-%   function setAxesLimits(obj, axesX, axesY)
+%   .. code-block:: matlab
+%
+%       obj.setAxesLimits(axesX, axesY)
 %
 % Input Arguments:
 %   - **axesX** — a vector [min, max] for for X

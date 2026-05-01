@@ -1,26 +1,32 @@
 function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
-% AMIRAMESH2BITMAP - Converts Amira Mesh to bitmap matrix [1:height, 1:width, 1:no_stacks, 1:colors].
+% AMIRAMESH2BITMAP - Convert Amira Mesh file to bitmap matrix.
 %
 % Syntax:
-%   function [bitmap, par, status] = amiraMesh2bitmap(filename, options)
+%   .. code-block:: matlab
+%
+%      bitmap = io.AmiraMesh.amiraMesh2bitmap()
+%      [bitmap, par] = io.AmiraMesh.amiraMesh2bitmap(filename)
+%      [bitmap, par, status] = io.AmiraMesh.amiraMesh2bitmap(filename, options)
 %
 % Input Arguments:
-%   - **filename** — (*optional),* a filename of amira mesh file, when omitted a file selection dialog is started.
-%   - **options** — a structure with extra options
-%     - .hWaitbar handles to the existing waitbar
-%     - .maxZ maximal number of z-slices in the dataset
-%     - .depth_start - > *(optional)*, to take only specified sections
-%     - .depth_end - > *(optional)*, to take only specified sections
-%     - .depth_step *(optional)*, Z-step to take not all sections
-%     - .xy_step *(optional)*, XY-step, i.e. binning factor
-%     - .resizeMethod *(optional)*, resize Method for binning the XY-dimension
-%     - .getMeta *(optional)*, logical, default=true, acquire meta data
-%     - .verbose *(optional)*, logical, default=true, make a printf message of the loaded file
+%   - **filename** — *(optional)* filename of Amira Mesh file; when omitted,
+%     a file selection dialog is started
+%   - **options** — *(optional)* struct with fields:
+%
+%     - ``.hWaitbar`` — handle to an existing progress dialog
+%     - ``.maxZ`` — [numeric] total number of z-slices (used to scale the waitbar)
+%     - ``.depth_start`` — [numeric] first z-slice to load (default: ``1``)
+%     - ``.depth_end`` — [numeric] last z-slice to load
+%     - ``.depth_step`` — [numeric] z-step (default: ``1``, load every slice)
+%     - ``.xy_step`` — [numeric] XY binning factor (default: ``1``, no binning)
+%     - ``.resizeMethod`` — (char) resize method for XY binning
+%     - ``.getMeta`` — [logical] acquire metadata (default: ``true``)
+%     - ``.verbose`` — [logical] print loaded-file message (default: ``true``)
 %
 % Output Arguments:
-%   - **bitmap** — - dataset, [1:height, 1:width, 1:colors, 1:no_stacks]
-%   - **par** — - structure with parameters from Amira Mesh file
-%   - **status** — - logical switch indicating success of the function
+%   - **bitmap** — dataset [height, width, colors, depth]
+%   - **par** — struct array with Amira Mesh header parameters
+%   - **status** — [logical] ``true`` on success, ``false`` on failure or cancel
 %
 
 % Updates
@@ -294,10 +300,12 @@ if options.verbose; disp(['amiraMesh2bitmap: ' filename ' was loaded!']); end
 end
 
 function parValueText = loopHeader(fid, parValueText, level)
-% LOOPHEADER - collect inbedded containers as a plain text.
+% LOOPHEADER - Collect embedded containers as plain text.
 %
 % Syntax:
-%   function parValueText = loopHeader(fid, parValueText, level)
+%   .. code-block:: matlab
+%
+%      parValueText = loopHeader(fid, parValueText, level)
 %
 while level >= 1
     tline = strtrim(fgetl(fid));

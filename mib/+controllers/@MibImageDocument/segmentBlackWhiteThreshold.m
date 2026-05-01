@@ -1,37 +1,44 @@
 function segmentBlackWhiteThreshold(obj, BatchOptIn)
-% SEGMENTBLACKWHITETHRESHOLD - Perform black and white thresholding for the *BW* *Threshold* tool.
+% SEGMENTBLACKWHITETHRESHOLD - Perform black and white thresholding for the BW Threshold tool.
 %
 % Syntax:
-%   function segmentBlackWhiteThreshold(obj, BatchOptIn)
+%   .. code-block:: matlab
 %
-% of the Segmentation panel
+%      obj.segmentBlackWhiteThreshold()
+%      obj.segmentBlackWhiteThreshold(BatchOptIn)
+%
+% Tool from the Segmentation panel.
 %
 % Input Arguments:
-%   - **BatchOptIn** — *(optional)* a structure for batch processing mode, when NaN return
-%     a structure with default options via "syncBatch" event
-%     - .Mode - Apply thresholding for the current slice (2D), current stack (3D) or the whole dataset(4D)
-%     - .MinValue - Minimum intensity or Sensitivity value for thresholding
-%     - .MaxValue - Maximum intensity or Width value for thresholding
-%     - .ColorChannel - Color channel to be used for thresholding
-%     - .FixSelectionToMask - Apply thresholding only to the masked area
-%     - .FixSelectionToMaterial - Apply thresholding only to the area of the selected material
-%     - .Adaptive - Enable adaptive thresholding; use MinValue to specify Sensitivity and MaxValue to specify Width
-%     - .AdaptiveInvert - [Adaptive only] invert dataset before adaptive thresholding
-%     - .AdaptiveForegroundPolarity - [Adaptive only] determine which pixels are considered foreground pixels
-%     - .Target - Destination layer for the thresholding
-%     - .showWaitbar - Show or not the progress bar during execution
+%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%     when ``NaN``, returns default structure via "syncBatch" event:
+%
+%     - ``.Mode`` — [char] ``'2D'``, ``'3D'``, or ``'4D'`` — apply thresholding for current slice, stack, or whole dataset
+%     - ``.MinValue`` — [numeric] minimum intensity or Sensitivity value for thresholding
+%     - ``.MaxValue`` — [numeric] maximum intensity or Width value for thresholding
+%     - ``.ColorChannel`` — [numeric] color channel for thresholding
+%     - ``.FixSelectionToMask`` — [logical] apply thresholding only to masked area
+%     - ``.FixSelectionToMaterial`` — [logical] apply thresholding only to selected material area
+%     - ``.Adaptive`` — [logical] enable adaptive thresholding (use ``MinValue`` for Sensitivity, ``MaxValue`` for Width)
+%     - ``.AdaptiveInvert`` — [logical, adaptive only] invert dataset before adaptive thresholding
+%     - ``.AdaptiveForegroundPolarity`` — [char, adaptive only] determine which pixels are foreground
+%     - ``.Target`` — [char] ``'selection'`` or ``'mask'`` — destination layer for thresholding
+%     - ``.showWaitbar`` — [logical] show progress bar during execution
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — apply thresholding with current widget settings:
 %
-%     obj.segmentBlackWhiteThreshold();  // apply thresholding with current widget settings
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentBlackWhiteThreshold();
 %
-%     obj.segmentBlackWhiteThreshold(BatchOpt);  // batch mode with provided options
+% **Example 2** — batch mode with provided options:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentBlackWhiteThreshold(BatchOpt);
 %
 
 % Updates

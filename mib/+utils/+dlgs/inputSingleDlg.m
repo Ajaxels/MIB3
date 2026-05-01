@@ -10,7 +10,6 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 % - **Escape** — cancel (equivalent to clicking Cancel)
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle)

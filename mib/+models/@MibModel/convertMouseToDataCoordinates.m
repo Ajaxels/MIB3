@@ -2,7 +2,9 @@ function [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mod
 % CONVERTMOUSETODATACOORDINATES - Convert coordinates under the mouse cursor to the coordinates of the dataset.
 %
 % Syntax:
-%   function [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)
+%   .. code-block:: matlab
+%
+%       [xOut, yOut, zOut, tOut] = obj.convertMouseToDataCoordinates(x, y, mode, permuteSw)
 %
 % Input Arguments:
 %   - **x** — x - coordinate

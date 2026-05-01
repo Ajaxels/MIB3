@@ -18,7 +18,9 @@ function [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNe
 % GENERATEUNET2DWITHENCODER - generate Unet convolutional neural network for semantic image.
 %
 % Syntax:
-%   function [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNetwork)
+%   .. code-block:: matlab
+%
+%       [net, outputSize] = obj.generateUnet2DwithEncoder(imageSize, encoderNetwork)
 %
 % segmentation of 2D RGB images using a specified encoder
 %

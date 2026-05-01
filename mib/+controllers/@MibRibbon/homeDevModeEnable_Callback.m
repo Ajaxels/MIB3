@@ -2,7 +2,9 @@ function homeDevModeEnable_Callback(obj, hWidget, hData)
 % HOMEDEVMODEENABLE_CALLBACK - Enable or disable developer mode that shows handles of widgets in.
 %
 % Syntax:
-%   function homeDevModeEnable_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homeDevModeEnable_Callback(hWidget, hData)
 %
 % tooltips
 

@@ -2,7 +2,9 @@ function result = setData4D(obj, dataset, type, orient, col_channel, options)
 % SETDATA4D - result = setData4D(obj, dataset, type, orient, col_channel, options).
 %
 % Syntax:
-%   function result = setData4D(obj, dataset, type, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       result = obj.setData4D(dataset, type, orient, col_channel, options)
 %
 % Set complete 4D dataset with colors [height:width:depth:colors:time]
 %

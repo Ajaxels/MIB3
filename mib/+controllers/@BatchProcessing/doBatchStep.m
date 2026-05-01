@@ -2,7 +2,9 @@ function status = doBatchStep(obj, stepId, stepOptions)
 % DOBATCHSTEP - execute a single step of the batch protocol.
 %
 % Syntax:
-%   function status = doBatchStep(obj, stepId, stepOptions)
+%   .. code-block:: matlab
+%
+%       status = obj.doBatchStep(stepId, stepOptions)
 %
 % Handles all built-in service steps (STOP EXECUTION, loop markers, Directory
 % operations, File operations) directly, then delegates every other action to
@@ -14,26 +16,29 @@ function status = doBatchStep(obj, stepId, stepOptions)
 % user pressed the Stop button while the protocol was running).
 %
 % Input Arguments:
-%   - **stepId** — 1-based index into obj.Protocol of the step to execute
-%   - **stepOptions** — optional struct carrying loop context; may include:
-%     - .DirectoryName    - directory from an enclosing Directory or File loop
-%     - .FilenameFilter   - bare filename (without path) supplied by a File loop
-%     - .Filenames        - full path(s) to the file supplied by a File loop
-%     - .FileLoopWaitbar  - [logical] when true suppress per-step waitbars
-%     - .seriesId         - integer BioFormats series index (from doSeriesLoop)
+%   - **stepId** — [numeric] 1-based index into obj.Protocol of the step to execute
+%   - **stepOptions** *(optional)* — [struct] loop context struct with fields:
+%
+%     - ``.DirectoryName`` — directory from an enclosing Directory or File loop
+%     - ``.FilenameFilter`` — bare filename (without path) supplied by a File loop
+%     - ``.Filenames`` — full path(s) to the file supplied by a File loop
+%     - ``.FileLoopWaitbar`` — [logical] when true suppress per-step waitbars
+%     - ``.seriesId`` — integer BioFormats series index (from doSeriesLoop)
 %
 % Output Arguments:
 %   - **status** — [logical] true on success, false if the step failed or was aborted
 %
-% Usage:
-%   Example 1::
+% **Example 1** — execute a protocol step:
 %
-%     status = obj.doBatchStep(stepId);
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      status = obj.doBatchStep(stepId);
 %
-%     status = obj.doBatchStep(stepId, stepOptions);  // with loop context
+% **Example 2** — with loop context:
 %
+%   .. code-block:: matlab
+%
+%      status = obj.doBatchStep(stepId, stepOptions);
 
 status = false;
 if nargin < 3; stepOptions = struct; end

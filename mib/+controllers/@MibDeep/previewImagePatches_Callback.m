@@ -2,7 +2,9 @@ function previewImagePatches_Callback(obj, event)
 % PREVIEWIMAGEPATCHES_CALLBACK - callback for value change of obj.view.handles.O_PreviewImagePatches.
 %
 % Syntax:
-%   function previewImagePatches_Callback(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.previewImagePatches_Callback(event)
 %
 
     if obj.view.handles.O_PreviewImagePatches.Value && strcmp(obj.view.handles.O_PreviewImagePatches.Enable, 'on')

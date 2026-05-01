@@ -1,8 +1,13 @@
 function homeHandles = addRibbonHome(obj)
-% ADDRIBBONHOME - build the Home tab group (obj.handles.ribbon.home) and add it to obj.handles.ribbon.global.
+% ADDRIBBONHOME - build the Home tab group and add it to the global ribbon.
 %
 % Syntax:
-%   function homeHandles = addRibbonHome(obj)
+%   .. code-block:: matlab
+%
+%      homeHandles = obj.addRibbonHome()
+%
+% Output Arguments:
+%   - **homeHandles** — [struct] handles to the Home ribbon section widgets
 %
 
 arguments (Input)

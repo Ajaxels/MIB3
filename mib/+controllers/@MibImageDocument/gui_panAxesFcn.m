@@ -1,21 +1,23 @@
 function gui_panAxesFcn(obj, xy, imgXLim, imgYLim)
-% GUI_PANAXESFCN - Moves the image in obj.handles.imViewAxes during a pan gesture.
+% GUI_PANAXESFCN - Move the image in obj.handles.imViewAxes during a pan gesture.
 %
 % Syntax:
-%   function gui_panAxesFcn(obj, xy, imgXLim, imgYLim)
+%   .. code-block:: matlab
 %
-% This is the WindowButtonMotionFcn callback active while the mouse button
-% is held during panning. It is installed by obj.gui_WindowButtonDownFcn:
-% hFig.WindowButtonMotionFcn = @(~,~)obj.gui_panAxesFcn(xy2, imgXLim, imgYLim);
+%      obj.gui_panAxesFcn(xy, imgXLim, imgYLim)
+%
+% This is the ``WindowButtonMotionFcn`` callback active while the mouse button
+% is held during panning. Installed by ``gui_WindowButtonDownFcn``:
+%
+%   .. code-block:: matlab
+%
+%      hFig.WindowButtonMotionFcn = @(~,~)obj.gui_panAxesFcn(xy2, imgXLim, imgYLim);
 %
 % Input Arguments:
-%   - **xy** — [1×2] double - axes data-unit coordinates of the mouse at the
-%     moment the button was first pressed (captured in gui_WindowButtonDownFcn)
-%   - **imgXLim** — [1×2] double - [xMin, xMax] data-coord boundaries of the
-%     displayed image (left and right edges). For the full image this
-%     is [1, imgWidth]; for a padded region it is [paddedX(1), paddedX(2)].
-%   - **imgYLim** — [1×2] double - [yMin, yMax] data-coord boundaries of the
-%     displayed image (top and bottom edges).
+%   - **xy** — [1×2 double] axes data-unit coordinates of mouse at moment button was first pressed (from ``gui_WindowButtonDownFcn``)
+%   - **imgXLim** — [1×2 double] ``[xMin, xMax]`` data-coord boundaries of displayed image (left and right edges);
+%     ``[1, imgWidth]`` for full image, ``[paddedX(1), paddedX(2)]`` for padded region
+%   - **imgYLim** — [1×2 double] ``[yMin, yMax]`` data-coord boundaries of displayed image (top and bottom edges)
 %
 % Output Arguments:
 %   (none)

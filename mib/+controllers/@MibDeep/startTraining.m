@@ -2,7 +2,9 @@ function startTraining(obj)
 % STARTTRAINING - perform training of the network.
 %
 % Syntax:
-%   function startTraining(obj)
+%   .. code-block:: matlab
+%
+%       obj.startTraining()
 %
 
 global counter;     % for patch test
@@ -180,7 +182,7 @@ try
         if preprocessedSwitch   % with preprocessing
             imgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'TrainImages'), ...
                 'FileExtensions', '.mibImg', 'IncludeSubfolders', false, ...
-                'ReadFcn', @utils.deepmib.storeLoadImages);
+                'ReadFcn', @deepmib.storeLoadImages);
             noFiles = numel(imgDS.Files);
         else    % without preprocessing
             if strcmp(obj.BatchOpt.Workflow{1}, '2D Patch-wise')
@@ -191,7 +193,7 @@ try
                     'FileExtensions', fnExtension, ...
                     'IncludeSubfolders', true, ...
                     "LabelSource", "foldernames", ...
-                    'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                    'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                 I = readimage(patchDS, 1);
                 if inputPatchSize(1) < size(I,1) || inputPatchSize(2) < size(I,2)
                     selection = uiconfirm(obj.view.gui, ...
@@ -211,14 +213,14 @@ try
                         'FileExtensions', fnExtension, ...
                         'IncludeSubfolders', true, ...
                         "LabelSource", "foldernames", ...
-                        'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                        'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                 end
                 noFiles = numel(patchDS.Files);
             else
                 imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), ...
                     'FileExtensions', fnExtension, ...
                     'IncludeSubfolders', false, ...
-                    'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                    'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
                 noFiles = numel(imgDS.Files);
             end
         end
@@ -348,13 +350,13 @@ try
         if preprocessedSwitch   % with preprocessing
             labelsDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'TrainLabels'), ...
                 'FileExtensions', '.mibCat', 'IncludeSubfolders', false, ...
-                'ReadFcn', @utils.deepmib.storeLoadCategorical);
+                'ReadFcn', @deepmib.storeLoadCategorical);
         else                    % without preprocessing
             switch obj.BatchOpt.ModelFilenameExtension{1}
                 case 'MODEL'
                     labelsDS = pixelLabelDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'), ...
                         classNames, pixelLabelIDs, ...
-                        'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                        'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
     
                     % I = readimage(labelsDS,1);  % read model test
                     % reset(modDS);
@@ -366,7 +368,7 @@ try
                         labelsDS = pixelLabelDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'), ...
                             classNames, pixelLabelIDs, ...
                             'FileExtensions', lower(['.' obj.BatchOpt.ModelFilenameExtension{1}]), ...
-                            'ReadFcn', @utils.deepmib.storeLoadImages);
+                            'ReadFcn', @deepmib.storeLoadImages);
                     else
                         labelsDS = pixelLabelDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'), ...
                             classNames, pixelLabelIDs, ...
@@ -394,7 +396,7 @@ try
     
     %% Create Random Patch Extraction Datastore for Validation
     if showWaitbarLocal
-        if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+        if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
         obj.wb.Value = 0.25;
         obj.wb.Message = 'Create a datastore for validation...';
     end
@@ -407,7 +409,7 @@ try
                 'FileExtensions', fnExtension, ...
                 'IncludeSubfolders', true, ...
                 "LabelSource", "foldernames", ...
-                'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
         else
             valPatchDS = [];
         end
@@ -417,10 +419,10 @@ try
             if ~isempty(fileList)
                 %fullPathFilenames = arrayfun(@(filename) fullfile(obj.BatchOpt.ResultingImagesDir, 'ValidationImages', cell2mat(filename)), {fileList.name}, 'UniformOutput', false);  % generate full paths
                 valImgDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'ValidationImages'), ...
-                    'FileExtensions', '.mibImg', 'ReadFcn', @utils.deepmib.storeLoadImages);
+                    'FileExtensions', '.mibImg', 'ReadFcn', @deepmib.storeLoadImages);
     
                 valLabelsDS = imageDatastore(fullfile(obj.BatchOpt.ResultingImagesDir, 'ValidationLabels'), ...
-                    'FileExtensions', '.mibCat', 'ReadFcn', @utils.deepmib.storeLoadCategorical);
+                    'FileExtensions', '.mibCat', 'ReadFcn', @deepmib.storeLoadCategorical);
             else    % do not use validation
                 valImgDS = [];
                 valLabelsDS = [];
@@ -431,13 +433,13 @@ try
                 valImgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), ...
                     'FileExtensions', fnExtension, ...
                     'IncludeSubfolders', false, ...
-                    'ReadFcn', @(fn)utils.deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+                    'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
     
                 switch obj.BatchOpt.ModelFilenameExtension{1}
                     case 'MODEL'
                         valLabelsDS = pixelLabelDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'), ...
                             classNames, pixelLabelIDs, ...
-                            'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                            'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
                     otherwise
                         if strcmp(obj.BatchOpt.Workflow{1}, '2.5D Semantic')
                             % have to use custom reader, the lower part may
@@ -446,7 +448,7 @@ try
                             valLabelsDS = pixelLabelDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'), ...
                                 classNames, pixelLabelIDs, ...
                                 'FileExtensions', lower(['.' obj.BatchOpt.ModelFilenameExtension{1}]), ...
-                                'ReadFcn', @utils.deepmib.storeLoadImages);
+                                'ReadFcn', @deepmib.storeLoadImages);
                         else
                             valLabelsDS = pixelLabelDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'), ...
                                 classNames, pixelLabelIDs, ...
@@ -507,7 +509,7 @@ try
     
     %% create network
     if showWaitbarLocal
-        if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+        if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
         obj.wb.Message = 'Creating the network...';
         obj.wb.Value = 0.4;
     end
@@ -576,7 +578,7 @@ try
     
     %% Augment the training and validation data by using the transform function with custom preprocessing
     if showWaitbarLocal
-        if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+        if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
         obj.wb.Message = 'Defing augmentation...';
         obj.wb.Value = 0.75;
     end
@@ -599,12 +601,12 @@ try
             mibDeepAugmentOpt.O_FractionOfPreviewPatches = obj.BatchOpt.O_FractionOfPreviewPatches{1};
             mibDeepAugmentOpt.T_NumberOfClasses = obj.BatchOpt.T_NumberOfClasses{1};
             
-            augmentFunctionHandle = @utils.deepmib.augmentAndCrop3dPatchMultiGPU; % make a handle to the function to use
+            augmentFunctionHandle = @deepmib.augmentAndCrop3dPatchMultiGPU; % make a handle to the function to use
     
             % % define augmenting function; the functions are essentially the same, but the multi-gpu
             % % version does not have access to MibDeep and obj.TrainingProgress
             % if ismember(obj.view.Figure.GPUDropDown.Value, {'Multi-GPU', 'Parallel'})
-            %     augmentFunctionHandle = @utils.deepmib.augmentAndCrop3dPatchMultiGPU; % make a handle to the function to use
+            %     augmentFunctionHandle = @deepmib.augmentAndCrop3dPatchMultiGPU; % make a handle to the function to use
             % else
             %     mibDeepAugmentOpt.O_PreviewImagePatches = obj.BatchOpt.O_PreviewImagePatches;
             %     mibDeepAugmentOpt.O_FractionOfPreviewPatches = obj.BatchOpt.O_FractionOfPreviewPatches{1};
@@ -654,10 +656,10 @@ try
             mibDeepAugmentOpt.O_FractionOfPreviewPatches = obj.BatchOpt.O_FractionOfPreviewPatches{1};
             mibDeepAugmentOpt.T_NumberOfClasses = obj.BatchOpt.T_NumberOfClasses{1};
     
-            augmentFunctionHandle = @utils.deepmib.augmentAndCrop2dPatchMultiGPU; % make a handle to the function to use
+            augmentFunctionHandle = @deepmib.augmentAndCrop2dPatchMultiGPU; % make a handle to the function to use
     
             % if ismember(obj.view.Figure.GPUDropDown.Value, {'Multi-GPU', 'Parallel'})
-            %     augmentFunctionHandle = @utils.deepmib.augmentAndCrop2dPatchMultiGPU; % make a handle to the function to use
+            %     augmentFunctionHandle = @deepmib.augmentAndCrop2dPatchMultiGPU; % make a handle to the function to use
             % else
             %     mibDeepAugmentOpt.O_PreviewImagePatches = obj.BatchOpt.O_PreviewImagePatches;
             %     mibDeepAugmentOpt.O_FractionOfPreviewPatches = obj.BatchOpt.O_FractionOfPreviewPatches{1};
@@ -723,7 +725,7 @@ try
     % After configuring the training options and the data source, train the 3-D U-Net network
     % by using the trainNetwork function.
     if showWaitbarLocal
-        if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+        if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
         obj.wb.Message = 'Starting trainining...';
         obj.wb.Value = 0.9;
     end
@@ -734,7 +736,7 @@ try
     % load the checkpoint to resume training
     if ~isempty(checkPointRestoreFile)
         if showWaitbarLocal
-            if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+            if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
             obj.wb.Message = 'Loading checkpoint...';
         end
         load(checkPointRestoreFile, 'net', '-mat');
@@ -777,7 +779,7 @@ try
     end
     
     if showWaitbarLocal
-        if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+        if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
         obj.wb.Message = 'Preparing structures and saving configs...';
         obj.wb.Value = 0.95;
     end
@@ -796,7 +798,7 @@ try
     obj.saveConfig(fullfile(configPath, [configFn '.mibCfg']));
     
     if showWaitbarLocal
-        if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+        if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
         delete(obj.wb);
     end
 catch err
@@ -862,7 +864,7 @@ try
                                 dataDimension = 2.5;
                             end
                     end
-                    [net, info] = trainnet(AugTrainDS, net, @(Y,T)utils.deepmib.customDiceForwardLoss(Y,T, dataDimension, useClasses), TrainingOptions);
+                    [net, info] = trainnet(AugTrainDS, net, @(Y,T)deepmib.customDiceForwardLoss(Y,T, dataDimension, useClasses), TrainingOptions);
                     fprintf('DeepMIB stop reason: %s\n', info.StopReason);
                 %case 'focalLossLayer'
                     % focalLoss = focalCrossEntropy(dlX, targets, ...
@@ -918,7 +920,7 @@ if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(info, 'OutputN
 end
 
 if showWaitbarLocal
-    if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+    if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
     obj.wb.Message = 'Saving network...';
     obj.wb.Value = 0.3;
 end
@@ -945,7 +947,7 @@ save(obj.BatchOpt.NetworkFilename, 'net', 'TrainingOptStruct', 'AugOpt2DStruct',
     'classNames', 'classColors', 'inputPatchSize', 'outputPatchSize', 'BatchOpt', 'mibVersion', '-mat', '-v7.3');
 
 if showWaitbarLocal
-    if obj.wb.CancelRequested; utils.deepmib.stopTrainingCallback(obj.wb); return; end
+    if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
     obj.wb.Message = 'Exporting training plots...';
     obj.wb.Value = 0.7;
 end
@@ -975,7 +977,7 @@ if obj.BatchOpt.T_ExportTrainingPlots
         try
             fn_out = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', [datetimeTag '_Train_',  fnTemplate '.png']);
             mibDeepTrainingProgressStruct.UIFigure.focus;
-            utils.deepmib.saveTrainingPlot([], [], mibDeepTrainingProgressStruct, fn_out);
+            deepmib.saveTrainingPlot([], [], mibDeepTrainingProgressStruct, fn_out);
             fn_out = fullfile(obj.BatchOpt.ResultingImagesDir, 'ScoreNetwork', [datetimeTag '_Train_',  fnTemplate '.fig']);
             savefig(mibDeepTrainingProgressStruct.UIFigure, fn_out)
         catch err

@@ -15,31 +15,35 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % BIOFORMATSSTDLOADER - Constructor for BioFormatsStdLoader class.
             %
             % Syntax:
-            %   function obj = BioFormatsStdLoader(options)
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.BioFormatsStdLoader(options)
             %
             % Input Arguments:
-            %   - **options** — [*optional,* struct] options structure
-            %   - .waitbar - [logical] show or not the waitbar
-            %   - .mibPath - [char] path to MIB directory
-            %   - .customSections - [logical] load custom sections only
-            %   - .customSectionsSettings - [struct] custom section parameters
-            %   - .imgStretch - [logical] stretch uint32 images to uint16
-            %   - .silentMode - [logical] do not ask user questions
-            %   - .verbose - [logical] show timing information
-            %   - .Font - [struct] font settings for dialogs
-            %   - .ParentFigure - handle of the main MIB window to be a parent for uiprogressdlg
-            %   - .bioFormatsMemoizerMemoDir - [char] path to memo directory
-            %   - .BioFormatsIndices - [numeric] specific series indices to load (0 for all)
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``mibPath`` — [char] path to MIB directory
+            %     - ``customSections`` — [logical] load custom sections only; default: ``false``
+            %     - ``customSectionsSettings`` — [struct] custom section parameters
+            %     - ``imgStretch`` — [logical] stretch uint32 images to uint16; default: ``false``
+            %     - ``silentMode`` — [logical] do not ask user questions; default: ``false``
+            %     - ``verbose`` — [logical] show timing information; default: ``false``
+            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``ParentFigure`` — handle of the main MIB window (parent for uiprogressdlg)
+            %     - ``bioFormatsMemoizerMemoDir`` — [char] path to memo directory
+            %     - ``BioFormatsIndices`` — [numeric] specific series indices to load (``0`` for all)
             %
             % Output Arguments:
             %   - **obj** — instance of the BioFormatsStdLoader class
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — create loader with options:
             %
-            %       options.waitbar = true;
-            %       options.bioFormatsMemoizerMemoDir = 'c:\temp';
-            %       loader = io.loaders.BioFormatsStdLoader(options);
+            %   .. code-block:: matlab
+            %
+            %      options.waitbar = true;
+            %      options.bioFormatsMemoizerMemoDir = 'c:\temp';
+            %      loader = io.loaders.BioFormatsStdLoader(options);
             %
 
             % default Options settings
@@ -55,7 +59,9 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % LOADMETADATA - Load metadata for files using Bio-Formats.
             %
             % Syntax:
-            %   function [imginfo, files] = loadMetadata(obj, filenames, options)
+            %   .. code-block:: matlab
+            %
+            %      [imginfo, files] = obj.loadMetadata(filenames, options)
             %
             % This method uses loci.formats.Memoizer with bfGetReader to extract
             % metadata efficiently. It handles multi-series selection, pixel size
@@ -63,36 +69,41 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             %
             % Input Arguments:
             %   - **filenames** — cell array with filenames
-            %   - **options** — [*struct]* options for metadata loading
-            %   - .waitbar - [logical] show or not the waitbar
-            %   - .customSections - [logical] load part of the dataset
-            %   - .Font - [struct] font settings for dialogs
-            %   - .BioFormatsIndices - [numeric] specific series to load (0 for all)
-            %   - .bioFormatsMemoizerMemoDir - [char] memo directory path
+            %   - **options** — *(optional)* struct with fields:
+            %
+            %     - ``waitbar`` — [logical] show or not the waitbar; default: ``false``
+            %     - ``customSections`` — [logical] load part of the dataset; default: ``false``
+            %     - ``Font`` — [struct] font settings for dialogs
+            %     - ``BioFormatsIndices`` — [numeric] specific series to load (``0`` for all)
+            %     - ``bioFormatsMemoizerMemoDir`` — [char] memo directory path
             %
             % Output Arguments:
-            %   - **imginfo** — dictionary with image metadata
-            %   - "Height" - image height in pixels
-            %   - "Width" - image width in pixels
-            %   - "Colors" - number of color channels
-            %   - "Depth" - number of z-slices
-            %   - "Time" - number of time points
-            %   - "imgClass" - image class (uint8, uint16, etc.)
-            %   - "ColorType" - 'grayscale', 'truecolor', or 'indexed'
-            %   - "ImageDescription" - description with BoundingBox info
-            %   - "Format" - HDF5 format type ('matlab.hdf5' or 'bdv.hdf5')
-            %   - "Levels" - number of pyramid levels (for BDV only)
-            %   - "ReturnedLevel" - selected pyramid level (for BDV only)
-            %   - "pixSize" - structire with pixel sizes, .x, .y, .z, .t, .units, .tunits
-            %   - other format-specific metadata fields
+            %   - **imginfo** — dictionary with image metadata containing fields:
+            %
+            %     - ``Height`` — image height in pixels
+            %     - ``Width`` — image width in pixels
+            %     - ``Colors`` — number of color channels
+            %     - ``Depth`` — number of z-slices
+            %     - ``Time`` — number of time points
+            %     - ``imgClass`` — image class (``uint8``, ``uint16``, etc.)
+            %     - ``ColorType`` — ``'grayscale'``, ``'truecolor'``, or ``'indexed'``
+            %     - ``ImageDescription`` — description with BoundingBox info
+            %     - ``Format`` — HDF5 format type (``'matlab.hdf5'`` or ``'bdv.hdf5'``)
+            %     - ``Levels`` — number of pyramid levels (for BDV only)
+            %     - ``ReturnedLevel`` — selected pyramid level (for BDV only)
+            %     - ``pixSize`` — struct with pixel sizes: ``.x``, ``.y``, ``.z``, ``.t``,
+            %       ``.units``, ``.tunits``
+            %     - other format-specific metadata fields
+            %
             %   - **files** — structure array with file information
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — load metadata from Bio-Formats file:
             %
-            %       loader = io.loaders.BioFormatsStdLoader();
-            %       filenames = {'image.czi'};
-            %       [imginfo, files] = loader.loadMetadata(filenames, options);
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.BioFormatsStdLoader();
+            %      filenames = {'image.czi'};
+            %      [imginfo, files] = loader.loadMetadata(filenames, options);
             %
 
             % Merge constructor options with runtime options
@@ -449,19 +460,29 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % LOADIMAGES - Load image data using Bio-Formats.
             %
             % Syntax:
-            %   function [img, imginfo] = loadImages(obj, files, imginfo, options)
+            %   .. code-block:: matlab
             %
-            % This method uses bfopen4 (MIB wrapper around bfopen) to load images.
+            %      [img, imginfo] = obj.loadImages(files, imginfo, options)
+            %
+            % This method uses bfopen5 (MIB wrapper around bfopen) to load images.
             % It supports loading multiple series and concatenating them along Z.
             %
             % Input Arguments:
             %   - **files** — structure array from loadMetadata
             %   - **imginfo** — dictionary from loadMetadata
-            %   - **options** — [*struct]* options for image loading
+            %   - **options** — *(optional)* struct for image loading
             %
             % Output Arguments:
             %   - **img** — loaded image dataset
             %   - **imginfo** — updated dictionary
+            %
+            % **Example 1** — load images from Bio-Formats file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loader = io.loaders.BioFormatsStdLoader();
+            %      [imginfo, files] = loader.loadMetadata({'image.czi'}, options);
+            %      [img, imginfo] = loader.loadImages(files, imginfo, options);
             %
 
             % Merge constructor options with runtime options

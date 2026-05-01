@@ -2,7 +2,9 @@ function imginfo = initializeImgInfo(varargin)
 % INITIALIZEIMGINFO - Create the standard MibImage metadata dictionary, optionally overriding defaults via Name-Value pairs.
 %
 % Syntax:
-%   function imginfo = initializeImgInfo(varargin)
+%   .. code-block:: matlab
+%
+%       imginfo = initializeImgInfo(varargin)
 %
 % This is the CANONICAL factory for the imginfo dictionary used throughout
 % MIB3 to carry image metadata between loaders, core data classes, and

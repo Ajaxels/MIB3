@@ -2,7 +2,9 @@ function fileFilters_ContextMenu(obj, menuEntry, selectedData)
 % FILEFILTERS_CONTEXTMENU - callbacks for the context menu of the file filters widget.
 %
 % Syntax:
-%   function fileFilters_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
+%
+%       obj.fileFilters_ContextMenu(menuEntry, selectedData)
 %
 % (obj.handles.panels.activeDataset.handles.fileFilters)
 %

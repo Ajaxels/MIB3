@@ -2,7 +2,9 @@ function roiModify(obj)
 % ROIMODIFY - Interactively modify (redraw) an existing ROI.
 %
 % Syntax:
-%   function roiModify(obj)
+%   .. code-block:: matlab
+%
+%      obj.roiModify()
 %
 % If "All" is selected in the ROI list a dialog prompts the user to choose
 % which ROI to edit.  The appropriate draw tool is then re-launched with

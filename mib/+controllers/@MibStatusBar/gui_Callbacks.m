@@ -1,63 +1,54 @@
 function gui_Callbacks(obj, mode)
-% GUI_CALLBACKS - callbacks for widgets of some the Status bar obj.handles.status.
+% GUI_CALLBACKS - Central callback dispatcher for status bar widgets.
 %
 % Syntax:
-%   function gui_Callbacks(obj, mode)
+%   .. code-block:: matlab
 %
-% Syntax:
-% obj.gui_Callbacks();
-% obj.gui_Callbacks(mode);
+%      obj.gui_Callbacks()
+%      obj.gui_Callbacks(mode)
 %
-% Description:
-% Central callback dispatcher for all interactive widgets in the
-% MibStatusBar status bar panel. Routes execution to the appropriate
-% handler based on the 'mode' string, which corresponds to the tag of
-% the triggered widget.
-%
-% When DeveloperMode is enabled in preferences, each call logs the
-% triggered mode to the MATLAB console for debugging.
+% Routes execution to the appropriate handler based on the widget tag (``mode``).
+% When DeveloperMode is enabled, each call logs the triggered mode to console for debugging.
 %
 % Input Arguments:
-%   obj  - [controllers.MibStatusBar] Handle to the MibStatusBar controller
-%   mode - [char, optional] Tag of the widget that triggered the callback.
-%   - **Default** — '' (no-op). Supported values:
+%   - **obj** — [MibStatusBar] controller instance
+%   - **mode** *(optional)* — [char] widget tag triggering callback (default: ``''`` no-op). Supported values:
 %
-%   'selectWorkingDirectory' - Opens a directory picker dialog. Updates
-%   mibModel.currentDirectory and refreshes
-%   the file list in the directory contents panel.
+%     - ``'selectWorkingDirectory'`` — open directory picker dialog, update ``mibModel.currentDirectory``, refresh file list
+%     - ``'currentDirectory'`` — validate and apply manually typed path; keep parent folder if filename detected; revert if invalid
+%     - ``'copyPath'`` — copy current directory path to system clipboard
+%     - ``'openBrowser'`` — open current directory in native file browser:
 %
-%   'currentDirectory'       - Validates and applies a manually typed path
-%   in the currentDirectory field. If the path
-%   includes a filename (detected by file extension),
-%   only the parent folder is kept. Resets to the
-%   previous path if the directory does not exist.
+%       - Windows — Windows Explorer
+%       - macOS — Finder (via ``open``)
+%       - Linux — Caja file manager (fallback: xterm); error dialog if path invalid
 %
-%   'copyPath'               - Copies the current directory path string
-%   to the system clipboard.
+%     - ``'zoom'`` — reserved for zoom-related status bar actions
 %
-%   'openBrowser'            - Opens the current directory in the native
-%   file browser:
-%   - **Windows** — Windows Explorer
-%   - **macOS** — Finder (via 'open')
-%   - **Linux** — Caja file manager, falling back
-%     to xterm if Caja is unavailable.
-%     Shows an error dialog if the path is invalid.
+% **Example 1** — Open directory picker dialog:
 %
-%   'zoom'                   - Reserved for zoom-related status bar actions
+%   .. code-block:: matlab
 %
+%      obj.gui_Callbacks('selectWorkingDirectory');
 %
-%   Example 1 - Open a directory picker dialog:
-%   obj.gui_Callbacks('selectWorkingDirectory');
+% **Example 2** — Apply typed path from currentDirectory field:
 %
-%   Example 2 - Apply a typed path from the currentDirectory field:
-%   obj.handles.currentDirectory.Value = 'C:\Data\experiment01';
-%   obj.gui_Callbacks('currentDirectory');
+%   .. code-block:: matlab
 %
-%   Example 3 - Copy the active directory path to the clipboard:
-%   obj.gui_Callbacks('copyPath');
+%      obj.handles.currentDirectory.Value = 'C:\Data\experiment01';
+%      obj.gui_Callbacks('currentDirectory');
 %
-%   Example 4 - Open the active directory in the OS file browser:
-%   obj.gui_Callbacks('openBrowser');
+% **Example 3** — Copy active directory path to clipboard:
+%
+%   .. code-block:: matlab
+%
+%      obj.gui_Callbacks('copyPath');
+%
+% **Example 4** — Open active directory in OS file browser:
+%
+%   .. code-block:: matlab
+%
+%      obj.gui_Callbacks('openBrowser');
 %
 
 

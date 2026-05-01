@@ -1,12 +1,17 @@
 function panelHandles = addDirContentsPanel(obj)
-% ADDDIRCONTENTSPANEL - add the DirContents panel, add context menus and callbacks for widgets.
+% ADDDIRCONTENTSPANEL - add the directory contents panel with context menus and callbacks.
 %
 % Syntax:
-%   function panelHandles = addDirContentsPanel(obj)
+%   .. code-block:: matlab
 %
-% The callbacks are added in the controller of the panel:
-% controllers.MibDirContents during its creation in
-% MibController.initialize() MibController.addGuiControllers()
+%      panelHandles = obj.addDirContentsPanel()
+%
+% Output Arguments:
+%   - **panelHandles** — [struct] handles to the directory contents panel widgets
+%
+% Notes:
+%   The callbacks are added in the controller of the panel: ``controllers.MibDirContents``
+%   during its creation in ``MibController.initialize()`` and ``MibController.addGuiControllers()``
 
 arguments (Input)
     obj views.MibView

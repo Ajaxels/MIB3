@@ -1,10 +1,13 @@
 function statusHandles = addStatusBar(obj)
-% ADDSTATUSBAR - Add status bar to MIB as matlab.ui.internal.statusbar.StatusBar().
+% ADDSTATUSBAR - add status bar with status widgets to the main window.
 %
 % Syntax:
-%   function statusHandles = addStatusBar(obj)
+%   .. code-block:: matlab
 %
-% stored in statusHandles.*
+%      statusHandles = obj.addStatusBar()
+%
+% Output Arguments:
+%   - **statusHandles** — [struct] handles to the status bar widgets
 
 arguments (Input)
     obj views.MibView

@@ -2,7 +2,10 @@ function updateGuiWidgets(obj, updatePanels)
 % UPDATEGUIWIDGETS - Update user interface widgets based on the properties of the currently open dataset.
 %
 % Syntax:
-%   function updateGuiWidgets(obj, updatePanels)
+%   .. code-block:: matlab
+%
+%      obj.updateGuiWidgets()
+%      obj.updateGuiWidgets(updatePanels)
 %
 % Refreshes the named subsets of the GUI; when called with no arguments (or
 % an empty cell array) every panel is refreshed.  Callers that know which
@@ -10,48 +13,50 @@ function updateGuiWidgets(obj, updatePanels)
 %
 % Input Arguments:
 %   - **updatePanels** — *(optional)* char or cell array of chars identifying the
-%     panel(s) to refresh.  Pass {} or omit to refresh everything.  Valid
+%     panel(s) to refresh.  Pass ``{}`` or omit to refresh everything.  Valid
 %     name strings:
-%     - 'ribbonImage'        - Image ribbon tab (bit depth, color type)
-%     - 'ribbonModel'        - Model ribbon tab (model type radio buttons)
-%     - 'QuickAccessBar'     - Orientation buttons, ROI, block-mode toggle
-%     - 'depthSlider'        - Z-slice number slider and edit field
-%     - 'timeSlider'         - Time-frame slider and edit field
-%     - 'checkboxes'         - Show mask / model checkboxes, restrict controls
-%     - 'imView'             - Image view panel title
-%     - 'activeDataset'      - Dataset buffer buttons in the Datasets panel
-%     - 'dirContentsDataset' - Directory contents file list and filter
-%     - 'panelThresholding'  - Black/white threshold sliders
-%     - 'roi'                - ROI related items
-%     - 'selectionPanel'     - LUT checkbox and colour table
-%     - 'statusBar'          - Status bar current-directory field
+%
+%     - ``'ribbonImage'``        — Image ribbon tab (bit depth, color type)
+%     - ``'ribbonModel'``        — Model ribbon tab (model type radio buttons)
+%     - ``'QuickAccessBar'``     — Orientation buttons, ROI, block-mode toggle
+%     - ``'depthSlider'``        — Z-slice number slider and edit field
+%     - ``'timeSlider'``         — Time-frame slider and edit field
+%     - ``'checkboxes'``         — Show mask / model checkboxes, restrict controls
+%     - ``'imView'``             — Image view panel title
+%     - ``'activeDataset'``      — Dataset buffer buttons in the Datasets panel
+%     - ``'dirContentsDataset'`` — Directory contents file list and filter
+%     - ``'panelThresholding'``  — Black/white threshold sliders
+%     - ``'roi'``                — ROI related items
+%     - ``'selectionPanel'``     — LUT checkbox and colour table
+%     - ``'statusBar'``          — Status bar current-directory field
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   Example 1 - Refresh ALL panels (e.g. after loading a new dataset)::
+% **Example 1** — refresh ALL panels (e.g. after loading a new dataset):
 %
-%     % Refresh ALL panels (e.g. after loading a new dataset):
-%     obj.updateGuiWidgets();
+%   .. code-block:: matlab
 %
+%      obj.updateGuiWidgets();
 %
-%   Example 2 - Refresh only the Model ribbon tab and the checkboxes panel::
+% **Example 2** — refresh only the Model ribbon tab and the checkboxes panel:
 %
-%     % Refresh only the Model ribbon tab and the checkboxes panel:
-%     obj.updateGuiWidgets({'ribbonModel', 'checkboxes'});
+%   .. code-block:: matlab
 %
+%      obj.updateGuiWidgets({'ribbonModel', 'checkboxes'});
 %
-%   Example 3 - Trigger a full refresh via the MibModel event bus::
+% **Example 3** — trigger a full refresh via the MibModel event bus:
 %
-%     % Trigger a full refresh via the MibModel event bus:
-%     notify(obj.mibModel, 'UpdateGuiWidgets');
+%   .. code-block:: matlab
 %
+%      notify(obj.mibModel, 'UpdateGuiWidgets');
 %
-%   Example 4 - Trigger a selective refresh via the MibModel event bus::
+% **Example 4** — trigger a selective refresh via the MibModel event bus:
 %
-%     % Trigger a selective refresh via the MibModel event bus:
-%     eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
-%     notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
+%   .. code-block:: matlab
+%
+%      eventdata = core.ToggleEventData({'ribbonModel', 'checkboxes'});
+%      notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
 %
 
 if obj.mibModel.preferences.System.DeveloperMode

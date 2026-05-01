@@ -2,7 +2,9 @@ function setActivationLayerOptions(obj)
 % SETACTIVATIONLAYEROPTIONS - update options for the activation layers.
 %
 % Syntax:
-%   function setActivationLayerOptions(obj)
+%   .. code-block:: matlab
+%
+%       obj.setActivationLayerOptions()
 %
     switch obj.BatchOpt.T_ActivationLayer{1}
         case 'clippedReluLayer'

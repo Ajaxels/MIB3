@@ -12,93 +12,95 @@ classdef MibRibbon
     end
 
     methods
-        % declaration of functions in the external files, keep empty line in between for the doc generator
-    
-        datasetAlignment_Callback(obj, hWidget, hData)        % callback on press of buttons in the Alignment section of the Dataset ribbon
-
-        datasetCalibration_Callback(obj, hWidget, hData)        % callback on press of buttons in the Calibration section of the Dataset ribbon
-
-        datasetMetadata_Callback(obj, hWidget, hData)        % callback on press of buttons in the Metadata section of the Dataset ribbon
-        
-        datasetToolsSlices_Callback(obj, hWidget, hData)        % callback on press of buttons in the Slices button of the Dataset ribbon
-        
-        datasetTools_Callback(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
-
-        datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
-
-        homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
-        
-        homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
-
-        homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
-
-        homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
-
-        homeLoad_Callback(obj, hWidget, hData)        % callback on press of the load button in the Home ribbon
-
-        homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
-
-        homeIOtools_Callback(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
-
-        homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
-
-        homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
-
-        homeUpdateRecentDirsList(obj)        % update the recent directories list
-
-        image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
-
-        imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
-
-        imageContrast_Callbacks(obj, hWidget, hData)        % callback on press of the contrast buttons in the Image ribbon
-
-        imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
-        
-        imageMode_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mode section of the Image ribbon
-
-        imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
-
-        imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
-
-        imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
-
-        maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
-        
-        maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
-        
-        maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
-        
-        maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
-
-        modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
-        
-        modelConvertType_Callback(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
-
-        modelExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Model ribbon
-
-        modelImport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Model ribbon
-
-        modelMaterials_Callback(obj, hWidget, hData)        % callback on press of buttons in the Materials button of the Model ribbon
-
-        modelQuantification_Callback(obj, hWidget, hData)        % callback on press of the Quantification button in the Model ribbon
-        
-        modelRender_Callback(obj, hWidget, hData)        % callback on press of buttons in the Render button of the Model ribbon
-
-        selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
-
-        selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
-
-        toolsMisc_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Misc section of the Tools ribbon
-        
-        toolsSegmentation_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Segmentation section of the Tools ribbon
-
-        result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
+        % % declaration of functions in the external files, keep empty line in between for the doc generator
+        % 
+        % datasetAlignment_Callback(obj, hWidget, hData)        % callback on press of buttons in the Alignment section of the Dataset ribbon
+        % 
+        % datasetCalibration_Callback(obj, hWidget, hData)        % callback on press of buttons in the Calibration section of the Dataset ribbon
+        % 
+        % datasetMetadata_Callback(obj, hWidget, hData)        % callback on press of buttons in the Metadata section of the Dataset ribbon
+        % 
+        % datasetToolsSlices_Callback(obj, hWidget, hData)        % callback on press of buttons in the Slices button of the Dataset ribbon
+        % 
+        % datasetTools_Callback(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
+        % 
+        % datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
+        % 
+        % homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
+        % 
+        % homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
+        % 
+        % homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
+        % 
+        % homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
+        % 
+        % homeLoad_Callback(obj, hWidget, hData)        % callback on press of the load button in the Home ribbon
+        % 
+        % homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
+        % 
+        % homeIOtools_Callback(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
+        % 
+        % homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
+        % 
+        % homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
+        % 
+        % homeUpdateRecentDirsList(obj)        % update the recent directories list
+        % 
+        % image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
+        % 
+        % imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
+        % 
+        % imageContrast_Callbacks(obj, hWidget, hData)        % callback on press of the contrast buttons in the Image ribbon
+        % 
+        % imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
+        % 
+        % imageMode_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mode section of the Image ribbon
+        % 
+        % imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
+        % 
+        % imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
+        % 
+        % imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
+        % 
+        % maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
+        % 
+        % maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
+        % 
+        % maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
+        % 
+        % maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
+        % 
+        % modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
+        % 
+        % modelConvertType_Callback(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
+        % 
+        % modelExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Model ribbon
+        % 
+        % modelImport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Model ribbon
+        % 
+        % modelMaterials_Callback(obj, hWidget, hData)        % callback on press of buttons in the Materials button of the Model ribbon
+        % 
+        % modelQuantification_Callback(obj, hWidget, hData)        % callback on press of the Quantification button in the Model ribbon
+        % 
+        % modelRender_Callback(obj, hWidget, hData)        % callback on press of buttons in the Render button of the Model ribbon
+        % 
+        % selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
+        % 
+        % selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
+        % 
+        % toolsMisc_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Misc section of the Tools ribbon
+        % 
+        % toolsSegmentation_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Segmentation section of the Tools ribbon
+        % 
+        % result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
 
         function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
             % MIBRIBBON - % Init properties.
             %
             % Syntax:
-            %   function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
+            %   .. code-block:: matlab
+            %
+            %       obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
             %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
@@ -193,7 +195,9 @@ classdef MibRibbon
             % ADDCALLBACKSTODATASETRIBBON - add callbacks to the Dataset ribbon to allow lazy loading.
             %
             % Syntax:
-            %   function addCallbacksToDatasetRibbon(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacksToDatasetRibbon()
             %
 
             %% Add Callbacks for the DATASET ribbon -> Alignment
@@ -236,7 +240,9 @@ classdef MibRibbon
             % ADDCALLBACKSTODATASETIMAGE - add callbacks to the Image ribbon to allow lazy loading.
             %
             % Syntax:
-            %   function addCallbacksToDatasetImage(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacksToDatasetImage()
             %
         
             %% Add Callbacks for the IMAGE ribbon -> Mode
@@ -304,7 +310,9 @@ classdef MibRibbon
             % ADDCALLBACKSTODATASETMODEL - add callbacks to the Model ribbon to allow lazy loading.
             %
             % Syntax:
-            %   function addCallbacksToDatasetModel(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacksToDatasetModel()
             %
 
             %% Add Callbacks for the MODEL ribbon -> Convert type
@@ -360,7 +368,9 @@ classdef MibRibbon
             % ADDCALLBACKSTODATASETMASK - add callbacks to the Mask ribbon to allow lazy loading.
             %
             % Syntax:
-            %   function addCallbacksToDatasetMask(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacksToDatasetMask()
             %
 
             %% Add Callbacks for the MASK ribbon -> Mask to Selection
@@ -399,7 +409,9 @@ classdef MibRibbon
             % ADDCALLBACKSTODATASETSELECTION - add callbacks to the Selection ribbon to allow lazy loading.
             %
             % Syntax:
-            %   function addCallbacksToDatasetSelection(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacksToDatasetSelection()
             %
 
             %% Add Callbacks for the SELECTION ribbon -> Converts section
@@ -443,7 +455,9 @@ classdef MibRibbon
             % ADDCALLBACKSTODATASETTOOLS - add callbacks to the Tools ribbon to allow lazy loading.
             %
             % Syntax:
-            %   function addCallbacksToDatasetTools(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacksToDatasetTools()
             %
 
             %% Add Callbacks for the SELECTION ribbon -> Segmentation section

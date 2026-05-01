@@ -1,19 +1,28 @@
 function addNode(obj, x, y, z, newTreeSwitch, options)
-% ADDNODE - add a new node(s) to the graph; when x,y,z are columns of.
+% ADDNODE - Add one or more nodes to the graph.
 %
 % Syntax:
-%   function addNode(obj, x, y, z, newTreeSwitch, options)
+%   .. code-block:: matlab
 %
-% coordinates they are considered to be connected with edges
+%       obj.addNode(x, y, z, newTreeSwitch, options)
+%
+% Adds a sequence of nodes connected by edges to the graph. When ``x``, ``y``, ``z``
+% are column vectors, the nodes are connected sequentially in the order given.
+% New nodes can extend an existing tree or start a new tree.
 %
 % Input Arguments:
-%   - **x** — a column of x coordinates of nodes (in physical units)
-%   - **y** — a column of y coordinates of nodes (in physical units)
-%   - **z** — a column of z coordinates of nodes (in physical units)
-%   - **newTreeSwitch** — an optional switch to start a new tree
-%   - **options** — a structure with optional parameters
-%     .pixSize - structure with pixel sizes of the dataset
-%     .BoundingBox - a vector with the bounding box information [xmin, width, ymin, height, zmin, depth]
+%   - **x** — [numeric vector] x coordinates of nodes IN PHYSICAL UNITS
+%   - **y** — [numeric vector] y coordinates of nodes IN PHYSICAL UNITS
+%   - **z** — [numeric vector] z coordinates of nodes IN PHYSICAL UNITS
+%   - **newTreeSwitch** — *(optional)* [numeric] start a new tree (default: ``0`` = extend active tree):
+%
+%     - ``0`` — add nodes to the active tree
+%     - ``1`` — start a new tree
+%
+%   - **options** — *(optional)* [struct] metadata and dataset information:
+%
+%     - ``.pixSize`` — [struct] pixel size with fields ``.x``, ``.y``, ``.z``, ``.units``
+%     - ``.BoundingBox`` — [1×6 numeric] bounding box ``[xmin, width, ymin, height, zmin, depth]``
 %
 
 if nargin < 6; options = struct(); end

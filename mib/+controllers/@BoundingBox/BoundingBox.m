@@ -1,12 +1,13 @@
 classdef BoundingBox < handle
-% BOUNDINGBOX - @type BoundingBox class is responsible for display of the Bounding Box.
+% BOUNDINGBOX - Controller for the Bounding Box editor dialog.
 %
-% window, available from MIB Menu Dataset Bounding Box
+% Available from Ribbon → Dataset → Bounding Box.  Allows viewing and
+% editing the spatial bounding box and voxel size of the current dataset.
 %
+% Syntax:
+%   .. code-block:: matlab
 %
-% .. code-block:: matlab
-%
-%   obj.startController('controllers.BoundingBox'); // as GUI tool
+%      obj.startController('controllers.BoundingBox');
 
     % Updates
     % 20.05.2019, updated for the batch mode
@@ -37,13 +38,25 @@ classdef BoundingBox < handle
 
     methods (Static)
         function ViewListner_Callback2(obj, src, evnt)
-            % VIEWLISTNER_CALLBACK2 - Guard: if the view window was closed (e.g. via X button before.
+            % VIEWLISTNER_CALLBACK2 - Guard: clean up listeners and return silently if the view was closed.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, src, evnt)
+            %   .. code-block:: matlab
             %
-            % CloseRequestFcn was registered, or external deletion), clean up
-            % the listeners now and return silently.
+            %      BoundingBox.ViewListner_Callback2(obj, src, evnt)
+            %
+            % If the view window was closed (e.g. via the X button before
+            % CloseRequestFcn was registered, or by external deletion), deletes
+            % all listeners and returns silently.
+            %
+            % Input Arguments:
+            %   - **obj** — handle to the BoundingBox controller instance
+            %   - **src** — event source (handle to MibModel)
+            %   - **evnt** — event data; ``evnt.EventName`` identifies the event
+            %
+            % Output Arguments:
+            %   (none)
+            %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
                     delete(obj.listener{i});
@@ -154,10 +167,15 @@ classdef BoundingBox < handle
         end
 
         function closeWindow(obj)
-            % CLOSEWINDOW - closing BoundingBox window.
+            % CLOSEWINDOW - Close the BoundingBox window and release all listeners.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if isvalid(obj.view.gui)
@@ -173,10 +191,15 @@ classdef BoundingBox < handle
         end
 
         function updateWidgets(obj)
-            % UPDATEWIDGETS - update widgets of this window.
+            % UPDATEWIDGETS - Refresh all widgets of the BoundingBox dialog from the current model state.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateWidgets()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             obj.BatchOpt.id = obj.mibModel.id;  % = obj.mibModel.getActiveId
@@ -223,13 +246,18 @@ classdef BoundingBox < handle
         end
 
         function addCallbacks(obj)
-            % ADDCALLBACKS - assign ValueChanged/ButtonPushed callbacks to all interactive.
+            % ADDCALLBACKS - Assign ValueChanged/ButtonPushed callbacks to all interactive widgets.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
             %
-            % widgets of the view; called once from the constructor after
-            % the view is created
+            %      obj.addCallbacks()
+            %
+            % Called once from the constructor after the view is created.
+            %
+            % Output Arguments:
+            %   (none)
+            %
 
             % Hook the window X-button so it triggers the same cleanup as
             % the explicit Close button (deletes listeners, fires CloseEvent).
@@ -256,15 +284,21 @@ classdef BoundingBox < handle
         end
 
         function returnBatchOpt(obj, BatchOptOut)
-            % RETURNBATCHOPT - return structure with Batch Options and possible configurations.
+            % RETURNBATCHOPT - Return the BatchOpt structure to the Batch controller via the SyncBatch event.
             %
             % Syntax:
-            %   function returnBatchOpt(obj, BatchOptOut)
+            %   .. code-block:: matlab
+            %
+            %      obj.returnBatchOpt()
+            %      obj.returnBatchOpt(BatchOptOut)
             %
             % Input Arguments:
-            %   - **BatchOptOut** — a local structure with Batch Options generated
-            %     during Continue callback. It may contain more fields than
-            %     obj.BatchOpt structure
+            %   - **BatchOptOut** — *(optional)* local structure with Batch Options
+            %     generated during the Apply callback; may contain more fields than
+            %     ``obj.BatchOpt``.  When omitted, ``obj.BatchOpt`` is used.
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if nargin < 2; BatchOptOut = obj.BatchOpt; end
@@ -275,43 +309,49 @@ classdef BoundingBox < handle
         end
 
         function updateBatchOptFromGUI(obj, hObject, valueChangedData)
-            % UPDATEBATCHOPTFROMGUI - update obj.BatchOpt from a GUI widget.
+            % UPDATEBATCHOPTFROMGUI - Update ``obj.BatchOpt`` from a GUI widget value-change event.
             %
             % Syntax:
-            %   function updateBatchOptFromGUI(obj, hObject, valueChangedData)
+            %   .. code-block:: matlab
             %
-            % use an external function (utils/updateBatchOptFromGUI_Shared.m)
-            % that is common for all tools compatible with the Batch mode
+            %      obj.updateBatchOptFromGUI(hObject, valueChangedData)
+            %
+            % Delegates to ``utils.updateBatchOptFromGUI_Shared``, which is common
+            % to all tools compatible with batch mode.
             %
             % Input Arguments:
-            %   - **hObject** — handle to a widget of the GUI; in AppDesigner
-            %     callbacks this is event.Source
-            %   - **valueChangedData** — the EventData object passed by AppDesigner
-            %     ValueChanged callbacks (not used directly here)
+            %   - **hObject** — handle to the widget that changed; in AppDesigner
+            %     callbacks this is ``event.Source``
+            %   - **valueChangedData** — ``EventData`` object passed by AppDesigner
+            %     ``ValueChangedFcn`` callbacks (not used directly here)
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
         end
 
         function importBtn_Callback(obj, batchModeSw)
-            % IMPORTBTN_CALLBACK - import bounding box information from the system clipboard.
+            % IMPORTBTN_CALLBACK - Import bounding box information from the system clipboard.
             %
             % Syntax:
-            %   function importBtn_Callback(obj, batchModeSw)
+            %   .. code-block:: matlab
             %
-            % The clipboard is expected to contain key=value pairs (one per
-            % line) as exported by Amira / FEI microscope software:
-            % ScaleX     = <voxel_size_x>
-            % ScaleY     = <voxel_size_y>
-            % ScaleZ     = <voxel_size_z>
-            % xPos       = <stage_center_x_in_um>
-            % yPos       = <stage_center_y_in_um>
-            % Z Position = <stage_z_in_um>
-            % Rotation   = <stage_rotation_deg>
+            %      obj.importBtn_Callback()
+            %      obj.importBtn_Callback(batchModeSw)
+            %
+            % The clipboard is expected to contain ``key = value`` pairs, one per
+            % line, as exported by Amira / FEI microscope software.  Recognised
+            % keys: ``ScaleX``, ``ScaleY``, ``ScaleZ``, ``xPos``, ``yPos``,
+            % ``Z Position``, ``Rotation``.
             %
             % Input Arguments:
-            %   - **batchModeSw** — [optional, default=0] set to 1 when called from
-            %     batch mode to suppress GUI widget updates
+            %   - **batchModeSw** — *(optional)* logical, default: ``0``; set to
+            %     ``1`` when called from batch mode to suppress GUI widget updates
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if nargin < 2; batchModeSw = 0; end
@@ -422,22 +462,28 @@ classdef BoundingBox < handle
         end
 
         function applyButton_Callback(obj, batchModeSw)
-            % APPLYBUTTON_CALLBACK - apply the edited bounding box to the current dataset.
+            % APPLYBUTTON_CALLBACK - Apply the edited bounding box to the current dataset.
             %
             % Syntax:
-            %   function applyButton_Callback(obj, batchModeSw)
+            %   .. code-block:: matlab
             %
-            % When only Xmin/Ymin/Zmin are filled in, the bounding box is
-            % shifted without changing voxel size.  When Xcenter/Ycenter
-            % are filled in, the dataset is positioned so that the given
-            % point becomes the centre of the XY extent.  When Xmax/Ymax/
-            % Zmax are also supplied, the voxel size is recalculated from
-            % the total extent.  StageRotationBias corrects for a known
-            % stage rotation (used e.g. for 3View systems at 45 deg).
+            %      obj.applyButton_Callback()
+            %      obj.applyButton_Callback(batchModeSw)
+            %
+            % When only ``Xmin``/``Ymin``/``Zmin`` are filled in, the bounding box
+            % is shifted without changing voxel size.  When ``Xcenter``/``Ycenter``
+            % are filled in, the dataset is positioned so that the given point
+            % becomes the centre of the XY extent.  When ``Xmax``/``Ymax``/``Zmax``
+            % are also supplied, the voxel size is recalculated from the total
+            % extent.  ``StageRotationBias`` corrects for a known stage rotation
+            % (e.g. for 3View systems at 45 deg).
             %
             % Input Arguments:
-            %   - **batchModeSw** — [optional, default=0] set to 1 when called from
-            %     batch mode to suppress GUI widget updates
+            %   - **batchModeSw** — *(optional)* logical, default: ``0``; set to
+            %     ``1`` when called from batch mode to suppress GUI widget updates
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             if nargin < 2; batchModeSw = 0; end
@@ -514,20 +560,30 @@ classdef BoundingBox < handle
         end
 
         function helpButton_Callback(obj)
-            % HELPBUTTON_CALLBACK - open the help page for the Bounding Box dialog in a browser.
+            % HELPBUTTON_CALLBACK - Open the help page for the Bounding Box dialog in a browser.
             %
             % Syntax:
-            %   function helpButton_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.helpButton_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/dataset/dataset-bb.html'), '-browser');
         end
 
         function closeButton_Callback(obj)
-            % CLOSEBUTTON_CALLBACK - close the dialog without applying changes.
+            % CLOSEBUTTON_CALLBACK - Close the dialog without applying changes.
             %
             % Syntax:
-            %   function closeButton_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %      obj.closeButton_Callback()
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             obj.closeWindow();

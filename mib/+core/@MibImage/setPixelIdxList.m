@@ -2,7 +2,9 @@ function result = setPixelIdxList(obj, type, dataset, PixelIdxList)
 % SETPIXELIDXLIST - Write pixel values at a list of linear indices into MibImage or a subclass.
 %
 % Syntax:
-%   function result = setPixelIdxList(obj, type, dataset, PixelIdxList)
+%   .. code-block:: matlab
+%
+%       result = obj.setPixelIdxList(type, dataset, PixelIdxList)
 %
 % For standard MibImage and MibLabels the raw data are written directly to
 % obj.data{1}.  For MibLabels63 (bit-packed) the values are packed into the

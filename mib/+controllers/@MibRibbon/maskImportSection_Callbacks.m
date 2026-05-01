@@ -2,7 +2,9 @@ function maskImportSection_Callbacks(obj, hWidget, hData)
 % MASKIMPORTSECTION_CALLBACKS - callback on press of buttons in the Import section of the Mask ribbon.
 %
 % Syntax:
-%   function maskImportSection_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.maskImportSection_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

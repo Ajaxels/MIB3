@@ -2,7 +2,9 @@ function makeDummyGraph(obj)
 % MAKEDUMMYGRAPH - generate a dummy graph for developmental purposes.
 %
 % Syntax:
-%   function makeDummyGraph(obj)
+%   .. code-block:: matlab
+%
+%       obj.makeDummyGraph()
 %
 
 points = [303 81 72;...

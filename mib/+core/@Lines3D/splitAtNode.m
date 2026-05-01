@@ -2,7 +2,9 @@ function splitAtNode(obj, x, y, z, orientation)
 % SPLITATNODE - split tree at the node that is closest to the point with coordinates x, y, z.
 %
 % Syntax:
-%   function splitAtNode(obj, x, y, z, orientation)
+%   .. code-block:: matlab
+%
+%       obj.splitAtNode(x, y, z, orientation)
 %
 % the node and its edges will be removed
 %

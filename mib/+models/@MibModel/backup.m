@@ -2,7 +2,9 @@ function backup(obj, type, switch3d, getDataOptions)
 % BACKUP - Store the dataset for Undo.
 %
 % Syntax:
-%   function backup(obj, type, switch3d, getDataOptions)
+%   .. code-block:: matlab
+%
+%       obj.backup(type, switch3d, getDataOptions)
 %
 % The dataset is stored in the MibBackup class (obj.Backup).
 %

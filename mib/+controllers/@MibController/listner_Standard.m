@@ -1,8 +1,17 @@
 function listner_Standard(obj, model, evnt)
-% LISTNER_STANDARD - standard listener callback for event that is provided as evnt.EventName.
+% LISTNER_STANDARD - Standard listener callback dispatched by evnt.EventName.
 %
 % Syntax:
-%   function listner_Standard(obj, model, evnt)
+%   .. code-block:: matlab
+%
+%      obj.listner_Standard(model, evnt)
+%
+% Input Arguments:
+%   - **model** — event source (object that fired the event)
+%   - **evnt** — event data; ``evnt.EventName`` identifies the event type
+%
+% Output Arguments:
+%   (none)
 %
  
 arguments (Input)

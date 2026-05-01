@@ -1,57 +1,64 @@
 classdef LoaderFactory
-% LOADERFACTORY - Factory class to create appropriate image loader based on file format.
+% LOADERFACTORY - Factory for instantiating appropriate image loaders based on file format.
 %
-% This factory creates concrete loader instances based on the loader
-% information provided by ExtensionRegistryLoad. Each loader implements
-% a standard interface with loadMetadata and loadImages methods.
+% Creates concrete loader instances based on the loader information provided by
+% ``ExtensionRegistryLoad``. Each loader implements a standard interface with
+% ``loadMetadata`` and ``loadImages`` methods.
 
     methods (Static)
         function loader = create(loaderInfo, options)
-            % CREATE - Create an image loader instance based on the loader information.
+            % CREATE - Create an image loader instance for a given file format.
             %
             % Syntax:
-            %   function loader = create(loaderInfo, options)
             %
-            % This is the main factory method that instantiates the appropriate
-            % loader class based on the loaderId field in loaderInfo structure.
+            %   .. code-block:: matlab
+            %
+            %      loader = io.LoaderFactory.create(loaderInfo, options)
+            %
+            % Main factory method that instantiates the appropriate loader class based on
+            % the ``loaderId`` field in the loaderInfo structure. Routes to ``imread``,
+            % BioFormats, HDF5, NRRD, IMOD, AmiraMesh, OME-Zarr, or other readers.
             %
             % Input Arguments:
-            %   - **loaderInfo** — [*struct]* structure returned by ExtensionRegistryLoad.resolveLoader
-            %   - .loaderId - [char] identifier of the file reader to use
-            %   - .mode - [char] dataset mode ('Standard', 'Virtual', 'BigData')
-            %   - .reader - [char] reader type ('Default', 'BioFormats')
-            %   - .extension - [char] file extension without leading dot
-            %   - .imageFormatType - [char] format type identifier
-            %   - **options** — [*struct]* options to pass to the loader constructor
-            %   - .UseBioFormats - [logical] use BioFormats library
-            %   - .waitbar - [logical] show waitbar during loading
-            %   - .mibPath - [char] path to MIB directory
-            %   - .virtual - [logical] virtual stacking mode
-            %   - .customSections - [logical] load custom sections only
-            %   - additional format-specific options
-            %   - .bioFormatsMemoizerMemoDir - location of MemoizerMemo for bioformats
+            %   - **loaderInfo** — struct returned by ``ExtensionRegistryLoad.resolveLoader``:
+            %
+            %     - ``.loaderId`` — [char] identifier of the file reader to use
+            %     - ``.mode`` — [char] dataset mode (``'Standard'``, ``'Virtual'``, ``'BigData'``)
+            %     - ``.reader`` — [char] reader type (``'Default'``, ``'BioFormats'``)
+            %     - ``.extension`` — [char] filename extension without leading dot
+            %     - ``.imageFormatType`` — [char] format type identifier
+            %
+            %   - **options** — *(optional)* struct with configuration options:
+            %
+            %     - ``.UseBioFormats`` — [logical] use BioFormats library
+            %     - ``.waitbar`` — [logical] show progress bar during loading
+            %     - ``.mibPath`` — [char] path to MIB installation directory
+            %     - ``.virtual`` — [logical] virtual stacking mode
+            %     - ``.customSections`` — [logical] load custom sections only
+            %     - ``.bioFormatsMemoizerMemoDir`` — [char] location of MemoizerMemo cache for BioFormats
+            %     - Additional format-specific options passed to the loader constructor
             %
             % Output Arguments:
-            %   - **loader** — loader object implementing loadMetadata and loadImages methods
+            %   - **loader** — loader object instance implementing ``loadMetadata`` and ``loadImages`` methods
             %
-            % Usage:
-            %   Example 1 - Basic usage::
+            % **Example 1** — basic usage with Standard mode and imread:
             %
-            %     % Basic usage
-            %     extReg = io.ExtensionRegistryLoad();
-            %     loaderInfo = extReg.resolveLoader('image.tif', 'Standard', 'Default'); % loaderInfo = extReg.resolveLoader('image.tif', obj.I{obj.id}.datasetType, 'Default');
-            %     options.waitbar = true;
-            %     options.mibPath = 'c:\mib';
-            %     loader = io.LoaderFactory.create(loaderInfo, options);
-            %     [imginfo, files] = loader.loadMetadata({'image.tif'}, options);
-            %     [img, imginfo] = loader.loadImages(files, imginfo, options);
+            %   .. code-block:: matlab
             %
+            %      extReg = io.ExtensionRegistryLoad();
+            %      loaderInfo = extReg.resolveLoader('image.tif', 'Standard', 'Default');
+            %      options.waitbar = true;
+            %      options.mibPath = 'c:\mib';
+            %      loader = io.LoaderFactory.create(loaderInfo, options);
+            %      [imginfo, files] = loader.loadMetadata({'image.tif'}, options);
+            %      [img, imginfo] = loader.loadImages(files, imginfo, options);
             %
-            %   Example 2 - BioFormats example::
+            % **Example 2** — using BioFormats for complex formats:
             %
-            %     % BioFormats example
-            %     loaderInfo = extReg.resolveLoader('image.czi', 'Standard', 'BioFormats');
-            %     loader = io.LoaderFactory.create(loaderInfo, options);
+            %   .. code-block:: matlab
+            %
+            %      loaderInfo = extReg.resolveLoader('image.czi', 'Standard', 'BioFormats');
+            %      loader = io.LoaderFactory.create(loaderInfo, options);
             %
 
             if nargin < 2; options = struct(); end
@@ -129,28 +136,36 @@ classdef LoaderFactory
         end
 
         function loaderList = getAvailableLoaders()
-            % GETAVAILABLELOADERS - Get a list of all available loader types.
+            % GETAVAILABLELOADERS - Get a list of all available loader types with descriptions.
             %
             % Syntax:
-            %   function loaderList = getAvailableLoaders()
             %
-            % Returns a cell array with all supported loader identifiers
-            % and their descriptions.
+            %   .. code-block:: matlab
+            %
+            %      loaderList = io.LoaderFactory.getAvailableLoaders()
+            %
+            % Returns a struct array containing all supported loader identifiers,
+            % their descriptions, and typical file extensions.
+            %
+            % Input Arguments:
+            %   (none)
             %
             % Output Arguments:
-            %   - **loaderList** — [*struct* array] array of structures with loader information
-            %   - .loaderId - [char] loader identifier
-            %   - .description - [char] human-readable description
-            %   - .extensions - [cell] typical file extensions
+            %   - **loaderList** — struct array with loader information:
             %
-            % Usage:
-            %   Example 1::
+            %     - ``.loaderId`` — [char] loader identifier
+            %     - ``.description`` — [char] human-readable description
+            %     - ``.extensions`` — cell array of [char] typical file extensions
             %
-            %     loaderList = io.LoaderFactory.getAvailableLoaders();
-            %     fprintf('Available loaders:\n');
-            %     for i = 1:numel(loaderList)
-            %         fprintf('  %s: %s\n', loaderList(i).loaderId, loaderList(i).description);
-            %     end
+            % **Example 1** — display all available loaders:
+            %
+            %   .. code-block:: matlab
+            %
+            %      loaderList = io.LoaderFactory.getAvailableLoaders();
+            %      fprintf('Available loaders:\n');
+            %      for i = 1:numel(loaderList)
+            %          fprintf('  %s: %s\n', loaderList(i).loaderId, loaderList(i).description);
+            %      end
             %
 
             loaderList = struct( ...

@@ -2,21 +2,25 @@ function updateBrushCursorOffset(obj)
 % UPDATEBRUSHCURSOROFFSET - Update brush cursor offset based on current brush radius and magnification.
 %
 % Syntax:
-%   function updateBrushCursorOffset(obj)
+%   .. code-block:: matlab
+%
+%      obj.updateBrushCursorOffset()
 %
 % Calculates the circle points for the brush cursor based on
 % the current brush radius setting and image magnification factor.
 % The offset is stored as a 2×N array with X and Y offsets.
 %
 % Input Arguments:
-%   none
+%   (none)
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-%   - **Example** —
-%     % Called automatically when brush size changes
-%     obj.updateBrushCursorOffset();
+% **Example** — called automatically when brush size changes:
+%
+%   .. code-block:: matlab
+%
+%      obj.updateBrushCursorOffset();
 %
 
 % Get brush radius from segmentation panel

@@ -2,47 +2,54 @@ function segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)
 % SEGMENTATIONBALL3D - Do segmentation using the 3D ball tool.
 %
 % Syntax:
-%   function segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)
+%   .. code-block:: matlab
+%
+%      obj.segmentationBall3D(y, x, z, modifier)
+%      obj.segmentationBall3D(y, x, z, modifier, BatchOptIn)
 %
 % Places an ellipsoidal 3D ball in the dataset at the given coordinate.
 % The ball is anisotropy-corrected: radii along each axis are scaled by
 % the voxel size ratio so the ball appears physically spherical.
 %
 % Input Arguments:
-%   - **y** — double, y-coordinate of the ball centre in full-dataset pixels
-%   - **x** — double, x-coordinate of the ball centre in full-dataset pixels
-%   - **z** — double, z-coordinate (slice index) of the ball centre
-%   - **modifier** — cell array of chars or char, modifier keys held during click
-%     - empty '' - add ball to the selection/mask layer
-%     - 'control' - subtract ball from the selection/mask layer
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode; when NaN,
-%     returns default options via the 'SyncBatch' event
-%     - .Radius - [char] ball radius in pixels (raw spinner value)
-%     - .X - [char] vector or single X coordinate of the ball centre
-%     - .Y - [char] vector or single Y coordinate of the ball centre
-%     - .Z - [char] vector or single Z coordinate of the ball centre;
-%   empty = current slice
-%     - .Mode - [char, {'add','erase'}] add or subtract ball
-%     - .restrictSelectionToMask - [logical] paint only within the mask
-%     - .restrictSelectionToMaterial - [logical] paint only within the
-%   selected material
-%     - .Target - [char, {'selection','mask'}] destination layer
-%     - .showWaitbar - [logical] show or not the progress bar
-%     - .id *(optional)* dataset index 1-9, default = obj.mibModel.getActiveId()
+%   - **y** — [double] y-coordinate of ball centre in full-dataset pixels
+%   - **x** — [double] x-coordinate of ball centre in full-dataset pixels
+%   - **z** — [double] z-coordinate (slice index) of ball centre
+%   - **modifier** — [char|cell] modifier keys held during click:
+%
+%     - ``''`` — add ball to selection/mask layer
+%     - ``'control'`` — subtract ball from selection/mask layer
+%
+%   - **BatchOptIn** *(optional)* — [struct|NaN] batch processing mode;
+%     when ``NaN``, returns default options via ``'SyncBatch'`` event:
+%
+%     - ``.Radius`` — [char] ball radius in pixels (raw spinner value)
+%     - ``.X`` — [char] vector or single X coordinate of ball centre
+%     - ``.Y`` — [char] vector or single Y coordinate of ball centre
+%     - ``.Z`` — [char] vector or single Z coordinate of ball centre; empty = current slice
+%     - ``.Mode`` — [char] ``'add'`` or ``'erase'`` — add or subtract ball
+%     - ``.restrictSelectionToMask`` — [logical] paint only within mask
+%     - ``.restrictSelectionToMaterial`` — [logical] paint only within selected material
+%     - ``.Target`` — [char] ``'selection'`` or ``'mask'`` — destination layer
+%     - ``.showWaitbar`` — [logical] show progress bar
+%     - ``.id`` *(optional)* — [numeric] dataset index 1–9 (default: ``obj.mibModel.getActiveId()``)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — add 3D ball at [y,x,z]=[50,75,10]:
 %
-%     obj.segmentationBall3D(50, 75, 10, '');  // add 3D ball at [y,x,z]=[50,75,10]
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationBall3D(50, 75, 10, '');
 %
-%     obj.segmentationBall3D(50, 75, 10, 'control');  // erase 3D ball
+% **Example 2** — erase 3D ball:
 %
-%   Example 3::
+%   .. code-block:: matlab
+%
+%      obj.segmentationBall3D(50, 75, 10, 'control');
+%
+% **Example 3** — batch processing:
 %
 %     BatchOpt.Radius = '6';
 %     BatchOpt.X = '75'; BatchOpt.Y = '50'; BatchOpt.Z = '10';

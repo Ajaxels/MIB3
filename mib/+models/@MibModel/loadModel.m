@@ -2,7 +2,9 @@ function loadModel(obj, model, BatchOptIn)
 % LOADMODEL - Load a segmentation model from file or import from a workspace array.
 %
 % Syntax:
-%   function loadModel(obj, model, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.loadModel(model, BatchOptIn)
 %
 % This is the top-level BatchOpt-compatible wrapper for model loading.
 % It handles:

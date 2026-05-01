@@ -2,7 +2,9 @@ function removeROI(obj)
 % REMOVEROI - Remove selected ROI(s) from the current dataset.
 %
 % Syntax:
-%   function removeROI(obj)
+%   .. code-block:: matlab
+%
+%      obj.removeROI()
 %
 % When 'All' is selected in the ROI list, removes every ROI after
 % user confirmation.  Otherwise removes only the selected ROI.

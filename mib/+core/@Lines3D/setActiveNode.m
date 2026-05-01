@@ -1,14 +1,22 @@
 function setActiveNode(obj, x, y, z, orientation)
-% SETACTIVENODE - set active the node which is closest to a point with coordinates x, y, z.
+% SETACTIVENODE - Set the active node closest to a given coordinate.
 %
 % Syntax:
-%   function setActiveNode(obj, x, y, z, orientation)
+%   .. code-block:: matlab
+%
+%       obj.setActiveNode(x, y, z, orientation)
+%
+% Activates the node that is closest to the specified point coordinates.
 %
 % Input Arguments:
-%   - **x** — x coordinate of a point next to the node
-%   - **y** — y coordinate of a point next to the node
-%   - **z** — z coordinate of a point next to the node
-%   - **orientation** — *(optional)* a number with orientation of the dataset, 3-yx, 1-xz, 2-yz, default 3
+%   - **x** — [numeric] x coordinate of the reference point
+%   - **y** — [numeric] y coordinate of the reference point
+%   - **z** — [numeric] z coordinate of the reference point
+%   - **orientation** — *(optional)* [numeric] image orientation; allowed values:
+%
+%     - ``3`` — YX plane (default)
+%     - ``1`` — XZ plane
+%     - ``2`` — YZ plane
 %
 
 if nargin < 5; orientation = 3; end

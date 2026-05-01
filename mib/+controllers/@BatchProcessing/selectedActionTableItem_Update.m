@@ -2,7 +2,9 @@ function selectedActionTableItem_Update(obj, hObject)
 % SELECTEDACTIONTABLEITEM_UPDATE - write an edited parameter value back to obj.CurrentBatch and the table cell.
 %
 % Syntax:
-%   function selectedActionTableItem_Update(obj, hObject)
+%   .. code-block:: matlab
+%
+%       obj.selectedActionTableItem_Update(hObject)
 %
 % Called by ValueChangedFcn of the four editing widgets:
 % selectedActionTableCellEdit, selectedActionTableCellNumericEdit,
@@ -13,11 +15,11 @@ function selectedActionTableItem_Update(obj, hObject)
 %     one of 'selectedActionTableCellPopup', 'selectedActionTableCellCheck',
 %     'selectedActionTableCellEdit', or 'selectedActionTableCellNumericEdit'
 %
-% Usage:
-%   Example 1::
+% **Example** — update a parameter value:
 %
-%     obj.selectedActionTableItem_Update(obj.view.handles.selectedActionTableCellEdit);
+%   .. code-block:: matlab
 %
+%      obj.selectedActionTableItem_Update(obj.view.handles.selectedActionTableCellEdit);
 
 if obj.selectedActionTableIndex == 0; return; end
 fieldNames = fieldnames(obj.CurrentBatch);

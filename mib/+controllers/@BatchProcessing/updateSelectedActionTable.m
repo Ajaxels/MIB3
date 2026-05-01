@@ -2,32 +2,36 @@ function updateSelectedActionTable(obj, BatchOpt)
 % UPDATESELECTEDACTIONTABLE - populate selectedActionTable from a BatchOpt structure.
 %
 % Syntax:
-%   function updateSelectedActionTable(obj, BatchOpt)
+%   .. code-block:: matlab
+%
+%       obj.updateSelectedActionTable(BatchOpt)
 %
 % Also updates obj.selectedSection, obj.selectedAction and obj.CurrentBatch.
 %
 % Input Arguments:
-%   - **BatchOpt** — a structure with action parameters. Fields that drive the
-%     widget type shown in displaySelectedActionTableItems:
-%     - logical scalar checkbox
-%     - cell{1} string, cell{2} cell-of-strings dropdown
-%     - cell{1} numeric, [cell{2} limits, cell{3} rounding] numeric text edit
-%     - char string text edit field
-%     - plain numeric numeric edit field
-%     Required meta-fields (removed from the table display):
-%     .mibBatchSectionName - section name string
-%     .mibBatchActionName  - action name string
-%     .mibBatchTooltip     - [optional] struct with per-field tooltip strings
+%   - **BatchOpt** — [struct] action parameters. Field types that drive widget rendering in displaySelectedActionTableItems:
 %
-% Usage:
-%   Example 1::
+%     - Logical scalar → checkbox
+%     - Cell {value; {list}} → dropdown
+%     - Cell {numeric; [limits]; rounding} → numeric text edit
+%     - Char string → text edit field
+%     - Plain numeric → numeric edit field
 %
-%     BatchOpt.colChannel = {1; {1,2,3}};   % dropdown, selected=1
-%     BatchOpt.showWaitbar = true;            % checkbox
-%     BatchOpt.mibBatchSectionName = 'Menu -> Image';
-%     BatchOpt.mibBatchActionName  = 'Invert image';
-%     obj.updateSelectedActionTable(BatchOpt);
+%   Required meta-fields (removed from table display):
 %
+%     - ``.mibBatchSectionName`` — section name string
+%     - ``.mibBatchActionName`` — action name string
+%     - ``.mibBatchTooltip`` *(optional)* — struct with per-field tooltip strings
+%
+% **Example** — populate parameter table from BatchOpt:
+%
+%   .. code-block:: matlab
+%
+%      BatchOpt.colChannel = {1; {1,2,3}};
+%      BatchOpt.showWaitbar = true;
+%      BatchOpt.mibBatchSectionName = 'Menu -> Image';
+%      BatchOpt.mibBatchActionName  = 'Invert image';
+%      obj.updateSelectedActionTable(BatchOpt);
 
 % update sections list
 obj.selectedSection = find(ismember({obj.Sections.Name}, BatchOpt.mibBatchSectionName) == 1);

@@ -2,7 +2,9 @@ function importNetwork(obj)
 % IMPORTNETWORK - import an externally trained or designed network to be used.
 %
 % Syntax:
-%   function importNetwork(obj)
+%   .. code-block:: matlab
+%
+%       obj.importNetwork()
 %
 % with DeepMIB
 %

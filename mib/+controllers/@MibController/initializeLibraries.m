@@ -2,38 +2,34 @@ function initializeLibraries(obj, initList)
 % INITIALIZELIBRARIES - Initialize external libraries and Java paths.
 %
 % Syntax:
-%   function initializeLibraries(obj, initList)
+%   .. code-block:: matlab
 %
-% Syntax:
-% obj.initializeLibraries()
-% obj.initializeLibraries(initList)
+%      obj.initializeLibraries()
+%      obj.initializeLibraries(initList)
 %
-% Description:
 % Initializes external libraries and adds Java paths needed for MIB.
 % Can selectively initialize specific libraries or all libraries.
 %
 % Input Arguments:
-%   - **initList** — cell array (optional)
-%     Cell array of library identifiers to initialize. When empty or
-%     missing, all libraries will be initialized.
-%     Valid identifiers:
-%     'bm3d'          - BM3D/BM4D denoising libraries
-%     'omero'         - OMERO client libraries
-%     'mij.jar'       - MIJ Java interface for ImageJ/Fiji
-%     'bioformats'    - Bio-Formats image reading library
-%     'imageselection' - ImageSelection for clipboard operations
-%     'fiji'          - Fiji/ImageJ application
-%     'poi'           - Apache POI for Excel file operations
-%     'imaris'        - Imaris integration
+%   - **initList** — *(optional)* cell array of library identifiers to initialize.
+%     When empty or missing, all libraries are initialized.
+%     Valid identifiers: ``'bm3d'``, ``'omero'``, ``'mij.jar'``, ``'bioformats'``,
+%     ``'imageselection'``, ``'fiji'``, ``'poi'``, ``'imaris'``
 %
-%   - **Example** —
-%     % Initialize all libraries
-%     obj.initializeLibraries();
+% Output Arguments:
+%   (none)
 %
-%   % Initialize only specific libraries
-%   obj.initializeLibraries({'mij.jar', 'bioformats'});
+% **Example 1** — initialize all libraries:
 %
-%   See also: initialize
+%   .. code-block:: matlab
+%
+%      obj.initializeLibraries();
+%
+% **Example 2** — initialize only specific libraries:
+%
+%   .. code-block:: matlab
+%
+%      obj.initializeLibraries({'mij.jar', 'bioformats'});
 %
 
 arguments (Input)

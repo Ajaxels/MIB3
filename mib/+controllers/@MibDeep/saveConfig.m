@@ -2,7 +2,9 @@ function saveConfig(obj, configName)
 % SAVECONFIG - save Deep MIB configuration to a file.
 %
 % Syntax:
-%   function saveConfig(obj, configName)
+%   .. code-block:: matlab
+%
+%       obj.saveConfig(configName)
 %
 % Input Arguments:
 %   - **configName** — [optional] string, full filename to the config file
@@ -40,10 +42,10 @@ function saveConfig(obj, configName)
     ScoreExportOpt = obj.ScoreExportOpt;
 
     % try to export path as relatives
-    BatchOpt.NetworkFilename = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.NetworkFilename, projectPath, '[RELATIVE]');
-    BatchOpt.OriginalTrainingImagesDir = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.OriginalTrainingImagesDir, projectPath, '[RELATIVE]');
-    BatchOpt.OriginalPredictionImagesDir = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.OriginalPredictionImagesDir, projectPath, '[RELATIVE]');
-    BatchOpt.ResultingImagesDir = utils.deepmib.convertAbsoluteToRelativePath(BatchOpt.ResultingImagesDir, projectPath, '[RELATIVE]');
+    BatchOpt.NetworkFilename = deepmib.convertAbsoluteToRelativePath(BatchOpt.NetworkFilename, projectPath, '[RELATIVE]');
+    BatchOpt.OriginalTrainingImagesDir = deepmib.convertAbsoluteToRelativePath(BatchOpt.OriginalTrainingImagesDir, projectPath, '[RELATIVE]');
+    BatchOpt.OriginalPredictionImagesDir = deepmib.convertAbsoluteToRelativePath(BatchOpt.OriginalPredictionImagesDir, projectPath, '[RELATIVE]');
+    BatchOpt.ResultingImagesDir = deepmib.convertAbsoluteToRelativePath(BatchOpt.ResultingImagesDir, projectPath, '[RELATIVE]');
 
     % add MIB version to the saved config
     mibVersion.mibVersion = obj.mibController.mibVersion;

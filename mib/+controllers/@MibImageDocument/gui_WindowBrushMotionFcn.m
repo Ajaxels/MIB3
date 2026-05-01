@@ -2,24 +2,26 @@ function gui_WindowBrushMotionFcn(obj, structElement)
 % GUI_WINDOWBRUSHMOTIONFCN - Draw the brush trace during use of the brush tool.
 %
 % Syntax:
-%   function gui_WindowBrushMotionFcn(obj, structElement)
+%   .. code-block:: matlab
 %
-% This function is called on every mouse movement while the brush tool
-% is active. It rasterizes the line from the previous cursor position to
-% the current one, dilates it with the structural element, and updates
-% the selection overlay on the displayed image. Supports both normal
-% brush and superpixel-assisted (SLIC/Watershed) modes.
+%      obj.gui_WindowBrushMotionFcn(structElement)
+%
+% Called on every mouse movement while the brush tool is active. Rasterizes the line
+% from previous cursor position to current one, dilates it with the structural element,
+% and updates the selection overlay on displayed image. Supports both normal brush and
+% superpixel-assisted (SLIC/Watershed) modes.
 %
 % Input Arguments:
-%   - **structElement** — double matrix, circular structural element for brush
-%     dilation, generated in segmentationBrush.m
+%   - **structElement** — [double matrix] circular structural element for brush dilation (generated in ``segmentationBrush.m``)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   @code % typically called as a callback, not directly:
-%   hFig.WindowButtonMotionFcn = @(~,~)obj.gui_WindowBrushMotionFcn(structElement); @endcode
+% **Usage note** — typically called as a callback, not directly:
+%
+%   .. code-block:: matlab
+%
+%      hFig.WindowButtonMotionFcn = @(~,~)obj.gui_WindowBrushMotionFcn(structElement);
 %
 
 % Updates

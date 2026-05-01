@@ -2,7 +2,9 @@ function previewPredictions(obj)
 % PREVIEWPREDICTIONS - load images of prediction scores into MIB.
 %
 % Syntax:
-%   function previewPredictions(obj)
+%   .. code-block:: matlab
+%
+%       obj.previewPredictions()
 %
 
 scoreDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsScores');

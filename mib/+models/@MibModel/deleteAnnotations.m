@@ -2,7 +2,9 @@ function deleteAnnotations(obj, BatchOptIn)
 % DELETEANNOTATIONS - Delete all annotations from the active dataset.
 %
 % Syntax:
-%   function deleteAnnotations(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.deleteAnnotations(BatchOptIn)
 %
 % Backs up the current annotation state for undo, removes all annotations,
 % and fires the UpdateAnnotations event so any listening views can refresh.

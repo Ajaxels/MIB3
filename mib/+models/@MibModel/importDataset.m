@@ -2,7 +2,9 @@ function importDataset(obj, layerType, BatchOptIn)
 % IMPORTDATASET - Import the image, mask, or model layer from the MATLAB main workspace.
 %
 % Syntax:
-%   function importDataset(obj, layerType, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.importDataset(layerType, BatchOptIn)
 %
 % Input Arguments:
 %   - **layerType** — a string specifying which layer to import:

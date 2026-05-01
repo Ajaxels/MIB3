@@ -2,7 +2,9 @@ function fileList_Callback(obj, hWidget, hData)
 % FILELIST_CALLBACK - callback for double click on a filename in obj.handles.panels.dirContents.handles.fileList.
 %
 % Syntax:
-%   function fileList_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.fileList_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

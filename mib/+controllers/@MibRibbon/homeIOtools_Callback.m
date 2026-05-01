@@ -2,7 +2,9 @@ function homeIOtools_Callback(obj, hWidget, hData)
 % HOMEIOTOOLS_CALLBACK - callback on press of the I/O tools buttons in the Home ribbon.
 %
 % Syntax:
-%   function homeIOtools_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homeIOtools_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

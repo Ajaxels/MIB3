@@ -2,7 +2,9 @@ function status = doFileLoop(obj, startStep, finishStep, options)
 % DOFILELOOP - iterate over files matching a filter and execute a range of protocol steps for each file.
 %
 % Syntax:
-%   function status = doFileLoop(obj, startStep, finishStep, options)
+%   .. code-block:: matlab
+%
+%       status = obj.doFileLoop(startStep, finishStep, options)
 %
 % Lists all non-directory entries in options.DirectoryName that match
 % options.FilenameFilter, then runs protocol steps startStep..finishStep
@@ -12,22 +14,22 @@ function status = doFileLoop(obj, startStep, finishStep, options)
 % flag is set.
 %
 % Input Arguments:
-%   - **startStep** — index of the first protocol step to execute inside the loop body
-%   - **finishStep** — index of the last protocol step to execute inside the loop body
-%   - **options** — a struct controlling the loop behaviour:
-%     - .DirectoryName - directory to scan; use 'Current MIB path' to resolve at runtime
-%     - .FilenameFilter - wildcard filter passed to dir() (e.g. '*.tif')
-%     - .FileLoopWaitbar - [logical] when true show a per-file waitbar and
-%   suppress waitbars inside individual steps
+%   - **startStep** — [numeric] index of the first protocol step to execute inside the loop body
+%   - **finishStep** — [numeric] index of the last protocol step to execute inside the loop body
+%   - **options** — [struct] loop control struct with fields:
+%
+%     - ``.DirectoryName`` — directory to scan; use ``'Current MIB path'`` to resolve at runtime
+%     - ``.FilenameFilter`` — wildcard filter passed to dir() (e.g., ``'*.tif'``)
+%     - ``.FileLoopWaitbar`` — [logical] when true show per-file waitbar and suppress per-step waitbars
 %
 % Output Arguments:
 %   - **status** — [logical] true on success, false if any step returned an error
 %
-% Usage:
-%   Example 1::
+% **Example** — iterate over files matching a filter:
 %
-%     status = obj.doFileLoop(startStep, finishStep, FileloopSettings);
+%   .. code-block:: matlab
 %
+%      status = obj.doFileLoop(startStep, finishStep, FileloopSettings);
 
 status = false; %#ok<NASGU>
 

@@ -2,7 +2,9 @@ function homeDevTest_Callback(obj, hWidget, hData)
 % HOMEDEVTEST_CALLBACK - Reserved for MIB developmental purposes.
 %
 % Syntax:
-%   function homeDevTest_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.homeDevTest_Callback(hWidget, hData)
 %
 
 arguments (Input)

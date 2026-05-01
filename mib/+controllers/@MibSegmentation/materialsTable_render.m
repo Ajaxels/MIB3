@@ -2,7 +2,9 @@ function materialsTable_render(obj, menuEntry, selectedData)
 % MATERIALSTABLE_RENDER - callbacks for the context menu of the Segmentation table widget Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen).
 %
 % Syntax:
-%   function materialsTable_render(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
+%
+%       obj.materialsTable_render(menuEntry, selectedData)
 %
 % Input Arguments:
 %   - **menuEntry** — handle to the pressed context menu entry, 'matlab.ui.container.Menu' class

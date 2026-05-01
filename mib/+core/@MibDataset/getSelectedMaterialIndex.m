@@ -2,7 +2,9 @@ function index = getSelectedMaterialIndex(obj, target)
 % GETSELECTEDMATERIALINDEX - return the index of the currently selected material in the mibView.handles.materialsTable.
 %
 % Syntax:
-%   function index = getSelectedMaterialIndex(obj, target)
+%   .. code-block:: matlab
+%
+%       index = obj.getSelectedMaterialIndex(target)
 %
 % Input Arguments:
 %   - **target** — a string specifying the target column of the materials table:

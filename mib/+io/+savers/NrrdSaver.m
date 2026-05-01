@@ -89,14 +89,19 @@ classdef NrrdSaver < io.savers.BaseSaver
     methods
 
         function obj = NrrdSaver(options)
-            % NRRDSAVER - Constructor — accepts an optional options struct.
+            % NRRDSAVER - Constructor for NrrdSaver class.
             %
             % Syntax:
-            %   function obj = NrrdSaver(options)
+            %   .. code-block:: matlab
+            %
+            %      saver = io.savers.NrrdSaver(options)
             %
             % Input Arguments:
-            %   options — (struct, optional) saver-level options (usually empty;
-            %   per-save options are passed to save() instead)
+            %   - **options** — *(optional)* struct, saver-level options (usually empty;
+            %     per-save options are passed to ``save()`` instead)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of the NrrdSaver class
             %
             if nargin < 1; options = struct(); end
             obj.Options = options;
@@ -107,7 +112,15 @@ classdef NrrdSaver < io.savers.BaseSaver
             % GETSUPPORTEDFORMATS - Return format strings handled by NrrdSaver.
             %
             % Syntax:
-            %   function formats = getSupportedFormats(~)
+            %   .. code-block:: matlab
+            %
+            %      formats = obj.getSupportedFormats()
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **formats** — cell array of format strings for NRRD output
             %
             formats = { ...
                 'NRRD Data Format (*.nrrd)'; ...
@@ -118,35 +131,39 @@ classdef NrrdSaver < io.savers.BaseSaver
             % SAVE - Write data as a NRRD file.
             %
             % Syntax:
-            %   function fnOut = save(obj, data, metadata, filename, options)
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.save(data, metadata, filename, options)
+            %
+            % NRRD supports single-channel data (C=1); a warning is issued and
+            % only the first channel is written if C>1. Similarly, only the first
+            % time point (T=1) is used for time-series data.
             %
             % Input Arguments:
-            %   data     — [H, W, D, C, T] numeric array.
-            %   Only the first channel (C=1) and first time point
-            %   (T=1) are written; a warning is issued if C>1.
-            %   metadata — struct; used fields:
-            %   .colorType    — 'grayscale' | 'multichannel' | 'indexed'
-            %   .dataClass    — 'uint8' | 'uint16' | ...
-            %   .maxInt       — maximum intensity value
-            %   .pixSize      — struct {.x .y .z .units .t .tunits}
-            %   .boundingBox  — [xmin xmax ymin ymax zmin zmax];
-            %   zeros(1,6) used if not present
-            %   .sliceName    — (optional) per-slice source filenames
-            %   filename — full output path, e.g. '/out/stack.nrrd'
-            %   options  — struct; used fields:
-            %   .Format           — format string ('NRRD ...' variants)
-            %   .layerType        — 'image' | 'mask' | 'labels'
-            %   (default 'image')
-            %   .showWaitbar      — logical
-            %   .silent           — logical, suppress dialogs
-            %   .overwrite        — logical
-            %   .FilenameGenerator — 'Use original filename' |
-            %   'Use sequential filename'
+            %   - **data** — [H, W, D, C, T] numeric array
+            %   - **metadata** — struct with fields:
+            %
+            %     - ``colorType`` — ``'grayscale'`` | ``'multichannel'`` | ``'indexed'``
+            %     - ``dataClass`` — ``'uint8'`` | ``'uint16'`` | ...
+            %     - ``maxInt`` — maximum intensity value
+            %     - ``pixSize`` — struct {``.x``, ``.y``, ``.z``, ``.units``, ``.t``, ``.tunits``}
+            %     - ``boundingBox`` — [xmin xmax ymin ymax zmin zmax]; default: ``zeros(1,6)``
+            %     - ``sliceName`` — *(optional)* per-slice source filenames
+            %
+            %   - **filename** — full output path, e.g. ``'/out/stack.nrrd'``
+            %   - **options** — struct with fields:
+            %
+            %     - ``Format`` — format string (``'NRRD Data Format (*.nrrd)'`` or ``'NRRD for 3D Slicer (*.nrrd)'``)
+            %     - ``layerType`` — ``'image'`` | ``'mask'`` | ``'labels'``; default: ``'image'``
+            %     - ``showWaitbar`` — logical; default: ``true``
+            %     - ``silent`` — logical, suppress dialogs; default: ``false``
+            %     - ``overwrite`` — logical; default: ``true``
+            %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
             %
             % Output Arguments:
-            %   fnOut — (char) path of saved .nrrd file, [] on failure
+            %   - **fnOut** — [char] path of saved ``.nrrd`` file, ``[]`` on failure
             %
-            %   Example — see class-level documentation above.
+            % **Example** — see class-level documentation above.
             %
 
             fnOut = [];

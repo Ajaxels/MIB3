@@ -2,7 +2,9 @@ function result = saveXMLheader(filename, options)
 % SAVEXMLHEADER - Save XML header for the HDF5 formats (for example, Fiji Big Data Viewer).
 %
 % Syntax:
-%   function result = saveXMLheader(filename, options)
+%   .. code-block:: matlab
+%
+%      result = io.HDF5.saveXMLheader(filename, options)
 %
 % Input Arguments:
 %   - **filename** — name of the file: myfile.xml
@@ -21,15 +23,13 @@ function result = saveXMLheader(filename, options)
 %     - ``.ModelMaterialNames`` — *(optional)* cell array with names of materials
 %
 % Output Arguments:
-%   - **result** — **0** - fail, **1** - success
+%   - **result** — ``1`` = success, ``0`` = failure
 %
-% Usage:
-%   **Example 1**
+% **Example** — save XML header for a BigDataViewer HDF5 file:
 %
 %   .. code-block:: matlab
 %
-%
-%     io.HDF5.saveXMLheader('c:\data\mydataset.xml', options);
+%      io.HDF5.saveXMLheader('c:\data\mydataset.xml', options);
 %
 
 % Updates

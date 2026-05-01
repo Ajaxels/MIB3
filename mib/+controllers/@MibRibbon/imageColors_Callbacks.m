@@ -2,7 +2,9 @@ function imageColors_Callbacks(obj, hWidget, hData)
 % IMAGECOLORS_CALLBACKS - callback on press of the color channel buttons in the Image ribbon.
 %
 % Syntax:
-%   function imageColors_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageColors_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

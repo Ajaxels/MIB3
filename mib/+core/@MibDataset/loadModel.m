@@ -2,7 +2,9 @@ function result = loadModel(obj, filenames, options)
 % LOADMODEL - Load a segmentation model into this dataset from files or a raw array.
 %
 % Syntax:
-%   function result = loadModel(obj, filenames, options)
+%   .. code-block:: matlab
+%
+%       result = obj.loadModel(filenames, options)
 %
 % This is the dataset-level orchestrator for model loading.  It is called
 % by MibModel.loadModel after BatchOpt processing, virtual-mode guarding,

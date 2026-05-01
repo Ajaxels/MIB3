@@ -2,7 +2,9 @@ function selectDirerctories(obj, event)
 % SELECTDIRERCTORIES - select directories containing images for training and prediction.
 %
 % Syntax:
-%   function selectDirerctories(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.selectDirerctories(event)
 %
     switch event.Source.Tag
         case 'SelectOriginalTrainingImagesDir'

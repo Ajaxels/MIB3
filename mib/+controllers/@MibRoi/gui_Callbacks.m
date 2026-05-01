@@ -2,7 +2,9 @@ function gui_Callbacks(obj, hWidget, hData)
 % GUI_CALLBACKS - callbacks for widgets of some the ROI panel obj.view.handles.panels.roi (obj.cRoi.gui).
 %
 % Syntax:
-%   function gui_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%      obj.gui_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

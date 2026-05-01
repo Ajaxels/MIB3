@@ -15,17 +15,12 @@
 % Date: 25.04.2023
 
 classdef Preferences < handle
-% PREFERENCES - @type Preferences class displays preferences dialog.
+% PREFERENCES - Controller for the preferences dialog — displays MIB3 settings.
 %
-% using appdesigner created GUI
+% Syntax:
+%   .. code-block:: matlab
 %
-%
-% .. code-block:: matlab
-%
-%   obj.startController('Preferences'); // as GUI tool
-
-    % Updates
-    %
+%      obj.startController('Preferences');
     
     properties
         mibController
@@ -64,6 +59,33 @@ classdef Preferences < handle
     
     methods
         function obj = Preferences(mibModel, varargin)
+            % PREFERENCES - Constructor — create a Preferences controller and open its GUI window.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj = Preferences(mibModel, mibController)
+            %
+            % Creates a Preferences controller instance, initializes the AppDesigner view,
+            % loads preferences from the model, positions the window in the center of the
+            % main MIB window, updates all GUI widgets, and registers a listener for model
+            % updates. The preferences dialog allows users to configure MIB3 settings across
+            % multiple panels: User Interface, Colors and Styles, Backup and Undo, External
+            % Directories, Keyboard Shortcuts, and Segmentation Tools.
+            %
+            % Input Arguments:
+            %   - **mibModel** — handle to the application MibModel instance
+            %   - **varargin{1}** — handle to the parent MibController
+            %
+            % Output Arguments:
+            %   - **obj** — handle to the created Preferences controller instance
+            %
+            % **Example** — open the preferences dialog:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj = Preferences(mibModel, mibController);
+            %
             obj.mibModel = mibModel;    % assign model
             obj.mibController = varargin{1};    % get handle to controller
             
@@ -110,8 +132,15 @@ classdef Preferences < handle
             % CLOSEWINDOW - closing Preferences window.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
             %
+            %       obj.closeWindow()
+            %
+            % **Example** — close the preferences window:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow();
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -129,13 +158,13 @@ classdef Preferences < handle
             % UPDATEWIDGETS - update widgets of this window.
             %
             % Syntax:
-            %   function updateWidgets(obj, panelId)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateWidgets()
+            %       obj.updateWidgets(panelId)
             %
             % Input Arguments:
-            %   panelId; [optional] handle to panel that has to be updated, when
-            %   missing all panels are updated
-            %   "UserInterfacePanel",
-            %
+            %   - **panelId** *(optional)* — [char] tag of panel to update; when missing, all panels are updated
             
             panelsList = {'UserInterfacePanel', 'ColorsPanel', 'BackupAndUndoPanel', ...
                 'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel'};
@@ -350,8 +379,18 @@ classdef Preferences < handle
             % APPLYBUTTONPUSHEDCALLBACK - apply preferences to MIB.
             %
             % Syntax:
-            %   function status = ApplyButtonPushedCallback(obj)
+            %   .. code-block:: matlab
             %
+            %      status = obj.ApplyButtonPushedCallback()
+            %
+            % Output Arguments:
+            %   - **status** — [numeric] 1 if successful, 0 if failed
+            %
+            % **Example** — apply and validate preferences:
+            %
+            %   .. code-block:: matlab
+            %
+            %      status = obj.ApplyButtonPushedCallback();
             
             %global scalingGUI;
             status = 0;
@@ -423,8 +462,15 @@ classdef Preferences < handle
             % RESCALEGUIBUTTONPUSHED - rescale user interface of MIB.
             %
             % Syntax:
-            %   function RescaleGUIButtonPushed(obj)
+            %   .. code-block:: matlab
             %
+            %      obj.RescaleGUIButtonPushed()
+            %
+            % **Example** — rescale the MIB GUI:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.RescaleGUIButtonPushed();
             global scalingGUI;
             
             scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
@@ -434,11 +480,18 @@ classdef Preferences < handle
         end
         
         function OKButtonPushedCallback(obj)
-            % OKBUTTONPUSHEDCALLBACK - callback on press of OK.
+            % OKBUTTONPUSHEDCALLBACK - apply preferences and close the preferences window.
             %
             % Syntax:
-            %   function OKButtonPushedCallback(obj)
+            %   .. code-block:: matlab
             %
+            %      obj.OKButtonPushedCallback()
+            %
+            % **Example** — confirm and apply preferences:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.OKButtonPushedCallback();
             
             status = obj.ApplyButtonPushedCallback();
             if status == 0; return; end
@@ -488,11 +541,12 @@ classdef Preferences < handle
             % COLORPANELCALLBACKS - callbacks for modification of the Colors panel.
             %
             % Syntax:
-            %   function ColorPanelCallbacks(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.ColorPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — a structure to the GUI element that has triggered callback
-            %
+            %   - **event** — [struct] event data from the GUI element that triggered callback
             
             switch event.Source.Tag
                 case 'SelectionColorButton'    % update selection color
@@ -588,11 +642,12 @@ classdef Preferences < handle
             % KEYBOARDSHORTCUTSPANELCALLBACKS - callbacks for modification of the Keyboard shortcuts panel.
             %
             % Syntax:
-            %   function KeyboardShortcutsPanelCallbacks(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.KeyboardShortcutsPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — a structure to the GUI element that has triggered callback
-            %
+            %   - **event** — [struct] event data from the GUI element that triggered callback
             
             switch event.Source.Tag
                 case 'ResetKeyShortcutsButton'
@@ -611,12 +666,14 @@ classdef Preferences < handle
             % SEGMENTATIONPANELCALLBACKS - callbacks for modification of the Segmentation tools panel.
             %
             % Syntax:
-            %   function SegmentationPanelCallbacks(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.SegmentationPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — a structure to the GUI element that has triggered callback
+            %   - **event** — [struct] event data from the GUI element that triggered callback
             %
-            
+
             switch event.Source.Tag
                 case 'annotationFontSize'
                     obj.preferences.SegmTools.Annotations.FontSize = find(ismember(obj.view.handles.annotationFontSize.Items, obj.view.handles.annotationFontSize.Value));
@@ -639,12 +696,14 @@ classdef Preferences < handle
             % BACKUPANDUNDOPANELCALLBACKS - callbacks for modification of the Undo and backup panel.
             %
             % Syntax:
-            %   function BackupAndUndoPanelCallbacks(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.BackupAndUndoPanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — a structure to the GUI element that has triggered callback
+            %   - **event** — [struct] event data from the GUI element that triggered callback
             %
-            
+
             switch event.Source.Tag
                 case 'EnableUndo'
                     obj.preferences.Undo.Enable = obj.view.handles.EnableUndo.Value;
@@ -670,12 +729,14 @@ classdef Preferences < handle
             % USERINTERFACEPANELCALLBACKS - callbacks for modification of the User Interface panel.
             %
             % Syntax:
-            %   function UserInterfacePanelCallbacks(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.UserInterfacePanelCallbacks(event)
             %
             % Input Arguments:
-            %   - **event** — a structure to the GUI element that has triggered callback
+            %   - **event** — [struct] event data from the GUI element that triggered callback
             %
-            
+
             switch event.Source.Tag
                 case 'MouseWheelActionDropDown'
                     if strcmp(obj.view.handles.MouseWheelActionDropDown.Value, 'Zoom In/Out')
@@ -764,11 +825,12 @@ classdef Preferences < handle
             % CATEGORIESTREESELECTIONCHANGED - callback for change of nodes of CategoriesTree.
             %
             % Syntax:
-            %   function CategoriesTreeSelectionChanged(obj, selectedNodes)
+            %   .. code-block:: matlab
+            %
+            %      obj.CategoriesTreeSelectionChanged(selectedNodes)
             %
             % Input Arguments:
-            %   - **selectedNodes** — handle to the selected nodes
-            %
+            %   - **selectedNodes** — [handle] handle to the selected tree node
             
             % hide currently visible (previous) panel
             obj.view.handles.(obj.shownPanelTag).Visible = 'off';
@@ -785,8 +847,15 @@ classdef Preferences < handle
             % UPDATECOLORPALETTE - generate default colors for the selected palette.
             %
             % Syntax:
-            %   function updateColorPalette(obj)
+            %   .. code-block:: matlab
             %
+            %      obj.updateColorPalette()
+            %
+            % **Example** — update the color palette:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.updateColorPalette();
             
             % update color palette based on selected parameters in the paletteTypePopup and paletteColorNumberPopup popups
             colorsNo = str2double(obj.view.handles.NumberOfColorsDropDown.Value);
@@ -799,15 +868,16 @@ classdef Preferences < handle
             % UPDATECOLORSTABLES - update color tables: ModelsColorsTable or LUTColorsTable.
             %
             % Syntax:
-            %   function updateColorsTables(obj, ColorTableTag, options)
+            %   .. code-block:: matlab
+            %
+            %      obj.updateColorsTables(ColorTableTag, options)
             %
             % Input Arguments:
-            %   - **ColorTableHandle** — a string with a tag of the table: "ModelsColorsTable", "LUTColorsTable"
-            %   - **options** — a structure with additional parameters
-            %     .updateDataOnly - [logical, dafault=false] update the data in the table without
-            %     .rowId - [integer, default=[]] index of a row to update, when empty update the full table
-            %     redrawing the styles
+            %   - **ColorTableTag** — [char] tag of the table: ``'ModelsColorsTable'`` or ``'LUTColorsTable'``
+            %   - **options** *(optional)* — [struct] structure with additional parameters:
             %
+            %     - ``.updateDataOnly`` — [logical] update data only without redrawing styles (default: ``false``)
+            %     - ``.rowId`` — [integer] index of row to update; when empty, update full table (default: ``[]``)
             
             if nargin < 2; error('ColorTableTag  is missing'); end
             if nargin < 3; options = struct(); end
@@ -873,10 +943,12 @@ classdef Preferences < handle
             % TABLECELLSELECTIONCALLBACK - callback for selection of a cell in ModelsColorsTable.
             %
             % Syntax:
-            %   function TableCellSelectionCallback(obj, event)
+            %   .. code-block:: matlab
             %
-            % Paramters:
-            % event:  a handle to the event structure
+            %      obj.TableCellSelectionCallback(event)
+            %
+            % Input Arguments:
+            %   - **event** — [struct] event data from the table cell selection
             
             indices = event.Indices;
             if isempty(indices); return; end
@@ -912,7 +984,9 @@ classdef Preferences < handle
             % MODELSCOLORSTABLECONTEXTMENUCALLBACKS - callbacks for the context menu of ModelsColorsTable.
             %
             % Syntax:
-            %   function ModelsColorsTableContextMenuCallbacks(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.ModelsColorsTableContextMenuCallbacks(event)
             %
             % Paramters:
             % event:  a handle to the event structure
@@ -1045,7 +1119,9 @@ classdef Preferences < handle
             % TABLECELLEDITCALLBACK - callback for modification of cells in tables.
             %
             % Syntax:
-            %   function TableCellEditCallback(obj, event)
+            %   .. code-block:: matlab
+            %
+            %      obj.TableCellEditCallback(event)
             %
             % Paramters:
             % event:  a handle to the event structure
@@ -1092,8 +1168,18 @@ classdef Preferences < handle
             % EXTERNALDIRSELECT - callback for press of select directory button.
             %
             % Syntax:
-            %   function ExternalDirSelect(obj, event)
+            %   .. code-block:: matlab
             %
+            %      obj.ExternalDirSelect(event)
+            %
+            % Input Arguments:
+            %   - **event** — [struct] event data from the button press
+            %
+            % **Example** — handle directory selection:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.ExternalDirSelect(event);
         
             switch event.Source.Tag
                 case 'FijiDirSelectBtn'
@@ -1151,8 +1237,18 @@ classdef Preferences < handle
             % EXTERNALDIRPATHCHANGE - update of external directories.
             %
             % Syntax:
-            %   function ExternalDirPathChange(obj, event)
+            %   .. code-block:: matlab
             %
+            %      obj.ExternalDirPathChange(event)
+            %
+            % Input Arguments:
+            %   - **event** — [struct] event data from the directory path field
+            %
+            % **Example** — validate and update directory path:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.ExternalDirPathChange(event);
             
             if ~isempty(obj.view.handles.(event.Source.Tag).Value)
                 if ~ismember(exist(obj.view.handles.(event.Source.Tag).Value), [2, 7]) %#ok<EXIST> % keep exists function here, for correct work with /Applications/Fiji.app 
@@ -1180,9 +1276,18 @@ classdef Preferences < handle
             % UPDATEKEYSHORTCUT - callback for change of key shortcuts in the table.
             %
             % Syntax:
-            %   function updateKeyShortcut(obj, eventdata)
+            %   .. code-block:: matlab
             %
-            % obj.view.handles.shortcutsTable
+            %      obj.updateKeyShortcut(eventdata)
+            %
+            % Input Arguments:
+            %   - **eventdata** — [struct] event data from the shortcuts table cell edit
+            %
+            % **Example** — update a keyboard shortcut:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.updateKeyShortcut(eventdata);
             
             index = eventdata.Indices(1);
             data = obj.view.handles.shortcutsTable.Data;    % have to take the whole table as looking for duplicates
@@ -1255,8 +1360,15 @@ classdef Preferences < handle
             % CALCULATE - start main calculation of the plugin.
             %
             % Syntax:
-            %   function Calculate(obj)
+            %   .. code-block:: matlab
             %
+            %      obj.Calculate()
+            %
+            % **Example** — trigger calculation:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.Calculate();
             
             % redraw the image if needed
             notify(obj.mibModel, 'plotImage');

@@ -2,7 +2,9 @@ function moveMaskToModelDataset(obj, action_type, options)
 % MOVEMASKTOMODELDATASET - Move the Mask layer to the Model layer for the full dataset.
 %
 % Syntax:
-%   function moveMaskToModelDataset(obj, action_type, options)
+%   .. code-block:: matlab
+%
+%       obj.moveMaskToModelDataset(action_type, options)
 %
 % Fast-path function for moving complete datasets between layers without
 % ROI or block mode. Operates directly on packed data arrays for maximum

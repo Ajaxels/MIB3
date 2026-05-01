@@ -2,17 +2,18 @@ function clearQuickMeasure(obj)
 % CLEARQUICKMEASURE - Silently remove the active quick-measurement ROI and text label.
 %
 % Syntax:
-%   function clearQuickMeasure(obj)
+%   .. code-block:: matlab
 %
-% Also restores WindowKeyPressFcn saved when the measurement was started.
-% Idempotent: safe to call multiple times or from DeletingROI re-entry.
+%      obj.clearQuickMeasure()
+%
+% Also restores ``WindowKeyPressFcn`` saved when the measurement was started.
+% Idempotent: safe to call multiple times or from ``DeletingROI`` re-entry.
 %
 % Input Arguments:
-%   none
+%   (none)
 %
 % Output Arguments:
-%   none
-%
+%   (none)
 
 if isempty(obj.quickMeasure); return; end
 

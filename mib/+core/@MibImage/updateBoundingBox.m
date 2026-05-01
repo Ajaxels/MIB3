@@ -2,7 +2,9 @@ function updateBoundingBox(obj, newBB, xyzShift, imgDims)
 % UPDATEBOUNDINGBOX - Update the bounding box of the dataset stored in obj.boundingBox.
 %
 % Syntax:
-%   function updateBoundingBox(obj, newBB, xyzShift, imgDims)
+%   .. code-block:: matlab
+%
+%       obj.updateBoundingBox(newBB, xyzShift, imgDims)
 %
 % The bounding box describes the physical extent of the dataset in 3D
 % space. It is stored directly in the obj.boundingBox property as

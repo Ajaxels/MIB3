@@ -2,7 +2,9 @@ function dilateSelection(obj)
 % DILATESELECTION - Expand (dilate) the Selection layer for the current dataset.
 %
 % Syntax:
-%   function dilateSelection(obj)
+%   .. code-block:: matlab
+%
+%      obj.dilateSelection()
 %
 % Reads modifier keys to determine the dataset scope, then reads the
 % Apply-in-3D, Difference and Strel-size widgets from the Selection panel.

@@ -2,7 +2,9 @@ function removeMaterial(obj, BatchOptIn)
 % REMOVEMATERIAL - Remove one or more materials from the current model — wrapper around core.MibDataset.removeMaterial.
 %
 % Syntax:
-%   function removeMaterial(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.removeMaterial(BatchOptIn)
 %
 % For models with 63 or 255 materials: prompts the user for material
 % indices to remove, remaps the remaining materials to contiguous indices

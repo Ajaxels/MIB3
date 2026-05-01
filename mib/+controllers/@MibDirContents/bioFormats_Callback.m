@@ -2,7 +2,9 @@ function bioFormats_Callback(obj)
 % BIOFORMATS_CALLBACK - callback for selection of the bio-formats reader by press on.
 %
 % Syntax:
-%   function bioFormats_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.bioFormats_Callback()
 %
 % obj.view.handles.panels.dirContents.handles.bioFormats, updates the
 % contents of obj.view.handles.panels.dirContents.handles.fileFilters and

@@ -66,7 +66,9 @@ classdef Quantification < handle
             % VIEWLISTNER_CALLBACK2 - static listener callback for mibModel events.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, src, evnt)
+            %   .. code-block:: matlab
+            %
+            %       obj.ViewListner_Callback2(src, evnt)
             %
             % Input Arguments:
             %   - **obj** — handle to Quantification controller
@@ -100,7 +102,10 @@ classdef Quantification < handle
             % QUANTIFICATION - constructor for Quantification controller.
             %
             % Syntax:
-            %   function obj = Quantification(mibModel, varargin)
+            %   .. code-block:: matlab
+            %
+            %       obj = Quantification(mibModel)
+            %       obj = Quantification(mibModel, mibController, BatchOpt, contIndex)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel

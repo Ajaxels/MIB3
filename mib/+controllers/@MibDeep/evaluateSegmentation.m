@@ -2,7 +2,9 @@ function evaluateSegmentation(obj)
 % EVALUATESEGMENTATION - evaluate segmentation results by comparing predicted models.
 %
 % Syntax:
-%   function evaluateSegmentation(obj)
+%   .. code-block:: matlab
+%
+%       obj.evaluateSegmentation()
 %
 % with the ground truth models
 % check for evaluation of patches in the patch-wise mode
@@ -115,12 +117,12 @@ try
     fullPathFilenames = arrayfun(@(filename) fullfile(truthDir, cell2mat(filename)), {truthList.name}, 'UniformOutput', false);  % generate full paths
     if preprocessedSwitch
         dsTruth = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-            'FileExtensions', '.mibCat', 'ReadFcn', @utils.deepmib.storeLoadImages);
+            'FileExtensions', '.mibCat', 'ReadFcn', @deepmib.storeLoadImages);
     else
         switch obj.BatchOpt.ModelFilenameExtension{1}
             case 'MODEL'
                 dsTruth = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-                    'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                    'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
                 % I = readimage(dsTruth,1);  % read model test
                 % reset(dsTruth);
             otherwise
@@ -138,7 +140,7 @@ fullPathFilenames = arrayfun(@(filename) fullfile(obj.BatchOpt.ResultingImagesDi
 switch obj.BatchOpt.P_ModelFiles{1}
     case 'MIB Model format'
         dsResults = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...
-            'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+            'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
     case {'TIF compressed format', 'TIF uncompressed format'}
         if strcmp(obj.BatchOpt.Workflow{1}(1:2), '2D')
             dsResults = pixelLabelDatastore(fullPathFilenames, classNames, pixelLabelID, ...

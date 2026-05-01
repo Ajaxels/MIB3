@@ -2,7 +2,9 @@ function status = doSeriesLoop(obj, startStep, finishStep)
 % DOSERIESLOOP - iterate over all Bio-Formats series in a multi-series container and execute protocol steps for each.
 %
 % Syntax:
-%   function status = doSeriesLoop(obj, startStep, finishStep)
+%   .. code-block:: matlab
+%
+%       status = obj.doSeriesLoop(startStep, finishStep)
 %
 % Opens the container defined by the 'Load and combine images' step at
 % startStep using the Bio-Formats Memoizer reader, counts the available

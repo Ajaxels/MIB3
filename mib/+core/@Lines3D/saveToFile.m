@@ -1,21 +1,29 @@
 function saveToFile(obj, filename, options)
-% SAVETOFILE - save Lines3D to a file.
+% SAVETOFILE - Save the Lines3D graph to a file.
 %
 % Syntax:
-%   function saveToFile(obj, filename, options)
+%   .. code-block:: matlab
+%
+%       obj.saveToFile(filename, options)
+%
+% Saves the graph to a file in one of several supported formats. If ``filename``
+% is omitted, a dialog prompts the user to select the filename and format.
 %
 % Input Arguments:
-%   - **filename** — full path to file
-%   - **options** — a structure with optional paramters
-%     .format - a char string
-%     'lines3d' - MIB lines3d format
-%     'amira-ascii' - amira ascii
-%     'amira-binary' - amira binary
-%     'excel' - Microsoft Excel format
-%     .treeId - a number with index of a tree to save, when empty save all graph
-%     .NodeFieldName - *(optional)* name of variable for nodes to save, only for Amira
-%     .EdgeFieldName - *(optional)* name of variable for edges to save, only for Amira
-%     .showWaitbar - *(optional)* a number 1-show; 0-do not show the waitbar
+%   - **filename** — *(optional)* [char] full output path; if ``[]`` or missing, a file dialog opens
+%   - **options** — *(optional)* [struct] export settings:
+%
+%     - ``.format`` — [char] output format; if missing, inferred from file extension:
+%
+%       - ``'lines3d'`` — MIB native format (MATLAB ``.lines3d`` binary)
+%       - ``'amira-ascii'`` — Amira Spatial Graph ASCII format
+%       - ``'amira-binary'`` — Amira Spatial Graph binary format
+%       - ``'excel'`` — Microsoft Excel ``.xls`` spreadsheet
+%
+%     - ``.treeId`` — *(optional)* [numeric or []] tree index to export (default: ``[]`` = all trees)
+%     - ``.NodeFieldName`` — *(optional)* [char] field name to export for nodes (Amira only)
+%     - ``.EdgeFieldName`` — *(optional)* [char] field name to export for edges (Amira only)
+%     - ``.showWaitbar`` — *(optional)* [logical] display progress bar (default: ``1``)
 %
 
 if nargin < 3; options = struct(); end

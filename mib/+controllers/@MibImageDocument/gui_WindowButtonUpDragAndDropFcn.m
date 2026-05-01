@@ -2,32 +2,38 @@ function gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)
 % GUI_WINDOWBUTTONUPDRAGANDDROPFCN - Commit the drag-and-drop shift on mouse button release.
 %
 % Syntax:
-%   function gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)
+%   .. code-block:: matlab
+%
+%      obj.gui_WindowButtonUpDragAndDropFcn(mode)
+%      obj.gui_WindowButtonUpDragAndDropFcn(mode, diffX, diffY)
+%      obj.gui_WindowButtonUpDragAndDropFcn(mode, diffX, diffY, BatchOptIn)
 %
 % Input Arguments:
-%   - **mode** — char, mode for the drag and drop action
-%     - '2D, Slice' - drag all selection on the current slice
-%     - 'Object2D' - drag the selected object only on the current slice
-%     - '3D, Stack' - drag all selection for all slices
-%     - 'Object3D' - drag the selected 3D object
-%   - **diffX** — *(optional)* double, shift in X direction (pixels); when empty,
-%     calculated from mouse position
-%   - **diffY** — *(optional)* double, shift in Y direction (pixels); when empty,
-%     calculated from mouse position
-%   - **BatchOptIn** — *(optional)* struct for batch processing mode
-%     - .Target - Layer to be moved
-%     - .Mode - Part of the dataset to be moved
-%     - .shiftX - X-shift in pixels
-%     - .shiftY - Y-shift in pixels
-%     - .showWaitbar - Show or not the progress bar
+%   - **mode** — [char] mode for drag-and-drop action:
+%
+%     - ``'2D, Slice'`` — drag all selection on current slice
+%     - ``'Object2D'`` — drag selected object only on current slice
+%     - ``'3D, Stack'`` — drag all selection for all slices
+%     - ``'Object3D'`` — drag selected 3D object
+%
+%   - **diffX** *(optional)* — [double] shift in X direction (pixels); when empty, calculated from mouse position
+%   - **diffY** *(optional)* — [double] shift in Y direction (pixels); when empty, calculated from mouse position
+%   - **BatchOptIn** *(optional)* — [struct] batch processing mode:
+%
+%     - ``.Target`` — [char] layer to be moved
+%     - ``.Mode`` — [char] part of dataset to be moved
+%     - ``.shiftX`` — [numeric] X-shift in pixels
+%     - ``.shiftY`` — [numeric] Y-shift in pixels
+%     - ``.showWaitbar`` — [logical] show progress bar
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example** — shift 5px right, 3px up:
 %
-%     obj.gui_WindowButtonUpDragAndDropFcn('2D, Slice', 5, -3);  // shift 5px right, 3px up
+%   .. code-block:: matlab
+%
+%      obj.gui_WindowButtonUpDragAndDropFcn('2D, Slice', 5, -3);
 %
 
 % Updates

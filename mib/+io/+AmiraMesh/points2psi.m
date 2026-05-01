@@ -18,7 +18,10 @@ function res = points2psi(filename, points, pntLabels, pntValues, options)
 % POINTS2PSI - generate PSI file for Amira.
 %
 % Syntax:
-%   function res = points2psi(filename, points, pntLabels, pntValues, options)
+%   .. code-block:: matlab
+%
+%      res = io.AmiraMesh.points2psi(filename, points)
+%      res = io.AmiraMesh.points2psi(filename, points, pntLabels, pntValues, options)
 %
 % the file contains cloud of points, their labels and values
 %

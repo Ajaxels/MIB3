@@ -2,41 +2,50 @@ function segmentationAnnotation(obj, y, x, z, t, modifier, options)
 % SEGMENTATIONANNOTATION - Add or remove a text annotation at the given dataset coordinate.
 %
 % Syntax:
-%   function segmentationAnnotation(obj, y, x, z, t, modifier, options)
+%   .. code-block:: matlab
+%
+%      obj.segmentationAnnotation(y, x, z, t, modifier)
+%      obj.segmentationAnnotation(y, x, z, t, modifier, options)
 %
 % Adds a new annotation (empty modifier), removes the closest annotation
 % (Ctrl), or interpolates annotations along Z between the last and the
 % current position (Shift).
 %
 % Input Arguments:
-%   - **y** — double, y-coordinate of the annotation point in full-dataset pixels
-%   - **x** — double, x-coordinate of the annotation point in full-dataset pixels
-%   - **z** — double, z-coordinate (slice index) of the annotation point
-%   - **t** — double, t-coordinate (time point) of the annotation point
-%   - **modifier** — cell array of chars or char, modifier keys held during click
-%     - empty '' or {} - add annotation to the list
-%     - 'control' / {'control'} - remove the closest annotation
-%     - 'shift'   / {'shift'}   - interpolate annotations between the last
-%   and the current position along Z
-%   - **options** — *(optional)* struct with additional settings
-%     - .samInteractiveModel - [logical] when true, triggers
-%   segmentationSAM after adding the annotation; default false
+%   - **y** — [double] y-coordinate of annotation point in full-dataset pixels
+%   - **x** — [double] x-coordinate of annotation point in full-dataset pixels
+%   - **z** — [double] z-coordinate (slice index) of annotation point
+%   - **t** — [double] t-coordinate (time point) of annotation point
+%   - **modifier** — [char|cell] modifier keys held during click:
+%
+%     - ``''`` or ``{}`` — add annotation to list
+%     - ``'control'`` or ``{'control'}`` — remove closest annotation
+%     - ``'shift'`` or ``{'shift'}`` — interpolate annotations between last and current position along Z
+%
+%   - **options** *(optional)* — [struct] additional settings:
+%
+%     - ``.samInteractiveModel`` — [logical] when ``true``, triggers ``segmentationSAM`` after adding annotation (default: ``false``)
 %
 % Output Arguments:
 %   (none)
 %
-% Usage:
-%   Example 1::
+% **Example 1** — add annotation:
 %
-%     obj.segmentationAnnotation(50, 75, 10, 1, {});  // add annotation
+%   .. code-block:: matlab
 %
-%   Example 2::
+%      obj.segmentationAnnotation(50, 75, 10, 1, {});
 %
-%     obj.segmentationAnnotation(50, 75, 10, 1, {'control'});  // remove closest
+% **Example 2** — remove closest annotation:
 %
-%   Example 3::
+%   .. code-block:: matlab
 %
-%     obj.segmentationAnnotation(50, 75, 10, 1, {'shift'});    // interpolate
+%      obj.segmentationAnnotation(50, 75, 10, 1, {'control'});
+%
+% **Example 3** — interpolate annotations:
+%
+%   .. code-block:: matlab
+%
+%      obj.segmentationAnnotation(50, 75, 10, 1, {'shift'});
 %
 
 % Updates

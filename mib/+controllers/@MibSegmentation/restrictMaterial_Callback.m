@@ -2,7 +2,9 @@ function restrictMaterial_Callback(obj)
 % RESTRICTMATERIAL_CALLBACK - callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in.
 %
 % Syntax:
-%   function restrictMaterial_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.restrictMaterial_Callback()
 %
 % obj.handles.panels.segmentation panel.
 % Restrict selection to the selected material in obj.handles.panels.segmentation.handles.materialsTable

@@ -2,7 +2,9 @@ function str = buildImageDescription(bb, actionLog)
 % BUILDIMAGEDESCRIPTION - Reconstruct a full ImageDescription string from a bounding box vector and an action log cell array.
 %
 % Syntax:
-%   function str = buildImageDescription(bb, actionLog)
+%   .. code-block:: matlab
+%
+%       str = buildImageDescription(bb, actionLog)
 %
 % This is the inverse of core.MibImage.splitImageDescription.  It produces
 % the canonical string written into the ImageDescription tag of TIFF files

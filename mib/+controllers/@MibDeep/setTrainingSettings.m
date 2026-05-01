@@ -2,7 +2,9 @@ function setTrainingSettings(obj)
 % SETTRAININGSETTINGS - update settings for training of networks.
 %
 % Syntax:
-%   function setTrainingSettings(obj)
+%   .. code-block:: matlab
+%
+%       obj.setTrainingSettings()
 %
     prompts = {'solverName, solver for training network'; ...
         'MaxEpochs, maximum number of epochs to use for training [30]'; ...

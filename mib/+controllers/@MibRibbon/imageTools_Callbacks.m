@@ -2,7 +2,9 @@ function imageTools_Callbacks(obj, hWidget, hData)
 % IMAGETOOLS_CALLBACKS - callback on press of Image tools buttons in the Image ribbon.
 %
 % Syntax:
-%   function imageTools_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.imageTools_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

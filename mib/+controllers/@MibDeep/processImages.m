@@ -2,7 +2,9 @@ function processImages(obj, preprocessFor)
 % PROCESSIMAGES - Preprocess images for training and prediction.
 %
 % Syntax:
-%   function processImages(obj, preprocessFor)
+%   .. code-block:: matlab
+%
+%       obj.processImages(preprocessFor)
 %
 % Input Arguments:
 %   - **preprocessFor** — a string with target, 'training', 'prediction'
@@ -254,7 +256,7 @@ function processImages(obj, preprocessFor)
                     case 'MODEL'
                         modDS = imageDatastore(fullfile(imageDirIn, 'Labels'), ...
                             'IncludeSubfolders', false, ...
-                            'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                            'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
                         % I = readimage(modDS,1);  % read model test
                         % reset(modDS);
                     otherwise
@@ -276,7 +278,7 @@ function processImages(obj, preprocessFor)
                             case 'MASK'
                                 maskDS = imageDatastore(fullfile(imageDirIn, 'Masks'), ...
                                     'IncludeSubfolders', false, ...
-                                    'FileExtensions', '.mask', 'ReadFcn', @utils.deepmib.storeLoadImages);
+                                    'FileExtensions', '.mask', 'ReadFcn', @deepmib.storeLoadImages);
                             otherwise
                                 maskDS = imageDatastore(fullfile(imageDirIn, 'Masks'), ...
                                     'IncludeSubfolders', false, 'FileExtensions', lower(['.' obj.BatchOpt.MaskFilenameExtension{1}]));
@@ -301,11 +303,11 @@ function processImages(obj, preprocessFor)
             try
                 modDS = imageDatastore(fullfile(imageDirIn, 'Labels'), ...
                     'IncludeSubfolders', false, ...
-                    'FileExtensions', '.model', 'ReadFcn', @utils.deepmib.storeLoadModel);
+                    'FileExtensions', '.model', 'ReadFcn', @deepmib.storeLoadModel);
                 if MaskAwayParFor && trainingSwitch     % do not use masks for prediction
                     maskDS = imageDatastore(fullfile(imageDirIn, 'Masks'), ...
                         'IncludeSubfolders', false, ...
-                        'FileExtensions', '.mask', 'ReadFcn', @utils.deepmib.storeLoadImages);
+                        'FileExtensions', '.mask', 'ReadFcn', @deepmib.storeLoadImages);
                 end
             catch err
                 if obj.BatchOpt.showWaitbar; delete(pwb); end
@@ -395,7 +397,7 @@ function processImages(obj, preprocessFor)
 
         % saving image
         fn = fullfile(imDir, sprintf('%s.mibImg', fnOut));
-        utils.deepmib.saveImageParFor(fn, mibImg, compressImages, saveImageOpt);
+        deepmib.saveImageParFor(fn, mibImg, compressImages, saveImageOpt);
 
         if GroundTruthModelSwitch
             if strcmp(mode2D3DParFor, '2D')
@@ -432,7 +434,7 @@ function processImages(obj, preprocessFor)
             end
 
             fn = fullfile(labelDir, sprintf('%s.mibCat', fnModOut));
-            utils.deepmib.saveImageParFor(fn, mibImg, compressModels, saveModelOpt);
+            deepmib.saveImageParFor(fn, mibImg, compressModels, saveModelOpt);
         end
         %if pwb.getCancelState(); delete(pwb); imgId = numFiles; end
         if showWaitbarParFor && mod(imgId, 10) == 1; increment(pwb); end

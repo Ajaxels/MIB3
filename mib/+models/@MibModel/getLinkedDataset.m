@@ -2,7 +2,9 @@ function partnerId = getLinkedDataset(obj, id)
 % GETLINKEDDATASET - Return the global dataset ID of the linked partner, or [] if not linked.
 %
 % Syntax:
-%   function partnerId = getLinkedDataset(obj, id)
+%   .. code-block:: matlab
+%
+%       partnerId = obj.getLinkedDataset(id)
 %
 % Searches ``obj.linkedPairs`` (n×2 array of [idA idB] global ID
 % pairs) for a row that contains *id* and returns the other column value.

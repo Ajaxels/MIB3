@@ -2,7 +2,9 @@ function listenMIB_Callback(obj)
 % LISTENMIB_CALLBACK - enable or disable the SyncBatch listener based on the listenMIB checkbox state.
 %
 % Syntax:
-%   function listenMIB_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.listenMIB_Callback()
 %
 % Usage:
 %   Example 1::

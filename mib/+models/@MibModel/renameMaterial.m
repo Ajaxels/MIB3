@@ -2,7 +2,9 @@ function renameMaterial(obj, BatchOptIn)
 % RENAMEMATERIAL - Rename one or all materials of the current model.
 %
 % Syntax:
-%   function renameMaterial(obj, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       obj.renameMaterial(BatchOptIn)
 %
 % For small models (63 or 255 materials): prompts the user for a new
 % name for the selected material.  Use MaterialIndex '0' with a

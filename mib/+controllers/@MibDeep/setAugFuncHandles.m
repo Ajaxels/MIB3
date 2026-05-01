@@ -2,7 +2,9 @@ function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
 % SETAUGFUNCHANDLES - define list of 2D/3D augmentation functions.
 %
 % Syntax:
-%   function [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)
+%   .. code-block:: matlab
+%
+%       [status, augNumber] = obj.setAugFuncHandles(mode, augOptions)
 %
 % Input Arguments:
 %   - **mode** — string defining '2D' or '3D' augmentations

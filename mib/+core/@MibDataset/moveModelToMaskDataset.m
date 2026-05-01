@@ -2,39 +2,41 @@ function moveModelToMaskDataset(obj, action_type, options)
 % MOVEMODELTOMASKDATASET - Move the selected Material to the Mask layer for the full dataset.
 %
 % Syntax:
-%   function moveModelToMaskDataset(obj, action_type, options)
+%   .. code-block:: matlab
+%
+%       obj.moveModelToMaskDataset(action_type, options)
 %
 % Fast-path function for moving complete datasets between layers without
 % ROI or block mode. Operates directly on packed data arrays for maximum
 % performance.
 %
 % Input Arguments:
-%   - **action_type** — a type of the desired action
-%   - 'add' - add the selected material (Select from) to mask
-%   - 'remove' - remove the selected material (Select from) from mask
-%   - 'replace' - replace mask with the selected (Select from) material
-%   - **options** — a structure with additional parameters
+%   - **action_type** — [char] type of the desired action:
 %
-%     - ``.contSelIndex`` — index of the Select from material
-%     - ``.contAddIndex`` — index of the Add to material
-%     - ``.level`` *(optional)*, index of image level from the image pyramid, default = 1
+%     - ``'add'`` — add the selected material to mask
+%     - ``'remove'`` — remove the selected material from mask
+%     - ``'replace'`` — replace mask with the selected material
+%
+%   - **options** — [struct] structure with additional parameters:
+%
+%     - ``.contSelIndex`` — [numeric] index of the "Select from" material
+%     - ``.contAddIndex`` — [numeric] index of the "Add to" material
+%     - ``.level`` *(optional)* — [numeric] image level index from pyramid (default: ``1``)
 %
 % Output Arguments:
+%   (none)
 %
-% Usage:
-%   **Example 1**
+% **Example** — Move selected material to mask by adding:
 %
 %   .. code-block:: matlab
 %
+%      options.contSelIndex = obj.getSelectedMaterialIndex();
+%      options.contAddIndex = obj.getSelectedMaterialIndex('AddTo');
+%      obj.moveModelToMaskDataset('add', options);
 %
-%     options.contSelIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex();
-%     options.contAddIndex = obj.mibModel.I{obj.mibModel.id}.getSelectedMaterialIndex('AddTo');
-%     obj.mibModel.I{obj.mibModel.id}.moveModelToMaskDataset('add', options);% add material to mask
-%
-%
-%   **Attention:** **NOT** **sensitive** to the blockModeSwitch
-%
-%   **Attention:** **NOT** **sensitive** to the shown ROI
+%   .. note::
+%      This is a fast-path function that operates on complete 4D datasets only.
+%      It is **not** sensitive to ``blockModeSwitch`` or visible ROI selections.
 %
 
 % Updates

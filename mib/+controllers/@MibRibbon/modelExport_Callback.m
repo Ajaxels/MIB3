@@ -2,7 +2,9 @@ function modelExport_Callback(obj, hWidget, hData)
 % MODELEXPORT_CALLBACK - callback on press of buttons in the Export section of the Model ribbon.
 %
 % Syntax:
-%   function modelExport_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelExport_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

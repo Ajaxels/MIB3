@@ -2,7 +2,9 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     % INITIALIZE - init MibDataset class and set all elements of the class to default values.
     %
     % Syntax:
-    %   function initialize(obj, img, meta, datasetType, modelType, enableSelection)
+    %   .. code-block:: matlab
+    %
+    %       obj.initialize(img, meta, datasetType, modelType, enableSelection)
     %
     % Input Arguments:
     %   - **img** — matrix with the image to initialize the class, can be empty

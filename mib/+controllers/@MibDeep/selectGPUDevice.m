@@ -2,7 +2,9 @@ function selectGPUDevice(obj)
 % SELECTGPUDEVICE - select environment for computations.
 %
 % Syntax:
-%   function selectGPUDevice(obj)
+%   .. code-block:: matlab
+%
+%       obj.selectGPUDevice()
 %
     selectedIndex = find(ismember(obj.view.Figure.GPUDropDown.Items, obj.view.Figure.GPUDropDown.Value));
     if ismember(obj.view.Figure.GPUDropDown.Value, {'CPU only', 'Multi-GPU', 'Parallel'})

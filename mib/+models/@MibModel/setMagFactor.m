@@ -2,7 +2,9 @@ function setMagFactor(obj, magFactor, id)
 % SETMAGFACTOR - set magnification for the currently shown or id dataset.
 %
 % Syntax:
-%   function setMagFactor(obj, magFactor, id)
+%   .. code-block:: matlab
+%
+%       obj.setMagFactor(magFactor, id)
 %
 % Input Arguments:
 %   - **magFactor** — magnification factor

@@ -2,7 +2,9 @@ function datasetToolsSlices_Callback(obj, hWidget, hData)
 % DATASETTOOLSSLICES_CALLBACK - callback on press of buttons in the Slices button of the Dataset ribbon.
 %
 % Syntax:
-%   function datasetToolsSlices_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetToolsSlices_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

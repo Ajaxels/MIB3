@@ -2,7 +2,9 @@ function update_fromModel(obj)
 % UPDATE_FROMMODEL - update widgets of the Segmentation panel from obj.mibModel.
 %
 % Syntax:
-%   function update_fromModel(obj)
+%   .. code-block:: matlab
+%
+%       obj.update_fromModel()
 %
 
 % update widgets of the segmentation panel from preferences

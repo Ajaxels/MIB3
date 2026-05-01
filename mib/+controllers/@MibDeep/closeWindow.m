@@ -2,7 +2,9 @@ function closeWindow(obj)
 % CLOSEWINDOW - callback on closing of DeepMIB window.
 %
 % Syntax:
-%   function closeWindow(obj)
+%   .. code-block:: matlab
+%
+%       obj.closeWindow()
 %
 
 % update preferences structure

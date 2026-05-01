@@ -47,7 +47,9 @@ classdef Annotations < handle
             % VIEWLISTNER_CALLBACK2 - Guard: if the view was closed before listener cleanup, clean up and return.
             %
             % Syntax:
-            %   function ViewListner_Callback2(obj, src, evnt)
+            %   .. code-block:: matlab
+            %
+            %       obj.ViewListner_Callback2(src, evnt)
             %
             if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener)
@@ -67,7 +69,10 @@ classdef Annotations < handle
             % ANNOTATIONS - Constructor for the Annotations controller.
             %
             % Syntax:
-            %   function obj = Annotations(mibModel, varargin)
+            %   .. code-block:: matlab
+            %
+            %       obj = Annotations(mibModel)
+            %       obj = Annotations(mibModel, BatchOpt)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
@@ -174,7 +179,9 @@ classdef Annotations < handle
             % CLOSEWINDOW - Close the Annotations window and clean up listeners.
             %
             % Syntax:
-            %   function closeWindow(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.closeWindow()
             %
 
             for i = numel(obj.childControllers):-1:1
@@ -200,7 +207,9 @@ classdef Annotations < handle
             % ADDCALLBACKS - Wire all widget callbacks. Called once from the constructor.
             %
             % Syntax:
-            %   function addCallbacks(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.addCallbacks()
             %
 
             % Window X-button triggers proper cleanup
@@ -260,7 +269,9 @@ classdef Annotations < handle
             % UPDATEWIDGETS - Refresh the annotation table from the current dataset.
             %
             % Syntax:
-            %   function updateWidgets(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.updateWidgets()
             %
 
             id = obj.mibModel.getActiveId();
@@ -294,7 +305,9 @@ classdef Annotations < handle
             % LOADBTN_CALLBACK - Import annotations from a file or from the MATLAB workspace.
             %
             % Syntax:
-            %   function loadBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.loadBtn_Callback()
             %
 
             id = obj.BatchOpt.id;
@@ -455,7 +468,9 @@ classdef Annotations < handle
             % SAVEBTN_CALLBACK - Export annotations to a file or to the MATLAB workspace.
             %
             % Syntax:
-            %   function saveBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.saveBtn_Callback()
             %
 
             id = obj.BatchOpt.id;
@@ -490,7 +505,9 @@ classdef Annotations < handle
             % SAVEANNOTATIONSTOFILE - Save annotations to a file chosen by the user.
             %
             % Syntax:
-            %   function saveAnnotationsToFile(obj, labelText, labelPosition, labelValue)
+            %   .. code-block:: matlab
+            %
+            %       obj.saveAnnotationsToFile(labelText, labelPosition, labelValue)
             %
             % Input Arguments:
             %   - **labelText** — cell array of annotation labels
@@ -604,7 +621,9 @@ classdef Annotations < handle
             % DELETEBTN_CALLBACK - Delete all annotations from the current dataset.
             %
             % Syntax:
-            %   function deleteBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.deleteBtn_Callback()
             %
 
             id = obj.BatchOpt.id;
@@ -619,7 +638,9 @@ classdef Annotations < handle
             % ANNOTATIONTABLE_CELLSELECTIONCALLBACK - Callback for cell selection change in annotationTable.
             %
             % Syntax:
-            %   function annotationTable_CellSelectionCallback(obj, Selection)
+            %   .. code-block:: matlab
+            %
+            %       obj.annotationTable_CellSelectionCallback(Selection)
             %
             % Input Arguments:
             %   - **Selection** — Nx2 array of [row col] pairs (from SelectionChangedFcn event.Selection)
@@ -636,7 +657,9 @@ classdef Annotations < handle
             % ANNOTATIONTABLE_CELLEDITCALLBACK - Callback for cell edit in annotationTable.
             %
             % Syntax:
-            %   function annotationTable_CellEditCallback(obj, Indices)
+            %   .. code-block:: matlab
+            %
+            %       obj.annotationTable_CellEditCallback(Indices)
             %
             % Input Arguments:
             %   - **Indices** — [row col] of the edited cell (from CellEditCallback event.Indices)
@@ -666,7 +689,9 @@ classdef Annotations < handle
             % PRECISIONEDIT_CALLBACK - Callback for the precision spinner; refresh table with new decimal places.
             %
             % Syntax:
-            %   function precisionEdit_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.precisionEdit_Callback()
             %
 
             precision = obj.view.handles.precisionEdit.Value;
@@ -684,7 +709,9 @@ classdef Annotations < handle
             % TABLECONTEXTMENU_CB - Callbacks for the annotation table context menu.
             %
             % Syntax:
-            %   function tableContextMenu_cb(obj, parameter)
+            %   .. code-block:: matlab
+            %
+            %       obj.tableContextMenu_cb(parameter)
             %
             % Input Arguments:
             %   - **parameter** — string selecting the action
@@ -1260,7 +1287,9 @@ classdef Annotations < handle
             % GUI_KEYPRESSFCN - Key-press callback for the main figure window.
             %
             % Syntax:
-            %   function gui_KeyPressFcn(obj, eventdata)
+            %   .. code-block:: matlab
+            %
+            %       obj.gui_KeyPressFcn(eventdata)
             %
 
             if ismember('control', eventdata.Modifier)
@@ -1275,7 +1304,9 @@ classdef Annotations < handle
             % ANNOTATIONTABLE_KEYPRESSFCN - Key-press callback for the annotation table; handles reorder shortcuts.
             %
             % Syntax:
-            %   function annotationTable_KeyPressFcn(obj, eventdata)
+            %   .. code-block:: matlab
+            %
+            %       obj.annotationTable_KeyPressFcn(eventdata)
             %
 
             if ismember('control', eventdata.Modifier)
@@ -1298,7 +1329,9 @@ classdef Annotations < handle
             % RESORTTABLEPOPUP_CALLBACK - Resort the annotation list by the chosen column.
             %
             % Syntax:
-            %   function resortTablePopup_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.resortTablePopup_Callback()
             %
 
             obj.mibModel.backup('annotations', 1);
@@ -1312,7 +1345,9 @@ classdef Annotations < handle
             % SETTINGSBTN_CALLBACK - Open the annotation display settings dialog.
             %
             % Syntax:
-            %   function settingsBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.settingsBtn_Callback()
             %
 
             prompts = {'Show annotations for extra slices (positive integer or 0):'; ...
@@ -1358,7 +1393,9 @@ classdef Annotations < handle
             % HELPBTN_CALLBACK - Open the Annotations help page in the browser.
             %
             % Syntax:
-            %   function helpBtn_Callback(obj)
+            %   .. code-block:: matlab
+            %
+            %       obj.helpBtn_Callback()
             %
 
             web(fullfile(fileparts(obj.mibModel.mibPath), ...

@@ -1,57 +1,89 @@
 classdef ExtensionRegistryLoad < handle
-% EXTENSIONREGISTRYLOAD - class to store filename extensions that MIB is capable to load.
+% EXTENSIONREGISTRYLOAD - Registry of supported image file extensions for loading by mode and reader.
 %
-% grouped under a dictionary obj.extensionSets
+% Manages a dictionary (``extensionSets``) of allowed filename extensions for each
+% combination of dataset mode (``Standard``, ``Virtual``, ``BigData``, ``Model``) and
+% file reader (``Default`` or ``BioFormats``). Provides methods to resolve which loader
+% should be used for a given filename, mode, and reader combination.
 
     properties (Access = private)
         extensionSets dictionary
-        % dictionary containing extensions for each mode:
-        % @li Standard.Default -> standard dataset loaded to memory, default reader
-        % @li Virtual.Default  -> virtual dataset, default reader
-        % @li BigData.Default -> bigdata dataset, default reader
-        % @li Standard.BioFormats  -> standard dataset loaded to memory, bio-formats reader
-        % @li Virtual.BioFormats -> virtual dataset, bio-formats reader
-        % @li BigData.BioFormats -> bigdata dataset, bio-formats reader
+        % Dictionary mapping mode.reader combinations to extension lists:
+        %
+        %   - ``Standard.Default`` — standard dataset loaded to memory, default reader
+        %   - ``Virtual.Default`` — virtual dataset, default reader
+        %   - ``BigData.Default`` — bigdata dataset, default reader
+        %   - ``Standard.BioFormats`` — standard dataset loaded to memory, bio-formats reader
+        %   - ``Virtual.BioFormats`` — virtual dataset, bio-formats reader
+        %   - ``BigData.BioFormats`` — bigdata dataset, bio-formats reader
+        %   - ``Model.Default`` — model files (labels/segmentation)
+        %
         imreadExtensions
-        % cell array with standard matlab image format filename extensions that are loaded with imread
+        % Cell array with standard MATLAB image format filename extensions (e.g. ``'tif'``, ``'png'``)
+        % loaded via ``imread``.
         videoExtensions
-        % cell array with standard matlab video extensions
+        % Cell array with standard MATLAB video extensions (e.g. ``'avi'``, ``'mp4'``).
     end
 
     methods
         function obj = ExtensionRegistryLoad()
-            % EXTENSIONREGISTRYLOAD - Constructor - init the class and initiate it with default.
+            % EXTENSIONREGISTRYLOAD - Constructor for ExtensionRegistryLoad.
             %
             % Syntax:
-            %   function obj = ExtensionRegistryLoad()
             %
-            % file extension formats
+            %   .. code-block:: matlab
+            %
+            %      registry = io.ExtensionRegistryLoad()
+            %
+            % Initializes the registry with default file extension sets for all
+            % supported modes and readers.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   - **obj** — instance of ExtensionRegistryLoad
 
             obj.extensionSets = dictionary();
             obj.initDefaults();
         end
 
         function loaderInfo = resolveLoader(obj, filename, mode, reader)
-            % RESOLVELOADER - find a loader that should be used for this specific dataset mode, selected reader and filename extension.
+            % RESOLVELOADER - Find the appropriate loader for a file given mode, reader, and extension.
             %
             % Syntax:
-            %   function loaderInfo = resolveLoader(obj, filename, mode, reader)
+            %
+            %   .. code-block:: matlab
+            %
+            %      loaderInfo = obj.resolveLoader(filename, mode, reader)
+            %
+            % Extracts the filename extension and returns a structure identifying
+            % which loader should be used. If the extension is not compatible with
+            % the requested mode/reader combination, returns an error message.
             %
             % Input Arguments:
             %   - **filename** — [char] first filename in the sequence of files to load
-            %   - **mode** — [char] defining type of MIB dataset,
-            %   - 'Standard' standard dataset that is loaded into memory
-            %   - 'Virtual' virtual dataset that is loaded on demand
-            %   - **reader** — [char] defining the type of file reader
-            %   - 'Default' matlab imread, custom and other readers
-            %   - 'BioFormats' use the BioFormats library to read images
+            %   - **mode** — [char] dataset type:
+            %
+            %     - ``'Standard'`` — dataset loaded into memory
+            %     - ``'Virtual'`` — dataset loaded on demand
+            %     - ``'BigData'`` — large dataset using OME-Zarr v3
+            %     - ``'Model'`` — segmentation labels/masks
+            %
+            %   - **reader** — [char] file reader type:
+            %
+            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` — BioFormats library reader
             %
             % Output Arguments:
-            %   - **loaderInfo** — a structure that encodes the potential loader to use or empty
-            %     .mode - [char] mode from input
-            %     .reader -[char] reader from input
-            %     extension - [char] filename extension without a leading dot
-            %     loaderId' - loader to use
+            %   - **loaderInfo** — struct encoding the loader configuration:
+            %
+            %     - ``.mode`` — [char] mode from input
+            %     - ``.reader`` — [char] reader from input
+            %     - ``.extension`` — [char] filename extension without leading dot
+            %     - ``.loaderId`` — [char] identifier of the loader to use (e.g. ``'BioFormatsStd'``, ``'imread'``)
+            %
+            %     When the extension is incompatible, returns a [char] error message instead.
             %
             
             % get the filename extension
@@ -82,39 +114,52 @@ classdef ExtensionRegistryLoad < handle
         end
 
         function ext = getAllowedExtensions(obj, mode, reader, withDot)
-            % GETALLOWEDEXTENSIONS - get registered extensions for the specified mode and reader.
+            % GETALLOWEDEXTENSIONS - Get registered extensions for specified mode and reader.
             %
             % Syntax:
-            %   function ext = getAllowedExtensions(obj, mode, reader, withDot)
+            %
+            %   .. code-block:: matlab
+            %
+            %      ext = obj.getAllowedExtensions(mode, reader, withDot)
             %
             % Input Arguments:
-            %   - **mode** — [char] defining type of MIB dataset,
-            %   - 'Standard' standard dataset that is loaded into memory
-            %   - 'Virtual' virtual dataset that is loaded on demand
-            %   - **reader** — [char] defining the type of file reader
-            %   - 'Default' matlab imread, custom and other readers
-            %   - 'BioFormats' use the BioFormats library to read images
-            %   - **withDot** — [logical] return the list of extensions with or without leading dot
-            %   - true return the list as cell array without dots
-            %   - false return the list as cell array with leading dots
+            %   - **mode** — [char] dataset type:
+            %
+            %     - ``'Standard'`` — dataset loaded into memory
+            %     - ``'Virtual'`` — dataset loaded on demand
+            %     - ``'BigData'`` — large dataset using OME-Zarr v3
+            %     - ``'Model'`` — segmentation labels/masks
+            %
+            %   - **reader** — [char] file reader type:
+            %
+            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` — BioFormats library reader
+            %
+            %   - **withDot** — *(optional)* logical, default: ``true``
+            %
+            %     - ``true`` — return extensions without leading dots (e.g. ``{'tif', 'png'}``)
+            %     - ``false`` — return extensions with leading dots (e.g. ``{'.tif', '.png'}``)
             %
             % Output Arguments:
-            %   - **ext** — cell array with filename extensions
+            %   - **ext** — cell array of [char] filename extensions
             %
-            % Usage:
-            %   // get the list of extensions that can be loaded for
-            %   the Standard dataset using BioFormats reader and return with
-            %   leading dots
-            %   <code>
-            %   ext = extReg.getAllowedExtensions('Standard', 'BioFormats', false);
-            %   <endcode>
-            %   Usage from MibModel
-            %   <code>
-            %   // default reader
-            %   ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false);
-            %   // BioFormats reader
-            %   ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'BioFormats', false);
-            %   <endcode>
+            % **Example 1** — get Standard dataset extensions for BioFormats reader with leading dots:
+            %
+            %   .. code-block:: matlab
+            %
+            %      ext = extReg.getAllowedExtensions('Standard', 'BioFormats', false);
+            %
+            % **Example 2** — access from MibModel with Default reader:
+            %
+            %   .. code-block:: matlab
+            %
+            %      ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'Default', false);
+            %
+            % **Example 3** — access from MibModel with BioFormats reader:
+            %
+            %   .. code-block:: matlab
+            %
+            %      ext = obj.mibModel.extensionRegistryLoad.getAllowedExtensions('Standard', 'BioFormats', false);
             %
             
             if nargin < 4; withDot = true; end
@@ -123,22 +168,35 @@ classdef ExtensionRegistryLoad < handle
         end
 
         function setAllowedExtensions(obj, mode, reader, extensionList)
-            % SETALLOWEDEXTENSIONS - update the filename extensions for the corresponding mode and.
+            % SETALLOWEDEXTENSIONS - Update filename extensions for specified mode and reader.
             %
             % Syntax:
-            %   function setAllowedExtensions(obj, mode, reader, extensionList)
             %
-            % reader
+            %   .. code-block:: matlab
+            %
+            %      obj.setAllowedExtensions(mode, reader, extensionList)
+            %
+            % Updates the list of allowed extensions for a given mode/reader combination.
+            % Extensions are stored internally without leading dots for consistency.
             %
             % Input Arguments:
-            %   - **mode** — [char] defining type of MIB dataset,
-            %   - 'Standard' standard dataset that is loaded into memory
-            %   - 'Virtual' virtual dataset that is loaded on demand
-            %   - **reader** — [char] defining the type of file reader
-            %   - 'Default' matlab imread, custom and other readers
-            %   - 'BioFormats' use the BioFormats library to read images
-            %   - **extensionList** — cell array with a new list of extensions, with or
-            %     without leading dots (e.g. '.tif' and 'tif' are both accepted)
+            %   - **mode** — [char] dataset type:
+            %
+            %     - ``'Standard'`` — dataset loaded into memory
+            %     - ``'Virtual'`` — dataset loaded on demand
+            %     - ``'BigData'`` — large dataset using OME-Zarr v3
+            %     - ``'Model'`` — segmentation labels/masks
+            %
+            %   - **reader** — [char] file reader type:
+            %
+            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` — BioFormats library reader
+            %
+            %   - **extensionList** — cell array of [char], new extension list;
+            %     may include or omit leading dots (e.g. both ``'.tif'`` and ``'tif'`` are accepted)
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             % Ensure extensions are stored without leading dots to keep
@@ -151,10 +209,22 @@ classdef ExtensionRegistryLoad < handle
 
     methods (Access=private)
         function initDefaults(obj)
-            % INITDEFAULTS - init obj.extensionSets.
+            % INITDEFAULTS - Initialize extension registry with default sets for all modes and readers.
             %
             % Syntax:
-            %   function initDefaults(obj)
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.initDefaults()
+            %
+            % Populates ``extensionSets`` dictionary with standard extensions for
+            % Standard, Virtual, BigData, and Model modes using Default and BioFormats readers.
+            %
+            % Input Arguments:
+            %   (none)
+            %
+            % Output Arguments:
+            %   (none)
             %
 
             % define standard formats
@@ -194,21 +264,30 @@ classdef ExtensionRegistryLoad < handle
         end
 
         function key = generateKey(~, mode, reader)
-            % GENERATEKEY - generate dictionary key from mode and reader.
+            % GENERATEKEY - Generate dictionary key from mode and reader strings.
             %
             % Syntax:
-            %   function key = generateKey(~, mode, reader)
+            %
+            %   .. code-block:: matlab
+            %
+            %      key = obj.generateKey(mode, reader)
             %
             % Input Arguments:
-            %   - **mode** — [char] defining type of MIB dataset,
-            %   - 'Standard' standard dataset that is loaded into memory
-            %   - 'Virtual' virtual dataset that is loaded on demand
-            %   - **reader** — [char] defining the type of file reader
-            %   - 'Default' matlab imread, custom and other readers
-            %   - 'BioFormats' use the BioFormats library to read images
+            %   - **mode** — [char|string] dataset type:
+            %
+            %     - ``'Standard'`` — dataset loaded into memory
+            %     - ``'Virtual'`` — dataset loaded on demand
+            %     - ``'BigData'`` — large dataset using OME-Zarr v3
+            %     - ``'Model'`` — segmentation labels/masks
+            %
+            %   - **reader** — [char|string] file reader type:
+            %
+            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` — BioFormats library reader
             %
             % Output Arguments:
-            %   - **key** — [char] with the key, e.g. "Standard.Default"
+            %   - **key** — [string] dictionary key in the format ``'<mode>.<reader>'``,
+            %     e.g. ``"Standard.Default"``, ``"Virtual.BioFormats"``
             %
 
             mode = string(mode); 
@@ -218,33 +297,50 @@ classdef ExtensionRegistryLoad < handle
         end
 
         function id = defaultLoaderId(obj, mode, reader, ext)
-            % DEFAULTLOADERID - obtain file reader id to use for image loading.
+            % DEFAULTLOADERID - Determine the loader ID for a given mode, reader, and file extension.
             %
             % Syntax:
-            %   function id = defaultLoaderId(obj, mode, reader, ext)
+            %
+            %   .. code-block:: matlab
+            %
+            %      id = obj.defaultLoaderId(mode, reader, ext)
+            %
+            % Routes to the appropriate loader class based on the combination of dataset
+            % mode, file reader type, and filename extension.
             %
             % Input Arguments:
-            %   - **mode** — [char] defining type of MIB dataset,
-            %   - 'Standard' standard dataset that is loaded into memory
-            %   - 'Virtual' virtual dataset that is loaded on demand
-            %   - **reader** — [char] defining the type of file reader
-            %   - 'Default' matlab imread, custom and other readers
-            %   - 'BioFormats' use the BioFormats library to read images
-            %   - **ext** — [char] - filename extension without a leading dot
+            %   - **mode** — [char|string] dataset type:
+            %
+            %     - ``'Standard'`` — dataset loaded into memory
+            %     - ``'Virtual'`` — dataset loaded on demand
+            %     - ``'BigData'`` — large dataset using OME-Zarr v3
+            %     - ``'Model'`` — segmentation labels/masks
+            %
+            %   - **reader** — [char|string] file reader type:
+            %
+            %     - ``'Default'`` — MATLAB ``imread``, custom, and other native readers
+            %     - ``'BioFormats'`` — BioFormats library reader
+            %
+            %   - **ext** — [char|string] filename extension without leading dot
+            %     (e.g. ``'tif'``, ``'png'``, ``'h5'``)
             %
             % Output Arguments:
-            %   - **id** — [char] identifier of the file reader to use
-            %     'BioFormatsVirtual' use bio-formats reader to load data in the virtual mode
-            %     'BioFormatsStd' use bio-formats to load data in the standard mode
-            %     'AmiraMesh' AmiraMesh reader of MIB
-            %     'imread' MATLAB standard image reader
-            %     'mibImg' custom image format for MIB
-            %     'hdf5-header' HDF5 with header for MIB or BigDataViewer in Fiji
-            %     'hdf5-no-header' HDF5 without header for Ilastik
-            %     'OmeZarr' MIB implementation of OME-Zarr v3 reader (Zarr3VirtualSetupLoader)
-            %     'imod' IMOD reader
-            %     'nrrd' NRRD reader
-            %     'VideoReader' MATLAB reader for video files
+            %   - **id** — [char|string] identifier of the loader class to instantiate:
+            %
+            %     - ``'BioFormatsVirtual'`` — BioFormats reader for virtual mode
+            %     - ``'BioFormatsStd'`` — BioFormats reader for standard mode
+            %     - ``'AmiraMesh'`` — AmiraMesh format reader
+            %     - ``'imread'`` — MATLAB standard image reader
+            %     - ``'mibImg'`` — custom MIB image format (.mibimg)
+            %     - ``'hdf5-header'`` — HDF5 with header metadata (MIB or BigDataViewer format)
+            %     - ``'hdf5-no-header'`` — HDF5 without header (Ilastik format)
+            %     - ``'hdf5-header-virtual'`` — HDF5 header-based reader for virtual mode
+            %     - ``'hdf5-no-header-virtual'`` — HDF5 headerless reader for virtual mode
+            %     - ``'OmeZarr'`` — OME-Zarr v3 reader (implemented via Zarr3VirtualSetupLoader)
+            %     - ``'imod'`` — IMOD model/mesh format reader
+            %     - ``'nrrd'`` — NRRD format reader
+            %     - ``'VideoReader'`` — MATLAB video file reader
+            %     - ``'MatModel'`` — MATLAB ``.model``, ``.mat``, or ``.mibcat`` segmentation format
             %
             
             % Model loading: route to format-appropriate loader

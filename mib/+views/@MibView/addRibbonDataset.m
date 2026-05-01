@@ -1,16 +1,19 @@
 function widgetHandles = addRibbonDataset(obj, lazyInit)
-% ADDRIBBONDATASET - build the Datasets tab group (obj.handles.ribbon.dataset).
+% ADDRIBBONDATASET - build the Dataset tab group and add it to the global ribbon.
 %
 % Syntax:
-%   function widgetHandles = addRibbonDataset(obj, lazyInit)
+%   .. code-block:: matlab
 %
-% and add it to obj.handles.ribbon.global
+%      widgetHandles = obj.addRibbonDataset()
+%      widgetHandles = obj.addRibbonDataset(lazyInit)
 %
 % Input Arguments:
-%   - **lazyInit** — [*optional* default=false] logical, when true do only
-%     place maker initialization of the panel. The full rendering is upon the
-%     first call, using
-%     "controllers.MibController.globalTabGroup_SelectionCallback" function
+%   - **lazyInit** *(optional)* — [logical] when ``true``, only a placeholder is
+%     initialized; full rendering occurs on first tab activation via
+%     ``MibController.globalTabGroup_SelectionCallback`` (default: ``false``)
+%
+% Output Arguments:
+%   - **widgetHandles** — [struct] handles to the Dataset ribbon section widgets
 %
 
 arguments (Input)

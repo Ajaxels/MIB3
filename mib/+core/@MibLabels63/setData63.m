@@ -2,7 +2,9 @@ function result = setData63(obj, dataset, type, orient, materialIndex, options)
 % SETDATA63 - Set dataset to MibLabels63 class.
 %
 % Syntax:
-%   function result = setData63(obj, dataset, type, orient, materialIndex, options)
+%   .. code-block:: matlab
+%
+%       result = obj.setData63(dataset, type, orient, materialIndex, options)
 %
 % Input Arguments:
 %   - **dataset** — matrix with the dataset to update MibBaseImage.img

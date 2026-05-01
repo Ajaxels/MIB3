@@ -2,7 +2,9 @@ function dataset = getData3D(obj, type, time, orient, col_channel, options)
 % GETDATA3D - Get the a 3D dataset with colors: height:width:depth:colors.
 %
 % Syntax:
-%   function dataset = getData3D(obj, type, time, orient, col_channel, options)
+%   .. code-block:: matlab
+%
+%       dataset = obj.getData3D(type, time, orient, col_channel, options)
 %
 % Input Arguments:
 %   - **type** — type of the dataset layer to retrieve:

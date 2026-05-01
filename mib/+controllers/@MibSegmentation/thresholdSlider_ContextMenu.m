@@ -2,7 +2,9 @@ function thresholdSlider_ContextMenu(obj, menuEntry, selectedData)
 % THRESHOLDSLIDER_CONTEXTMENU - Callbacks for the context menu of the threshold Low/High sliders.
 %
 % Syntax:
-%   function thresholdSlider_ContextMenu(obj, menuEntry, selectedData)
+%   .. code-block:: matlab
+%
+%       obj.thresholdSlider_ContextMenu(menuEntry, selectedData)
 %
 % (obj.handles.thresholdLow, obj.handles.thresholdHigh)
 %

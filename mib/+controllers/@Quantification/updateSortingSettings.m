@@ -2,7 +2,9 @@ function updateSortingSettings(obj)
 % UPDATESORTINGSETTINGS - Sync sort direction and column index from the sortTable dropdown.
 %
 % Syntax:
-%   function updateSortingSettings(obj)
+%   .. code-block:: matlab
+%
+%       obj.updateSortingSettings()
 %
 % Reads the selected item from sortTable (e.g. 'Value, descend'),
 % updates obj.sortingDirection ('ascend'/'descend') and

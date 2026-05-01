@@ -1,10 +1,12 @@
 function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
-% MIBUIGETFILE - a wrapper function to provide a modified uigetfile dialog for MacOS.
+% MIBUIGETFILE - a wrapper function to provide a modified uigetfile dialog for MacOS Catalina.
 %
 % Syntax:
-%   function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
+%   .. code-block:: matlab
 %
-% Catalina. The general syntax is the same as for uigetfile, except missing
+%       function [file, path, indx] = mibUiGetFile(filter, title, defname, mode)
+%
+% The general syntax is the same as for uigetfile, except missing
 % 'MultiSelect' key
 %
 % Input Arguments:

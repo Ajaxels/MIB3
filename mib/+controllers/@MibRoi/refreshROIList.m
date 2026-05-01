@@ -2,7 +2,9 @@ function refreshROIList(obj, previousValue)
 % REFRESHROILIST - Rebuild the ROI list-box items from current hROI.Data and attempt to.
 %
 % Syntax:
-%   function refreshROIList(obj, previousValue)
+%   .. code-block:: matlab
+%
+%      obj.refreshROIList(previousValue)
 %
 % preserve the previously selected value.
 %

@@ -2,7 +2,9 @@ function setDefaultColorPalette(obj, paletteName, colorsNo)
 % SETDEFAULTCOLORPALETTE - set default color palette for materials of the model.
 %
 % Syntax:
-%   function setDefaultColorPalette(obj, paletteName, colorsNo)
+%   .. code-block:: matlab
+%
+%       obj.setDefaultColorPalette(paletteName, colorsNo)
 %
 % Input Arguments:
 %   - **paletteName** — string with the name of the palette to use, see

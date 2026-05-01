@@ -2,7 +2,9 @@ function result = updateVoxelSizes(obj, pixSize, BatchOptIn)
 % UPDATEVOXELSIZES - Update the physical voxel sizes of the currently shown dataset.
 %
 % Syntax:
-%   function result = updateVoxelSizes(obj, pixSize, BatchOptIn)
+%   .. code-block:: matlab
+%
+%       result = obj.updateVoxelSizes(pixSize, BatchOptIn)
 %
 % Opens an interactive dialog when called without arguments, or accepts
 % values programmatically via pixSize / BatchOptIn for scripting and
@@ -10,24 +12,24 @@ function result = updateVoxelSizes(obj, pixSize, BatchOptIn)
 % Replaces MIB2: mibController.menuDatasetParameters_Callback
 %
 % Input Arguments:
-%   - **pixSize** — *(optional)* a structure with new voxel parameters.  When
-%     omitted or empty the user is prompted via an interactive dialog.  Fields:
-%     - **.x**      physical voxel size in X (number)
-%     - **.y**      physical voxel size in Y (number)
-%     - **.z**      physical voxel size in Z (number)
-%     - **.t**      time step between frames (number)
-%     - **.units**  physical units string: 'm','cm','mm','um', or 'nm'
-%     - **.tunits** time units string (e.g. 's','m','h')
-%   - **BatchOptIn** — *(optional)* structure for batch-processing mode.
-%     Pass **NaN** to retrieve default options via the 'SyncBatch' event.
-%   - **Fields** —
-%     - .VoxelX    - string, physical voxel size in X
-%     - .VoxelY    - string, physical voxel size in Y
-%     - .VoxelZ    - string, physical voxel size in Z
-%     - .VoxelT    - string, time step between frames
-%     - .Units     - cell string {'m','cm','mm','um','nm'} + selected index
-%     - .TimeUnits - string, time units
-%     - .id        - *(optional)* dataset index 1-9; default = current
+%   - **pixSize** — *(optional)* [struct] structure with new voxel parameters. When omitted or empty the user is prompted via an interactive dialog. Fields:
+%
+%     - **.x** — [numeric] physical voxel size in X
+%     - **.y** — [numeric] physical voxel size in Y
+%     - **.z** — [numeric] physical voxel size in Z
+%     - **.t** — [numeric] time step between frames
+%     - **.units** — [char] physical units: ``'m'``, ``'cm'``, ``'mm'``, ``'um'``, or ``'nm'``
+%     - **.tunits** — [char] time units (e.g., ``'s'``, ``'m'``, ``'h'``)
+%
+%   - **BatchOptIn** — *(optional)* [struct] structure for batch-processing mode. Pass **NaN** to retrieve default options via the 'SyncBatch' event. Fields:
+%
+%     - **.VoxelX** — [char] physical voxel size in X
+%     - **.VoxelY** — [char] physical voxel size in Y
+%     - **.VoxelZ** — [char] physical voxel size in Z
+%     - **.VoxelT** — [char] time step between frames
+%     - **.Units** — [cell] ``{'m','cm','mm','um','nm'}`` with selected index as second element
+%     - **.TimeUnits** — [char] time units
+%     - **.id** — *(optional)* [numeric] dataset index 1-9; default = current dataset
 %
 % Output Arguments:
 %   - **result** — **1** on success, **0** on cancel

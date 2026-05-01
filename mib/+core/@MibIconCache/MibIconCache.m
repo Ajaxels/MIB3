@@ -1,72 +1,83 @@
 classdef MibIconCache
-    % MibIconCache
-    % Static icon cache to keep images for icons of MIB
-    % backed by a MAT resource file.
-    % Improves get image performance up to 10 times relative to direct
-    % reading of images from HDD.
+    % MIBIBONCACHE - Static cache for MIB icons and images backed by a MAT resource file.
     %
-    % Usage:
-    %   img = core.MibIconCache.get('icons', 'about_24px');
-    %   img = core.MibIconCache.get('images', 'mib_question');
-    %   core.MibIconCache.buildResourceFile(resourceFilePath, assetsDir);
-
-    % % test script
-    % files = dir('C:\MATLAB\MIB3\mib\assets\icons\*.png');
-    % filesNames1 = {files.name};
-    % filesNames2 = cellfun(@(f) erase(f, '.png'), filesNames1, 'UniformOutput', false);
+    % Provides fast access to cached icon and image files stored in a MAT resource file.
+    % Improves performance up to 10 times relative to direct disk reads.
+    % The cache is automatically built from asset directories and persists across calls.
     %
-    % % Test 1: Cache (returns image arrays)
-    % t1 = tic;
-    % imgs = cell(numel(filesNames2), 1);
-    % for i = 1:numel(filesNames2)
-    %     imgs{i} = core.MibIconCache.get('icons', filesNames2{i});
-    % end
-    % timeCache = toc(t1);
+    % **Basic usage:**
     %
-    % % Test 2: Direct imread (actually load images)
-    % t1 = tic;
-    % imgs2 = cell(numel(filesNames1), 1);
-    % for i = 1:numel(filesNames1)
-    %     imgs2{i} = imread(fullfile(obj.controller.mibPath, 'assets/icons', filesNames1{i}));
-    % end
-    % timeFile = toc(t1);
+    %   .. code-block:: matlab
     %
-    % fprintf('Time difference (timeCache/timeFile) = %f\n', timeCache/timeFile);
+    %       img = core.MibIconCache.get('icons', 'about_24px');
+    %       img = core.MibIconCache.get('images', 'mib_question');
+    %       core.MibIconCache.buildResourceFile(resourceFilePath, assetsDir);
+    %
+    % **Example** — benchmark cache performance vs. direct file reads:
+    %
+    %   .. code-block:: matlab
+    %
+    %       % Scan icons directory
+    %       files = dir('C:\MATLAB\MIB3\mib\assets\icons\*.png');
+    %       filesNames1 = {files.name};
+    %       filesNames2 = cellfun(@(f) erase(f, '.png'), filesNames1, 'UniformOutput', false);
+    %
+    %       % Test 1: Cache (returns image arrays)
+    %       t1 = tic;
+    %       imgs = cell(numel(filesNames2), 1);
+    %       for i = 1:numel(filesNames2)
+    %           imgs{i} = core.MibIconCache.get('icons', filesNames2{i});
+    %       end
+    %       timeCache = toc(t1);
+    %
+    %       % Test 2: Direct imread (actually load images)
+    %       t1 = tic;
+    %       imgs2 = cell(numel(filesNames1), 1);
+    %       for i = 1:numel(filesNames1)
+    %           imgs2{i} = imread(fullfile(obj.controller.mibPath, 'assets/icons', filesNames1{i}));
+    %       end
+    %       timeFile = toc(t1);
+    %
+    %       % Show performance improvement
+    %       fprintf('Time difference (timeCache/timeFile) = %f\n', timeCache/timeFile);
 
     methods (Static)
          function img = get(foldername, name, resourceFilePath, assetsDir)
-            % GET - Return icon/image by name from a MAT-resource file backed.
+            % GET - Return icon/image from the resource cache by name.
             %
             % Syntax:
-            %   function img = get(foldername, name, resourceFilePath, assetsDir)
+            %   .. code-block:: matlab
             %
-            % cache.
-            % In case the cache not yet loaded, it will be loaded as
-            % stored in a persistent variable. In case, the resource file
-            % is not present it will be automatically generated using
-            % obj.buildResourceFile method.
+            %       img = MibIconCache.get(foldername, name, resourceFilePath, assetsDir)
+            %
+            % Retrieves a cached icon or image from the MAT resource file. If the cache
+            % is not yet loaded, it is loaded from the persistent variable. If the resource
+            % file is missing, it is automatically generated from the assets directory.
             %
             % Input Arguments:
-            %   - **foldername** — char with the folder name:
+            %   - **foldername** — [char] folder name specifying which type of resource:
             %
             %     - ``'icons'`` — icons folder
             %     - ``'images'`` — images folder
             %
-            %   - **name** — name of the icon/image without extension
-            %   - **resourceFilePath** — full path to the resource file, default
-            %     location under "MIB3\mib\assets\mib_icons.res"
-            %   - **assetsDir** — path to the assets directory that contains
-            %     'images' and 'icons' folder. Default location "MIB3\mib\assets"
+            %   - **name** — [char] icon/image name without extension
+            %   - **resourceFilePath** — *(optional)* [char] full path to resource file (default: ``MIB3/mib/assets/mib_icons.res``)
+            %   - **assetsDir** — *(optional)* [char] path to assets directory containing 'images' and 'icons' folders (default: ``MIB3/mib/assets``)
             %
-            % Usage:
+            % Output Arguments:
+            %   - **img** — [numeric array] image data for the requested icon/image
+            %
+            % **Example 1** — get icon from the icons folder:
             %
             %   .. code-block:: matlab
             %
+            %       img = core.MibIconCache.get('icons', 'about_24px');
             %
-            %     %% get image corresponding to "assets/icons/about_24px.png"
-            %     img = MibIconCache.get('icons', 'about_24px');
-            %     %% get image corresponding to "assets/images/mib_question.png"
-            %     img = MibIconCache.get('images', 'mib_question');
+            % **Example 2** — get image from the images folder:
+            %
+            %   .. code-block:: matlab
+            %
+            %       img = core.MibIconCache.get('images', 'mib_question');
             %
 
             % Normalize inputs
@@ -200,20 +211,28 @@ classdef MibIconCache
         end
 
         function buildResourceFile(assetsDir, resourceFilePath)
-            % BUILDRESOURCEFILE - Scan.
+            % BUILDRESOURCEFILE - Scan asset folders and rebuild the resource cache file.
             %
             % Syntax:
-            %   function buildResourceFile(assetsDir, resourceFilePath)
+            %   .. code-block:: matlab
             %
-            % - assetsDir\icons
-            % - assetsDir\images
+            %       MibIconCache.buildResourceFile(assetsDir, resourceFilePath)
             %
-            % read images and save them to assetsDir\mib_icons.res MAT resource file.
+            % Scans the asset directories (icons, images) for image files and builds a MAT
+            % resource file containing all images. This is called automatically when the
+            % resource file is missing or when a requested icon is not found.
             %
-            % Usage:
-            %   assetsDir = fullfile(obj.mibPath, 'assets');
-            %   resourceFile  = fullfile(obj.mibPath, 'assets', 'mib_icons.res');
-            %   MibIconCache.buildResourceFile(assetsDir, resourceFilePath)
+            % Input Arguments:
+            %   - **assetsDir** — *(optional)* [char] path to assets directory; when empty uses default (``MIB3/mib/assets``)
+            %   - **resourceFilePath** — *(optional)* [char] path for output resource file; when empty uses default (``MIB3/mib/assets/mib_icons.res``)
+            %
+            % **Example** — build resource file from assets directory:
+            %
+            %   .. code-block:: matlab
+            %
+            %       assetsDir = fullfile(obj.mibPath, 'assets');
+            %       resourceFile = fullfile(obj.mibPath, 'assets', 'mib_icons.res');
+            %       core.MibIconCache.buildResourceFile(assetsDir, resourceFile);
             %
 
             if nargin < 1 || isempty(assetsDir)

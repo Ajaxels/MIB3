@@ -1,12 +1,17 @@
 function panelHandles = addSelectionViewSettingsPanel(obj)
-% ADDSELECTIONVIEWSETTINGSPANEL - add the Selection and View Settings panel, add context menus and callbacks for widgets.
+% ADDSELECTIONVIEWSETTINGSPANEL - add the Selection and View Settings panel with context menus and callbacks.
 %
 % Syntax:
-%   function panelHandles = addSelectionViewSettingsPanel(obj)
+%   .. code-block:: matlab
 %
-% The callbacks are added in the controller of the panel:
-% controllers.MibSelection during its creation in
-% MibController.initialize() MibController.addGuiControllers()
+%      panelHandles = obj.addSelectionViewSettingsPanel()
+%
+% Output Arguments:
+%   - **panelHandles** — [struct] handles to the selection and view settings panel widgets
+%
+% Notes:
+%   The callbacks are added in the controller of the panel: ``controllers.MibSelection``
+%   during its creation in ``MibController.initialize()`` and ``MibController.addGuiControllers()``
 
 arguments (Input)
     obj views.MibView

@@ -2,30 +2,37 @@ function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
 % UPDATEBRUSHCURSOR - Update brush cursor position and visibility.
 %
 % Syntax:
-%   function updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)
+%   .. code-block:: matlab
+%
+%      obj.updateBrushCursor(xyCoordinate, lineStyle, resetOffset)
 %
 % Creates or updates a circular cursor overlay that visualizes
 % the current brush size. The cursor follows the mouse and
 % changes style based on painting state.
 %
 % Input Arguments:
-%   - **xyCoordinate** — [x, y] double array, cursor position in axes coordinates
-%     If empty, gets position from CurrentPoint
-%   - **lineStyle** — char, line style for cursor
-%     ':' = dashed (default, hover mode)
-%     '-' = solid (painting mode)
-%   - **resetOffset** — logical, when true the cursor offset will be reset, needed when magnification is changed
+%   - **xyCoordinate** *(optional)* — [double] ``[x, y]`` cursor position in axes coordinates; if empty, uses ``CurrentPoint``
+%   - **lineStyle** *(optional)* — [char] line style for cursor (default: ``':'``):
+%
+%     - ``':'`` — dashed line (hover mode)
+%     - ``'-'`` — solid line (painting mode)
+%
+%   - **resetOffset** *(optional)* — [logical] reset cursor offset when ``true``, needed when magnification changes (default: ``false``)
 %
 % Output Arguments:
-%   none
+%   (none)
 %
-%   - **Example** —
-%     % Update cursor at position [100, 150] with dashed style
-%     obj.updateBrushCursor([100, 150], ':', true);
+% **Example 1** — update cursor at specific position with dashed style:
 %
+%   .. code-block:: matlab
 %
-%   % Use solid line during painting
-%   obj.updateBrushCursor([], '-');
+%      obj.updateBrushCursor([100, 150], ':', true);
+%
+% **Example 2** — use solid line during painting:
+%
+%   .. code-block:: matlab
+%
+%      obj.updateBrushCursor([], '-');
 %
 
 if nargin < 4; resetOffset = false; end

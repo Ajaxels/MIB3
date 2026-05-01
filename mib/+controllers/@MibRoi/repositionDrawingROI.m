@@ -2,7 +2,9 @@ function repositionDrawingROI(obj)
 % REPOSITIONDRAWINGROI - Reposition the active interactive drawing tool after zoom/pan redraws.
 %
 % Syntax:
-%   function repositionDrawingROI(obj)
+%   .. code-block:: matlab
+%
+%      obj.repositionDrawingROI()
 %
 % the image at a different axes coordinate scale.
 %

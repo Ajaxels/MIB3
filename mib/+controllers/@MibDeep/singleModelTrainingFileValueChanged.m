@@ -2,7 +2,9 @@ function singleModelTrainingFileValueChanged(obj, event)
 % SINGLEMODELTRAININGFILEVALUECHANGED - callback for press of SingleModelTrainingFile.
 %
 % Syntax:
-%   function singleModelTrainingFileValueChanged(obj, event)
+%   .. code-block:: matlab
+%
+%       obj.singleModelTrainingFileValueChanged(event)
 %
 
     if nargin < 2; event.Source = obj.view.handles.SingleModelTrainingFile; end

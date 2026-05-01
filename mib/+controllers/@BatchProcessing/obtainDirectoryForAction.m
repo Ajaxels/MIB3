@@ -2,7 +2,9 @@ function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, ste
 % OBTAINDIRECTORYFORACTION - resolve and return an output directory for a single protocol step.
 %
 % Syntax:
-%   function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, stepId, stepOptions)
+%   .. code-block:: matlab
+%
+%       dirOut = obj.obtainDirectoryForAction(dirModeField, filenameField, stepId, stepOptions)
 %
 % Evaluates the directory-mode field of the step's BatchOpt and returns the
 % corresponding absolute path.  If the directory does not yet exist it is

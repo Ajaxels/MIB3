@@ -1,12 +1,17 @@
 function panelHandles = addRoiPanel(obj)
-% ADDROIPANEL - add the ROI panel and add context menus.
+% ADDROIPANEL - add the ROI panel with context menus and callbacks.
 %
 % Syntax:
-%   function panelHandles = addRoiPanel(obj)
+%   .. code-block:: matlab
 %
-% The callbacks are added in the controller of the panel:
-% controllers.MibRoi during its creation in
-% MibController.initialize() MibController.addGuiControllers()
+%      panelHandles = obj.addRoiPanel()
+%
+% Output Arguments:
+%   - **panelHandles** — [struct] handles to the ROI panel widgets
+%
+% Notes:
+%   The callbacks are added in the controller of the panel: ``controllers.MibRoi``
+%   during its creation in ``MibController.initialize()`` and ``MibController.addGuiControllers()``
 
 arguments (Input)
     obj views.MibView

@@ -2,7 +2,9 @@ function [imageDescription, actionLog] = splitImageDescription(fullStr)
 % SPLITIMAGEDESCRIPTION - Split a full ImageDescription string into the BoundingBox part and a cell array of per-operation log entries.
 %
 % Syntax:
-%   function [imageDescription, actionLog] = splitImageDescription(fullStr)
+%   .. code-block:: matlab
+%
+%       [imageDescription, actionLog] = splitImageDescription(fullStr)
 %
 % BACKGROUND
 % MIB stores two conceptually distinct pieces of information inside the

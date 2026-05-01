@@ -2,7 +2,9 @@ function modelMaterials_Callback(obj, hWidget, hData)
 % MODELMATERIALS_CALLBACK - callback on press of buttons in the Materials button of the Model ribbon.
 %
 % Syntax:
-%   function modelMaterials_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.modelMaterials_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

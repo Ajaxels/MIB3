@@ -2,7 +2,9 @@ function restrictMask_Callback(obj)
 % RESTRICTMASK_CALLBACK - callbacks for press of obj.handles.restrictMask in.
 %
 % Syntax:
-%   function restrictMask_Callback(obj)
+%   .. code-block:: matlab
+%
+%       obj.restrictMask_Callback()
 %
 % obj.handles.panels.segmentation panel. Restrict selection to the mask layer
 

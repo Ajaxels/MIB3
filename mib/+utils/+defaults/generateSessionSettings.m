@@ -2,7 +2,6 @@ function sessionSettings = generateSessionSettings()
 % GENERATESESSIONSETTINGS - Generate the default MIB session settings structure.
 %
 % Syntax:
-%
 %   .. code-block:: matlab
 %
 %      sessionSettings = generateSessionSettings()

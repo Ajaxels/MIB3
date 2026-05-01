@@ -1,16 +1,19 @@
 function widgetHandles = addRibbonModel(obj, lazyInit)
-% ADDRIBBONMODEL - build the Model tab group (obj.handles.ribbon.model).
+% ADDRIBBONMODEL - build the Model tab group and add it to the global ribbon.
 %
 % Syntax:
-%   function widgetHandles = addRibbonModel(obj, lazyInit)
+%   .. code-block:: matlab
 %
-% and add it to obj.handles.ribbon.global
+%      widgetHandles = obj.addRibbonModel()
+%      widgetHandles = obj.addRibbonModel(lazyInit)
 %
 % Input Arguments:
-%   - **lazyInit** — [*optional* default=false] logical, when true do only
-%     place maker initialization of the panel. The full rendering is upon the
-%     first call, using
-%     "controllers.MibController.globalTabGroup_SelectionCallback" function
+%   - **lazyInit** *(optional)* — [logical] when ``true``, only a placeholder is
+%     initialized; full rendering occurs on first tab activation via
+%     ``MibController.globalTabGroup_SelectionCallback`` (default: ``false``)
+%
+% Output Arguments:
+%   - **widgetHandles** — [struct] handles to the Model ribbon section widgets
 %
 
 arguments (Input)

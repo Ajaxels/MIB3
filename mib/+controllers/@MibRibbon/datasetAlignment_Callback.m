@@ -2,7 +2,9 @@ function datasetAlignment_Callback(obj, hWidget, hData)
 % DATASETALIGNMENT_CALLBACK - callback on press of buttons in the Alignment section of the Dataset ribbon.
 %
 % Syntax:
-%   function datasetAlignment_Callback(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.datasetAlignment_Callback(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

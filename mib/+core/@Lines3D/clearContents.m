@@ -2,7 +2,9 @@ function clearContents(obj)
 % CLEARCONTENTS - Set all elements of the class to default values.
 %
 % Syntax:
-%   function clearContents(obj)
+%   .. code-block:: matlab
+%
+%       obj.clearContents()
 %
 % Input Arguments:
 %

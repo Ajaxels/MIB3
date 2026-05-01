@@ -2,7 +2,9 @@ function maskExportSection_Callbacks(obj, hWidget, hData)
 % MASKEXPORTSECTION_CALLBACKS - callback on press of buttons in the Export section of the Mask ribbon.
 %
 % Syntax:
-%   function maskExportSection_Callbacks(obj, hWidget, hData)
+%   .. code-block:: matlab
+%
+%       obj.maskExportSection_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget

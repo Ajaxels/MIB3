@@ -1,5 +1,5 @@
 classdef (Abstract) BaseSaver < handle
-% UNKNOWN - Abstract base class for all MIB3 image format savers.
+% BASESAVER - Abstract base class for all MIB3 image format savers.
 %
 % This class defines the standard interface that every concrete saver
 % must implement, and provides protected utility methods shared across
@@ -70,76 +70,79 @@ classdef (Abstract) BaseSaver < handle
     % ------------------------------------------------------------------ %
     methods (Abstract)
         fnOut = save(obj, data, metadata, filename, options)
-        % function fnOut = save(obj, data, metadata, filename, options)
-        % Write data to a file in the format handled by this saver.
+        % SAVE - Write data to a file in the format handled by this saver.
         %
-        % Parameters:
-        %   data     — (numeric) [H, W, D, C, T] array.
-        %              For mask/labels it is uint8/uint16/... with label IDs.
-        %   metadata — (struct) see class-level description above.
-        %   filename — (char) full output path INCLUDING extension,
-        %              e.g. '/data/experiment/out.tif' or
-        %                   'C:\data\Labels_myStack.model'
-        %              The directory must already exist; use
-        %              buildOutputPath() to assemble the path.
-        %   options  — (struct) runtime options:
-        %     .Format           — (char) format string matching SaverFactory
-        %                         registry, e.g. 'TIF format uncompressed (``*.tif``)'
-        %     .Saving3DPolicy   — (char) '3D stack' | '2D sequence'
-        %     .showWaitbar      — (logical) display progress bar
-        %     .silent           — (logical) suppress all dialogs
-        %     .FilenameGenerator — (char) 'Use original filename' |
-        %                                  'Use sequential filename'
-        %     .Compression      — (char) 'none' | 'lzw' | 'packbits' (TIF)
-        %                                 or 'lossy' | 'lossless'     (JPG)
-        %     .Quality          — (double 0-100) JPG quality
-        %     .MaterialIndex    — (double|[]) index of label material to
-        %                         export; [] = all, NaN = currently selected
-        %     .overwrite        — (logical) silently overwrite existing files
+        % Syntax:
+        %   .. code-block:: matlab
         %
-        % Return values:
-        %   fnOut — (char OR cell of char) path(s) of saved file(s).
-        %           Returns [] on failure or cancellation.
+        %      fnOut = obj.save(data, metadata, filename, options)
         %
-        % Example:
-        %   @code
-        %   saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
-        %   opts.Format         = 'TIF format uncompressed (``*.tif``)';
-        %   opts.Saving3DPolicy = '3D stack';
-        %   opts.showWaitbar    = false;
-        %   opts.silent         = true;
-        %   opts.Compression    = 'none';
-        %   opts.overwrite      = true;
-        %   opts.pixSize        = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
-        %   meta.filename       = 'source.tif';
-        %   meta.colorType      = 'grayscale';
-        %   meta.lutColors      = [1 1 1];
-        %   meta.dataClass      = 'uint8';
-        %   meta.maxInt         = 255;
-        %   meta.sliceName      = {};
-        %   data = uint8(rand(256,256,10,1,1) * 255);  % [H,W,D,C,T]
-        %   fnOut = saver.save(data, meta, '/tmp/stack.tif', opts);
-        %   @endcode
+        % Input Arguments:
+        %   - **data** — [H, W, D, C, T] numeric array;
+        %     for mask/labels it contains uint8/uint16/... label IDs
+        %   - **metadata** — struct (see class-level description for fields)
+        %   - **filename** — [char] full output path INCLUDING extension, e.g.
+        %     ``'/data/experiment/out.tif'`` or ``'C:\data\Labels_myStack.model'``;
+        %     directory must already exist
+        %   - **options** — struct with runtime options:
+        %
+        %     - ``Format`` — format string matching SaverFactory registry
+        %     - ``Saving3DPolicy`` — ``'3D stack'`` | ``'2D sequence'``
+        %     - ``showWaitbar`` — logical, display progress bar
+        %     - ``silent`` — logical, suppress dialogs
+        %     - ``FilenameGenerator`` — ``'Use original filename'`` | ``'Use sequential filename'``
+        %     - ``Compression`` — ``'none'`` | ``'lzw'`` | ``'packbits'`` (TIFF) or ``'lossy'`` | ``'lossless'`` (JPEG)
+        %     - ``Quality`` — [0–100] JPEG quality
+        %     - ``MaterialIndex`` — [numeric | []] material index to export; ``[]`` = all, ``NaN`` = currently selected
+        %     - ``overwrite`` — logical, silently overwrite existing files
+        %
+        % Output Arguments:
+        %   - **fnOut** — [char or cell of char] path(s) of saved file(s);
+        %     ``[]`` on failure or cancellation
+        %
+        % **Example** — save TIFF stack with standard settings:
+        %
+        %   .. code-block:: matlab
+        %
+        %      saver = io.SaverFactory.create('TIF format uncompressed (``*.tif``)');
+        %      opts.Format         = 'TIF format uncompressed (``*.tif``)';
+        %      opts.Saving3DPolicy = '3D stack';
+        %      opts.showWaitbar    = false;
+        %      opts.silent         = true;
+        %      opts.Compression    = 'none';
+        %      opts.overwrite      = true;
+        %      opts.pixSize        = struct('x',0.1,'y',0.1,'z',0.5,'units','um','t',1,'tunits','s');
+        %      meta.filename       = 'source.tif';
+        %      meta.colorType      = 'grayscale';
+        %      meta.lutColors      = [1 1 1];
+        %      meta.dataClass      = 'uint8';
+        %      meta.maxInt         = 255;
+        %      meta.sliceName      = {};
+        %      data = uint8(rand(256,256,10,1,1) * 255);  % [H,W,D,C,T]
+        %      fnOut = saver.save(data, meta, '/tmp/stack.tif', opts);
 
         formats = getSupportedFormats(obj)
-        % function formats = getSupportedFormats(obj)
-        % Return the list of format strings handled by this saver.
+        % GETSUPPORTEDFORMATS - Return the list of format strings handled by this saver.
         %
-        % These strings must exactly match the keys used in SaverFactory's
-        % internal registry so that the factory can map a format string to
-        % the correct saver class.
+        % Syntax:
+        %   .. code-block:: matlab
         %
-        % Return values:
-        %   formats — (cell of char) format strings, e.g.
-        %             {'TIF format uncompressed (``*.tif``)',
-        %              'TIF format LZW compression (``*.tif``)'}
+        %      formats = obj.getSupportedFormats()
         %
-        % Example:
-        %   @code
-        %   saver   = io.savers.TiffSaver();
-        %   formats = saver.getSupportedFormats();
-        %   % formats{1} == 'TIF format uncompressed (``*.tif``)'
-        %   @endcode
+        % Format strings must exactly match the keys in SaverFactory's internal
+        % registry so the factory can map format strings to saver classes.
+        %
+        % Output Arguments:
+        %   - **formats** — cell of char with format strings, e.g.
+        %     ``{'TIF format uncompressed (*.tif)', 'TIF format LZW compression (*.tif)'}``
+        %
+        % **Example** — get supported TIFF formats:
+        %
+        %   .. code-block:: matlab
+        %
+        %      saver   = io.savers.TiffSaver();
+        %      formats = saver.getSupportedFormats();
+        %      % formats{1} == 'TIF format uncompressed (*.tif)'
     end
 
     % ------------------------------------------------------------------ %
@@ -148,12 +151,26 @@ classdef (Abstract) BaseSaver < handle
     methods (Access = protected)
 
         function initBaseProps(obj, options)
-            % INITBASEPROPS - Extract mibPath and ParentFigure from options into dedicated.
+            % INITBASEPROPS - Extract mibPath and ParentFigure from options into properties.
             %
             % Syntax:
-            %   function initBaseProps(obj, options)
+            %   .. code-block:: matlab
             %
-            % properties.  Call at the end of every concrete saver constructor.
+            %      obj.initBaseProps(options)
+            %
+            % Call at the end of every concrete saver constructor.
+            %
+            % Input Arguments:
+            %   - **options** — *(optional)* struct with recognized fields:
+            %
+            %     - `` `.mibPath` `` — [char] path to MIB installation directory
+            %     - `` `.ParentFigure` `` — handle to main MIB window for ``uiprogressdlg``
+            %     - `` `.waitbarHandle` `` — *(optional)* handle to upstream indeterminate progress dialog
+            %
+            %     All fields are optional; absent or empty values are silently ignored.
+            %
+            % Output Arguments:
+            %   (none)
             if nargin < 2 || isempty(options); return; end
             if isfield(options, 'mibPath') && ~isempty(options.mibPath)
                 obj.mibPath = options.mibPath;
@@ -167,13 +184,28 @@ classdef (Abstract) BaseSaver < handle
         end
 
         function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
-            % CREATEPROGRESSDIALOG - Create a uiprogressdlg attached to obj.ParentFigure, or return [].
+            % CREATEPROGRESSDIALOG - Create a uiprogressdlg or reuse upstream handle.
             %
             % Syntax:
-            %   function wb = createProgressDialog(obj, title, message, cancelable, indeterminate)
+            %   .. code-block:: matlab
             %
-            % when no valid parent is available (standalone / headless use).
-            % All wb access by callers must be guarded with  if ~isempty(wb).
+            %      wb = obj.createProgressDialog(title, message, cancelable, indeterminate)
+            %
+            % Attempts to reuse an indeterminate progress dialog created upstream
+            % (stored in ``obj.WaitbarHandle``). If not available or invalid,
+            % creates a new ``uiprogressdlg`` attached to ``obj.ParentFigure``.
+            % Returns ``[]`` when no valid parent is available (standalone or headless use).
+            %
+            % Input Arguments:
+            %   - **title** — [char] dialog title bar text
+            %   - **message** — [char] dialog body message
+            %   - **cancelable** — *(optional)* [logical] show Cancel button; default: ``false``
+            %   - **indeterminate** — *(optional)* [logical] indeterminate spinner mode; default: ``false``
+            %
+            % Output Arguments:
+            %   - **wb** — ``matlab.ui.dialog.ProgressDialog`` handle, or ``[]`` when no
+            %     valid parent is available. **Callers must guard all ``wb`` access with
+            %     ``if ~isempty(wb) ... end``**
             if nargin < 4; cancelable    = false; end
             if nargin < 5; indeterminate = false; end
 
@@ -211,29 +243,36 @@ classdef (Abstract) BaseSaver < handle
         end
 
         function fullpath = buildOutputPath(~, destDir, fname)
-            % BUILDOUTPUTPATH - Combine a destination directory and a filename into a full path.
+            % BUILDOUTPUTPATH - Combine a destination directory and filename into a full path.
             %
             % Syntax:
-            %   function fullpath = buildOutputPath(~, destDir, fname)
+            %   .. code-block:: matlab
             %
-            % If destDir is empty the filename is returned unchanged (useful
-            % when the caller already embedded the directory in fname).
+            %      fullpath = obj.buildOutputPath(destDir, fname)
+            %
+            % If ``destDir`` is empty, ``fname`` is returned unchanged (useful when the
+            % caller has already embedded the directory in ``fname``).
             %
             % Input Arguments:
-            %   destDir — (char) directory portion; may be empty ('')
-            %   fname   — (char) filename, with or without leading directory
+            %   - **destDir** — [char] directory portion; may be empty (``''``)
+            %   - **fname** — [char] filename, with or without leading directory
             %
             % Output Arguments:
-            %   fullpath — (char) combined path
+            %   - **fullpath** — [char] combined path
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — combine directory and filename:
             %
-            %       p = obj.buildOutputPath('/data/out', 'stack.tif');
-            %       % p == '/data/out/stack.tif'
+            %   .. code-block:: matlab
             %
-            %       p = obj.buildOutputPath('', '/already/full/path.tif');
-            %       % p == '/already/full/path.tif'
+            %      p = obj.buildOutputPath('/data/out', 'stack.tif');
+            %      % p == '/data/out/stack.tif'
+            %
+            % **Example 2** — empty directory returns filename unchanged:
+            %
+            %   .. code-block:: matlab
+            %
+            %      p = obj.buildOutputPath('', '/already/full/path.tif');
+            %      % p == '/already/full/path.tif'
             %
             if isempty(destDir)
                 fullpath = fname;
@@ -243,27 +282,30 @@ classdef (Abstract) BaseSaver < handle
         end
 
         function imgOut = permuteMib3ToHWCD(~, data, t)
-            % PERMUTEMIB3TOHWCD - Convert MIB3 native layout [H,W,D,C,T] to legacy [H,W,C,D].
+            % PERMUTEMIB3TOHWCD - Convert MIB3 native [H,W,D,C,T] to legacy [H,W,C,D] layout.
             %
             % Syntax:
-            %   function imgOut = permuteMib3ToHWCD(~, data, t)
+            %   .. code-block:: matlab
             %
-            % for a single time point, as expected by legacy helpers such
-            % as the TIFF/PNG/JPG writers ported from MIB2.
+            %      imgOut = obj.permuteMib3ToHWCD(data, t)
+            %
+            % Extracts a single time point and reorders dimensions for legacy
+            % helpers such as TIFF/PNG/JPG writers ported from MIB2.
             %
             % Input Arguments:
-            %   data — (numeric) full 5-D array [H, W, D, C, T]
-            %   t    — (integer) 1-based time index
+            %   - **data** — [H, W, D, C, T] numeric array (full 5-D)
+            %   - **t** — [integer] 1-based time point index
             %
             % Output Arguments:
-            %   imgOut — (numeric) [H, W, C, D] slice for time t
+            %   - **imgOut** — [H, W, C, D] numeric array for time point t
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — extract first time point with dimension swap:
             %
-            %       % data is [512 512 10 3 2] (H W D C T)
-            %       slice_t1 = obj.permuteMib3ToHWCD(data, 1);
-            %       % slice_t1 is [512 512 3 10]
+            %   .. code-block:: matlab
+            %
+            %      % data is [512 512 10 3 2] (H W D C T)
+            %      slice_t1 = obj.permuteMib3ToHWCD(data, 1);
+            %      % slice_t1 is [512 512 3 10]
             %
             imgOut = permute(data(:, :, :, :, t), [1 2 4 3]);  % [H, W, C, D]
         end
@@ -272,55 +314,60 @@ classdef (Abstract) BaseSaver < handle
             % SPLITFILENAME - Wrapper around fileparts with lower-cased extension.
             %
             % Syntax:
-            %   function [pathStr, baseName, ext] = splitFilename(~, filename)
+            %   .. code-block:: matlab
+            %
+            %      [pathStr, baseName, ext] = obj.splitFilename(filename)
             %
             % Input Arguments:
-            %   filename — (char) full path to decompose
+            %   - **filename** — [char] full path to decompose
             %
             % Output Arguments:
-            %   pathStr  — (char) directory portion
-            %   baseName — (char) file stem without extension
-            %   ext      — (char) lower-case extension including dot
+            %   - **pathStr** — [char] directory portion
+            %   - **baseName** — [char] file stem without extension
+            %   - **ext** — [char] lower-case extension including dot
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — decompose mixed-case filename:
             %
-            %       [p, n, e] = obj.splitFilename('/data/stack.TIF');
-            %       % p == '/data', n == 'stack', e == '.tif'
+            %   .. code-block:: matlab
+            %
+            %      [p, n, e] = obj.splitFilename('/data/stack.TIF');
+            %      % p == '/data', n == 'stack', e == '.tif'
             %
             [pathStr, baseName, ext] = fileparts(filename);
             ext = lower(ext);
         end
 
         function sliceNames = buildSliceNames(obj, baseName, pathStr, depth, ext, options, metadata)
-            % BUILDSLICENAMES - Build a cell array of per-slice output filenames for 2D sequences.
+            % BUILDSLICENAMES - Build per-slice output filenames for 2-D sequences.
             %
             % Syntax:
-            %   function sliceNames = buildSliceNames(obj, baseName, pathStr, depth, ext, options, metadata)
+            %   .. code-block:: matlab
             %
-            % Respects the options.FilenameGenerator policy:
-            % 'Use original filename' — derives names from metadata.sliceName
-            % when available; falls back to sequential
-            % 'Use sequential filename' (default) — generates numbered names
+            %      sliceNames = obj.buildSliceNames(baseName, pathStr, depth, ext, options, metadata)
+            %
+            % Respects the ``options.FilenameGenerator`` policy:
+            % - ``'Use original filename'`` — derives names from ``metadata.sliceName``
+            %   when available; falls back to sequential if unavailable
+            % - ``'Use sequential filename'`` — generates numbered names (default)
             %
             % Input Arguments:
-            %   baseName — (char) stem used for sequential naming
-            %   pathStr  — (char) destination directory
-            %   depth    — (integer) number of slices (Z)
-            %   ext      — (char) extension with leading dot, e.g. '.tif'
-            %   options  — (struct) must contain .FilenameGenerator (char)
-            %   metadata — (struct) may contain .sliceName (cell of char)
+            %   - **baseName** — [char] stem used for sequential naming
+            %   - **pathStr** — [char] destination directory
+            %   - **depth** — [integer] number of slices (Z dimension)
+            %   - **ext** — [char] extension with leading dot, e.g. ``'.tif'``
+            %   - **options** — struct, must contain `` `.FilenameGenerator` `` field
+            %   - **metadata** — struct, may contain `` `.sliceName` `` (cell of char)
             %
             % Output Arguments:
-            %   sliceNames — (cell of char) [depth x 1] full output paths
+            %   - **sliceNames** — [cell of char] {depth × 1} full output paths
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — sequential naming for 5 slices:
             %
-            %       % Sequential naming for 5 slices
-            %       opts.FilenameGenerator = 'Use sequential filename';
-            %       names = obj.buildSliceNames('myStack', '/out', 5, '.png', opts, meta);
-            %       % names == {'/out/myStack_01.png'; ...'/out/myStack_05.png'}
+            %   .. code-block:: matlab
+            %
+            %      opts.FilenameGenerator = 'Use sequential filename';
+            %      names = obj.buildSliceNames('myStack', '/out', 5, '.png', opts, meta);
+            %      % names == {'/out/myStack_01.png'; ... '/out/myStack_05.png'}
             %
             useOriginal = isfield(options, 'FilenameGenerator') && ...
                 strcmp(options.FilenameGenerator, 'Use original filename') && ...

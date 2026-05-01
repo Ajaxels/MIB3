@@ -2,7 +2,9 @@ function clearSelection(obj)
 % CLEARSELECTION - Clear the Selection layer for the current dataset.
 %
 % Syntax:
-%   function clearSelection(obj)
+%   .. code-block:: matlab
+%
+%      obj.clearSelection()
 %
 % Reads modifier keys held at call time to decide the clear scope:
 %   - no modifier '2D, Slice'   (current slice only)

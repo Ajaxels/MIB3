@@ -54,14 +54,21 @@
 
 /* === MATLAB domain — function/class/method signature boxes ============== */
 
-/* Signature container: green tint background + orange left border */
+/* Signature container: peachy background (#fad4b4) + orange left border */
 dt.sig.sig-object {
-    background-color: rgba(0, 102, 51, 0.07);
+    background-color: #fdf0e5 !important;
     border-left:      3px solid #F28C38;
     border-radius:    2px;
     padding:          3px 8px;
-    font-size:        0.80rem;
+    font-size:        0.70rem;
     line-height:      1.5;
+}
+
+/* Ensure code/pre inside signatures also use peachy background */
+dt.sig.sig-object code,
+dt.sig.sig-object pre,
+dt.sig.sig-object .highlight {
+    background-color: #fad4b4 !important;
 }
 
 /* Function / method name: bold */
@@ -105,4 +112,24 @@ dl.mat.method   > dd {
 .md-typeset dl.mat dd dl > dt {
     color: #004d26;
     font-weight: bold;
+}
+
+/* === Bullet lists in API documentation (tighter spacing) ================= */
+/* Options/arguments bullet lists should be compact */
+.md-typeset dl.mat dd ul,
+.md-typeset dl.mat dd ol {
+    margin-top:    0.2em;
+    margin-bottom: 0.2em;
+}
+
+.md-typeset dl.mat dd ul li,
+.md-typeset dl.mat dd ol li {
+    margin-top:    0.1em;
+    margin-bottom: 0.1em;
+}
+
+.md-typeset dl.mat dd ul li > p,
+.md-typeset dl.mat dd ol li > p {
+    margin-top:    0.0em;
+    margin-bottom: 0.0em;
 }
