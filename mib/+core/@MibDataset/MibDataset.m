@@ -99,7 +99,7 @@ classdef MibDataset < matlab.mixin.Copyable
         % unlink materials in the segmentation table, when true click on
         % the segmentation table selects individually Materials or addTo
         % columns
-        snapshotFilename = []
+        snapshotFilename = ''
         % filename for the snapshot, used by controllers.Snapshot; initialized on first open
     end
 

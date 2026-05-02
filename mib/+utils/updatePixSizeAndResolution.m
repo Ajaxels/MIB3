@@ -33,6 +33,7 @@ function [img_info, pixSize, result] = updatePixSizeAndResolution(img_info, pixS
 %     - .ParentFigure - handle to the parent figure/window used to anchor the dialog
 %     - .mibPath      - (char) MIB installation directory, used for help / icon lookup
 %     - .HelpUrl      - (char) URL or path for the Help button shown in the dialog
+%     - .WindowStyle  - [char] ``'normal'`` (default) or ``'modal'``
 %
 % Output Arguments:
 %   - **img_info** — updated imageData.img_info (unchanged and [] when img_info was passed as [])
@@ -91,6 +92,8 @@ if ~isfield(options, 'showDialog');   options.showDialog   = false; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 if ~isfield(options, 'mibPath');      options.mibPath      = ''; end
 if ~isfield(options, 'HelpUrl');      options.HelpUrl      = ''; end
+if ~isfield(options, 'WindowStyle');  options.WindowStyle  = 'normal'; end
+
 
 % Remember whether the caller explicitly supplied pixSize (used later to decide
 % whether to trust img_info{'XResolution'} or the provided/dialog-updated pixSize)
@@ -127,6 +130,7 @@ if options.showDialog
     dlgOptions.WindowWidth = 300;
     dlgOptions.LabelPosition = 'top';
     dlgOptions.Focus = 1;
+    dlgOptions.WindowStyle = options.WindowStyle;
     if ~isempty(options.mibPath);  dlgOptions.mibPath  = options.mibPath;  end
     if ~isempty(options.HelpUrl);  dlgOptions.HelpUrl  = options.HelpUrl;  end
 

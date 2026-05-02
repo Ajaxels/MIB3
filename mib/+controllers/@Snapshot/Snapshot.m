@@ -73,14 +73,22 @@ classdef Snapshot < handle
             end
 
             % Initialize BatchOpt
-            obj.BatchOpt.Target = {'File'};
-            obj.BatchOpt.Target{2} = {'File', 'Clipboard'};
+            obj.BatchOpt.Destination = {'Clipboard'};
+            obj.BatchOpt.Destination{2} = {'File', 'Clipboard'};
             obj.BatchOpt.Crop = {'FullImage'};
             obj.BatchOpt.Crop{2} = {'FullImage', 'ShownArea', 'ROI'};
-            obj.BatchOpt.ROIIndex = {'1'};
-            obj.BatchOpt.ROIIndex{2} = {'1'};
+            obj.BatchOpt.RoiIndex = {'1'};
+            obj.BatchOpt.RoiIndex{2} = {'1'};
             obj.BatchOpt.Width = '';
             obj.BatchOpt.Height = '';
+
+            obj.BatchOpt.Width{1} = 1024;
+            obj.BatchOpt.Width{2} = [1 Inf];
+            obj.BatchOpt.Width{3} = true;
+            obj.BatchOpt.Height{1} = 1024;
+            obj.BatchOpt.Height{2} = [1 Inf];
+            obj.BatchOpt.Height{3} = true;
+
             obj.BatchOpt.ResizeMethod = {'bicubic'};
             obj.BatchOpt.ResizeMethod{2} = {'bicubic', 'bilinear', 'nearest'};
             obj.BatchOpt.Scalebar = false;
@@ -88,9 +96,15 @@ classdef Snapshot < handle
             obj.BatchOpt.WhiteBackground = true;
             obj.BatchOpt.SplitChannels = false;
             obj.BatchOpt.Grayscale = false;
-            obj.BatchOpt.ColsNumber = '2';
-            obj.BatchOpt.RowsNumber = '2';
-            obj.BatchOpt.Margin = '10';
+            obj.BatchOpt.ColsNumber{1} = 2;         % default value
+            obj.BatchOpt.ColsNumber{2} = [1 Inf];   % range
+            obj.BatchOpt.ColsNumber{3} = true;      % round
+            obj.BatchOpt.RowsNumber{1} = 2;            % default value
+            obj.BatchOpt.RowsNumber{2} = [1 Inf];   % range
+            obj.BatchOpt.RowsNumber{3} = true;      % round
+            obj.BatchOpt.Margin{1} = 10;            % default value
+            obj.BatchOpt.Margin{2} = [0 Inf];       % range
+            obj.BatchOpt.Margin{3} = true;          % round
             obj.BatchOpt.FileFormat = {'TIF'};
             obj.BatchOpt.FileFormat{2} = {'TIF', 'BMP', 'JPG', 'PNG'};
             obj.BatchOpt.TIFcompression = {'lzw'};
@@ -103,9 +117,9 @@ classdef Snapshot < handle
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Home';
             obj.BatchOpt.mibBatchActionName = 'Make snapshot';
             % tooltips
-            obj.BatchOpt.mibBatchTooltip.Target = 'Destination target for snapshots';
+            obj.BatchOpt.mibBatchTooltip.Destination = 'Destination for snapshots';
             obj.BatchOpt.mibBatchTooltip.Crop = 'Crop the snapshot to ROI or the shown area';
-            obj.BatchOpt.mibBatchTooltip.ROIIndex = '[ROI Crop only] index of ROI to be used for cropping';
+            obj.BatchOpt.mibBatchTooltip.RoiIndex = '[ROI Crop only] index of ROI to be used for cropping';
             obj.BatchOpt.mibBatchTooltip.Width = 'Width of the output image, keep empty to match the crop parameter';
             obj.BatchOpt.mibBatchTooltip.Height = 'Height of the output image, keep empty to match the crop parameter';
             obj.BatchOpt.mibBatchTooltip.ResizeMethod = 'Method for image resizing, normally - bicubic for downsampling and nearest for upsampling';
@@ -166,6 +180,48 @@ classdef Snapshot < handle
             % ADDCALLBACKS - Wire essential callbacks (CloseRequestFcn only).
             % Other callbacks are wired in the .mlapp by the user.
             obj.view.gui.CloseRequestFcn = @(~, ~) obj.closeWindow();
+            
+            h = obj.view.handles;
+            % Destination radio button group (Clipboard / File)
+            h.Destination.SelectionChangedFcn = @(~, ~) obj.updateDestination();
+            % Crop radio button group (Full / Shown / Roi)
+            h.Crop.SelectionChangedFcn = @(~, ~) obj.updateCropMode();
+            
+            h.RoiIndex.ValueChangedFcn = @(~, ~) obj.updateRoiIndex();  % Roi index changed
+            h.Width.ValueChangedFcn = @(~, ~) obj.Width_Callback();     % Width changed
+            h.Height.ValueChangedFcn = @(~, ~) obj.Height_Callback();   % Height changed
+            h.ResizeMethod.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.ResizeMethod);   % Height changed
+            h.binCheck.ValueChangedFcn = @(~, ~) obj.binCheck_Callback();   % bin/mag switch
+
+            % bin/mag buttons
+            h.bin2Btn.ButtonPushedFcn = @obj.binMagButtons_Callback;   % bin/mag buttons
+            h.bin4Btn.ButtonPushedFcn = @obj.binMagButtons_Callback;   % bin/mag buttons
+            h.bin8Btn.ButtonPushedFcn = @obj.binMagButtons_Callback;   % bin/mag buttons
+
+            % Options panel
+            h.SplitChannels.ValueChangedFcn = @(~, ~) obj.SplitChannels_Callback();
+            h.Grayscale.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.Grayscale);
+            h.ColsNumber.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.ColsNumber);
+            h.RowsNumber.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.RowsNumber);
+            h.Margin.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.Margin);
+            
+            h.Scalebar.ValueChangedFcn = @(~, ~) obj.scalebar_Callback();
+            h.WhiteBackground.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.WhiteBackground);
+            h.Measurements.ValueChangedFcn = @(~, ~) obj.measurements_Callback();
+            h.measurementsOptions.ButtonPushedFcn = @(~, ~) obj.measurementsOptions_Callback();
+            
+            % File format panel
+            h.FileFormatTabGroup.SelectionChangedFcn = @(~, ~) obj.FileFormatTabGroup_Callback();
+            h.FileFormat.ValueChangedFcn = @(~, ~) obj.FileFormat_Callback();
+            h.JPGquality.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.JPGquality);
+            h.JPGmode.ValueChangedFcn = @(~, ~) obj.updateBatchOptFromGUI(h.JPGmode);
+            h.selectFileBtn.ButtonPushedFcn = @(~, ~) obj.selectFileBtn_Callback();
+            h.outputDir.ValueChangedFcn = @(~, ~) obj.outputDir_Callback();
+
+            % buttons at the bottom
+            h.helpButton.ButtonPushedFcn = @(~, ~) obj.help();
+            h.snapshotBtn.ButtonPushedFcn = @(~, ~) obj.snapshotBtn_Callback();
+            h.closelBtn.ButtonPushedFcn = @(~, ~) obj.closeWindow();
         end
 
         function closeWindow(obj)
@@ -241,22 +297,26 @@ classdef Snapshot < handle
             [numberOfROI, indices] = obj.mibModel.I{activeId}.hROI.getNumberOfROI();
             if numberOfROI == 0
                 obj.view.handles.ROI.Enable = 'off';
-                obj.view.handles.ROIIndex.Enable = 'off';
+                obj.view.handles.RoiIndex.Enable = 'off';
                 if obj.view.handles.ROI.Value
                     obj.view.handles.FullImage.Value = true;
                 end
             else
                 obj.view.handles.ROI.Enable = 'on';
-                obj.view.handles.ROIIndex.Enable = 'on';
+                obj.view.handles.RoiIndex.Enable = 'on';
 
                 roiNames = cell([numberOfROI 1]);
                 for i = 1:numberOfROI
                     roiNames(i) = obj.mibModel.I{activeId}.hROI.Data(indices(i)).label;
                 end
-                if numel(roiNames) < numel(obj.view.handles.ROIIndex.Items)
-                    obj.view.handles.ROIIndex.Value = roiNames{1};
+                if numel(roiNames) < numel(obj.view.handles.RoiIndex.Items)
+                    obj.view.handles.RoiIndex.Value = roiNames{1};
                 end
-                obj.view.handles.ROIIndex.Items = roiNames;
+                obj.view.handles.RoiIndex.Items = roiNames;
+                if obj.mibModel.I{activeId}.selectedROI >  0
+                    obj.view.handles.RoiIndex.ValueIndex = obj.mibModel.I{activeId}.selectedROI; 
+                    obj.BatchOpt.RoiIndex{1} = num2str(obj.mibModel.I{activeId}.selectedROI);
+                end
             end
         end
 
@@ -293,8 +353,8 @@ classdef Snapshot < handle
                     obj.origWidth = width;
                 end
             end
-            obj.view.handles.Width.Value = num2str(width);
-            obj.view.handles.Height.Value = num2str(height);
+            obj.view.handles.Width.Value = width;
+            obj.view.handles.Height.Value = height;
             obj.origHeight = height;
             obj.resizedWidth = width;
         end
@@ -306,16 +366,83 @@ classdef Snapshot < handle
             end
         end
 
-        function ROIIndex_Callback(obj)
-            % ROIINDEX_CALLBACK - Update shown ROI selection.
+        function updateDestination(obj)
+            % update destination for the snapshot
+            if obj.view.handles.File.Value
+                obj.view.handles.filePanel.Visible = true;
+            else
+                obj.view.handles.filePanel.Visible = false;
+            end
+            obj.updateBatchOptFromGUI(obj.view.handles.Destination);
+        end
+
+        function updateCropMode(obj)
+            % update the crop mode for the snapshot
+            
+            % update obj.BatchOpt
+            obj.updateBatchOptFromGUI(obj.view.handles.Crop);
+            % update the crop factor
+            obj.crop_Callback();
+        end
+
+        function updateRoiIndex(obj)
+            % updateRoiIndex - Update shown ROI selection.
             activeId = obj.mibModel.getActiveId();
-            roiItems = obj.view.handles.ROIIndex.Items;
-            roiValue = obj.view.handles.ROIIndex.Value;
+            roiItems = obj.view.handles.RoiIndex.Items;
+            roiValue = obj.view.handles.RoiIndex.Value;
             roiIdx = find(strcmp(roiItems, roiValue), 1);
             obj.mibModel.I{activeId}.selectedROI = roiIdx;
-            notify(obj.mibModel, 'UpdateGuiWidgets');
+            
+            eventdata = core.ToggleEventData({'roi'});
+            notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
+            
             notify(obj.mibModel, 'ShowImage');
             obj.crop_Callback();
+        end
+
+        function binCheck_Callback(obj)
+            % update buttons bin/mag buttons
+            if obj.view.handles.binCheck.Value
+                obj.view.handles.bin2Btn.Text = 'bin x2';
+                obj.view.handles.bin2Btn.Tooltip = 'Reduce dimensions of the snapshot in 2 times';
+                obj.view.handles.bin4Btn.Text = 'bin x4';
+                obj.view.handles.bin4Btn.Tooltip = 'Reduce dimensions of the snapshot in 4 times';
+                obj.view.handles.bin8Btn.Text = 'bin x8';
+                obj.view.handles.bin8Btn.Tooltip = 'Reduce dimensions of the snapshot in 8 times';
+            else
+                obj.view.handles.bin2Btn.Text = 'mag x2';
+                obj.view.handles.bin2Btn.Tooltip = 'Increse dimensions of the snapshot in 2 times';
+                obj.view.handles.bin4Btn.Text = 'mag x4';
+                obj.view.handles.bin4Btn.Tooltip = 'Increse dimensions of the snapshot in 4 times';
+                obj.view.handles.bin8Btn.Text = 'mag x8';
+                obj.view.handles.bin8Btn.Tooltip = 'Increse dimensions of the snapshot in 8 times';
+            end
+        end
+
+        function binMagButtons_Callback(obj, hObject, event)
+            % calculate new width/height of the dataset depending on the
+            % pressed button and its text
+
+            % get downsampling / upsampling factor
+            switch hObject.Tag
+                case 'bin2Btn'
+                    xFactor = 2;
+                case 'bin4Btn'
+                    xFactor = 4;
+                case 'bin8Btn'
+                    xFactor = 8;
+            end
+
+            % magnification mode
+            if hObject.Text(1) == 'm'
+                xFactor = 1/xFactor;
+            end
+            width = obj.view.handles.Width.Value;
+            height = obj.view.handles.Height.Value;
+            width = ceil(width/xFactor);
+            height = ceil(height/xFactor);
+            obj.view.handles.Width.Value = width;
+            obj.view.handles.Height.Value = height;
         end
 
         function FileFormat_Callback(obj)
@@ -325,13 +452,13 @@ classdef Snapshot < handle
             % switch the selected tab
             switch format
                 case 'BMP'
-                    obj.view.handles.TabGroup.SelectedTab = obj.view.handles.bmpTab;
+                    obj.view.handles.FileFormatTabGroup.SelectedTab = obj.view.handles.bmpTab;
                 case 'JPG'
-                    obj.view.handles.TabGroup.SelectedTab = obj.view.handles.jpgTab;
+                    obj.view.handles.FileFormatTabGroup.SelectedTab = obj.view.handles.jpgTab;
                 case 'PNG'
-                    obj.view.handles.TabGroup.SelectedTab = obj.view.handles.pngTab;
+                    obj.view.handles.FileFormatTabGroup.SelectedTab = obj.view.handles.pngTab;
                 case 'TIF'
-                    obj.view.handles.TabGroup.SelectedTab = obj.view.handles.tifTab;
+                    obj.view.handles.FileFormatTabGroup.SelectedTab = obj.view.handles.tifTab;
             end
 
             activeId = obj.mibModel.getActiveId();
@@ -341,20 +468,61 @@ classdef Snapshot < handle
             fn = fullfile(filePath, [baseName ext]);
             obj.view.handles.outputDir.Value = fn;
             obj.mibModel.I{activeId}.snapshotFilename = fn;
+
+            % update BatchOpt
+            obj.updateBatchOptFromGUI(obj.view.handles.FileFormat);
+        end
+
+        function FileFormatTabGroup_Callback(obj)
+            % FILEFORMATTABGROUP_CALLBACK - Sync format dropdown and filename when a tab is clicked directly.
+            tabTitle = obj.view.handles.FileFormatTabGroup.SelectedTab.Title;
+            obj.view.handles.FileFormat.Value = tabTitle;
+            activeId = obj.mibModel.getActiveId();
+            fn = obj.mibModel.I{activeId}.snapshotFilename;
+            [filePath, baseName] = fileparts(fn);
+            fn = fullfile(filePath, [baseName '.' lower(tabTitle)]);
+            obj.view.handles.outputDir.Value = fn;
+            obj.mibModel.I{activeId}.snapshotFilename = fn;
+            obj.updateBatchOptFromGUI(obj.view.handles.FileFormat);
+        end
+
+        function measurements_Callback(obj)
+            % enable or disable rendering of measurements on the snapshot
+
+            obj.view.handles.measurementsOptions.Enable = false;
+            if obj.view.handles.Measurements.Value
+                dlgOpt.MsgBoxOnly  = true;
+                dlgOpt.Icon        = 'puffin_warning';
+                dlgOpt.HeaderLines = 1;
+                dlgOpt.WindowHeight = 220;
+                msgText = sprintf('Addition of measurements to the snapshot may add artifacts at the borders of the image (at least in R2014b)!\n\nAfter rendering please make sure that the snapshot is good enough for your purposes!');
+                utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                    sprintf('Attention!'), ...
+                    {}, {msgText}, 'Adding measurements', dlgOpt);
+                obj.view.handles.measurementsOptions.Enable = true;
+            end
+            obj.updateBatchOptFromGUI(obj.view.handles.Measurements);
         end
 
         function measurementsOptions_Callback(obj)
             % MEASUREMENTSOPTIONS_CALLBACK - Update measurement visualization settings.
             activeId = obj.mibModel.getActiveId();
-            obj.mibModel.I{activeId}.hMeasure.setOptions();
+            obj.mibModel.I{activeId}.measure.setOptions();
         end
 
-        function Scalebar_Callback(obj)
+        function scalebar_Callback(obj)
             % SCALEBAR_CALLBACK - Enable scale bar and verify pixel size.
             if obj.view.handles.Scalebar.Value
                 activeId = obj.mibModel.getActiveId();
-                obj.mibModel.I{activeId}.updatePixSizeResolution();
+                dataset = obj.mibModel.I{activeId};
+                dlgOpts.showDialog   = true;
+                dlgOpts.ParentFigure = obj.view.gui;
+                dlgOpts.mibPath      = obj.mibModel.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                [~, newPixSize, dlgResult] = utils.updatePixSizeAndResolution([], dataset.image.pixSize, dlgOpts);
+                if dlgResult; dataset.setPixSize(newPixSize); end
             end
+            obj.updateBatchOptFromGUI(obj.view.handles.Scalebar);
         end
 
         function crop_Callback(obj)
@@ -372,17 +540,17 @@ classdef Snapshot < handle
             end
 
             if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
-                roiValue = obj.view.handles.ROIIndex.Value;
+                roiValue = obj.view.handles.RoiIndex.Value;
                 roiImg = obj.mibModel.I{activeId}.hROI.returnMask(roiValue);
                 STATS = regionprops(roiImg, 'BoundingBox');
                 width = ceil(STATS.BoundingBox(3));
                 height = ceil(STATS.BoundingBox(4));
             else
-                [height, width] = obj.mibModel.I{activeId}.getDatasetDimensions('image', [], [], options);
+                [height, width] = obj.mibModel.I{activeId}.getDatasetDimensions('image', [], options);
             end
 
             obj.origWidth = width;
-            obj.view.handles.Height.Value = num2str(height);
+            obj.view.handles.Height.Value = height;
             orientation = obj.mibModel.I{activeId}.orientation;
             pixSize = obj.mibModel.I{activeId}.image.pixSize;
             if orientation == 1
@@ -392,7 +560,7 @@ classdef Snapshot < handle
             elseif orientation == 3
                 width = width * pixSize.x / pixSize.y;
             end
-            obj.view.handles.Width.Value = num2str(ceil(width));
+            obj.view.handles.Width.Value = width;
             obj.origHeight = height;
             obj.resizedWidth = width;
         end
@@ -460,18 +628,19 @@ classdef Snapshot < handle
 
         function Width_Callback(obj)
             % WIDTH_CALLBACK - Update height to maintain aspect ratio when width changes.
-            newWidth = str2double(obj.view.handles.Width.Value);
+            
+            newWidth = obj.view.handles.Width.Value;
             if isempty(obj.extraController)
                 ratio = obj.origHeight / obj.resizedWidth;
                 newHeight = round(newWidth * ratio);
-                obj.view.handles.Height.Value = num2str(newHeight);
+                obj.view.handles.Height.Value = newHeight;
             else
                 if strcmp(obj.extraController.view.gui.Name, '3D onFlyImageStretch') || strcmp(obj.extraController.view.gui.Name, '3D Controls')
                     screensize = get(groot, 'Screensize');
                     if screensize(3) < newWidth
                         utils.dlgs.showErrorDialog(obj.view.gui, ...
                             'The output dimensions should be smaller than the screen size!', 'Size is too large');
-                        obj.view.handles.Width.Value = num2str(obj.resizedWidth);
+                        obj.view.handles.Width.Value = obj.resizedWidth;
                         return;
                     end
                 end
@@ -480,22 +649,27 @@ classdef Snapshot < handle
 
         function Height_Callback(obj)
             % HEIGHT_CALLBACK - Update width to maintain aspect ratio when height changes.
-            newHeight = str2double(obj.view.handles.Height.Value);
+            newHeight = obj.view.handles.Height.Value;
             if isempty(obj.extraController)
                 ratio = obj.origHeight / obj.resizedWidth;
                 newWidth = round(newHeight / ratio);
-                obj.view.handles.Width.Value = num2str(newWidth);
+                obj.view.handles.Width.Value = newWidth;
             else
                 if strcmp(obj.extraController.view.gui.Name, '3D onFlyImageStretch')
                     screensize = get(groot, 'Screensize');
                     if screensize(4) < newHeight
                         utils.dlgs.showErrorDialog(obj.view.gui, ...
                             'The output dimensions should be smaller than the screen size!', 'Size is too large');
-                        obj.view.handles.Height.Value = num2str(obj.origHeight);
+                        obj.view.handles.Height.Value = obj.origHeight;
                         return;
                     end
                 end
             end
+        end
+
+        function help(obj)
+            % show help
+            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-makesnapshot.html'), '-browser');
         end
 
         function snapshotBtn_Callback(obj, useBatchMode)
@@ -503,33 +677,29 @@ classdef Snapshot < handle
 
             if nargin < 2; useBatchMode = 0; end
             activeId = obj.mibModel.getActiveId();
-
+            dataset = obj.mibModel.I{activeId};
             if useBatchMode == 0
                 obj.view.handles.snapshotBtn.BackgroundColor = [1 0 0];
                 drawnow;
             end
 
-            if obj.view.handles.WhiteBackground.Value
-                bgColor = 1;
-            else
-                bgColor = 0;
+            bgColor = double(obj.BatchOpt.WhiteBackground); % 1-white, 0-black
+
+            options.resizeToMagnification = false;
+            options.blockModeSwitch = false;
+            options.markerType = 'Label + Value';
+            if strcmp(obj.BatchOpt.Crop{1}, 'ShownArea')
+                options.blockModeSwitch = true;
+            elseif strcmp(obj.BatchOpt.Crop{1}, 'ROI')
+                options.blockModeSwitch = dataset.blockModeSwitch;
             end
 
-            options.resize = 'no';
-            options.mode = 'full';
-            options.markerType = 'both';
-            if obj.view.handles.ShownArea.Value   % saving only the shown area
-                options.blockModeSwitch = 1;
-                options.mode = 'shown';
-            elseif obj.view.handles.ROI.Value
-                options.blockModeSwitch = obj.mibModel.I{activeId}.blockModeSwitch;
-            end
-
-            slices = obj.mibModel.I{activeId}.slices;
+            slices = dataset.slices;
+            noColorChannels = numel(slices{4});
             if obj.view.handles.SplitChannels.Value    % split color channels
-                rowNo = obj.view.handles.RowsNumber.Value;  % spinner returns number
-                colNo = obj.view.handles.ColsNumber.Value;  % spinner returns number
-                if numel(slices{3}) + 1 > rowNo * colNo
+                rowNo = obj.BatchOpt.RowsNumber{1};
+                colNo = obj.BatchOpt.ColsNumber{1};
+                if noColorChannels + 1 > rowNo * colNo
                     utils.dlgs.showErrorDialog(obj.view.gui, ...
                         sprintf('Number of selected color channels is larger than the number of panels in the resulting image!\nIncrease number of columns or rows and try again'), ...
                         'Too many color channels');
@@ -538,50 +708,41 @@ classdef Snapshot < handle
                     end
                     return;
                 end
-                maxImageIndex = min([numel(slices{3}) + 1, rowNo * colNo]);
-                imageShift = obj.view.handles.Margin.Value;  % spinner returns number
+                maxImageIndex = min([noColorChannels + 1, rowNo * colNo]);
+                imageShift = obj.BatchOpt.Margin{1};
             else
                 rowNo = 1;
                 colNo = 1;
                 maxImageIndex = 1;
             end
 
-            newWidth = str2double(obj.view.handles.Width.Value);
-            newHeight = str2double(obj.view.handles.Height.Value);
-            colorChannels = slices{3};    % store selected color channels
+            newWidth = obj.view.handles.Width.Value;
+            newHeight = obj.view.handles.Height.Value;
+            colorChannels = slices{4};    % store selected color channels
 
-            progressDialog = uiprogressdlg(obj.view.gui, 'Value', 0, ...
-                'Message', 'Generating images, please wait...', 'Title', 'Making snapshot');
+            progressBar = core.PoolWaitbar(maxImageIndex, 'Generating images, please wait...', ...
+                obj.view.gui, 'Making snapshot', true);
 
             if isempty(obj.extraController)     % snapshot from MIB main window
                 for imageId = 1:maxImageIndex
-                    if imageId == maxImageIndex
-                        if isfield(options, 'useLut'); options = rmfield(options, 'useLut'); end
-
-                        if obj.mibModel.I{activeId}.volren.show == 0
-                            img = obj.mibModel.getRGBimage(options);
-                        else
-                            volrenOpt.ImageSize = [newHeight, newWidth];
-                            scaleRatio = 1 / obj.mibModel.I{activeId}.magFactor;
-                            S = makehgtform('scale', 1/scaleRatio);
-                            volren = obj.mibModel.I{activeId}.volren;
-                            volrenOpt.Mview = S * volren.viewer_matrix;
-
-                            timePoint = slices{5}(1);
-                            img = obj.mibModel.getRGBvolume(cell2mat(obj.mibModel.getData3D('image', timePoint, 3, 0)), volrenOpt);
-                        end
-                    else
-                        if obj.view.handles.Grayscale.Value
-                            options.useLut = 0;
-                        end
-
-                        obj.mibModel.I{activeId}.slices{3} = colorChannels(imageId);
-                        img = obj.mibModel.getRGBimage(options);
+                    if progressBar.getCancelState()
+                        progressBar.deletePoolWaitbar();
+                        if useBatchMode == 0; obj.view.handles.snapshotBtn.BackgroundColor = [0.149 0.902 0.1804]; end
+                        return;
                     end
 
-                    obj.mibModel.I{activeId}.slices{3} = colorChannels;
+                    if imageId == maxImageIndex
+                        if isfield(options, 'useLut'); options = rmfield(options, 'useLut'); end
+                        img = obj.mibModel.getRGBimage(options);   
+                    else
+                        if obj.BatchOpt.Grayscale; options.useLut = 0; end
 
-                    if obj.view.handles.Measurements.Value
+                        dataset.slices{4} = colorChannels(imageId);
+                        img = obj.mibModel.getRGBimage(options);
+                    end
+                    dataset.slices{4} = colorChannels;
+
+                    if obj.BatchOpt.Measurements
                         hFig = figure(153);
                         hFig.Renderer = 'zbuffer';
                         clf;
@@ -590,10 +751,9 @@ classdef Snapshot < handle
 
                         imshow(img);
                         hold on;
-                        obj.mibModel.I{activeId}.hMeasure.addMeasurementsToPlot(obj.mibModel, options.mode, gca);
+                        dataset.hMeasure.addMeasurementsToPlot(obj.mibModel, options.mode, gca);
                         set(gca, 'xtick', []);
                         set(gca, 'ytick', []);
-                        % export to img
                         img2 = export_fig('-native', '-zbuffer', '-a1');
 
                         delete(153);
@@ -602,23 +762,22 @@ classdef Snapshot < handle
                         img = imresize(img2, [size(img, 1) size(img, 2)], 'nearest');
                     end
 
-                    if obj.view.handles.ROI.Value
-                        roiValue = obj.view.handles.ROIIndex.Value;
-                        roiImg = obj.mibModel.I{activeId}.hROI.returnMask(roiValue);
+                    if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
+                        roiImg = dataset.hROI.returnMask(str2double(obj.BatchOpt.RoiIndex{1}));
                         STATS = regionprops(roiImg, 'BoundingBox');
                         img = imcrop(img, STATS.BoundingBox);
                     end
 
                     scale = newWidth / size(img, 2);
-                    if newWidth ~= size(img, 2) || newHeight ~= size(img, 1)   % resize the image
+                    if newWidth ~= size(img, 2) || newHeight ~= size(img, 1)
                         resizeMethod = obj.view.handles.ResizeMethod.Value;
                         img = imresize(img, [newHeight newWidth], resizeMethod);
                     end
 
-                    if obj.view.handles.Scalebar.Value  % add scale bar
-                        scalebarOptions.orientation = obj.mibModel.I{activeId}.orientation;
+                    if obj.BatchOpt.Scalebar
+                        scalebarOptions.orientation = dataset.orientation;
                         scalebarOptions.bgColor = bgColor;
-                        img = utils.addScaleBar(img, obj.mibModel.I{activeId}.image.pixSize, scale, scalebarOptions);
+                        img = utils.addScaleBar(img, dataset.image.pixSize, scale, scalebarOptions);
                     end
 
                     if maxImageIndex == 1
@@ -645,24 +804,30 @@ classdef Snapshot < handle
                             rowId = rowId + 1;
                         end
                     end
-                    progressDialog.Value = imageId / maxImageIndex;
+                    progressBar.increment();
                 end
             else
                 if strcmp(obj.extraController.view.gui.Name, '3D onFlyImageStretch') || strcmp(obj.extraController.view.gui.Name, '3D Controls')
                     imgOut = obj.extraController.grabFrame(newWidth, newHeight);
                 end
+                progressBar.increment();
+            end
+
+            % cancel check before saving
+            if progressBar.getCancelState()
+                progressBar.deletePoolWaitbar();
+                if useBatchMode == 0; obj.view.handles.snapshotBtn.BackgroundColor = [0.149 0.902 0.1804]; end
+                return;
             end
 
             if obj.view.handles.File.Value     % saving to a file
-                if exist(obj.mibModel.I{activeId}.snapshotFilename, 'file')
+                if exist(dataset.snapshotFilename, 'file')
                     button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
                         sprintf('Warning!\nThe file already exist!\n\nOverwrite?'), ...
                         'Overwrite?', 'Overwrite', 'Cancel', 'Cancel');
                     if strcmp(button, 'Cancel')
-                        if useBatchMode == 0
-                            obj.view.handles.snapshotBtn.BackgroundColor = [0.149 0.902 0.1804];
-                        end
-                        close(progressDialog);
+                        progressBar.deletePoolWaitbar();
+                        if useBatchMode == 0; obj.view.handles.snapshotBtn.BackgroundColor = [0.149 0.902 0.1804]; end
                         return;
                     end
                 end
@@ -678,27 +843,27 @@ classdef Snapshot < handle
                         if ~isa(imgOut, 'uint8')
                             imgOut = im2uint8(imgOut);
                         end
-                        parameters.Quality = obj.view.handles.JPGquality.Value;  % numeric
-                        parameters.Bitdepth = str2double(obj.view.handles.jpgBitdepth.Value);  % dropdown returns string
-                        parameters.Mode = obj.view.handles.JPGmode.Value;  % dropdown returns string
-                        parameters.Comment = obj.view.handles.jpgComment.Value;
+                        parameters.Quality = obj.view.handles.JPGquality.Value;
+                        parameters.Bitdepth = str2double(obj.view.handles.JPGbitdepth.Value);
+                        parameters.Mode = obj.view.handles.JPGmode.Value;
+                        parameters.Comment = obj.view.handles.JPGcomment.Value;
                     case 'PNG'
                         parameters.BitDepth = 8;
                     case 'TIF'
-                        parameters.Compression = obj.view.handles.TIFcompression.Value;  % dropdown returns string
-                        parameters.ColorSpace = obj.view.handles.tifColor.Value;  % dropdown returns string
-                        parameters.Resolution = obj.view.handles.tifResolution.Value;  % numeric edit field
-                        parameters.RowsPerStrip = obj.view.handles.tifRowsPerStrip.Value;  % numeric edit field
-                        parameters.Description = obj.view.handles.tifDescription.Value;
+                        parameters.Compression = obj.view.handles.TIFcompression.Value;
+                        parameters.ColorSpace = obj.view.handles.TIFcolor.Value;
+                        parameters.Resolution = obj.view.handles.TIFresolution.Value;
+                        parameters.RowsPerStrip = obj.view.handles.TIFrowsperstrip.Value;
+                        parameters.Description = obj.view.handles.TIFdescription.Value;
                         parameters.WriteMode = 'overwrite';
                 end
 
-                utils.mibImWrite(imgOut, obj.mibModel.I{activeId}.snapshotFilename, parameters);
+                utils.mibImWrite(imgOut, dataset.snapshotFilename, parameters);
             elseif obj.view.handles.Clipboard.Value  % copy to Clipboard
-                progressDialog.Message = 'Exporting to clipboard, please wait...';
+                progressBar.updateText('Exporting to clipboard, please wait...');
                 imclipboard('copy', imgOut);
             end
-            close(progressDialog);
+            progressBar.deletePoolWaitbar();
 
             % count user's points
             obj.mibModel.preferences.Users.Tiers.numberOfSnapAndMovies = obj.mibModel.preferences.Users.Tiers.numberOfSnapAndMovies + 1;

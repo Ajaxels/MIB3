@@ -47,27 +47,20 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %       ``'puffin_question'``, ``'puffin_warning'``, ``'puffin_info'``,
 %       ``'puffin_error'``, ``'puffin_measure'``, ``'puffin_waiting'``,
 %       ``'question'``, ``'celebrate'``, ``'call4help'``, ``'warning'``
-%     - ``.IconWidth`` — [numeric] icon column width in pixels
-%       (default: ``[]``, i.e. use the image's natural width)
-%     - ``.LabelPosition`` — [char] ``'left'`` (default, label beside widget)
-%       or ``'top'`` (label above widget)
-%     - ``.LastItemColumns`` — [integer] ``1`` to force the last widget to span all
-%       columns, ``0`` otherwise (default: ``0``)
-%     - ``.MainColumnWidths`` — cell array of main-grid column widths,
-%       e.g. ``{'1x', '2x'}`` for 2 columns (default: ``'1x'`` for all)
+%     - ``.IconWidth`` — [numeric] icon column width in pixels (default: ``[]``, i.e. use the image's natural width)
+%     - ``.LabelPosition`` — [char] ``'left'`` (default, label beside widget) or ``'top'`` (label above widget)
+%     - ``.LastItemColumns`` — [integer] ``1`` to force the last widget to span all columns, ``0`` otherwise (default: ``0``)
+%     - ``.MainColumnWidths`` — cell array of main-grid column widths, e.g. ``{'1x', '2x'}`` for 2 columns (default: ``'1x'`` for all)
 %     - ``.mibPath`` — [char] path to MIB installation
-%     - ``.MsgBoxOnly`` — [logical] show as a message-box with a single OK button
-%       and one HTML content widget (default: ``false``)
+%     - ``.MsgBoxOnly`` — [logical] show as a message-box with a single OK button and one HTML content widget (default: ``false``)
 %     - ``.OkBtnText`` — [char] OK button label (default: ``'OK'``)
 %     - ``.ParentFigure`` — [handle] parent figure for centering (default: ``[]``)
-%     - ``.PromptLines`` — scalar or array of integers specifying wrapped prompt
-%       label line heights (one value per prompt)
+%     - ``.PromptLines`` — scalar or array of integers specifying wrapped prompt label line heights (one value per prompt)
 %     - ``.SectionsColumnWidths`` — cell array of label/widget column proportions for
 %       each main column when ``LabelPosition='left'``;
 %       e.g. ``{'1x','2x','1x','2x'}`` gives ``label:widget = 1x:2x`` for both columns
 %       (default: ``'fit'`` for labels and ``'1x'`` for widgets)
-%     - ``.WindowHeight`` — [numeric] dialog height in pixels
-%       (default: auto-calculated, min 200, max 800)
+%     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: auto-calculated, min 200, max 800)
 %     - ``.WindowStyle`` — [char] ``'normal'`` (default) or ``'modal'``
 %     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 560)
 %
@@ -161,12 +154,12 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %
 % .. code-block:: matlab
 %
-%    options.MsgBoxOnly  = true;
-%    options.Icon        = 'puffin_warning';
-%    options.HeaderLines = 3;
+%    dlgOpt.MsgBoxOnly  = true;
+%    dlgOpt.Icon        = 'puffin_warning';
+%    dlgOpt.HeaderLines = 3;
 %    utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
 %        sprintf('!!! Warning !!!\n\nThe output format was not selected!'), ...
-%        {}, {}, 'Warning', options);
+%        {}, {}, 'Warning', dlgOpt);
 %
 
 

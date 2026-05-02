@@ -32,14 +32,14 @@ switch hObject.Type
     case 'uibuttongroup'
         hChildren = hObject.Children;
         for i=1:numel(hChildren)
-            if isprop(hChildren(i), 'Style')    % GUIDE GUI
-                if strcmp(hChildren(i).Style, 'radiobutton')
+            if ~isprop(hChildren(i), 'Style')    % AppDesigner GUI
+                if strcmp(hChildren(i).Type, 'uiradiobutton')
                     if hChildren(i).Value == 1
                         BatchOpt.(hObject.Tag)(1) = {(hChildren(i).Tag)};
                     end
                 end
-            else        % AppDesigner GUI
-                if strcmp(hChildren(i).Type, 'uiradiobutton')
+            else        % GUIDE GUI 
+                if strcmp(hChildren(i).Style, 'radiobutton')
                     if hChildren(i).Value == 1
                         BatchOpt.(hObject.Tag)(1) = {(hChildren(i).Tag)};
                     end

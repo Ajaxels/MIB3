@@ -219,35 +219,6 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
     end
 end
 
-%% Update the QuickAccessBar TAB ------------------------------------
-% -------------------------------------------------------------------
-if isempty(updatePanels) || ismember('QuickAccessBar', updatePanels)
-    % update orientation buttons
-    qabHandles = obj.cQuickAccessBar.handles;
-    if dataset.orientation == 3 && ~qabHandles.yx_orientation.Value
-        qabHandles.yx_orientation.Value = true;
-        qabHandles.yz_orientation.Value = false;
-        qabHandles.xz_orientation.Value = false;
-    elseif dataset.orientation == 2 && ~qabHandles.yz_orientation.Value
-        qabHandles.yx_orientation.Value = false;
-        qabHandles.yz_orientation.Value = true;
-        qabHandles.xz_orientation.Value = false;
-    elseif dataset.orientation == 1 && ~qabHandles.xz_orientation.Value
-        qabHandles.yx_orientation.Value = false;
-        qabHandles.yz_orientation.Value = false;
-        qabHandles.xz_orientation.Value = true;
-    end
-    
-    % define ROI button state
-    if qabHandles.roiMode.Value ~= dataset.roiShow
-        qabHandles.roiMode.Value = dataset.roiShow;
-    end
-
-    % define the blockModeSwitch state
-    if qabHandles.blockMode.Value ~= dataset.blockModeSwitch
-        qabHandles.blockMode.Value = dataset.blockModeSwitch;
-    end
-end
 
 %% Update sliders ---------------------------------------------
 % -------------------------------------------------------------
@@ -519,18 +490,47 @@ if isempty(updatePanels) || ismember('roi', updatePanels)
     roiListHandle.Items = items;
     
     if number > 0
-        % try to preserve the previously selected ROI
-        prevSelected = roiListHandle.Value;
-        if ismember(prevSelected, items)
-            roiListHandle.Value = prevSelected;
+        prevSelected = dataset.selectedROI + 1;
+        if prevSelected <= numel(items)
+            roiListHandle.ValueIndex = prevSelected;           
         else
-            roiListHandle.Value = 'All';
+            roiListHandle.ValueIndex = 1;
         end
         obj.cRoi.handles.roiShowROI.Value = dataset.roiShow;
     else
         roiListHandle.Value = 'All';
         dataset.roiShow = false;
         obj.cRoi.handles.roiShowROI.Value = false;
+    end
+end
+
+%% Update the QuickAccessBar TAB ------------------------------------
+% -------------------------------------------------------------------
+if isempty(updatePanels) || ismember('QuickAccessBar', updatePanels)
+    % update orientation buttons
+    qabHandles = obj.cQuickAccessBar.handles;
+    if dataset.orientation == 3 && ~qabHandles.yx_orientation.Value
+        qabHandles.yx_orientation.Value = true;
+        qabHandles.yz_orientation.Value = false;
+        qabHandles.xz_orientation.Value = false;
+    elseif dataset.orientation == 2 && ~qabHandles.yz_orientation.Value
+        qabHandles.yx_orientation.Value = false;
+        qabHandles.yz_orientation.Value = true;
+        qabHandles.xz_orientation.Value = false;
+    elseif dataset.orientation == 1 && ~qabHandles.xz_orientation.Value
+        qabHandles.yx_orientation.Value = false;
+        qabHandles.yz_orientation.Value = false;
+        qabHandles.xz_orientation.Value = true;
+    end
+
+    % define ROI button state
+    if qabHandles.roiMode.Value ~= dataset.roiShow
+        qabHandles.roiMode.Value = dataset.roiShow;
+    end
+
+    % define the blockModeSwitch state
+    if qabHandles.blockMode.Value ~= dataset.blockModeSwitch
+        qabHandles.blockMode.Value = dataset.blockModeSwitch;
     end
 end
 
