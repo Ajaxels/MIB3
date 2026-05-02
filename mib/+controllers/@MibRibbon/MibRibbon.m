@@ -88,11 +88,10 @@ classdef MibRibbon
         % 
         % selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
         % 
-        % toolsMisc_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Misc section of the Tools ribbon
-        % 
-        % toolsSegmentation_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Segmentation section of the Tools ribbon
+        % % tools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools ribbon
         % 
         % result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
+
 
         function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)
             % MIBRIBBON - % Init properties.
@@ -462,26 +461,26 @@ classdef MibRibbon
 
             %% Add Callbacks for the SELECTION ribbon -> Segmentation section
             % DeepMIB
-            obj.handles.ribbonTools.deepmib.ButtonPushedFcn = @obj.toolsSegmentation_Callbacks;
+            obj.handles.ribbonTools.deepmib.ButtonPushedFcn = @obj.tools_Callbacks;
             % Classifiers
-            obj.handles.ribbonTools.membrane.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
-            obj.handles.ribbonTools.supervoxels.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            obj.handles.ribbonTools.membrane.ItemPushedFcn = @obj.tools_Callbacks;
+            obj.handles.ribbonTools.supervoxels.ItemPushedFcn = @obj.tools_Callbacks;
             % Semi-automatic
-            obj.handles.ribbonTools.globalthres.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
-            obj.handles.ribbonTools.graphcut.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
-            obj.handles.ribbonTools.watershed.ItemPushedFcn = @obj.toolsSegmentation_Callbacks;
+            obj.handles.ribbonTools.globalthres.ItemPushedFcn = @obj.tools_Callbacks;
+            obj.handles.ribbonTools.graphcut.ItemPushedFcn = @obj.tools_Callbacks;
+            obj.handles.ribbonTools.watershed.ItemPushedFcn = @obj.tools_Callbacks;
             %% Add Callbacks for the SELECTION ribbon -> Misc section
             % Measure length
-            obj.handles.ribbonTools.measure.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
-            obj.handles.ribbonTools.measureTool.ItemPushedFcn = @obj.toolsMisc_Callbacks;
-            obj.handles.ribbonTools.measureLine.ItemPushedFcn = @obj.toolsMisc_Callbacks;
-            obj.handles.ribbonTools.measureFreehand.ItemPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.measure.ButtonPushedFcn = @obj.tools_Callbacks;
+            obj.handles.ribbonTools.measureTool.ItemPushedFcn = @obj.tools_Callbacks;
+            obj.handles.ribbonTools.measureLine.ItemPushedFcn = @obj.tools_Callbacks;
+            obj.handles.ribbonTools.measureFreehand.ItemPushedFcn = @obj.tools_Callbacks;
             % Object separator
-            obj.handles.ribbonTools.objects.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.objects.ButtonPushedFcn = @obj.tools_Callbacks;
             % Stereology
-            obj.handles.ribbonTools.stereology.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.stereology.ButtonPushedFcn = @obj.tools_Callbacks;
             % Wound healing assay
-            obj.handles.ribbonTools.wound.ButtonPushedFcn = @obj.toolsMisc_Callbacks;
+            obj.handles.ribbonTools.wound.ButtonPushedFcn = @obj.tools_Callbacks;
 
 
         end

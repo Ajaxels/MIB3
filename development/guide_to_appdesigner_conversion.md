@@ -26,6 +26,10 @@ Create a new App Designer app in `mib/+views/XxxGUI.mlapp`.
   `core.ChildView` calls `XxxGUI(controller)`.
 - Every interactive widget must have a **Tag** set — `core.ChildView` maps Tags to
   `obj.view.handles.<Tag>`.
+- **`obj.view.gui`** is the UIFigure handle (window). Use it for figure-level properties
+  (`obj.view.gui.Visible`, `obj.view.gui.CloseRequestFcn`) and as the parent argument to
+  dialogs (`utils.dlgs.showErrorDialog(obj.view.gui, ...)`).
+- **`obj.view.handles.<Tag>`** accesses individual widgets. Never use `obj.view.gui.<Tag>`.
 - The `.mlapp` contains **layout only** — no callback logic.
 - No `CloseRequestFcn` in the `.mlapp`; it is set in the controller's `addCallbacks`.
 
@@ -65,9 +69,9 @@ Helper renames:
 
 ```matlab
 % MIB2                                   % MIB3
-mibChildView(obj, 'mibXxxGUI')           core.ChildView(obj, 'views.XxxGUI')
+mibChildView(obj, 'mibXxxGUI')           obj.view = core.ChildView(obj, 'views.XxxGUI')
 mibRescaleWidgets(...)                   (remove — AppDesigner handles scaling)
-mibUpdateFontSize(gui, Font)             utils.fontSizeUpdate(gui, Font)
+mibUpdateFontSize(gui, Font)             utils.fontSizeUpdate(obj.view.gui, Font)
 moveWindowOutside(h, 'left')             utils.moveWindowOutside(gui, mibGUI, 'left')
 updateGUIFromBatchOpt_Shared(...)        utils.updateGUIFromBatchOpt_Shared(...)
 updateBatchOptCombineFields_Shared(...)  utils.updateBatchOptCombineFields_Shared(...)
@@ -112,9 +116,10 @@ function obj = Xxx(mibModel, varargin)
     obj.updateWidgets();
 
     Font = obj.mibModel.preferences.System.Font;
-    if obj.view.handles.<anchorWidget>.FontSize ~= Font.FontSize ...
-            || ~strcmp(obj.view.handles.<anchorWidget>.FontName, Font.FontName)
-        utils.fontSizeUpdate(obj.view.gui, Font);
+    % Replace 'someWidget' with any stable label or text widget in the view
+    if obj.view.handles.someWidget.FontSize ~= Font.FontSize ...
+            || ~strcmp(obj.view.handles.someWidget.FontName, Font.FontName)
+        utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);
     end
     obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 

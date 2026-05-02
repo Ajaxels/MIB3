@@ -172,6 +172,11 @@ classdef Snapshot < handle
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
             obj.listener{3} = addlistener(obj.mibModel, 'AxesLimitsChanged', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
 
+            % add handle tags to tooltips in developer mode
+            if obj.mibModel.preferences.System.DeveloperMode
+                utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');
+            end
+
             % show the dialog
             obj.view.gui.Visible = true;
         end

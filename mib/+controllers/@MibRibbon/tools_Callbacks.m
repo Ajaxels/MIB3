@@ -1,10 +1,10 @@
-function toolsMisc_Callbacks(obj, hWidget, hData)
-% TOOLSMISC_CALLBACKS - callback on press of buttons in the Misc section of the Tools ribbon.
+function tools_Callbacks(obj, hWidget, hData)
+% TOOLS_CALLBACKS - callback on press of buttons in the Tools ribbon.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.toolsMisc_Callbacks(hWidget, hData)
+%       obj.tools_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget
@@ -19,19 +19,28 @@ end
 
 mode = hWidget.Text;
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibRibbon.toolsMisc_Callbacks: Tools ribbon-> Misc section pressed -> %s\n', mode);
+    fprintf('controllers.MibRibbon.tools_Callbacks: Tools ribbon -> pressed -> %s\n', mode);
 end
 
 switch mode
+    case sprintf('Deep learning\nsegmentation')        % obj.handles.ribbonTools.deepmib
+        obj.mibController.startController('controllers.MibDeep', obj.mibController);
+    case 'Membrane detector'        % obj.handles.ribbonTools.membrane
+    case 'Supervoxels classifier'        % obj.handles.ribbonTools.supervoxels
+    case sprintf('Global\nthresholding')        % obj.handles.ribbonTools.globalthres
+    case 'Graphcut'        % obj.handles.ribbonTools.graphcut
+    case 'Watershed'        % obj.handles.ribbonTools.watershed
+
     case {sprintf('Measure\nlength'), 'Line measure'}   % obj.handles.ribbonTools.measure or obj.handles.ribbonTools.measureLine
         obj.mibController.measureLength('line');
     case 'Measure tool'                                 % obj.handles.ribbonTools.measureTool
-        obj.mibController.measureLength('tool');
+        obj.mibController.measureLength('tool');        % measure tool starts from measureLength
     case 'Free hand measure'                            % measureFreehand
         obj.mibController.measureLength('freehand');
     case sprintf('Object\nseparation')                  % obj.handles.ribbonTools.objects
     case 'Stereology'                                   % obj.handles.ribbonTools.stereology
     case sprintf('Wound healing\nassey')                % obj.handles.ribbonTools.wound
+
 end
 
 end

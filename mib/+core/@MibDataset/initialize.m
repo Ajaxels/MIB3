@@ -107,7 +107,7 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     % ---------- main layers ----------
     obj.annotations = core.Annotations;     % handle to class for keeping annotations
     obj.lines3D = core.Lines3D;             % handle to class for keeping 3D Lines and skeletons
-    obj.measure = [];                       % handle to class to keep measurements
+    obj.measure = core.Measurements(obj);   % handle to class to keep measurements
     obj.hROI = core.RoiRegion(obj);         % handle to ROI class, core.RoiRegion
     
     % ---------- other properties ----------

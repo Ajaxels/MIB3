@@ -240,8 +240,6 @@ classdef CropDataset < handle
             obj.currentMode = 'Manual';
             obj.updateWidgets();
 
-            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
-
             % add handle tags to tooltips in developer mode
             if obj.mibModel.preferences.System.DeveloperMode
                 utils.overrideDescriptions(obj.view.handles, true, 'obj.view.handles');

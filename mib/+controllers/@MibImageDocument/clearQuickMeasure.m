@@ -25,6 +25,11 @@ if isfield(qm, 'savedKPF')
     obj.UIFigure.WindowKeyPressFcn = qm.savedKPF;
 end
 
+% Re-enable segmentation that was suppressed during measurement
+if isfield(qm, 'mibController') && ~isempty(qm.mibController) && isvalid(qm.mibController)
+    qm.mibController.mibModel.disableSegmentation = false;
+end
+
 if ~isempty(qm.textH) && isvalid(qm.textH); delete(qm.textH); end
 if ~isempty(qm.roi)   && isvalid(qm.roi);   delete(qm.roi);   end
 

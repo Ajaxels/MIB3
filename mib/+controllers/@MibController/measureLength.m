@@ -21,12 +21,12 @@ function measureLength(obj, type)
 
 switch type
     case 'tool'
-        obj.startController('mibMeasureToolController', obj);     % start the Measure Tool
-        obj.view.handles.panels.selection.handles.showAnnotations
+        obj.startController('controllers.MeasureTool', obj);     % start the Measure Tool
         obj.cSelection.handles.showAnnotations.Value = true;
         obj.mibModel.showAnnotations = true;
         return;
     case 'line'
+        obj.mibModel.disableSegmentation = true;
         cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
         % Only one measurement ROI per document at a time.
         % Placeholder set BEFORE drawline so a second button press while
@@ -37,6 +37,8 @@ switch type
         cImageDoc.UIFigure.WindowButtonDownFcn = [];
         roi = drawline(cImageDoc.handles.imViewAxes);
     case 'freehand'
+        obj.mibModel.disableSegmentation = true;
+
         cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
         if ~isempty(cImageDoc.quickMeasure); return; end
         cImageDoc.quickMeasure = struct('roi',[],'textH',[],'pending',true);
@@ -53,6 +55,7 @@ cImageDoc.UIFigure.WindowButtonDownFcn = savedWBDF;
 % points), drawline/drawfreehand returns an invalid handle — clean up and bail.
 if ~isvalid(roi)
     cImageDoc.quickMeasure = [];
+    obj.mibModel.disableSegmentation = false;
     return;
 end
 
@@ -71,6 +74,7 @@ cImageDoc.quickMeasure.textH = textH;
 cImageDoc.quickMeasure.datasetId = datasetId;
 cImageDoc.quickMeasure.lastPos = roi.Position;
 cImageDoc.quickMeasure.savedKPF = cImageDoc.UIFigure.WindowKeyPressFcn;
+cImageDoc.quickMeasure.mibController = obj;
 
 % Populate text label immediately
 cImageDoc.updateMeasureText(roi.Position);
@@ -188,7 +192,7 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
         options.OkBtnText      = 'OK';
         options.Icon           = 'puffin_measure';
         options.IconWidth      = 96;
-        options.WindowHeight   = 146;
+        options.WindowHeight   = 180;
         options.mibPath        = obj.mibPath;
         options.DoNotShowAgain = true;
         [~, ~, obj.mibModel.sessionSettings.DoNotShowDialogs.MeasureLength] = ...

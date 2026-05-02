@@ -112,8 +112,8 @@ if ~isempty(obj.I{fromId}.measure)
     newDataset.measure = copy(obj.I{fromId}.measure);
     % re-reference if the class holds a back-pointer (field names vary
     % between versions — use a defensive check)
-    if isprop(newDataset.measure, 'hImg')
-        newDataset.measure.hImg = newDataset;
+    if isprop(newDataset.measure, 'mibDataset')
+        newDataset.measure.mibDataset = newDataset;
     end
 end
 
