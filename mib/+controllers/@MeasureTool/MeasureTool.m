@@ -88,6 +88,18 @@ classdef MeasureTool < handle
                 @(source, event) controllers.MeasureTool.ViewListner_Callback2(obj, source, event));
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', ...
                 @(source, event) controllers.MeasureTool.ViewListner_Callback2(obj, source, event));
+            obj.listener{3} = addlistener(obj.mibModel, 'AddMeasurement', @(~, ~) obj.addMeasurement);
+
+            % initialise per-type annotation defaults on first launch; preserve on reopen
+            if ~isfield(obj.mibModel.sessionSettings, 'measureTool')
+                obj.mibModel.sessionSettings.measureTool.Angle.Info        = '';
+                obj.mibModel.sessionSettings.measureTool.Caliper.Info      = '';
+                obj.mibModel.sessionSettings.measureTool.Circle.Info       = '';
+                obj.mibModel.sessionSettings.measureTool.Distance.Info     = '';
+                obj.mibModel.sessionSettings.measureTool.DistancePoly.Info = '';
+                obj.mibModel.sessionSettings.measureTool.DistanceFree.Info = '';
+                obj.mibModel.sessionSettings.measureTool.Point.Info        = '';
+            end
 
             obj.updateWidgets();
 
@@ -114,9 +126,7 @@ classdef MeasureTool < handle
             %
 
             % safety: restore segmentation if it was left disabled
-            if obj.mibModel.disableSegmentation
-                obj.mibModel.disableSegmentation = 0;
-            end
+            if obj.mibModel.disableSegmentation; obj.mibModel.disableSegmentation = false; end
 
             for listenerIdx = 1:numel(obj.listener)
                 delete(obj.listener{listenerIdx});
@@ -131,27 +141,27 @@ classdef MeasureTool < handle
         end
 
         % --- split method signatures ---
-        addCallbacks(obj)
-        gui_Callbacks(obj, source, event)
-        updateWidgets(obj)
-        updateTable(obj)
-        addMeasurement(obj)
-        editMeasurement(obj, datasetId, measurementIndex, colCh, integrationWidth, finetuneCheck, calcIntensity, useFixedZT)
-        contextMenu(obj, parameter)
-        measureAngle(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
-        measureCaliper(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
-        measureCircle(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
-        measureDistance(obj, datasetId, colCh, ~, integrationWidth, calcIntensity, insertIndex)
-        measureDistancePoly(obj, datasetId, colCh, noPoints, ~, calcIntensity, insertIndex)
-        measureDistanceFree(obj, datasetId, colCh, ~, calcIntensity, insertIndex)
-        measurePoint(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
-        [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType)
-        generateKymograph(obj, datasetId, measurementIndex)
-        loadMeasurements(obj)
-        saveMeasurements(obj)
-        plotIntensityProfile(obj, rowIndex)
-        previewIntensityProfile(obj)
-        updatePlotSettings(obj)
+        % addCallbacks(obj)
+        % gui_Callbacks(obj, source, event)
+        % updateWidgets(obj)
+        % updateTable(obj)
+        % addMeasurement(obj)
+        % editMeasurement(obj, datasetId, measurementIndex, colCh, integrationWidth, finetuneCheck, calcIntensity, useFixedZT)
+        % contextMenu(obj, parameter)
+        % measureAngle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        % measureCaliper(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        % measureCircle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        % measureDistance(obj, datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, insertIndex)
+        % measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
+        % measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
+        % measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        % [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices)
+        % generateKymograph(obj, datasetId, measurementIndex)
+        % loadMeasurements(obj)
+        % saveMeasurements(obj)
+        % plotIntensityProfile(obj, rowIndex)
+        % previewIntensityProfile(obj)
+        % updatePlotSettings(obj)
 
     end  % methods
 

@@ -676,21 +676,12 @@ classdef CropDataset < handle
                 % --- Interactive mode: draw a rectangle on the image axes ---
                 % Resolve axes, cImageDoc and cRoi from mibController (split-panel safe).
                 % Falls back to obj.mibImageAxes when mibController is absent.
-                imViewAxes = [];
-                cImageDoc  = [];
-                cRoi       = [];
-                brushCursorState = [];
-                if ~isempty(obj.mibController) && isvalid(obj.mibController)
-                    selectedSet = obj.mibModel.Sets.selectedSet;
-                    cImageDoc = obj.mibController.cImageDoc{selectedSet};
-                    if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                        imViewAxes = cImageDoc.handles.imViewAxes;
-                    end
-                    cRoi = obj.mibController.cRoi;
-                end
-                if isempty(imViewAxes) && ~isempty(obj.mibImageAxes) && isgraphics(obj.mibImageAxes)
-                    imViewAxes = obj.mibImageAxes;
-                end
+                
+                selectedSet = obj.mibModel.Sets.selectedSet;
+                cImageDoc = obj.mibController.cImageDoc{selectedSet};
+                imViewAxes = cImageDoc.handles.imViewAxes;
+                cRoi = obj.mibController.cRoi;
+
                 if isempty(imViewAxes) || ~isgraphics(imViewAxes)
                     utils.dlgs.showErrorDialog(obj.view.gui, ...
                         sprintf('!!! Error !!!\n\nImage axes handle is not available.\nPlease use Manual or ROI mode instead.'), ...
@@ -700,12 +691,12 @@ classdef CropDataset < handle
 
                 % Prepare drawing state
                 obj.view.gui.Visible = 'off';
-                obj.mibModel.disableSegmentation = 1;
+                obj.mibModel.disableSegmentation = true;
+
                 if ~isempty(cImageDoc) && isvalid(cImageDoc)
-                    brushCursorState = obj.mibController.view.brushCursorShow;
-                    obj.mibController.view.brushCursorShow = false;
                     cImageDoc.UIFigure.Pointer = 'cross';
                 end
+
                 if ~isempty(cRoi)
                     cRoi.drawingROI.type          = 'Rectangle';
                     cRoi.drawingROI.dataPos       = [];
@@ -730,7 +721,9 @@ classdef CropDataset < handle
                             cRoi.drawingROI.active = true;
                         end
                         wait(roi);
-                        drawOk = isvalid(roi);
+                        % Escape clears roi.Position without deleting the object;
+                        % deletion (e.g. clicking X) makes isvalid false — check both.
+                        drawOk = isvalid(roi) && ~isempty(roi.Position);
                     end
                 catch
                 end
@@ -739,12 +732,12 @@ classdef CropDataset < handle
                 if ~isempty(movingLsn); delete(movingLsn); end
                 if ~isempty(movedLsn);  delete(movedLsn);  end
                 if ~isempty(cRoi); cRoi.drawingROI.active = false; end
-                obj.mibModel.disableSegmentation = 0;
+                obj.mibModel.disableSegmentation = false;
+
                 if ~isempty(cImageDoc) && isvalid(cImageDoc)
                     cImageDoc.UIFigure.Pointer = 'cross';
-                    obj.mibController.view.brushCursorShow = brushCursorState;
                 end
-                obj.view.gui.Visible = 'on';
+                obj.view.gui.Visible = true;
 
                 if ~drawOk
                     if ~isempty(roi) && isvalid(roi); delete(roi); end

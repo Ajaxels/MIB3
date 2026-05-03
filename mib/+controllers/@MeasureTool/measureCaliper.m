@@ -1,4 +1,4 @@
-function measureCaliper(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
+function annotationText = measureCaliper(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 % MEASURECALIPER - Interactive caliper (perpendicular-width) measurement.
 %
 % Syntax:
@@ -14,26 +14,27 @@ function measureCaliper(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, in
 % Input Arguments:
 %   - **datasetId** — [double] index into ``mibModel.I``
 %   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] reserved
+%   - **finetuneCheck** — [logical] when ``false`` accept each ROI immediately after placement (no double-click required)
 %   - **calcIntensity** — [logical] compute intensity profile along perpendicular
 %   - **showInfoDlg** — [logical] show annotation text dialog
 %   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
 %
 
 if nargin < 7; insertIndex = 0; end
+annotationText = '';
 
 hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 pixSize     = obj.mibModel.I{datasetId}.image.pixSize;
 
 % draw the baseline
-[lineX, lineY, wasCancelled] = obj.drawROI('line');
+[lineX, lineY, wasCancelled] = obj.drawROI('line', finetuneCheck);
 if wasCancelled || numel(lineX) < 2; return; end
 p1x = lineX(1); p1y = lineY(1);
 p2x = lineX(2); p2y = lineY(2);
 
 % draw the perpendicular point
-[ptX, ptY, wasCancelled] = obj.drawROI('point');
+[ptX, ptY, wasCancelled] = obj.drawROI('point', finetuneCheck);
 if wasCancelled || isempty(ptX); return; end
 p3x = ptX(1); p3y = ptY(1);
 
@@ -64,7 +65,7 @@ intensityMean = NaN;
 profileData   = NaN;
 if calcIntensity
     % profile along the perpendicular segment P3-P4
-    imageData   = obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId));
+    imageData   = cell2mat(obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId)));
     profileData = core.Measurements.computeProfile(imageData, [p3x, p4x], [p3y, p4y], pixSize, orientation);
     if size(profileData, 1) > 1
         intensityMean = mean(profileData(2:end, :), 2);
@@ -72,11 +73,9 @@ if calcIntensity
 end
 
 annotationText = '';
-if showInfoDlg
-    dlgAnswer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', {'Annotation:'}, {''}, ...
-        'Caliper annotation', struct());
-    if isempty(dlgAnswer); return; end
-    annotationText = dlgAnswer{1};
+if ischar(showInfoDlg)
+    annotationText = utils.dlgs.inputSingleDlg(obj.view.gui, 'Annotation:', showInfoDlg, 'Caliper annotation');
+    if isempty(annotationText); return; end
 end
 
 newData.n              = NaN;

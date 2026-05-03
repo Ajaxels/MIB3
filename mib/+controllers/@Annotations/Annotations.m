@@ -218,12 +218,9 @@ classdef Annotations < handle
             h = obj.view.handles;
 
             % Table
-            h.annotationTable.SelectionChangedFcn = ...
-                @(~, evt) obj.annotationTable_CellSelectionCallback(evt.Selection);
-            h.annotationTable.CellEditCallback = ...
-                @(~, evt) obj.annotationTable_CellEditCallback(evt.Indices);
-            h.annotationTable.KeyPressFcn = ...
-                @(~, evt) obj.annotationTable_KeyPressFcn(evt);
+            h.annotationTable.SelectionChangedFcn = @(~, evt) obj.annotationTable_CellSelectionCallback(evt.Selection);
+            h.annotationTable.CellEditCallback = @(~, evt) obj.annotationTable_CellEditCallback(evt.Indices);
+            h.annotationTable.KeyPressFcn = @(~, evt) obj.annotationTable_KeyPressFcn(evt);
             h.annotationTable.ColumnEditable = [true true true true true true];
 
             % Figure key press (for Ctrl+Z etc.)

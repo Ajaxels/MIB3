@@ -1,11 +1,11 @@
-function measureDistanceFree(obj, datasetId, colCh, ~, calcIntensity, insertIndex)
+function annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 % MEASUREDISTANCEFREE - Interactive freehand distance measurement.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity)
-%       obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
+%       obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg)
+%       obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 %
 % The user draws a freehand path.  The resulting dense vertex array is
 % downsampled using an evenly-spaced parameterisation, then the result is
@@ -15,24 +15,31 @@ function measureDistanceFree(obj, datasetId, colCh, ~, calcIntensity, insertInde
 % Input Arguments:
 %   - **datasetId** — [double] index into ``mibModel.I``
 %   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] reserved
+%   - **finetuneCheck** — [logical] when ``false`` accept the freehand path immediately after drawing (no double-click required)
 %   - **calcIntensity** — [logical] compute intensity profile along path
+%   - **showInfoDlg** — [logical] show annotation text dialog after drawing
 %   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
 %
 
-if nargin < 6; insertIndex = 0; end
+if nargin < 7; insertIndex = 0; end
+annotationText = '';
 
-noPoints = str2double(obj.view.handles.noPointsEdit.Value);
-fixPoints = obj.view.handles.fixNumberPoints.Value;
+autoPointSpacing = obj.view.handles.autoPointSpacing.Value;
 
-[rawX, rawY, wasCancelled] = obj.drawROI('freehand');
+[rawX, rawY, wasCancelled] = obj.drawROI('freehand', finetuneCheck);
 if wasCancelled || numel(rawX) < 2; return; end
 
 % determine how many knot points to keep
-if fixPoints && ~isnan(noPoints) && noPoints >= 2
-    targetPoints = round(noPoints);
+if autoPointSpacing && numel(rawX) > 2
+    targetPoints = max(2, round(numel(rawX) / 10));
 else
     targetPoints = max(2, round(numel(rawX) / 10));
+    defAns = struct('Value', targetPoints, 'Limits', [1 Inf], 'Step', 1, 'Round', true);
+    reductionFactor = utils.dlgs.inputSingleDlg(obj.view.gui, ...
+        sprintf('Captured points: %d\nEnter density reduction factor (1 = keep all):', numel(rawX)), ...
+        defAns, 'Freehand point density');
+    if isempty(reductionFactor); return; end
+    targetPoints = max(2, round(numel(rawX) / reductionFactor));
 end
 targetPoints = min(targetPoints, numel(rawX));
 
@@ -68,11 +75,17 @@ distanceValue = sum(hypot(diff(interpX) * pxX, diff(interpY) * pxY));
 intensityMean = NaN;
 profileData   = NaN;
 if calcIntensity
-    imageData   = obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId));
+    imageData   = cell2mat(obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId)));
     profileData = core.Measurements.computeProfile(imageData, interpX, interpY, pixSize, orientation);
     if size(profileData, 1) > 1
         intensityMean = mean(profileData(2:end, :), 2);
     end
+end
+
+annotationText = '';
+if ischar(showInfoDlg)
+    annotationText = utils.dlgs.inputSingleDlg(obj.view.gui, 'Annotation:', showInfoDlg, 'Freehand annotation');
+    if isempty(annotationText); return; end
 end
 
 newData.n              = NaN;
@@ -88,7 +101,7 @@ newData.circ           = [];
 newData.intensity      = intensityMean;
 newData.profile        = profileData;
 newData.integrateWidth = [];
-newData.info           = '';
+newData.info           = annotationText;
 newData.colCh          = colCh;
 
 if insertIndex > 0

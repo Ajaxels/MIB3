@@ -353,7 +353,7 @@ hFig = obj.UIFigure;
 axH = obj.handles.imViewAxes;
 
 % disable segmentation and set cursor
-obj.mibModel.disableSegmentation = 1;
+obj.mibModel.disableSegmentation = true;
 hFig.WindowButtonDownFcn = [];
 hFig.Pointer = 'cross';
 
@@ -370,14 +370,14 @@ try
     end
     wait(roi);
 catch
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
 end
 
 if ~isvalid(roi)
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
@@ -387,7 +387,7 @@ try
     selected_mask = uint8(createMask(roi, obj.imageHandle));
 catch
     delete(roi);
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
@@ -397,7 +397,7 @@ delete(roi);
 % restore callbacks and pointer
 hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
 hFig.Pointer = 'crosshair';
-obj.mibModel.disableSegmentation = 0;
+obj.mibModel.disableSegmentation = false;
 
 cancelled = false;
 end

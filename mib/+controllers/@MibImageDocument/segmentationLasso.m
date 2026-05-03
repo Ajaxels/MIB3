@@ -51,7 +51,7 @@ hFig = obj.UIFigure;
 axH = obj.handles.imViewAxes;
 
 % disable segmentation and change pointer for drawing
-obj.mibModel.disableSegmentation = 1;
+obj.mibModel.disableSegmentation = true;
 hFig.WindowButtonDownFcn = [];
 hFig.Pointer = 'cross';
 
@@ -72,7 +72,7 @@ try
     wait(roi);
 catch
     % user cancelled or error during drawing
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
@@ -80,7 +80,7 @@ end
 
 % check if ROI is valid (user may have pressed Escape)
 if ~isvalid(roi)
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
@@ -91,7 +91,7 @@ try
     selected_mask = uint8(createMask(roi, obj.imageHandle));
 catch
     delete(roi);
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
@@ -101,7 +101,7 @@ delete(roi);
 % restore callbacks and pointer
 hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
 hFig.Pointer = 'crosshair';
-obj.mibModel.disableSegmentation = 0;
+obj.mibModel.disableSegmentation = false;
 
 % resize the mask to match the actual data dimensions
 getDataOptions.blockModeSwitch = 1;

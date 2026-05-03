@@ -235,8 +235,8 @@ classdef Measurements < matlab.mixin.Copyable
             %     setDefaultOptions(obj);% call within the class
             %
 
-            obj.Options.marker       = 'o';
-            obj.Options.markersize   = '10';
+            obj.Options.marker       = '.';
+            obj.Options.markersize   = '12';
             obj.Options.linestyle    = '-';
             obj.Options.linewidth    = '1';
             obj.Options.color        = 'y';
@@ -519,14 +519,14 @@ classdef Measurements < matlab.mixin.Copyable
             indices = find(strcmp(infoValues, queryStr));
         end
 
-        function addMeasurementsToPlot(obj, axesHandle, ~, orientation, convertFcn, selectedIdx, showLabel)
+        function addMeasurementsToPlot(obj, axesHandle, mode, orientation, convertFcn, selectedIdx) %#ok<INUSL>
             % ADDMEASUREMENTSTOPLOT - Render measurement overlays on the given axes.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
             %       obj.addMeasurementsToPlot(axesHandle, mode, orientation, convertFcn)
-            %       obj.addMeasurementsToPlot(axesHandle, mode, orientation, convertFcn, selectedIdx, showLabel)
+            %       obj.addMeasurementsToPlot(axesHandle, mode, orientation, convertFcn, selectedIdx)
             %
             % Plots measurements visible on the current Z slice and time point.
             % Coordinate conversion is injected via ``convertFcn`` so the class
@@ -534,16 +534,16 @@ classdef Measurements < matlab.mixin.Copyable
             %
             % Input Arguments:
             %   - **axesHandle** — handle to the target axes.
-            %   - **mode** — [char] rendering mode (``'shown'`` or ``'full'``); passed
-            %     through for callers that need it, not used internally.
+            %   - **mode** — [char] rendering mode passed by the caller: ``'shown'``
+            %     for the standard block-mode viewport, ``'full'`` for the
+            %     full-resolution pan coordinate system.  Stored for future use;
+            %     the actual coordinate mapping is performed by ``convertFcn``.
             %   - **orientation** — [double] current orientation (3 = yx, 1 = zx, 2 = zy).
             %   - **convertFcn** — [function_handle] ``@(X,Y) ...`` that converts
             %     data coordinates to axes coordinates:
             %     ``[Xscreen, Yscreen] = convertFcn(Xdata, Ydata)``
             %   - **selectedIdx** — *(optional)* [double] ``0`` = all visible;
             %     ``>0`` = only that index.  Default ``0``.
-            %   - **showLabel** — *(optional)* [logical] show ``.info`` text label.
-            %     Default ``false``.
             %
             % Output Arguments:
             %
@@ -554,10 +554,9 @@ classdef Measurements < matlab.mixin.Copyable
             %
             %
             %     convertFcn = @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, 'shown');
-            %     ds.measurements.addMeasurementsToPlot(ax, 'shown', ds.orientation, convertFcn, 0, true);
+            %     ds.measurements.addMeasurementsToPlot(ax, 'shown', ds.orientation, convertFcn, 0);
             %
 
-            if nargin < 7; showLabel = false; end
             if nargin < 6; selectedIdx = 0; end
 
             if obj.getNumberOfMeasurements() == 0; return; end
@@ -638,7 +637,7 @@ classdef Measurements < matlab.mixin.Copyable
                             'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
                             'Marker', effectiveMarker, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
                             'Tag', 'measurements');
-                        if showLabel && options.showText
+                        if options.showText
                             text(screenX(end), screenY(end), ...
                                 sprintf('  %.4g', obj.Data(dataIdx).value), ...
                                 'Parent', axesHandle, ...
@@ -651,7 +650,7 @@ classdef Measurements < matlab.mixin.Copyable
                             'Color', color, 'LineStyle', 'none', ...
                             'Marker', effectiveMarker, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
                             'Tag', 'measurements');
-                        if showLabel && options.showText
+                        if options.showText
                             text(screenX(1), screenY(1), ...
                                 ['  ' labelText], ...
                                 'Parent', axesHandle, ...
@@ -664,7 +663,7 @@ classdef Measurements < matlab.mixin.Copyable
                             'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
                             'Marker', effectiveMarker, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
                             'Tag', 'measurements');
-                        if showLabel && options.showText && numel(screenX) >= 2
+                        if options.showText && numel(screenX) >= 2
                             vertexIdx = ceil(numel(screenX) / 2);
                             text(screenX(vertexIdx), screenY(vertexIdx), ...
                                 sprintf('  %.2f\xb0', obj.Data(dataIdx).value), ...
@@ -691,7 +690,7 @@ classdef Measurements < matlab.mixin.Copyable
                                 [centerScreenY - crossSize, centerScreenY + crossSize], ...
                                 'Color', color, 'LineStyle', '-', 'LineWidth', lineWidth, ...
                                 'Tag', 'measurements');
-                            if showLabel && options.showText
+                            if options.showText
                                 text(centerScreenX, centerScreenY, ...
                                     sprintf('  R=%.4g', obj.Data(dataIdx).value), ...
                                     'Parent', axesHandle, ...
@@ -701,20 +700,20 @@ classdef Measurements < matlab.mixin.Copyable
                         end
 
                     case 'Distance (polyline)'
+                        % screenX/screenY hold the dense interpolated path — draw that as the line
+                        plot(axesHandle, screenX, screenY, ...
+                            'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
+                            'Tag', 'measurements');
+                        % spline.x/y hold the original knot positions — show those as markers
                         splineData = obj.Data(dataIdx).spline;
-                        if ~isempty(splineData) && isfield(splineData, 'x')
-                            [splineScreenX, splineScreenY] = convertFcn(splineData.x, splineData.y);
-                            plot(axesHandle, splineScreenX, splineScreenY, ...
-                                'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
-                                'Tag', 'measurements');
-                        end
-                        if options.showMarkers
-                            plot(axesHandle, screenX, screenY, ...
+                        if options.showMarkers && ~isempty(splineData) && isfield(splineData, 'x')
+                            [knotScreenX, knotScreenY] = convertFcn(splineData.x, splineData.y);
+                            plot(axesHandle, knotScreenX, knotScreenY, ...
                                 'Color', color, 'LineStyle', 'none', ...
                                 'Marker', markerStyle, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
                                 'Tag', 'measurements');
                         end
-                        if showLabel && options.showText
+                        if options.showText
                             text(screenX(end), screenY(end), ...
                                 sprintf('  %.4g', obj.Data(dataIdx).value), ...
                                 'Parent', axesHandle, ...

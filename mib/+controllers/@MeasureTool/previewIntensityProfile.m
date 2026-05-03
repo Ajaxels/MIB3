@@ -24,42 +24,40 @@ if isempty(obj.indices) || hMeasure.getNumberOfMeasurements() == 0
     return;
 end
 
-% resolve table row → data index (same mapping as contextMenu)
-filterValue = obj.view.handles.filterPopup.Value;
-selectedTableRow = obj.indices(1, 1);
+% resolve table rows → data indices (same mapping as contextMenu)
+filterValue      = obj.view.handles.filterPopup.Value;
+selectedTableRows = unique(obj.indices(:, 1));
+
 if strcmp(filterValue, 'All')
-    dataIndex = selectedTableRow;
+    dataIndices = selectedTableRows;
 else
     typeFlags = strcmp({hMeasure.Data(1:hMeasure.getNumberOfMeasurements()).type}, filterValue);
     filteredIndices = find(typeFlags);
-    if selectedTableRow > numel(filteredIndices); cla(plotAxes); return; end
-    dataIndex = filteredIndices(selectedTableRow);
+    validMask   = selectedTableRows <= numel(filteredIndices);
+    dataIndices = filteredIndices(selectedTableRows(validMask));
 end
 
-if dataIndex > hMeasure.getNumberOfMeasurements(); cla(plotAxes); return; end
-
-profileData = hMeasure.Data(dataIndex).profile;
-if isequal(profileData, NaN) || isempty(profileData) || ~isnumeric(profileData)
+dataIndices = dataIndices(dataIndices <= hMeasure.getNumberOfMeasurements());
+if isempty(dataIndices)
     cla(plotAxes);
     return;
 end
 
 cla(plotAxes);
-distanceVec = profileData(1, :);
-nChannels   = size(profileData, 1) - 1;
-
 hold(plotAxes, 'on');
-for channelIdx = 1:nChannels
-    plot(plotAxes, distanceVec, profileData(channelIdx + 1, :));
+for selIdx = 1:numel(dataIndices)
+    profileData = hMeasure.Data(dataIndices(selIdx)).profile;
+    if isequal(profileData, NaN) || isempty(profileData) || ~isnumeric(profileData)
+        continue;
+    end
+    distanceVec = profileData(1, :);
+    nChannels   = size(profileData, 1) - 1;
+    for channelIdx = 1:nChannels
+        plot(plotAxes, distanceVec, profileData(channelIdx + 1, :));
+    end
 end
 hold(plotAxes, 'off');
 
 xlabel(plotAxes, 'Distance (px)');
 ylabel(plotAxes, 'Intensity');
-
-if obj.view.handles.autoJumpCheck.Value
-    obj.mibModel.I{datasetId}.slices{3} = repmat(hMeasure.Data(dataIndex).Z, 1, 2);
-    obj.mibModel.I{datasetId}.slices{5} = repmat(hMeasure.Data(dataIndex).T, 1, 2);
-    notify(obj.mibModel, 'SliceChanged');
-end
 end

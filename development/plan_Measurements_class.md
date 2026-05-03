@@ -4,11 +4,14 @@
 
 - `core.Measurements` — implemented 2026-05-02. All smoke tests pass, 0 static analysis issues.
 - `controllers.MeasureTool` — implemented 2026-05-02. 22 files, 0 static analysis issues.
+- `MibController` integration — completed 2026-05-03. `cMeasureTool` property added, `showImage` overlay scaffolding enabled, `mibModel.showAnnotations` flag wired.
+- Drawing-time pan/zoom repositioning — completed 2026-05-03. In-progress measurement ROIs follow the image during pan via the existing `MibRoi.drawingROI` infrastructure.
+- Live intensity-profile preview — completed 2026-05-03. `profileAxes` updates dynamically while drawing line/polyline/freehand measurements when `previewIntensityCheck` is on.
+- Brush-cursor hiding during measurement drawing — completed 2026-05-03. `MibModel.disableSegmentation` made `SetObservable`; `MibImageDocument` listens via `PostSet` and hides the brush cursor automatically (covers all callers, not just MeasureTool).
 
 ## Remaining Work
 
 - `views.MeasureToolGUI.mlapp` — user creates in App Designer with widget tags listed in the [MeasureTool Controller section](#measuretool-controller-file-layout).
-- `MibController` integration: add `cMeasureTool` property, instantiate from Measurements ribbon button, enable `addMeasurementsToPlot` scaffolding in `showImage` (~lines 235–240).
 
 ## Context
 
@@ -101,7 +104,7 @@ Result: `core.Measurements` is ~1135 LOC vs MIB2's 2412 LOC (the extra lines are
 
 `backup.m` and `undo.m` already use `obj.I{id}.measure.Data` — no changes needed because the new class exposes `Data` with the same semantics.
 
-`controllers.MibController.showImage` already has commented scaffolding (~lines 235-240) for `dataset.hMeasure.addMeasurementsToPlot(...)` — leave that commented for now; the future `MibMeasureToolController` and a new `mibShowAnnotationsCheck` MibModel state will wire it in. **Do not enable in this task** to avoid coupling to UI that doesn't exist yet.
+`controllers.MibController.showImage` scaffolding (~lines 235-241) is now **enabled** (2026-05-03). The render is gated on `obj.mibModel.showAnnotations && dataset.measure.getNumberOfMeasurements() > 0`. The `convertFcn` is built from `obj.mibModel.convertDataToMouseCoordinates(x, y, renderMode)` where `renderMode = 'shown'` for block-mode and `'full'` for full-resolution pan. The pre-existing `findobj(... 'tag', 'measurements', '-or', 'tag', 'roi'); delete(...)` at lines 117-122 of `showImage.m` clears stale overlays before the new render.
 
 ## Critical Files To Read Before Implementation
 
@@ -189,10 +192,30 @@ mib\+controllers\@MeasureTool\
 
 Static check 2026-05-02: **0 issues** on all 22 files.
 
-### Integration Points (Pending)
+### Integration Points (Completed 2026-05-03)
 
-| File | Change |
-|---|---|
-| `+controllers/@MibController/MibController.m` | Add `cMeasureTool` property |
-| Measurements ribbon button callback | `obj.cMeasureTool = controllers.MeasureTool(obj)` |
-| `+controllers/@MibController/showImage.m:235–240` | Enable commented `addMeasurementsToPlot` scaffolding |
+| File | Change | Status |
+|---|---|---|
+| `+controllers/@MibController/MibController.m` | Added `cMeasureTool` property (initialised `[]`) | ✓ |
+| Measurements ribbon button callback | `obj.cMeasureTool = controllers.MeasureTool(obj)` | ✓ |
+| `+controllers/@MibController/showImage.m:235-241` | `addMeasurementsToPlot` enabled, gated on `mibModel.showAnnotations` | ✓ |
+| `+controllers/@MibController/showImage.m:117-122` | Stale measurement overlays cleared before re-render | ✓ |
+| `+models/@MibModel/MibModel.m` | `disableSegmentation` moved into `properties (SetObservable)` block | ✓ |
+| `+controllers/@MibImageDocument/setupCallbacks.m` | `PostSet` listener on `disableSegmentation` → `updateBrushCursor()` | ✓ |
+| `+controllers/@MibImageDocument/updateBrushCursor.m` | `shouldShow` includes `&& ~obj.mibModel.disableSegmentation` | ✓ |
+| `+controllers/@MibImageDocument/gui_WindowButtonDownFcn.m` | Pan-start deletes both `'roi'` and `'measurements'` tagged overlays | ✓ |
+
+### Drawing-Time Features (Added 2026-05-03)
+
+**Pan/zoom repositioning during measurement drawing** — `MeasureTool/drawROI.m` registers the in-progress `images.roi.*` object into `obj.mibController.cRoi.drawingROI` (the same struct used by `MibRoi/addROI.m` and `roiModify.m`). The existing infrastructure handles the rest:
+
+- `MibRoi/repositionDrawingROI.m` runs from `MibController/showImage.m:248-250` after every redraw → re-maps `dataPos` → axes coords for zoom and pan-end
+- `MibImageDocument/gui_WindowButtonDownFcn.m:263-309` re-maps into the padded-image coordinate system at pan-start (gated on `disableSegmentation`)
+
+Type mapping in `drawROI.m`: `line`/`polyline`/`point` → `'Polyline'`, `freehand` → `'Lasso'`, `ellipse` → `'Ellipse'`. The `'otherwise'` (Polyline/Lasso) branch in the dispatch already does `roi.Position = [X(:), Y(:)]` which works correctly for line/polyline/freehand and for a 1-point Point ROI alike.
+
+**Live intensity-profile preview** — when `previewIntensityCheck.Value == 1` and `roiType` is `'line'` / `'polyline'` / `'freehand'`, `drawROI.m` caches the 2-D image once at entry (read with `getData2D` using the current `imageColChDropdown` channel) and refreshes `obj.view.handles.profileAxes` on every `MovingROI` / `ROIMoved` event via `core.Measurements.computeProfile`. Plot layout matches `previewIntensityProfile.m` for visual continuity. Degrades gracefully (preview disabled) when the image fetch fails or the type is non-profile.
+
+**Auto-jump on table row selection** — `MeasureTool/gui_Callbacks.m` `case 'measureTable'`: when `autoJumpCheck.Value` and a row is selected, calls `dataset.moveView(centerX, centerY)` then `notify('SliceChanged' / 'FrameChanged' / 'ShowImage')` to center the viewport on the measurement and switch Z/T as needed.
+
+**Auto-accept on `finetuneCheck = false`** — `drawROI.m` skips the `wait(roiObject)` call when `finetuneCheck` is false, so the measurement is committed as soon as `drawline` / `drawpoint` / `drawpolygon` etc. returns (no double-click required).

@@ -137,12 +137,12 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     xy2 = zeros([2,1]);  % converted coordinates
 
     if ~obj.mibController.fastPanningMode % full image / padded mode
-        % Delete ROI overlay objects — they use data coordinates that become
-        % invalid when the image is reloaded at a different scale;
+        % Delete ROI and measurement overlay objects — they use data coordinates
+        % that become invalid when the image is reloaded at a different scale;
         % showImage redraws them on release. Not needed in fast-pan mode
         % because the image CData/XData are unchanged there.
-        roiObjs = findobj(obj.handles.imViewAxes, 'tag', 'roi');
-        if ~isempty(roiObjs); delete(roiObjs); end
+        overlayObjs = findobj(obj.handles.imViewAxes, 'tag', 'roi', '-or', 'tag', 'measurements');
+        if ~isempty(overlayObjs); delete(overlayObjs); end
         switch dataset.orientation
             case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
             case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
@@ -260,7 +260,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     % Reposition drawing ROI into the pan coordinate system.
     % Cannot use convertDataToMouseCoordinates here because pan changes
     % the axes coordinate system away from what that function expects.
-    if ~obj.mibController.fastPanningMode && obj.mibModel.disableSegmentation == 1
+    if ~obj.mibController.fastPanningMode && obj.mibModel.disableSegmentation
         drawInfo = obj.mibController.cRoi.drawingROI;
         roiH = drawInfo.roi;
         dp   = drawInfo.dataPos;
@@ -319,7 +319,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
 elseif strcmp(operation, 'select')
     %% Start segmentation mode
     % skip all segmentation when ROI drawing is active (pan still works)
-    if obj.mibModel.disableSegmentation == 1; return; end
+    if obj.mibModel.disableSegmentation; return; end
 
     %y = round(xy(1,2));
     %x = round(xy(1,1));

@@ -74,6 +74,7 @@ obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(~,~) obj
 obj.listeners{end+1} = addlistener(obj.mibModel, 'ShowImage',         @(~,~) obj.updateMeasureText());
 obj.listeners{end+1} = addlistener(obj.mibModel, 'SliceChanged',      @(~,~) obj.listener_sliceChanged());
 obj.listeners{end+1} = addlistener(obj.mibModel, 'FrameChanged',      @(~,~) obj.listener_frameChanged());
+obj.listeners{end+1} = addlistener(obj.mibModel, 'disableSegmentation', 'PostSet', @(~,~) obj.updateBrushCursor());
 
 % obj.figureDoc.CanCloseFcn
 end

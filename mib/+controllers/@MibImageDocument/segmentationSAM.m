@@ -109,7 +109,7 @@ if strcmp(dataset.datasetType, 'Virtual')
 end
 
 % check for switch that disables segmentation tools
-if obj.mibModel.disableSegmentation == 1; return; end
+if obj.mibModel.disableSegmentation; return; end
 
 methodToUse = find(ismember(BatchOpt.Method{2}, BatchOpt.Method{1})); % 1, 2, 3: ['Interactive', 'Landmarks', 'Automatic everything']
 % create a new model. if needed

@@ -93,7 +93,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
 
     switch KeyShortcuts.Action{ActionId}
         case 'Add measurement (Measure tool)'   % add measurement, works with Measure Tool, default 'm'
-            notify(obj.mibModel, 'AddMeasurement', eventdata);
+            notify(obj.mibModel, 'AddMeasurement');
         case 'Switch dataset to XY orientation'         % default 'Alt + 1'
             if dataset.orientation == 3 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || strcmp(dataset.datasetType, 'Virtual'); return; end
             if dataset.orientation == 1

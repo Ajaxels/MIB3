@@ -23,7 +23,7 @@ nChannels = obj.mibModel.I{datasetId}.dim_yxzct(4);
 % Populate colour-channel dropdown
 channelItems = [{'All'}, arrayfun(@(channelIdx) sprintf('Ch %d', channelIdx), ...
     1:nChannels, 'UniformOutput', false)];
-obj.view.handles.imageColChPopup.Items = channelItems;
+obj.view.handles.imageColChDropdown.Items = channelItems;
 
 % Sync interpolation method dropdown
 if ismember(hMeasure.Options.splinemethod, obj.view.handles.interpolationModePopup.Items)

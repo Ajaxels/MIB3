@@ -45,7 +45,8 @@ if isempty(lineStyle); lineStyle = ':'; end
 % Use this document's local id — mibModel.id is stale in split view.
 localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
     (obj.setOfDatasetsIndex - 1) * obj.mibModel.Sets.datasetsInSet;
-shouldShow = obj.view.brushCursorShow && obj.isInsideImage && obj.mibModel.I{localId}.datasetType(1) ~= 'V';
+shouldShow = obj.view.brushCursorShow && obj.isInsideImage && ...
+    obj.mibModel.I{localId}.datasetType(1) ~= 'V' && ~obj.mibModel.disableSegmentation;
 
 if resetOffset; obj.brushCursorOffset = []; end
 

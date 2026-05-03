@@ -92,12 +92,11 @@ end
 cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
 axH       = cImageDoc.handles.imViewAxes;
 
-% hide brush cursor overlay and switch cursor for drawing
-if ~isempty(cImageDoc.brushCursor); cImageDoc.brushCursor.Visible = false; end
+% switch cursor for drawing
 cImageDoc.UIFigure.Pointer = 'cross';
 
 % disable segmentation callbacks (pan remains active via WindowButtonDownFcn)
-obj.mibModel.disableSegmentation = 1;
+obj.mibModel.disableSegmentation = true;
 
 try
     switch roiType
@@ -119,19 +118,17 @@ try
             roi = drawfreehand(axH, 'Closed', true);
     end
 catch ME
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     obj.drawingROI.active = false;
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     rethrow(ME);
 end
 
 % user cancelled (Escape before completing)
 if ~isvalid(roi)
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     obj.drawingROI.active = false;
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     return;
 end
 
@@ -185,21 +182,19 @@ try
 catch
     % ROI was deleted during wait
     delete(movingLsn); delete(movedLsn);
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     obj.drawingROI.active = false;
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     return;
 end
 
 % clean up listeners and drawing state
 delete(movingLsn); delete(movedLsn);
-obj.mibModel.disableSegmentation = 0;
+obj.mibModel.disableSegmentation = false;
 obj.drawingROI.active = false;
 
 if ~isvalid(roi)
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     return;
 end
 

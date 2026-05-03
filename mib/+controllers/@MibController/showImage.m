@@ -232,17 +232,13 @@ else
         end
     end
 
-    % %% Add measurements/annotations overlay
-    % if obj.mibModel.mibShowAnnotationsCheck
-    %     obj.mibView.handles.mibShowAnnotationsCheck.Value = 1;
-    %     dataset.hMeasure.addMeasurementsToPlot(...
-    %         obj.mibModel, 'shown', imViewAxes);
-    % end
-
-    %% Update display
-    %if ~verLessThan('matlab', '9.7')
-    %    drawnow nocallbacks limitrate;
-    %end
+    %% Add measurements overlay
+    if obj.mibModel.showAnnotations && dataset.measure.getNumberOfMeasurements() > 0
+        renderMode = 'shown';
+        if ~resizeToMagnification; renderMode = 'full'; end
+        convertFcn = @(x,y) obj.mibModel.convertDataToMouseCoordinates(x, y, renderMode);
+        dataset.measure.addMeasurementsToPlot(imViewAxes, renderMode, dataset.orientation, convertFcn);
+    end
 end
 
 %% Update cursor size

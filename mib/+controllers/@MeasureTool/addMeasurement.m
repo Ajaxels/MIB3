@@ -16,45 +16,77 @@ function addMeasurement(obj)
 
 datasetId = obj.mibModel.getActiveId();
 obj.mibModel.backup('measurements');
-obj.mibModel.disableSegmentation = 1;
+obj.mibModel.disableSegmentation = true;
 
 try
     % read options from view
-    colChItems    = obj.view.handles.imageColChPopup.Items;
-    colChSelected = obj.view.handles.imageColChPopup.Value;
-    colChIndex    = find(strcmp(colChItems, colChSelected), 1);
-    colCh         = colChIndex - 1;   % 0 = all channels; 1+ = specific channel
-
+    colCh         = obj.view.handles.imageColChDropdown.ValueIndex - 1;   % 0 = all channels; 1+ = specific channel
     finetuneCheck    = obj.view.handles.finetuneCheck.Value;
     calcIntensity    = obj.view.handles.calcIntensityCheck.Value;
     showInfoDlg      = obj.view.handles.showEditInfoDlg.Value;
     integrationWidth = str2double(obj.view.handles.integrationWidth.Value);
-    noPoints         = str2double(obj.view.handles.noPointsEdit.Value);
-    measureType      = obj.view.handles.measureTypePopup.Value;
+    measureType      = obj.view.handles.measureTypeDropdown.Value;
+
+    measureSettings = obj.mibModel.sessionSettings.measureTool;
 
     switch measureType
         case 'Angle'
-            obj.measureAngle(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.Angle.Info; end
+            infoText = obj.measureAngle(datasetId, colCh, finetuneCheck, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.Angle.Info = infoText;
+            end
         case 'Caliper'
-            obj.measureCaliper(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.Caliper.Info; end
+            infoText = obj.measureCaliper(datasetId, colCh, finetuneCheck, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.Caliper.Info = infoText;
+            end
         case 'Circle (R)'
-            obj.measureCircle(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.Circle.Info; end
+            infoText = obj.measureCircle(datasetId, colCh, finetuneCheck, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.Circle.Info = infoText;
+            end
         case 'Distance (linear)'
-            obj.measureDistance(datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.Distance.Info; end
+            infoText = obj.measureDistance(datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.Distance.Info = infoText;
+            end
         case 'Distance (polyline)'
-            obj.measureDistancePoly(datasetId, colCh, noPoints, finetuneCheck, calcIntensity);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.DistancePoly.Info; end
+            infoText = obj.measureDistancePoly(datasetId, colCh, finetuneCheck, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.DistancePoly.Info = infoText;
+            end
         case 'Distance (freehand)'
-            obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.DistanceFree.Info; end
+            infoText = obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.DistanceFree.Info = infoText;
+            end
         case 'Point'
-            obj.measurePoint(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg);
+            infoDefault = false;
+            if showInfoDlg; infoDefault = measureSettings.Point.Info; end
+            infoText = obj.measurePoint(datasetId, colCh, finetuneCheck, calcIntensity, infoDefault);
+            if showInfoDlg && ischar(infoText)
+                obj.mibModel.sessionSettings.measureTool.Point.Info = infoText;
+            end
     end
 catch measureError
     if ~strcmp(measureError.identifier, 'MeasureTool:Cancelled')
-        utils.dlgs.showErrorDialog(obj.view.gui, measureError.message, 'Measurement error');
+        utils.dlgs.showErrorDialog(obj.view.gui, measureError, 'MeasureTool.addMeasurement: Measurement error');
     end
 end
 
-obj.mibModel.disableSegmentation = 0;
+obj.mibModel.disableSegmentation = false;
 obj.updateTable();
 notify(obj.mibModel, 'ShowImage');
 end

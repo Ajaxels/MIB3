@@ -44,8 +44,8 @@ end
 if dataIndex > hMeasure.getNumberOfMeasurements(); return; end
 
 % resolve colour channel from popup
-colChItems    = obj.view.handles.imageColChPopup.Items;
-colChSelected = obj.view.handles.imageColChPopup.Value;
+colChItems    = obj.view.handles.imageColChDropdown.Items;
+colChSelected = obj.view.handles.imageColChDropdown.Value;
 colChIndex    = find(strcmp(colChItems, colChSelected), 1);
 colCh         = colChIndex - 1;
 

@@ -1,4 +1,4 @@
-function measurePoint(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
+function annotationText = measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 % MEASUREPOINT - Interactive single-point measurement.
 %
 % Syntax:
@@ -13,18 +13,19 @@ function measurePoint(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, inse
 % Input Arguments:
 %   - **datasetId** — [double] index into ``mibModel.I``
 %   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] reserved
+%   - **finetuneCheck** — [logical] when ``false`` accept the point immediately after placement (no double-click required)
 %   - **calcIntensity** — [logical] read pixel intensity at the point
 %   - **showInfoDlg** — [logical] show annotation text dialog
 %   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
 %
 
 if nargin < 7; insertIndex = 0; end
+annotationText = '';
 
 hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 
-[X, Y, wasCancelled] = obj.drawROI('point');
+[X, Y, wasCancelled] = obj.drawROI('point', finetuneCheck);
 if wasCancelled || isempty(X); return; end
 pointX = X(1); pointY = Y(1);
 
@@ -40,11 +41,9 @@ if calcIntensity
 end
 
 annotationText = '';
-if showInfoDlg
-    dlgAnswer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', {'Annotation:'}, {''}, ...
-        'Point annotation', struct());
-    if isempty(dlgAnswer); return; end
-    annotationText = dlgAnswer{1};
+if ischar(showInfoDlg)
+    annotationText = utils.dlgs.inputSingleDlg(obj.view.gui, 'Annotation:', showInfoDlg, 'Point annotation');
+    if isempty(annotationText); return; end
 end
 
 newData.n              = NaN;

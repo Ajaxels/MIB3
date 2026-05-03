@@ -38,7 +38,7 @@ if useFixedZT
 end
 
 obj.mibModel.backup('measurements');
-obj.mibModel.disableSegmentation = 1;
+obj.mibModel.disableSegmentation = true;
 
 try
     switch measureType
@@ -49,19 +49,18 @@ try
         case 'Circle (R)'
             obj.measureCircle(datasetId, colCh, finetuneCheck, calcIntensity, false, measurementIndex);
         case 'Distance (linear)'
-            obj.measureDistance(datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, measurementIndex);
+            obj.measureDistance(datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, false, measurementIndex);
         case 'Distance (polyline)'
-            noPoints = str2double(obj.view.handles.noPointsEdit.Value);
-            obj.measureDistancePoly(datasetId, colCh, noPoints, finetuneCheck, calcIntensity, measurementIndex);
+            obj.measureDistancePoly(datasetId, colCh, finetuneCheck, calcIntensity, false, measurementIndex);
         case 'Distance (freehand)'
-            obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity, measurementIndex);
+            obj.measureDistanceFree(datasetId, colCh, finetuneCheck, calcIntensity, false, measurementIndex);
         case 'Point'
             obj.measurePoint(datasetId, colCh, finetuneCheck, calcIntensity, false, measurementIndex);
     end
 catch
 end
 
-obj.mibModel.disableSegmentation = 0;
+obj.mibModel.disableSegmentation = false;
 obj.updateTable();
 notify(obj.mibModel, 'ShowImage');
 end

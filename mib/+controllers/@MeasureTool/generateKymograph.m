@@ -27,8 +27,8 @@ if ~ismember(measureType, {'Distance (linear)', 'Distance (polyline)', 'Caliper'
 end
 
 % resolve colour channel
-colChItems    = obj.view.handles.imageColChPopup.Items;
-colChSelected = obj.view.handles.imageColChPopup.Value;
+colChItems    = obj.view.handles.imageColChDropdown.Items;
+colChSelected = obj.view.handles.imageColChDropdown.Value;
 colChIndex    = find(strcmp(colChItems, colChSelected), 1);
 colCh         = colChIndex - 1;
 

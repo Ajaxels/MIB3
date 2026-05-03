@@ -1,4 +1,4 @@
-function measureCircle(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, insertIndex)
+function annotationText = measureCircle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 % MEASURECIRCLE - Interactive circle-fit measurement via an ellipse ROI.
 %
 % Syntax:
@@ -14,19 +14,20 @@ function measureCircle(obj, datasetId, colCh, ~, calcIntensity, showInfoDlg, ins
 % Input Arguments:
 %   - **datasetId** — [double] index into ``mibModel.I``
 %   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **finetuneCheck** — [logical] reserved
+%   - **finetuneCheck** — [logical] when ``false`` accept the ellipse immediately after placement (no double-click required)
 %   - **calcIntensity** — [logical] compute radial intensity profile
 %   - **showInfoDlg** — [logical] show annotation text dialog
 %   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
 %
 
 if nargin < 7; insertIndex = 0; end
+annotationText = '';
 
 hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 pixSize     = obj.mibModel.I{datasetId}.image.pixSize;
 
-[vertX, vertY, wasCancelled] = obj.drawROI('ellipse');
+[vertX, vertY, wasCancelled] = obj.drawROI('ellipse', finetuneCheck);
 if wasCancelled || numel(vertX) < 3; return; end
 
 circ = core.Measurements.computeCircleFit(vertX, vertY);
@@ -48,7 +49,7 @@ intensityMean = NaN;
 profileData   = NaN;
 if calcIntensity
     % profile along the circle boundary
-    imageData   = obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId));
+    imageData   = cell2mat(obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId)));
     profileData = core.Measurements.computeProfile(imageData, circX, circY, pixSize, orientation);
     if size(profileData, 1) > 1
         intensityMean = mean(profileData(2:end, :), 2);
@@ -56,11 +57,9 @@ if calcIntensity
 end
 
 annotationText = '';
-if showInfoDlg
-    dlgAnswer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', {'Annotation:'}, {''}, ...
-        'Circle annotation', struct());
-    if isempty(dlgAnswer); return; end
-    annotationText = dlgAnswer{1};
+if ischar(showInfoDlg)
+    annotationText = utils.dlgs.inputSingleDlg(obj.view.gui, 'Annotation:', showInfoDlg, 'Circle annotation');
+    if isempty(annotationText); return; end
 end
 
 newData.n              = NaN;

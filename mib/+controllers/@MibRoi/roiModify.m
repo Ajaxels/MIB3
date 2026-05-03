@@ -79,9 +79,8 @@ Y = roiData.Y;
 cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
 axH = cImageDoc.handles.imViewAxes;
 
-if ~isempty(cImageDoc.brushCursor); cImageDoc.brushCursor.Visible = false; end
 cImageDoc.UIFigure.Pointer = 'cross';
-obj.mibModel.disableSegmentation = 1;
+obj.mibModel.disableSegmentation = true;
 
 try
     switch drawType
@@ -99,18 +98,16 @@ try
             roi = drawpolygon(axH, 'Position', [XAxes(:), YAxes(:)]);
     end
 catch ME
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     obj.drawingROI.active = false;
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     rethrow(ME);
 end
 
 if ~isvalid(roi)
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     obj.drawingROI.active = false;
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     return;
 end
 
@@ -120,6 +117,7 @@ obj.drawingROI.type          = drawType;
 obj.drawingROI.dataPos       = [];
 obj.drawingROI.repositioning = false;
 obj.drawingROI.active        = true;
+
 
     function captureDataPos()
         if ~isvalid(roi) || obj.drawingROI.repositioning; return; end
@@ -154,20 +152,18 @@ try
     wait(roi);
 catch
     delete(movingLsn); delete(movedLsn);
-    obj.mibModel.disableSegmentation = 0;
+    obj.mibModel.disableSegmentation = false;
     obj.drawingROI.active = false;
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     return;
 end
 
 delete(movingLsn); delete(movedLsn);
-obj.mibModel.disableSegmentation = 0;
+obj.mibModel.disableSegmentation = false;
 obj.drawingROI.active = false;
 
 if ~isvalid(roi)
     cImageDoc.UIFigure.Pointer = 'cross';
-    cImageDoc.updateBrushCursor();
     return;
 end
 

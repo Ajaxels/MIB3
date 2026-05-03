@@ -19,21 +19,32 @@ viewGui = obj.view.gui;
 viewGui.CloseRequestFcn = @(~,~) obj.closeWindow();
 
 h = obj.view.handles;
-h.addBtn.ButtonPushedFcn              = @obj.gui_Callbacks;
-h.closeBtn.ButtonPushedFcn            = @obj.gui_Callbacks;
-h.deleteAllBtn.ButtonPushedFcn        = @obj.gui_Callbacks;
-h.optionsBtn.ButtonPushedFcn          = @obj.gui_Callbacks;
-h.loadBtn.ButtonPushedFcn             = @obj.gui_Callbacks;
-h.saveBtn.ButtonPushedFcn             = @obj.gui_Callbacks;
-h.refreshTableBtn.ButtonPushedFcn     = @obj.gui_Callbacks;
-h.helpBtn.ButtonPushedFcn             = @obj.gui_Callbacks;
-h.updateVoxelsButton.ButtonPushedFcn  = @obj.gui_Callbacks;
-h.measureTable.CellSelectionCallback  = @obj.gui_Callbacks;
-h.filterPopup.ValueChangedFcn         = @obj.gui_Callbacks;
-h.interpolationModePopup.ValueChangedFcn           = @obj.gui_Callbacks;
+% Measure panel callbacks
+h.measureTypeDropdown.ValueChangedFcn = @obj.gui_Callbacks;
+h.integrateCheck.ValueChangedFcn      = @obj.gui_Callbacks;
+h.interpolationModePopup.ValueChangedFcn  = @obj.gui_Callbacks;
+
+% Plot panel
 h.markersCheck.ValueChangedFcn        = @obj.gui_Callbacks;
 h.linesCheck.ValueChangedFcn          = @obj.gui_Callbacks;
 h.textCheck.ValueChangedFcn           = @obj.gui_Callbacks;
+h.optionsBtn.ButtonPushedFcn          = @obj.gui_Callbacks;
+
+% Voxel size panel
+h.updateVoxelsButton.ButtonPushedFcn  = @obj.gui_Callbacks;
+
+% Measurements panel
+h.filterPopup.ValueChangedFcn         = @obj.gui_Callbacks;
+h.refreshTableBtn.ButtonPushedFcn     = @obj.gui_Callbacks;
+h.measureTable.CellSelectionCallback  = @obj.gui_Callbacks;
+
+% Bottom buttons
+h.loadBtn.ButtonPushedFcn             = @obj.gui_Callbacks;
+h.saveBtn.ButtonPushedFcn             = @obj.gui_Callbacks;
+h.deleteAllBtn.ButtonPushedFcn        = @obj.gui_Callbacks;
+h.helpBtn.ButtonPushedFcn             = @obj.gui_Callbacks;
+h.addBtn.ButtonPushedFcn              = @obj.gui_Callbacks;
+h.closeBtn.ButtonPushedFcn            = @obj.gui_Callbacks;
 
 % Context menu attached to measureTable
 contextMenuHandle = uicontextmenu(viewGui);

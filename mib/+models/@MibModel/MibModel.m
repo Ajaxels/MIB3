@@ -71,9 +71,6 @@ classdef MibModel < handle
         % variable for Undo history, instance of core.MibBackup
         useBioFormats = false;
         % use bio-formats reader
-        disableSegmentation = 0;
-        % when 1, segmentation tool callbacks return early (pan still works);
-        % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
         linkedPairs = zeros(0,2)
         % n×2 double array of global dataset ID pairs that are linked for view synchronisation;
         % each row [idA, idB] means dataset idA and idB always show the same position.
@@ -81,6 +78,12 @@ classdef MibModel < handle
         % Queried by MibController.showImage for live propagation.
         connImaris = []
         % handle to an active IceImarisConnector connection; [] when not connected
+    end
+
+    properties (SetObservable)
+        disableSegmentation = false;
+        % when 1, segmentation tool callbacks return early (pan still works);
+        % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
     end
 
     events

@@ -1,11 +1,11 @@
-function measureDistancePoly(obj, datasetId, colCh, noPoints, ~, calcIntensity, insertIndex)
+function annotationText = measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 % MEASUREDISTANCEPOLY - Interactive polyline distance measurement.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.measureDistancePoly(datasetId, colCh, noPoints, finetuneCheck, calcIntensity)
-%       obj.measureDistancePoly(datasetId, colCh, noPoints, finetuneCheck, calcIntensity, insertIndex)
+%       obj.measureDistancePoly(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg)
+%       obj.measureDistancePoly(datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
 %
 % The user draws an open polygon.  The vertices are interpolated with the
 % spline method selected in ``interpolationModePopup`` and the cumulative arc-length is
@@ -16,20 +16,21 @@ function measureDistancePoly(obj, datasetId, colCh, noPoints, ~, calcIntensity, 
 % Input Arguments:
 %   - **datasetId** — [double] index into ``mibModel.I``
 %   - **colCh** — [double] colour channel (0 = all, 1+ = specific)
-%   - **noPoints** — [double] target number of interpolated points (NaN = auto)
-%   - **finetuneCheck** — [logical] reserved
+%   - **finetuneCheck** — [logical] when ``false`` accept the polyline immediately after placement (no double-click required)
 %   - **calcIntensity** — [logical] compute intensity profile along path
+%   - **showInfoDlg** — [logical] show annotation text dialog after drawing
 %   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
 %
 
 if nargin < 7; insertIndex = 0; end
+annotationText = '';
 
 hMeasure        = obj.mibModel.I{datasetId}.measure;
 orientation     = obj.mibModel.I{datasetId}.orientation;
 pixSize         = obj.mibModel.I{datasetId}.image.pixSize;
 splineMethod    = hMeasure.Options.splinemethod;
 
-[knotX, knotY, wasCancelled] = obj.drawROI('polyline');
+[knotX, knotY, wasCancelled] = obj.drawROI('polyline', finetuneCheck);
 if wasCancelled || numel(knotX) < 2; return; end
 
 % cumulative arc-length parameterisation of the knots
@@ -38,11 +39,12 @@ totalArc = arcCum(end);
 if totalArc < eps; return; end
 
 % number of interpolated samples
-if isnan(noPoints) || noPoints < 2
-    interpolatedPointCount = max(2, round(totalArc));
-else
-    interpolatedPointCount = round(noPoints);
-end
+% if isnan(noPoints) || noPoints < 2
+%     interpolatedPointCount = max(2, round(totalArc));
+% else
+%     interpolatedPointCount = round(noPoints);
+% end
+interpolatedPointCount = numel(knotX);
 denseArc = linspace(0, totalArc, interpolatedPointCount);
 
 % interpolate path
@@ -60,11 +62,17 @@ distanceValue = sum(hypot(diff(interpX) * pxX, diff(interpY) * pxY));
 intensityMean = NaN;
 profileData   = NaN;
 if calcIntensity
-    imageData   = obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId));
+    imageData   = cell2mat(obj.mibModel.getData2D('image', [], [], colCh, struct('id', datasetId)));
     profileData = core.Measurements.computeProfile(imageData, interpX, interpY, pixSize, orientation);
     if size(profileData, 1) > 1
         intensityMean = mean(profileData(2:end, :), 2);
     end
+end
+
+annotationText = '';
+if ischar(showInfoDlg)
+    annotationText = utils.dlgs.inputSingleDlg(obj.view.gui, 'Annotation:', showInfoDlg, 'Polyline annotation');
+    if isempty(annotationText); return; end
 end
 
 newData.n              = NaN;
@@ -80,7 +88,7 @@ newData.circ           = [];
 newData.intensity      = intensityMean;
 newData.profile        = profileData;
 newData.integrateWidth = [];
-newData.info           = '';
+newData.info           = annotationText;
 newData.colCh          = colCh;
 
 if insertIndex > 0
