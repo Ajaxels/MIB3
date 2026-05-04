@@ -1,4 +1,4 @@
-function [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices)
+function [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices, initialDataPos)
 % DRAWROI - Interactively draw a ROI on the image axes and return pixel coords.
 %
 % Syntax:
@@ -45,8 +45,9 @@ function [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, m
 %     if cancelled; return; end
 %
 
-if nargin < 3; finetuneCheck = true; end
-if nargin < 4; maxVertices = Inf; end
+if nargin < 3 || isempty(finetuneCheck);  finetuneCheck  = true; end
+if nargin < 4 || isempty(maxVertices);   maxVertices    = Inf;  end
+if nargin < 5;                           initialDataPos = [];   end
 
 pixelX      = [];
 pixelY      = [];
@@ -56,31 +57,72 @@ cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
 axesHandle = cImageDoc.handles.imViewAxes;
 
 % hide brush cursor and set cross cursor during draw
-if ~isempty(cImageDoc.brushCursor)
+if ~isempty(cImageDoc.brushCursor) && isvalid(cImageDoc.brushCursor)
     cImageDoc.brushCursor.Visible = false;
 end
 cImageDoc.UIFigure.Pointer = 'cross';
 
 try
-    switch roiType
-        case 'line'
-            roiObject = drawline(axesHandle);
-        case 'polyline'
-            if isfinite(maxVertices)
-                roiObject = drawpolygon(axesHandle, 'MaxVertices', maxVertices);
-            else
+    if isempty(initialDataPos)
+        switch roiType
+            case 'line'
+                roiObject = drawline(axesHandle);
+            case 'polyline'
                 roiObject = drawpolyline(axesHandle);
-            end
-        case 'ellipse'
-            roiObject = drawellipse(axesHandle, 'FixedAspectRatio', true, 'AspectRatio', 1);
-        case 'point'
-            roiObject = drawpoint(axesHandle);
-        case 'freehand'
-            roiObject = drawfreehand(axesHandle, 'Closed', false);
-        otherwise
+            case 'ellipse'
+                roiObject = drawellipse(axesHandle, 'FixedAspectRatio', true, 'AspectRatio', 1);
+            case 'point'
+                roiObject = drawpoint(axesHandle);
+            case 'freehand'
+                roiObject = drawfreehand(axesHandle, 'Closed', false);
+            otherwise
+                cImageDoc.UIFigure.Pointer = 'cross';
+                cImageDoc.updateBrushCursor();
+                return;
+        end
+    else
+        if ~finetuneCheck
+            % Recalculate mode: return stored pixel coordinates directly — no drawing.
+            % The caller recomputes the measurement value with the current pixSize.
+            pixelX       = initialDataPos(:, 1);
+            pixelY       = initialDataPos(:, 2);
+            wasCancelled = false;
             cImageDoc.UIFigure.Pointer = 'cross';
             cImageDoc.updateBrushCursor();
             return;
+        end
+        % Edit mode — create pre-positioned ROI and wait for user confirmation
+        switch roiType
+            case {'line', 'polyline', 'freehand', 'point'}
+                [screenX, screenY] = obj.mibModel.convertDataToMouseCoordinates( ...
+                    initialDataPos(:,1), initialDataPos(:,2), 'shown');
+                screenPos = [screenX(:), screenY(:)];
+        end
+        switch roiType
+            case 'line'
+                roiObject = images.roi.Line(axesHandle, 'Position', screenPos);
+            case 'polyline'
+                roiObject = images.roi.Polyline(axesHandle, 'Position', screenPos);
+            case 'point'
+                roiObject = images.roi.Point(axesHandle, 'Position', screenPos(1,:));
+            case 'freehand'
+                roiObject = images.roi.Freehand(axesHandle, 'Position', screenPos, 'Closed', false);
+            case 'ellipse'
+                % initialDataPos = [cx, cy, sax, say] in data pixel space
+                [scx, scy] = obj.mibModel.convertDataToMouseCoordinates( ...
+                    initialDataPos(1), initialDataPos(2), 'shown');
+                [sex, ~]   = obj.mibModel.convertDataToMouseCoordinates( ...
+                    initialDataPos(1)+initialDataPos(3), initialDataPos(2), 'shown');
+                [~,   sey] = obj.mibModel.convertDataToMouseCoordinates( ...
+                    initialDataPos(1), initialDataPos(2)+initialDataPos(4), 'shown');
+                roiObject  = drawellipse(axesHandle, ...
+                    'Center', [scx, scy], 'SemiAxes', [sex-scx, sey-scy], ...
+                    'FixedAspectRatio', true, 'AspectRatio', 1);
+            otherwise
+                cImageDoc.UIFigure.Pointer = 'cross';
+                cImageDoc.updateBrushCursor();
+                return;
+        end
     end
 catch err
     cImageDoc.UIFigure.Pointer = 'cross';
@@ -137,11 +179,13 @@ onRoiUpdate();
 
 % when fine-tune is on, wait for the user to double-click to confirm;
 % when off, drawline already returned after placing all points so no wait needed.
-% when maxVertices is finite, poll until that many vertices are placed instead
-% of calling wait() (MATLAB ROI objects have no MaxVertices property).
+% when maxVertices is finite and we are drawing from scratch, poll until that
+% many vertices are placed (MATLAB ROI objects have no MaxVertices property).
+% When editing a pre-positioned ROI the target vertex count is already met, so
+% always use wait() to let the user adjust handles and double-click to confirm.
 if finetuneCheck
     try
-        if isfinite(maxVertices)
+        if isfinite(maxVertices) && isempty(initialDataPos)
             while isvalid(roiObject) && size(roiObject.Position, 1) < maxVertices
                 drawnow;
                 pause(0.05);

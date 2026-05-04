@@ -27,7 +27,22 @@ hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 pixSize     = obj.mibModel.I{datasetId}.image.pixSize;
 
-[vertX, vertY, wasCancelled] = obj.drawROI('ellipse', finetuneCheck);
+initialPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData = hMeasure.Data(insertIndex);
+    if ~isempty(oldData.circ) && isfield(oldData.circ, 'xc')
+        if finetuneCheck
+            % Edit mode: show existing circle as a draggable ellipse ROI.
+            % initialDataPos = [cx, cy, sax, say] in data pixel space.
+            initialPos = [oldData.circ.xc, oldData.circ.yc, oldData.circ.R, oldData.circ.R];
+        else
+            % Recalculate mode: return stored boundary arc so computeCircleFit
+            % refits the same circle geometry with the updated pixSize.
+            initialPos = [oldData.X(:), oldData.Y(:)];
+        end
+    end
+end
+[vertX, vertY, wasCancelled] = obj.drawROI('ellipse', finetuneCheck, [], initialPos);
 if wasCancelled || numel(vertX) < 3; return; end
 
 circ = core.Measurements.computeCircleFit(vertX, vertY);

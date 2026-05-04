@@ -32,10 +32,16 @@ plotAxes     = axes(figHandle);
 distanceVec  = profileData(1, :);
 nChannels    = size(profileData, 1) - 1;
 
+singleSample = numel(distanceVec) == 1;
 hold(plotAxes, 'on');
 for channelIdx = 1:nChannels
-    plot(plotAxes, distanceVec, profileData(channelIdx + 1, :), ...
-        'DisplayName', sprintf('Ch %d', channelIdx));
+    if singleSample
+        plot(plotAxes, distanceVec, profileData(channelIdx + 1, :), 'o', ...
+            'DisplayName', sprintf('Ch %d', channelIdx));
+    else
+        plot(plotAxes, distanceVec, profileData(channelIdx + 1, :), ...
+            'DisplayName', sprintf('Ch %d', channelIdx));
+    end
 end
 hold(plotAxes, 'off');
 

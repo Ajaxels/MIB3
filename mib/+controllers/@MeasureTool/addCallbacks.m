@@ -53,7 +53,7 @@ uimenu(contextMenuHandle, 'Text', 'Jump to measurement', 'MenuSelectedFcn', @(~,
 uimenu(contextMenuHandle, 'Text', 'Modify measurement...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Modify'));
 uimenu(contextMenuHandle, 'Text', 'Recalculate selected...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Recalculate'));
 uimenu(contextMenuHandle, 'Text', 'Duplicate measurement', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Duplicate'));
-uimenu(contextMenuHandle, 'Text', 'Generate kymograph...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Kymograph'), 'Separator','on');
+uimenu(contextMenuHandle, 'Text', 'Generate kymograph (line, polyline)', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Kymograph'), 'Separator','on');
 uimenu(contextMenuHandle, 'Text', 'Plot intensity profile...', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Plot'));
 uimenu(contextMenuHandle, 'Text', 'Delete measurement', 'MenuSelectedFcn', @(~,~) obj.contextMenu('Delete'), 'Separator','on');
 h.measureTable.ContextMenu = contextMenuHandle;

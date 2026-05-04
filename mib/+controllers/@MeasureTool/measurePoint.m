@@ -25,22 +25,27 @@ annotationText = '';
 hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 
-[X, Y, wasCancelled] = obj.drawROI('point', finetuneCheck);
+initialPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData    = hMeasure.Data(insertIndex);
+    initialPos = [oldData.X(1), oldData.Y(1)];
+end
+[X, Y, wasCancelled] = obj.drawROI('point', finetuneCheck, [], initialPos);
 if wasCancelled || isempty(X); return; end
 pointX = X(1); pointY = Y(1);
 
 intensityMean = NaN;
 profileData   = NaN;
 if calcIntensity
-    imageData = obj.mibModel.getData2D('image', [], [], 0, struct('id', datasetId));
-    rowIdx = min(size(imageData, 1), max(1, round(pointY)));
-    colIdx = min(size(imageData, 2), max(1, round(pointX)));
-    intensityAtPixel = double(squeeze(imageData(rowIdx, colIdx, :)));
+    pixRow = max(1, round(pointY));
+    pixCol = max(1, round(pointX));
+    pixOpts = struct('id', datasetId, 'x', [pixCol, pixCol], 'y', [pixRow, pixRow]);
+    imageData = cell2mat(obj.mibModel.getData2D('image', [], [], colCh, pixOpts));
+    intensityAtPixel = double(imageData(:));
     intensityMean    = intensityAtPixel;
-    profileData      = [ones(1, numel(intensityAtPixel)); intensityAtPixel(:)'];
+    profileData      = [0; intensityAtPixel(:)];   % row 1 = distance 0; rows 2+ = per-channel intensity
 end
 
-annotationText = '';
 if ischar(showInfoDlg)
     annotationText = utils.dlgs.inputSingleDlg(obj.view.gui, 'Annotation:', showInfoDlg, 'Point annotation');
     if isempty(annotationText); return; end
@@ -48,7 +53,7 @@ end
 
 newData.n              = NaN;
 newData.type           = 'Point';
-newData.value          = NaN;
+newData.value          = mean(double(intensityMean));
 newData.X              = pointX;
 newData.Y              = pointY;
 newData.Z              = obj.mibModel.I{datasetId}.slices{3}(1);

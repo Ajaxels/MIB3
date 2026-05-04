@@ -132,6 +132,8 @@ else  % return a subvolume of the full dataset
     Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data{1}, 3)])];
     Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data{1}, 5)])];
 
+    if colChannel == 0; colChannel = 1:size(obj.data{1}, 4); end
+
     if strcmp(obj.type, 'image') || isempty(materialIndex)
         dataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     else % labels

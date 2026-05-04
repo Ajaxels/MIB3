@@ -93,7 +93,9 @@ elseif dataset.orientation == 2 % zy
 end
 
 %% Update image in axes
-if isempty(obj.cImageDoc{selectedSet}.imageHandle.CData)
+if isempty(obj.cImageDoc{selectedSet}.imageHandle) || ...
+        ~isvalid(obj.cImageDoc{selectedSet}.imageHandle) || ...
+        isempty(obj.cImageDoc{selectedSet}.imageHandle.CData)
     % Create new image object with stretched XData
     imgHeight = size(obj.mibModel.Ishown, 1);
     imgWidth = size(obj.mibModel.Ishown, 2);

@@ -632,7 +632,7 @@ classdef Measurements < matlab.mixin.Copyable
 
                 switch measureType
 
-                    case {'Distance (linear)', 'Caliper'}
+                    case 'Distance (linear)'
                         plot(axesHandle, screenX, screenY, ...
                             'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
                             'Marker', effectiveMarker, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
@@ -643,6 +643,27 @@ classdef Measurements < matlab.mixin.Copyable
                                 'Parent', axesHandle, ...
                                 'Color', textColorFG, 'BackgroundColor', textColorBG, ...
                                 'FontSize', fontSize, 'Tag', 'measurements');
+                        end
+
+                    case 'Caliper'
+                        % Draw baseline P1-P2 and perpendicular P3-P4 as two
+                        % separate segments — no connecting line between P2 and P3.
+                        if numel(screenX) >= 4
+                            plot(axesHandle, screenX(1:2), screenY(1:2), ...
+                                'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
+                                'Marker', effectiveMarker, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
+                                'Tag', 'measurements');
+                            plot(axesHandle, screenX(3:4), screenY(3:4), ...
+                                'Color', color, 'LineStyle', effectiveLineStyle, 'LineWidth', lineWidth, ...
+                                'Marker', effectiveMarker, 'MarkerSize', markerSize, 'MarkerEdgeColor', color, ...
+                                'Tag', 'measurements');
+                            if options.showText
+                                text(screenX(3), screenY(3), ...
+                                    sprintf('  %.4g', obj.Data(dataIdx).value), ...
+                                    'Parent', axesHandle, ...
+                                    'Color', textColorFG, 'BackgroundColor', textColorBG, ...
+                                    'FontSize', fontSize, 'Tag', 'measurements');
+                            end
                         end
 
                     case 'Point'
@@ -1004,7 +1025,9 @@ classdef Measurements < matlab.mixin.Copyable
 
             pointCount = length(x);
             designMatrix = [x(:), y(:), ones(pointCount, 1)];
+            warnState = warning('off', 'MATLAB:rankDeficientMatrix');
             abc = designMatrix \ -(x(:).^2 + y(:).^2);
+            warning(warnState);
             centreX = -abc(1) / 2;
             centreY = -abc(2) / 2;
             radius  = sqrt(centreX^2 + centreY^2 - abc(3));
@@ -1054,10 +1077,13 @@ classdef Measurements < matlab.mixin.Copyable
             [xGrid, yGrid] = meshgrid(1:imageWidth, 1:imageHeight);
 
             arcLengths = [0; cumsum(hypot(diff(X(:)), diff(Y(:))))];
+            [arcLengths, uniqueIdx] = unique(arcLengths);
+            knotX = X(uniqueIdx);
+            knotY = Y(uniqueIdx);
             numberOfSamples = max(1, round(max(arcLengths)));
             sampledArcLengths = linspace(0, max(arcLengths), numberOfSamples);
-            sampledX = interp1(arcLengths, X(:), sampledArcLengths);
-            sampledY = interp1(arcLengths, Y(:), sampledArcLengths);
+            sampledX = interp1(arcLengths, knotX(:), sampledArcLengths);
+            sampledY = interp1(arcLengths, knotY(:), sampledArcLengths);
 
             intensityProfile = zeros(channelCount, numberOfSamples);
             for channelIdx = 1:channelCount
@@ -1076,7 +1102,7 @@ classdef Measurements < matlab.mixin.Copyable
             %       kymograph = core.Measurements.computeKymograph(imageStack, X, Y)
             %
             % Input Arguments:
-            %   - **imageStack** — [H × W × C × nSlices] uint or double array.
+            %   - **imageStack** — [H × W × C × nSlices] uint or double array (not a cell; use ``imageStackCell{1}`` and permute from ``getData4D`` output).
             %   - **X** — [double(1×2)] line endpoint X coords (pixel space).
             %   - **Y** — [double(1×2)] line endpoint Y coords (pixel space).
             %
@@ -1096,16 +1122,24 @@ classdef Measurements < matlab.mixin.Copyable
             %
 
             [imageHeight, imageWidth, channelCount, numberOfSlices] = size(imageStack);
-            numberOfPoints = max(1, round(hypot(diff(X), diff(Y))));
-            lineX = linspace(X(1), X(2), numberOfPoints);
-            lineY = linspace(Y(1), Y(2), numberOfPoints);
+
+            % two endpoints → interpolate a straight line; more points → use as-is
+            if numel(X) == 2
+                numberOfPoints = max(1, round(hypot(diff(X), diff(Y))));
+                pathX = linspace(X(1), X(2), numberOfPoints);
+                pathY = linspace(Y(1), Y(2), numberOfPoints);
+            else
+                pathX = X(:)';
+                pathY = Y(:)';
+            end
+            numberOfPoints = numel(pathX);
 
             % clamp to valid pixel indices
-            rowIndices = min(imageHeight, max(1, round(lineY)));
-            colIndices = min(imageWidth,  max(1, round(lineX)));
+            rowIndices    = min(imageHeight, max(1, round(pathY)));
+            colIndices    = min(imageWidth,  max(1, round(pathX)));
             linearIndices = sub2ind([imageHeight, imageWidth], rowIndices, colIndices);
 
-            kymograph = zeros(numberOfSlices, numberOfPoints, channelCount, 'like', imageStack(:,:,:,1));
+            kymograph = zeros(numberOfSlices, numberOfPoints, channelCount, 'like', imageStack(1,1,1,1));
             for sliceIdx = 1:numberOfSlices
                 for channelIdx = 1:channelCount
                     slice2D = imageStack(:, :, channelIdx, sliceIdx);

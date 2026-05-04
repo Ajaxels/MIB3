@@ -52,8 +52,13 @@ for selIdx = 1:numel(dataIndices)
     end
     distanceVec = profileData(1, :);
     nChannels   = size(profileData, 1) - 1;
+    singleSample = numel(distanceVec) == 1;
     for channelIdx = 1:nChannels
-        plot(plotAxes, distanceVec, profileData(channelIdx + 1, :));
+        if singleSample
+            plot(plotAxes, distanceVec, profileData(channelIdx + 1, :), 'o');
+        else
+            plot(plotAxes, distanceVec, profileData(channelIdx + 1, :));
+        end
     end
 end
 hold(plotAxes, 'off');

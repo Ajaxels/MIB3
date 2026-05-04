@@ -27,7 +27,12 @@ hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 pixSize     = obj.mibModel.I{datasetId}.image.pixSize;
 
-[X, Y, wasCancelled] = obj.drawROI('polyline', finetuneCheck, 3);
+initialPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData    = hMeasure.Data(insertIndex);
+    initialPos = [oldData.X(1:3)', oldData.Y(1:3)'];
+end
+[X, Y, wasCancelled] = obj.drawROI('polyline', finetuneCheck, 3, initialPos);
 if wasCancelled || numel(X) < 3; return; end
 if numel(X) > 3; X = X(1:3); Y = Y(1:3); end
 

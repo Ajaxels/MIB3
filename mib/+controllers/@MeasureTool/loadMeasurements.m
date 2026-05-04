@@ -13,9 +13,11 @@ function loadMeasurements(obj)
 %   - **obj** — :class:`controllers.MeasureTool`
 %
 
+datasetId = obj.mibModel.getActiveId();
+[path, ~] = fileparts(obj.mibModel.I{datasetId}.image.filename);
 [filename, pathname] = uigetfile( ...
     {'*.measure', 'Measurements (*.measure)'}, ...
-    'Load measurements', obj.mibModel.myPath);
+    'Load measurements', path);
 if isequal(filename, 0); return; end
 
 loadedStruct = load(fullfile(pathname, filename), '-mat');
@@ -26,9 +28,7 @@ if ~isfield(loadedStruct, 'measureData')
     return;
 end
 
-datasetId = obj.mibModel.getActiveId();
 hMeasure  = obj.mibModel.I{datasetId}.measure;
-
 obj.mibModel.backup('measurements');
 hMeasure.clearData();
 

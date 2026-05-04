@@ -26,7 +26,12 @@ annotationText = '';
 
 autoPointSpacing = obj.view.handles.autoPointSpacing.Value;
 
-[rawX, rawY, wasCancelled] = obj.drawROI('freehand', finetuneCheck);
+initialPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData    = hMeasure.Data(insertIndex);
+    initialPos = [oldData.spline.x(:), oldData.spline.y(:)];
+end
+[rawX, rawY, wasCancelled] = obj.drawROI('freehand', finetuneCheck, [], initialPos);
 if wasCancelled || numel(rawX) < 2; return; end
 
 % determine how many knot points to keep
@@ -60,10 +65,10 @@ arcCumKnot = [0; cumsum(hypot(diff(knotX(:)), diff(knotY(:))))];
 totalArc   = arcCumKnot(end);
 if totalArc < eps; return; end
 
-interpolatedPointCount = max(2, round(totalArc));
-denseArcFull = linspace(0, totalArc, interpolatedPointCount);
-interpX = interp1(arcCumKnot, knotX(:), denseArcFull, splineMethod, 'extrap');
-interpY = interp1(arcCumKnot, knotY(:), denseArcFull, splineMethod, 'extrap');
+nDense = max(2, round(totalArc));
+denseArc = sort(unique([linspace(0, totalArc, nDense), arcCumKnot(:)']));
+interpX = interp1(arcCumKnot, knotX(:), denseArc, splineMethod, 'extrap');
+interpY = interp1(arcCumKnot, knotY(:), denseArc, splineMethod, 'extrap');
 
 switch orientation
     case 1;    pxX = pixSize.z;  pxY = pixSize.x;

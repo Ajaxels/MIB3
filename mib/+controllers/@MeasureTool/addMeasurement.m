@@ -88,5 +88,11 @@ end
 
 obj.mibModel.disableSegmentation = false;
 obj.updateTable();
+nRows = size(obj.view.handles.measureTable.Data, 1);
+if nRows > 0
+    scroll(obj.view.handles.measureTable, 'row', nRows);
+    obj.view.handles.measureTable.Selection = [nRows, 3];
+    obj.indices = [nRows, 3];
+end
 notify(obj.mibModel, 'ShowImage');
 end

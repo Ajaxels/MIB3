@@ -53,13 +53,11 @@ integrationWidth = str2double(obj.view.handles.integrationWidth.Value);
 calcIntensity    = obj.view.handles.calcIntensityCheck.Value;
 
 switch parameter
-
     case 'ModifyInfo'
         currentInfo = hMeasure.Data(dataIndex).info;
-        dlgAnswer   = utils.dlgs.inputUniversalDlg(obj.view.gui, '', {'Info:'}, {currentInfo}, ...
-            'Edit annotation', struct());
+        dlgAnswer   = utils.dlgs.inputSingleDlg(obj.view.gui, 'Info:', currentInfo, 'Edit annotation');
         if isempty(dlgAnswer); return; end
-        hMeasure.Data(dataIndex).info = dlgAnswer{1};
+        hMeasure.Data(dataIndex).info = dlgAnswer;
         obj.updateTable();
 
     case 'Jump'
@@ -71,7 +69,25 @@ switch parameter
         obj.editMeasurement(datasetId, dataIndex, colCh, integrationWidth, true, calcIntensity, false);
 
     case 'Recalculate'
-        obj.editMeasurement(datasetId, dataIndex, colCh, integrationWidth, false, calcIntensity, true);
+        allSelectedRows = unique(obj.indices(:, 1));
+        if strcmp(filterValue, 'All')
+            allDataIndices = allSelectedRows;
+        else
+            typeFlags      = strcmp({hMeasure.Data(1:hMeasure.getNumberOfMeasurements()).type}, filterValue);
+            filteredIndices = find(typeFlags);
+            validMask      = allSelectedRows <= numel(filteredIndices);
+            allDataIndices = filteredIndices(allSelectedRows(validMask));
+        end
+        allDataIndices = allDataIndices(allDataIndices <= hMeasure.getNumberOfMeasurements());
+        if isempty(allDataIndices); return; end
+        progressBar = core.PoolWaitbar(numel(allDataIndices), 'Recalculating...', ...
+            obj.view.gui, 'Recalculate measurements', true);
+        for recalcIdx = 1:numel(allDataIndices)
+            if progressBar.getCancelState(); break; end
+            obj.editMeasurement(datasetId, allDataIndices(recalcIdx), colCh, integrationWidth, false, calcIntensity, true);
+            progressBar.increment();
+        end
+        progressBar.deletePoolWaitbar();
 
     case 'Duplicate'
         obj.mibModel.backup('measurements');

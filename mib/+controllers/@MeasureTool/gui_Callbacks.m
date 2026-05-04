@@ -68,6 +68,10 @@ switch source.Tag
 
     case 'deleteAllBtn'
         if hMeasure.getNumberOfMeasurements() == 0; return; end
+        dlgOpt.Icon = 'puffin_warning';
+        answer = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+            sprintf('Delete all measurements?\n\nTip: you can undo this operation with Ctrl+Z'), 'Delete all', 'Delete', 'Cancel', 'Cancel', dlgOpt);
+        if ~strcmp(answer, 'Delete'); return; end
         obj.mibModel.backup('measurements');
         hMeasure.removeMeasurement([]);
         obj.updateTable();

@@ -27,14 +27,36 @@ hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 pixSize     = obj.mibModel.I{datasetId}.image.pixSize;
 
+initialLinePos  = [];
+initialPointPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData         = hMeasure.Data(insertIndex);
+    initialLinePos  = [oldData.X(1:2)', oldData.Y(1:2)'];
+    initialPointPos = [oldData.X(3), oldData.Y(3)];
+end
+
 % draw the baseline
-[lineX, lineY, wasCancelled] = obj.drawROI('line', finetuneCheck);
+[lineX, lineY, wasCancelled] = obj.drawROI('line', finetuneCheck, [], initialLinePos);
 if wasCancelled || numel(lineX) < 2; return; end
 p1x = lineX(1); p1y = lineY(1);
 p2x = lineX(2); p2y = lineY(2);
 
+% Keep the baseline visible while the user places the perpendicular point.
+cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+axesHandle = cImageDoc.handles.imViewAxes;
+baselineOverlay = [];
+try
+    [screenX12, screenY12] = obj.mibModel.convertDataToMouseCoordinates([p1x, p2x], [p1y, p2y], 'shown');
+    baselineOverlay = line(axesHandle, screenX12, screenY12, ...
+        'Color', [1 1 0], 'LineWidth', 1.5, ...
+        'HitTest', 'off', 'PickableParts', 'none', 'Tag', 'caliper_temp');
+catch
+end
+
 % draw the perpendicular point
-[ptX, ptY, wasCancelled] = obj.drawROI('point', finetuneCheck);
+[ptX, ptY, wasCancelled] = obj.drawROI('point', finetuneCheck, [], initialPointPos);
+
+if ~isempty(baselineOverlay) && isvalid(baselineOverlay); delete(baselineOverlay); end
 if wasCancelled || isempty(ptX); return; end
 p3x = ptX(1); p3y = ptY(1);
 

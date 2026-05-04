@@ -512,7 +512,8 @@ classdef Snapshot < handle
         function measurementsOptions_Callback(obj)
             % MEASUREMENTSOPTIONS_CALLBACK - Update measurement visualization settings.
             activeId = obj.mibModel.getActiveId();
-            obj.mibModel.I{activeId}.measure.setOptions();
+            obj.mibModel.I{activeId}.measure.updateOptions(obj.view.gui);
+            notify(obj.mibModel, 'ShowImage');
         end
 
         function scalebar_Callback(obj)
@@ -755,10 +756,13 @@ classdef Snapshot < handle
                         warning('off', 'MATLAB:print:DeprecateZbuffer');
 
                         imshow(img);
-                        hold on;
-                        dataset.hMeasure.addMeasurementsToPlot(obj.mibModel, options.mode, gca);
-                        set(gca, 'xtick', []);
-                        set(gca, 'ytick', []);
+                        axHandle = gca;
+                        hold(axHandle, 'on');
+                        % imshow maps image pixel (X,Y) to axes coords (X,Y) — identity conversion
+                        convertFcn = @(X, Y) deal(double(X), double(Y));
+                        dataset.measure.addMeasurementsToPlot(axHandle, 'full', dataset.orientation, convertFcn, 0);
+                        set(axHandle, 'xtick', []);
+                        set(axHandle, 'ytick', []);
                         img2 = export_fig('-native', '-zbuffer', '-a1');
 
                         delete(153);

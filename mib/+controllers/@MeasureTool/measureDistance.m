@@ -28,7 +28,12 @@ hMeasure    = obj.mibModel.I{datasetId}.measure;
 orientation = obj.mibModel.I{datasetId}.orientation;
 pixSize     = obj.mibModel.I{datasetId}.image.pixSize;
 
-[X, Y, wasCancelled] = obj.drawROI('line', finetuneCheck);
+initialPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData    = hMeasure.Data(insertIndex);
+    initialPos = [oldData.X(1:2)', oldData.Y(1:2)'];
+end
+[X, Y, wasCancelled] = obj.drawROI('line', finetuneCheck, [], initialPos);
 if wasCancelled || numel(X) < 2; return; end
 X = X(1:2); Y = Y(1:2);
 

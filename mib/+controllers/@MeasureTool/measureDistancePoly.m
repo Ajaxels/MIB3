@@ -30,7 +30,12 @@ orientation     = obj.mibModel.I{datasetId}.orientation;
 pixSize         = obj.mibModel.I{datasetId}.image.pixSize;
 splineMethod    = hMeasure.Options.splinemethod;
 
-[knotX, knotY, wasCancelled] = obj.drawROI('polyline', finetuneCheck);
+initialPos = [];
+if insertIndex > 0 && insertIndex <= hMeasure.getNumberOfMeasurements()
+    oldData    = hMeasure.Data(insertIndex);
+    initialPos = [oldData.spline.x(:), oldData.spline.y(:)];
+end
+[knotX, knotY, wasCancelled] = obj.drawROI('polyline', finetuneCheck, [], initialPos);
 if wasCancelled || numel(knotX) < 2; return; end
 
 % cumulative arc-length parameterisation of the knots
@@ -38,16 +43,13 @@ arcCum = [0; cumsum(hypot(diff(knotX(:)), diff(knotY(:))))];
 totalArc = arcCum(end);
 if totalArc < eps; return; end
 
-% number of interpolated samples
-% if isnan(noPoints) || noPoints < 2
-%     interpolatedPointCount = max(2, round(totalArc));
-% else
-%     interpolatedPointCount = round(noPoints);
-% end
-interpolatedPointCount = numel(knotX);
-denseArc = linspace(0, totalArc, interpolatedPointCount);
+% Dense arc-length samples merged with the exact knot arc-length positions.
+% Including the knot values guarantees the interpolated path passes through
+% each original vertex (both for linear and spline methods), so the rendered
+% line aligns with the placed marker dots.
+nDense = max(2, round(totalArc));
+denseArc = sort(unique([linspace(0, totalArc, nDense), arcCum(:)']));
 
-% interpolate path
 interpX = interp1(arcCum, knotX(:), denseArc, splineMethod, 'extrap');
 interpY = interp1(arcCum, knotY(:), denseArc, splineMethod, 'extrap');
 

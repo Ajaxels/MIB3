@@ -119,7 +119,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
     % Hide center spot marker
     if ~isempty(obj.centralMarker); obj.centralMarker.Visible = false; end
     % Hide brush/segmentation cursor if it exists
-    if ~isempty(obj.brushCursor); obj.brushCursor.Visible = false; end
+    if ~isempty(obj.brushCursor) && isvalid(obj.brushCursor); obj.brushCursor.Visible = false; end
     % Hide quick measure ROI and label during pan to avoid mis-positioned rendering
     if ~isempty(obj.quickMeasure) && isfield(obj.quickMeasure, 'roi') && ...
             ~isempty(obj.quickMeasure.roi) && isvalid(obj.quickMeasure.roi)
@@ -143,6 +143,7 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
         % because the image CData/XData are unchanged there.
         overlayObjs = findobj(obj.handles.imViewAxes, 'tag', 'roi', '-or', 'tag', 'measurements');
         if ~isempty(overlayObjs); delete(overlayObjs); end
+        if isempty(obj.imageHandle) || ~isvalid(obj.imageHandle); return; end
         switch dataset.orientation
             case 3;  coef_z = dataset.image.pixSize.x / dataset.image.pixSize.y;
             case 1;  coef_z = dataset.image.pixSize.z / dataset.image.pixSize.x;
