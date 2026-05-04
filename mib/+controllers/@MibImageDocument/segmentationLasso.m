@@ -52,10 +52,27 @@ axH = obj.handles.imViewAxes;
 
 % disable segmentation and change pointer for drawing
 obj.mibModel.disableSegmentation = true;
-hFig.WindowButtonDownFcn = [];
 hFig.Pointer = 'cross';
 
+% map lasso type to drawingROI type string used by repositionDrawingROI
+drawingROITypeMap = struct('Lasso', 'Freehand', 'Rectangle', 'Rectangle', 'Ellipse', 'Ellipse', 'Polyline', 'Polygon');
+if isfield(drawingROITypeMap, type)
+    drawingROIType = drawingROITypeMap.(type);
+else
+    drawingROIType = 'Freehand';
+end
+
+cRoi = obj.mibController.cRoi;
+if ~isempty(cRoi)
+    cRoi.drawingROI.type          = drawingROIType;
+    cRoi.drawingROI.dataPos       = [];
+    cRoi.drawingROI.repositioning = false;
+    cRoi.drawingROI.active        = false;
+end
+
 % draw the ROI interactively
+movingLsn = [];
+movedLsn  = [];
 try
     switch type
         case 'Lasso'
@@ -69,14 +86,32 @@ try
         otherwise
             roi = drawfreehand(axH, 'Closed', true);
     end
+    if isvalid(roi)
+        captureF  = @() captureSegLassoDataPos(roi, drawingROIType, cRoi, obj.mibModel);
+        movingLsn = addlistener(roi, 'MovingROI', @(~,~) captureF());
+        movedLsn  = addlistener(roi, 'ROIMoved',  @(~,~) captureF());
+        captureF();   % capture initial position
+        if ~isempty(cRoi)
+            cRoi.drawingROI.roi    = roi;
+            cRoi.drawingROI.active = true;
+        end
+    end
     wait(roi);
 catch
     % user cancelled or error during drawing
+    if ~isempty(movingLsn); delete(movingLsn); end
+    if ~isempty(movedLsn);  delete(movedLsn);  end
+    if ~isempty(cRoi); cRoi.drawingROI.active = false; end
     obj.mibModel.disableSegmentation = false;
     hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
     hFig.Pointer = 'crosshair';
     return;
 end
+
+% cleanup listeners and deactivate drawingROI tracking
+if ~isempty(movingLsn); delete(movingLsn); end
+if ~isempty(movedLsn);  delete(movedLsn);  end
+if ~isempty(cRoi); cRoi.drawingROI.active = false; end
 
 % check if ROI is valid (user may have pressed Escape)
 if ~isvalid(roi)
@@ -190,4 +225,40 @@ notify(obj.mibModel, 'UpdateUserScore');
 
 notify(obj.mibModel, 'ShowImage');
 
+end
+
+% -------------------------------------------------------------------------
+
+function captureSegLassoDataPos(roi, type, cRoi, mibModel)
+% CAPTURESEGLASSODATAPOS - Capture current ROI position in data-pixel coords.
+%
+% Called on MovingROI/ROIMoved events and once after initial draw.
+% Stores coords in cRoi.drawingROI.dataPos so repositionDrawingROI can
+% restore the ROI's axes position after a zoom/pan redraw.
+
+if isempty(roi) || ~isvalid(roi); return; end
+if ~isempty(cRoi) && cRoi.drawingROI.repositioning; return; end
+try
+    switch type
+        case 'Rectangle'
+            p = roi.Position;   % [x y w h] in axes coords
+            [X, Y] = mibModel.convertMouseToDataCoordinates( ...
+                [p(1); p(1)+p(3)], [p(2); p(2)+p(4)], 'shown');
+            if ~isempty(cRoi); cRoi.drawingROI.dataPos = [X(:), Y(:)]; end
+        case 'Ellipse'
+            c  = roi.Center;    % [cx cy] in axes coords
+            sa = roi.SemiAxes;  % [rx ry] in axes coords
+            [cx, cy] = mibModel.convertMouseToDataCoordinates(c(1),       c(2),       'shown');
+            [ex, ~]  = mibModel.convertMouseToDataCoordinates(c(1)+sa(1), c(2),       'shown');
+            [~,  ey] = mibModel.convertMouseToDataCoordinates(c(1),       c(2)+sa(2), 'shown');
+            if ~isempty(cRoi)
+                cRoi.drawingROI.dataPos = [cx, cy, abs(ex-cx), abs(ey-cy)];
+            end
+        otherwise  % Freehand, Polygon
+            verts = roi.Position;  % [N×2] in axes coords
+            [X, Y] = mibModel.convertMouseToDataCoordinates(verts(:,1), verts(:,2), 'shown');
+            if ~isempty(cRoi); cRoi.drawingROI.dataPos = [X(:), Y(:)]; end
+    end
+catch
+end
 end

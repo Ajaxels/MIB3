@@ -37,11 +37,12 @@ Dataset tool dialogs
 .. toctree::
    :maxdepth: 1
 
+   BoundingBox
+   DisplayAdjust
    CropDataset
    CropObjects
    ResampleDataset
-   DisplayAdjust
-   BoundingBox
+   Snapshot
 
 Segmentation tool dialogs
 -------------------------
@@ -51,6 +52,7 @@ Segmentation tool dialogs
 
    Annotations
    Lines3dDialog
+   MeasureTool
    Quantification
    QuantificationProperties
 

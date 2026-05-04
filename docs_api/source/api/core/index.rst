@@ -34,6 +34,7 @@ Overlays and annotations
 
    Annotations
    Lines3D
+   Measurements
    RoiRegion
 
 Supporting classes
