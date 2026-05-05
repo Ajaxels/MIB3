@@ -90,8 +90,7 @@ catch constructorErr
 end
 
 % Wire CloseEvent for lifecycle management
-addlistener(parentObj.childControllers{id}, 'CloseEvent', ...
-    @(src, ~) utils.purgeChildController(parentObj, src));
+addlistener(parentObj.childControllers{id}, 'CloseEvent', @(src, ~) utils.purgeChildController(parentObj, src));
 
 % In batch mode the child fires CloseEvent during its constructor, before
 % the listener above is wired.  The view property stays empty in that case,

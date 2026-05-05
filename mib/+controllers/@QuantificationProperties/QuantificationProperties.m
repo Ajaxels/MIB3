@@ -42,8 +42,7 @@ classdef QuantificationProperties < handle
             % Syntax:
             %   .. code-block:: matlab
             %
-            %       obj = QuantificationProperties(mibModel)
-            %       obj = QuantificationProperties(mibModel, parentController)
+            %       obj = QuantificationProperties(mibModel, parentController, propertyList, obj3d)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
@@ -54,7 +53,7 @@ classdef QuantificationProperties < handle
             % Usage:
             %   Example 1::
             %
-            %     obj.startController('controllers.QuantificationProperties', obj, {'Area','Perimeter'}, false);
+            %    utils.startController(obj, 'controllers.QuantificationProperties', obj, propertyList, obj3d);
             %
 
             % Updates
@@ -72,7 +71,7 @@ classdef QuantificationProperties < handle
             if numel(varargin) >= 3; obj.obj3d = varargin{3}; end
 
             guiName = 'views.QuantificationPropertiesGUI';
-            obj.view = core.ChildView(obj, guiName);
+            obj.view = core.ChildView(obj, guiName); % initialize the view
 
             obj.addCallbacks();
 
