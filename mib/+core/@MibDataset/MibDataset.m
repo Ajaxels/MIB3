@@ -109,92 +109,50 @@ classdef MibDataset < matlab.mixin.Copyable
     end
 
     methods
-        % % declaration of functions in the external files, keep empty line in between for the doc generator
-        % [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)        % add a material; scans time-points for large models, checks capacity, updates metadata
-        % 
-        % clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
-        % 
-        % closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
-        % 
-        % result = cropDataset(obj, cropF, options)        % Crop all layers of the dataset (image, labels, mask, selection); handles Virtual → Standard conversion
-        % 
-        % createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
-        % 
-        % [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
-        % 
-        % [x, y, z] = convertPixelsToUnits(obj, x, y, z)        % Convert pixel coordinates to physical imaging units using pixSize and boundingBox
-        % 
-        % [x, y, z] = convertUnitsToPixels(obj, x, y, z)        % Convert physical imaging units to pixel coordinates using pixSize and boundingBox
-        % 
-        % [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
-        % 
-        % slice_no = getCurrentSliceNumber(obj)        % get slice number of the currently shown image
-        % 
-        % timePnt = getCurrentTimePoint(obj)        % Get time point of the currently shown image.
-        % 
-        % dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
-        % 
-        % dataset = getData3D(obj, type, time, orient, col_channel, options)        % Get the a 3D dataset with colors: height:width:depth:colors
-        % 
-        % dataset = getData4D(obj, type, time, orient, col_channel, options)        % Get the a 4D dataset with colors: [height:width:depth:colors:time]
-        % 
-        % varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
-        % 
-        % dataset = getPixelIdxList(obj, type, PixelIdxList, options)  % Get pixel values at a list of linear indices; routes to correct layer (image/labels/mask/selection)
-        % 
-        % bb = getRoiBoundingBox(obj, roiIndex)        % Return the bounding box for a ROI at its native orientation.
-        % 
-        % index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
-        % 
-        % [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
-        % 
-        % initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
-        % 
-        % insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
-        % 
-        % insertMaterial(obj, materialIndex, materialName, wb)     % insert a new material at the specified position, shifting pixel values and metadata
-        % 
-        % result = loadModel(obj, filenames, options)          % load a segmentation model from files or a raw array; orchestrates loader dispatch, dimension validation, and metadata assignment
-        % 
-        % moveMaskToSelectionDataset(obj, action_type, options)        % move Mask layer to Selection for full dataset (fast path, no ROI/block mode)
-        % 
-        % moveMaskToModelDataset(obj, action_type, options)            % move Mask layer to Model for full dataset (fast path, no ROI/block mode)
-        % 
-        % moveModelToSelectionDataset(obj, action_type, options)       % move Model material to Selection for full dataset (fast path, no ROI/block mode)
-        % 
-        % moveModelToMaskDataset(obj, action_type, options)            % move Model material to Mask for full dataset (fast path, no ROI/block mode)
-        % 
-        % moveSelectionToMaskDataset(obj, action_type, options)        % move Selection layer to Mask for full dataset (fast path, no ROI/block mode)
-        % 
-        % moveSelectionToModelDataset(obj, action_type, options)       % move Selection layer to Model for full dataset (fast path, no ROI/block mode)
-        % 
-        % moveView(obj, x, y, orient)        % Center the image view at the provided coordinates: x, y
-        % 
-        % removeMaterial(obj, materialIndices, wb)                % remove materials: remaps/zeros pixel data across time-points, then updates metadata
-        % 
-        % reorderMaterials(obj, newOrder, wb)                     % reorder materials in the model according to a permutation vector (small models only)
-        % 
-        % setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
-        % 
-        % swapMaterials(obj, material1, material2, wb)            % swap two materials in the model: pixel data and metadata
-        % 
-        % newMode = switchDatasetMode(obj, newMode, enableSelection, initWithImage)  % Function to switch between loading datasets to different modes, defined in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
-        % 
-        % transpose(obj, new_orient)        % Change orientation of the image to the YX, XZ, or YZ plane
-        % 
-        % result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset
-        % 
-        % result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset
-        % 
-        % result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
-        % 
-        % result = setPixelIdxList(obj, type, dataset, PixelIdxList, options)  % Write pixel values at a list of linear indices; routes to correct layer and updates modelExist/maskExist flags
-        % 
-        % fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
-        % 
-        % setPixSize(obj, val)        % Propagate a new pixSize struct to image, labels, mask, and selection layers.
-        % 
-        % updateBoundingBox(obj, newBB, xyzShift, imgDims)  % Delegate bounding-box update to obj.image; ds.image.pixSize is updated in place.
+        % declaration of methods in external files
+        [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)        % add a material; scans time-points for large models, checks capacity, updates metadata
+        clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
+        closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
+        result = cropDataset(obj, cropF, options)        % Crop all layers of the dataset (image, labels, mask, selection); handles Virtual → Standard conversion
+        createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
+        [axesX, axesY] = getAxesLimits(obj)  % get axes limits for the dataset
+        [x, y, z] = convertPixelsToUnits(obj, x, y, z)        % Convert pixel coordinates to physical imaging units using pixSize and boundingBox
+        [x, y, z] = convertUnitsToPixels(obj, x, y, z)        % Convert physical imaging units to pixel coordinates using pixSize and boundingBox
+        [yMin, yMax, xMin, xMax, zMin, zMax] = getCoordinatesOfShownImage(obj, transposeTo3) % Return minimal and maximal coordinates (XY) of the image that is currently shown.
+        slice_no = getCurrentSliceNumber(obj)        % get slice number of the currently shown image
+        timePnt = getCurrentTimePoint(obj)        % Get time point of the currently shown image.
+        dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % Get the a 2D slice with colors: height:width:colors
+        dataset = getData3D(obj, type, time, orient, col_channel, options)        % Get the a 3D dataset with colors: height:width:depth:colors
+        dataset = getData4D(obj, type, time, orient, col_channel, options)        % Get the a 4D dataset with colors: [height:width:depth:colors:time]
+        varargout = getDatasetDimensions(obj, type, orient, options) % Get dimensions of the dataset, [height, width, depth, color, time]
+        dataset = getPixelIdxList(obj, type, PixelIdxList, options)  % Get pixel values at a list of linear indices; routes to correct layer (image/labels/mask/selection)
+        bb = getRoiBoundingBox(obj, roiIndex)        % Return the bounding box for a ROI at its native orientation.
+        index = getSelectedMaterialIndex(obj, target)        % return the index of the currently selected material in the mibView.handles.materialsTable
+        [labelsList, labelValues, labelPositions, indices] = getSliceLabels(obj, sliceNumber, timePoint, options)        % Get list of labels (mibImage.hLabels) shown at the specified slice
+        initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
+        insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
+        insertMaterial(obj, materialIndex, materialName, wb)     % insert a new material at the specified position, shifting pixel values and metadata
+        result = loadModel(obj, filenames, options)          % load a segmentation model from files or a raw array; orchestrates loader dispatch, dimension validation, and metadata assignment
+        moveMaskToSelectionDataset(obj, action_type, options)        % move Mask layer to Selection for full dataset (fast path, no ROI/block mode)
+        moveMaskToModelDataset(obj, action_type, options)            % move Mask layer to Model for full dataset (fast path, no ROI/block mode)
+        moveModelToSelectionDataset(obj, action_type, options)       % move Model material to Selection for full dataset (fast path, no ROI/block mode)
+        moveModelToMaskDataset(obj, action_type, options)            % move Model material to Mask for full dataset (fast path, no ROI/block mode)
+        moveSelectionToMaskDataset(obj, action_type, options)        % move Selection layer to Mask for full dataset (fast path, no ROI/block mode)
+        moveSelectionToModelDataset(obj, action_type, options)       % move Selection layer to Model for full dataset (fast path, no ROI/block mode)
+        moveView(obj, x, y, orient)        % Center the image view at the provided coordinates: x, y
+        removeMaterial(obj, materialIndices, wb)                % remove materials: remaps/zeros pixel data across time-points, then updates metadata
+        reorderMaterials(obj, newOrder, wb)                     % reorder materials in the model according to a permutation vector (small models only)
+        setAxesLimits(obj, axesX, axesY)        % set axes limits for the dataset
+        swapMaterials(obj, material1, material2, wb)            % swap two materials in the model: pixel data and metadata
+        newMode = switchDatasetMode(obj, newMode, enableSelection, initWithImage)  % Function to switch between loading datasets to different modes, defined in bj.handles.panels.activeDataset.handles.datasetType as 'Standard', 'Virtual', 'BigData'
+        transpose(obj, new_orient)        % Change orientation of the image to the YX, XZ, or YZ plane
+        result = setData2D(obj, slice, type, slice_no, orient, col_channel, options)        % set the 2D slice with colors: height:width:colors to the dataset
+        result = setData3D(obj, type, dataset, time, orient, col_channel, options)        % set the 3D dataset with colors: height:width:depth:colors to the dataset
+        result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
+        result = setPixelIdxList(obj, type, dataset, PixelIdxList, options)  % Write pixel values at a list of linear indices; routes to correct layer and updates modelExist/maskExist flags
+        fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
+        setPixSize(obj, val)        % Propagate a new pixSize struct to image, labels, mask, and selection layers.
+        updateBoundingBox(obj, newBB, xyzShift, imgDims)  % Delegate bounding-box update to obj.image; ds.image.pixSize is updated in place.
 
         function obj = MibDataset(img, meta, datasetType, modelType)
             % MIBDATASET - Constructor for a dataset container with image and annotation layers.

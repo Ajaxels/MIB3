@@ -23,22 +23,15 @@ classdef MibLabels63 < core.MibImage
     end
 
     methods
-        % % declaration of methods
-        % dataset = getData63(obj, type, orient, materialIndex, options)        % get dataset
-        % 
-        % result = setData63(obj, dataset, type, orient, materialIndex, options)        % update contents of the class
-        % 
-        % result = countMaterials(obj)                 % calculate and update materialsCount from materialNames or packed pixel data; call after load/import
-        % 
-        % renameMaterial(obj, index, newName)          % rename one or all materials in the model metadata
-        % 
-        % insertMaterial(obj, index, name, wb)     % insert a material at the specified position: shifts bit-packed pixel data and updates name/colour/materialsCount
-        % 
-        % swapMaterials(obj, index1, index2)     % swap material names and colours between two positions
-        % 
-        % reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
-        % 
-        % fnOut = save(obj, filename, options)   % save label data to file; overrides MibImage.save() to use getData63() for correct bit-unpacking
+        % declaration of methods in external files
+        dataset = getData63(obj, type, orient, materialIndex, options)        % get dataset
+        result = setData63(obj, dataset, type, orient, materialIndex, options)        % update contents of the class
+        result = countMaterials(obj)                 % calculate and update materialsCount from materialNames or packed pixel data; call after load/import
+        renameMaterial(obj, index, newName)          % rename one or all materials in the model metadata
+        insertMaterial(obj, index, name, wb)     % insert a material at the specified position: shifts bit-packed pixel data and updates name/colour/materialsCount
+        swapMaterials(obj, index1, index2)     % swap material names and colours between two positions
+        reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
+        fnOut = save(obj, filename, options)   % save label data to file; overrides MibImage.save() to use getData63() for correct bit-unpacking
 
         function obj = MibLabels63(img, meta)
             % MIBLABELS63 - Constructor of MibLabels63 — memory-optimised label storage.

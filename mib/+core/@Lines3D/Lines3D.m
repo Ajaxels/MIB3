@@ -74,52 +74,30 @@ classdef Lines3D < matlab.mixin.Copyable
 
     methods
         % % declaration of functions in the external files
-        % img = addLinesToImage(obj, img, Box, options)    % add lines to the image; returns img with fused lines
-        % 
-        % addNode(obj, x, y, z, newTreeSwitch, options)   % add a new node(s) to the graph
-        % 
-        % Graph = calculateLengthOfNodes(obj, Graph, options)  % calculate/update edge lengths in the graph
-        % 
-        % clearContents(obj)                               % set all elements of the class to default values
-        % 
-        % [edge, edgeIds] = clipEdge(obj, Box)             % clip edges using a bounding box
-        % 
-        % connectNodes(obj, s, t)                          % make an edge between two nodes
-        % 
-        % result = deleteNode(obj, x, y, z, orientation)   % delete node closest to (x,y,z); returns result string
-        % 
-        % deleteTree(obj, treeId)                          % delete tree from the graph by index or name
-        % 
-        % nodeId = findClosestNode(obj, x, y, z, orientation)  % find the closest node to a point
-        % 
-        % [nodes, indices] = findSliceNodes(obj, z, orientation)  % find nodes shown on the current slice
-        % 
-        % options = getOptions(obj)                        % get display/rendering options of the class
-        % 
-        % [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)  % return subgraph for a single tree
-        % 
-        % treeNames = getTreeNames(obj, index)             % return names of trees
-        % 
-        % insertNode(obj, nodeId, x, y, z)                 % insert a node after nodeId; inserted node becomes active
-        % 
-        % makeDummyGraph(obj)                              % generate a dummy graph for developmental purposes
-        % 
-        % replaceGraph(obj, Graph)                         % replace the current graph object with a new graph
-        % 
-        % saveToFile(obj, filename, options)               % save Lines3D to a file (lines3d/amira/excel)
-        % 
-        % setActiveNode(obj, x, y, z, orientation)         % set the node closest to (x,y,z) as the active node
-        % 
-        % setOptions(obj, options)                         % update display/rendering options of the class
-        % 
-        % splitAtNode(obj, x, y, z, orientation)           % split tree at the node closest to (x,y,z)
-        % 
-        % [noTrees, nodeByTree] = updateNumberOfTrees(obj) % update noTrees count and return nodeByTree vector
-        % 
-        % updateNodeCoordinate(obj, nodeId, x, y, z)       % update coordinates of a node and recalculate edges
-        % 
-        % updateNodeStrel(obj, nodeStrelSize)              % update strel element for rendering nodes as circles
-
+        img = addLinesToImage(obj, img, Box, options)    % add lines to the image; returns img with fused lines
+        addNode(obj, x, y, z, newTreeSwitch, options)   % add a new node(s) to the graph
+        Graph = calculateLengthOfNodes(obj, Graph, options)  % calculate/update edge lengths in the graph
+        clearContents(obj)                               % set all elements of the class to default values
+        [edge, edgeIds] = clipEdge(obj, Box)             % clip edges using a bounding box
+        connectNodes(obj, s, t)                          % make an edge between two nodes
+        result = deleteNode(obj, x, y, z, orientation)   % delete node closest to (x,y,z); returns result string
+        deleteTree(obj, treeId)                          % delete tree from the graph by index or name
+        nodeId = findClosestNode(obj, x, y, z, orientation)  % find the closest node to a point
+        [nodes, indices] = findSliceNodes(obj, z, orientation)  % find nodes shown on the current slice
+        options = getOptions(obj)                        % get display/rendering options of the class
+        [Graph, nodeIds, EdgesTable, NodesTable] = getTree(obj, treeId)  % return subgraph for a single tree
+        treeNames = getTreeNames(obj, index)             % return names of trees
+        insertNode(obj, nodeId, x, y, z)                 % insert a node after nodeId; inserted node becomes active
+        makeDummyGraph(obj)                              % generate a dummy graph for developmental purposes
+        replaceGraph(obj, Graph)                         % replace the current graph object with a new graph
+        saveToFile(obj, filename, options)               % save Lines3D to a file (lines3d/amira/excel)
+        setActiveNode(obj, x, y, z, orientation)         % set the node closest to (x,y,z) as the active node
+        setOptions(obj, options)                         % update display/rendering options of the class
+        splitAtNode(obj, x, y, z, orientation)           % split tree at the node closest to (x,y,z)
+        [noTrees, nodeByTree] = updateNumberOfTrees(obj) % update noTrees count and return nodeByTree vector
+        updateNodeCoordinate(obj, nodeId, x, y, z)       % update coordinates of a node and recalculate edges
+        updateNodeStrel(obj, nodeStrelSize)              % update strel element for rendering nodes as circles
+        
         function obj = Lines3D(Gin, activeNodeId, options)
             % LINES3D - Constructor for the Lines3D class.
             %

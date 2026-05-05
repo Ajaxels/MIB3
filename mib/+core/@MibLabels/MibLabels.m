@@ -26,20 +26,14 @@ classdef MibLabels < core.MibImage
     end
 
     methods
-        
-        % fnOut = save(obj, filename, options)        % Override of MibImage.save(); adds materialNames/materialColors/labelsVariable to metadata before dispatching to io.SaverFactory
-        % 
-        % result = countMaterials(obj)                 % calculate and update materialsCount from materialNames or pixel data; call after load/import
-        % 
-        % squeezeMaterialLabels(obj, wb)              % renumber all label indices to contiguous 1..N; for large model types after material deletion
-        % 
-        % renameMaterial(obj, index, newName)          % rename one or all materials in the model metadata
-        % 
-        % insertMaterial(obj, index, name, wb)     % insert a material at the specified position: shifts pixel data and updates name/colour/materialsCount
-        % 
-        % swapMaterials(obj, index1, index2)     % swap material names and colours between two positions
-        % 
-        % reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
+        % declaration of methods in external files
+        fnOut = save(obj, filename, options)        % Override of MibImage.save(); adds materialNames/materialColors/labelsVariable to metadata before dispatching to io.SaverFactory
+        result = countMaterials(obj)                 % calculate and update materialsCount from materialNames or pixel data; call after load/import
+        squeezeMaterialLabels(obj, wb)              % renumber all label indices to contiguous 1..N; for large model types after material deletion
+        renameMaterial(obj, index, newName)          % rename one or all materials in the model metadata
+        insertMaterial(obj, index, name, wb)     % insert a material at the specified position: shifts pixel data and updates name/colour/materialsCount
+        swapMaterials(obj, index1, index2)     % swap material names and colours between two positions
+        reorderMaterials(obj, newOrder)        % reorder material names and colours according to newOrder
 
         function obj = MibLabels(img, meta)
             % MIBLABELS - Constructor of MibLabels — segmentation label storage.
