@@ -48,8 +48,7 @@ function exportNetwork(obj)
             if outputFilename == 0; return; end
     end
 
-    wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Exporting to %s\nPlease wait...', exportFormat), ...
-        'Title', 'Export network');
+    wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Exporting to %s\nPlease wait...', exportFormat), 'Title', 'Export network');
     % load the model
     Model = load(obj.BatchOpt.NetworkFilename, '-mat');
     wb.Value = 0.4;

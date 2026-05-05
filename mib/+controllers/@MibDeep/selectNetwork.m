@@ -40,8 +40,7 @@ function net = selectNetwork(obj, networkName)
                 return;
             end
 
-            obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Loading the network\nPlease wait...'), ...
-                'Title', 'Load network');
+            obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Loading the network\nPlease wait...'), 'Title', 'Load network');
 
             res = load(networkName, '-mat');     % loading 'net', 'TrainingOptions', 'classNames' variables
             net = res.net;   % generate output network

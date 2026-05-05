@@ -48,13 +48,11 @@ switch fileFilters{selectedIndx, 2}
             [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle);
             if isempty(answer); return; end
 
-            wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Importing the network\nPlease wait...'), ...
-                'Title', 'Import network');
+            wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Importing the network\nPlease wait...'), 'Title', 'Import network');
 
             net = import.(fieldNames{selIndex});
         else
-            wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Importing the network\nPlease wait...'), ...
-                'Title', 'Import network');
+            wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Importing the network\nPlease wait...'), 'Title', 'Import network');
             net = import.(fieldNames{1});
         end
 

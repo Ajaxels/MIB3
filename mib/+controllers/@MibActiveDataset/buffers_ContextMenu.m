@@ -474,9 +474,9 @@ switch parameter
             if strcmp(selection, 'Cancel'); return; end
         end
 
+        pwb = [];
         if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.view.gui, 'Value', 0, ...
-                'Message', 'Please wait...', 'Title', 'Close all datasets');
+            pwb = core.PoolWaitbar(obj.mibModel.Sets.datasetsInSet, 'Please wait...', obj.view.gui, 'Close all datasets', true);
         end
 
         fn = fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.png');
@@ -517,7 +517,10 @@ switch parameter
                 obj.handles.(bufBtn).Tooltip = 'use RMB for a context menu with additional options';
             end
 
-            if BatchOpt.showWaitbar; wb.Value = iButton/obj.mibModel.Sets.datasetsInSet; end
+            if ~isempty(pwb)
+                if ~isempty(pwb) && pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+                pwb.increment(); 
+            end
         end
 
         % remove all linkedPairs involving any dataset in the closed set
@@ -534,7 +537,7 @@ switch parameter
             obj.handles.buffer1.BackgroundColor = [0 1 0];  % mark buffer 1 as active
         end
 
-        if BatchOpt.showWaitbar; delete(wb); end
+        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
 
         % reinitialise axes for ALL datasets in the target set;
         % stale axesX/axesY from the old images cause showImage to fail when

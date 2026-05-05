@@ -24,8 +24,7 @@ end
 % remove slash from the end of the path
 if strcmp(projectPath(end), filesep); projectPath = projectPath(1:end-1); end
 
-obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Loading config file\nPlease wait...'), ...
-    'Title', 'Load config');
+obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('Loading config file\nPlease wait...'), 'Title', 'Load config');
 
 res = load(configName, '-mat');
 obj.wb.Value = 0.2;

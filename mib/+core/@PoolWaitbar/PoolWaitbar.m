@@ -14,44 +14,50 @@ classdef PoolWaitbar < handle
     %
     % Usage:
     %   **Basic** examples:
-    %   **Example 1** — Simplest use: create, run parfor, delete
+    %   **Example 1** — PoolWaitbar in an additional MIB child window
     %
     %   .. code-block:: matlab
     %
     %
-    %     % Simplest use: create, run parfor, delete
-    %     pwb = core.PoolWaitbar(100, 'Working...', mibGUI, 'My task');
-    %     parfor ii = 1:100
-    %         pwb.increment();
+    %     % Use with a child window controller; parent = obj.view.gui (AppDesigner dialog)
+    %     pwb = core.PoolWaitbar(maxValue, 'Please wait...', obj.view.gui, 'waitbar title', true);
+    %     for i = 1:maxValue
+    %         % ... process something ...
+    %           if ~isempty(pwb)
+    %               if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+    %               pwb.increment();
+    %           end
     %     end
     %     pwb.deletePoolWaitbar();
     %
     %
-    %   **Example 2** — Reuse an existing uiprogressdlg
+    %   **Example 2** — PoolWaitbar in a docked panel of MIB
     %
     %   .. code-block:: matlab
     %
     %
-    %     % Reuse an existing uiprogressdlg
-    %     wb = uiprogressdlg(mibGUI, 'Message', 'Phase 1', 'Title', 'Proc');
-    %     pwb = core.PoolWaitbar(n, 'Phase 2', wb);
-    %     parfor ii = 1:n
-    %         pwb.increment();
+    %     % Use with docked panels in the main MIB window; parent = obj.gui.Parent (container)
+    %     pwb = core.PoolWaitbar(nItems, 'Processing...', obj.view.gui, 'My Task', true);
+    %     for ii = 1:nItems
+    %         % ... process item ...
+    %           if ~isempty(pwb)
+    %               if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+    %               pwb.increment();
+    %           end
     %     end
-    %     pwb.deletePoolWaitbar(true);   % keep wb open for the next phase
-    %     wb.Value = 1;  delete(wb);
+    %     pwb.deletePoolWaitbar();
     %
     %
-    %   **Example 3** — Cancelable dialog – poll getCancelState() between parfor batches
+    %   **Example 3** — Parallel loop with batch cancel polling
     %
     %   .. code-block:: matlab
     %
     %
-    %     % Cancelable dialog – poll getCancelState() between parfor batches
-    %     pwb = core.PoolWaitbar(n, 'Processing...', mibGUI, 'Job', true);
+    %     % Cancelable parfor with batching (cancel polling between batches only)
+    %     pwb = core.PoolWaitbar(n, 'Processing...', obj.view.gui, 'Job', true);
     %     pwb.setIncrement(10);         % update every 10 steps
     %     for batchStart = 1:10:n
-    %         if pwb.getCancelState(); break; end
+    %         if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
     %         batchEnd = min(batchStart+9, n);
     %         parfor ii = batchStart:batchEnd
     %             pwb.increment();
@@ -108,7 +114,7 @@ classdef PoolWaitbar < handle
     %  Public API
     %% ----------------------------------------------------------------
     methods
-        function obj = PoolWaitbar(N, message, parentOrHandle, WindowName, Cancelable)
+        function obj = PoolWaitbar(N, message, parentOrHandle, WindowName, Cancelable, Indeterminate)
             % POOLWAITBAR - Construct a thread-safe progress dialog for parallel loops.
             %
             % Syntax:
@@ -128,6 +134,7 @@ classdef PoolWaitbar < handle
             %   - **WindowName** — *(optional)* char, dialog title; default ''
             %   - **Cancelable** — *(optional)* logical, add Cancel button;
             %     default false.  Only used when parentOrHandle is a Figure.
+            %   - **Indeterminate** - *(optional)* logical, default=false; use the Indeterminate mode
             %
             % Output Arguments:
             %   - **obj** — core.PoolWaitbar instance
@@ -149,6 +156,7 @@ classdef PoolWaitbar < handle
             %     pwb = core.PoolWaitbar(200, 'Phase 2', existingWb);
             %
 
+            if nargin < 6; Indeterminate = false; end
             if nargin < 5; Cancelable = false; end
             if nargin < 4; WindowName = ''; end
             if nargin < 3; parentOrHandle = []; end
@@ -163,13 +171,14 @@ classdef PoolWaitbar < handle
                 if ~isempty(WindowName); obj.ClientHandle.Title   = WindowName; end
                 obj.ClientHandle.Value = 0;
 
-            elseif isa(parentOrHandle, 'matlab.ui.Figure')
+            elseif isa(parentOrHandle, 'matlab.ui.Figure') || isa(parentOrHandle, 'matlab.ui.container.internal.AppContainer')
                 % Create a new deterministic uiprogressdlg
                 obj.ClientHandle = uiprogressdlg(parentOrHandle, ...
                     'Message',    message, ...
                     'Title',      WindowName, ...
                     'Value',      0, ...
-                    'Cancelable', Cancelable);
+                    'Cancelable', Cancelable, ...
+                    'Indeterminate', Indeterminate);
 
             else
                 error('core:PoolWaitbar:noParent', ...

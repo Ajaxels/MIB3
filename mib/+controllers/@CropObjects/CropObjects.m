@@ -697,7 +697,7 @@ classdef CropObjects < handle
                               {modelText1, modelText2, obj.mibModel.sessionSettings.(obj.sessionSettingsKey).cropOutAllMaterials}};
                     dlgOpt.mibPath      = obj.mibModel.mibPath;
                     dlgOpt.WindowWidth  = 550;
-                    dlgOpt.WindowHeight  = 230;
+                    dlgOpt.WindowHeight  = 260;
                     dlgOpt.LabelPosition = 'left';
                     header        = 'Specify additional filename parameters';
                     dlgOpt.HeaderLines   = 1;
@@ -779,8 +779,7 @@ classdef CropObjects < handle
             objDigits = numel(num2str(noPoints));
             hasView = ~isempty(obj.view) && isvalid(obj.view.gui);
             if hasView
-                wb = uiprogressdlg(obj.view.gui, 'Title', 'Crop patches', ...
-                    'Message', 'Please wait...', 'Value', 0);
+                pwb = core.PoolWaitbar(noPoints, 'Processing patches...', obj.view.gui, 'Crop patches', true);
             end
 
             getDataOpt.blockModeSwitch = 0;
@@ -788,8 +787,8 @@ classdef CropObjects < handle
 
             for pntId = 1:noPoints
                 if hasView
-                    wb.Value   = (pntId - 1) / noPoints;
-                    wb.Message = sprintf('Processing patch %d / %d...', pntId, noPoints);
+                    if pwb.getCancelState(); break; end
+                    pwb.updateText(sprintf('Processing patch %d / %d...', pntId, noPoints));
                 end
 
                 annZ = obj.annotationLabels.positions(pntId, 1);
@@ -928,11 +927,14 @@ classdef CropObjects < handle
                     assignin('base', matlabVarName, matlabVar);
                     fprintf('MIB: "%s" was exported to MATLAB workspace\n', matlabVarName);
                 end
+                
+                if hasView
+                    pwb.increment();
+                end
             end
 
             if hasView
-                wb.Value = 1;
-                delete(wb);
+                pwb.deletePoolWaitbar();
                 obj.closeWindow();
             end
         end

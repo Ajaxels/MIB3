@@ -940,10 +940,9 @@ classdef DisplayAdjust < handle
             end
 
             minval = zeros([numel(colorCh), 1], obj.mibModel.I{id}.image.dataClass);
-            wb = [];
+            pwb = [];
             if obj.BatchOpt.showWaitbar && ~isempty(obj.view)
-                wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, ...
-                    'Message', 'Calculating minimum value...', 'Title', 'Find Min');
+                pwb = core.PoolWaitbar(numel(colorCh), 'Calculating minimum value...', obj.view.gui, 'Find Min', true);
             end
 
             if ~strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
@@ -958,7 +957,10 @@ classdef DisplayAdjust < handle
                         minval(colId) = (double(img(max(1, floor(n*threshold/100)))) + ...
                                          double(img(ceil(n*threshold/100)))) / 2;
                     end
-                    if ~isempty(wb); wb.Value = colId/numel(colorCh); end
+                    if ~isempty(pwb)
+                        if pwb.getCancelState(); pwb.deletePoolWaitbar(); minval = []; return; end
+                        pwb.increment(); 
+                    end
                 end
             else
                 if threshold ~= 0
@@ -967,7 +969,7 @@ classdef DisplayAdjust < handle
                     dlgOpt.HeaderLines = 1;
                     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
                     notify(obj.mibModel, 'StopProtocol');
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     minval = []; return;
                 end
                 for colId = 1:numel(colorCh)
@@ -980,11 +982,11 @@ classdef DisplayAdjust < handle
                         end
                         if minval(colId) == 0; break; end
                     end
-                    if ~isempty(wb); wb.Value = colId/numel(colorCh); end
+                    if ~isempty(pwb); pwb.increment(); end
                 end
             end
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 obj.view.handles.minEdit.Value = double(minval(1));
                 obj.minEdit_Callback();
@@ -1027,10 +1029,9 @@ classdef DisplayAdjust < handle
             end
 
             maxval = zeros([numel(colorCh), 1], obj.mibModel.I{id}.image.dataClass);
-            wb = [];
+            pwb = [];
             if obj.BatchOpt.showWaitbar && ~isempty(obj.view)
-                wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, ...
-                    'Message', 'Calculating maximum value...', 'Title', 'Find Max');
+                pwb = core.PoolWaitbar(numel(colorCh), 'Calculating maximum value...', obj.view.gui, 'Find Max', true);
             end
 
             if ~strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
@@ -1045,7 +1046,10 @@ classdef DisplayAdjust < handle
                         maxval(colId) = (double(img(max(1, floor(n*(1-threshold/100))))) + ...
                                          double(img(ceil(n*(1-threshold/100))))) / 2;
                     end
-                    if ~isempty(wb); wb.Value = colId/numel(colorCh); end
+                    if ~isempty(pwb)
+                        if pwb.getCancelState(); pwb.deletePoolWaitbar(); maxval = []; return; end
+                        pwb.increment();
+                    end
                 end
             else
                 if threshold ~= 0
@@ -1054,7 +1058,7 @@ classdef DisplayAdjust < handle
                     dlgOpt.HeaderLines = 1;
                     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', dlgOpt);
                     notify(obj.mibModel, 'StopProtocol');
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     maxval = []; return;
                 end
                 for colId = 1:numel(colorCh)
@@ -1067,11 +1071,14 @@ classdef DisplayAdjust < handle
                         end
                         if maxval(colId) == maxInt; break; end
                     end
-                    if ~isempty(wb); wb.Value = colId/numel(colorCh); end
+                    if ~isempty(pwb)
+                        if pwb.getCancelState(); pwb.deletePoolWaitbar(); maxval = []; return; end
+                        pwb.increment();
+                    end
                 end
             end
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
             if ~isempty(obj.view) && isvalid(obj.view.gui)
                 obj.view.handles.maxEdit.Value = double(maxval(1));
                 obj.maxEdit_Callback();
@@ -1115,22 +1122,20 @@ classdef DisplayAdjust < handle
 
             if maxT == 1; obj.mibModel.backup('image', 1); end
 
-            wb = [];
+            pwb = [];
             if obj.BatchOpt.showWaitbar
-                wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, ...
-                    'Message', 'Adjusting...', 'Title', 'Adjusting intensities');
+                pwb = core.PoolWaitbar(maxT * maxZ, 'Adjusting...', obj.view.gui, 'Adjusting intensities', true);
             end
 
             [lowIn, highIn, lowOut, highOut] = obj.mibModel.I{id}.image.getImAdjustStretchCoef(channel);
-            waitbarStep = max(1, round(maxT*maxZ/20));
-
             for t = 1:maxT
                 for z = 1:maxZ
                     obj.mibModel.I{id}.image.data{1}(:,:,z,channel,t) = imadjust( ...
                         obj.mibModel.I{id}.image.data{1}(:,:,z,channel,t), ...
                         [lowIn, highIn], [lowOut, highOut], viewPort.gamma(channel));
-                    if ~isempty(wb) && mod(z + (t-1)*maxZ, waitbarStep) == 0
-                        wb.Value = (z + (t-1)*maxZ) / (maxZ*maxT);
+                    if ~isempty(pwb)
+                        if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+                        pwb.increment();
                     end
                 end
             end
@@ -1144,7 +1149,7 @@ classdef DisplayAdjust < handle
             obj.mibModel.I{id}.image.viewPort.max(channel)   = maxInt;
             obj.mibModel.I{id}.image.viewPort.gamma(channel) = 1;
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
             obj.updateSliders();
             notify(obj.mibModel, 'ShowImage');
         end

@@ -332,8 +332,7 @@ if answer{2}    % save in Matlab format
     fprintf('Evaluation results were saved to:\n%s\n', fn);
 end
 if answer{3}    % save in Excel format
-    wbar = uiprogressdlg(obj.view.gui, 'Message', sprintf('Saving to Excel\nPlease wait...'), ...
-        'Title', 'Export');
+    wbar = uiprogressdlg(obj.view.gui, 'Message', sprintf('Saving to Excel\nPlease wait...'), 'Title', 'Export');
 
     clear excelHeader;
     fn = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'EvaluationResults.xls');
@@ -371,8 +370,7 @@ if answer{3}    % save in Excel format
 end
 
 if answer{4}    % save in CSV format
-    wbar = uiprogressdlg(obj.view.gui, 'Message', sprintf('Saving to CSV format\nPlease wait...'), ...
-        'Title', 'Export');
+    wbar = uiprogressdlg(obj.view.gui, 'Message', sprintf('Saving to CSV format\nPlease wait...'), 'Title', 'Export');
     fn = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels', 'EvaluationClassMetrics.csv');
     if exist(fn, 'file') == 2; delete(fn); end
     try

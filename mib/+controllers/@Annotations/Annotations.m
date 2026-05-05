@@ -1032,9 +1032,6 @@ classdef Annotations < handle
                         '', prompts, defAns, 'Conversion to Mask', maskOpt);
                     if isempty(answer); return; end
 
-                    wb = uiprogressdlg(obj.view.gui, 'Title', 'Annotations to Mask', ...
-                        'Message', 'Preparing...', 'Value', 0);
-
                     if obj.mibModel.I{id}.maskExist
                         setDataOptions.blockModeSwitch = 0;
                         obj.mibModel.backup('mask', 1, setDataOptions);
@@ -1070,10 +1067,11 @@ classdef Annotations < handle
                     nPts               = size(d2, 1);
                     getOpt.id          = id;
                     getOpt.blockModeSwitch = 0;
+                    pwb = core.PoolWaitbar(nPts, 'Preparing...', obj.view.gui, 'Annotations to Mask', true);
 
                     for pntId = 1:nPts
-                        wb.Value   = (pntId - 1) / nPts;
-                        wb.Message = sprintf('Placing spot %d / %d...', pntId, nPts);
+                        if pwb.getCancelState(); break; end
+                        pwb.updateText(sprintf('Placing spot %d / %d...', pntId, nPts));
 
                         zc = d2(pntId, 1);
                         xc = d2(pntId, 2);
@@ -1133,10 +1131,10 @@ classdef Annotations < handle
                             end
                             obj.mibModel.setData2D(maskBlock, 'mask', zSlice, 3, NaN, getOpt);
                         end
+                        pwb.increment();
                     end
 
-                    wb.Value = 1;
-                    delete(wb);
+                    pwb.deletePoolWaitbar();
                     obj.mibModel.showMask = true; 
                     eventdata = core.ToggleEventData({'selectionPanel'});
                     notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);

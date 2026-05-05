@@ -35,13 +35,20 @@ switch Filters{FilterIndex,2}
         save(fn_out, 'Protocol', '-mat', '-v7');
     case 'Excel format (*.xls)'
         warning('off', 'MATLAB:xlswrite:AddSheet');
-        wb = uiprogressdlg(obj.view.gui, 'Title', 'Saving to Excel', 'Message', 'Please wait...', 'Value', 0);
         % Sheet 1
         s = {sprintf('MIB protocol file: %s', fn_out)};
         s(3,1) = {'Step'}; s(3,2) = {'Section name'}; s(3,3) = {'Action name'}; s(3,4) = {'Command'};
         s(3,5) = {'Parameter name'}; s(3,6) = {'Parameter value'};
         lineIndex = 4;
+        
+        % Create PoolWaitbar with cancel option
+        pwb = core.PoolWaitbar(numel(obj.Protocol), 'Building spreadsheet...', obj.view.gui, 'Saving to Excel', true);
+        
         for protId = 1:numel(obj.Protocol)
+            if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+            
+            pwb.updateText(sprintf('Processing protocol step %d / %d', protId, numel(obj.Protocol)));
+            
             s(lineIndex,1) = {sprintf('%d', protId)};
             s(lineIndex,2) = {obj.Protocol(protId).mibBatchSectionName};
             s(lineIndex,3) = {obj.Protocol(protId).mibBatchActionName};
@@ -59,12 +66,12 @@ switch Filters{FilterIndex,2}
                 lineIndex = lineIndex + 1;
             end
             if isempty(fieldNames); lineIndex = lineIndex + 1; end  % to fix position for the STOP EXECUTION
+            
+            pwb.increment();
         end
-        wb.Value = 0.2;
+
         warning('off','MATLAB:COM:invalidargumenttype');    % switch off warnings
         xlswrite2(fn_out, s, 'Protocol');
-        wb.Value = 1;
-        close(wb);
 end
 fprintf('mib: protocol was saved to "%s"\n', fn_out);
 end

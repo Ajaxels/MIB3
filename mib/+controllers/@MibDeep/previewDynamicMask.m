@@ -7,8 +7,7 @@ function previewDynamicMask(obj)
 %       obj.previewDynamicMask()
 %
 
-    wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', ...
-        'Title', 'Generating blocks');
+    wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', 'Title', 'Generating blocks');
 
     % get current image
     img = obj.mibModel.getData2D('image');

@@ -18,8 +18,7 @@ function duplicateConfigAndNetwork(obj)
         fullfile(currPath, currFile));
     if newFile == 0; return; end
 
-    wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', ...
-        'Title', 'Saving network and config');
+    wb = uiprogressdlg(obj.view.gui, 'Message', 'Please wait...', 'Title', 'Saving network and config');
 
     % copy network file
     newNetworkFile = fullfile(newPath, newFile);
