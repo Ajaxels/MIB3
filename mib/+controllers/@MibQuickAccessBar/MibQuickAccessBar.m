@@ -11,12 +11,10 @@ classdef MibQuickAccessBar
     end
 
     methods
-
-        % createCentralMarker(obj, centerX, centerY, options)        % create a central marker on the image axes
-        % 
-        % gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of the quick access bar of MIB
-        % 
-        % orientationChange(obj, hWidget, moveMouseSw)  % switch viewing plane to YX/XZ/YZ orientation
+        % ------------------------- declaration of functions in the external files,
+        createCentralMarker(obj, centerX, centerY, options)        % create a central marker on the image axes
+        gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of the quick access bar of MIB
+        orientationChange(obj, hWidget, moveMouseSw)  % switch viewing plane to YX/XZ/YZ orientation
 
         function obj = MibQuickAccessBar(mainCtrl, view, guiHandles, model)
             % MIBQUICKACCESSBAR - Initialize Quick Access Bar controller.

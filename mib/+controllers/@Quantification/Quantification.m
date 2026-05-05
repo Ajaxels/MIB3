@@ -1,12 +1,5 @@
 classdef Quantification < handle
 % QUANTIFICATION - controller for the Quantification (image statistics) window.
-%
-% available via MIB Menu Models Model statistics
-%
-%
-% .. code-block:: matlab
-%
-%   obj.startController('controllers.Quantification');
 
     properties
         mibModel
@@ -56,8 +49,7 @@ classdef Quantification < handle
     end
 
     events
-        CloseEvent
-        % fires when the dialog is closed; caught by parent to clean up
+        CloseEvent        % fires when the dialog is closed; caught by parent to clean up
     end
 
     methods (Static)
@@ -94,24 +86,52 @@ classdef Quantification < handle
                     obj.updateWidgets();
             end
         end
-
     end % methods (Static)
 
     methods
+        % declaration of methods in external files
+        addCallbacks(obj) % Wire all widget callbacks once from the constructor
+        applySelectedProperties(obj, propertyList) % Apply the property list returned by the QuantificationProperties dialog
+        closeWindow(obj) % Close the Quantification dialog and release all resources
+        createContextMenus(obj)  % Build the right-click context menu for statTable programmatically
+        enableStatTable(obj) % Enable or disable statTable depending on whether results are available
+        exportButton_Callback(obj, batchModeSwitch)  % Export quantification results to Excel, CSV, MAT file, or MATLAB workspace
+        gui_WindowButtonDownFcn(obj)  % Handle mouse button press events on the histogram axes.
+        highlightRange_Callback(obj) % Highlight all objects whose Value column falls within the range
+        highlightSelection(obj, object_list, mode, sliceNumbers)  % Highlight selected quantification objects in the selection layer
+        histScale_Callback(obj)  % Toggle the histogram Y axis between logarithmic and linear scale
+        material_Callback(obj) % Handle selection change in the Material dropdown
+        multiple_Callback(obj) % Handle the Multiple properties checkbox toggle
+        multipleBtn_Callback(obj) % Open the property selection dialog for multi-property batch analysis
+        property_Callback(obj) % Handle selection change in the Property dropdown
+        quantification_Callback(obj, batchModeSwitch) % Run the shape/intensity quantification analysis and populate statTable
+        radioButton_Callback(obj, hObject) % Handle Shape2D / Shape3D / Object / Intensity radio button changes
+        returnBatchOpt(obj, BatchOptOut) % Publish BatchOpt to the macro recorder via 'SyncBatch' event
+        data = sortBtn_Callback(obj, data) % Sort the statTable data matrix according to the current sorting settings
+        statTable_CellSelectionCallback(obj, indices, parameter) % Handle cell selection in statTable and optionally highlight objects
+        tableContextMenu_cb(obj, parameter) % Handle context menu actions on statTable rows
+        units_Callback(obj) % Handle selection change in the Units dropdown
+        updateBatchOptFromGUI(obj, hObject, ~)  % Sync BatchOpt from a changed widget using the shared utility
+        updateSortingSettings(obj) % Sync sort direction and column index from the sortTable dropdown
+        updateWidgets(obj) % Refresh all GUI widgets from the current model state and BatchOpt
+
         function obj = Quantification(mibModel, varargin)
             % QUANTIFICATION - constructor for Quantification controller.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
-            %       obj = Quantification(mibModel)
-            %       obj = Quantification(mibModel, mibController, BatchOpt, contIndex)
+            %       obj = controllers.Quantification(mibModel)
+            %       obj = controllers.Quantification(mibModel, mibController, BatchOpt, contIndex)
             %
             % Input Arguments:
             %   - **mibModel** — handle to MibModel
             %   - **varargin{1}** — *(optional)* handle to parent MibController (for startController compatibility)
             %   - **varargin{2}** — *(optional)* BatchOpt struct; pass NaN to return default BatchOpt via SyncBatch
             %   - **varargin{3}** — *(optional)* contIndex - material index to pre-select (-1=Mask, 0=Exterior, 1,2,...=material)
+            %
+            % Output Arguments:
+            %   - **obj** — [Quantification] initialized controller instance
             %
             % Usage:
             %   Example 1::
@@ -317,10 +337,8 @@ classdef Quantification < handle
             obj.view.gui.Visible = 'on';    % turn on the window
 
             % --- Register model listeners ---
-            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', ...
-                @(src, evnt) controllers.Quantification.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', ...
-                @(src, evnt) controllers.Quantification.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src, evnt) controllers.Quantification.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', @(src, evnt) controllers.Quantification.ViewListner_Callback2(obj, src, evnt));
         end
 
     end % methods

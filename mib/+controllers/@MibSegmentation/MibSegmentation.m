@@ -16,64 +16,36 @@ classdef MibSegmentation
     methods
 
         % % ------------------ declaration of listeners
-        % 
-        % listener_updatePanelPosition(obj, src, evtData) % Listener callback: adapt the Segmentation panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right).
-        % 
-        % % ------------------ declaration of other methods and callbacks
-        % 
-        % annotationsPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Annotations tool
-        % 
-        % brushPanel_Callback(obj, hWidget, hData, mode)        % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
-        % 
-        % colorWheel_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the color wheel button (obj.view.handles.panels.segmentation.handles.colorWheel)
-        % 
-        % dragPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Drag-and-drop materials tool
-        % 
-        % favTool_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in obj.handles.panels.segmentation panel
-        % 
-        % gui_Callbacks(obj, hWidget, hData)        % callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
-        % 
-        % lassoPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Lasso/Object picker tools
-        % 
-        % lines3DPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->3D lines tool
-        % 
-        % magicwandPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Magicwand tool
-        % 
-        % materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
-        % 
-        % materialsTable_CellSelectionCallback(obj, cellIndices)        % handle cell selection in materials table (obj.handles.materialsTable)
-        % 
-        % materialsTable_ContextMenu(obj, menuEntry, selectedData)    % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTable)
-        % 
-        % materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)      % callbacks for the context menu of 
-        %                                                                         % - Segmentation table widget -> Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
-        %                                                                         % - Menu ribbon -> Models -> Materials (obj.view.handles.model.materials)
-        % 
-        % materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, action_type)  % callbacks for the context menu of the segmentation table to move layers
-        % 
-        % materialsTable_render(obj, menuEntry, selectedData)  % callbacks for the context menu of the Segmentation table widget -> Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen)
-        % 
-        % membranePanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Membrane click tracker tool
-        % 
-        % restrictMask_Callback(obj)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in obj.handles.panels.segmentation panel. Restrict selection to the mask layer
-        % 
-        % restrictMaterial_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in obj.handles.panels.segmentation panel
-        % 
-        % samPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->SAM tool
-        % 
-        % segmentationTool_Callback(obj, segmToolIndex)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
-        % 
-        % thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
-        % 
-        % thresholdSlider_ContextMenu(obj, menuEntry, selectedData)        % context menu callbacks for threshold sliders (Default, Set step...)
-        % 
-        % update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
-        % 
-        % updateInterpolationSettings(obj) % show dialog to modify selection interpolation settings for the brush tool
-        % 
-        % updateMaterialsTable(obj, position)                 % update the segmentation table from model
-        % 
-        % updateSamSettings(obj)        % Open SAM settings dialog for configuring SAM1 or SAM2 parameters
+        listener_updatePanelPosition(obj, src, evtData) % Listener callback: adapt the Segmentation panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right).
+        % ------------------ declaration of other methods and callbacks
+        annotationsPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Annotations tool
+        brushPanel_Callback(obj, hWidget, hData, mode)        % callbacks for widgets in the Segmentation panel->Brush/3D ball/Spot tool
+        colorWheel_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the color wheel button (obj.view.handles.panels.segmentation.handles.colorWheel)
+        dragPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Drag-and-drop materials tool
+        favTool_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.favoriteTool in obj.handles.panels.segmentation panel
+        gui_Callbacks(obj, hWidget, hData)        % callbacks for widgets of some the Segmentation panel obj.handles.panels.segmentation
+        lassoPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Lasso/Object picker tools
+        lines3DPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->3D lines tool
+        magicwandPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Magicwand tool
+        materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
+        materialsTable_CellSelectionCallback(obj, cellIndices)        % handle cell selection in materials table (obj.handles.materialsTable)
+        materialsTable_ContextMenu(obj, menuEntry, selectedData)    % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTable)
+        materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)      % callbacks for the context menu of 
+                                                                                % - Segmentation table widget -> Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
+                                                                                % - Menu ribbon -> Models -> Materials (obj.view.handles.model.materials)
+        materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, action_type)  % callbacks for the context menu of the segmentation table to move layers
+        materialsTable_render(obj, menuEntry, selectedData)  % callbacks for the context menu of the Segmentation table widget -> Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen)
+        membranePanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Membrane click tracker tool
+        restrictMask_Callback(obj)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in obj.handles.panels.segmentation panel. Restrict selection to the mask layer
+        restrictMaterial_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in obj.handles.panels.segmentation panel
+        samPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->SAM tool
+        segmentationTool_Callback(obj, segmToolIndex)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
+        thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
+        thresholdSlider_ContextMenu(obj, menuEntry, selectedData)        % context menu callbacks for threshold sliders (Default, Set step...)
+        update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
+        updateInterpolationSettings(obj) % show dialog to modify selection interpolation settings for the brush tool
+        updateMaterialsTable(obj, position)                 % update the segmentation table from model
+        updateSamSettings(obj)        % Open SAM settings dialog for configuring SAM1 or SAM2 parameters
 
         function obj = MibSegmentation(mainCtrl, view, guiHandles, model)
             % MIBSEGMENTATION - Constructor for the Segmentation panel controller.

@@ -22,27 +22,17 @@ classdef MibRoi < handle
 
     methods
         % % ------------------------- declaration of listeners
-        % 
-        % listener_updatePanelPosition(obj, src, evtData)        % redraw the panel based on its position within the main GUI
-        % 
-        % % ------------------------- declaration of functions in the external files, 
-        % % keep empty line in between for the doc generator
-        % 
-        % gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
-        % 
-        % addROI(obj) % interactively add a new ROI or create one from manual coordinates
-        % 
-        % removeROI(obj) % remove selected ROI(s) from the current dataset
-        % 
-        % refreshROIList(obj, previousValue) % rebuild the ROI list-box items from current hROI.Data
-        % 
-        % repositionDrawingROI(obj) % reposition the active drawing tool after zoom/pan changes the axes coordinate system
-        % 
-        % roiModify(obj) % interactively modify (redraw) an existing ROI in-place
-        % 
-        % roiSave(obj) % save ROIs of the current dataset to a .roi (MAT) file
-        % 
-        % roiLoad(obj) % load ROIs from a .roi (MAT) file into the current dataset
+
+        listener_updatePanelPosition(obj, src, evtData)        % redraw the panel based on its position within the main GUI
+        % ------------------------- declaration of functions in the external files, 
+        gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
+        addROI(obj) % interactively add a new ROI or create one from manual coordinates
+        removeROI(obj) % remove selected ROI(s) from the current dataset
+        refreshROIList(obj, previousValue) % rebuild the ROI list-box items from current hROI.Data
+        repositionDrawingROI(obj) % reposition the active drawing tool after zoom/pan changes the axes coordinate system
+        roiModify(obj) % interactively modify (redraw) an existing ROI in-place
+        roiSave(obj) % save ROIs of the current dataset to a .roi (MAT) file
+        roiLoad(obj) % load ROIs from a .roi (MAT) file into the current dataset
 
         function obj = MibRoi(mainCtrl, view, guiHandles, model)
             % MIBROI - Initialize ROI panel controller.

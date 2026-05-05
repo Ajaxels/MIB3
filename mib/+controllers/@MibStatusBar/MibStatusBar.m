@@ -14,11 +14,9 @@ classdef MibStatusBar
     methods
         % % declaration of functions in the external files, keep empty line in between for the doc generator
         % 
-        % listener_updateStatusBar(obj, src, evtData) % Call for update of the status bar widgets, used upon change of directory in Batch Processing executed upon catch of MibModel->"UpdateStatusBar" event
-        % 
-        % gui_Callbacks(obj, mode) % callbacks for widgets of some the Status bar obj.handles.status
-        % 
-        % zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)       % Callback for the mibZoomEdit control to change image magnification
+        listener_updateStatusBar(obj, src, evtData) % Call for update of the status bar widgets, used upon change of directory in Batch Processing executed upon catch of MibModel->"UpdateStatusBar" event
+        gui_Callbacks(obj, mode) % callbacks for widgets of some the Status bar obj.handles.status
+        zoomEdit_Callback(obj, recenterSwitch, BatchOptIn)       % Callback for the mibZoomEdit control to change image magnification
 
         function obj = MibStatusBar(mainCtrl, view, guiHandles, model)
             % MIBSTATUSBAR - Initialize status bar controller.

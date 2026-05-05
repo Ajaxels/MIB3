@@ -13,23 +13,15 @@ classdef MibDirContents
     end
 
     methods
-        % % ------------------ declaration of listeners
-        % 
-        % listenerUpdateFileList(obj, src, evtData)        % Update list of files in "obj.view.handles.panels.dirContents.handles.fileList" executed upon catch of MibModel->"UpdateFilelist" event
-        % 
-        % listener_updatePanelPosition(obj, src, evtData)        % Listener callback: adapt the Directory contents panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right)
-        % 
-        % % ------------------ declaration of other methods and callbacks
-        % 
-        % bioFormats_Callback(obj)        % callback for selection of the bio-formats reader by press on obj.view.handles.panels.dirContents.handles.bioFormats, updates the contents of obj.view.handles.panels.dirContents.handles.fileFilters and refresh the list of files in obj.view.handles.panels.dirContents.handles.fileList
-        % 
-        % fileFilters_Callback(obj, hWidget, hData)        % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
-        % 
-        % fileFilters_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file filters widget (obj.handles.panels.activeDataset.handles.fileFilters)
-        % 
-        % fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.activeDataset.handles.fileList)
-        % 
-        % updateFileList_Callback(obj, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
+        % ------------------ declaration of listeners
+        listenerUpdateFileList(obj, src, evtData)        % Update list of files in "obj.view.handles.panels.dirContents.handles.fileList" executed upon catch of MibModel->"UpdateFilelist" event
+        listener_updatePanelPosition(obj, src, evtData)        % Listener callback: adapt the Directory contents panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right)
+        % ------------------ declaration of other methods and callbacks
+        bioFormats_Callback(obj)        % callback for selection of the bio-formats reader by press on obj.view.handles.panels.dirContents.handles.bioFormats, updates the contents of obj.view.handles.panels.dirContents.handles.fileFilters and refresh the list of files in obj.view.handles.panels.dirContents.handles.fileList
+        fileFilters_Callback(obj, hWidget, hData)        % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
+        fileFilters_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file filters widget (obj.handles.panels.activeDataset.handles.fileFilters)
+        fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.activeDataset.handles.fileList)
+        updateFileList_Callback(obj, selectedFilename)       % callback for click on the "obj.view.handles.panels.dirContents.handles.updateFileList" button to update the list of files shown in "obj.view.handles.panels.dirContents.handles.fileList" using filters specified in "obj.view.handles.panels.dirContents.handles.fileFilters"
 
         function obj = MibDirContents(mainCtrl, view, guiHandles, model)
             % MIBDIRCONTENTS - Constructor for the Directory Contents panel controller.

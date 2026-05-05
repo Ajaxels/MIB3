@@ -55,32 +55,31 @@ classdef BatchProcessing < handle
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-        % 
-        % backupProtocol(obj)                                                                           % backup current protocol for undo/redo
-        % backupProtocolRestore(obj, mode)                                                              % restore protocol from backup (undo/redo)
-        % deleteProtocol(obj)                                                                           % delete current protocol
-        % directoryLoopAction_Callback(obj, BatchOptInput)                                              % callback for Directory Loop action
-        % directoryOperationsAction_Callback(obj, BatchOptInput)                                        % callback for Directory operations action
-        % displaySelectedActionTableItems(obj, evnt)                                                    % display options for selected table row
-        % status = doBatchStep(obj, stepId, stepOptions)                                                % execute a single protocol step
-        % status = doFileLoop(obj, startStep, finishStep, options)                                      % loop over files in a directory
-        % status = doSeriesLoop(obj, startStep, finishStep)                                             % loop over Bio-Formats series
-        % fileLoopAction_Callback(obj, BatchOptInput)                                                   % callback for File Loop action
-        % fileOperationsAction_Callback(obj, BatchOptInput)                                             % callback for File operations action
-        % helpBtn_Callback(obj)                                                                         % show help page
-        % initialize(obj)                                                                               % build the obj.Sections catalogue of all available batch actions
-        % listenMIB_Callback(obj)                                                                       % enable/disable listener to MIB events
-        % loadProtocol(obj)                                                                             % load protocol from file
-        % dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, stepId, stepOptions)      % resolve directory paths for batch steps
-        % protocolActions_Callback(obj, options)                                                        % modify protocol (add/insert/update/delete/move/etc.)
-        % protocolList_SelectionCallback(obj)                                                           % callback for row selection in protocolList
-        % runProtocol_Callback(obj, parameter)                                                       % run protocol (complete/from/step/stepadvance)
-        % saveProtocol(obj)                                                                             % save protocol to file
-        % selectProtocolSection_Callback(obj, hObject)                                                           % callback for section/action popups
-        % selectedActionTable_ContextCallback(obj, parameter)                                           % context menu callback for selectedActionTable
-        % selectedActionTableItem_Update(obj, hObject)                                                  % update selected action in table
-        % updateProtocolList(obj)                                                                       % update the protocol list display
-        % updateSelectedActionTable(obj, BatchOpt)                                                      % update selected action table from BatchOpt
+        backupProtocol(obj)                                                                           % backup current protocol for undo/redo
+        backupProtocolRestore(obj, mode)                                                              % restore protocol from backup (undo/redo)
+        deleteProtocol(obj)                                                                           % delete current protocol
+        directoryLoopAction_Callback(obj, BatchOptInput)                                              % callback for Directory Loop action
+        directoryOperationsAction_Callback(obj, BatchOptInput)                                        % callback for Directory operations action
+        displaySelectedActionTableItems(obj, evnt)                                                    % display options for selected table row
+        status = doBatchStep(obj, stepId, stepOptions)                                                % execute a single protocol step
+        status = doFileLoop(obj, startStep, finishStep, options)                                      % loop over files in a directory
+        status = doSeriesLoop(obj, startStep, finishStep)                                             % loop over Bio-Formats series
+        fileLoopAction_Callback(obj, BatchOptInput)                                                   % callback for File Loop action
+        fileOperationsAction_Callback(obj, BatchOptInput)                                             % callback for File operations action
+        helpBtn_Callback(obj)                                                                         % show help page
+        initialize(obj)                                                                               % build the obj.Sections catalogue of all available batch actions
+        listenMIB_Callback(obj)                                                                       % enable/disable listener to MIB events
+        loadProtocol(obj)                                                                             % load protocol from file
+        dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, stepId, stepOptions)      % resolve directory paths for batch steps
+        protocolActions_Callback(obj, options)                                                        % modify protocol (add/insert/update/delete/move/etc.)
+        protocolList_SelectionCallback(obj)                                                           % callback for row selection in protocolList
+        runProtocol_Callback(obj, parameter)                                                       % run protocol (complete/from/step/stepadvance)
+        saveProtocol(obj)                                                                             % save protocol to file
+        selectProtocolSection_Callback(obj, hObject)                                                           % callback for section/action popups
+        selectedActionTable_ContextCallback(obj, parameter)                                           % context menu callback for selectedActionTable
+        selectedActionTableItem_Update(obj, hObject)                                                  % update selected action in table
+        updateProtocolList(obj)                                                                       % update the protocol list display
+        updateSelectedActionTable(obj, BatchOpt)                                                      % update selected action table from BatchOpt
 
         function obj = BatchProcessing(mibModel, varargin)
             % BATCHPROCESSING - Constructor — create a BatchProcessing controller and open its GUI window.

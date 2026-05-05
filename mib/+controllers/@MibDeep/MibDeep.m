@@ -219,145 +219,75 @@ classdef MibDeep < handle
 
     methods
         % declaration of functions in the external files, keep empty line in between for the doc generator
-
         activationLayerChangeCallback(obj)        % callback for modification of the Activation Layer dropdown
-
         balanceClasses(obj)        % balance classes before training
-
         bioformatsCallback(obj, event) % update available filename extensions upon press of the BioFormats checkbox
-        
         imgOut = channelWisePreProcess(obj, imgIn)        % function imgOut = channelWisePreProcess(obj, imgIn)
-
         checkNetwork(obj, fn)        % generate and check network using settings in the Train tab
-
         closeWindow(obj)        % callback on closing of DeepMIB window
-
         res = correctBatchOpt(obj, res)        % correct loaded BatchOpt structure if it is not compatible with the current version of DeepMIB
-
         countLabels(obj)        % count occurrences of labels in model files callback for press of the "Count labels" in the Options panel
-        
         [lgraph, outputPatchSize] = createNetwork(obj, previewSwitch) % generate network
-
         customTrainingProgressWindow_Callback(obj, event)        % callback for click on obj.view.handles.O_CustomTrainingProgressWindow checkbox
-
         duplicateConfigAndNetwork(obj)        % copy the network file and its config to a new filename
-
         evaluateSegmentation(obj)        % evaluate segmentation results by comparing predicted models with the ground truth models
-
         evaluateSegmentationPatches(obj)        % evaluate segmentation results for the patches in the patch-wise mode
-
         exploreActivations(obj)        % [MOVE TO THE BUTTON CALLBACK] explore activations within the trained network
-
         exportNetwork(obj)        % convert and export network to ONNX or TensorFlow formats
-
         net = generateDeepLabV3Network(obj, imageSize, numClasses, targetNetwork)% generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
-
         net = generate3DDeepLabV3Network(obj, imageSize, numClasses, downsamplingFactor, targetNetwork) % generate DeepLab v3+ convolutional neural network for semantic image segmentation of 2D RGB images
-
         [net, outputSize] = generateUnet2DwithEncoder(obj, imageSize, encoderNetwork) % enerate Unet convolutional neural network for semantic image segmentation of 2D RGB images using a specified encoder
-
         bls = generateDynamicMaskingBlocks(obj, vol, blockSize, noColors)        % generate blocks using dynamic masking parameters acquired in obj.DynamicMaskOpt
-        
         gpuInfo(obj)        % display information about the selected GPU
-
         helpButton_callback(obj)        % show Help sections
-
         importNetwork(obj)        % import an externally trained or designed network to be used with DeepMIB
-
         loadConfig(obj, configName)        % load config file with Deep MIB settings
-
         TrainingOptions = preprareTrainingOptions(obj, valDS)        % prepare trainig options for the network training
-
         TrainingOptions = preprareTrainingOptionsInstances(obj, valDS);     % prepare options for training of instance segmentation network
-
         previewDynamicMask(obj)        % preview results for the dynamic mode
-
         previewImagePatches_Callback(obj, event)        % callback for value change of obj.view.handles.O_PreviewImagePatches
-
         previewModels(obj, loadImagesSwitch)        % load images for predictions and the resulting models into MIB
-
         previewPredictions(obj)        % load images of prediction scores into MIB
-
         [cancelled, outputLabels, scoreImg] = processBlocksBlockedImage(obj, vol, zValue, net, inputPatchSize, outputPatchSize, blockSize, padShift, dataDimension, patchwiseWorkflowSwitch, patchwisePatchesPredictSwitch, classNames, generateScoreFiles, executionEnvironment, fn, progressDlg) % process image as patches using the blockmode    
-
         processImages(obj, preprocessFor)        % Preprocess images for training and prediction
-
         processImagesForInstanceSegmentation(obj, preprocessFor)        % Preprocess labels for 2D instance segmentation for training and prediction
-
         returnBatchOpt(obj, BatchOptOut)        % return structure with Batch Options and possible configurations via the notify 'SyncBatch' event
-        
         saveCheckpointNetworkCheck(obj)        % callback for press of Save checkpoint networks (obj.view.handles.T_SaveProgress)
-
         saveConfig(obj, filename)        % save Deep MIB configuration to a file
-
         selectArchitecture(obj, event)        % select the target architecture
-
         selectDirerctories(obj, event)        % select directories containing images for training and prediction
-
         selectGPUDevice(obj)        % select environment for computations
-
         net = selectNetwork(obj, networkName)        % select a filename for a new network in the Train mode, or select a network to use for the Predict mode
-
         selectWorkflow(obj, event)        % select deep learning workflow to perform
-
         sendReportsCallback(obj)        % define parameters for sending progress report to the user's email address
-
         setActivationLayerOptions(obj)        % update options for the activation layers
-
         [status, augNumber] = setAugFuncHandles(obj, mode, augOptions)        % define list of 2D/3D augmentation functions
-
         setAugmentationSettings(obj, mode)        % update settings for augmentation fo 2D images
-
         setInputLayerSettings(obj)        % update init settings for the input layer of networks
-
         setSegmentationLayer(obj)        % callback for modification of the Segmentation Layer dropdown
-
         setSegmentationLayerOptions(obj)        % update options for the activation layers
-
         setTrainingSettings(obj)        % update settings for training of networks
-
         singleModelTrainingFileValueChanged(obj, event)        % callback for press of SingleModelTrainingFile
-
         start(obj, event)        % start calcualtions, depending on the selected tab preprocessing, training, or prediction is initialized
-
         startPrediction2D(obj)        % predict datasets for 2D taken to a separate function for better performance
-
         startPrediction3D(obj)        % predict datasets for 3D networks taken to a separate to improve performance
-
         startPredictionBlockedImage(obj)        % predict 2D/3D datasets using the blockedImage class requires R2021a or newer
-
         startPreprocessing(obj)        % preprocess imaging for training and prediction
-
         startTraining(obj)        % perform training of the network
-
         startTrainingInstances(obj)        % perform training of instance segmentation network
-
         toggleAugmentations(obj)        % callback for press of the T_augmentation checkbox
-
         transferLearning(obj)        % perform fine-tuning of the loaded network to a different number of classes
-
         lgraph = updateActivationLayers(obj, lgraph)        % update the activation layers depending on settings in obj.BatchOpt.T_ActivationLayer and obj.ActivationLayerOpt
-
         updateBatchOptFromGUI(obj, event)       % update obj.BatchOpt from widgets of GUI
-
         lgraph = updateConvolutionLayers(obj, lgraph)        % update the convolution layers by providing new set of weight initializers
-
         updateDynamicMaskSettings(obj)        % update settings for calculation of dynamic masks during prediction using blockedimage mode the settings are stored in obj.DynamicMaskOpt
-
         updateImageDirectoryPath(obj, event)        % update directories with images for training, prediction and results
-
         lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)        % update maxPool and TransposedConvolution layers depending on network downsampling factor only for U-net and SegNet
-
         lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)        % update the input layer settings for lgraph parameters are taken from obj.InputLayerOpt
-
         updatePreprocessingMode(obj)        % callback for change of selection in the Preprocess for dropdown
-        
         updateScoreExportSettings(obj)        % update export settings for score files
-
         lgraph = updateSegmentationLayer(obj, lgraph, classNames)        % redefine the segmentation layer of lgraph based on obj.BatchOpt settings
-
         updateWidgets(obj)        % update widgets of this window
-
        
         function obj = MibDeep(mibModel, varargin)
             obj.mibModel = mibModel;    % assign model

@@ -6,12 +6,10 @@ function initialize(obj)
 %
 %       obj.initialize()
 %
-% Populates obj.Sections as a struct array where each element represents
-% one section visible in the section dropdown:
+% Populates obj.Sections as a struct array where each element represents one section visible in the section dropdown:
 %   - Sections(id).Name              - display name shown in selectProtocolSection
 %   - Sections(id).Actions(id2).Name - action name shown in selectProtocolAction
-%   - Sections(id).Actions(id2).Command - MATLAB expression evaluated
-% by doBatchStep; the variable *Batch* is the BatchOpt struct
+%   - Sections(id).Actions(id2).Command - MATLAB expression evaluated by doBatchStep; the variable *Batch* is the BatchOpt struct
 %
 % Called once from the constructor before the view is created so that
 % the section popup can be populated immediately.

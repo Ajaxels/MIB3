@@ -49,19 +49,12 @@ classdef MibVirtualImage < core.MibImage
 
     methods
         % % declaration of functions in external files
-        % 
         % initialize(obj, data, meta)          % Initialize with dummy placeholder or provided file paths (overrides MibImage.initialize)
-        % 
         % dataset = getData(obj, layerType, orient, colChannel, options)    % Get dataset — dispatches to getDataZarr or getDataVirt
-        % 
         % dataset = getDataZarr(obj, type, orient, colChannel, options)        % Read a subvolume from a Zarr pyramid dataset with optional slicing.
-        % 
         % dataset = getDataVirt(obj, type, orient, colChannel, options)        % Read a virtual dataset (BioFormats or HDF5) from disk on demand.
-        % 
         % loader = getOrCreateLoader(obj, fileIdx)   % Return (or lazily create) the virtual loader for file index fileIdx.
-        % 
         % closeVirtualDataset(obj)             % Close open virtual readers and loader objects.
-        % 
         % insertSlice(obj, img, insertPosition, dim, virtMeta, options)    % Insert virtual file references along depth; updates Virtual struct and sliceName
 
         function obj = MibVirtualImage(data, meta)

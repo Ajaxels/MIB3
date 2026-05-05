@@ -11,22 +11,12 @@ function selectedActionTable_ContextCallback(obj, parameter)
 % selected or if obj.CurrentBatch is empty.
 %
 % Supported operations (parameter):
-%   - 'add'               - prompt for a new numeric or logical parameter and
-% append it to obj.CurrentBatch
-%   - 'delete'            - remove the currently highlighted parameter from
-% obj.CurrentBatch
-%   - 'Add directories'   - open a multi-directory chooser and append the
-% selected paths to the DirectoriesList of a
-% DIRECTORY LOOP START step
-%   - 'Modify directory'  - open a single-directory chooser to replace the
-% currently selected directory entry; works for
-% DIRECTORY LOOP START, FILE LOOP START,
-% Directory operations, File operations, and generic
-% cell/char directory fields
-%   - 'Remove directories'- display a checklist and remove the ticked entries
-% from the DirectoriesList of a DIRECTORY LOOP START step
-%   - 'Set second column width' - prompt for a pixel width and apply it to
-% the second column of selectedActionTable
+%   - 'add'               - prompt for a new numeric or logical parameter and append it to obj.CurrentBatch
+%   - 'delete'            - remove the currently highlighted parameter from obj.CurrentBatch
+%   - 'Add directories'   - open a multi-directory chooser and append the selected paths to the DirectoriesList of a DIRECTORY LOOP START step
+%   - 'Modify directory'  - open a single-directory chooser to replace the currently selected directory entry; works for DIRECTORY LOOP START, FILE LOOP START, Directory operations, File operations, and generic cell/char directory fields
+%   - 'Remove directories'- display a checklist and remove the ticked entries from the DirectoriesList of a DIRECTORY LOOP START step
+%   - 'Set second column width' - prompt for a pixel width and apply it to the second column of selectedActionTable
 %
 % Input Arguments:
 %   - **parameter** — string matching one of the case labels listed above

@@ -16,6 +16,7 @@ Main controllers
    MibController
    MibRibbon
    MibImageDocument
+   BatchProcessing
 
 Panel controllers
 -----------------
@@ -70,6 +71,5 @@ Preferences and utilities
 .. toctree::
    :maxdepth: 1
 
-   BatchProcessing
    Preferences
    WelcomeTips

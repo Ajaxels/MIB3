@@ -30,15 +30,11 @@ classdef MibActiveDataset
     methods
         % % declaration of functions in the external files, keep empty line in between for the doc generator
         % 
-        % buffers_Callback(obj, hWidget, hData, buttonId)        % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset stored in a buffer defined by the pressed button
-        % 
-        % buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)        % callbacks for the context menu of the buffers (obj.handles.panels.activeDataset.handles.buffer1) buttons; batch-compatible
-        % 
-        % setsOps_Callbacks(obj, hWidget, hData, mode)        % callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
-        % 
-        % datasetTypeChange_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
-        % 
-        % update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
+        buffers_Callback(obj, hWidget, hData, buttonId)        % callbacks for press obj.handles.panels.activeDataset.handles.buffer1 buttons, selects the dataset stored in a buffer defined by the pressed button
+        buffers_ContextMenu(obj, parameter, buttonID, BatchOptIn)        % callbacks for the context menu of the buffers (obj.handles.panels.activeDataset.handles.buffer1) buttons; batch-compatible
+        setsOps_Callbacks(obj, hWidget, hData, mode)        % callbacks for press of sets-related widgets in obj.view.handles.panels.activeDataset.handles
+        datasetTypeChange_Callback(obj, hWidget, hData)        % callback for selection of entry in Datasets.datasetType dropdown to choose the type of the dataset stored in the selected buffer/container
+        update_fromModel(obj, src, evtData)        % update widgets of the Datasets panel from obj.mibModel
 
         function obj = MibActiveDataset(mainCtrl, view, guiHandles, model)
             % MIBACTIVEDATASET - Constructor for the Datasets panel controller.

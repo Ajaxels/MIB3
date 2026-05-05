@@ -89,102 +89,60 @@ classdef MibImageDocument < handle
     end
 
     methods
-        % % declaration of methods
-        % 
-        % clearQuickMeasure(obj)        % Silently remove the active quick-measurement ROI and text label
-        % 
-        % frameNumber_Callback(obj, parameter, BatchOptIn)        % Callback for changing the time points of the dataset by entering a new time value
-        % listener_frameChanged(obj)    % Listener for MibModel 'FrameChanged' event — syncs frame widgets and redraws
-        % listener_sliceChanged(obj)    % Listener for MibModel 'SliceChanged' event — syncs slice widgets and redraws
-        % 
-        % frameNumberSlider_Callback(obj, sliderValue)        % Change the currently displayed frame using the time-number slider
-        % 
-        % title = getTitle(obj)        % Get the title of this image document
-        % 
-        % gui_panAxesFcn(obj, xy, imgWidth, imgHeight)        % Moves the image in obj.handles.imViewAxes during a pan gesture.
-        % 
-        % gui_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View documents obj.cImageDoc{setId}
-        % 
-        % gui_ScrollWheelFcn(obj, eventdata)        % Callback for mouse scroll wheel
-        % 
-        % gui_SizeChangedFcn(obj)        % Callback when figure size changes
-        % 
-        % gui_Brush_scrollWheelFcn(obj, eventdata)        % Handle scroll wheel during adaptive superpixel brush mode
-        % 
-        % gui_WindowBrushMotionFcn(obj, structElement)        % Draw brush trace during brush tool use
-        % 
-        % gui_WindowButtonDownFcn(obj)        % Callback for mouse button press in the image view.
-        % 
-        % gui_WindowButtonUpFcn(obj, brush_switch)        % Callback for release of the mouse button.
-        % 
-        % gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)        % Handle key callbacks during brush superpixel mode
-        % 
-        % gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
-        % 
-        % segmentationAnnotation(obj, y, x, z, t, modifier, options)        % Add or remove a text annotation at the given dataset coordinate
-        % 
-        % segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)        % Do segmentation using the 3D ball tool
-        % 
-        % segmentationLines3D(obj, y, x, z, modifier)        % Handle mouse clicks for 3D line skeleton annotation
-        % 
-        % segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
-        % 
-        % segmentBlackWhiteThreshold(obj, BatchOptIn)        % Black and white thresholding for segmentation
-        % 
-        % segmentationDragAndDrop(obj, y, x, modifier)        % Initiate drag-and-drop of materials/selection/mask
-        % 
-        % gui_WindowDragAndDropMotionFcn(obj, brushSelection)  % Visual feedback during drag-and-drop motion
-        % 
-        % gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)  % Commit drag-and-drop shift on mouse release
-        % 
-        % output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)  % Trace membranes using the click tracker tool
-        % 
-        % segmentationLasso(obj, modifier)        % Do segmentation using the lasso tool
-        % 
-        % segmentationObjectPicker(obj, yxzCoordinate, modifier)  % Select objects from mask/model layers
-        % 
-        % recalculateObjects(obj)  % Recalculate object stats for Object Picker 3D mode
-        % 
-        % segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the magic wand tool
-        % 
-        % segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the region growing method
-        % 
-        % segmentationLassoManual(obj, BatchOptIn)  % Do manual segmentation using the lasso tool
-        % 
-        % segmentationSAM(obj, extraOptions, BatchOptIn)        % Segment using SAM1 (Segment Anything Model)
-        % 
-        % segmentationSAM2(obj, extraOptions, BatchOptIn)       % Segment using SAM2 (Segment Anything Model 2)
-        % 
-        % status = segmentationSAM_requirements(obj, samVersion) % Check SAM requirements and download models
-        % 
-        % segmentationSpot(obj, y, x, modifier, BatchOptIn)        % Do segmentation using the spot tool
-        % 
-        % selectDocument(obj)        % Select this document in the document group
-        % 
-        % setDescription(obj, description)        % Update the description text of this document
-        % 
-        % setTitle(obj, title)        % Set the title of this image document
-        % 
-        % setupCallbacks(obj)        % Setup all callbacks for this image document
-        % 
-        % sliceNumber_Callback(obj, parameter, BatchOptIn)        % callback for changing the slices of the 3D dataset by entering a new slice number
-        % 
-        % sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of change of slices slider
-        % 
-        % sliceNumberSlider_Callback(obj, sliderValue)        % callback for change of slices using the slice number slider 
-        % 
-        % changed = syncActiveSet(obj)        % Lightweight sync of mibModel's active set to this document's setOfDatasetsIndex.
-        % 
-        % updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)        % Update brush cursor position and visibility
-        % 
-        % updateBrushCursorOffset(obj)        % Update brush cursor offset based on current brush radius and magnification
-        % 
-        % updateMeasureText(obj, pos)        % Refresh the quick-measurement text label (called on zoom/pan/drag/dataset-change)
+        % ------------------------- declaration of functions in the external files,
+        clearQuickMeasure(obj)        % Silently remove the active quick-measurement ROI and text label
+        frameNumber_Callback(obj, parameter, BatchOptIn)        % Callback for changing the time points of the dataset by entering a new time value
+        listener_frameChanged(obj)    % Listener for MibModel 'FrameChanged' event — syncs frame widgets and redraws
+        listener_sliceChanged(obj)    % Listener for MibModel 'SliceChanged' event — syncs slice widgets and redraws
+        frameNumberSlider_Callback(obj, sliderValue)        % Change the currently displayed frame using the time-number slider
+        title = getTitle(obj)        % Get the title of this image document
+        gui_panAxesFcn(obj, xy, imgWidth, imgHeight)        % Moves the image in obj.handles.imViewAxes during a pan gesture.
+        gui_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View documents obj.cImageDoc{setId}
+        gui_ScrollWheelFcn(obj, eventdata)        % Callback for mouse scroll wheel
+        gui_SizeChangedFcn(obj)        % Callback when figure size changes
+        gui_Brush_scrollWheelFcn(obj, eventdata)        % Handle scroll wheel during adaptive superpixel brush mode
+        gui_WindowBrushMotionFcn(obj, structElement)        % Draw brush trace during brush tool use
+        gui_WindowButtonDownFcn(obj)        % Callback for mouse button press in the image view.
+        gui_WindowButtonUpFcn(obj, brush_switch)        % Callback for release of the mouse button.
+        gui_WindowKeyPressFcn_BrushSuperpixel(obj, eventdata)        % Handle key callbacks during brush superpixel mode
+        gui_WinMouseMotionFcn(obj)        % Callback for mouse movement over the figure window
+        segmentationAnnotation(obj, y, x, z, t, modifier, options)        % Add or remove a text annotation at the given dataset coordinate
+        segmentationBall3D(obj, y, x, z, modifier, BatchOptIn)        % Do segmentation using the 3D ball tool
+        segmentationLines3D(obj, y, x, z, modifier)        % Handle mouse clicks for 3D line skeleton annotation
+        segmentationBrush(obj, y, x, modifier)        % Start segmentation using the brush tool
+        segmentBlackWhiteThreshold(obj, BatchOptIn)        % Black and white thresholding for segmentation
+        segmentationDragAndDrop(obj, y, x, modifier)        % Initiate drag-and-drop of materials/selection/mask
+        gui_WindowDragAndDropMotionFcn(obj, brushSelection)  % Visual feedback during drag-and-drop motion
+        gui_WindowButtonUpDragAndDropFcn(obj, mode, diffX, diffY, BatchOptIn)  % Commit drag-and-drop shift on mouse release
+        output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)  % Trace membranes using the click tracker tool
+        segmentationLasso(obj, modifier)        % Do segmentation using the lasso tool
+        segmentationObjectPicker(obj, yxzCoordinate, modifier)  % Select objects from mask/model layers
+        recalculateObjects(obj)  % Recalculate object stats for Object Picker 3D mode
+        segmentationMagicWand(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the magic wand tool
+        segmentationRegionGrowing(obj, yxzCoordinate, BatchOptIn)  % Do segmentation using the region growing method
+        segmentationLassoManual(obj, BatchOptIn)  % Do manual segmentation using the lasso tool
+        segmentationSAM(obj, extraOptions, BatchOptIn)        % Segment using SAM1 (Segment Anything Model)
+        segmentationSAM2(obj, extraOptions, BatchOptIn)       % Segment using SAM2 (Segment Anything Model 2)
+        status = segmentationSAM_requirements(obj, samVersion) % Check SAM requirements and download models
+        segmentationSpot(obj, y, x, modifier, BatchOptIn)        % Do segmentation using the spot tool
+        selectDocument(obj)        % Select this document in the document group
+        setDescription(obj, description)        % Update the description text of this document
+        setTitle(obj, title)        % Set the title of this image document
+        setupCallbacks(obj)        % Setup all callbacks for this image document
+        sliceNumber_Callback(obj, parameter, BatchOptIn)        % callback for changing the slices of the 3D dataset by entering a new slice number
+        sliceNumberSlider_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of change of slices slider
+        sliceNumberSlider_Callback(obj, sliderValue)        % callback for change of slices using the slice number slider 
+        changed = syncActiveSet(obj)        % Lightweight sync of mibModel's active set to this document's setOfDatasetsIndex.
+        updateBrushCursor(obj, xyCoordinate, lineStyle, resetOffset)        % Update brush cursor position and visibility
+        updateBrushCursorOffset(obj)        % Update brush cursor offset based on current brush radius and magnification
+        updateMeasureText(obj, pos)        % Refresh the quick-measurement text label (called on zoom/pan/drag/dataset-change)
 
         function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
             % MIBIMAGEDOCUMENT - Create a new MibImageDocument controller.
             %
             % Syntax:
+            %   .. code-block:: matlab
+            %
             %   function obj = MibImageDocument(mainCtrl, view, title, docGroupTag, setOfDatasetsIndex, model)
             %
             % Creates a FigureDocument with an embedded ImageViewDocument component,
@@ -203,8 +161,7 @@ classdef MibImageDocument < handle
             %   - **obj** — controllers.MibImageDocument, the created controller instance
             %
             % Usage:
-            %   docCtrl = controllers.MibImageDocument(obj.mibController, ...
-            %   obj.view, 'Buffer 1', 'imageViewGroup', 1, obj.mibModel);
+            %   docCtrl = controllers.MibImageDocument(obj.mibController, obj.view, 'Buffer 1', 'imageViewGroup', 1, obj.mibModel);
             %
 
             %% Init properties

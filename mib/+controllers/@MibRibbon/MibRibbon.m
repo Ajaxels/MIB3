@@ -14,83 +14,45 @@ classdef MibRibbon
     methods
         % % declaration of functions in the external files, keep empty line in between for the doc generator
         % 
-        % datasetAlignment_Callback(obj, hWidget, hData)        % callback on press of buttons in the Alignment section of the Dataset ribbon
-        % 
-        % datasetCalibration_Callback(obj, hWidget, hData)        % callback on press of buttons in the Calibration section of the Dataset ribbon
-        % 
-        % datasetMetadata_Callback(obj, hWidget, hData)        % callback on press of buttons in the Metadata section of the Dataset ribbon
-        % 
-        % datasetToolsSlices_Callback(obj, hWidget, hData)        % callback on press of buttons in the Slices button of the Dataset ribbon
-        % 
-        % datasetTools_Callback(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
-        % 
-        % datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
-        % 
-        % homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
-        % 
-        % homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
-        % 
-        % homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
-        % 
-        % homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
-        % 
-        % homeLoad_Callback(obj, hWidget, hData)        % callback on press of the load button in the Home ribbon
-        % 
-        % homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
-        % 
-        % homeIOtools_Callback(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
-        % 
-        % homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
-        % 
-        % homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
-        % 
-        % homeUpdateRecentDirsList(obj)        % update the recent directories list
-        % 
-        % image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
-        % 
-        % imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
-        % 
-        % imageContrast_Callbacks(obj, hWidget, hData)        % callback on press of the contrast buttons in the Image ribbon
-        % 
-        % imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
-        % 
-        % imageMode_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mode section of the Image ribbon
-        % 
-        % imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
-        % 
-        % imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
-        % 
-        % imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
-        % 
-        % maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
-        % 
-        % maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
-        % 
-        % maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
-        % 
-        % maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
-        % 
-        % modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
-        % 
-        % modelConvertType_Callback(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
-        % 
-        % modelExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Model ribbon
-        % 
-        % modelImport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Model ribbon
-        % 
-        % modelMaterials_Callback(obj, hWidget, hData)        % callback on press of buttons in the Materials button of the Model ribbon
-        % 
-        % modelQuantification_Callback(obj, hWidget, hData)        % callback on press of the Quantification button in the Model ribbon
-        % 
-        % modelRender_Callback(obj, hWidget, hData)        % callback on press of buttons in the Render button of the Model ribbon
-        % 
-        % selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
-        % 
-        % selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
-        % 
-        % % tools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools ribbon
-        % 
-        % result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
+        datasetAlignment_Callback(obj, hWidget, hData)        % callback on press of buttons in the Alignment section of the Dataset ribbon
+        datasetCalibration_Callback(obj, hWidget, hData)        % callback on press of buttons in the Calibration section of the Dataset ribbon
+        datasetMetadata_Callback(obj, hWidget, hData)        % callback on press of buttons in the Metadata section of the Dataset ribbon
+        datasetToolsSlices_Callback(obj, hWidget, hData)        % callback on press of buttons in the Slices button of the Dataset ribbon
+        datasetTools_Callback(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
+        datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
+        homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
+        homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
+        homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
+        homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
+        homeLoad_Callback(obj, hWidget, hData)        % callback on press of the load button in the Home ribbon
+        homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
+        homeIOtools_Callback(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
+        homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
+        homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
+        homeUpdateRecentDirsList(obj)        % update the recent directories list
+        image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
+        imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
+        imageContrast_Callbacks(obj, hWidget, hData)        % callback on press of the contrast buttons in the Image ribbon
+        imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
+        imageMode_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mode section of the Image ribbon
+        imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
+        imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
+        imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
+        maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
+        maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
+        maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
+        maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
+        modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
+        modelConvertType_Callback(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
+        modelExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Model ribbon
+        modelImport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Model ribbon
+        modelMaterials_Callback(obj, hWidget, hData)        % callback on press of buttons in the Materials button of the Model ribbon
+        modelQuantification_Callback(obj, hWidget, hData)        % callback on press of the Quantification button in the Model ribbon
+        modelRender_Callback(obj, hWidget, hData)        % callback on press of buttons in the Render button of the Model ribbon
+        selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
+        selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
+        tools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools ribbon
+        result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
 
 
         function obj = MibRibbon(mainCtrl, view, ribbonHandles, ribbonWidgets, model)

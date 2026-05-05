@@ -17,8 +17,7 @@ function fileLoopAction_Callback(obj, BatchOptInput)
 %   - DirectoryName   - source directory; choices include 'Current MIB path',
 % 'Inherit from Directory loop', or an absolute path
 %   - FilenameFilter  - wildcard applied inside the directory (default '*.*')
-%   - FileLoopWaitbar - [logical] when true only the file-level waitbar is
-% displayed; all per-step waitbars are suppressed
+%   - FileLoopWaitbar - [logical] when true only the file-level waitbar is displayed; all per-step waitbars are suppressed
 %
 % Input Arguments:
 %   - **BatchOptInput** — [optional]

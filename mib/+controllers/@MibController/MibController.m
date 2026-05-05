@@ -73,68 +73,38 @@ classdef MibController < handle
     end
 
     methods
-        % % declaration of functions in the external files, keep empty line in between for the doc generator
-        % 
-        % % LISTENERS CALLBACKS
-        % listener_appStateChanged(obj, src, evtData) % generic listener for change of states in the main GUI
-        % 
-        % listner1_Standard(obj, model, evnt)    % listener type 1 callbacks
-        % 
-        % listner_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure, generic listener for small event callbacks
-        % 
-        % listener_newDataset(obj, src, evtData) % Update obj.I (MibDataset) by resizing it to fit on the screen executed upon catch of MibModel->"NewDataset" event
-        % 
-        % listener_showImage(obj, src, evtData) % render (show) the current image in the Image View panel
-        % 
-        % listener_showErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
-        % 
-        % listener_updateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
-        % 
-        % listener_updateToolbar(obj, src, evtData) % update buttons in MIB toolbar "obj.view.handles.qab.handles"
-        % 
-        % 
-        % % METHODS
-        % 
-        % addGuiControllers(obj)  % add GUI components to the main view obj.view
-        % 
-        % deleteImageDocument(obj, docIndex)        % Delete an image document and reindex remaining documents
-        % 
-        % result = exitProgram(obj, target)        % exit mib 
-        % 
-        % id = findChildId(obj, childName)        % find id of a child controller
-        % 
-        % globalTabGroup_SelectionCallback(obj, hWidget) % callback for the selection of the tab in the main ribbon, optimization for lazy initialization of ribbon tabs
-        % 
-        % helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
-        % 
-        % initialize(obj)  % initialize the main MibController class
-        % 
-        % initializeLibraries(obj, initList)            % initialize external libraries and Java paths
-        % 
-        % gui_WindowKeyPressFcn(obj, hWidget, hData)        % Callback for a key press in MIB
-        % gui_WindowKeyReleaseFcn(obj, hWidget, hData)       % Callback for a key release in MIB; restores brush radius after Ctrl eraser mode
-        % 
-        % status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
-        % 
-        % filename = saveLayout(obj, mode) % store the current layout of panels
-        % 
-        % measureLength(obj, type)                % quick line or freehand path length measurement
-        % 
-        % showImage(obj, resizeToMagnification, setId, sImgIn)        % show the current image in the Image View panel
-        % 
-        % [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
-        % 
-        % startController(obj, controllerName, varargin) % start a child controller using provided name
-        % 
-        % updateFrameNumber(obj, BatchOptIn)             % change the currently displayed time frame in the active image document (batch-aware wrapper)
-        % 
-        % updateGuiWidgets(obj, updatePanels)            % update user interface widgets in obj.mibView.gui based on the properties of the opened dataset
-        % 
-        % updateSliceNumber(obj, BatchOptIn)             % change the currently displayed slice number in the active image document (batch-aware wrapper)
-        % 
-        % updateInterpolationMode(obj, options)        % Function to set the state of the interpolation button in the Selection ribbon
-        % 
-        % updateVisualizationMode(obj, mode)        % Function to set type of image interpolation for the visualization (from Image Ribbon)
+        % declaration of functions in the external files, keep empty line in between for the doc generator
+        % LISTENERS CALLBACKS
+        listener_appStateChanged(obj, src, evtData) % generic listener for change of states in the main GUI
+        listner1_Standard(obj, model, evnt)    % listener type 1 callbacks
+        listner_ModelEvent(obj, model, evnt)  % listener type 2 rely on additional evnt.EventName structure, generic listener for small event callbacks
+        listener_newDataset(obj, src, evtData) % Update obj.I (MibDataset) by resizing it to fit on the screen executed upon catch of MibModel->"NewDataset" event
+        listener_showImage(obj, src, evtData) % render (show) the current image in the Image View panel
+        listener_showErrorDialog(obj, src, evtData) % Listener callback to show the error dialog
+        listener_updateDatasetAxes(obj, src, evtData) % update obj.I (MibDataset).axesX and bj.I (MibDataset).axesY during fit screen, resize, or new dataset drawing
+        listener_updateToolbar(obj, src, evtData) % update buttons in MIB toolbar "obj.view.handles.qab.handles"
+        % METHODS
+        addGuiControllers(obj)  % add GUI components to the main view obj.view
+        deleteImageDocument(obj, docIndex)        % Delete an image document and reindex remaining documents
+        result = exitProgram(obj, target)        % exit mib 
+        id = findChildId(obj, childName)        % find id of a child controller
+        globalTabGroup_SelectionCallback(obj, hWidget) % callback for the selection of the tab in the main ribbon, optimization for lazy initialization of ribbon tabs
+        helpButtons_Callback(obj, hWidget, hData) % callback for click on the Help buttons in various panels of MIB
+        initialize(obj)  % initialize the main MibController class
+        initializeLibraries(obj, initList)            % initialize external libraries and Java paths
+        gui_WindowKeyPressFcn(obj, hWidget, hData)        % Callback for a key press in MIB
+        gui_WindowKeyReleaseFcn(obj, hWidget, hData)       % Callback for a key release in MIB; restores brush radius after Ctrl eraser mode
+        status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
+        filename = saveLayout(obj, mode) % store the current layout of panels
+        measureLength(obj, type)                % quick line or freehand path length measurement
+        showImage(obj, resizeToMagnification, setId, sImgIn)        % show the current image in the Image View panel
+        [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
+        startController(obj, controllerName, varargin) % start a child controller using provided name
+        updateFrameNumber(obj, BatchOptIn)             % change the currently displayed time frame in the active image document (batch-aware wrapper)
+        updateGuiWidgets(obj, updatePanels)            % update user interface widgets in obj.mibView.gui based on the properties of the opened dataset
+        updateSliceNumber(obj, BatchOptIn)             % change the currently displayed slice number in the active image document (batch-aware wrapper)
+        updateInterpolationMode(obj, options)        % Function to set the state of the interpolation button in the Selection ribbon
+        updateVisualizationMode(obj, mode)        % Function to set type of image interpolation for the visualization (from Image Ribbon)
 
         function obj = MibController(mibModel, mibVersion)
             % MIBCONTROLLER - MibController class constructor.

@@ -13,12 +13,9 @@ function dirOut = obtainDirectoryForAction(obj, dirModeField, filenameField, ste
 %
 % Supported directory modes (value of *dirModeField):*
 %   - 'Absolute'                    - use the path stored in *filenameField* verbatim
-%   - 'Relative to current MIB path'- append *filenameField* to obj.mibModel.currentDirectory;
-% leading "../" sequences navigate up the tree
-%   - 'Inherit from Directory loop' - take stepOptions.DirectoryName from the
-% enclosing directory loop
-%   - 'Inherit dirs +Dirname'       - concatenate stepOptions.DirectoryName with
-% obj.Protocol(stepId).Batch.DirectoryName
+%   - 'Relative to current MIB path'- append *filenameField* to obj.mibModel.currentDirectory; leading "../" sequences navigate up the tree
+%   - 'Inherit from Directory loop' - take stepOptions.DirectoryName from the enclosing directory loop
+%   - 'Inherit dirs +Dirname'       - concatenate stepOptions.DirectoryName with obj.Protocol(stepId).Batch.DirectoryName
 %
 % Input Arguments:
 %   - **dirModeField** — name of a BatchOpt field whose value selects the directory mode
