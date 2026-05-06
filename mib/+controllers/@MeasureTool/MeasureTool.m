@@ -42,6 +42,28 @@ classdef MeasureTool < handle
     end
 
     methods
+        % --- split method signatures ---
+        addCallbacks(obj)
+        gui_Callbacks(obj, source, event)
+        updateWidgets(obj)
+        updateTable(obj)
+        addMeasurement(obj)
+        editMeasurement(obj, datasetId, measurementIndex, colCh, integrationWidth, finetuneCheck, calcIntensity, useFixedZT)
+        contextMenu(obj, parameter)
+        annotationText = measureAngle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        annotationText = measureCaliper(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        annotationText = measureCircle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        annotationText = measureDistance(obj, datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, insertIndex)
+        annotationText = measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
+        annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
+        measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices, initialDataPos)
+        generateKymograph(obj, datasetId, measurementIndex)
+        loadMeasurements(obj)
+        saveMeasurements(obj)
+        plotIntensityProfile(obj, rowIndex)
+        previewIntensityProfile(obj)
+        updatePlotSettings(obj)
 
         function obj = MeasureTool(mibModel, varargin)
             % MEASURETOOL - Constructor for the MeasureTool controller.
@@ -139,29 +161,6 @@ classdef MeasureTool < handle
 
             notify(obj, 'CloseEvent');
         end
-
-        % --- split method signatures ---
-        addCallbacks(obj)
-        gui_Callbacks(obj, source, event)
-        updateWidgets(obj)
-        updateTable(obj)
-        addMeasurement(obj)
-        editMeasurement(obj, datasetId, measurementIndex, colCh, integrationWidth, finetuneCheck, calcIntensity, useFixedZT)
-        contextMenu(obj, parameter)
-        measureAngle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
-        measureCaliper(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
-        measureCircle(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
-        measureDistance(obj, datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, insertIndex)
-        measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
-        measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
-        measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
-        [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices)
-        generateKymograph(obj, datasetId, measurementIndex)
-        loadMeasurements(obj)
-        saveMeasurements(obj)
-        plotIntensityProfile(obj, rowIndex)
-        previewIntensityProfile(obj)
-        updatePlotSettings(obj)
 
     end  % methods
 

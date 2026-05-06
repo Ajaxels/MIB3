@@ -72,4 +72,6 @@ Preferences and utilities
    :maxdepth: 1
 
    Preferences
+   VolRenApp
+   VolRenAppViewer
    WelcomeTips

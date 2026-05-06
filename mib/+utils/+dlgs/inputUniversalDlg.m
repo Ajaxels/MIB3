@@ -128,12 +128,12 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %
 % .. code-block:: matlab
 %
-%    options.MsgBoxOnly  = true;
-%    options.Icon        = 'puffin_warning';
-%    options.HeaderLines = 1;
+%    dlgOpt.MsgBoxOnly  = true;
+%    dlgOpt.Icon        = 'puffin_warning';
+%    dlgOpt.HeaderLines = 1;
 %    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
 %        {'Please enable "Enable selection" in Preferences and try again.'}, ...
-%        'Models are disabled', options);
+%        'Models are disabled', dlgOpt);
 %
 % **Example 4** — Message box with rich HTML body
 %
@@ -515,7 +515,7 @@ if options.MsgBoxOnly
                 % Wrap with proper HTML structure if not already complete
                 if ~contains(lower(htmlContent), '<!doctype')
                     % Add DOCTYPE and style with sans-serif font
-                    htmlContent = ['<!DOCTYPE html><html><head><style>body{font-family: sans-serif;}</style></head>' ...
+                    htmlContent = ['<!DOCTYPE html><html><head><style>body{font-family: sans-serif;font-size: 10pt}</style></head>' ...
                                    regexprep(htmlContent, '<html[^>]*>', '') '</html>'];
                 elseif ~contains(lower(htmlContent), 'font-family')
                     % Add sans-serif font style if DOCTYPE exists but no font specified

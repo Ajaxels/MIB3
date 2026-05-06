@@ -1,26 +1,33 @@
 classdef VolRenApp < handle
-    % @type VolRenApp class is a template class for using with
-    % GUI developed using appdesigner of Matlab
+    % VOLRENAPP - Controller for the 3D volume rendering viewer.
     %
-    % @code
-    % obj.startController('controllers.VolRenApp'); // as GUI tool
-    % @endcode
-    % or
-    % @code
-    % // a code below was used for mibImageArithmeticController
-    % BatchOpt.Parameter = 'test';  // fill edit boxes as strings
-    % BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-    % BatchOpt.Popup = {'value'};        // value for the popups as a cell
-    % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-    % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('controllers.VolRenApp', [], BatchOpt); // start VolRenApp in the batch mode
-    % @endcode
-    % or
-    % @code
-    % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
-    % obj.startController('controllers.VolRenApp', [], NaN);
-    % @endcode
+    % Syntax:
+    %   .. code-block:: matlab
+    %
+    %      obj.startController('controllers.VolRenApp');
+    %
+    % **Example 1** — launch as interactive GUI tool:
+    %
+    %   .. code-block:: matlab
+    %
+    %      obj.startController('controllers.VolRenApp');
+    %
+    % **Example 2** — launch in batch mode:
+    %
+    %   .. code-block:: matlab
+    %
+    %      BatchOpt.Parameter = 'test';
+    %      BatchOpt.Checkbox = true;
+    %      BatchOpt.Popup = {'value'};
+    %      BatchOpt.Radio = {'Radio1'};
+    %      BatchOpt.showWaitbar = true;
+    %      obj.startController('controllers.VolRenApp', [], BatchOpt);
+    %
+    % **Example 3** — trigger return of available options via ``syncBatch`` event:
+    %
+    %   .. code-block:: matlab
+    %
+    %      obj.startController('controllers.VolRenApp', [], NaN);
 
     % Updates
     %
@@ -33,18 +40,16 @@ classdef VolRenApp < handle
         listener
         % a cell array with handles to listeners
         BatchOpt
-        % a structure compatible with batch operation
-        % name of each field should be displayed in a tooltip of GUI
-        % it is recommended that the Tags of widgets match the name of the
-        % fields in this structure
-        % .Parameter - [editbox], char/string
-        % .Checkbox - [checkbox], logical value true or false
-        % .Dropdown{1} - [dropdown],  cell string for the dropdown
-        % .Dropdown{2} - [optional], an array with possible options
-        % .Radio - [radiobuttons], cell string 'Radio1' or 'Radio2'...
-        % .ParameterNumeric{1} - [numeric editbox], cell with a number
-        % .ParameterNumeric{2} - [optional], vector with limits [min, max]
-        % .ParameterNumeric{3} - [optional], string 'on' - to round the value, 'off' to do not round the value
+        % a structure compatible with batch operation; field names should match widget Tags in the GUI:
+        %
+        % - ``.Parameter`` — [editbox], char/string
+        % - ``.Checkbox`` — [checkbox], logical ``true`` or ``false``
+        % - ``.Dropdown{1}`` — [dropdown], cell string for the dropdown
+        % - ``.Dropdown{2}`` — *(optional)* array with possible options
+        % - ``.Radio`` — [radiobuttons], cell string ``'Radio1'`` or ``'Radio2'`` etc.
+        % - ``.ParameterNumeric{1}`` — [numeric editbox], cell with a number
+        % - ``.ParameterNumeric{2}`` — *(optional)* vector with limits ``[min, max]``
+        % - ``.ParameterNumeric{3}`` — *(optional)* ``'on'`` to round the value, ``'off'`` to not round
         childControllers
         % list of opened subcontrollers
         childControllersIds
@@ -54,18 +59,20 @@ classdef VolRenApp < handle
         animationFilename
         % template for the animation filename
         animationPath
-        % a structure with animation path
-        % .CameraPosition - a matrix of camera positions [keyFrame, x,y,z]
-        % .CameraUpVector - a matrix of camera up vectors [keyFrame, x,y,z]
-        % .CameraTarget - a matrix of camera target positions [keyFrame, x,y,z]
+        % a structure with animation path:
+        %
+        % - ``.CameraPosition`` — matrix of camera positions ``[keyFrame, x, y, z]``
+        % - ``.CameraUpVector`` — matrix of camera up vectors ``[keyFrame, x, y, z]``
+        % - ``.CameraTarget`` — matrix of camera target positions ``[keyFrame, x, y, z]``
         animationPreviewRunning
         % logical switch defining whether the animation is previewed
         defaultView
         % a structure with the default camera position
         figPosStored
-        %  a structure with stored positions of the widgets for making snapshots
-        % .mibVolRenAppFigure -> position of the main figure
-        % .mainGridLayoutRowHeights -> heights of rows in obj.view.handles.mainGridLayout
+        % a structure with stored positions of the widgets for making snapshots:
+        %
+        % - ``.mibVolRenAppFigure`` — position of the main figure
+        % - ``.mainGridLayoutRowHeights`` — heights of rows in ``obj.view.handles.mainGridLayout``
         keyFrameTableIndex
         % index of the selected key frame
         matlabVersion
@@ -83,15 +90,16 @@ classdef VolRenApp < handle
         scalingTransform
         % tform to scale the dataset upon loading to have its units in um
         Settings
-        % a structure with settings, initialized from obj.mibModel.preferences.VolRen;
-        % .volumeAlphaCurve.x = [0 .3 .7 1];
-        % .volumeAlphaCurve.y = [1 1 0 0];
-        % .markerSize -  marker size for the alpha plot
-        % .BackgroundColor - color for the background
-        % .colormapName - a string with default colormap, or 'custom' (not yet implemented)
-        % .colormapInvert - true/false, invert or not the colormap
-        % .animationPath - a structure with animation path
-        % .noFramesPreview - number of frames for the preview
+        % a structure with settings, initialized from ``obj.mibModel.preferences.VolRen``:
+        %
+        % - ``.volumeAlphaCurve.x`` — default ``[0 .3 .7 1]``
+        % - ``.volumeAlphaCurve.y`` — default ``[1 1 0 0]``
+        % - ``.markerSize`` — marker size for the alpha plot
+        % - ``.BackgroundColor`` — color for the background
+        % - ``.colormapName`` — default colormap name, or ``'custom'`` (not yet implemented)
+        % - ``.colormapInvert`` — ``true``/``false``, whether to invert the colormap
+        % - ``.animationPath`` — a structure with animation path
+        % - ``.noFramesPreview`` — number of frames for the animation preview
         surfList
         % a cell array of generated surfaces
         surfListAlpha
@@ -103,11 +111,12 @@ classdef VolRenApp < handle
         volume
         % main image volume
         volumeAlphaCurve
-        % a structure with alpha curve details
-        % .x - vector of intensity points [0 - 1]
-        % .y - value of alpha for each intensity point [0 - 1]
-        % .alphamap - calculated alpha map used in volshow
-        % .activePoint -  selected point
+        % a structure with alpha curve details:
+        %
+        % - ``.x`` — vector of intensity points ``[0..1]``
+        % - ``.y`` — alpha value for each intensity point ``[0..1]``
+        % - ``.alphamap`` — calculated alpha map used in ``volshow``
+        % - ``.activePoint`` — index of the currently selected point
         volumeColormap
         % vector with the colormap
         volumeScaleFactor
@@ -159,13 +168,19 @@ classdef VolRenApp < handle
 
     methods
         function obj = VolRenApp(mibModel, varargin)
-            % function obj = VolRenApp(mibModel, options)
-            % class constructor
+            % VOLRENAPP - Class constructor for the VolRenApp controller.
             %
-            % Parameters:
-            % mibModel: a handle to mibModel class
-            % options: a structure with optional initialization parameters
-            %   .Settings - settings for initialization of the volviewer
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj = VolRenApp(mibModel)
+            %      obj = VolRenApp(mibModel, options)
+            %
+            % Input Arguments:
+            %   - **mibModel** — [handle] handle to the MibModel instance
+            %   - **options** *(optional)* — struct with initialization parameters:
+            %
+            %     - ``.Settings`` — settings for initialization of the volume viewer
             
             obj.mibModel = mibModel;    % assign model
             id = obj.mibModel.getActiveId();
@@ -287,13 +302,18 @@ classdef VolRenApp < handle
         end
 
         function updateVolumeRenderingStyle(obj)
-            % function updateVolumeRenderingStyle(obj)
-            % update Volume Rendering Style
+            % UPDATEVOLUMERENDERINGSTYLE - Update the volume rendering style.
             %
-            % Parameters:
-            % style: string with new rendering style: VolumeRendering,
-            % MaximumIntensityProjection, MinimumIntensityProjection,
-            % GradientOpacity, Isosurface, SlicePlanes
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateVolumeRenderingStyle()
+            %
+            % Reads ``obj.view.handles.rendererDropDown.Value`` and updates
+            % widget states and ``obj.volume.RenderingStyle`` accordingly.
+            % Supported styles: ``'VolumeRendering'``, ``'MaximumIntensityProjection'``,
+            % ``'MinimumIntensityProjection'``, ``'GradientOpacity'``,
+            % ``'Isosurface'``, ``'SlicePlanes'``.
 
             obj.view.handles.slicesGridLayout.Visible = 'off';
 
@@ -325,8 +345,15 @@ classdef VolRenApp < handle
         end
 
         function updateIsovalue(obj, newIsovalue)
-            % function updateIsovalue(obj, newIsovalue)
-            % update IsosurfaceValue of the volume
+            % UPDATEISOVALUE - Update the isosurface or gradient opacity value of the volume.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateIsovalue(newIsovalue)
+            %
+            % Input Arguments:
+            %   - **newIsovalue** — [numeric] new isovalue or gradient opacity value ``[0..1]``
 
             switch obj.view.handles.rendererDropDown.Value
                 case 'Isosurface'
@@ -339,8 +366,15 @@ classdef VolRenApp < handle
         end
 
         function alphaAxesButtonDown(obj, event)
-            % function alphaAxesButtonDown(obj, event)
-            % buttom down event above obj.view.handles.alphaAxes
+            % ALPHAAXESBUTTONDOWN - Handle mouse button-down event on the alpha axes.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.alphaAxesButtonDown(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] MATLAB UI callback event from ``obj.view.handles.alphaAxes``
 
             xy = obj.view.handles.alphaAxes.CurrentPoint;
             seltype = obj.view.gui.SelectionType;
@@ -410,20 +444,27 @@ classdef VolRenApp < handle
         end
 
         function updateBackgroundColor(obj, event)
-            % function updateBackgroundColor(obj, event)
-            % update background color settings
+            % UPDATEBACKGROUNDCOLOR - Update the viewer background colour settings.
             %
-            % Parameters:
-            % event: a structure event generated upon selection of the
-            % operation to perform
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateBackgroundColor(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the operation:
+            %
+            %     - ``'menuBackgroundColor'`` — update the primary background colour
+            %     - ``'menuBackgroundGradientColor'`` — update the gradient background colour
 
             switch event.Source.Tag
                 case 'menuBackgroundColor'
                     obj.Settings.Viewer.backgroundColor = uisetcolor(obj.Settings.Viewer.backgroundColor, 'Select main background color');
                     obj.viewer.BackgroundColor = obj.Settings.Viewer.backgroundColor;
                 case 'menuBackgroundGradientColor'
-                    obj.Settings.Viewer.gradientColor = uisetcolor(obj.Settings.Viewer.gradientColor, 'Select secondary background color');
-                    obj.Settings.Viewer.gradientColor = obj.Settings.Viewer.gradientColor;
+                    newColor = uisetcolor(obj.Settings.Viewer.gradientColor, 'Select secondary background color');
+                    if newColor == 0; return; end
+                    obj.Settings.Viewer.gradientColor = newColor;
                 case 'menuBackgroundGradient'
                     if event.Source.Checked
                         event.Source.Checked = "off";
@@ -439,13 +480,20 @@ classdef VolRenApp < handle
         end
 
         function updateColormap(obj, event)
-            % function updateColormap(obj, event)
-            % select and update colormap
+            % UPDATECOLORMAP - Update the volume colormap from a widget selection event.
             %
-            % Parameter:
-            % event: a handle to the selected widget
-            % event.Source.Tag == colormapName -> string with the name of the selected colormap
-            % event.Source.Tag == invertColormap -> logical, indicating inversion of the color map
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateColormap(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the field to update:
+            %
+            %     - ``'colormapName'`` — name of the selected colormap
+            %     - ``'colormapInvert'`` — logical flag to invert the colormap
+            %     - ``'colormapBlackPoint'`` — black-point adjustment value
+            %     - ``'colormapWhitePoint'`` — white-point adjustment value
 
             switch event.Source.Tag
                 case 'colormapName'
@@ -462,9 +510,15 @@ classdef VolRenApp < handle
 
 
         function generateColorMap(obj)
-            % function generateColorMap(obj)
-            % generate obj.volumeColormap from the selected
-            % obj.Settings.Volume.colormapName and obj.Settings.Volume.colormapInvert
+            % GENERATECOLORMAP - Build ``obj.volumeColormap`` from current colormap settings.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.generateColorMap()
+            %
+            % Constructs the colormap vector from ``obj.Settings.Volume.colormapName``
+            % and ``obj.Settings.Volume.colormapInvert``, then applies it to the volume and axes.
 
             % find points to stretch the colormap
             pnt1 = ceil(obj.view.handles.colormapBlackPoint.Value/4)+1;
@@ -517,7 +571,12 @@ classdef VolRenApp < handle
         end
 
         function updateCameraWidgets(obj)
-            % update widgets that describe position of the camera
+            % UPDATECAMERAWIDGETS - Refresh camera position and orientation widgets.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateCameraWidgets()
             if ~isvalid(obj.viewer); return; end % skip when the viewer is closed
 
             obj.view.handles.cameraZoomEdit.Value = double(obj.viewer.CameraZoom);
@@ -534,15 +593,20 @@ classdef VolRenApp < handle
         end
 
         function menuChangeView(obj, event)
-            % function menuChangeView(obj, event)
-            % callback for selection of views
+            % MENUCHANGEVIEW - Callback for standard orthogonal view menu items.
             %
-            % Parameters:
-            % event: a handle to the selected widget
-            % event.Source.Tag = menuDefaultView -> show the default view
-            % event.Source.Tag = menuXYview -> show the XY view
-            % event.Source.Tag = menuXZview -> show the XZ view
-            % event.Source.Tag = menuYZview -> show the YZ view
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.menuChangeView(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the view:
+            %
+            %     - ``'menuDefaultView'`` — restore the saved default view
+            %     - ``'menuXYview'`` — show the XY (top-down) view
+            %     - ``'menuXZview'`` — show the XZ (front) view
+            %     - ``'menuYZview'`` — show the YZ (side) view
 
             %cameraPos = obj.volume.CameraPosition
             %cameraTarget = obj.volume.CameraTarget
@@ -572,7 +636,12 @@ classdef VolRenApp < handle
         end
 
         function closeWindow(obj)
-            % closing VolRenApp window
+            % CLOSEWINDOW - Close the VolRenApp window and release resources.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow()
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -595,8 +664,12 @@ classdef VolRenApp < handle
         end
 
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % update widgets of this window
+            % UPDATEWIDGETS - Refresh all widgets in the VolRenApp panel.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateWidgets()
 
             obj.view.handles.showScaleBar.Value = obj.Settings.Viewer.showScaleBar;
             obj.view.handles.showOrientationAxes.Value = obj.Settings.Viewer.showOrientationAxes;
@@ -644,8 +717,12 @@ classdef VolRenApp < handle
         end
 
         function updateKeyFrameTable(obj)
-            % function updateKeyFrameTable(obj)
-            % update obj.view.handles.keyFrameTable
+            % UPDATEKEYFRAMETABLE - Refresh the key-frame table widget.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateKeyFrameTable()
 
             if ~isfield(obj.animationPath, 'CameraPosition')
                 obj.view.handles.keyFrameTable.Data = [];
@@ -659,12 +736,16 @@ classdef VolRenApp < handle
         end
 
         function addAnimationKeyFrame(obj, posIndex)
-            % function addAnimationKeyFrame(obj, posIndex)
-            % add/insert a key frame
+            % ADDANIMATIONKEYFRAME - Add or insert an animation key frame at the current view.
             %
-            % Parameters:
-            % posIndex: [@em optional] position of the key frame, when 1 -
-            % in the beginning of the animation sequence
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.addAnimationKeyFrame()
+            %      obj.addAnimationKeyFrame(posIndex)
+            %
+            % Input Arguments:
+            %   - **posIndex** *(optional)* — [numeric] insertion position; ``1`` inserts at the beginning
             %
             if nargin < 2
                 if ~isfield(obj.animationPath, 'CameraPosition')
@@ -694,8 +775,15 @@ classdef VolRenApp < handle
         end
 
         function keyFrameTable_CellSelection(obj, indices)
-            % function keyFrameTable_CellSelection(obj, indices)
-            % callback for selection of a cell in obj.view.handles.keyFrameTable
+            % KEYFRAMETABLE_CELLSELECTION - Handle cell selection in the key-frame table.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.keyFrameTable_CellSelection(indices)
+            %
+            % Input Arguments:
+            %   - **indices** — [numeric] selected cell indices ``[row, col]``
 
             if nargin < 2; indices = obj.keyFrameTableIndex; end
 
@@ -709,19 +797,28 @@ classdef VolRenApp < handle
         end
 
         function surfaceTable_CellSelection(obj, indices)
-            % function surfaceTable_CellSelection(obj, indices)
-            % callback for selection of a cell in obj.view.handles.surfaceTable
+            % SURFACETABLE_CELLSELECTION - Handle cell selection in the surface table.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.surfaceTable_CellSelection(indices)
+            %
+            % Input Arguments:
+            %   - **indices** — [numeric] selected cell indices ``[row, col]``
             
             if nargin < 2; indices = obj.surfaceTableIndex; end
             try
                 obj.surfaceTableIndex = unique(indices(:,1));
             catch err
-                err
-                return
+                utils.dlgs.showErrorDialog(obj.view.gui, err, 'surfaceTable_CellSelection errpor');
+                return;
             end
             
             if numel(obj.surfaceTableIndex) == 1 && indices(2) == 1  % change color
                 newColor = uisetcolor(obj.surfList{obj.surfaceTableIndex}.Color, 'Set color');
+                if newColor==0; return; end
+
                 obj.surfList{obj.surfaceTableIndex}.Color = newColor;
                 obj.updateSurfaceTable();
             end
@@ -729,19 +826,30 @@ classdef VolRenApp < handle
 
         
         function modelTable_CellSelection(obj, indices)
-            % function modelTable_CellSelection(obj, indices)
-            % callback for selection of a cell in obj.view.handles.modelTable
+            % MODELTABLE_CELLSELECTION - Handle cell selection in the model/overlay table.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.modelTable_CellSelection(indices)
+            %
+            % Input Arguments:
+            %   - **indices** — [numeric] selected cell indices ``[row, col]``
             if nargin < 2; indices = obj.modelTableIndex; end
 
             obj.modelTableIndex = indices;
         end
 
         function loadAnimationPath(obj)
-            % function loadAnimationPath(obj)
-            % load animation path from a file
+            % LOADANIMATIONPATH - Load an animation path from a ``.animation`` file.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.loadAnimationPath()
 
             mypath = fileparts(obj.animationFilename);
-            [filename, path] = mib_uigetfile(...
+            [filename, path] = utils.dlgs.mibUiGetFile(...
                 {'*.animation;',  'Matlab format (*.animation)'; ...
                 '*.*', 'All Files (*.*)'}, ...
                 'Load animation...', mypath);
@@ -760,8 +868,12 @@ classdef VolRenApp < handle
         end
 
         function saveAnimationPath(obj)
-            % function saveAnimationPath(obj)
-            % save animation path to a file
+            % SAVEANIMATIONPATH - Save the current animation path to a ``.animation`` file.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.saveAnimationPath()
             if ~isfield(obj.animationPath, 'CameraPosition')
                 uialert(obj.view.gui, ...
                     sprintf('!!! Error !!!\n\nThe animation path is not present!\nPlease use the Animation tab to make it!'), ...
@@ -783,8 +895,12 @@ classdef VolRenApp < handle
 
 
         function deleteAllAnimationKeyFrames(obj)
-            % function deleteAllBtn_Callback(obj)
-            % delete all key frames
+            % DELETEALLANIMATIONKEYFRAMES - Delete all animation key frames after user confirmation.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.deleteAllAnimationKeyFrames()
 
             answer = uiconfirm(obj.view.gui, ...
                 sprintf('!!! Warning !!!\nYou are going to remove all key frames!\nContinue?'), ...
@@ -797,8 +913,17 @@ classdef VolRenApp < handle
         end
 
         function previewAnimation(obj, noFrames)
-            % function previewAnimation(obj, noFrames)
-            % preview animation
+            % PREVIEWANIMATION - Preview the key-frame animation in the viewer.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.previewAnimation()
+            %      obj.previewAnimation(noFrames)
+            %
+            % Input Arguments:
+            %   - **noFrames** *(optional)* — [numeric] number of interpolated frames
+            %     (default: ``obj.Settings.Animation.noFrames``)
 
             if nargin < 2; noFrames = obj.Settings.Animation.noFrames; end
             if ~isfield(obj.animationPath, 'CameraPosition'); return; end
@@ -837,19 +962,26 @@ classdef VolRenApp < handle
         end
 
         function positions = generatePositionsForKeyFramesAnimation(obj, noFrames, options)
-            % function positions = generatePositionsForKeyFramesAnimation(obj, noFrames, options)
-            % generate camera positions from the key frames
+            % GENERATEPOSITIONSFORKEYFRAMESANIMATION - Interpolate camera positions from key frames.
             %
-            % Parameters:
-            % noFrames: number of frames
-            % options - an optional structure with additional parameters
-            %   .back_and_forth - a switch to make animations in both forward and reverse orientation
+            % Syntax:
+            %   .. code-block:: matlab
             %
-            % Return values:
-            % positions: a structure with camera positions for each frame of the resulting movie
-            %  .CameraUpVector - an array of camera-up vectors for each time point or a single vector
-            %  .CameraTarget - an array of camera-target vectors for each time point or a single vector
-            %  .CameraPosition - a vector for each time point
+            %      positions = obj.generatePositionsForKeyFramesAnimation(noFrames)
+            %      positions = obj.generatePositionsForKeyFramesAnimation(noFrames, options)
+            %
+            % Input Arguments:
+            %   - **noFrames** — [numeric] total number of interpolated frames
+            %   - **options** *(optional)* — struct with additional parameters:
+            %
+            %     - ``.back_and_forth`` — [logical] when ``1``, animate forward then reverse
+            %
+            % Output Arguments:
+            %   - **positions** — struct with per-frame camera data:
+            %
+            %     - ``.CameraPosition`` — ``[N x 3]`` interpolated camera positions
+            %     - ``.CameraUpVector`` — ``[N x 3]`` interpolated camera-up vectors
+            %     - ``.CameraTarget`` — ``[]`` (target is fixed; reserved for future use)
 
             if nargin < 3; options = struct(); end
             if nargin < 2; noFrames = obj.Settings.Animation.noFrames; end
@@ -910,18 +1042,32 @@ classdef VolRenApp < handle
         end
 
         function updateAnimationNumberOfFrames(obj, noFrames)
-            % function updateAnimationNumberOfFrames(obj, noFrames)
-            % update number of frames in the animation
+            % UPDATEANIMATIONNUMBEROFFRAMES - Update the stored animation frame count.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateAnimationNumberOfFrames(noFrames)
+            %
+            % Input Arguments:
+            %   - **noFrames** — [numeric] new frame count stored in ``obj.Settings.Animation.noFrames``
 
             obj.Settings.Animation.noFrames = noFrames;
         end
 
         function modelTable_cm_Callback(obj, event)
-            % callback for modelTable context menu
+            % MODELTABLE_CM_CALLBACK - Callback for the model table context menu.
             %
-            % Parameters:
-            % event: a handle of the pressed button
-            % .event.Source.Tag -> 'modelTable_cm_generateSurface', generate surface from the selected material
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.modelTable_cm_Callback(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %
+            %     - ``'modelTable_cm_generateSurface'`` — generate a surface mesh from the selected material
+            id = obj.mibModel.getActiveId();
             switch event.Source.Tag
                 case 'modelTable_cm_generateSurface'
                     materialId = obj.modelTableIndex;     % get index of the selected material
@@ -933,7 +1079,7 @@ classdef VolRenApp < handle
                         mask = (obj.volume.OverlayData == matIndex);  % generate mask from the material
                         surfId = numel(obj.surfList) + 1;
                         obj.surfList{surfId} = images.ui.graphics3d.Surface(obj.viewer, ...
-                            'Color', obj.mibModel.I{obj.mibModel.Id}.modelMaterialColors(matIndex,:), ...
+                            'Color', obj.mibModel.I{id}.labels.materialColors(matIndex,:), ...
                             'Data', mask, ...
                             'Transformation', obj.scalingTransform, ...
                             'Visible', true);
@@ -947,19 +1093,25 @@ classdef VolRenApp < handle
         end
 
         function surfaceTable_cm_Callback(obj, event)
-            % callback for surfaceTable context menu
+            % SURFACETABLE_CM_CALLBACK - Callback for the surface table context menu.
             %
-            % Parameters:
-            % event: a handle of the pressed button
-            % .event.Source.Tag -> 'surfaceTable_cm_saveSurface', save surface to a file in STL format
-            % .event.Source.Tag -> 'surfaceTable_cm_removeSurface', delete surface from the viewer
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.surfaceTable_cm_Callback(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %
+            %     - ``'surfaceTable_cm_saveSurface'`` — save the selected surface to an STL file
+            %     - ``'surfaceTable_cm_removeSurface'`` — delete the selected surface from the viewer
+            id = obj.mibModel.getActiveId();
             switch event.Source.Tag
                 case 'surfaceTable_cm_saveSurface'
                     if isempty(obj.surfaceTableIndex); return; end
 
-                    [path, fnTemplate] = fileparts(obj.mibModel.I{obj.mibModel.Id}.meta('Filename'));
-                    outputFilename = fullfile(path, ...
-                        sprintf('Surf_%s.stl', fnTemplate));
+                    [path, fnTemplate] = fileparts(obj.mibModel.I{id}.image.filename);
+                    outputFilename = fullfile(path, sprintf('Surf_%s.stl', fnTemplate));
                     [filename, path] = uiputfile(...
                         {'*.stl',  'STL format (*.stl)'; ...
                         '*.*',  'All Files (*.*)'}, ...
@@ -967,18 +1119,21 @@ classdef VolRenApp < handle
                     if isequal(filename, 0); return; end % check for cancel
                     [~, filenameTemplate, ext] = fileparts(filename);
                     
-                    wb = waitbar(0, sprintf('Exporting surface(s)\nPlease wait...'));
+                    % make waitbar
+                    pwb = core.PoolWaitbar(numel(obj.surfaceTableIndex), sprintf('Exporting surface(s)\nPlease wait...'), obj.view.gui, 'Export surfaces', true);
+
                     for surfIndex = 1:numel(obj.surfaceTableIndex)
                         surfId = obj.surfaceTableIndex(surfIndex);
-                        waitbar(surfIndex/numel(obj.surfaceTableIndex), wb, sprintf('Exporting %s surface\nPlease wait...', obj.view.handles.surfaceTable.Data{surfId,2}));
-                        
+                        pwb.updateText(sprintf('Exporting %s surface\nPlease wait...', obj.view.handles.surfaceTable.Data{surfId,2}));
+
                         [fv.faces, fv.vertices] = extractIsosurface(obj.surfList{surfId}.Data, 0.5);
-                        outputFilename = fullfile(path, ...
-                            sprintf('%s_%s%s', filenameTemplate, obj.view.handles.surfaceTable.Data{surfId,2}, ext));
-                        stlwrite(outputFilename, fv, ...
-                            'FaceColor',obj.surfList{surfId}.Color*255);
+                        outputFilename = fullfile(path, sprintf('%s_%s%s', filenameTemplate, obj.view.handles.surfaceTable.Data{surfId,2}, ext));
+
+                        stlwrite(outputFilename, fv, 'FaceColor',obj.surfList{surfId}.Color*255);
+                        if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+                        pwb.increment();
                     end
-                    delete(wb);
+                    pwb.deletePoolWaitbar();
                 case 'surfaceTable_cm_removeSurface'
                     selection = uiconfirm(obj.view.gui, ...
                         sprintf('!!! Warning !!!\n\nYou are going to remove selected surfaces!\nContinue?'), ...
@@ -1001,15 +1156,20 @@ classdef VolRenApp < handle
         
         
         function keyFrameTable_cm_Callback(obj, event)
-            % function keyFrameTable_cm_Callback(obj, event)
-            % callback for keyFrameTable context menu
+            % KEYFRAMETABLE_CM_CALLBACK - Callback for the key-frame table context menu.
             %
-            % Parameters:
-            % event: a handle of the pressed button
-            % .event.Source.Tag -> 'keyFrameTable_cm_jumpToKeyFrame', jump to the selected key frame and update the view
-            % .event.Source.Tag -> 'keyFrameTable_cm_insertKeyFrame', insert a key frame to the current position
-            % .event.Source.Tag -> 'keyFrameTable_cm_replaceKeyFrame', replace the selected key frame
-            % .event.Source.Tag -> 'keyFrameTable_cm_removeKeyFrame', remove the key frame from the current position;
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.keyFrameTable_cm_Callback(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %
+            %     - ``'keyFrameTable_cm_jumpToKeyFrame'`` — jump to the selected key frame
+            %     - ``'keyFrameTable_cm_insertKeyFrame'`` — insert a key frame at the current position
+            %     - ``'keyFrameTable_cm_replaceKeyFrame'`` — replace the selected key frame with the current view
+            %     - ``'keyFrameTable_cm_removeKeyFrame'`` — remove the selected key frame
 
             switch event.Source.Tag
                 case 'keyFrameTable_cm_jumpToKeyFrame'
@@ -1039,13 +1199,18 @@ classdef VolRenApp < handle
         end
 
         function alphaCurveOperations(obj, event)
-            % function alphaCurveOperations(obj, event)
-            % callback for press of buttons in the alpha curve tab
+            % ALPHACURVEOPERATIONS - Callback for alpha curve control buttons.
             %
-            % Parameters:
-            % event: a handle of the pressed button
-            % .event.Source.Tag -> 'resetAlphaCurve'
-            % .event.Source.Tag -> 'invertAlphaCurve'
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.alphaCurveOperations(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event; ``event.Source.Tag`` selects the action:
+            %
+            %     - ``'resetAlphaCurve'`` — reset the alpha curve to the default
+            %     - ``'invertAlphaCurve'`` — invert the alpha curve along the x-axis
 
             switch event.Source.Tag
                 case 'resetAlphaCurve'      % reset the alpha curve
@@ -1064,8 +1229,12 @@ classdef VolRenApp < handle
         end
 
         function plotAlphaPlot(obj)
-            % function plotAlphaPlot(obj)
-            % draw alpha plot
+            % PLOTALPHAPLOT - Redraw the alpha curve plot in ``obj.view.handles.alphaAxes``.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.plotAlphaPlot()
 
             cla(obj.view.handles.alphaAxes);
             hold(obj.view.handles.alphaAxes, 'on');
@@ -1086,11 +1255,15 @@ classdef VolRenApp < handle
         end
 
         function toggleViewerSettings(obj, event)
-            % function showScaleBar(obj, event)
-            % toggle switch on/off for some of the viewer parameters
+            % TOGGLEVIEWERSETTINGS - Toggle viewer display settings on or off.
             %
-            % Paramters:
-            % event: handle to the pressed widget
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.toggleViewerSettings(event)
+            %
+            % Input Arguments:
+            %   - **event** — [event] UI callback event from the toggled widget
             switch event.Source.Tag
                 case 'showScaleBar'
                     obj.viewer.ScaleBar = event.Value;
@@ -1119,15 +1292,22 @@ classdef VolRenApp < handle
 
 
         function updateScalingTransform(obj, pixSize)
-            % function updateScalingTransform(obj, pixSize)
-            % generate tform (obj.scalingTransform) to scale the dataset upon loading to have its
-            % units in um
-
-            % Parameters:
-            % pixSize: a standard MIB structure with pixels size
-            % .x - pixel size in X after rescaling of the imported volume
-            % .y - pixel size in Y after rescaling of the imported volume
-            % .z - pixel size in Z after rescaling of the imported volume
+            % UPDATESCALINGTRANSFORM - Generate the affine scaling transform for the volume.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateScalingTransform(pixSize)
+            %
+            % Builds ``obj.scalingTransform`` (an ``affinetform3d``) from the pixel size
+            % so that the dataset is displayed with units in µm.
+            %
+            % Input Arguments:
+            %   - **pixSize** — [struct] MIB pixel-size structure:
+            %
+            %     - ``.x`` — pixel size in X (µm/pixel)
+            %     - ``.y`` — pixel size in Y (µm/pixel)
+            %     - ``.z`` — slice thickness in Z (µm/slice)
 
             Sx = pixSize.x;   % scaling pixels to um ratio, x-axis
             Sy = pixSize.y;   % scaling pixels to um ratio, y-axis
@@ -1143,34 +1323,44 @@ classdef VolRenApp < handle
         end
 
         function imgOut = grabFrame(obj, width, height, options)
-            % function grabFrame(obj, width, height, options)
-            % grab a frame from the volume viewer
+            % GRABFRAME - Capture a frame image from the volume viewer panel.
             %
-            % Parameters
-            % width: width of the snapshot, can be empty
-            % height: height of the snapshot, can be empty
-            % options: [@em optional] structure with extra parameters
-            % .resizeWindow - a switch, 1-resize window, 0-do not resize window, used for animations
-            % .showWaitbar - show or not waitbar
-            % .hWaitbar - a handle to existing waitbar
-            % .waitbarProgress - a fraction for the waitbar position
-
-            %|
-            % @b Examples:
-            % @code
-            % // for animations
-            % obj.prepareWindowForGrabFrame(width, height);     // resize widgets
-            % options.resizeWindow = 0; // do not resize the window during the animation
-            % for i=1:100
-            %   // change view
-            %   imgOut = obj.extraController.grabFrame(width, height, options);
-            % end
-            % obj.extraController.restoreWindowAfterGrabFrame();    // restore widget size
-            % @endcode
-            % @code
-            % // as taken from mibSnapshotController, used for snapshots
-            % imgOut = obj.extraController.grabFrame(width, height);
-            % @endcode
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      imgOut = obj.grabFrame(width, height)
+            %      imgOut = obj.grabFrame(width, height, options)
+            %
+            % Input Arguments:
+            %   - **width** — [numeric] snapshot width in pixels; ``[]`` uses the current panel width
+            %   - **height** — [numeric] snapshot height in pixels; ``[]`` uses the current panel height
+            %   - **options** *(optional)* — struct with extra parameters:
+            %
+            %     - ``.resizeWindow`` — [numeric] ``1`` resize window before capture, ``0`` skip (default: ``1``)
+            %     - ``.showWaitbar`` — [logical] show a progress waitbar (default: ``true``)
+            %     - ``.hWaitbar`` — [handle] handle to an existing waitbar dialog
+            %     - ``.waitbarProgress`` — [numeric] waitbar fill fraction (default: ``0.5``)
+            %
+            % Output Arguments:
+            %   - **imgOut** — [uint8] ``[height x width x 3]`` RGB image array
+            %
+            % **Example 1** — capture frames inside an animation loop:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.prepareWindowForGrabFrame(width, height);
+            %      options.resizeWindow = 0;
+            %      for i = 1:100
+            %          % change view
+            %          imgOut = obj.extraController.grabFrame(width, height, options);
+            %      end
+            %      obj.extraController.restoreWindowAfterGrabFrame();
+            %
+            % **Example 2** — single snapshot (e.g., from mibSnapshotController):
+            %
+            %   .. code-block:: matlab
+            %
+            %      imgOut = obj.extraController.grabFrame(width, height);
 
             deleteWaitbar = 0;  % delete or not waitbar after in the end
 
@@ -1212,18 +1402,27 @@ classdef VolRenApp < handle
         end
 
         function prepareWindowForGrabFrame(obj, width, height)
-            % function prepareWindowForGrabFrame(obj, width, height)
-            % prepare window to grab a frame
+            % PREPAREWINDOWFORGRABFRAME - Resize and prepare the viewer window for frame capture.
             %
-
-            %|
-            % @b Examples:
-            % @code
-            % // as taken from mibSnapshotController
-            % obj.extraController.prepareWindowForGrabFrame(width, height);
-            % imgOut = obj.extraController.grabFrame(width, height);
-            % obj.extraController.restoreWindowAfterGrabFrame();
-            % @endcode
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.prepareWindowForGrabFrame(width, height)
+            %
+            % Stores current window geometry, hides the toolbar, and sets the
+            % viewer panel to exactly ``width × height`` pixels ready for ``grabFrame``.
+            %
+            % Input Arguments:
+            %   - **width** — [numeric] desired capture width in pixels
+            %   - **height** — [numeric] desired capture height in pixels
+            %
+            % Usage example:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.extraController.prepareWindowForGrabFrame(width, height);
+            %      imgOut = obj.extraController.grabFrame(width, height);
+            %      obj.extraController.restoreWindowAfterGrabFrame();
 
             % store current positions
             obj.figPosStored.mibVolRenAppFigure = obj.childControllers{1}.view.gui.Position;
@@ -1246,8 +1445,15 @@ classdef VolRenApp < handle
         end
 
         function restoreWindowAfterGrabFrame(obj)
-            % function restoreWindowAfterGrabFrame(obj)
-            % restore widget sizes after the snapshot
+            % RESTOREWINDOWAFTERGRABFRAME - Restore viewer window geometry after frame capture.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.restoreWindowAfterGrabFrame()
+            %
+            % Reverses the changes made by ``prepareWindowForGrabFrame``,
+            % restoring the original panel size and toolbar visibility.
 
             % restore positions of the widgets
             obj.childControllers{1}.view.gui.Position = obj.figPosStored.mibVolRenAppFigure;
@@ -1263,28 +1469,45 @@ classdef VolRenApp < handle
         end
 
         function makeAnimation(obj, mode)
-            % function makeAnimation(obj, mode)
-            % start making movie window
+            % MAKEANIMATION - Open the MakeMovie dialog for recording an animation.
             %
-            % Parameters
-            % mode: a string with the desired animation type,
-            %   'spin' - to spin around selected axis
-            %   'animation' - to animate the scene using key frames
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.makeAnimation(mode)
+            %
+            % Input Arguments:
+            %   - **mode** — [char] animation type:
+            %
+            %     - ``'spin'`` — rotate camera around the selected axis
+            %     - ``'animation'`` — animate the scene using stored key frames
 
             options.mode = mode;    % mode for movie make
-            obj.startController('mibMakeMovieController', obj, options);
+            utils.startController(obj, 'controllers.MakeMovie', obj, options);
         end
 
 
         function status = grabVolume(obj, volumeType, colorChannel)
-            % function status = grabVolume(obj, volumeType, colorChannel)
-            % grab the currently displayed volume to the 3D volume viewer
+            % GRABVOLUME - Fetch the current MIB dataset volume into the 3D viewer.
             %
-            % Parameters:
-            % volumeType: [@em default: 'image'] string with type of the volume to grab: 'image','model', 'selection', 'mask'
-            % colorChannel: [@em default: 1] index of the color channel or material to grab
-            % Return values:
-            % status: 1 - success, 0 - cancel
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      status = obj.grabVolume()
+            %      status = obj.grabVolume(volumeType, colorChannel)
+            %
+            % Input Arguments:
+            %   - **volumeType** *(optional)* — [char] volume layer to load (default: ``'image'``):
+            %
+            %     - ``'image'`` — intensity image data
+            %     - ``'labels'`` — segmentation labels
+            %     - ``'selection'`` — selection layer
+            %     - ``'mask'`` — mask layer
+            %
+            %   - **colorChannel** *(optional)* — [numeric] color channel or material index (default: ``1``)
+            %
+            % Output Arguments:
+            %   - **status** — [numeric] ``1`` on success, ``0`` if cancelled
 
             status = 0;
 
@@ -1299,7 +1522,7 @@ classdef VolRenApp < handle
             if strcmp(volumeType, 'image')
                 colorChannelList = arrayfun(@(x) sprintf('ColCh %d', x), 1:obj.mibModel.I{id}.image.colors, 'UniformOutput', false);
                 colorChannelList = [{'Selected'}, {'All'}, colorChannelList];
-            elseif strcmp(volumeType, 'model')
+            elseif strcmp(volumeType, 'labels')
                 colorChannelList = [{'All materials'}, obj.mibModel.I{id}.labels.materialNames'];
             else
                 colorChannelList = {'Selected'};
@@ -1449,8 +1672,8 @@ classdef VolRenApp < handle
             end
 
             %             % check overlay
-            %             noMaterials = numel(obj.mibModel.I{obj.mibModel.Id}.modelMaterialNames);
-            %             img = obj.mibModel.getData3D('model', timePnt, 4);
+            %             noMaterials = numel(dataset.labels.materialNames);
+            %             img = obj.mibModel.getData3D('labels', timePnt, 4);
             %             % resize the volume
             %             if obj.volumeScaleFactor ~= 1
             %                 rescaleOpt.imgType = '3D';
@@ -1461,11 +1684,11 @@ classdef VolRenApp < handle
             %
             %             obj.volume.OverlayAlphamap = [0 1 1 1 1];
             %             %obj.volume.OverlayAlphamap = 0;
-            %             obj.volume.OverlayColormap = [0, 0, 0; obj.mibModel.I{obj.mibModel.Id}.modelMaterialColors(1:noMaterials,:)];
+            %             obj.volume.OverlayColormap = [0, 0, 0; obj.mibModel.I{id}.modelMaterialColors(1:noMaterials,:)];
             %             obj.volume.OverlayThreshold = .001;
             %
             %             mask1 = (img{1} == 1);
-            %             surf1 = images.ui.graphics3d.Surface(obj.viewer, 'Color', obj.mibModel.I{obj.mibModel.Id}.modelMaterialColors(1,:), 'Data', mask1, ...
+            %             surf1 = images.ui.graphics3d.Surface(obj.viewer, 'Color', obj.mibModel.I{id}.modelMaterialColors(1,:), 'Data', mask1, ...
             %                 'Transformation', obj.scalingTransform);
             %             surf1.Alpha = 1;
 
@@ -1476,11 +1699,17 @@ classdef VolRenApp < handle
         end
 
         function recalculateAlphamap(obj, transparentVolume)
-            % function recalculateAlphamap(obj, transparentVolume)
-            % recalculate obj.volume.Alphamap
+            % RECALCULATEALPHAMAP - Recalculate and apply the volume alpha map.
             %
-            % Parameters:
-            % transparentVolume: [@em default false] when true, make the volume transparent
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.recalculateAlphamap()
+            %      obj.recalculateAlphamap(transparentVolume)
+            %
+            % Input Arguments:
+            %   - **transparentVolume** *(optional)* — [logical] when ``true``, set alphamap to ``0``
+            %     making the volume fully transparent (default: ``false``)
 
             if nargin < 2; transparentVolume = false; end
             if transparentVolume
@@ -1497,8 +1726,12 @@ classdef VolRenApp < handle
         end
 
         function spinDataset(obj)
-            % function spinDataset(obj)
-            % spin dataset (rotate camera around the dataset)
+            % SPINDATASET - Preview a camera spin animation around the dataset.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.spinDataset()
 
             % CameraPosition:   the position of the camera itself
             % CameraTarget:     the camera's look-at point
@@ -1542,20 +1775,28 @@ classdef VolRenApp < handle
         end
 
         function positions = generatePositionsForSpinAnimation(obj, noFrames, options)
-            % function generatePositionsForSpinAnimation(obj)
-            % generate camera positions for the spin animation
+            % GENERATEPOSITIONSFORSPINANIMATION - Generate camera positions for a spin animation.
             %
-            % Parameters:
-            % noFrames: number of frames
-            % options: a structure with optional parameters
-            %   .back_and_forth - a switch to make animations in both forward and reverse orientation
-            %   .clockwise - a switch 1 - clockwise, 0 - anticlockwise rotation
-            %   .rotAxis - a number with rotation axis, 3-'z', 1-'x', 2-'y'
-            % Return values:
-            % positions: a structure with camera positions for each frame
-            %  .CameraUpVector - an array of camera-up vectors for each time point or a single vector
-            %  .CameraTarget - an array of camera-target vectors for each time point or a single vector
-            %  .CameraPosition - a vector for each time point
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      positions = obj.generatePositionsForSpinAnimation(noFrames)
+            %      positions = obj.generatePositionsForSpinAnimation(noFrames, options)
+            %
+            % Input Arguments:
+            %   - **noFrames** — [numeric] number of frames (default: ``120``)
+            %   - **options** *(optional)* — struct with rotation parameters:
+            %
+            %     - ``.back_and_forth`` — [logical] animate forward then reverse (default: ``0``)
+            %     - ``.clockwise`` — [numeric] ``1`` for clockwise, ``0`` for anticlockwise (default: ``0``)
+            %     - ``.rotAxis`` — [char] rotation axis: ``'X-axis'``, ``'Y-axis'``, or ``'Z-axis'``
+            %
+            % Output Arguments:
+            %   - **positions** — struct with per-frame camera data:
+            %
+            %     - ``.CameraPosition`` — ``[N x 3]`` array of camera positions
+            %     - ``.CameraUpVector`` — ``[1 x 3]`` fixed up-vector for the chosen spin axis
+            %     - ``.CameraTarget`` — ``[1 x 3]`` fixed camera target (centre of volume)
 
             if nargin < 3; options = struct(); end
             if nargin < 2; noFrames = 120; end
@@ -1664,51 +1905,66 @@ classdef VolRenApp < handle
         end
 
         function makeSnapshop(obj)
-            % function makeSnapshop(obj)
-            % make snapshot
-            obj.startController('mibSnapshotController', obj);
+            % MAKESNAPSHOP - Open the Snapshot dialog for the current viewer state.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.makeSnapshop()
+            utils.startController(obj, 'controllers.Snapshot', obj);
         end
 
         function modelUpdateOverlay(obj, overlayType, materialId)
-            % grab the model from MIB and assign it as an overlay for the
-            % volume
+            % MODELUPDATEOVERLAY - Fetch an overlay layer from MIB and apply it to the volume.
             %
-            % Parameters:
-            % overlayType: string, type of the overlay to show,
-            %    @li 'model' - the model layer
-            %    @li 'mask' - the mask layer
-            %    @li 'selection' - the selection layer
-            % materialId: index of material of the model, use NaN to get all materials
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.modelUpdateOverlay()
+            %      obj.modelUpdateOverlay(overlayType, materialId)
+            %
+            % Input Arguments:
+            %   - **overlayType** *(optional)* — [char] overlay layer type:
+            %
+            %     - ``'labels'`` — segmentation labels (model) layer
+            %     - ``'mask'`` — mask layer
+            %     - ``'selection'`` — selection layer
+            %
+            %   - **materialId** *(optional)* — [numeric] material index; ``NaN`` to load all materials
 
             if nargin < 3; materialId = NaN; end    % get all materials
             if nargin < 2; overlayType = obj.view.handles.overlaySourceDropDown.Value; end    % get all materials
-
-            existStatus = obj.mibModel.I{obj.mibModel.Id}.enableSelection;
+            id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
+            existStatus = dataset.enableSelection;
             obj.noOverlayMaterials = 1;
             switch overlayType
-                case 'model'
+                case 'labels'
                     % get number of materials
-                    obj.noOverlayMaterials = numel(obj.mibModel.I{obj.mibModel.Id}.modelMaterialNames);
-                    existStatus = obj.mibModel.I{obj.mibModel.Id}.modelExist;
-                    overlayColormap = [0, 0, 0; obj.mibModel.I{obj.mibModel.Id}.modelMaterialColors(1:obj.noOverlayMaterials,:)];
+                    obj.noOverlayMaterials = numel(dataset.labels.materialNames);
+                    existStatus = dataset.modelExist;
+                    overlayColormap = [0, 0, 0; dataset.labels.materialColors(1:obj.noOverlayMaterials,:)];
                 case 'mask'
-                    existStatus = obj.mibModel.I{obj.mibModel.Id}.maskExist;
+                    existStatus = dataset.maskExist;
                     overlayColormap = [0, 0, 0; obj.mibModel.preferences.Colors.MaskColor];
                 case 'selection'
                     overlayColormap = [0, 0, 0; obj.mibModel.preferences.Colors.SelectionColor];
             end
             if existStatus == 0
-                uialert(obj.view.gui, ...
-                    sprintf('!!! Error !!!\n\nThe %s is not present in MIB!', overlayType), 'Missing model');
+                dlgOpt.MsgBoxOnly  = true;
+                dlgOpt.Icon        = 'puffin_error';
+                dlgOpt.HeaderLines = 1;
+                utils.dlgs.inputUniversalDlg(obj.view.gui, sprintf('The %s is not present in MIB!', overlayType), {''}, {''}, ...
+                    'Missing model', dlgOpt);
                 return;
             end
 
-            overlay = cell2mat(obj.mibModel.getData3D(overlayType, NaN, 4, materialId));
+            overlay = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialId));
             % resize the volume
             if obj.volumeScaleFactor ~= 1
                 rescaleOpt.imgType = '3D';
                 rescaleOpt.method = 'nearest';
-                overlay = mibResize3d(overlay,  obj.volumeScaleFactor, rescaleOpt);
+                overlay = utils.resizeImage3d(overlay,  obj.volumeScaleFactor, rescaleOpt);
             end
             [imgH, imgW, imgD] = size(overlay);
             % add one extra slice for single images
@@ -1720,39 +1976,43 @@ classdef VolRenApp < handle
             % https://se.mathworks.com/help/releases/R2024b/images/ref/images.ui.graphics.image-properties.html?searchHighlight=OverlayDisplayRange&s_tid=doc_srchtitle#mw_1bf93e21-15d7-4716-93b7-d0b98195db15
             % a new property at least in R2024b which should be set to
             % 'data-range' or 'manual' with obj.volume.OverlayDisplayRange = [0 numberOfmaterials]
-            if isprop(obj.volume, 'OverlayDisplayRangeMode') 
-                if obj.mibModel.matlabVersion <= 24.1
-                    obj.volume.OverlayDisplayRangeMode = 'manual';
-                    obj.volume.OverlayDisplayRange = [0 obj.noOverlayMaterials];
-                else
-                    obj.volume.OverlayDisplayRangeMode = 'data-range'; 
-                end
-            end
+            % if isprop(obj.volume, 'OverlayDisplayRangeMode') 
+            %     if obj.mibModel.matlabVersion <= 24.1
+            %         obj.volume.OverlayDisplayRangeMode = 'manual';
+            %         obj.volume.OverlayDisplayRange = [0 obj.noOverlayMaterials];
+            %     else
+                     obj.volume.OverlayDisplayRangeMode = 'data-range'; 
+            %     end
+            % end
             
             obj.volume.OverlayAlphamap = [0 ones([1, obj.noOverlayMaterials])];
             obj.volume.OverlayColormap = overlayColormap;
             obj.volume.OverlayThreshold = 0.0001;
             
             % update rendering style
-            if obj.matlabVersion >= 23.2 % R2023b
-                obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
-            end
-
+            obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
             obj.overlayShownMaterials = logical(ones([obj.noOverlayMaterials, 1]));
             obj.updateModelTable(); % update table with materials
         end
 
         function updateOverlayRenderingStyle(obj)
-            % function updateOverlayRenderingStyle()
-            % update rendering style for overlays
+            % UPDATEOVERLAYRENDERINGSTYLE - Update the overlay rendering style.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateOverlayRenderingStyle()
 
-            if obj.matlabVersion >= 23.2 % R2023b
-                obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
-            end
+            obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
         end
 
         function updateSurfaceTable(obj)
-            % update obj.view.handles.surfaceTable
+            % UPDATESURFACETABLE - Refresh the surface table widget with current surface data.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateSurfaceTable()
             noSurfaces = numel(obj.surfList);
             data = cell([noSurfaces, 5]);
             materialNames = cellfun(@(x) x.UserData.Name, obj.surfList, 'UniformOutput', false)';
@@ -1782,11 +2042,17 @@ classdef VolRenApp < handle
         end
         
         function modelHideAllMaterials(obj, hideMaterialsSwitch)
-            % function modelHideAllMaterials(obj, hideMaterialsSwitch)
-            % hide all materials of the shown model
+            % MODELHIDEALLMATERIALS - Hide or show all overlay materials at once.
             %
-            % Parameters:
-            % value: [logical, optional], switch to hide (true) or show materials (false)
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.modelHideAllMaterials()
+            %      obj.modelHideAllMaterials(hideMaterialsSwitch)
+            %
+            % Input Arguments:
+            %   - **hideMaterialsSwitch** *(optional)* — [logical] ``true`` to hide, ``false`` to show
+            %     (default: reads ``obj.view.handles.modelHideAllCheckBox.Value``)
             if nargin < 2; hideMaterialsSwitch = obj.view.handles.modelHideAllCheckBox.Value; end
 
             if hideMaterialsSwitch
@@ -1803,13 +2069,20 @@ classdef VolRenApp < handle
 
 
         function updateModelTable(obj)
-            % update obj.view.handles.modelTable
-            % after loading of the model
+            % UPDATEMODELTABLE - Refresh the model/overlay material table widget.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateModelTable()
             data = cell([obj.noOverlayMaterials, 4]);
+            id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
+
             switch obj.view.handles.overlaySourceDropDown.Value
-                case 'model'
-                    data(:,2) = obj.mibModel.I{obj.mibModel.Id}.modelMaterialNames;
-                    bgColorsList = obj.mibModel.I{obj.mibModel.Id}.modelMaterialColors(1:obj.noOverlayMaterials, :);
+                case 'labels'
+                    data(:,2) = dataset.labels.materialNames;
+                    bgColorsList = dataset.labels.materialColors(1:obj.noOverlayMaterials, :);
                 case 'selection'
                     data(1,2) = {'selection'};
                     bgColorsList = obj.mibModel.preferences.Colors.SelectionColor;
@@ -1834,7 +2107,12 @@ classdef VolRenApp < handle
         end
 
         function surfaceTableCellEdit(obj, event)
-            % callback for update of values in obj.view.handles.modelTable
+            % SURFACETABLECELLEDIT - Handle in-place edits in the surface table.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.surfaceTableCellEdit(event)
             indices = event.Indices;
             newData = event.NewData;
             surfaceId = indices(1);
@@ -1864,7 +2142,12 @@ classdef VolRenApp < handle
         end
 
         function modelTableCellEdit(obj, event)
-            % callback for update of values in obj.view.handles.modelTable
+            % MODELTABLECELLEDIT - Handle in-place edits in the model/overlay material table.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.modelTableCellEdit(event)
             indices = event.Indices;
             newData = event.NewData;
             materialId = indices(1);
@@ -1928,13 +2211,17 @@ classdef VolRenApp < handle
         end
 
         function changeSlice(obj, sourceWidget, value)
-            % callback for change of the slice value on
-            % obj.view.handles.xSliderEdit / ySliderEdit / zSliderEdit
+            % CHANGESLICE - Update a slice plane position from a slider or edit box.
             %
-            % Parameters:
-            % sourceWidget: tag (str) of the widgets that was modified,
-            % 'xSliderEdit', 'ySliderEdit', 'zSliderEdit'
-            % value: new value
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.changeSlice(sourceWidget, value)
+            %
+            % Input Arguments:
+            %   - **sourceWidget** — [char] tag of the source widget:
+            %     ``'xSliderEdit'``, ``'ySliderEdit'``, or ``'zSliderEdit'``
+            %   - **value** — [numeric] new slice index
 
             if nargin == 3; obj.view.handles.(sourceWidget).Value = value;  end
 
@@ -1952,7 +2239,17 @@ classdef VolRenApp < handle
         end
 
         function showVolume(obj, showSwitch)
-            % toggle showing of the volume
+            % SHOWVOLUME - Toggle visibility of the main volume object.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.showVolume()
+            %      obj.showVolume(showSwitch)
+            %
+            % Input Arguments:
+            %   - **showSwitch** *(optional)* — [logical] ``true`` to show, ``false`` to hide
+            %     (default: reads ``obj.view.handles.showVolumeCheckBox.Value``)
             if nargin < 2; showSwitch = obj.view.handles.showVolumeCheckBox.Value; end
 
             if showSwitch
@@ -1963,7 +2260,17 @@ classdef VolRenApp < handle
         end
 
         function transparentVolume(obj, transparentSwitch)
-            % make volume transparent, which still shows the overlay model
+            % TRANSPARENTVOLUME - Make the volume transparent to reveal the overlay model.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.transparentVolume()
+            %      obj.transparentVolume(transparentSwitch)
+            %
+            % Input Arguments:
+            %   - **transparentSwitch** *(optional)* — [logical] ``true`` to make transparent, ``false`` to restore
+            %     (default: reads ``obj.view.handles.transparentVolumeCheckBox.Value``)
             if nargin < 2; transparentSwitch = obj.view.handles.transparentVolumeCheckBox.Value; end
 
             if transparentSwitch
@@ -1976,7 +2283,12 @@ classdef VolRenApp < handle
         end
 
         function showHelp(obj)
-            % show help
+            % SHOWHELP - Open the MIB 3D viewer help page in the system browser.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.showHelp()
 
             global mibPath;
             web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-mib3Dviewer.html'), '-browser');

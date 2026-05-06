@@ -1,26 +1,33 @@
 classdef VolRenAppViewer < handle
-    % @type VolRenAppViewer class is a template class for using with
-    % GUI developed using appdesigner of Matlab
+    % VOLRENAPPVIEWER - Viewer window controller for 3D volume rendering.
     %
-    % @code
-    % obj.startController('controllers.VolRenAppViewer'); // as GUI tool
-    % @endcode
-    % or 
-    % @code 
-    % // a code below was used for mibImageArithmeticController
-    % BatchOpt.Parameter = 'test';  // fill edit boxes as strings
-    % BatchOpt.Checkbox = true;     // fill checkboxes with logicals: true/false
-    % BatchOpt.Popup = {'value'};        // value for the popups as a cell
-    % BatchOpt.Radio = {'Radio1'};          // selection of radio buttons, as cell with the handle of the target radio button
-    % BatchOpt.showWaitbar = true;  // show or not the waitbar
-    % obj.startController('controllers.VolRenAppViewer', [], BatchOpt); // start VolRenAppViewer in the batch mode
-    % @endcode
-    % or
-    % @code
-    % // trigger return of the possible Options using returnBatchOpt function
-    % // using notify syncBatch event
-    % obj.startController('controllers.VolRenAppViewer', [], NaN);
-    % @endcode
+    % Syntax:
+    %   .. code-block:: matlab
+    %
+    %      obj.startController('controllers.VolRenAppViewer');
+    %
+    % **Example 1** — launch as interactive GUI tool:
+    %
+    %   .. code-block:: matlab
+    %
+    %      obj.startController('controllers.VolRenAppViewer');
+    %
+    % **Example 2** — launch in batch mode:
+    %
+    %   .. code-block:: matlab
+    %
+    %      BatchOpt.Parameter = 'test';
+    %      BatchOpt.Checkbox = true;
+    %      BatchOpt.Popup = {'value'};
+    %      BatchOpt.Radio = {'Radio1'};
+    %      BatchOpt.showWaitbar = true;
+    %      obj.startController('controllers.VolRenAppViewer', [], BatchOpt);
+    %
+    % **Example 3** — trigger return of available options via ``syncBatch`` event:
+    %
+    %   .. code-block:: matlab
+    %
+    %      obj.startController('controllers.VolRenAppViewer', [], NaN);
     
 	% Updates
 	%     
@@ -51,22 +58,23 @@ classdef VolRenAppViewer < handle
     
     methods
         function obj = VolRenAppViewer(mibModel, varargin)
-            % VOLRENAPPVIEWER - constructor for volume visualization window
+            % VOLRENAPPVIEWER - Class constructor for the VolRenAppViewer controller.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
-            %       obj = VolRenAppViewer(mibModel)
-            %       obj = VolRenAppViewer(mibModel, parentController)
+            %      obj = VolRenAppViewer(mibModel)
+            %      obj = VolRenAppViewer(mibModel, parentController)
             %
             % Input Arguments:
-            %   - **mibModel** — handle to MibModel
-            %   - **varargin{1}** — handle to parent VolRenApp controller
+            %   - **mibModel** — [handle] handle to the MibModel instance
+            %   - **varargin{1}** *(optional)* — [handle] handle to the parent VolRenApp controller
             %
-            % Usage:
-            %   Example 1::
+            % **Example 1** — start VolRenAppViewer from a parent controller:
             %
-            %     utils.startController(obj, 'controllers.VolRenAppViewer', obj);
+            %   .. code-block:: matlab
+            %
+            %      utils.startController(obj, 'controllers.VolRenAppViewer', obj);
             %
 
             obj.mibModel = mibModel;    % assign model
@@ -85,14 +93,19 @@ classdef VolRenAppViewer < handle
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) obj.ViewListner_Callback(obj, src, evnt));    % listen changes in number of ROIs
             
             % show the gui
-            obj.view.gui.Visible = 'on';
+            obj.view.gui.Visible = true;
             
             drawnow;
 
         end
         
         function closeWindow(obj)
-            % closing VolRenAppViewer window
+            % CLOSEWINDOW - Close the VolRenAppViewer window and release resources.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.closeWindow()
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);   % delete childController window
             end
@@ -107,8 +120,12 @@ classdef VolRenAppViewer < handle
         end
         
         function updateWidgets(obj)
-            % function updateWidgets(obj)
-            % update widgets of this window
+            % UPDATEWIDGETS - Refresh all widgets in the VolRenAppViewer panel.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.updateWidgets()
             
             %fprintf('childController:updateWidgets: %g\n', toc);
         end

@@ -30,7 +30,9 @@ end
 
 switch menuEntry.Tag
     case 'materialsTableContextRenMIB'
-
+        % updated saving of models in 2D mode with slice names
+        % finished with Volume rendering
+        obj.mibController.startController('controllers.VolRenApp');
     case 'materialsTableContextRenMat'
 
     case 'materialsTableContextRenFiji'

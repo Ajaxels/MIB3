@@ -41,3 +41,5 @@ codegen/
 .claude/settings.local.json
 
 /mib/ImportExportTools/Imaris/mibConnectToImaris.m
+
+/mib/external/Fiji

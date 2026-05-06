@@ -200,6 +200,15 @@ switch lower(layerType)
             end
         end
 
+        % Propagate per-slice filenames from the image layer so that
+        % MibLabels.save() can populate metadata.sliceName.  Labels objects
+        % never carry their own slice names, so without this the
+        % 'Use original filename' policy in 2-D sequence savers always falls
+        % back to sequential numbering.
+        if ~isfield(options, 'imageSliceNames') || isempty(options.imageSliceNames)
+            options.imageSliceNames = obj.image.sliceName;
+        end
+
         % Delegate to MibLabels.save()
         fnOut = obj.labels.save(filename, options);
 

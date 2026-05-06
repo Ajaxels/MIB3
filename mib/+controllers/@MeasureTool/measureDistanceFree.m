@@ -20,6 +20,10 @@ function annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneChe
 %   - **showInfoDlg** — [logical] show annotation text dialog after drawing
 %   - **insertIndex** — *(optional)* [double] replace-at-position (0 = append)
 %
+% Output Arguments:
+%   - **annotationText** — [char] annotation label entered by the user;
+%     empty string ``''`` when the dialog was skipped or cancelled
+%
 
 if nargin < 7; insertIndex = 0; end
 annotationText = '';

@@ -355,7 +355,9 @@ classdef (Abstract) BaseSaver < handle
             %   - **pathStr** — [char] destination directory
             %   - **depth** — [integer] number of slices (Z dimension)
             %   - **ext** — [char] extension with leading dot, e.g. ``'.tif'``
-            %   - **options** — struct, must contain `` `.FilenameGenerator` `` field
+            %   - **options** — struct, must contain ``FilenameGenerator`` field;
+            %     optionally ``FilenamePrefix`` (char, e.g. ``'Labels_'``) prepended to
+            %     the stem when using original filenames
             %   - **metadata** — struct, may contain `` `.sliceName` `` (cell of char)
             %
             % Output Arguments:
@@ -374,11 +376,16 @@ classdef (Abstract) BaseSaver < handle
                 isfield(metadata, 'sliceName') && ...
                 numel(metadata.sliceName) == depth;
 
+            prefix = '';
+            if isfield(options, 'FilenamePrefix')
+                prefix = options.FilenamePrefix;
+            end
+
             sliceNames = cell(depth, 1);
             if useOriginal
                 for z = 1:depth
                     [~, sn] = fileparts(metadata.sliceName{z});
-                    sliceNames{z} = fullfile(pathStr, [sn ext]);
+                    sliceNames{z} = fullfile(pathStr, [prefix sn ext]);
                 end
             else
                 for z = 1:depth

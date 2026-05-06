@@ -690,6 +690,9 @@ classdef ResampleDataset < handle
             % ----- resample ROIs -----
             obj.mibModel.I{id}.hROI.resample(resampledRatio);
 
+            % ----- resample measurements -----
+            obj.mibModel.I{id}.measure.resample(resampledRatio);
+
             % ----- action log -----
             log_text = sprintf('Resample [%d %d %d %d %d]->[%d %d %d %d %d], method: %s', ...
                 obj.height, obj.width, obj.color, obj.depth, maxT, ...

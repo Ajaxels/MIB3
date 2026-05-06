@@ -55,7 +55,14 @@ function fnOut = save(obj, filename, options)
 %       - ``[]`` or ``NaN`` — all materials
 %       - integer — single material (returned as binary 0/1)
 %
-%     - ``.FilenameGenerator`` — [char] filename policy for 2D sequences
+%     - ``.FilenameGenerator`` — [char] filename policy for 2D sequences:
+%       ``'Use original filename'`` | ``'Use sequential filename'``
+%     - ``.imageSliceNames`` — [cell of char] *(optional)* per-slice source
+%       filenames from the parent image layer, injected by
+%       ``MibDataset.saveImage()``.  When present and the labels object has
+%       no own ``sliceName``, these names are forwarded to
+%       ``metadata.sliceName`` so that 2-D sequence savers can apply the
+%       ``'Use original filename'`` policy.
 %     - ``.pixSize`` — [struct] injected by ``MibDataset.save()``
 %     - ``.boundingBox`` — [1 x 6 numeric] injected by ``MibDataset.save()``
 %     - ``.annotations`` — [struct] *(optional)* injected by ``MibDataset.save()``:
@@ -216,9 +223,15 @@ if isfield(options,'annotations') && ~isempty(options.annotations)
 end
 if ~isempty(obj.sliceName)
     metadata.sliceName = obj.sliceName;
+elseif isfield(options, 'imageSliceNames') && ~isempty(options.imageSliceNames)
+    % Use per-slice filenames from the parent image layer (injected by
+    % MibDataset.saveImage) so that 2-D sequence savers can apply the
+    % 'Use original filename' policy for labels.
+    metadata.sliceName = options.imageSliceNames;
 else
     metadata.sliceName = {};
 end
+options.FilenamePrefix = 'Labels_';
 
 % --- get data [H, W, D, C, T] ---
 % When a specific material is requested getData returns a binary volume

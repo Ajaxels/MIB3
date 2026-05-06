@@ -341,6 +341,34 @@ classdef MatlabSaver < io.savers.BaseSaver
             if isempty(pathStr); pathStr = pwd; end
 
             nZ = size(data,3);
+
+            % Detect whether FilenameGenerator was explicitly set by the
+            % caller (batch/scripted mode) or is absent (simple GUI mode).
+            callerSetFilename = isfield(options, 'FilenameGenerator');
+            if ~isfield(options, 'showWaitbar'); options.showWaitbar = true;  end
+            if ~isfield(options, 'silent');      options.silent      = false; end
+            if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
+
+            % When slice names are available and the caller has not pre-set
+            % FilenameGenerator, give the user a choice — mirrors TiffSaver.
+            hasSliceNames = isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nZ;
+            if ~options.silent && ~callerSetFilename && nZ > 1 && hasSliceNames
+                parentFig = [];
+                if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
+                    parentFig = options.ParentFigure;
+                end
+                mibPathLocal = '';
+                if isfield(options, 'mibPath'); mibPathLocal = options.mibPath; end
+                dlgOpts.mibPath     = mibPathLocal;
+                dlgOpts.WindowStyle = 'modal';
+                prompts = {'Filename generator:'};
+                defAns  = {{'Use sequential filename', 'Use original filename', 1}};
+                answer = utils.dlgs.inputUniversalDlg(parentFig, '', prompts, defAns, ...
+                    'Model 2D sequence saving options', dlgOpts);
+                if isempty(answer); return; end
+                options.FilenameGenerator = answer{1};
+            end
+
             sliceNames = obj.buildSliceNames(baseName, pathStr, nZ, ext, options, metadata);
 
             % Pre-compute shared variables
@@ -472,6 +500,16 @@ classdef MatlabSaver < io.savers.BaseSaver
                 if isempty(answer); return; end
                 options.Saving3DPolicy = answer{1};
                 options.FilenamePolicy  = answer{2};
+            end
+
+            % Map FilenamePolicy → FilenameGenerator so buildSliceNames
+            % (which uses FilenameGenerator) honours the chosen policy.
+            if ~isfield(options, 'FilenameGenerator')
+                if strcmp(options.FilenamePolicy, 'Use existing name')
+                    options.FilenameGenerator = 'Use original filename';
+                else
+                    options.FilenameGenerator = 'Use sequential filename';
+                end
             end
 
             matNames = obj.getMaterialNames(metadata);

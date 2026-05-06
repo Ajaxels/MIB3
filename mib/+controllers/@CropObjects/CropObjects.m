@@ -651,7 +651,7 @@ classdef CropObjects < handle
             end
             toMatlab = strcmp(BatchOptLocal.CropObjectsTo{1}, 'Crop to MATLAB');
 
-            % ---- dataset dimensions & pixelsize ------------------------
+            % ---- dataset dimensions & pixel size ------------------------
             imgW    = obj.mibModel.I{id}.image.width;
             imgH    = obj.mibModel.I{id}.image.height;
             imgZ    = obj.mibModel.I{id}.image.depth;
@@ -818,9 +818,9 @@ classdef CropObjects < handle
                     x1 = max(1, min(obj.annotationLabels.positions(pntId, 2) - floor(marginXY / 2), imgW - marginXY + 1));
                     y1 = max(1, min(obj.annotationLabels.positions(pntId, 3) - floor(marginZ  / 2), imgH - marginZ  + 1));
                     z1 = max(1, min(annZ - floor(patchDepth / 2), imgZ - patchDepth + 1));
-                    x2 = x1 + marginXY  - 1;
-                    y2 = y1 + marginZ   - 1;
-                    z2 = z1 + patchDepth - 1;
+                    x2 = min([imgW x1 + marginXY  - 1]);
+                    y2 = min([imgH y1 + marginZ   - 1]);
+                    z2 = min([imgZ z1 + patchDepth - 1]);
                 end
 
                 getDataOpt.x = [x1, x2];

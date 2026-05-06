@@ -851,6 +851,7 @@ classdef CropDataset < handle
 
             obj.mibModel.I{bufferId}.hROI.crop(crop_factor);
             obj.mibModel.I{bufferId}.annotations.crop(crop_factor);
+            obj.mibModel.I{bufferId}.measure.crop(crop_factor);
             log_text = ['ImCrop: [x1 y1 dx dy z1 dz t1 dt]: [' num2str(crop_factor) ']'];
             obj.mibModel.I{bufferId}.image.updateActionLog(log_text);
 

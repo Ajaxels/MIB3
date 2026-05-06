@@ -30,8 +30,7 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 %       ``'question_48px'``, ``'warning_48px'``, ``'celebrate'``, ``'call4help'``
 %     - ``.IconWidth`` — [numeric] icon column width in pixels (default: 48)
 %     - ``.ParentFigure`` — [handle] parent window used to centre the dialog (default: ``[]``)
-%     - ``.DefaultKey`` — [char] ``'default'`` or ``'cancel'``; controls which action
-%       the Enter key triggers (default: ``'default'``)
+%     - ``.DefaultKey`` — [char] ``'default'`` or ``'cancel'``; controls which action the Enter key triggers (default: ``'default'``)
 %     - ``.FontSize`` — [numeric] question text font size (default: 14)
 %     - ``.ButtonFontSize`` — [numeric] button font size (default: 12)
 %     - ``.DoNotShowAgain`` — [logical] show a "Do not show again" checkbox (default: ``false``)

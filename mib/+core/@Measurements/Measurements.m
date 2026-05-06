@@ -810,6 +810,7 @@ classdef Measurements < matlab.mixin.Copyable
 
                 obj.Data(measureIdx).X = obj.Data(measureIdx).X * ratioX;
                 obj.Data(measureIdx).Y = obj.Data(measureIdx).Y * ratioY;
+                obj.Data(measureIdx).Z = round(obj.Data(measureIdx).Z * resampledRatio(3));
 
                 % scale circle parameters
                 if ~isempty(obj.Data(measureIdx).circ)
@@ -888,6 +889,7 @@ classdef Measurements < matlab.mixin.Copyable
 
                 obj.Data(measureIdx).X = obj.Data(measureIdx).X - shiftX;
                 obj.Data(measureIdx).Y = obj.Data(measureIdx).Y - shiftY;
+                obj.Data(measureIdx).Z = obj.Data(measureIdx).Z - (cropF(5) - 1);
 
                 % shift circle parameters
                 if ~isempty(obj.Data(measureIdx).circ)
