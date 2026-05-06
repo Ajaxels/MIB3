@@ -35,7 +35,7 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
         end
 
         function [imginfo, files] = loadMetadata(obj, filenames, options)
-            % LOADMETADATA - Load metadata for MATLAB-format model files.
+            % LOADMETADATA - Load both metadata and raw pixels for MATLAB-format model files.
             %
             % Syntax:
             %   .. code-block:: matlab
@@ -80,7 +80,10 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
             %
 
             if nargin < 3; options = obj.Options; end
-            options = obj.mergeOptions(obj.Options, options); %#ok<NASGU>
+            options = obj.mergeOptions(obj.Options, options);
+
+            % Initialize default options
+            if ~isfield(options, 'waitbar'); options.waitbar = true; end
 
             % Init imginfo with standard defaults
             imginfo = core.MibImage.initializeImgInfo();
@@ -109,8 +112,23 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
                 'imgClass',  [], ...
                 'data',      []);
 
+            % Initialize waitbar
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading model data and metadata\nPlease wait...'), ...
+                    obj.ParentFigure, 'Model import', true, true);
+            end
+
             loadedCount = 0;
             for iFile = 1:noFiles
+                % Check for cancel
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
+                    imginfo = dictionary();
+                    return;
+                end
+
                 filename = filenames{iFile};
                 [~, ~, ext] = fileparts(filename);
                 ext = lower(strrep(ext, '.', ''));
@@ -119,8 +137,7 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
                 try
                     res = load(filename, '-mat');
                 catch ME
-                    warning('MatModelLoader:loadFailed', ...
-                        'Could not load file: %s', filename);
+                    utils.dlgs.showErrorDialog([], ME, 'MatModel Loader Error', sprintf('Could not load file:\n%s\n', filename));
                     continue;
                 end
 
@@ -150,8 +167,7 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
                 end
 
                 if isempty(labVar) || ~isfield(res, labVar)
-                    warning('MatModelLoader:noDataVar', ...
-                        'Cannot determine data variable in: %s', filename);
+                    utils.dlgs.showErrorDialog([], sprintf('Cannot determine data variable in: %s', filename), 'MatModel Loader Error', 'MatModelLoader:noDataVar');
                     continue;
                 end
 
@@ -277,7 +293,12 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
                 files(iFile).data     = rawData;  % cache to avoid re-reading
 
                 loadedCount = loadedCount + 1;
+
+                % Update waitbar
+                if ~isempty(pwb); pwb.increment(); end
             end
+
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
 
             imginfo{"numEntries"} = loadedCount;
         end
@@ -321,11 +342,16 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
             z1  = 1;
             for iFile = 1:numel(files)
                 if isempty(files(iFile).data); continue; end
-                rawData = reshape(files(iFile).data, ...
-                    [files(iFile).height, files(iFile).width, ...
-                     files(iFile).noLayers, 1, files(iFile).time]);
+                % rawData = reshape(files(iFile).data, ...
+                %     [files(iFile).height, files(iFile).width, ...
+                %      files(iFile).noLayers, 1, files(iFile).time]);
                 z2 = z1 + files(iFile).noLayers - 1;
-                img(:, :, z1:z2, 1, :) = rawData;
+                % img(:, :, z1:z2, 1, :) = rawData;
+                if numel(files) == 1 %#ok<ISCL>
+                    img = files(iFile).data;
+                else    
+                    img(:, :, z1:z2, 1, :) = files(iFile).data;
+                end
                 z1 = z2 + 1;
             end
         end

@@ -140,10 +140,11 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Metadata import', ...
-                    sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), true);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), ...
+                    obj.ParentFigure, 'Metadata import', true);
             end
 
             % Pre-allocate files structure
@@ -157,7 +158,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.ImreadLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.ImreadLoader');
@@ -165,7 +166,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
+                if ~isempty(pwb) && pwb.getCancelState()
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};                % update filenames
@@ -184,7 +185,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 try
                     info = imfinfo(files(fnIndex).filename);
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                     %rethrow(err);
                 end
@@ -205,7 +206,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                 dlgOptions.mibPath = options.mibPath;
                                 [answer, selectedIndex] = utils.dlgs.inputUniversalDlg(options.ParentFigure, '', prompt, {defAns}, 'title', dlgOptions);
                                 if isempty(answer)
-                                    if ~isempty(wb); delete(wb); end
+                                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                                     return;
                                 end
                                 files(fnIndex).level = selectedIndex;
@@ -272,7 +273,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 if strcmp(info(1).ColorType, 'truecolor'); imginfo{"ColorType"} = 'multichannel'; info(1).ColorType='multichannel'; end
                 if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, info(1).ColorType)
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                         'Mixed colors', 'Error in io.loaders.ImreadLoader');
@@ -391,7 +392,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                                         pixSize.units(1) = 'u';
                                     end
                                 catch err
-                                    if ~isempty(wb); delete(wb); end
+                                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                                     rethrow(err);
                                 end
                             end
@@ -400,9 +401,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
-                end
+                if ~isempty(pwb); pwb.increment(); end
             end
 
             % If pixSize.z was estimated from a single-layer file (using the isotropic fallback),
@@ -428,7 +427,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return; 
                 end
             end
@@ -448,7 +447,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % use io.BaseImageLoader.finalizeImgInfo of the parent class
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -556,18 +555,18 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             layerid = 1;
             noFiles = numel(files);
 
-            % Initialize uiprogressdlg
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading images...', ...
-                    sprintf('Please wait...'), true);
+            % Initialize waitbar
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading images...', true);
+                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
             end
 
             % Process each file
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
-                    delete(wb);
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
                     img = [];
                     return;
                 end
@@ -641,16 +640,14 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                     % Store slice
                     img(1:maxY, 1:maxX, layerid, 1:size(I,3)) = permute(I(1:maxY, 1:maxX, 1:size(I,3)), [1 2 4 3]);
 
-                    % Update uiprogressdlg
-                    if ~isempty(wb)
-                        if mod(layerid, waitbarUpdateFrequency) == 0
-                            if wb.CancelRequested
-                                delete(wb);
-                                img = [];
-                                return;
-                            end
-                            wb.Value = layerid / maxZ;
+                    % Update waitbar
+                    if ~isempty(pwb) && mod(layerid, waitbarUpdateFrequency) == 0
+                        if pwb.getCancelState()
+                            pwb.deletePoolWaitbar();
+                            img = [];
+                            return;
                         end
+                        pwb.increment();
                     end
 
                     layerid = layerid + 1;
@@ -658,8 +655,8 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             end
 
             % Check for cancel after loading large single files
-            if ~isempty(wb) && wb.CancelRequested
-                delete(wb);
+            if ~isempty(pwb) && pwb.getCancelState()
+                pwb.deletePoolWaitbar();
                 img = [];
                 return;
             end
@@ -672,7 +669,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
 
             [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
     end
 end

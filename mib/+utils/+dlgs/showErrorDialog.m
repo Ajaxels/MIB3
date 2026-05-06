@@ -52,7 +52,7 @@ function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSu
 %      try
 %          % some code
 %      catch err
-%          utils.dlgs.showErrorDialog(obj.view.gui, err, 'Processing Error');
+%          utils.dlgs.showErrorDialog(obj.view.gui, err, 'Processing Error', 'prefix');
 %          return;
 %      end
 %

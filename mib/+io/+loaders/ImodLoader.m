@@ -115,10 +115,11 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Metadata import', ...
-                    sprintf('Loading IMOD metadata\n(press Cancel when metadata is the same for all files)'), true);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading IMOD metadata\n(press Cancel when metadata is the same for all files)'), ...
+                    obj.ParentFigure, 'Metadata import', true);
             end
 
             % Pre-allocate files structure
@@ -129,7 +130,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.ImodLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.ImodLoader');
@@ -138,7 +139,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
+                if ~isempty(pwb) && pwb.getCancelState()
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};
@@ -220,7 +221,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                     close(mrcFile);
 
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error reading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     imginfo = dictionary();
@@ -239,11 +240,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(fnIndex, ceil(noFiles/50)) == 0
-                        wb.Value = fnIndex/noFiles;
-                    end
-                end
+                if ~isempty(pwb); pwb.increment(); end
             end
 
             % update pixSize
@@ -254,7 +251,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                 end
             end
@@ -268,7 +265,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -345,17 +342,17 @@ classdef ImodLoader < io.loaders.BaseImageLoader
             layerId = 1;
             noFiles = numel(files);
 
-            % Initialize uiprogressdlg
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading IMOD images...', ...
-                    sprintf('Please wait...'), true);
+            % Initialize waitbar
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading IMOD images...', true);
+                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
-                    delete(wb);
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
                     img = [];
                     return;
                 end
@@ -382,7 +379,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                                 'Convert image', ...
                                 'Icon', 'warning', 'DefaultOption', 1);
                             if strcmp(selection, 'Cancel')
-                                if ~isempty(wb); delete(wb); end
+                                if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                                 img = [];
                                 return;
                             end
@@ -414,7 +411,7 @@ classdef ImodLoader < io.loaders.BaseImageLoader
 
                     close(mrcFile);
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading IMOD file:\n%s', err.message), 'IMOD Error', 'Error in io.loaders.ImodLoader');
                     img = [];
@@ -422,16 +419,14 @@ classdef ImodLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(layerId, waitbarUpdateFrequency) == 0
-                        wb.Value = layerId / maxZ;
-                    end
+                if ~isempty(pwb) && mod(layerId, waitbarUpdateFrequency) == 0
+                    pwb.increment();
                 end
 
                 layerId = layerId + files(fnIndex).noLayers;
             end
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
 
             % Finalize
             imginfo{'Height'} = height;

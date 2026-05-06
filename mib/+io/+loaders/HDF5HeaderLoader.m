@@ -334,10 +334,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Metadata import', ...
-                    sprintf('Loading HDF5 metadata\n(press Cancel when metadata is the same for all files)'), true);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading HDF5 metadata\n(press Cancel when metadata is the same for all files)'), ...
+                    obj.ParentFigure, 'Metadata import', true);
             end
 
             % Pre-allocate files structure
@@ -350,7 +351,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.HDF5HeaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.HDF5HeaderLoader');
@@ -358,7 +359,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
+                if ~isempty(pwb) && pwb.getCancelState()
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:}; % update filenames
@@ -376,7 +377,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 try
                     imginfoTemp = obj.parseXMLHeader(filenames{fnIndex});
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.HDF5HeaderLoader!\n\nCannot parse XML header:\n%s\n\nError: %s', ...
                         filenames{fnIndex}, err.message), ...
@@ -398,7 +399,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     % Check ColorType consistency
                     if ~strcmp(imginfo{"ColorType"}, imginfoTemp{"ColorType"})
                         imginfo = dictionary();
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                             'Mixed colors', 'Error in io.loaders.HDF5HeaderLoader');
@@ -479,7 +480,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                             defAns = struct('Value', 1, 'Limits', [1 noLevels], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d');
                             level = utils.dlgs.inputSingleDlg(obj.Options.ParentFigure, prompt, defAns, 'Select image', dlgOptions);
                             if isempty(level)
-                                if ~isempty(wb); delete(wb); end
+                                if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                                 imginfo = dictionary();
                                 return;
                             end
@@ -504,7 +505,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                         case {'H5T_STD_I8LE', 'H5T_STD_U8LE'}
                             imgClass = 'uint8';
                         otherwise
-                            if ~isempty(wb); delete(wb); end
+                            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                             utils.dlgs.showErrorDialog(options.ParentFigure, ...
                                 sprintf('Oops!\n\nPlease check image class "%s" and implement it!', dataType), ...
                                 'Unsupported data type', 'Error in io.loaders.HDF5HeaderLoader');
@@ -521,7 +522,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
                 else
                     % Unknown format
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('!!! Error !!!\n\nCannot detect the HDF5 format!'), ...
                         'Unknown format', 'Error in io.loaders.HDF5HeaderLoader');
@@ -544,9 +545,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
-                end
+                if ~isempty(pwb); pwb.increment(); end
             end
 
             % update pixSize
@@ -557,7 +556,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                 end
             end
@@ -574,7 +573,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -676,18 +675,18 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             layerid = 1;
             noFiles = numel(files);
 
-            % Initialize uiprogressdlg
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading HDF5 images...', ...
-                    sprintf('Please wait...'), true);
+            % Initialize waitbar
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading HDF5 images...', true);
+                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
             end
 
             % Process each file
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
-                    delete(wb);
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
                     img = [];
                     return;
                 end
@@ -706,7 +705,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     try
                         imgIn = obj.loadBigDataViewerFormat(files(fnIndex).filename, opt, imginfo);
                     catch err
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error loading BigDataViewer HDF5:\n%s\n\nError: %s', ...
                             imginfo{"Filename"}, err.message), ...
@@ -725,7 +724,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     try
                         hdf5image = h5read(files(fnIndex).filename, files(fnIndex).seriesName);
                     catch err
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error loading MATLAB HDF5:\n%s\n\nError: %s', ...
                             files(fnIndex).filename, err.message), ...
@@ -736,7 +735,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
                     % Check if data is numerical
                     if iscell(hdf5image)
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         assignin('base', 'hdf5image', hdf5image);
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('mibGetImages: cannot read this dataset!\n\nIt was exported as ''hdf5image'' to the main MATLAB workspace.'), ...
@@ -787,23 +786,21 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(layerid, waitbarUpdateFrequency) == 0
-                        if wb.CancelRequested
-                            delete(wb);
-                            img = [];
-                            return;
-                        end
-                        wb.Value = layerid / maxZ;
+                if ~isempty(pwb) && mod(layerid, waitbarUpdateFrequency) == 0
+                    if pwb.getCancelState()
+                        pwb.deletePoolWaitbar();
+                        img = [];
+                        return;
                     end
+                    pwb.increment();
                 end
 
                 layerid = layerid + files(fnIndex).noLayers;
             end
 
             % Check for cancel after loading
-            if ~isempty(wb) && wb.CancelRequested
-                delete(wb);
+            if ~isempty(pwb) && pwb.getCancelState()
+                pwb.deletePoolWaitbar();
                 img = [];
                 return;
             end
@@ -816,7 +813,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
 
             [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadBigDataViewerFormat(obj, filename, options, imginfo)
@@ -893,10 +890,11 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 
             % Initialize progress dialog
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading HDF5...', ...
-                    sprintf('Loading HDF5 file structure\nPlease wait...'), false, true);
+            pwb = [];   wb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(1, sprintf('Loading HDF5 file structure\nPlease wait...'), ...
+                    obj.ParentFigure, 'Loading HDF5...', false, true);
+                if ~isempty(pwb); wb = pwb.getWaitbarHandle(); end
             end
 
             % Get HDF5 file structure
@@ -942,7 +940,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                 % Select pyramid level
                 if isfield(options, 'level')
                     if options.level(1) < 1 || options.level(1) > noLevels
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidLevel', ...
                             'The level value (%d) is out of range! It should be between 1 and %d', ...
                             options.level, noLevels);
@@ -956,13 +954,13 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     defAns = struct('Value', 1, 'Limits', [1 noLevels], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d');
                     level = utils.dlgs.inputSingleDlg(obj.Options.ParentFigure, prompt, defAns, 'Select image', dlgOptions);
                     if isempty(level)
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         return;
                     end
 
                     imginfo{"ReturnedLevel"} = level;
                     if imginfo{"ReturnedLevel"} < 1 || imginfo{"ReturnedLevel"} > noLevels
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidLevel', ...
                             'Wrong number! The number should be between 1 and %d', noLevels);
                     end
@@ -985,7 +983,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                     case {'H5T_STD_I8LE', 'H5T_STD_U8LE'}
                         imginfo{"imgClass"} = 'uint8';
                     otherwise
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         error('HDF5HeaderLoader:loadBigDataViewerFormat:UnsupportedDataType', ...
                             'Unsupported image class (%s)! Please implement.', dataType);
                 end
@@ -999,7 +997,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             if isfield(options, 'x')
                 if options.x(1) < 1 || options.x(1) > imginfo{"Width"} || ...
                    options.x(2) < 1 || options.x(2) > imginfo{"Width"}
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidX', ...
                         'The X value [%d:%d] is out of range! It should be between 1 and %d', ...
                         options.x(1), options.x(2), imginfo{"Width"});
@@ -1013,7 +1011,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             if isfield(options, 'y')
                 if options.y(1) < 1 || options.y(1) > imginfo{"Height"} || ...
                    options.y(2) < 1 || options.y(2) > imginfo{"Height"}
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidY', ...
                         'The Y value [%d:%d] is out of range! It should be between 1 and %d', ...
                         options.y(1), options.y(2), imginfo{"Height"});
@@ -1027,7 +1025,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             if isfield(options, 'z')
                 if options.z(1) < 1 || options.z(1) > imginfo{"Depth"} || ...
                    options.z(2) < 1 || options.z(2) > imginfo{"Depth"}
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidZ', ...
                         'The Z value [%d:%d] is out of range! It should be between 1 and %d', ...
                         options.z(1), options.z(2), imginfo{"Depth"});
@@ -1040,7 +1038,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % Color channels
             if isfield(options, 'c')
                 if min(options.c) < 1 || max(options.c) > imginfo{"Colors"}
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidC', ...
                         'The C value is out of range! It should be between 1 and %d', ...
                         imginfo{"Colors"});
@@ -1054,7 +1052,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             if isfield(options, 't')
                 if options.t(1) < 1 || options.t(1) > imginfo{"Time"} || ...
                    options.t(2) < 1 || options.t(2) > imginfo{"Time"}
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     error('HDF5HeaderLoader:loadBigDataViewerFormat:InvalidT', ...
                         'The T value [%d:%d] is out of range! It should be between 1 and %d', ...
                         options.t(1), options.t(2), imginfo{"Time"});
@@ -1136,7 +1134,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                                     clear dummy_full;
                                     readSuccess = true;
                                 catch ME3
-                                    if ~isempty(wb); delete(wb); end
+                                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                                     error('HDF5HeaderLoader:loadBigDataViewerFormat:ReadError', ...
                                         ['Failed to read HDF5 dataset using all strategies.\n' ...
                                          'Dataset: %s\n' ...
@@ -1148,7 +1146,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
                             end
                         else
                             % Re-throw if not a filter error
-                            if ~isempty(wb); delete(wb); end
+                            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                             rethrow(ME1);
                         end
                     end
@@ -1177,7 +1175,7 @@ classdef HDF5HeaderLoader < io.loaders.BaseImageLoader
             % Permute to MIB dimension order [y, x, z, c, t]
             img = permute(dataset, [2 1 3 4 5]);
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
     end
 end

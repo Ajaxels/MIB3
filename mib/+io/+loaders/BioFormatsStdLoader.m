@@ -123,10 +123,11 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Metadata import', ...
-                    sprintf('Loading Bio-Formats metadata\nPlease wait...'), false);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading Bio-Formats metadata\nPlease wait...'), ...
+                    obj.ParentFigure, 'Metadata import', true);
             end
 
             % Pre-allocate files structure array
@@ -139,7 +140,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.BioFormatsStdLoader');
@@ -170,7 +171,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         filesTemp.hDataset.setId(filenames{fnIndex});
                         numSeries = filesTemp.hDataset.getSeriesCount();
                     catch err
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error in io.loaders.BioFormatsStdLoader!\n\nMemoizer can not be initialized for :\n%s', filenames{fnIndex}), ...
                             'BioFormats memoizer', 'Error in io.loaders.BioFormatsStdLoader');
@@ -243,7 +244,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 filesTemp.dimensionOrder = char(filesTemp.hDataset.getDimensionOrder());
 
                 if strcmp(filesTemp.seriesIndex, 'Cancel')
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     imginfo = dictionary();
                     return;
                 end
@@ -253,7 +254,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                     if ~isempty(filesTemp.hDataset)
                         filesTemp.hDataset.close();
                     end
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     imginfo = dictionary();
                     return;
                 end
@@ -393,11 +394,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(fnIndex, ceil(noFiles/50)) == 0
-                        wb.Value = fnIndex/noFiles;
-                    end
-                end
+                if ~isempty(pwb); pwb.increment(); end
             end
 
             % update pixSize
@@ -442,7 +439,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                 end
             end
@@ -453,7 +450,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -528,16 +525,16 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             noFiles = numel(files);
 
             % Initialize waitbar
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading images with BioFormats', ...
-                    sprintf('Please wait...'), true);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading images with BioFormats', true);
+                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
-                    delete(wb);
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
                     img = [];
                     return;
                 end
@@ -550,8 +547,8 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 % Setup options for bfopen5
                 bfopenOptions = struct();
                 bfopenOptions.bioFormatsMemoizerMemoDir = files(fnIndex).bioFormatsMemoizerMemoDir;
-                if ~isempty(wb)
-                    bfopenOptions.waitbarHandle = wb;
+                if ~isempty(pwb)
+                    bfopenOptions.waitbarHandle = pwb.getWaitbarHandle();
                     bfopenOptions.waitbarUpdateFrequency = waitbarUpdateFrequency;
                 end
                 if isfield(files(fnIndex), 'dimensionOrder')
@@ -589,18 +586,18 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         layerId = layerId + 1;
 
                         % Update waitbar
-                        if ~isempty(wb) && mod(layerId, waitbarUpdateFrequency) == 0
-                            if ~isempty(wb) && wb.CancelRequested
+                        if ~isempty(pwb) && mod(layerId, waitbarUpdateFrequency) == 0
+                            if pwb.getCancelState()
                                 img = [];
-                                delete(wb);
+                                pwb.deletePoolWaitbar();
                                 return;
                             end
-                            wb.Value = layerId/maxZ;
+                            pwb.increment();
                         end
                     end
 
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('io.loaders.BioFormatsStdLoader:\n\nError loading Bio-Formats file\n%s', err.message), 'Bio-Formats Error', 'Error in io.loaders.BioFormatsStdLoader');
                     img = [];
@@ -608,7 +605,7 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                 end
             end
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
 
             % Finalize
             imginfo{'Height'} = height;

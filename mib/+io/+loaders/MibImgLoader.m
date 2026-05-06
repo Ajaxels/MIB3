@@ -111,10 +111,11 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Metadata import', ...
-                    sprintf('Loading mibImg metadata\n(press Cancel when metadata is the same for all files)'), true);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading mibImg metadata\n(press Cancel when metadata is the same for all files)'), ...
+                    obj.ParentFigure, 'Metadata import', true);
             end
 
             % Pre-allocate files structure
@@ -126,7 +127,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             for fnIndex = 1:noFiles
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.MibImgLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.MibImgLoader');
@@ -135,7 +136,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
+                if ~isempty(pwb) && pwb.getCancelState()
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:};
@@ -163,7 +164,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                     % Load 'options' field to get dimension order
                     fileOpts = resObj.options; 
                     if isempty(fileOpts)
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('Error in io.loaders.MibImgLoader!\n\nInvalid mibImg file:\n%s\n\nmissing options structure', files(fnIndex).filename), ...
                             'Missing options field', 'Error in io.loaders.MibImgLoader');
@@ -193,7 +194,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                     files(fnIndex).time = size(resObj.(resObj.imgVariable), tDim);
                     files(fnIndex).imgClass = class(resObj.(resObj.imgVariable));
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error reading mibImg file:\n%s', err.message), 'mibImg Error', 'Error in io.loaders.MibImgLoader');
                     imginfo = dictionary();
@@ -212,11 +213,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(fnIndex, ceil(noFiles/50)) == 0
-                        wb.Value = fnIndex/noFiles;
-                    end
-                end
+                if ~isempty(pwb); pwb.increment(); end
             end
 
             % update pixSize
@@ -227,7 +224,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                 end
             end
@@ -238,7 +235,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -307,17 +304,17 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
             layerId = 1;
             noFiles = numel(files);
 
-            % Initialize uiprogressdlg
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading mibImg images...', ...
-                    sprintf('Please wait...'), true);
+            % Initialize waitbar
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading mibImg images...', true);
+                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
             end
 
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
-                    delete(wb);
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
                     img = [];
                     return;
                 end
@@ -355,7 +352,7 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                         res.(res.imgVariable);
 
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                      utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading mibImg file:\n%s', err.message), 'mibImg Error', 'Error in io.loaders.MibImgLoader');
                     img = [];
@@ -363,16 +360,14 @@ classdef MibImgLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(layerId, waitbarUpdateFrequency) == 0
-                        wb.Value = layerId / maxZ;
-                    end
+                if ~isempty(pwb) && mod(layerId, waitbarUpdateFrequency) == 0
+                    pwb.increment();
                 end
 
                 layerId = layerId + files(fnIndex).noLayers;
             end
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
 
             % Finalize
             imginfo{'Height'} = height;

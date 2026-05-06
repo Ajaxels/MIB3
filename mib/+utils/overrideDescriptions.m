@@ -63,9 +63,7 @@ for i = 1:numel(fields)
     fname = fields{i};
     
     % Skip excluded fields
-    if ismember(fname, exclusionList)
-        continue;
-    end
+    if ismember(fname, exclusionList); continue; end
 
     current = handles.(fname);
     currentPath = sprintf('%s.%s', fieldPath, fname);
@@ -78,6 +76,11 @@ for i = 1:numel(fields)
         % Check if object has 'Description'/'Tooltip'/'Text' property
         updateDescription = false;
         outputTypeCell = false;
+
+        if isa(current, 'matlab.ui.container.GridLayout')
+            % skip grid layouts
+            continue;
+        end
 
         if isprop(current, 'Tooltip')  % appdesigner widget
             outputTypeCell = iscell(current.Tooltip);  % currentDescription should be converted to cell

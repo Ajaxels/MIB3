@@ -86,7 +86,9 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
         obj.mibModel.setData2D(currSelection, 'selection', [], [], NaN, getDataOptions);
     else
         % Add mode: OR the brush stroke into the existing selection
+        tic
         obj.mibModel.setData2D(uint8(currSelection | obj.brushSelection{1}.selection), 'selection', [], [], NaN, getDataOptions);
+        toc
     end
 
     % Add travelled brush distance to the gamification counter

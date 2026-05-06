@@ -46,7 +46,7 @@ hFig = obj.UIFigure;
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 % ---- do backup ----
-backupOptions.blockModeSwitch = true;
+backupOptions.blockModeSwitch = false;
 obj.mibModel.backup('selection', 0, backupOptions);
 
 % ---- read brush radius ----

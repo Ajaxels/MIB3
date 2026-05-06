@@ -154,7 +154,7 @@ if obj.Backup.enableSwitch == 0; return; end
 if nargin < 4; getDataOptions = struct(); end
 if nargin < 3; switch3d = 1; end
 
-if ~isfield(getDataOptions, 'id'); getDataOptions.id = obj.id; end
+if ~isfield(getDataOptions, 'id'); getDataOptions.id = obj.getActiveId(); end
 id = getDataOptions.id;
 
 if isfield(getDataOptions, 'blockModeSwitch') && getDataOptions.blockModeSwitch == true

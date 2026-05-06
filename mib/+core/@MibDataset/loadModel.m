@@ -142,7 +142,7 @@ else
 
     % Check success
     if ~isKey(imginfo, 'numEntries') || imginfo{"numEntries"} == 0
-        warning('MibDataset:loadModel', 'Loader returned no entries for: %s', filenames{1});
+        utils.dlgs.showErrorDialog([], sprintf('Loader returned no entries for: %s', filenames{1}), 'MibDataset:loadModel');
         return;
     end
 

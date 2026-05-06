@@ -135,10 +135,11 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             noFiles = numel(filenames);
 
             % Initialize waitbar if requested
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Metadata import', ...
-                    sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), true);
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(noFiles, ...
+                    sprintf('Loading metadata\n(press Cancel when metadata is the same for all files)'), ...
+                    obj.ParentFigure, 'Metadata import', true);
             end
 
             % Pre-allocate files structure
@@ -153,7 +154,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 % Check if file exists
                 if exist(filenames{fnIndex}, 'file') == 0
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.VideoReaderLoader!\n\nThe required file:\n%s\nnot found!', filenames{fnIndex}), ...
                         'File does not exists', 'Error in io.loaders.VideoReaderLoader');
@@ -161,7 +162,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 end
 
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
+                if ~isempty(pwb) && pwb.getCancelState()
                     % Use metadata from first file for all remaining files
                     files(fnIndex:noFiles) = files(1);
                     [files.filename] = filenames{:}; % update filenames
@@ -181,7 +182,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 try
                     xyloObj = VideoReader(files(fnIndex).filename);
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error in io.loaders.VideoReaderLoader!\n\nCannot open video file:\n%s\n\nError: %s', ...
                         filenames{fnIndex}, err.message), ...
@@ -229,7 +230,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
 
                     if ~isempty(imginfo{"ColorType"}) && ~strcmp(imginfo{"ColorType"}, currentColorType)
                         imginfo = dictionary();
-                        if ~isempty(wb); delete(wb); end
+                        if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                         utils.dlgs.showErrorDialog(options.ParentFigure, ...
                             sprintf('!!! Error !!!\n\nThe files have dissimilar ColorType'), ...
                             'Mixed colors', 'Error in io.loaders.VideoReaderLoader');
@@ -238,9 +239,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 end
 
                 % Update waitbar
-                if ~isempty(wb)
-                    if mod(fnIndex, ceil(noFiles/50)) == 0; wb.Value = fnIndex/noFiles; end
-                end
+                if ~isempty(pwb); pwb.increment(); end
             end
 
             % update pixSize
@@ -251,7 +250,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 [files, imginfo, cancelled] = obj.handleCustomSections(files, imginfo, options);
                 if cancelled
                     imginfo = dictionary();
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     return;
                 end
             end
@@ -265,7 +264,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
 
         function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -368,18 +367,18 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             layerid = 1;
             noFiles = numel(files);
 
-            % Initialize uiprogressdlg
-            wb = [];
-            if options.waitbar
-                wb = obj.createProgressDialog('Loading video frames...', ...
-                    sprintf('Please wait...'), true);
+            % Initialize waitbar
+            pwb = [];
+            if options.waitbar && ~isempty(obj.ParentFigure)
+                pwb = core.PoolWaitbar(maxZ, 'Please wait...', obj.ParentFigure, 'Loading video frames...', true);
+                if ~isempty(pwb); pwb.setIncrement(waitbarUpdateFrequency); end
             end
 
             % Process each file
             for fnIndex = 1:noFiles
                 % Check for cancel button
-                if ~isempty(wb) && wb.CancelRequested
-                    delete(wb);
+                if ~isempty(pwb) && pwb.getCancelState()
+                    pwb.deletePoolWaitbar();
                     img = [];
                     return;
                 end
@@ -394,7 +393,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                 try
                     xyloObj = VideoReader(files(fnIndex).filename);
                 catch err
-                    if ~isempty(wb); delete(wb); end
+                    if ~isempty(pwb); pwb.deletePoolWaitbar(); end
                     utils.dlgs.showErrorDialog(options.ParentFigure, ...
                         sprintf('Error loading video file:\n%s\n\nError: %s', ...
                         files(fnIndex).filename, err.message), ...
@@ -428,16 +427,14 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
                     img(1:min(maxY, size(I,1)), 1:min(maxX, size(I,2)), layerid, 1:min(maxC, size(I,3))) = ...
                         permute(I(1:min(maxY, size(I,1)), 1:min(maxX, size(I,2)), 1:min(maxC, size(I,3))), [1 2 4 3]);
 
-                    % Update uiprogressdlg
-                    if ~isempty(wb)
-                        if mod(layerid, waitbarUpdateFrequency) == 0
-                            if wb.CancelRequested
-                                delete(wb);
-                                img = [];
-                                return;
-                            end
-                            wb.Value = layerid / maxZ;
+                    % Update waitbar
+                    if ~isempty(pwb) && mod(layerid, waitbarUpdateFrequency) == 0
+                        if pwb.getCancelState()
+                            pwb.deletePoolWaitbar();
+                            img = [];
+                            return;
                         end
+                        pwb.increment();
                     end
 
                     layerid = layerid + 1;
@@ -445,8 +442,8 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
             end
 
             % Check for cancel after loading large single files
-            if ~isempty(wb) && wb.CancelRequested
-                delete(wb);
+            if ~isempty(pwb) && pwb.getCancelState()
+                pwb.deletePoolWaitbar();
                 img = [];
                 return;
             end
@@ -459,7 +456,7 @@ classdef VideoReaderLoader < io.loaders.BaseImageLoader
 
             [img, imginfo] = obj.finalizeImageLoading(img, imginfo, options);
 
-            if ~isempty(wb); delete(wb); end
+            if ~isempty(pwb); pwb.deletePoolWaitbar(); end
         end
     end
 end
