@@ -119,11 +119,23 @@ if ischar(err) || isstring(err)
     errBody = strtrim(char(err));
 elseif isempty(err) || isempty(fieldnames(err))
     errBody = '';
-elseif ~isempty(err.cause)
-    errBody = sprintf('%s\n\n%s\n\n%s', ...
-        err.identifier, err.message, err.cause{1}.message);
 else
-    errBody = sprintf('%s\n\n%s', err.identifier, err.message);
+    if ~isempty(err.cause)
+        errBody = sprintf('%s\n\n%s\n\n%s', ...
+            err.identifier, err.message, err.cause{1}.message);
+    else
+        errBody = sprintf('%s\n\n%s', err.identifier, err.message);
+    end
+    % Append formatted stack trace
+    if ~isempty(err.stack)
+        stackLines = cell(numel(err.stack), 1);
+        for stackIdx = 1:numel(err.stack)
+            [~, stackFilename, stackExt] = fileparts(err.stack(stackIdx).file);
+            stackLines{stackIdx} = sprintf('  [%d] %s  (%s%s, line %d)', ...
+                stackIdx, err.stack(stackIdx).name, stackFilename, stackExt, err.stack(stackIdx).line);
+        end
+        errBody = sprintf('%s\n\nStack trace:\n%s', errBody, strjoin(stackLines, newline));
+    end
 end
 errBody = strtrim(errBody);
 

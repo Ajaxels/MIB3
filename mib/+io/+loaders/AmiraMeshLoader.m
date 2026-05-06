@@ -418,7 +418,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     options.hWaitbar = wb;
                     options.maxZ = maxZ;
                 else
-                    options.hWaitbar = NaN;
+                    options.hWaitbar = [];
                 end
 
                 % Send custom Amira options
@@ -441,8 +441,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
                     imgIn = io.AmiraMesh.amiraMesh2bitmap(files(fnIndex).filename, options);
                 catch err
                     if ~isempty(wb); delete(wb); end
-                    utils.dlgs.showErrorDialog(options.ParentFigure, ...
-                        sprintf('Error loading Amira Mesh file:\n%s', err.message), 'Amira Mesh Error', 'Error in io.loaders.AmiraMeshLoader');
+                    utils.dlgs.showErrorDialog(options.ParentFigure, err, 'Error in io.loaders.AmiraMeshLoader', sprintf('Error loading Amira Mesh file:\n%s',files(fnIndex).filename));
                     img = [];
                     return;
                 end

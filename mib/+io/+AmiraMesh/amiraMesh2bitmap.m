@@ -279,7 +279,7 @@ for dataBlock = 1:dataIndex - 1
                 bitmap(:, :, zIndex, color_id:color_id+colorChannels(dataBlock)-1) = permute(dataVec, [1,2,4,3]);
             end
         end
-        if ~isempty(options.hWaitbar) && mod(zIndex, waitbarUpdateFrequency)==0
+        if mod(zIndex, waitbarUpdateFrequency)==0 && ~isempty(options.hWaitbar)
             if options.hWaitbar.CancelRequested
                 fclose(fid);
                 bitmap = NaN;
