@@ -188,7 +188,7 @@ switch options.Icon
     case 'warning_48px',  iconFilename = 'warning_48px.png';
     case 'question_48px', iconFilename = 'question_48px.png';
     case 'celebrate',     iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
-    case 'call4help',     iconFilename = 'call4help.jpg';
+    case 'call4help',     iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3));
     case 'puffin_warning'
         % get random icon
         iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));

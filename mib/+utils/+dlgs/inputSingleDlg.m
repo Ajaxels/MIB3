@@ -202,16 +202,16 @@ end
 
 % Icon selection and loading
 switch options.Icon
-    case 'warning_48px',   iconFilename = 'warning_48px.png';
-    case 'question_48px',  iconFilename = 'question_48px.png';
-    case 'celebrate', iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
-    case 'call4help', iconFilename = 'call4help.jpg';
+    case 'warning_48px',     iconFilename = 'warning_48px.png';
+    case 'question_48px',    iconFilename = 'question_48px.png';
+    case 'celebrate',        iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
+    case 'call4help',        iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3));
     case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
     case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
     case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
     case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(5));
     case 'puffin_info';      iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
-    case 'puffin_waiting';      iconFilename = sprintf('puffin_waiting_%d_96px.png', randi(3));
+    case 'puffin_waiting';   iconFilename = sprintf('puffin_waiting_%d_96px.png', randi(3));
     otherwise
         % puffin_question
         iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));

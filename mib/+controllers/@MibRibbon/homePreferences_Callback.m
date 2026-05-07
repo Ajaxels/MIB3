@@ -56,7 +56,7 @@ switch mode
             fieldNames = fieldnames(call4help);
             infoText = '<html><body>';
             for i=1:numel(fieldNames)
-                infoText = sprintf('%s<h3>%s</h3>%s', infoText, fieldNames{i}, call4help.(fieldNames{i}));
+                infoText = sprintf('%s<h3 style="margin-bottom: 3px;">%s</h3>%s', infoText, fieldNames{i}, call4help.(fieldNames{i}));
             end
             infoText = [infoText '</body></html>'];
         catch err
@@ -66,11 +66,10 @@ switch mode
 
         options = struct();
         dlgTitle = 'MIB Call4Help';
-        options.Icon = 'call4help';
         options.WindowWidth = 700;
-        options.WindowHeight = 300;
+        options.WindowHeight = 380;
         options.MsgBoxOnly = true;
-        options.Icon = 'puffin_info';
+        options.Icon = 'call4help';
         options.OkBtnText = 'Copy';
         options.HelpBtnText = 'Calendar';
         options.HelpUrl = 'https://outlook.office365.com/owa/calendar/MIBcall4help@HelsinkiFI.onmicrosoft.com/bookings/s/olBBIX11aEqP-UndmR2Emg2';

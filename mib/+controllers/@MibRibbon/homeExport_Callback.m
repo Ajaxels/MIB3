@@ -35,6 +35,13 @@ switch mode
     case {'Render', 'MIB Rendering'}     % obj.handles.ribbonHome.render &  obj.handles.ribbonHome.renderMIB
         obj.mibController.startController('controllers.VolRenApp');
     case 'MATLAB Volume Viewer'     % obj.handles.ribbonHome.renderMatlab
+        if isdeployed
+            dlgOpts.MsgBoxOnly = true; 
+            dlgOpts.Icon = 'puffin_error';
+            header = sprintf('MATLAB Volume Viewer is only available in MIB for MATLAB!\nPlese use MIB Rendering instead.');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'ObtainDirectoryForAction error', dlgOpts);
+            return;
+        end
         id = obj.mibModel.getActiveId();
         dataset = obj.mibModel.I{id};
         img = cell2mat(obj.mibModel.getData3D('image', [], 3));

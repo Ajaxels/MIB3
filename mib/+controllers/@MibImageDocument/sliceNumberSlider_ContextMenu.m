@@ -47,7 +47,7 @@ switch menuEntry.Tag
         mibInputMultiDlgOpt.PromptLines = [1, 1];
         mibInputMultiDlgOpt.WindowHeight = 120;
         mibInputMultiDlgOpt.ParentFigure = obj.view.gui;
-        mibInputMultiDlgOpt.mibPath  = .obj.mibModel.mibPath;
+        mibInputMultiDlgOpt.mibPath  = obj.mibModel.mibPath;
         answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompt, defAns, 'Set step...', mibInputMultiDlgOpt);
         if isempty(answer); return; end
 
