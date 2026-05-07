@@ -80,8 +80,7 @@ classdef ResampleDataset < handle
             id = obj.mibModel.getActiveId();
 
             getDataOpt.blockModeSwitch = 0;
-            [obj.height, obj.width, obj.depth, colors] = ...
-                obj.mibModel.I{id}.getDatasetDimensions('image', 3, getDataOpt);
+            [obj.height, obj.width, obj.depth, colors] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, getDataOpt);
             obj.color = numel(colors);
 
             pixSize = obj.mibModel.I{id}.image.pixSize;
@@ -142,11 +141,15 @@ classdef ResampleDataset < handle
             guiName = 'views.ResampleDatasetGUI';
             obj.view = core.ChildView(obj, guiName);
             obj.addCallbacks();
+
             Font = obj.mibModel.preferences.System.Font;
-            utils.fontSizeUpdate(obj.view.gui, Font);
+            if obj.view.handles.PixelsizeXLabel.FontSize ~= Font.FontSize ...
+                    || ~strcmp(obj.view.handles.PixelsizeXLabel.FontName, Font.FontName)
+                utils.fontSizeUpdate(obj.view.gui, Font);
+            end
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
             obj.updateWidgets();
-            obj.view.gui.Icon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+
             obj.view.gui.Visible = 'on';
 
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', ...

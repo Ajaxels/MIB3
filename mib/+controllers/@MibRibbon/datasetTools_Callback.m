@@ -23,6 +23,8 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
+    case 'Alignment'
+        obj.mibController.startController('controllers.Alignment');
     case 'Crop'              % obj.handles.ribbonDataset.crop
         obj.mibController.startController('controllers.CropDataset', obj.mibController);
     case 'Resize'           % obj.handles.ribbonDataset.resize

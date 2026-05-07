@@ -14,7 +14,6 @@ classdef MibRibbon
     methods
         % % declaration of functions in the external files, keep empty line in between for the doc generator
         % 
-        datasetAlignment_Callback(obj, hWidget, hData)        % callback on press of buttons in the Alignment section of the Dataset ribbon
         datasetCalibration_Callback(obj, hWidget, hData)        % callback on press of buttons in the Calibration section of the Dataset ribbon
         datasetMetadata_Callback(obj, hWidget, hData)        % callback on press of buttons in the Metadata section of the Dataset ribbon
         datasetToolsSlices_Callback(obj, hWidget, hData)        % callback on press of buttons in the Slices button of the Dataset ribbon
@@ -162,7 +161,7 @@ classdef MibRibbon
             %
 
             %% Add Callbacks for the DATASET ribbon -> Alignment
-            obj.handles.ribbonDataset.alignment.ButtonPushedFcn = @obj.datasetAlignment_Callback;
+            obj.handles.ribbonDataset.alignment.ButtonPushedFcn = @obj.datasetTools_Callback;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools
             obj.handles.ribbonDataset.crop.ButtonPushedFcn = @obj.datasetTools_Callback;
             obj.handles.ribbonDataset.resize.ButtonPushedFcn = @obj.datasetTools_Callback;
