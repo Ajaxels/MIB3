@@ -96,6 +96,7 @@ if nargin == 3  % batch mode
 end
 
 dataset = obj.mibModel.I{BatchOpt.id};
+selectedColorChannel = dataset.selectedColorChannel; % 0 - all, otherwise 1,2,3...
 
 % check for the virtual stacking mode and return
 if strcmp(dataset.datasetType, 'Virtual')
@@ -318,7 +319,7 @@ try
             end
 
             % get image
-            imgIn = cell2mat(obj.mibModel.getData2D('image', z, dataset.orientation, NaN, getDataOpt));
+            imgIn = cell2mat(obj.mibModel.getData2D('image', z, dataset.orientation, selectedColorChannel, getDataOpt));
 
             if size(imgIn, 3) ~= 1 && size(imgIn, 3) ~= 3
                 dlgOpt.MsgBoxOnly = true;

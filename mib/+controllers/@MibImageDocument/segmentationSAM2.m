@@ -97,6 +97,7 @@ if nargin == 3  % batch mode
 end
 
 dataset = obj.mibModel.I{BatchOpt.id};
+selectedColorChannel = dataset.selectedColorChannel; % 0 - all, otherwise 1,2,3...
 
 % check for the virtual stacking mode and return
 if strcmp(dataset.datasetType, 'Virtual')
@@ -410,7 +411,7 @@ try
             end
 
             getDataOpt.z = [z1 z2];
-            imgDataset = cell2mat(obj.mibModel.getData3D('image', t, dataset.orientation, NaN, getDataOpt));
+            imgDataset = cell2mat(obj.mibModel.getData3D('image', t, dataset.orientation, selectedColorChannel, getDataOpt));
             % check for correct number of color channels, adjust contast, do image padding and convert to RGB
             [imgDataset, padSize] = checkAndPreprocessImage(imgDataset, methodToUse, currViewPort, colCh, liveStretch, true);
             if isnan(imgDataset(1))
@@ -463,6 +464,7 @@ try
                     wb.Value = 0.15; wb.Message = sprintf('%s: starting SAM\nPlease wait...', BatchOpt.Method{1});
                     drawnow;
                 end
+               
                 imgDataset = pointsVideoSAM(imgDataset, labelPositions, labelValues, castDataType);
                 if localWaitbar && t1==t2
                     wb.Value = 0.9; wb.Message = sprintf('%s: finalizing\nPlease wait...', BatchOpt.Method{1});
@@ -518,7 +520,7 @@ try
                 end
 
                 % get image
-                imgIn = cell2mat(obj.mibModel.getData2D('image', z, dataset.orientation, NaN, getDataOpt));
+                imgIn = cell2mat(obj.mibModel.getData2D('image', z, dataset.orientation, selectedColorChannel, getDataOpt));
                 % check for correct number of color channels, adjust contast, do image padding and convert to RGB
                 [imgIn, padSize] = checkAndPreprocessImage(imgIn, methodToUse, currViewPort, colCh, liveStretch);
                 imgIn = squeeze(imgIn);  % restore [H,W,C] for 2D processing

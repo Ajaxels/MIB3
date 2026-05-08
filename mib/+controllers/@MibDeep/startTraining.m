@@ -487,7 +487,15 @@ try
         % after initialization using transform function
         patchDS = randomPatchExtractionDatastore(imgDS, labelsDS, randomStoreInputPatchSize, ...
             'PatchesPerImage', obj.BatchOpt.T_PatchesPerImage{1}); 
-    
+        try
+            % try to read a patch to check its size
+            patchDS.read;
+            patchDS.reset;
+        catch err
+            if showWaitbarLocal; delete(obj.wb); end
+            utils.dlgs.showErrorDialog(obj.view.gui, err, 'StartTraining.randomPatchExtractionDatastore');
+            return;
+        end
         patchDS.MiniBatchSize = obj.BatchOpt.T_MiniBatchSize{1};
     
         % create random patch extraction datastore for validation

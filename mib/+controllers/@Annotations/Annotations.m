@@ -1356,8 +1356,7 @@ classdef Annotations < handle
             sOpt.WindowWidth = 450;
             sOpt.WindowHeight = 190;
             sOpt.mibPath = obj.mibModel.mibPath;
-            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                prompts, defAns, 'Annotation settings', sOpt);
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, [], prompts, defAns, 'Annotation settings', sOpt);
             if isempty(answer); return; end
 
             value = str2double(answer{1});

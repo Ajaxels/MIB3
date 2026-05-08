@@ -111,4 +111,7 @@ else
     handles.favoriteTool.Value = false;
 end
 
+% refresh image to remove the brush cursor
+notify(obj.mibModel, 'ShowImage');
+
 end

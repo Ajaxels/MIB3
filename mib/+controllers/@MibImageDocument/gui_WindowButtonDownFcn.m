@@ -729,13 +729,18 @@ elseif strcmp(operation, 'select')
                 else
                     % use newer version SAM2
                     obj.segmentationSAM2(extraOptions);
+                    
+                    if samMethodVal == 2 && ~isempty(obj.mibController.currentModifier) && strcmp(obj.mibController.currentModifier, 'shift')  % 'Interactive 3D'
+                        % Key-release events fired during the blocking Python call are
+                        % lost in some MATLAB versions, leaving currentModifier stale.
+                        % Reset it explicitly so scroll wheel and other callbacks see
+                        % the correct (no-modifier) state after SAM completes.
+                        obj.mibController.currentModifier = {};
+                    end
+
                 end
 
-                % Key-release events fired during the blocking Python call are
-                % lost in some MATLAB versions, leaving currentModifier stale.
-                % Reset it explicitly so scroll wheel and other callbacks see
-                % the correct (no-modifier) state after SAM completes.
-                obj.mibController.currentModifier = {};
+                
                 return;
 
             elseif samMethodVal == 3    % 'Landmarks'
