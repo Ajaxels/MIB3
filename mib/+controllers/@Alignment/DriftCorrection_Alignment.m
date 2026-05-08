@@ -23,8 +23,16 @@ function DriftCorrection_Alignment(obj, parameters)
 %     ``UseParallelComputing``, ``useBatchMode``.
 
 id = obj.mibModel.getActiveId();
+
+% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
+    parentFig = obj.view.gui;
+else
+    parentFig = obj.mibModel.mibGUI;
+end
+
 if obj.mibModel.I{id}.image.depth < 2
-    utils.dlgs.showErrorDialog(obj.view.gui, ...
+    utils.dlgs.showErrorDialog(parentFig, ...
         'Drift correction requires at least 2 slices in Z.', 'Alignment');
     return;
 end
@@ -39,14 +47,14 @@ obj.mibModel.backup('mibDataset', 1, backupOpt);
 pwb = [];
 useWaitbar = obj.BatchOpt.showWaitbar;
 if useWaitbar
-    pwb = core.PoolWaitbar(depth, 'Calculating drifts...', obj.view.gui, ...
+    pwb = core.PoolWaitbar(depth, 'Calculating drifts...', parentFig, ...
         'Alignment and drift correction', true);
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
 % --- Calculate shifts (skip when pre-loaded via loadShiftsCheck)
 if isempty(obj.shiftsX)
-    [shiftX, shiftY] = computeShifts(obj, parameters, pwb);
+    [shiftX, shiftY] = computeShifts(obj, parameters, pwb, parentFig);
     if isempty(shiftX); return; end
 
     % Optional preview / running-average dialog
@@ -54,7 +62,8 @@ if isempty(obj.shiftsX)
         previewShifts(shiftX, shiftY);
         questOpt.Icon = 'puffin_question';
         questOpt.WindowStyle = 'modal';
-        choice = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+        questOpt.WindowWidth = 520;
+        choice = utils.dlgs.inputQuestDlg(parentFig, ...
             'Align the stack using the detected displacements?', 'Align dataset', ...
             'Apply current values', 'Fix drifts', 'Quit alignment', ...
             'Apply current values', questOpt);
@@ -76,7 +85,7 @@ if isempty(obj.shiftsX)
         halfwidth    = obj.BatchOpt.SubtractRunningAverageStep{1};
         excludePeaks = obj.BatchOpt.SubtractRunningAverageExcludePeaks{1};
         [shiftX, shiftY, halfwidth, excludePeaks] = utils.align.subtractRunningAverage( ...
-            obj.view.gui, shiftX, shiftY, halfwidth, excludePeaks, parameters.useBatchMode);
+            parentFig, shiftX, shiftY, halfwidth, excludePeaks, parameters.useBatchMode);
         if isempty(shiftX); return; end
         if halfwidth > 0
             obj.BatchOpt.SubtractRunningAverage             = true;
@@ -106,8 +115,29 @@ shiftOpts.waitbar         = pwb;
 imageStack = cell2mat(obj.mibModel.getData4D('image', [], NaN));
 imageStackOut = utils.align.crossShiftStack(imageStack, obj.shiftsX, obj.shiftsY, shiftOpts);
 if isempty(imageStackOut); return; end
-obj.mibModel.setData4D(imageStackOut, 'image', [], NaN);
+
+% Replace the image canvas directly — alignment enlarges height/width and
+% setData4D cannot resize the fixed-size data{1}.
+img5D = obj.mibModel.I{id}.image;
+newH  = size(imageStackOut, 1);
+newW  = size(imageStackOut, 2);
+img5D.data{1}   = reshape(imageStackOut, [newH, newW, img5D.depth, img5D.colors, img5D.time]);
+img5D.height    = newH;
+img5D.width     = newW;
+img5D.dim_yxzct = [newH, newW, img5D.depth, img5D.colors, img5D.time];
 clear imageStack imageStackOut;
+
+% --- Sync MibDataset metadata to the new (enlarged) canvas before any
+% setData4D() call below — the layer setters validate against ds.dim_yxzct
+ds = obj.mibModel.I{id};
+ds.dim_yxzct = img5D.dim_yxzct;
+oldSlices = ds.slices;
+ds.slices{1} = [1, newH];
+ds.slices{2} = [1, newW];
+ds.slices{3} = 1:img5D.depth;
+ds.slices{4} = [1, 1];
+ds.slices{5} = [1, 1];
+ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 
 % --- Apply shifts to service layers (mask / selection / labels)
 serviceShiftOpts.backgroundColor = 0;       % service layers always pad with zeros
@@ -120,6 +150,12 @@ if isLabels63
     layer = cell2mat(obj.mibModel.getData4D('everything', [], 0));
     shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
     if isempty(shifted); return; end
+    % pre-resize the packed labels container before setData4D
+    obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+    obj.mibModel.I{id}.labels.height    = newH;
+    obj.mibModel.I{id}.labels.width     = newW;
+    obj.mibModel.I{id}.labels.depth     = img5D.depth;
+    obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
     obj.mibModel.setData4D(shifted, 'everything', [], 0);
 else
     if obj.mibModel.I{id}.modelExist
@@ -127,6 +163,10 @@ else
         layer = cell2mat(obj.mibModel.getData4D('labels', [], NaN));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
+        obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], class(obj.mibModel.I{id}.labels.data{1}));
+        obj.mibModel.I{id}.labels.height    = newH;
+        obj.mibModel.I{id}.labels.width     = newW;
+        obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
         obj.mibModel.setData4D(shifted, 'labels', [], NaN);
     end
     if obj.mibModel.I{id}.maskExist
@@ -134,6 +174,10 @@ else
         layer = cell2mat(obj.mibModel.getData4D('mask', [], 0));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
+        obj.mibModel.I{id}.mask.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+        obj.mibModel.I{id}.mask.height    = newH;
+        obj.mibModel.I{id}.mask.width     = newW;
+        obj.mibModel.I{id}.mask.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
         obj.mibModel.setData4D(shifted, 'mask', [], 0);
     end
     if obj.mibModel.I{id}.enableSelection
@@ -141,22 +185,13 @@ else
         layer = cell2mat(obj.mibModel.getData4D('selection', [], NaN));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
+        obj.mibModel.I{id}.selection.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+        obj.mibModel.I{id}.selection.height    = newH;
+        obj.mibModel.I{id}.selection.width     = newW;
+        obj.mibModel.I{id}.selection.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
         obj.mibModel.setData4D(shifted, 'selection', [], NaN);
     end
 end
-
-% --- Sync MibDataset metadata to the new (enlarged) canvas
-ds = obj.mibModel.I{id};
-ds.image.height = size(ds.image.data{1}, 1);
-ds.image.width  = size(ds.image.data{1}, 2);
-ds.dim_yxzct    = [ds.image.height, ds.image.width, ds.image.depth, ds.image.colors, ds.image.time];
-oldSlices = ds.slices;
-ds.slices{1} = [1, ds.image.height];
-ds.slices{2} = [1, ds.image.width];
-ds.slices{3} = 1:ds.image.depth;
-ds.slices{4} = [1, 1];
-ds.slices{5} = [1, 1];
-ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 
 % --- Bounding box shift (orientations: 3 = XY, 1 = ZX, 2 = ZY)
 maxXshift = min(obj.shiftsX);
@@ -192,7 +227,7 @@ end
 
 % --- Save shifts to file if requested
 if obj.BatchOpt.SaveShiftsToFile
-    saveShiftsToFile(obj, id, parameters.useBatchMode);
+    saveShiftsToFile(obj, id, parameters.useBatchMode, parentFig);
 end
 
 % Trigger a redraw
@@ -204,7 +239,7 @@ notify(obj.mibModel, 'ShowImage');
 end
 
 % =============================================================================
-function [shiftX, shiftY] = computeShifts(obj, parameters, pwb)
+function [shiftX, shiftY] = computeShifts(obj, parameters, pwb, parentFig)
 % Helper: load image data (with optional sub-area / mask / gradient pre-processing)
 % then call utils.align.calcShifts. Returns ``[]`` if the user cancelled.
 
@@ -249,7 +284,7 @@ if ismember(parameters.Subarea, {'Mask', 'Selection'})
     end
     sliceIndices = find(~isnan(sliceMaskBoxes(:, 1)));
     if isempty(sliceIndices)
-        utils.dlgs.showErrorDialog(obj.view.gui, ...
+        utils.dlgs.showErrorDialog(parentFig, ...
             sprintf('No %s areas were found.', parameters.Subarea), ...
             sprintf('Missing %s layer', parameters.Subarea));
         notify(obj.mibModel, 'StopProtocol');
@@ -344,12 +379,12 @@ title('Detected shifts (before alignment)');
 end
 
 % =============================================================================
-function saveShiftsToFile(obj, id, useBatchMode)
+function saveShiftsToFile(obj, id, useBatchMode, parentFig)
 if useBatchMode
     fn = obj.mibModel.I{id}.image.sliceName('Filename');
     [pathstr, name, ~] = fileparts(fn);
     fullPath = fullfile(pathstr, [name '_align.coefXY']);
-elseif isfield(obj.view.handles, 'saveShiftsXYpath')
+elseif ~isempty(obj.view) && isvalid(obj.view) && isfield(obj.view.handles, 'saveShiftsXYpath')
     fullPath = obj.view.handles.saveShiftsXYpath.Value;
 else
     return;
@@ -362,7 +397,7 @@ try
     fprintf('done!\n');
 catch ME
     fprintf('failed.\n');
-    utils.dlgs.showErrorDialog(obj.view.gui, ME, 'Save shifts');
+    utils.dlgs.showErrorDialog(parentFig, ME, 'Save shifts');
 end
 end
 

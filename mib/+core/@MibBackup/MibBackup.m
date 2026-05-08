@@ -130,8 +130,8 @@ classdef MibBackup < handle
             % Can store 2D slices or 3D volumes with associated metadata and coordinates.
             %
             % Input Arguments:
-            %   - **type** — [char] data type: ``'image'``, ``'labels'``, ``'selection'``, ``'mask'``, ``'everything'`` (for uint6), ``'lines3d'``, or ``'mibImage'``
-            %   - **data** — [cell array] 3D or 2D dataset to store; structure for labels; or Lines3D object
+            %   - **type** — [char] data type: ``'image'``, ``'labels'``, ``'selection'``, ``'mask'``, ``'everything'`` (for uint6), ``'lines3d'``, or ``'mibDataset'``
+            %   - **data** — [cell array] 3D or 2D dataset to store; structure for labels; Lines3D object; or :class:`core.MibDataset` for ``'mibDataset'`` type
             %   - **meta** — *(optional)* [dictionary or NaN] imageData metadata; not required for labels/selection/mask/everything
             %   - **options** — *(optional)* [struct] storage parameters:
             %
@@ -171,7 +171,7 @@ classdef MibBackup < handle
             if ~isfield(options, 'viewPort'); options.viewPort = []; end
             if ~isfield(options, 'id'); options.id = []; end
             
-            if strcmp(type, 'mibImage')
+            if strcmp(type, 'mibDataset')
                 options.switch3d = 1;
                 depth = 2;  % set depth to 2 to make sure options.switch3d operation
             else
@@ -223,7 +223,7 @@ classdef MibBackup < handle
                 obj.undoList = obj.undoList(1:obj.undoIndex);
                 obj.index3d = obj.index3d(obj.index3d < obj.undoIndex);
             end
-            if ~strcmp(type, 'mibImage')
+            if ~strcmp(type, 'mibDataset')
                 if isnan(options.t(1)); options.t = [1 1]; end
             end
                 
@@ -250,7 +250,7 @@ classdef MibBackup < handle
             obj.index3d = obj.index3d(obj.index3d>0);
             
             % to check for entry of the first element
-            if isa(obj.undoList(1).data, 'mibImage')
+            if isa(obj.undoList(1).data, 'core.MibDataset')
                 obj.undoIndex = numel(obj.undoList) + 1;
             else
                 if isstruct(obj.undoList(1).data{1}) || isa(obj.undoList(1).data{1}, 'core.Lines3D')
@@ -398,7 +398,7 @@ classdef MibBackup < handle
             %
             % Input Arguments:
             %   - **index** — [numeric] index of the item to replace; when empty, replaces the last entry
-            %   - **type** — [char] data type: ``'image'``, ``'labels'``, ``'selection'``, ``'mask'``, ``'everything'`` (for uint6), or ``'mibImage'``
+            %   - **type** — [char] data type: ``'image'``, ``'labels'``, ``'selection'``, ``'mask'``, ``'everything'`` (for uint6), or ``'mibDataset'``
             %   - **data** — [cell array or object] the new dataset to store
             %   - **meta** — *(optional)* [dictionary or NaN] imageData metadata; not required for labels/selection/mask/everything
             %   - **options** — *(optional)* [struct] storage parameters:

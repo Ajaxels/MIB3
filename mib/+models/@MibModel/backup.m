@@ -194,7 +194,7 @@ end
 if switch3d && obj.Backup.max3d_steps == 0; return; end
 
 if strcmp(type, 'mibDataset')
-    mibDatasetCopy = copy(obj.I{id});
+    mibDatasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
     obj.Backup.store(type, mibDatasetCopy, [], getDataOptions);
     return;
 end

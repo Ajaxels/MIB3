@@ -22,9 +22,17 @@ function SingleLandmark_Alignment(obj, parameters)
 %     ``backgroundColor``, ``useBatchMode`` are used here.
 
 id = obj.mibModel.getActiveId();
+
+% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
+    parentFig = obj.view.gui;
+else
+    parentFig = obj.mibModel.mibGUI;
+end
+
 [~, ~, depth, ~] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
 if depth < 2
-    utils.dlgs.showErrorDialog(obj.view.gui, ...
+    utils.dlgs.showErrorDialog(parentFig, ...
         'Single landmark alignment requires at least 2 slices.', 'Alignment');
     return;
 end
@@ -34,7 +42,7 @@ useAnnotations = false;
 if obj.mibModel.I{id}.annotations.getLabelsNumber() > 1
     questOpt.Icon = 'puffin_question';
     questOpt.WindowStyle = 'modal';
-    answer = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+    answer = utils.dlgs.inputQuestDlg(parentFig, ...
         sprintf(['Were the corresponding points marked with the Annotation tool, ' ...
                  'or with the Brush + Selection layer?']), ...
         'Annotations or Selection?', ...
@@ -50,7 +58,7 @@ obj.mibModel.backup('mibDataset', 1, backupOpt);
 pwb = [];
 if obj.BatchOpt.showWaitbar
     pwb = core.PoolWaitbar(depth, 'Computing single-landmark shifts...', ...
-        obj.view.gui, 'Alignment', true);
+        parentFig, 'Alignment', true);
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
@@ -103,7 +111,7 @@ else
             continue;
         end
         if size(prevPos, 1) > 1 || size(currPos, 1) > 1
-            utils.dlgs.showErrorDialog(obj.view.gui, ...
+            utils.dlgs.showErrorDialog(parentFig, ...
                 sprintf(['Single-landmark alignment allows at most 1 landmark per slice.\n' ...
                         'Extra landmarks were detected on slice %d or %d.'], layer-1, layer), ...
                 'Wrong number of landmarks');
@@ -133,7 +141,7 @@ if ~parameters.useBatchMode
 
     questOpt2.Icon = 'puffin_question';
     questOpt2.WindowStyle = 'modal';
-    choice = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+    choice = utils.dlgs.inputQuestDlg(parentFig, ...
         'Align the stack using these displacements?', 'Align dataset', ...
         'Apply current values', 'Quit alignment', 'Quit alignment', ...
         'Apply current values', questOpt2);
@@ -154,8 +162,29 @@ shiftOpts.waitbar         = pwb;
 imageStack = cell2mat(obj.mibModel.getData4D('image', [], NaN));
 imageStackOut = utils.align.crossShiftStack(imageStack, obj.shiftsX, obj.shiftsY, shiftOpts);
 if isempty(imageStackOut); return; end
-obj.mibModel.setData4D(imageStackOut, 'image', [], NaN);
+
+% Replace the image canvas directly — alignment enlarges height/width and
+% setData4D cannot resize the fixed-size data{1}.
+img5D = obj.mibModel.I{id}.image;
+newH  = size(imageStackOut, 1);
+newW  = size(imageStackOut, 2);
+img5D.data{1}   = reshape(imageStackOut, [newH, newW, img5D.depth, img5D.colors, img5D.time]);
+img5D.height    = newH;
+img5D.width     = newW;
+img5D.dim_yxzct = [newH, newW, img5D.depth, img5D.colors, img5D.time];
 clear imageStack imageStackOut;
+
+% --- Sync MibDataset metadata to the new (enlarged) canvas before any
+% setData4D() call below — the layer setters validate against ds.dim_yxzct
+ds = obj.mibModel.I{id};
+ds.dim_yxzct = img5D.dim_yxzct;
+oldSlices = ds.slices;
+ds.slices{1} = [1, newH];
+ds.slices{2} = [1, newW];
+ds.slices{3} = 1:img5D.depth;
+ds.slices{4} = [1, 1];
+ds.slices{5} = [1, 1];
+ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 
 % --- Apply to service layers
 serviceShiftOpts.backgroundColor = 0;
@@ -167,6 +196,11 @@ if isLabels63
     layer = cell2mat(obj.mibModel.getData4D('everything', [], 0));
     shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
     if isempty(shifted); return; end
+    obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+    obj.mibModel.I{id}.labels.height    = newH;
+    obj.mibModel.I{id}.labels.width     = newW;
+    obj.mibModel.I{id}.labels.depth     = img5D.depth;
+    obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
     obj.mibModel.setData4D(shifted, 'everything', [], 0);
 else
     if obj.mibModel.I{id}.modelExist
@@ -174,6 +208,10 @@ else
         layer = cell2mat(obj.mibModel.getData4D('labels', [], NaN));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
+        obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], class(obj.mibModel.I{id}.labels.data{1}));
+        obj.mibModel.I{id}.labels.height    = newH;
+        obj.mibModel.I{id}.labels.width     = newW;
+        obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
         obj.mibModel.setData4D(shifted, 'labels', [], NaN);
     end
     if obj.mibModel.I{id}.maskExist
@@ -181,6 +219,10 @@ else
         layer = cell2mat(obj.mibModel.getData4D('mask', [], 0));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
+        obj.mibModel.I{id}.mask.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+        obj.mibModel.I{id}.mask.height    = newH;
+        obj.mibModel.I{id}.mask.width     = newW;
+        obj.mibModel.I{id}.mask.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
         obj.mibModel.setData4D(shifted, 'mask', [], 0);
     end
     if obj.mibModel.I{id}.enableSelection
@@ -188,6 +230,10 @@ else
         layer = cell2mat(obj.mibModel.getData4D('selection', [], NaN));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
+        obj.mibModel.I{id}.selection.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+        obj.mibModel.I{id}.selection.height    = newH;
+        obj.mibModel.I{id}.selection.width     = newW;
+        obj.mibModel.I{id}.selection.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
         obj.mibModel.setData4D(shifted, 'selection', [], NaN);
     end
 end
@@ -198,19 +244,6 @@ if ~useAnnotations
 else
     obj.mibModel.I{id}.annotations.clearContents();
 end
-
-% --- Sync MibDataset metadata to the new (enlarged) canvas
-ds = obj.mibModel.I{id};
-ds.image.height = size(ds.image.data{1}, 1);
-ds.image.width  = size(ds.image.data{1}, 2);
-ds.dim_yxzct    = [ds.image.height, ds.image.width, ds.image.depth, ds.image.colors, ds.image.time];
-oldSlices = ds.slices;
-ds.slices{1} = [1, ds.image.height];
-ds.slices{2} = [1, ds.image.width];
-ds.slices{3} = 1:ds.image.depth;
-ds.slices{4} = [1, 1];
-ds.slices{5} = [1, 1];
-ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 
 % --- Bounding box shift
 maxXshift = min(obj.shiftsX);

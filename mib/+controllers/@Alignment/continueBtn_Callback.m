@@ -21,9 +21,16 @@ if nargin < 2; useBatchMode = false; end
 
 id = obj.mibModel.getActiveId();
 
+% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
+    parentFig = obj.view.gui;
+else
+    parentFig = obj.mibModel.mibGUI;
+end
+
 % --- 5D dataset rejection
 if obj.mibModel.I{id}.image.time > 1 && obj.mibModel.I{id}.image.depth > 1
-    utils.dlgs.showErrorDialog(obj.view.gui, ...
+    utils.dlgs.showErrorDialog(parentFig, ...
         '5D datasets are not supported by the alignment tool.', 'Alignment');
     return;
 end
@@ -33,16 +40,11 @@ if obj.BatchOpt.HDD_Mode
     allowedHDD = {'Drift correction', 'Template matching', ...
         'Automatic feature-based', 'Automatic feature-based v2'};
     if ~ismember(obj.BatchOpt.Algorithm{1}, allowedHDD)
-        utils.dlgs.showErrorDialog(obj.view.gui, ...
+        utils.dlgs.showErrorDialog(parentFig, ...
             sprintf('HDD mode is not available for "%s".', obj.BatchOpt.Algorithm{1}), ...
             'Alignment');
         return;
     end
-end
-
-% --- Pre-load shifts if requested in batch mode (GUI mode handles this in loadShiftsCheck_Callback)
-if useBatchMode && isfield(obj.view.handles, 'loadShiftsCheck')
-    % no-op: already loaded by loadShiftsCheck_Callback
 end
 
 % --- Build the shared parameters struct
@@ -117,7 +119,7 @@ switch obj.BatchOpt.Algorithm{1}
         return;
 
     otherwise
-        utils.dlgs.showErrorDialog(obj.view.gui, ...
+        utils.dlgs.showErrorDialog(parentFig, ...
             sprintf('Unknown algorithm: "%s".', obj.BatchOpt.Algorithm{1}), 'Alignment');
         return;
 end

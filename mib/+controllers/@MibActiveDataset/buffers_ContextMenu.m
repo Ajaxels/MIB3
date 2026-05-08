@@ -303,7 +303,7 @@ switch parameter
 
         deepCopyOpt.showWaitbar = BatchOpt.showWaitbar;
         deepCopyOpt.UIFigure    = obj.view.gui;
-        obj.mibModel.imageDeepCopy(srcGlobalId, destGlobalId, deepCopyOpt);
+        obj.mibModel.deepCopyDataset(srcGlobalId, destGlobalId, deepCopyOpt);
 
         % update destination button appearance
         destLocalId = mod(destGlobalId-1, obj.mibModel.Sets.datasetsInSet) + 1;

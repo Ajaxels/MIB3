@@ -1,10 +1,11 @@
-function imageDeepCopy(obj, fromId, toId, options)
-% IMAGEDEEPCOPY - Deep-copy a MibDataset from one container slot to another.
+function newDataset = deepCopyDataset(obj, fromId, toId, options)
+% DEEPCOPYDATASET - Deep-copy a MibDataset; optionally install it into another container slot.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.imageDeepCopy(fromId, toId, options)
+%       obj.deepCopyDataset(fromId, toId, options)
+%       newDataset = obj.deepCopyDataset(fromId, [], options)
 %
 % @c copy() (matlab.mixin.Copyable) performs a shallow copy only — all
 % handle sub-properties (*image,* *labels,* *mask,* *selection,*
@@ -12,9 +13,15 @@ function imageDeepCopy(obj, fromId, toId, options)
 % at the same objects after a plain @c copy(). This method fixes that by
 % explicitly deep-copying every handle sub-property.
 %
+% Used by container-buffer and crop operations (cross-container deep copy)
+% as well as by :meth:`backup` and :meth:`undo` for the ``'mibDataset'``
+% snapshot type.
+%
 % Input Arguments:
 %   - **fromId** — index of the source dataset in ``obj.I``
-%   - **toId** — index of the destination dataset in ``obj.I``
+%   - **toId** — index of the destination dataset in ``obj.I``; when
+%     ``[]``, the deep-copied dataset is *not* installed into ``obj.I`` and
+%     is only returned via ``newDataset`` (used by undo/backup)
 %   - **options** — *(optional)* structure with additional parameters
 %
 %     - ``.showWaitbar`` — logical, show a progress dialog *(default: true)*
@@ -23,19 +30,28 @@ function imageDeepCopy(obj, fromId, toId, options)
 %
 %
 % Output Arguments:
+%   - **newDataset** — deep-copied :class:`core.MibDataset`; fully
+%     independent of ``obj.I{fromId}``
 %
 % Usage:
 %   **Example 1** — deep-copy dataset from container 1 to container 2
 %
 %   .. code-block:: matlab
 %
-%      obj.mibModel.imageDeepCopy(srcId, destId, options);
+%      obj.mibModel.deepCopyDataset(srcId, destId, options);
+%
+%   **Example 2** — get a free-standing deep copy (no destination slot)
+%
+%   .. code-block:: matlab
+%
+%      datasetCopy = obj.mibModel.deepCopyDataset(srcId, [], struct('showWaitbar', false));
 %
 
 % Updates
 %
 
 if nargin < 4; options = struct(); end
+if nargin < 3; toId = []; end
 if ~isfield(options, 'showWaitbar'); options.showWaitbar = true; end
 if ~isfield(options, 'UIFigure');    options.UIFigure = []; end
 
@@ -49,7 +65,9 @@ if options.showWaitbar
 end
 
 % close any open virtual file readers at the destination before overwriting
-obj.I{toId}.closeVirtualDataset();
+if ~isempty(toId)
+    obj.I{toId}.closeVirtualDataset();
+end
 
 % --- shallow copy of the entire MibDataset (value-type properties are
 %     fully copied; handle-type properties still share the source object)
@@ -120,7 +138,9 @@ end
 if options.showWaitbar && ~isempty(wb); wb.Value = 0.95; end
 
 % --- commit the deep-copied dataset to the destination slot
-obj.I{toId} = newDataset;
+if ~isempty(toId)
+    obj.I{toId} = newDataset;
+end
 
 if options.showWaitbar && ~isempty(wb); wb.Value = 1; delete(wb); end
 end

@@ -44,8 +44,9 @@ while notOk
         defAns = {struct('Spinner', true, 'Value', halfwidth,    'Limits', [0 Inf], 'Step', 1, 'Round', true); ...
                   struct('Spinner', true, 'Value', excludePeaks, 'Limits', [0 Inf], 'Step', 1, 'Round', true)};
         dlgOpt.WindowStyle  = 'modal';
-        dlgOpt.LabelPosition = 'left';
         dlgOpt.Icon         = 'puffin_question';
+        dlgOpt.WindowHeight = 200;
+        dlgOpt.Focus = 1;
         answer = utils.dlgs.inputUniversalDlg(parentFigure, ...
             'Running average', prompts, defAns, 'Running average', dlgOpt);
         if isempty(answer); shiftXOut = []; shiftYOut = []; return; end
@@ -67,6 +68,7 @@ while notOk
 
         questOpt.Icon = 'puffin_question';
         questOpt.WindowStyle = 'modal';
+        questOpt.WindowWidth = 520;
         fixDrifts = utils.dlgs.inputQuestDlg(parentFigure, ...
             'Align the stack using detected displacements?', 'Align dataset', ...
             'Apply current values', 'Change window size', 'Quit alignment', ...

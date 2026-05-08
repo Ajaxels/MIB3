@@ -157,7 +157,7 @@ classdef MibModel < handle
 
         id = getActiveId(obj)        % compute the correct dataset index from Sets.selectedSet (immune to mouse-motion corruption of obj.id)
 
-        imageDeepCopy(obj, fromId, toId, options)        % deep-copy a MibDataset from one container slot to another, correctly handling handle sub-properties (image, labels, mask, selection, annotations, lines3D, measure, hROI)
+        newDataset = deepCopyDataset(obj, fromId, toId, options)        % deep-copy a MibDataset (image, labels, mask, selection, annotations, lines3D, measure, hROI); installs into ``obj.I{toId}`` when ``toId`` is non-empty, otherwise just returns the copy (used by undo/backup)
 
         partnerId = getLinkedDataset(obj, id)        % return the global dataset ID of the linked partner, or [] if id is not part of any linked pair
 

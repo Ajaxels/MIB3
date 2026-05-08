@@ -123,7 +123,7 @@ if obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
             obj.Backup.replaceItem(newDataIndex, type, dataStore, NaN, storeOptions);
         end
     else
-        datasetCopy = copy(obj.I{id});
+        datasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
         obj.Backup.replaceItem(newDataIndex, type, datasetCopy, NaN, storeOptions);
     end
 else
@@ -140,7 +140,7 @@ else
             case 'measurements'
                 obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.measure.Data}, NaN, storeOptions);
             case 'mibDataset'
-                datasetCopy = copy(obj.I{id});
+                datasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
                 obj.Backup.replaceItem(newDataIndex, type, datasetCopy, NaN, storeOptions);
             otherwise
                 dataStore = cell([size(storeOptions.x, 1), 1]);

@@ -824,7 +824,7 @@ classdef CropDataset < handle
                 else
                     copyOpts.UIFigure = [];
                 end
-                obj.mibModel.imageDeepCopy(id, bufferId, copyOpts);
+                obj.mibModel.deepCopyDataset(id, bufferId, copyOpts);
             else
                 bufferId = id;
                 if ~obj.batchProcessingSwitch

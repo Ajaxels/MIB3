@@ -314,14 +314,45 @@ pwb.updateText('Applying shifts...');
 10. ✅ Wire `Tools/Alignment...` ribbon entry to `controllers.Alignment` (`@MibRibbon/datasetAlignment_Callback.m`).
 11. ✅ Static analysis pass (`mcp__matlab__check_matlab_code` clean across all 14 new/modified `.m` files).
 
-**Phase 1 verification (pending — needs `AlignmentGUI.mlapp`):**
+**Phase 1 verification — partial (needs `AlignmentGUI.mlapp` for the dropdown / spinner widgets):**
 
-- Open MIB3, load a Z-stack, click Dataset → Alignment → dialog appears with all widgets populated from `BatchOpt`.
-- `Algorithm = Drift correction`, click Apply → progress dialog appears, Cancel works mid-run, alignment completes, `image.boundingBox` updated, `image.height` / `image.width` reflect padded canvas.
-- `Algorithm = Single landmark point` after placing a 1-px Selection landmark on each slice → centroid-shift alignment runs end-to-end.
-- Repeat with Annotation landmarks (one per slice) → annotation-driven alignment runs end-to-end.
-- Headless batch round-trip: `controllers.Alignment(obj.mibModel, [], NaN)` → `SyncBatch` event delivers a `BatchOpt` whose shapes match the widget table.
-- `Ctrl+Z` after an alignment restores the pre-alignment state.
+- ⬜ Open MIB3, load a Z-stack, click Dataset → Alignment → dialog appears with all widgets populated from `BatchOpt`.
+- ✅ `Algorithm = Drift correction`, click Apply → runs end-to-end after the runtime fixes below; canvas grows correctly, undo (Ctrl+Z) restores pre-alignment state.
+- ⬜ `Algorithm = Single landmark point` end-to-end (Selection-centroid + Annotation paths) — code paths fixed alongside Drift correction; awaiting user verification with landmarks.
+- ⬜ Headless batch round-trip: `controllers.Alignment(obj.mibModel, [], NaN)` → `SyncBatch` event delivers a `BatchOpt` whose shapes match the widget table.
+- ✅ Batch-mode dispatch (`controllers.Alignment(obj.mibModel, [], BatchOpt)`) — runs without crashing on the missing view (was previously hitting `obj.view.handles` on a `[]` view).
+
+#### Phase 1 runtime fixes (2026-05-09)
+
+After the GUI was first wired up, three categories of crash surfaced and were fixed:
+
+1. **`backup('mibDataset', 1, ...)` crashed in `core.MibBackup.store`** — the `'mibDataset'` branch of `models.MibModel.backup` passed a `core.MibDataset` instance into `store`, but `store` only special-cased the legacy `'mibImage'` literal and otherwise indexed `data{roiId}`. Fixes:
+   - Renamed `'mibImage'` → `'mibDataset'` in `core.MibBackup.store` (3 sites + docs) and in `replaceItem` docs; the `isa(obj.undoList(1).data, 'mibImage')` guard in `store` now tests `core.MibDataset`.
+   - Renamed `models.MibModel.imageDeepCopy` → `models.MibModel.deepCopyDataset`. The new method accepts `toId = []` to return a free-standing deep copy without touching `obj.I` (used by `backup` and `undo` for snapshots), and still installs the result into `obj.I{toId}` when `toId` is non-empty (used by `CropDataset`, the buffer-copy context menu, etc.). Old call-sites in `@CropDataset/CropDataset.m` and `@MibActiveDataset/buffers_ContextMenu.m` updated.
+   - `models.MibModel.backup` (mibDataset branch) and `models.MibModel.undo` (both `'mibDataset'` snapshot points) now call `obj.deepCopyDataset(id, [], struct('showWaitbar', false))` instead of the shallow `copy(obj.I{id})`. **Net effect: Ctrl+Z after an alignment now restores the full `MibDataset` (image + labels + mask + selection + ROI + annotations + lines3D + measurements).**
+
+2. **`setData4D` size mismatch on the enlarged canvas** — alignment grows `height` / `width`, but `MibImage.setData` writes into the existing fixed-size `data{1}` and errored with `"Unable to perform assignment because the size of the left side is 887-by-813-by-171 and the size of the right side is 890-by-815-by-171"`. Fix: in both `DriftCorrection_Alignment.m` and `SingleLandmark_Alignment.m` adopt the canvas-replace pattern from `ResampleDataset` / `CropDataset`:
+   - Replace `image.data{1}` directly with `reshape(imageStackOut, [newH, newW, depth, colors, time])`, then update `image.height` / `image.width` / `image.dim_yxzct`.
+   - **Sync `MibDataset.dim_yxzct` and `slices` BEFORE any subsequent `setData4D`** for service layers — the layer setters validate against the dataset dims and would otherwise see the old size.
+   - For each populated service layer (`labels` / `mask` / `selection`, or the packed `everything` for `core.MibLabels63`), pre-allocate `obj.<layer>.data{1}` at the new dims and update its `height` / `width` / `dim_yxzct` before calling `setData4D`.
+
+3. **Batch-mode crash on `obj.view.handles`** — running the controller from `BatchProcessing` constructs it with no view (`obj.view` is `[]`), but `continueBtn_Callback`, `DriftCorrection_Alignment`, and `SingleLandmark_Alignment` referenced `obj.view.gui` and `obj.view.handles` unconditionally. Fix:
+   - Removed the dead `if useBatchMode && isfield(obj.view.handles, 'loadShiftsCheck')` no-op block in `continueBtn_Callback`.
+   - At the top of each algorithm method (and `continueBtn_Callback`), compute `parentFig = obj.view.gui` when the view is alive, else `obj.mibModel.mibGUI`. Every dialog (`showErrorDialog`, `inputQuestDlg`, `inputUniversalDlg`) and the `core.PoolWaitbar` constructor now consume `parentFig` instead of `obj.view.gui`.
+   - Threaded `parentFig` into the local helpers `computeShifts(obj, parameters, pwb, parentFig)` and `saveShiftsToFile(obj, id, useBatchMode, parentFig)`. `saveShiftsToFile` also guards `obj.view.handles` access with an `isvalid(obj.view)` check.
+   - The remaining `obj.view.handles` reads (in `gui_Callbacks`, `algorithm_Callback`, `subwindowEdit_Callback`, `getSearchWindow_Callback`, `loadShiftsCheck_Callback`) only fire from widget callbacks, so they only execute when the GUI is alive.
+
+#### `inputQuestDlg` button auto-sizing (2026-05-09)
+
+`mib/+utils/+dlgs/inputQuestDlg.m` previously hard-coded `btnW = 100 px`, which clipped long labels (e.g. *"Apply current values"*, *"Quit alignment"*) used by the alignment confirmation dialogs. Fixed:
+
+- Each button is now sized as `max(100 px, label_chars × 0.65 × ButtonFontSize + 12 px padding)` so short labels keep the original look and long labels grow to fit.
+- `btnsTotalW` is computed as the sum of the per-button widths plus inter-button gaps; `btnGrid.ColumnWidth = num2cell(btnWidths)` gives each button its own column.
+- `WindowWidth` is grown (never shrunk) when the button row plus the icon column would otherwise crowd the question label: `neededWidth = btnsTotalW + iconW + 40`.
+
+#### Known caveat — multi-channel images
+
+`utils.align.crossShiftStack` documents 4-D input as `[h, w, c, d]`, but `getData4D('image', …)` returns 5-D `[h, w, d, c, t]`. For single-channel single-time stacks the 5-D array collapses to 3-D and `crossShiftStack`'s 3-D path works; for multi-channel images the existing call would mis-index channels as slices. **Flagged for a Phase 1.5 fix** — adjust `crossShiftStack` to consume the MIB layout, or reshape at the call site, before the multi-channel path is exercised.
 
 ### Phase 2 — Landmark-based methods ⬜ PENDING
 
@@ -378,11 +409,20 @@ pwb.updateText('Applying shifts...');
 
 ## Current state summary (Phase 1)
 
-- **14 files created / modified, all green under `mcp__matlab__check_matlab_code`.**
+- **14 alignment files + 5 supporting framework files all green under `mcp__matlab__check_matlab_code`.**
 - Backend helpers (`+utils/+align/`) ported with `core.PoolWaitbar` integration and RST docblocks.
 - Controller skeleton complete with three-signature constructor, batch-mode dispatch, listeners, `gui_Callbacks` dispatcher, `continueBtn_Callback` algorithm dispatcher.
-- Drift correction + Single landmark fully ported with cancelable progress and `try/catch` → `showErrorDialog`.
+- Drift correction + Single landmark fully ported with cancelable progress, `try/catch` → `showErrorDialog`, canvas-replace pattern for the resized image, and `parentFig` helper so they run safely with no view (BatchProcessing).
 - TwoStacks mode and all `BatchOpt.TwoStacks*` / `SecondDataset*` fields removed per requirement.
 - All `questdlg` → `inputQuestDlg`; `errordlg` / `try-catch` → `showErrorDialog`; `warndlg` / `msgbox` → `inputUniversalDlg(MsgBoxOnly)`.
+- `inputQuestDlg` button row now auto-widths per label so long answers (e.g. *"Apply current values"*) are not clipped.
+- Backup system extended: `core.MibBackup` accepts `'mibDataset'` snapshots; `models.MibModel.deepCopyDataset` (renamed from `imageDeepCopy`) returns a free-standing deep copy when called with `toId = []`; `backup('mibDataset', 1, opts)` + Ctrl+Z now correctly round-trip the full dataset.
 - Ribbon button (`Dataset → Alignment`) wired.
-- **Blocking next step**: user authors `mib/+views/AlignmentGUI.mlapp` against the widget Tag contract above; only then can end-to-end verification proceed.
+- Drift correction confirmed running end-to-end via BatchProcessing (no GUI). End-to-end runtime testing of Single landmark and the GUI mode awaits the user-authored `mib/+views/AlignmentGUI.mlapp`.
+
+### Outstanding blockers / next steps
+
+1. **User authors `mib/+views/AlignmentGUI.mlapp`** against the widget Tag contract above. This is the only blocker for full Phase 1 GUI verification (dropdowns / spinners / panels).
+2. **Phase 1.5 — multi-channel `crossShiftStack`**: fix the dim-layout mismatch flagged above so multi-channel image stacks align correctly (single-channel already works).
+3. **Phase 2** — `ThreeLandmarks_Alignment`, `LandmarkMultiPoint_Alignment`, `LandmarkMultiPointColor_Alignment`, `utils.align.crossShiftStacks`.
+4. **Phase 3** — feature-based + AMST + HDD-mode methods.

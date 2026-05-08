@@ -235,14 +235,30 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
 end
 
 % ---- Layout constants ----
-btnW    = 100;
 btnGap  = 8;
 btnH    = 24;
 nBtn    = numel(buttons);
-btnsTotalW = nBtn * btnW + (nBtn - 1) * btnGap;
+
+% Auto-size each button to its own label so long text isn't clipped.
+% Rough estimate: ~0.65 px per character per font-size point, plus button
+% frame padding. Floor at 100 px so short labels keep the original look.
+charWidthEst = options.ButtonFontSize * 0.65;
+btnPaddingPx = 6;
+btnWidths = zeros(1, nBtn);
+for iBtn = 1:nBtn
+    btnWidths(iBtn) = max(100, ceil(numel(char(buttons{iBtn})) * charWidthEst + btnPaddingPx));
+end
+btnsTotalW = sum(btnWidths) + (nBtn - 1) * btnGap;
 
 chkH  = 24;
 iconW = options.IconWidth;
+
+% Grow the dialog width when buttons would otherwise crowd the question
+% text. Required width = buttons + icon column + outer/inner paddings.
+neededWidth = btnsTotalW + iconW + 40;
+if options.WindowWidth < neededWidth
+    options.WindowWidth = neededWidth;
+end
 
 % Bottom row height: single row with checkbox and buttons side by side
 bottomRowH = btnH + 8;
@@ -331,7 +347,7 @@ end
 btnGrid = uigridlayout(bottomGrid, [1, nBtn]);
 btnGrid.Layout.Row    = 1;
 btnGrid.Layout.Column = 2;
-btnGrid.ColumnWidth   = repmat({btnW}, 1, nBtn);
+btnGrid.ColumnWidth   = num2cell(btnWidths);
 btnGrid.RowHeight     = {btnH};
 btnGrid.Padding       = [0, 0, 0, 0];
 btnGrid.ColumnSpacing = btnGap;
