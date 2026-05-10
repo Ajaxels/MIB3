@@ -50,18 +50,18 @@ if ~isfield(options, 'method');   options.method = 'Drift correction'; end
 if ~isfield(options, 'refFrame'); options.refFrame = 0; end
 if ~isfield(options, 'waitbar');  options.waitbar = []; end
 
+[height, width, depth] = size(I);
+shiftX = zeros(depth, 1);
+shiftY = zeros(depth, 1);
+
 pwb = options.waitbar;
 showProgress = ~isempty(pwb) && isvalid(pwb);
 if showProgress
     pwb.updateText(sprintf('Calculating drifts\nPlease wait...'));
-    pwb.updateMaxNumberOfIterations(size(I, 3));
+    pwb.updateMaxNumberOfIterations(depth);
     pwb.setCurrentIteration(0);
+    pwb.setIncrement(floor(depth/10));
 end
-
-[height, width, depth] = size(I);
-
-shiftX = zeros(depth, 1);
-shiftY = zeros(depth, 1);
 
 referenceFFT = fft2(I(:,:,1));
 imageCenterX = floor((width / 2) + 1);
@@ -101,7 +101,7 @@ switch options.method
                     return;
                 end
                 if mod(sliceIdx, 10) == 0
-                    pwb.setCurrentIteration(sliceIdx);
+                    pwb.increment();
                     pwb.updateText(sprintf('Calculating drifts: %d / %d', sliceIdx, depth));
                 end
             end

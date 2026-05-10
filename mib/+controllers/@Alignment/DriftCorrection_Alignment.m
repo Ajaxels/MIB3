@@ -59,9 +59,10 @@ if isempty(obj.shiftsX)
 
     % Optional preview / running-average dialog
     if ~parameters.useBatchMode
+        obj.BatchOpt.SubtractRunningAverage = false;
         previewShifts(shiftX, shiftY);
         questOpt.Icon = 'puffin_question';
-        questOpt.WindowStyle = 'modal';
+        questOpt.WindowStyle = 'normal';
         questOpt.WindowWidth = 520;
         choice = utils.dlgs.inputQuestDlg(parentFig, ...
             'Align the stack using the detected displacements?', 'Align dataset', ...
@@ -230,8 +231,9 @@ if obj.BatchOpt.SaveShiftsToFile
     saveShiftsToFile(obj, id, parameters.useBatchMode, parentFig);
 end
 
-% Trigger a redraw
-notify(obj.mibModel, 'NewDataset');
+% Trigger a redraw — keepBackup=true so the 'mibDataset' snapshot stored
+% by backup() at the top of this method is not wiped by listener_newDataset.
+notify(obj.mibModel, 'NewDataset', core.ToggleEventData(struct('index', id, 'keepBackup', true)));
 notify(obj.mibModel, 'ShowImage');
 
 % --- Suppress unused warnings for ports of code paths reused by other algorithms

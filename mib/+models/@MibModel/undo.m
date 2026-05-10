@@ -219,7 +219,7 @@ if storeOptions.switch3d     % 3D case
         end
     else
         obj.I{id} = data;
-        notify(obj, 'NewDataset', core.ToggleEventData(id));
+        notify(obj, 'NewDataset', core.ToggleEventData(struct('index', id, 'keepBackup', true)));
         notify(obj, 'ShowImage');
         return;
     end

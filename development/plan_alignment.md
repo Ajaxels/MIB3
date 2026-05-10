@@ -44,8 +44,8 @@ Decisions:
 | `subwindowEdit_Callback.m` | minX/maxX/minY/maxY validation | 1 | ✅ done |
 | `getSearchWindow_Callback.m` | Pull bounding box from selection | 1 | ✅ done |
 | `loadShiftsCheck_Callback.m` | File picker for `.coefXY` shifts | 1 | ✅ done |
-| `ThreeLandmarks_Alignment.m` | 3-point affine (MIB2 lines 868–959) | 2 | ⬜ pending |
-| `LandmarkMultiPoint_Alignment.m` | Multi-point landmark alignment | 2 | ⬜ pending |
+| `ThreeLandmarks_Alignment.m` | 3-point affine (MIB2 lines 868–959); `fitgeotrans` + `imwarp` modernisation; warps + crossShiftStacks for image + service layers | 2 | ✅ done |
+| `LandmarkMultiPoint_Alignment.m` | Multi-point landmark alignment with per-slice cumulative `fitgeotrans`; cropped + extended modes; warps image + service layers; relocates annotations | 2 | ✅ done |
 | `LandmarkMultiPointColor_Alignment.m` | Color-channel landmark alignment | 2 | ⬜ pending |
 | `AutomaticFeatureBased_Alignment.m` (+ V2) | In-memory feature-based registration | 3 | ⬜ pending |
 | `AutomaticFeatureBasedHDD_Alignment.m` (+ V2) | HDD-mode feature-based registration | 3 | ⬜ pending |
@@ -61,9 +61,9 @@ Decisions:
 | `windv.m` | `MIB2\Tools\windv.m` | 1 | ✅ done |
 | `runningAverageSmoothPoints.m` | `MIB2\Tools\mibRunningAverageSmoothPoints.m` | 1 | ✅ done |
 | `calcShifts.m` | `MIB2\Tools\mibCalcShifts.m` | 1 | ✅ done — takes optional `core.PoolWaitbar` via `options.waitbar` |
-| `crossShiftStack.m` | `MIB2\Tools\mibCrossShiftStack.m` | 1 | ✅ done |
+| `crossShiftStack.m` | `MIB2\Tools\mibCrossShiftStack.m` | 1 | ✅ done — rewritten to consume MIB3 5-D `[h, w, d, c, t]` natively; no permute to MIB2 `[h, w, c, d]` |
 | `subtractRunningAverage.m` | `MIB2\Tools\mibSubtractRunningAverage.m` | 1 | ✅ done — uses `inputUniversalDlg` + `inputQuestDlg`; takes parent figure as 1st arg |
-| `crossShiftStacks.m` | `MIB2\Tools\mibCrossShiftStacks.m` | 2 | ⬜ pending |
+| `crossShiftStacks.m` | `MIB2\Tools\mibCrossShiftStacks.m` | 2 | ✅ done — MIB3 layout `[h, w, d, c]` natively; `modelSwitch=1` for 3-D service layers; reuses an existing `core.PoolWaitbar` for cancel polling |
 | `detectFeatures.m` | `MIB2\Tools\mibAlignmentDetectFeatures.m` | 3 | ⬜ pending |
 
 ### View — authored by the user
@@ -295,6 +295,10 @@ pwb.updateText('Applying shifts...');
 - `getDatasetDimensions` arity differs by class:
   - `MibDataset.getDatasetDimensions(type, orient, options)` (used here)
   - `MibImage.getDatasetDimensions(orient, splitDims, blockModeSwitch)` — wrong receiver gives "Too many input arguments"
+- **Image-data dim order is MIB3 5-D `[h, w, d, c, t]`** — *never* permute to MIB2's `[h, w, c, d]` internally. `cell2mat(getData4D(...))` already returns this layout; drop the time axis with `arr(:,:,:,:,1)` (preserves the color axis) instead of `squeeze` (which drops single-channel `c=1` along with `t=1`). All helpers in `+utils/+align/` consume / emit MIB3 layout, including 3-D service-layer stacks `[h, w, d]` (no leading-color dim).
+- **`MibImage` has `maxInt` as a direct property, not a `meta` dictionary entry.** Use `obj.mibModel.I{id}.image.maxInt` for the white-fill background colour; do *not* write `obj.mibModel.I{id}.image.meta('MaxInt')` — `meta` lives on `MibDataset`, not on `MibImage`, and the `getMeta` / `setMeta` methods that build it are encapsulated.
+- **Undo of `'mibDataset'` snapshots requires a `keepBackup` flag on the trailing `NewDataset` event** so `listener_newDataset` does not wipe the just-stored snapshot via `Backup.clearContents()`. Fire as `notify(obj.mibModel, 'NewDataset', core.ToggleEventData(struct('index', id, 'keepBackup', true)))` after any in-place dataset rewrite that called `backup('mibDataset', 1, ...)` first. `MibController.listener_newDataset` reads `Parameters.keepBackup` and skips the `clearContents()` step when set; fresh loads still clear history because they do *not* set the flag.
+- **`fitgeotrans` returns legacy `affine2d` / `projective2d` types** whose `.T` property is writable, so cumulative composition `t2.T = t2.T * t1.T` continues to work in MATLAB R2024a+. Polynomial / piecewise-linear tform types have no `.T` matrix — skip the composition (or guard with `isprop(t, 'T')`) for those.
 
 ---
 
@@ -317,10 +321,11 @@ pwb.updateText('Applying shifts...');
 **Phase 1 verification — partial (needs `AlignmentGUI.mlapp` for the dropdown / spinner widgets):**
 
 - ⬜ Open MIB3, load a Z-stack, click Dataset → Alignment → dialog appears with all widgets populated from `BatchOpt`.
-- ✅ `Algorithm = Drift correction`, click Apply → runs end-to-end after the runtime fixes below; canvas grows correctly, undo (Ctrl+Z) restores pre-alignment state.
+- ✅ `Algorithm = Drift correction`, click Apply → runs end-to-end after the runtime + layout fixes below; canvas grows correctly, undo (Ctrl+Z) and toolbar arrow restore pre-alignment state.
 - ⬜ `Algorithm = Single landmark point` end-to-end (Selection-centroid + Annotation paths) — code paths fixed alongside Drift correction; awaiting user verification with landmarks.
 - ⬜ Headless batch round-trip: `controllers.Alignment(obj.mibModel, [], NaN)` → `SyncBatch` event delivers a `BatchOpt` whose shapes match the widget table.
 - ✅ Batch-mode dispatch (`controllers.Alignment(obj.mibModel, [], BatchOpt)`) — runs without crashing on the missing view (was previously hitting `obj.view.handles` on a `[]` view).
+- ✅ `SaveShiftsToFile` / `loadShiftsCheck` round-trip for Single landmark — `obj.shiftsX/Y` populated triggers the load path, post-run save writes a `.coefXY` for replay.
 
 #### Phase 1 runtime fixes (2026-05-09)
 
@@ -350,16 +355,35 @@ After the GUI was first wired up, three categories of crash surfaced and were fi
 - `btnsTotalW` is computed as the sum of the per-button widths plus inter-button gaps; `btnGrid.ColumnWidth = num2cell(btnWidths)` gives each button its own column.
 - `WindowWidth` is grown (never shrunk) when the button row plus the icon column would otherwise crowd the question label: `neededWidth = btnsTotalW + iconW + 40`.
 
-#### Known caveat — multi-channel images
+#### Phase 1.5 — multi-channel layout fix ✅ DONE (2026-05-10)
 
-`utils.align.crossShiftStack` documents 4-D input as `[h, w, c, d]`, but `getData4D('image', …)` returns 5-D `[h, w, d, c, t]`. For single-channel single-time stacks the 5-D array collapses to 3-D and `crossShiftStack`'s 3-D path works; for multi-channel images the existing call would mis-index channels as slices. **Flagged for a Phase 1.5 fix** — adjust `crossShiftStack` to consume the MIB layout, or reshape at the call site, before the multi-channel path is exercised.
+Initial port of `crossShiftStack` permuted the data to MIB2's `[h, w, c, d]` internally and then squeezed back, which mis-indexed colour channels as slices for multi-channel images and caused the eventual `setData4D` to reshape into the wrong dims (one user run produced a `18835×20724×1×171 (62 GB)` allocation when stale shifts from a previous landmark run leaked in and the dim order put them on the wrong axis). Fixes:
 
-### Phase 2 — Landmark-based methods ⬜ PENDING
+- `utils.align.crossShiftStack.m` rewritten to allocate `zeros([newH, newW, depth, colors, times], ...)` directly and place each slice via `imgOut(yOff:yOff+h-1, xOff:xOff+w-1, k, :, :) = imgIn(:, :, k, :, :)`. `size(imgIn, 1:5)` handles 3-D service layers and 4-D / 5-D image stacks uniformly — no `permute`, no `squeeze`.
+- `utils.align.crossShiftStacks.m` rewritten the same way: input is `[h, w, d, c]` (or `[h, w, d]` with `modelSwitch=1`); the `permute(I, [1 2 4 3])` round-trip and the closing `squeeze` are gone.
+- `ThreeLandmarks_Alignment.m` no longer permutes around the image warp. `cell2mat(getData4D(...))(:,:,:,:,1)` drops only the time axis (preserves `c=1` for grayscale). `warpStack4D` iterates over depth dim 3 and uses `reshape` only as a no-copy view into the `[h, w, 1, c]` slab handed to `imwarp`. Final write-back to `image.data{1}` is a plain `reshape` to 5-D.
+- `LandmarkMultiPoint_Alignment.m` (extended mode) assembles the new canvas as `zeros(newH, newW, depth, nColors, ...)` directly (was `[h, w, c, d]`) and places each warped slice via `Iout(y1:y2, x1:x2, layer, :) = reshape(iMatrix{layer}, ..., 1, nColors)`. The canvas-replace step is just `reshape` — no permute.
 
-- `ThreeLandmarks_Alignment.m` (MIB2 lines 868–959 — port via `fitgeotrans` / `imwarp` rather than the deprecated `imtransform`).
-- `LandmarkMultiPoint_Alignment.m` (port of MIB2 `LandmarkMultiPointAlignment`).
-- `LandmarkMultiPointColor_Alignment.m` (port of MIB2 `LandmarkMultiPointColorAlignment`).
-- `utils.align.crossShiftStacks.m` — needed by ThreeLandmarks (apply combined transform + shift).
+Result: multi-channel image stacks now flow through alignment without any layout conversion; service layers still travel as 3-D `[h, w, d]` via `modelSwitch=1`.
+
+#### `MibImage.maxInt` vs. `meta('MaxInt')` (2026-05-10)
+
+Initial ports of `ThreeLandmarks_Alignment` and `LandmarkMultiPoint_Alignment` followed the MIB2 idiom `obj.mibModel.I{id}.meta('MaxInt')` for the white-fill background colour, but `MibImage` exposes `maxInt` as a direct property (`MibImage.m:68`) — there is no `meta` dictionary on `MibImage` (only on `MibDataset`, via `getMeta` / `setMeta`). Both algorithm methods now read `img5D.maxInt` directly. **Recap of the rule for future ports** in the "Conversion rules" section.
+
+#### Undo / `keepBackup` pattern (2026-05-09 → 2026-05-10)
+
+After backup + in-place rewrite, the trailing `notify('NewDataset')` was triggering `MibController.listener_newDataset` → `Backup.clearContents()` (the standard "fresh dataset loaded, drop undo history" hook), which wiped the snapshot just stored by `backup('mibDataset', 1, ...)`. Ctrl+Z and the toolbar redo arrow both went dead immediately after the alignment. Fix:
+
+- `models.MibModel.undo` (the mibDataset branch) and every alignment method now fire `notify('NewDataset', core.ToggleEventData(struct('index', id, 'keepBackup', true)))` after the in-place rewrite.
+- `MibController.listener_newDataset` reads `Parameters.keepBackup` and skips the `clearContents()` step when the flag is set; fresh loads (loaders / drag-drop) leave the flag absent, so they still clear history as before.
+- Pattern documented in "Conversion rules" so it carries over to ResampleDataset / CropDataset / future canvas-rewriters.
+
+### Phase 2 — Landmark-based methods (in progress)
+
+- ✅ `utils.align.crossShiftStacks.m` — accepts `options.modelSwitch` for 3-D service layers and reuses an existing `core.PoolWaitbar` for cancel polling.
+- ✅ `ThreeLandmarks_Alignment.m` — modernised to `fitgeotrans` + `imwarp`; finds the first slice pair with ≥3 Selection-layer connected components, fits a 2-D affine, warps the tail `[layer+1..Depth]` and concatenates it to the unchanged head via `crossShiftStacks`. Applies the same warp to labels / mask / selection (or the packed `everything` for `core.MibLabels63`). Uses the canvas-replace pattern + `dim_yxzct` / `slices` sync from Phase 1; calls `backup('mibDataset', 1, ...)` first so Ctrl+Z restores the full pre-alignment dataset.
+- ✅ `LandmarkMultiPoint_Alignment.m` — fits a per-slice geometric transform (`fitgeotrans` with `nonreflectivesimilarity` / `similarity` / `affine` / `projective` / `pwl` / `polynomial`); minimum-landmark count derived from the transform type (2/3/4/6). Annotation source matched by label name; selection source matched via `controllers.Alignment.findMatchingPairs` after forward-projection through the previous slice's cumulative tform. Supports both `cropped` (in-place per-slice `setData2D`) and `extended` (canvas grows; canvas-replace pattern + service-layer container pre-resize). Service layers (`labels` / `mask` / `selection` or packed `everything`) warped with nearest-neighbour and re-assembled on the new canvas. Annotations relocated via `transformPointsForward` + canvas-offset shift. Tform matrices + spatial references persist to `obj.shiftsX / .shiftsY`; `SaveShiftsToFile` writes them to `.coefXY` for replay via `loadShiftsCheck`.
+- ⬜ `LandmarkMultiPointColor_Alignment.m` (port of MIB2 `LandmarkMultiPointColorAlignment`).
 - Verification: place 3+ landmarks on each of 2 slices, run each algorithm, confirm aligned canvas + service-layer alignment.
 
 ### Phase 3 — Feature-based + AMST + HDD ⬜ PENDING
@@ -407,22 +431,24 @@ After the GUI was first wired up, three categories of crash surfaced and were fi
 
 ---
 
-## Current state summary (Phase 1)
+## Current state summary
 
-- **14 alignment files + 5 supporting framework files all green under `mcp__matlab__check_matlab_code`.**
-- Backend helpers (`+utils/+align/`) ported with `core.PoolWaitbar` integration and RST docblocks.
-- Controller skeleton complete with three-signature constructor, batch-mode dispatch, listeners, `gui_Callbacks` dispatcher, `continueBtn_Callback` algorithm dispatcher.
-- Drift correction + Single landmark fully ported with cancelable progress, `try/catch` → `showErrorDialog`, canvas-replace pattern for the resized image, and `parentFig` helper so they run safely with no view (BatchProcessing).
+- **All 16 alignment-related `.m` files (controller methods + `+utils/+align/` helpers) clean under `mcp__matlab__check_matlab_code`.**
+- Phase 1 done: controller skeleton, three-signature constructor, batch-mode dispatch, listeners, `gui_Callbacks` dispatcher, `continueBtn_Callback` algorithm dispatcher.
+- Phase 1.5 done: helpers and algorithm methods consume / emit MIB3 5-D `[h, w, d, c, t]` (or 3-D `[h, w, d]` for service layers) natively; no internal permute / squeeze round-trip; multi-channel images now align correctly through Drift correction / Single landmark / Three landmarks / Multi-point landmark.
+- Phase 2 in progress: Drift correction, Single landmark, Three landmark points, Landmarks (multi points) all done — only `LandmarkMultiPointColor_Alignment` remains.
+- Algorithm methods all use: `backup('mibDataset', 1, ...)` first, cancelable `core.PoolWaitbar`, `parentFig` helper for batch-mode safety, canvas-replace pattern with `dim_yxzct` / `slices` sync, pre-resized service-layer containers, `keepBackup=true` flag on the trailing `NewDataset` event.
+- Backup system extended: `core.MibBackup` accepts `'mibDataset'` snapshots; `models.MibModel.deepCopyDataset` (renamed from `imageDeepCopy`) returns a free-standing deep copy when called with `toId = []`; `backup('mibDataset', 1, opts)` + Ctrl+Z + toolbar redo now correctly round-trip the full dataset, with the `keepBackup` flag preventing `listener_newDataset` from clearing history.
+- `SaveShiftsToFile` / `loadShiftsCheck` round-trip wired for Drift correction, Single landmark, Multi-point landmark (numeric shifts → `.coefXY` and tform/rbMatrix → `.coefXY` respectively).
 - TwoStacks mode and all `BatchOpt.TwoStacks*` / `SecondDataset*` fields removed per requirement.
 - All `questdlg` → `inputQuestDlg`; `errordlg` / `try-catch` → `showErrorDialog`; `warndlg` / `msgbox` → `inputUniversalDlg(MsgBoxOnly)`.
-- `inputQuestDlg` button row now auto-widths per label so long answers (e.g. *"Apply current values"*) are not clipped.
-- Backup system extended: `core.MibBackup` accepts `'mibDataset'` snapshots; `models.MibModel.deepCopyDataset` (renamed from `imageDeepCopy`) returns a free-standing deep copy when called with `toId = []`; `backup('mibDataset', 1, opts)` + Ctrl+Z now correctly round-trip the full dataset.
+- `inputQuestDlg` button row auto-widths per label so long answers (e.g. *"Apply current values"*) are not clipped.
 - Ribbon button (`Dataset → Alignment`) wired.
-- Drift correction confirmed running end-to-end via BatchProcessing (no GUI). End-to-end runtime testing of Single landmark and the GUI mode awaits the user-authored `mib/+views/AlignmentGUI.mlapp`.
+- Drift correction confirmed running end-to-end via BatchProcessing (no GUI). End-to-end runtime testing of the four Phase-1/2 algorithms via the GUI awaits the user-authored `mib/+views/AlignmentGUI.mlapp`.
 
 ### Outstanding blockers / next steps
 
 1. **User authors `mib/+views/AlignmentGUI.mlapp`** against the widget Tag contract above. This is the only blocker for full Phase 1 GUI verification (dropdowns / spinners / panels).
-2. **Phase 1.5 — multi-channel `crossShiftStack`**: fix the dim-layout mismatch flagged above so multi-channel image stacks align correctly (single-channel already works).
-3. **Phase 2** — `ThreeLandmarks_Alignment`, `LandmarkMultiPoint_Alignment`, `LandmarkMultiPointColor_Alignment`, `utils.align.crossShiftStacks`.
-4. **Phase 3** — feature-based + AMST + HDD-mode methods.
+2. **Phase 2** — `LandmarkMultiPointColor_Alignment` only (`ThreeLandmarks_Alignment`, `LandmarkMultiPoint_Alignment`, `utils.align.crossShiftStacks` ✅ done; Phase 1.5 multi-channel `crossShiftStack` ✅ done).
+3. **Phase 3** — feature-based + AMST + HDD-mode methods.
+4. **Spurious huge shifts in Drift correction** — one user run produced cumulative shifts of ~20 000 pixels (62 GB canvas allocation). Layout fix removes the layout-driven misindexing but the underlying FFT phase-correlation can still produce these on pathological data. Worth adding a sanity cap (e.g. clamp per-slice shifts to `max(width, height)/2`) and / or auto-clearing `obj.shiftsX/Y` at the top of `DriftCorrection_Alignment` so a stale Multi-point landmark run cannot bleed cell-array tforms into the numeric path.

@@ -89,6 +89,18 @@ classdef Alignment < handle
     end
 
     methods
+        % --- method in external files signatures ---
+        continueBtn_Callback(obj, useBatchMode)
+        gui_Callbacks(obj, source, event)
+        algorithm_Callback(obj)
+        subwindowEdit_Callback(obj, hObject)
+        getSearchWindow_Callback(obj)
+        loadShiftsCheck_Callback(obj)
+        DriftCorrection_Alignment(obj, parameters)
+        SingleLandmark_Alignment(obj, parameters)
+        ThreeLandmarks_Alignment(obj, parameters)
+        LandmarkMultiPoint_Alignment(obj, parameters)
+
         function obj = Alignment(mibModel, varargin)
             % ALIGNMENT - Construct the alignment controller.
             %

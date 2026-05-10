@@ -21,7 +21,7 @@ startingPath = h.loadShiftsXYpath.Value;
 [fileName, pathName] = utils.dlgs.mibUiGetFile( ...
     {'*.coefXY', 'MIB shift files (*.coefXY)'; '*.*', 'All Files (*.*)'}, ...
     'Select file with shifts...', startingPath);
-if fileName == 0
+if ~iscell(fileName)
     h.loadShiftsCheck.Value = false;
     return;
 end

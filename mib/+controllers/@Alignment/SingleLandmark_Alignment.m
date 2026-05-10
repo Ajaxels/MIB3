@@ -38,10 +38,12 @@ if depth < 2
 end
 
 % --- Choose landmark source: annotations vs. selection
+%     Skipped entirely when shifts are pre-loaded from a ``.coefXY`` file.
+shiftsLoaded   = ~isempty(obj.shiftsX);
 useAnnotations = false;
-if obj.mibModel.I{id}.annotations.getLabelsNumber() > 1
+if ~shiftsLoaded && obj.mibModel.I{id}.annotations.getLabelsNumber() > 1
     questOpt.Icon = 'puffin_question';
-    questOpt.WindowStyle = 'modal';
+    questOpt.WindowStyle = 'normal';
     answer = utils.dlgs.inputQuestDlg(parentFig, ...
         sprintf(['Were the corresponding points marked with the Annotation tool, ' ...
                  'or with the Brush + Selection layer?']), ...
@@ -59,94 +61,107 @@ pwb = [];
 if obj.BatchOpt.showWaitbar
     pwb = core.PoolWaitbar(depth, 'Computing single-landmark shifts...', ...
         parentFig, 'Alignment', true);
+    pwb.setIncrement(floor(depth/10));
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
-obj.shiftsX = zeros(1, depth);
-obj.shiftsY = zeros(1, depth);
-shiftX = 0;
-shiftY = 0;
+if ~shiftsLoaded
+    obj.shiftsX = zeros(1, depth);
+    obj.shiftsY = zeros(1, depth);
+    shiftX = 0;
+    shiftY = 0;
 
-if ~useAnnotations
-    % --- Selection-layer centroids
-    optionsGetData.blockModeSwitch = 0;
-    prevStats = struct([]);
-    for layer = 2:depth
-        if ~isempty(pwb)
-            if pwb.getCancelState(); return; end
-            pwb.increment();
+    if ~useAnnotations
+        % --- Selection-layer centroids
+        optionsGetData.blockModeSwitch = 0;
+        prevStats = struct([]);
+        for layer = 2:depth
+            if ~isempty(pwb)
+                if pwb.getCancelState(); return; end
+                if mod(layer, 10) == 0; pwb.increment(); end
+            end
+            if isempty(prevStats)
+                prevSel = cell2mat(obj.mibModel.getData2D('selection', layer-1, [], NaN, optionsGetData));
+                prevStats = regionprops(prevSel, 'Centroid');
+            end
+            if isempty(prevStats); continue; end
+            currSel = cell2mat(obj.mibModel.getData2D('selection', layer, [], NaN, optionsGetData));
+            currStats = regionprops(currSel, 'Centroid');
+            if isempty(currStats)
+                prevStats = struct([]);
+                continue;
+            end
+            shiftX = shiftX + round(prevStats(1).Centroid(1) - currStats(1).Centroid(1));
+            shiftY = shiftY + round(prevStats(1).Centroid(2) - currStats(1).Centroid(2));
+            obj.shiftsX(layer:end) = shiftX;
+            obj.shiftsY(layer:end) = shiftY;
+            prevStats = currStats;
         end
-        if isempty(prevStats)
-            prevSel = cell2mat(obj.mibModel.getData2D('selection', layer-1, [], NaN, optionsGetData));
-            prevStats = regionprops(prevSel, 'Centroid');
+    else
+        % --- Annotation positions
+        prevPos = [];
+        for layer = 2:depth
+            if ~isempty(pwb)
+                if pwb.getCancelState(); return; end
+                if mod(layer, 10) == 0; pwb.increment(); end
+            end
+            if isempty(prevPos)
+                [~, ~, prevPos] = obj.mibModel.I{id}.getSliceLabels(layer-1);   % [zxyt]
+            end
+            if isempty(prevPos); continue; end
+            [~, ~, currPos] = obj.mibModel.I{id}.getSliceLabels(layer);
+            if isempty(currPos)
+                prevPos = [];
+                continue;
+            end
+            if size(prevPos, 1) > 1 || size(currPos, 1) > 1
+                utils.dlgs.showErrorDialog(parentFig, ...
+                    sprintf(['Single-landmark alignment allows at most 1 landmark per slice.\n' ...
+                            'Extra landmarks were detected on slice %d or %d.'], layer-1, layer), ...
+                    'Wrong number of landmarks');
+                return;
+            end
+            shiftX = shiftX + round(prevPos(2) - currPos(2));
+            shiftY = shiftY + round(prevPos(3) - currPos(3));
+            obj.shiftsX(layer:end) = shiftX;
+            obj.shiftsY(layer:end) = shiftY;
+            prevPos = currPos;
         end
-        if isempty(prevStats); continue; end
-        currSel = cell2mat(obj.mibModel.getData2D('selection', layer, [], NaN, optionsGetData));
-        currStats = regionprops(currSel, 'Centroid');
-        if isempty(currStats)
-            prevStats = struct([]);
-            continue;
-        end
-        shiftX = shiftX + round(prevStats(1).Centroid(1) - currStats(1).Centroid(1));
-        shiftY = shiftY + round(prevStats(1).Centroid(2) - currStats(1).Centroid(2));
-        obj.shiftsX(layer:end) = shiftX;
-        obj.shiftsY(layer:end) = shiftY;
-        prevStats = currStats;
     end
-else
-    % --- Annotation positions
-    prevPos = [];
-    for layer = 2:depth
-        if ~isempty(pwb)
-            if pwb.getCancelState(); return; end
-            pwb.increment();
+
+    % --- Optional preview / confirmation in interactive mode
+    if ~parameters.useBatchMode
+        figure(155); clf;
+        plot(1:length(obj.shiftsX), obj.shiftsX, '.-', ...
+             1:length(obj.shiftsY), obj.shiftsY, '.-');
+        legend('Shift X', 'Shift Y'); grid on;
+        xlabel('Frame number'); ylabel('Displacement');
+        title('Detected single-landmark shifts');
+
+        if ~isdeployed
+            assignin('base', 'shiftX', obj.shiftsX);
+            assignin('base', 'shiftY', obj.shiftsY);
         end
-        if isempty(prevPos)
-            [~, ~, prevPos] = obj.mibModel.I{id}.getSliceLabels(layer-1);   % [zxyt]
-        end
-        if isempty(prevPos); continue; end
-        [~, ~, currPos] = obj.mibModel.I{id}.getSliceLabels(layer);
-        if isempty(currPos)
-            prevPos = [];
-            continue;
-        end
-        if size(prevPos, 1) > 1 || size(currPos, 1) > 1
-            utils.dlgs.showErrorDialog(parentFig, ...
-                sprintf(['Single-landmark alignment allows at most 1 landmark per slice.\n' ...
-                        'Extra landmarks were detected on slice %d or %d.'], layer-1, layer), ...
-                'Wrong number of landmarks');
+
+        questOpt2.Icon = 'puffin_question';
+        questOpt2.WindowStyle = 'normal';
+        choice = utils.dlgs.inputQuestDlg(parentFig, ...
+            'Align the stack using these displacements?', 'Align dataset', ...
+            'Apply current values', 'Quit alignment', ...
+            'Apply current values', questOpt2);
+        if isempty(choice) || strcmp(choice, 'Quit alignment')
             return;
         end
-        shiftX = shiftX + round(prevPos(2) - currPos(2));
-        shiftY = shiftY + round(prevPos(3) - currPos(3));
-        obj.shiftsX(layer:end) = shiftX;
-        obj.shiftsY(layer:end) = shiftY;
-        prevPos = currPos;
     end
-end
-
-% --- Optional preview / confirmation in interactive mode
-if ~parameters.useBatchMode
-    figure(155); clf;
-    plot(1:length(obj.shiftsX), obj.shiftsX, '.-', ...
-         1:length(obj.shiftsY), obj.shiftsY, '.-');
-    legend('Shift X', 'Shift Y'); grid on;
-    xlabel('Frame number'); ylabel('Displacement');
-    title('Detected single-landmark shifts');
-
-    if ~isdeployed
-        assignin('base', 'shiftX', obj.shiftsX);
-        assignin('base', 'shiftY', obj.shiftsY);
-    end
-
-    questOpt2.Icon = 'puffin_question';
-    questOpt2.WindowStyle = 'modal';
-    choice = utils.dlgs.inputQuestDlg(parentFig, ...
-        'Align the stack using these displacements?', 'Align dataset', ...
-        'Apply current values', 'Quit alignment', 'Quit alignment', ...
-        'Apply current values', questOpt2);
-    if isempty(choice) || strcmp(choice, 'Quit alignment')
-        return;
+else
+    % --- Shifts came from a .coefXY file; pad/truncate to match the
+    %     current dataset depth so crossShiftStack receives the right size.
+    if numel(obj.shiftsX) < depth
+        obj.shiftsX(end+1:depth) = obj.shiftsX(end);
+        obj.shiftsY(end+1:depth) = obj.shiftsY(end);
+    elseif numel(obj.shiftsX) > depth
+        obj.shiftsX = obj.shiftsX(1:depth);
+        obj.shiftsY = obj.shiftsY(1:depth);
     end
 end
 
@@ -238,11 +253,15 @@ else
     end
 end
 
-% --- Clear the landmarks now that they have been consumed
-if ~useAnnotations
-    obj.mibModel.I{id}.clearLayer('selection', '4D');
-else
-    obj.mibModel.I{id}.annotations.clearContents();
+% --- Clear the landmarks now that they have been consumed (only when we
+%     actually used them to detect shifts; when shifts were loaded from a
+%     file the user has not declared which source to clear).
+if ~shiftsLoaded
+    if ~useAnnotations
+        obj.mibModel.I{id}.clearLayer('selection', '4D');
+    else
+        obj.mibModel.I{id}.annotations.clearContents();
+    end
 end
 
 % --- Bounding box shift
@@ -264,11 +283,24 @@ switch ds.orientation
 end
 obj.mibModel.I{id}.updateBoundingBox([], [maxXshift, maxYshift, maxZshift]);
 
-obj.mibModel.I{id}.image.updateActionLog(sprintf( ...
-    'Aligned using %s; landmark source = %s', ...
-    obj.BatchOpt.Algorithm{1}, ternary(useAnnotations, 'Annotations', 'Selection')));
+if shiftsLoaded
+    obj.mibModel.I{id}.image.updateActionLog(sprintf( ...
+        'Aligned using %s; shifts loaded from file', ...
+        obj.BatchOpt.Algorithm{1}));
+else
+    obj.mibModel.I{id}.image.updateActionLog(sprintf( ...
+        'Aligned using %s; landmark source = %s', ...
+        obj.BatchOpt.Algorithm{1}, ternary(useAnnotations, 'Annotations', 'Selection')));
+end
 
-notify(obj.mibModel, 'NewDataset');
+% --- Save shifts to file if requested
+if obj.BatchOpt.SaveShiftsToFile
+    saveShiftsToFile(obj, id, parameters.useBatchMode, parentFig);
+end
+
+% keepBackup=true so the 'mibDataset' snapshot stored by backup() at the top
+% of this method is not wiped by listener_newDataset.
+notify(obj.mibModel, 'NewDataset', core.ToggleEventData(struct('index', id, 'keepBackup', true)));
 notify(obj.mibModel, 'ShowImage');
 
 end
@@ -276,6 +308,32 @@ end
 % =============================================================================
 function out = ternary(condition, ifTrue, ifFalse)
 if condition; out = ifTrue; else; out = ifFalse; end
+end
+
+% =============================================================================
+function saveShiftsToFile(obj, id, useBatchMode, parentFig)
+% In batch mode the destination is derived from the dataset filename so the
+% run is fully unattended; in GUI mode the path comes from the
+% ``saveShiftsXYpath`` text field next to the Save-shifts checkbox.
+if useBatchMode
+    fn = obj.mibModel.I{id}.image.sliceName('Filename');
+    [pathstr, name, ~] = fileparts(fn);
+    fullPath = fullfile(pathstr, [name '_align.coefXY']);
+elseif ~isempty(obj.view) && isvalid(obj.view) && isfield(obj.view.handles, 'saveShiftsXYpath')
+    fullPath = obj.view.handles.saveShiftsXYpath.Value;
+else
+    return;
+end
+shiftsX = obj.shiftsX;
+shiftsY = obj.shiftsY;
+fprintf('Saving alignment shifts to file: %s ... ', fullPath);
+try
+    save(fullPath, 'shiftsX', 'shiftsY');
+    fprintf('done!\n');
+catch ME
+    fprintf('failed.\n');
+    utils.dlgs.showErrorDialog(parentFig, ME, 'Save shifts');
+end
 end
 
 % =============================================================================

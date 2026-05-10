@@ -101,8 +101,13 @@ end
 % update widgets of the MIB view
 obj.updateGuiWidgets();
 
-% clear undo history
-if strcmp(evtData.EventName, 'NewDataset'); obj.mibModel.Backup.clearContents(); end
+% clear undo history — but NOT when the caller has just stored a backup it
+% needs to preserve (Ctrl+Z restore of a 'mibDataset' snapshot, or an
+% in-place dataset rewrite like an alignment that backed itself up first).
+keepBackup = isstruct(Parameters) && isfield(Parameters, 'keepBackup') && Parameters.keepBackup;
+if strcmp(evtData.EventName, 'NewDataset') && ~keepBackup
+    obj.mibModel.Backup.clearContents();
+end
 
 % show the new image
 obj.showImage();

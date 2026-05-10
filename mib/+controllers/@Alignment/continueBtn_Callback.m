@@ -99,12 +99,10 @@ switch obj.BatchOpt.Algorithm{1}
         obj.SingleLandmark_Alignment(parameters);
 
     case 'Three landmark points'
-        notYetPorted(obj, 'Three landmark points');
-        return;
+        obj.ThreeLandmarks_Alignment(parameters);
 
     case 'Landmarks, multi points'
-        notYetPorted(obj, 'Landmarks, multi points');
-        return;
+        obj.LandmarkMultiPoint_Alignment(parameters);
 
     case 'Color channels, multi points'
         notYetPorted(obj, 'Color channels, multi points');

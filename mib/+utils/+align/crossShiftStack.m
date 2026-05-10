@@ -11,11 +11,16 @@ function imgOut = crossShiftStack(imgIn, shiftsX, shiftsY, options)
 % values and pads the output canvas to accommodate the union of all shifts. The
 % padding intensity is controlled by ``options.backgroundColor``.
 %
+% Input layout is MIB3-native: ``[h, w, d]`` for service layers, ``[h, w, d, c]``
+% for image stacks, or ``[h, w, d, c, t]`` for image stacks with a time axis.
+% The depth axis is always dim 3 — color and time are after depth, matching
+% :attr:`core.MibImage.data` ``{1}``.
+%
 % Input Arguments:
-%   - **imgIn** — [numeric] input stack: ``[height, width, depth]`` (3-D) or
-%     ``[height, width, color, depth]`` (4-D).
-%   - **shiftsX** — [numeric vector] X translation per slice, length ``depth``.
-%   - **shiftsY** — [numeric vector] Y translation per slice, length ``depth``.
+%   - **imgIn** — [numeric] input stack in MIB3 layout: ``[h, w, d]``,
+%     ``[h, w, d, c]``, or ``[h, w, d, c, t]``.
+%   - **shiftsX** — [numeric vector] X translation per slice, length ``d``.
+%   - **shiftsY** — [numeric vector] Y translation per slice, length ``d``.
 %   - **options** *(optional)* — struct with fields:
 %
 %     - ``.backgroundColor`` — [char|numeric] padding colour: ``'black'`` (default),
@@ -24,8 +29,8 @@ function imgOut = crossShiftStack(imgIn, shiftsX, shiftsY, options)
 %       progress reporting; pass ``[]`` or omit to disable progress reporting.
 %
 % Output Arguments:
-%   - **imgOut** — [numeric] aligned stack with same dimensionality as ``imgIn`` and
-%     enlarged ``height``/``width``.
+%   - **imgOut** — [numeric] aligned stack with the same layout / class as
+%     ``imgIn`` and enlarged ``h`` / ``w``.
 %
 % **Example** — apply shifts and use the parent figure's PoolWaitbar:
 %
@@ -34,6 +39,9 @@ function imgOut = crossShiftStack(imgIn, shiftsX, shiftsY, options)
 %    opts.backgroundColor = 'mean';
 %    opts.waitbar = pwb;
 %    aligned = utils.align.crossShiftStack(I, shiftX, shiftY, opts);
+
+% Updates
+%
 
 if nargin < 3
     error('utils:align:crossShiftStack:missingArgs', ...
@@ -46,28 +54,32 @@ if ~isfield(options, 'waitbar');         options.waitbar = []; end
 pwb = options.waitbar;
 showProgress = ~isempty(pwb) && isvalid(pwb);
 
-% Normalize to 4-D (height, width, color, depth)
-mode = '4D';
-if ndims(imgIn) == 3
-    mode = '3D';
-    imgIn = permute(imgIn, [1 2 4 3]);
-end
+% MIB3 layout — work natively in [h, w, d, c, t]. Service-layer 3-D and
+% image-stack 4-D inputs are handled by querying the missing trailing dims
+% as size 1; the assignment below copes uniformly with all three cases.
+[height, width, depth, colors, times] = size(imgIn, 1:5);
 
-[height, width, color, depth] = size(imgIn);
 minX = min(shiftsX);    maxX = max(shiftsX);
 minY = min(shiftsY);    maxY = max(shiftsY);
 deltaX = abs(minX) + maxX;
 deltaY = abs(minY) + maxY;
+newH   = height + deltaY;
+newW   = width  + deltaX;
 
+% Resolve the background fill value
 if isnumeric(options.backgroundColor)
-    imgOut = zeros([height+deltaY, width+deltaX, color, depth], class(imgIn)) + options.backgroundColor;
+    bg = options.backgroundColor;
 elseif strcmp(options.backgroundColor, 'black')
-    imgOut = zeros([height+deltaY, width+deltaX, color, depth], class(imgIn));
+    bg = 0;
 elseif strcmp(options.backgroundColor, 'white')
-    imgOut = zeros([height+deltaY, width+deltaX, color, depth], class(imgIn)) + intmax(class(imgIn));
+    bg = intmax(class(imgIn));
 else
-    backgroundIntensity = mean(imgIn, 'all');
-    imgOut = zeros([height+deltaY, width+deltaX, color, depth], class(imgIn)) + backgroundIntensity;
+    bg = mean(imgIn, 'all');
+end
+
+imgOut = zeros([newH, newW, depth, colors, times], class(imgIn));
+if bg ~= 0
+    imgOut = imgOut + cast(bg, class(imgIn));
 end
 
 if showProgress
@@ -79,18 +91,14 @@ end
 for sliceIdx = 1:depth
     xOffset = shiftsX(sliceIdx) - minX + 1;
     yOffset = shiftsY(sliceIdx) - minY + 1;
-    imgOut(yOffset:yOffset+height-1, xOffset:xOffset+width-1, :, sliceIdx) = imgIn(:,:,:,sliceIdx);
+    imgOut(yOffset:yOffset+height-1, xOffset:xOffset+width-1, sliceIdx, :, :) = ...
+        imgIn(:, :, sliceIdx, :, :);
     if showProgress
         if pwb.getCancelState()
             imgOut = [];
             return;
         end
-        pwb.increment();
+        if mod(sliceIdx, 10) == 0; pwb.increment(); end
     end
 end
-
-if strcmp(mode, '3D')
-    imgOut = squeeze(imgOut);
-end
-
 end
