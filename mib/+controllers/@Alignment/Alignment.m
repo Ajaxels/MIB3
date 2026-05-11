@@ -100,6 +100,14 @@ classdef Alignment < handle
         SingleLandmark_Alignment(obj, parameters)
         ThreeLandmarks_Alignment(obj, parameters)
         LandmarkMultiPoint_Alignment(obj, parameters)
+        LandmarkMultiPointColor_Alignment(obj, parameters)
+        AutomaticFeatureBased_Alignment(obj, parameters)
+        AutomaticFeatureBasedV2_Alignment(obj, parameters)
+        AlignMedianSmoothTemplate_Alignment(obj, parameters)
+        alignDriftCorrectionHDD_Alignment(obj, parameters)
+        AutomaticFeatureBasedHDD_Alignment(obj, parameters)
+        status = updateAutomaticOptions(obj)
+        previewFeaturesBtn_Callback(obj)
 
         function obj = Alignment(mibModel, varargin)
             % ALIGNMENT - Construct the alignment controller.

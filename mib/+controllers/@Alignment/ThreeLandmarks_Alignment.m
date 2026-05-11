@@ -152,7 +152,7 @@ isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
 
 if isLabels63
     if ~isempty(pwb); pwb.updateText('Warping selection / mask / labels...'); end
-    everythingWarped = warpAndStackServiceLayer(obj, id, 'everything', tform, layerId, depth, height, width, headOpts, tailOpts, serviceOpts);
+    everythingWarped = warpAndStackServiceLayer(obj, 'everything', tform, headOpts, tailOpts, serviceOpts);
     if isempty(everythingWarped); return; end
     obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
     obj.mibModel.I{id}.labels.height    = newH;
@@ -163,7 +163,7 @@ if isLabels63
 else
     if obj.mibModel.I{id}.modelExist
         if ~isempty(pwb); pwb.updateText('Warping labels...'); end
-        labelsWarped = warpAndStackServiceLayer(obj, id, 'labels', tform, layerId, depth, height, width, headOpts, tailOpts, serviceOpts);
+        labelsWarped = warpAndStackServiceLayer(obj, 'labels', tform, headOpts, tailOpts, serviceOpts);
         if isempty(labelsWarped); return; end
         obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, depth, nTime], class(obj.mibModel.I{id}.labels.data{1}));
         obj.mibModel.I{id}.labels.height    = newH;
@@ -173,7 +173,7 @@ else
     end
     if obj.mibModel.I{id}.maskExist
         if ~isempty(pwb); pwb.updateText('Warping mask...'); end
-        maskWarped = warpAndStackServiceLayer(obj, id, 'mask', tform, layerId, depth, height, width, headOpts, tailOpts, serviceOpts);
+        maskWarped = warpAndStackServiceLayer(obj, 'mask', tform, headOpts, tailOpts, serviceOpts);
         if isempty(maskWarped); return; end
         obj.mibModel.I{id}.mask.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
         obj.mibModel.I{id}.mask.height    = newH;
@@ -183,7 +183,7 @@ else
     end
     if obj.mibModel.I{id}.enableSelection
         if ~isempty(pwb); pwb.updateText('Warping selection...'); end
-        selWarped = warpAndStackServiceLayer(obj, id, 'selection', tform, layerId, depth, height, width, headOpts, tailOpts, serviceOpts);
+        selWarped = warpAndStackServiceLayer(obj, 'selection', tform, headOpts, tailOpts, serviceOpts);
         if isempty(selWarped); return; end
         obj.mibModel.I{id}.selection.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
         obj.mibModel.I{id}.selection.height    = newH;

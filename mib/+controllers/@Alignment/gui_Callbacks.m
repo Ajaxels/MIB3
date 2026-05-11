@@ -54,12 +54,7 @@ switch source.Tag
         obj.updateBatchOptFromGUI(source);
 
     case 'previewFeaturesBtn'
-        if ismethod(obj, 'previewFeaturesBtn_Callback')
-            obj.previewFeaturesBtn_Callback();
-        else
-            utils.dlgs.showErrorDialog(obj.view.gui, ...
-                'Feature-preview is not yet ported to MIB3.', 'Alignment');
-        end
+        obj.previewFeaturesBtn_Callback();
 
     case 'Subarea'
         if strcmp(source.Value, 'Manually specified')

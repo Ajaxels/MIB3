@@ -1,5 +1,7 @@
 # Graphify — Installation and Usage Guide for MIB3
 
+https://github.com/safishamsi/graphify
+
 Graphify builds a navigable knowledge graph of the MIB3 MATLAB codebase.
 It produces three outputs in `graphify-out/`:
 
@@ -19,14 +21,14 @@ It produces three outputs in `graphify-out/`:
 ## 2. Install the graphify package
 
 ```bash
-pip install graphify
+pip install graphifyy
 ```
 
 Or into a specific conda/mamba environment:
 
 ```bash
 conda activate myenv
-pip install graphify
+pip install graphifyy
 ```
 
 Verify installation:
@@ -47,7 +49,7 @@ This registers the `/graphify` slash command so Copilot can query the graph
 interactively in the terminal.
 
 ```bash
-graphify copilot install
+graphify install --platform copilot
 ```
 
 The skill is installed per-user at:
@@ -67,9 +69,10 @@ graphify copilot uninstall
 
 ## 4. Connect to Claude Code
 
-The same skill file is picked up automatically by Claude Code (GitHub Copilot
-coding agent). No extra step is needed beyond the `graphify copilot install`
-above — Claude Code reads skills from the same `~/.copilot/skills/` directory.
+Install in Claude Code with
+```bash
+graphify install --platform windows
+```
 
 Once installed, Claude Code follows these rules (already added to `CLAUDE.md`):
 - Reads `graphify-out/GRAPH_REPORT.md` before answering architecture questions

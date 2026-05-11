@@ -46,12 +46,14 @@ Decisions:
 | `loadShiftsCheck_Callback.m` | File picker for `.coefXY` shifts | 1 | ✅ done |
 | `ThreeLandmarks_Alignment.m` | 3-point affine (MIB2 lines 868–959); `fitgeotrans` + `imwarp` modernisation; warps + crossShiftStacks for image + service layers | 2 | ✅ done |
 | `LandmarkMultiPoint_Alignment.m` | Multi-point landmark alignment with per-slice cumulative `fitgeotrans`; cropped + extended modes; warps image + service layers; relocates annotations | 2 | ✅ done |
-| `LandmarkMultiPointColor_Alignment.m` | Color-channel landmark alignment | 2 | ⬜ pending |
-| `AutomaticFeatureBased_Alignment.m` (+ V2) | In-memory feature-based registration | 3 | ⬜ pending |
-| `AutomaticFeatureBasedHDD_Alignment.m` (+ V2) | HDD-mode feature-based registration | 3 | ⬜ pending |
-| `AlignMedianSmoothTemplate_Alignment.m` | AMST | 3 | ⬜ pending |
-| `alignDriftCorrectionHDD_Alignment.m` | HDD-mode drift correction | 3 | ⬜ pending |
-| `previewFeaturesBtn_Callback.m` | Feature detector preview window | 3 | ⬜ pending |
+| `LandmarkMultiPointColor_Alignment.m` | Within-slice colour-channel landmark alignment; pairs annotations by text label, value 1 = fixed channel, value 2 = channel to transform; cropped mode only (matches MIB2) | 2 | ✅ done |
+| `AutomaticFeatureBased_Alignment.m` | In-memory v1: per-slice `detectFeatures` + `extractFeatures` + `matchFeatures` + `estgeotform2d` RANSAC → cumulative `tform.T` chain → cropped/extended apply (canvas-replace pattern). Optional running-average smoothing from BatchOpt (interactive dialog deferred). Handles `rigidtform2d`/`simtform2d`/`affinetform2d`/`projtform2d` → legacy `affine2d`/`projective2d` `.T` form for composition. | 3 | ✅ done |
+| `AutomaticFeatureBasedV2_Alignment.m` | Modern v2 (R2022b+): `estgeotform2d` → `affinetform2d` native, pairwise tforms decomposed into translation / rotation / scale, cumulative via cumsum/cumprod; corner-projection canvas for extended mode; rounds translations for `translation` type; ratio = `1/imgDownsamplingFactorForAnalysis`; allowed types `translation/rigid/similarity/affine`; BatchOpt-driven smoothing on cumulative parameters | 3 | ✅ done |
+| `AutomaticFeatureBasedHDD_Alignment.m` | Streaming v1: imageDatastore + parfor detect/extract + sequential match/estgeotform2d compose + per-image read/warp/save to `<InputDir>/HDD_OutputSubfolderName`; cropped + extended (per-slice `affineOutputView` + union canvas); BatchOpt-driven smoothing | 3 | ✅ done |
+| `AutomaticFeatureBasedHDDV2_Alignment.m` | HDD-mode v2 feature-based | 3 | ⬜ pending |
+| `AlignMedianSmoothTemplate_Alignment.m` | Intensity-based registration to a `medfilt3([1,1,MedianSize])` template via `imregtform` (monomodal, `automaticOptions.amst` optimizer knobs); cropped-only (matches MIB2); supports `translation/rigid/similarity/affine`; optional parfor; BatchOpt-driven smoothing | 3 | ✅ done |
+| `alignDriftCorrectionHDD_Alignment.m` | Streaming drift correction over a directory; `imageDatastore` + `io.loadImagesWrapper` reads + FFT cross-correlation pair by pair + cumsum / windowed / first-slice integration + optional `subtractRunningAverage` + per-image padded canvas saved via `core.MibImage.save` to `<InputDir>/HDD_OutputSubfolderName` in chosen format (AM/JPG/MRC/NRRD/PNG/TIF) | 3 | ✅ done |
+| `previewFeaturesBtn_Callback.m` | Feature detector preview window — slice / slice+1 detect → match → `estgeotform2d` RANSAC → side-by-side `showMatchedFeatures` (with outliers + inliers) in a tagged figure | 3 | ✅ done |
 | `HDD_BioformatsReader_Callback.m` | Enable/disable HDD bioformats index | 3 | ⬜ pending (currently inlined in `gui_Callbacks`) |
 
 ### Backend helpers — `mib/+utils/+align/`
@@ -64,7 +66,7 @@ Decisions:
 | `crossShiftStack.m` | `MIB2\Tools\mibCrossShiftStack.m` | 1 | ✅ done — rewritten to consume MIB3 5-D `[h, w, d, c, t]` natively; no permute to MIB2 `[h, w, c, d]` |
 | `subtractRunningAverage.m` | `MIB2\Tools\mibSubtractRunningAverage.m` | 1 | ✅ done — uses `inputUniversalDlg` + `inputQuestDlg`; takes parent figure as 1st arg |
 | `crossShiftStacks.m` | `MIB2\Tools\mibCrossShiftStacks.m` | 2 | ✅ done — MIB3 layout `[h, w, d, c]` natively; `modelSwitch=1` for 3-D service layers; reuses an existing `core.PoolWaitbar` for cancel polling |
-| `detectFeatures.m` | `MIB2\Tools\mibAlignmentDetectFeatures.m` | 3 | ⬜ pending |
+| `detectFeatures.m` | `MIB2\Tools\mibAlignmentDetectFeatures.m` | 3 | ✅ done — pure dispatcher over `detect{SURF,SIFT,MSER,Harris,BRISK,FAST,MinEigen,ORB}Features`; consumes the `obj.automaticOptions` struct |
 
 ### View — authored by the user
 
@@ -378,23 +380,33 @@ After backup + in-place rewrite, the trailing `notify('NewDataset')` was trigger
 - `MibController.listener_newDataset` reads `Parameters.keepBackup` and skips the `clearContents()` step when the flag is set; fresh loads (loaders / drag-drop) leave the flag absent, so they still clear history as before.
 - Pattern documented in "Conversion rules" so it carries over to ResampleDataset / CropDataset / future canvas-rewriters.
 
-### Phase 2 — Landmark-based methods (in progress)
+### Phase 2 — Landmark-based methods ✅ DONE
 
 - ✅ `utils.align.crossShiftStacks.m` — accepts `options.modelSwitch` for 3-D service layers and reuses an existing `core.PoolWaitbar` for cancel polling.
 - ✅ `ThreeLandmarks_Alignment.m` — modernised to `fitgeotrans` + `imwarp`; finds the first slice pair with ≥3 Selection-layer connected components, fits a 2-D affine, warps the tail `[layer+1..Depth]` and concatenates it to the unchanged head via `crossShiftStacks`. Applies the same warp to labels / mask / selection (or the packed `everything` for `core.MibLabels63`). Uses the canvas-replace pattern + `dim_yxzct` / `slices` sync from Phase 1; calls `backup('mibDataset', 1, ...)` first so Ctrl+Z restores the full pre-alignment dataset.
 - ✅ `LandmarkMultiPoint_Alignment.m` — fits a per-slice geometric transform (`fitgeotrans` with `nonreflectivesimilarity` / `similarity` / `affine` / `projective` / `pwl` / `polynomial`); minimum-landmark count derived from the transform type (2/3/4/6). Annotation source matched by label name; selection source matched via `controllers.Alignment.findMatchingPairs` after forward-projection through the previous slice's cumulative tform. Supports both `cropped` (in-place per-slice `setData2D`) and `extended` (canvas grows; canvas-replace pattern + service-layer container pre-resize). Service layers (`labels` / `mask` / `selection` or packed `everything`) warped with nearest-neighbour and re-assembled on the new canvas. Annotations relocated via `transformPointsForward` + canvas-offset shift. Tform matrices + spatial references persist to `obj.shiftsX / .shiftsY`; `SaveShiftsToFile` writes them to `.coefXY` for replay via `loadShiftsCheck`.
-- ⬜ `LandmarkMultiPointColor_Alignment.m` (port of MIB2 `LandmarkMultiPointColorAlignment`).
-- Verification: place 3+ landmarks on each of 2 slices, run each algorithm, confirm aligned canvas + service-layer alignment.
+- ✅ `LandmarkMultiPointColor_Alignment.m` — within-slice colour-channel alignment (no propagation across slices). Each slice's annotations split by `labelValues`: `value == 1` = fixed channel, `value == 2` = channel to transform; pairs matched by annotation text label. Per-slice `fitgeotrans` on the paired `[x, y]` coordinates, then `imwarp` with `'OutputView', imref2d([H, W])` applied to the single transformed colour channel via `setData2D('image', warped, layer, [], parameters.colorCh, …)`. Only **cropped** mode supported (matches MIB2 — extended rejected up front). `backup('mibDataset', 1, ...)` + `keepBackup=true` on the trailing `NewDataset` notify; transforms persisted to `obj.shiftsX / .shiftsY` and optionally saved to `.coefXY` via `SaveShiftsToFile`.
+- Verification: place 3+ pairs (value 1 + value 2 with matching text) on each slice, run colour-channel alignment, confirm only the selected channel is transformed and the alignment is replayable through `loadShiftsCheck`.
 
-### Phase 3 — Feature-based + AMST + HDD ⬜ PENDING
+### Phase 3 — Feature-based + AMST + HDD ⬜ IN PROGRESS
 
-- All `Automatic*FeatureBased*_Alignment.m` files (in-memory + HDD, v1 + v2).
-- `AlignMedianSmoothTemplate_Alignment.m` (AMST).
-- `alignDriftCorrectionHDD_Alignment.m` (HDD-mode drift correction).
-- `previewFeaturesBtn_Callback.m`, dedicated `HDD_BioformatsReader_Callback.m` (currently inlined in `gui_Callbacks`).
-- `utils.align.detectFeatures.m` (port of `mibAlignmentDetectFeatures`).
-- `automaticOptions` parameter dialog (was MIB2 `updateAutomaticOptions`; will use `inputUniversalDlg` + a settings dialog).
-- Verification: feature-based alignment of a microscopy stack with each detector type; AMST on a noisy stack; HDD-mode drift correction on a directory of TIFFs.
+- ✅ `utils.align.detectFeatures.m` — pure dispatcher over the `detect{SURF,SIFT,MSER,Harris,BRISK,FAST,MinEigen,ORB}Features` functions, parameters drawn from the active branch of `obj.automaticOptions`.
+- ✅ `previewFeaturesBtn_Callback.m` — interactive matching preview: takes the current and next slice, applies the same downsampling ratio the alignment would use (`imgWidthForAnalysis / Width` for v1 or `1 / imgDownsamplingFactorForAnalysis` for v2), detects features, extracts descriptors (`'Upright'` flag honours `automaticOptions.rotationInvariance`, ORB skipped), matches, runs `estgeotform2d` for RANSAC inlier selection, and renders both *with-outliers* and *inliers-only* views in a tagged figure (`Tag='mib_FeaturePreview'`) so subsequent previews reuse the same window. No-op when active algorithm is AMST. Skips the `automaticOptions` settings dialog for now — runs with whatever defaults are already in `obj.automaticOptions`; the dialog will land with the `automaticOptions` Phase 3 item.
+- ✅ `AutomaticFeatureBased_Alignment.m` (in-memory v1) — per-slice `utils.align.detectFeatures` → `extractFeatures` (`'Upright'` flag drives `rotationInvariance`, ORB skips the flag) → `matchFeatures` → `estgeotform2d` RANSAC. Per-slice transforms wrapped to legacy `affine2d` / `projective2d` form via a local `makeLegacyTform` helper (handles `rigidtform2d` / `simtform2d` / `affinetform2d` / `projtform2d` from `estgeotform2d` by transposing `.A` into `.T`), so the cumulative composition `t.T = t.T * prev.T` keeps working. Cropped + extended apply modes inlined from the `LandmarkMultiPoint_Alignment` pattern (canvas-replace, service-layer pre-resize, annotation relocation). Optional running-average smoothing of stretch + shear runs from the BatchOpt fields (`SubtractRunningAverage*`) when the flag is set — the interactive plot + question-dialog flow from MIB2 is deferred. Standard frame: `backup('mibDataset', 1, …)` + `keepBackup=true` notify, cancelable `core.PoolWaitbar`, `parentFig` helper. The `updateAutomaticOptions` settings dialog is skipped — runs from the defaults already in `obj.automaticOptions`.
+- ✅ `AutomaticFeatureBasedV2_Alignment.m` — modern (R2022b+) feature-based registration. Uses `estgeotform2d` with native `affinetform2d` / `rigidtform2d` / `simtform2d` return types, wrapped uniformly into `affinetform2d` via its `.A` property. Stores **pairwise** transforms separately from **cumulative** ones and decomposes each pairwise matrix into translation `[tx, ty]`, rotation `θ`, scale `s` (and full 2×2 block for affine). Cumulative parameters built with `cumsum`/`cumprod`; running-average smoothing acts on those parameter arrays (translation / rotation / scale) independently, then the cumulative tforms are rebuilt from the smoothed parameters. For `translation` mode the cumulative `[1,3]` / `[2,3]` entries are rounded to integer pixels so the warped stack is resampling-blur-free. Extended canvas computed by **corner projection** (transforming the four image corners through every cumulative tform and unioning the bounding box — a tighter canvas than the per-slice `imref2d` limits used by v1). Apply phase inlined (uses `imwarp(..., 'OutputView', refImgSize)` for image + service layers in both modes — different enough from v1's canvas-tile pattern that it wasn't worth forcing through the shared helpers). Allowed types `translation` / `rigid` / `similarity` / `affine`; ratio = `1 / imgDownsamplingFactorForAnalysis`. Persists state as a struct (`pairwiseTforms` / `cumulativeTforms` / decomposition arrays) in `obj.shiftsX` so it can replay; `SaveShiftsToFile` writes the same struct to `.coefXY` via `save('-struct', ...)`.
+- ✅ `AutomaticFeatureBasedHDD_Alignment.m` — streaming v1 feature-based. Builds the same `imageDatastore` + `io.loadImagesWrapper` chain as HDD drift. Phase 1: `parfor` over every file detects features with `utils.align.detectFeatures` and extracts descriptors via `extractFeatures` — only the descriptors + valid-point locations + dimensions are kept in memory, never the images. Phase 2: sequential pair-match (`matchFeatures`) + RANSAC fit (`estgeotform2d`) + cumulative legacy-`.T` composition via local `makeLegacyTform`. Phase 3 (apply): cropped uses slice-1 dimensions for `imref2d`; extended computes per-slice `affineOutputView` with `'CenterOutput'` boundary style, then unions into a single canvas. Apply loops run under `parfor` when `UseParallelComputing` is set. Each warped image is wrapped in `core.MibImage` and saved to `<InputDir>/HDD_OutputSubfolderName` via `core.MibImage.save`. BatchOpt-driven smoothing on stretch + shear via `utils.align.runningAverageSmoothPoints` (interactive figure-plot deferred). No in-memory dataset is modified — no backup, no `NewDataset` notify.
+- ⬜ `AutomaticFeatureBasedHDDV2_Alignment.m` — HDD-mode v2 feature-based (modern `affinetform2d` chain).
+- ✅ `AlignMedianSmoothTemplate_Alignment.m` (AMST) — intensity-based registration. Pulls the full 3-D image as `movingImg`, optionally downsamples by `imgWidthForAnalysis / Width`, builds the **template** via `medfilt3(movingImg, [1, 1, MedianSize], 'replicate')` (Z-axis median that compensates for local deformations), then registers each slice to its templated counterpart via `imregtform` (`'monomodal'` mode, optimizer parameters from `obj.automaticOptions.amst.{MaximumIterations, GradientMagnitudeTolerance, MinimumStepLength, MaximumStepLength, RelaxationFactor}`, `PyramidLevels` from `automaticOptions.amst.PyramidLevels`). Translation components scaled back to full resolution after the downsampled fit. **Cropped-only** (matches MIB2; extended raises an error). Allowed types `translation / rigid / similarity / affine` — `projective` and `nonreflectivesimilarity` are rejected / mapped (imregtform limitation). Pre-alignment expectation confirmed via `inputQuestDlg` ("AMST expects a pre-aligned stack — continue?"). Optional parfor (gated by `BatchOpt.UseParallelComputing`, limit from `obj.mibModel.cpuParallelLimitMax`). BatchOpt-driven running-average smoothing on stretch + shear via `utils.align.windv` (interactive figure-plot flow deferred). Applies via shared `applyCroppedMode` + `relocateAnnotations` + `saveTformsToFile` private helpers. Standard `backup('mibDataset', 1, …)` + `keepBackup=true` frame.
+- ✅ `alignDriftCorrectionHDD_Alignment.m` — streaming drift correction. Builds an `imageDatastore` over `HDD_InputDir` filtered by `HDD_InputFilenameExtension`, using `io.loadImagesWrapper` (MIB3 5-D layout `[H, W, Z=1, C, T=1]`) as the `ReadFcn` — works for all formats including AmiraMesh and BioFormats (`HDD_BioformatsReader` / `HDD_BioformatsIndex` honoured). Phase 1 walks the datastore pair by pair: FFT cross-correlation, periodic-boundary ambiguity guard, optional Sobel intensity-gradient prefilter, manual ROI (`Subarea = 'Manually specified'`) cropping. Pairwise shifts integrated by `refFrame`: `cumsum` for *Previous slice*, slice-1 FFT kept as reference for *First slice*, windowed-step accumulation + `windv` smoothing for *Relative to N*. Optional `utils.align.subtractRunningAverage` smoothing afterwards (interactive figure-plot flow deferred). Phase 2 re-reads each image, places it onto a padded canvas (size = original + abs(min) + max), wraps into `core.MibImage`, and saves to `<InputDir>/HDD_OutputSubfolderName` in the chosen format via `core.MibImage.save` (format short codes mapped to MIB descriptors). No in-memory dataset is modified, so no `backup` is taken and no `NewDataset` notify is fired — only the output directory is written. Cancelable progress + `parentFig` helper for batch-mode safety.
+- ⬜ dedicated `HDD_BioformatsReader_Callback.m` (currently inlined in `gui_Callbacks`).
+- ✅ `updateAutomaticOptions.m` — interactive settings dialog (port of MIB2's `updateAutomaticOptions`). Branches on the active `Algorithm`:
+  - **AMST** — one dialog with image-downsampling + 6 `imregconfig` optimizer parameters (`PyramidLevels`, `MaximumIterations`, `GradientMagnitudeTolerance`, `MinimumStepLength`, `MaximumStepLength`, `RelaxationFactor`). Includes `HelpUrl` link to the `regularstepgradientdescent` docs.
+  - **Feature-based (v1 + v2)** — one dialog per detector: image-downsampling + rotation-invariance flag (skipped for ORB which has no orientation) + 2-4 detector-specific parameters + 3 RANSAC parameters (`MaxNumTrials`, `Confidence`, `MaxDistance`). All 8 `detect*Features` detectors handled (SURF / SIFT / MSER / Harris / BRISK / FAST / MinEigen / ORB). MSER's `RegionAreaRange` accepted as a string and parsed via `str2num`.
+  - Native MIB3 widget types: numeric edits for numerics (no `num2str` round-trip), checkbox for rotationInvariance, returns native types via `inputUniversalDlg`.
+  - Returns `status` (1 = OK, 0 = cancel); writes back to `obj.automaticOptions` in place.
+- ✅ **Dialog wired into all four callers**: `previewFeaturesBtn_Callback`, `AutomaticFeatureBased_Alignment`, `AutomaticFeatureBasedV2_Alignment`, `AlignMedianSmoothTemplate_Alignment`. Algorithm files call it gated on `~useBatchMode && ~shiftsLoaded` so headless / replay paths still skip it. Each algorithm refreshes its downsampling parameter from the dialog before proceeding.
+- ✅ **Shared apply-mode helpers extracted to `@Alignment/private/`**: `applyCroppedMode.m`, `applyExtendedMode.m`, `assembleServiceCanvas.m`, `relocateAnnotations.m`, `saveTformsToFile.m`. Visible only to class methods (MATLAB class-folder private subdirectory rule), called without a package prefix. `saveTformsToFile` takes an optional `label` argument so each algorithm can identify itself in the progress message. `LandmarkMultiPoint_Alignment.m` and `AutomaticFeatureBased_Alignment.m` both now delegate to these helpers — ready for the v2 / HDD ports to reuse without further duplication.
+- Verification: feature-based v1 alignment of a microscopy stack with each detector type, cropped + extended; AMST on a noisy stack; HDD-mode drift correction on a directory of TIFFs.
 
 ---
 
@@ -433,22 +445,51 @@ After backup + in-place rewrite, the trailing `notify('NewDataset')` was trigger
 
 ## Current state summary
 
-- **All 16 alignment-related `.m` files (controller methods + `+utils/+align/` helpers) clean under `mcp__matlab__check_matlab_code`.**
-- Phase 1 done: controller skeleton, three-signature constructor, batch-mode dispatch, listeners, `gui_Callbacks` dispatcher, `continueBtn_Callback` algorithm dispatcher.
-- Phase 1.5 done: helpers and algorithm methods consume / emit MIB3 5-D `[h, w, d, c, t]` (or 3-D `[h, w, d]` for service layers) natively; no internal permute / squeeze round-trip; multi-channel images now align correctly through Drift correction / Single landmark / Three landmarks / Multi-point landmark.
-- Phase 2 in progress: Drift correction, Single landmark, Three landmark points, Landmarks (multi points) all done — only `LandmarkMultiPointColor_Alignment` remains.
-- Algorithm methods all use: `backup('mibDataset', 1, ...)` first, cancelable `core.PoolWaitbar`, `parentFig` helper for batch-mode safety, canvas-replace pattern with `dim_yxzct` / `slices` sync, pre-resized service-layer containers, `keepBackup=true` flag on the trailing `NewDataset` event.
-- Backup system extended: `core.MibBackup` accepts `'mibDataset'` snapshots; `models.MibModel.deepCopyDataset` (renamed from `imageDeepCopy`) returns a free-standing deep copy when called with `toId = []`; `backup('mibDataset', 1, opts)` + Ctrl+Z + toolbar redo now correctly round-trip the full dataset, with the `keepBackup` flag preventing `listener_newDataset` from clearing history.
-- `SaveShiftsToFile` / `loadShiftsCheck` round-trip wired for Drift correction, Single landmark, Multi-point landmark (numeric shifts → `.coefXY` and tform/rbMatrix → `.coefXY` respectively).
-- TwoStacks mode and all `BatchOpt.TwoStacks*` / `SecondDataset*` fields removed per requirement.
-- All `questdlg` → `inputQuestDlg`; `errordlg` / `try-catch` → `showErrorDialog`; `warndlg` / `msgbox` → `inputUniversalDlg(MsgBoxOnly)`.
-- `inputQuestDlg` button row auto-widths per label so long answers (e.g. *"Apply current values"*) are not clipped.
-- Ribbon button (`Dataset → Alignment`) wired.
-- Drift correction confirmed running end-to-end via BatchProcessing (no GUI). End-to-end runtime testing of the four Phase-1/2 algorithms via the GUI awaits the user-authored `mib/+views/AlignmentGUI.mlapp`.
+**Last updated: 2026-05-11**
 
-### Outstanding blockers / next steps
+### Algorithms ported (9 of 11)
 
-1. **User authors `mib/+views/AlignmentGUI.mlapp`** against the widget Tag contract above. This is the only blocker for full Phase 1 GUI verification (dropdowns / spinners / panels).
-2. **Phase 2** — `LandmarkMultiPointColor_Alignment` only (`ThreeLandmarks_Alignment`, `LandmarkMultiPoint_Alignment`, `utils.align.crossShiftStacks` ✅ done; Phase 1.5 multi-channel `crossShiftStack` ✅ done).
-3. **Phase 3** — feature-based + AMST + HDD-mode methods.
-4. **Spurious huge shifts in Drift correction** — one user run produced cumulative shifts of ~20 000 pixels (62 GB canvas allocation). Layout fix removes the layout-driven misindexing but the underlying FFT phase-correlation can still produce these on pathological data. Worth adding a sanity cap (e.g. clamp per-slice shifts to `max(width, height)/2`) and / or auto-clearing `obj.shiftsX/Y` at the top of `DriftCorrection_Alignment` so a stale Multi-point landmark run cannot bleed cell-array tforms into the numeric path.
+| # | Algorithm | In-memory | HDD-mode |
+|---|---|---|---|
+| 1 | Drift correction / Template matching | ✅ `DriftCorrection_Alignment` | ✅ `alignDriftCorrectionHDD_Alignment` |
+| 2 | Single landmark point | ✅ `SingleLandmark_Alignment` | (n/a) |
+| 3 | Three landmark points | ✅ `ThreeLandmarks_Alignment` | (n/a) |
+| 4 | Landmarks, multi points | ✅ `LandmarkMultiPoint_Alignment` | (n/a) |
+| 5 | Color channels, multi points | ✅ `LandmarkMultiPointColor_Alignment` | (n/a) |
+| 6 | Automatic feature-based | ✅ `AutomaticFeatureBased_Alignment` | ✅ `AutomaticFeatureBasedHDD_Alignment` |
+| 7 | Automatic feature-based v2 | ✅ `AutomaticFeatureBasedV2_Alignment` | ⬜ `AutomaticFeatureBasedHDDV2_Alignment` |
+| 8 | AMST: median-smoothed template | ✅ `AlignMedianSmoothTemplate_Alignment` | (n/a) |
+
+### Supporting infrastructure (all ✅)
+
+- **Controller skeleton** — three-signature constructor, batch-mode dispatch, listeners, `gui_Callbacks` dispatcher, `continueBtn_Callback` algorithm dispatcher.
+- **Backend helpers** in `mib/+utils/+align/` — `windv`, `runningAverageSmoothPoints`, `calcShifts`, `crossShiftStack`, `crossShiftStacks`, `subtractRunningAverage`, `detectFeatures`. All MIB3 5-D layout-native; cancel-aware via `core.PoolWaitbar`.
+- **Shared private helpers** in `@Alignment/private/` — `applyCroppedMode`, `applyExtendedMode`, `assembleServiceCanvas`, `relocateAnnotations`, `saveTformsToFile`. Used by Multi-point landmark, feature-based v1, AMST.
+- **Interactive settings dialog** — `updateAutomaticOptions.m` ports MIB2's branching dialog; covers AMST + all 8 detectors + RANSAC. Wired into preview + v1 + v2 + AMST (gated on `~useBatchMode && ~shiftsLoaded`).
+- **Feature preview** — `previewFeaturesBtn_Callback` renders matched + inlier views in a tagged figure.
+- **Undo system** — `core.MibBackup` accepts `'mibDataset'` snapshots; `models.MibModel.deepCopyDataset` returns free-standing deep copy when `toId = []`; `keepBackup=true` flag on `NewDataset` event prevents `listener_newDataset` from wiping the redo snapshot. Ctrl+Z + toolbar redo round-trip the full dataset.
+- **`SaveShiftsToFile` / `loadShiftsCheck`** — `.coefXY` round-trip wired for every algorithm that produces persistable transforms (numeric shifts for drift/single, tform+rbMatrix for landmark/feature-based v1/AMST, struct for v2).
+- **TwoStacks mode** removed entirely (BatchOpt fields, view widgets, dispatcher branch).
+- **Dialog modernisation** — `questdlg` → `inputQuestDlg` (auto-widths long button labels); `errordlg` + every `try/catch` → `showErrorDialog`; `warndlg` / `msgbox` → `inputUniversalDlg(MsgBoxOnly)`.
+- **Ribbon button** `Dataset → Alignment` wired.
+- **Static analysis**: every new / modified `.m` file clean under `mcp__matlab__check_matlab_code` (the only remaining note is an info-level `readFcn` broadcast on HDD feature-based — inherent to parfor + imageDatastore).
+
+### Consistent patterns across every algorithm method
+
+- `backup('mibDataset', 1, ...)` before any in-memory write (HDD variants skip — they write only to the output directory).
+- `parentFig` helper (view alive ? `obj.view.gui` : `obj.mibModel.mibGUI`) for batch-mode-safe dialogs.
+- Cancelable `core.PoolWaitbar` with `getCancelState()` polled at each phase boundary.
+- MIB3 5-D `[h, w, d, c, t]` layout natively — no internal permutes.
+- Canvas-replace pattern with `dim_yxzct` / `slices` sync + pre-resized service-layer containers for extended-mode writes.
+- `keepBackup=true` flag on the trailing `NewDataset` notify so undo history survives.
+
+### Remaining work
+
+| Item | Notes |
+|---|---|
+| ⬜ `AutomaticFeatureBasedHDDV2_Alignment.m` | HDD v2 feature-based — modern `affinetform2d` chain + corner-projection canvas + per-image read/warp/save. Will largely parallel the HDD v1 port. |
+| ⬜ Dedicated `HDD_BioformatsReader_Callback.m` | Currently inlined in `gui_Callbacks` (toggles `HDD_BioformatsIndex.Enable`); promote to a method file for symmetry with the other dedicated callbacks. |
+| ⬜ Interactive running-average smoothing dialogs | v1, v2, and AMST currently run BatchOpt-driven smoothing only — the MIB2 figure-plot + question-dialog flow is deferred. UI polish, not algorithm work. |
+| ⬜ `mib/+views/AlignmentGUI.mlapp` | User-authored against the widget Tag contract above. The only blocker for end-to-end GUI verification. |
+| ⬜ Spurious huge-shift defence in `DriftCorrection_Alignment` | Add a sanity cap (clamp per-slice shifts to `max(W, H) / 2`) and/or auto-clear `obj.shiftsX/Y` at the top of the method so a stale cell-array tform from a previous landmark / feature-based run cannot bleed into the numeric drift path. |
+| ⬜ End-to-end GUI verification | All 9 ported algorithms need a run-through once the `.mlapp` lands. Drift correction is already confirmed end-to-end via BatchProcessing (no GUI). |

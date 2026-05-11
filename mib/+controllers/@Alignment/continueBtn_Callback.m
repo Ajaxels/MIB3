@@ -89,8 +89,7 @@ parameters.maxY = obj.BatchOpt.maxY{1};
 switch obj.BatchOpt.Algorithm{1}
     case {'Drift correction', 'Template matching'}
         if obj.BatchOpt.HDD_Mode
-            notYetPorted(obj, 'HDD-mode drift / template matching');
-            return;
+            obj.alignDriftCorrectionHDD_Alignment(parameters);
         else
             obj.DriftCorrection_Alignment(parameters);
         end
@@ -105,16 +104,25 @@ switch obj.BatchOpt.Algorithm{1}
         obj.LandmarkMultiPoint_Alignment(parameters);
 
     case 'Color channels, multi points'
-        notYetPorted(obj, 'Color channels, multi points');
-        return;
+        obj.LandmarkMultiPointColor_Alignment(parameters);
 
-    case {'Automatic feature-based', 'Automatic feature-based v2'}
-        notYetPorted(obj, obj.BatchOpt.Algorithm{1});
-        return;
+    case 'Automatic feature-based'
+        if obj.BatchOpt.HDD_Mode
+            obj.AutomaticFeatureBasedHDD_Alignment(parameters);
+        else
+            obj.AutomaticFeatureBased_Alignment(parameters);
+        end
+
+    case 'Automatic feature-based v2'
+        if obj.BatchOpt.HDD_Mode
+            notYetPorted(obj, 'HDD-mode feature-based v2');
+            return;
+        else
+            obj.AutomaticFeatureBasedV2_Alignment(parameters);
+        end
 
     case 'AMST: median-smoothed template'
-        notYetPorted(obj, 'AMST: median-smoothed template');
-        return;
+        obj.AlignMedianSmoothTemplate_Alignment(parameters);
 
     otherwise
         utils.dlgs.showErrorDialog(parentFig, ...

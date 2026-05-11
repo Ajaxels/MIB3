@@ -1,0 +1,388 @@
+function AutomaticFeatureBased_Alignment(obj, parameters)
+% AUTOMATICFEATUREBASED_ALIGNMENT - Align a stack with automatically detected feature matches.
+%
+% Syntax:
+%   .. code-block:: matlab
+%
+%      obj.AutomaticFeatureBased_Alignment(parameters)
+%
+% Walks the stack slice by slice, detects features with the user-selected
+% detector (:func:`utils.align.detectFeatures`), extracts descriptors,
+% matches them, and fits a robust 2-D transform with ``estgeotform2d``
+% (MSAC inlier selection). Transforms are composed cumulatively so each
+% slice is aligned to slice 1's coordinate frame.
+%
+% Two apply modes (chosen via ``parameters.TransformationMode``):
+%
+% - ``'cropped'``  — original canvas preserved; each slice warped with
+%   ``imwarp(..., 'OutputView', imref2d([H, W]))`` and written back via
+%   :meth:`setData2D`.
+% - ``'extended'`` — canvas grows to fit the union of all warped slices;
+%   the image canvas is replaced atomically and service-layer containers
+%   are pre-resized before :meth:`setData4D`.
+%
+% Running-average smoothing of the per-slice scale + shear parameters is
+% applied when ``BatchOpt.SubtractRunningAverage`` is set; the smoothed
+% values are written back into ``tformMatrix{*}.T`` *before* the apply
+% phase. The interactive plot+question flow from MIB2 is deferred —
+% smoothing currently runs straight from the existing
+% ``BatchOpt.SubtractRunningAverage*`` fields (no GUI prompt).
+%
+% Cancellation: a :class:`core.PoolWaitbar` is constructed with
+% ``Cancelable = true`` whenever ``BatchOpt.showWaitbar`` is set; cancel
+% state is polled at each phase boundary and immediately before each
+% write. The ``automaticOptions`` settings dialog from MIB2 is currently
+% skipped — the algorithm runs with whatever defaults already exist in
+% ``obj.automaticOptions``.
+%
+% Input Arguments:
+%   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
+%     Reads ``TransformationType``, ``TransformationMode``, ``colorCh``,
+%     ``backgroundColor``, ``useBatchMode``, ``method``.
+
+% Updates
+%
+
+id = obj.mibModel.getActiveId();
+
+% Parent figure for any dialogs — ``obj.view`` is empty in batch mode
+if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
+    parentFig = obj.view.gui;
+else
+    parentFig = obj.mibModel.mibGUI;
+end
+
+% Resolve the feature detector type from the widget / BatchOpt
+parameters.detectPointsType = obj.BatchOpt.FeatureDetectorType{1};
+
+[Height, Width, ~, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
+if Depth < 2
+    utils.dlgs.showErrorDialog(parentFig, ...
+        'Automatic feature-based alignment requires at least 2 slices.', 'Alignment');
+    return;
+end
+
+% --- Backup the full MibDataset before any modification
+backupOpt.id = id;
+obj.mibModel.backup('mibDataset', 1, backupOpt);
+
+% --- Background fill for the image warp
+img5D = obj.mibModel.I{id}.image;
+optionsGetData = struct('blockModeSwitch', 0);
+if isnumeric(parameters.backgroundColor)
+    bgImage = double(parameters.backgroundColor);
+elseif strcmp(parameters.backgroundColor, 'black')
+    bgImage = 0;
+elseif strcmp(parameters.backgroundColor, 'white')
+    bgImage = double(img5D.maxInt);
+else    % 'mean'
+    firstSlice = cell2mat(obj.mibModel.getData2D('image', 1, [], parameters.colorCh, optionsGetData));
+    bgImage = mean(firstSlice(:));
+end
+
+% --- Downsampling ratio: match the size used by previewFeaturesBtn
+if obj.automaticOptions.imgWidthForAnalysis == 0
+    parameters.imgWidthForAnalysis = Width;
+else
+    parameters.imgWidthForAnalysis = obj.automaticOptions.imgWidthForAnalysis;
+end
+
+% --- Replay path: shifts loaded from .coefXY file
+shiftsLoaded = ~isempty(obj.shiftsX) && iscell(obj.shiftsX);
+if shiftsLoaded
+    tformMatrix = obj.shiftsX;
+    rbMatrix    = obj.shiftsY;
+else
+    tformMatrix = cell(Depth, 1);
+    rbMatrix    = cell(Depth, 1);
+end
+
+% --- Settings dialog (skipped in batch mode and on replay)
+if ~parameters.useBatchMode && ~shiftsLoaded
+    status = obj.updateAutomaticOptions();
+    if status == 0; return; end
+    if obj.automaticOptions.imgWidthForAnalysis == 0
+        parameters.imgWidthForAnalysis = Width;
+    else
+        parameters.imgWidthForAnalysis = obj.automaticOptions.imgWidthForAnalysis;
+    end
+end
+
+% --- Set up cancelable progress
+pwb = [];
+if obj.BatchOpt.showWaitbar
+    pwb = core.PoolWaitbar(Depth * 2, 'Detecting features & matching...', ...
+        parentFig, 'Alignment', true);
+end
+cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
+
+% --- Step 1: fit per-slice cumulative transforms (skipped when replayed)
+if ~shiftsLoaded
+    if ~isempty(pwb); pwb.updateText('Step 1/2: detecting & matching features...'); end
+    [tformMatrix, ok] = fitPerSliceFeatureTransforms(obj, id, Depth, Width, ...
+        parameters, tformMatrix, optionsGetData, pwb, parentFig);
+    if ~ok; return; end
+
+    % --- Optional running-average smoothing of stretch + shear
+    if obj.BatchOpt.SubtractRunningAverage
+        tformMatrix = smoothTformChain(tformMatrix, Depth, obj.BatchOpt);
+    end
+end
+
+% Verify we have at least one usable transform
+anyTform = any(~cellfun(@isempty, tformMatrix));
+if ~anyTform
+    utils.dlgs.showErrorDialog(parentFig, ...
+        'No transforms were produced — check feature detector settings.', ...
+        'Alignment');
+    return;
+end
+
+% --- Step 2: apply transforms
+refImgSize = imref2d([Height, Width]);
+if strcmp(parameters.TransformationMode, 'cropped')
+    if ~isempty(pwb); pwb.updateText('Step 2/2: warping (cropped)...'); end
+    applyCroppedMode(obj, id, Depth, tformMatrix, refImgSize, bgImage, pwb);
+    rbMatrix(:) = {refImgSize};
+    dxCanvas = 0;
+    dyCanvas = 0;
+else
+    if ~isempty(pwb); pwb.updateText('Step 2/2: warping (extended)...'); end
+    [dxCanvas, dyCanvas, rbMatrix] = applyExtendedMode(obj, id, Depth, ...
+        tformMatrix, rbMatrix, bgImage, pwb);
+    if isempty(dxCanvas); return; end
+end
+
+% --- Transform annotations
+if obj.mibModel.I{id}.annotations.getLabelsNumber() > 0
+    relocateAnnotations(obj, id, Depth, tformMatrix, rbMatrix, ...
+        strcmp(parameters.TransformationMode, 'cropped'), dxCanvas, dyCanvas);
+end
+
+% --- Bounding-box shift (extended mode only)
+if strcmp(parameters.TransformationMode, 'extended')
+    maxXshift = dxCanvas;
+    maxYshift = dyCanvas;
+    maxZshift = 0;
+    ds = obj.mibModel.I{id};
+    switch ds.orientation
+        case 3
+            maxXshift = maxXshift * ds.image.pixSize.x;
+            maxYshift = maxYshift * ds.image.pixSize.y;
+        case 2
+            maxZshift = maxXshift * ds.image.pixSize.z;
+            maxYshift = maxYshift * ds.image.pixSize.y;
+            maxXshift = 0;
+        case 1
+            maxZshift = maxXshift * ds.image.pixSize.z;
+            maxXshift = maxYshift * ds.image.pixSize.x;
+            maxYshift = 0;
+    end
+    obj.mibModel.I{id}.updateBoundingBox([], [maxXshift, maxYshift, maxZshift]);
+end
+
+% --- Persist transforms so subsequent runs / save-shifts pick them up
+obj.shiftsX = tformMatrix;
+obj.shiftsY = rbMatrix;
+
+% --- Save tforms / rbMatrix to file if requested
+if obj.BatchOpt.SaveShiftsToFile
+    saveTformsToFile(obj, id, parameters.useBatchMode, parentFig, 'feature-based alignment');
+end
+
+obj.mibModel.I{id}.image.updateActionLog(sprintf( ...
+    'Aligned using %s; type=%s, mode=%s, detector=%s, imgWidth=%d, rotation=%d', ...
+    parameters.method, parameters.TransformationType, parameters.TransformationMode, ...
+    parameters.detectPointsType, parameters.imgWidthForAnalysis, ...
+    1 - obj.automaticOptions.rotationInvariance));
+
+% keepBackup=true so the 'mibDataset' snapshot stored by backup() above is
+% not wiped by listener_newDataset.
+notify(obj.mibModel, 'NewDataset', core.ToggleEventData(struct('index', id, 'keepBackup', true)));
+notify(obj.mibModel, 'ShowImage');
+end
+
+% =============================================================================
+function [tformMatrix, ok] = fitPerSliceFeatureTransforms(obj, ~, Depth, Width, ...
+    parameters, tformMatrix, optionsGetData, pwb, parentFig)
+% Walk slices 2..Depth: detect features on the previous + current slice,
+% match descriptors, RANSAC-fit a 2-D transform with ``estgeotform2d``,
+% and compose with the previous slice's cumulative transform. The first
+% slice's reference image is kept across iterations to avoid re-detecting
+% it; only the new "distorted" slice is detected each pass.
+
+ok = false;
+ratio = parameters.imgWidthForAnalysis / Width;
+
+% Detect features on slice 1 (the reference)
+original = cell2mat(obj.mibModel.getData2D('image', 1, [], parameters.colorCh, optionsGetData));
+if ratio ~= 1; original = imresize(original, ratio, 'bicubic'); end
+ptsOriginal = utils.align.detectFeatures(original, parameters.detectPointsType, obj.automaticOptions);
+if isempty(ptsOriginal)
+    utils.dlgs.showErrorDialog(parentFig, ...
+        sprintf(['No features detected on slice 1 with "%s".\n\n' ...
+                'Adjust the detector settings and retry.'], parameters.detectPointsType), ...
+        'Alignment');
+    return;
+end
+if ~strcmp(parameters.detectPointsType, 'Oriented FAST and rotated BRIEF (ORB)')
+    [featuresOriginal, validPtsOriginal] = extractFeatures(original, ptsOriginal, ...
+        'Upright', obj.automaticOptions.rotationInvariance);
+else
+    [featuresOriginal, validPtsOriginal] = extractFeatures(original, ptsOriginal);
+end
+validPtsOriginal.Location = validPtsOriginal.Location / ratio;
+
+for layer = 2:Depth
+    if ~isempty(pwb)
+        if pwb.getCancelState(); return; end
+        pwb.increment();
+    end
+
+    distorted = cell2mat(obj.mibModel.getData2D('image', layer, [], parameters.colorCh, optionsGetData));
+    if ratio ~= 1; distorted = imresize(distorted, ratio, 'bicubic'); end
+
+    ptsDistorted = utils.align.detectFeatures(distorted, parameters.detectPointsType, obj.automaticOptions);
+    if isempty(ptsDistorted)
+        utils.dlgs.showErrorDialog(parentFig, ...
+            sprintf(['No features detected on slice %d with "%s".\n\n' ...
+                    'Adjust the detector settings and retry.'], ...
+                    layer, parameters.detectPointsType), 'Alignment');
+        return;
+    end
+
+    if ~strcmp(parameters.detectPointsType, 'Oriented FAST and rotated BRIEF (ORB)')
+        [featuresDistorted, validPtsDistorted] = extractFeatures(distorted, ptsDistorted, ...
+            'Upright', obj.automaticOptions.rotationInvariance);
+    else
+        [featuresDistorted, validPtsDistorted] = extractFeatures(distorted, ptsDistorted);
+    end
+    validPtsDistorted.Location = validPtsDistorted.Location / ratio;
+
+    indexPairs = matchFeatures(featuresOriginal, featuresDistorted);
+    if isempty(indexPairs)
+        utils.dlgs.showErrorDialog(parentFig, ...
+            sprintf('No matching descriptors between slice %d and %d. Adjust detector settings.', ...
+                    layer - 1, layer), 'Alignment');
+        return;
+    end
+    matchedOriginal  = validPtsOriginal(indexPairs(:, 1));
+    matchedDistorted = validPtsDistorted(indexPairs(:, 2));
+
+    if size(matchedOriginal, 1) < 3
+        utils.dlgs.showErrorDialog(parentFig, ...
+            sprintf(['Only %d matched points between slice %d and %d — at least 3 are required.\n\n' ...
+                    'Adjust feature-detector settings to produce more points.'], ...
+                    size(matchedOriginal, 1), layer - 1, layer), 'Alignment');
+        return;
+    end
+
+    try
+        [tform, inlierIdx] = estgeotform2d(matchedDistorted, matchedOriginal, ...
+            parameters.TransformationType, ...
+            'MaxNumTrials', obj.automaticOptions.estGeomTransform.MaxNumTrials, ...
+            'Confidence',   obj.automaticOptions.estGeomTransform.Confidence, ...
+            'MaxDistance',  obj.automaticOptions.estGeomTransform.MaxDistance);
+    catch ME
+        utils.dlgs.showErrorDialog(parentFig, ME, ...
+            sprintf('estgeotform2d failed on slice %d', layer));
+        return;
+    end
+
+    % Wrap the rigid2d / affine2d / projective2d returned by estgeotform2d
+    % into the legacy ``.T`` form so we can compose cumulatively.
+    tformLegacy = makeLegacyTform(tform);
+
+    % Compose with the previously broadcast transform
+    if isempty(tformMatrix{layer})
+        tformMatrix(layer:end) = {tformLegacy};
+    else
+        if isprop(tformLegacy, 'T') && isprop(tformMatrix{layer}, 'T')
+            tformLegacy.T = tformLegacy.T * tformMatrix{layer}.T;
+        end
+        tformMatrix(layer:end) = {tformLegacy};
+    end
+
+    % The distorted slice becomes the new "original" for the next pass
+    featuresOriginal = featuresDistorted;
+    validPtsOriginal = validPtsDistorted;
+    % Quieten unused-output lint
+    matchedOriginal = matchedOriginal(inlierIdx, :); %#ok<NASGU>
+end
+ok = true;
+end
+
+% =============================================================================
+function tformLegacy = makeLegacyTform(tform)
+% ESTGEOTFORM2D returns the new premultiply types (``rigidtform2d`` /
+% ``simtform2d`` / ``affinetform2d`` / ``projtform2d``) whose ``.A``
+% property holds a 3x3 row-major matrix. Convert to the legacy ``.T``
+% (transpose-of-A) form used by the rest of the alignment pipeline so
+% cumulative ``t.T = t.T * prev.T`` composition keeps working.
+
+if isprop(tform, 'T')
+    tformLegacy = tform;
+    return;
+end
+
+if isa(tform, 'rigidtform2d') || isa(tform, 'simtform2d')
+    tformLegacy = affine2d(tform.A');
+elseif isa(tform, 'affinetform2d')
+    tformLegacy = affine2d(tform.A');
+elseif isa(tform, 'projtform2d')
+    tformLegacy = projective2d(tform.A');
+else
+    % Fall back: try to expose .A → affine2d transpose
+    tformLegacy = affine2d(tform.A');
+end
+end
+
+% =============================================================================
+function tformMatrix = smoothTformChain(tformMatrix, Depth, BatchOpt)
+% Apply running-average smoothing to the cumulative tform chain. Reads
+% the BatchOpt knobs set by the GUI: ``SubtractRunningAverageStep`` and
+% the per-channel fix flags + exclude-peak thresholds.
+
+vec_length = numel(tformMatrix);
+hasTform = false(vec_length, 1);
+for k = 2:vec_length
+    hasTform(k) = ~isempty(tformMatrix{k}) && isprop(tformMatrix{k}, 'T');
+end
+if ~any(hasTform); return; end
+
+x_stretch = arrayfun(@(k) tformMatrix{k}.T(1,1), 2:vec_length);
+y_stretch = arrayfun(@(k) tformMatrix{k}.T(2,2), 2:vec_length);
+x_shear   = arrayfun(@(k) tformMatrix{k}.T(2,1), 2:vec_length);
+y_shear   = arrayfun(@(k) tformMatrix{k}.T(1,2), 2:vec_length);
+
+halfwidth = BatchOpt.SubtractRunningAverageStep{1};
+if halfwidth > floor(Depth/2 - 1)
+    halfwidth = max(1, floor(Depth/2 - 1));
+end
+excludeStretchPeaks = BatchOpt.SubtractRunningAverageExcludeStretchPeaks{1};
+excludeShearPeaks   = BatchOpt.SubtractRunningAverageExcludeShearPeaks{1};
+
+if BatchOpt.SubtractRunningAverageFixStretch
+    x_stretch = utils.align.runningAverageSmoothPoints(x_stretch, halfwidth, excludeStretchPeaks) + 1;
+    y_stretch = utils.align.runningAverageSmoothPoints(y_stretch, halfwidth, excludeStretchPeaks) + 1;
+end
+if BatchOpt.SubtractRunningAverageFixShear
+    x_shear = utils.align.runningAverageSmoothPoints(x_shear, halfwidth, excludeShearPeaks);
+    y_shear = utils.align.runningAverageSmoothPoints(y_shear, halfwidth, excludeShearPeaks);
+end
+
+for k = 2:vec_length
+    if ~hasTform(k); continue; end
+    tformMatrix{k}.T(1,1) = x_stretch(k - 1);
+    tformMatrix{k}.T(2,2) = y_stretch(k - 1);
+    tformMatrix{k}.T(2,1) = x_shear(k - 1);
+    tformMatrix{k}.T(1,2) = y_shear(k - 1);
+end
+end
+
+% =============================================================================
+function safeDeleteWaitbar(pwb)
+if ~isempty(pwb) && isvalid(pwb)
+    pwb.deletePoolWaitbar();
+end
+end
