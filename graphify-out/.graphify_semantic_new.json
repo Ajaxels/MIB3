@@ -1,0 +1,1711 @@
+{
+  "nodes": [
+    {
+      "id": "mib3_entry",
+      "label": "mib3.m (entry point)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "controllers_package",
+      "label": "+controllers package",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "core_package",
+      "label": "+core package",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "io_package",
+      "label": "+io package",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "models_package",
+      "label": "+models package",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "utils_package",
+      "label": "+utils package",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "views_package",
+      "label": "+views package",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibController",
+      "label": "MibController (main UI controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibModel",
+      "label": "MibModel (application state)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibView",
+      "label": "MibView (main app window)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibDataset",
+      "label": "MibDataset (open dataset container)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibImage",
+      "label": "MibImage (pixel data layer)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibLabels",
+      "label": "MibLabels (segmentation labels)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibLabels63",
+      "label": "MibLabels63 (63-material labels variant)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibUndo",
+      "label": "MibUndo (undo/backup history)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "Annotations",
+      "label": "Annotations (point annotations)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "Lines3D",
+      "label": "Lines3D (3D lines/skeletons)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibIconCache",
+      "label": "MibIconCache (icon caching)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ChildView",
+      "label": "ChildView (base class for child dialogs)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ToggleEventData",
+      "label": "ToggleEventData (event data wrapper)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ExtensionRegistryLoad",
+      "label": "ExtensionRegistryLoad (extension-to-loader map)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "LoaderFactory",
+      "label": "LoaderFactory (I/O factory)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "BaseImageLoader",
+      "label": "BaseImageLoader (abstract loader base)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "AmiraMeshLoader",
+      "label": "AmiraMeshLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "BioFormatsStdLoader",
+      "label": "BioFormatsStdLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "HDF5HeaderLoader",
+      "label": "HDF5HeaderLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "HDF5NoHeaderLoader",
+      "label": "HDF5NoHeaderLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ImodLoader",
+      "label": "ImodLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ImreadLoader",
+      "label": "ImreadLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibImgLoader",
+      "label": "MibImgLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "NrrdLoader",
+      "label": "NrrdLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "VideoReaderLoader",
+      "label": "VideoReaderLoader",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibRibbon",
+      "label": "MibRibbon (ribbon toolbar controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibSegmentation",
+      "label": "MibSegmentation (segmentation tool controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibSelection",
+      "label": "MibSelection (selection/LUT controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibRoi",
+      "label": "MibRoi (ROI controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibDirContents",
+      "label": "MibDirContents (directory browser controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibActiveDataset",
+      "label": "MibActiveDataset (active dataset/buffer selector)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibQuickAccessBar",
+      "label": "MibQuickAccessBar (quick access toolbar)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "MibStatusBar",
+      "label": "MibStatusBar (status bar controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "Preferences",
+      "label": "Preferences (preferences dialog controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "WelcomeTips",
+      "label": "WelcomeTips (welcome/tips dialog controller)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "views_components",
+      "label": "+views/+components (.mlapp panel components)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ActiveDataset_mlapp",
+      "label": "ActiveDataset.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "DirectoryContents_mlapp",
+      "label": "DirectoryContents.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "ImageView_mlapp",
+      "label": "ImageView.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "PanelComponent_mlapp",
+      "label": "PanelComponent.mlapp (base panel)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "Roi_mlapp",
+      "label": "Roi.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "Segmentation_mlapp",
+      "label": "Segmentation.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "SelectionViewSettings_mlapp",
+      "label": "SelectionViewSettings.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "utils_dlgs",
+      "label": "+utils/+dlgs (dialog utilities)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "utils_defaults",
+      "label": "+utils/+defaults (default generators)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "utils_deepmib",
+      "label": "+utils/+deepmib (DeepMIB utilities)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "generatePreferences",
+      "label": "generatePreferences.m",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "generateKeyShortcuts",
+      "label": "generateKeyShortcuts.m",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "generateLUT",
+      "label": "generateLUT.m",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "generateSessionSettings",
+      "label": "generateSessionSettings.m",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "initializeImgInfo",
+      "label": "initializeImgInfo.m",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "initializePixSize",
+      "label": "initializePixSize.m",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "mib3_mat",
+      "label": "mib3.mat (user preferences file)",
+      "file_type": "document",
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null
+    },
+    {
+      "id": "mib3_prefs_override_mat",
+      "label": "mib3_prefs_override.mat (global config override)",
+      "file_type": "document",
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null
+    },
+    {
+      "id": "prefs_override_mechanism",
+      "label": "Preferences override mechanism (fallback config on startup)",
+      "file_type": "document",
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null
+    },
+    {
+      "id": "AmiraMesh_subpkg",
+      "label": "+io/+AmiraMesh (Amira mesh utilities)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "BioFormats_subpkg",
+      "label": "+io/+BioFormats (BioFormats utilities)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "loaders_subpkg",
+      "label": "+io/+loaders (concrete loader classes)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "PreferencesGUI_mlapp",
+      "label": "PreferencesGUI.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "AmiraImportGUI_mlapp",
+      "label": "AmiraImportGUI.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "SelectLociSeriesGUI_mlapp",
+      "label": "SelectLociSeriesGUI.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "SelectHDFSeriesGUI_mlapp",
+      "label": "SelectHDFSeriesGUI.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "TipsAppGUI_mlapp",
+      "label": "TipsAppGUI.mlapp",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "factory_pattern",
+      "label": "Factory pattern for I/O loaders (ExtensionRegistry -> LoaderFactory -> loaders)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "mvc_pattern",
+      "label": "MVC architecture (MibModel / MibController / MibView)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "event_driven_design",
+      "label": "Event-driven design (listeners on MibModel events)",
+      "file_type": "document",
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "project_structure_snapshot",
+      "label": "Project structure snapshot for mib/",
+      "file_type": "document",
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "excluded_folders_filter",
+      "label": "Excluded folders filter (external, assets, jars, plugins, guide)",
+      "file_type": "document",
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null
+    },
+    {
+      "id": "generated_structure_report",
+      "label": "Generated structure report",
+      "file_type": "document",
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "mib3_entry",
+      "target": "MibModel",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mib3_entry",
+      "target": "MibController",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibModel",
+      "target": "models_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibView",
+      "target": "views_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDataset",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibImage",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibLabels",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibLabels63",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibUndo",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Annotations",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Lines3D",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibModel",
+      "target": "MibDataset",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDataset",
+      "target": "MibImage",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDataset",
+      "target": "MibLabels",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDataset",
+      "target": "Annotations",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDataset",
+      "target": "Lines3D",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibLabels63",
+      "target": "MibLabels",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibModel",
+      "target": "MibUndo",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibRibbon",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibSegmentation",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibDirContents",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibActiveDataset",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibRoi",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibSelection",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibStatusBar",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibQuickAccessBar",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibView",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "MibModel",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibRibbon",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibSegmentation",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibSelection",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibRoi",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDirContents",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibActiveDataset",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibQuickAccessBar",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibStatusBar",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Preferences",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "WelcomeTips",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibView",
+      "target": "views_components",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "ActiveDataset_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "DirectoryContents_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "ImageView_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "PanelComponent_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "Roi_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "Segmentation_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_components",
+      "target": "SelectionViewSettings_mlapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibActiveDataset",
+      "target": "ActiveDataset_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibDirContents",
+      "target": "DirectoryContents_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibSegmentation",
+      "target": "Segmentation_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibRoi",
+      "target": "Roi_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibSelection",
+      "target": "SelectionViewSettings_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ExtensionRegistryLoad",
+      "target": "LoaderFactory",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "LoaderFactory",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "factory_pattern",
+      "target": "ExtensionRegistryLoad",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "factory_pattern",
+      "target": "LoaderFactory",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "AmiraMeshLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "BioFormatsStdLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "HDF5HeaderLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "HDF5NoHeaderLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ImodLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ImreadLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibImgLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "NrrdLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "VideoReaderLoader",
+      "target": "BaseImageLoader",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "AmiraMeshLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "BioFormatsStdLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "HDF5HeaderLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "HDF5NoHeaderLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ImodLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ImreadLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibImgLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "NrrdLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "VideoReaderLoader",
+      "target": "loaders_subpkg",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "AmiraMeshLoader",
+      "target": "AmiraMesh_subpkg",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "BioFormatsStdLoader",
+      "target": "BioFormats_subpkg",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibModel",
+      "target": "LoaderFactory",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "generatePreferences",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "generateKeyShortcuts",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "generateLUT",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "generateSessionSettings",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "initializeImgInfo",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "initializePixSize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_defaults",
+      "target": "utils_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_dlgs",
+      "target": "utils_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_deepmib",
+      "target": "utils_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibModel",
+      "target": "utils_defaults",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibController",
+      "target": "utils_dlgs",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Preferences",
+      "target": "generatePreferences",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "Preferences",
+      "target": "PreferencesGUI_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "WelcomeTips",
+      "target": "TipsAppGUI_mlapp",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "prefs_override_mechanism",
+      "target": "mib3_prefs_override_mat",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "prefs_override_mechanism",
+      "target": "mib3_mat",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mib3_prefs_override_mat",
+      "target": "mib3_mat",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "generatePreferences",
+      "target": "mib3_mat",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "mib\\mib3_prefs_override.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mvc_pattern",
+      "target": "MibModel",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mvc_pattern",
+      "target": "MibController",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "mvc_pattern",
+      "target": "MibView",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "event_driven_design",
+      "target": "MibModel",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "event_driven_design",
+      "target": "MibController",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ToggleEventData",
+      "target": "event_driven_design",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ChildView",
+      "target": "views_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "MibIconCache",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ToggleEventData",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ExtensionRegistryLoad",
+      "target": "io_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "LoaderFactory",
+      "target": "io_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "loaders_subpkg",
+      "target": "io_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "AmiraMesh_subpkg",
+      "target": "io_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "BioFormats_subpkg",
+      "target": "io_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\mib_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "generated_structure_report",
+      "target": "project_structure_snapshot",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "excluded_folders_filter",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "controllers_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "core_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "io_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "models_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "utils_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "project_structure_snapshot",
+      "target": "views_package",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "mib\\project_structure.txt",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,23 @@
+# .graphifyignore
+# Exclude directories - only MATLAB code in mib/ should be indexed
+.buildtool/
+.claude/
+.git/
+.github/
+deployed/
+development/
+docs/
+docs_api/
+resources/
+mib/external/
+mib/jars/
+temp/
+
+# Exclude non-MATLAB file types
+*.mlapp
+*.md
+*.png
+*.jpg
+*.tif
+*.html
+*.json
