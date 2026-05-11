@@ -55,7 +55,7 @@ tic
 % ATTENTION! it is important to have the version number between "ver." and "/" 
 % Release syntax example: "ver. 2025.11 / 04.11.2025"
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2026.04 / 17.04.2025 (preview)';  
+mibVersion = 'ver. 2026.05 / 11.05.2025 (preview)';  
 
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs 
 % WHEN COMPILING
@@ -74,6 +74,36 @@ if isdeployed()
     s = settings;
     % Make sure that documents are docked in the compiled application
     s.matlab.ui.figure.DockFigureInDeployment.TemporaryValue = true;
+end
+
+if false
+    % Forces MATLAB Compiler to include dynamically-referenced views.
+    % This function is NEVER called at runtime.
+    views.DisplayAdjustGUI; %#ok<*UNRCH>
+    views.AlignmentGUI;
+    views.AmiraImportGUI;
+    views.AnnotationsGUI;
+    views.BatchProcessingGUI;
+    views.BoundingBoxGUI;
+    views.CropDatasetGUI;
+    views.CropObjectsGUI;
+    views.DisplayAdjustGUI;
+    views.Lines3dDialog;
+    views.MeasureToolGUI;
+    views.MibDeepActivationsGUI;
+    views.MibDeepAugmentSettingsGUI;
+    views.MibDeepGUI;
+    views.PreferencesGUI;
+    views.QuantificationGUI;
+    views.QuantificationPropertiesGUI;
+    views.ResampleDatasetGUI;
+    views.SelectHDFSeriesGUI;
+    views.SelectLociSeriesGUI;
+    views.SelectModelTypeGUI;
+    views.SnapshotGUI;
+    views.TipsAppGUI;
+    views.VolRenAppGUI;
+    views.VolRenAppViewerGUI;
 end
 
 mibPath = utils.getInstallationPath('mib3');
