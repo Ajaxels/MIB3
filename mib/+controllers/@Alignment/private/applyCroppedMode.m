@@ -29,10 +29,17 @@ function applyCroppedMode(obj, id, depth, tformMatrix, refImgSize, bgImage, pwb)
 optionsGetData = struct('blockModeSwitch', 0);
 isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
 
+if ~isempty(pwb)
+    pwbIncrement = max([1 floor(depth/10)]);
+    pwb.updateMaxNumberOfIterations(depth);
+    pwb.setCurrentIteration(0);
+    pwb.setIncrement(pwbIncrement);
+end
+
 for layer = 2:depth
     if ~isempty(pwb)
-        if pwb.getCancelState(); return; end
-        pwb.increment();
+        %if pwb.getCancelState(); return; end
+        if mod(layer, pwbIncrement)==0; pwb.increment(); end
     end
     if isempty(tformMatrix{layer}); continue; end
 

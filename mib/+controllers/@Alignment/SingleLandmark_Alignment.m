@@ -61,7 +61,8 @@ pwb = [];
 if obj.BatchOpt.showWaitbar
     pwb = core.PoolWaitbar(depth, 'Computing single-landmark shifts...', ...
         parentFig, 'Alignment', true);
-    pwb.setIncrement(floor(depth/10));
+    stepIncrement = floor(depth/10);
+    pwb.setIncrement(stepIncrement);
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
@@ -78,7 +79,7 @@ if ~shiftsLoaded
         for layer = 2:depth
             if ~isempty(pwb)
                 if pwb.getCancelState(); return; end
-                if mod(layer, 10) == 0; pwb.increment(); end
+                if mod(layer, stepIncrement) == 0; pwb.increment(); end
             end
             if isempty(prevStats)
                 prevSel = cell2mat(obj.mibModel.getData2D('selection', layer-1, [], NaN, optionsGetData));
@@ -103,7 +104,7 @@ if ~shiftsLoaded
         for layer = 2:depth
             if ~isempty(pwb)
                 if pwb.getCancelState(); return; end
-                if mod(layer, 10) == 0; pwb.increment(); end
+                if mod(layer, stepIncrement) == 0; pwb.increment(); end
             end
             if isempty(prevPos)
                 [~, ~, prevPos] = obj.mibModel.I{id}.getSliceLabels(layer-1);   % [zxyt]

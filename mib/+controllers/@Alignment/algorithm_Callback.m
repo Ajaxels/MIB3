@@ -25,22 +25,18 @@ for k = 1:numel(optionalTags)
         h.(optionalTags{k}).Enable = 'off';
     end
 end
-if isfield(h, 'Subarea');  h.Subarea.Enable = 'on';  end
-if isfield(h, 'previewFeaturesBtn'); h.previewFeaturesBtn.Text = 'Preview'; end
+h.Subarea.Enable = 'on';
 
-hddModeValue = false;
-if isfield(h, 'HDD_Mode')
-    hddModeValue = h.HDD_Mode.Value;
-    h.HDD_Mode.Enable = 'off';
-    h.HDD_Mode.Value = false;
-end
+hddModeValue = h.HDD_Mode.Value;
+h.HDD_Mode.Enable = 'off';
+h.HDD_Mode.Value = false;
 
 helpText = '';
 switch methodSelected
     case 'Drift correction'
         helpText = 'Use Drift correction for small shifts between comparably sized images.';
         enableWidgets(h, {'ColorChannel','IntensityGradient','CorrelateWith','HDD_Mode'});
-        if isfield(h, 'HDD_Mode'); h.HDD_Mode.Value = hddModeValue; end
+        h.HDD_Mode.Value = hddModeValue;
 
     case 'Template matching'
         helpText = 'Use Template matching when one stack is smaller than the other.';
@@ -50,76 +46,63 @@ switch methodSelected
         helpText = 'Use automatic feature detection to align slices.';
         enableWidgets(h, {'TransformationType','TransformationMode','FeatureDetectorType', ...
             'previewFeaturesBtn','ColorChannel','HDD_Mode','UseParallelComputing'});
-        if isfield(h, 'HDD_Mode'); h.HDD_Mode.Value = hddModeValue; end
-        if isfield(h, 'TransformationType')
-            if strcmp(methodSelected, 'Automatic feature-based')
-                allowed = {'similarity', 'affine', 'projective'};
-            else
-                allowed = {'translation', 'rigid', 'similarity', 'affine'};
-            end
-            h.TransformationType.Items = allowed;
-            h.TransformationType.Value = allowed{1};
-            obj.BatchOpt.TransformationType{2} = allowed;
-            obj.BatchOpt.TransformationType{1} = allowed{1};
+        h.HDD_Mode.Value = hddModeValue;
+
+        if strcmp(methodSelected, 'Automatic feature-based')
+            allowed = {'similarity', 'affine', 'projective'};
+        else
+            allowed = {'translation', 'rigid', 'similarity', 'affine'};
         end
+        h.TransformationType.Items = allowed;
+        h.TransformationType.Value = allowed{1};
+        obj.BatchOpt.TransformationType{2} = allowed;
+        obj.BatchOpt.TransformationType{1} = allowed{1};
 
     case 'AMST: median-smoothed template'
-        helpText = ['Align dataset to a Z-median-smoothed version of itself, compensating ' ...
-            'for local deformations. The dataset must be pre-aligned with Drift correction.'];
-        enableWidgets(h, {'TransformationType','previewFeaturesBtn','ColorChannel', ...
-            'MedianSize','UseParallelComputing'});
-        if isfield(h, 'TransformationType')
-            allowed = {'similarity', 'affine', 'projective'};
-            h.TransformationType.Items = allowed;
-            h.TransformationType.Value = 'affine';
-            obj.BatchOpt.TransformationType{2} = allowed;
-            obj.BatchOpt.TransformationType{1} = 'affine';
-        end
-        if isfield(h, 'TransformationMode')
-            h.TransformationMode.Value = 'cropped';
-            obj.BatchOpt.TransformationMode{1} = 'cropped';
-        end
-        if isfield(h, 'previewFeaturesBtn'); h.previewFeaturesBtn.Text = 'Settings'; end
-        if isfield(h, 'Subarea');  h.Subarea.Enable = 'off'; end
+        helpText = sprintf(['Align dataset to a Z-median-smoothed version of itself, compensating ' ...
+            'for local deformations.\nThe dataset must be pre-aligned with Drift correction.']);
+        enableWidgets(h, {'TransformationType','previewFeaturesBtn','ColorChannel', 'MedianSize','UseParallelComputing'});
+
+        allowed = {'similarity', 'affine', 'projective'};
+        h.TransformationType.Items = allowed;
+        h.TransformationType.Value = 'affine';
+        obj.BatchOpt.TransformationType{2} = allowed;
+        obj.BatchOpt.TransformationType{1} = 'affine';
+
+        h.TransformationMode.Value = 'cropped';
+        obj.BatchOpt.TransformationMode{1} = 'cropped';
+        h.Subarea.Enable = 'off';
 
     case 'Single landmark point'
-        helpText = ['Use the Brush or Annotation tool to mark two corresponding spots on ' ...
-            'consecutive slices. The dataset is translated to align the marked spots.'];
+        helpText = sprintf(['Use the Brush or Annotation tool to mark two corresponding spots on ' ...
+            'consecutive slices.\nThe dataset is translated to align the marked spots.']);
 
     case 'Three landmark points'
-        helpText = ['Use the Brush tool to mark three corresponding spots on consecutive ' ...
+        helpText = sprintf(['Use the Brush tool to mark three corresponding spots on consecutive ' ...
             'slices. The dataset is transformed to align the marked spots. ' ...
-            'The Landmark mode is recommended instead.'];
+            '\n\nThe Landmark mode is recommended instead.']);
 
     case 'Landmarks, multi points'
-        helpText = ['Use annotations or selection-with-brush to mark corresponding spots on ' ...
-            'consecutive slices. The dataset is transformed to align the marked areas.'];
+        helpText = sprintf(['Use annotation name to mark corresponding points or selection-with-brush to mark corresponding spots on ' ...
+            'consecutive slices.\nThe dataset is transformed to align the marked areas.']);
         enableWidgets(h, {'TransformationType','TransformationMode'});
-        if isfield(h, 'TransformationType')
-            allowed = {'non reflective similarity', 'similarity', 'affine', 'projective'};
-            h.TransformationType.Items = allowed;
-            obj.BatchOpt.TransformationType{2} = allowed;
-        end
+        allowed = {'non reflective similarity', 'similarity', 'affine', 'projective'};
+        h.TransformationType.Items = allowed;
+        obj.BatchOpt.TransformationType{2} = allowed;
 
     case 'Color channels, multi points'
-        helpText = ['Select the colour channel to move and use annotations to identify ' ...
-            'corresponding spots: text = point id, value = colour channel id.'];
+        helpText = sprintf(['Select the colour channel to move and use annotations to identify ' ...
+            'corresponding spots:\ntext = point id\nvalue = colour channel id.']);
         enableWidgets(h, {'TransformationType','TransformationMode','ColorChannel'});
-        if isfield(h, 'TransformationType')
-            allowed = {'non reflective similarity', 'similarity', 'affine', 'projective'};
-            h.TransformationType.Items = allowed;
-            obj.BatchOpt.TransformationType{2} = allowed;
-        end
-        if isfield(h, 'TransformationMode')
-            h.TransformationMode.Value = 'cropped';
-            obj.BatchOpt.TransformationMode{1} = 'cropped';
-        end
+        allowed = {'non reflective similarity', 'similarity', 'affine', 'projective'};
+        h.TransformationType.Items = allowed;
+        obj.BatchOpt.TransformationType{2} = allowed;
+        h.TransformationMode.Value = 'cropped';
+        obj.BatchOpt.TransformationMode{1} = 'cropped';
 end
 
-if isfield(h, 'landmarkHelpText')
-    h.landmarkHelpText.Text = helpText;
-    h.landmarkHelpText.Tooltip = helpText;
-end
+h.landmarkHelpText.Text = helpText;
+h.landmarkHelpText.Tooltip = helpText;
 
 end
 

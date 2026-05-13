@@ -365,6 +365,37 @@ classdef PoolWaitbar < handle
         end
 
         % ----------------------------------------------------------
+        function updateIndeterminateMode(obj, indeterminateMode)
+            % UPDATEINDETETRMINATEMODE -  update the indeterminate mode of
+            % the progress bar
+            %
+            % Syntax:
+            %   function updateIndeterminateMode(obj)
+            %   function updateIndeterminateMode(obj, indeterminateMode)
+            %
+            % Input Arguments:
+            %   - **indeterminateMode** — logical, indeterminate switch, when ``true`` show
+            %     the progress bar using indeterminate style. Default = true
+            %
+            % Output Arguments:
+            %   (none)
+            %
+            % Usage:
+            %   **Example 1**
+            %
+            %   .. code-block:: matlab
+            %
+            %     pwb.updateIndeterminateMode(true); % enable the indeterminate mode
+            %     pwb.updateIndeterminateMode(false); % disable the indeterminate mode
+            %
+            if nargin < 2; indeterminateMode = true; end
+
+            if isvalid(obj.ClientHandle)
+                obj.ClientHandle.Indeterminate = indeterminateMode;
+            end
+        end
+
+        % ----------------------------------------------------------
         function text = getText(obj)
             % GETTEXT - Return the current message string from the uiprogressdlg.
             %

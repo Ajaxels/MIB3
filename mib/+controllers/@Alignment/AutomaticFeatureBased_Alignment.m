@@ -55,7 +55,7 @@ end
 % Resolve the feature detector type from the widget / BatchOpt
 parameters.detectPointsType = obj.BatchOpt.FeatureDetectorType{1};
 
-[Height, Width, ~, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
+[Height, Width, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
 if Depth < 2
     utils.dlgs.showErrorDialog(parentFig, ...
         'Automatic feature-based alignment requires at least 2 slices.', 'Alignment');
@@ -139,6 +139,12 @@ if ~anyTform
 end
 
 % --- Step 2: apply transforms
+if ~isempty(pwb)
+    if pwb.getCancelState(); return; end
+    pwb.updateText('Step 2/2: warping...'); 
+    %pwb.updateIndeterminateMode(true);
+end
+
 refImgSize = imref2d([Height, Width]);
 if strcmp(parameters.TransformationMode, 'cropped')
     if ~isempty(pwb); pwb.updateText('Step 2/2: warping (cropped)...'); end
@@ -233,10 +239,18 @@ else
 end
 validPtsOriginal.Location = validPtsOriginal.Location / ratio;
 
+% update progress bar
+if ~isempty(pwb)
+    stepIncrement = max([1 floor(Depth/10)]);
+    pwb.updateMaxNumberOfIterations(Depth);
+    pwb.setCurrentIteration(0);
+    pwb.setIncrement(stepIncrement);
+end
+
 for layer = 2:Depth
     if ~isempty(pwb)
         if pwb.getCancelState(); return; end
-        pwb.increment();
+        if mod(layer, stepIncrement)==0; pwb.increment(); end
     end
 
     distorted = cell2mat(obj.mibModel.getData2D('image', layer, [], parameters.colorCh, optionsGetData));

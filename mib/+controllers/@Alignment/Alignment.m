@@ -324,14 +324,13 @@ classdef Alignment < handle
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, ...
                     'Alignment does not support 5D datasets', {''}, ...
-                    {'Use a 4D (XYZC) dataset and try again.'}, 'Error', dlgOpt);
+                    {'Use a 4D (YXZC) dataset and try again.'}, 'Error', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end
 
             getDataOpt.blockModeSwitch = 0;
-            [height, width, depth, colors] = ...
-                obj.mibModel.I{id}.getDatasetDimensions('image', 3, getDataOpt);
+            [height, width, depth, colors] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, getDataOpt);
             fn = obj.mibModel.I{id}.image.filename;
             [obj.pathstr, name, ext] = fileparts(fn);
 
@@ -342,36 +341,22 @@ classdef Alignment < handle
             obj.pixSize = struct();
 
             h = obj.view.handles;
-            if isfield(h, 'existingFnText1')
-                h.existingFnText1.Text    = obj.pathstr;
-                h.existingFnText1.Tooltip = fn;
-            end
-            if isfield(h, 'existingFnText2')
-                h.existingFnText2.Text    = [name ext];
-                h.existingFnText2.Tooltip = fn;
-            end
-            if isfield(h, 'existingDimText')
-                h.existingDimText.Text = sprintf('%d x %d x %d', width, height, depth);
-            end
-            if isfield(h, 'existingPixText2')
-                h.existingPixText2.Text = sprintf('Pixel size, %s:', obj.mibModel.I{id}.image.pixSize.units);
-            end
-            if isfield(h, 'existingPixText')
-                h.existingPixText.Text = sprintf('%f x %f x %f', ...
-                    obj.mibModel.I{id}.image.pixSize.x, ...
-                    obj.mibModel.I{id}.image.pixSize.y, ...
-                    obj.mibModel.I{id}.image.pixSize.z);
-            end
-            if isfield(h, 'saveShiftsXYpath')
-                h.saveShiftsXYpath.Value = fullfile(obj.pathstr, [name '_align.coefXY']);
-            end
-            if isfield(h, 'loadShiftsXYpath')
-                h.loadShiftsXYpath.Value = fullfile(obj.pathstr, [name '_align.coefXY']);
-            end
+            h.existingFnText1.Text    = obj.pathstr;
+            h.existingFnText1.Tooltip = fn;
+            h.existingFnText2.Text    = [name ext];
+            h.existingFnText2.Tooltip = fn;
+            h.existingDimText.Text = sprintf('%d x %d x %d', width, height, depth);
+            h.existingPixText2.Text = sprintf('Pixel size, %s:', obj.mibModel.I{id}.image.pixSize.units);
+            h.existingPixText.Text = sprintf('%f x %f x %f', ...
+                obj.mibModel.I{id}.image.pixSize.x, ...
+                obj.mibModel.I{id}.image.pixSize.y, ...
+                obj.mibModel.I{id}.image.pixSize.z);
 
+            h.saveShiftsXYpath.Value = fullfile(obj.pathstr, [name '_align.coefXY']);
+            h.loadShiftsXYpath.Value = fullfile(obj.pathstr, [name '_align.coefXY']);
+            
             % Refresh dynamic dropdowns / spinner ranges
-            obj.BatchOpt.ColorChannel{2} = arrayfun(@(x) sprintf('ColCh %d', x), ...
-                1:numel(colors), 'UniformOutput', false);
+            obj.BatchOpt.ColorChannel{2} = arrayfun(@(x) sprintf('ColCh %d', x), 1:numel(colors), 'UniformOutput', false);
             selColCh = max([1 obj.mibModel.I{id}.selectedColorChannel]);
             if selColCh > numel(obj.BatchOpt.ColorChannel{2}); selColCh = 1; end
             obj.BatchOpt.ColorChannel{1} = obj.BatchOpt.ColorChannel{2}{selColCh};

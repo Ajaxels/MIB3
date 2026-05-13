@@ -26,10 +26,6 @@ function previewFeaturesBtn_Callback(obj)
 % Updates
 %
 
-if strcmp(obj.BatchOpt.Algorithm{1}, 'AMST: median-smoothed template')
-    return;
-end
-
 % Parent figure for any dialogs — ``obj.view`` is empty in batch mode
 if ~isempty(obj.view) && isvalid(obj.view) && isvalid(obj.view.gui)
     parentFig = obj.view.gui;
@@ -40,10 +36,12 @@ end
 % --- Let the user tune detector / RANSAC parameters first
 status = obj.updateAutomaticOptions();
 if status == 0; return; end
+if strcmp(obj.BatchOpt.Algorithm{1}, 'AMST: median-smoothed template'); return;  end
+
 
 id = obj.mibModel.getActiveId();
 optionsGetData = struct('blockModeSwitch', 0);
-[~, Width, ~, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, optionsGetData);
+[~, Width, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, optionsGetData);
 if Depth < 2
     utils.dlgs.showErrorDialog(parentFig, ...
         'Feature preview requires at least two slices in the active dataset.', ...

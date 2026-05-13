@@ -60,7 +60,8 @@ if showProgress
     pwb.updateText(sprintf('Calculating drifts\nPlease wait...'));
     pwb.updateMaxNumberOfIterations(depth);
     pwb.setCurrentIteration(0);
-    pwb.setIncrement(floor(depth/10));
+    pwbIncrement = max([1 floor(depth/10)]);
+    pwb.setIncrement(pwbIncrement);
 end
 
 referenceFFT = fft2(I(:,:,1));
@@ -100,7 +101,7 @@ switch options.method
                     shiftX = []; shiftY = [];
                     return;
                 end
-                if mod(sliceIdx, 10) == 0
+                if mod(sliceIdx, pwbIncrement) == 0
                     pwb.increment();
                     pwb.updateText(sprintf('Calculating drifts: %d / %d', sliceIdx, depth));
                 end

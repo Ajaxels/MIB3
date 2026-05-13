@@ -81,7 +81,7 @@ if ~parameters.useBatchMode
     if isempty(answer) || strcmp(answer, 'Cancel'); return; end
 end
 
-[Height, Width, ~, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
+[Height, Width, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
 if Depth < 3
     utils.dlgs.showErrorDialog(parentFig, ...
         'AMST requires at least 3 slices.', 'Alignment');

@@ -61,7 +61,7 @@ if ~ismember(parameters.TransformationType, {'translation', 'rigid', 'similarity
     return;
 end
 
-[Height, Width, ~, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
+[Height, Width, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
 if Depth < 2
     utils.dlgs.showErrorDialog(parentFig, ...
         'Automatic feature-based v2 alignment requires at least 2 slices.', 'Alignment');
@@ -150,6 +150,11 @@ if ~shiftsLoaded
     end
 
     % --- Rebuild cumulative tforms (from smoothed parameters or raw chain)
+    if ~isempty(pwb)
+        if pwb.getCancelState(); return; end
+        pwb.updateText('Step 1/2: calculating cumulative tforms...'); 
+    end
+
     cumulativeTforms{1} = affinetform2d(eye(3));
     for layer = 2:Depth
         if useSmoothed
@@ -181,6 +186,11 @@ if ~shiftsLoaded
 end
 
 % --- Step 2: determine apply canvas
+if ~isempty(pwb)
+    if pwb.getCancelState(); return; end
+    pwb.updateText('Step 2/2: calculating canvas area...'); 
+end
+
 if strcmp(parameters.TransformationMode, 'extended')
     % Project the four image corners through every cumulative tform and union
     corners = [1, 1; Width, 1; Width, Height; 1, Height];
@@ -203,7 +213,11 @@ else                                                  % cropped
 end
 
 % --- Step 2: apply transforms
-if ~isempty(pwb); pwb.updateText('Step 2/2: warping...'); end
+if ~isempty(pwb)
+    if pwb.getCancelState(); return; end
+    pwb.updateText('Step 2/2: warping...'); 
+    pwb.updateIndeterminateMode(true);
+end
 ok = applyV2(obj, id, Depth, cumulativeTforms, refImgSize, minX, minY, ...
     bgImage, strcmp(parameters.TransformationMode, 'extended'), pwb);
 if ~ok; return; end
@@ -285,10 +299,18 @@ else
 end
 validPtsOriginal.Location = validPtsOriginal.Location / ratio;
 
+% update progress bar
+if ~isempty(pwb)
+    stepIncrement = max([1 floor(Depth/10)]);
+    pwb.updateMaxNumberOfIterations(Depth);
+    pwb.setCurrentIteration(0);
+    pwb.setIncrement(stepIncrement);
+end
+
 for layer = 2:Depth
     if ~isempty(pwb)
         if pwb.getCancelState(); return; end
-        pwb.increment();
+        if mod(layer, stepIncrement)==0; pwb.increment(); end
     end
 
     distorted = cell2mat(obj.mibModel.getData2D('image', layer, [], parameters.colorCh, optionsGetData));
@@ -411,13 +433,18 @@ newH = refImgSize.ImageSize(1);
 newW = refImgSize.ImageSize(2);
 canvasChanged = isExtended && (newH ~= img5D.height || newW ~= img5D.width);
 
+% update progress bar
+if ~isempty(pwb)
+    %stepIncrement = max([1 floor(Depth/10)]);
+    %pwb.updateMaxNumberOfIterations(Depth);
+    %pwb.setCurrentIteration(0);
+    %pwb.setIncrement(stepIncrement);
+    pwb.updateText('Step 2/2: warping the image layer...');
+end
+
 % --- Warp every image slice
 Iout = zeros(newH, newW, Depth, nColors, imgClass) + cast(bgImage, imgClass);
 for layer = 1:Depth
-    if ~isempty(pwb)
-        if pwb.getCancelState(); return; end
-        pwb.increment();
-    end
     slice2D = cell2mat(obj.mibModel.getData2D('image', layer, [], NaN, optionsGetData));
     warped  = imwarp(slice2D, cumulativeTforms{layer}, 'cubic', ...
         'OutputView', refImgSize, 'FillValues', double(bgImage));
@@ -448,6 +475,10 @@ end
 clear Iout;
 
 % --- Service layers
+if ~isempty(pwb)
+    pwb.updateText('Step 2/2: warping the service layers...');
+end
+
 if isLabels63
     warpAndWriteServiceCanvas(obj, id, 'everything', cumulativeTforms, refImgSize, ...
         canvasChanged, Depth, nTime, 'uint8', 0);
