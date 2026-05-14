@@ -138,6 +138,8 @@ if ~shiftsLoaded
     cumulativeTranslations = cumsum(translations, 1);
     cumulativeRotations    = cumsum(rotations,    1);
     cumulativeScales       = cumprod(scales,      1);
+    % cumulativeAffineParams = cumsum(affine_params, 1); will not correct affine, 
+    % so commulative affines are not needed, but will show them as plots
 
     % --- Optional BatchOpt-driven smoothing of cumulative parameters
     if obj.BatchOpt.SubtractRunningAverage
@@ -342,6 +344,17 @@ for layer = 2:Depth
     matchedOriginal  = validPtsOriginal(indexPairs(:, 1));
     matchedDistorted = validPtsDistorted(indexPairs(:, 2));
 
+    % % Show putative point matches.
+    % figure;
+    % matchedOriginalTemp = matchedOriginal;
+    % matchedOriginalTemp.Location = matchedOriginalTemp.Location * ratio;
+    % matchedDistortedTemp = matchedDistorted;
+    % matchedDistortedTemp.Location = matchedDistortedTemp.Location * ratio;
+    % showMatchedFeatures(original,distorted,matchedOriginalTemp,matchedDistortedTemp);
+    % title('Putatively matched points (including outliers)');
+
+    % https://se.mathworks.com/help/images/migrate-geometric-transformations-to-premultiply-convention.html?requestedDomain=
+
     try
         tform = estgeotform2d(matchedDistorted, matchedOriginal, ...
             parameters.TransformationType, ...
@@ -349,7 +362,7 @@ for layer = 2:Depth
             'Confidence',   obj.automaticOptions.estGeomTransform.Confidence, ...
             'MaxDistance',  obj.automaticOptions.estGeomTransform.MaxDistance);
     catch ME
-        utils.dlgs.showErrorDialog(parentFig, ME, ...
+        utils.dlgs.showErrorDialog(parentFig, ME, 'AutomaticFeatureBasedV2_Alignment', ...
             sprintf('estgeotform2d failed on slice %d', layer));
         return;
     end
@@ -358,6 +371,64 @@ for layer = 2:Depth
     % translation / rigid / similarity / affine output types).
     T = tform.A;
     pairwiseTforms{layer} = affinetform2d(T);
+
+    % % debug preview
+    % figure(1234);
+    % showMatchedFeatures(original,distorted,matchedOriginal,matchedDistorted);
+    % title("Matched Points");
+    % figure(1235);
+    % inlierPtsDistorted = matchedDistorted(inlierIdx,:);
+    % inlierPtsOriginal  = matchedOriginal(inlierIdx,:);
+    % showMatchedFeatures(original,distorted,inlierPtsOriginal,inlierPtsDistorted);
+    % title("Removed outliers");
+
+    % T = [ a,  b,  tx ]
+    %     [ c,  d,  ty ]
+    %     [ 0,  0,   1 ]
+    % the top-left 2x2 block ([a, b; c, d]) handles scaling, rotation, and shear
+    % the third column ([tx, ty]) handles translation.
+    % the last row is always [0, 0, 1] for 2D transformations
+    %
+    % TRANSLATION:
+    % T = [ 1,  0,  tx ]
+    %     [ 0,  1,  ty ]
+    %     [ 0,  0,   1 ]
+    % where
+    % T(1,1) = a = 1: No scaling or rotation (identity)
+    % T(1,2) = b = 0: No shear or rotation
+    % T(2,1) = c = 0: No shear or rotation
+    % T(2,2) = d = 1: No scaling or rotation (identity)
+    % T(1,3) = tx: Translation in x-direction
+    % T(2,3) = ty: Translation in y-direction
+    %
+    % RIGID (preserves distances and angles (rotation + translation, no scaling))
+    % T = [ cos(θ), -sin(θ),  tx ]
+    %     [ sin(θ),  cos(θ),  ty ]
+    %     [      0,       0,   1 ]
+    % where
+    % T(1,1) = a = cos(θ): Cosine of rotation angle.
+    % T(1,2) = b = -sin(θ): Negative sine of rotation angle.
+    % T(2,1) = c = sin(θ): Sine of rotation angle.
+    % T(2,2) = d = cos(θ): Cosine of rotation angle.
+    %
+    % SIMILARITY (preserves angles (rotation + uniform scaling + translation))
+    %   T = [ s*cos(θ), -s*sin(θ),  tx ]
+    %       [ s*sin(θ),  s*cos(θ),  ty ]
+    %       [        0,         0,   1 ]
+    % where
+    % T(1,1) = a = s * cos(θ): Scale times cosine of rotation angle.
+    % T(1,2) = b = -s * sin(θ): Negative scale times sine of rotation angle.
+    % T(2,1) = c = s * sin(θ): Scale times sine of rotation angle.
+    % T(2,2) = d = s * cos(θ): Scale times cosine of rotation angle.
+    %
+    % AFFINE (full affine transformation (scaling, rotation, shear, translation))
+    % T = [ a,  b,  tx ]
+    %     [ c,  d,  ty ]
+    %     [ 0,  0,   1 ]
+    % T(1,1) = a: General scaling/shear/rotation component (diagonal ~1 for identity-like).
+    % T(1,2) = b: Shear/rotation component (off-diagonal ~0 for identity-like).
+    % T(2,1) = c: Shear/rotation component (off-diagonal ~0 for identity-like).
+    % T(2,2) = d: General scaling/shear/rotation component (diagonal ~1 for identity-like).
 
     % Decompose into translation / rotation / scale parameters
     translations(layer, :) = [T(1, 3), T(2, 3)];

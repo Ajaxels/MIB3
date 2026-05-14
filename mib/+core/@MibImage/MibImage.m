@@ -197,17 +197,17 @@ classdef MibImage < matlab.mixin.Copyable
                     obj.type = 'labels63';
             end
 
-            if isempty(data) 
-                obj.initialize(data, meta);
-            else
-                % For image data only: permute [H,W,C] → [H,W,1,C] so the
-                % colour dimension lands in position 4.  Labels store depth
-                % in position 3, so the permute must be skipped for them.
-                if ndims(data)==3 && size(data, 3) < 4 && strcmp(obj.type, 'image')
-                    data = permute(data, [1 2 4 3]);
-                end
-                obj.initialize(data, meta);
-            end
+            % if isempty(data) 
+            obj.initialize(data, meta);
+            % else
+            %     % For image data only: permute [H,W,C] → [H,W,1,C] so the
+            %     % colour dimension lands in position 4.  Labels store depth
+            %     % in position 3, so the permute must be skipped for them.
+            %     if ndims(data)==3 && size(data, 3) < 4 && strcmp(obj.type, 'image')
+            %         data = permute(data, [1 2 4 3]);
+            %     end
+            %     obj.initialize(data, meta);
+            % end
         end
 
         

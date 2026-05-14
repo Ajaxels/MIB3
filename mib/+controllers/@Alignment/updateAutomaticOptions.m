@@ -111,7 +111,7 @@ estGeomDefs = {
     struct('Spinner',true,'Value',obj.automaticOptions.estGeomTransform.Confidence,'Limits',[1 Inf],'Step',1, 'Round',false), ...
     struct('Spinner',true,'Value',obj.automaticOptions.estGeomTransform.MaxDistance,'Limits',[1 Inf],'Step',1, 'Round',true)};
 
-dlgOpt = struct('WindowWidth', 560, 'WindowStyle', 'modal', 'Icon', 'puffin_question', 'LabelPosition', 'left');
+dlgOpt = struct('WindowWidth', 560, 'WindowStyle', 'modal', 'Icon', 'puffin_question', 'LabelPosition', 'left', 'Focus', 1);
 
 % --- ORB has a different shape (no rotationInvariance row, ScaleFactor/NumLevels)
 isORB = strcmp(featureDetectorType, 'Oriented FAST and rotated BRIEF (ORB)');
