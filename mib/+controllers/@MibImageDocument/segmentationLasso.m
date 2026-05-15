@@ -121,9 +121,28 @@ if ~isvalid(roi)
     return;
 end
 
-% create mask from the ROI (same size as the displayed image)
+% convert ROI vertices to data coordinates and create mask via poly2mask;
+% this avoids createMask(roi, imageHandle) which clips to the current CData
+% extent and produces wrong results when the ROI extends beyond the view
 try
-    selected_mask = uint8(createMask(roi, obj.imageHandle));
+    switch type
+        case 'Rectangle'
+            p = roi.Position;
+            verticesX = [p(1); p(1)+p(3); p(1)+p(3); p(1)];
+            verticesY = [p(2); p(2); p(2)+p(4); p(2)+p(4)];
+        case 'Ellipse'
+            c = roi.Center;
+            sa = roi.SemiAxes;
+            rotRad = deg2rad(roi.RotationAngle);
+            theta = linspace(0, 2*pi, 720)';
+            verticesX = c(1) + sa(1)*cos(theta)*cos(rotRad) - sa(2)*sin(theta)*sin(rotRad);
+            verticesY = c(2) + sa(1)*cos(theta)*sin(rotRad) + sa(2)*sin(theta)*cos(rotRad);
+        otherwise  % Freehand, Polygon
+            verts = roi.Position;
+            verticesX = verts(:,1);
+            verticesY = verts(:,2);
+    end
+    [dataX, dataY] = obj.mibModel.convertMouseToDataCoordinates(verticesX, verticesY, 'shown');
 catch
     delete(roi);
     obj.mibModel.disableSegmentation = false;
@@ -138,18 +157,15 @@ hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
 hFig.Pointer = 'crosshair';
 obj.mibModel.disableSegmentation = false;
 
-% resize the mask to match the actual data dimensions
-getDataOptions.blockModeSwitch = 1;
+% create mask at full data resolution from data coordinates
+getDataOptions.blockModeSwitch = 0;
 currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], getDataOptions));
-selected_mask = imresize(selected_mask, [size(currSelection, 1) size(currSelection, 2)], 'method', 'nearest');
+selected_mask = uint8(poly2mask(double(dataX), double(dataY), size(currSelection, 1), size(currSelection, 2)));
 
 % calculating bounding box for the backup
 CC = regionprops(selected_mask, 'BoundingBox');
 if isempty(CC); return; end
 bb = CC.BoundingBox;
-[axesX, axesY] = obj.mibModel.getAxesLimits();
-bb(1) = bb(1) + max([1 ceil(axesX(1))]) - 1;
-bb(2) = bb(2) + max([1 ceil(axesY(1))]) - 1;
 
 orientation = obj.mibModel.I{id}.orientation;
 if orientation == 3      % XY

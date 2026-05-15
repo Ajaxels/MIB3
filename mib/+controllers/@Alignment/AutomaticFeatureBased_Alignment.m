@@ -22,11 +22,13 @@ function AutomaticFeatureBased_Alignment(obj, parameters)
 %   are pre-resized before :meth:`setData4D`.
 %
 % Running-average smoothing of the per-slice scale + shear parameters is
-% applied when ``BatchOpt.SubtractRunningAverage`` is set; the smoothed
-% values are written back into ``tformMatrix{*}.T`` *before* the apply
-% phase. The interactive plot+question flow from MIB2 is deferred —
-% smoothing currently runs straight from the existing
-% ``BatchOpt.SubtractRunningAverage*`` fields (no GUI prompt).
+% available in two modes: interactive (GUI) and batch.  In interactive mode
+% the raw scaling and shear curves are plotted (figure 125) and the user
+% chooses whether to apply smoothing and tunes the half-width / exclude-peaks
+% settings in a loop until satisfied; the smoothed values are written back
+% into ``tformMatrix{*}.T`` *before* the apply phase.  In batch mode
+% smoothing runs automatically from the ``BatchOpt.SubtractRunningAverage*``
+% fields when ``BatchOpt.SubtractRunningAverage`` is set.
 %
 % Cancellation: a :class:`core.PoolWaitbar` is constructed with
 % ``Cancelable = true`` whenever ``BatchOpt.showWaitbar`` is set; cancel
@@ -123,8 +125,11 @@ if ~shiftsLoaded
         parameters, tformMatrix, optionsGetData, pwb, parentFig);
     if ~ok; return; end
 
-    % --- Optional running-average smoothing of stretch + shear
-    if obj.BatchOpt.SubtractRunningAverage
+    % --- Interactive (GUI) or BatchOpt-driven (batch) smoothing of stretch + shear
+    if ~parameters.useBatchMode
+        [tformMatrix, userCancelled] = interactiveSmoothingV1(tformMatrix, Depth, parentFig);
+        if userCancelled; return; end
+    elseif obj.BatchOpt.SubtractRunningAverage
         tformMatrix = smoothTformChain(tformMatrix, Depth, obj.BatchOpt);
     end
 end
@@ -348,6 +353,137 @@ elseif isa(tform, 'projtform2d')
 else
     % Fall back: try to expose .A → affine2d transpose
     tformLegacy = affine2d(tform.A');
+end
+end
+
+% =============================================================================
+function [tformMatrix, userCancelled] = interactiveSmoothingV1(tformMatrix, Depth, parentFig)
+% INTERACTIVESMOOTHINGV1 - Interactive plot + running-average smoothing for
+% cumulative scale/shear tform parameters in the v1 feature-based alignment.
+%
+% Plots the raw scaling and shear components (figure 125) and asks the user
+% whether to proceed as-is, apply running-average smoothing, or quit.
+% The smoothing-settings dialog runs in a loop until the user accepts or
+% cancels.
+
+userCancelled = false;
+vec_length = numel(tformMatrix);
+
+% Extract raw scale/shear components from the cumulative tform chain
+x_stretch = arrayfun(@(k) tformMatrix{k}.T(1,1), 2:vec_length);
+y_stretch = arrayfun(@(k) tformMatrix{k}.T(2,2), 2:vec_length);
+x_shear   = arrayfun(@(k) tformMatrix{k}.T(2,1), 2:vec_length);
+y_shear   = arrayfun(@(k) tformMatrix{k}.T(1,2), 2:vec_length);
+sliceIndices = 2:vec_length;
+
+% --- Plot raw parameters
+figure(125);
+subplot(2, 1, 1);
+plot(sliceIndices, x_stretch, '.-', sliceIndices, y_stretch, '.-');
+title('Scaling');  legend('x-axis', 'y-axis');
+subplot(2, 1, 2);
+plot(sliceIndices, x_shear, '.-', sliceIndices, y_shear, '.-');
+title('Shear');  legend('x-axis', 'y-axis');
+
+% --- First decision dialog
+answer1 = utils.dlgs.inputQuestDlg(parentFig, ...
+    'Align the stack using detected displacements?', 'Fix drifts', ...
+    'Yes', 'Subtract running average', 'Quit alignment', 'Yes');
+if isempty(answer1) || strcmp(answer1, 'Quit alignment')
+    userCancelled = true;
+    return;
+end
+if strcmp(answer1, 'Yes')
+    return;  % apply without smoothing
+end
+
+% --- Smoothing loop
+halfWidthMax     = max(1, floor(Depth / 2 - 1));
+halfWidthDefault = min(25, halfWidthMax);
+fixStretch          = true;
+fixShear            = true;
+excludeStretchPeaks = 0;
+excludeShearPeaks   = 0;
+
+notOk = true;
+while notOk
+    % Smoothing-settings dialog
+    prompts = {'Fix stretching', 'Fix shear', ...
+               'Half-width of averaging window', ...
+               'Exclude stretch peaks higher than (0 = off)', ...
+               'Exclude shear peaks higher than (0 = off)'};
+    defAns = {fixStretch, fixShear, ...
+              struct('Spinner', true, 'Value', halfWidthDefault, ...
+                     'Limits', [1 halfWidthMax], 'Step', 1, 'Round', 0), ...
+              struct('Spinner', true, 'Value', excludeStretchPeaks, ...
+                     'Limits', [0 1e6], 'Step', 0.01, 'Round', 4), ...
+              struct('Spinner', true, 'Value', excludeShearPeaks, ...
+                     'Limits', [0 1e6], 'Step', 0.01, 'Round', 4)};
+    dlgOpt.Title = 'Please select suitable settings for the correction';
+    answer2 = utils.dlgs.inputUniversalDlg(parentFig, '', prompts, defAns, 'Correction settings', dlgOpt);
+    if isempty(answer2)
+        userCancelled = true;
+        return;
+    end
+    fixStretch          = logical(answer2{1});
+    fixShear            = logical(answer2{2});
+    halfWidthDefault    = answer2{3};
+    excludeStretchPeaks = answer2{4};
+    excludeShearPeaks   = answer2{5};
+
+    % Validate half-width
+    if halfWidthDefault > halfWidthMax
+        utils.dlgs.inputQuestDlg(parentFig, ...
+            sprintf('Half-width must be smaller than half the stack depth (%d).', halfWidthMax), ...
+            'Wrong half-width', 'Try again', 'Try again');
+        continue;
+    end
+
+    % Apply smoothing
+    if fixStretch
+        x_stretch2 = utils.align.runningAverageSmoothPoints(x_stretch, halfWidthDefault, excludeStretchPeaks) + 1;
+        y_stretch2 = utils.align.runningAverageSmoothPoints(y_stretch, halfWidthDefault, excludeStretchPeaks) + 1;
+    else
+        x_stretch2 = x_stretch;
+        y_stretch2 = y_stretch;
+    end
+    if fixShear
+        x_shear2 = utils.align.runningAverageSmoothPoints(x_shear, halfWidthDefault, excludeShearPeaks);
+        y_shear2 = utils.align.runningAverageSmoothPoints(y_shear, halfWidthDefault, excludeShearPeaks);
+    else
+        x_shear2 = x_shear;
+        y_shear2 = y_shear;
+    end
+
+    % Re-plot smoothed parameters
+    figure(125);
+    subplot(2, 1, 1);
+    plot(sliceIndices, x_stretch2, '.-', sliceIndices, y_stretch2, '.-');
+    title('Scaling, fixed');  legend('x-axis', 'y-axis');
+    subplot(2, 1, 2);
+    plot(sliceIndices, x_shear2, '.-', sliceIndices, y_shear2, '.-');
+    title('Shear, fixed');  legend('x-axis', 'y-axis');
+
+    % Second decision dialog
+    answer3 = utils.dlgs.inputQuestDlg(parentFig, ...
+        'Align the stack using detected displacements?', 'Fix drifts', ...
+        'Yes', 'Change window size', 'Quit alignment', 'Yes');
+    if isempty(answer3) || strcmp(answer3, 'Quit alignment')
+        userCancelled = true;
+        return;
+    end
+    if strcmp(answer3, 'Yes')
+        % Write smoothed values back into the tform chain
+        for k = 2:vec_length
+            if isempty(tformMatrix{k}) || ~isprop(tformMatrix{k}, 'T'); continue; end
+            tformMatrix{k}.T(1,1) = x_stretch2(k - 1);
+            tformMatrix{k}.T(2,2) = y_stretch2(k - 1);
+            tformMatrix{k}.T(2,1) = x_shear2(k - 1);
+            tformMatrix{k}.T(1,2) = y_shear2(k - 1);
+        end
+        notOk = false;
+    end
+    % else "Change window size" → loop with updated defAns
 end
 end
 

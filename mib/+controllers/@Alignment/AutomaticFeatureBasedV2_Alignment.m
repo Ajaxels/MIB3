@@ -27,11 +27,12 @@ function AutomaticFeatureBasedV2_Alignment(obj, parameters)
 % Supported TransformationType: ``'translation'``, ``'rigid'``,
 % ``'similarity'``, ``'affine'`` (matches MIB2 v2's allowed list).
 %
-% Smoothing currently runs straight from the ``BatchOpt.SubtractRunningAverage*``
-% fields when ``SubtractRunningAverage`` is set — the interactive plot +
-% question-dialog flow from MIB2 is deferred. The ``updateAutomaticOptions``
-% settings dialog is also skipped; the algorithm runs from whatever defaults
-% already exist in ``obj.automaticOptions``.
+% In GUI mode a diagnostic plot of the cumulative parameters is shown after
+% step 1 and the user can choose **Apply current values** (no smoothing) or
+% **Fix drifts** (interactive running-average smoothing loop with per-component
+% control over translation, rotation and scale). In batch mode, smoothing
+% runs straight from the ``BatchOpt.SubtractRunningAverage*`` fields when the
+% flag is set.
 %
 % Input Arguments:
 %   - **parameters** — struct produced by :meth:`continueBtn_Callback`.
@@ -141,14 +142,18 @@ if ~shiftsLoaded
     % cumulativeAffineParams = cumsum(affine_params, 1); will not correct affine, 
     % so commulative affines are not needed, but will show them as plots
 
-    % --- Optional BatchOpt-driven smoothing of cumulative parameters
-    if obj.BatchOpt.SubtractRunningAverage
+    % --- Interactive (GUI) or BatchOpt-driven (batch) smoothing
+    useSmoothed = false;
+    if ~parameters.useBatchMode
+        [cumulativeTranslations, cumulativeRotations, cumulativeScales, useSmoothed, userCancelled] = ...
+            interactiveSmoothingV2(cumulativeTranslations, cumulativeRotations, ...
+                cumulativeScales, affine_params, Depth, parameters.TransformationType, parentFig);
+        if userCancelled; return; end
+    elseif obj.BatchOpt.SubtractRunningAverage
         [cumulativeTranslations, cumulativeRotations, cumulativeScales] = ...
             smoothCumulativeV2(cumulativeTranslations, cumulativeRotations, ...
                 cumulativeScales, Depth, parameters.TransformationType, obj.BatchOpt);
         useSmoothed = true;
-    else
-        useSmoothed = false;
     end
 
     % --- Rebuild cumulative tforms (from smoothed parameters or raw chain)
@@ -478,6 +483,193 @@ if BatchOpt.SubtractRunningAverageFixShear && ismember(transformType, {'rigid', 
 end
 if BatchOpt.SubtractRunningAverageFixStretch && ismember(transformType, {'similarity', 'affine'})
     cumS = utils.align.runningAverageSmoothPoints(cumS, halfwidth, excludeScale) + 1;
+end
+end
+
+% =============================================================================
+function [cumT, cumR, cumS, useSmoothed, cancelled] = interactiveSmoothingV2( ...
+    cumT, cumR, cumS, affine_params, Depth, transformType, parentFig)
+% Interactive running-average smoothing dialog with parameter plots.
+% Plots cumulative alignment parameters, asks the user whether to apply
+% the current values or fix drifts with running-average smoothing.
+% When "Fix drifts" is chosen, loops through a settings dialog where
+% the user adjusts the smoothing half-width and per-component flags
+% until satisfied.
+
+useSmoothed = false;
+cancelled = false;
+
+% --- Subplot layout depends on transform type
+switch transformType
+    case 'translation';  noRows = 1; noCols = 1;
+    case 'rigid';        noRows = 1; noCols = 2;
+    case 'similarity';   noRows = 1; noCols = 3;
+    case 'affine';       noRows = 2; noCols = 4;
+end
+
+% --- Plot original cumulative parameters (figure 125)
+hFig125 = figure(125);
+hFig125.Name = 'Cumulative alignment parameters';
+plotCumulativeV2(hFig125, noRows, noCols, cumT, cumR, cumS, affine_params, Depth, transformType);
+
+% --- First question: apply as-is or fix drifts?
+questOpt.Icon = 'puffin_question';
+answer1 = utils.dlgs.inputQuestDlg(parentFig, ...
+    'Align the stack using detected displacements?', 'Align dataset', ...
+    'Quit alignment', 'Fix drifts', 'Apply current values', 'Apply current values', questOpt);
+if isempty(answer1) || strcmp(answer1, 'Quit alignment')
+    cancelled = true;
+    if isvalid(hFig125); close(hFig125); end
+    return;
+end
+if strcmp(answer1, 'Apply current values')
+    if isvalid(hFig125); close(hFig125); end
+    return;
+end
+
+% --- "Fix drifts" smoothing loop
+maxHalfwidth = max(1, floor(Depth/2 - 1));
+halfWidthDefault = min(25, maxHalfwidth);
+
+prompts = {'Half-width of the averaging window'; 'Fix translation'; 'Exclude jumps higher than (0=off):'};
+defAns = {struct('Spinner',true,'Value',halfWidthDefault,'Limits',[1 maxHalfwidth],'Step',1,'Round',true); ...
+           true; ...
+           struct('Spinner',true,'Value',0,'Limits',[0 Inf],'Step',1,'Round',false)};
+
+if ismember(transformType, {'rigid', 'similarity', 'affine'})
+    prompts = [prompts; {'Fix rotations'; 'Exclude jumps higher than (0=off):'}];
+    defAns = [defAns; {true; struct('Spinner',true,'Value',0,'Limits',[0 Inf],'Step',1,'Round',false)}];
+end
+if ismember(transformType, {'similarity', 'affine'})
+    prompts = [prompts; {'Fix scales'; 'Exclude jumps higher than (0=off):'}];
+    defAns = [defAns; {true; struct('Spinner',true,'Value',0,'Limits',[0 Inf],'Step',1,'Round',false)}];
+end
+
+dlgOpt.okBtnText = 'Continue';
+
+hFig126 = [];
+notOk = true;
+while notOk
+    answer = utils.dlgs.inputUniversalDlg(parentFig, '', prompts, defAns, 'Correction settings', dlgOpt);
+    if isempty(answer)
+        cancelled = true;
+        if isvalid(hFig125); close(hFig125); end
+        if ~isempty(hFig126) && isvalid(hFig126); close(hFig126); end
+        return;
+    end
+
+    halfwidth = answer{1};
+    fixTranslation = answer{2};
+    excludeTranslationJumps = answer{3};
+
+    fixRotation = false;
+    fixScale = false;
+    excludeRotationJumps = 0;
+    excludeScaleJumps = 0;
+    idx = 4;
+    if ismember(transformType, {'rigid', 'similarity', 'affine'})
+        fixRotation = answer{idx};
+        excludeRotationJumps = answer{idx + 1};
+        idx = idx + 2;
+    end
+    if ismember(transformType, {'similarity', 'affine'})
+        fixScale = answer{idx};
+        excludeScaleJumps = answer{idx + 1};
+    end
+
+    % Apply smoothing
+    smoothT = cumT;
+    if fixTranslation
+        smoothT(:, 1) = utils.align.runningAverageSmoothPoints(cumT(:, 1), halfwidth, excludeTranslationJumps);
+        smoothT(:, 2) = utils.align.runningAverageSmoothPoints(cumT(:, 2), halfwidth, excludeTranslationJumps);
+    end
+    smoothR = cumR;
+    if fixRotation
+        smoothR = utils.align.runningAverageSmoothPoints(cumR, halfwidth, excludeRotationJumps);
+    end
+    smoothS = cumS;
+    if fixScale
+        smoothS = utils.align.runningAverageSmoothPoints(cumS, halfwidth, excludeScaleJumps) + 1;
+    end
+
+    % Plot smoothed parameters (figure 126)
+    if isempty(hFig126) || ~isvalid(hFig126)
+        hFig126 = figure(126);
+    end
+    hFig126.Name = 'Smoothed alignment parameters';
+    hFig126.Position = hFig125.Position;
+    plotCumulativeV2(hFig126, noRows, noCols, smoothT, smoothR, smoothS, affine_params, Depth, transformType);
+
+    answer2 = utils.dlgs.inputQuestDlg(parentFig, ...
+        'Align the stack using detected displacements?', 'Align dataset', ...
+        'Quit alignment', 'Change window size', 'Apply current values', 'Apply current values', questOpt);
+    if isempty(answer2) || strcmp(answer2, 'Quit alignment')
+        cancelled = true;
+        if isvalid(hFig125); close(hFig125); end
+        if isvalid(hFig126); close(hFig126); end
+        return;
+    end
+
+    if strcmp(answer2, 'Apply current values')
+        cumT = smoothT;
+        cumR = smoothR;
+        cumS = smoothS;
+        useSmoothed = true;
+        notOk = false;
+    else
+        % "Change window size" — loop with updated defaults
+        defAns{1} = struct('Spinner',true,'Value',halfwidth,'Limits',[1 maxHalfwidth],'Step',1,'Round',true);
+        defAns{2} = fixTranslation;
+        defAns{3} = struct('Spinner',true,'Value',excludeTranslationJumps,'Limits',[0 Inf],'Step',1,'Round',false);
+        idx = 4;
+        if ismember(transformType, {'rigid', 'similarity', 'affine'})
+            defAns{idx}   = fixRotation;
+            defAns{idx+1} = struct('Spinner',true,'Value',excludeRotationJumps,'Limits',[0 Inf],'Step',1,'Round',false);
+            idx = idx + 2;
+        end
+        if ismember(transformType, {'similarity', 'affine'})
+            defAns{idx}   = fixScale;
+            defAns{idx+1} = struct('Spinner',true,'Value',excludeScaleJumps,'Limits',[0 Inf],'Step',1,'Round',false);
+        end
+    end
+end
+
+if isvalid(hFig125); close(hFig125); end
+if ~isempty(hFig126) && isvalid(hFig126); close(hFig126); end
+end
+
+% =============================================================================
+function plotCumulativeV2(hFig, noRows, noCols, cumT, cumR, cumS, ...
+    affine_params, Depth, transformType)
+% Plot cumulative V2 alignment parameters into the given figure.
+
+figure(hFig);
+clf(hFig);
+subplot(noRows, noCols, 1);
+plot(2:Depth, cumT(2:end, 1), '.-', 2:Depth, cumT(2:end, 2), '.-');
+title('Translation'); legend('x-axis', 'y-axis', 'Location', 'best'); grid on;
+
+if ismember(transformType, {'rigid', 'similarity', 'affine'})
+    subplot(noRows, noCols, 2);
+    plot(2:Depth, cumR(2:end), '.-'); title('Rotations'); grid on;
+end
+if ismember(transformType, {'similarity', 'affine'})
+    subplot(noRows, noCols, 3);
+    plot(2:Depth, cumS(2:end), '.-'); title('Scales'); grid on;
+end
+if strcmp(transformType, 'affine')
+    subplot(noRows, noCols, 5);
+    plot(2:Depth, affine_params(2:end, 1), '.-');
+    title('Affine a (scaling/shear/rotation, ~1)'); grid on;
+    subplot(noRows, noCols, 6);
+    plot(2:Depth, affine_params(2:end, 2), '.-');
+    title('Affine b (shear/rotation, ~0)'); grid on;
+    subplot(noRows, noCols, 7);
+    plot(2:Depth, affine_params(2:end, 3), '.-');
+    title('Affine c (shear/rotation, ~0)'); grid on;
+    subplot(noRows, noCols, 8);
+    plot(2:Depth, affine_params(2:end, 4), '.-');
+    title('Affine d (scaling/shear/rotation, ~1)'); grid on;
 end
 end
 

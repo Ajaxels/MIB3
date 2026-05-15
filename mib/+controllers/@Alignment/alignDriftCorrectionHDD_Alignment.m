@@ -14,7 +14,8 @@ function alignDriftCorrectionHDD_Alignment(obj, parameters)
 % cross-correlation pairwise; integrates pairwise shifts via ``cumsum``
 % (``CorrelateWith = 'Previous slice'`` / ``'Relative to'``) or keeps
 % slice 1 as the reference throughout (``CorrelateWith = 'First slice'``);
-% optionally smooths via :func:`utils.align.subtractRunningAverage`;
+% optionally smooths via :func:`utils.align.subtractRunningAverage`
+% (interactive loop when ``useBatchMode`` is false, straight batch otherwise);
 % then re-reads each image, places it onto a padded canvas, and saves it
 % to ``<InputDir>/HDD_OutputSubfolderName`` in the chosen format via
 % :meth:`core.MibImage.save`.
@@ -141,12 +142,16 @@ if isempty(obj.shiftsX)
             shiftY = round(utils.align.windv(sY, step));
     end
 
-    % --- Optional running-average smoothing
-    if obj.BatchOpt.SubtractRunningAverage
-        halfwidth     = obj.BatchOpt.SubtractRunningAverageStep{1};
-        excludePeaks  = obj.BatchOpt.SubtractRunningAverageExcludePeaks{1};
+    % --- Running-average smoothing: interactive (GUI) or batch
+    if ~parameters.useBatchMode
+        [shiftX, shiftY, userCancelled] = interactiveDriftSmoothing(shiftX, shiftY, ...
+            obj.BatchOpt, parentFig);
+        if userCancelled; return; end
+    elseif obj.BatchOpt.SubtractRunningAverage
+        halfwidth    = obj.BatchOpt.SubtractRunningAverageStep{1};
+        excludePeaks = obj.BatchOpt.SubtractRunningAverageExcludePeaks{1};
         [shiftX, shiftY] = utils.align.subtractRunningAverage(parentFig, ...
-            shiftX, shiftY, halfwidth, excludePeaks, parameters.useBatchMode);
+            shiftX, shiftY, halfwidth, excludePeaks, true);
         if isempty(shiftX); return; end
     end
 
@@ -336,6 +341,46 @@ switch extLabel
     case 'PNG';  saveOpt.Format = 'Portable Network Graphics (*.png)';
     case 'TIF';  saveOpt.Format = 'TIF format uncompressed (*.tif)';
     otherwise;   saveOpt.Format = 'TIF format uncompressed (*.tif)';
+end
+end
+
+% =============================================================================
+function [shiftX, shiftY, userCancelled] = interactiveDriftSmoothing(shiftX, shiftY, BatchOpt, parentFig)
+% INTERACTIVEDRIFTSMOOTHING - Plot raw drift shifts and offer smoothing.
+%
+% Plots shiftX/shiftY in figure 155, presents a three-way dialog
+% ("Apply current values" / "Fix drifts" / "Quit alignment"), and on
+% "Fix drifts" delegates to the interactive
+% :func:`utils.align.subtractRunningAverage` loop.
+
+userCancelled = false;
+
+% Plot raw shifts
+figure(155);  clf;
+plot(1:numel(shiftX), shiftX, '.-', 1:numel(shiftY), shiftY, '.-');
+legend('Shift X', 'Shift Y', 'Location', 'best');
+grid;  xlabel('Frame number');  ylabel('Displacement');
+title('Before drift correction');
+
+% First decision dialog
+answer = utils.dlgs.inputQuestDlg(parentFig, ...
+    'Align the stack using detected displacements?', 'Align dataset', ...
+    'Apply current values', 'Fix drifts', 'Quit alignment', 'Apply current values');
+if isempty(answer) || strcmp(answer, 'Quit alignment')
+    userCancelled = true;
+    return;
+end
+if strcmp(answer, 'Apply current values')
+    return;  % proceed with unsmoothed shifts
+end
+
+% 'Fix drifts' — subtractRunningAverage already contains the interactive loop
+halfwidth    = BatchOpt.SubtractRunningAverageStep{1};
+excludePeaks = BatchOpt.SubtractRunningAverageExcludePeaks{1};
+[shiftX, shiftY] = utils.align.subtractRunningAverage(parentFig, ...
+    shiftX, shiftY, halfwidth, excludePeaks, false);
+if isempty(shiftX)
+    userCancelled = true;
 end
 end
 
