@@ -115,8 +115,7 @@ switch obj.BatchOpt.Algorithm{1}
 
     case 'Automatic feature-based v2'
         if obj.BatchOpt.HDD_Mode
-            notYetPorted(obj, 'HDD-mode feature-based v2');
-            return;
+            obj.AutomaticFeatureBasedHDDV2_Alignment(parameters);
         else
             obj.AutomaticFeatureBasedV2_Alignment(parameters);
         end
@@ -133,16 +132,4 @@ end
 % Headless batch mode: report BatchOpt back to the batch controller
 if useBatchMode; obj.returnBatchOpt(); end
 
-end
-
-function notYetPorted(obj, name)
-% NOTYETPORTED - Local helper that emits a "not yet ported" error dialog.
-parent = [];
-if ~isempty(obj.view) && isvalid(obj.view.gui)
-    parent = obj.view.gui;
-end
-utils.dlgs.showErrorDialog(parent, ...
-    sprintf(['The "%s" algorithm has not been ported to MIB3 yet.\n\n' ...
-            'Phase 1 of the port supports Drift correction, Template matching, ' ...
-            'and Single landmark point.'], name), 'Alignment');
 end

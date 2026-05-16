@@ -167,6 +167,10 @@ if ~shiftsLoaded
     % First slice: identity
     tformMatrix{1} = affine2d(eye(3));
 
+    % Fix RANSAC seed so estgeotform2d is reproducible across runs and
+    % matches the in-memory variant for direct comparison.
+    rng(0, 'twister');
+
     for layer = 2:numFiles
         if ~isempty(pwb)
             if pwb.getCancelState(); return; end
@@ -220,6 +224,8 @@ end
 if ~isempty(pwb)
     pwb.updateText('Step 3/3: warping + saving images...');
     pwb.setCurrentIteration(0);
+    pwb.setIncrement(1);
+    pwb.updateMaxNumberOfIterations(numFiles);
 end
 
 outputDir = fullfile(inputDir, obj.BatchOpt.HDD_OutputSubfolderName);
@@ -254,17 +260,26 @@ if isCropped
         [iWarped, ~] = imwarp(squeeze(imgIn5D(:,:,1,:,1)), tformMatrix{layer}, ...
             'cubic', 'OutputView', refImgSize, 'FillValues', double(bgImage));
         saveOneImage(iWarped, files{layer}, outputDir, outputExt, saveOpt);
+        if ~isempty(pwb); pwb.increment(); end
     end
-    if ~isempty(pwb); pwb.setCurrentIteration(numFiles); end
+    
 else
-    % Extended view — per-slice affineOutputView "CenterOutput", then
-    % canvas computed from the union of XWorld / YWorld limits
-    Hmax = max(heightVec);  Wmax = max(widthVec);
-    if Hmax == 0; Hmax = Height; Wmax = Width; end
+    % Extended mode — mirrors applyExtendedMode logic exactly:
+    %   1. affineOutputView with no BoundsStyle → minimum bounding box
+    %      (same world coords as imwarp without OutputView).
+    %   2. Union canvas = max(xmax) - min(xmin), no extra abs() term.
+    %   3. Each warped patch is tiled at pixel offset (xmin-dx+1, ymin-dy+1).
+
+    % Step 1: pre-compute per-slice output view (min bounding box).
+    % NOTE: affineOutputView defaults to a centered/input-sized output —
+    % 'BoundsStyle','FollowOutput' is required to match imwarp's behavior
+    % when called without an OutputView argument.
     for layer = 1:numFiles
         if isempty(tformMatrix{layer}); continue; end
-        rbMatrix{layer} = affineOutputView([Hmax, Wmax], tformMatrix{layer}, ...
-            'BoundsStyle', 'CenterOutput');
+        H_layer = heightVec(layer); if H_layer == 0; H_layer = Height; end
+        W_layer = widthVec(layer);  if W_layer == 0; W_layer = Width; end
+        rbMatrix{layer} = affineOutputView([H_layer, W_layer], tformMatrix{layer}, ...
+            'BoundsStyle', 'FollowOutput');
     end
 
     xmin = zeros(numFiles, 1);  xmax = zeros(numFiles, 1);
@@ -276,11 +291,12 @@ else
         ymin(layer) = floor(rbMatrix{layer}.YWorldLimits(1));
         ymax(layer) = floor(rbMatrix{layer}.YWorldLimits(2));
     end
-    dx = min(xmin);
-    dy = min(ymin);
-    nWidth  = max(xmax) - dx + abs(dx);
-    nHeight = max(ymax) - dy + abs(dy);
+    dx      = min(xmin);
+    dy      = min(ymin);
+    nWidth  = max(xmax) - dx;
+    nHeight = max(ymax) - dy;
 
+    % Step 2: warp each image, tile into the union canvas, save
     files = imgDS.Files;
     parfor (layer = 1:numFiles, parforArg)
         if isempty(tformMatrix{layer}); continue; end
@@ -289,17 +305,24 @@ else
         catch
             continue;
         end
-        % Anchor this slice's rbMatrix into the union canvas frame
-        rbL = rbMatrix{layer};
-        rbL.XWorldLimits = rbL.XWorldLimits - ceil((max(widthVec)  - min(widthVec))  / 2) - dx * 2;
-        rbL.YWorldLimits = rbL.YWorldLimits - (max(heightVec) - min(heightVec)) - dy;
-        rbL.ImageSize    = [nHeight, nWidth];
+        img2D = squeeze(imgIn5D(:,:,1,:,1));  % [H, W, C]
 
-        iWarped = imwarp(squeeze(imgIn5D(:,:,1,:,1)), tformMatrix{layer}, 'cubic', ...
-            'OutputView', rbL, 'FillValues', double(bgImage));
-        saveOneImage(iWarped, files{layer}, outputDir, outputExt, saveOpt);
+        % Warp without OutputView → minimum bounding box patch
+        iWarped = imwarp(img2D, tformMatrix{layer}, 'cubic', ...
+            'FillValues', double(bgImage));
+
+        % Tile patch at its pixel offset in the union canvas
+        x1 = xmin(layer) - dx + 1;
+        y1 = ymin(layer) - dy + 1;
+        x2 = x1 + size(iWarped, 2) - 1;
+        y2 = y1 + size(iWarped, 1) - 1;
+        nC = size(img2D, 3);
+        canvas = repmat(cast(bgImage, class(img2D)), [nHeight, nWidth, nC]);
+        canvas(y1:y2, x1:x2, :) = iWarped;
+
+        saveOneImage(canvas, files{layer}, outputDir, outputExt, saveOpt);
+        if ~isempty(pwb); pwb.increment(); end
     end
-    if ~isempty(pwb); pwb.setCurrentIteration(numFiles); end
 end
 
 % --- Save tforms / rbMatrix to file if requested
@@ -405,15 +428,18 @@ function [tformMatrix, userCancelled] = interactiveSmoothingHDD(tformMatrix, num
 userCancelled = false;
 vec_length = numel(tformMatrix);
 
-% Extract raw scale/shear from the cumulative tform chain (all files)
-x_stretch = arrayfun(@(k) tformMatrix{k}.T(1,1), 1:vec_length);
-y_stretch = arrayfun(@(k) tformMatrix{k}.T(2,2), 1:vec_length);
-x_shear   = arrayfun(@(k) tformMatrix{k}.T(2,1), 1:vec_length);
-y_shear   = arrayfun(@(k) tformMatrix{k}.T(1,2), 1:vec_length);
-sliceIndices = 1:vec_length;
+% Extract raw scale/shear from the cumulative tform chain.
+% Start from k=2: skip the identity at k=1 so it does not bias the
+% running-average window, matching v1's interactiveSmoothingV1 convention.
+% Cast to double — image-derived T elements may be single on some slices.
+x_stretch = arrayfun(@(k) double(tformMatrix{k}.T(1,1)), 2:vec_length);
+y_stretch = arrayfun(@(k) double(tformMatrix{k}.T(2,2)), 2:vec_length);
+x_shear   = arrayfun(@(k) double(tformMatrix{k}.T(2,1)), 2:vec_length);
+y_shear   = arrayfun(@(k) double(tformMatrix{k}.T(1,2)), 2:vec_length);
+sliceIndices = 2:vec_length;
 
 % Plot raw parameters
-figure(125);
+figure(126);
 subplot(2, 1, 1);
 plot(sliceIndices, x_stretch, '.-', sliceIndices, y_stretch, '.-');
 title('Scaling');  legend('x-axis', 'y-axis');
@@ -422,14 +448,16 @@ plot(sliceIndices, x_shear, '.-', sliceIndices, y_shear, '.-');
 title('Shear');  legend('x-axis', 'y-axis');
 
 % First decision dialog
+questOpt.Icon = 'puffin_question';
+questOpt.WindowStyle = 'normal';
 answer1 = utils.dlgs.inputQuestDlg(parentFig, ...
     'Align the stack using detected displacements?', 'Fix drifts', ...
-    'Yes', 'Subtract running average', 'Quit alignment', 'Yes');
+    'Apply current values', 'Fix drifts', 'Quit alignment', 'Apply current values', questOpt);
 if isempty(answer1) || strcmp(answer1, 'Quit alignment')
     userCancelled = true;
     return;
 end
-if strcmp(answer1, 'Yes')
+if strcmp(answer1, 'Apply current values')
     return;  % apply without smoothing
 end
 
@@ -443,36 +471,28 @@ excludeShearPeaks   = 0;
 
 notOk = true;
 while notOk
-    prompts = {'Fix stretching', 'Fix shear', ...
-               'Half-width of averaging window', ...
-               'Exclude stretch peaks higher than (0 = off)', ...
-               'Exclude shear peaks higher than (0 = off)'};
-    defAns = {fixStretch, fixShear, ...
-              struct('Spinner', true, 'Value', halfWidthDefault, ...
-                     'Limits', [1 halfWidthMax], 'Step', 1, 'Round', 0), ...
-              struct('Spinner', true, 'Value', excludeStretchPeaks, ...
-                     'Limits', [0 1e6], 'Step', 0.01, 'Round', 4), ...
-              struct('Spinner', true, 'Value', excludeShearPeaks, ...
-                     'Limits', [0 1e6], 'Step', 0.01, 'Round', 4)};
-    dlgOpt.Title = 'Please select suitable settings for the correction';
+    dlgOpt.LabelPosition = 'left';
+    dlgOpt.WindowHeight = 210;
+    prompts = {'Half-width of averaging window', ...
+                'Fix stretching', ...
+                'Exclude stretch peaks higher than (0 = off)', ...
+                'Fix shear', ...
+                'Exclude shear peaks higher than (0 = off)'};
+    defAns = {struct('Spinner', true, 'Value', halfWidthDefault, 'Limits', [1 halfWidthMax], 'Step', 1, 'Round', true), ...
+              fixStretch, ...
+              struct('Spinner', true, 'Value', excludeStretchPeaks, 'Limits', [0 Inf], 'Step', 0.01, 'Round', false), ...
+              fixShear, ...
+              struct('Spinner', true, 'Value', excludeShearPeaks, 'Limits', [0 Inf], 'Step', 0.01, 'Round', false)};
     answer2 = utils.dlgs.inputUniversalDlg(parentFig, '', prompts, defAns, 'Correction settings', dlgOpt);
     if isempty(answer2)
         userCancelled = true;
         return;
     end
-    fixStretch          = logical(answer2{1});
-    fixShear            = logical(answer2{2});
-    halfWidthDefault    = answer2{3};
-    excludeStretchPeaks = answer2{4};
+    halfWidthDefault    = answer2{1};
+    fixStretch          = logical(answer2{2});
+    excludeStretchPeaks = answer2{3};
+    fixShear            = logical(answer2{4});
     excludeShearPeaks   = answer2{5};
-
-    % Validate half-width
-    if halfWidthDefault > halfWidthMax
-        utils.dlgs.inputQuestDlg(parentFig, ...
-            sprintf('Half-width must be smaller than half the stack depth (%d).', halfWidthMax), ...
-            'Wrong half-width', 'Try again', 'Try again');
-        continue;
-    end
 
     % Apply smoothing
     if fixStretch
@@ -491,7 +511,7 @@ while notOk
     end
 
     % Re-plot smoothed parameters
-    figure(125);
+    figure(126);
     subplot(2, 1, 1);
     plot(sliceIndices, x_stretch2, '.-', sliceIndices, y_stretch2, '.-');
     title('Scaling, fixed');  legend('x-axis', 'y-axis');
@@ -502,19 +522,23 @@ while notOk
     % Second decision dialog
     answer3 = utils.dlgs.inputQuestDlg(parentFig, ...
         'Align the stack using detected displacements?', 'Fix drifts', ...
-        'Yes', 'Change window size', 'Quit alignment', 'Yes');
+        'Apply values', 'Change window size', 'Quit alignment', 'Apply values', questOpt);
     if isempty(answer3) || strcmp(answer3, 'Quit alignment')
         userCancelled = true;
         return;
     end
-    if strcmp(answer3, 'Yes')
-        % Write smoothed values back (skip slice 1 = identity)
+    if strcmp(answer3, 'Apply values')
+        % Write smoothed values back (skip slice 1 = identity).
+        % Assign full T matrix at once to avoid affine2d setter rejecting
+        % intermediate element-level states.
         for k = 2:vec_length
             if isempty(tformMatrix{k}) || ~isprop(tformMatrix{k}, 'T'); continue; end
-            tformMatrix{k}.T(1,1) = x_stretch2(k);
-            tformMatrix{k}.T(2,2) = y_stretch2(k);
-            tformMatrix{k}.T(2,1) = x_shear2(k);
-            tformMatrix{k}.T(1,2) = y_shear2(k);
+            Tk = tformMatrix{k}.T;
+            Tk(1,1) = x_stretch2(k - 1);
+            Tk(2,2) = y_stretch2(k - 1);
+            Tk(2,1) = x_shear2(k - 1);
+            Tk(1,2) = y_shear2(k - 1);
+            tformMatrix{k}.T = Tk;
         end
         notOk = false;
     end
@@ -536,10 +560,10 @@ for k = 2:vec_length
 end
 if ~any(hasTform); return; end
 
-x_stretch = arrayfun(@(k) tformMatrix{k}.T(1,1), 1:vec_length);
-y_stretch = arrayfun(@(k) tformMatrix{k}.T(2,2), 1:vec_length);
-x_shear   = arrayfun(@(k) tformMatrix{k}.T(2,1), 1:vec_length);
-y_shear   = arrayfun(@(k) tformMatrix{k}.T(1,2), 1:vec_length);
+x_stretch = arrayfun(@(k) double(tformMatrix{k}.T(1,1)), 2:vec_length);
+y_stretch = arrayfun(@(k) double(tformMatrix{k}.T(2,2)), 2:vec_length);
+x_shear   = arrayfun(@(k) double(tformMatrix{k}.T(2,1)), 2:vec_length);
+y_shear   = arrayfun(@(k) double(tformMatrix{k}.T(1,2)), 2:vec_length);
 
 halfwidth = BatchOpt.SubtractRunningAverageStep{1};
 if halfwidth > floor(numFiles/2 - 1)
@@ -559,10 +583,12 @@ end
 
 for k = 2:vec_length
     if ~hasTform(k); continue; end
-    tformMatrix{k}.T(1,1) = x_stretch(k);
-    tformMatrix{k}.T(2,2) = y_stretch(k);
-    tformMatrix{k}.T(2,1) = x_shear(k);
-    tformMatrix{k}.T(1,2) = y_shear(k);
+    Tk = tformMatrix{k}.T;
+    Tk(1,1) = x_stretch(k - 1);
+    Tk(2,2) = y_stretch(k - 1);
+    Tk(2,1) = x_shear(k - 1);
+    Tk(1,2) = y_shear(k - 1);
+    tformMatrix{k}.T = Tk;
 end
 end
 

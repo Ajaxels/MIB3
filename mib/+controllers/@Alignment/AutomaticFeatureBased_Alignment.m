@@ -249,6 +249,10 @@ if ~isempty(pwb)
     pwb.setIncrement(stepIncrement);
 end
 
+% Fix RANSAC seed so estgeotform2d is reproducible across runs and
+% matches the HDD variant for direct comparison.
+rng(0, 'twister');
+
 for layer = 2:Depth
     if ~isempty(pwb)
         if pwb.getCancelState(); return; end
@@ -489,13 +493,17 @@ while notOk
         return;
     end
     if strcmp(answer3, 'Apply values')
-        % Write smoothed values back into the tform chain
+        % Write smoothed values back into the tform chain.
+        % Assign the full T matrix at once — element-level assignment triggers
+        % the affine2d setter with an intermediate state and fails validation.
         for k = 2:vec_length
             if isempty(tformMatrix{k}) || ~isprop(tformMatrix{k}, 'T'); continue; end
-            tformMatrix{k}.T(1,1) = x_stretch2(k - 1);
-            tformMatrix{k}.T(2,2) = y_stretch2(k - 1);
-            tformMatrix{k}.T(2,1) = x_shear2(k - 1);
-            tformMatrix{k}.T(1,2) = y_shear2(k - 1);
+            Tk = tformMatrix{k}.T;
+            Tk(1,1) = x_stretch2(k - 1);
+            Tk(2,2) = y_stretch2(k - 1);
+            Tk(2,1) = x_shear2(k - 1);
+            Tk(1,2) = y_shear2(k - 1);
+            tformMatrix{k}.T = Tk;
         end
         notOk = false;
     end
@@ -539,10 +547,12 @@ end
 
 for k = 2:vec_length
     if ~hasTform(k); continue; end
-    tformMatrix{k}.T(1,1) = x_stretch(k - 1);
-    tformMatrix{k}.T(2,2) = y_stretch(k - 1);
-    tformMatrix{k}.T(2,1) = x_shear(k - 1);
-    tformMatrix{k}.T(1,2) = y_shear(k - 1);
+    Tk = tformMatrix{k}.T;
+    Tk(1,1) = x_stretch(k - 1);
+    Tk(2,2) = y_stretch(k - 1);
+    Tk(2,1) = x_shear(k - 1);
+    Tk(1,2) = y_shear(k - 1);
+    tformMatrix{k}.T = Tk;
 end
 end
 

@@ -106,6 +106,7 @@ classdef Alignment < handle
         AlignMedianSmoothTemplate_Alignment(obj, parameters)
         alignDriftCorrectionHDD_Alignment(obj, parameters)
         AutomaticFeatureBasedHDD_Alignment(obj, parameters)
+        AutomaticFeatureBasedHDDV2_Alignment(obj, parameters)
         status = updateAutomaticOptions(obj)
         previewFeaturesBtn_Callback(obj)
 
@@ -156,9 +157,9 @@ classdef Alignment < handle
             % ---- BatchOpt defaults (no TwoStacks / SecondDataset fields) ----
             BatchOpt.Algorithm    = {'Drift correction'};
             BatchOpt.Algorithm{2} = {'Drift correction', 'Template matching', ...
+                'Automatic feature-based', 'Automatic feature-based v2', ...
                 'Single landmark point', 'Three landmark points', ...
                 'Landmarks, multi points', 'Color channels, multi points', ...
-                'Automatic feature-based', 'Automatic feature-based v2', ...
                 'AMST: median-smoothed template'};
 
             BatchOpt.CorrelateWith    = {'Previous slice'};
