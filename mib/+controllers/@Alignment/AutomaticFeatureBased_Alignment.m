@@ -60,7 +60,7 @@ parameters.detectPointsType = obj.BatchOpt.FeatureDetectorType{1};
 [Height, Width, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
 if Depth < 2
     utils.dlgs.showErrorDialog(parentFig, ...
-        'Automatic feature-based alignment requires at least 2 slices.', 'Alignment');
+        'Automatic feature-based alignment requires at least 2 slices.', 'AutomaticFeatureBased_Alignment');
     return;
 end
 
@@ -113,8 +113,7 @@ end
 % --- Set up cancelable progress
 pwb = [];
 if obj.BatchOpt.showWaitbar
-    pwb = core.PoolWaitbar(Depth * 2, 'Detecting features & matching...', ...
-        parentFig, 'Alignment', true);
+    pwb = core.PoolWaitbar(Depth * 2, 'Detecting features & matching...', parentFig, 'Alignment', true);
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
@@ -137,9 +136,7 @@ end
 % Verify we have at least one usable transform
 anyTform = any(~cellfun(@isempty, tformMatrix));
 if ~anyTform
-    utils.dlgs.showErrorDialog(parentFig, ...
-        'No transforms were produced — check feature detector settings.', ...
-        'Alignment');
+    utils.dlgs.showErrorDialog(parentFig, 'No transforms were produced — check feature detector settings.', 'Alignment');
     return;
 end
 
@@ -281,27 +278,51 @@ for layer = 2:Depth
     indexPairs = matchFeatures(featuresOriginal, featuresDistorted);
     if isempty(indexPairs)
         utils.dlgs.showErrorDialog(parentFig, ...
-            sprintf('No matching descriptors between slice %d and %d. Adjust detector settings.', ...
-                    layer - 1, layer), 'Alignment');
+            sprintf('No matching descriptors between slice %d and %d. Adjust detector settings.', layer - 1, layer), ...
+            'Alignment');
         return;
     end
     matchedOriginal  = validPtsOriginal(indexPairs(:, 1));
     matchedDistorted = validPtsDistorted(indexPairs(:, 2));
 
+    % Show putative point matches.
+    %                     figure;
+    %                     matchedOriginalTemp = matchedOriginal;
+    %                     matchedOriginalTemp.Location = matchedOriginalTemp.Location * ratio;
+    %                     matchedDistortedTemp = matchedDistorted;
+    %                     matchedDistortedTemp.Location = matchedDistortedTemp.Location * ratio;
+    %                     showMatchedFeatures(original,distorted,matchedOriginalTemp,matchedDistortedTemp);
+    %                     title('Putatively matched points (including outliers)');
+
     if size(matchedOriginal, 1) < 3
         utils.dlgs.showErrorDialog(parentFig, ...
             sprintf(['Only %d matched points between slice %d and %d — at least 3 are required.\n\n' ...
-                    'Adjust feature-detector settings to produce more points.'], ...
-                    size(matchedOriginal, 1), layer - 1, layer), 'Alignment');
+                    'Adjust feature-detector settings to produce more points.'], size(matchedOriginal, 1), layer - 1, layer), ...
+                    'Alignment');
         return;
     end
 
     try
+        % Find a transformation corresponding to the matching point pairs using the
+        % statistically robust M-estimator SAmple Consensus (MSAC) algorithm, which
+        % is a variant of the RANSAC algorithm. It removes outliers while computing
+        % the transformation matrix. You may see varying results of the transformation
+        % computation because of the random sampling employed by the MSAC algorithm.
         [tform, inlierIdx] = estgeotform2d(matchedDistorted, matchedOriginal, ...
             parameters.TransformationType, ...
             'MaxNumTrials', obj.automaticOptions.estGeomTransform.MaxNumTrials, ...
             'Confidence',   obj.automaticOptions.estGeomTransform.Confidence, ...
             'MaxDistance',  obj.automaticOptions.estGeomTransform.MaxDistance);
+
+        %     figure(1234);
+        %     showMatchedFeatures(original,distorted,matchedOriginal,matchedDistorted);
+        %     title("Matched Points");
+        %     figure(1235);
+        %     inlierPtsDistorted = matchedDistorted(inlierIdx,:);
+        %     inlierPtsOriginal  = matchedOriginal(inlierIdx,:);
+        %     showMatchedFeatures(original,distorted,inlierPtsOriginal,inlierPtsDistorted);
+        %     title("Removed outliers");
+
     catch ME
         utils.dlgs.showErrorDialog(parentFig, ME, ...
             sprintf('estgeotform2d failed on slice %d', layer));
@@ -313,6 +334,7 @@ for layer = 2:Depth
     tformLegacy = makeLegacyTform(tform);
 
     % Compose with the previously broadcast transform
+    % https://se.mathworks.com/help/images/matrix-representation-of-geometric-transformations.html
     if isempty(tformMatrix{layer})
         tformMatrix(layer:end) = {tformLegacy};
     else
@@ -386,14 +408,16 @@ plot(sliceIndices, x_shear, '.-', sliceIndices, y_shear, '.-');
 title('Shear');  legend('x-axis', 'y-axis');
 
 % --- First decision dialog
+questOpt.Icon = 'puffin_question';
+questOpt.WindowStyle = 'normal';
 answer1 = utils.dlgs.inputQuestDlg(parentFig, ...
-    'Align the stack using detected displacements?', 'Fix drifts', ...
-    'Yes', 'Subtract running average', 'Quit alignment', 'Yes');
+    'Align the stack using detected displacements?', 'Align dataset', ...
+    'Apply current values', 'Fix drifts', 'Quit alignment', 'Apply current values', questOpt);
 if isempty(answer1) || strcmp(answer1, 'Quit alignment')
     userCancelled = true;
     return;
 end
-if strcmp(answer1, 'Yes')
+if strcmp(answer1, 'Apply current values')
     return;  % apply without smoothing
 end
 
@@ -401,43 +425,35 @@ end
 halfWidthMax     = max(1, floor(Depth / 2 - 1));
 halfWidthDefault = min(25, halfWidthMax);
 fixStretch          = true;
-fixShear            = true;
 excludeStretchPeaks = 0;
+fixShear            = true;
 excludeShearPeaks   = 0;
 
 notOk = true;
 while notOk
     % Smoothing-settings dialog
-    prompts = {'Fix stretching', 'Fix shear', ...
-               'Half-width of averaging window', ...
+    prompts = {'Half-width of averaging window', ...
+               'Fix stretching', ...
                'Exclude stretch peaks higher than (0 = off)', ...
+               'Fix shear', ...
                'Exclude shear peaks higher than (0 = off)'};
-    defAns = {fixStretch, fixShear, ...
-              struct('Spinner', true, 'Value', halfWidthDefault, ...
-                     'Limits', [1 halfWidthMax], 'Step', 1, 'Round', 0), ...
-              struct('Spinner', true, 'Value', excludeStretchPeaks, ...
-                     'Limits', [0 1e6], 'Step', 0.01, 'Round', 4), ...
-              struct('Spinner', true, 'Value', excludeShearPeaks, ...
-                     'Limits', [0 1e6], 'Step', 0.01, 'Round', 4)};
-    dlgOpt.Title = 'Please select suitable settings for the correction';
+    defAns = {struct('Spinner', true, 'Value', halfWidthDefault, 'Limits', [1 halfWidthMax], 'Step', 1, 'Round', false), ...
+              fixStretch,  ...
+              struct('Spinner', true, 'Value', excludeStretchPeaks, 'Limits', [0 Inf], 'Step', 0.01, 'Round', false), ...
+              fixShear, ...
+              struct('Spinner', true, 'Value', excludeShearPeaks, 'Limits', [0 Inf], 'Step', 0.01, 'Round', false)};
+    dlgOpt.LabelPosition = 'left';
+    dlgOpt.WindowHeight = 210;
     answer2 = utils.dlgs.inputUniversalDlg(parentFig, '', prompts, defAns, 'Correction settings', dlgOpt);
     if isempty(answer2)
         userCancelled = true;
         return;
     end
-    fixStretch          = logical(answer2{1});
-    fixShear            = logical(answer2{2});
-    halfWidthDefault    = answer2{3};
-    excludeStretchPeaks = answer2{4};
+    halfWidthDefault    = answer2{1};
+    fixStretch          = logical(answer2{2});
+    excludeStretchPeaks = answer2{3};
+    fixShear            = logical(answer2{4});
     excludeShearPeaks   = answer2{5};
-
-    % Validate half-width
-    if halfWidthDefault > halfWidthMax
-        utils.dlgs.inputQuestDlg(parentFig, ...
-            sprintf('Half-width must be smaller than half the stack depth (%d).', halfWidthMax), ...
-            'Wrong half-width', 'Try again', 'Try again');
-        continue;
-    end
 
     % Apply smoothing
     if fixStretch
@@ -467,12 +483,12 @@ while notOk
     % Second decision dialog
     answer3 = utils.dlgs.inputQuestDlg(parentFig, ...
         'Align the stack using detected displacements?', 'Fix drifts', ...
-        'Yes', 'Change window size', 'Quit alignment', 'Yes');
+        'Apply values', 'Change window size', 'Quit alignment', 'Apply values', questOpt);
     if isempty(answer3) || strcmp(answer3, 'Quit alignment')
         userCancelled = true;
         return;
     end
-    if strcmp(answer3, 'Yes')
+    if strcmp(answer3, 'Apply values')
         % Write smoothed values back into the tform chain
         for k = 2:vec_length
             if isempty(tformMatrix{k}) || ~isprop(tformMatrix{k}, 'T'); continue; end

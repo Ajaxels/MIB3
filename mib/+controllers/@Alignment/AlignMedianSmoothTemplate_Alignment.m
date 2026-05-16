@@ -46,14 +46,12 @@ end
 % --- Reject extended mode + projective transformType
 if ~strcmp(parameters.TransformationMode, 'cropped')
     utils.dlgs.showErrorDialog(parentFig, ...
-        ['AMST currently supports only the "cropped" transformation mode.\n\n' ...
-         'Switch TransformationMode and retry.'], 'Alignment');
+        sprintf('AMST currently supports only the "cropped" transformation mode.\n\nSwitch TransformationMode and retry.'), 'Alignment');
     return;
 end
 if strcmp(parameters.TransformationType, 'projective')
     utils.dlgs.showErrorDialog(parentFig, ...
-        ['AMST does not support "projective" transforms (imregtform limitation).\n\n' ...
-         'Use translation, rigid, similarity, or affine.'], 'Alignment');
+        sprintf('AMST does not support "projective" transforms (imregtform limitation).\n\nUse translation, rigid, similarity, or affine.'), 'Alignment');
     return;
 end
 if ~ismember(parameters.TransformationType, {'translation', 'rigid', 'similarity', 'affine'})
@@ -62,9 +60,7 @@ if ~ismember(parameters.TransformationType, {'translation', 'rigid', 'similarity
         parameters.TransformationType = 'similarity';
     else
         utils.dlgs.showErrorDialog(parentFig, ...
-            sprintf(['AMST does not support "%s" (imregtform accepts only ' ...
-                    'translation / rigid / similarity / affine).'], ...
-                    parameters.TransformationType), 'Alignment');
+            sprintf('AMST does not support "%s"\n\n(imregtform accepts translation / rigid / similarity / affine).', parameters.TransformationType), 'Alignment');
         return;
     end
 end
@@ -76,15 +72,14 @@ if ~parameters.useBatchMode
     answer = utils.dlgs.inputQuestDlg(parentFig, ...
         sprintf(['AMST expects a pre-aligned stack.\n\n' ...
                 'If the dataset has not yet been roughly aligned (e.g. with ' ...
-                'Drift correction), AMST may diverge. Continue anyway?']), ...
-        'Pre-alignment', 'Yes, continue', 'Cancel', '', 'Yes, continue', questOpt);
+                'Drift correction), AMST may diverge\n Continue?']), ...
+        'Pre-alignment', 'Yes, continue', 'Cancel', 'Yes, continue', questOpt);
     if isempty(answer) || strcmp(answer, 'Cancel'); return; end
 end
 
 [Height, Width, Depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3, struct('blockModeSwitch', 0));
 if Depth < 3
-    utils.dlgs.showErrorDialog(parentFig, ...
-        'AMST requires at least 3 slices.', 'Alignment');
+    utils.dlgs.showErrorDialog(parentFig, 'AMST requires at least 3 slices.', 'Alignment');
     return;
 end
 

@@ -514,9 +514,10 @@ plotCumulativeV2(hFig125, noRows, noCols, cumT, cumR, cumS, affine_params, Depth
 
 % --- First question: apply as-is or fix drifts?
 questOpt.Icon = 'puffin_question';
+questOpt.WindowStyle = 'normal';
 answer1 = utils.dlgs.inputQuestDlg(parentFig, ...
     'Align the stack using detected displacements?', 'Align dataset', ...
-    'Quit alignment', 'Fix drifts', 'Apply current values', 'Apply current values', questOpt);
+    'Apply current values', 'Fix drifts', 'Quit alignment', 'Apply current values', questOpt);
 if isempty(answer1) || strcmp(answer1, 'Quit alignment')
     cancelled = true;
     if isvalid(hFig125); close(hFig125); end
@@ -546,6 +547,8 @@ if ismember(transformType, {'similarity', 'affine'})
 end
 
 dlgOpt.okBtnText = 'Continue';
+dlgOpt.LabelPosition = 'left';
+dlgOpt.WindowHeight = 210;
 
 hFig126 = [];
 notOk = true;
@@ -602,7 +605,7 @@ while notOk
 
     answer2 = utils.dlgs.inputQuestDlg(parentFig, ...
         'Align the stack using detected displacements?', 'Align dataset', ...
-        'Quit alignment', 'Change window size', 'Apply current values', 'Apply current values', questOpt);
+        'Apply values', 'Change window size', 'Quit alignment', 'Apply current values', questOpt);
     if isempty(answer2) || strcmp(answer2, 'Quit alignment')
         cancelled = true;
         if isvalid(hFig125); close(hFig125); end
@@ -610,7 +613,7 @@ while notOk
         return;
     end
 
-    if strcmp(answer2, 'Apply current values')
+    if strcmp(answer2, 'Apply values')
         cumT = smoothT;
         cumR = smoothR;
         cumS = smoothS;

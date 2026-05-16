@@ -48,12 +48,13 @@ end
 if ~parameters.useBatchMode
     questOpt.Icon = 'puffin_warning';
     questOpt.WindowStyle = 'modal';
+    questOpt.WindowWidth = 500;
     answer = utils.dlgs.inputQuestDlg(parentFig, ...
         sprintf(['Before proceeding, please confirm that all images in the input ' ...
                 'directory have the same dimensions.\n\nIf images have variable ' ...
                 'dimensions, try the HDD mode of the Automatic feature-based ' ...
                 'algorithm instead.']), ...
-        'HDD drift correction', 'Yes, images are the same size', 'Cancel', '', ...
+        'HDD drift correction', 'Yes, images are the same size', 'Cancel', ...
         'Yes, images are the same size', questOpt);
     if isempty(answer) || strcmp(answer, 'Cancel'); return; end
 end
@@ -72,8 +73,7 @@ end
 % --- Build the imageDatastore
 inputDir = obj.BatchOpt.HDD_InputDir;
 if ~isfolder(inputDir)
-    utils.dlgs.showErrorDialog(parentFig, ...
-        sprintf('Input directory does not exist: "%s"', inputDir), 'HDD drift');
+    utils.dlgs.showErrorDialog(parentFig, sprintf('Input directory does not exist: "%s"', inputDir), 'HDD drift');
     return;
 end
 ext = lower(['.' obj.BatchOpt.HDD_InputFilenameExtension{1}]);
@@ -106,6 +106,8 @@ pwb = [];
 if obj.BatchOpt.showWaitbar
     pwb = core.PoolWaitbar(NumFiles, 'HDD drift: computing shifts...', ...
         parentFig, 'Alignment', true);
+    stepIncrement = max([1 floor(NumFiles/10)]);
+    pwb.setIncrement(stepIncrement);
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
@@ -184,6 +186,7 @@ end
 for imgId = 1:NumFiles
     if ~isempty(pwb)
         if pwb.getCancelState(); return; end
+        if mod(imgId, stepIncrement)==0; pwb.increment(); end
     end
     [imgIn5D, fileinfo] = readimage(imgDS, imgId);   % [H, W, Z=1, C, T=1]
     [height, width, ~, nColors] = size(imgIn5D, 1:4);
@@ -205,8 +208,6 @@ for imgId = 1:NumFiles
     % Wrap into a MibImage and save
     mibImg = core.MibImage(reshape(imgOut, [size(imgOut, 1), size(imgOut, 2), 1, nColors, 1]));
     mibImg.save(fnOut, saveOpt);
-
-    if ~isempty(pwb); pwb.increment(); end
 end
 
 % Note: HDD mode doesn't touch the in-memory dataset, so no backup or
@@ -239,6 +240,12 @@ catch ME
     utils.dlgs.showErrorDialog(parentFig, ME, 'HDD drift: read failed (slice 1)');
     return;
 end
+
+if ~isempty(pwb)
+    stepIncrement = max([1 floor(NumFiles/10)]);
+    pwb.setIncrement(stepIncrement);
+end
+
 fixedImg = sliceTo2D(firstImg, parameters.colorCh, manualMode, x1, x2, y1, y2);
 if intensityGradient
     fixedImg = sobelGradient(fixedImg, hx, hy);
@@ -250,7 +257,7 @@ keepFirstAsReference = (parameters.refFrame == 1);
 for imgId = 2:NumFiles
     if ~isempty(pwb)
         if pwb.getCancelState(); return; end
-        if mod(imgId, 10) == 0; pwb.increment(); end
+        if mod(imgId, stepIncrement) == 0; pwb.increment(); end
     end
 
     try

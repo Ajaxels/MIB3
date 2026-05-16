@@ -52,11 +52,12 @@ parameters.detectPointsType = obj.BatchOpt.FeatureDetectorType{1};
 if ~parameters.useBatchMode
     questOpt.Icon = 'puffin_warning';
     questOpt.WindowStyle = 'modal';
+    questOpt.WindowWidth = 500;
     answer = utils.dlgs.inputQuestDlg(parentFig, ...
         sprintf(['Before proceeding, please load the first image of the dataset ' ...
                 'into MIB so that the image dimensions, pixel size, and reference ' ...
                 'frame can be derived from it.']), ...
-        'HDD feature-based', 'Yes, the first image is loaded', 'Cancel', '', ...
+        'HDD feature-based', 'Yes, the first image is loaded', 'Cancel', ...
         'Yes, the first image is loaded', questOpt);
     if isempty(answer) || strcmp(answer, 'Cancel'); return; end
 end
@@ -133,8 +134,10 @@ end
 % --- Cancelable progress
 pwb = [];
 if obj.BatchOpt.showWaitbar
-    pwb = core.PoolWaitbar(numFiles * 2, 'HDD feature-based: detecting + matching...', ...
+    pwb = core.PoolWaitbar(numFiles*2, 'HDD feature-based: detecting + matching...', ...
         parentFig, 'Alignment', true);
+    stepIncrement = max([1 floor(numFiles/10)]);
+    pwb.setIncrement(stepIncrement);
 end
 cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
 
@@ -167,7 +170,7 @@ if ~shiftsLoaded
     for layer = 2:numFiles
         if ~isempty(pwb)
             if pwb.getCancelState(); return; end
-            if mod(layer, 10) == 0; pwb.increment(); end
+            if mod(layer, stepIncrement) == 0; pwb.increment(); end
         end
 
         indexPairs = matchFeatures(featuresList{layer - 1}, featuresList{layer});
@@ -333,6 +336,10 @@ readFcn = imgDS.ReadFcn;
 errorFlag = false(numFiles, 1);
 errorMsgs = cell(numFiles, 1);
 
+% pwb increment
+stepIncrement = max([1 floor(numFiles/10)]);
+
+
 parfor (layer = 1:numFiles, parforArg)
     try
         img5D = readFcn(files{layer});
@@ -361,7 +368,7 @@ parfor (layer = 1:numFiles, parforArg)
         [featuresList{layer}, validPtsList{layer}] = extractFeatures(distorted, ptsDistorted);
     end
     validPtsList{layer}.Location = validPtsList{layer}.Location / ratio;
-    if ~isempty(pwb) && mod(layer, 10) == 0; pwb.increment(); end
+    if ~isempty(pwb) && mod(layer, stepIncrement) == 0; pwb.increment(); end
 end
 
 if any(errorFlag)
