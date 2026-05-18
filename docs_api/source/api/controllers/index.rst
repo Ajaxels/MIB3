@@ -38,10 +38,12 @@ Dataset tool dialogs
 .. toctree::
    :maxdepth: 1
 
+   Alignment
    BoundingBox
    DisplayAdjust
    CropDataset
    CropObjects
+   MakeMovie
    ResampleDataset
    Snapshot
 

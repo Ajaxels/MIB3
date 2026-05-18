@@ -222,10 +222,6 @@ column.add(homeHandles.export);
 
 % % --------- MOVIE/RENDER ---------
 column = section.addColumn('Width', 100); 
-% Render movie
-homeHandles.movie = Button("Movie",  Icon(fullfile(iconPath, 'documentary_16px.png')));
-homeHandles.movie.Description = 'Start the movie maker tool';
-column.add(homeHandles.movie);
 % Render volume
 homeHandles.render = SplitButton("Render", Icon(fullfile(iconPath, 'volume_rendering_16px.png')));
 homeHandles.render.Description = 'Show the dataset using volume rendering';
@@ -242,6 +238,12 @@ homeHandles.renderFiji = ListItem( '3D viewer in Fiji',  Icon(fullfile(iconPath,
 popupList.add(homeHandles.renderFiji);
 homeHandles.render.Popup = popupList;
 column.add(homeHandles.render);
+
+% Render movie
+homeHandles.movie = Button("Movie",  Icon(fullfile(iconPath, 'documentary_16px.png')));
+homeHandles.movie.Description = 'Start the movie maker tool';
+column.add(homeHandles.movie);
+
 column.addEmptyControl();
 
 % % --------- SNAPSHOT ---------

@@ -101,6 +101,8 @@ classdef MibDataset < matlab.mixin.Copyable
         % columns
         snapshotFilename = ''
         % filename for the snapshot, used by controllers.Snapshot; initialized on first open
+        movieFilename = ''
+        % filename for the movie, used by controllers.MakeMovie; initialized on first open
     end
 
     events

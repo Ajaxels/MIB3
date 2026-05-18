@@ -362,7 +362,7 @@ if ~isempty(sOver1) && ~isnan(sOver1(1,1,1))
 
     if dataset.labels.maxMaterials ~= 127 && dataset.labels.maxMaterials ~= 32767
         M = sOver1;
-        selectedObject = dataset.getSelectedMaterialIndex;
+        selectedObject = dataset.getSelectedMaterialIndex();
 
         % Convert to contour if needed
         if obj.preferences.Styles.Labels.ShowAsContours

@@ -159,11 +159,11 @@ if modelType >= 256 && ~isempty(newMaterialIndex)
     BatchOpt.MaterialName = num2str(newMaterialIndex);
 end
 
-% Select the newly added material (offset: 1=Mask, 2=Exterior, 3=1st material...)
-if ~isempty(newMaterialIndex)
-    obj.I{BatchOpt.id}.selectedMaterial      = newMaterialIndex + 2;
-    obj.I{BatchOpt.id}.selectedAddToMaterial = newMaterialIndex + 2;
-end
+% MibDataset.addMaterial already set selectedMaterial/selectedAddToMaterial
+% correctly for all model types (table rows 3-4 for large models, nMats+2
+% for small models). Do NOT override here — for large models newMaterialIndex
+% is the raw pixel value (1, 2, 3 …) and adding 2 produces out-of-range row
+% indices that crash the 4-row materialsTable.
 
 if BatchOpt.showWaitbar; wb.Value = 1; end
 

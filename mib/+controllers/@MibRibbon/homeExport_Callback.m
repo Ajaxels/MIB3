@@ -32,6 +32,7 @@ switch mode
     case 'Snapshot'     % obj.handles.ribbonHome.snapshot
         obj.mibController.startController('controllers.Snapshot');
     case 'Movie'     % obj.handles.ribbonHome.movie
+        obj.mibController.startController('controllers.MakeMovie');
     case {'Render', 'MIB Rendering'}     % obj.handles.ribbonHome.render &  obj.handles.ribbonHome.renderMIB
         obj.mibController.startController('controllers.VolRenApp');
     case 'MATLAB Volume Viewer'     % obj.handles.ribbonHome.renderMatlab

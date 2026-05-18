@@ -51,7 +51,7 @@ switch mode
     case 'removeMaterial'
         obj.mibModel.removeMaterial();
     case 'colorWheel'
-
+        obj.mibModel.setDefaultColorPalette('Random Colors');
     case 'viewSettings'
         prompts = {'Show Labels using contours:'; 'Show Mask using contours:'};
         defAns = {

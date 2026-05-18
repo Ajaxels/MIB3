@@ -99,8 +99,7 @@ else
     OPTIONS.model_fn = dataset.labels.filename;
     if ~strcmp(obj.BatchOpt.MaterialIndex, '-2')
         matIdx = str2double(obj.BatchOpt.MaterialIndex);
-        OPTIONS.material_id = sprintf('%s (%s)', obj.BatchOpt.MaterialIndex, ...
-            dataset.labels.materialNames{matIdx});
+        OPTIONS.material_id = sprintf('%s (%s)', obj.BatchOpt.MaterialIndex, dataset.labels.materialNames{matIdx});
     else
         OPTIONS.material_id = 'Full model';
     end

@@ -49,8 +49,10 @@ if obj.labels.maxMaterials < 256
     index = index - 2;
 else
     index = index - 2;
-    if index > 0
+    if index > 0 && index <= numel(obj.labels.materialNames)
         index = str2double(obj.labels.materialNames{index});
+    elseif index > numel(obj.labels.materialNames)
+        index = 0;  % selection points past the registered slots; treat as Exterior
     end
 end
 end
