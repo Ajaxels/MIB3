@@ -52,6 +52,13 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Make snapshot';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Snapshot'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Save dataset';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.saveImage("image", [], Batch);'; actionId = actionId + 1;
+
+obj.Sections(secIndex).Actions(actionId).Name = 'Chunk dataset...';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ChunkingExport'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Stitch chunked datasets...';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ChunkingImport'', [], Batch);'; actionId = actionId + 1;
+
+
 obj.Sections(secIndex).Actions(actionId).Name = 'DIRECTORY LOOP START';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.directoryLoopAction_Callback(Batch)'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'DIRECTORY LOOP STOP';

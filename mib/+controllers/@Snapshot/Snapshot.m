@@ -374,9 +374,9 @@ classdef Snapshot < handle
         function updateDestination(obj)
             % update destination for the snapshot
             if obj.view.handles.File.Value
-                obj.view.handles.filePanel.Visible = true;
+                obj.view.handles.filePanel.Enable = true;
             else
-                obj.view.handles.filePanel.Visible = false;
+                obj.view.handles.filePanel.Enable = false;
             end
             obj.updateBatchOptFromGUI(obj.view.handles.Destination);
         end

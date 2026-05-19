@@ -26,7 +26,9 @@ switch mode
     case sprintf('Batch\nprocessing')   % obj.handles.ribbonHome.batch
         obj.mibController.startController('controllers.BatchProcessing', obj.mibController);  
     case 'Chunk dataset'                % obj.handles.ribbonHome.chunk
+        obj.mibController.startController('controllers.ChunkingExport');  
     case 'Stitch dataset'               % obj.handles.ribbonHome.stitch
+        obj.mibController.startController('controllers.ChunkingImport');  
     case 'Shuffle images'               % obj.handles.ribbonHome.shuffle
     case 'Restore order'                % obj.handles.ribbonHome.reshuffle
 end

@@ -199,7 +199,8 @@ classdef HDF5Saver < io.savers.BaseSaver
             if ~isfield(options, 'Format');      options.Format      = 'Hierarchical Data Format (*.h5)'; end
 
             % isXmlFormat: true for the explicit *.xml format entry
-            isXmlFormat = contains(options.Format, 'xml', 'IgnoreCase', true);
+            isXmlFormat    = contains(options.Format, 'xml',            'IgnoreCase', true);
+            isBDVByFormat  = contains(options.Format, 'Big Data Viewer', 'IgnoreCase', true);
 
             % --- decompose filename ---
             [pathStr, baseName, ext] = obj.splitFilename(filename);
