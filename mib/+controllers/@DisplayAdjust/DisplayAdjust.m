@@ -99,8 +99,7 @@ classdef DisplayAdjust < handle
             nColors   = obj.mibModel.I{id}.image.colors;
 
             % ---- build BatchOpt with defaults
-            PossibleColChannels = [{'All channels'}, ...
-                arrayfun(@(x) sprintf('ColCh %d', x), 1:nColors, 'UniformOutput', false)];
+            PossibleColChannels = [{'All channels'}, arrayfun(@(x) sprintf('ColCh %d', x), 1:nColors, 'UniformOutput', false)];
             obj.BatchOpt.ColChannel    = {'All channels'};
             obj.BatchOpt.ColChannel{2} = PossibleColChannels;
             obj.BatchOpt.Min           = num2str(viewPort.min');
@@ -112,8 +111,8 @@ classdef DisplayAdjust < handle
             obj.BatchOpt.detectMaxQuantile = '0';
             obj.BatchOpt.showWaitbar   = true;
 
-            obj.BatchOpt.mibBatchSectionName = 'Panel -> View settings';
-            obj.BatchOpt.mibBatchActionName  = 'Display';
+            obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Image';
+            obj.BatchOpt.mibBatchActionName  = 'Adjust Display/Image';
 
             obj.BatchOpt.mibBatchTooltip.ColChannel    = 'Apply Min/Max/Gamma to the specified color channel(s)';
             obj.BatchOpt.mibBatchTooltip.Min           = 'Intensities below this value will be shown in black';
@@ -186,8 +185,7 @@ classdef DisplayAdjust < handle
             obj.view = core.ChildView(obj, guiName);
 
             % deferred-render timer — fires ShowImage 80ms after last slider event
-            obj.updateTimer = timer('ExecutionMode', 'singleShot', 'StartDelay', 0.01, ...
-                'TimerFcn', @(~,~) notify(obj.mibModel, 'ShowImage'));
+            obj.updateTimer = timer('ExecutionMode', 'singleShot', 'StartDelay', 0.01, 'TimerFcn', @(~,~) notify(obj.mibModel, 'ShowImage'));
 
             obj.addCallbacks();
 
@@ -218,14 +216,10 @@ classdef DisplayAdjust < handle
             end
 
             % ---- register event listeners
-            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', ...
-                @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{2} = addlistener(obj.mibModel, 'SliceChanged', ...
-                @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{3} = addlistener(obj.mibModel, 'FrameChanged', ...
-                @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{4} = addlistener(obj.mibModel, 'NewDataset', ...
-                @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{2} = addlistener(obj.mibModel, 'SliceChanged', @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{3} = addlistener(obj.mibModel, 'FrameChanged', @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{4} = addlistener(obj.mibModel, 'NewDataset', @(src,evnt) controllers.DisplayAdjust.ViewListner_Callback2(obj, src, evnt));
             obj.listener{2}.Enabled = false;   % enabled by autoHistCheck
             obj.listener{3}.Enabled = false;
         end
@@ -949,9 +943,9 @@ classdef DisplayAdjust < handle
                 for colId = 1:numel(colorCh)
                     if threshold == 0
                         minval(colId) = min(min(min(min( ...
-                            obj.mibModel.I{id}.image.data{1}(:,:,colorCh(colId),:,:)))));
+                            obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:)))));
                     else
-                        img  = obj.mibModel.I{id}.image.data{1}(:,:,colorCh(colId),:,:);
+                        img  = obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:);
                         img  = sort(img(:));
                         n    = numel(img);
                         minval(colId) = (double(img(max(1, floor(n*threshold/100)))) + ...
@@ -1038,9 +1032,9 @@ classdef DisplayAdjust < handle
                 for colId = 1:numel(colorCh)
                     if threshold == 0
                         maxval(colId) = max(max(max(max( ...
-                            obj.mibModel.I{id}.image.data{1}(:,:,colorCh(colId),:,:)))));
+                            obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:)))));
                     else
-                        img  = obj.mibModel.I{id}.image.data{1}(:,:,colorCh(colId),:,:);
+                        img  = obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:);
                         img  = sort(img(:));
                         n    = numel(img);
                         maxval(colId) = (double(img(max(1, floor(n*(1-threshold/100))))) + ...

@@ -190,9 +190,9 @@ if storeOptions.switch3d     % 3D case
                 case 'image'
                     obj.I{id}.setData3D(data{cellId}, 'image', storeOptions.t(1), storeOptions.orient, 0, setDataOptions2);
                     obj.I{id}.image.setMeta(meta);
-                    if obj.I{id}.image.colors ~= size(data{1}, 3)
-                        obj.I{id}.image.colors = size(data{1}, 3);
-                        obj.I{id}.slices{3} = 1:min([size(data{1}, 3) 3]);
+                    if obj.I{id}.image.colors ~= size(data{1}, 4)  % dim 4 = colors for [y,x,z,c,t]
+                        obj.I{id}.image.colors = size(data{1}, 4);
+                        obj.I{id}.slices{4} = 1:min([size(data{1}, 4) 3]);
                     end
                     if isempty(setDataOptions.viewPort)
                         obj.I{id}.image.viewPort = obj.I{id}.image.getDefaultViewPort();

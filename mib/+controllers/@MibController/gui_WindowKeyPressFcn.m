@@ -188,9 +188,12 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             if dataset.enableSelection == 0; return; end
 
             switch KeyShortcuts.Action{ActionId}
-                case 'Fill the holes in the Selection layer';  obj.cSelection.fillSelection();
-                case 'Erode the Selection layer';              obj.cSelection.erodeSelection();
-                case 'Dilate the Selection layer';             obj.cSelection.dilateSelection();
+                case 'Fill the holes in the Selection layer' 
+                    obj.cSelection.fillSelection();
+                case 'Erode the Selection layer'              
+                    obj.cSelection.erodeSelection();
+                case 'Dilate the Selection layer'             
+                    obj.cSelection.dilateSelection();
             end
 
         case {'Zoom out/Previous slice', 'Previous slice', 'Zoom in/Next slice', 'Next slice'}
@@ -212,8 +215,8 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                     cImageDoc.frameNumberSlider_Callback();
                 else            % change Z
                     if dataset.image.depth == 1; return; end
-                    shift = obj.sliderZStep;
-                    if shiftPressed; shift = obj.sliderZShiftStep; end
+                    shift = cImageDoc.sliderZStep;
+                    if shiftPressed; shift = cImageDoc.sliderZShiftStep; end
                     new_index = max(1, min(dataset.dim_yxzct(dataset.orientation), dataset.slices{dataset.orientation}(1) + direction*shift));
                     dataset.slices{dataset.orientation} = [new_index, new_index];
                     cImageDoc.handles.sliceNumberSlider.Value = new_index;

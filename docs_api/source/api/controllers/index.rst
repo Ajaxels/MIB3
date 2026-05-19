@@ -44,6 +44,7 @@ Dataset tool dialogs
    CropDataset
    CropObjects
    MakeMovie
+   NormalizeContrast
    ResampleDataset
    Snapshot
 

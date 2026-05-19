@@ -1,0 +1,2966 @@
+{
+  "C:\\Matlab\\MIB3\\buildfile.m": {
+    "mtime": 1765446273.9308808,
+    "hash": "b4460e614043686370441f389bdd78d2"
+  },
+  "C:\\Matlab\\MIB3\\deploymentScript_Linux.m": {
+    "mtime": 1778532586.8436415,
+    "hash": "d1bd8e6e92a36d6f0b973bab798be77e"
+  },
+  "C:\\Matlab\\MIB3\\deploymentScript_Win.m": {
+    "mtime": 1778533148.6143167,
+    "hash": "d4c79dc527104e11ebeded08bdfc3b68"
+  },
+  "C:\\Matlab\\MIB3\\mib\\mib3.m": {
+    "mtime": 1778532465.410993,
+    "hash": "66a82b1e680b5244eea5c9dd5cd21f9f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\mib3_deploy.m": {
+    "mtime": 1778533118.1965935,
+    "hash": "68f13fe3b65eb7cdf8965ed2d44f0008"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\MibDeepActivations.m": {
+    "mtime": 1777569866.063849,
+    "hash": "2ddf25dd40da95bb71f35f8774acb2c1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\MibDeepAugmentSettings.m": {
+    "mtime": 1777569866.0668485,
+    "hash": "80770441e52899d72e7a967465b1f556"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\algorithm_Callback.m": {
+    "mtime": 1778655932.0675316,
+    "hash": "69920f19879dce85383581a734286f08"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\alignDriftCorrectionHDD_Alignment.m": {
+    "mtime": 1779090345.923541,
+    "hash": "a6ecaca23463520b9695ae5b676d5fc6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\AlignMedianSmoothTemplate_Alignment.m": {
+    "mtime": 1779090345.9255378,
+    "hash": "52db35a6f95f15e91f46dcb7da9fdd24"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\Alignment.m": {
+    "mtime": 1779090345.926543,
+    "hash": "7e78685acad90bcad242e723899a7866"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\AutomaticFeatureBasedHDDV2_Alignment.m": {
+    "mtime": 1779090345.9315386,
+    "hash": "ebb35c8cb320d3906fc182bda81a4426"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\AutomaticFeatureBasedHDD_Alignment.m": {
+    "mtime": 1779090345.9295373,
+    "hash": "6260eaa48490be03a0098b28bfb9c057"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\AutomaticFeatureBasedV2_Alignment.m": {
+    "mtime": 1779090345.9325373,
+    "hash": "e8b8bc45daabc7615b5e4332e53b4386"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\AutomaticFeatureBased_Alignment.m": {
+    "mtime": 1779090345.9285386,
+    "hash": "a07f9fc7957ede61f05b6dcae02feb7c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\continueBtn_Callback.m": {
+    "mtime": 1779090345.9345362,
+    "hash": "13d37ba68b908d8ad7f628bab84e30f1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\DriftCorrection_Alignment.m": {
+    "mtime": 1778478571.5805516,
+    "hash": "daa41555b321249296be9277d6227c4a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\getSearchWindow_Callback.m": {
+    "mtime": 1778236060.9557137,
+    "hash": "ffe914c296c0f95ca09c14e93e64d8a5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\gui_Callbacks.m": {
+    "mtime": 1778525920.2495048,
+    "hash": "a53e746d27803be6a153dc84deab3ece"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\LandmarkMultiPointColor_Alignment.m": {
+    "mtime": 1778525920.2525067,
+    "hash": "52d8193dc9200692ebe22e061a92626a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\LandmarkMultiPoint_Alignment.m": {
+    "mtime": 1778525920.2505057,
+    "hash": "3b7081b3174ba92eb4eea88b75ce2517"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\loadShiftsCheck_Callback.m": {
+    "mtime": 1778478571.5835538,
+    "hash": "6f9be4f13e1684b4c2c080660768a2fb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\previewFeaturesBtn_Callback.m": {
+    "mtime": 1778655932.0740488,
+    "hash": "b7de052d376e8458a98d66196beb860b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\SingleLandmark_Alignment.m": {
+    "mtime": 1778655932.0780492,
+    "hash": "72407ba2d4f12703a793366118f0bcc6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\subwindowEdit_Callback.m": {
+    "mtime": 1778236060.9607189,
+    "hash": "a35d2c3bc98abfc54f112ac3134d9249"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\ThreeLandmarks_Alignment.m": {
+    "mtime": 1778525920.263026,
+    "hash": "40ec7e4e2641bc1253c097930ffda8dc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\updateAutomaticOptions.m": {
+    "mtime": 1778742780.848896,
+    "hash": "e0725e8dc8dcc15be75f6ca13953833b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\private\\applyCroppedMode.m": {
+    "mtime": 1778655932.076051,
+    "hash": "fc303d56394aa89496e408f9f2e79fe5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\private\\applyExtendedMode.m": {
+    "mtime": 1778525920.2560272,
+    "hash": "ce5b078756f82d4811fca1980812212f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\private\\assembleServiceCanvas.m": {
+    "mtime": 1778525920.2570257,
+    "hash": "0f5610fa3126552dcdb0ff20a96c77ca"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\private\\relocateAnnotations.m": {
+    "mtime": 1778525920.2600267,
+    "hash": "4a6bd00df76bbe699ff7ee3d873310aa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Alignment\\private\\saveTformsToFile.m": {
+    "mtime": 1778525920.2610261,
+    "hash": "2db6481b56ab861a93328878c0e02a77"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Annotations\\Annotations.m": {
+    "mtime": 1778236641.1872177,
+    "hash": "d2e46c836762708686400a8fe0c42d8d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\backupProtocol.m": {
+    "mtime": 1777584467.3466861,
+    "hash": "1c867cbe33a6146b58441ff83a94ff8b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\backupProtocolRestore.m": {
+    "mtime": 1777584468.1305642,
+    "hash": "92950772f7f76ee0db907e0b727618f8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\BatchProcessing.m": {
+    "mtime": 1778008118.2138531,
+    "hash": "d68fcf46e32a8b92a669b423de6ab2a0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\deleteProtocol.m": {
+    "mtime": 1777584475.277453,
+    "hash": "f3e18030f6d93cb2c4c11fcaf2f32899"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\directoryLoopAction_Callback.m": {
+    "mtime": 1777584475.907548,
+    "hash": "250126b1c97fb43b3db392abbf70e017"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\directoryOperationsAction_Callback.m": {
+    "mtime": 1777584476.5660222,
+    "hash": "7d537507b26e119cb0df82e096b790aa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\displaySelectedActionTableItems.m": {
+    "mtime": 1777584477.173414,
+    "hash": "8f420efc955cad4498a6c1e37fa55d03"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\doBatchStep.m": {
+    "mtime": 1777586167.1979907,
+    "hash": "360e39c5462dc0972016cd67e2f36eb9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\doFileLoop.m": {
+    "mtime": 1777586175.5710888,
+    "hash": "2379aa96014c856634fa65c148b5251b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\doSeriesLoop.m": {
+    "mtime": 1777584479.0914805,
+    "hash": "5da7bb4bab04ce45a70328c17922ca11"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\fileLoopAction_Callback.m": {
+    "mtime": 1778008446.6656957,
+    "hash": "31ceb4801ca0f38f9a58068caa1a9706"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\fileOperationsAction_Callback.m": {
+    "mtime": 1777584480.1507454,
+    "hash": "2a77f661550aa7e061b718a83e833cc8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\helpBtn_Callback.m": {
+    "mtime": 1777584480.810031,
+    "hash": "191f1be1ef188abc09a205f1ba63453b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\initialize.m": {
+    "mtime": 1779190722.9938157,
+    "hash": "e864a12a976a33786e8ca10052b32652"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\listenMIB_Callback.m": {
+    "mtime": 1777584481.8092296,
+    "hash": "75dae23bc615384a44ccf41226a114a9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\loadProtocol.m": {
+    "mtime": 1777584482.2498891,
+    "hash": "cd5805c2e99442eb7936c4f33f3a84d1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\obtainDirectoryForAction.m": {
+    "mtime": 1778008496.291726,
+    "hash": "0f80cdb7cbce376468baf478d5644992"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\protocolActions_Callback.m": {
+    "mtime": 1777586185.5790646,
+    "hash": "03445e71262ae6b2e64561e7eb90b9c7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\protocolList_SelectionCallback.m": {
+    "mtime": 1777584484.171542,
+    "hash": "53b355e6a5b6c2729abaf77bafdc827d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\runProtocol_Callback.m": {
+    "mtime": 1777586195.3994741,
+    "hash": "d5cb90ac4bf1fb1c42de3e48e9d86b94"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\saveProtocol.m": {
+    "mtime": 1777986318.4353108,
+    "hash": "80e35e1cec720fa9239d5ae27e4be0d4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\selectedActionTableItem_Update.m": {
+    "mtime": 1777586198.563944,
+    "hash": "bc838537618d0069003b13f986e689e8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\selectedActionTable_ContextCallback.m": {
+    "mtime": 1778008414.2430558,
+    "hash": "426f99f8f64ec9e9c7e1c36eece11e9d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\selectProtocolSection_Callback.m": {
+    "mtime": 1777584486.9489918,
+    "hash": "bbd641dbe6cba2591db154b18880dba3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\updateProtocolList.m": {
+    "mtime": 1777584487.5652776,
+    "hash": "154092219cf04bd29ff3afba53e223af"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BatchProcessing\\updateSelectedActionTable.m": {
+    "mtime": 1777586208.9793046,
+    "hash": "dabc2cc388accd3fde5158b186643713"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@BoundingBox\\BoundingBox.m": {
+    "mtime": 1777533869.1693802,
+    "hash": "9639dd2b5a01b525574121384dec1930"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\collectSliceStats.m": {
+    "mtime": 1779191743.4277713,
+    "hash": "19015ca50e2b34fcce36d57269558afa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\continueBtn_Callback.m": {
+    "mtime": 1779191994.269544,
+    "hash": "73a73d47c0fd6b5ae6e3fdec795fb034"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\ContrastNormalization.m": {
+    "mtime": 1779191999.1409009,
+    "hash": "04d25325cc5e52ef3158f6dd83659b9e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\gui_Callbacks.m": {
+    "mtime": 1779177783.9656763,
+    "hash": "481d08014f6762736d8ad559a7619985"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\normalizeBackground.m": {
+    "mtime": 1779191820.098188,
+    "hash": "788f3fd4ef4a3e42de6c7a27d958c89b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\normalizeMaskedArea.m": {
+    "mtime": 1779191887.9992967,
+    "hash": "0274904486759ec7035b5e9f8854b787"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\normalizeTimeSeries.m": {
+    "mtime": 1779191946.9755652,
+    "hash": "25545ae2f4a172cc108965222e17270d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ContrastNormalization\\normalizeZStack.m": {
+    "mtime": 1779192009.0616698,
+    "hash": "b22a001e498c13fe67311e6b311ca9a9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@CropDataset\\CropDataset.m": {
+    "mtime": 1778478571.587797,
+    "hash": "8f4d68b145f602387de6de204c80ed3b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@CropObjects\\CropObjects.m": {
+    "mtime": 1778142453.7712924,
+    "hash": "a42d025bf76ad9abc4d0d74b7b2cac4b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@DisplayAdjust\\DisplayAdjust.m": {
+    "mtime": 1779191353.3918962,
+    "hash": "3b6e9621e0d4c70c3d5355456256617e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Lines3dDialog\\Lines3dDialog.m": {
+    "mtime": 1777585729.6328402,
+    "hash": "22cccd0f4e4f196da14ffcc5c8e5c938"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MakeMovie\\gui_Callbacks.m": {
+    "mtime": 1779172744.9405453,
+    "hash": "6e661104a79fd974ca8328d8b5ac7256"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MakeMovie\\MakeMovie.m": {
+    "mtime": 1779172744.9415402,
+    "hash": "dc44670641b47d956d75be367aa3a151"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\addCallbacks.m": {
+    "mtime": 1777985024.2787454,
+    "hash": "1f7fbcfcfd6ea519761d3db5cb1b30e3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\addMeasurement.m": {
+    "mtime": 1777985024.2797458,
+    "hash": "422afb8df3c6a5223b46949242bb53fc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\contextMenu.m": {
+    "mtime": 1777985024.280746,
+    "hash": "86a76fa28de457b889bffd06798641e8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\drawROI.m": {
+    "mtime": 1777985024.2817426,
+    "hash": "6c42139fbdcfa2db5a3e22836857fd3f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\editMeasurement.m": {
+    "mtime": 1777876429.4183414,
+    "hash": "fce04f62bf1ee429589caa0013ec76ab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\generateKymograph.m": {
+    "mtime": 1777985024.2827444,
+    "hash": "1ca4f594be644598e28aa935c6e7db3c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\gui_Callbacks.m": {
+    "mtime": 1777985024.2837462,
+    "hash": "6d44801f2edc05301d03e9990f0af68d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\loadMeasurements.m": {
+    "mtime": 1777985024.2847457,
+    "hash": "d488dd92235862d9f48f691c35899052"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measureAngle.m": {
+    "mtime": 1778142453.773297,
+    "hash": "6aa670fbc6c3baf352589bcef1797f2f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measureCaliper.m": {
+    "mtime": 1778142453.7748103,
+    "hash": "13439ceb6cc7eb20b07bd34daa4730a1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measureCircle.m": {
+    "mtime": 1777985024.288744,
+    "hash": "c7376f37a1208b04081adc16da55458e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measureDistance.m": {
+    "mtime": 1778142453.7758152,
+    "hash": "4734f650a2c63859b3aea0e2e33493d6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measureDistanceFree.m": {
+    "mtime": 1778142453.7768233,
+    "hash": "14c10bcd1747eb89c7fe994d22705233"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measureDistancePoly.m": {
+    "mtime": 1778142453.7778237,
+    "hash": "127ed137d3e2c67a6cace3a50b594cfd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\measurePoint.m": {
+    "mtime": 1778142453.7798274,
+    "hash": "5d9227d617d228e8a4ec852965a864e7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\MeasureTool.m": {
+    "mtime": 1778142453.7808242,
+    "hash": "c8b11a368eebc2398d45bb30646a7ade"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\plotIntensityProfile.m": {
+    "mtime": 1777985024.298262,
+    "hash": "c8bd8356c4247705adde6d758728ff53"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\previewIntensityProfile.m": {
+    "mtime": 1777985024.2992628,
+    "hash": "b79452c6547cd66ab5e6ff9f29f9291b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\saveMeasurements.m": {
+    "mtime": 1777985024.3002605,
+    "hash": "1a17c48a9dcb43c86c921dadc0c286c9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\updatePlotSettings.m": {
+    "mtime": 1777876429.436344,
+    "hash": "e013e73b85c2c2cf05f79d7c83b13590"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\updateTable.m": {
+    "mtime": 1777876429.436344,
+    "hash": "aa384a478ccb5b837170d03e2b45a55c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MeasureTool\\updateWidgets.m": {
+    "mtime": 1777876429.438343,
+    "hash": "c6f463788af10505fca209d5e3d7b1fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibActiveDataset\\buffers_Callback.m": {
+    "mtime": 1777582272.9533513,
+    "hash": "ffdf0b584a52f4e7dca9f1c658fe0ffc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibActiveDataset\\buffers_ContextMenu.m": {
+    "mtime": 1778478571.5897949,
+    "hash": "0758578e4e189a5a585b303b9625e84d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibActiveDataset\\datasetTypeChange_Callback.m": {
+    "mtime": 1777582279.9675403,
+    "hash": "fa74268493ff370b801d8c10c038a4d4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibActiveDataset\\MibActiveDataset.m": {
+    "mtime": 1778007223.8127756,
+    "hash": "d7f60b5232ddfb35c5a920bb82c27e6b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibActiveDataset\\setsOps_Callbacks.m": {
+    "mtime": 1777582484.0743604,
+    "hash": "665227842cb6e7a11de3b5f8f44463d6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibActiveDataset\\update_fromModel.m": {
+    "mtime": 1777581448.233747,
+    "hash": "f91b243d0fd5d151e2d1046ef5589be4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\addGuiControllers.m": {
+    "mtime": 1777580031.1446378,
+    "hash": "22a5391a6a45b8ec17ac8b4c80a8106d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\deleteImageDocument.m": {
+    "mtime": 1777580036.3536115,
+    "hash": "b7f599ecfec41a564f67f0f575c2234a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\dragNdrop_Callback.m": {
+    "mtime": 1777580039.9544718,
+    "hash": "502e85eb0287b898f084816be26fa12b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\exitProgram.m": {
+    "mtime": 1777580043.032416,
+    "hash": "881989d7fdf9af116f4fdee00be00ee9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\findChildId.m": {
+    "mtime": 1777580055.207234,
+    "hash": "79c6e928b85ee774c8badab55546fc96"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\globalTabGroup_SelectionCallback.m": {
+    "mtime": 1777580059.0841508,
+    "hash": "79615b42afdd4f16eed94b1e5f2081b9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\gui_WindowKeyPressFcn.m": {
+    "mtime": 1777876429.4393432,
+    "hash": "a463cfa223a687cf99305dce9557540e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\gui_WindowKeyReleaseFcn.m": {
+    "mtime": 1777580065.539431,
+    "hash": "594298b16441b09f4a0ec89ba8b55a5e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\helpButtons_Callback.m": {
+    "mtime": 1777580069.8231542,
+    "hash": "cd1397cbea29c8b68b4add3155410bfc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\initialize.m": {
+    "mtime": 1777580073.5218027,
+    "hash": "03a0f21f5025882a49d041666c39a5d7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\initializeLibraries.m": {
+    "mtime": 1777580077.4082108,
+    "hash": "8ee7c1073fdacb370d98942236829bd2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_appStateChanged.m": {
+    "mtime": 1777580080.9672196,
+    "hash": "3703101aa031c9a6d6e26b88e2885c45"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_newDataset.m": {
+    "mtime": 1778478571.590803,
+    "hash": "d606b70238bdae0c1313895510d5710b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_showErrorDialog.m": {
+    "mtime": 1777580089.102211,
+    "hash": "050a3f61a8ed77231ae8f7699ba4826d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_showImage.m": {
+    "mtime": 1777580093.9943638,
+    "hash": "2025206d83ea70b2d4af427183630668"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_updateDatasetAxes.m": {
+    "mtime": 1777667355.6967845,
+    "hash": "a888bb47516c930320dcd23ca66fef56"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_updateGuiWidgets.m": {
+    "mtime": 1777533488.7047324,
+    "hash": "bb9e470561e80da0a617607e549af1c9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listener_updateToolbar.m": {
+    "mtime": 1777580103.5894995,
+    "hash": "50d623522188bfe16558f75092791489"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listner_ModelEvent.m": {
+    "mtime": 1777580107.9529595,
+    "hash": "352c7cf09db59a91a7c4772d67fbc8a8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\listner_Standard.m": {
+    "mtime": 1777580111.9428287,
+    "hash": "d0feb8853aad7cad134af63cbfb31e5f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\loadLayout.m": {
+    "mtime": 1777580125.9394815,
+    "hash": "1f0e8360e44d038c6ba16c117c190f86"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\measureLength.m": {
+    "mtime": 1777876429.4413426,
+    "hash": "bf4163d74dea6e390b2515c535ab5582"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\MibController.m": {
+    "mtime": 1778007674.2303774,
+    "hash": "44c0afc98b852e269246b235527bbaa1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\saveLayout.m": {
+    "mtime": 1777580135.4506786,
+    "hash": "93588687c53d41dc1abb0802882cb0ad"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\showImage.m": {
+    "mtime": 1777985024.3022623,
+    "hash": "26322352278c5bc6c645d56df8b23eab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\showSplashScreen.m": {
+    "mtime": 1777580142.5965977,
+    "hash": "3a8940702569787d61b1bf53f20c4242"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\startController.m": {
+    "mtime": 1777580146.0672197,
+    "hash": "2728e4d2432a25eb64cc66ffdb892281"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\updateFrameNumber.m": {
+    "mtime": 1777580149.306946,
+    "hash": "662b2d69b6f5da1efe96f988cee46e0b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\updateGuiWidgets.m": {
+    "mtime": 1777876429.445345,
+    "hash": "ad5964167c9820ca96643eafacfd0d5c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\updateInterpolationMode.m": {
+    "mtime": 1777580157.072049,
+    "hash": "3fc7368c0b95c6912e63bd618107646d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\updateSliceNumber.m": {
+    "mtime": 1777580163.417429,
+    "hash": "de5631a00db04b32cd6305bb317f8559"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibController\\updateVisualizationMode.m": {
+    "mtime": 1777580167.3068204,
+    "hash": "f4f63ef8658f1da041b109766301063b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\activationLayerChangeCallback.m": {
+    "mtime": 1777584066.8275678,
+    "hash": "696723e3a52c12fc4002110645410a9e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\balanceClasses.m": {
+    "mtime": 1777584071.637505,
+    "hash": "3443059a72b5c4d16e9c7b9d948cb606"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\bioformatsCallback.m": {
+    "mtime": 1777584075.132866,
+    "hash": "202db3055c1839fe94589f4ffdcc4a48"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\channelWisePreProcess.m": {
+    "mtime": 1777584079.1966794,
+    "hash": "ea5319499a7e8f0aa275206ae5a4e64b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\checkNetwork.m": {
+    "mtime": 1777584082.4039245,
+    "hash": "9216fad0cf219e4c78ba65e116aa82dc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\closeWindow.m": {
+    "mtime": 1777584085.5572214,
+    "hash": "0dd42cd75af660842e9d90b29956113a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\correctBatchOpt.m": {
+    "mtime": 1777584089.0440452,
+    "hash": "8ce55943b812762f01053996f05a1028"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\countLabels.m": {
+    "mtime": 1777584092.6914508,
+    "hash": "95b9096dd671def94cc27cf1b3b76951"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\createNetwork.m": {
+    "mtime": 1777584096.2578244,
+    "hash": "ba07ea6a34da10207d021ebcbe63998b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\customTrainingProgressWindow_Callback.m": {
+    "mtime": 1777584099.5357769,
+    "hash": "1f6dbef1414ae50d759b8a2b10ea7ca8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\duplicateConfigAndNetwork.m": {
+    "mtime": 1777989250.8152237,
+    "hash": "7d5e60b53566a50b50a983dbb5dd4799"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\evaluateSegmentation.m": {
+    "mtime": 1777989331.2322714,
+    "hash": "7cc1f7d30c89cd6e3b9ab63a856584b5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\evaluateSegmentationPatches.m": {
+    "mtime": 1777584110.9681962,
+    "hash": "9eb20c0b679dfad74caa2148f47cf088"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\exploreActivations.m": {
+    "mtime": 1777584114.1793175,
+    "hash": "7a1a07af12345ec7607eb3a91938af62"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\exportNetwork.m": {
+    "mtime": 1777989347.5488143,
+    "hash": "65d358ec9e454433cf3107804af559da"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\generate3DDeepLabV3Network.m": {
+    "mtime": 1777584123.6519046,
+    "hash": "624916ff0f1d3200903c24c5dcbf144a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\generateDeepLabV3Network.m": {
+    "mtime": 1777584128.9460495,
+    "hash": "37e6676fd9325d989bdfc1a0fc76068c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\generateDynamicMaskingBlocks.m": {
+    "mtime": 1777584132.5704157,
+    "hash": "e9ff1bccb1448a637da1009b6f7860a2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\generateUnet2DwithEncoder.m": {
+    "mtime": 1777584138.5945077,
+    "hash": "4e450f9c29faf10e85c4a10d8c7d97c5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\gpuInfo.m": {
+    "mtime": 1777584142.618487,
+    "hash": "0149aaf777aeec524333d4a292f9ed46"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\helpButton_callback.m": {
+    "mtime": 1777584146.6707942,
+    "hash": "d4a38490f24c392d612d085cd093b13a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\importNetwork.m": {
+    "mtime": 1777989377.78294,
+    "hash": "1c1e9b3d393eefa5007bfb03c2ea72fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\loadConfig.m": {
+    "mtime": 1777989362.6564245,
+    "hash": "d6fd989a5ec55d6906d7ef91ec43bf89"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\MibDeep.m": {
+    "mtime": 1778007639.1916986,
+    "hash": "54dc876e92150f2641ac58d554c2fa59"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\preprareTrainingOptions.m": {
+    "mtime": 1777584161.1036866,
+    "hash": "edeebc92a3d1078375d6bf942083c948"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\preprareTrainingOptionsInstances.m": {
+    "mtime": 1777584165.1065443,
+    "hash": "9a3b1af20808937b1b1483498f32b610"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\previewDynamicMask.m": {
+    "mtime": 1777989393.6980057,
+    "hash": "544c9659b9e142688786254e3299fd38"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\previewImagePatches_Callback.m": {
+    "mtime": 1777584172.372656,
+    "hash": "7971b18cce6ad721fa9f9ecbdaeaae16"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\previewModels.m": {
+    "mtime": 1777584176.249329,
+    "hash": "3c3297595169950c0361145d6a8dd9a9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\previewPredictions.m": {
+    "mtime": 1777584180.3225708,
+    "hash": "99ba9d351924fd925ef3183d9a109748"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\processBlocksBlockedImage.m": {
+    "mtime": 1777584184.9666402,
+    "hash": "01b586b3ec5c8e48924bc17172a1f6e1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\processImages.m": {
+    "mtime": 1777584189.0018585,
+    "hash": "579424d33182ba6a2908e585fdf61cc0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\processImagesForInstanceSegmentation.m": {
+    "mtime": 1777584192.9133463,
+    "hash": "eeb5ec3143fd822693eb64e5d62585fd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\returnBatchOpt.m": {
+    "mtime": 1777584196.2887466,
+    "hash": "f80aff29bc6c4ef850bdad0fbc2eff6e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\saveCheckpointNetworkCheck.m": {
+    "mtime": 1777584200.066426,
+    "hash": "3bd16975c4bfb2f2f79549fd9cfbafb3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\saveConfig.m": {
+    "mtime": 1777584203.4400864,
+    "hash": "915425559167e7b0e151ef45e495249b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\selectArchitecture.m": {
+    "mtime": 1777584207.1745584,
+    "hash": "280a2060b1a0d23d994ed7eaaaec0be6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\selectDirerctories.m": {
+    "mtime": 1777584210.7619438,
+    "hash": "59042039243b277a4dcec1bfd8d4fa11"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\selectGPUDevice.m": {
+    "mtime": 1777584214.1344857,
+    "hash": "e5cadeac16335acb9b42e84c97bff5fb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\selectNetwork.m": {
+    "mtime": 1777989405.8166103,
+    "hash": "67e1dc403a99646a6da0eb71993dbab1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\selectWorkflow.m": {
+    "mtime": 1777584222.7979076,
+    "hash": "a165780fe74f4716bb8844d38b29d499"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\sendReportsCallback.m": {
+    "mtime": 1777584226.7089307,
+    "hash": "824be4bf76498dde7de20a0dcaa9102d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setActivationLayerOptions.m": {
+    "mtime": 1777584231.0886497,
+    "hash": "f9888d982b6b89ff6bd73bb08a36f87e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setAugFuncHandles.m": {
+    "mtime": 1777584236.3789167,
+    "hash": "bed89b9052f7470fe0378dd42ffce535"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setAugmentationSettings.m": {
+    "mtime": 1777584240.125232,
+    "hash": "8dcf4c1ec536189efaba0bc1a275d546"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setInputLayerSettings.m": {
+    "mtime": 1777584244.6234083,
+    "hash": "6bc00599f08359d961d49fdc002cb3ca"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setSegmentationLayer.m": {
+    "mtime": 1777584248.5388224,
+    "hash": "4613df3d67751cb2affab9d05fea9bd7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setSegmentationLayerOptions.m": {
+    "mtime": 1777584253.085446,
+    "hash": "1b920695d218cacae563e56ce12a9d2a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\setTrainingSettings.m": {
+    "mtime": 1777584257.2055092,
+    "hash": "ac51acf1d8ca2e4f12ebc839ad89d513"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\singleModelTrainingFileValueChanged.m": {
+    "mtime": 1777584261.523324,
+    "hash": "e48b8733fdc090508418931de3c82ca3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\start.m": {
+    "mtime": 1777584265.6424303,
+    "hash": "3f51985a151699f5a1d329f007f8192c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startController.m": {
+    "mtime": 1777584269.7046974,
+    "hash": "d1fc2f8ea7ac53a6add6d41480ea57cc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startPrediction2D.m": {
+    "mtime": 1777584281.306923,
+    "hash": "8744164082fbf9de2d29a7a5d7f26331"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startPrediction3D.m": {
+    "mtime": 1777584285.002401,
+    "hash": "c9ca5edcea46e40a7c40535388fa72da"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startPredictionBlockedImage.m": {
+    "mtime": 1777584288.960639,
+    "hash": "9842c0f75817bfee232204c5ffdf2713"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startPreprocessing.m": {
+    "mtime": 1777584275.9892633,
+    "hash": "5e2807fc67a29d2f22f273db8c0d14c2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startTraining.m": {
+    "mtime": 1778241767.1185024,
+    "hash": "7194e82d4ddc54c225b9c7ac5002cba5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\startTrainingInstances.m": {
+    "mtime": 1777584297.8984902,
+    "hash": "b6fc4cd22337427072e4daae5b44721b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\toggleAugmentations.m": {
+    "mtime": 1777584302.15952,
+    "hash": "634370fe406f7c466ebece9713bfc18b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\transferLearning.m": {
+    "mtime": 1777584306.1720834,
+    "hash": "ef13e6b6ca09a5c02d68b5b1244e69fb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateActivationLayers.m": {
+    "mtime": 1777584310.9306338,
+    "hash": "d2838ebfcbfa82b7aa3b11a3ff87c8e2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateBatchOptFromGUI.m": {
+    "mtime": 1777584315.645151,
+    "hash": "c64a86f722d25ba08e8b18a81f464ac9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateConvolutionLayers.m": {
+    "mtime": 1777584322.1448586,
+    "hash": "e1dcbb1f021239751ee3424da70352a5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateDynamicMaskSettings.m": {
+    "mtime": 1777584326.8820255,
+    "hash": "399fd522589612e7ffe3be2e4e080206"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateImageDirectoryPath.m": {
+    "mtime": 1777584330.9703574,
+    "hash": "7d6a138f7e51191470695045002af8a3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateMaxPoolAndTransConvLayers.m": {
+    "mtime": 1777584335.5653155,
+    "hash": "d68151daa1a039b695355871f87ca02a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateNetworkInputLayer.m": {
+    "mtime": 1777584339.5920095,
+    "hash": "326337c940a3fc923345fb6d3d930ce8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updatePreprocessingMode.m": {
+    "mtime": 1777584343.6711583,
+    "hash": "b7988e60e899eed5a5cc5dd10ac7bb87"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateScoreExportSettings.m": {
+    "mtime": 1777584347.5580332,
+    "hash": "62e4965f46b89ed203b8731212c47d89"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateSegmentationLayer.m": {
+    "mtime": 1777584352.8803287,
+    "hash": "e51943e1940b1b9e5f34d4ef22c5cf4d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDeep\\updateWidgets.m": {
+    "mtime": 1777584356.8907442,
+    "hash": "dfc7c31f1cd6d84f00c90ed9b9550fef"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\bioFormats_Callback.m": {
+    "mtime": 1777581508.24049,
+    "hash": "06a93b1fa598c957a3856d460d0e41ae"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\fileFilters_Callback.m": {
+    "mtime": 1777581517.4755414,
+    "hash": "13a5b69e29f4cae8de3d5183cb8d0a0d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\fileFilters_ContextMenu.m": {
+    "mtime": 1777581529.4536405,
+    "hash": "85fa3f8f2119f0e62845d1a147c3aeb0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\fileList_Callback.m": {
+    "mtime": 1777581538.371629,
+    "hash": "408a860c047fe6dbc862d5990dbd5d07"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\fileList_ContextMenu.m": {
+    "mtime": 1777582634.7774982,
+    "hash": "80c45616e2e4c333467c4f06bf464789"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\listenerUpdateFileList.m": {
+    "mtime": 1777582644.054457,
+    "hash": "024e88a38695c715ad4185101a6e01c0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\listener_updatePanelPosition.m": {
+    "mtime": 1777582657.3162587,
+    "hash": "3abc6614e7a065fb5a8e348ee3ae1e6c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\MibDirContents.m": {
+    "mtime": 1778007571.3946862,
+    "hash": "12733199e9b8b1ea144502ed4a514a92"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibDirContents\\updateFileList_Callback.m": {
+    "mtime": 1777581581.662023,
+    "hash": "a515e270b535b7f8e0a4c74a74a65925"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\clearQuickMeasure.m": {
+    "mtime": 1777876429.4473429,
+    "hash": "a95c172e842bc8e143ef57c7c055adad"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\frameNumberSlider_Callback.m": {
+    "mtime": 1777581513.0020576,
+    "hash": "d1046ff9beee96290e980039858c6a8f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\frameNumber_Callback.m": {
+    "mtime": 1777581480.5088224,
+    "hash": "e8f83510f74af5f4e4e15502c0cea949"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\getTitle.m": {
+    "mtime": 1777581440.1074758,
+    "hash": "3d4b9e692cdad7a200097091bbfa30d5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_Brush_scrollWheelFcn.m": {
+    "mtime": 1777581673.1498039,
+    "hash": "8138b602069e1c3a81b8baf0a566f16f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_Callbacks.m": {
+    "mtime": 1777581403.9598727,
+    "hash": "54d67ac5af0e6235d299569483092149"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_panAxesFcn.m": {
+    "mtime": 1777581548.385053,
+    "hash": "42390474a7b4bf99d6045fec7e343078"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_ScrollWheelFcn.m": {
+    "mtime": 1777667354.1938243,
+    "hash": "1d6e33182d447b62c3dc9f2f97589a2e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_SizeChangedFcn.m": {
+    "mtime": 1777581562.2759912,
+    "hash": "2af4a0f0d2956e7ac4a8bbdd8b76d113"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WindowBrushMotionFcn.m": {
+    "mtime": 1777582207.9829051,
+    "hash": "56116e3b9d601cab51c9dc1d8a54fd44"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WindowButtonDownFcn.m": {
+    "mtime": 1778238133.753361,
+    "hash": "4fe4b281ee4fa717c81e71510ea5f0f5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WindowButtonUpDragAndDropFcn.m": {
+    "mtime": 1778006036.453267,
+    "hash": "326f4e23ff64ae21f103fa5813dfad81"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WindowButtonUpFcn.m": {
+    "mtime": 1778072312.2745018,
+    "hash": "6c27f75d1341b5cc57738b0ea1385ff2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WindowDragAndDropMotionFcn.m": {
+    "mtime": 1777581744.7932658,
+    "hash": "1e9309154c1220e17c48d8644a9009cb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WindowKeyPressFcn_BrushSuperpixel.m": {
+    "mtime": 1777469063.5348046,
+    "hash": "263db0b8fff153187b060b3df5cc7eea"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\gui_WinMouseMotionFcn.m": {
+    "mtime": 1777466571.3918767,
+    "hash": "1c7f45ad8ca9442337ff883d9cb095f1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\listener_frameChanged.m": {
+    "mtime": 1777581430.5094917,
+    "hash": "c4bfc3d83aec30e7f940b19a41c3e045"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\listener_sliceChanged.m": {
+    "mtime": 1777581434.7468584,
+    "hash": "e13ef491325b2f691a794180d7a63137"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\MibImageDocument.m": {
+    "mtime": 1778008641.6549966,
+    "hash": "ec020cffa5871297f1769ee9ff083f18"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\recalculateObjects.m": {
+    "mtime": 1777581720.403153,
+    "hash": "2366fbe971265bc61e3db40a9ab1bff8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationAnnotation.m": {
+    "mtime": 1777581646.1162114,
+    "hash": "b4c130ece2fa8e1502bd1fd2ff104b9d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationBall3D.m": {
+    "mtime": 1777581583.7008264,
+    "hash": "c6d7a084d6df92ca59dea19dab8104ed"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationBrush.m": {
+    "mtime": 1778072116.348542,
+    "hash": "faa504a3247e5f568d66bfac00fa7c19"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationClickTracker.m": {
+    "mtime": 1777581689.7137802,
+    "hash": "26a65617f4c815b551738682e42d48f1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationDragAndDrop.m": {
+    "mtime": 1777581715.418059,
+    "hash": "696aae3f419d5ab043773f8e9783fb00"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationLasso.m": {
+    "mtime": 1778829782.199313,
+    "hash": "22b9b2a5db9ea1abae45cf778df0476d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationLassoManual.m": {
+    "mtime": 1777581740.7481575,
+    "hash": "39c78162556f80d2235610988bf2ee53"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationLines3D.m": {
+    "mtime": 1777581696.462612,
+    "hash": "9dc9eca6f872c7f41bcc981f50eb5639"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationMagicWand.m": {
+    "mtime": 1777581396.3018274,
+    "hash": "6ee97a59603692abb7ea7e94853b22b8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationObjectPicker.m": {
+    "mtime": 1777876429.4533448,
+    "hash": "a5184f44d3cb9741c880dd05c541614d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationRegionGrowing.m": {
+    "mtime": 1777581637.571008,
+    "hash": "812307e8614e0de57b3aadd81d7403c8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationSAM.m": {
+    "mtime": 1778238929.1860583,
+    "hash": "4cc68f622ed0c41792ae0ab1dc0f33b3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationSAM2.m": {
+    "mtime": 1778238885.7530181,
+    "hash": "3b1e3c6785bbfbaf41a0a8270e9a823c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationSAM_requirements.m": {
+    "mtime": 1777582262.4763002,
+    "hash": "e7324c817e458ff860053b195e38aca8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentationSpot.m": {
+    "mtime": 1777581618.305504,
+    "hash": "c1ca7a5a9d6814fd7b068492b5fd79b0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\segmentBlackWhiteThreshold.m": {
+    "mtime": 1777581655.726814,
+    "hash": "06aedad133d320826345e770b54f8e38"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\selectDocument.m": {
+    "mtime": 1777581464.9378202,
+    "hash": "4cf828aa7065466e33134e2cc18483fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\setDescription.m": {
+    "mtime": 1777581451.7819736,
+    "hash": "b904be7d8031019ec58a66593f3cb6cb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\setTitle.m": {
+    "mtime": 1777581448.046516,
+    "hash": "a6f1ce86f33bc7182082f508115e29d9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\setupCallbacks.m": {
+    "mtime": 1777876429.4593432,
+    "hash": "afecbdef99009dbc1c8c0a8457ee5e42"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\sliceNumberSlider_Callback.m": {
+    "mtime": 1777581525.7968814,
+    "hash": "a2e789334c39f98b645c731563540d41"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\sliceNumberSlider_ContextMenu.m": {
+    "mtime": 1778158191.5757406,
+    "hash": "2de863b45f287dbefde5cf59657654c2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\sliceNumber_Callback.m": {
+    "mtime": 1777581493.3593047,
+    "hash": "76b606c9046ad7e0eeddab8bf8010eb5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\syncActiveSet.m": {
+    "mtime": 1777582232.612075,
+    "hash": "7bfea1a4e9a9891c37a7fca71aba3489"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\updateBrushCursor.m": {
+    "mtime": 1777876429.4613433,
+    "hash": "7f7a7ee2f739d98308651be23f9ac840"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\updateBrushCursorOffset.m": {
+    "mtime": 1777581677.2843063,
+    "hash": "8b21fa6a10254b741a36306ae73bf7df"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibImageDocument\\updateMeasureText.m": {
+    "mtime": 1777581725.8792777,
+    "hash": "3afee8fce337b69445aa9f234d4e2d1a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibQuickAccessBar\\createCentralMarker.m": {
+    "mtime": 1777585264.3395796,
+    "hash": "191a915fb439e78e4dff9dc748ad5c9c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibQuickAccessBar\\gui_Callbacks.m": {
+    "mtime": 1777583349.453398,
+    "hash": "bb3254bd0702fd3550e0be888f6ac572"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibQuickAccessBar\\MibQuickAccessBar.m": {
+    "mtime": 1778007513.667722,
+    "hash": "653a6da715a88318622facd0983c98fd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibQuickAccessBar\\orientationChange.m": {
+    "mtime": 1777585274.7242177,
+    "hash": "c16f6bb3a7f49972b71758e33d2cbb79"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\datasetCalibration_Callback.m": {
+    "mtime": 1777580367.6684263,
+    "hash": "50e76cc01872a989c2edcd6ac871046e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\datasetMetadata_Callback.m": {
+    "mtime": 1777580379.3520007,
+    "hash": "a3504e384162e46666792ea02823065e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\datasetToolsSlices_Callback.m": {
+    "mtime": 1777580402.2860768,
+    "hash": "fc96f926345c07617860a16756d6797f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\datasetToolsTransform_Callback.m": {
+    "mtime": 1777580468.1020718,
+    "hash": "1ba9171c3fc6312ace2de7b788417c15"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\datasetTools_Callback.m": {
+    "mtime": 1778236060.964716,
+    "hash": "8f3aa9a680fde572272da32a478d38d6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeDevModeEnable_Callback.m": {
+    "mtime": 1777580569.2445607,
+    "hash": "34333ac8457068066c6fb93ca03369f7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeDevTest_Callback.m": {
+    "mtime": 1777580350.8001351,
+    "hash": "2f6e19be70b93af81484739a7e7715ce"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeExamples_Callback.m": {
+    "mtime": 1777580574.3305616,
+    "hash": "33c5e203908ba5e7edd328f136b7e9e8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeExport_Callback.m": {
+    "mtime": 1779172744.9435406,
+    "hash": "89f9afa638807ef7178ff0dc7310fcde"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeImport_Callback.m": {
+    "mtime": 1777580585.7757697,
+    "hash": "c8cef3fe5e84f1937006cc81b9712797"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeIOtools_Callback.m": {
+    "mtime": 1777580590.6790326,
+    "hash": "9e52c15b131bc3fb1f9584350c457800"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeLoad_Callback.m": {
+    "mtime": 1777580595.5247655,
+    "hash": "30dd94c3d8fb76f38a1b2f40bd4e6ba4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homePreferences_Callback.m": {
+    "mtime": 1778165259.3391943,
+    "hash": "24fd426f66cef9a8dc5bc4b542d88dff"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeSelectRecentDir_Callback.m": {
+    "mtime": 1777580605.156711,
+    "hash": "202db52d78dce7e59cb2472bb9f2084d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\homeUpdateRecentDirsList.m": {
+    "mtime": 1777580859.681049,
+    "hash": "60f07c16a81cc65075717562a3430fef"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageColors_Callbacks.m": {
+    "mtime": 1777580781.7684958,
+    "hash": "f93351ed0a8d13caeaaed9dc346c3721"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageContrast_Callbacks.m": {
+    "mtime": 1779184875.9612038,
+    "hash": "5a3e190472c9f7355f76a359ccd623fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageInvert_Callbacks.m": {
+    "mtime": 1777580792.1206672,
+    "hash": "3c8a9cbc2db733f0033577cb1ddb4fd0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageMode_Callback.m": {
+    "mtime": 1777580610.2732058,
+    "hash": "19526955c6ce530ad0e0f50e0c36de96"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageMorphOps_Callbacks.m": {
+    "mtime": 1777580802.416624,
+    "hash": "b6c5bb5fbed4769ca06986d176e23a50"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageTools_Callbacks.m": {
+    "mtime": 1777580807.707531,
+    "hash": "f76f66eabdbe43e09b086e32fda9b268"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\imageVisualization_Callbacks.m": {
+    "mtime": 1777580812.473748,
+    "hash": "04e59a92f3bfcc2637850eafcde326a5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\image_Callbacks.m": {
+    "mtime": 1777580797.782991,
+    "hash": "d09c9c95f55af405db6ab4407c1a99a7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\maskExportSection_Callbacks.m": {
+    "mtime": 1777580817.8488996,
+    "hash": "e955d6b3aa123b0d682b9dcd8d38534c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\maskImportSection_Callbacks.m": {
+    "mtime": 1777580823.763132,
+    "hash": "7145ca865313febfefe1c5ab2648f6a0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\maskToolsQuantifySection_Callbacks.m": {
+    "mtime": 1777580828.87891,
+    "hash": "dab6309b2f674bdf184025238266d306"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\maskToSelection_Callback.m": {
+    "mtime": 1777580615.1214142,
+    "hash": "4dd810b270fe9da556602d0d3c3f8fab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\MibRibbon.m": {
+    "mtime": 1778236060.9662254,
+    "hash": "ada960b27a3b9484c442aca22897e4f7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelAnnotations_Callback.m": {
+    "mtime": 1777580619.7671459,
+    "hash": "fe34f9d9aa6c59204827b9f8754d825c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelConvertType_Callback.m": {
+    "mtime": 1777580624.648503,
+    "hash": "b519ad48581f21732197b91dba9668a8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelExport_Callback.m": {
+    "mtime": 1777580629.9924989,
+    "hash": "d6686e2d621c95df78461140568dfb81"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelImport_Callback.m": {
+    "mtime": 1777580634.8126142,
+    "hash": "71be711dc08d946b15bc634e5d6c0ab5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelMaterials_Callback.m": {
+    "mtime": 1777580640.6475997,
+    "hash": "56e5ad5ea6752241d5c801acddbf8870"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelQuantification_Callback.m": {
+    "mtime": 1777580645.6100168,
+    "hash": "8ec0fa4a211a140056ce29508549641c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\modelRender_Callback.m": {
+    "mtime": 1777580650.790831,
+    "hash": "9f57bbeb4cca181df94f77ae62e10eb0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\selectionConverts_Callbacks.m": {
+    "mtime": 1777580834.7805858,
+    "hash": "aee432bde8e6f569eb9499fe9895bcce"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\selectionTools_Callbacks.m": {
+    "mtime": 1777580839.646286,
+    "hash": "da654e89af198e678368c0e6e2441d27"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\tools_Callbacks.m": {
+    "mtime": 1777876429.464351,
+    "hash": "f19bf8ce2542c2a4fb65a4077f608bdd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRibbon\\updateVoxelSizes.m": {
+    "mtime": 1777581164.7081757,
+    "hash": "9278bee0af953cb383f1bd159fac6d5f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\addROI.m": {
+    "mtime": 1777876429.466352,
+    "hash": "65d7cfa992172dd1820c46c9fe0a321d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\gui_Callbacks.m": {
+    "mtime": 1777583298.6446984,
+    "hash": "73217c9441367abc92188eff077743a0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\listener_updatePanelPosition.m": {
+    "mtime": 1777585044.5161355,
+    "hash": "5405d768a9e88358ee9f11849fb84c5a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\MibRoi.m": {
+    "mtime": 1778007487.2112424,
+    "hash": "31afdc135d472b6413bdc0029fd39000"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\refreshROIList.m": {
+    "mtime": 1777583301.1161792,
+    "hash": "082f0aa69a6c8b68a9b64ac2d516f9fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\removeROI.m": {
+    "mtime": 1777583300.5592313,
+    "hash": "025a963883ace87e1bacc167f8c46338"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\repositionDrawingROI.m": {
+    "mtime": 1777583301.7724717,
+    "hash": "eff12e6326d6d62680eaf825742d2c16"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\roiLoad.m": {
+    "mtime": 1777583302.3927786,
+    "hash": "9bfbe9698960319b51ca1c9d1643da3d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\roiModify.m": {
+    "mtime": 1777876429.4683516,
+    "hash": "e593b93936cfc298799717390ffc1987"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibRoi\\roiSave.m": {
+    "mtime": 1777583303.7757378,
+    "hash": "d873a6b1c56dee4a2c5d5e055abab311"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\annotationsPanel_Callback.m": {
+    "mtime": 1777583231.1533344,
+    "hash": "e9525a6dc35cfdb387d2648156f7aeb0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\brushPanel_Callback.m": {
+    "mtime": 1777583244.066922,
+    "hash": "46c93378c7f7a6c130033d68fe62a8d5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\colorWheel_ContextMenu.m": {
+    "mtime": 1777582948.8035023,
+    "hash": "e279e9713af075e58082a419f647d541"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\dragPanel_Callback.m": {
+    "mtime": 1777583236.245527,
+    "hash": "c7b1afa8a4625a2b0bfbc6de7c73ed07"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\favTool_Callback.m": {
+    "mtime": 1777581683.9259696,
+    "hash": "94fae6cbf51e3d7724f167896c1a645b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\gui_Callbacks.m": {
+    "mtime": 1779172744.9445434,
+    "hash": "e5112992854d37bb47cb6622942df70e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\lassoPanel_Callback.m": {
+    "mtime": 1777582962.315871,
+    "hash": "59d67a372f9d729f05cf1c0f2961db05"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\lines3DPanel_Callback.m": {
+    "mtime": 1777582967.8907936,
+    "hash": "94aa3e534a4ad5f777be948a72f63f1a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\listener_updatePanelPosition.m": {
+    "mtime": 1777582980.1818178,
+    "hash": "0a039a8e3ca8a728ba94ec84580f637b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\magicwandPanel_Callback.m": {
+    "mtime": 1777582987.605695,
+    "hash": "e1ebb3956bd5f31b2411ec9af423342c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\materialsTable_applyRowStyle.m": {
+    "mtime": 1777581749.693956,
+    "hash": "20fab7cd8ff047f7ce2c0eaa9afd8567"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\materialsTable_CellSelectionCallback.m": {
+    "mtime": 1777581761.1858048,
+    "hash": "e62619c1c323c9bcb18e0b12698b0427"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\materialsTable_ContextMenu.m": {
+    "mtime": 1777582994.0542636,
+    "hash": "d9f0a3f4227caec17389f4c24e056dda"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\materialsTable_Materials_ContextMenu.m": {
+    "mtime": 1777583000.468312,
+    "hash": "9a69b7bf60141ed549935201cdb3bd9c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\materialsTable_moveLayers.m": {
+    "mtime": 1777581790.2790813,
+    "hash": "57c9e9fc3442f78c3f7f55c9a2725577"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\materialsTable_render.m": {
+    "mtime": 1778142453.784824,
+    "hash": "43ed0a156376ec790a724c11d567fe60"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\membranePanel_Callback.m": {
+    "mtime": 1777583007.380661,
+    "hash": "e62d330cd9eb1864a3c80fee0b9450cc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\MibSegmentation.m": {
+    "mtime": 1778007467.2822576,
+    "hash": "7457ef10d245eeb20cf31333cd1c1251"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\restrictMask_Callback.m": {
+    "mtime": 1777581837.500995,
+    "hash": "4ded0855396d49719268cafb9f72cb48"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\restrictMaterial_Callback.m": {
+    "mtime": 1777581847.9106064,
+    "hash": "9b79b96e35666c6ba0ed32768edb5b42"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\samPanel_Callback.m": {
+    "mtime": 1777583014.0093932,
+    "hash": "05b6faa9e97fb29237306ac9e8b113c5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\segmentationTool_Callback.m": {
+    "mtime": 1778239280.4594996,
+    "hash": "d75e172fe4b335a9e62fb6d0e48d0ca3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\thresholdingPanel_Callback.m": {
+    "mtime": 1777583020.4202578,
+    "hash": "59baa284ef1e28a072c0b1e9f1c84fff"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\thresholdSlider_ContextMenu.m": {
+    "mtime": 1777581900.7119405,
+    "hash": "3d23fc0e3f5dfab0a1fdca0bc867b813"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\updateInterpolationSettings.m": {
+    "mtime": 1777581919.59282,
+    "hash": "1a0a7ecb6d04212eb35b6db276ab1833"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\updateMaterialsTable.m": {
+    "mtime": 1779172744.9455416,
+    "hash": "b7de1bc8fb9063c70347a4bc75ad5484"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\updateSamSettings.m": {
+    "mtime": 1777581937.2793992,
+    "hash": "e4320c177bf7537779864a2c2eaf02bb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSegmentation\\update_fromModel.m": {
+    "mtime": 1777581911.6907246,
+    "hash": "123b6945d65846742514cdcb81b5c32c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\clearSelection.m": {
+    "mtime": 1777583108.1869874,
+    "hash": "79c97047fb174f9cf0b3072976e03d04"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\dilateSelection.m": {
+    "mtime": 1777583108.7703116,
+    "hash": "df88f7da4f624c196d0fff524ad7a7cb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\erodeSelection.m": {
+    "mtime": 1777583109.1941993,
+    "hash": "b1850b6f84b144de4cf312a681544071"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\fillSelection.m": {
+    "mtime": 1777583109.8282242,
+    "hash": "1410e0339a0503c2507beab8a8db7e94"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\gui_Callbacks.m": {
+    "mtime": 1777584963.8055234,
+    "hash": "67de523993cc41bee0bd8a365f7a0812"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\listener_updatePanelPosition.m": {
+    "mtime": 1777584974.9548874,
+    "hash": "18280a601a1b3a85e63f62138bac8766"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\lutTable_CellEditCallback.m": {
+    "mtime": 1777584980.7804122,
+    "hash": "7b5ac3169509abb9c79cf1c11e068bae"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\lutTable_CellSelection.m": {
+    "mtime": 1777584985.7553983,
+    "hash": "98cd066681671283df0eea7d04847f53"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\lutTable_ContextMenu.m": {
+    "mtime": 1777584991.5926583,
+    "hash": "40367d9e320688e4827337f3fe89d8e0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\lutTable_update_fromModel.m": {
+    "mtime": 1777583127.6301181,
+    "hash": "4e2e57d963062de4b3e9798c6fd746db"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\MibSelection.m": {
+    "mtime": 1778007434.505475,
+    "hash": "444c0441063fc78f847ca2c20d6670c7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\selectionActions.m": {
+    "mtime": 1777584998.9266486,
+    "hash": "e32a1695d72a760cdf057bddf2884c5c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\selectionPanelCheckboxes.m": {
+    "mtime": 1777585018.5612955,
+    "hash": "048fa9635320a12434da76d65464eca9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\updateSegmentationPreset.m": {
+    "mtime": 1777583128.2930357,
+    "hash": "48518aeb43162a6393bf2ab9c925f80c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibSelection\\updateSettingsFromPreset.m": {
+    "mtime": 1777583128.8226225,
+    "hash": "a0db24f5709f587b6b484b533e54ba95"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibStatusBar\\gui_Callbacks.m": {
+    "mtime": 1777585206.6522074,
+    "hash": "ccb13c70067704c79d3fcd74153079a3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibStatusBar\\listener_updateStatusBar.m": {
+    "mtime": 1777585213.2964003,
+    "hash": "ef548e8f044b3b4d6f1f384e2cd45d97"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibStatusBar\\MibStatusBar.m": {
+    "mtime": 1778007414.7254052,
+    "hash": "46dea12d047f5908f501e48f9d18a3ce"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@MibStatusBar\\zoomEdit_Callback.m": {
+    "mtime": 1777585225.2239213,
+    "hash": "16dc1a6046999a5b91b8e809cf8e6864"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Preferences\\Preferences.m": {
+    "mtime": 1777587376.693849,
+    "hash": "d8f83be24b1402365fbce36f7c4e2dc1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\addCallbacks.m": {
+    "mtime": 1777583819.1048858,
+    "hash": "d3cf38953f593e03e18de3031e63b439"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\applySelectedProperties.m": {
+    "mtime": 1777583826.8312526,
+    "hash": "21ba2d3ccf9227b729e1b1a2f49d228a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\closeWindow.m": {
+    "mtime": 1777583832.1830695,
+    "hash": "805aa9e71a85d48c4ee1ab8a3993d45b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\createContextMenus.m": {
+    "mtime": 1777583837.4303477,
+    "hash": "93e4c891476f735235a9cae1fc9bb2bc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\enableStatTable.m": {
+    "mtime": 1777583842.3878932,
+    "hash": "57483cf0caee103e725799c500cbd3f2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\exportButton_Callback.m": {
+    "mtime": 1779172744.9475374,
+    "hash": "237a9b3b0bd71cacacde47e89d43713f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\gui_WindowButtonDownFcn.m": {
+    "mtime": 1777583852.0054557,
+    "hash": "853a67346e499336174c792063ab559a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\highlightRange_Callback.m": {
+    "mtime": 1777583857.1720567,
+    "hash": "7d9ae365452ee9832dbc318316eccefa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\highlightSelection.m": {
+    "mtime": 1777585965.8749743,
+    "hash": "e713fcd9903a65f613a02d7351c2ed34"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\histScale_Callback.m": {
+    "mtime": 1777583868.1902685,
+    "hash": "c1ecac23e751ea9432915f31f436b067"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\material_Callback.m": {
+    "mtime": 1777586286.9604318,
+    "hash": "9224f50491762ee97286b3cf457bb3a6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\multipleBtn_Callback.m": {
+    "mtime": 1777583882.5344121,
+    "hash": "779bad952f2b22b078c049d28158194c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\multiple_Callback.m": {
+    "mtime": 1777583877.8582153,
+    "hash": "443eb3b76760eb85276e9b3b0f73a59a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\property_Callback.m": {
+    "mtime": 1777586320.0890913,
+    "hash": "01acf7c540de9369bdf1293fbf8eaf0d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\Quantification.m": {
+    "mtime": 1778009035.755631,
+    "hash": "638da611ba65e9d9cb16134daa2feacd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\quantification_Callback.m": {
+    "mtime": 1777583895.510421,
+    "hash": "692b0e18254c7db1b7fc01a9a64b1cf2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\radioButton_Callback.m": {
+    "mtime": 1777586348.992667,
+    "hash": "bbbf86dff3756d88bb83bebe90f7e1c4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\returnBatchOpt.m": {
+    "mtime": 1777583907.0468054,
+    "hash": "2162b4bb5badf696d2dd11c7c3cc0c23"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\sortBtn_Callback.m": {
+    "mtime": 1777583912.271215,
+    "hash": "b27c1a21dea0388e8af6333e931bf436"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\statTable_CellSelectionCallback.m": {
+    "mtime": 1777586372.6505482,
+    "hash": "c2965760d4989a54faf95715e9b97510"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\tableContextMenu_cb.m": {
+    "mtime": 1777585974.3694649,
+    "hash": "24820175abeda9dadf2c6ec881c09469"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\units_Callback.m": {
+    "mtime": 1777583930.2507968,
+    "hash": "d75df979aa1346cc71baadad7c61aa9a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\updateBatchOptFromGUI.m": {
+    "mtime": 1777583937.6009393,
+    "hash": "07e74e39df8f13dc343d9e1c2abf1e27"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\updateSortingSettings.m": {
+    "mtime": 1777583942.8339572,
+    "hash": "cf9ce1a5488f6193d8513f0a0cd47472"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Quantification\\updateWidgets.m": {
+    "mtime": 1777586460.270251,
+    "hash": "21f7e00f2ad62c860501d03881ea08f7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@QuantificationProperties\\QuantificationProperties.m": {
+    "mtime": 1778049028.2411408,
+    "hash": "f0865d06dfd8c4125efdcf3fb22ce7c0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@ResampleDataset\\ResampleDataset.m": {
+    "mtime": 1778236060.967233,
+    "hash": "f686c00343a4e0c70254e00b6894f1d8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@Snapshot\\Snapshot.m": {
+    "mtime": 1777985024.3062618,
+    "hash": "199e20dc1af9a0b4bd6203f10ffdd7fc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@VolRenApp\\VolRenApp.m": {
+    "mtime": 1778142453.7898233,
+    "hash": "9eba98591184d92e2eeaf8c7c99b5e20"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@VolRenAppViewer\\VolRenAppViewer.m": {
+    "mtime": 1778142453.7918246,
+    "hash": "142bdfd6a683e923349a03c77a109d7e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+controllers\\@WelcomeTips\\WelcomeTips.m": {
+    "mtime": 1777587187.706308,
+    "hash": "58e93436f5cd43edcc40d4b32cfb183d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Annotations\\Annotations.m": {
+    "mtime": 1777574638.288027,
+    "hash": "cae05db3429fde7e2e18ecb163306976"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@ChildView\\ChildView.m": {
+    "mtime": 1777576326.0172098,
+    "hash": "48ab7c8889de1b74a546af1e84a77087"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\addLinesToImage.m": {
+    "mtime": 1777575204.1856234,
+    "hash": "94ceca7f64dda88210288830f3f1b802"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\addNode.m": {
+    "mtime": 1777575216.8097064,
+    "hash": "2f55b302b57a0bf7f1c3056a79b06fd1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\calculateLengthOfNodes.m": {
+    "mtime": 1777575209.5745296,
+    "hash": "f20c15bba9d98cb1cba982cf72cfa10c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\clearContents.m": {
+    "mtime": 1777574829.2489157,
+    "hash": "bf399da8792383345517cdd2277634f3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\clipEdge.m": {
+    "mtime": 1777574841.5451076,
+    "hash": "d00074815c6287e9c7bbf54185e847b3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\connectNodes.m": {
+    "mtime": 1777574850.144673,
+    "hash": "aea73c1cb7d7e3e4da8e9a1b085af104"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\deleteNode.m": {
+    "mtime": 1777574859.5109048,
+    "hash": "f2a01f55c2f4f27c50764850d281039c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\deleteTree.m": {
+    "mtime": 1777574868.8194163,
+    "hash": "11ee5c71e73cd4d193d6a30500730523"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\findClosestNode.m": {
+    "mtime": 1777574878.7984774,
+    "hash": "fe5865389bbb4784d98cd3b4b5d10251"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\findSliceNodes.m": {
+    "mtime": 1777574890.0228179,
+    "hash": "e80ee65deb8c0d56d7c971f6f8db0adf"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\getOptions.m": {
+    "mtime": 1777574899.591562,
+    "hash": "8dface1f1dd959463ce3523953c2b5d3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\getTree.m": {
+    "mtime": 1777574909.8715892,
+    "hash": "3c75073069fd289466c6529e2cbc80ed"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\getTreeNames.m": {
+    "mtime": 1777574920.5083091,
+    "hash": "297a817f309db657543f17728f9e1b9e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\insertNode.m": {
+    "mtime": 1777574929.338552,
+    "hash": "ebc8a8c8fb28e2ae4802a8ac130a1f2f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\Lines3D.m": {
+    "mtime": 1778009307.5203743,
+    "hash": "9edb56e9c2048c4b4ba3167c803494cd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\makeDummyGraph.m": {
+    "mtime": 1777574939.580302,
+    "hash": "5913b4f2ae7c4231bff861dc49e95eb6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\replaceGraph.m": {
+    "mtime": 1777575229.4114542,
+    "hash": "fd6f30a159f5d48d7d818355085e85d9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\saveToFile.m": {
+    "mtime": 1777575237.5572217,
+    "hash": "6d71bb5cef2c84ab124bf94b9fb74974"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\setActiveNode.m": {
+    "mtime": 1777575192.7256067,
+    "hash": "f3addbc3cd72bd539c542d7abdff1edb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\setOptions.m": {
+    "mtime": 1777574977.6107032,
+    "hash": "fffc36b33ed85e9e33fc813d4804b291"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\splitAtNode.m": {
+    "mtime": 1777574987.150312,
+    "hash": "de4abf47c00188d589f38fa09d90890a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\updateNodeCoordinate.m": {
+    "mtime": 1777574995.615346,
+    "hash": "ace01cd444fd3d770e7f8495fdaba4b6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\updateNodeStrel.m": {
+    "mtime": 1777575004.9129996,
+    "hash": "dabb9baa2b7a9b172a94588d2bc908fd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Lines3D\\updateNumberOfTrees.m": {
+    "mtime": 1777575014.261413,
+    "hash": "319a992a97f0370965c37283817e5928"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@Measurements\\Measurements.m": {
+    "mtime": 1778142453.7938225,
+    "hash": "992bfc6afd2a094703df967e0b7554bc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibBackup\\MibBackup.m": {
+    "mtime": 1779189290.5453322,
+    "hash": "f00e1fe8f5ee9d1d7e53d233ed8cb830"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\addMaterial.m": {
+    "mtime": 1777570936.1639278,
+    "hash": "407e7669edf6bb0909d8b1c51e053364"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\clearLayer.m": {
+    "mtime": 1777904080.2772684,
+    "hash": "831b2e43184c3fb4e649d89f5b380884"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\closeVirtualDataset.m": {
+    "mtime": 1777571025.074923,
+    "hash": "64f24af5b2b2d48bc82a1820b7100da6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\convertPixelsToUnits.m": {
+    "mtime": 1777571081.1570802,
+    "hash": "b16ea2edf38fdc1e672a90ade8ca9a49"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\convertUnitsToPixels.m": {
+    "mtime": 1777571155.6698918,
+    "hash": "6ac7a93887150ec809c511cb441e92a0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\createModel.m": {
+    "mtime": 1777571144.9456325,
+    "hash": "93dc2f2713347124feb016d3d060e615"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\cropDataset.m": {
+    "mtime": 1777571780.517248,
+    "hash": "74ba4faaa842060c6cc3ba5dd8759b77"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getAxesLimits.m": {
+    "mtime": 1777571201.4817817,
+    "hash": "c5dbc1972a79876f2db424f140995fc1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getCoordinatesOfShownImage.m": {
+    "mtime": 1777571228.9272413,
+    "hash": "097f072b161df1258fe96246652a23ac"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getCurrentSliceNumber.m": {
+    "mtime": 1777571255.5753582,
+    "hash": "d5a3c1f7b6352b1860a1ddc86244afff"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getCurrentTimePoint.m": {
+    "mtime": 1777571802.319813,
+    "hash": "5456ac1206f2245969f6e49f22f8163f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getData2D.m": {
+    "mtime": 1777571330.5963993,
+    "hash": "7b02114443e80ebf3053c99c05ff46a5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getData3D.m": {
+    "mtime": 1777571327.1939905,
+    "hash": "9c9ead042bdb53a2951c9b23ecf28aec"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getData4D.m": {
+    "mtime": 1777571323.8127534,
+    "hash": "4fda46b6e81fc234619a9e99432bcbab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getDatasetDimensions.m": {
+    "mtime": 1777571376.6898408,
+    "hash": "89075fd4503137e7e7cd3a50976e49cf"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getPixelIdxList.m": {
+    "mtime": 1777571925.9078429,
+    "hash": "4eaf49b3f7e0178302b9e97dfe1b0f06"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getRoiBoundingBox.m": {
+    "mtime": 1777571971.0075438,
+    "hash": "c57a46cff99c7972c4f569d937df4b2d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getSelectedMaterialIndex.m": {
+    "mtime": 1779172744.9495375,
+    "hash": "8bf8ce5508f6247d5a4f7c87438970b4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\getSliceLabels.m": {
+    "mtime": 1777571428.0221107,
+    "hash": "bc00b1eaedd5b4833a86675d5898ae02"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\initialize.m": {
+    "mtime": 1777876429.474352,
+    "hash": "94d8e98898062f0a5f14f669362bebde"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\insertMaterial.m": {
+    "mtime": 1777571448.559693,
+    "hash": "485894da2ab6139b8bb89bbfd9c58282"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\insertSlice.m": {
+    "mtime": 1777571457.729859,
+    "hash": "20dc941125c955b40737a0db1e75e316"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\loadModel.m": {
+    "mtime": 1778070926.6590514,
+    "hash": "e7e34641ef6ec46a2bfc320452549b24"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\MibDataset.m": {
+    "mtime": 1779172744.951542,
+    "hash": "f4f15a90f3f37e3cc6d3557030f70ce6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveMaskToModelDataset.m": {
+    "mtime": 1777571478.0981367,
+    "hash": "e20eb5350eaf9ab93dc7dd13e5273f3d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveMaskToSelectionDataset.m": {
+    "mtime": 1777571486.7348237,
+    "hash": "371b3549e1fa5219a51ff18dd1a6a6b2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveModelToMaskDataset.m": {
+    "mtime": 1777572032.969357,
+    "hash": "01c87adc9c4f3eeac2cf13e899198aa5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveModelToSelectionDataset.m": {
+    "mtime": 1777572051.39223,
+    "hash": "13f52cb64af6c8fecb4c25564e3e8a9b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveSelectionToMaskDataset.m": {
+    "mtime": 1777572067.8980796,
+    "hash": "301094a1b5ea397c04d870959d422395"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveSelectionToModelDataset.m": {
+    "mtime": 1777572080.5400958,
+    "hash": "a996165e9c3ff11ff7715212d3fc5664"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\moveView.m": {
+    "mtime": 1777571533.9003038,
+    "hash": "4590eb03dc961ea1ecde6414181cbaad"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\removeMaterial.m": {
+    "mtime": 1777571542.5438962,
+    "hash": "38e8db9f784c54dc623e8544c8bf0ec7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\reorderMaterials.m": {
+    "mtime": 1777571552.897079,
+    "hash": "14c3c2c1f5ff0c0a67a581b4ec4f36fa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\saveImage.m": {
+    "mtime": 1778142453.7958243,
+    "hash": "e4ea64cdb07c3832faa2409be8d71da7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\setAxesLimits.m": {
+    "mtime": 1777571574.1287856,
+    "hash": "50b61ae0be3c0fd4e5290fd0e27c5370"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\setData2D.m": {
+    "mtime": 1777572260.0518467,
+    "hash": "eedecf1ddf69aa55dc0a02998896ad81"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\setData3D.m": {
+    "mtime": 1777572314.8837562,
+    "hash": "16e8923f7c31196062dd808cbe47a567"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\setData4D.m": {
+    "mtime": 1777571607.6207051,
+    "hash": "13042a5550ab1daaef45241eef0c50e4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\setPixelIdxList.m": {
+    "mtime": 1777572325.4329638,
+    "hash": "57600561bdfeae2df949f7ac209a4b6b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\setPixSize.m": {
+    "mtime": 1777571659.9398272,
+    "hash": "5442584562535b194f8aab354070105f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\swapMaterials.m": {
+    "mtime": 1777571671.3284283,
+    "hash": "40ae14330d7b53c21d0c1ef620e881d6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\switchDatasetMode.m": {
+    "mtime": 1777571695.3975928,
+    "hash": "efdcacd055f8e83057d3ee82649ce6ee"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\transpose.m": {
+    "mtime": 1777571704.8891592,
+    "hash": "c851af78435297f45a645687230385f6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibDataset\\updateBoundingBox.m": {
+    "mtime": 1777571713.1897192,
+    "hash": "8eda464c0636c1fc46bd49d8b89ec0dc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibIconCache\\MibIconCache.m": {
+    "mtime": 1777579827.4201295,
+    "hash": "013fc5affb629ed283d68d1b92a458b6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\addColorChannel.m": {
+    "mtime": 1777572488.6887753,
+    "hash": "443d56ea5e1e6da01ac1222dc9829cc4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\buildImageDescription.m": {
+    "mtime": 1777572575.818743,
+    "hash": "8f36bfd7d3e91060f2c1fa0b3ed07630"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\clearLayer.m": {
+    "mtime": 1777572599.131388,
+    "hash": "9def304a2f8a4f5ddb95934f204688ae"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\crop.m": {
+    "mtime": 1777572613.2616036,
+    "hash": "851c4df6d4845dd3845896fbc5c42382"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\getData.m": {
+    "mtime": 1777985024.3102689,
+    "hash": "810d5bd3a6fd7f4f160e19a51485af89"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\getDatasetDimensions.m": {
+    "mtime": 1777572634.5598693,
+    "hash": "7894725697b88898723dbd372bf8494b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\getDefaultViewPort.m": {
+    "mtime": 1777572955.6706622,
+    "hash": "c5eac37a84eea16b2b0367d93cb222df"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\getImAdjustStretchCoef.m": {
+    "mtime": 1777572657.547425,
+    "hash": "679c7ff83992c1e84732bb058e9ee6de"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\getMeta.m": {
+    "mtime": 1777572667.939877,
+    "hash": "0a38144e88de0b3f4eba82b4b56e3810"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\getPixelIdxList.m": {
+    "mtime": 1777572678.926091,
+    "hash": "e7e1448c3629260ab1e915bd3487c42c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\initialize.m": {
+    "mtime": 1777572690.1168368,
+    "hash": "d12c6833c90756ca0424a59f2aa706e4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\initializeImgInfo.m": {
+    "mtime": 1777572702.427101,
+    "hash": "8a9613e02f25c366acbea49de6d76c64"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\insertSlice.m": {
+    "mtime": 1777572712.2320669,
+    "hash": "e9d0656d6674e69677d2ce647356207e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\MibImage.m": {
+    "mtime": 1778744245.8669472,
+    "hash": "3926750b92699530fea1b4fe3210f8f5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\save.m": {
+    "mtime": 1777573322.4098313,
+    "hash": "8aa5ffa9975d03d21dce79e0914b1c5e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\setData.m": {
+    "mtime": 1779188786.6788535,
+    "hash": "696e1a8072894c27e82319ba6942b68f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\setMeta.m": {
+    "mtime": 1777572743.469134,
+    "hash": "93b0fdb1b971f961ce8a8981d74ddb4e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\setPixelIdxList.m": {
+    "mtime": 1777572754.2994854,
+    "hash": "3a047edfc47d005fed3394b718284996"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\splitImageDescription.m": {
+    "mtime": 1777572760.86078,
+    "hash": "01157329dd54197a25973a511c1451af"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\updateActionLog.m": {
+    "mtime": 1777572774.0466928,
+    "hash": "35c4af30ffbd423bcac09dfac2722244"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibImage\\updateBoundingBox.m": {
+    "mtime": 1777572784.492391,
+    "hash": "8c5a7fd4559659483d07131567bd1004"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\countMaterials.m": {
+    "mtime": 1777573523.629964,
+    "hash": "e4e99d436b5e6df0e83558a06ad7dc04"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\insertMaterial.m": {
+    "mtime": 1777573532.4947968,
+    "hash": "89351ce7ad2495493b6f7007ae0224c5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\MibLabels.m": {
+    "mtime": 1778009462.4809115,
+    "hash": "6e7b2d9258186bad4c87e1574f7ecd5f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\renameMaterial.m": {
+    "mtime": 1777573557.2442186,
+    "hash": "fe1a4cc050f95fd3c4ce3e060959329c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\reorderMaterials.m": {
+    "mtime": 1777573565.8221104,
+    "hash": "de86daee9b9037e1dbb8a09f34479c0b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\save.m": {
+    "mtime": 1778142453.796826,
+    "hash": "00252c494649815d02114efae98ea368"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\squeezeMaterialLabels.m": {
+    "mtime": 1777573585.6003156,
+    "hash": "4591e4eb06e79c1a6df7abc3b711c8ad"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels\\swapMaterials.m": {
+    "mtime": 1777573594.3369248,
+    "hash": "91f516ebd0195183406768826e1ed258"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\countMaterials.m": {
+    "mtime": 1777574013.990793,
+    "hash": "2a89289a2092ffc6182b491ab27e30c9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\getData63.m": {
+    "mtime": 1777574041.281969,
+    "hash": "8d475401448e4b87f91e794eabc122fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\insertMaterial.m": {
+    "mtime": 1777574057.4879923,
+    "hash": "c02e13b00a767b94a5e66a88a7e3d964"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\MibLabels63.m": {
+    "mtime": 1778009452.3598335,
+    "hash": "9b488133e26674afa1b35a59fc6535b9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\renameMaterial.m": {
+    "mtime": 1777574067.0118923,
+    "hash": "fe1a4cc050f95fd3c4ce3e060959329c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\reorderMaterials.m": {
+    "mtime": 1777574076.933246,
+    "hash": "de86daee9b9037e1dbb8a09f34479c0b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\save.m": {
+    "mtime": 1778142453.7988243,
+    "hash": "c1697584d142d9073e3d777212ffead6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\setData63.m": {
+    "mtime": 1778072722.981667,
+    "hash": "0b88c1f16cfef70e832c2fc92237dbae"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibLabels63\\swapMaterials.m": {
+    "mtime": 1777574098.220509,
+    "hash": "91f516ebd0195183406768826e1ed258"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\closeVirtualDataset.m": {
+    "mtime": 1777573130.6205683,
+    "hash": "a9ebd72d7f112bb21103d81cfdfe7f39"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\getData.m": {
+    "mtime": 1777573140.4452562,
+    "hash": "88b4d49674563829d42cac7411321a57"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\getDataVirt.m": {
+    "mtime": 1777573530.643173,
+    "hash": "ac39f5644843bd8ec19d4efeb3d0e389"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\getDataZarr.m": {
+    "mtime": 1777573251.3265498,
+    "hash": "da7e17c32b6ccebcbfd1258ede042983"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\getOrCreateLoader.m": {
+    "mtime": 1777573168.5699053,
+    "hash": "7ae27bb59691ceb3bd9fcde15f9a3c04"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\initialize.m": {
+    "mtime": 1777573178.3592176,
+    "hash": "5c5c229c0922603bfa73777913869320"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\insertSlice.m": {
+    "mtime": 1777573190.1999233,
+    "hash": "44c230205be00d7a757a409fcb367efb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@MibVirtualImage\\MibVirtualImage.m": {
+    "mtime": 1778009456.315387,
+    "hash": "2028f3deb28adc23e4bcfc5cb7c17005"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@PoolWaitbar\\PoolWaitbar.m": {
+    "mtime": 1778655932.0820477,
+    "hash": "1810549f3713a1b9f58315701559c894"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@RoiRegion\\RoiRegion.m": {
+    "mtime": 1777575730.5857518,
+    "hash": "d5146a2f7a7b46c0509ac90773af4ce6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+core\\@ToggleEventData\\ToggleEventData.m": {
+    "mtime": 1777576335.0102315,
+    "hash": "fc71080eb871f50cb96980dce7dbae66"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\augmentAndCrop2dPatchMultiGPU.m": {
+    "mtime": 1777569444.8802226,
+    "hash": "e577a92c1c2344db675390ac04a3161a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\augmentAndCrop3dPatchMultiGPU.m": {
+    "mtime": 1777569449.9405885,
+    "hash": "8aa54a1c636e433c91aef93c1be7cbf2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\convertAbsoluteToRelativePath.m": {
+    "mtime": 1777569867.9549744,
+    "hash": "f83f177fd0921954096af7ea9f4bba5f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\convertRelativeToAbsolutePath.m": {
+    "mtime": 1777569869.3760495,
+    "hash": "fc5cb4b4920d87b5b854badd5d8dbdec"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\createAnisotropic3dUnet.m": {
+    "mtime": 1777569876.8295524,
+    "hash": "ad6a532bfa4adeafa77e826bc5b0ce12"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\customDiceForwardLoss.m": {
+    "mtime": 1777569485.4317377,
+    "hash": "a4afd4ea04be4a498c2a4d6780f997a5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\customTrainingProgressDisplay.m": {
+    "mtime": 1777569876.8325522,
+    "hash": "6a2299769886ff78e1e8c9154fddc6f2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\customTrainingProgressDisplayTrainNet.m": {
+    "mtime": 1777569876.835552,
+    "hash": "68faf47b0ac4a8ec24dce9bd16a60345"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\exportONNXNetwork.m": {
+    "mtime": 1777569535.1486776,
+    "hash": "969e9a07331dbd98c342d9dbc559865c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\generateDefaultAugmentations.m": {
+    "mtime": 1777569876.8375554,
+    "hash": "2390008129294ae9325dc70d683e5889"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\matReadInstanceLabels.m": {
+    "mtime": 1777569876.8385544,
+    "hash": "af62aba40a3361b3e4f21dd717aab24a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\oldAugSettingsToNew.m": {
+    "mtime": 1777569876.8405614,
+    "hash": "b2fbe0f1a0fef43c078fe668398fd9b3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\saveImageParFor.m": {
+    "mtime": 1777569554.6268685,
+    "hash": "c32b3d29071bf3ed4e64cc72cca0f47e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\saveInstanceLabelsParFor.m": {
+    "mtime": 1777569558.3421295,
+    "hash": "38be81da2e1f49b1f2b175e29bfd519a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\saveTrainingPlot.m": {
+    "mtime": 1777569562.312988,
+    "hash": "8e714c2d041e0d675e602e63eac279e9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\segmentBlockedImage.m": {
+    "mtime": 1777569566.0411103,
+    "hash": "de87746bf319779348403028f6a35e43"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\stopTrainingCallback.m": {
+    "mtime": 1777569570.0542157,
+    "hash": "69c7edf9af6bcbb1552b1b5971adb858"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\stopTrainingWithoutPlots.m": {
+    "mtime": 1777569573.8160205,
+    "hash": "d7b1f5b3e522918dfac15331936ffeab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\storeLoadCategorical.m": {
+    "mtime": 1777569577.2005687,
+    "hash": "b97845a019a4a3e9b2ffcc8033dc5fca"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\storeLoadImages.m": {
+    "mtime": 1777569580.5462987,
+    "hash": "be40f962ec9b72d5f1d0c34b2d1859d4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\storeLoadModel.m": {
+    "mtime": 1777569584.2776887,
+    "hash": "138509492c01c4e5f0be2dfa79761320"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+deepmib\\trainingStructUpdateAxes.m": {
+    "mtime": 1777569591.157665,
+    "hash": "3589e2569193d48aa3465ef9ce63fc99"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\ExtensionRegistryLoad.m": {
+    "mtime": 1777566761.277868,
+    "hash": "cfd5b0820f639e76c1c4583c0944d083"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\LoaderFactory.m": {
+    "mtime": 1777566860.5165753,
+    "hash": "2a09a313237f57715ac04b5fa20122b5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\loadImagesWrapper.m": {
+    "mtime": 1777495232.1279685,
+    "hash": "6829dbecc5b1867ca10e264f36291651"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\mibImage2mrc.m": {
+    "mtime": 1777567272.538248,
+    "hash": "85cc55e6850c6da14b0503efdb358490"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\SaverFactory.m": {
+    "mtime": 1777566991.9148166,
+    "hash": "35302f8f94d3c2bd3c778f80dc63e8c8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\amiraLabels2bitmap.m": {
+    "mtime": 1777547725.9112947,
+    "hash": "4e9c2f69e9baf51aa4c91f2b829f852d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\amiraLandmarks2points.m": {
+    "mtime": 1777548053.1807866,
+    "hash": "5ec2ca2a7b6738b6824734c097c38ac7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\amiraMesh2bitmap.m": {
+    "mtime": 1778059051.1444004,
+    "hash": "ada1427f999de68a69eba8bc2698edb8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\bitmap2amiraLabels.m": {
+    "mtime": 1777548208.8332083,
+    "hash": "6073955966fc062f780f4d3ccb7f3bee"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\bitmap2amiraLabels2.m": {
+    "mtime": 1777548182.7777257,
+    "hash": "63e0ddff170d386e8496fb3a3ef96941"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\bitmap2amiraMesh.m": {
+    "mtime": 1777548123.5035229,
+    "hash": "b44359dd557720c9af164b0b933d29d0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\getAmiraMeshHeader.m": {
+    "mtime": 1777548142.0201056,
+    "hash": "f8a135ae0f2c92e330a387b5026d31e4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\graph2amiraSpatialGraph.m": {
+    "mtime": 1777548223.3326132,
+    "hash": "61cd126c843d5af77e092959dec5fc30"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\points2amiraLandmarks.m": {
+    "mtime": 1777548064.7099586,
+    "hash": "648e27939de70580c88033aac9441f83"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+AmiraMesh\\points2psi.m": {
+    "mtime": 1777548227.6710212,
+    "hash": "a4d5689bad4332965f4739834206290a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+BioFormats\\bfopen3.m": {
+    "mtime": 1777549764.9332485,
+    "hash": "cd36ec0c455d393616ef53378688ed6e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+BioFormats\\bfopen5.m": {
+    "mtime": 1777549678.969419,
+    "hash": "a6c355d3a278f8598795a232da075820"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+BioFormats\\mibImage2ometiff.m": {
+    "mtime": 1777549155.8852975,
+    "hash": "c46e18ec5ee78d8de8b505afb7736aab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+BioFormats\\wavelength2rgb.m": {
+    "mtime": 1777549083.9199493,
+    "hash": "ada2489504aeb1eaf66505e151b56f85"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+Fiji\\Miji_deploy.m": {
+    "mtime": 1778142453.799823,
+    "hash": "eb49cc8e5004f993d65c0b406eaeefea"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+Fiji\\Miji_wrapper.m": {
+    "mtime": 1778142453.801826,
+    "hash": "d460be2700932e2a0db3ad34161ae1a8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+HDF5\\image2hdf5.m": {
+    "mtime": 1777549920.5350814,
+    "hash": "39d4c002cd01f96a5f6c71682138ca48"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+HDF5\\saveBigDataViewerFormat.m": {
+    "mtime": 1777549952.625118,
+    "hash": "119cd8ad5dcf92f05b8f8556636054dc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+HDF5\\saveXMLheader.m": {
+    "mtime": 1777549961.2432585,
+    "hash": "e980c247396627ced455648a33e3165d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\connectToImaris.m": {
+    "mtime": 1777466579.9822972,
+    "hash": "482a1c2717f0359641ebfaea9b2cd3b8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\getImarisDataset.m": {
+    "mtime": 1777495217.9377086,
+    "hash": "fb14cbf68aa2adedec76bf02657ef612"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\getImarisDataset_StandardConnection.m": {
+    "mtime": 1777495217.93671,
+    "hash": "f260b660399b6b577f690579ff20141a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\imaris_send_data_test.m": {
+    "mtime": 1777272770.0347197,
+    "hash": "4469fa497675074ac6acaafda646229a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\mibSetImarisSpots.m": {
+    "mtime": 1777551354.3319032,
+    "hash": "dc98f731578e75be929d4284df3f3884"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\mibSetImarisSurface.m": {
+    "mtime": 1777495217.93671,
+    "hash": "46ce6b01aad5aa7792023588d3a6236a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\renderModelImaris.m": {
+    "mtime": 1777466579.987297,
+    "hash": "33a3c3fed7101cd52e73db8cbdac0cf9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\setImarisDataset.m": {
+    "mtime": 1777551338.5638251,
+    "hash": "1727821a18adfa4916bcbd25ce520f9b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+imaris\\surfacesFromSegmentationImage.m": {
+    "mtime": 1777469066.0428264,
+    "hash": "5fa8d8bd9cc848035b560b62c17ca83a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+IMOD\\mibExportModelToImodModel.m": {
+    "mtime": 1777551572.2118917,
+    "hash": "1d857bcb915555a390076418d143ff3b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\AmiraMeshLoader.m": {
+    "mtime": 1778067574.0479026,
+    "hash": "9f092f8d2fcef938f63a77221fe5b929"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\BaseImageLoader.m": {
+    "mtime": 1777573222.5540977,
+    "hash": "8ea57be73aab819a7acd31ae04b5a109"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\BioFormatsStdLoader.m": {
+    "mtime": 1778067508.9102178,
+    "hash": "79c9f652c62cb5d8cf2dceedf9caf8f2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\BioFormatsVirtualLoader.m": {
+    "mtime": 1777554156.6636803,
+    "hash": "9758f049e4c4e0a579317009e3f268bf"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\BioFormatsVirtualSetupLoader.m": {
+    "mtime": 1777573236.6404288,
+    "hash": "8f6c7ef32be6f41a9b814712e2a0cc43"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\HDF5HeaderLoader.m": {
+    "mtime": 1778067709.9871268,
+    "hash": "353c47c94125f2f0254b424648024bac"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\HDF5NoHeaderLoader.m": {
+    "mtime": 1778067304.3202615,
+    "hash": "b2fa709d98f9ac5f6a80088e5949492f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\HDF5VirtualLoader.m": {
+    "mtime": 1777573244.629501,
+    "hash": "5de9a9227125614478aba2a7a491d7da"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\HDF5VirtualSetupLoader.m": {
+    "mtime": 1777573255.8353631,
+    "hash": "6bc98e9d32371b7acf929a9e56a16fd1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\ImodLoader.m": {
+    "mtime": 1778067852.650747,
+    "hash": "2ef30f7859ce8973665e7230e74b47ba"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\ImreadLoader.m": {
+    "mtime": 1778067387.6185741,
+    "hash": "8be291a7cabd86a1c1c3bdb0176385a7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\MatModelLoader.m": {
+    "mtime": 1778070930.9718792,
+    "hash": "4a01ce3de15f918716d378ffb715b785"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\MibImgLoader.m": {
+    "mtime": 1778067226.020221,
+    "hash": "7faa8118f9371898184d22fa5dbcc522"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\NrrdLoader.m": {
+    "mtime": 1778067262.4849198,
+    "hash": "b312ace8e3b376a49a4f2c8ea7cd62b2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\VideoReaderLoader.m": {
+    "mtime": 1778067339.1096213,
+    "hash": "ab15a3ddb12f65e5f4e90c9bdd1e70a7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\Zarr3VirtualLoader.m": {
+    "mtime": 1777573263.0589197,
+    "hash": "62bfc3d2f1a617107aa2cb846c8097a1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+loaders\\Zarr3VirtualSetupLoader.m": {
+    "mtime": 1777573280.2934763,
+    "hash": "46acc9463358a9ca39abd5734ea966df"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+NRRD\\bitmap2nrrd.m": {
+    "mtime": 1777551702.2290885,
+    "hash": "234c54f70c164095d8e965a1df88bb9a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\AmiraMeshSaver.m": {
+    "mtime": 1777557241.8170085,
+    "hash": "a558cb6d21c58501aeeace70071ee446"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\BaseSaver.m": {
+    "mtime": 1778142453.8028235,
+    "hash": "699286ab032208e8faed3c65c1b586a4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\HDF5Saver.m": {
+    "mtime": 1777557403.1626956,
+    "hash": "bd6aae5351faded823138c90864539a8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\ImodContourSaver.m": {
+    "mtime": 1777557456.4973574,
+    "hash": "1cbfdf3613868d1ffdd7541d9208cdf2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\JpgSaver.m": {
+    "mtime": 1777557569.278242,
+    "hash": "67e1d4b316970703b1a8ad23249b5d56"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\MatlabSaver.m": {
+    "mtime": 1778142453.8048234,
+    "hash": "3ec9b4c2f014bc27ceddeacd9ec3dfdc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\MrcSaver.m": {
+    "mtime": 1777558388.854979,
+    "hash": "7b2d02c2c1e66c79f75a75941978525c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\NrrdSaver.m": {
+    "mtime": 1777558916.5699518,
+    "hash": "f01edfd3e77c694c34b9c8320d1a8a72"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\OmeTiffSaver.m": {
+    "mtime": 1777559178.2709467,
+    "hash": "9ddbd30061a0349624aeb99126fda070"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\PngSaver.m": {
+    "mtime": 1777559493.627218,
+    "hash": "85810e1b029b0c8e94924699b9925d10"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\StlSaver.m": {
+    "mtime": 1777559702.730548,
+    "hash": "113ebe9b21ec2be1aa5daa89fe24e226"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+io\\+savers\\TiffSaver.m": {
+    "mtime": 1777559765.0718806,
+    "hash": "babe1b3136fde6f1abdfe2da33b89248"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\addMaterial.m": {
+    "mtime": 1779172744.9535394,
+    "hash": "0645b71101f5e3066ba4c242da04c925"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\backup.m": {
+    "mtime": 1778478571.5948052,
+    "hash": "9af6bc161fb049ccc0c4343c40e223f3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\clearLayer.m": {
+    "mtime": 1777570584.9377644,
+    "hash": "0e622fcad552d2a3de8ff5c51dc96aab"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\clearSelection.m": {
+    "mtime": 1777570591.1140807,
+    "hash": "c64de0779f25755d67f438b559e7b6df"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\convertDataToMouseCoordinates.m": {
+    "mtime": 1777570600.2573366,
+    "hash": "5ca6c1a964c581ed602312c2019adc4b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\convertMouseToDataCoordinates.m": {
+    "mtime": 1777570608.6967924,
+    "hash": "0e8d4c625b2e5a4325f5d164be54b550"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\createModel.m": {
+    "mtime": 1777570616.5958283,
+    "hash": "fd005f5f42b8b6c00a5328fd0e8caee0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\datasetsSetsOps.m": {
+    "mtime": 1777570040.1312327,
+    "hash": "cb6aa9b0fbf2f3b07a3df0e9137e6ba7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\deepCopyDataset.m": {
+    "mtime": 1778478571.5968041,
+    "hash": "6ea49952ad161c81e24456224be2d9d7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\deleteAnnotations.m": {
+    "mtime": 1777570625.3735225,
+    "hash": "11e0bfa9a5c736f0efe356f949931159"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\dilateImage.m": {
+    "mtime": 1777989289.0554416,
+    "hash": "b86799f7365e7407621200d3c9367e10"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\erodeImage.m": {
+    "mtime": 1777570636.5364304,
+    "hash": "59beceb17e6fcca14735169f4b7cb012"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\exportDataset.m": {
+    "mtime": 1777570642.0670202,
+    "hash": "2e43866a4fe8ddf76b694c5eb4cda403"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\exportDatasetToImaris.m": {
+    "mtime": 1777570648.0416946,
+    "hash": "c991d26bc9bf96d88a44f6dc2e8e6b3e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\exportDatasetToMib.m": {
+    "mtime": 1777570653.673713,
+    "hash": "f7711fc19986df25ef4e0798d3017bdc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\fillSelectionOrMask.m": {
+    "mtime": 1777570661.12383,
+    "hash": "319e4860739d2193aa47b6752bcb807b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getActiveId.m": {
+    "mtime": 1777573364.4759398,
+    "hash": "8de4bf237169d207ec213924d2f10fc9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getAxesLimits.m": {
+    "mtime": 1777570675.1126509,
+    "hash": "39d9a5cd66635ad5843d229ce97a2112"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getData2D.m": {
+    "mtime": 1777570494.2837129,
+    "hash": "a9a599e3f3f26e73a76fe1125ee6348c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getData3D.m": {
+    "mtime": 1777570501.9874756,
+    "hash": "240acc888d2e40cc54dd269db812d464"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getData4D.m": {
+    "mtime": 1777570508.7320952,
+    "hash": "cb49161f9d13a03e4603c7d5919feeb3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getImageProperty.m": {
+    "mtime": 1777570516.1279116,
+    "hash": "57dd9b3d6a59b0c826bf8ee60fe1ed4f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getLinkedDataset.m": {
+    "mtime": 1777570524.6944337,
+    "hash": "66806cd17240fb76b9c1a4eb73a13103"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getMagFactor.m": {
+    "mtime": 1777570533.401879,
+    "hash": "0ac623fca3b78f0930481f612258c2b6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\getRGBimage.m": {
+    "mtime": 1779172744.955539,
+    "hash": "ffd7d906682a011035c6526d122dd5f6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\importDataset.m": {
+    "mtime": 1777570550.6044593,
+    "hash": "c98f095b9e51818ef3936f66b05e7f55"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\importDatasetFromMib.m": {
+    "mtime": 1777570557.0366104,
+    "hash": "adc7939e51e1ae3d4c4c322860c12577"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\initialize.m": {
+    "mtime": 1777570162.9261212,
+    "hash": "e69568a6515902b66f6f9e92c5886391"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\initializePreferences.m": {
+    "mtime": 1777570166.742277,
+    "hash": "0f4dc3f45b572b9ca8db13c86fe84edd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\interpolateImage.m": {
+    "mtime": 1777570337.3855717,
+    "hash": "1a6f25edf5c6e19d0e34da2577aabdd8"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\loadImages.m": {
+    "mtime": 1777570175.8206344,
+    "hash": "1d66d8e0842f40800ee28a4438280a61"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\loadModel.m": {
+    "mtime": 1777570352.7915063,
+    "hash": "e8409b41cfef8f8ac8f71397d2cbc807"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\materialsActions.m": {
+    "mtime": 1777570367.0228505,
+    "hash": "8bb4abcc42bb1e59f7cb223a914b7617"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\MibModel.m": {
+    "mtime": 1778478571.5988026,
+    "hash": "141a08c7d0922a64724df3225b536238"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\moveLayers.m": {
+    "mtime": 1777570074.2444057,
+    "hash": "77fe827575d5536c66d3696d5ec2cf84"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\removeMaterial.m": {
+    "mtime": 1777570382.8705878,
+    "hash": "658d8ee7b75e0b5fec556261f4c13f33"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\renameMaterial.m": {
+    "mtime": 1777570396.88294,
+    "hash": "e39dd926481da08a7b5fa519c8a186df"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\saveImage.m": {
+    "mtime": 1777570203.194977,
+    "hash": "593bb414557694aca39c4794825265d5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\saveLabels.m": {
+    "mtime": 1777570414.9312263,
+    "hash": "197c3232b06c2bc09860dbe3798f4abd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\setAxesLimits.m": {
+    "mtime": 1777570426.2775383,
+    "hash": "302404b4dc158508ae0fe63634ce7d52"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\setData2D.m": {
+    "mtime": 1777570441.9977746,
+    "hash": "f7b528f92b52467a6da1692af7e20fff"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\setData3D.m": {
+    "mtime": 1777570451.6012785,
+    "hash": "9c65dc6212f97651d0d91acc5b2c5f3a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\setData4D.m": {
+    "mtime": 1777570459.2638807,
+    "hash": "e9b0c17c121e75d2b83b2866d88a1f0f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\setDefaultColorPalette.m": {
+    "mtime": 1777570466.0588057,
+    "hash": "ee5042278247a9ec16d7d82232e0ea25"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\setMagFactor.m": {
+    "mtime": 1777570472.7864153,
+    "hash": "5743805418f7d0be9fed385accc5a2c7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+models\\@MibModel\\undo.m": {
+    "mtime": 1779189568.2773652,
+    "hash": "742a6e5a2cff21f4c40975ef2823972a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\addScaleBar.m": {
+    "mtime": 1777667647.2885375,
+    "hash": "7f786f062fb4ea5735773f53ce283cbc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\addText2Img.m": {
+    "mtime": 1777479237.191348,
+    "hash": "4c4ef808ca2a247b125dd9e2e0bdb5fe"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\attachFileDnD.m": {
+    "mtime": 1777479237.1953478,
+    "hash": "135e9a3377a705805dfe2e43273212bf"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\calculatePixSizes.m": {
+    "mtime": 1777479069.0455654,
+    "hash": "14cb73ed1ee40ff607f0fc8c2a0366f3"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\calculateResolution.m": {
+    "mtime": 1777479069.0455654,
+    "hash": "2042964a43fda3d8553b4e6909dd5135"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\childWindowKeyPressFcn.m": {
+    "mtime": 1777479069.0455654,
+    "hash": "4343c40c71d9a4ff49250104c54ba0aa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\concatenateDictionaries.m": {
+    "mtime": 1777479022.905579,
+    "hash": "b3c4a032d1b0a9106388a1561bf12d96"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\concatenateStructures.m": {
+    "mtime": 1777479022.905579,
+    "hash": "fe9d11d239104b53496b56ac1f3543ff"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\connectPoints.m": {
+    "mtime": 1777479069.0455654,
+    "hash": "50549f1abb993b23e55e131d4ca5fcac"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\fontSizeUpdate.m": {
+    "mtime": 1777479163.8157406,
+    "hash": "032ae6e56ac6e2c1ae03473d7b213c85"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\generateSequentialFilename.m": {
+    "mtime": 1777479304.707132,
+    "hash": "fae41fb88f4453ce3dfedd465df45f98"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\GetExeLocation.c": {
+    "mtime": 1765446274.0851324,
+    "hash": "cb52c1f7e133d6b0f660b6ba23a7cc65"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\getInstallationPath.m": {
+    "mtime": 1777479163.8157406,
+    "hash": "ec5976dbb78bb7ac93f1a38b829aba04"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\getMaxParpoolWorkers.m": {
+    "mtime": 1777479069.1191459,
+    "hash": "29f1e6793b7b7910a25a29efdb9ffbfc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\getMibVersionNumberic.m": {
+    "mtime": 1777479119.057278,
+    "hash": "54be12f68b933e6c59317efcda4ef9ac"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\getPrefDir.m": {
+    "mtime": 1777479022.905579,
+    "hash": "959b042b4ad90b1b2910be02ef974b8f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\imageProfileIntegrate.m": {
+    "mtime": 1777876429.482871,
+    "hash": "211fa6cc10d72c74f0bf6f47e0ce095c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\interpolateLines.m": {
+    "mtime": 1777479119.0582776,
+    "hash": "299be4b60f5c12a883c05459822bfc2c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\interpolateShapes.m": {
+    "mtime": 1777479022.9186008,
+    "hash": "7ac54a9522d6332103f3cb5a0d9797fd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\isosurfaceMibRendering.m": {
+    "mtime": 1777479163.8157406,
+    "hash": "f4f43c1c3848a54e5a46026e5612562b"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\mibImWrite.m": {
+    "mtime": 1777667683.3108914,
+    "hash": "867ec271860afcbe3de676fbf1be3b5a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\moveWindowOutside.m": {
+    "mtime": 1777479163.806734,
+    "hash": "d361489b28b276a677cf16e4c357d8a1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\overrideDescriptions.m": {
+    "mtime": 1778074211.6619647,
+    "hash": "d7aa16df2e0ddb673d21b12ab2bc5957"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\purgeChildController.m": {
+    "mtime": 1777479119.0582776,
+    "hash": "04ec58b41f5a222a022a7c23dbf96d5e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\renderVolumeWithFiji.m": {
+    "mtime": 1778142453.8118215,
+    "hash": "b39aadd90855f2ee8684c0c895794ce2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\resizeImage3d.m": {
+    "mtime": 1777479266.6702576,
+    "hash": "ffc01f4b633831df14e3956ece989eef"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\saveProjectStructure.m": {
+    "mtime": 1777479318.4403932,
+    "hash": "4fe5b50a3670b1bb14b9f6438b0b767f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\startController.m": {
+    "mtime": 1778049028.2461398,
+    "hash": "c220a728c03da0fc973d3b6dad445f14"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\struct2array.m": {
+    "mtime": 1777479069.1191459,
+    "hash": "298427c1d718f7b56b136368521ecc75"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\traceCurve.m": {
+    "mtime": 1777479119.0687926,
+    "hash": "34560c7d36f2a8fe27673b671bc0c134"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\unFocus.m": {
+    "mtime": 1777479190.9324546,
+    "hash": "4c85428c76e1a1390d4105017331b6a6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\updateBatchOptCombineFields_Shared.m": {
+    "mtime": 1777479190.9434507,
+    "hash": "c9e4880e574e3d131ddcdf3be15921b1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\updateBatchOptFromGUI_Shared.m": {
+    "mtime": 1777876429.4838707,
+    "hash": "a4226d2b03760e36e1daef70ad9d6290"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\updateGUIFromBatchOpt_Shared.m": {
+    "mtime": 1777479190.9314532,
+    "hash": "180b7cba5de72123f4b204d2981c9f38"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\updatePixSizeAndResolution.m": {
+    "mtime": 1777876429.4858713,
+    "hash": "d52617e38eac98b9889ffdaaf8bec6fa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\calcShifts.m": {
+    "mtime": 1778655932.0830488,
+    "hash": "88b4ec3426e66f4f7f4ccdb9d914cdaf"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\crossShiftStack.m": {
+    "mtime": 1778478571.603804,
+    "hash": "5b76ed93a8e0126f7687baeefe12ccb2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\crossShiftStacks.m": {
+    "mtime": 1778478571.605314,
+    "hash": "c2ede16a87fbe4c6f714bf4be4f0a318"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\detectFeatures.m": {
+    "mtime": 1778525920.2660272,
+    "hash": "a8d80cc7c327642d6a1d586e5f5ad183"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\runningAverageSmoothPoints.m": {
+    "mtime": 1778236060.9722354,
+    "hash": "25eaf70546318c996a659c4897f1fa74"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\subtractRunningAverage.m": {
+    "mtime": 1778478571.607327,
+    "hash": "8539a8489a1f057450e6853c200e055d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+align\\windv.m": {
+    "mtime": 1778236060.975235,
+    "hash": "5a2868ca1963b780ef57f4fbd55fd3be"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\addToJavaClasspath.m": {
+    "mtime": 1777568560.230172,
+    "hash": "586a40154ece6a323eaa2d83f4843d3f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\generateDefaultPalette.m": {
+    "mtime": 1777568564.227224,
+    "hash": "af362c8d1c94f1930f371367f6158dd7"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\generateKeyShortcuts.m": {
+    "mtime": 1777568594.6827738,
+    "hash": "851b36023977a56ff8e5cc4494986438"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\generateLUT.m": {
+    "mtime": 1777568601.913896,
+    "hash": "b0b0b74284f0b191e8f323cd502e5070"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\generatePreferences.m": {
+    "mtime": 1777569876.842567,
+    "hash": "28447f6ec1cbd8bb95de74e0e01f16fd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\generateSessionSettings.m": {
+    "mtime": 1777876429.4798727,
+    "hash": "ef463ecf0f434d274d0498fa3ba237db"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+defaults\\initializePixSize.m": {
+    "mtime": 1777568613.5482364,
+    "hash": "20cdb5313023928b450fc44fe14469c9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\AmiraImportDlg.m": {
+    "mtime": 1777469053.2954907,
+    "hash": "bc90541148f390495c7bfe5d9cd443a4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\inputQuestDlg.m": {
+    "mtime": 1778478571.6093245,
+    "hash": "9e84d745aded9d115b7224d1e9a9c44d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\inputSingleDlg.m": {
+    "mtime": 1778164972.2544415,
+    "hash": "14882e1ff790779891c8d20b535195f5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\inputUniversalDlg.m": {
+    "mtime": 1778142453.8108263,
+    "hash": "cd9e55c4b37249b87596c91d65693342"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\mibUiGetFile.m": {
+    "mtime": 1777567747.7506049,
+    "hash": "b749aa7c4a4613b9ca49bd7071bdb067"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\SelectHDFSeries.m": {
+    "mtime": 1777568374.4454503,
+    "hash": "7d53608b2218f5292e71f860e4984272"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\SelectLociSeriesDlg.m": {
+    "mtime": 1777568446.9532297,
+    "hash": "de404ab71ddf87fe8102d3d7a0c1860a"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\selectModelTypeDlg.m": {
+    "mtime": 1777469053.4175491,
+    "hash": "b1d12ba457cbf47de8de92eea362210c"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\showErrorDialog.m": {
+    "mtime": 1778164988.7806835,
+    "hash": "e383805f2af012c957d05097412515cc"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\showErrorDialogStd.m": {
+    "mtime": 1777568581.180084,
+    "hash": "874a3cb60f362307b281ff6677ad5df2"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+utils\\+dlgs\\showMilestoneDialog.m": {
+    "mtime": 1777568065.012619,
+    "hash": "ef9d2401d29fbe8c8b908a9c70e55878"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addActiveDatasetPanel.m": {
+    "mtime": 1777663287.4073515,
+    "hash": "0f76e3374ebfe6cb6a15c135069060f0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addDirContentsPanel.m": {
+    "mtime": 1777663294.3407845,
+    "hash": "38bbce6c680b3380331831bad01f4670"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addQuickAccessBar.m": {
+    "mtime": 1777663355.4600658,
+    "hash": "60612f2ca3ca3afbfd4e19e891195107"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonDataset.m": {
+    "mtime": 1777663314.436626,
+    "hash": "84c43cb267b4e055b4c1d53a09148d93"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonHome.m": {
+    "mtime": 1779172744.957543,
+    "hash": "d992f51d6b736cca8557f2cf1907a451"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonImage.m": {
+    "mtime": 1777663307.507049,
+    "hash": "ebca02ef5da5e64cc4946cb8c5b23da0"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonMask.m": {
+    "mtime": 1777663326.4340525,
+    "hash": "cea7df6d9b2019300aaef1eb15477ee4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonModel.m": {
+    "mtime": 1777663320.7353513,
+    "hash": "5d61cab4fc079cfb052cc7b37953e266"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonPlugins.m": {
+    "mtime": 1777663343.4544983,
+    "hash": "297b3afd11969280340b646b84b082cd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonSelection.m": {
+    "mtime": 1777663331.7352793,
+    "hash": "79d5df259a2f013c7a7487e909f62e94"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonTabs.m": {
+    "mtime": 1777663349.6226592,
+    "hash": "d6ae60976335293261578c7277aa910d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRibbonTools.m": {
+    "mtime": 1777663337.3922925,
+    "hash": "da97ab4c228a679d088bb632543cca20"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addRoiPanel.m": {
+    "mtime": 1777663361.0564277,
+    "hash": "d8a67f4ebc4c801ffdb50a21d4c70fb1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addSegmentationPanel.m": {
+    "mtime": 1777663366.250638,
+    "hash": "f6addaeb25c803afba2ecaab093f398f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addSelectionViewSettingsPanel.m": {
+    "mtime": 1777663371.9565508,
+    "hash": "7328f1e9db88e00b772ec8607b682f3e"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\addStatusBar.m": {
+    "mtime": 1777663377.3649273,
+    "hash": "a1b2e5b501d2f5e2ef92d0c08c60961d"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\doPostInitializationTasks.m": {
+    "mtime": 1777663383.3328066,
+    "hash": "08b7c3d3ae55b46f220f635f8b811083"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\initializeMibView.m": {
+    "mtime": 1777663388.684957,
+    "hash": "57b2889394ef5a449d338f16fb9a76b4"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\MibView.m": {
+    "mtime": 1777663283.1249475,
+    "hash": "63675f6ed806ad4ded4d957c6922b0aa"
+  },
+  "C:\\Matlab\\MIB3\\mib\\+views\\@MibView\\recenterGui.m": {
+    "mtime": 1777663393.7063308,
+    "hash": "a4264c0a81bd69ae218f2c82490ac4c6"
+  },
+  "C:\\Matlab\\MIB3\\mib\\legacy\\dicePixelCustomClassificationLayer.m": {
+    "mtime": 1776754911.8044238,
+    "hash": "dd2f5f5aa1bbbb7d172ce24a2e18d9bd"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\FileProcessing\\ImageConverter\\extractToXMLMetaFromFibicsTIFs.m": {
+    "mtime": 1765446275.0974047,
+    "hash": "3ae08d04e6cd4555e09e7fb36c6506ec"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\FileProcessing\\ImageConverter\\ImageConverter.m": {
+    "mtime": 1777358765.5017126,
+    "hash": "08a7409c5ee4e5a4d9506cd9e09574e5"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\FileProcessing\\ImageConverter\\readMetaDataFromFibicsTIFs.m": {
+    "mtime": 1765446275.102402,
+    "hash": "53ebf8f16af2527d72d0a24152dd1363"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m": {
+    "mtime": 1777444458.3546917,
+    "hash": "358d7d1cd30515fc7ef114ebbed529ca"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\OrganelleAnalysis\\SurfaceMeasurements\\SurfaceMeasurements.m": {
+    "mtime": 1777375363.8523898,
+    "hash": "b84d15673a0b876c1698b6d79f88d4d1"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m": {
+    "mtime": 1777444458.3566906,
+    "hash": "39ddf3965722006116434488e8882d2f"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\Tutorials\\GuiTutorial\\GuiTutorial.m": {
+    "mtime": 1777358765.5097148,
+    "hash": "3afbc60d1d1d7f89cb269edd7df57fcb"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m": {
+    "mtime": 1777444458.367413,
+    "hash": "37bd4af6a7ec87e97a5d99db4c11ff10"
+  },
+  "C:\\Matlab\\MIB3\\mib\\plugins\\Tutorials\\PluginWithoutGUI\\PluginWithoutGUI.m": {
+    "mtime": 1777444458.3754134,
+    "hash": "660aced47f0b8702f79473f23881cbaf"
+  },
+  "C:\\Matlab\\MIB3\\mib\\mib3_prefs_override.txt": {
+    "mtime": 1765446275.0964048,
+    "hash": "792c364f1df90a3ab83860866104ad39"
+  },
+  "C:\\Matlab\\MIB3\\mib\\mib_structure.txt": {
+    "mtime": 1770124361.7047372,
+    "hash": "ef57270c9691f12c5556fe424a0e3054"
+  },
+  "C:\\Matlab\\MIB3\\mib\\project_structure.txt": {
+    "mtime": 1770124114.0599656,
+    "hash": "b393129de1f7c6b92192afbb8a5632e9"
+  },
+  "C:\\Matlab\\MIB3\\mib\\assets\\videos\\celebration.mp4": {
+    "mtime": 1771524729.9339356,
+    "hash": "02b17f1e32c377d2c308c587e9b789f1"
+  }
+}

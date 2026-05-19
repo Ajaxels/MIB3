@@ -31,7 +31,6 @@ classdef MibRibbon
         homeUpdateRecentDirsList(obj)        % update the recent directories list
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
         imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
-        imageContrast_Callbacks(obj, hWidget, hData)        % callback on press of the contrast buttons in the Image ribbon
         imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
         imageMode_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mode section of the Image ribbon
         imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
@@ -225,11 +224,8 @@ classdef MibRibbon
             obj.handles.ribbonImage.colorsSwap.ItemPushedFcn = @obj.imageColors_Callbacks;
             obj.handles.ribbonImage.colorsDelete.ItemPushedFcn = @obj.imageColors_Callbacks;
             % contrast
-            obj.handles.ribbonImage.contrastCLAHE.ItemPushedFcn = @obj.imageContrast_Callbacks;
-            obj.handles.ribbonImage.contrastNormZ.ItemPushedFcn = @obj.imageContrast_Callbacks;
-            obj.handles.ribbonImage.contrastNormZmask.ItemPushedFcn = @obj.imageContrast_Callbacks;
-            obj.handles.ribbonImage.contrastNormZmaskBg.ItemPushedFcn = @obj.imageContrast_Callbacks;
-            obj.handles.ribbonImage.contrastNormT.ItemPushedFcn = @obj.imageContrast_Callbacks;
+            obj.handles.ribbonImage.contrastCLAHE.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.contrastNorm.ItemPushedFcn = @obj.image_Callbacks;
             % invert
             obj.handles.ribbonImage.invert.ButtonPushedFcn = @obj.imageInvert_Callbacks;
             obj.handles.ribbonImage.invert2D.ItemPushedFcn = @obj.imageInvert_Callbacks;

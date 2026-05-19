@@ -25,6 +25,10 @@ end
 switch mode
     case 'Adjust display'               % obj.handles.ribbonImage.display
         obj.mibController.startController('controllers.DisplayAdjust');
+    case 'Contrast-limited adaptive histogram equalization'     % obj.handles.ribbonImage.contrastCLAHE
+
+    case 'Normalize layers'                                     % obj.handles.ribbonImage.contrastNorm
+        obj.mibController.startController('controllers.ContrastNormalization');
     case 'Image filters'                % obj.handles.ribbonImage.filters
     case 'Line intensity profile'       % obj.handles.ribbonImage.profileLine
     case 'Arbitrary intensity profile'  % obj.handles.ribbonImage.profileArbitrary

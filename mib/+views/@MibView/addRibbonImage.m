@@ -140,17 +140,8 @@ popupList.add(header1);
 widgetHandles.contrastCLAHE =  ListItem('Contrast-limited adaptive histogram equalization', Icon(fullfile(iconPath, 'contrast_clahe_24px.png')));
 popupList.add(widgetHandles.contrastCLAHE);
 % % Normalize Z stack
-widgetHandles.contrastNormZ =  ListItem('Normalize layers', Icon(fullfile(iconPath, 'contrast_normZ_24px.png')));
-popupList.add(widgetHandles.contrastNormZ);
-% % Normalize Z stack masked
-widgetHandles.contrastNormZmask =  ListItem('Normalize layers based on mask', Icon(fullfile(iconPath, 'contrast_normZmask_24px.png')));
-popupList.add(widgetHandles.contrastNormZmask);
-% % Normalize layers based on masked background
-widgetHandles.contrastNormZmaskBg =  ListItem('Normalize layers based on masked background', Icon(fullfile(iconPath, 'contrast_normZbg_24px.png')));
-popupList.add(widgetHandles.contrastNormZmaskBg);
-% % Normalize T stack
-widgetHandles.contrastNormT =  ListItem('Normalize time series', Icon(fullfile(iconPath, 'contrast_normT_24px.png')));
-popupList.add(widgetHandles.contrastNormT);
+widgetHandles.contrastNorm =  ListItem('Normalize layers', Icon(fullfile(iconPath, 'contrast_norm_24px.png')));
+popupList.add(widgetHandles.contrastNorm);
 
 % add the popup list to the Contrast button
 widgetHandles.contrast.Popup = popupList;

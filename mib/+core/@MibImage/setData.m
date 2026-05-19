@@ -71,7 +71,7 @@ end
 if isempty(orient); orient = 3; end
 
 materialIndex = []; % for the labels type index of material to get
-if isempty(colChannel) % take all color channels or materials
+if isempty(colChannel) || (isscalar(colChannel) && colChannel == 0) % take all color channels or materials
     colChannel = 1:obj.colors;
 else
     if strcmp(obj.type, 'labels')

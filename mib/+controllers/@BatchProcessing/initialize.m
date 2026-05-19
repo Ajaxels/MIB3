@@ -95,19 +95,19 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startContr
 obj.Sections(secIndex).Actions(actionId).Name = 'Voxels';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cRibbon.updateVoxelSizes([], Batch);'; actionId = actionId + 1;
 
-% secIndex = secIndex + 1;
-% actionId = 1;
-% obj.Sections(secIndex).Name = 'Ribbon -> Image';
+secIndex = secIndex + 1;
+actionId = 1;
+obj.Sections(secIndex).Name = 'Ribbon -> Image';
 % obj.Sections(secIndex).Actions(actionId).Name = 'Mode';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuImageMode_Callback([], Batch);'; actionId = actionId + 1;
-%obj.Sections(secIndex).Actions(actionId).Name = 'Adjust Display/Image';
-%obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibImageAdjController'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Adjust Display/Image';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.DisplayAdjust'', [], Batch);'; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Color channel actions';
 %obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.colorChannelActions([], [], [], Batch);'; actionId = actionId + 1;
-%obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Contrast-limited adaptive histogram equalization';
-%obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.contrastCLAHE(''Current stack (3D)'', Batch);'; actionId = actionId + 1;
-%obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Normalize layers';
-%obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.contrastNormalization(''Z stack'', Batch);'; actionId = actionId + 1;
+% obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Contrast-limited adaptive histogram equalization';
+% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.contrastCLAHE(''Current stack (3D)'', Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Normalize layers';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContrastNormalization'', [], Batch);'; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Invert image';
 %obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuImageInvert_Callback([], Batch);'; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Image filters';

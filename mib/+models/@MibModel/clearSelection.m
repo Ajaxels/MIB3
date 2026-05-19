@@ -87,8 +87,14 @@ if nargin == 3
     end
 end
 
-id = BatchOpt.id;
+% render waitbar
+if BatchOpt.showWaitbar && ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
+    wb = uiprogressdlg(obj.mibGUI, 'Title', 'Clearing selection', ...
+        'Message', 'Clearing Selection layer...', ...
+        'Indeterminate', 'on');
+end
 
+id = BatchOpt.id;
 %% Perform the clear
 switch BatchOpt.DatasetType{1}
     case '2D, Slice'
@@ -105,11 +111,7 @@ switch BatchOpt.DatasetType{1}
 
         t1 = obj.I{id}.slices{5}(1);
         t2 = obj.I{id}.slices{5}(2);
-        if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.mibGUI, 'Title', 'Clearing selection', ...
-                'Message', 'Clearing Selection layer for the current z-stack...', ...
-                'Indeterminate', 'on');
-        end
+        
         obj.I{id}.clearLayer('selection', '3D');
         if BatchOpt.showWaitbar; delete(wb); end
 
@@ -118,11 +120,7 @@ switch BatchOpt.DatasetType{1}
         backupOptions.id = id;
         obj.backup('selection', 1, backupOptions);
 
-        if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.mibGUI, 'Title', 'Clearing selection', ...
-                'Message', 'Clearing Selection layer for the whole dataset...', ...
-                'Indeterminate', 'on');
-        end
+        
         obj.I{id}.clearLayer('selection', '4D');
         if BatchOpt.showWaitbar; delete(wb); end
 end

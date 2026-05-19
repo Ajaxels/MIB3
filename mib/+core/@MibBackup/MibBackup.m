@@ -191,12 +191,9 @@ classdef MibBackup < handle
                 if isempty(data{1}); return; end   % no data to store
             
                 if ~isfield(options, 'switch3d') 
-                    if strcmp(type, 'image')
-                        dimId = 4;
-                    else
-                        dimId = 3;
-                    end
-                    if size(data{1}, dimId) > 1
+                    % For image [h,w,depth,colors,time] and other types [h,w,depth,time],
+                    % depth is always dimension 3 — check it to determine 3D vs 2D
+                    if size(data{1}, 3) > 1
                         options.switch3d = 1;
                     else
                         options.switch3d = 0;
@@ -206,13 +203,13 @@ classdef MibBackup < handle
                 if ~isfield(options, 'x'); options.x = [1, size(data{1}, 2)]; end
                 if ~isfield(options, 'y'); options.y = [1, size(data{1}, 1)]; end
                 if strcmp(type, 'image')
-                    if ~isfield(options, 'z'); options.z = [1, size(data{1}, 4)]; end
+                    if ~isfield(options, 'z'); options.z = [1, size(data{1}, 3)]; end  % dim 3 = depth
                     if ~isfield(options, 't'); options.t = [1, size(data{1}, 5)]; end
                 else
                     if ~isfield(options, 'z'); options.z = [1, size(data{1}, 3)]; end
                     if ~isfield(options, 't'); options.t = [1, size(data{1}, 4)]; end
                 end
-                depth = size(data{1}, 4);
+                depth = size(data{1}, 3);  % dim 3 = depth for both image and non-image types
             end
             
             % crop undoList

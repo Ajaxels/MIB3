@@ -133,19 +133,45 @@ selectedOnly = BatchOpt.restrictSelectionToMaterial;
 
 getDataOptions.id = BatchOpt.id;
 
+%% Pre-compute dims, parallel setup, and waitbar (3D/4D only)
+if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
+    %% Time-point range
+    if strcmp(BatchOpt.DatasetType{1}, '4D, Dataset')
+        t1 = 1;
+        t2 = obj.I{BatchOpt.id}.image.time;
+    else
+        t1 = obj.I{BatchOpt.id}.slices{5}(1);
+        t2 = obj.I{BatchOpt.id}.slices{5}(2);
+    end
+
+    orient    = obj.I{BatchOpt.id}.orientation;
+    max_size  = obj.I{BatchOpt.id}.dim_yxzct(orient);
+    max_size2 = max_size * (t2 - t1 + 1);
+
+    % Auto-enable parallel if a pool is already running (non-batch)
+    if ~batchModeSwitch
+        if ~isempty(gcp('nocreate')); BatchOpt.Use2DParallelComputing = true; end
+    end
+
+    if BatchOpt.Use2DParallelComputing
+        parforArg = obj.cpuParallelLimitMax;
+        if isempty(gcp('nocreate')); parpool(parforArg); end
+    else
+        parforArg = 0;
+    end
+
+    if BatchOpt.showWaitbar
+        pwb = core.PoolWaitbar(max_size2, ...
+            sprintf('Filling holes in %s\nPlease wait...', BatchOpt.TargetLayer{1}), ...
+            obj.mibGUI, 'Filling holes...');
+    end
+    showWaitbar = BatchOpt.showWaitbar;
+end
+
 %% Backup (skipped in batch mode)
 if ~batchModeSwitch
     do3Dbackup = ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice');
     obj.backup(BatchOpt.TargetLayer{1}, do3Dbackup, getDataOptions);
-end
-
-%% Time-point range
-if strcmp(BatchOpt.DatasetType{1}, '4D, Dataset')
-    t1 = 1;
-    t2 = obj.I{BatchOpt.id}.image.time;
-else
-    t1 = obj.I{BatchOpt.id}.slices{5}(1);
-    t2 = obj.I{BatchOpt.id}.slices{5}(2);
 end
 
 %% ================================================================
@@ -164,32 +190,9 @@ if strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
 %  3D / 4D — slice-by-slice loop (parallel or sequential)
 %% ================================================================
 else
-    orient   = obj.I{BatchOpt.id}.orientation;
-    max_size = obj.I{BatchOpt.id}.dim_yxzct(orient);
-    max_size2 = max_size * (t2 - t1 + 1);
-
-    % Auto-enable parallel if a pool is already running (non-batch)
-    if ~batchModeSwitch
-        if ~isempty(gcp('nocreate')); BatchOpt.Use2DParallelComputing = true; end
-    end
-
     if BatchOpt.Use2DParallelComputing
-        parforArg = obj.cpuParallelLimitMax;
-        if isempty(gcp('nocreate')); parpool(parforArg); end
-    else
-        parforArg = 0;
-    end
-
-    if BatchOpt.Use2DParallelComputing
-        %% ---- Parallel path: core.PoolWaitbar -------------------------
-        if BatchOpt.showWaitbar
-            pwb = core.PoolWaitbar(max_size2, ...
-                sprintf('Filling holes in %s\nPlease wait...', BatchOpt.TargetLayer{1}), ...
-                obj.mibGUI, 'Filling holes...');
-            pwb.setIncrement(10);
-        end
-        showWaitbar = BatchOpt.showWaitbar;
-
+        %% ---- Parallel path -------------------------
+        if showWaitbar; pwb.setIncrement(10); end
         for t = t1:t2
             getDataOptions.t = [t, t];
             stack = cell2mat(obj.getData3D(BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions));
@@ -212,22 +215,14 @@ else
             obj.I{BatchOpt.id}.setData3D(stack, BatchOpt.TargetLayer{1}, t, orient, [], getDataOptions);
         end
 
-        if BatchOpt.showWaitbar; pwb.deletePoolWaitbar(); end
+        if showWaitbar; pwb.deletePoolWaitbar(); end
 
     else
-        %% ---- Sequential path: plain uiprogressdlg -------------------
-        if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
-                'Message', sprintf('Filling holes in %s\nPlease wait...', BatchOpt.TargetLayer{1}), ...
-                'Title', 'Filling holes...');
-        end
-
+        %% ---- Sequential path -------------------------
         for t = t1:t2
             getDataOptions.t = [t, t];
             for layer_id = 1:max_size
-                if BatchOpt.showWaitbar
-                    wb.Value = ((t - t1) * max_size + layer_id) / max_size2;
-                end
+                if showWaitbar; pwb.increment(); end
                 slice = cell2mat(obj.getData2D(BatchOpt.TargetLayer{1}, layer_id, orient, [], getDataOptions));
                 if max(slice(:)) < 1; continue; end
                 slice = imfill(slice, 'holes');
@@ -239,7 +234,7 @@ else
             end
         end
 
-        if BatchOpt.showWaitbar; delete(wb); end
+        if showWaitbar; pwb.deletePoolWaitbar(); end
     end
 end
 
