@@ -79,19 +79,19 @@ switch mode
         obj.selectionPanelCheckboxes(BatchOpt);
 
     case 'preset1' % apply preset 1 to the selected segmentation tool
-        if any(strcmp(obj.mibController.currentModifier, 'shift'))
+        if any(strcmp(obj.UIFigure.CurrentModifier, 'shift')) %any(strcmp(obj.mibController.currentModifier, 'shift'))
             obj.updateSegmentationPreset(1);
         else
             obj.updateSettingsFromPreset(1);
         end
     case 'preset2' % apply preset 2 to the selected segmentation tool
-        if any(strcmp(obj.mibController.currentModifier, 'shift'))
+        if any(strcmp(obj.UIFigure.CurrentModifier, 'shift'))
             obj.updateSegmentationPreset(2);
         else
             obj.updateSettingsFromPreset(2);
         end
     case 'preset3' % apply preset 3 to the selected segmentation tool
-        if any(strcmp(obj.mibController.currentModifier, 'shift'))
+        if any(strcmp(obj.UIFigure.CurrentModifier, 'shift'))
             obj.updateSegmentationPreset(3);
         else
             obj.updateSettingsFromPreset(3);
