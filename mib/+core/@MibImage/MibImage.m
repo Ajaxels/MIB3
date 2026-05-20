@@ -79,6 +79,8 @@ classdef MibImage < matlab.mixin.Copyable
         % pyramid.shardSizes = meta.shardSizes(:, [4, 5, 2, 3, 1]);
         sliceName
         % a cell array of slice filenames that composing the dataset
+        sliceSize
+        % an [N×2] double matrix of original [height, width] per slice; empty [] when all slices share the same size
         time
         % number of time points in the dataset
         type

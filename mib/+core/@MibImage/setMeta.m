@@ -41,6 +41,7 @@ obj.dataClass   = meta{'imgClass'};
 obj.colorType   = meta{'ColorType'};
 obj.maxInt      = meta{'MaxInt'};
 obj.sliceName   = meta{'SliceName'};
+obj.sliceSize   = meta{'SliceSize'};
 obj.pixSize     = meta{'pixSize'};
 obj.lutColors   = meta{'lutColors'};
 

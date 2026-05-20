@@ -169,6 +169,13 @@ elseif isfield(options, 'imageSliceNames') && ~isempty(options.imageSliceNames)
 else
     metadata.sliceName = {};
 end
+if ~isempty(obj.sliceSize)
+    metadata.sliceSize = obj.sliceSize;
+elseif isfield(options, 'imageSliceSizes') && ~isempty(options.imageSliceSizes)
+    metadata.sliceSize = options.imageSliceSizes;
+else
+    metadata.sliceSize = [];
+end
 options.FilenamePrefix = 'Labels_';
 
 % --- get data [H, W, D, C, T] using getData63 to unpack bits 1-6 ---

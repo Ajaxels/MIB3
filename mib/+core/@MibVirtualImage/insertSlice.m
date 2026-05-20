@@ -20,12 +20,13 @@ function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
 %   - **options** — *(optional)* struct with fields:
 %
 %     - ``.sliceNames`` — cell array of names for the inserted slices (default {})
+%     - ``.sliceSizes`` — [N×2] double matrix of [height, width] for the inserted slices (default [])
 %
 % Output Arguments:
 %   none
 %
 %   After the call the following properties are updated:
-%   obj.data, obj.Virtual, obj.depth, obj.dim_yxzct, obj.sliceName (when applicable)
+%   obj.data, obj.Virtual, obj.depth, obj.dim_yxzct, obj.sliceName, obj.sliceSize (when applicable)
 %
 % Usage:
 %   **Example 1**
@@ -42,6 +43,7 @@ function insertSlice(obj, img, insertPosition, dim, virtMeta, options)
 if nargin < 6; options = struct; end
 if nargin < 4; dim = 'depth'; end
 if ~isfield(options, 'sliceNames'); options.sliceNames = {}; end
+if ~isfield(options, 'sliceSizes'); options.sliceSizes = []; end
 
 if ~strcmp(dim, 'depth')
     error('core:MibVirtualImage:insertSlice:unsupportedDim', ...
@@ -99,6 +101,25 @@ if ~isempty(obj.sliceName)
         sliceNames = [sliceNames(1:insertPosition-1); sliceNamesNew; sliceNames(insertPosition:end)];
     end
     obj.sliceName = sliceNames;
+end
+
+% ---- update sliceSize ----
+if ~isempty(obj.sliceSize)
+    sliceSizes = obj.sliceSize;
+    if size(sliceSizes, 1) == 1; sliceSizes = repmat(sliceSizes, [D1_z 1]); end
+
+    sliceSizesNew = options.sliceSizes;
+    if isempty(sliceSizesNew); sliceSizesNew = [0, 0]; end
+    if size(sliceSizesNew, 1) == 1; sliceSizesNew = repmat(sliceSizesNew, [nNew 1]); end
+
+    if insertPosition == D1_z+1
+        sliceSizes = [sliceSizes; sliceSizesNew];
+    elseif insertPosition == 1
+        sliceSizes = [sliceSizesNew; sliceSizes];
+    else
+        sliceSizes = [sliceSizes(1:insertPosition-1, :); sliceSizesNew; sliceSizes(insertPosition:end, :)];
+    end
+    obj.sliceSize = sliceSizes;
 end
 
 end

@@ -246,10 +246,15 @@ classdef TiffSaver < io.savers.BaseSaver
             % caller and the dataset has more than one slice (same logic as
             % PngSaver; Saving3DPolicy is also asked here since TIFF supports
             % both 3D stack and 2D sequence modes).
+            hasSliceSizes = isfield(metadata, 'sliceSize') && size(metadata.sliceSize, 1) == nD;
             if ~options.silent && ~callerSetFilename && nD > 1
                 prompts = {'Filename generator:'; 'Multi-dimensional saving policy:'};
                 defAns  = {{'Use original filename', 'Use sequential filename', 2}; ...
                            {'3D stack', '2D sequence', 1}};
+                if hasSliceSizes
+                    prompts{end+1} = 'Restore original slice dimensions:';
+                    defAns{end+1}  = {'No', 'Yes', 1};
+                end
                 dlgOpts.mibPath     = obj.mibPath;
                 dlgOpts.WindowStyle = 'modal';
                 answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
@@ -257,6 +262,9 @@ classdef TiffSaver < io.savers.BaseSaver
                 if isempty(answer); return; end
                 options.FilenameGenerator = answer{1};
                 options.Saving3DPolicy    = answer{2};
+                if hasSliceSizes
+                    options.RestoreOriginalSize = strcmp(answer{3}, 'Yes');
+                end
             end
 
             % --- outer waitbar for time series ---
@@ -318,6 +326,10 @@ classdef TiffSaver < io.savers.BaseSaver
                                 delete(wbInner); return;
                             end
                             img2D = squeeze(slice4D(:, :, :, z));  % [H, W, C]
+                            if isfield(options, 'RestoreOriginalSize') && options.RestoreOriginalSize && ...
+                                    hasSliceSizes
+                                img2D = obj.cropSliceToOriginalSize(img2D, metadata.sliceSize(z, :));
+                            end
                             descArgs = {};
                             if ~isempty(imgDescArr{z}); descArgs = {'Description', imgDescArr{z}}; end
                             if isnan(cmap)

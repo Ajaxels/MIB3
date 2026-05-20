@@ -213,6 +213,13 @@ else
     metadata.sliceName = {};
 end
 
+% per-slice original dimensions
+if ~isempty(obj.sliceSize)
+    metadata.sliceSize = obj.sliceSize;
+else
+    metadata.sliceSize = [];
+end
+
 % resolution for PNG/TIF Resolution tags — pixels per inch
 resolution = utils.calculateResolution(options.pixSize);
 metadata.xResolution = resolution(1);

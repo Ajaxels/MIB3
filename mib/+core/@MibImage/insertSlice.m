@@ -21,13 +21,14 @@ function insertSlice(obj, img, insertPosition, dim, options)
 %
 %     - ``.BackgroundColorIntensity`` — scalar fill value for dimension mismatches (default 0)
 %     - ``.sliceNames`` — cell array of names for the inserted depth slices (default {})
+%     - ``.sliceSizes`` — [N×2] double matrix of [height, width] for the inserted slices (default [])
 %
 % Output Arguments:
 %   none
 %
 %   After the call the following properties are updated:
 %   obj.data{1}, obj.height, obj.width, obj.depth, obj.colors, obj.time,
-%   obj.dim_yxzct, obj.sliceName (when applicable)
+%   obj.dim_yxzct, obj.sliceName, obj.sliceSize (when applicable)
 %
 % Usage:
 %   **Example 1**
@@ -66,6 +67,7 @@ if nargin < 5; options = struct; end
 if nargin < 4; dim = 'depth'; end
 if ~isfield(options, 'BackgroundColorIntensity'); options.BackgroundColorIntensity = 0; end
 if ~isfield(options, 'sliceNames');               options.sliceNames = {};             end
+if ~isfield(options, 'sliceSizes');               options.sliceSizes = [];              end
 
 BackgroundColorIntensity = options.BackgroundColorIntensity;
 
@@ -132,6 +134,25 @@ if strcmp(dim, 'depth')
             sliceNames = [sliceNames(1:insertPosition-1); sliceNamesNew; sliceNames(insertPosition:end)];
         end
         obj.sliceName = sliceNames;
+    end
+
+    % ---- update sliceSize ----
+    if ~isempty(obj.sliceSize)
+        sliceSizes = obj.sliceSize;
+        if size(sliceSizes, 1) == 1; sliceSizes = repmat(sliceSizes, [D1_z 1]); end
+
+        sliceSizesNew = options.sliceSizes;
+        if isempty(sliceSizesNew); sliceSizesNew = [D2_y, D2_x]; end
+        if size(sliceSizesNew, 1) == 1; sliceSizesNew = repmat(sliceSizesNew, [D2_z 1]); end
+
+        if insertPosition == D1_z+1
+            sliceSizes = [sliceSizes; sliceSizesNew];
+        elseif insertPosition == 1
+            sliceSizes = [sliceSizesNew; sliceSizes];
+        else
+            sliceSizes = [sliceSizes(1:insertPosition-1, :); sliceSizesNew; sliceSizes(insertPosition:end, :)];
+        end
+        obj.sliceSize = sliceSizes;
     end
 
 % -----------------------------------------------------------------------

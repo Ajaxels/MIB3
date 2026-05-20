@@ -114,6 +114,7 @@ obj.viewPort = meta{'viewPort'};
 % update other parameters
 obj.colormap  = meta{'Colormap'};
 obj.sliceName = meta{'SliceName'};
+obj.sliceSize = meta{'SliceSize'};
 
 if ~isempty(meta{'ColorType'})
     obj.colorType = meta{'ColorType'};

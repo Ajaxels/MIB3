@@ -208,6 +208,9 @@ switch lower(layerType)
         if ~isfield(options, 'imageSliceNames') || isempty(options.imageSliceNames)
             options.imageSliceNames = obj.image.sliceName;
         end
+        if ~isfield(options, 'imageSliceSizes') || isempty(options.imageSliceSizes)
+            options.imageSliceSizes = obj.image.sliceSize;
+        end
 
         % Delegate to MibLabels.save()
         fnOut = obj.labels.save(filename, options);
@@ -248,6 +251,8 @@ switch lower(layerType)
         metadata.materialColors = options.MaskColor;
         metadata.sliceName      = {};
         if ~isempty(obj.image.sliceName); metadata.sliceName = obj.image.sliceName; end
+        metadata.sliceSize      = [];
+        if ~isempty(obj.image.sliceSize); metadata.sliceSize = obj.image.sliceSize; end
         metadata.layerType        = 'mask';
         metadata.imageDescription = core.MibImage.buildImageDescription( ...
             obj.image.boundingBox, obj.image.actionLog);

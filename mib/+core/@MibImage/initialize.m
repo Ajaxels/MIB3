@@ -81,6 +81,7 @@ if ~isempty(obj.data)
     % update additional properties
     obj.filename = meta{'Filename'};
     obj.sliceName = meta{'SliceName'};
+    obj.sliceSize = meta{'SliceSize'};
     obj.lutColors = meta{'lutColors'};
 
     % ---- parse ImageDescription → boundingBox + actionLog ----------------

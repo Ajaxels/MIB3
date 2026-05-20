@@ -205,17 +205,34 @@ classdef PngSaver < io.savers.BaseSaver
             % --- "Define naming" dialog ---
             % Show when slice names are available and FilenameGenerator was not
             % explicitly provided by the caller.
-            if ~options.silent && ~callerSetFilename && ...
+            hasSliceSizes = isfield(metadata, 'sliceSize') && size(metadata.sliceSize, 1) == nD;
+            showNamingDlg = ~options.silent && ~callerSetFilename && ...
                     isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nD && ...
-                    nT == 1 && nD > 1
-                prompts  = {'Filename generator:'};
-                defAns   = {{'Use original filename', 'Use sequential filename', 1}};
+                    nT == 1 && nD > 1;
+            showSizeDlg = ~options.silent && hasSliceSizes && nD > 1;
+            if showNamingDlg || showSizeDlg
+                prompts = {};
+                defAns  = {};
+                if showNamingDlg
+                    prompts{end+1} = 'Filename generator:';
+                    defAns{end+1}  = {'Use original filename', 'Use sequential filename', 1};
+                end
+                if showSizeDlg
+                    prompts{end+1} = 'Restore original slice dimensions:';
+                    defAns{end+1}  = {'No', 'Yes', 1};
+                end
                 dlgOpts.mibPath     = obj.mibPath;
                 dlgOpts.WindowStyle = 'modal';
                 answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
                     'Define naming', dlgOpts);
                 if isempty(answer); return; end
-                options.FilenameGenerator = answer{1};
+                answerIdx = 1;
+                if showNamingDlg
+                    options.FilenameGenerator = answer{answerIdx}; answerIdx = answerIdx + 1;
+                end
+                if showSizeDlg
+                    options.RestoreOriginalSize = strcmp(answer{answerIdx}, 'Yes');
+                end
             end
 
             % --- build per-slice output names ---
@@ -235,6 +252,10 @@ classdef PngSaver < io.savers.BaseSaver
                 for t = 1:nT
                     for z = 1:nD
                         img2D = squeeze(data(:,:,z,:,t));  % [H, W, C]
+                        if isfield(options, 'RestoreOriginalSize') && options.RestoreOriginalSize && ...
+                                hasSliceSizes
+                            img2D = obj.cropSliceToOriginalSize(img2D, metadata.sliceSize(z, :));
+                        end
 
                         % Derive output name for this (t, z) pair
                         if nT > 1

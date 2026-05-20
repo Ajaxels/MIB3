@@ -23,6 +23,7 @@ classdef (Abstract) BaseSaver < handle
 % .dataClass   — (char) 'uint8' | 'uint16' | 'uint32' | ...
 % .maxInt      — (double) maximum representable intensity
 % .sliceName   — (cell of char) per-slice source filenames
+% .sliceSize   — (double [N×2]) per-slice original [height, width]; empty when uniform
 % Optional fields injected by MibDataset:
 % .pixSize       — struct {.x .y .z .t .units .tunits}
 % .boundingBox   — [xmin xmax ymin ymax zmin zmax]
@@ -391,6 +392,30 @@ classdef (Abstract) BaseSaver < handle
                 for z = 1:depth
                     sliceNames{z} = fullfile(pathStr, ...
                         utils.generateSequentialFilename(baseName, z, depth, ext));
+                end
+            end
+        end
+
+        function img2D = cropSliceToOriginalSize(~, img2D, sliceSize)
+            % CROPSLICETOORIGINALSIZE - Crop a padded 2-D slice back to its original dimensions.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      img2D = obj.cropSliceToOriginalSize(img2D, sliceSize)
+            %
+            % Input Arguments:
+            %   - **img2D** — [H, W] or [H, W, C] image slice (possibly padded)
+            %   - **sliceSize** — [1x2] vector ``[origHeight, origWidth]``
+            %
+            % Output Arguments:
+            %   - **img2D** — cropped to ``[origHeight, origWidth, :]``
+            %
+            if ~isempty(sliceSize)
+                origH = min(sliceSize(1), size(img2D, 1));
+                origW = min(sliceSize(2), size(img2D, 2));
+                if origH < size(img2D, 1) || origW < size(img2D, 2)
+                    img2D = img2D(1:origH, 1:origW, :);
                 end
             end
         end

@@ -707,6 +707,13 @@ classdef ResampleDataset < handle
                 obj.mibModel.I{id}.image.sliceName = {};
             end
 
+            % remove SliceSize if Z or spatial dimensions changed
+            if ~isempty(obj.mibModel.I{id}.image.sliceSize) && ...
+                    (newZ ~= obj.depth || newH ~= obj.height || newW ~= obj.width)
+                obj.mibModel.I{id}.image.sliceSize = [];
+                obj.mibModel.I{id}.labels.sliceSize = [];
+            end
+
             % clear selection and mask unless 'everything' was resampled together
             if ~strcmp(modelDataType, 'everything')
                 obj.mibModel.I{id}.clearLayer('selection');

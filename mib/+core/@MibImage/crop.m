@@ -46,6 +46,9 @@ y1 = cropF(2);  dy = cropF(4);
 z1 = cropF(5);  dz = cropF(6);
 t1 = cropF(7);  dt = cropF(8);
 
+% Check if X/Y dimensions are changing (needed for sliceSize clearing)
+xyChanged = (x1 > 1) || (y1 > 1) || (dx < obj.width) || (dy < obj.height);
+
 % Crop data{1}: layout is [height, width, depth, colors, time]
 obj.data{1} = obj.data{1}( ...
     y1:y1+dy-1, ...
@@ -64,5 +67,15 @@ obj.dim_yxzct = [obj.height, obj.width, obj.depth, obj.colors, obj.time];
 % Trim sliceName if the dataset had per-slice filenames
 if numel(obj.sliceName) > 1
     obj.sliceName = obj.sliceName(z1 : z1+dz-1);
+end
+
+% Clear sliceSize if X or Y was cropped (original sizes no longer restorable);
+% otherwise trim to the new Z range
+if ~isempty(obj.sliceSize)
+    if xyChanged
+        obj.sliceSize = [];
+    elseif size(obj.sliceSize, 1) > 1
+        obj.sliceSize = obj.sliceSize(z1:z1+dz-1, :);
+    end
 end
 end

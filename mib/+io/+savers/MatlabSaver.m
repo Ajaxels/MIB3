@@ -352,6 +352,7 @@ classdef MatlabSaver < io.savers.BaseSaver
             % When slice names are available and the caller has not pre-set
             % FilenameGenerator, give the user a choice — mirrors TiffSaver.
             hasSliceNames = isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nZ;
+            hasSliceSizes = isfield(metadata, 'sliceSize') && size(metadata.sliceSize, 1) == nZ;
             if ~options.silent && ~callerSetFilename && nZ > 1 && hasSliceNames
                 parentFig = [];
                 if isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
@@ -363,10 +364,17 @@ classdef MatlabSaver < io.savers.BaseSaver
                 dlgOpts.WindowStyle = 'modal';
                 prompts = {'Filename generator:'};
                 defAns  = {{'Use sequential filename', 'Use original filename', 1}};
+                if hasSliceSizes
+                    prompts{end+1} = 'Restore original slice dimensions:';
+                    defAns{end+1}  = {'No', 'Yes', 1};
+                end
                 answer = utils.dlgs.inputUniversalDlg(parentFig, '', prompts, defAns, ...
                     'Model 2D sequence saving options', dlgOpts);
                 if isempty(answer); return; end
                 options.FilenameGenerator = answer{1};
+                if hasSliceSizes
+                    options.RestoreOriginalSize = strcmp(answer{2}, 'Yes');
+                end
             end
 
             sliceNames = obj.buildSliceNames(baseName, pathStr, nZ, ext, options, metadata);
@@ -397,6 +405,10 @@ classdef MatlabSaver < io.savers.BaseSaver
                 end
                 vars          = sharedVars;
                 vars.(labVar) = squeeze(data(:,:,z,1,1));
+                if isfield(options, 'RestoreOriginalSize') && options.RestoreOriginalSize && ...
+                        hasSliceSizes
+                    vars.(labVar) = obj.cropSliceToOriginalSize(vars.(labVar), metadata.sliceSize(z, :));
+                end
                 save(sliceNames{z}, '-struct', 'vars', '-mat', '-v7.3');
                 if ~isempty(wb); wb.Value = z/nZ; end
             end

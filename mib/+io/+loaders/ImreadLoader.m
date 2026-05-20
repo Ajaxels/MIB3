@@ -442,6 +442,7 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
             % Generate slice names from filenames
             % use io.BaseImageLoader.generateSliceNames of the parent class
             imginfo = obj.generateSliceNames(files, imginfo);
+            imginfo = obj.generateSliceSizes(files, imginfo);
 
             % Finalize image info
             % use io.BaseImageLoader.finalizeImgInfo of the parent class

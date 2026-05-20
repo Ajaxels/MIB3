@@ -135,11 +135,18 @@ if ~isempty(meta) && isa(meta, 'dictionary') && isKey(meta, 'SliceName')
     sliceNames = meta{'SliceName'};
 end
 
+% ---- extract slice sizes from meta (used by image.insertSlice) ----
+sliceSizes = [];
+if ~isempty(meta) && isa(meta, 'dictionary') && isKey(meta, 'SliceSize')
+    sliceSizes = meta{'SliceSize'};
+end
+
 % -----------------------------------------------------------------------
 if strcmp(options.dim, 'depth')
 % -----------------------------------------------------------------------
     imgOpts.BackgroundColorIntensity = BackgroundColorIntensity;
     imgOpts.sliceNames               = sliceNames;
+    imgOpts.sliceSizes               = sliceSizes;
 
     if obj.datasetType(1) == 'V'
         obj.image.insertSlice(img, insertPosition, 'depth', meta{'Virtual'}, imgOpts);
@@ -172,6 +179,14 @@ if strcmp(options.dim, 'depth')
             end
         end
         if options.showWaitbar; wb.Value = 0.85; end
+
+        % ---- sync sliceSize from image to label layers ----
+        if ~isempty(obj.image.sliceSize)
+            if obj.labels.exists; obj.labels.sliceSize = obj.image.sliceSize; end
+            if isa(obj, 'core.MibDataset') && ~isa(obj.labels, 'core.MibLabels63')
+                if obj.maskExist; obj.mask.sliceSize = obj.image.sliceSize; end
+            end
+        end
 
         % ---- shift annotations: labelPositions = [z, x, y, t] ----
         [labelsList, labelValues, labelPositions, ~] = obj.annotations.getLabels();

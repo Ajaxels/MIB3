@@ -443,7 +443,57 @@ classdef (Abstract) BaseImageLoader < handle
                 imginfo{"SliceName"} = {[fnShort, ext]};
             end
         end
-        
+
+        function imginfo = generateSliceSizes(~, files, imginfo)
+            % GENERATESLICESIZES - Generate per-slice original dimensions when sizes differ.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      imginfo = obj.generateSliceSizes(files, imginfo)
+            %
+            % This method creates a cell array of [height, width] vectors per slice
+            % when the loaded files have different spatial dimensions. When all files
+            % share the same height and width, the method does nothing (SliceSize
+            % stays at its default empty value), avoiding unnecessary overhead.
+            %
+            % Input Arguments:
+            %   - **files** — structure array with file information:
+            %
+            %     - ``.height`` — [numeric] image height for this file
+            %     - ``.width`` — [numeric] image width for this file
+            %     - ``.noLayers`` — [numeric] number of layers per file
+            %
+            %   - **imginfo** — dictionary with image metadata
+            %
+            % Output Arguments:
+            %   - **imginfo** — updated dictionary with ``'SliceSize'`` field
+            %     (``[N×2]`` double matrix, each row ``[height, width]``) when dimensions differ;
+            %     unchanged otherwise
+            %
+            % **Example 1** — generate slice sizes and display the first one:
+            %
+            %   .. code-block:: matlab
+            %
+            %      imginfo = obj.generateSliceSizes(files, imginfo);
+            %      disp(imginfo{"SliceSize"}(1,:));  % e.g. [512, 256]
+            %
+
+            heights = [files.height];
+            widths  = [files.width];
+            if numel(unique(heights)) > 1 || numel(unique(widths)) > 1
+                totalLayers = sum([files.noLayers]);
+                SliceSize = zeros(totalLayers, 2);
+                index = 1;
+                for fileId = 1:numel(files)
+                    endIdx = index + files(fileId).noLayers - 1;
+                    SliceSize(index:endIdx, :) = repmat([files(fileId).height, files(fileId).width], [files(fileId).noLayers, 1]);
+                    index = endIdx + 1;
+                end
+                imginfo{"SliceSize"} = SliceSize;
+            end
+        end
+
         function imginfo = finalizeImgInfo(~, imginfo, files, filename)
             % FINALIZEIMGINFO - Finalize imginfo dictionary with missing values.
             %

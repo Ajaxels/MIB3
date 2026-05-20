@@ -175,6 +175,7 @@ classdef JpgSaver < io.savers.BaseSaver
             showNaming = ~callerSetFilename && ...
                 isfield(metadata, 'sliceName') && numel(metadata.sliceName) == nD && ...
                 nT == 1 && nD > 1;
+            hasSliceSizes = isfield(metadata, 'sliceSize') && size(metadata.sliceSize, 1) == nD;
 
             if ~options.silent && (~callerSetQuality || ~callerSetCompression || showNaming)
                 prompts = {'Compression mode:'; 'Quality (0-100):'};
@@ -185,6 +186,10 @@ classdef JpgSaver < io.savers.BaseSaver
                     prompts{end+1} = 'Filename generator:';
                     defAns{end+1}  = {'Use original filename', 'Use sequential filename', 1};
                 end
+                if hasSliceSizes && nD > 1
+                    prompts{end+1} = 'Restore original slice dimensions:';
+                    defAns{end+1}  = {'No', 'Yes', 1};
+                end
                 dlgOpts.mibPath     = obj.mibPath;
                 dlgOpts.WindowStyle = 'modal';
                 dlgOpts.LabelPosition = 'left';
@@ -193,8 +198,12 @@ classdef JpgSaver < io.savers.BaseSaver
                 if isempty(answer); return; end
                 options.Compression = answer{1};
                 options.Quality     = answer{2};
+                nextIdx = 3;
                 if showNaming
-                    options.FilenameGenerator = answer{3};
+                    options.FilenameGenerator = answer{nextIdx}; nextIdx = nextIdx + 1;
+                end
+                if hasSliceSizes && nD > 1
+                    options.RestoreOriginalSize = strcmp(answer{nextIdx}, 'Yes');
                 end
             end
 
@@ -207,32 +216,53 @@ classdef JpgSaver < io.savers.BaseSaver
                 wb = obj.createProgressDialog('Saving images...', sprintf('Saving JPEG — %s', baseName), false);
             end
 
-            allFn = {};
-            done  = 0;
+            % Pre-compute loop-invariant values to avoid repeated checks per slice
+            doRestoreSize = isfield(options, 'RestoreOriginalSize') && ...
+                options.RestoreOriginalSize && hasSliceSizes;
+            commentArgs = {};
+            if ~isempty(comment); commentArgs = {'Comment', comment}; end
+            multiTime = nT > 1;
+
             total = nD * nT;
+            allFn = cell(total, 1);   % pre-allocate — avoids O(N²) dynamic growth
+            done  = 0;
+            wbStep = max(1, round(total / 100));  % throttle: update waitbar ~100 times
+
+            % Per-slice crop flags: avoid calling crop on slices that are
+            % already at canvas size (no padding was added for those slices)
+            needsCrop = false(nD, 1);
+            if doRestoreSize
+                paddedH = size(data, 1);
+                paddedW = size(data, 2);
+                needsCrop = metadata.sliceSize(:,1) < paddedH | ...
+                            metadata.sliceSize(:,2) < paddedW;
+            end
 
             try
                 for t = 1:nT
                     for z = 1:nD
                         img2D = squeeze(data(:,:,z,:,t));  % [H, W, C]
+                        if doRestoreSize && needsCrop(z)
+                            img2D = obj.cropSliceToOriginalSize(img2D, metadata.sliceSize(z, :));
+                        end
 
-                        if nT > 1
+                        if multiTime
                             [~, sn, se] = fileparts(sliceNames{z});
                             outName = fullfile(pathStr, sprintf('%s_T%03d%s', sn, t, se));
                         else
                             outName = sliceNames{z};
                         end
 
-                        commentArgs = {};
-                        if ~isempty(comment); commentArgs = {'Comment', comment}; end
                         imwrite(img2D, outName, 'jpg', ...
                             commentArgs{:}, ...
                             'Mode',    options.Compression, ...
                             'Quality', options.Quality);
 
-                        allFn{end+1} = outName; %#ok<AGROW>
                         done = done + 1;
-                        if ~isempty(wb); wb.Value = done/total; end
+                        allFn{done} = outName;
+                        if ~isempty(wb) && mod(done, wbStep) == 0
+                            wb.Value = done / total;
+                        end
                     end
                 end
             catch ME
@@ -241,7 +271,7 @@ classdef JpgSaver < io.savers.BaseSaver
             end
             if ~isempty(wb); delete(wb); end
 
-            fprintf('JpgSaver: saved %d file(s) → %s\n', numel(allFn), pathStr);
+            fprintf('JpgSaver: saved %d file(s) → %s\n', done, pathStr);
             if isscalar(allFn)
                 fnOut = allFn{1};
             else

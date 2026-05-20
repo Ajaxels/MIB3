@@ -297,6 +297,7 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
 
             % Generate slice names
             imginfo = obj.generateSliceNames(files, imginfo);
+            imginfo = obj.generateSliceSizes(files, imginfo);
 
             % Finalize image info
             imginfo = obj.finalizeImgInfo(imginfo, files, filenames{1});
