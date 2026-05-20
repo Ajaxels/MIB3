@@ -104,7 +104,21 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     
     % update the dataset type
     obj.datasetType = datasetType;
-    
+
+    % Initialise mask filename from the image filename so that saveMask /
+    % loadMask can resolve a sensible default path without extra logic.
+    % Use 'Mask_<stem>.mask' alongside the image file; skip for the
+    % placeholder 'none.tif' that represents an empty dataset slot.
+    if ~strcmp(obj.image.filename, 'none.tif')
+        [imgPath, imgStem] = fileparts(obj.image.filename);
+        derivedMaskFilename = fullfile(imgPath, ['Mask_' imgStem '.mask']);
+        obj.image.maskFilename = derivedMaskFilename;
+        if isprop(obj.labels, 'maskFilename')
+            obj.labels.maskFilename = derivedMaskFilename;
+        end
+        obj.mask.filename = derivedMaskFilename;
+    end
+
     % ---------- main layers ----------
     obj.annotations = core.Annotations;     % handle to class for keeping annotations
     obj.lines3D = core.Lines3D;             % handle to class for keeping 3D Lines and skeletons

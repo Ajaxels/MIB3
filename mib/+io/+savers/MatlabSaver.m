@@ -219,7 +219,7 @@ classdef MatlabSaver < io.savers.BaseSaver
     % ------------------------------------------------------------------ %
     methods (Access = private)
 
-        function fnOut = saveMask(~, data, ~, filename, options)
+        function fnOut = saveMask(obj, data, ~, filename, options)
             % SAVEMASK - Save binary mask as MAT-file (variable: ``maskImg``).
             %
             % Syntax:

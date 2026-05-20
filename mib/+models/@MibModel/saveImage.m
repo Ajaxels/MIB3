@@ -375,7 +375,14 @@ if exist(destDir,'dir') ~= 7; mkdir(destDir); end
 
 % --- resolve output filename stem ---
 if strcmp(BatchOpt.FilenamePolicy{1}, 'Use existing name')
-    outputName = imgName;   % use source image stem
+    if strcmpi(layerType, 'image')
+        outputName = imgName;   % image: use source image stem
+    else
+        % mask / labels: BatchOpt.Filename was resolved in Section 1 from the
+        % layer's own stored filename (e.g. 'Mask_stack.mask', 'Labels_stack.model').
+        % Strip the extension here; formatExt is appended below.
+        [~, outputName] = fileparts(BatchOpt.Filename);
+    end
 else
     % 'Use new provided name' — may contain [F] template
     outputName = BatchOpt.Filename;

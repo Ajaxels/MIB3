@@ -8,7 +8,7 @@ function saveMeasurements(obj)
 %
 % Opens a save-file dialog.  Depending on the chosen extension:
 %
-% - ``*.measure`` — serialises ``hMeasure.Data`` to a MAT-file (variable ``measureData``).
+% - ``*.measure`` — serialises ``hMeasure.Data`` to a MAT-file (variable ``Data``).
 % - ``*.xls``     — writes two sheets: **Sheet1** (summary table) and
 %   **Sheet2** (intensity profiles).
 %
@@ -35,8 +35,8 @@ fullPath = fullfile(pathname, filename);
 [~, ~, fileExt] = fileparts(filename);
 
 if strcmp(fileExt, '.measure')
-    measureData = hMeasure.Data; %#ok<NASGU>
-    save(fullPath, 'measureData', '-mat', '-v7.3');
+    Data = hMeasure.Data; %#ok<NASGU>
+    save(fullPath, 'Data', '-mat', '-v7.3');
     fprintf('MIB: saving measurements to %s -> done!\n', filename);
     return;
 end

@@ -36,8 +36,7 @@ classdef MibRibbon
         imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
         imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
         imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
-        maskExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
-        maskImportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Mask ribbon
+        maskImportExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
         maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
         maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
         modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
@@ -340,16 +339,16 @@ classdef MibRibbon
             obj.handles.ribbonMask.maskToSelection4DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
             obj.handles.ribbonMask.maskToSelection4DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
             %% Add Callbacks for the MASK ribbon -> Import section
-            obj.handles.ribbonMask.clear.ButtonPushedFcn = @obj.maskImportSection_Callbacks;
-            obj.handles.ribbonMask.load.ButtonPushedFcn = @obj.maskImportSection_Callbacks;
-            obj.handles.ribbonMask.import.ButtonPushedFcn = @obj.maskImportSection_Callbacks;
-            obj.handles.ribbonMask.importFromMatlab.ItemPushedFcn = @obj.maskImportSection_Callbacks;
-            obj.handles.ribbonMask.importFromMIB.ItemPushedFcn = @obj.maskImportSection_Callbacks;
+            obj.handles.ribbonMask.clear.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.load.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.import.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.importFromMatlab.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.importFromMIB.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
             %% Add Callbacks for the MASK ribbon -> Export section
-            obj.handles.ribbonMask.export.ButtonPushedFcn = @obj.maskExportSection_Callbacks;
-            obj.handles.ribbonMask.exportToMatlab.ItemPushedFcn = @obj.maskExportSection_Callbacks;
-            obj.handles.ribbonMask.exportToMIB.ItemPushedFcn = @obj.maskExportSection_Callbacks;
-            obj.handles.ribbonMask.save.ButtonPushedFcn = @obj.maskExportSection_Callbacks;
+            obj.handles.ribbonMask.export.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.exportToMatlab.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.exportToMIB.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.saveMask.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
             %% Add Callbacks for the MASK ribbon -> Tools and Quantification section
             obj.handles.ribbonMask.invert.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
             obj.handles.ribbonMask.invert2D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;

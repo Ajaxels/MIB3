@@ -306,6 +306,7 @@ modelMeta = core.MibImage.initializeImgInfo( ...
     'Height',  modelH, 'Width', modelW, 'Depth', modelD, 'Time', modelT, 'Colors', 1);
 if modelType == 63
     obj.labels = core.MibLabels63(rawModel, modelMeta);
+    obj.labels.maskFilename = obj.image.maskFilename;
 else
     obj.labels = core.MibLabels(rawModel, modelMeta);
     obj.labels.maxMaterials = modelType;

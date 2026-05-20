@@ -32,7 +32,7 @@ function [img, img_info, viewPort, lutColors, connImaris] = getImarisDataset(con
 %
 
 % Updates
-% 25.09.2017 IB updated connection to Imaris
+% 
 
 global mibPath;
 if nargin < 1; connImaris = []; end

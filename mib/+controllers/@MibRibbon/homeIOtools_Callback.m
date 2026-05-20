@@ -30,6 +30,8 @@ switch mode
     case 'Stitch dataset'               % obj.handles.ribbonHome.stitch
         obj.mibController.startController('controllers.ChunkingImport');  
     case 'Shuffle images'               % obj.handles.ribbonHome.shuffle
+        obj.mibController.startController('controllers.RenameShuffle');  
     case 'Restore order'                % obj.handles.ribbonHome.reshuffle
+        obj.mibController.startController('controllers.RenameRestore');  
 end
 end

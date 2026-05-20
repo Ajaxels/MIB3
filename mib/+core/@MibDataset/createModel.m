@@ -143,6 +143,9 @@ obj.modelExist = true;
 obj.labels.labelsVariable = 'mibModel';
 [~, baseFn] = fileparts(obj.image.filename);
 obj.labels.filename = sprintf('Labels_%s.model', baseFn);
+if isprop(obj.labels, 'maskFilename')
+    obj.labels.maskFilename = obj.image.maskFilename;
+end
 obj.lastSegmSelection = [2 1];
 
 if modelType < 256

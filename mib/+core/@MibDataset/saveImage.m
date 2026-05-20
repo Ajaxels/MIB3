@@ -233,9 +233,10 @@ switch lower(layerType)
 
         % Get full 5-D mask data [H, W, D, C, T] → use getData3D for all T
         % Note: mask is always single-channel (C=1)
-        maskData = obj.getData3D('mask', NaN, 3, NaN);   % [H, W, D] → expand to [H,W,D,1,1]
+        maskData = obj.getData3D('mask', NaN, 3, NaN);   % returns {[H, W, D]}
+        maskData = maskData{1};                          % unpack cell → [H, W, D]
         maskData = reshape(maskData, [size(maskData,1), size(maskData,2), ...
-            size(maskData,3), 1, 1]);
+            size(maskData,3), 1, 1]);                    % → [H, W, D, 1, 1]
 
         % Build mask metadata
         metadata.filename       = obj.image.filename;

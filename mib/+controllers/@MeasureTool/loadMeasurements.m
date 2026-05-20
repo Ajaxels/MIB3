@@ -6,7 +6,7 @@ function loadMeasurements(obj)
 %
 %       obj.loadMeasurements()
 %
-% Opens a file dialog, deserialises the ``measureData`` struct array from
+% Opens a file dialog, deserialises the ``Data`` struct array from
 % the selected MAT-file, and replaces the current measurements.
 %
 % Input Arguments:
@@ -21,9 +21,9 @@ datasetId = obj.mibModel.getActiveId();
 if isequal(filename, 0); return; end
 
 loadedStruct = load(fullfile(pathname, filename), '-mat');
-if ~isfield(loadedStruct, 'measureData')
+if ~isfield(loadedStruct, 'Data')
     utils.dlgs.showErrorDialog(obj.view.gui, ...
-        'The selected file does not contain a ''measureData'' variable.', ...
+        'The selected file does not contain a ''Data'' variable.', ...
         'Load measurements');
     return;
 end
@@ -32,8 +32,8 @@ hMeasure  = obj.mibModel.I{datasetId}.measure;
 obj.mibModel.backup('measurements');
 hMeasure.clearData();
 
-for recordIdx = 1:numel(loadedStruct.measureData)
-    hMeasure.storeMeasurement(loadedStruct.measureData(recordIdx));
+for recordIdx = 1:numel(loadedStruct.Data)
+    hMeasure.storeMeasurement(loadedStruct.Data(recordIdx));
 end
 
 obj.updateTable();

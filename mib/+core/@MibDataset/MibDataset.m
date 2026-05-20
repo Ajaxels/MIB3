@@ -134,6 +134,7 @@ classdef MibDataset < matlab.mixin.Copyable
         initialize(obj, img, meta, datasetType, modelType, enableSelection) % init MibDataset class and set all elements of the class to default values
         insertSlice(obj, img, insertPosition, meta, options)    % Insert a slice or a dataset into the existing volume
         insertMaterial(obj, materialIndex, materialName, wb)     % insert a new material at the specified position, shifting pixel values and metadata
+        result = loadMask(obj, filenames, options)   % Load a binary mask into this dataset from files or a raw array
         result = loadModel(obj, filenames, options)          % load a segmentation model from files or a raw array; orchestrates loader dispatch, dimension validation, and metadata assignment
         moveMaskToSelectionDataset(obj, action_type, options)        % move Mask layer to Selection for full dataset (fast path, no ROI/block mode)
         moveMaskToModelDataset(obj, action_type, options)            % move Mask layer to Model for full dataset (fast path, no ROI/block mode)
