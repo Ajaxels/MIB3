@@ -170,6 +170,7 @@ classdef TiffSaver < io.savers.BaseSaver
             % **Example** — see class-level documentation above.
             %
 
+            if nargin < 5; options = struct(); end
             fnOut = [];
 
             % Track which options were explicitly provided by the caller

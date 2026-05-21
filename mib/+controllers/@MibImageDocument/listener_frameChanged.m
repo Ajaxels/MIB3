@@ -40,8 +40,10 @@ if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 
 frameNumber = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
 
-% Sync widgets directly — avoid triggering slider/edit callbacks
-obj.handles.frameNumber.Value      = frameNumber;
-obj.frameNumber_Callback();
+% Sync widgets directly — no callbacks to avoid re-entrant FrameChanged loop
+obj.handles.frameNumber.Value       = frameNumber;
+obj.handles.frameNumberSlider.Value = frameNumber;
+
+obj.mibController.showImage();
 
 end

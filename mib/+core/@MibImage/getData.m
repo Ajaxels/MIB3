@@ -71,7 +71,7 @@ end
 if isempty(orient); orient = 3; end
 
 materialIndex = []; % for the labels type index of material to get
-if isempty(colChannel) % take all color channels or materials
+if isempty(colChannel) || (isscalar(colChannel) && isnan(colChannel)) % take all color channels or materials
     colChannel = 1:obj.colors;
 else
     if strcmp(obj.type, 'labels')
@@ -145,4 +145,11 @@ else  % return a subvolume of the full dataset
     elseif orient==2 % permute to yz
         dataset = permute(dataset,[1 3 2 4 5]);
     end
+end
+
+% For label-type objects (MibLabels, mask, selection) with a single colour
+% channel, remove the singleton 4th dimension so that the output is
+% [H,W,Z,T] — consistent with getData63 for MibLabels63.
+if ~strcmp(obj.type, 'image') && size(dataset, 4) == 1
+    dataset = reshape(dataset, size(dataset,1), size(dataset,2), size(dataset,3), size(dataset,5));
 end

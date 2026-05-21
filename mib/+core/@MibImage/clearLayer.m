@@ -56,7 +56,7 @@ if nargin < 4; x = []; end
 if nargin < 3; y = []; end
 if nargin < 2; layerName = 'selection'; end
 
-if isempty(obj.data{1}); return; end    % selection is disabled
+if ~obj.exists; return; end    % layer is disabled/uninitialized
 
 % update time
 if isempty(t)

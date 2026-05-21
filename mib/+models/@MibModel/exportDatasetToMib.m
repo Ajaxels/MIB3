@@ -98,7 +98,15 @@ BatchOpt.LayerType{2} = {'mask', 'model'};
 BatchOpt.id           = activeId;
 
 totalContainers = numel(obj.Sets.names) * obj.Sets.datasetsInSet;
-defaultDestGlobalId = mod(activeId, totalContainers) + 1;   % next container, wrapping
+% Find nearest loaded container (by circular distance), skipping the source
+defaultDestGlobalId = mod(activeId, totalContainers) + 1;  % fallback: next by index
+for offset = 1:totalContainers-1
+    candidateId = mod(activeId - 1 + offset, totalContainers) + 1;
+    if candidateId ~= activeId && ~strcmp(obj.I{candidateId}.image.filename, 'none.tif')
+        defaultDestGlobalId = candidateId;
+        break;
+    end
+end
 BatchOpt.Destination    = {sprintf('Container %d', defaultDestGlobalId)};
 BatchOpt.Destination{2} = arrayfun(@(n) sprintf('Container %d', n), ...
     1:totalContainers, 'UniformOutput', false);

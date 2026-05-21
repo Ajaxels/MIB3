@@ -23,7 +23,7 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
-    case 'Adjust display'               % obj.handles.ribbonImage.display
+    case sprintf('Adjust\ndisplay')               % obj.handles.ribbonImage.display
         obj.mibController.startController('controllers.DisplayAdjust');
     case 'Contrast-limited adaptive histogram equalization'     % obj.handles.ribbonImage.contrastCLAHE
 

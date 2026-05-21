@@ -71,7 +71,7 @@ end
 if isempty(orient); orient = 3; end
 
 materialIndex = []; % for the labels type index of material to get
-if isempty(colChannel) || (isscalar(colChannel) && colChannel == 0) % take all color channels or materials
+if isempty(colChannel) || (isscalar(colChannel) && (colChannel == 0 || isnan(colChannel))) % take all color channels or materials
     colChannel = 1:obj.colors;
 else
     if strcmp(obj.type, 'labels')
@@ -98,11 +98,33 @@ if blockModeSwitchLocal == 0  % set the full dataset
     end
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        obj.data{1}(:,:,:,colChannel,:) = dataset;
+        if isequal(colChannel, 1:obj.colors)
+            % Full channel replacement — reshape incoming data to 5D [H,W,Z,C,T]
+            % so that labels [H,W,Z,T] maps correctly to data{1} [H,W,Z,1,T]
+            nC = numel(colChannel);
+            targetShape = [size(dataset,1), size(dataset,2), size(dataset,3), nC, ...
+                           numel(dataset) / (size(dataset,1) * size(dataset,2) * size(dataset,3) * nC)];
+            dataset = reshape(dataset, targetShape);
+            if isequal(size(obj.data{1}), targetShape)
+                obj.data{1}(:,:,:,colChannel,:) = dataset;
+            else
+                % Container size changed — replace and update dimensions
+                obj.data{1}    = dataset;
+                obj.height     = targetShape(1);
+                obj.width      = targetShape(2);
+                obj.depth      = targetShape(3);
+                obj.colors     = targetShape(4);
+                obj.time       = targetShape(5);
+                obj.dim_yxzct  = targetShape;
+            end
+        else
+            obj.data{1}(:,:,:,colChannel,:) = dataset;
+        end
     else % labels type
         obj.data{1}(obj.data{1} == materialIndex) = 0;
         obj.data{1}(dataset == 1) = materialIndex;
     end
+
 else  % set a part of the dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
     Xlim = [1 obj.width];

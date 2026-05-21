@@ -42,6 +42,16 @@ classdef SaverFactory
 %      maskFormats = io.SaverFactory.getFormats('mask');
 %      labelFormats = io.SaverFactory.getFormats('labels');
 %
+% **Minimal scripted load + save** (no metadata required):
+%
+%   .. code-block:: matlab
+%
+%      imageFormats = io.SaverFactory.getFormats('image');
+%      labelFormats = io.SaverFactory.getFormats('labels');
+%      img = io.loadImagesWrapper('C:\data\image.tif');
+%      saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
+%      fnOut = saver.save(img, [], 'C:\data\image_out.tif', struct());
+%
 % **See also:** ``io.LoaderFactory``, ``io.savers.BaseSaver``,
 % ``core.MibDataset.save``, ``models.MibModel.save``
 

@@ -320,6 +320,9 @@ classdef DisplayAdjust < handle
 
             % context menus for findMin / findMax
             obj.addFindBtnContextMenus();
+
+            % double-click on sliders resets to limit/default
+            obj.view.gui.WindowButtonDownFcn = @(~,~) obj.figureWindowButtonDown_Callback();
         end
 
         % -----------------------------------------------------------------
@@ -418,16 +421,16 @@ classdef DisplayAdjust < handle
 
             h = obj.view.handles;
 
-            % minSlider: fixed range [0, maxInt]
-            h.minSlider.Limits = [0, maxInt];
+            % minSlider: expand lower limit if viewport min is below 0
+            h.minSlider.Limits = [min(0, min_val), maxInt];
             h.minSlider.Value  = min_val;
             h.minEdit.Value    = min_val;
             ticks = round(linspace(0, maxInt, 5));
             h.minSlider.MajorTicks = ticks;
             h.minSlider.MajorTickLabels = arrayfun(@(v) sprintf('%d', v), ticks, 'UniformOutput', false);
 
-            % maxSlider: fixed range [0, maxInt]
-            h.maxSlider.Limits = [0, maxInt];
+            % maxSlider: expand upper limit if viewport max exceeds maxInt
+            h.maxSlider.Limits = [0, max(maxInt, max_val)];
             h.maxSlider.Value  = max_val;
             h.maxEdit.Value    = max_val;
             h.maxSlider.MajorTicks = ticks;
@@ -1228,6 +1231,74 @@ classdef DisplayAdjust < handle
             web(fullfile(fileparts(obj.mibModel.mibPath), ...
                 'docs/html/user-interface/panels/viewsettings/viewsettings-adjustments.html'), ...
                 '-browser');
+        end
+
+        % -----------------------------------------------------------------
+        function figureWindowButtonDown_Callback(obj)
+            % FIGUREWINDOWBUTTONDOWN_CALLBACK - Reset slider on double-click.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.figureWindowButtonDown_Callback()
+            %
+            % Fires on every mouse press in the figure; only acts on
+            % double-click (``SelectionType == 'open'``) over one of the three
+            % sliders.
+            %
+            % Output Arguments:
+            %   (none)
+            %
+
+            if ~strcmp(obj.view.gui.SelectionType, 'open'); return; end
+            h = obj.view.handles;
+            currentObj = obj.view.gui.CurrentObject;
+            if isequal(currentObj, h.minSlider)
+                obj.resetSlider('min');
+            elseif isequal(currentObj, h.maxSlider)
+                obj.resetSlider('max');
+            elseif isequal(currentObj, h.gammaSlider)
+                obj.resetSlider('gamma');
+            end
+        end
+
+        % -----------------------------------------------------------------
+        function resetSlider(obj, whichSlider)
+            % RESETSLIDER - Reset a slider to its natural limit or default.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.resetSlider(whichSlider)
+            %
+            % Input Arguments:
+            %   - **whichSlider** — ``'min'``, ``'max'``, or ``'gamma'``
+            %
+            %     - ``'min'`` — sets minSlider to ``Limits(1)`` (0, or lower if viewport was negative)
+            %     - ``'max'`` — sets maxSlider to ``Limits(2)`` (maxInt, or higher if viewport exceeded it)
+            %     - ``'gamma'`` — resets gammaSlider to ``1``
+            %
+            % Output Arguments:
+            %   (none)
+            %
+
+            h = obj.view.handles;
+            switch whichSlider
+                case 'min'
+                    val = h.minSlider.Limits(1);
+                    h.minSlider.Value = val;
+                    h.minEdit.Value   = val;
+                case 'max'
+                    val = h.maxSlider.Limits(2);
+                    h.maxSlider.Value = val;
+                    h.maxEdit.Value   = val;
+                case 'gamma'
+                    h.gammaSlider.Value = 1;
+                    h.gammaEdit.Value   = 1;
+            end
+            obj.updateSettings();
+            obj.updateHist();
+            notify(obj.mibModel, 'ShowImage');
         end
 
         % -----------------------------------------------------------------

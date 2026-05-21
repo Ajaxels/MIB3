@@ -146,6 +146,7 @@ clipboardText = strtrim(clipboardText);
 
 % --- fallback for empty ParentFigure ---
 if isempty(ParentFigure) 
+    clipboard('copy', clipboardText);
     errordlg(clipboardText, winTitle);
     return;
 end

@@ -89,7 +89,15 @@ BatchOpt.id           = activeId;
 BatchOpt.showWaitbar  = true;
 
 totalContainers = numel(obj.Sets.names) * obj.Sets.datasetsInSet;
-defaultSrcGlobalId = mod(activeId - 2, totalContainers) + 1;   % previous container, wrapping
+% Find nearest loaded container (by circular distance), skipping the destination
+defaultSrcGlobalId = mod(activeId - 2, totalContainers) + 1;  % fallback: previous by index
+for offset = 1:totalContainers-1
+    candidateId = mod(activeId - 1 + offset, totalContainers) + 1;
+    if candidateId ~= activeId && ~strcmp(obj.I{candidateId}.image.filename, 'none.tif')
+        defaultSrcGlobalId = candidateId;
+        break;
+    end
+end
 BatchOpt.Source    = {sprintf('Container %d', defaultSrcGlobalId)};
 BatchOpt.Source{2} = arrayfun(@(n) sprintf('Container %d', n), ...
     1:totalContainers, 'UniformOutput', false);

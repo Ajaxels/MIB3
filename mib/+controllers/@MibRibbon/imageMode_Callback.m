@@ -23,13 +23,11 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
-    case 'Grayscale'              % obj.handles.ribbonImage.grayscale
-    case 'Multi-channel'                 % obj.handles.ribbonImage.multichannel
-    case 'HSV color'                 % obj.handles.ribbonImage.hsv
-    case 'Indexed'                 % obj.handles.ribbonImage.indexed
-    case '8 bit'                 % obj.handles.ribbonImage.bit8
-    case '16 bit'                 % obj.handles.ribbonImage.bit16
-    case '32 bit'                 % obj.handles.ribbonImage.bit32
+    case {'Grayscale', 'Multi-channel', 'HSV color', 'Indexed', '8 bit', '16 bit', '32 bit'}
+        BatchOpt.Target = {mode};
+        obj.mibModel.changeImageMode(BatchOpt);
+    otherwise
+        return;
 end
 
 

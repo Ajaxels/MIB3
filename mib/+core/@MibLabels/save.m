@@ -243,7 +243,7 @@ options.FilenamePrefix = 'Labels_';
 % --- get data [H, W, D, C, T] ---
 % When a specific material is requested getData returns a binary volume
 if isempty(selMaterial)
-    data = obj.getData('labels', 3, NaN);   % all materials → multi-valued
+    data = obj.getData('labels', 3, []);   % all materials → multi-valued
 else
     data = obj.getData('labels', 3, selMaterial);  % binary: 1 where == selMaterial
 

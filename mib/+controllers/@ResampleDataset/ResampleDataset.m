@@ -472,15 +472,23 @@ classdef ResampleDataset < handle
 
             if nargin < 2; batchModeSwitch = false; end
             id = obj.mibModel.getActiveId();
-
+            
+            BatchOptLoc = obj.BatchOpt;
+            
             pixSize = obj.mibModel.I{id}.image.pixSize;
+
+            wb = [];
+            if BatchOptLoc.showWaitbar && ~batchModeSwitch
+                wb = uiprogressdlg(obj.view.gui, ...
+                    'Value', 0, ...
+                    'Message', sprintf('Resampling image...\ndoing backup...'), ...
+                    'Title', 'Resampling...', 'Cancelable', 'off');
+            end
 
             % backup before destructive operation (GUI path only)
             if ~batchModeSwitch
                 obj.mibModel.backup('image', 1);
             end
-
-            BatchOptLoc = obj.BatchOpt;
 
             % resolve target pixel dimensions from the selected mode
             switch BatchOptLoc.ResamplingMode{1}
@@ -524,6 +532,7 @@ classdef ResampleDataset < handle
                     utils.dlgs.inputUniversalDlg(obj.view.gui, 'The dimensions were not changed!', {''}, ...
                         {''}, 'Resample: no change', dlgOpt);
                 end
+                if ~isempty(wb); delete(wb); end
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end
@@ -534,16 +543,21 @@ classdef ResampleDataset < handle
             methodLabels   = BatchOptLoc.LabelsresampleDropDown{1};
             imgClass       = obj.mibModel.I{id}.image.dataClass;
 
-            wb = [];
-            if BatchOptLoc.showWaitbar && ~batchModeSwitch
-                wb = uiprogressdlg(obj.view.gui, ...
-                    'Value', 0, ...
-                    'Message', sprintf('Resampling image...\n[%d %d %d %d] -> [%d %d %d %d]', ...
-                        obj.height, obj.width, obj.color, obj.depth, ...
-                        newH, newW, obj.color, newZ), ...
-                    'Title', 'Resampling...', 'Cancelable', 'off');
+            % wb = [];
+            % if BatchOptLoc.showWaitbar && ~batchModeSwitch
+            %     wb = uiprogressdlg(obj.view.gui, ...
+            %         'Value', 0, ...
+            %         'Message', sprintf('Resampling image...\n[%d %d %d %d] -> [%d %d %d %d]', ...
+            %             obj.height, obj.width, obj.color, obj.depth, ...
+            %             newH, newW, obj.color, newZ), ...
+            %         'Title', 'Resampling...', 'Cancelable', 'off');
+            % end
+            
+            if ~isempty(wb); wb.Message = sprintf('Resampling image...\n[%d %d %d %d] -> [%d %d %d %d]', ...
+                    obj.height, obj.width, obj.color, obj.depth, ...
+                    newH, newW, obj.color, newZ); 
             end
-
+            
             opts.blockModeSwitch = 0;
             % allocate output in MIB3 layout [h, w, d, c, t]
             imgOut = zeros([newH, newW, newZ, obj.color, maxT], imgClass);
@@ -609,8 +623,7 @@ classdef ResampleDataset < handle
             isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
 
             if isLabels63
-                labelsExist = obj.mibModel.I{id}.labels.exists && ...
-                              ~isnan(obj.mibModel.I{id}.labels.data{1}(1));
+                labelsExist = obj.mibModel.I{id}.labels.exists && ~isnan(obj.mibModel.I{id}.labels.data{1}(1));
             else
                 labelsExist = obj.mibModel.I{id}.modelExist;
             end
@@ -633,7 +646,11 @@ classdef ResampleDataset < handle
 
                 imgOutModel = zeros([newH, newW, newZ, maxT], class(model4D));
                 for t = 1:maxT
-                    modelSlice = model4D(:,:,:,t);   % [h,w,d]
+                    if t==maxT 
+                        modelSlice = model4D; % faster this way
+                    else
+                        modelSlice = model4D(:,:,:,t);  % [h,w,d]
+                    end
                     resizeLabOpts              = labelsOpts;
                     resizeLabOpts.showWaitbar  = 0;
                     resizeLabOpts.algorithm    = resamplingFn;
@@ -652,8 +669,10 @@ classdef ResampleDataset < handle
                 end
                 if ~isempty(wb); wb.Value = 0.95; end
 
-                % MibLabels63 stores everything in a fixed-size data{1}; setData4D cannot
-                % resize it, so pre-allocate the container at the new dimensions first.
+                % MibLabels63 stores everything in a fixed-size data{1}; pre-allocate
+                % the container at the new dimensions before setData63 fills it.
+                % Regular MibLabels is handled generically by MibImage.setData
+                % which auto-resizes data{1} on full-container replacement.
                 if isLabels63
                     obj.mibModel.I{id}.labels.data{1}    = zeros([newH, newW, newZ, maxT], 'uint8');
                     obj.mibModel.I{id}.labels.height      = newH;

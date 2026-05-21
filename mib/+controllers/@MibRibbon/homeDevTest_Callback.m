@@ -19,7 +19,7 @@ end
 
 fprintf('Size of obj.mibModel.I{obj.mibModel.id}.image.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.image.sliceSize)));
 fprintf('Size of obj.mibModel.I{obj.mibModel.id}.labels.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.labels.sliceSize)));
-
+size(obj.mibModel.I{obj.mibModel.id}.labels.data{1})
 
 
 %% Benchmark: getRGBimage x 100

@@ -88,7 +88,7 @@ column.add(widgetHandles.mode);
 section = obj.handles.ribbon.image.addSection("Image adjustments");
 %% --------- ADJUST DISPLAY ---------
 column = section.addColumn();
-widgetHandles.display = Button('Adjust display',  Icon(fullfile(iconPath, 'display_24px.png')));
+widgetHandles.display = Button(sprintf('Adjust\ndisplay'),  Icon(fullfile(iconPath, 'display_24px.png')));
 widgetHandles.display.Description = 'Adjust display/image';
 column.add(widgetHandles.display);
 

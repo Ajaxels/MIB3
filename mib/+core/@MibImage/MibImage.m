@@ -111,6 +111,7 @@ classdef MibImage < matlab.mixin.Copyable
         result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
         dataset = getPixelIdxList(obj, type, PixelIdxList)          % Get pixel values at a list of linear indices; handles MibLabels63 bit-unpacking automatically
         result = setPixelIdxList(obj, type, dataset, PixelIdxList)  % Write pixel values at a list of linear indices; handles MibLabels63 bit-packing automatically
+        status = convertImage(obj, format, options)     % Convert pixel data to a new color type or bit depth
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
         updateActionLog(obj, logEntry, action, entryIndex)    % Append, insert, delete, or modify a timestamped entry in obj.actionLog.
         updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.

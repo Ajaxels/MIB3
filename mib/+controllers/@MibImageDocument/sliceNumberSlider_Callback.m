@@ -60,25 +60,9 @@ if dataset.orientation == 1     %'XZ'
 elseif dataset.orientation == 2 %'YZ'
     obj.mibModel.I{datasetId}.slices{2} = [sliceNumber, sliceNumber];
 elseif dataset.orientation == 3     %'YX'
-    % update label text for the image view panel
-    if ~isempty(dataset.image.sliceName)
-        noSliceNames = numel(dataset.image.sliceName);
-        layerNamePrevious = ...
-            dataset.image.sliceName{min([dataset.slices{3}(1) noSliceNames])};
-        layerNameNext = ...
-            dataset.image.sliceName{min([sliceNumber noSliceNames])};
-
-        if ~strcmp(layerNamePrevious, layerNameNext) % update label
-            strVal1 = 'Image View    >>>>>    ';
-            [~, fn, ext] = fileparts(dataset.image.filename);
-            strVal2 = sprintf('%s%s    >>>>>    %s', fn, ext, layerNameNext);
-            obj.handles.imViewAxes.Title.String = [strVal1 strVal2];    
-        end
-    end
     obj.mibModel.I{datasetId}.slices{3} = [sliceNumber, sliceNumber];
 end
 
-obj.mibController.showImage();
 notify(obj.mibModel, 'SliceChanged');   % notify the controller about changed slice
 
 end

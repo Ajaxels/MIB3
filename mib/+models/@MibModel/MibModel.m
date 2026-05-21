@@ -124,6 +124,7 @@ classdef MibModel < handle
         clearMask(obj, sel_switch, BatchOptIn)  % Clear the Mask layer for the current dataset.
         clearSelection(obj, sel_switch, BatchOptIn)           % clear the Selection layer (2D/3D/4D scope)
         deleteAnnotations(obj, BatchOptIn)        % Delete all annotations from the active dataset
+        status = changeImageMode(obj, BatchOptIn)   % Convert the active dataset to a different image mode or bit depth
         dilateImage(obj, BatchOptIn)       % dilate (expand) the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
         erodeImage(obj, BatchOptIn)        % erode the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
         fillSelectionOrMask(obj, targetLayer, BatchOptIn)   % fill holes in the selection or mask layer (2D/3D/4D scope, sequential or parallel)

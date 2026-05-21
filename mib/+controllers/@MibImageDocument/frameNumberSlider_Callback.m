@@ -43,6 +43,5 @@ frameNumber = round(sliderValue); % the slider top limit is a float with +0.001,
 obj.handles.frameNumber.Value = frameNumber;
 
 obj.mibModel.I{obj.mibModel.id}.slices{5} = [frameNumber, frameNumber];
-notify(obj.mibModel, 'SliceChanged');   % notify the controller about changed slice
-obj.mibController.showImage();
+notify(obj.mibModel, 'FrameChanged');   % notify the controller about changed frame
 end

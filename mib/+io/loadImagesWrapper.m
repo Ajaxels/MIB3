@@ -59,6 +59,16 @@ function img = loadImagesWrapper(filename, options)
 %         'ReadFcn', @(fn) io.loadImagesWrapper(fn, opts));
 %     img = read(ds);   % returns [H, W, Z, C, T]
 %
+%   **Example 6** — Discover supported extensions, then load a file
+%
+%   .. code-block:: matlab
+%
+%
+%     extReg = io.ExtensionRegistryLoad();
+%     standardExts   = extReg.getAllowedExtensions('Standard', 'Default');
+%     bioformatsExts = extReg.getAllowedExtensions('Standard', 'BioFormats');
+%     img = io.loadImagesWrapper('C:\data\image.tif');
+%
 
 if nargin < 2; options = struct(); end
 if ~isfield(options, 'mibBioformatsCheck'); options.mibBioformatsCheck = false; end

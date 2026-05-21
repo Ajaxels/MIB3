@@ -51,17 +51,17 @@ classdef AmiraImportDlg < handle
             % Update font size if Font structure is provided
             if obj.view.handles.firstLabel.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.firstLabel.FontName, Font.FontName)
-                 utils.fontSizeUpdate(obj.view.gui, Font);
+                 utils.fontSizeUpdate(obj.view.Figure, Font);
             end
             
             % Initialize UI components
             obj.initView();
             
             % move the window to the left hand side of the main window
-            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
+            obj.view.Figure = utils.moveWindowOutside(obj.view.Figure, obj.ParentFigure, 'center', 'center');
 
             % Make sure the GUI is visible
-            obj.view.gui.Visible = true;
+            obj.view.Figure.Visible = true;
         end
         
         function result = run(obj)
@@ -73,7 +73,7 @@ classdef AmiraImportDlg < handle
             % Blocks execution until the user continues or cancels.
             
             % Block execution
-            uiwait(obj.view.gui);
+            uiwait(obj.view.Figure);
             
             % Check if view was closed abruptly (X button)
             if ~isvalid(obj.view)
@@ -98,10 +98,10 @@ classdef AmiraImportDlg < handle
             %
 
             % Center the window relative to parent
-            utils.moveWindowOutside(obj.view.gui, obj.ParentFigure, 'center', 'center');
+            utils.moveWindowOutside(obj.view.Figure, obj.ParentFigure, 'center', 'center');
 
             % add icon
-            obj.view.gui.Icon = 'mib_icon_16px.png';
+            obj.view.Figure.Icon = 'mib_icon_16px.png';
 
             % Set Dimensions Text
             textString = sprintf('%d x %d x %d', obj.dim_xyczt(1), obj.dim_xyczt(2), obj.dim_xyczt(4));
@@ -126,7 +126,7 @@ classdef AmiraImportDlg < handle
             obj.view.handles.binZSpinner.ValueChangedFcn = @obj.onZStepChange;
             
             % Keyboard handling
-            obj.view.gui.WindowKeyPressFcn = @obj.onKeyPress;
+            obj.view.Figure.WindowKeyPressFcn = @obj.onKeyPress;
         end
         
         function onZStepChange(obj, src, ~)
@@ -160,7 +160,7 @@ classdef AmiraImportDlg < handle
             obj.output = res;
             
             % Resume execution
-            uiresume(obj.view.gui);
+            uiresume(obj.view.Figure);
         end
         
         function onCancel(obj, ~, ~)
@@ -170,7 +170,7 @@ classdef AmiraImportDlg < handle
             %   function onCancel(obj, ~, ~)
             %
             obj.output = NaN;
-            uiresume(obj.view.gui);
+            uiresume(obj.view.Figure);
         end
         
         function onKeyPress(obj, ~, event)

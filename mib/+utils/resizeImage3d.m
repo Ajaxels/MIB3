@@ -120,8 +120,8 @@ newZ = options.depth;
 % ---- set up progress bar ---------------------------------------------------
 localWb = [];   % dialog created here (must be deleted on exit)
 wb = options.wb;
-wbMsg = sprintf('Resizing [%d %d %d %d] -> [%d %d %d %d] using %s...', ...
-    height, width, colors, depth, newH, newW, colors, newZ, options.algorithm);
+wbMsg = sprintf('Resizing using %s...\n[%d %d %d %d] -> [%d %d %d %d]', ...
+    options.algorithm, height, width, colors, depth, newH, newW, colors, newZ);
 
 if options.showWaitbar
     if ~isempty(wb)

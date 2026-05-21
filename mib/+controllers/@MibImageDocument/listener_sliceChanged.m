@@ -39,8 +39,20 @@ if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 dataset     = obj.mibModel.I{obj.mibModel.id};
 sliceNumber = dataset.slices{dataset.orientation}(1);
 
-% Sync widgets directly — avoid triggering slider/edit callbacks
-obj.handles.sliceNumber.Value      = sliceNumber;
-obj.sliceNumber_Callback()
+% Sync widgets directly — no callbacks to avoid re-entrant SliceChanged loop
+obj.handles.sliceNumber.Value       = sliceNumber;
+obj.handles.sliceNumberSlider.Value = sliceNumber;
+
+% Update slice-name title for YX orientation
+if dataset.orientation == 3 && ~isempty(dataset.image.sliceName)
+    noSliceNames = numel(dataset.image.sliceName);
+    layerName = dataset.image.sliceName{min([sliceNumber noSliceNames])};
+    strVal1 = 'Image View    >>>>>    ';
+    [~, fn, ext] = fileparts(dataset.image.filename);
+    strVal2 = sprintf('%s%s    >>>>>    %s', fn, ext, layerName);
+    obj.handles.imViewAxes.Title.String = [strVal1 strVal2];
+end
+
+obj.mibController.showImage();
 
 end

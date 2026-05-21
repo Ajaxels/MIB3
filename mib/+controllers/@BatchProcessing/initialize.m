@@ -105,8 +105,8 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.cRibbon.up
 secIndex = secIndex + 1;
 actionId = 1;
 obj.Sections(secIndex).Name = 'Ribbon -> Image';
-% obj.Sections(secIndex).Actions(actionId).Name = 'Mode';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuImageMode_Callback([], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Mode';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.changeImageMode([], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Adjust Display/Image';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.DisplayAdjust'', [], Batch);'; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Color channel actions';
