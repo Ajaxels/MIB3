@@ -97,22 +97,26 @@ classdef MibImage < matlab.mixin.Copyable
 
     methods
         % declaration of methods in external files
-        clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
-        crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
         output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
-        insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data{1} along depth or time; updates sliceName
+        clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
+        status = convertImage(obj, format, options)     % Convert pixel data to a new color type or bit depth
+        crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
+        result = copySlice(obj, sliceFrom, sliceTo, orient)     % Copy a slice from one position to another within obj.data{1}
+        result = deleteSlice(obj, sliceNumbers, orient)         % Remove slices from obj.data{1} along the specified dimension; updates dim_yxzct and sliceName
         dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
         varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
         viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
-        meta = getMeta(obj)        % collect properties into a metadata dictionary (inverse of initialize)
-        setMeta(obj, meta)        % apply a metadata dictionary to properties (inverse of getMeta)
         [lowIn, highIn, lowOut, highOut] = getImAdjustStretchCoef(obj, channels)        % Return image stretching coefficients to be used for imadjust function to stretch contrast of the image
-        initialize(obj, data, meta, type);  % initialize the class using default or provided values
-        result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
         dataset = getPixelIdxList(obj, type, PixelIdxList)          % Get pixel values at a list of linear indices; handles MibLabels63 bit-unpacking automatically
+        meta = getMeta(obj)        % collect properties into a metadata dictionary (inverse of initialize)
+        initialize(obj, data, meta, type);  % initialize the class using default or provided values
+        insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data{1} along depth or time; updates sliceName
+        result = resliceDataset(obj, sliceNumbers, orient)      % Keep only the indexed slices; remove all others from obj.data{1}
+        setMeta(obj, meta)        % apply a metadata dictionary to properties (inverse of getMeta)
+        result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
         result = setPixelIdxList(obj, type, dataset, PixelIdxList)  % Write pixel values at a list of linear indices; handles MibLabels63 bit-packing automatically
-        status = convertImage(obj, format, options)     % Convert pixel data to a new color type or bit depth
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
+        result = swapSlices(obj, sliceFrom, sliceTo, orient)    % Swap two or more slices within obj.data{1}
         updateActionLog(obj, logEntry, action, entryIndex)    % Append, insert, delete, or modify a timestamped entry in obj.actionLog.
         updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
 

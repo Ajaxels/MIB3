@@ -86,6 +86,7 @@ classdef MibController < handle
         % METHODS
         addGuiControllers(obj)  % add GUI components to the main view obj.view
         deleteImageDocument(obj, docIndex)        % Delete an image document and reindex remaining documents
+        datasetSlices(obj, parameter)             % Dispatcher for Menu -> Dataset -> Slice operations (copy, swap, insert, delete, reslice)
         result = exitProgram(obj, target)        % exit mib 
         id = findChildId(obj, childName)        % find id of a child controller
         globalTabGroup_SelectionCallback(obj, hWidget) % callback for the selection of the tab in the main ribbon, optimization for lazy initialization of ribbon tabs

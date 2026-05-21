@@ -400,6 +400,20 @@
       "source_location": "L1"
     },
     {
+      "id": "controllers_chunkingexport_chunkingexport_m",
+      "label": "ChunkingExport.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_m",
+      "label": "ChunkingImport.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": "L1"
+    },
+    {
       "id": "controllers_contrastnormalization_collectslicestats_m",
       "label": "collectSliceStats.m",
       "file_type": "code",
@@ -698,6 +712,13 @@
       "label": "addGuiControllers.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibController\\addGuiControllers.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibcontroller_datasetslices_m",
+      "label": "datasetSlices.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibController\\datasetSlices.m",
       "source_location": "L1"
     },
     {
@@ -1849,20 +1870,6 @@
       "source_location": "L1"
     },
     {
-      "id": "controllers_mibribbon_datasettoolsslices_callback_m",
-      "label": "datasetToolsSlices_Callback.m",
-      "file_type": "code",
-      "source_file": "+controllers\\@MibRibbon\\datasetToolsSlices_Callback.m",
-      "source_location": "L1"
-    },
-    {
-      "id": "controllers_mibribbon_datasettoolstransform_callback_m",
-      "label": "datasetToolsTransform_Callback.m",
-      "file_type": "code",
-      "source_file": "+controllers\\@MibRibbon\\datasetToolsTransform_Callback.m",
-      "source_location": "L1"
-    },
-    {
       "id": "controllers_mibribbon_datasettools_callback_m",
       "label": "datasetTools_Callback.m",
       "file_type": "code",
@@ -1947,24 +1954,10 @@
       "source_location": "L1"
     },
     {
-      "id": "controllers_mibribbon_imagecontrast_callbacks_m",
-      "label": "imageContrast_Callbacks.m",
-      "file_type": "code",
-      "source_file": "+controllers\\@MibRibbon\\imageContrast_Callbacks.m",
-      "source_location": "L1"
-    },
-    {
       "id": "controllers_mibribbon_imageinvert_callbacks_m",
       "label": "imageInvert_Callbacks.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibRibbon\\imageInvert_Callbacks.m",
-      "source_location": "L1"
-    },
-    {
-      "id": "controllers_mibribbon_imagemode_callback_m",
-      "label": "imageMode_Callback.m",
-      "file_type": "code",
-      "source_file": "+controllers\\@MibRibbon\\imageMode_Callback.m",
       "source_location": "L1"
     },
     {
@@ -1996,17 +1989,10 @@
       "source_location": "L1"
     },
     {
-      "id": "controllers_mibribbon_maskexportsection_callbacks_m",
-      "label": "maskExportSection_Callbacks.m",
+      "id": "controllers_mibribbon_maskimportexportsection_callbacks_m",
+      "label": "maskImportExportSection_Callbacks.m",
       "file_type": "code",
-      "source_file": "+controllers\\@MibRibbon\\maskExportSection_Callbacks.m",
-      "source_location": "L1"
-    },
-    {
-      "id": "controllers_mibribbon_maskimportsection_callbacks_m",
-      "label": "maskImportSection_Callbacks.m",
-      "file_type": "code",
-      "source_file": "+controllers\\@MibRibbon\\maskImportSection_Callbacks.m",
+      "source_file": "+controllers\\@MibRibbon\\maskImportExportSection_Callbacks.m",
       "source_location": "L1"
     },
     {
@@ -2696,6 +2682,34 @@
       "source_location": "L1"
     },
     {
+      "id": "controllers_renamerestore_gui_callbacks_m",
+      "label": "gui_Callbacks.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_m",
+      "label": "RenameRestore.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_renameshuffle_gui_callbacks_m",
+      "label": "gui_Callbacks.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_m",
+      "label": "RenameShuffle.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": "L1"
+    },
+    {
       "id": "controllers_resampledataset_resampledataset_m",
       "label": "ResampleDataset.m",
       "file_type": "code",
@@ -2927,6 +2941,20 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibdataset_addframe_m",
+      "label": "addFrame.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\addFrame.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibdataset_addframetoimage_m",
+      "label": "addFrameToImage.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\addFrameToImage.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibdataset_addmaterial_m",
       "label": "addMaterial.m",
       "file_type": "code",
@@ -2962,6 +2990,13 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibdataset_copyslice_m",
+      "label": "copySlice.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\copySlice.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibdataset_createmodel_m",
       "label": "createModel.m",
       "file_type": "code",
@@ -2973,6 +3008,20 @@
       "label": "cropDataset.m",
       "file_type": "code",
       "source_file": "+core\\@MibDataset\\cropDataset.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibdataset_deleteslice_m",
+      "label": "deleteSlice.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\deleteSlice.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibdataset_flipdataset_m",
+      "label": "flipDataset.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\flipDataset.m",
       "source_location": "L1"
     },
     {
@@ -3081,6 +3130,13 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibdataset_loadmask_m",
+      "label": "loadMask.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\loadMask.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibdataset_loadmodel_m",
       "label": "loadModel.m",
       "file_type": "code",
@@ -3158,6 +3214,20 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibdataset_reslicedataset_m",
+      "label": "resliceDataset.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\resliceDataset.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibdataset_rotatedataset_m",
+      "label": "rotateDataset.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\rotateDataset.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibdataset_saveimage_m",
       "label": "saveImage.m",
       "file_type": "code",
@@ -3214,6 +3284,13 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibdataset_swapslices_m",
+      "label": "swapSlices.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\swapSlices.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibdataset_switchdatasetmode_m",
       "label": "switchDatasetMode.m",
       "file_type": "code",
@@ -3225,6 +3302,13 @@
       "label": "transpose.m",
       "file_type": "code",
       "source_file": "+core\\@MibDataset\\transpose.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibdataset_transposedataset_m",
+      "label": "transposeDataset.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\transposeDataset.m",
       "source_location": "L1"
     },
     {
@@ -3263,10 +3347,31 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibimage_convertimage_m",
+      "label": "convertImage.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibImage\\convertImage.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibimage_copyslice_m",
+      "label": "copySlice.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibImage\\copySlice.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibimage_crop_m",
       "label": "crop.m",
       "file_type": "code",
       "source_file": "+core\\@MibImage\\crop.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibimage_deleteslice_m",
+      "label": "deleteSlice.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibImage\\deleteSlice.m",
       "source_location": "L1"
     },
     {
@@ -3340,6 +3445,13 @@
       "source_location": "L1"
     },
     {
+      "id": "core_mibimage_reslicedataset_m",
+      "label": "resliceDataset.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibImage\\resliceDataset.m",
+      "source_location": "L1"
+    },
+    {
       "id": "core_mibimage_save_m",
       "label": "save.m",
       "file_type": "code",
@@ -3372,6 +3484,13 @@
       "label": "splitImageDescription.m",
       "file_type": "code",
       "source_file": "+core\\@MibImage\\splitImageDescription.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_mibimage_swapslices_m",
+      "label": "swapSlices.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibImage\\swapSlices.m",
       "source_location": "L1"
     },
     {
@@ -4201,10 +4320,24 @@
       "source_location": "L1"
     },
     {
+      "id": "models_mibmodel_changeimagemode_m",
+      "label": "changeImageMode.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": "L1"
+    },
+    {
       "id": "models_mibmodel_clearlayer_m",
       "label": "clearLayer.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\clearLayer.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_clearmask_m",
+      "label": "clearMask.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\clearMask.m",
       "source_location": "L1"
     },
     {
@@ -4226,6 +4359,13 @@
       "label": "convertMouseToDataCoordinates.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\convertMouseToDataCoordinates.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_copyswapslice_m",
+      "label": "copySwapSlice.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
       "source_location": "L1"
     },
     {
@@ -4254,6 +4394,13 @@
       "label": "deleteAnnotations.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\deleteAnnotations.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_deleteslice_m",
+      "label": "deleteSlice.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
       "source_location": "L1"
     },
     {
@@ -4390,6 +4537,13 @@
       "source_location": "L1"
     },
     {
+      "id": "models_mibmodel_insertemptyslice_m",
+      "label": "insertEmptySlice.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\insertEmptySlice.m",
+      "source_location": "L1"
+    },
+    {
       "id": "models_mibmodel_interpolateimage_m",
       "label": "interpolateImage.m",
       "file_type": "code",
@@ -4401,6 +4555,13 @@
       "label": "loadImages.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\loadImages.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_loadmask_m",
+      "label": "loadMask.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\loadMask.m",
       "source_location": "L1"
     },
     {
@@ -4446,6 +4607,13 @@
       "source_location": "L1"
     },
     {
+      "id": "models_mibmodel_reslicedataset_m",
+      "label": "resliceDataset.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": "L1"
+    },
+    {
       "id": "models_mibmodel_saveimage_m",
       "label": "saveImage.m",
       "file_type": "code",
@@ -4457,6 +4625,13 @@
       "label": "saveLabels.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\saveLabels.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_savemask_m",
+      "label": "saveMask.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\saveMask.m",
       "source_location": "L1"
     },
     {
@@ -4499,6 +4674,13 @@
       "label": "setMagFactor.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\setMagFactor.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_transformdataset_m",
+      "label": "transformDataset.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\transformDataset.m",
       "source_location": "L1"
     },
     {
@@ -5652,6 +5834,237 @@
       "contributor": null
     },
     {
+      "id": "controllers_chunkingexport_chunkingexport_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_chunkingexport",
+      "label": "ChunkingExport",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_selectdirbtn_callback",
+      "label": "selectDirBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_diredit_callback",
+      "label": "dirEdit_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_returnbatchopt",
+      "label": "returnBatchOpt",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_updatebatchoptfromgui",
+      "label": "updateBatchOptFromGUI",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingexport_chunkingexport_chunkbtn_callback",
+      "label": "chunkBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_chunkingimport",
+      "label": "ChunkingImport",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_combinemodechanged_callback",
+      "label": "combineModeChanged_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_returnbatchopt",
+      "label": "returnBatchOpt",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_updatebatchoptfromgui",
+      "label": "updateBatchOptFromGUI",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_selectfilesbtn_callback",
+      "label": "selectFilesBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_combinebtn_callback",
+      "label": "combineBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_chunkingimport_chunkingimport_loadmodels",
+      "label": "loadModels",
+      "file_type": "code",
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_contrastnormalization_contrastnormalization_viewlistner_callback2",
       "label": "ViewListner_Callback2",
       "file_type": "code",
@@ -6424,6 +6837,28 @@
     {
       "id": "controllers_displayadjust_displayadjust_adjhelpbtn_callback",
       "label": "adjHelpBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@DisplayAdjust\\DisplayAdjust.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_displayadjust_displayadjust_figurewindowbuttondown_callback",
+      "label": "figureWindowButtonDown_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@DisplayAdjust\\DisplayAdjust.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_displayadjust_displayadjust_resetslider",
+      "label": "resetSlider",
       "file_type": "code",
       "source_file": "+controllers\\@DisplayAdjust\\DisplayAdjust.m",
       "source_location": null,
@@ -7493,6 +7928,259 @@
       "label": "closeWindow",
       "file_type": "code",
       "source_file": "+controllers\\@QuantificationProperties\\QuantificationProperties.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_renamerestore",
+      "label": "RenameRestore",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_updateprojectdetails",
+      "label": "updateProjectDetails",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_projectfilenameedit_callback",
+      "label": "projectFilenameEdit_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_selectsettingsfilebtn_callback",
+      "label": "selectSettingsFileBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_copyshowdirectory",
+      "label": "copyShowDirectory",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_updatedir",
+      "label": "updateDir",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_resaveproject",
+      "label": "resaveProject",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_updateparentdir",
+      "label": "updateParentDir",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renamerestore_renamerestore_restorebtn_callback",
+      "label": "restoreBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_renameshuffle",
+      "label": "RenameShuffle",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_adddirbtn_callback",
+      "label": "addDirBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_removedirbtn_callback",
+      "label": "removeDirBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_selectdirbtn_callback",
+      "label": "selectDirBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_diredit_callback",
+      "label": "dirEdit_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_renameshuffle_renameshuffle_randombtn_callback",
+      "label": "randomBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -16756,6 +17444,216 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_chunkingexport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_selectdirbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_diredit_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_returnbatchopt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_updatebatchoptfromgui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "controllers_chunkingexport_chunkingexport_chunkbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_chunkingimport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_combinemodechanged_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_returnbatchopt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_updatebatchoptfromgui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_selectfilesbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_combinebtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "controllers_chunkingimport_chunkingimport_loadmodels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_contrastnormalization_contrastnormalization_m",
       "target": "controllers_contrastnormalization_collectslicestats_m",
       "relation": "contains",
@@ -17537,6 +18435,26 @@
     },
     {
       "source": "controllers_displayadjust_displayadjust_m",
+      "target": "controllers_displayadjust_displayadjust_figurewindowbuttondown_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@DisplayAdjust\\DisplayAdjust.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_displayadjust_displayadjust_m",
+      "target": "controllers_displayadjust_displayadjust_resetslider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@DisplayAdjust\\DisplayAdjust.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_displayadjust_displayadjust_m",
       "target": "controllers_displayadjust_displayadjust_getchannelindex",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -18248,6 +19166,16 @@
     {
       "source": "controllers_mibcontroller_mibcontroller_m",
       "target": "controllers_mibcontroller_addguicontrollers_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\MibController.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_mibcontroller_m",
+      "target": "controllers_mibcontroller_datasetslices_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -19947,26 +20875,6 @@
     },
     {
       "source": "controllers_mibribbon_mibribbon_m",
-      "target": "controllers_mibribbon_datasettoolsslices_callback_m",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibRibbon\\MibRibbon.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibribbon_mibribbon_m",
-      "target": "controllers_mibribbon_datasettoolstransform_callback_m",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibRibbon\\MibRibbon.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibribbon_mibribbon_m",
       "target": "controllers_mibribbon_homedevmodeenable_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -20087,27 +20995,7 @@
     },
     {
       "source": "controllers_mibribbon_mibribbon_m",
-      "target": "controllers_mibribbon_imagecontrast_callbacks_m",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibRibbon\\MibRibbon.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibribbon_mibribbon_m",
       "target": "controllers_mibribbon_imageinvert_callbacks_m",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibRibbon\\MibRibbon.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibribbon_mibribbon_m",
-      "target": "controllers_mibribbon_imagemode_callback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -20147,17 +21035,7 @@
     },
     {
       "source": "controllers_mibribbon_mibribbon_m",
-      "target": "controllers_mibribbon_maskexportsection_callbacks_m",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibRibbon\\MibRibbon.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibribbon_mibribbon_m",
-      "target": "controllers_mibribbon_maskimportsection_callbacks_m",
+      "target": "controllers_mibribbon_maskimportexportsection_callbacks_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -21502,6 +22380,256 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@QuantificationProperties\\QuantificationProperties.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_gui_callbacks_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_renamerestore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_updateprojectdetails",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_projectfilenameedit_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_selectsettingsfilebtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_copyshowdirectory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_updatedir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_resaveproject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_updateparentdir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "controllers_renamerestore_renamerestore_restorebtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_gui_callbacks_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_renameshuffle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_adddirbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_removedirbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_selectdirbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_diredit_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "controllers_renameshuffle_renameshuffle_randombtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -23177,6 +24305,26 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_addframe_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_addframetoimage_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_addmaterial_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -23227,6 +24375,16 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_copyslice_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_createmodel_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -23238,6 +24396,26 @@
     {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_cropdataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_deleteslice_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_flipdataset_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -23397,6 +24575,16 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_loadmask_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_loadmodel_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -23497,6 +24685,26 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_reslicedataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_rotatedataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_saveimage_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -23577,6 +24785,16 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_swapslices_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_switchdatasetmode_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -23588,6 +24806,16 @@
     {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_transpose_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_transposedataset_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -23697,7 +24925,37 @@
     },
     {
       "source": "core_mibimage_mibimage_m",
+      "target": "core_mibimage_convertimage_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\MibImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_mibimage_m",
+      "target": "core_mibimage_copyslice_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\MibImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_mibimage_m",
       "target": "core_mibimage_crop_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\MibImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_mibimage_m",
+      "target": "core_mibimage_deleteslice_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -23797,6 +25055,16 @@
     },
     {
       "source": "core_mibimage_mibimage_m",
+      "target": "core_mibimage_reslicedataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\MibImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_mibimage_m",
       "target": "core_mibimage_save_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -23838,6 +25106,16 @@
     {
       "source": "core_mibimage_mibimage_m",
       "target": "core_mibimage_splitimagedescription_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\MibImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_mibimage_m",
+      "target": "core_mibimage_swapslices_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -24467,7 +25745,27 @@
     },
     {
       "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_changeimagemode_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_clearlayer_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_clearmask_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -24498,6 +25796,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_convertmousetodatacoordinates_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_copyswapslice_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -24538,6 +25846,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_deleteannotations_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_deleteslice_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -24737,6 +26055,16 @@
     },
     {
       "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_insertemptyslice_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_interpolateimage_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -24748,6 +26076,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_loadimages_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_loadmask_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -24807,6 +26145,16 @@
     },
     {
       "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_reslicedataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_saveimage_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -24818,6 +26166,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_savelabels_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_savemask_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -24878,6 +26236,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_setmagfactor_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_transformdataset_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -31636,6 +33004,76 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "core_mibimage_mibimage_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "core_mibdataset_mibdataset_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "io_extensionregistryload_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_contrastnormalization_continuebtn_callback_m",
       "target": "controllers_contrastnormalization_normalizezstack_m",
       "relation": "calls",
@@ -34026,26 +35464,6 @@
       "weight": 1.0
     },
     {
-      "source": "controllers_mibimagedocument_listener_framechanged_m",
-      "target": "controllers_mibimagedocument_framenumber_callback_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@MibImageDocument\\listener_frameChanged.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibimagedocument_listener_slicechanged_m",
-      "target": "controllers_mibimagedocument_slicenumber_callback_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@MibImageDocument\\listener_sliceChanged.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
       "source": "controllers_mibimagedocument_segmentationannotation_m",
       "target": "controllers_mibimagedocument_segmentationsam_m",
       "relation": "calls",
@@ -35256,6 +36674,166 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_closewindow",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_selectsettingsfilebtn_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_projectfilenameedit_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_restorebtn_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_resaveproject",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_updatedir",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_updateparentdir",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "controllers_renamerestore_renamerestore_copyshowdirectory",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "controllers_renameshuffle_renameshuffle_closewindow",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "controllers_renameshuffle_renameshuffle_selectdirbtn_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "controllers_renameshuffle_renameshuffle_adddirbtn_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "controllers_renameshuffle_renameshuffle_removedirbtn_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "controllers_renameshuffle_renameshuffle_randombtn_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "controllers_renameshuffle_renameshuffle_diredit_callback",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_resampledataset_resampledataset_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -35576,6 +37154,26 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_addframe_m",
+      "target": "core_mibdataset_updateboundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\addFrame.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_addframetoimage_m",
+      "target": "core_mibdataset_updateboundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\addFrameToImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_addmaterial_m",
       "target": "core_mibdataset_createmodel_m",
       "relation": "calls",
@@ -35732,6 +37330,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+core\\@MibDataset\\initialize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_loadmask_m",
+      "target": "core_miblabels_miblabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibDataset\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_loadmask_m",
+      "target": "core_mibdataset_setdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\loadMask.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -35896,6 +37514,26 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_rotatedataset_m",
+      "target": "core_mibdataset_setpixsize_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\rotateDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_rotatedataset_m",
+      "target": "core_mibdataset_updateboundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\rotateDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_saveimage_m",
       "target": "core_mibdataset_getdata3d_m",
       "relation": "calls",
@@ -36006,6 +37644,26 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_transposedataset_m",
+      "target": "core_mibdataset_setpixsize_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\transposeDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_transposedataset_m",
+      "target": "core_mibdataset_updateboundingbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\transposeDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_updateboundingbox_m",
       "target": "core_mibdataset_setpixsize_m",
       "relation": "calls",
@@ -36022,6 +37680,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+core\\@MibImage\\clearLayer.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_convertimage_m",
+      "target": "core_mibimage_updateactionlog_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibImage\\convertImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_convertimage_m",
+      "target": "core_mibimage_getdefaultviewport_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibImage\\convertImage.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -36226,6 +37904,36 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_clearlayer_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -36252,6 +37960,36 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\clearLayer.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_clearmask_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\clearMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_clearmask_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\clearMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_clearmask_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\clearMask.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -36322,6 +38060,36 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\convertMouseToDataCoordinates.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_copyswapslice_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_copyswapslice_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_copyswapslice_m",
+      "target": "models_mibmodel_getdata2d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -36392,6 +38160,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\deleteAnnotations.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_deleteslice_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_deleteslice_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -36816,6 +38604,26 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_insertemptyslice_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\insertEmptySlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_insertemptyslice_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\insertEmptySlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_interpolateimage_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -36872,6 +38680,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\loadImages.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmask_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmask_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\loadMask.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -37046,6 +38874,26 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_reslicedataset_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_reslicedataset_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_saveimage_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -37076,6 +38924,26 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_savemask_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\saveMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_savemask_m",
+      "target": "models_mibmodel_saveimage_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\saveMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_setdefaultcolorpalette_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -37092,6 +38960,36 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\setDefaultColorPalette.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -37386,6 +39284,186 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_tutorials_demoplugin_demoplugin_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_demoplugin_demoplugin_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_demoplugin_demoplugin_m",
+      "target": "core_poolwaitbar_poolwaitbar_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_guitutorial_guitutorial_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\GuiTutorial\\GuiTutorial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
+      "target": "core_poolwaitbar_poolwaitbar_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\Tutorials\\PluginWithoutGUI\\PluginWithoutGUI.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\OrganelleAnalysis\\SurfaceMeasurements\\SurfaceMeasurements.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "core_poolwaitbar_poolwaitbar_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_multirenametool_multirenametool_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_multirenametool_multirenametool_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_multirenametool_multirenametool_m",
+      "target": "core_poolwaitbar_poolwaitbar_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "external_zarr3matlab_zarrgroup_m",
+      "target": "external_zarr3matlab_zarrarray_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "external_zarr3matlab_tests_zarrarraytest_m",
+      "target": "external_zarr3matlab_zarrarray_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
+      "target": "external_zarr3matlab_zarrgroup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_loaders_amirameshloader_m",
       "target": "core_poolwaitbar_poolwaitbar_m",
       "relation": "calls",
@@ -37592,186 +39670,6 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "external_zarr3matlab_zarrgroup_m",
-      "target": "external_zarr3matlab_zarrarray_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "external\\Zarr3Matlab\\ZarrGroup.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "external_zarr3matlab_tests_zarrarraytest_m",
-      "target": "external_zarr3matlab_zarrarray_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrArrayTest.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "external_zarr3matlab_tests_zarrgrouptest_m",
-      "target": "external_zarr3matlab_zarrgroup_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
-      "target": "core_toggleeventdata_toggleeventdata_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
-      "target": "core_poolwaitbar_poolwaitbar_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_fileprocessing_multirenametool_multirenametool_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_fileprocessing_multirenametool_multirenametool_m",
-      "target": "core_toggleeventdata_toggleeventdata_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_fileprocessing_multirenametool_multirenametool_m",
-      "target": "core_poolwaitbar_poolwaitbar_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\OrganelleAnalysis\\SurfaceMeasurements\\SurfaceMeasurements.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_demoplugin_demoplugin_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_demoplugin_demoplugin_m",
-      "target": "core_toggleeventdata_toggleeventdata_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_demoplugin_demoplugin_m",
-      "target": "core_poolwaitbar_poolwaitbar_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\DemoPlugin\\DemoPlugin.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_guitutorial_guitutorial_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\GuiTutorial\\GuiTutorial.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
-      "target": "core_childview_childview_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
-      "target": "core_toggleeventdata_toggleeventdata_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
-      "target": "core_poolwaitbar_poolwaitbar_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\GuiTutorialBatch\\GuiTutorialBatch.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_m",
-      "target": "core_toggleeventdata_toggleeventdata_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "plugins\\Tutorials\\PluginWithoutGUI\\PluginWithoutGUI.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -38686,6 +40584,196 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_updateguifrombatchopt_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "io_amiramesh_bitmap2amiralabels_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingexport_chunkingexport_m",
+      "target": "io_nrrd_bitmap2nrrd_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingExport\\ChunkingExport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_updateguifrombatchopt_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "utils_dlgs_mibuigetfile_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "io_loadimageswrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_chunkingimport_chunkingimport_m",
+      "target": "io_amiramesh_amiralabels2bitmap_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@ChunkingImport\\ChunkingImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_contrastnormalization_continuebtn_callback_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -39412,6 +41500,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibActiveDataset\\setsOps_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_datasetslices_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\datasetSlices.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -41126,6 +43224,36 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibribbon_homeimport_callback_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRibbon\\homeImport_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibribbon_homeimport_callback_m",
+      "target": "io_imaris_getimarisdataset_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRibbon\\homeImport_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibribbon_homeimport_callback_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRibbon\\homeImport_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibribbon_homepreferences_callback_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -41716,6 +43844,86 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_renamerestore_gui_callbacks_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renamerestore_renamerestore_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameRestore\\RenameRestore.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_gui_callbacks_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_renameshuffle_renameshuffle_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@RenameShuffle\\RenameShuffle.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_resampledataset_resampledataset_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
       "relation": "calls",
@@ -42196,6 +44404,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_addframetoimage_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\addFrameToImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_getdata2d_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -42256,6 +44474,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_loadmask_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_loadmodel_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -42306,6 +44534,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_transposedataset_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\transposeDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibiconcache_mibiconcache_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -42322,6 +44560,36 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@MibIconCache\\MibIconCache.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_convertimage_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\convertImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_convertimage_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\convertImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_convertimage_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibImage\\convertImage.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -43076,6 +45344,46 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_changeimagemode_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_clearlayer_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
       "relation": "calls",
@@ -43086,12 +45394,42 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_clearmask_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\clearMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_clearselection_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+models\\@MibModel\\clearSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_copyswapslice_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_copyswapslice_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -43152,6 +45490,36 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+models\\@MibModel\\deleteAnnotations.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_deleteslice_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_deleteslice_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_deleteslice_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -43406,6 +45774,26 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_insertemptyslice_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\insertEmptySlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_insertemptyslice_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\insertEmptySlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_interpolateimage_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
       "relation": "calls",
@@ -43472,6 +45860,36 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+models\\@MibModel\\loadImages.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmask_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmask_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmask_m",
+      "target": "utils_dlgs_mibuigetfile_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\loadMask.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -43626,6 +46044,36 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_reslicedataset_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_reslicedataset_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_reslicedataset_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_saveimage_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -43692,6 +46140,46 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+models\\@MibModel\\setDefaultColorPalette.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "utils_dlgs_inputsingledlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
       "source_location": null,
       "weight": 1.0
     },

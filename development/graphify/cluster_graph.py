@@ -20,7 +20,7 @@ questions = suggest_questions(G, communities, labels)
 
 report = generate(G, communities, cohesion, labels, gods, surprises, detection, tokens, 'C:\\Matlab\\MIB3\\mib', suggested_questions=questions)
 Path('graphify-out/GRAPH_REPORT.md').write_text(report, encoding='utf-8')
-to_json(G, communities, 'graphify-out/graph.json')
+to_json(G, communities, 'graphify-out/graph.json', force=True)
 
 analysis = {
     'communities': {str(k): v for k, v in communities.items()},

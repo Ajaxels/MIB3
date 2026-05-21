@@ -125,7 +125,7 @@ BatchOpt.NumberOfColorChannels{3} = 'on';
 BatchOpt.showWaitbar           = true;
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
-BatchOpt.mibBatchActionName  = 'Transform';
+BatchOpt.mibBatchActionName  = 'Transform / Add frame';
 BatchOpt.mibBatchTooltip.Transform              = 'Select the transform operation';
 BatchOpt.mibBatchTooltip.Position               = 'Image placement when adding a frame (width/height mode)';
 BatchOpt.mibBatchTooltip.NewImageWidth          = 'New image width in pixels';

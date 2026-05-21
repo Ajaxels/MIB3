@@ -29,6 +29,28 @@ switch mode
         obj.mibController.startController('controllers.CropDataset', obj.mibController);
     case 'Resize'           % obj.handles.ribbonDataset.resize
         obj.mibController.startController('controllers.ResampleDataset');
+    case {'Update with new width/height', 'Update with new dX/dY', 'Flip horizontally', ...
+            'Flip vertically', 'Flip Z', 'Flip T', 'Rotate 90 degrees', 'Rotate -90 degrees', ...
+            'Transpose YX -> YZ', 'Transpose YX -> XZ', 'Transpose YX -> XY', ...
+            'Transpose Z <-> T', 'Transpose Z <-> C'}
+        
+        % Normalize ' <-> ' → '<->' for BatchOpt compatibility
+        mode = strrep(mode, ' <-> ', '<->');
+        BatchOpt.Transform = {mode};
+        obj.mibModel.transformDataset(BatchOpt);
+        
+    case 'Copy slice...'              % obj.handles.ribbonDataset.sliceCopy
+        obj.mibController.datasetSlices('copySlice');
+    case 'Insert empty slice(s)...'                 % obj.handles.ribbonDataset.sliceInsert
+        obj.mibController.datasetSlices('insertSlice');
+    case 'Interval slicing...'              % obj.handles.ribbonDataset.sliceInterval
+        obj.mibController.datasetSlices('reslice');
+    case 'Swap slices...'                 % obj.handles.ribbonDataset.sliceSwap
+        obj.mibController.datasetSlices('swapSlice');
+    case 'Delete slice(s)...'              % obj.handles.ribbonDataset.sliceDelete
+        obj.mibController.datasetSlices('deleteSlice');
+    case 'Delete frame(s)...'                 % obj.handles.ribbonDataset.sliceFrameDelete
+        obj.mibController.datasetSlices('deleteFrame');
 end
 
 end

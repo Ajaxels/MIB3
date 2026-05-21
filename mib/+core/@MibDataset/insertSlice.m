@@ -59,7 +59,7 @@ function insertSlice(obj, img, insertPosition, meta, options)
 if nargin < 5; options = struct; end
 if nargin < 4; meta = []; end
 if nargin < 3; insertPosition = NaN; end
-if insertPosition == 0; insertPosition = NaN; end
+if insertPosition == 0; insertPosition = 1; end  % 0 means insert at the very beginning
 
 if ~isfield(options, 'dim');                       options.dim = 'depth';       end
 if ~isfield(options, 'showWaitbar');               options.showWaitbar = true;  end
@@ -158,7 +158,7 @@ if strcmp(options.dim, 'depth')
     if obj.datasetType(1) ~= 'V'
         % ---- label layers (insert zeros at the same position) ----
         if obj.labels.maxMaterials < 255   % labels63: model+mask+selection packed together
-            if obj.modelExist
+            if obj.modelExist || obj.maskExist || obj.selection.exists
                 emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
                 obj.labels.insertSlice(emptyLayer, insertPosition, 'depth');
             end
@@ -207,7 +207,7 @@ else  % insert a new time point
 
     % ---- label layers ----
     if obj.labels.maxMaterials < 255   % labels63
-        if obj.modelExist
+        if obj.modelExist || obj.maskExist || obj.selection.exists
             emptyLayer = zeros([D2_y, D2_x, D2_z, 1, D2_t], 'uint8');
             obj.labels.insertSlice(emptyLayer, insertPosition, 'time');
         end

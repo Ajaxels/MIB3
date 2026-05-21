@@ -16,9 +16,7 @@ classdef MibRibbon
         % 
         datasetCalibration_Callback(obj, hWidget, hData)        % callback on press of buttons in the Calibration section of the Dataset ribbon
         datasetMetadata_Callback(obj, hWidget, hData)        % callback on press of buttons in the Metadata section of the Dataset ribbon
-        datasetToolsSlices_Callback(obj, hWidget, hData)        % callback on press of buttons in the Slices button of the Dataset ribbon
         datasetTools_Callback(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
-        datasetToolsTransform_Callback(obj, hWidget, hData)        % callback on press of buttons in the Transform button of the Dataset ribbon
         homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
         homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
         homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
@@ -163,26 +161,26 @@ classdef MibRibbon
             obj.handles.ribbonDataset.crop.ButtonPushedFcn = @obj.datasetTools_Callback;
             obj.handles.ribbonDataset.resize.ButtonPushedFcn = @obj.datasetTools_Callback;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools -> Transform
-            obj.handles.ribbonDataset.addframeWidth.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.addframedX.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.flipH.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.flipV.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.flipZ.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.flipT.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.rotPos90.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.rotNeg90.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.transposeYX2YZ.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.transposeYX2XZ.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.transposeYX2XY.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.transposeZ2T.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
-            obj.handles.ribbonDataset.transposeZ2C.ItemPushedFcn = @obj.datasetToolsTransform_Callback;
+            obj.handles.ribbonDataset.addframeWidth.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.addframedX.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.flipH.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.flipV.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.flipZ.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.flipT.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.rotPos90.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.rotNeg90.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.transposeYX2YZ.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.transposeYX2XZ.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.transposeYX2XY.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.transposeZ2T.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.transposeZ2C.ItemPushedFcn = @obj.datasetTools_Callback;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools -> Slices
-            obj.handles.ribbonDataset.sliceCopy.ItemPushedFcn = @obj.datasetToolsSlices_Callback;
-            obj.handles.ribbonDataset.sliceInsert.ItemPushedFcn = @obj.datasetToolsSlices_Callback;
-            obj.handles.ribbonDataset.sliceInterval.ItemPushedFcn = @obj.datasetToolsSlices_Callback;
-            obj.handles.ribbonDataset.sliceSwap.ItemPushedFcn = @obj.datasetToolsSlices_Callback;
-            obj.handles.ribbonDataset.sliceDelete.ItemPushedFcn = @obj.datasetToolsSlices_Callback;
-            obj.handles.ribbonDataset.sliceFrameDelete.ItemPushedFcn = @obj.datasetToolsSlices_Callback;
+            obj.handles.ribbonDataset.sliceCopy.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.sliceInsert.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.sliceInterval.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.sliceSwap.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.sliceDelete.ItemPushedFcn = @obj.datasetTools_Callback;
+            obj.handles.ribbonDataset.sliceFrameDelete.ItemPushedFcn = @obj.datasetTools_Callback;
             %% Add Callbacks for the DATASET ribbon -> Calibration section
             obj.handles.ribbonDataset.scalebar.ButtonPushedFcn = @obj.datasetCalibration_Callback;
             obj.handles.ribbonDataset.boundingbox.ButtonPushedFcn = @obj.datasetCalibration_Callback;

@@ -115,6 +115,34 @@ Full tables in `.claude/conversion_reference.md` (data structures, backup, clear
 
 **Dropdown `defAns`:** `{'item1', 'item2', 'item3', 2}` — string items followed by a **numeric default index** as last element. `answer{i}` returns the selected item string.
 
+**Spinner (numeric) `defAns`:** pass a struct instead of a plain value:
+```matlab
+struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Step', 1, 'Round', true)
+```
+`answer{i}` returns the numeric value directly — no `str2double` needed.
+
+**Numeric BatchOpt fields** — when a BatchOpt parameter is a numeric value (not a dropdown), store it as a 3-element cell:
+```matlab
+BatchOpt.MyParam = {value, [minLim maxLim], 'on'};  % 'on' = integer rounding
+```
+- `{1}` — the scalar value
+- `{2}` — `[min max]` limits used to populate the spinner
+- `{3}` — `'on'` to round to integer; omit or use `'off'` for float
+
+When reading the value in processing code use `BatchOpt.MyParam{1}`, **not** `str2double`.
+
+When reading from dialog answers after a spinner prompt, assign directly:
+```matlab
+BatchOpt.MyParam{1} = answer{i};   % answer{i} is already numeric
+```
+
+The spinner limits must be updated after batch-merge to reflect the actual dataset dimensions:
+```matlab
+% after utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn)
+maxSlice = obj.I{BatchOpt.id}.dim_yxzct(dimOrient);
+BatchOpt.MyParam{2} = [1, maxSlice];   % refresh limits
+```
+
 `inputUniversalDlg` icons: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`
 
 ### Events & Notifications
@@ -193,4 +221,4 @@ Rules:
 - ALWAYS read graphify-out/GRAPH_REPORT.md before reading any source files, running grep/glob searches, or answering codebase questions. The graph is your primary map of the codebase.
 - IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
 - For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- After modifying code, run `python development/graphify/run_all.py` from the repo root to keep the graph current (MATLAB-aware pipeline, ~50 s, no API cost).
