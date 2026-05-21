@@ -167,6 +167,7 @@ classdef MibModel < handle
         result = setData3D(obj, dataset, type, time, orient, col_channel, options)        % set a 3D dataset in the current dataset; wrapper around core.MibDataset.setData3D
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % set the complete 4D dataset; wrapper around core.MibDataset.setData4D
         setMagFactor(obj, magFactor, id)        % set magnification for the currently shown or id dataset
+        status = transformDataset(obj, BatchOptIn)  % Dispatcher for dataset geometry transforms (flip, rotate, transpose, add frame)
         undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
 
         function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)

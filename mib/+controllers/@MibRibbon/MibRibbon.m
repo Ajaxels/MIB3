@@ -32,7 +32,6 @@ classdef MibRibbon
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
         imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
         imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
-        imageMode_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mode section of the Image ribbon
         imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
         imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
         imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
@@ -204,13 +203,13 @@ classdef MibRibbon
             %
         
             %% Add Callbacks for the IMAGE ribbon -> Mode
-            obj.handles.ribbonImage.grayscale.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.multichannel.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.hsv.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.indexed.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.bit8.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.bit16.ValueChangedFcn = @obj.imageMode_Callback;
-            obj.handles.ribbonImage.bit32.ValueChangedFcn = @obj.imageMode_Callback;
+            obj.handles.ribbonImage.grayscale.ValueChangedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.multichannel.ValueChangedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.hsv.ValueChangedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.indexed.ValueChangedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.bit8.ValueChangedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.bit16.ValueChangedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.bit32.ValueChangedFcn = @obj.image_Callbacks;
 
             %% Add Callbacks for the IMAGE ribbon -> Image Adjustments
             obj.handles.ribbonImage.display.ButtonPushedFcn = @obj.image_Callbacks;

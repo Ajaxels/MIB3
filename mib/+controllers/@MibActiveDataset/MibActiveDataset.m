@@ -123,9 +123,9 @@ classdef MibActiveDataset
             obj.handles.datasetType.ValueChangedFcn = @obj.datasetTypeChange_Callback;
 
             % ---------------------- Key press callback ----------------------
-            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyPressFcn    = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyReleaseFcn  = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
 
-            %% Add listeners
             obj.listeners{1} = addlistener(obj.mibModel, 'DatasetsPanelUpdate', @(src, evnt) obj.update_fromModel(src, evnt)); % update GUI from the model
 
         end

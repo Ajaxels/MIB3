@@ -101,7 +101,7 @@ if obj.I{BatchOpt.id}.image.time < 2 && ~batchModeSwitch
 end
 
 %% LUT check for multichannel (>3 ch) → Grayscale or Indexed
-lutChanged = false;
+noOrigColors = obj.I{BatchOpt.id}.image.colors;
 if strcmp(obj.I{BatchOpt.id}.image.colorType, 'multichannel') && obj.I{BatchOpt.id}.image.colors > 3
     if ismember(BatchOpt.Target{1}, {'Grayscale', 'Indexed'})
         if ~batchModeSwitch
@@ -117,7 +117,6 @@ if strcmp(obj.I{BatchOpt.id}.image.colorType, 'multichannel') && obj.I{BatchOpt.
             end
         end
         obj.I{BatchOpt.id}.useLUT = 0;
-        lutChanged = true;
     end
 end
 
@@ -125,7 +124,7 @@ end
 formatMap = dictionary( ...
     {'Grayscale', 'Multi-channel', 'HSV color', 'Indexed', '8 bit', '16 bit', '32 bit'}, ...
     {'grayscale', 'multichannel',  'hsvcolor',  'indexed', 'uint8', 'uint16', 'uint32'});
-formatString = formatMap(BatchOpt.Target{1});
+formatString = formatMap{BatchOpt.Target(1)};
 
 %% Call core converter
 convertOpt.showWaitbar            = BatchOpt.showWaitbar;
@@ -139,14 +138,15 @@ if status == 0
 end
 
 %% Sync MibDataset state: reset displayed color channels to all
-obj.I{BatchOpt.id}.slices{4} = 1:obj.I{BatchOpt.id}.image.colors;
+noNewColors = obj.I{BatchOpt.id}.image.colors;
+obj.I{BatchOpt.id}.slices{4} = 1:noNewColors;
 
 %% Notify batch system and refresh display
 BatchOpt = rmfield(BatchOpt, 'id');
 notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
 
 updatePanels = {'ribbonImage'};
-if lutChanged; updatePanels{end+1} = 'selectionPanel'; end
+if noOrigColors ~= noNewColors; updatePanels{end+1} = 'selectionPanel'; end
 notify(obj, 'UpdateGuiWidgets', core.ToggleEventData(updatePanels));
 notify(obj, 'ShowImage');
 end

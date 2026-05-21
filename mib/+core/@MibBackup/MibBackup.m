@@ -213,7 +213,7 @@ classdef MibBackup < handle
             end
             
             % crop undoList
-            if options.switch3d && obj.max3d_steps == 0 && depth > 1
+            if ~strcmp(type, 'mibDataset') && options.switch3d && obj.max3d_steps == 0 && depth > 1
                 clearContents(obj);
                 return;
             else

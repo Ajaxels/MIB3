@@ -96,17 +96,17 @@ if isempty(updatePanels) || ismember('ribbonImage', updatePanels)
         ribbonImage = obj.cRibbon.handles.ribbonImage;
     end
 
-    if strcmp(dataset.image.dataClass, 'uint8') && ~ribbonImage.bit8.Value
+    if strcmp(dataset.image.dataClass, 'uint8') 
         % update 8bit checkbox
         ribbonImage.bit8.Value = true;
         ribbonImage.bit16.Value = false;
         ribbonImage.bit32.Value = false;
-    elseif strcmp(dataset.image.dataClass, 'uint16') && ~ribbonImage.bit16.Value
+    elseif strcmp(dataset.image.dataClass, 'uint16') 
         % update 16bit checkbox
         ribbonImage.bit8.Value = false;
         ribbonImage.bit16.Value = true;
         ribbonImage.bit32.Value = false;
-    elseif strcmp(dataset.image.dataClass, 'uint32') && ~ribbonImage.bit32.Value
+    elseif strcmp(dataset.image.dataClass, 'uint32') 
         % update 32bit checkbox
         ribbonImage.bit8.Value = false;
         ribbonImage.bit16.Value = false;
@@ -114,7 +114,7 @@ if isempty(updatePanels) || ismember('ribbonImage', updatePanels)
     end
       
     % update color type
-    if strcmp(dataset.image.colorType, 'grayscale') && ~ribbonImage.grayscale.Value
+    if strcmp(dataset.image.colorType, 'grayscale')
         % update grayscale checkbox
         ribbonImage.grayscale.Value = true;
         ribbonImage.grayscale.Enabled = true;
@@ -123,7 +123,7 @@ if isempty(updatePanels) || ismember('ribbonImage', updatePanels)
         ribbonImage.hsv.Enabled = false;
         ribbonImage.indexed.Value = false;
         ribbonImage.indexed.Enabled = true;
-    elseif strcmp(dataset.image.colorType, 'multichannel') && ~ribbonImage.multichannel.Value
+    elseif strcmp(dataset.image.colorType, 'multichannel') 
         ribbonImage.grayscale.Value = false;
         ribbonImage.grayscale.Enabled = true;
         ribbonImage.multichannel.Value = true;
@@ -131,7 +131,7 @@ if isempty(updatePanels) || ismember('ribbonImage', updatePanels)
         ribbonImage.hsv.Enabled = true;
         ribbonImage.indexed.Value = false;
         ribbonImage.indexed.Enabled = true;
-    elseif strcmp(dataset.image.colorType, 'hsvcolor') && ~ribbonImage.hsv.Value
+    elseif strcmp(dataset.image.colorType, 'hsvcolor') 
         ribbonImage.grayscale.Value = false;
         ribbonImage.grayscale.Enabled = false;
         ribbonImage.multichannel.Value = false;
@@ -139,7 +139,7 @@ if isempty(updatePanels) || ismember('ribbonImage', updatePanels)
         ribbonImage.hsv.Enabled = true;
         ribbonImage.indexed.Value = false;
         ribbonImage.indexed.Enabled = false;
-    elseif strcmp(dataset.image.colorType, 'indexed') && ~ribbonImage.indexed.Value
+    elseif strcmp(dataset.image.colorType, 'indexed')
         ribbonImage.grayscale.Value = false;
         ribbonImage.grayscale.Enabled = true;
         ribbonImage.multichannel.Value = false;

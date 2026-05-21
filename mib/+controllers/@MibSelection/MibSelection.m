@@ -108,7 +108,8 @@ classdef MibSelection
             obj.listeners{1} = addlistener(obj.view.handles.panels.selectionPanel, 'PropertyChanged', @obj.listener_updatePanelPosition); % redraw the panel when Region property gets changed
             
             %% ---------------------- Key press callback ----------------------
-            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyPressFcn   = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyReleaseFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
         end
 
 

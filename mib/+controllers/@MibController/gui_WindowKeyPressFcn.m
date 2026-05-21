@@ -324,6 +324,11 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Undo/Redo last action'                    % default 'Ctrl + z'
             if ~obj.mibModel.Backup.enableSwitch; return; end
             if obj.mibModel.Backup.prevUndoIndex == 0; return; end
+            % Clear modifier before undo: the undo chain triggers UI updates
+            % (DatasetsPanelUpdate, updateGuiWidgets) that can shift focus to a
+            % panel without WindowKeyReleaseFcn, causing the KeyRelease event to
+            % fire there and never reach gui_WindowKeyReleaseFcn.
+            obj.currentModifier = {};
             obj.mibModel.undo();
             obj.showImage();
 

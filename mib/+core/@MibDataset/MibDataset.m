@@ -154,6 +154,11 @@ classdef MibDataset < matlab.mixin.Copyable
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % Set complete 4D dataset with colors [height:width:depth:colors:time]
         result = setPixelIdxList(obj, type, dataset, PixelIdxList, options)  % Write pixel values at a list of linear indices; routes to correct layer and updates modelExist/maskExist flags
         fnOut = saveImage(obj, layerType, filename, options)        % Save a data layer ('image'|'labels'|'mask') to file. Intermediate entry point — injects pixSize/boundingBox and delegates to the appropriate layer object's save() method. See core.MibDataset.save for details.
+        flipDataset(obj, mode, parentFigure, showWaitbar)       % flip dataset horizontally, vertically, along Z or T
+        rotateDataset(obj, mode, parentFigure, showWaitbar)     % rotate dataset 90 or -90 degrees
+        transposeDataset(obj, mode, parentFigure, showWaitbar, noColorChannels)  % transpose dataset between YZ/XZ/XY/ZX/Z-T/Z-C
+        addFrameToImage(obj, BatchOpt, parentFigure)            % add a frame by specifying new absolute width and height
+        addFrame(obj, BatchOpt, parentFigure)                   % add a frame by specifying dX/dY padding
         setPixSize(obj, val)        % Propagate a new pixSize struct to image, labels, mask, and selection layers.
         updateBoundingBox(obj, newBB, xyzShift, imgDims)  % Delegate bounding-box update to obj.image; ds.image.pixSize is updated in place.
 

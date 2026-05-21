@@ -215,7 +215,8 @@ classdef MibSegmentation
             obj.handles.segmTool.ValueChangedFcn = @(~,~)obj.segmentationTool_Callback;
 
             %% ---------------------- Key press callback ----------------------
-            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyPressFcn   = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyReleaseFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
 
             %% 3D ball, brush, spot panels
             obj.handles.brushRadius.ValueChangedFcn = @obj.brushPanel_Callback;

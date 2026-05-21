@@ -1,6 +1,6 @@
 classdef MibDirContents
-% MIBDIRCONTENTS - controller for methods of the DirContents panel in MIB.
-%
+    % MIBDIRCONTENTS - controller for methods of the DirContents panel in MIB.
+    %
 
     properties
         mibController   % controllers.MibController
@@ -79,7 +79,7 @@ classdef MibDirContents
             obj.handles.fileListContextLoadPart.MenuSelectedFcn = @obj.fileList_ContextMenu;
             obj.handles.fileListContextLoadNth.MenuSelectedFcn = @obj.fileList_ContextMenu;
             obj.handles.fileListContextInsert.MenuSelectedFcn = @obj.fileList_ContextMenu;
-            % 
+            %
             obj.handles.fileListContextColorCombine.MenuSelectedFcn = @obj.fileList_ContextMenu;
             obj.handles.fileListContextColorAdd.MenuSelectedFcn = @obj.fileList_ContextMenu;
             obj.handles.fileListContextColorAddNth.MenuSelectedFcn = @obj.fileList_ContextMenu;
@@ -92,7 +92,7 @@ classdef MibDirContents
             % ---------------------- Add context menu for fileFilters ----------------------
             obj.handles.fileFiltersContextRegister.MenuSelectedFcn = @obj.fileFilters_ContextMenu;
             obj.handles.fileFiltersContextUnregister.MenuSelectedFcn = @obj.fileFilters_ContextMenu;
-            
+
             % ---------------------- ADD CALLBACKS TO WIDGETS ----------------------
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.ClickedFcn = @obj.fileList_Callback;
@@ -108,8 +108,9 @@ classdef MibDirContents
             obj.listeners{1} = addlistener(obj.view.handles.panels.dirContentsPanel, 'PropertyChanged', @obj.listener_updatePanelPosition); % redraw the panel when Region property gets changed
 
             % ---------------------- Key press callback ----------------------
-            obj.UIFigure.WindowKeyPressFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
-            
+            obj.UIFigure.WindowKeyPressFcn   = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);
+            obj.UIFigure.WindowKeyReleaseFcn = @(hWidget, hData)obj.mibController.gui_WindowKeyReleaseFcn(hWidget, hData);
+
         end
 
     end

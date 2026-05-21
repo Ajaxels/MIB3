@@ -23,6 +23,9 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
+    case {'Grayscale', 'Multi-channel', 'HSV color', 'Indexed', '8 bit', '16 bit', '32 bit'}
+        BatchOpt.Target = {mode};
+        obj.mibModel.changeImageMode(BatchOpt);
     case sprintf('Adjust\ndisplay')               % obj.handles.ribbonImage.display
         obj.mibController.startController('controllers.DisplayAdjust');
     case 'Contrast-limited adaptive histogram equalization'     % obj.handles.ribbonImage.contrastCLAHE

@@ -176,6 +176,12 @@ if strcmp(type, 'lines3d')
     return;
 end
 
+if strcmp(type, 'mibDataset')
+    mibDatasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
+    obj.Backup.store(type, mibDatasetCopy, [], getDataOptions);
+    return;
+end
+
 % disable backup for 5D datasets
 if ~isfield(getDataOptions, 'x') || ~isfield(getDataOptions, 'y') || ...
         ~isfield(getDataOptions, 'z') || ~isfield(getDataOptions, 't')
@@ -192,12 +198,6 @@ if isfield(getDataOptions, 'z') && getDataOptions.z(2) - getDataOptions.z(1) == 
 end
 
 if switch3d && obj.Backup.max3d_steps == 0; return; end
-
-if strcmp(type, 'mibDataset')
-    mibDatasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
-    obj.Backup.store(type, mibDatasetCopy, [], getDataOptions);
-    return;
-end
 
 % replace types 'selection','mask','labels' to 'everything' for type-63 models
 if isa(obj.I{id}.labels, 'core.MibLabels63')

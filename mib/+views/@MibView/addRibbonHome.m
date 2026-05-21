@@ -220,6 +220,14 @@ homeHandles.export.Popup = popupList;
 % add the dropdown button to the column
 column.add(homeHandles.export);
 
+% % --------- SNAPSHOT ---------
+%icon = core.MibIconCache.get('icons', 'snapshot_16px');
+%snapshot = Button("Snapshot",  Icon(core.MibIconCache.get('icons', 'snapshot_16px')));
+column = section.addColumn(); 
+homeHandles.snapshot = Button("Snapshot",  Icon(fullfile(iconPath, 'snapshot_24px.png')));
+homeHandles.snapshot.Description = 'Start the snapshot tool';
+column.add(homeHandles.snapshot);
+
 % % --------- MOVIE/RENDER ---------
 column = section.addColumn('Width', 100); 
 % Render volume
@@ -245,14 +253,6 @@ homeHandles.movie.Description = 'Start the movie maker tool';
 column.add(homeHandles.movie);
 
 column.addEmptyControl();
-
-% % --------- SNAPSHOT ---------
-%icon = core.MibIconCache.get('icons', 'snapshot_16px');
-%snapshot = Button("Snapshot",  Icon(core.MibIconCache.get('icons', 'snapshot_16px')));
-column = section.addColumn(); 
-homeHandles.snapshot = Button("Snapshot",  Icon(fullfile(iconPath, 'snapshot_16px.png')));
-homeHandles.snapshot.Description = 'Start the snapshot tool';
-column.add(homeHandles.snapshot);
 
 
 %% ============= Make "I/O Tools" section =============
