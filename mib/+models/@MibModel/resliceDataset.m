@@ -80,7 +80,7 @@ else
 end
 BatchOpt.showWaitbar = true;
 
-BatchOpt.mibBatchSectionName = 'Menu -> Dataset';
+BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
 BatchOpt.mibBatchActionName  = 'Slice -> Stride reslicing';
 BatchOpt.mibBatchTooltip.Dimension    = 'Dimension to reslice';
 BatchOpt.mibBatchTooltip.SliceNumbers = 'Indices of slices to keep, for example: "1, 10:10:end"';
@@ -113,8 +113,7 @@ maxSlice = obj.I{BatchOpt.id}.dim_yxzct(orientation);
 
 %% interactive dialog
 if nargin < 4
-    dlgOpt.PromptLines  = [1, 2];
-    dlgOpt.WindowHeight = 200;
+    dlgOpt.WindowHeight = 180;
     answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
         sprintf('Slice range: 1:%d  (all others will be deleted)', maxSlice), ...
         {'Dimension:', 'Slice index(es) to keep (e.g. 1, 5, 10, 20:30, 50:5:end):'}, ...

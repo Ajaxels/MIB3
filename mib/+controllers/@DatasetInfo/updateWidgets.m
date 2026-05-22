@@ -146,6 +146,9 @@ expand(rootNode);
 % Build flat node list for search (skeleton only; updated on each expansion).
 obj.allTreeNodes = obj.flattenTreeNodes(tree);
 
+% Build complete metadata search list (includes collapsed sections).
+obj.metaSearchList = obj.buildMetaSearchList();
+
 % Restore selection — works for first-level nodes; child nodes inside a
 % deferred section are not found until that section is expanded.
 if ~isempty(obj.selectedNodeText) && ~isempty(obj.allTreeNodes)

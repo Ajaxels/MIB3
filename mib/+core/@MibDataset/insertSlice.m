@@ -17,15 +17,18 @@ function insertSlice(obj, img, insertPosition, meta, options)
 %   - **insertPosition** — *(optional)* position where to insert the new slice/volume
 %     starting from **1.** When omitted, *NaN,* or *0* - appends to the end
 %   - **meta** — *(optional)* dictionary with dataset parameters,
-%     used to retrieve 'SliceName' entries for the inserted slices; can be *[]*
+%     used to retrieve ``'SliceName'`` and ``'SliceSize'`` entries for the
+%     inserted slices; can be ``[]``.  When not provided and the dataset
+%     already has per-slice filenames, slice names are auto-generated from
+%     the neighboring slice name with an ``_empty_NNN`` suffix.
 %   - **options** — *(optional)* structure with additional parameters
 %
 %     - ``.dim`` — string defining insertion dimension: 'depth' (default) or 'time'
 %     - ``.BackgroundColorIntensity`` — background fill value for dimension mismatches
 %     - ``.silentMode`` — logical; when **true** no dialogs are shown
 %     - ``.showWaitbar`` — logical; **true** (default) shows a progress waitbar
-%     - ``.ParentFigure`` — handle to parent figure for dialog centering (default: [])
-%       @lo .mibPath - path to MIB installation directory
+%     - ``.ParentFigure`` — handle to parent figure for dialog centering (default: ``[]``)
+%     - ``.mibPath`` — path to MIB installation directory
 %
 % Output Arguments:
 %   none
@@ -59,7 +62,7 @@ function insertSlice(obj, img, insertPosition, meta, options)
 if nargin < 5; options = struct; end
 if nargin < 4; meta = []; end
 if nargin < 3; insertPosition = NaN; end
-if insertPosition == 0; insertPosition = 1; end  % 0 means insert at the very beginning
+if insertPosition == 0; insertPosition = NaN; end  % 0 means append to the end
 
 if ~isfield(options, 'dim');                       options.dim = 'depth';       end
 if ~isfield(options, 'showWaitbar');               options.showWaitbar = true;  end
@@ -144,6 +147,29 @@ end
 % -----------------------------------------------------------------------
 if strcmp(options.dim, 'depth')
 % -----------------------------------------------------------------------
+    % ---- auto-generate slice names when the dataset has per-slice filenames
+    %      and none were provided via meta ----
+    if isempty(sliceNames) && obj.datasetType(1) ~= 'V' && ...
+            ~isempty(obj.image.sliceName) && numel(obj.image.sliceName) > 1
+        % Use the slice just before the insertion point as the name template.
+        % When inserting at position 1, borrow from the first existing slice;
+        % when appending, borrow from the last.
+        refIdx = min(max(insertPosition - 1, 1), D1_z);
+        [refPath, refBase, refExt] = fileparts(obj.image.sliceName{refIdx});
+        sliceNames = cell(D2_z, 1);
+        for sliceIdx = 1:D2_z
+            sliceNames{sliceIdx} = fullfile(refPath, ...
+                [refBase sprintf('_empty_%03d', sliceIdx) refExt]);
+        end
+    end
+
+    % ---- auto-fill slice sizes when the dataset has per-slice sizes
+    %      and none were provided via meta (inserted image size is used) ----
+    if isempty(sliceSizes) && obj.datasetType(1) ~= 'V' && ...
+            ~isempty(obj.image.sliceSize) && size(obj.image.sliceSize, 1) > 1
+        sliceSizes = repmat([D2_y, D2_x], [D2_z, 1]);
+    end
+
     imgOpts.BackgroundColorIntensity = BackgroundColorIntensity;
     imgOpts.sliceNames               = sliceNames;
     imgOpts.sliceSizes               = sliceSizes;

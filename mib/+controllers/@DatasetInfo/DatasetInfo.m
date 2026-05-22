@@ -21,8 +21,9 @@ classdef DatasetInfo < handle
         view                % handle to DatasetInfoGUI (set by core.ChildView)
         listener            % cell array of listener handles
         selectedNodeText    % key name of the currently selected tree node
-        foundNodeIndex      % index of the last found node during search (into allTreeNodes)
-        allTreeNodes        % flat cell array of all tree nodes for sequential search
+        foundNodeIndex      % index of the last found entry during search (into metaSearchList)
+        allTreeNodes        % flat cell array of rendered tree nodes for tree navigation
+        metaSearchList      % flat cell array of all metadata entries for search
     end
 
     events
@@ -101,15 +102,18 @@ classdef DatasetInfo < handle
 
             widgetHandles.refreshButton.ButtonPushedFcn   = cb;
             widgetHandles.simplifyButton.ButtonPushedFcn  = cb;
-            widgetHandles.insertButton.ButtonPushedFcn    = cb;
-            widgetHandles.modifyButton.ButtonPushedFcn    = cb;
-            widgetHandles.deleteButton.ButtonPushedFcn    = cb;
             widgetHandles.findNextButton.ButtonPushedFcn      = cb;
             widgetHandles.findPreviousButton.ButtonPushedFcn  = cb;
             widgetHandles.closeButton.ButtonPushedFcn         = cb;
 
             widgetHandles.searchEdit.ValueChangedFcn      = cb;
             widgetHandles.metaTree.SelectionChangedFcn    = @(~,~) obj.treeNodeSelected_Callback();
+
+            contextMenu = uicontextmenu(obj.view.gui);
+            uimenu(contextMenu, 'Text', 'Insert', 'MenuSelectedFcn', @(~,~) obj.insertButton_Callback());
+            uimenu(contextMenu, 'Text', 'Modify', 'MenuSelectedFcn', @(~,~) obj.modifyButton_Callback());
+            uimenu(contextMenu, 'Text', 'Delete', 'Separator', 'on', 'MenuSelectedFcn', @(~,~) obj.deleteButton_Callback());
+            widgetHandles.metaTree.ContextMenu = contextMenu;
         end
 
         % ---------------------------------------------------------------
@@ -1048,42 +1052,52 @@ classdef DatasetInfo < handle
 
         % ---------------------------------------------------------------
         function searchEdit_Callback(obj, parameter)
-            % SEARCHEDIT_CALLBACK - Search for text in the metadata tree.
+            % SEARCHEDIT_CALLBACK - Search for text across all metadata entries.
+            %
+            % Searches the underlying metadata dictionary directly so that
+            % entries in collapsed (not yet expanded) sections are found too.
+            % When a match is located inside a deferred section, that section
+            % is expanded automatically before selecting the tree node.
             %
             % Input Arguments:
             %   - **parameter** — ``'new'`` to start a forward search from
             %     the beginning, ``'next'`` to find the next match,
             %     ``'previous'`` to find the previous match.
-            if strcmp(parameter, 'new')
+
+            if strcmp(parameter, 'new') || isempty(obj.metaSearchList)
+                obj.metaSearchList = obj.buildMetaSearchList();
+            end
+
+            % Always sync the search position with the currently selected tree
+            % node so that 'next'/'previous' continues relative to wherever the
+            % user clicked, not where the last programmatic result landed.
+            selectedIdx = obj.getSelectedNodeListIndex();
+            if selectedIdx > 0
+                obj.foundNodeIndex = selectedIdx;
+            elseif strcmp(parameter, 'new')
                 obj.foundNodeIndex = 0;
             end
 
             searchString = lower(obj.view.handles.searchEdit.Value);
             if isempty(searchString); return; end
 
+            listSize = numel(obj.metaSearchList);
+
             if strcmp(parameter, 'previous')
-                % search backwards from current position
                 startIdx = obj.foundNodeIndex - 1;
-                if startIdx < 1; startIdx = numel(obj.allTreeNodes); end
-                for nodeIdx = startIdx : -1 : 1
-                    nodeText = lower(obj.allTreeNodes{nodeIdx}.Text);
-                    if contains(nodeText, searchString)
-                        obj.foundNodeIndex = nodeIdx;
-                        obj.view.handles.metaTree.SelectedNodes = obj.allTreeNodes{nodeIdx};
-                        scroll(obj.view.handles.metaTree, obj.allTreeNodes{nodeIdx});
-                        obj.treeNodeSelected_Callback();
+                if startIdx < 1; startIdx = listSize; end
+                for idx = startIdx:-1:1
+                    if contains(lower(obj.metaSearchList{idx}.text), searchString)
+                        obj.foundNodeIndex = idx;
+                        obj.navigateToMetaEntry(obj.metaSearchList{idx});
                         return;
                     end
                 end
             else
-                % search forwards
-                for nodeIdx = obj.foundNodeIndex + 1 : numel(obj.allTreeNodes)
-                    nodeText = lower(obj.allTreeNodes{nodeIdx}.Text);
-                    if contains(nodeText, searchString)
-                        obj.foundNodeIndex = nodeIdx;
-                        obj.view.handles.metaTree.SelectedNodes = obj.allTreeNodes{nodeIdx};
-                        scroll(obj.view.handles.metaTree, obj.allTreeNodes{nodeIdx});
-                        obj.treeNodeSelected_Callback();
+                for idx = obj.foundNodeIndex + 1 : listSize
+                    if contains(lower(obj.metaSearchList{idx}.text), searchString)
+                        obj.foundNodeIndex = idx;
+                        obj.navigateToMetaEntry(obj.metaSearchList{idx});
                         return;
                     end
                 end
@@ -1093,6 +1107,7 @@ classdef DatasetInfo < handle
             obj.foundNodeIndex = 0;
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_warning';
+            dlgOpt.WindowStyle = 'modal';
             dlgOpt.HeaderLines = 1;
             utils.dlgs.inputUniversalDlg(obj.view.gui, ...
                 'No matching results!', {}, {}, 'Search', dlgOpt);
@@ -1223,5 +1238,284 @@ classdef DatasetInfo < handle
                 newDict{keepKeys(keyIdx)} = inputDict{keepKeys(keyIdx)};
             end
         end
+
+        % ---------------------------------------------------------------
+        function list = buildMetaSearchList(obj)
+            % BUILDMETASEARCHLIST - Build a flat searchable list of all metadata entries.
+            %
+            % Scans the metadata dictionary directly (not the visible tree)
+            % so that every entry is reachable regardless of which sections
+            % are currently expanded.  The returned list is used by
+            % :meth:`searchEdit_Callback` to drive forward/backward search.
+            %
+            % Each element of the returned cell array is a struct with:
+            %
+            %   - ``text`` — display text exactly as it appears in the tree node
+            %   - ``sectionKey`` — ``NodeData.key`` of the deferred section node
+            %     to expand before navigating; ``''`` when already visible
+            %   - ``sectionPopulationType`` — ``NodeData.populationType`` of
+            %     that section node
+
+            list = {};
+            datasetId = obj.mibModel.getActiveId();
+            meta = obj.mibModel.I{datasetId}.image.getMeta();
+
+            % ---- Scalar keys (always visible leaf nodes) ----
+            scalarKeyNames = ["Filename", "Height", "Width", "Depth", "Time", ...
+                "Colors", "ColorType", "imgClass", "MaxInt", "ImageDescription"];
+            for keyIdx = 1:numel(scalarKeyNames)
+                keyName = scalarKeyNames(keyIdx);
+                if ~isKey(meta, keyName); continue; end
+                value = meta{keyName};
+                if isnumeric(value) && numel(value) <= 1
+                    text = sprintf('%s: %s', keyName, num2str(value));
+                elseif ischar(value) || isstring(value)
+                    text = sprintf('%s: %s', keyName, char(value));
+                else
+                    text = sprintf('%s: %s', keyName, mat2str(value));
+                end
+                list{end+1} = struct('text', text, 'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+            end
+
+            % ---- Struct keys: pixSize, viewPort ----
+            structKeyNames = ["pixSize", "viewPort"];
+            for keyIdx = 1:numel(structKeyNames)
+                keyName = char(structKeyNames(keyIdx));
+                if ~isKey(meta, keyName); continue; end
+                value = meta{keyName};
+                if ~isstruct(value); continue; end
+                list{end+1} = struct('text', keyName, 'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                fieldNamesList = fieldnames(value);
+                for fieldIdx = 1:numel(fieldNamesList)
+                    fieldValue = value.(fieldNamesList{fieldIdx});
+                    if isnumeric(fieldValue)
+                        text = sprintf('%s: %s', fieldNamesList{fieldIdx}, num2str(fieldValue));
+                    else
+                        text = sprintf('%s: %s', fieldNamesList{fieldIdx}, char(string(fieldValue)));
+                    end
+                    list{end+1} = struct('text', text, 'sectionKey', keyName, 'sectionPopulationType', 'struct_fields'); %#ok<AGROW>
+                end
+            end
+
+            % ---- Cell array keys: SliceName, ActionLog ----
+            cellKeyNames = ["SliceName", "ActionLog"];
+            for keyIdx = 1:numel(cellKeyNames)
+                keyName = char(cellKeyNames(keyIdx));
+                if ~isKey(meta, keyName); continue; end
+                value = meta{keyName};
+                if isempty(value) || ~iscell(value); continue; end
+                if numel(value) == 1
+                    list{end+1} = struct('text', sprintf('%s: %s', keyName, char(string(value{1}))), ...
+                        'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                else
+                    list{end+1} = struct('text', keyName, 'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                    for itemIdx = 1:numel(value)
+                        list{end+1} = struct('text', char(string(value{itemIdx})), ...
+                            'sectionKey', keyName, 'sectionPopulationType', 'cell_items'); %#ok<AGROW>
+                    end
+                end
+            end
+
+            % ---- Matrix keys: lutColors, Colormap, SliceSize ----
+            matrixKeyNames = ["lutColors", "Colormap", "SliceSize"];
+            for keyIdx = 1:numel(matrixKeyNames)
+                keyName = char(matrixKeyNames(keyIdx));
+                if ~isKey(meta, keyName); continue; end
+                value = meta{keyName};
+                if isempty(value) || ~isnumeric(value); continue; end
+                if size(value, 1) == 1
+                    list{end+1} = struct('text', sprintf('%s: %s', keyName, num2str(value)), ...
+                        'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                else
+                    list{end+1} = struct('text', keyName, 'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                    for rowIdx = 1:size(value, 1)
+                        list{end+1} = struct('text', num2str(value(rowIdx, :)), ...
+                            'sectionKey', keyName, 'sectionPopulationType', 'matrix_rows'); %#ok<AGROW>
+                    end
+                end
+            end
+
+            % ---- customMeta ----
+            if isKey(meta, 'customMeta')
+                customMetaValue = meta{'customMeta'};
+                if isstruct(customMetaValue) && ~isempty(fieldnames(customMetaValue))
+                    list{end+1} = struct('text', 'customMeta', 'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                    customTexts = flattenCustomMetaTexts(customMetaValue);
+                    for textIdx = 1:numel(customTexts)
+                        list{end+1} = struct('text', customTexts{textIdx}, ...
+                            'sectionKey', 'customMeta', 'sectionPopulationType', 'customMeta'); %#ok<AGROW>
+                    end
+                end
+            end
+
+            % ---- Extras ----
+            processedKeyNames = ["Filename", "Height", "Width", "Depth", "Time", ...
+                "Colors", "ColorType", "imgClass", "MaxInt", "ImageDescription", ...
+                "pixSize", "viewPort", "SliceName", "ActionLog", ...
+                "lutColors", "Colormap", "SliceSize", "customMeta"];
+            allKeys = keys(meta);
+            extraKeyNames = allKeys(~ismember(allKeys, processedKeyNames));
+            if ~isempty(extraKeyNames)
+                list{end+1} = struct('text', 'Extras', 'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                for keyIdx = 1:numel(extraKeyNames)
+                    try
+                        value = meta{extraKeyNames(keyIdx)};
+                        extraTexts = flattenExtraValueTexts(char(extraKeyNames(keyIdx)), value);
+                        for textIdx = 1:numel(extraTexts)
+                            list{end+1} = struct('text', extraTexts{textIdx}, ...
+                                'sectionKey', '__extras__', 'sectionPopulationType', 'extras'); %#ok<AGROW>
+                        end
+                    catch
+                    end
+                end
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function navigateToMetaEntry(obj, entry)
+            % NAVIGATETOMETAENTRY - Expand the relevant section and select the
+            % tree node that corresponds to a metadata search list entry.
+            %
+            % If the entry lives inside a deferred (lazy-loaded) section that
+            % still holds a ``'Loading...'`` placeholder, the section is
+            % populated first.  After expanding, the flat node list is
+            % refreshed and the matching node is selected and scrolled to.
+
+            tree = obj.view.handles.metaTree;
+
+            if ~isempty(entry.sectionKey)
+                sectionNode = obj.findSectionNode(entry.sectionKey, entry.sectionPopulationType);
+                if ~isempty(sectionNode)
+                    if ~isempty(sectionNode.Children) && ...
+                            isfield(sectionNode.Children(1).NodeData, 'key') && ...
+                            strcmp(sectionNode.Children(1).NodeData.key, '__loading__')
+                        obj.treeNodeExpanded_Callback([], struct('Node', sectionNode));
+                    end
+                    expand(sectionNode);
+                    obj.allTreeNodes = obj.flattenTreeNodes(tree);
+                end
+            end
+
+            for nodeIdx = 1:numel(obj.allTreeNodes)
+                if strcmpi(obj.allTreeNodes{nodeIdx}.Text, entry.text)
+                    tree.SelectedNodes = obj.allTreeNodes{nodeIdx};
+                    scroll(tree, obj.allTreeNodes{nodeIdx});
+                    obj.treeNodeSelected_Callback();
+                    return;
+                end
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function idx = getSelectedNodeListIndex(obj)
+            % GETSELECTEDNODELISTINDEX - Return the metaSearchList index that
+            % corresponds to the currently selected tree node, or 0 if none.
+            idx = 0;
+            nodes = obj.view.handles.metaTree.SelectedNodes;
+            if isempty(nodes); return; end
+            selectedText = nodes(1).Text;
+            for listIdx = 1:numel(obj.metaSearchList)
+                if strcmpi(obj.metaSearchList{listIdx}.text, selectedText)
+                    idx = listIdx;
+                    return;
+                end
+            end
+        end
+
+        % ---------------------------------------------------------------
+        function sectionNode = findSectionNode(obj, sectionKey, sectionPopulationType)
+            % FINDSECTIONNODE - Locate a deferred section node by its
+            % NodeData key and populationType in the current allTreeNodes list.
+            sectionNode = [];
+            for nodeIdx = 1:numel(obj.allTreeNodes)
+                nd = obj.allTreeNodes{nodeIdx}.NodeData;
+                if ~isstruct(nd); continue; end
+                if strcmp(string(nd.key), sectionKey) && strcmp(nd.populationType, sectionPopulationType)
+                    sectionNode = obj.allTreeNodes{nodeIdx};
+                    return;
+                end
+            end
+        end
     end
+end
+
+% =====================================================================
+%  Local function — recursively flatten a customMeta struct to a list
+%  of node text strings.  Mirrors addStructToTree in
+%  treeNodeExpanded_Callback.m so that texts match exactly.
+% =====================================================================
+function texts = flattenCustomMetaTexts(s)
+texts = {};
+fieldNamesList = fieldnames(s);
+for fieldIdx = 1:numel(fieldNamesList)
+    fieldName = fieldNamesList{fieldIdx};
+    displayName = strrep(strrep(strrep(fieldName, '_dash_', '-'), '_colon_', ':'), '_dot_', '.');
+    fieldValue = s.(fieldName);
+    if strcmp(fieldName, 'Attributes')
+        if isstruct(fieldValue)
+            subTexts = flattenCustomMetaTexts(fieldValue);
+            texts = [texts, subTexts]; %#ok<AGROW>
+        end
+    elseif strcmp(fieldName, 'AttributesText')
+        % no tree node — skip
+    elseif strcmp(fieldName, 'Text')
+        if ~isempty(fieldValue)
+            texts{end+1} = char(string(fieldValue)); %#ok<AGROW>
+        end
+    elseif isstruct(fieldValue)
+        texts{end+1} = displayName; %#ok<AGROW>
+        subTexts = flattenCustomMetaTexts(fieldValue);
+        texts = [texts, subTexts]; %#ok<AGROW>
+    elseif iscell(fieldValue)
+        for cellIdx = 1:numel(fieldValue)
+            texts{end+1} = sprintf('%s (%d)', displayName, cellIdx); %#ok<AGROW>
+            if isstruct(fieldValue{cellIdx})
+                subTexts = flattenCustomMetaTexts(fieldValue{cellIdx});
+                texts = [texts, subTexts]; %#ok<AGROW>
+            end
+        end
+    else
+        texts{end+1} = sprintf('%s: %s', displayName, char(string(fieldValue))); %#ok<AGROW>
+    end
+end
+end
+
+% =====================================================================
+%  Local function — flatten an Extras key value to a list of node text
+%  strings.  Mirrors addExtraNode in treeNodeExpanded_Callback.m so
+%  that texts match exactly.
+% =====================================================================
+function texts = flattenExtraValueTexts(keyName, value)
+texts = {};
+if isnumeric(value) && numel(value) <= 10
+    texts{end+1} = sprintf('%s: %s', keyName, num2str(value));
+elseif ischar(value) || isstring(value)
+    texts{end+1} = sprintf('%s: %s', keyName, char(value));
+elseif iscell(value)
+    if numel(value) == 1
+        texts{end+1} = sprintf('%s: %s', keyName, char(string(value{1})));
+    else
+        texts{end+1} = keyName;
+        for itemIdx = 1:numel(value)
+            texts{end+1} = char(string(value{itemIdx})); %#ok<AGROW>
+        end
+    end
+elseif isstruct(value)
+    texts{end+1} = keyName;
+    fieldNamesList = fieldnames(value);
+    for fieldIdx = 1:numel(fieldNamesList)
+        fieldValue = value.(fieldNamesList{fieldIdx});
+        if isnumeric(fieldValue)
+            texts{end+1} = sprintf('%s: %s', fieldNamesList{fieldIdx}, num2str(fieldValue)); %#ok<AGROW>
+        elseif ~isstruct(fieldValue)
+            texts{end+1} = sprintf('%s: %s', fieldNamesList{fieldIdx}, char(string(fieldValue))); %#ok<AGROW>
+        else
+            texts{end+1} = fieldNamesList{fieldIdx}; %#ok<AGROW>
+        end
+    end
+elseif isnumeric(value)
+    texts{end+1} = sprintf('%s: [%s]', keyName, num2str(size(value)));
+else
+    texts{end+1} = sprintf('%s: %s', keyName, char(string(value)));
+end
 end

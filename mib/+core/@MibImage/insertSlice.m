@@ -120,11 +120,11 @@ if strcmp(dim, 'depth')
     % ---- update sliceName ----
     if ~isempty(obj.sliceName)
         sliceNames = obj.sliceName;
-        if numel(sliceNames) == 1; sliceNames = repmat(sliceNames, [D1_z 1]); end
+        if isscalar(sliceNames); sliceNames = repmat(sliceNames, [D1_z 1]); end
 
         sliceNamesNew = options.sliceNames;
         if isempty(sliceNamesNew); sliceNamesNew = {''}; end
-        if numel(sliceNamesNew) == 1; sliceNamesNew = repmat(sliceNamesNew, [D2_z 1]); end
+        if isscalar(sliceNamesNew); sliceNamesNew = repmat(sliceNamesNew, [D2_z 1]); end
 
         if insertPosition == D1_z+1
             sliceNames = [sliceNames; sliceNamesNew];

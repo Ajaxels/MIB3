@@ -22,7 +22,8 @@ function deleteSlice(obj, orientation, sliceNumber, BatchOptIn)
 %
 %     - ``.Dimension`` — [cell] deletion dimension (default: ``{'depth'}``).
 %       Allowed values: ``{'height', 'width', 'depth', 'time'}``
-%     - ``.DeletePosition`` — [string] slice indices, e.g. ``'5'`` or ``'1,5:10'``
+%     - ``.DeletePosition`` — [string] slice indices, e.g. ``'5'`` or ``'1,5:10'``;
+%       ``'0'`` deletes the last slice/frame
 %     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
 %     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
 %
@@ -88,10 +89,10 @@ else
 end
 BatchOpt.showWaitbar = true;
 
-BatchOpt.mibBatchSectionName = 'Menu -> Dataset';
+BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
 BatchOpt.mibBatchActionName  = 'Slice -> Delete slice/frame';
 BatchOpt.mibBatchTooltip.Dimension      = 'Dimension from where to delete slices';
-BatchOpt.mibBatchTooltip.DeletePosition = 'Indices of slices to delete, for example: "1,79:85"';
+BatchOpt.mibBatchTooltip.DeletePosition = 'Indices of slices to delete, for example: "1,79:85"; 0 = last slice/frame';
 BatchOpt.mibBatchTooltip.showWaitbar    = 'Show or not the progress bar during execution';
 
 if nargin == 4  % batch mode
@@ -122,17 +123,16 @@ maxSlice = obj.I{BatchOpt.id}.dim_yxzct(orientation);
 
 %% interactive dialog
 if nargin < 4
-    dlgOpt.PromptLines  = [1, 2];
-    dlgOpt.WindowHeight = 200;
+    dlgOpt.WindowHeight = 180;
     answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
-        sprintf('Slice/frame range: 1:%d', maxSlice), ...
-        {'Dimension:', 'Slice index(es) to delete (e.g. 5, 7, 10:20, 50:3:60):'}, ...
+        sprintf('Slice/frame range: 1:%d; 0 = last', maxSlice), ...
+        {'Dimension:', 'Slice index(es) to delete (e.g. 5, 7, 10:20, 0 = last):'}, ...
         {[BatchOpt.Dimension{2}, find(ismember(BatchOpt.Dimension{2}, BatchOpt.Dimension{1}), 1)], ...
          BatchOpt.DeletePosition}, ...
         'Delete slice/frame', dlgOpt);
     if isempty(answer); return; end
 
-    if isnan(str2double(answer{2}))
+    if isnan(str2num(answer{2})) %#ok<ST2NM>
         utils.dlgs.showErrorDialog(obj.mibGUI, 'Wrong number format!', 'Error');
         return;
     end
@@ -143,6 +143,7 @@ end
 
 %%
 deletePositions = str2num(BatchOpt.DeletePosition); %#ok<ST2NM>
+deletePositions(deletePositions == 0) = maxSlice;   % 0 = last slice/frame
 
 dsOpts.showWaitbar  = BatchOpt.showWaitbar;
 dsOpts.ParentFigure = obj.mibGUI;

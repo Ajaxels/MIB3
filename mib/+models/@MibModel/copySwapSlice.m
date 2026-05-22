@@ -10,6 +10,8 @@ function copySwapSlice(obj, sourceSlice, targetSlice, mode, BatchOptIn)
 % Batch-compatible dispatcher.  Shows an interactive dialog when called
 % without ``BatchOptIn``.  Delegates to ``MibDataset.copySlice``,
 % ``MibDataset.insertSlice``, or ``MibDataset.swapSlices``.
+% In insert mode the image, labels, mask, and selection layers of the
+% source slice are all copied into the newly inserted position.
 %
 % Input Arguments:
 %   - **sourceSlice** — *(optional)* index of the source slice; ``[]`` uses
@@ -26,8 +28,8 @@ function copySwapSlice(obj, sourceSlice, targetSlice, mode, BatchOptIn)
 %     - ``.SourceSlice`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       index of the source slice
 %     - ``.TargetSlice`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
-%       index of the destination slice; for insert mode ``maxSlice+1``
-%       appends to the end
+%       index of the destination slice; for insert mode ``1`` = insert as
+%       first slice, ``0`` = append to the end
 %     - ``.showWaitbar`` — [logical] show the progress dialog (default: ``true``)
 %     - ``.id`` — *(optional)* dataset index 1–9, default = ``obj.getActiveId()``
 %
@@ -83,11 +85,11 @@ if ~isempty(sourceSlice); sourceVal = sourceSlice; end
 if ~isempty(targetSlice); targetVal = targetSlice; end
 
 BatchOpt.SourceSlice = {sourceVal, [1, maxSlice], 'on'};
-BatchOpt.TargetSlice = {targetVal, [1, maxSlice+1], 'on'};
+BatchOpt.TargetSlice = {targetVal, [0, maxSlice], 'on'};
 BatchOpt.showWaitbar = true;
 BatchOpt.id = activeId;
 
-BatchOpt.mibBatchSectionName = 'Menu -> Dataset';
+BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
 if strcmp(BatchOpt.Mode{1}, 'swap')
     BatchOpt.mibBatchActionName = 'Slice -> Swap slices';
 else
@@ -95,7 +97,7 @@ else
 end
 BatchOpt.mibBatchTooltip.Mode        = '"swap": swap two slices; "replace": replace target slice with source slice; "insert": insert source slice before target slice';
 BatchOpt.mibBatchTooltip.SourceSlice = 'Index of the source slice';
-BatchOpt.mibBatchTooltip.TargetSlice = 'Index of the destination slice; for insert mode maxSlice+1 = append to the end';
+BatchOpt.mibBatchTooltip.TargetSlice = 'Index of the destination slice; for insert mode 1 = insert as first slice, 0 = append to the end';
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 
 if nargin == 5  % batch mode
@@ -121,7 +123,7 @@ maxSlice = obj.I{BatchOpt.id}.dim_yxzct(obj.I{BatchOpt.id}.orientation);
 
 % update spinner limits to reflect the actual dataset
 BatchOpt.SourceSlice{2} = [1, maxSlice];
-BatchOpt.TargetSlice{2} = [1, maxSlice+1];
+BatchOpt.TargetSlice{2} = [0, maxSlice];
 
 if nargin < 5
     if strcmp(BatchOpt.Mode{1}, 'swap')
@@ -129,10 +131,10 @@ if nargin < 5
         textString2 = 'Index of the destination slice:';
     else
         textString1 = 'Index of the source slice:';
-        textString2 = sprintf('Index of the destination slice (%d = append to end):', maxSlice+1);
+        textString2 = sprintf('Index of the destination slice\n(1 = first slice, 0 = append to end):', maxSlice);
     end
 
-    dlgOpt.WindowHeight = 220;
+    dlgOpt.WindowHeight = 230;
     answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
         sprintf('Slice range: 1 to %d', maxSlice), ...
         {'Replace or insert slice at the destination:', textString1, textString2}, ...
@@ -149,6 +151,17 @@ end
 
 sourceSlice = BatchOpt.SourceSlice{1};
 targetSlice = BatchOpt.TargetSlice{1};
+
+% Translate 0 to the logical "end" for each mode:
+%   insert  → append after last slice (NaN triggers the clamp in insertSlice)
+%   replace / swap → last existing slice
+if targetSlice == 0
+    if strcmp(BatchOpt.Mode{1}, 'insert')
+        targetSlice = NaN;
+    else
+        targetSlice = maxSlice;
+    end
+end
 
 %%
 switch BatchOpt.Mode{1}
@@ -178,6 +191,35 @@ switch BatchOpt.Mode{1}
         insertOpts.showWaitbar  = BatchOpt.showWaitbar;
         insertOpts.ParentFigure = obj.mibGUI;
         obj.I{BatchOpt.id}.insertSlice(img, targetSlice, insertMeta, insertOpts);
+
+        % After insertion the dataset is one slice larger.  Compute:
+        %   insertedIdx  — position of the newly inserted empty-label slice
+        %   sourceNewIdx — position of the source slice (may have shifted +1)
+        if isnan(targetSlice)
+            insertedIdx  = maxSlice + 1;   % was appended to the end
+            sourceNewIdx = sourceSlice;    % source position unchanged
+        else
+            insertedIdx  = targetSlice;
+            if sourceSlice >= targetSlice
+                sourceNewIdx = sourceSlice + 1;  % source shifted right
+            else
+                sourceNewIdx = sourceSlice;
+            end
+        end
+
+        % Copy label layers from the (shifted) source into the new slice.
+        if obj.I{BatchOpt.id}.modelExist
+            labelData = cell2mat(obj.getData2D('labels', sourceNewIdx, [], [], getDataOpt));
+            obj.setData2D(labelData, 'labels', insertedIdx, [], [], getDataOpt);
+        end
+        if obj.I{BatchOpt.id}.maskExist
+            maskData = cell2mat(obj.getData2D('mask', sourceNewIdx, [], [], getDataOpt));
+            obj.setData2D(maskData, 'mask', insertedIdx, [], [], getDataOpt);
+        end
+        if obj.I{BatchOpt.id}.selection.exists
+            selData = cell2mat(obj.getData2D('selection', sourceNewIdx, [], [], getDataOpt));
+            obj.setData2D(selData, 'selection', insertedIdx, [], [], getDataOpt);
+        end
 
         datasetId = BatchOpt.id;
         BatchOpt = rmfield(BatchOpt, 'id');

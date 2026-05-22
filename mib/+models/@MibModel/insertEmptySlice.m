@@ -18,8 +18,8 @@ function insertEmptySlice(obj, BatchOptIn)
 %     - ``.Dimension`` — [cell] insertion dimension (default: ``{'depth'}``).
 %       Allowed values: ``{'depth', 'time'}``
 %     - ``.InsertPosition`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
-%       slice index before which to insert; ``0`` inserts at the very beginning,
-%       ``maxSlice+1`` appends to the end (default: current slice)
+%       insert before this 1-based slice index; ``1`` = insert as first slice;
+%       ``0`` = append to the end (default: current slice)
 %     - ``.NumberOfSlices`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
 %       number of slices to insert (default: ``{1, [1, maxSlice], 'on'}``)
 %     - ``.BackgroundColor`` — [numeric cell] ``{value, [minLim maxLim], 'on'}``
@@ -57,7 +57,7 @@ maxIntValue = double(obj.I{activeId}.image.maxInt);
 BatchOpt = struct();
 BatchOpt.Dimension    = {'depth'};
 BatchOpt.Dimension{2} = {'depth', 'time'};
-BatchOpt.InsertPosition  = {obj.I{activeId}.getCurrentSliceNumber(), [0, obj.I{activeId}.dim_yxzct(3)+1], 'on'};
+BatchOpt.InsertPosition  = {obj.I{activeId}.getCurrentSliceNumber(), [0, obj.I{activeId}.dim_yxzct(3)], 'on'};
 BatchOpt.NumberOfSlices  = {1, [1, 1000], 'on'};
 BatchOpt.BackgroundColor = {maxIntValue, [0, maxIntValue], 'on'};
 BatchOpt.showWaitbar     = true;
@@ -66,7 +66,7 @@ BatchOpt.id              = activeId;
 BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
 BatchOpt.mibBatchActionName  = 'Slice -> Insert an empty slice';
 BatchOpt.mibBatchTooltip.Dimension       = 'Dimension to which insert an empty slice';
-BatchOpt.mibBatchTooltip.InsertPosition  = 'Insert the slice before the specified position; 0 = insert at the very beginning; maxSlice+1 = append to the end';
+BatchOpt.mibBatchTooltip.InsertPosition  = 'Insert before this 1-based slice index; 1 = insert as first slice; 0 = append to the end';
 BatchOpt.mibBatchTooltip.NumberOfSlices  = 'Number of empty slices to insert';
 BatchOpt.mibBatchTooltip.BackgroundColor = 'Intensity of the background fill value';
 BatchOpt.mibBatchTooltip.showWaitbar     = 'Show or not the progress bar during execution';
@@ -97,7 +97,7 @@ maxIntValue = double(obj.I{BatchOpt.id}.image.maxInt);
 maxSlice    = obj.I{BatchOpt.id}.dim_yxzct(dimOrient);
 
 % update spinner limits to reflect the actual dimension and dataset
-BatchOpt.InsertPosition{2} = [0, maxSlice+1];
+BatchOpt.InsertPosition{2} = [0, maxSlice];
 BatchOpt.NumberOfSlices{2} = [1, maxSlice];
 BatchOpt.BackgroundColor{2} = [0, maxIntValue];
 
@@ -105,9 +105,9 @@ BatchOpt.BackgroundColor{2} = [0, maxIntValue];
 if nargin < 2
     dlgOpt.WindowHeight = 270;
     answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
-        sprintf('Slice number range: 0 (beginning) to %d (end)', maxSlice+1), ...
+        sprintf('Slice position range: 1 (first) to %d; 0 = append to end', maxSlice), ...
         {'Dimension:', ...
-         sprintf('Destination slice index\n(0 = beginning, %d = append to end):', maxSlice+1), ...
+         sprintf('Destination slice index\n(1 = first, %d = last, 0 = append to end):', maxSlice), ...
          'Number of slices to insert:', ...
          sprintf('Background intensity (0 – %d):', maxIntValue)}, ...
         {[BatchOpt.Dimension{2}, find(ismember(BatchOpt.Dimension{2}, BatchOpt.Dimension{1}), 1)], ...
