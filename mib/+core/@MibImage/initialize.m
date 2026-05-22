@@ -130,6 +130,13 @@ if ~isempty(obj.data)
         obj.colorType = 'multichannel';
     end
 
+    % capture custom metadata from loaders (e.g. BioFormats XML struct)
+    if isKey(meta, 'meta') && isstruct(meta{'meta'})
+        obj.customMeta = meta{'meta'};
+    else
+        obj.customMeta = struct();
+    end
+
     % update obj.pyramid
     obj.pyramid = struct(); % structure to keep pyramid organization of data, convert axes to MIB order
     obj.pyramid.levelNames = {};

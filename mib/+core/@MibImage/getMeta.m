@@ -46,4 +46,9 @@ meta = core.MibImage.initializeImgInfo( ...
     'pixSize',          obj.pixSize, ...
     'viewPort',         obj.viewPort, ...
     'lutColors',        obj.lutColors);
+
+% include custom metadata from loaders (e.g. BioFormats XML struct)
+if ~isempty(fieldnames(obj.customMeta))
+    meta{'customMeta'} = obj.customMeta;
+end
 end

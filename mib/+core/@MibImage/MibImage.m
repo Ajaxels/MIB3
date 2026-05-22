@@ -87,12 +87,19 @@ classdef MibImage < matlab.mixin.Copyable
         % type of the dataset: image (MibImage), labels (MibLabels), labels63 (MibLabels63), virtual (MibVirtualImage)
         width
         % image width, px
-        viewPort    
+        viewPort
         % a structure with viewing parameters:
         %
         % - ``.min`` — a vector with minimal value for intensity stretching for each color channel
         % - ``.max`` — a vector with maximal value for intensity stretching for each color channel
         % - ``.gamma`` — a vector with gamma factor for contrast adjustment for each color channel
+        customMeta = struct()
+        % a struct holding non-standard metadata supplied by loaders
+        % (e.g. parsed XML from BioFormats).  Normally empty; populated
+        % from the ``'meta'`` key in the img_info dictionary during
+        % ``initialize()``.  Returned by ``getMeta()`` under the
+        % ``'customMeta'`` key and cleared by DatasetInfo's Simplify
+        % button.
     end
 
     methods

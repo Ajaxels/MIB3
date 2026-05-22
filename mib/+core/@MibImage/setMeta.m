@@ -62,6 +62,13 @@ else
     obj.actionLog = parsedLog;
 end
 
+% custom metadata from loaders
+if isKey(meta, 'customMeta') && isstruct(meta{'customMeta'})
+    obj.customMeta = meta{'customMeta'};
+else
+    obj.customMeta = struct();
+end
+
 % update dim_yxzct
 obj.dim_yxzct = [obj.height obj.width obj.depth obj.colors obj.time];
 end

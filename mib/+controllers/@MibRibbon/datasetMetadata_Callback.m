@@ -25,6 +25,7 @@ end
 switch mode
     case 'Action log'              % obj.handles.ribbonDataset.log
     case 'Metadata'                 % obj.handles.ribbonDataset.info
+        obj.mibController.startController('controllers.DatasetInfo');
 end
 
 

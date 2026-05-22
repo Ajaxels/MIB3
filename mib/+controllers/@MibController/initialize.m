@@ -75,8 +75,9 @@ obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateUserScore', @(src, evnt)
 %obj.listeners{end+1} = addlistener(obj.model, 'newFileCreated', @obj.listner2_Callback);
 
 % Make the GUI visible
-obj.view.gui.Visible = true;
 drawnow;
+obj.view.gui.Visible = true;
+
 
 if showSplashScreen; hSplashScreen.focus; end  % focus on the splash screen
 %pause(2);
