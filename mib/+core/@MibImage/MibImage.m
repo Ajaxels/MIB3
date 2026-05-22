@@ -105,6 +105,13 @@ classdef MibImage < matlab.mixin.Copyable
     methods
         % declaration of methods in external files
         output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
+        copyColorChannel(obj, channel1, channel2, options)  % Copy channel1 intensity to channel2 position (appends if channel2 > obj.colors)
+        deleteColorChannel(obj, channel1, options)           % Delete one or more color channels from obj.data{1}
+        insertEmptyColorChannel(obj, channel1, options)     % Insert a zero-filled color channel at the given 1-based position
+        invertColorChannel(obj, channel1, options)           % Invert pixel values in channel1 (replaces v with maxInt-v)
+        rotateColorChannel(obj, channel1, angle, options)   % Rotate channel1 by 90, 180, or -90 degrees (square images only)
+        shiftColorChannel(obj, channel1, dx, dy, fillValue, options)  % Shift channel1 by dx/dy pixels; fill vacated border with fillValue
+        swapColorChannels(obj, channel1, channel2, options) % Swap two color channels in obj.data{1}
         clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
         status = convertImage(obj, format, options)     % Convert pixel data to a new color type or bit depth
         crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)

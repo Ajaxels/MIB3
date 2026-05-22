@@ -40,22 +40,38 @@ selectedRows = obj.view.handles.panels.selection.handles.lutTable.UserData(:,1);
 
 switch menuEntry.Tag
     case 'lutTableContextInsert' % insert an empty color channel
-
+        obj.mibModel.colorChannelActions('Insert empty channel', selectedRows);
     case 'lutTableContextCopy' % copy the selected color channel to a new one
-
+        obj.mibModel.colorChannelActions('Copy channel', selectedRows);
     case 'lutTableContextInvert' % invert the selected color channel
-
+        obj.mibModel.colorChannelActions('Invert channel', selectedRows);
     case 'lutTableContextRotate' % rotate the selected color channel
-
+        obj.mibModel.colorChannelActions('Rotate channel', selectedRows);
     case 'lutTableContextShift' % shift the selected color channel
-
+        obj.mibModel.colorChannelActions('Shift channel', selectedRows);
     case 'lutTableContextSwap' % swap two color channels
-
+        obj.mibModel.colorChannelActions('Swap channels', selectedRows);
     case 'lutTableContextDelete' % delete the selected color channel
-
+        obj.mibModel.colorChannelActions('Delete channel', selectedRows);
     case 'lutTableContextSetLUT' % select new color for the selected color channel to show the the LUT mode
-
-
+        if obj.handles.lutColors.Value == 0
+            uialert(obj.view.gui, ...
+                sprintf(['The colors for the color channels may be selected only in the LUT mode!\n\n' ...
+                         'To enable the LUT mode please select the LUT checkbox\n' ...
+                         '(Selection and View Settings Panel->LUT checkbox)']), ...
+                'Requires LUT color mode!', 'Icon', 'warning');
+            return;
+        end
+        channelIndex = selectedRows(1);
+        lutColors = obj.mibModel.I{obj.mibModel.id}.image.lutColors;
+        newColor = uisetcolor(lutColors(channelIndex, :), sprintf('Set color for channel %d', channelIndex));
+        if isscalar(newColor); return; end
+        lutColors(channelIndex, :) = newColor;
+        obj.mibModel.I{obj.mibModel.id}.image.lutColors = lutColors;
+        obj.lutTable_update_fromModel();
+        obj.handles.lutTable.Selection = [];
+        drawnow;
+        notify(obj.mibModel, 'ShowImage');
 end
 
 

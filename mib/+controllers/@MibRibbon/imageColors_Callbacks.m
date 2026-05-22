@@ -24,12 +24,19 @@ end
 
 switch mode
     case 'Insert empty channel...'  % obj.handles.ribbonImage.colorsInsert
+        obj.mibModel.colorChannelActions('Insert empty channel');
     case 'Copy channel...'          % obj.handles.ribbonImage.colorsCopy
+        obj.mibModel.colorChannelActions('Copy channel');
     case 'Invert channel...'        % obj.handles.ribbonImage.colorsInvert
+        obj.mibModel.colorChannelActions('Invert channel');
     case 'Rotate channel...'        % obj.handles.ribbonImage.colorsRotate
+        obj.mibModel.colorChannelActions('Rotate channel');
     case 'Shift channel...'         % obj.handles.ribbonImage.colorsShift
+        obj.mibModel.colorChannelActions('Shift channel');
     case 'Swap channel...'          % obj.handles.ribbonImage.colorsSwap
+        obj.mibModel.colorChannelActions('Swap channels');
     case 'Delete channel...'        % obj.handles.ribbonImage.colorsDelete
+        obj.mibModel.colorChannelActions('Delete channel');
 end
 
 

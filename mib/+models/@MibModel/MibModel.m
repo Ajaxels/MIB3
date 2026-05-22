@@ -151,6 +151,7 @@ classdef MibModel < handle
         importDatasetFromMib(obj, layerType, BatchOptIn)        % Import the mask or model layer from another MIB container.
         initialize(obj)        % initialize the MibModel class
         initializePreferences(obj)        % initialize and update MIB preferences from a file
+        colorChannelActions(obj, mode, channel1, BatchOptIn)  % handle various color channel operations (insert, delete, copy, invert, rotate, shift, swap)
         insertEmptySlice(obj, BatchOptIn)           % Insert one or more empty (background-filled) slices into the volume
         interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm
         loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack

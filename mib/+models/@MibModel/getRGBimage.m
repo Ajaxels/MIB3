@@ -112,7 +112,8 @@ end
 %% Load image data
 if isempty(sImgIn)
     % Load image from dataset
-    sImgIn  = cell2mat(dataset.getData2D('image', sliceToShowIdx, NaN, NaN, options));
+    sImgIn  = cell2mat(dataset.getData2D('image', sliceToShowIdx, NaN, [], options));
+    
     colortype = dataset.image.colorType;
     currViewPort = dataset.image.viewPort;
     showModelSwitch = obj.showModel;
