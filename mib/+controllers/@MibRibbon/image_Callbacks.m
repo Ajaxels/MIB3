@@ -33,6 +33,7 @@ switch mode
     case 'Normalize layers'                                     % obj.handles.ribbonImage.contrastNorm
         obj.mibController.startController('controllers.ContrastNormalization');
     case 'Image filters'                % obj.handles.ribbonImage.filters
+        obj.mibController.startController('controllers.ImageFilters');
     case 'Line intensity profile'       % obj.handles.ribbonImage.profileLine
     case 'Arbitrary intensity profile'  % obj.handles.ribbonImage.profileArbitrary
 
