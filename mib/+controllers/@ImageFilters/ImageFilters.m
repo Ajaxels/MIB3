@@ -593,40 +593,40 @@ classdef ImageFilters < handle
             viewPort = dataset.image.viewPort;
             maxInt = dataset.image.maxInt;
 
+            % Base RGB options: block mode, no resize so I has the same
+            % pixel dimensions as img (both at dataset block resolution).
+            % showImage/getRGBimage will apply magFactor scaling via sImgIn.
+            getRGBimageOptions.blockModeSwitch = 1;
+            getRGBimageOptions.resizeToMagnification = false;
+
             switch SourceLayer
                 case 'selection'
-                    getRGBimageOptions.blockModeSwitch = 1;
-                    getRGBimageOptions.resize = 'no';
                     currTransparency = obj.mibModel.preferences.Colors.SelectionTransparency;
                     obj.mibModel.preferences.Colors.SelectionTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
-                    I(img==1) = maxInt;
+                    obj.mibModel.preferences.Colors.SelectionTransparency = currTransparency;
+                    I(img==1) = 255;
                     showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
-                    obj.mibModel.preferences.Colors.SelectionTransparency = currTransparency;
                 case 'mask'
-                    getRGBimageOptions.blockModeSwitch = 1;
-                    getRGBimageOptions.resize = 'no';
                     currTransparency = obj.mibModel.preferences.Colors.MaskTransparency;
                     obj.mibModel.preferences.Colors.MaskTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
-                    I(img==1) = maxInt;
+                    obj.mibModel.preferences.Colors.MaskTransparency = currTransparency;
+                    I(img==1) = 255;
                     showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
-                    obj.mibModel.preferences.Colors.MaskTransparency = currTransparency;
                 case 'labels'
-                    getRGBimageOptions.blockModeSwitch = 1;
-                    getRGBimageOptions.resize = 'no';
                     currTransparency = obj.mibModel.preferences.Colors.ModelTransparency;
                     obj.mibModel.preferences.Colors.ModelTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
-                    I(img==1) = maxInt;
+                    obj.mibModel.preferences.Colors.ModelTransparency = currTransparency;
+                    I(img==1) = 255;
                     showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
-                    obj.mibModel.preferences.Colors.ModelTransparency = currTransparency;
                 otherwise
                     % convert to 8-bit for display if needed
                     if ~isa(img, 'uint8')
