@@ -134,19 +134,8 @@ end
 % imViewAxes.HandleVisibility = 'callback';
 
 %% Set axes limits and zoom
-if ~isempty(sImgIn) && resizeToMagnification == 1
-    % Custom image provided - fit to screen
-    imViewAxes.DataAspectRatioMode = 'manual';
-    imViewAxes.PlotBoxAspectRatioMode = 'manual';
-    imViewAxes.DataAspectRatio = [1 coef_z 1];
-
-    imPanPos = obj.cImageDoc{selectedSet}.handles.mainGridLayout.OuterPosition;
-    imPanPos(3) = imPanPos(3) - obj.cImageDoc{selectedSet}.handles.mainGridLayout.RowHeight{2};
-    imPanPos(4) = imPanPos(4) - obj.cImageDoc{selectedSet}.handles.mainGridLayout.ColumnWidth{1};
-    imViewAxes.PlotBoxAspectRatio = [imPanPos(3)/imPanPos(4) 1 1];
-    imViewAxes.YLim = [1 size(obj.mibModel.Ishown, 1)];
-    imViewAxes.XLim = [1 size(obj.mibModel.Ishown, 2)];
-else
+% Always use dataset-based axes limits (sImgIn preview uses same view as current dataset)
+if true
     % Standard dataset display
     magFactor = dataset.magFactor;
     [axesX, axesY] = dataset.getAxesLimits();

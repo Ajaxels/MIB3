@@ -581,7 +581,7 @@ classdef ImageFilters < handle
                 SourceLayer = 'selection';
                 if ismember(obj.BatchOpt.FilterName{1}, {'SlicClustering', 'WatershedClustering'})
                     img = uint8(double(img) ./ double(max(img(:))) * 255);
-                    showSettings.resizeToMagnification = false;
+                    showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = img;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     return;
@@ -601,7 +601,7 @@ classdef ImageFilters < handle
                     obj.mibModel.preferences.Colors.SelectionTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
                     I(img==1) = maxInt;
-                    showSettings.resizeToMagnification = false;
+                    showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     obj.mibModel.preferences.Colors.SelectionTransparency = currTransparency;
@@ -612,7 +612,7 @@ classdef ImageFilters < handle
                     obj.mibModel.preferences.Colors.MaskTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
                     I(img==1) = maxInt;
-                    showSettings.resizeToMagnification = false;
+                    showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     obj.mibModel.preferences.Colors.MaskTransparency = currTransparency;
@@ -623,7 +623,7 @@ classdef ImageFilters < handle
                     obj.mibModel.preferences.Colors.ModelTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
                     I(img==1) = maxInt;
-                    showSettings.resizeToMagnification = false;
+                    showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = I;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     obj.mibModel.preferences.Colors.ModelTransparency = currTransparency;
@@ -647,7 +647,7 @@ classdef ImageFilters < handle
                             img = uint8(img/256);
                         end
                     end
-                    showSettings.resizeToMagnification = false;
+                    showSettings.resizeToMagnification = true;
                     showSettings.sImgIn = img;
                     notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
             end
