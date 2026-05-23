@@ -1,4 +1,4 @@
-function listener_showImage(obj, src, evtData)
+function listener_showImage(obj, ~, evtData)
 % LISTENER_SHOWIMAGE - Call for render image in the Image View panel.
 %
 % Syntax:
@@ -22,13 +22,14 @@ function listener_showImage(obj, src, evtData)
 %   (none)
 %
 
-if ~isprop(evtData, 'Parameters')
-    settings = struct('resizeToMagnification', true, 'setOfDatasetsIndex', []);
+if ~isprop(evtData, 'Parameters') || ~isstruct(evtData.Parameters)
+    settings = struct('resizeToMagnification', true, 'setOfDatasetsIndex', [], 'sImgIn', []);
 else
     settings = evtData.Parameters;
     if ~isfield(settings, 'resizeToMagnification'); settings.resizeToMagnification = true; end
     if ~isfield(settings, 'setOfDatasetsIndex'); settings.setOfDatasetsIndex = []; end
+    if ~isfield(settings, 'sImgIn'); settings.sImgIn = []; end
 end
 
-obj.showImage(settings.resizeToMagnification, settings.setOfDatasetsIndex);
+obj.showImage(settings.resizeToMagnification, settings.setOfDatasetsIndex, settings.sImgIn);
 end

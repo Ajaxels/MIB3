@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 25.04.2023
-
 classdef ImageFilters < handle
 % IMAGEFILTERS - Controller for the Image Filters dialog.
 %
@@ -99,7 +83,7 @@ classdef ImageFilters < handle
 
             obj.mibModel = mibModel;
             obj.mibGUI = mibModel.mibGUI;
-
+            
             %% fill BatchOpt with defaults
             obj.BatchOpt.id = obj.mibModel.getActiveId();
 
@@ -111,7 +95,7 @@ classdef ImageFilters < handle
             obj.imageFiltersParams = obj.mibModel.sessionSettings.ImageFilters; % local copy
 
             % update certain parameters
-            obj.imageFiltersParams.Bilateral.degreeOfSmoothing = num2str(obj.mibModel.I{obj.BatchOpt.id}.image.meta('MaxInt')^2*.01);
+            obj.imageFiltersParams.Bilateral.degreeOfSmoothing = num2str(obj.mibModel.I{obj.BatchOpt.id}.image.maxInt^2*.01);
 
             if verLessThan('Matlab', '9.8')
                 obj.BasicFiltersList = {'Average', 'Disk', 'DistanceMap', 'ElasticDistortion', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std'};
@@ -210,8 +194,7 @@ classdef ImageFilters < handle
             obj.view = core.ChildView(obj, 'views.ImageFiltersGUI');
 
             % add thumbnail image
-            imshow(obj.mibModel.sessionSettings.ImageFilters.TestImg, ...
-                'Parent', obj.view.handles.ThumbnailView1);
+            imshow(obj.mibModel.sessionSettings.ImageFilters.TestImg, 'Parent', obj.view.handles.ThumbnailView1);
 
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 
@@ -570,6 +553,7 @@ classdef ImageFilters < handle
             % PREVIEWBUTTONPUSHED - Apply filter to current view and display as overlay.
             getDataOptions.blockModeSwitch = 1;
             id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
 
             switch obj.BatchOpt.SourceLayer{1}
                 case 'labels'
@@ -597,16 +581,17 @@ classdef ImageFilters < handle
                 SourceLayer = 'selection';
                 if ismember(obj.BatchOpt.FilterName{1}, {'SlicClustering', 'WatershedClustering'})
                     img = uint8(double(img) ./ double(max(img(:))) * 255);
-                    eventdata = core.ToggleEventData(img);
-                    notify(obj.mibModel, 'ShowImage', eventdata);
+                    showSettings.resizeToMagnification = false;
+                    showSettings.sImgIn = img;
+                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     return;
                 end
             else
                 SourceLayer = obj.BatchOpt.SourceLayer{1};
             end
 
-            viewPort = obj.mibModel.I{id}.image.viewPort;
-            maxInt = obj.mibModel.I{id}.image.meta('MaxInt');
+            viewPort = dataset.image.viewPort;
+            maxInt = dataset.image.maxInt;
 
             switch SourceLayer
                 case 'selection'
@@ -616,8 +601,9 @@ classdef ImageFilters < handle
                     obj.mibModel.preferences.Colors.SelectionTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
                     I(img==1) = maxInt;
-                    eventdata = core.ToggleEventData(I);
-                    notify(obj.mibModel, 'ShowImage', eventdata);
+                    showSettings.resizeToMagnification = false;
+                    showSettings.sImgIn = I;
+                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     obj.mibModel.preferences.Colors.SelectionTransparency = currTransparency;
                 case 'mask'
                     getRGBimageOptions.blockModeSwitch = 1;
@@ -626,8 +612,9 @@ classdef ImageFilters < handle
                     obj.mibModel.preferences.Colors.MaskTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
                     I(img==1) = maxInt;
-                    eventdata = core.ToggleEventData(I);
-                    notify(obj.mibModel, 'ShowImage', eventdata);
+                    showSettings.resizeToMagnification = false;
+                    showSettings.sImgIn = I;
+                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     obj.mibModel.preferences.Colors.MaskTransparency = currTransparency;
                 case 'labels'
                     getRGBimageOptions.blockModeSwitch = 1;
@@ -636,15 +623,16 @@ classdef ImageFilters < handle
                     obj.mibModel.preferences.Colors.ModelTransparency = 1;
                     I = obj.mibModel.getRGBimage(getRGBimageOptions);
                     I(img==1) = maxInt;
-                    eventdata = core.ToggleEventData(I);
-                    notify(obj.mibModel, 'ShowImage', eventdata);
+                    showSettings.resizeToMagnification = false;
+                    showSettings.sImgIn = I;
+                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
                     obj.mibModel.preferences.Colors.ModelTransparency = currTransparency;
                 otherwise
                     % convert to 8-bit for display if needed
                     if ~isa(img, 'uint8')
                         if ~obj.mibModel.onFlyImageStretch
                             if size(img, 3) == 1
-                                colCh = obj.mibModel.I{id}.selectedColorChannel;
+                                colCh = dataset.selectedColorChannel;
                                 if viewPort.min(colCh) ~= 0 || viewPort.max(colCh) ~= maxInt || viewPort.gamma(colCh) ~= 1
                                     img = imadjust(img, [viewPort.min(colCh)/maxInt viewPort.max(colCh)/maxInt], [0 1], viewPort.gamma(colCh));
                                 end
@@ -659,8 +647,9 @@ classdef ImageFilters < handle
                             img = uint8(img/256);
                         end
                     end
-                    eventdata = core.ToggleEventData(img);
-                    notify(obj.mibModel, 'ShowImage', eventdata);
+                    showSettings.resizeToMagnification = false;
+                    showSettings.sImgIn = img;
+                    notify(obj.mibModel, 'ShowImage', core.ToggleEventData(showSettings));
             end
         end
 
