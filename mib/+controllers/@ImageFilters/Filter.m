@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 25.04.2023
-
 function img = Filter(obj, img, batchModeSwitch)
 % FILTER - Apply the currently selected image filter to the dataset or a supplied image.
 %
@@ -73,7 +57,7 @@ if isempty(img)
         return;
     end
 
-    getDataOptions.roiId = [];
+    getDataOptions.roiId = -1;
     getDataOptions.id = obj.BatchOpt.id;
 
     if strcmp(BatchOptOut.FilterGroup{1}, 'Image Binarization')
@@ -83,10 +67,10 @@ if isempty(img)
     end
 
     if strcmp(BatchOptOut.FilterName{1}, 'ElasticDistortion') && BatchOptOut.DistortAllLAyers
-        backupLayer = 'mibImage';
+        backupLayer = 'image';
     end
     if strcmp(BatchOptOut.FilterName{1}, 'DistanceMap')
-        backupLayer = 'mibImage';
+        backupLayer = 'image';
     end
 
     switch obj.BatchOpt.DatasetType{1}
@@ -121,12 +105,12 @@ if ~isempty(img)
 
     switch BatchOptOut.ActionToResult{1}
         case 'Fitler image'
-            img = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimit);
+            img = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
         case 'Filter and add'
-            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimit);
+            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
             img = img + imgOut;
         case 'Filter and subtract'
-            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimit);
+            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
             img = img - imgOut;
     end
     if size(img, 4)+size(img, 3) > 2; toc; end
@@ -135,7 +119,7 @@ end
 
 % resolve color channel
 switch BatchOptOut.ColorChannel{1}
-    case 'All';      colChannel = 0;
+    case 'All';      colChannel = NaN;  % MIB3: NaN = all channels
     case 'Displayed'; colChannel = [];
     otherwise;       colChannel = str2double(BatchOptOut.ColorChannel{1});
 end
@@ -171,29 +155,30 @@ for sourceLayerId = 1:numel(sourceLayersList)
 
         for roi = 1:numel(img)
             % adjust image for SLIC/Watershed clustering (needs uint8)
+            % img{roi} is in MIB3 format [H,W,Z,C] for 3D or [H,W,C] for 2D
             if ismember(BatchOptOut.FilterName{1}, {'SlicClustering', 'WatershedClustering'})
                 id = obj.mibModel.getActiveId();
                 viewPort = obj.mibModel.I{id}.image.viewPort;
-                if colChannel == 0
+                if isnan(colChannel)
                     col_channel = 1;
                 else
                     col_channel = colChannel;
                 end
                 if isa(img{roi}, 'uint16')
                     if obj.mibModel.onFlyImageStretch
-                        for sliceId = 1:size(img{roi}, 4)
-                            img{roi}(:,:,1,sliceId) = imadjust(img{roi}(:,:,1,sliceId), stretchlim(img{roi}(:,:,1,sliceId),[0 1]),[]);
+                        for sliceId = 1:size(img{roi}, 3)
+                            img{roi}(:,:,sliceId,1) = imadjust(img{roi}(:,:,sliceId,1), stretchlim(img{roi}(:,:,sliceId,1),[0 1]),[]);
                         end
                     else
-                        for sliceId = 1:size(img{roi}, 4)
-                            img{roi}(:,:,1,sliceId) = imadjust(img{roi}(:,:,1,sliceId), [viewPort.min(col_channel)/65535 viewPort.max(col_channel)/65535],[0 1],viewPort.gamma(col_channel));
+                        for sliceId = 1:size(img{roi}, 3)
+                            img{roi}(:,:,sliceId,1) = imadjust(img{roi}(:,:,sliceId,1), [viewPort.min(col_channel)/65535 viewPort.max(col_channel)/65535],[0 1],viewPort.gamma(col_channel));
                         end
                     end
                     img{roi} = uint8(img{roi}/255);
                 else
                     if viewPort.min(col_channel) > 1 || viewPort.max(col_channel) < 255
-                        for sliceId = 1:size(img{roi}, 4)
-                            img{roi}(:,:,1,sliceId) = imadjust(img{roi}(:,:,1,sliceId), [viewPort.min(col_channel)/255 viewPort.max(col_channel)/255],[0 1],viewPort.gamma(col_channel));
+                        for sliceId = 1:size(img{roi}, 3)
+                            img{roi}(:,:,sliceId,1) = imadjust(img{roi}(:,:,sliceId,1), [viewPort.min(col_channel)/255 viewPort.max(col_channel)/255],[0 1],viewPort.gamma(col_channel));
                         end
                     end
                 end
@@ -201,23 +186,29 @@ for sourceLayerId = 1:numel(sourceLayersList)
 
             switch BatchOptOut.ActionToResult{1}
                 case 'Fitler image'
-                    [img{roi}, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimit);
+                    [img{roi}, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
                 case 'Filter and add'
-                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimit);
+                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
                     img{roi} = img{roi}+imgOut;
                 case 'Filter and subtract'
-                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimit);
+                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
                     img{roi} = img{roi}-imgOut;
             end
-            if ~strcmp(sourceLayersList{sourceLayerId}, 'image') && ~ismember(BatchOptOut.FilterName{1}, {'DistanceMap'})
-                img{roi} = squeeze(img{roi});
+
+            % Normalize output: doImageFiltering normalizes to [H,W,Z,C] internally.
+            % For 2D-slice image data it adds a Z=1 dim ([H,W,C]→[H,W,1,C]); squeeze it back.
+            % For non-image layers, squeeze [H,W,Z,1] → [H,W,Z] (or [H,W] for 2D).
+            if strcmp(sourceLayersList{sourceLayerId}, 'image') && strcmp(BatchOptOut.DatasetType{1}, '2D, Slice')
+                img{roi} = squeeze(img{roi});  % [H,W,1,C] → [H,W,C] for setData2D
+            elseif ~strcmp(sourceLayersList{sourceLayerId}, 'image') && ~ismember(BatchOptOut.FilterName{1}, {'DistanceMap'})
+                img{roi} = squeeze(img{roi});  % [H,W,Z,1] → [H,W,Z] for setData3D non-image
             end
         end
 
         if ismember(BatchOptOut.FilterName{1}, {'DistanceMap'})
             % apply result to image layer; convert class if needed
             id = obj.mibModel.getActiveId();
-            if ~strcmp(obj.mibModel.I{id}.image.meta('imgClass'), class(img{1}(1)))
+            if ~strcmp(obj.mibModel.I{id}.image.dataClass, class(img{1}(1)))
                 convertOpt.showWaitbar = true;
                 obj.mibModel.I{id}.image.convertImage(class(img{1}(1)), convertOpt);
                 notify(obj.mibModel, 'NewDataset');
@@ -230,7 +221,7 @@ for sourceLayerId = 1:numel(sourceLayersList)
         elseif ~ismember(BatchOptOut.FilterName{1}, obj.BinarizationFiltersList)
             id = obj.mibModel.getActiveId();
             if strcmp(BatchOptOut.FilterName{1}, 'MathOps')
-                if ~strcmp(class(img{1}), obj.mibModel.I{id}.image.meta('imgClass'))
+                if ~strcmp(class(img{1}), obj.mibModel.I{id}.image.dataClass)
                     obj.mibModel.I{id}.image.convertImage(class(img{1}));
                 end
             end
@@ -274,7 +265,7 @@ if strcmp(BatchOptOut.DatasetType{1}, '2D, Slice')
 end
 if isnan(log_text); return; end
 if ~strcmp(BatchOptOut.FilterGroup{1}, 'Image Binarization') && ~ismember(BatchOptOut.SourceLayer{1}, {'selection', 'mask', 'labels'})
-    obj.mibModel.I{obj.mibModel.getActiveId()}.image.updateImgInfo(log_text);
+    obj.mibModel.I{obj.mibModel.getActiveId()}.image.updateActionLog(log_text);
 end
 toc(t1);
 

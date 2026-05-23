@@ -1,20 +1,4 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 25.04.2023
-
-function [img, logText] = doImageFiltering(img, BatchOpt, cpuParallelLimit)
+function [img, logText] = doImageFiltering(img, BatchOpt, cpuParallelLimit, parentFigure)
 % DOIMAGEFILTERING - Filter the image using BatchOpt-compatible parameter structure.
 %
 % Syntax:
@@ -22,20 +6,23 @@ function [img, logText] = doImageFiltering(img, BatchOpt, cpuParallelLimit)
 %
 %       [img, logText] = utils.doImageFiltering(img, BatchOpt)
 %       [img, logText] = utils.doImageFiltering(img, BatchOpt, cpuParallelLimit)
+%       [img, logText] = utils.doImageFiltering(img, BatchOpt, cpuParallelLimit, parentFigure)
 %
 % Input Arguments:
-%   - **img** — a matrix ``[height, width, color, layers]``
+%   - **img** — a matrix in MIB3 native format ``[height, width, depth, colors]``
 %   - **BatchOpt** — a structure with filter parameters (FilterName, Mode3D, etc.)
 %   - **cpuParallelLimit** — *(optional)* max CPU cores for parallel processing
+%   - **parentFigure** — *(optional)* UIFigure handle passed to ``core.PoolWaitbar``
 %
 % Return values:
-%   - **img** — filtered dataset ``[height, width, color, no_stacks]``
+%   - **img** — filtered dataset ``[height, width, depth, colors]``
 %   - **logText** — log text describing the applied filter and its parameters
 
 % Updates
 %
 
 logText = [];
+if nargin < 4; parentFigure = []; end
 if nargin < 3; cpuParallelLimit = 0; end
 if nargin < 2; utils.dlgs.showErrorDialog([], 'doImageFiltering: the BatchOpt structure is required!', 'Error'); return; end
 if nargin < 1; utils.dlgs.showErrorDialog([], 'doImageFiltering: the img is required!', 'Error'); return; end
@@ -45,29 +32,35 @@ if ~isfield(BatchOpt, 'UseParallelComputing'); BatchOpt.UseParallelComputing = f
 if ~isfield(BatchOpt, 'showWaitbar'); BatchOpt.showWaitbar = false; end
 
 maxVal = double(intmax(class(img(1))));
-if ~strcmp(BatchOpt.SourceLayer{1}, 'image')   % reshape image, for selection and mask
-    img = reshape(img, [size(img,1), size(img,2), 1, size(img,3)]);
+
+% Normalize to MIB3 native format [H, W, Z, C] — depth=dim3, colors=dim4.
+% Inputs from getData2D/getData3D may arrive as [H,W,C] (2D image), [H,W,Z,C] (3D image),
+if strcmp(BatchOpt.SourceLayer{1}, 'image')
+    if ndims(img) == 3  % 2D slice [H,W,C] → [H,W,1,C]
+        img = reshape(img, [size(img,1), size(img,2), 1, size(img,3)]);
+    end
+    % 4D image [H,W,Z,C] stays as is
 end
 
-if size(img, 4) == 1; BatchOpt.showWaitbar = 0; BatchOpt.UseParallelComputing = false; end     % turn off the waitbar and parallel computing for single images
+if size(img, 3) == 1; BatchOpt.showWaitbar = 0; BatchOpt.UseParallelComputing = false; end     % turn off the waitbar and parallel computing for single-slice images
 showWaitbar = BatchOpt.showWaitbar;
 
 if BatchOpt.Mode3D  % perform the 3D filters
-    if size(img, 4) < 3
+    if size(img, 3) < 3
         utils.dlgs.showErrorDialog([], '3D filters require more than 2 layers!', 'Error!');
         return;
     end
 
     % create waitbar
     if showWaitbar
-        pwb = core.PoolWaitbar(size(img,3), ['Applying ' BatchOpt.FilterName{1} ' filter...'], [], 'Filtering', true);
+        pwb = core.PoolWaitbar(size(img,4), ['Applying ' BatchOpt.FilterName{1} ' filter...'], parentFigure, 'Filtering', true);
     else
         pwb = [];   % have to init it for parfor loops
     end
 
     if nargout == 2; logText = sprintf('%s 3D, %s (%s), ColCh: %s', BatchOpt.FilterName{1}, BatchOpt.ActionToResult{1}, BatchOpt.DatasetType{1}, BatchOpt.ColorChannel{1}); end
 
-    for colCh=1:size(img,3)
+    for colCh=1:size(img,4)
         switch BatchOpt.FilterName{1}
             case 'Average'
                 if colCh==1
@@ -81,7 +74,7 @@ if BatchOpt.Mode3D  % perform the 3D filters
                     end
                     logText = sprintf('%s, %s, PadValue:%d, ', logText, BatchOpt.Padding{1}, BatchOpt.PaddingValue{1});
                 end
-                img(:,:,colCh,:) = permute(imfilter(squeeze(img(:,:,colCh,:)), h, Padding, BatchOpt.FilteringMode{1}), [1 2 4 3]);
+                img(:,:,:,colCh) = imfilter(squeeze(img(:,:,:,colCh)), h, Padding, BatchOpt.FilteringMode{1});
             case 'DistanceMap'
                 % calculate distance transform
                 if sum(str2num(BatchOpt.AspectRatio3D)) == 3
@@ -97,7 +90,6 @@ if BatchOpt.Mode3D  % perform the 3D filters
                 else
                     img = uint32(img);
                 end
-                img = permute(img, [1,2,4,3]);
                 logText = sprintf('%s, 3D, Method:%s, Aspect: %s', logText, BatchOpt.Method{1}, BatchOpt.AspectRatio3D);
             case {'Prewitt', 'Sobel'}
                 if colCh==1
@@ -112,28 +104,28 @@ if BatchOpt.Mode3D  % perform the 3D filters
                 end
                 switch BatchOpt.ReturnPart{1}
                     case 'both'
-                        img(:,:,colCh,:) = permute(abs(imfilter(double(squeeze(img(:,:,colCh,:))), h, Padding, BatchOpt.FilteringMode{1}))*BatchOpt.NormalizationFactor{1}, [1 2 4 3]);
+                        img(:,:,:,colCh) = abs(imfilter(double(squeeze(img(:,:,:,colCh))), h, Padding, BatchOpt.FilteringMode{1}))*BatchOpt.NormalizationFactor{1};
                     case 'negative'
-                        img(:,:,colCh,:) = permute(imfilter(imcomplement(squeeze(img(:,:,colCh,:))), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1}, [1 2 4 3]);
+                        img(:,:,:,colCh) = imfilter(imcomplement(squeeze(img(:,:,:,colCh))), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1};
                     case 'positive'
-                        img(:,:,colCh,:) = permute(imfilter(squeeze(img(:,:,colCh,:)), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1}, [1 2 4 3]);
+                        img(:,:,:,colCh) = imfilter(squeeze(img(:,:,:,colCh)), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1};
                 end
             case 'Frangi'
                 if colCh==1
                     logText = sprintf('%s, Thickness:%s, Sens:%.3f, Polarity:%s, NormF:%.3f', logText, BatchOpt.ThicknessRange, BatchOpt.StructureSensitivity{1}, BatchOpt.ObjectPolarity{1}, BatchOpt.NormalizationFactor{1});
                     ThicknessRange = str2num(BatchOpt.ThicknessRange); %#ok<*ST2NM>
                 end
-                img(:,:,colCh,:) = permute(fibermetric(squeeze(img(:,:,colCh,:)), ThicknessRange, ...
+                img(:,:,:,colCh) = fibermetric(squeeze(img(:,:,:,colCh)), ThicknessRange, ...
                     'StructureSensitivity', BatchOpt.StructureSensitivity{1}, 'ObjectPolarity', ...
-                    BatchOpt.ObjectPolarity{1})*BatchOpt.NormalizationFactor{1}, [1 2 4 3]);
+                    BatchOpt.ObjectPolarity{1})*BatchOpt.NormalizationFactor{1};
             case 'Gradient'
                 if colCh==1
                     logText = sprintf('%s, SpacingXYZ: %s, NormF:%.3f', logText, BatchOpt.SpacingXYZ, BatchOpt.NormalizationFactor{1});
                     SpacingXYZ = str2num(BatchOpt.SpacingXYZ);
                     if numel(SpacingXYZ) < 3; SpacingXYZ = [SpacingXYZ(1), SpacingXYZ(1), SpacingXYZ(1)]; end
                 end
-                [Ix, Iy, Iz] = gradient(double(squeeze(img(:,:,colCh,:))), SpacingXYZ(1), SpacingXYZ(2), SpacingXYZ(3));
-                img(:,:,colCh,:) = permute(sqrt(Ix.^2 + Iy.^2 + Iz.^2)*BatchOpt.NormalizationFactor{1}, [1 2 4 3]);      % convert to data type
+                [Ix, Iy, Iz] = gradient(double(squeeze(img(:,:,:,colCh))), SpacingXYZ(1), SpacingXYZ(2), SpacingXYZ(3));
+                img(:,:,:,colCh) = sqrt(Ix.^2 + Iy.^2 + Iz.^2)*BatchOpt.NormalizationFactor{1};
             case 'LoG'
                 if colCh==1
                     h = fspecial3('log', str2num(BatchOpt.HSize), str2double(BatchOpt.Sigma));
@@ -146,8 +138,8 @@ if BatchOpt.Mode3D  % perform the 3D filters
                         Padding = BatchOpt.Padding{1};
                     end
                 end
-                img_dummy = imfilter(double(squeeze(img(:,:,colCh,:))), h, Padding, BatchOpt.FilteringMode{1});
-                img(:,:,colCh,:) = permute(img_dummy, [1 2 4 3])*BatchOpt.NormalizationFactor{1} + halfClassIntensity;
+                img_dummy = imfilter(double(squeeze(img(:,:,:,colCh))), h, Padding, BatchOpt.FilteringMode{1});
+                img(:,:,:,colCh) = img_dummy*BatchOpt.NormalizationFactor{1} + halfClassIntensity;
             case 'Median'
                 if colCh==1
                     NeighborhoodSize = str2num(BatchOpt.NeighborhoodSize);
@@ -155,7 +147,7 @@ if BatchOpt.Mode3D  % perform the 3D filters
                     if numel(NeighborhoodSize)==1; NeighborhoodSize = [NeighborhoodSize, NeighborhoodSize, NeighborhoodSize]; end %#ok<AGROW>
                     logText = sprintf('%s, NSize: %s, Padding:%s', logText, BatchOpt.NeighborhoodSize, BatchOpt.Padding{1});
                 end
-                img(:,:,colCh,:) = permute(medfilt3(squeeze(img(:,:,colCh,:)), NeighborhoodSize, BatchOpt.Padding{1}),[1 2 4 3]);
+                img(:,:,:,colCh) = medfilt3(squeeze(img(:,:,:,colCh)), NeighborhoodSize, BatchOpt.Padding{1});
             case 'Mode'
                 if colCh==1
                     FiltSize = str2num(BatchOpt.FiltSize);
@@ -164,7 +156,7 @@ if BatchOpt.Mode3D  % perform the 3D filters
                     logText = sprintf('%s, FiltSize: %s, Padding: %s', logText, ...
                         BatchOpt.FiltSize, BatchOpt.Padding{1});
                 end
-                img(:,:,colCh,:) = permute(modefilt(squeeze(img(:,:,colCh,:)), FiltSize, Padding), [1 2 4 3]);
+                img(:,:,:,colCh) = modefilt(squeeze(img(:,:,:,colCh)), FiltSize, Padding);
             case 'Gaussian'
                 if colCh==1
                     HSize = str2num(BatchOpt.HSize);
@@ -177,9 +169,8 @@ if BatchOpt.Mode3D  % perform the 3D filters
                     logText = sprintf('%s, HSize:%s, Sigma:%.3f, NormFac:%s', logText, BatchOpt.HSize, BatchOpt.Sigma{1});
                     logText = sprintf('%s, %s, PadValue:%d, ', logText, BatchOpt.Padding{1}, BatchOpt.PaddingValue{1});
                 end
-                img(:,:,colCh,:) = permute(...
-                    imgaussfilt3(squeeze(img(:,:,colCh,:)), BatchOpt.Sigma{1}, 'FilterSize', HSize, 'Padding', Padding, 'FilterDomain', BatchOpt.FilterDomain{1}),...
-                    [1 2 4 3]);
+                img(:,:,:,colCh) = imgaussfilt3(squeeze(img(:,:,:,colCh)), BatchOpt.Sigma{1}, ...
+                    'FilterSize', HSize, 'Padding', Padding, 'FilterDomain', BatchOpt.FilterDomain{1});
             case 'SlicClustering'
                 img = squeeze(img);
                 dims = size(img);
@@ -249,9 +240,9 @@ if BatchOpt.Mode3D  % perform the 3D filters
                 if colCh==1
                     logText = sprintf('%s 3D, ScalingFactor: %d, HSize: %s, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.HSize, BatchOpt.Sigma{1});
                     randomSeed = 0;     % define random seed
-                    [img(:,:,colCh,:), DisplacementField] = mibElasticDistortionFilter(img(:,:,colCh,:), BatchOpt, randomSeed);
+                    [img(:,:,:,colCh), DisplacementField] = mibElasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed);
                 else
-                    img(:,:,colCh,:) = mibElasticDistortionFilter(img(:,:,:,z), BatchOpt, randomSeed, DisplacementField);
+                    img(:,:,:,colCh) = mibElasticDistortionFilter(img(:,:,:,colCh), BatchOpt, randomSeed, DisplacementField);
                 end
 
         end
@@ -263,7 +254,7 @@ else    % perform 2D filters
 
     % create waitbar
     if showWaitbar
-        pwb = core.PoolWaitbar(maxCount, ['Applying ' BatchOpt.FilterName{1} ' filter...'], [], 'Filtering', true);
+        pwb = core.PoolWaitbar(maxCount, ['Applying ' BatchOpt.FilterName{1} ' filter...'], parentFigure, 'Filtering', true);
     else
         pwb = [];   % have to init it for parfor loops
     end
@@ -284,17 +275,17 @@ else    % perform 2D filters
                 BatchOpt.Mode{1}, BatchOpt.Mean, BatchOpt.Variance, BatchOpt.Density{1});
             Mean = str2double(BatchOpt.Mean);
             Variance = str2double(BatchOpt.Variance);
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
                     switch BatchOpt.Mode{1}
                         case 'gaussian'
-                            img(:,:,colCh,z) = imnoise(img(:,:,colCh,z), BatchOpt.Mode{1}, Mean, Variance);
+                            img(:,:,z,colCh) = imnoise(img(:,:,z,colCh), BatchOpt.Mode{1}, Mean, Variance);
                         case 'speckle'
-                            img(:,:,colCh,z) = imnoise(img(:,:,colCh,z), BatchOpt.Mode{1}, Variance);
+                            img(:,:,z,colCh) = imnoise(img(:,:,z,colCh), BatchOpt.Mode{1}, Variance);
                         case 'poisson'
-                            img(:,:,colCh,z) = imnoise(img(:,:,colCh,z), BatchOpt.Mode{1});
+                            img(:,:,z,colCh) = imnoise(img(:,:,z,colCh), BatchOpt.Mode{1});
                         case 'salt & pepper'
-                            img(:,:,colCh,z) = imnoise(img(:,:,colCh,z), BatchOpt.Mode{1}, BatchOpt.Density{1});
+                            img(:,:,z,colCh) = imnoise(img(:,:,z,colCh), BatchOpt.Mode{1}, BatchOpt.Density{1});
                     end
                     if showWaitbar; pwb.increment(); end
                 end
@@ -302,9 +293,9 @@ else    % perform 2D filters
         case 'AnisotropicDiffusion'
             logText = sprintf('%s, Grad: %d, Iter: %d, Conn: %s, Conduction: %s', logText, ...
                 BatchOpt.GradientThreshold{1}, BatchOpt.NumberOfIterations{1}, BatchOpt.Connectivity{1}, BatchOpt.ConductionMethod{1});
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = imdiffusefilt(img(:,:,colCh,z), 'GradientThreshold', BatchOpt.GradientThreshold{1}, ...
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = imdiffusefilt(img(:,:,z,colCh), 'GradientThreshold', BatchOpt.GradientThreshold{1}, ...
                         'NumberOfIterations', BatchOpt.NumberOfIterations{1}, 'Connectivity', BatchOpt.Connectivity{1},...
                         'ConductionMethod', BatchOpt.ConductionMethod{1});
                     if showWaitbar; pwb.increment(); end
@@ -330,9 +321,9 @@ else    % perform 2D filters
                 Padding = BatchOpt.Padding{1};
             end
 
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = imfilter(img(:,:,colCh,z), h, Padding, BatchOpt.FilteringMode{1});
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = imfilter(img(:,:,z,colCh), h, Padding, BatchOpt.FilteringMode{1});
                     if showWaitbar; pwb.increment(); end
                 end
             end
@@ -346,24 +337,24 @@ else    % perform 2D filters
             end
             logText = sprintf('%s, Smooth: %s, Sigma: %.3f, Nhood: %s, Padding: %s(%d)', logText, ...
                 BatchOpt.degreeOfSmoothing, BatchOpt.spatialSigma{1}, BatchOpt.NeighborhoodSize, BatchOpt.Padding{1}, BatchOpt.PaddingValue{1});
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = imbilatfilt(img(:,:,colCh,z), degreeOfSmoothing, BatchOpt.spatialSigma{1}, ...
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = imbilatfilt(img(:,:,z,colCh), degreeOfSmoothing, BatchOpt.spatialSigma{1}, ...
                         'NeighborhoodSize', NeighborhoodSize, 'Padding', Padding);
                     if showWaitbar; pwb.increment(); end
                 end
             end
         case 'BMxD'
             logText = sprintf('%s, Sigma:%.3f, Profile:%s', logText, BatchOpt.Sigma{1}, BatchOpt.Profile{1});
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
                     if maxVal == 255
-                        [~, I] = BM3D(1, img(:,:,colCh,z), BatchOpt.Sigma{1}/100*255, BatchOpt.Profile{1});
-                        img(:,:,colCh,z) = uint8(I*maxVal);
+                        [~, I] = BM3D(1, img(:,:,z,colCh), BatchOpt.Sigma{1}/100*255, BatchOpt.Profile{1});
+                        img(:,:,z,colCh) = uint8(I*maxVal);
                     else
-                        I = double(img(:,:,colCh,z))/maxVal;
+                        I = double(img(:,:,z,colCh))/maxVal;
                         [~, I] = BM3D(1, I, BatchOpt.Sigma{1}/100*255, BatchOpt.Profile{1});
-                        img(:,:,colCh,z) = I*maxVal;
+                        img(:,:,z,colCh) = I*maxVal;
                     end
                     if showWaitbar; pwb.increment(); end
                 end
@@ -371,12 +362,12 @@ else    % perform 2D filters
         case 'DistanceMap'
             methodVar = BatchOpt.Method{1};
             imgOut = zeros(size(img));
-            parfor (z = 1:size(img, 4), parforArg)
+            parfor (z = 1:size(img, 3), parforArg)
                 % calculate distance transform
-                if max(max(img(:,:,1,z))) == 0
-                    imgOut(:,:,1,z) = 0;
+                if max(max(img(:,:,z,1))) == 0
+                    imgOut(:,:,z,1) = 0;
                 else
-                    imgOut(:,:,1,z) = bwdist(img(:,:,1,z), methodVar);
+                    imgOut(:,:,z,1) = bwdist(img(:,:,z,1), methodVar);
                 end
                 if showWaitbar; pwb.increment(); end
             end
@@ -404,8 +395,8 @@ else    % perform 2D filters
             xStep = ceil(width/tilesX);
             yStep = ceil(height/tilesY);
 
-            for colCh=1:size(img, 3)
-                for z = 1:size(img, 4)
+            for colCh=1:size(img, 4)
+                for z = 1:size(img, 3)
                     for x=1:tilesX
                         for y=1:tilesY
                             yMin = (y-1)*yStep+1;
@@ -413,7 +404,7 @@ else    % perform 2D filters
                             xMin = (x-1)*xStep+1;
                             xMax = min([(x-1)*xStep+xStep, width]);
 
-                            img(yMin:yMax, xMin:xMax, colCh, z) = denoiseImage(img(yMin:yMax, xMin:xMax, colCh, z), net);
+                            img(yMin:yMax, xMin:xMax, z, colCh) = denoiseImage(img(yMin:yMax, xMin:xMax, z, colCh), net);
                         end
                     end
                     if showWaitbar; pwb.increment(); end
@@ -428,16 +419,16 @@ else    % perform 2D filters
                 case {'LaplacianOfGaussian', 'Canny','approxcanny','zerocross'}
 
             end
-            parfor (z = 1:size(img, 4), parforArg)  % binarization filter, only one color channel
+            parfor (z = 1:size(img, 3), parforArg)  % binarization filter, only one color channel
                 switch BatchOpt.Method{1}
                     case {'Sobel', 'Prewitt', 'Roberts'}
-                        img(:,:,1,z) = edge(img(:,:,1,z), BatchOpt.Method{1}, Threshold, BatchOpt.Direction{1});
+                        img(:,:,z,1) = edge(img(:,:,z,1), BatchOpt.Method{1}, Threshold, BatchOpt.Direction{1});
                     case 'Canny'
-                        img(:,:,1,z) = edge(img(:,:,1,z), BatchOpt.Method{1}, Threshold, Sigma);
+                        img(:,:,z,1) = edge(img(:,:,z,1), BatchOpt.Method{1}, Threshold, Sigma);
                     case 'LaplacianOfGaussian'
-                        img(:,:,1,z) = edge(img(:,:,1,z), 'log', Threshold, Sigma);
+                        img(:,:,z,1) = edge(img(:,:,z,1), 'log', Threshold, Sigma);
                     case 'approxcanny'
-                        img(:,:,1,z) = edge(img(:,:,1,z), BatchOpt.Method{1}, Threshold);
+                        img(:,:,z,1) = edge(img(:,:,z,1), BatchOpt.Method{1}, Threshold);
                 end
                 if showWaitbar; pwb.increment(); end
             end
@@ -460,14 +451,14 @@ else    % perform 2D filters
             else
                 filterWith = 3;     % Entropy
             end
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
                     if filterWith == 1
-                        img(:,:,colCh,z) = stdfilt(img(:,:,colCh,z), SE.Neighborhood)*BatchOpt.NormalizationFactor{1};
+                        img(:,:,z,colCh) = stdfilt(img(:,:,z,colCh), SE.Neighborhood)*BatchOpt.NormalizationFactor{1};
                     elseif filterWith == 2
-                        img(:,:,colCh,z) = rangefilt(img(:,:,colCh,z), SE.Neighborhood)*BatchOpt.NormalizationFactor{1};
+                        img(:,:,z,colCh) = rangefilt(img(:,:,z,colCh), SE.Neighborhood)*BatchOpt.NormalizationFactor{1};
                     else
-                        img(:,:,colCh,z) = entropyfilt(img(:,:,colCh,z), SE.Neighborhood)*BatchOpt.NormalizationFactor{1};
+                        img(:,:,z,colCh) = entropyfilt(img(:,:,z,colCh), SE.Neighborhood)*BatchOpt.NormalizationFactor{1};
                     end
                     if showWaitbar; pwb.increment(); end
                 end
@@ -480,22 +471,22 @@ else    % perform 2D filters
             if isnan(NumIntensityLevels); NumIntensityLevels = 'auto'; end
 
             if BatchOpt.useRGB
-                if size(img, 3) ~= 3
+                if size(img, 4) ~= 3
                     if showWaitbar; delete(pwb); end
-                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 3)), 'Error');
+                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 4)), 'Error');
                     return;
                 end
                 if showWaitbar; pwb.setIncrement(3); end   % set increment for RGB images
 
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,:,z) = locallapfilt(img(:,:,:,z), BatchOpt.EdgeAmplitude{1}, BatchOpt.Smoothing{1}, BatchOpt.DynamicRange{1},...
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,:) = locallapfilt(squeeze(img(:,:,z,:)), BatchOpt.EdgeAmplitude{1}, BatchOpt.Smoothing{1}, BatchOpt.DynamicRange{1},...
                         'ColorMode', BatchOpt.ColorMode{1}, 'NumIntensityLevels', NumIntensityLevels);
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
-                for colCh=1:size(img, 3)
-                    parfor (z = 1:size(img, 4), parforArg)
-                        img(:,:,colCh,z) = locallapfilt(img(:,:,colCh,z), BatchOpt.EdgeAmplitude{1}, BatchOpt.Smoothing{1}, BatchOpt.DynamicRange{1},...
+                for colCh=1:size(img, 4)
+                    parfor (z = 1:size(img, 3), parforArg)
+                        img(:,:,z,colCh) = locallapfilt(img(:,:,z,colCh), BatchOpt.EdgeAmplitude{1}, BatchOpt.Smoothing{1}, BatchOpt.DynamicRange{1},...
                             'ColorMode', BatchOpt.ColorMode{1}, 'NumIntensityLevels', NumIntensityLevels);
                         if showWaitbar; pwb.increment(); end
                     end
@@ -512,21 +503,21 @@ else    % perform 2D filters
             end
 
             if BatchOpt.useRGB
-                if size(img, 3) ~= 3
+                if size(img, 4) ~= 3
                     if showWaitbar; delete(pwb); end
-                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 3)), 'Error');
+                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 4)), 'Error');
                     return;
                 end
                 if showWaitbar; pwb.setIncrement(3); end   % set increment for RGB images
 
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,:,z) = imflatfield(img(:,:,:,z), Sigma, 'filterSize', filterSize);
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,:) = imflatfield(squeeze(img(:,:,z,:)), Sigma, 'filterSize', filterSize);
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
-                for colCh=1:size(img, 3)
-                    parfor (z = 1:size(img, 4), parforArg)
-                        img(:,:,colCh,z) = imflatfield(img(:,:,colCh,z), Sigma, 'filterSize', filterSize);
+                for colCh=1:size(img, 4)
+                    parfor (z = 1:size(img, 3), parforArg)
+                        img(:,:,z,colCh) = imflatfield(img(:,:,z,colCh), Sigma, 'filterSize', filterSize);
                         if showWaitbar; pwb.increment(); end
                     end
                 end
@@ -534,9 +525,9 @@ else    % perform 2D filters
         case 'Frangi'
             logText = sprintf('%s, Thickness:%s, Sens:%.3f, Polarity:%s, NormF:%.3f', logText, BatchOpt.ThicknessRange, BatchOpt.StructureSensitivity{1}, BatchOpt.ObjectPolarity{1}, BatchOpt.NormalizationFactor{1});
             ThicknessRange = str2num(BatchOpt.ThicknessRange); %#ok<*ST2NM>
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = fibermetric(img(:,:,colCh,z), ThicknessRange, ...
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = fibermetric(img(:,:,z,colCh), ThicknessRange, ...
                         'StructureSensitivity', BatchOpt.StructureSensitivity{1}, 'ObjectPolarity', BatchOpt.ObjectPolarity{1})*BatchOpt.NormalizationFactor{1};
                     if showWaitbar; pwb.increment(); end
                 end
@@ -544,10 +535,10 @@ else    % perform 2D filters
         case 'ElasticDistortion'
             % not implemented, this version is very slow
             logText = sprintf('%s, ScalingFactor: %d, HSize: %s, Sigma: %.1f', logText, BatchOpt.ScalingFactor{1}, BatchOpt.HSize, BatchOpt.Sigma{1});
-            %for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
+            %for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
                     randomSeed = z;     % define random
-                    img(:,:,:,z) = mibElasticDistortionFilter(img(:,:,:,z), BatchOpt, randomSeed);
+                    img(:,:,z,:) = mibElasticDistortionFilter(squeeze(img(:,:,z,:)), BatchOpt, randomSeed);
                     if showWaitbar; pwb.increment(); end
                 end
             %end
@@ -562,9 +553,9 @@ else    % perform 2D filters
                 Padding = BatchOpt.PaddingValue{1};
             end
             logText = sprintf('%s, HSize: %s, Sigma: %.3f, %s, PadValue:%d', logText, BatchOpt.HSize, BatchOpt.Sigma{1}, BatchOpt.Padding{1}, BatchOpt.PaddingValue{1});
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = imgaussfilt(img(:,:,colCh,z), BatchOpt.Sigma{1}, 'FilterSize', HSize, ...
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = imgaussfilt(img(:,:,z,colCh), BatchOpt.Sigma{1}, 'FilterSize', HSize, ...
                         'Padding', Padding, 'FilterDomain', BatchOpt.FilterDomain{1});
                     if showWaitbar; pwb.increment(); end
                 end
@@ -573,10 +564,10 @@ else    % perform 2D filters
             logText = sprintf('%s, SpacingXYZ: %s, NormF:%.3f', logText, BatchOpt.SpacingXYZ, BatchOpt.NormalizationFactor{1});
             SpacingXYZ = str2num(BatchOpt.SpacingXYZ);
             if numel(SpacingXYZ) == 1; SpacingXYZ = [SpacingXYZ, SpacingXYZ]; end
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    [Ix, Iy] = gradient(double(img(:,:,colCh,z)), SpacingXYZ(1), SpacingXYZ(2));
-                    img(:,:,colCh,z) = sqrt(Ix.^2 + Iy.^2)*BatchOpt.NormalizationFactor{1};
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    [Ix, Iy] = gradient(double(img(:,:,z,colCh)), SpacingXYZ(1), SpacingXYZ(2));
+                    img(:,:,z,colCh) = sqrt(Ix.^2 + Iy.^2)*BatchOpt.NormalizationFactor{1};
                     if showWaitbar; pwb.increment(); end
                 end
             end
@@ -584,21 +575,21 @@ else    % perform 2D filters
             logText = sprintf('%s, Amount:%.3f, AlphaBlend:%d, useRGB:%d', logText, BatchOpt.Amount{1}, BatchOpt.AlphaBlend, BatchOpt.useRGB);
 
             if BatchOpt.useRGB
-                if size(img, 3) ~= 3
+                if size(img, 4) ~= 3
                     if showWaitbar; delete(pwb); end
-                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 3)), 'Error');
+                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 4)), 'Error');
                     return;
                 end
                 if showWaitbar; pwb.setIncrement(3); end   % set increment for RGB images
 
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,:,z) = imlocalbrighten(img(:,:,:,z), BatchOpt.Amount{1}, 'AlphaBlend', BatchOpt.AlphaBlend);
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,:) = imlocalbrighten(squeeze(img(:,:,z,:)), BatchOpt.Amount{1}, 'AlphaBlend', BatchOpt.AlphaBlend);
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
-                for colCh=1:size(img, 3)
-                    parfor (z = 1:size(img, 4), parforArg)
-                        img(:,:,colCh,z) = imlocalbrighten(img(:,:,colCh,z), BatchOpt.Amount{1}, 'AlphaBlend', BatchOpt.AlphaBlend);
+                for colCh=1:size(img, 4)
+                    parfor (z = 1:size(img, 3), parforArg)
+                        img(:,:,z,colCh) = imlocalbrighten(img(:,:,z,colCh), BatchOpt.Amount{1}, 'AlphaBlend', BatchOpt.AlphaBlend);
                         if showWaitbar; pwb.increment(); end
                     end
                 end
@@ -607,21 +598,21 @@ else    % perform 2D filters
             logText = sprintf('%s, EdgeThreshold:%.2f, Amount:%.2f, useRGB:%d', logText, BatchOpt.EdgeThreshold{1}, BatchOpt.Amount{1}, BatchOpt.useRGB);
 
             if BatchOpt.useRGB
-                if size(img, 3) ~= 3
+                if size(img, 4) ~= 3
                     if showWaitbar; delete(pwb); end
-                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 3)), 'Error');
+                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 4)), 'Error');
                     return;
                 end
                 if showWaitbar; pwb.setIncrement(3); end   % set increment for RGB images
 
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,:,z) = localcontrast(img(:,:,:,z), BatchOpt.EdgeThreshold{1}, BatchOpt.Amount{1});
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,:) = localcontrast(squeeze(img(:,:,z,:)), BatchOpt.EdgeThreshold{1}, BatchOpt.Amount{1});
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
-                for colCh=1:size(img, 3)
-                    parfor (z = 1:size(img, 4), parforArg)
-                        img(:,:,colCh,z) = localcontrast(img(:,:,colCh,z), BatchOpt.EdgeThreshold{1}, BatchOpt.Amount{1});
+                for colCh=1:size(img, 4)
+                    parfor (z = 1:size(img, 3), parforArg)
+                        img(:,:,z,colCh) = localcontrast(img(:,:,z,colCh), BatchOpt.EdgeThreshold{1}, BatchOpt.Amount{1});
                         if showWaitbar; pwb.increment(); end
                     end
                 end
@@ -636,10 +627,10 @@ else    % perform 2D filters
             else
                 Padding = BatchOpt.Padding{1};
             end
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img_dummy = imfilter(double(img(:,:,colCh,z)), h, Padding, BatchOpt.FilteringMode{1});
-                    img(:,:,colCh,z) = img_dummy*BatchOpt.NormalizationFactor{1} + halfClassIntensity;
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img_dummy = imfilter(double(img(:,:,z,colCh)), h, Padding, BatchOpt.FilteringMode{1});
+                    img(:,:,z,colCh) = img_dummy*BatchOpt.NormalizationFactor{1} + halfClassIntensity;
                     if showWaitbar; pwb.increment(); end
                 end
             end
@@ -651,7 +642,7 @@ else    % perform 2D filters
                 outputClass = BatchOpt.OutputImageClass{1};
             end
             value = str2double(BatchOpt.Value);
-            for colCh=1:size(img, 3)
+            for colCh=1:size(img, 4)
                 switch BatchOpt.Operation{1}
                     case 'Add'
                         img = cast(double(img) + value, outputClass);
@@ -669,9 +660,9 @@ else    % perform 2D filters
             if isempty('NeighborhoodSize'); utils.dlgs.showErrorDialog([], 'NeighborhoodSize should contain one or two numbers!', 'Error'); return; end
             if numel(NeighborhoodSize)==1; NeighborhoodSize = [NeighborhoodSize, NeighborhoodSize]; end %#ok<AGROW>
             logText = sprintf('%s, NSize: %s, Padding:%s', logText, BatchOpt.NeighborhoodSize, BatchOpt.Padding{1});
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = medfilt2(img(:,:,colCh,z), NeighborhoodSize, BatchOpt.Padding{1});
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = medfilt2(img(:,:,z,colCh), NeighborhoodSize, BatchOpt.Padding{1});
                     if showWaitbar; pwb.increment(); end
                 end
             end
@@ -682,9 +673,9 @@ else    % perform 2D filters
 
             logText = sprintf('%s, FiltSize: %s, Padding: %s', logText, ...
                 BatchOpt.FiltSize, BatchOpt.Padding{1});
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = modefilt(img(:,:,colCh,z), FiltSize, Padding);
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = modefilt(img(:,:,z,colCh), FiltSize, Padding);
                     if showWaitbar; pwb.increment(); end
                 end
             end
@@ -695,13 +686,13 @@ else    % perform 2D filters
             logText = sprintf('%s, SmoothDeg:%s, SWin:%s; CompWin:%s', logText, BatchOpt.DegreeOfSmoothing, BatchOpt.SearchWindowSize, BatchOpt.ComparisonWindowSize);
             SearchWindowSize = SearchWindowSize - mod(SearchWindowSize,2) + 1;
             ComparisonWindowSize = ComparisonWindowSize - mod(ComparisonWindowSize,2) + 1;
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
                     if ~isnan(DegreeOfSmoothing)
-                        img(:,:,colCh,z) = imnlmfilt(img(:,:,colCh,z), 'DegreeOfSmoothing', DegreeOfSmoothing, ...
+                        img(:,:,z,colCh) = imnlmfilt(img(:,:,z,colCh), 'DegreeOfSmoothing', DegreeOfSmoothing, ...
                             'SearchWindowSize', SearchWindowSize, 'ComparisonWindowSize', ComparisonWindowSize);
                     else
-                        img(:,:,colCh,z) = imnlmfilt(img(:,:,colCh,z), ...
+                        img(:,:,z,colCh) = imnlmfilt(img(:,:,z,colCh), ...
                             'SearchWindowSize', SearchWindowSize, 'ComparisonWindowSize', ComparisonWindowSize);
                     end
                     if showWaitbar; pwb.increment(); end
@@ -717,15 +708,15 @@ else    % perform 2D filters
             else
                 Padding = BatchOpt.Padding{1};
             end
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
                     switch BatchOpt.ReturnPart{1}
                         case 'both'
-                            img(:,:,colCh,z) = abs(imfilter(double(img(:,:,colCh,z)), h, Padding, BatchOpt.FilteringMode{1}))*BatchOpt.NormalizationFactor{1};
+                            img(:,:,z,colCh) = abs(imfilter(double(img(:,:,z,colCh)), h, Padding, BatchOpt.FilteringMode{1}))*BatchOpt.NormalizationFactor{1};
                         case 'negative'
-                            img(:,:,colCh,z) = imfilter(imcomplement(img(:,:,colCh,z)), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1};
+                            img(:,:,z,colCh) = imfilter(imcomplement(img(:,:,z,colCh)), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1};
                         case 'positive'
-                            img(:,:,colCh,z) = imfilter(img(:,:,colCh,z), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1};
+                            img(:,:,z,colCh) = imfilter(img(:,:,z,colCh), h, Padding, BatchOpt.FilteringMode{1})*BatchOpt.NormalizationFactor{1};
                     end
                     if showWaitbar; pwb.increment(); end
                 end
@@ -736,23 +727,23 @@ else    % perform 2D filters
                 BatchOpt.ContrastEnhancement{1}, BatchOpt.useRGB);
             AtmosphericLight = str2num(BatchOpt.AtmosphericLight);
             if BatchOpt.useRGB
-                if size(img, 3) ~= 3
+                if size(img, 4) ~= 3
                     if showWaitbar; delete(pwb); end
-                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 3)), 'Error');
+                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 4)), 'Error');
                     return;
                 end
                 if showWaitbar; pwb.setIncrement(3); end   % set increment for RGB images
 
                 if numel(AtmosphericLight) == 1; AtmosphericLight = [AtmosphericLight(1), AtmosphericLight(1), AtmosphericLight(1)]; end
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,:,z) = imreducehaze(img(:,:,:,z), ...
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,:) = imreducehaze(squeeze(img(:,:,z,:)), ...
                         BatchOpt.Amount{1}, 'method', BatchOpt.Method{1}, 'AtmosphericLight', AtmosphericLight, 'ContrastEnhancement', BatchOpt.ContrastEnhancement{1});
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
-                for colCh=1:size(img, 3)
-                    parfor (z = 1:size(img, 4), parforArg)
-                        img(:,:,colCh,z) = imreducehaze(img(:,:,colCh,z), ...
+                for colCh=1:size(img, 4)
+                    parfor (z = 1:size(img, 3), parforArg)
+                        img(:,:,z,colCh) = imreducehaze(img(:,:,z,colCh), ...
                             BatchOpt.Amount{1}, 'method', BatchOpt.Method{1}, 'AtmosphericLight', AtmosphericLight(1), 'ContrastEnhancement', BatchOpt.ContrastEnhancement{1});
                         if showWaitbar; pwb.increment(); end
                     end
@@ -766,10 +757,10 @@ else    % perform 2D filters
             % calculate number of superpixels
             dims = size(img);
             noPix = ceil(dims(1)*dims(2)/BatchOpt.ClusterSize{1});
-            model = zeros([dims(1), dims(2), size(img, 4)]);
-            pixNoArray = zeros([size(img, 4), 1]);
-            parfor (z = 1:size(img, 4), parforArg)  % binarization filter, only one color channel
-                [model(:,:,z), pixNoArray(z)] = slicmex(img(:,:,1,z), noPix, BatchOpt.Compactness{1});
+            model = zeros([dims(1), dims(2), size(img, 3)]);
+            pixNoArray = zeros([size(img, 3), 1]);
+            parfor (z = 1:size(img, 3), parforArg)  % binarization filter, only one color channel
+                [model(:,:,z), pixNoArray(z)] = slicmex(img(:,:,z,1), noPix, BatchOpt.Compactness{1});
                 if showWaitbar; pwb.increment(); end
             end
             if max(pixNoArray) < 65535
@@ -781,22 +772,22 @@ else    % perform 2D filters
             logText = sprintf('%s, Radius:%.1f, Amount:%.1f, Threshold:%.2f, useRGB:%d', ....
                 logText, BatchOpt.Radius{1}, BatchOpt.Amount{1}, BatchOpt.Threshold{1}, BatchOpt.useRGB);
             if BatchOpt.useRGB
-                if size(img, 3) ~= 3
+                if size(img, 4) ~= 3
                     if showWaitbar; delete(pwb); end
-                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 3)), 'Error');
+                    utils.dlgs.showErrorDialog([], sprintf('The image should have 3 color channels!\nThis image has %d color channels', size(img, 4)), 'Error');
                     return;
                 end
                 if showWaitbar; pwb.setIncrement(3); end   % set increment for RGB images
 
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,:,z) = imsharpen(img(:,:,:,z), ...
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,:) = imsharpen(squeeze(img(:,:,z,:)), ...
                         'Radius', BatchOpt.Radius{1}, 'Amount', BatchOpt.Amount{1}, 'Threshold', BatchOpt.Threshold{1});
                     if showWaitbar; pwb.increment(); end
                 end
             else    % grayscale image
-                for colCh=1:size(img, 3)
-                    parfor (z = 1:size(img, 4), parforArg)
-                        img(:,:,colCh,z) = imsharpen(img(:,:,colCh,z), ...
+                for colCh=1:size(img, 4)
+                    parfor (z = 1:size(img, 3), parforArg)
+                        img(:,:,z,colCh) = imsharpen(img(:,:,z,colCh), ...
                             'Radius', BatchOpt.Radius{1}, 'Amount', BatchOpt.Amount{1}, 'Threshold', BatchOpt.Threshold{1});
                         if showWaitbar; pwb.increment(); end
                     end
@@ -808,9 +799,9 @@ else    % perform 2D filters
             if isempty('NeighborhoodSize'); utils.dlgs.showErrorDialog([], 'NeighborhoodSize should contain two numbers!', 'Error'); return; end
             if numel(NeighborhoodSize)==1; NeighborhoodSize = [NeighborhoodSize, NeighborhoodSize]; end %#ok<AGROW>
             logText = sprintf('%s, NSize: %s, AddNoise:%s', logText, BatchOpt.NeighborhoodSize, BatchOpt.AdditiveNoise);
-            for colCh=1:size(img, 3)
-                parfor (z = 1:size(img, 4), parforArg)
-                    img(:,:,colCh,z) = wiener2(img(:,:,colCh,z), NeighborhoodSize, AdditiveNoise);
+            for colCh=1:size(img, 4)
+                parfor (z = 1:size(img, 3), parforArg)
+                    img(:,:,z,colCh) = wiener2(img(:,:,z,colCh), NeighborhoodSize, AdditiveNoise);
                     if showWaitbar; pwb.increment(); end
                 end
             end
@@ -820,15 +811,15 @@ else    % perform 2D filters
             end
             % calculate number of superpixels
             dims = size(img);
-            model = zeros([dims(1), dims(2), size(img, 4)]);
+            model = zeros([dims(1), dims(2), size(img, 3)]);
             gaps = 1;
             if strcmp(BatchOpt.GapPolicy{1}, 'remove gaps'); gaps = 0; end
             getClusters = 1;
             if strcmp(BatchOpt.ResultingShape{1}, 'ridges'); getClusters = 0; gaps = 1; end
-            maxInt = zeros([size(img, 4), 1])+255;  % allocate space for max number of clusters per slice
+            maxInt = zeros([size(img, 3), 1])+255;  % allocate space for max number of clusters per slice
 
-            parfor (z = 1:size(img, 4), parforArg)  % binarization filter, only one color channel
-                currImg = img(:,:,1,z);
+            parfor (z = 1:size(img, 3), parforArg)  % binarization filter, only one color channel
+                currImg = img(:,:,z,1);
                 if BatchOpt.ClusterSize{1} > 0
                     mask = imextendedmin(currImg, BatchOpt.ClusterSize{1});
                     mask = imimposemin(currImg, mask);
