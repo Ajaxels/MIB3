@@ -34,14 +34,14 @@ if nargin < 2; img = []; end
 BatchOptOut = obj.BatchOpt;
 
 if batchModeSwitch == 0     % GUI mode: read current filter parameters
-    ImageFiltersFields = fieldnames(obj.ImageFilters.(BatchOptOut.FilterName{1}));
+    ImageFiltersFields = fieldnames(obj.imageFiltersParams.(BatchOptOut.FilterName{1}));
     for i = 1:numel(ImageFiltersFields)
         if strcmp(ImageFiltersFields{i}, 'mibBatchTooltip'); continue; end
-        BatchOptOut.(ImageFiltersFields{i}) = obj.ImageFilters.(BatchOptOut.FilterName{1}).(ImageFiltersFields{i});
+        BatchOptOut.(ImageFiltersFields{i}) = obj.imageFiltersParams.(BatchOptOut.FilterName{1}).(ImageFiltersFields{i});
     end
 end
 
-obj.ImageFilters.DesiredFilterName = BatchOptOut.FilterName{1};
+obj.imageFiltersParams.DesiredFilterName = BatchOptOut.FilterName{1};
 
 % validate DistanceMap parameters
 if strcmp(BatchOptOut.FilterName{1}, 'DistanceMap')

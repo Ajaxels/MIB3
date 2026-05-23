@@ -50,7 +50,7 @@ classdef ImageFilters < handle
         % cell array with available contrast adjustment filters
         BinarizationFiltersList
         % cell array with available binarization filters
-        ImageFilters
+        imageFiltersParams
         % structure with parameters for each filter (local copy of sessionSettings.ImageFilters)
         Filters3D
         % list of filter names that support 3D mode
@@ -108,10 +108,10 @@ classdef ImageFilters < handle
                 if ~isempty(varargin{1}); DesiredFilterName = varargin{1}; end
             end
 
-            obj.ImageFilters = obj.mibModel.sessionSettings.ImageFilters; % local copy
+            obj.imageFiltersParams = obj.mibModel.sessionSettings.ImageFilters; % local copy
 
             % update certain parameters
-            obj.ImageFilters.Bilateral.degreeOfSmoothing = num2str(obj.mibModel.I{obj.BatchOpt.id}.image.meta('MaxInt')^2*.01);
+            obj.imageFiltersParams.Bilateral.degreeOfSmoothing = num2str(obj.mibModel.I{obj.BatchOpt.id}.image.meta('MaxInt')^2*.01);
 
             if verLessThan('Matlab', '9.8')
                 obj.BasicFiltersList = {'Average', 'Disk', 'DistanceMap', 'ElasticDistortion', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std'};
@@ -131,8 +131,8 @@ classdef ImageFilters < handle
             end
 
             % determine desired filter and its group
-            if isempty(DesiredFilterName) && ~isempty(obj.ImageFilters.DesiredFilterName)
-                DesiredFilterName = obj.ImageFilters.DesiredFilterName;
+            if isempty(DesiredFilterName) && ~isempty(obj.imageFiltersParams.DesiredFilterName)
+                DesiredFilterName = obj.imageFiltersParams.DesiredFilterName;
             end
 
             if ~isempty(DesiredFilterName)
@@ -259,7 +259,7 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
-            obj.mibModel.sessionSettings.ImageFilters = obj.ImageFilters;
+            obj.mibModel.sessionSettings.ImageFilters = obj.imageFiltersParams;
 
             if isvalid(obj.view.gui)
                 delete(obj.view.gui);
@@ -298,16 +298,16 @@ classdef ImageFilters < handle
             % RETURNBATCHOPT - Send BatchOpt (with filter params) to mibBatchController.
             if nargin < 2
                 BatchOptOut = obj.BatchOpt;
-                ImageFiltersFields = fieldnames(obj.ImageFilters.(BatchOptOut.FilterName{1}));
+                ImageFiltersFields = fieldnames(obj.imageFiltersParams.(BatchOptOut.FilterName{1}));
                 for i = 1:numel(ImageFiltersFields)
                     if ~isfield(BatchOptOut, ImageFiltersFields{i})
-                        BatchOptOut.(ImageFiltersFields{i}) = obj.ImageFilters.(BatchOptOut.FilterName{1}).(ImageFiltersFields{i});
+                        BatchOptOut.(ImageFiltersFields{i}) = obj.imageFiltersParams.(BatchOptOut.FilterName{1}).(ImageFiltersFields{i});
                     end
                 end
             end
 
             % add tooltips for the current filter
-            CurrentFilterTooltip = obj.ImageFilters.(BatchOptOut.FilterName{1}).mibBatchTooltip;
+            CurrentFilterTooltip = obj.imageFiltersParams.(BatchOptOut.FilterName{1}).mibBatchTooltip;
             fieldNames = fieldnames(CurrentFilterTooltip);
             for i = 1:numel(fieldNames)
                 BatchOptOut.mibBatchTooltip.(fieldNames{i}) = CurrentFilterTooltip.(fieldNames{i});
@@ -386,10 +386,10 @@ classdef ImageFilters < handle
         end
 
         % ---------------------------------------------------------------
-        function updateImageFiltersParameters(obj, hWidget, event)
+        function updateImageFiltersParameters(obj, hWidget, ~)
             % UPDATEIMAGEFILTERSPARAMETERS - Sync ImageFilters struct when a parameter widget changes.
-            subBatchOpt = obj.ImageFilters.(obj.view.handles.FilterName.Value);
-            obj.ImageFilters.(obj.view.handles.FilterName.Value) = utils.updateBatchOptFromGUI_Shared(subBatchOpt, hWidget);
+            subBatchOpt = obj.imageFiltersParams.(obj.view.handles.FilterName.Value);
+            obj.imageFiltersParams.(obj.view.handles.FilterName.Value) = utils.updateBatchOptFromGUI_Shared(subBatchOpt, hWidget);
             try
                 obj.renderThumbnailPreview();
                 if obj.view.handles.AutopreviewCheckBox.Value
@@ -416,7 +416,7 @@ classdef ImageFilters < handle
             hParent = obj.view.handles.GridLayoutParameters;
             noRows = numel(obj.view.handles.GridLayoutParameters.RowHeight);
 
-            paraList = obj.ImageFilters.(value);
+            paraList = obj.imageFiltersParams.(value);
             Tooltips = paraList.mibBatchTooltip;
             paraList = rmfield(paraList, 'mibBatchTooltip');
 
