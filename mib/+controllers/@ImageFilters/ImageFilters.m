@@ -42,6 +42,8 @@ classdef ImageFilters < handle
         % cell array of dynamically created filter-parameter widget handles
         BatchOpt
         % structure compatible with batch processing; field names match widget Tags
+        infoHtmlTempFile
+        % path to the current InfoHTML temp file; deleted on next setInfoHtml call
     end
 
     events
@@ -68,6 +70,8 @@ classdef ImageFilters < handle
     end
 
     methods
+        % External method file declarations
+        updateSessionSettings(obj) % generate default session settings with filter settings
 
         % ---------------------------------------------------------------
         function obj = ImageFilters(mibModel, varargin)
@@ -84,6 +88,11 @@ classdef ImageFilters < handle
             obj.mibModel = mibModel;
             obj.mibGUI = mibModel.mibGUI;
             
+            % get default parameters for filters
+            if ~isfield(obj.mibModel.sessionSettings, 'ImageFilters')
+                obj.updateSessionSettings();
+            end
+
             %% fill BatchOpt with defaults
             obj.BatchOpt.id = obj.mibModel.getActiveId();
 
@@ -96,12 +105,7 @@ classdef ImageFilters < handle
 
             % update certain parameters
             obj.imageFiltersParams.Bilateral.degreeOfSmoothing = num2str(obj.mibModel.I{obj.BatchOpt.id}.image.maxInt^2*.01);
-
-            if verLessThan('Matlab', '9.8')
-                obj.BasicFiltersList = {'Average', 'Disk', 'DistanceMap', 'ElasticDistortion', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std'};
-            else
-                obj.BasicFiltersList = {'Average', 'Disk', 'DistanceMap', 'ElasticDistortion', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Mode', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std'};
-            end
+            obj.BasicFiltersList = {'Average', 'Disk', 'DistanceMap', 'ElasticDistortion', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Mode', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std'};
             obj.EdgePreservingFiltersList = {'AnisotropicDiffusion', 'Bilateral', 'DNNdenoise', 'Median', 'NonLocalMeans', 'Wiener'};
             obj.ContrastFiltersList = {'AddNoise', 'FastLocalLaplacian', 'FlatfieldCorrection', 'LocalBrighten', 'LocalContrast', 'ReduceHaze', 'UnsharpMask'};
             obj.BinarizationFiltersList = {'Edge', 'SlicClustering', 'WatershedClustering'};
@@ -159,7 +163,7 @@ classdef ImageFilters < handle
             obj.BatchOpt.showWaitbar = true;
             obj.BatchOpt.id = obj.mibModel.getActiveId();
 
-            obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Image filters';
+            obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Image -> Filters';
             obj.BatchOpt.mibBatchActionName = obj.BatchOpt.FilterName{1};
             obj.BatchOpt.mibBatchTooltip.FilterGroup = 'Specify image group of image filters';
             obj.BatchOpt.mibBatchTooltip.FilterName = 'Specify name of the filter';
@@ -210,7 +214,6 @@ classdef ImageFilters < handle
             obj.FilterGroupValueChanged();
 
             obj.addCallbacks();
-
             obj.view.gui.Visible = 'on';
 
             % add listeners
@@ -222,26 +225,87 @@ classdef ImageFilters < handle
         function addCallbacks(obj)
             % ADDCALLBACKS - Wire all widget callbacks after view creation.
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
-            obj.view.handles.FilterGroup.ValueChangedFcn    = @(h,~) obj.FilterGroupValueChanged(h);
-            obj.view.handles.FilterName.ValueChangedFcn     = @(h,~) obj.FilterNameValueChanged(h);
-            obj.view.handles.Mode3D.ValueChangedFcn         = @(~,~) obj.Mode3DValueChanged();
-            obj.view.handles.DatasetType.ValueChangedFcn    = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.ColorChannel.ValueChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.SourceLayer.ValueChangedFcn    = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.ActionToResult.ValueChangedFcn = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.MaterialIndex.ValueChangedFcn  = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.UseParallelComputing.ValueChangedFcn = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.AutopreviewCheckBox.ValueChangedFcn  = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.PreviewButton.ButtonPushedFcn  = @(~,~) obj.PreviewButtonPushed();
-            obj.view.handles.FilterButton.ButtonPushedFcn   = @(~,~) obj.Filter();
-            obj.view.handles.HelpButton.ButtonPushedFcn     = @(~,~) obj.helpButton_Callback();
-            obj.view.handles.CloseButton.ButtonPushedFcn    = @(~,~) obj.closeWindow();
-            obj.view.gui.WindowScrollWheelFcn = @(~,e) obj.scrollWheel_Callback(e);
+            obj.view.handles.FilterGroup.ValueChangedFcn    = @(h,~) obj.FilterGroupValueChanged(h); %
+            obj.view.handles.FilterName.ValueChangedFcn     = @(h,~) obj.FilterNameValueChanged(h); %
+            obj.view.handles.Mode3D.ValueChangedFcn         = @(~,~) obj.Mode3DValueChanged(); %
+            obj.view.handles.DatasetType.ValueChangedFcn    = @(h,e) obj.updateBatchOptFromGUI(e); %
+            obj.view.handles.ColorChannel.ValueChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e); %
+            obj.view.handles.SourceLayer.ValueChangedFcn    = @(h,e) obj.updateBatchOptFromGUI(e); %
+            obj.view.handles.ActionToResult.ValueChangedFcn = @(h,e) obj.updateBatchOptFromGUI(e); %
+            obj.view.handles.MaterialIndex.ValueChangedFcn  = @(h,e) obj.updateBatchOptFromGUI(e); %
+            obj.view.handles.UseParallelComputing.ValueChangedFcn = @(h,e) obj.updateBatchOptFromGUI(e); %
+            obj.view.handles.PreviewButton.ButtonPushedFcn  = @(~,~) obj.PreviewButtonPushed(); % 
+            obj.view.handles.FilterButton.ButtonPushedFcn   = @(~,~) obj.Filter(); % 
+            obj.view.handles.HelpButton.ButtonPushedFcn     = @(~,~) obj.helpButton_Callback(); % 
+            obj.view.handles.CloseButton.ButtonPushedFcn    = @(~,~) obj.closeWindow();  % 
+            obj.view.gui.WindowScrollWheelFcn = @(~,e) obj.scrollWheel_Callback(e); %
+            obj.view.gui.KeyPressFcn = @(~,e) obj.figureKeyPress(e);
+            obj.view.handles.InfoHTML.HTMLEventReceivedFcn = @(~,e) obj.infoHtmlDataChanged(e);
+        end
+
+        % ---------------------------------------------------------------
+        function figureKeyPress(obj, event)
+            % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+            if isempty(event.Character); return; end
+
+            eventData = struct();
+            eventData.eventdata = event;
+            eventData = core.ToggleEventData(eventData);
+            notify(obj.mibModel, 'KeyPressEvent', eventData);
+        end
+
+        % ---------------------------------------------------------------
+        function infoHtmlDataChanged(obj, event)
+            % INFOHTMLDATACHANGED - Handle events sent from the InfoHTML uihtml component.
+            % In R2026a+ direct <a href> navigation is sandboxed; links are intercepted
+            % by JavaScript and forwarded here via sendEventToMATLAB(eventName, data).
+            % MATLAB receives them in HTMLEventReceivedFcn: event.HTMLEventData.url
+            if strcmp(event.HTMLEventName, 'linkClicked') && isfield(event.HTMLEventData, 'url')
+                web(event.HTMLEventData.url, '-browser');
+            end
+        end
+
+      
+
+        % ---------------------------------------------------------------
+        function setInfoHtml(obj, infoText)
+            % SETINFOHTML - Write info HTML to a unique temp file and load it into InfoHTML.
+            % Inline HTMLSource strings block <script> in R2026a (CSP); a file path
+            % allows scripts. tempname() gives a unique path each call so uihtml
+            % always detects a change and reloads (same path = no reload).
+            htmlContent = sprintf([...
+                '<!DOCTYPE html><html><head><script>\n' ...
+                'function setup(htmlComponent) {\n' ...
+                '  document.addEventListener("click", function(e) {\n' ...
+                '    var t = e.target;\n' ...
+                '    while (t && t.tagName !== "A") { t = t.parentElement; }\n' ...
+                '    if (t && t.href) {\n' ...
+                '      e.preventDefault();\n' ...
+                '      htmlComponent.sendEventToMATLAB("linkClicked", {url: t.href});\n' ...
+                '    }\n' ...
+                '  });\n' ...
+                '}\n' ...
+                '</script></head><body>\n' ...
+                '<p style="font-family: Sans-serif; font-size: small;">%s</p>\n' ...
+                '</body></html>'], infoText);
+
+            if ~isempty(obj.infoHtmlTempFile) && isfile(obj.infoHtmlTempFile)
+                delete(obj.infoHtmlTempFile);
+            end
+            tempFilePath = [tempname, '.html'];
+            fid = fopen(tempFilePath, 'w', 'n', 'UTF-8');
+            fprintf(fid, '%s', htmlContent);
+            fclose(fid);
+            obj.infoHtmlTempFile = tempFilePath;
+            obj.view.handles.InfoHTML.HTMLSource = tempFilePath;
         end
 
         % ---------------------------------------------------------------
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
+            if ~isempty(obj.infoHtmlTempFile) && isfile(obj.infoHtmlTempFile)
+                delete(obj.infoHtmlTempFile);
+            end
             obj.mibModel.sessionSettings.ImageFilters = obj.imageFiltersParams;
 
             if isvalid(obj.view.gui)
@@ -466,8 +530,7 @@ classdef ImageFilters < handle
             end
 
             % update filter info HTML
-            obj.view.handles.InfoHTML.HTMLSource = sprintf('<p style="font-family: Sans-serif; font-size: small;">%s</p>', ...
-                obj.mibModel.sessionSettings.ImageFilters.(value).mibBatchTooltip.Info);
+            obj.setInfoHtml(obj.mibModel.sessionSettings.ImageFilters.(value).mibBatchTooltip.Info);
 
             % enable/disable 3D checkbox
             if ismember(value, obj.Filters3D)

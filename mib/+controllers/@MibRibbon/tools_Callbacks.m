@@ -31,10 +31,10 @@ switch mode
     case 'Graphcut'        % obj.handles.ribbonTools.graphcut
     case 'Watershed'        % obj.handles.ribbonTools.watershed
 
-    case {sprintf('Measure\nlength'), 'Line measure'}   % obj.handles.ribbonTools.measure or obj.handles.ribbonTools.measureLine
-        obj.mibController.measureLength('line');
-    case 'Measure tool'                                 % obj.handles.ribbonTools.measureTool
+    case {'Measure tool', sprintf('Measure\ntool')}   % obj.handles.ribbonTools.measureTool
         obj.mibController.measureLength('tool');        % measure tool starts from measureLength
+    case 'Line measure'   % obj.handles.ribbonTools.measure or obj.handles.ribbonTools.measureLine
+        obj.mibController.measureLength('line');
     case 'Free hand measure'                            % measureFreehand
         obj.mibController.measureLength('freehand');
     case sprintf('Object\nseparation')                  % obj.handles.ribbonTools.objects

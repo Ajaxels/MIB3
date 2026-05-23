@@ -289,6 +289,7 @@ classdef BatchProcessing < handle
             h.deleteProtocol.ButtonPushedFcn = @(~,~) obj.deleteProtocol();
             h.undo.ButtonPushedFcn           = @(~,~) obj.backupProtocolRestore('undo');
             h.redo.ButtonPushedFcn           = @(~,~) obj.backupProtocolRestore('redo');
+            h.closeButton.ButtonPushedFcn    = @(~,~) obj.closeWindow(); 
 
             % add / insert / update protocol steps
             h.addToProtocol.ButtonPushedFcn = @(~,~) obj.protocolActions_Callback('add');

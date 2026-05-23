@@ -90,6 +90,7 @@ classdef MibModel < handle
         AddMeasurement       % add a new measurement
         DatasetsPanelUpdate  % update widgets of the Datasets panel
         FrameChanged         % change of the current frame of 5D dataset (time)
+        KeyPressEvent        % event triggered by a child widget to call for key press callback of MIB
         NewDataset           % MibModel loaded a new image, update MibController widgets
         ShowErrorDialog      % show error dialog, notified from widgets that have no access to MibView, requires core.ToggleEventData
         ShowImage            % render image in the Image View panel

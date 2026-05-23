@@ -136,12 +136,13 @@ popupList = PopupList();
 header1 = PopupListHeader('Adjust or normalize contrast');
 popupList.add(header1);
 
-% % CLAHE
-widgetHandles.contrastCLAHE =  ListItem('Contrast-limited adaptive histogram equalization', Icon(fullfile(iconPath, 'contrast_clahe_24px.png')));
-popupList.add(widgetHandles.contrastCLAHE);
 % % Normalize Z stack
 widgetHandles.contrastNorm =  ListItem('Normalize layers', Icon(fullfile(iconPath, 'contrast_norm_24px.png')));
 popupList.add(widgetHandles.contrastNorm);
+% % CLAHE
+widgetHandles.contrastCLAHE =  ListItem('Contrast-limited adaptive histogram equalization', Icon(fullfile(iconPath, 'contrast_clahe_24px.png')));
+popupList.add(widgetHandles.contrastCLAHE);
+
 
 % add the popup list to the Contrast button
 widgetHandles.contrast.Popup = popupList;

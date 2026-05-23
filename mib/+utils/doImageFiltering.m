@@ -34,12 +34,21 @@ if ~isfield(BatchOpt, 'showWaitbar'); BatchOpt.showWaitbar = false; end
 maxVal = double(intmax(class(img(1))));
 
 % Normalize to MIB3 native format [H, W, Z, C] — depth=dim3, colors=dim4.
-% Inputs from getData2D/getData3D may arrive as [H,W,C] (2D image), [H,W,Z,C] (3D image),
+% getData2D returns [H,W,C] for a 2D slice, getData3D returns [H,W,Z,C] for a
+% 3D stack — but for single-channel images MATLAB drops the trailing C=1 singleton,
+% so both can arrive here as ndims==3.  Disambiguate using DatasetType:
+%   '2D, Slice'  → ndims==3 means [H,W,C]; reshape to [H,W,1,C]
+%   '3D, Stack' / '4D, Dataset' → ndims==3 means [H,W,Z] (C=1 implicit);
+%      the filter loops already iterate correctly (size(img,3)=Z, size(img,4)=1).
 if strcmp(BatchOpt.SourceLayer{1}, 'image')
-    if ndims(img) == 3  % 2D slice [H,W,C] → [H,W,1,C]
-        img = reshape(img, [size(img,1), size(img,2), 1, size(img,3)]);
+    if ndims(img) == 3
+        is2D = ~isfield(BatchOpt, 'DatasetType') || strcmp(BatchOpt.DatasetType{1}, '2D, Slice');
+        if is2D   % [H,W,C] → [H,W,1,C]
+            img = reshape(img, [size(img,1), size(img,2), 1, size(img,3)]);
+        end
+        % 3D/4D single-channel stack: [H,W,Z] stays — filter loops use dim3 as Z
     end
-    % 4D image [H,W,Z,C] stays as is
+    % 4D image [H,W,Z,C] (ndims==4) stays as is
 end
 
 if size(img, 3) == 1; BatchOpt.showWaitbar = 0; BatchOpt.UseParallelComputing = false; end     % turn off the waitbar and parallel computing for single-slice images
@@ -227,7 +236,7 @@ if BatchOpt.Mode3D  % perform the 3D filters
                 end
 
                 if strcmp(BatchOpt.ResultingShape{1}, 'clusters')
-                    if ~strcmp(BatchOpt.DestinationLayer{1}, 'model')
+                    if ~strcmp(BatchOpt.DestinationLayer{1}, 'labels')
                         img = uint8(img);
                         img(img>1) = 1;
                     end
@@ -324,7 +333,9 @@ else    % perform 2D filters
             for colCh=1:size(img, 4)
                 parfor (z = 1:size(img, 3), parforArg)
                     img(:,:,z,colCh) = imfilter(img(:,:,z,colCh), h, Padding, BatchOpt.FilteringMode{1});
-                    if showWaitbar; pwb.increment(); end
+                    if showWaitbar
+                        pwb.increment(); 
+                    end
                 end
             end
         case 'Bilateral'
@@ -538,7 +549,7 @@ else    % perform 2D filters
             %for colCh=1:size(img, 4)
                 parfor (z = 1:size(img, 3), parforArg)
                     randomSeed = z;     % define random
-                    img(:,:,z,:) = mibElasticDistortionFilter(squeeze(img(:,:,z,:)), BatchOpt, randomSeed);
+                    img(:,:,z,:) = utils.elasticDistortionFilter(squeeze(img(:,:,z,:)), BatchOpt, randomSeed);
                     if showWaitbar; pwb.increment(); end
                 end
             %end
@@ -752,7 +763,7 @@ else    % perform 2D filters
         case 'SaltAndPepper'
             logText = sprintf('%s, HSize:%s, Threshold:%d, NoiseType:%s', ....
                 logText, BatchOpt.HSize, BatchOpt.IntensityThreshold{1}, BatchOpt.NoiseType{1});
-            img = mibRemoveSaltAndPepperNoise(img, BatchOpt, cpuParallelLimit);
+            img = utils.removeSaltAndPepperNoise(img, BatchOpt, cpuParallelLimit);
         case 'SlicClustering'
             % calculate number of superpixels
             dims = size(img);
@@ -832,7 +843,7 @@ else    % perform 2D filters
                     mask = imdilate(mask, ones(3));
                 end
 
-                if strcmp(BatchOpt.DestinationLayer{1}, 'model') && getClusters == 1
+                if strcmp(BatchOpt.DestinationLayer{1}, 'labels') && getClusters == 1
                     maxVal = double(intmax(class(mask(1))));
                     if maxInt(z) < maxVal; maxInt(z) = maxVal; end
                 end
@@ -843,7 +854,7 @@ else    % perform 2D filters
             maxInt = max(maxInt);   % get max number of clusters
 
             if getClusters
-                if strcmp(BatchOpt.DestinationLayer{1}, 'model')
+                if strcmp(BatchOpt.DestinationLayer{1}, 'labels')
                     if maxInt < 65536
                         img = uint16(model) ;
                     else

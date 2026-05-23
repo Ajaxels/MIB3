@@ -95,7 +95,7 @@ column.add(widgetHandles.semiauto);
 section = obj.handles.ribbon.tools.addSection("Misc");
 % Measure length
 column = section.addColumn();
-widgetHandles.measure =  matlab.ui.internal.toolstrip.SplitButton(sprintf('Measure\nlength'), Icon(fullfile(iconPath, 'profileLine_24px.png')));
+widgetHandles.measure =  matlab.ui.internal.toolstrip.SplitButton(sprintf('Measure\ntool'), Icon(fullfile(iconPath, 'measure_24px.png')));
 widgetHandles.measure.Description = "Start Measure tool for interactive measurements";
 
 popupList = PopupList();

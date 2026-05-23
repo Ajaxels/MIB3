@@ -26,8 +26,9 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 %     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 420)
 %     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: 160)
 %     - ``.WindowStyle`` — [char] ``'normal'`` or ``'modal'`` (default: ``'modal'``)
-%     - ``.Icon`` — [char] ``'puffin_question'`` (default), ``'puffin_warning'``,
-%       ``'question_48px'``, ``'warning_48px'``, ``'celebrate'``, ``'call4help'``
+%     - ``.Icon`` — [char]
+%     ``'puffin_question'`` (default), ``'puffin_warning'``,
+%           ``'puffin_info'``, ``'question_48px'``, ``'warning_48px'``, ``'celebrate'``, ``'call4help'``
 %     - ``.IconWidth`` — [numeric] icon column width in pixels (default: 48)
 %     - ``.ParentFigure`` — [handle] parent window used to centre the dialog (default: ``[]``)
 %     - ``.DefaultKey`` — [char] ``'default'`` or ``'cancel'``; controls which action the Enter key triggers (default: ``'default'``)
@@ -189,8 +190,10 @@ switch options.Icon
     case 'question_48px', iconFilename = 'question_48px.png';
     case 'celebrate',     iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
     case 'call4help',     iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3));
-    case 'puffin_warning'
-        % get random icon
+    case 'puffin_info'
+        iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
+        options.IconWidth = 96;
+    case 'puffin_warning'         
         iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
         options.IconWidth = 96;
     otherwise  % 'puffin_question
@@ -303,7 +306,7 @@ contentGrid.Layout.Column = 1;
 contentGrid.ColumnWidth   = {iconW, '1x'};
 contentGrid.RowHeight     = {'1x'};
 contentGrid.Padding       = [0, 0, 0, 0];
-contentGrid.ColumnSpacing = 8;
+contentGrid.ColumnSpacing = 18;
 
 % Icon (uiimage with pre-composited alpha — no axes toolbar artifacts)
 if ~isempty(iconImg)

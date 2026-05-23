@@ -66,8 +66,7 @@ obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateDatasetAxes', @(src, evn
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateToolbar', @(src, evnt) obj.listener_updateToolbar(src, evnt)); % update toolbar buttons
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src, evnt) obj.listener_updateGuiWidgets(src, evnt)); % update GUI widgets
 obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateUserScore', @(src, evnt) obj.listner_ModelEvent(src, evnt)); % update GUI widgets
-
-% obj.listeners{end+1} = addlistener(obj.mibModel, 'UpdateUserScore', @(src, evnt) obj.listner_Standard(src, evnt)); % update GUI widgets
+obj.listeners{end+1} = addlistener(obj.mibModel, 'KeyPressEvent', @(src,evnt) obj.listner_ModelEvent(src, evnt));
 
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @(src, evnt) obj.listner_ModelEvent_Callback(src, evnt));
 %obj.listeners{end+1} = addlistener(obj.model, 'modelNotify', @obj.listner_ModelEvent_Callback);

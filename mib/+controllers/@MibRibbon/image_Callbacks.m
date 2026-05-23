@@ -29,6 +29,7 @@ switch mode
     case sprintf('Adjust\ndisplay')               % obj.handles.ribbonImage.display
         obj.mibController.startController('controllers.DisplayAdjust');
     case 'Contrast-limited adaptive histogram equalization'     % obj.handles.ribbonImage.contrastCLAHE
+        obj.mibController.startController('controllers.ContrastClahe');
 
     case 'Normalize layers'                                     % obj.handles.ribbonImage.contrastNorm
         obj.mibController.startController('controllers.ContrastNormalization');

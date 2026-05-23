@@ -107,8 +107,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Adjust Display/Image';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.DisplayAdjust'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Color channel actions';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.colorChannelActions([], [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Contrast-limited adaptive histogram equalization';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.contrastCLAHE(''Current stack (3D)'', Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Contrast-limited adaptive histogram equalization';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContrastClahe'', [], Batch)'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Normalize layers';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContrastNormalization'', [], Batch);'; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Invert image';
@@ -129,6 +129,25 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startContr
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibWhiteBalanceController'', [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Morphological operations';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibImageMorphOpsController'', [], Batch);'; actionId = actionId + 1;
+
+secIndex = secIndex + 1;
+obj.Sections(secIndex).Name = 'Ribbon -> Image -> Filters';
+FiltersList = {'Average', 'Disk', 'DistanceMap', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Mode', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std',...
+    'AnisotropicDiffusion', 'Bilateral', 'DNNdenoise', 'Median', 'NonLocalMeans', 'Wiener',...
+    'AddNoise', 'FastLocalLaplacian', 'FlatfieldCorrection', 'LocalBrighten', 'LocalContrast', 'ReduceHaze', 'UnsharpMask',...
+    'Edge', 'SlicClustering', 'WatershedClustering'};
+% add BMxD filter if available
+if ~isempty(obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath)
+    if exist(fullfile(obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath, 'BM3D.m'), 'file') == 2
+        FiltersList{end+1} = 'BMxD';
+    end
+end
+FiltersList = sort(FiltersList);
+for actionId = 1:numel(FiltersList)
+    obj.Sections(secIndex).Actions(actionId).Name = FiltersList{actionId};
+    obj.Sections(secIndex).Actions(actionId).Command = sprintf('obj.mibController.startController(''controllers.ImageFilters'', ''%s'', Batch);', FiltersList{actionId});
+end
+
 
 secIndex = secIndex + 1;
 actionId = 1;
@@ -340,24 +359,6 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Mask';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''selection'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Model';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.moveLayers(''selection'', ''labels'', [], [], Batch);'; actionId = actionId + 1;
-
-% secIndex = secIndex + 1;
-% obj.Sections(secIndex).Name = 'Panel -> Image filters';
-% FiltersList = {'Average', 'Disk', 'DistanceMap', 'Entropy', 'Frangi', 'Gaussian', 'Gradient', 'LoG', 'MathOps', 'Mode', 'Motion','Prewitt','Range', 'SaltAndPepper','Sobel','Std',...
-%     'AnisotropicDiffusion', 'Bilateral', 'DNNdenoise', 'Median', 'NonLocalMeans', 'Wiener',...
-%     'AddNoise', 'FastLocalLaplacian', 'FlatfieldCorrection', 'LocalBrighten', 'LocalContrast', 'ReduceHaze', 'UnsharpMask',...
-%     'Edge', 'SlicClustering', 'WatershedClustering'};
-% % add BMxD filter if available
-% if ~isempty(obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath)
-%     if exist(fullfile(obj.mibModel.preferences.ExternalDirs.bm3dInstallationPath, 'BM3D.m'), 'file') == 2
-%         FiltersList{end+1} = 'BMxD';
-%     end
-% end
-% FiltersList = sort(FiltersList);
-% % for actionId = 1:numel(FiltersList)
-% %     obj.Sections(secIndex).Actions(actionId).Name = FiltersList{actionId};
-% %     obj.Sections(secIndex).Actions(actionId).Command = sprintf('obj.mibController.startController(''mibImageFiltersController'', ''%s'', Batch);', FiltersList{actionId});
-% % end
 
 secIndex = secIndex + 1;
 actionId = 1;

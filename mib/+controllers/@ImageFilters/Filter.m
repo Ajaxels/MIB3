@@ -49,8 +49,8 @@ if isempty(img)
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, '!!! Warning !!!', {''}, ...
-            {'This tool is not compatible with the virtual stacking mode!\nPlease switch to the memory-resident mode and try again'}, ...
+        utils.dlgs.inputUniversalDlg(obj.mibGUI, '', {''}, ...
+            {sprintf('This tool is not compatible with the virtual stacking mode!\nPlease switch to the memory-resident mode and try again')}, ...
             'Not implemented', dlgOpt);
         notify(obj.mibModel, 'StopProtocol');
         obj.closeWindow();
@@ -75,10 +75,10 @@ if isempty(img)
 
     switch obj.BatchOpt.DatasetType{1}
         case '2D, Slice'
-            obj.mibModel.backup(backupLayer, 0, getDataOptions);
+            if batchModeSwitch == 0; obj.mibModel.backup(backupLayer, 0, getDataOptions); end
             timeVector = [obj.mibModel.I{obj.BatchOpt.id}.getCurrentTimePoint(), obj.mibModel.I{obj.BatchOpt.id}.getCurrentTimePoint()];
         case '3D, Stack'
-            obj.mibModel.backup(backupLayer, 1, getDataOptions);
+            if batchModeSwitch == 0; obj.mibModel.backup(backupLayer, 1, getDataOptions); end
             timeVector = [obj.mibModel.I{obj.BatchOpt.id}.getCurrentTimePoint(), obj.mibModel.I{obj.BatchOpt.id}.getCurrentTimePoint()];
         case '4D, Dataset'
             timeVector = [1, obj.mibModel.I{obj.BatchOpt.id}.image.time];
@@ -129,7 +129,7 @@ end
 
 % determine which layers to process (ElasticDistortion can distort all)
 if strcmp(BatchOptOut.FilterName{1}, 'ElasticDistortion') && BatchOptOut.DistortAllLAyers
-    if obj.mibModel.I{obj.BatchOpt.id}.labels.modelType == 63
+    if obj.mibModel.I{obj.BatchOpt.id}.labels.maxMaterials == 63
         sourceLayersList = {'image', 'everything'};
     else
         sourceLayersList = {'image', 'labels', 'mask'};
@@ -186,12 +186,12 @@ for sourceLayerId = 1:numel(sourceLayersList)
 
             switch BatchOptOut.ActionToResult{1}
                 case 'Fitler image'
-                    [img{roi}, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
+                    [img{roi}, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibModel.mibGUI);
                 case 'Filter and add'
-                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
+                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibModel.mibGUI);
                     img{roi} = img{roi}+imgOut;
                 case 'Filter and subtract'
-                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
+                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibModel.mibGUI);
                     img{roi} = img{roi}-imgOut;
             end
 
@@ -238,7 +238,7 @@ for sourceLayerId = 1:numel(sourceLayersList)
                     obj.mibModel.setData3D(img, BatchOptOut.DestinationLayer{1}, t, [], [], getDataOptions);
                 else
                     id = obj.mibModel.getActiveId();
-                    if obj.mibModel.I{id}.labels.modelType ~= ModelType
+                    if obj.mibModel.I{id}.labels.maxMaterials ~= ModelType
                         obj.mibModel.createModel(ModelType);
                     end
                     obj.mibModel.setData2D(img, BatchOptOut.DestinationLayer{1}, obj.mibModel.I{obj.BatchOpt.id}.getCurrentSliceNumber(), [], [], getDataOptions);

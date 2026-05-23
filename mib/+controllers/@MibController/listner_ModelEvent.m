@@ -24,12 +24,23 @@ function listner_ModelEvent(obj, model, evnt)
 %      eventdata = core.ToggleEventData(notifyEvent);
 %      notify(obj, "modelNotify", eventdata);
 %
-
-% arguments (Input)
-%     obj controllers.MibController
-%     model 
-%     evnt (1,1) ToggleEventData
-% end
+% **Example 2** — forward key presses from a child controller figure to MIB shortcuts
+% (wire in the child controller's ``addCallbacks``, define ``figureKeyPress`` as a method):
+%
+%   .. code-block:: matlab
+%
+%      % in addCallbacks:
+%      obj.view.gui.KeyPressFcn = @(~,e) obj.figureKeyPress(e);
+%
+%      % method:
+%      function figureKeyPress(obj, event)
+%          if isempty(event.Character); return; end
+%          eventData = struct();
+%          eventData.eventdata = event;
+%          eventData = core.ToggleEventData(eventData);
+%          notify(obj.mibModel, 'KeyPressEvent', eventData);
+%      end
+%
 
 % if ~ismember('Parameters', fieldnames(evnt))
 %     errorText = sprintf(['Parameters field is required!\n\n' ...
@@ -44,6 +55,22 @@ function listner_ModelEvent(obj, model, evnt)
 % end
 
 switch evnt.EventName
+    case 'KeyPressEvent'
+        % key press event to propagate keys from child controllers to
+        % MibController.gui_WindowKeyPressFcn
+        % see example in controllers.ImageFilters.addCallbacks:
+        % % obj.view.gui.KeyPressFcn = @(~,e) obj.figureKeyPress(e);
+        % %
+        % % function figureKeyPress(obj, event)
+        % %     % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
+        % %     if isempty(event.Character); return; end
+        % % 
+        % %     eventData = struct();
+        % %     eventData.eventdata = event;
+        % %     eventData = core.ToggleEventData(eventData);
+        % %     notify(obj.mibModel, 'KeyPressEvent', eventData);
+        % % end
+        obj.gui_WindowKeyPressFcn(struct('CurrentObject', [], 'WindowKeyReleaseFcn', []), evnt.Parameters.eventdata);
     case 'UpdateUserScore'
         % increase user score after use of a segmentation tool
         % or performing operations in MIB
