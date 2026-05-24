@@ -23,6 +23,10 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
+    case 'Load'
+        utils.dlgs.showErrorDialog(obj.view.gui, ...
+            'Not implemented', ...
+            'homeImport_Callback');
     case {'Import', 'MATLAB'}  % obj.handles.ribbonHome.import &  obj.handles.ribbonHome.importFromMatlab
         obj.mibModel.importDataset('image');
     case 'System Clipboard'    % obj.handles.ribbonHome.importFromClipboard
@@ -33,8 +37,10 @@ switch mode
         end
         % convert to MIB3 [y,x,z,c,t] dimensions
         img = permute(img, [1,2,4,3]);
+        imageFilename = fullfile(obj.mibModel.currentDirectory, 'import_clipboard.jpg');
+        imageMeta = core.MibImage.initializeImgInfo('Filename', imageFilename);
         id = obj.mibModel.getActiveId();
-        obj.mibModel.I{id}.initialize(img, [], 'Standard', 'imageOnly', obj.mibModel.preferences.System.EnableSelection);
+        obj.mibModel.I{id}.initialize(img, imageMeta, 'Standard', 'imageOnly', obj.mibModel.preferences.System.EnableSelection);
 
         % --- notify controllers ---
         notify(obj.mibModel, 'NewDataset');

@@ -19,7 +19,6 @@ classdef MibRibbon
         homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
         homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
         homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
-        homeLoad_Callback(obj, hWidget, hData)        % callback on press of the load button in the Home ribbon
         homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
         homeIOtools_Callback(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
         homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
@@ -59,7 +58,7 @@ classdef MibRibbon
 
             %  Add CALLBACKS  ----------------------
             %% Add Callbacks for the HOME ribbon
-            obj.handles.ribbonHome.loadFile.ButtonPushedFcn = @obj.homeLoad_Callback;
+            obj.handles.ribbonHome.loadFile.ButtonPushedFcn = @obj.homeImport_Callback;
             obj.homeUpdateRecentDirsList();  % update the list of the recent directories
 
             obj.handles.ribbonHome.import.ButtonPushedFcn = @obj.homeImport_Callback;
