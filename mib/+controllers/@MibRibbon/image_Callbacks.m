@@ -73,7 +73,7 @@ switch mode
     case 'Content-aware fill'                                   % obj.handles.ribbonImage.contentAware
         obj.mibController.startController('controllers.ContentAwareFill');
     case 'Debris removal'                % obj.handles.ribbonImage.debrisRemoval
-
+        obj.mibController.startController('controllers.DebrisRemoval');
     case 'Image arithmetics'       % obj.handles.ribbonImage.imageMath
 
     case 'Intensity projection'  % obj.handles.ribbonImage.intProjection
@@ -81,7 +81,7 @@ switch mode
     case 'Select image frame'               % obj.handles.ribbonImage.imgFrame
 
     case 'White balance correction'          
-
+        obj.mibController.startController('controllers.WhiteBalance');
     % Intensity profile
     case 'Line intensity profile'       % obj.handles.ribbonImage.profileLine
 

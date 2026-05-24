@@ -204,8 +204,12 @@ classdef ImageFilters < handle
 
             obj.ParaHandles = {};
 
-            % update font size
-            utils.fontSizeUpdate(obj.view.gui, obj.mibModel.preferences.System.Font);
+            % update font and size
+            Font = obj.mibModel.preferences.System.Font;
+            if obj.view.handles.FilterButton.FontSize ~= Font.FontSize ...
+                    || ~strcmp(obj.view.handles.FilterButton.FontName, Font.FontName)
+                utils.fontSizeUpdate(obj.view.gui, Font);
+            end
 
             obj.updateWidgets();
 
