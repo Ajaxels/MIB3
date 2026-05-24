@@ -24,9 +24,11 @@ end
 
 switch mode
     case 'Shown slice (2D)'         % obj.handles.ribbonImage.invert2D
+        obj.mibModel.invertImage('2D, Slice');
     case 'Current stack (3D)'       % obj.handles.ribbonImage.invert3D
+        obj.mibModel.invertImage('3D, Stack');
     case {'Invert', 'Complete volume (4D)'}     % obj.handles.ribbonImage.invert4D
-
+        obj.mibModel.invertImage('4D, Dataset');
 end
 
 

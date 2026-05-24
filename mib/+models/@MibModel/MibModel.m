@@ -127,6 +127,7 @@ classdef MibModel < handle
         clearSelection(obj, sel_switch, BatchOptIn)           % clear the Selection layer (2D/3D/4D scope)
         [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)        % convert dataset coordinates to image axes (screen) coordinates
         [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
+        colorChannelActions(obj, mode, channel1, BatchOptIn)  % handle various color channel operations (insert, delete, copy, invert, rotate, shift, swap)
         copySwapSlice(obj, sourceSlice, targetSlice, mode, BatchOptIn)  % Batch-compatible dispatcher for copy, insert, and swap slice operations
         createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
         status = datasetsSetsOps(obj, BatchOptIn)        % operations with sets of the model; compatible with the batch mode.
@@ -152,7 +153,7 @@ classdef MibModel < handle
         importDatasetFromMib(obj, layerType, BatchOptIn)        % Import the mask or model layer from another MIB container.
         initialize(obj)        % initialize the MibModel class
         initializePreferences(obj)        % initialize and update MIB preferences from a file
-        colorChannelActions(obj, mode, channel1, BatchOptIn)  % handle various color channel operations (insert, delete, copy, invert, rotate, shift, swap)
+        invertImage(obj, datasetType, BatchOptIn) % Invert pixel intensities in the image dataset
         insertEmptySlice(obj, BatchOptIn)           % Insert one or more empty (background-filled) slices into the volume
         interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm
         loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack

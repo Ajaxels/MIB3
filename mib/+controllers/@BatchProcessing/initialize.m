@@ -111,8 +111,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Contrast-limited adaptive histo
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContrastClahe'', [], Batch)'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Normalize layers';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContrastNormalization'', [], Batch);'; actionId = actionId + 1;
-%obj.Sections(secIndex).Actions(actionId).Name = 'Invert image';
-%obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuImageInvert_Callback([], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Invert image';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.invertImage([], Batch);'; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Image filters';
 %obj.Sections(secIndex).Actions(actionId).Command = ''; actionId = actionId + 1;
 %obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Content-aware fill';
