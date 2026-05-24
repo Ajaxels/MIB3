@@ -26,11 +26,7 @@ classdef MibRibbon
         homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
         homeUpdateRecentDirsList(obj)        % update the recent directories list
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
-        imageColors_Callbacks(obj, hWidget, hData)        % callback on press of the color channel buttons in the Image ribbon
-        imageInvert_Callbacks(obj, hWidget, hData)        % callback on press of the Invert buttons in the Image ribbon
         imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
-        imageTools_Callbacks(obj, hWidget, hData)        % callback on press of Image tools buttons in the Image ribbon
-        imageVisualization_Callbacks(obj, hWidget, hData)        % callback on press of the Visualization buttons in the Image ribbon
         maskImportExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
         maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
         maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
@@ -210,36 +206,36 @@ classdef MibRibbon
             %% Add Callbacks for the IMAGE ribbon -> Image Adjustments
             obj.handles.ribbonImage.display.ButtonPushedFcn = @obj.image_Callbacks;
             % colors
-            obj.handles.ribbonImage.colorsInsert.ItemPushedFcn = @obj.imageColors_Callbacks;
-            obj.handles.ribbonImage.colorsCopy.ItemPushedFcn = @obj.imageColors_Callbacks;
-            obj.handles.ribbonImage.colorsInvert.ItemPushedFcn = @obj.imageColors_Callbacks;
-            obj.handles.ribbonImage.colorsRotate.ItemPushedFcn = @obj.imageColors_Callbacks;
-            obj.handles.ribbonImage.colorsShift.ItemPushedFcn = @obj.imageColors_Callbacks;
-            obj.handles.ribbonImage.colorsSwap.ItemPushedFcn = @obj.imageColors_Callbacks;
-            obj.handles.ribbonImage.colorsDelete.ItemPushedFcn = @obj.imageColors_Callbacks;
+            obj.handles.ribbonImage.colorsInsert.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.colorsCopy.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.colorsInvert.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.colorsRotate.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.colorsShift.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.colorsSwap.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.colorsDelete.ItemPushedFcn = @obj.image_Callbacks;
             % contrast
             obj.handles.ribbonImage.contrastCLAHE.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.contrastNorm.ItemPushedFcn = @obj.image_Callbacks;
             % invert
-            obj.handles.ribbonImage.invert.ButtonPushedFcn = @obj.imageInvert_Callbacks;
-            obj.handles.ribbonImage.invert2D.ItemPushedFcn = @obj.imageInvert_Callbacks;
-            obj.handles.ribbonImage.invert3D.ItemPushedFcn = @obj.imageInvert_Callbacks;
-            obj.handles.ribbonImage.invert4D.ItemPushedFcn = @obj.imageInvert_Callbacks;
+            obj.handles.ribbonImage.invert.ButtonPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.invert2D.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.invert3D.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.invert4D.ItemPushedFcn = @obj.image_Callbacks;
             % visualization
-            obj.handles.ribbonImage.visualization.ButtonPushedFcn = @obj.imageVisualization_Callbacks;
-            obj.handles.ribbonImage.visBicubic.ItemPushedFcn = @obj.imageVisualization_Callbacks;
-            obj.handles.ribbonImage.visNearest.ItemPushedFcn = @obj.imageVisualization_Callbacks;
-            obj.handles.ribbonImage.visAuto.ItemPushedFcn = @obj.imageVisualization_Callbacks;
+            obj.handles.ribbonImage.visualization.ButtonPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.visBicubic.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.visNearest.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.visAuto.ItemPushedFcn = @obj.image_Callbacks;
 
             %% Add Callbacks for the IMAGE ribbon -> Image Tools
             obj.handles.ribbonImage.filters.ButtonPushedFcn = @obj.image_Callbacks;
             % image tools
-            obj.handles.ribbonImage.contentAware.ItemPushedFcn = @obj.imageTools_Callbacks;
-            obj.handles.ribbonImage.debrisRemoval.ItemPushedFcn = @obj.imageTools_Callbacks;
-            obj.handles.ribbonImage.imageMath.ItemPushedFcn = @obj.imageTools_Callbacks;
-            obj.handles.ribbonImage.intProjection.ItemPushedFcn = @obj.imageTools_Callbacks;
-            obj.handles.ribbonImage.imgFrame.ItemPushedFcn = @obj.imageTools_Callbacks;
-            obj.handles.ribbonImage.whiteBalance.ItemPushedFcn = @obj.imageTools_Callbacks;
+            obj.handles.ribbonImage.contentAware.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.debrisRemoval.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.imageMath.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.intProjection.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.imgFrame.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.whiteBalance.ItemPushedFcn = @obj.image_Callbacks;
             % morph ops
             obj.handles.ribbonImage.botHat.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
             obj.handles.ribbonImage.clearBorder.ItemPushedFcn = @obj.imageMorphOps_Callbacks;

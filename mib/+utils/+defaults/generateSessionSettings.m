@@ -33,6 +33,14 @@ sessionSettings.CLAHE.NBins = 256;
 sessionSettings.CLAHE.Distribution = 'uniform';
 sessionSettings.CLAHE.Alpha = 0.4;
 
+% content-aware fill session settings
+sessionSettings.contentAwareFill.Method      = 'inpaintCoherent';
+sessionSettings.contentAwareFill.DatasetType = 'Shown slice (2D)';
+sessionSettings.contentAwareFill.Mask        = 'selection';
+sessionSettings.contentAwareFill.Radius      = 9;
+sessionSettings.contentAwareFill.SmoothingFactor = 4;
+sessionSettings.contentAwareFill.FillOrder   = 'gradient';
+
 % add physical pixel size in meters
 pixelsPerInch = get(0, 'ScreenPixelsPerInch');
 sessionSettings.metersPerPixel = 0.0254/pixelsPerInch;
