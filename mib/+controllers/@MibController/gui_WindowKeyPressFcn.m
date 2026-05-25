@@ -391,7 +391,7 @@ else    % all other possible shortcuts
             %     end
             % end
         case 'a'    % Select the Mask or Material (when mask is not shown) layer
-            if strcmp(modifier, 'control') | strcmp(modifier, 'alt') %#ok<OR2>
+            if strcmp(modifier, 'control') | strcmp(modifier, 'alt') 
                 if dataset.labels.maxMaterials ~= 128
                     if strcmp(modifier, 'alt')
                         if dataset.selectedMaterial == 1

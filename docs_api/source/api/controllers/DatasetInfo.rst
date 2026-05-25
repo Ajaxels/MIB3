@@ -1,9 +1,9 @@
-NormalizeContrast
+DatasetInfo
 ===========
 
 .. currentmodule:: controllers
 
-.. autoclass:: NormalizeContrast
+.. autoclass:: DatasetInfo
    :members:
    :undoc-members:
    :show-inheritance:

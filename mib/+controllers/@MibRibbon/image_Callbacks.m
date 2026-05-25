@@ -75,11 +75,11 @@ switch mode
     case 'Debris removal'                % obj.handles.ribbonImage.debrisRemoval
         obj.mibController.startController('controllers.DebrisRemoval');
     case 'Image arithmetics'       % obj.handles.ribbonImage.imageMath
-
+        obj.mibController.startController('controllers.ImageArithmetics');
     case 'Intensity projection'  % obj.handles.ribbonImage.intProjection
-
+        obj.mibModel.intensityProjection();
     case 'Select image frame'               % obj.handles.ribbonImage.imgFrame
-
+        obj.mibController.startController('controllers.ImageFrame');
     case 'White balance correction'          
         obj.mibController.startController('controllers.WhiteBalance');
     % Intensity profile

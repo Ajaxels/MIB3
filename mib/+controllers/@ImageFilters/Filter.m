@@ -42,6 +42,13 @@ if strcmp(BatchOptOut.FilterName{1}, 'DistanceMap')
     end
 end
 
+% define parent window
+if isempty(obj.view)   % headless batch mode
+    parentFigure = obj.mibModel.mibGUI;
+else
+    parentFigure = obj.view.gui;
+end
+
 returnBatchSettings = 0;
 if isempty(img)
     % check for virtual stacking mode
@@ -105,12 +112,12 @@ if ~isempty(img)
 
     switch BatchOptOut.ActionToResult{1}
         case 'Fitler image'
-            img = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
+            img = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, parentFigure);
         case 'Filter and add'
-            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
+            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, parentFigure);
             img = img + imgOut;
         case 'Filter and subtract'
-            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibGUI);
+            imgOut = utils.doImageFiltering(img, BatchOptOut, obj.mibModel.cpuParallelLimitMax, parentFigure);
             img = img - imgOut;
     end
     if size(img, 4)+size(img, 3) > 2; toc; end
@@ -186,12 +193,12 @@ for sourceLayerId = 1:numel(sourceLayersList)
 
             switch BatchOptOut.ActionToResult{1}
                 case 'Fitler image'
-                    [img{roi}, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibModel.mibGUI);
+                    [img{roi}, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, parentFigure);
                 case 'Filter and add'
-                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibModel.mibGUI);
+                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, parentFigure);
                     img{roi} = img{roi}+imgOut;
                 case 'Filter and subtract'
-                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, obj.mibModel.mibGUI);
+                    [imgOut, log_text] = utils.doImageFiltering(img{roi}, BatchOptOut, obj.mibModel.cpuParallelLimitMax, parentFigure);
                     img{roi} = img{roi}-imgOut;
             end
 

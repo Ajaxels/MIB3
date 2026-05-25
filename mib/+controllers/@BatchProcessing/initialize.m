@@ -119,12 +119,12 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Content-awa
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContentAwareFill'', [], Batch)'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Debris removal';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.DebrisRemoval'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Image Arithmetics';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibImageArithmeticController'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Intensity projection';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuImageToolsProjection_Callback(Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Select Image Frame';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibImageSelectFrameController'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Image Arithmetics';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ImageArithmetics'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Intensity projection';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.intensityProjection(Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Select Image Frame';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ImageFrame'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> White balance correction';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.WhiteBalance'', [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Morphological operations';

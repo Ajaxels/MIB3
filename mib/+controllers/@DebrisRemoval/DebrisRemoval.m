@@ -221,8 +221,14 @@ classdef DebrisRemoval < handle
                 return;
             end
 
+            % define parent window
+            if isempty(obj.view)   % headless batch mode
+                parentFigure = obj.mibModel.mibGUI;
+            else
+                parentFigure = obj.view.gui;
+            end
             if obj.BatchOpt.showWaitbar
-                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Cancelable', 'on', ...
+                progressBar = uiprogressdlg(parentFigure, 'Value', 0, 'Cancelable', 'on', ...
                     'Message', 'Please wait...', 'Title', 'Debris removal');
             end
 

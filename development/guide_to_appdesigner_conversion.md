@@ -42,6 +42,7 @@ Widget property differences from GUIDE:
 | Checkbox, dropdown | `.Value` | `.Value` (unchanged) |
 | Button callback | `Callback` | `ButtonPushedFcn` |
 | Edit callback | `Callback` | `ValueChangedFcn` |
+| Read-only multi-line text | `edit` with `Max>1`, `Enable=off` | `uitextarea` with `Editable=off`; set content via `.Value` (accepts a string or cell array of strings) |
 
 ---
 
@@ -425,7 +426,44 @@ two callbacks free of mutual calls and the loop never closes.
 
 ---
 
-## 7. Checklist
+## 7. Dual-mode action methods (GUI + headless batch)
+
+Action callbacks (e.g. `applyButton_Callback`, `runExpressionBtn_Callback`) are called
+from **both** the GUI button and the batch dispatch path in the constructor. Two patterns
+apply whenever the method may be entered headlessly.
+
+### Parent figure
+
+`obj.view` is `[]` in headless batch mode — use `obj.mibModel.mibGUI` as the parent
+rather than `[]`, so progress dialogs and error dialogs are properly parented to the main
+window instead of appearing as free-floating figures:
+
+```matlab
+if isempty(obj.view)        % headless batch mode
+    parentFigure = obj.mibModel.mibGUI;
+else
+    parentFigure = obj.view.gui;
+end
+```
+
+Pass `parentFigure` to every `core.PoolWaitbar`, `utils.dlgs.showErrorDialog`, and
+`utils.dlgs.inputUniversalDlg` call inside the method.
+
+### Skip backup in batch mode
+
+`backup()` is only meaningful in interactive mode — the user cannot undo a batch
+operation, and calling it headlessly wastes time and memory. Guard it with the same
+`obj.view` check:
+
+```matlab
+if ~isempty(obj.view)       % skip backup in headless batch mode
+    obj.mibModel.backup(outputType, 1, setDataOptions);
+end
+```
+
+---
+
+## 8. Checklist
 
 - [ ] `.mlapp` startup function accepts `(app, controller)`
 - [ ] All widgets have unique Tags; addressed as `obj.view.handles.<Tag>`
@@ -440,6 +478,9 @@ two callbacks free of mutual calls and the loop never closes.
 - [ ] Both `UpdateGuiWidgets` and `NewDataset` listeners registered
 - [ ] All utility functions namespaced (`utils.*`, `core.*`)
 - [ ] Event names PascalCase (`UpdateGuiWidgets`, `UpdateImgInfo`, `NewDataset`)
+- [ ] Dual-mode action methods: `parentFigure` set to `obj.mibModel.mibGUI` when `isempty(obj.view)`, not `[]`
+- [ ] `backup()` skipped in headless batch mode (`if ~isempty(obj.view)` guard)
+- [ ] Read-only multi-line text uses `uitextarea` (`Editable=off`) with `.Value`, not `uilabel` with `.Text`
 - [ ] No `waitbar` / bare `uiprogressdlg` — `core.PoolWaitbar` only, **constructed with `Cancelable = true`** and `getCancelState()` checked at every loop top + before every irreversible op
 - [ ] No `str2double` on spinner / numeric edit field values (they're already numeric)
 - [ ] No `'r'` / `'g'` background colour strings — RGB triplets only

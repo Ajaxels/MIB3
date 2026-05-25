@@ -153,6 +153,7 @@ classdef MibModel < handle
         importDatasetFromMib(obj, layerType, BatchOptIn)        % Import the mask or model layer from another MIB container.
         initialize(obj)        % initialize the MibModel class
         initializePreferences(obj)        % initialize and update MIB preferences from a file
+        intensityProjection(obj, BatchOptIn)        % Calculate intensity projection (Max, Min, Mean, Median, Sum) along a chosen dimension
         invertImage(obj, datasetType, BatchOptIn) % Invert pixel intensities in the image dataset
         insertEmptySlice(obj, BatchOptIn)           % Insert one or more empty (background-filled) slices into the volume
         interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm

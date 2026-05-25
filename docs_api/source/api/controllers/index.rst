@@ -38,13 +38,20 @@ Dataset tool dialogs
 .. toctree::
    :maxdepth: 1
 
+   ActionLog
    Alignment
    BoundingBox
-   DisplayAdjust
+   ChunkingExport
+   ChunkingImport
+   ContentAwareFill
+   ContrastClahe
+   ContrastNormalization
    CropDataset
    CropObjects
+   DatasetInfo
+   DebrisRemoval
+   DisplayAdjust
    MakeMovie
-   NormalizeContrast
    ResampleDataset
    Snapshot
 
