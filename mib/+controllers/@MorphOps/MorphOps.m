@@ -10,10 +10,10 @@ classdef MorphOps < handle
 %
 % Launch in batch mode::
 %
-%   BatchOpt.Mode           = {'2D'};
+%   BatchOpt.Objects3D      = false;
 %   BatchOpt.MorphOperation = {'thin'};
 %   BatchOpt.DatasetScope   = {'3D, Stack'};
-%   BatchOpt.IterationsMode = {'infinite'};
+%   BatchOpt.IterationsMode      = {'Infinite'};
 %   BatchOpt.showWaitbar    = false;
 %   obj.mibController.startController('controllers.MorphOps', [], BatchOpt);
 %
@@ -33,6 +33,8 @@ classdef MorphOps < handle
         % cell array of listener handles
         BatchOpt
         % structure compatible with batch processing; field names match widget Tags
+        autoPreview = false
+        % when true, every widget change fires previewButtonPushed (2D mode only)
     end
 
     events
@@ -73,37 +75,29 @@ classdef MorphOps < handle
 
             id = obj.mibModel.getActiveId();
 
-            obj.BatchOpt.Mode{1} = '2D';
-            obj.BatchOpt.Mode{2} = {'2D', '3D'};
-
+            obj.BatchOpt.Objects3D = false;
             obj.BatchOpt.MorphOperation{1} = 'branchpoints';
-            obj.BatchOpt.MorphOperation{2} = {'branchpoints', 'bwulterode', 'diag', 'endpoints', 'skel', 'spur', 'thin'};
-
+            obj.BatchOpt.MorphOperation{2} = {'branchpoints', 'bwulterode', 'clean', 'diag', 'endpoints', 'fill', 'majority', 'remove', 'skel', 'spur', 'thin'};
             obj.BatchOpt.DatasetScope{1} = '3D, Stack';
             obj.BatchOpt.DatasetScope{2} = {'2D, Slice', '3D, Stack'};
-
             obj.BatchOpt.IterationsMode{1} = 'limitTo';
-            obj.BatchOpt.IterationsMode{2} = {'limitTo', 'infinite'};
-
+            obj.BatchOpt.IterationsMode{2} = {'limitTo', 'Infinite'};
             obj.BatchOpt.Iterations = {1, [1 Inf], 'on'};
-
             obj.BatchOpt.RemoveBranches = false;
-
-            obj.BatchOpt.BwulterodeConnectivity{1} = '4';
-            obj.BatchOpt.BwulterodeConnectivity{2} = {'4', '8'};
-
-            obj.BatchOpt.BwulterodeMethod{1} = 'infinity';
-            obj.BatchOpt.BwulterodeMethod{2} = {'infinity', 'euclidean'};
-
+            obj.BatchOpt.Connectivity{1} = '4';
+            obj.BatchOpt.Connectivity{2} = {'4', '8'};
+            obj.BatchOpt.BwulterodeMode{1} = '2D';
+            obj.BatchOpt.BwulterodeMode{2} = {'2D', '3D'};
+            obj.BatchOpt.Method{1} = 'euclidean';
+            obj.BatchOpt.Method{2} = {'euclidean', 'cityblock', 'chessboard', 'quasi-euclidean'};
             obj.BatchOpt.showWaitbar = true;
             obj.BatchOpt.id = id;
 
             % Restore last-used settings from session
             if isfield(obj.mibModel.sessionSettings, 'morphOpsImages')
                 ss = obj.mibModel.sessionSettings.morphOpsImages;
-                if isfield(ss, 'Mode') && ismember(ss.Mode, {'2D', '3D'})
-                    obj.BatchOpt.Mode{1} = ss.Mode;
-                    obj.updateMorphOperationList();
+                if isfield(ss, 'Objects3D') && islogical(ss.Objects3D)
+                    obj.BatchOpt.Objects3D = ss.Objects3D;
                 end
                 if isfield(ss, 'MorphOperation') && ismember(ss.MorphOperation, obj.BatchOpt.MorphOperation{2})
                     obj.BatchOpt.MorphOperation{1} = ss.MorphOperation;
@@ -112,14 +106,15 @@ classdef MorphOps < handle
 
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Selection';
             obj.BatchOpt.mibBatchActionName  = 'Tools for Selection -> Morphological operations';
-            obj.BatchOpt.mibBatchTooltip.Mode                   = 'Use 2D (bwmorph) or 3D (bwmorph3/bwskel) operations';
+            obj.BatchOpt.mibBatchTooltip.Objects3D              = 'Use 3D operations (bwmorph3/bwskel) when true; 2D operations (bwmorph) when false';
             obj.BatchOpt.mibBatchTooltip.MorphOperation         = '2D or 3D morphological operation to apply';
             obj.BatchOpt.mibBatchTooltip.DatasetScope           = 'Apply to current slice only or the whole stack (2D mode)';
             obj.BatchOpt.mibBatchTooltip.IterationsMode         = 'Apply a fixed number of iterations (limitTo) or run until convergence (infinite)';
             obj.BatchOpt.mibBatchTooltip.Iterations             = 'Number of iterations when IterationsMode is limitTo';
             obj.BatchOpt.mibBatchTooltip.RemoveBranches         = 'Remove branches after thinning or skeletonization (skel/thin with infinite iterations)';
-            obj.BatchOpt.mibBatchTooltip.BwulterodeConnectivity = 'Connectivity for bwulterode (4 or 8)';
-            obj.BatchOpt.mibBatchTooltip.BwulterodeMethod       = 'Method for bwulterode: infinity or euclidean';
+            obj.BatchOpt.mibBatchTooltip.Connectivity = 'Connectivity value for bwulterode (2D: 4/8; 3D: 6/18/26)';
+            obj.BatchOpt.mibBatchTooltip.BwulterodeMode        = 'Use 2D (connectivity 4/8) or 3D (connectivity 6/18/26) mode for bwulterode';
+            obj.BatchOpt.mibBatchTooltip.Method       = 'Method for bwulterode: infinity or euclidean';
             obj.BatchOpt.mibBatchTooltip.showWaitbar            = 'Show or not the progress bar during execution';
 
             %% Batch / headless mode
@@ -135,7 +130,8 @@ classdef MorphOps < handle
                     return;
                 end
                 obj.BatchOpt = utils.updateBatchOptCombineFields_Shared(obj.BatchOpt, BatchOptIn);
-                obj.updateMorphOperationList();   % ensure {2} matches Mode after merge
+                obj.updateMorphOperationList();
+                obj.updateConnectivityList();
                 obj.Calculate(true);
                 notify(obj, 'CloseEvent');
                 return;
@@ -162,6 +158,8 @@ classdef MorphOps < handle
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
 
+            %obj.view.handles.ulterosionPanel.Parent = obj.view.handles.IterationsMode;
+
             obj.updateWidgets();
             obj.addCallbacks();
             obj.view.gui.Visible = 'on';
@@ -174,15 +172,17 @@ classdef MorphOps < handle
         function addCallbacks(obj)
             % ADDCALLBACKS - Wire all widget callbacks after view creation.
             obj.view.gui.CloseRequestFcn = @(~,~) obj.closeWindow();
-            obj.view.handles.Mode.ValueChangedFcn               = @(h,e) obj.modeChanged(e);
+            obj.view.handles.Objects3D.ValueChangedFcn          = @(h,e) obj.objects3DChanged(e);
+            obj.view.handles.Mode.SelectionChangedFcn           = @(h,e) obj.modeSelectionChanged(e);
             obj.view.handles.MorphOperation.ValueChangedFcn     = @(h,e) obj.operationChanged(e);
             obj.view.handles.DatasetScope.SelectionChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e);
             obj.view.handles.IterationsMode.SelectionChangedFcn = @(h,e) obj.iterationsModeChanged(e);
             obj.view.handles.Iterations.ValueChangedFcn         = @(h,e) obj.updateBatchOptFromGUI(e);
             obj.view.handles.RemoveBranches.ValueChangedFcn     = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.BwulterodeConnectivity.ValueChangedFcn = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.BwulterodeMethod.ValueChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e);
-            obj.view.handles.showWaitbar.ValueChangedFcn        = @(h,e) obj.updateBatchOptFromGUI(e);
+            obj.view.handles.Connectivity.ValueChangedFcn = @(h,e) obj.updateBatchOptFromGUI(e);
+            obj.view.handles.Method.ValueChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e);
+            
+            obj.view.handles.autoPreview.ValueChangedFcn        = @(h,e) obj.autoPreviewChanged(e);
             obj.view.handles.previewButton.ButtonPushedFcn      = @(~,~) obj.previewButtonPushed();
             obj.view.handles.continueButton.ButtonPushedFcn     = @(~,~) obj.Calculate();
             obj.view.handles.helpButton.ButtonPushedFcn         = @(~,~) obj.helpButton_Callback();
@@ -194,7 +194,10 @@ classdef MorphOps < handle
         function figureKeyPress(obj, event)
             % FIGUREKEYPRESS - Forward key presses to MIB main window shortcuts.
             if isempty(event.Character); return; end
-            eventData = core.ToggleEventData(struct('eventdata', event));
+
+            eventData = struct();
+            eventData.eventdata = event;
+            eventData = core.ToggleEventData(eventData);
             notify(obj.mibModel, 'KeyPressEvent', eventData);
         end
 
@@ -202,8 +205,8 @@ classdef MorphOps < handle
         function closeWindow(obj)
             % CLOSEWINDOW - Save session settings, destroy view, fire CloseEvent.
             if ~isempty(obj.BatchOpt)
-                obj.mibModel.sessionSettings.morphOpsImages.Mode          = obj.BatchOpt.Mode{1};
-                obj.mibModel.sessionSettings.morphOpsImages.MorphOperation = obj.BatchOpt.MorphOperation{1};
+                obj.mibModel.sessionSettings.morphOpsImages.Objects3D      = obj.BatchOpt.Objects3D;
+                obj.mibModel.sessionSettings.morphOpsImages.MorphOperation  = obj.BatchOpt.MorphOperation{1};
             end
             if ~isempty(obj.view) && isvalid(obj.view.gui); delete(obj.view.gui); end
             for i = 1:numel(obj.listener); delete(obj.listener{i}); end
@@ -212,15 +215,36 @@ classdef MorphOps < handle
 
         % -----------------------------------------------------------
         function updateMorphOperationList(obj)
-            % UPDATEMORPHOPERATIONLIST - Update MorphOperation{2} to match current Mode.
-            if strcmp(obj.BatchOpt.Mode{1}, '2D')
-                newList = {'branchpoints', 'bwulterode', 'diag', 'endpoints', 'skel', 'spur', 'thin'};
+            % UPDATEMORPHOPERATIONLIST - Refresh MorphOperation dropdown items to match Objects3D state.
+            if obj.BatchOpt.Objects3D
+                currentList = {'branchpoints', 'clean', 'endpoints', 'fill', 'majority', 'remove', 'skel'};
             else
-                newList = {'branchpoints', 'clean', 'endpoints', 'fill', 'majority', 'remove', 'skel'};
+                currentList = {'branchpoints', 'bwulterode', 'diag', 'endpoints', 'skel', 'spur', 'thin'};
             end
-            obj.BatchOpt.MorphOperation{2} = newList;
-            if ~ismember(obj.BatchOpt.MorphOperation{1}, newList)
-                obj.BatchOpt.MorphOperation{1} = newList{1};
+            if ~ismember(obj.BatchOpt.MorphOperation{1}, currentList)
+                obj.BatchOpt.MorphOperation{1} = currentList{1};
+            end
+            if ~isempty(obj.view) && isvalid(obj.view.gui)
+                obj.view.handles.MorphOperation.Items = currentList;
+                obj.view.handles.MorphOperation.Value = obj.BatchOpt.MorphOperation{1};
+            end
+        end
+
+        % -----------------------------------------------------------
+        function updateConnectivityList(obj)
+            % UPDATECONNECTIVITYLIST - Refresh Connectivity items to match BwulterodeMode.
+            if strcmp(obj.BatchOpt.BwulterodeMode{1}, '3D')
+                newList = {'6', '18', '26'};
+            else
+                newList = {'4', '8'};
+            end
+            obj.BatchOpt.Connectivity{2} = newList;
+            if ~ismember(obj.BatchOpt.Connectivity{1}, newList)
+                obj.BatchOpt.Connectivity{1} = newList{1};
+            end
+            if ~isempty(obj.view) && isvalid(obj.view.gui)
+                obj.view.handles.Connectivity.Items = newList;
+                obj.view.handles.Connectivity.Value = obj.BatchOpt.Connectivity{1};
             end
         end
 
@@ -229,6 +253,8 @@ classdef MorphOps < handle
             % UPDATEWIDGETS - Refresh widgets to reflect current model state.
             obj.BatchOpt.id = obj.mibModel.getActiveId();
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
+            obj.updateMorphOperationList();
+            obj.updateConnectivityList();
             obj.applyUIRules();
         end
 
@@ -236,16 +262,30 @@ classdef MorphOps < handle
         function updateBatchOptFromGUI(obj, event)
             % UPDATEBATCHOPTFROMGUI - Sync BatchOpt from a widget change event.
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
+            obj.triggerAutoPreview();
         end
 
         % -----------------------------------------------------------
-        function modeChanged(obj, event)
-            % MODECHANGED - Handle 2D/3D mode switch; repopulate MorphOperation list.
-            obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
+        function objects3DChanged(obj, event)
+            % OBJECTS3DCHANGED - Handle Objects3D checkbox; switch between 2D/3D morphological operations.
+            obj.BatchOpt.Objects3D = event.Source.Value;
             obj.updateMorphOperationList();
-            obj.view.handles.MorphOperation.Items = obj.BatchOpt.MorphOperation{2};
-            obj.view.handles.MorphOperation.Value = obj.BatchOpt.MorphOperation{1};
             obj.applyUIRules();
+            obj.triggerAutoPreview();
+        end
+
+        % -----------------------------------------------------------
+        function modeSelectionChanged(obj, event)
+            % MODESELECTIONCHANGED - Handle Mode radio change; update bwulterode connectivity dimension.
+            if strcmp(event.NewValue.Tag, 'mode3D')
+                obj.BatchOpt.BwulterodeMode{1} = '3D';
+                obj.BatchOpt.DatasetScope{1} = '3D, Stack';
+                obj.view.handles.datasetRadio.Value = 1;
+            else
+                obj.BatchOpt.BwulterodeMode{1} = '2D';
+            end
+            obj.updateConnectivityList();
+            obj.triggerAutoPreview();
         end
 
         % -----------------------------------------------------------
@@ -253,6 +293,7 @@ classdef MorphOps < handle
             % OPERATIONCHANGED - Handle MorphOperation dropdown change.
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.applyUIRules();
+            obj.triggerAutoPreview();
         end
 
         % -----------------------------------------------------------
@@ -260,13 +301,36 @@ classdef MorphOps < handle
             % ITERATIONSMODECHANGED - Handle limitTo/infinite radio switch.
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, event.Source);
             obj.applyUIRules();
+            obj.triggerAutoPreview();
+        end
+
+        % -----------------------------------------------------------
+        function autoPreviewChanged(obj, event)
+            % AUTOPREVIEWCHANGED - Handle autoPreview checkbox toggle.
+            obj.autoPreview = event.Source.Value;
+            obj.triggerAutoPreview();
+        end
+
+        % -----------------------------------------------------------
+        function triggerAutoPreview(obj)
+            % TRIGGERAUTPREVIEW - Fire preview if autoPreview is on and in 2D mode.
+            if obj.autoPreview && ~obj.BatchOpt.Objects3D
+                obj.previewButtonPushed();
+            end
         end
 
         % -----------------------------------------------------------
         function applyUIRules(obj)
             % APPLYUIRULES - Enforce all enable/visible rules from current BatchOpt state.
-            is2D      = strcmp(obj.BatchOpt.Mode{1}, '2D');
+            is2D      = ~obj.BatchOpt.Objects3D;
             currentOp = obj.BatchOpt.MorphOperation{1};
+
+            % Sync bwulterode Mode radio buttons (inside ulterosionPanel)
+            if strcmp(obj.BatchOpt.BwulterodeMode{1}, '3D')
+                obj.view.handles.Mode.SelectedObject = obj.view.handles.mode3D;
+            else
+                obj.view.handles.Mode.SelectedObject = obj.view.handles.mode2D;
+            end
 
             % DatasetScope only applies in 2D mode
             if is2D
@@ -278,35 +342,58 @@ classdef MorphOps < handle
             end
 
             if is2D && strcmp(currentOp, 'bwulterode')
-                obj.view.handles.iterPanel.Visible  = 'off';
-                obj.view.handles.ulterPanel.Visible = 'on';
+                obj.view.handles.IterationsMode.Visible  = 'off';
+                obj.view.handles.ulterosionPanel.Visible = 'on';
                 obj.view.handles.RemoveBranches.Enable = 'off';
                 obj.view.handles.RemoveBranches.Value  = false;
                 obj.BatchOpt.RemoveBranches = false;
             else
-                obj.view.handles.iterPanel.Visible  = 'on';
-                obj.view.handles.ulterPanel.Visible = 'off';
+                obj.view.handles.IterationsMode.Visible  = 'on';
+                obj.view.handles.ulterosionPanel.Visible = 'off';
 
-                % 2D skel: bwskel requires a finite MinBranchLength — disable infinite
-                isSkel2D = is2D && strcmp(currentOp, 'skel');
-                if isSkel2D
-                    obj.view.handles.infinite.Enable = 'off';
-                    obj.view.handles.limitTo.Value = true;
-                    obj.BatchOpt.IterationsMode{1} = 'limitTo';
+                isSkel = strcmp(currentOp, 'skel');
+
+                if ~is2D && ~isSkel
+                    % 3D non-skel: iterations not applicable — disable all iteration controls
+                    obj.view.handles.limitTo.Enable          = 'off';
+                    obj.view.handles.Infinite.Enable         = 'off';
+                    obj.view.handles.Iterations.Enable       = 'off';
+                    obj.view.handles.iterationsLabel.Enable  = 'off';
                 else
-                    obj.view.handles.infinite.Enable = 'on';
+                    obj.view.handles.limitTo.Enable          = 'on';
+                    obj.view.handles.iterationsLabel.Enable  = 'on';
+
+                    if isSkel
+                        % skel (2D or 3D): bwskel requires finite MinBranchLength
+                        obj.view.handles.Infinite.Enable = 'off';
+                        obj.view.handles.limitTo.Value = true;
+                        obj.BatchOpt.IterationsMode{1} = 'limitTo';
+                        obj.view.handles.iterationsLabel.Text = 'Min branch length:';
+                    else
+                        obj.view.handles.Infinite.Enable = 'on';
+                        obj.view.handles.iterationsLabel.Text = 'Iterations number:';
+                    end
+
+                    isLimitTo = strcmp(obj.BatchOpt.IterationsMode{1}, 'limitTo');
+                    obj.view.handles.Iterations.Enable = isLimitTo;
                 end
 
+                % RemoveBranches: skel always (2D only); thin with infinite iterations (2D only)
                 isLimitTo = strcmp(obj.BatchOpt.IterationsMode{1}, 'limitTo');
-                obj.view.handles.Iterations.Enable = isLimitTo;
-
-                % RemoveBranches: only when skel or thin in 2D with infinite iterations
-                canRemove = is2D && ismember(currentOp, {'skel', 'thin'}) && ~isLimitTo;
+                canRemove = is2D && (isSkel || (strcmp(currentOp, 'thin') && ~isLimitTo));
                 obj.view.handles.RemoveBranches.Enable = canRemove;
                 if ~canRemove
                     obj.view.handles.RemoveBranches.Value = false;
                     obj.BatchOpt.RemoveBranches = false;
                 end
+            end
+
+            % Preview controls — only meaningful in 2D mode
+            obj.view.handles.previewButton.Enable = is2D;
+            obj.view.handles.autoPreview.Enable   = is2D;
+            if ~is2D
+                obj.view.handles.autoPreview.Value = false;
+                obj.autoPreview = false;
             end
 
             obj.view.handles.infoText.Text = obj.getInfoText();
@@ -363,8 +450,8 @@ classdef MorphOps < handle
         function morphedSel = applyMorphOp2D(obj, selSlice)
             % APPLYMORPHOP2D - Apply current 2D morphological operation to a selection slice.
             operation    = obj.BatchOpt.MorphOperation{1};
-            connectivity = str2double(obj.BatchOpt.BwulterodeConnectivity{1});
-            method       = obj.BatchOpt.BwulterodeMethod{1};
+            connectivity = str2double(obj.BatchOpt.Connectivity{1});
+            method       = obj.BatchOpt.Method{1};
 
             if strcmp(obj.BatchOpt.IterationsMode{1}, 'limitTo')
                 iterNo = obj.BatchOpt.Iterations{1};
@@ -372,7 +459,8 @@ classdef MorphOps < handle
                 iterNo = Inf;
             end
 
-            if max(selSlice(:)) == 0
+            selSlice = squeeze(selSlice);
+            if isempty(selSlice) || max(selSlice(:)) == 0
                 morphedSel = selSlice;
                 return;
             end
@@ -384,13 +472,13 @@ classdef MorphOps < handle
                     if ~verLessThan('matlab', '9.4')
                         morphedSel = uint8(bwskel(logical(selSlice), 'MinBranchLength', iterNo));
                     else
-                        morphedSel = uint8(bwmorph(selSlice, 'skel', iterNo));
+                        morphedSel = uint8(bwmorph(logical(selSlice), 'skel', iterNo));
                     end
                 otherwise
-                    morphedSel = uint8(bwmorph(selSlice, operation, iterNo));
+                    morphedSel = uint8(bwmorph(logical(selSlice), operation, iterNo));
             end
 
-            if obj.BatchOpt.RemoveBranches && ismember(operation, {'skel', 'thin'}) && isinf(iterNo)
+            if obj.BatchOpt.RemoveBranches && (strcmp(operation, 'skel') || (strcmp(operation, 'thin') && isinf(iterNo)))
                 morphedSel = utils.removeBranches(morphedSel);
             end
         end
@@ -406,14 +494,14 @@ classdef MorphOps < handle
 
             morphedSel = obj.applyMorphOp2D(selSlice);
 
-            imgSlice  = cell2mat(obj.mibModel.getData2D('image', [], [], 0, getDataOptions));
-            dataClass = obj.mibModel.I{obj.BatchOpt.id}.image.dataClass;
-            maxVal    = double(intmax(dataClass));
-            grayBg    = uint8(double(imgSlice(:,:,1)) / maxVal * 160);
-            previewRGB = repmat(grayBg, [1 1 3]);
-            highlight  = uint8(double(morphedSel) * 95);
-            previewRGB(:,:,2) = min(255, previewRGB(:,:,2) + highlight);
-            previewRGB(:,:,3) = min(255, previewRGB(:,:,3) + highlight);
+            % Build preview: normal RGB image with morphed selection overlaid as white
+            getRGBimageOptions.blockModeSwitch = 1;
+            getRGBimageOptions.resizeToMagnification = false;
+            currTransparency = obj.mibModel.preferences.Colors.SelectionTransparency;
+            obj.mibModel.preferences.Colors.SelectionTransparency = 1;
+            previewRGB = obj.mibModel.getRGBimage(getRGBimageOptions);
+            obj.mibModel.preferences.Colors.SelectionTransparency = currTransparency;
+            previewRGB(morphedSel == 1) = 255;
 
             showSettings.resizeToMagnification = true;
             showSettings.sImgIn = previewRGB;

@@ -64,8 +64,10 @@ Segmentation tool dialogs
    Annotations
    Lines3dDialog
    MeasureTool
+   MorphOps
    Quantification
    QuantificationProperties
+   
 
 Deep learning
 -------------

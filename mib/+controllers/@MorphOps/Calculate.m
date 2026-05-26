@@ -15,23 +15,35 @@ function Calculate(obj, batchModeSwitch)
 if nargin < 2; batchModeSwitch = false; end
 
 id    = obj.BatchOpt.id;
-is2D  = strcmp(obj.BatchOpt.Mode{1}, '2D');
+is2D  = ~obj.BatchOpt.Objects3D;
 
+% define parent window
+if isempty(obj.view)   % headless batch mode
+    parentFigure = obj.mibModel.mibGUI;
+else
+    parentFigure = obj.view.gui;
+end
 if obj.BatchOpt.showWaitbar
-    progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Cancelable', 'on', ...
+    progressBar = uiprogressdlg(parentFigure, 'Value', 0, 'Cancelable', 'on', ...
         'Message', 'Please wait...', 'Title', 'Morphological operations');
+end
+
+if obj.mibModel.I{id}.enableSelection == 0
+    if obj.BatchOpt.showWaitbar; delete(progressBar); end
+    return;
 end
 
 depth = obj.mibModel.I{id}.image.depth;
 time  = obj.mibModel.I{id}.image.time;
 
-getDataOptions.roiId = [];
+getDataOptions.roiId = -1;
 getDataOptions.id    = id;
 
 %% Backup — only for single time-frame datasets (too expensive for 4D)
 if ~batchModeSwitch && time == 1
-    datasetSwitch = strcmp(obj.BatchOpt.DatasetScope{1}, '3D, Stack') || ~is2D;
-    obj.mibModel.backup('selection', datasetSwitch, getDataOptions);
+    datasetSwitch = strcmp(obj.BatchOpt.DatasetScope{1}, 'datasetRadio') || ~is2D;
+    backupOptions.id = id;
+    obj.mibModel.backup('selection', datasetSwitch, backupOptions);
 end
 
 %% Processing loop
@@ -39,7 +51,7 @@ for t = 1:time
     getDataOptions.t = [t t];
 
     if is2D
-        datasetSwitch = strcmp(obj.BatchOpt.DatasetScope{1}, '3D, Stack');
+        datasetSwitch = strcmp(obj.BatchOpt.DatasetScope{1}, 'datasetRadio');
 
         if datasetSwitch
             % Whole stack: process each Z slice
