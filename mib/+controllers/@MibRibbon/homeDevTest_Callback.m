@@ -16,10 +16,11 @@ end
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
+a = uifigure;
 
-fprintf('Size of obj.mibModel.I{obj.mibModel.id}.image.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.image.sliceSize)));
-fprintf('Size of obj.mibModel.I{obj.mibModel.id}.labels.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.labels.sliceSize)));
-size(obj.mibModel.I{obj.mibModel.id}.labels.data{1})
+%fprintf('Size of obj.mibModel.I{obj.mibModel.id}.image.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.image.sliceSize)));
+%fprintf('Size of obj.mibModel.I{obj.mibModel.id}.labels.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.labels.sliceSize)));
+%size(obj.mibModel.I{obj.mibModel.id}.labels.data{1})
 
 
 %% Benchmark: getRGBimage x 100

@@ -133,7 +133,8 @@ switch mode
         obj.selectionPanelCheckboxes(BatchOpt);
 
     case 'display' % start image view settings dialog
-        obj.mibController.startController('controllers.DisplayAdjust');
+        %obj.mibController.startController('controllers.DisplayAdjust');
+        utils.startController(obj.mibController, 'controllers.DisplayAdjust');
 
     case 'onFly' % automatically adjust contrast and brightness
         BatchOpt.OnFly = checkboxOptions(obj.handles.onFly.Value+1);
