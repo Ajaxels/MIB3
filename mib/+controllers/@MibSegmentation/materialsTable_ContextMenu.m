@@ -50,6 +50,50 @@ switch menuEntry.Tag
         obj.materialsTable_CellSelectionCallback(cellIndices);    
     case 'materialsTableContextQuant'
         obj.mibController.startController('controllers.Quantification');
+
+        %% Materials
+    case 'materialsTableContextMatRename'
+        obj.mibModel.materialsActions('Rename material');
+    case 'materialsTableContextMatAdd'
+        obj.mibModel.materialsActions('Add material');
+    case 'materialsTableContextMatInsert'
+        obj.mibModel.materialsActions('Insert material');
+    case 'materialsTableContextMatSwap'
+        obj.mibModel.materialsActions('Swap materials');
+    case 'materialsTableContextMatReorder'
+        obj.mibModel.materialsActions('Reorder materials');
+    case 'materialsTableContextMatExport'
+        obj.mibModel.materialsActions('Export material');
+    case 'materialsTableContextMatSave'
+        obj.mibModel.materialsActions('Save material to file');
+    case 'materialsTableContextMatRemove'
+        obj.mibModel.materialsActions('Remove material');
+
+        %% Render section...
+    case 'materialsTableContextRenMIB'
+        % render material with MIB volume rendering
+        id = obj.mibModel.getActiveId();
+        contIndex = obj.mibModel.I{id}.getSelectedMaterialIndex();
+        if contIndex == -1
+            if obj.mibModel.I{id}.maskExist == 0
+                utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, 'Mask was not found!', 'Missing mask');
+                return;
+            end
+            options.dataType = 'mask';
+            options.colorChannel = 1;
+        else
+            options.dataType = 'labels';
+            options.colorChannel = contIndex;
+        end
+        obj.mibController.startController('controllers.VolRenApp', options);
+    case 'materialsTableContextRenMat'
+        % render material with MIB isosurfaces
+        obj.renderIsosurface();
+
+    case 'materialsTableContextRenFiji'
+        % render material with Fiji viewer
+    
+        %% Unlink material from Add to
     case 'materialsTableContextUnlink'
         if strcmp(menuEntry.Checked, 'off')
             % unlink Materials and AddTo columns
@@ -61,6 +105,8 @@ switch menuEntry.Tag
             menuEntry.Checked = 'off';
         end
         obj.restrictMaterial_Callback();
+    
+
 end
 
 end

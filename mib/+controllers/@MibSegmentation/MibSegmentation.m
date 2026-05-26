@@ -30,12 +30,9 @@ classdef MibSegmentation
         materialsTable_applyRowStyle(obj, rowIndex, isHighlighted, columnIndex, fontColor, highlightColor)       % apply highlighting style to material row
         materialsTable_CellSelectionCallback(obj, cellIndices)        % handle cell selection in materials table (obj.handles.materialsTable)
         materialsTable_ContextMenu(obj, menuEntry, selectedData)    % callbacks for the context menu of the segmentation table widget (obj.handles.panels.segmentation.handles.materialsTable)
-        materialsTable_Materials_ContextMenu(obj, menuEntry, selectedData)      % callbacks for the context menu of 
-                                                                                % - Segmentation table widget -> Materials...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextMat)
-                                                                                % - Menu ribbon -> Models -> Materials (obj.view.handles.model.materials)
         materialsTable_moveLayers(obj, obj_type_from, obj_type_to, layers_id, action_type)  % callbacks for the context menu of the segmentation table to move layers
-        materialsTable_render(obj, menuEntry, selectedData)  % callbacks for the context menu of the Segmentation table widget -> Render...  entry (obj.view.handles.panels.segmentation.handles.materialsTableContextRen)
         membranePanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Membrane click tracker tool
+        renderIsosurface(obj) % Render the currently selected material(s) as MATLAB isosurfaces
         restrictMask_Callback(obj)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMask in obj.handles.panels.segmentation panel. Restrict selection to the mask layer
         restrictMaterial_Callback(obj, hWidget, hData)        % callbacks for press of obj.handles.panels.segmentation.handles.restrictMaterial in obj.handles.panels.segmentation panel
         samPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->SAM tool
@@ -150,14 +147,14 @@ classdef MibSegmentation
             obj.handles.materialsTableContextSetColor.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             obj.handles.materialsTableContextQuant.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             % Materials section
-            obj.handles.materialsTableContextMatRename.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatAdd.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatInsert.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatSwap.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatReorder.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatExport.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatSave.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
-            obj.handles.materialsTableContextMatRemove.MenuSelectedFcn = @obj.materialsTable_Materials_ContextMenu;
+            obj.handles.materialsTableContextMatRename.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatAdd.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatInsert.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatSwap.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatReorder.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatExport.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatSave.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatRemove.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             % Material to Selection...
             obj.handles.materialsTableContextM2SN2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '2D, Slice', 'replace');
             obj.handles.materialsTableContextM2SA2D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('labels', 'selection', '2D, Slice', 'add');
@@ -189,9 +186,9 @@ classdef MibSegmentation
             obj.handles.materialsTableContextM2M2A4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '4D, Dataset', 'add');
             obj.handles.materialsTableContextM2M2S4D.MenuSelectedFcn = @(~,~)obj.materialsTable_moveLayers('mask', 'labels', '4D, Dataset', 'remove');
             % Render...
-            obj.handles.materialsTableContextRenMIB.MenuSelectedFcn = @obj.materialsTable_render;
-            obj.handles.materialsTableContextRenMat.MenuSelectedFcn = @obj.materialsTable_render;
-            obj.handles.materialsTableContextRenFiji.MenuSelectedFcn = @obj.materialsTable_render;
+            obj.handles.materialsTableContextRenMIB.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextRenMat.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextRenFiji.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             % Bottom section
             obj.handles.materialsTableContextUnlink.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
 

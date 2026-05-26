@@ -25,6 +25,7 @@ end
 switch mode
     case {'Render', 'MIB rendering'}      % obj.handles.ribbonModel.render or obj.handles.ribbonModel.renderMIB
     case 'MATLAB isosurface'      % obj.handles.ribbonModel.renderMatlab
+        obj.mibController.cSegmentation.renderIsosurface();
     case 'MATLAB isosurface and export to Imaris'      % obj.handles.ribbonModel.renderMatlabImaris
     case 'MATLAB volume viewer'      % obj.handles.ribbonModel.renderMatlabVolView
     case 'Fiji volume viewer'      % obj.handles.ribbonModel.renderFiji

@@ -196,6 +196,7 @@ switch BatchOpt.Action{1}
     case 'Insert material'
         if ~isfield(BatchOptIn, 'MaterialName') || ~isfield(BatchOptIn, 'MaterialIndex1')
             dlgOpt.WindowHeight = 180;
+            dlgOpt.Focus = 1;
             prompts = {sprintf('Material name\n(no spaces / no letters as the 1st character):'); ...
                        sprintf('Index where material needs to be inserted\n[number between 1-%d]:', nMats + 1)};
             defAns = {sprintf('mat%.3d', nMats + 1); BatchOpt.MaterialIndex1};
@@ -218,6 +219,7 @@ switch BatchOpt.Action{1}
     case 'Swap materials'
         if ~isfield(BatchOptIn, 'MaterialIndex1') || ~isfield(BatchOptIn, 'MaterialIndex2')
             dlgOpt.WindowHeight = 180;
+            dlgOpt.Focus = 2;
             prompts = {sprintf('Index of the first material to swap\n[number between 1-%d]:', nMats); ...
                        sprintf('Index of the second material to swap\n[number between 1-%d]:', nMats)};
             defAns = {BatchOpt.MaterialIndex1; BatchOpt.MaterialIndex2};
@@ -252,6 +254,7 @@ switch BatchOpt.Action{1}
             prompts = {sprintf('Provide a new order for materials\nyou can use MATLAB notation: "1:5 9:-1:6 12 11 10"\n          => "1,2,3,4,5,9,8,7,6,12,11,10"\n[numbers between 1-%d]:', nMats)};
             defAns = {num2str(1:nMats)};
             dlgOpt.WindowWidth = 600;
+            dlgOpt.Focus = 1;
             answer = utils.dlgs.inputSingleDlg(obj.mibGUI, prompts, defAns, 'Reorder materials', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.MaterialIndex1 = answer;
