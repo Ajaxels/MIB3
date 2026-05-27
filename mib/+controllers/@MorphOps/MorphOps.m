@@ -12,7 +12,7 @@ classdef MorphOps < handle
 %
 %   BatchOpt.Objects3D      = false;
 %   BatchOpt.MorphOperation = {'thin'};
-%   BatchOpt.DatasetScope   = {'3D, Stack'};
+%   BatchOpt.ApplyTo   = {'Stack'};
 %   BatchOpt.IterationsMode      = {'Infinite'};
 %   BatchOpt.showWaitbar    = false;
 %   obj.mibController.startController('controllers.MorphOps', [], BatchOpt);
@@ -78,8 +78,8 @@ classdef MorphOps < handle
             obj.BatchOpt.Objects3D = false;
             obj.BatchOpt.MorphOperation{1} = 'branchpoints';
             obj.BatchOpt.MorphOperation{2} = {'branchpoints', 'bwulterode', 'clean', 'diag', 'endpoints', 'fill', 'majority', 'remove', 'skel', 'spur', 'thin'};
-            obj.BatchOpt.DatasetScope{1} = '3D, Stack';
-            obj.BatchOpt.DatasetScope{2} = {'2D, Slice', '3D, Stack'};
+            obj.BatchOpt.ApplyTo{1} = 'CurrentSlice';
+            obj.BatchOpt.ApplyTo{2} = {'CurrentSlice', 'Stack'};
             obj.BatchOpt.IterationsMode{1} = 'limitTo';
             obj.BatchOpt.IterationsMode{2} = {'limitTo', 'Infinite'};
             obj.BatchOpt.Iterations = {1, [1 Inf], 'on'};
@@ -105,10 +105,10 @@ classdef MorphOps < handle
             end
 
             obj.BatchOpt.mibBatchSectionName = 'Ribbon -> Selection';
-            obj.BatchOpt.mibBatchActionName  = 'Tools for Selection -> Morphological operations';
+            obj.BatchOpt.mibBatchActionName  = 'Morphological operations';
             obj.BatchOpt.mibBatchTooltip.Objects3D              = 'Use 3D operations (bwmorph3/bwskel) when true; 2D operations (bwmorph) when false';
             obj.BatchOpt.mibBatchTooltip.MorphOperation         = '2D or 3D morphological operation to apply';
-            obj.BatchOpt.mibBatchTooltip.DatasetScope           = 'Apply to current slice only or the whole stack (2D mode)';
+            obj.BatchOpt.mibBatchTooltip.ApplyTo           = 'Apply to current slice only or the whole stack (2D mode)';
             obj.BatchOpt.mibBatchTooltip.IterationsMode         = 'Apply a fixed number of iterations (limitTo) or run until convergence (infinite)';
             obj.BatchOpt.mibBatchTooltip.Iterations             = 'Number of iterations when IterationsMode is limitTo';
             obj.BatchOpt.mibBatchTooltip.RemoveBranches         = 'Remove branches after thinning or skeletonization (skel/thin with infinite iterations)';
@@ -175,7 +175,7 @@ classdef MorphOps < handle
             obj.view.handles.Objects3D.ValueChangedFcn          = @(h,e) obj.objects3DChanged(e);
             obj.view.handles.Mode.SelectionChangedFcn           = @(h,e) obj.modeSelectionChanged(e);
             obj.view.handles.MorphOperation.ValueChangedFcn     = @(h,e) obj.operationChanged(e);
-            obj.view.handles.DatasetScope.SelectionChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e);
+            obj.view.handles.ApplyTo.SelectionChangedFcn   = @(h,e) obj.updateBatchOptFromGUI(e);
             obj.view.handles.IterationsMode.SelectionChangedFcn = @(h,e) obj.iterationsModeChanged(e);
             obj.view.handles.Iterations.ValueChangedFcn         = @(h,e) obj.updateBatchOptFromGUI(e);
             obj.view.handles.RemoveBranches.ValueChangedFcn     = @(h,e) obj.updateBatchOptFromGUI(e);
@@ -279,8 +279,8 @@ classdef MorphOps < handle
             % MODESELECTIONCHANGED - Handle Mode radio change; update bwulterode connectivity dimension.
             if strcmp(event.NewValue.Tag, 'mode3D')
                 obj.BatchOpt.BwulterodeMode{1} = '3D';
-                obj.BatchOpt.DatasetScope{1} = '3D, Stack';
-                obj.view.handles.datasetRadio.Value = 1;
+                obj.BatchOpt.ApplyTo{1} = 'Stack';
+                obj.view.handles.Stack.Value = 1;
             else
                 obj.BatchOpt.BwulterodeMode{1} = '2D';
             end
@@ -332,13 +332,13 @@ classdef MorphOps < handle
                 obj.view.handles.Mode.SelectedObject = obj.view.handles.mode2D;
             end
 
-            % DatasetScope only applies in 2D mode
+            % ApplyTo only applies in 2D mode
             if is2D
-                obj.view.handles.DatasetScope.Enable = 'on';
+                obj.view.handles.ApplyTo.Enable = 'on';
             else
-                obj.view.handles.DatasetScope.Enable = 'off';
-                obj.view.handles.DatasetScope.SelectedObject = obj.view.handles.datasetRadio;
-                obj.BatchOpt.DatasetScope{1} = '3D, Stack';
+                obj.view.handles.ApplyTo.Enable = 'off';
+                obj.view.handles.ApplyTo.SelectedObject = obj.view.handles.Stack;
+                obj.BatchOpt.ApplyTo{1} = 'Stack';
             end
 
             if is2D && strcmp(currentOp, 'bwulterode')

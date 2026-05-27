@@ -113,8 +113,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Contrast -> Normalize layers';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContrastNormalization'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Invert image';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.invertImage([], Batch);'; actionId = actionId + 1;
-%obj.Sections(secIndex).Actions(actionId).Name = 'Image filters';
-%obj.Sections(secIndex).Actions(actionId).Command = ''; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Morphological operations for images';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.MorphOpsImages'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Content-aware fill';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ContentAwareFill'', [], Batch)'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Debris removal';
@@ -127,8 +127,7 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> Select Imag
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ImageFrame'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Tools for Images -> White balance correction';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.WhiteBalance'', [], Batch);'; actionId = actionId + 1;
-% obj.Sections(secIndex).Actions(actionId).Name = 'Morphological operations';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibImageMorphOpsController'', [], Batch);'; actionId = actionId + 1;
+
 
 secIndex = secIndex + 1;
 obj.Sections(secIndex).Name = 'Ribbon -> Image -> Filters';
@@ -233,6 +232,8 @@ obj.Sections(secIndex).Name = 'Ribbon -> Selection';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''labels'', [], [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Selection to Mask';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.mibModel.moveLayers(''selection'', ''mask'', [], [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Morphological operations';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.MorphOps'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Interpolate selection';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImage(''selection'', [], Batch);'; actionId = actionId + 1;
 % obj.Sections(secIndex).Actions(actionId).Name = 'Replace selected area in the image';

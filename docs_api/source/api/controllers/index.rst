@@ -52,6 +52,7 @@ Dataset tool dialogs
    DebrisRemoval
    DisplayAdjust
    MakeMovie
+   MorphOpsImages
    ResampleDataset
    Snapshot
 

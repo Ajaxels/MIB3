@@ -41,7 +41,7 @@ getDataOptions.id    = id;
 
 %% Backup — only for single time-frame datasets (too expensive for 4D)
 if ~batchModeSwitch && time == 1
-    datasetSwitch = strcmp(obj.BatchOpt.DatasetScope{1}, 'datasetRadio') || ~is2D;
+    datasetSwitch = strcmp(obj.BatchOpt.ApplyTo{1}, 'Stack') || ~is2D;
     backupOptions.id = id;
     obj.mibModel.backup('selection', datasetSwitch, backupOptions);
 end
@@ -51,7 +51,7 @@ for t = 1:time
     getDataOptions.t = [t t];
 
     if is2D
-        datasetSwitch = strcmp(obj.BatchOpt.DatasetScope{1}, 'datasetRadio');
+        datasetSwitch = strcmp(obj.BatchOpt.ApplyTo{1}, 'Stack');
 
         if datasetSwitch
             % Whole stack: process each Z slice
