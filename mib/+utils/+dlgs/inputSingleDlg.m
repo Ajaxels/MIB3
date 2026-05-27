@@ -150,6 +150,7 @@ end
 
 persistent mibDir
 persistent parentFigureHandle  % cached handle to the main GUI window
+persistent cachedFigure        % reusable hidden uifigure shell
 
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
@@ -219,10 +220,21 @@ end
 
 iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 
-fig = uifigure('Name', dlgTitle, 'WindowStyle', lower(options.WindowStyle), Visible='off');
-fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
-fig.Position = [fig.Position(1), fig.Position(2), options.WindowWidth, options.WindowHeight];
-fig.Tag = 'inputSingleDlg';
+% Reuse a cached hidden figure when available
+if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
+    fig = cachedFigure;
+    delete(fig.Children);
+    fig.Name = dlgTitle;
+    fig.WindowKeyPressFcn = '';
+    fig.CloseRequestFcn = 'closereq';
+else
+    fig = uifigure('Name', dlgTitle, 'Visible', 'off');
+    fig.Tag = 'inputSingleDlg';
+    fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
+    cachedFigure = fig;
+end
+fig.WindowStyle = lower(options.WindowStyle);
+fig.Position(3:4) = [options.WindowWidth, options.WindowHeight];
 
 mainGrid = uigridlayout(fig, [3 2], ...
     'RowHeight', {'1x', 22, 22}, ...
@@ -290,6 +302,7 @@ cancelBtn.Layout.Column = 3;
 
 % Key handling (Esc for Cancel, Enter for OK)
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
+fig.CloseRequestFcn = @(~,~) onCancel();
 
 % Center dialog on parent figure if provided
 if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
@@ -324,14 +337,14 @@ end
 % Initialize output
 answer = [];
 
-drawnow;
 fig.Visible = 'on';
+drawnow;
 
 % Direct focus on input widget — no java.awt.Robot, no timer
 focus(inputCtrl);
 
 % Block caller until dialog is closed
-waitfor(fig);
+uiwait(fig);
 
 % Callbacks
     function onOK()
@@ -340,12 +353,14 @@ waitfor(fig);
         else
             answer = char(inputCtrl.Value);
         end
-        delete(fig);
+        fig.Visible = 'off';
+        uiresume(fig);
     end
 
     function onCancel()
         answer = [];
-        delete(fig);
+        fig.Visible = 'off';
+        uiresume(fig);
     end
 
     function onKey(evt)

@@ -174,6 +174,9 @@ end
 
 persistent mibDirPersistent;       % cached MIB installation path
 persistent parentFigurePersistent; % cached handle to the main GUI window
+persistent cachedFigure;           % reusable hidden uifigure shell
+persistent iconCompositeCache;     % dictionary: cacheKey -> composited uint8 image
+persistent iconCacheBgColor;       % RGB triplet used for compositing
 
 % Normalize options field names to their canonical casing.
 % MATLAB struct field lookup is case-sensitive, so options.msgboxonly would be
@@ -293,9 +296,20 @@ end
 mibDir = mibDirPersistent;
 
 % Build figure (before icon loading to get background color)
-fig = uifigure('Name', dlgTitle, 'Visible', 'off');
-fig.Tag = 'inputUniversalDlg';
-fig.AutoResizeChildren = 'off';  % Disable auto-resize
+% Reuse a cached hidden figure when available to avoid ~200-400ms uifigure creation cost
+if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
+    fig = cachedFigure;
+    delete(fig.Children);
+    fig.Name = dlgTitle;
+    fig.KeyPressFcn = '';
+    fig.WindowKeyPressFcn = '';
+    fig.CloseRequestFcn = 'closereq';
+else
+    fig = uifigure('Name', dlgTitle, 'Visible', 'off');
+    fig.Tag = 'inputUniversalDlg';
+    fig.AutoResizeChildren = 'off';
+    cachedFigure = fig;
+end
 if strcmpi(options.WindowStyle,'modal'); fig.WindowStyle='modal'; else; fig.WindowStyle='normal'; end
 fig.Position(3) = options.WindowWidth;
 
@@ -381,41 +395,58 @@ iconImg = [];
 iconImgWidth = 48;  % Default icon width
 if exist(iconPath, 'file')
     try
-        % Read image with alpha channel
-        [img, ~, alpha] = imread(iconPath);
-        
-        % Handle alpha channel by compositing with figure background
-        if ~isempty(alpha)
-            % Convert to double for blending
-            img = im2double(img);
-            alpha = im2double(alpha);
-            
-            % Get background color from figure
-            bgColor = figBgColor; % RGB triplet from figure
-            
-            % Blend image with background using alpha
-            if size(img, 3) == 3
-                % RGB image
-                for k = 1:3
-                    img(:,:,k) = img(:,:,k) .* alpha + bgColor(k) * (1 - alpha);
-                end
-            else
-                % Grayscale image - use average of RGB for gray value
-                bgGray = mean(bgColor);
-                img = img .* alpha + bgGray * (1 - alpha);
-            end
-            
-            % Convert back to uint8
-            iconImg = im2uint8(img);
-        else
-            iconImg = img;
+        % Initialize icon composite cache
+        if isempty(iconCompositeCache)
+            iconCompositeCache = configureDictionary("string", "cell");
+            iconCacheBgColor = figBgColor;
         end
-        
-        % Get icon width for layout
-        iconImgWidth = size(iconImg, 2);
-        if ~isempty(options.IconWidth)
-            iconImg = imresize(iconImg, [NaN options.IconWidth]);
-            iconImgWidth = options.IconWidth;
+        % Invalidate cache on background color change (theme switch)
+        if ~isequal(iconCacheBgColor, figBgColor)
+            iconCompositeCache = configureDictionary("string", "cell");
+            iconCacheBgColor = figBgColor;
+        end
+
+        iconWidth = options.IconWidth;
+        if isempty(iconWidth); iconWidth = 0; end
+        cacheKey = string(sprintf('%s_%d', iconFilename, iconWidth));
+
+        if isKey(iconCompositeCache, cacheKey)
+            iconImg = iconCompositeCache{cacheKey};
+            iconImgWidth = size(iconImg, 2);
+        else
+            % Read image with alpha channel
+            [img, ~, alpha] = imread(iconPath);
+
+            % Handle alpha channel by compositing with figure background
+            if ~isempty(alpha)
+                img = im2double(img);
+                alpha = im2double(alpha);
+                bgColor = figBgColor;
+
+                if size(img, 3) == 3
+                    for k = 1:3
+                        img(:,:,k) = img(:,:,k) .* alpha + bgColor(k) * (1 - alpha);
+                    end
+                else
+                    bgGray = mean(bgColor);
+                    img = img .* alpha + bgGray * (1 - alpha);
+                end
+                iconImg = im2uint8(img);
+            else
+                iconImg = img;
+            end
+
+            % Resize icon
+            iconImgWidth = size(iconImg, 2);
+            if ~isempty(options.IconWidth)
+                iconImg = imresize(iconImg, [NaN options.IconWidth]);
+                iconImgWidth = options.IconWidth;
+            end
+
+            % Store in cache
+            if ~isempty(iconImg)
+                iconCompositeCache(cacheKey) = {iconImg};
+            end
         end
     catch
         iconImg = [];
@@ -828,10 +859,11 @@ end
 % Key handling
 fig.KeyPressFcn = @(~, evt) onKey(evt);
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
+fig.CloseRequestFcn = @(~,~) onCancel();
 
 % show the dialog
-drawnow;
 fig.Visible = 'on';
+drawnow;
 
 % Set focus
 if options.MsgBoxOnly || options.Focus == 0
@@ -858,8 +890,8 @@ answer = {};
 selectedIndices = [];
 dontShowAgain = false;
 
-% Block caller until dialog is closed
-waitfor(fig);
+% Block caller until dialog is closed (uiwait/uiresume enables figure reuse)
+uiwait(fig);
 
 % Callbacks
     function onHelp()
@@ -924,7 +956,9 @@ waitfor(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        delete(fig);
+        % Hide and unblock instead of deleting so the figure can be reused
+        fig.Visible = 'off';
+        uiresume(fig);
     end
 
     function onCancel()
@@ -933,7 +967,8 @@ waitfor(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        delete(fig);
+        fig.Visible = 'off';
+        uiresume(fig);
     end
 
     function onKey(evt)

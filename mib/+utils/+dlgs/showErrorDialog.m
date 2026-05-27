@@ -101,6 +101,7 @@ if ~isfield(options, 'SuffixHeight'); options.SuffixHeight = 'fit'; end
 
 % --- resolve mibDir ---
 persistent mibDir
+persistent cachedFigure        % reusable hidden uifigure shell
 if isempty(mibDir) && isempty(options.mibPath)
     if isdeployed
         [~, result] = system('path');
@@ -197,12 +198,20 @@ rowHeights{end+1} = 26;                    % button row
 rowMap.buttons    = currentRow;
 
 % --- build dialog ---
-fig = uifigure(...
-    'Name',        winTitle, ...
-    'Visible',     'off', ...
-    'WindowStyle', lower(options.WindowStyle), ...
-    'Resize',      'on');
-fig.Icon     = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
+% Reuse a cached hidden figure when available
+if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
+    fig = cachedFigure;
+    delete(fig.Children);
+    fig.Name = winTitle;
+    fig.WindowKeyPressFcn = '';
+    fig.CloseRequestFcn = 'closereq';
+else
+    fig = uifigure('Name', winTitle, 'Visible', 'off', 'Resize', 'on');
+    fig.Tag = 'showErrorDialog';
+    fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
+    cachedFigure = fig;
+end
+fig.WindowStyle = lower(options.WindowStyle);
 fig.Position(3:4) = [options.WindowWidth, options.WindowHeight];
 
 mainGrid = uigridlayout(fig, [numel(rowHeights), 2], ...
@@ -307,15 +316,16 @@ catch
     % use MATLAB default position on failure
 end
 
-drawnow;
+fig.CloseRequestFcn = @(~,~) onClose();
 fig.Visible = 'on';
+drawnow;
 focus(okBtn);
 uiwait(fig);
 
 % --- nested callbacks ---
     function onClose()
+        fig.Visible = 'off';
         uiresume(fig);
-        delete(fig);
     end
 
     function onCopy()
