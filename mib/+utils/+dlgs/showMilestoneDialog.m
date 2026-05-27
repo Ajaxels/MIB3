@@ -53,6 +53,7 @@ end
 %% Resolve mibDir and ParentFigure (mirrors pattern used in other +utils/+dlgs functions)
 persistent mibDir
 persistent parentFigureHandle   % cached handle to the main GUI window
+persistent cachedFigure         % reusable hidden uifigure shell
 
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
@@ -244,13 +245,21 @@ elseif strcmp(mode, 'currentStats') && exist(cheersFile, 'file')
 end
 
 %% Build figure
-fig = uifigure('Name', dlgTitle, 'Visible', 'off', ...
-    'WindowStyle', lower(windowStyle), ...
-    'Position', [100, 100, WIN_W, WIN_H], ...
-    'Resize', 'on');
-iconFile = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
-if exist(iconFile, 'file'); fig.Icon = iconFile; end
-fig.CloseRequestFcn = @(~,~) onClose();
+% Reuse a cached hidden figure when available
+if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
+    fig = cachedFigure;
+    delete(fig.Children);
+    fig.Name = dlgTitle;
+    fig.CloseRequestFcn = 'closereq';
+else
+    fig = uifigure('Name', dlgTitle, 'Visible', 'off', 'Resize', 'on');
+    fig.Tag = 'showMilestoneDialog';
+    iconFile = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
+    if exist(iconFile, 'file'); fig.Icon = iconFile; end
+    cachedFigure = fig;
+end
+fig.WindowStyle = lower(windowStyle);
+fig.Position = [fig.Position(1), fig.Position(2), WIN_W, WIN_H];
 
 %% Root grid: [1 row × 2 cols]  —  video | content
 rootGrid = uigridlayout(fig, [1, 2], ...
@@ -372,8 +381,9 @@ if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
 end
 
 %% Show and wait
-drawnow;
+fig.CloseRequestFcn = @(~,~) onClose();
 fig.Visible = 'on';
+drawnow;
 focus(okBtn);
 uiwait(fig);
 
@@ -403,14 +413,14 @@ uiwait(fig);
 
     function onOK()
         stopTimer();
+        fig.Visible = 'off';
         uiresume(fig);
-        delete(fig);
     end
 
     function onClose()
         stopTimer();
+        fig.Visible = 'off';
         uiresume(fig);
-        delete(fig);
     end
 
 end

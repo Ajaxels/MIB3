@@ -83,6 +83,9 @@ if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not
 % ---------- Resolve mibDir ----------
 persistent mibDir
 persistent parentFigureHandle   % cached handle to the main GUI window
+persistent cachedFigure         % reusable hidden uifigure shell
+persistent iconCompositeCache   % dictionary: cacheKey -> composited uint8 image
+persistent iconCacheBgColor     % RGB triplet used for compositing
 
 % ParentFigure param takes priority; update cache
 % Use isvalid() not ishandle() — AppContainer satisfies isvalid but not ishandle.
@@ -207,15 +210,26 @@ iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
 selection = '';
 dontShowAgain = false;
 
-fig = uifigure('Name', dlgTitle, 'Visible', 'off');
-fig.AutoResizeChildren = 'off';
+% Reuse a cached hidden figure when available
+if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
+    fig = cachedFigure;
+    delete(fig.Children);
+    fig.Name = dlgTitle;
+    fig.WindowKeyPressFcn = '';
+    fig.CloseRequestFcn = 'closereq';
+else
+    fig = uifigure('Name', dlgTitle, 'Visible', 'off');
+    fig.AutoResizeChildren = 'off';
+    fig.Tag = 'inputQuestDlg';
+    cachedFigure = fig;
+end
 if strcmpi(options.WindowStyle, 'modal')
     fig.WindowStyle = 'modal';
+else
+    fig.WindowStyle = 'normal';
 end
 fig.Position(3) = options.WindowWidth;
 fig.Position(4) = options.WindowHeight;
-fig.WindowKeyPressFcn = @onKey;  % WindowKeyPressFcn fires even when child widgets have focus
-fig.CloseRequestFcn   = @onClose;
 
 % Center on parent — AppContainer uses WindowBounds (top-left origin);
 % uifigure/figure use Position (bottom-left origin).
@@ -281,19 +295,36 @@ figBgColor = fig.Color;
 iconImg = [];
 if exist(iconPath, 'file')
     try
-        [img, ~, alpha] = imread(iconPath);
-        if ~isempty(alpha)
-            img    = im2double(img);
-            alpha  = im2double(alpha);
-            for k = 1:3
-                img(:,:,k) = img(:,:,k) .* alpha + figBgColor(k) .* (1 - alpha);
-            end
-            iconImg = im2uint8(img);
-        else
-            iconImg = img;
+        % Initialize icon composite cache
+        if isempty(iconCompositeCache)
+            iconCompositeCache = configureDictionary("string", "cell");
+            iconCacheBgColor = figBgColor;
         end
-        if ~isempty(iconImg)
-            iconImg = imresize(iconImg, [NaN iconW]);
+        % Invalidate cache on background color change (theme switch)
+        if ~isequal(iconCacheBgColor, figBgColor)
+            iconCompositeCache = configureDictionary("string", "cell");
+            iconCacheBgColor = figBgColor;
+        end
+
+        cacheKey = string(sprintf('%s_%d', iconFilename, iconW));
+        if isKey(iconCompositeCache, cacheKey)
+            iconImg = iconCompositeCache{cacheKey};
+        else
+            [img, ~, alpha] = imread(iconPath);
+            if ~isempty(alpha)
+                img    = im2double(img);
+                alpha  = im2double(alpha);
+                for k = 1:3
+                    img(:,:,k) = img(:,:,k) .* alpha + figBgColor(k) .* (1 - alpha);
+                end
+                iconImg = im2uint8(img);
+            else
+                iconImg = img;
+            end
+            if ~isempty(iconImg)
+                iconImg = imresize(iconImg, [NaN iconW]);
+                iconCompositeCache(cacheKey) = {iconImg};
+            end
         end
     catch
         iconImg = [];
@@ -369,10 +400,13 @@ for i = 1:nBtn
     end
 end
 
-drawnow;
+% Wire callbacks after layout is built
+fig.WindowKeyPressFcn = @onKey;
+fig.CloseRequestFcn   = @onClose;
 
 % Show figure after layout is fully built
 fig.Visible = 'on';
+drawnow;
 
 % Focus the default button
 idx = find(strcmp(buttons, defaultBtn), 1, 'first');
@@ -381,7 +415,7 @@ if ~isempty(idx)
 end
 
 % Block caller until dialog is closed
-waitfor(fig);
+uiwait(fig);
 
 % ---------- Nested callbacks ----------
     function storeDontShow()
@@ -395,9 +429,8 @@ waitfor(fig);
     function onButton(src, ~)
         selection = src.Text;
         storeDontShow();
-        if isvalid(fig)
-            delete(fig);
-        end
+        fig.Visible = 'off';
+        uiresume(fig);
     end
 
     function doCancel()
@@ -407,9 +440,8 @@ waitfor(fig);
             selection = '';
         end
         storeDontShow();
-        if isvalid(fig)
-            delete(fig);
-        end
+        fig.Visible = 'off';
+        uiresume(fig);
     end
 
     function onClose(~, ~)
