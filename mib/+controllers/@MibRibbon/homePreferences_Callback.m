@@ -86,6 +86,7 @@ switch mode
             'currentStats', struct('mibPath', obj.mibModel.mibPath, 'WindowStyle', 'normal'));
     case 'Licenses'                     % obj.handles.ribbonHome.licenses
     case 'About MIB'                    % obj.handles.ribbonHome.about
+        obj.mibController.startController('controllers.About');  % a new appdesigner version
 end
 
 

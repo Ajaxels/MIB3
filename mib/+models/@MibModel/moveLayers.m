@@ -513,6 +513,11 @@ else
                 end
                 obj.I{obj.id}.setData2D(model, 'labels', [], [], [], BatchOptLocal);
         end
+        % notify MibModel that slice was added, used in Graphcut
+        setDataOpt.type = BatchOptLocal.DestinationLayer{1};
+        setDataOpt.mode = '2D';
+        eventdata = core.ToggleEventData(setDataOpt);
+        notify(obj, 'SetData', eventdata);
     end
 end
 

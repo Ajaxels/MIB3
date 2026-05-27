@@ -15,6 +15,7 @@ classdef MibSelection
     methods
         % % declaration of listeners
         % 
+        listners_Callbacks(obj, src, evtData) % Generic callback on getting listeners events
         listener_updatePanelPosition(obj, src, evtData)        % Listener callback: adapt the Selection panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right).
         % declaration of functions in the external files, keep empty line in between for the doc generator
         gui_Callbacks(obj, hWidget, hData) % callbacks for widgets of some the ROI panel obj.view.handles.panels.roi
@@ -106,6 +107,8 @@ classdef MibSelection
 
             %% Add listeners
             obj.listeners{1} = addlistener(obj.view.handles.panels.selectionPanel, 'PropertyChanged', @obj.listener_updatePanelPosition); % redraw the panel when Region property gets changed
+            %obj.listeners{2} = addlistener(obj.mibModel, 'ShowMask', @(s,e) obj.ViewListner_Callback(obj, s, e));  % check the Show Mask 
+            obj.listeners{2} = addlistener(obj.mibModel, 'ShowMask', @obj.listners_Callbacks);  % check the Show Mask 
             
             %% ---------------------- Key press callback ----------------------
             obj.UIFigure.WindowKeyPressFcn   = @(hWidget, hData)obj.mibController.gui_WindowKeyPressFcn(hWidget, hData);

@@ -18,7 +18,8 @@ function img = addText2Img(img, textArray, positionList, options)
 %
 %     - ``.color``       — [numeric] text colour as an RGB vector or scalar grey value (default: ``0.5``)
 %     - ``.fontSize``    — [numeric] font size index 1–7, mapping to pt 8–20 of Ubuntu Mono (default: ``2``)
-%     - ``.markerText``  — [char] marker+text visibility: ``'both'`` *(default)*, ``'marker'`` (no text), or ``'text'`` (no marker)
+%     - ``.markerText``  — [char] marker+text visibility: ``'Label + Value'`` *(default)*, ``'Label'`` (only label, no value), or ``'Value'`` (only value, no label)
+%     - ``.markerShow``  — [logical] ``true`` - *(default)* show marker; ``false`` - do not show marker
 %     - ``.AnchorPoint`` — [char] text-box reference point: ``'LeftTop'`` *(default)*, ``'LeftCenter'``, ``'LeftBottom'``, ``'CenterTop'``, ``'Center'``, ``'CenterBottom'``, ``'RightTop'``, ``'RightCenter'``, ``'RightBottom'``
 %
 % Output Arguments:
@@ -57,13 +58,16 @@ if ~isfield(options, 'AnchorPoint'); options.AnchorPoint = 'LeftTop'; end
 if ~isfield(options, 'color'); options.color = [0.5 0.5 0.5]; end
 if ~isfield(options, 'fontSize'); options.fontSize = 2; end
 if ~isfield(options, 'markerText'); options.markerText = 'Label + Value'; end
+if ~isfield(options, 'markerShow'); options.markerShow = true; end
 
 maxVal = double(intmax(class(img)));
 
 fontSize = 2*options.fontSize+6;
 
 % Always draw the position marker regardless of display mode
-img = insertMarker(img, positionList, '+', 'color', options.color*maxVal, 'size', 2);
+if options.markerShow
+    img = insertMarker(img, positionList, '+', 'color', options.color*maxVal, 'size', 2);
+end
 
 % Draw text for modes that include a label, value, or both
 if ismember(options.markerText, {'Label + Value', 'Label', 'Value'})

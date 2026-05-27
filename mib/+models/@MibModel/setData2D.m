@@ -59,4 +59,11 @@ if ~isfield(options, 'id'); options.id = obj.id; end
 id = options.id;
 
 result = obj.I{id}.setData2D(dataset, type, slice_no, orient, col_channel, options);
+
+% notify MibModel that slice was added, used in Graphcut, moved to moveLayers function
+% setDataOpt.type = type;
+% setDataOpt.mode = '2D';
+% eventdata = core.ToggleEventData(setDataOpt);
+% notify(obj, 'SetData', eventdata);
+
 end

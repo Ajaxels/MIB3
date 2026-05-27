@@ -55,9 +55,18 @@ if exist(prefsFn, 'file') ~= 0
 else
     % ------------ check for preference override file ------------
     % Override file allows system-wide preference defaults
-    overridePreferencesFile = fullfile(obj.mibPath, 'mib3_prefs_override.mat');
+    % get computer name:
+    computerName = '';
+    try
+        computerName = char(java.net.InetAddress.getLocalHost.getHostName);
+    catch
+    end
+    overridePreferencesFile = fullfile(obj.mibPath, sprintf('mib3_prefs_override_%s.mat', computerName));
+    if ~isfile(overridePreferencesFile)
+        overridePreferencesFile = fullfile(obj.mibPath, 'mib3_prefs_override.mat');
+    end
 
-    if exist(overridePreferencesFile, 'file') ~= 0
+    if isfile(overridePreferencesFile)
         overridePrefs = load(overridePreferencesFile); %#ok<LOAD>
         fprintf('MIB override global parameters file: %s\n', overridePreferencesFile);
 

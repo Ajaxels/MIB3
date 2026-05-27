@@ -29,6 +29,7 @@ switch mode
     case 'Supervoxels classifier'        % obj.handles.ribbonTools.supervoxels
     case sprintf('Global\nthresholding')        % obj.handles.ribbonTools.globalthres
     case 'Graphcut'        % obj.handles.ribbonTools.graphcut
+        obj.mibController.startController('controllers.Graphcut');
     case 'Watershed'        % obj.handles.ribbonTools.watershed
 
     case {'Measure tool', sprintf('Measure\ntool')}   % obj.handles.ribbonTools.measureTool
