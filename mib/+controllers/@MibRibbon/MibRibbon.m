@@ -29,13 +29,7 @@ classdef MibRibbon
         maskImportExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
         maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
         maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
-        modelAnnotations_Callback(obj, hWidget, hData)        % callback on press of buttons in the List of annotations button of the Model ribbon
-        modelConvertType_Callback(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
-        modelExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Model ribbon
-        modelImport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Import section of the Model ribbon
-        modelMaterials_Callback(obj, hWidget, hData)        % callback on press of buttons in the Materials button of the Model ribbon
-        modelQuantification_Callback(obj, hWidget, hData)        % callback on press of the Quantification button in the Model ribbon
-        modelRender_Callback(obj, hWidget, hData)        % callback on press of buttons in the Render button of the Model ribbon
+        model_Callbacks(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
         selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
         selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
         tools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools ribbon
@@ -261,52 +255,52 @@ classdef MibRibbon
             %
 
             %% Add Callbacks for the MODEL ribbon -> Convert type
-            obj.handles.ribbonModel.mat63.ValueChangedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.mat255.ValueChangedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.mat65535.ValueChangedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.mat4294967295.ValueChangedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.indexed2dconn4.ItemPushedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.indexed2dconn8.ItemPushedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.indexed3dconn4.ItemPushedFcn = @obj.modelConvertType_Callback;
-            obj.handles.ribbonModel.indexed3dconn8.ItemPushedFcn = @obj.modelConvertType_Callback;
+            obj.handles.ribbonModel.mat63.ValueChangedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.mat255.ValueChangedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.mat65535.ValueChangedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.mat4294967295.ValueChangedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.indexed2dconn4.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.indexed2dconn8.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.indexed3dconn4.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.indexed3dconn8.ItemPushedFcn = @obj.model_Callbacks;
             %% Add Callbacks for the MODEL ribbon -> Import section
-            obj.handles.ribbonModel.new.ButtonPushedFcn = @obj.modelImport_Callback;
-            obj.handles.ribbonModel.load.ButtonPushedFcn = @obj.modelImport_Callback;
-            obj.handles.ribbonModel.import.ButtonPushedFcn = @obj.modelImport_Callback;
-            obj.handles.ribbonModel.importFromMatlab.ItemPushedFcn = @obj.modelImport_Callback;
-            obj.handles.ribbonModel.importFromMIB.ItemPushedFcn = @obj.modelImport_Callback;
+            obj.handles.ribbonModel.new.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.load.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.import.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.importFromMatlab.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.importFromMIB.ItemPushedFcn = @obj.model_Callbacks;
             %% Add Callbacks for the MODEL ribbon -> Export section
-            obj.handles.ribbonModel.export.ButtonPushedFcn = @obj.modelExport_Callback;
-            obj.handles.ribbonModel.exportToMatlab.ItemPushedFcn = @obj.modelExport_Callback;
-            obj.handles.ribbonModel.exportToMIB.ItemPushedFcn = @obj.modelExport_Callback;
-            obj.handles.ribbonModel.exportToImaris.ItemPushedFcn = @obj.modelExport_Callback;
-            obj.handles.ribbonModel.save.ButtonPushedFcn = @obj.modelExport_Callback;
-            obj.handles.ribbonModel.saveAs.ButtonPushedFcn = @obj.modelExport_Callback;
+            obj.handles.ribbonModel.export.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.exportToMatlab.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.exportToMIB.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.exportToImaris.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.save.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.saveAs.ButtonPushedFcn = @obj.model_Callbacks;
             %% Add Callbacks for the MODEL ribbon -> Model tools section
             % Materials
-            obj.handles.ribbonModel.matRename.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matAdd.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matInsert.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matSwap.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matReorder.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matExport.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matSave.ItemPushedFcn = @obj.modelMaterials_Callback;
-            obj.handles.ribbonModel.matRemove.ItemPushedFcn = @obj.modelMaterials_Callback;
+            obj.handles.ribbonModel.matRename.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matAdd.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matInsert.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matSwap.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matReorder.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matExport.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matSave.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matRemove.ItemPushedFcn = @obj.model_Callbacks;
             % List of annotations
-            obj.handles.ribbonModel.annotations.ButtonPushedFcn = @obj.modelAnnotations_Callback;
-            obj.handles.ribbonModel.annotationsList.ItemPushedFcn = @obj.modelAnnotations_Callback;
-            obj.handles.ribbonModel.annotationsImaris.ItemPushedFcn = @obj.modelAnnotations_Callback;
-            obj.handles.ribbonModel.annotationsRemove.ItemPushedFcn = @obj.modelAnnotations_Callback;
+            obj.handles.ribbonModel.annotations.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.annotationsList.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.annotationsImaris.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.annotationsRemove.ItemPushedFcn = @obj.model_Callbacks;
             % Render
-            obj.handles.ribbonModel.render.ButtonPushedFcn = @obj.modelRender_Callback;
-            obj.handles.ribbonModel.renderMIB.ItemPushedFcn = @obj.modelRender_Callback;
-            obj.handles.ribbonModel.renderMatlab.ItemPushedFcn = @obj.modelRender_Callback;
-            obj.handles.ribbonModel.renderMatlabImaris.ItemPushedFcn = @obj.modelRender_Callback;
-            obj.handles.ribbonModel.renderMatlabVolView.ItemPushedFcn = @obj.modelRender_Callback;
-            obj.handles.ribbonModel.renderFiji.ItemPushedFcn = @obj.modelRender_Callback;
-            obj.handles.ribbonModel.renderImaris.ItemPushedFcn = @obj.modelRender_Callback;
+            obj.handles.ribbonModel.render.ButtonPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.renderMIB.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.renderMatlab.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.renderMatlabImaris.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.renderMatlabVolView.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.renderFiji.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.renderImaris.ItemPushedFcn = @obj.model_Callbacks;
             % Quantification
-            obj.handles.ribbonModel.quantification.ButtonPushedFcn = @obj.modelQuantification_Callback;            
+            obj.handles.ribbonModel.quantification.ButtonPushedFcn = @obj.model_Callbacks;            
         end
 
         function addCallbacksToDatasetMask(obj)

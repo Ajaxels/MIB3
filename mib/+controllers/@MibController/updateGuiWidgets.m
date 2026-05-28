@@ -161,25 +161,17 @@ if isempty(updatePanels) || ismember('ribbonModel', updatePanels)
         ribbonModel = obj.cRibbon.handles.ribbonModel;
     end
 
-    if dataset.labels.maxMaterials == 63 && ~ribbonModel.mat63.Value
+    ribbonModel.mat63.Value = false;
+    ribbonModel.mat255.Value = false;
+    ribbonModel.mat65535.Value = false;
+    ribbonModel.mat4294967295.Value = false;
+    if dataset.labels.maxMaterials == 63
         ribbonModel.mat63.Value = true;
-        ribbonModel.mat255.Value = false;
-        ribbonModel.mat65535.Value = false;
-        ribbonModel.mat4294967295.Value = false;
-    elseif dataset.labels.maxMaterials == 255 && ~ribbonModel.mat255.Value
-        ribbonModel.mat63.Value = false;
+    elseif dataset.labels.maxMaterials == 255 
         ribbonModel.mat255.Value = true;
-        ribbonModel.mat65535.Value = false;
-        ribbonModel.mat4294967295.Value = false;
-    elseif dataset.labels.maxMaterials == 65535 && ~ribbonModel.mat65535.Value
-        ribbonModel.mat63.Value = false;
-        ribbonModel.mat255.Value = false;
+    elseif dataset.labels.maxMaterials == 65535
         ribbonModel.mat65535.Value = true;
-        ribbonModel.mat4294967295.Value = false;
-    elseif dataset.labels.maxMaterials == 4294967295 && ~ribbonModel.mat4294967295.Value
-        ribbonModel.mat63.Value = false;
-        ribbonModel.mat255.Value = false;
-        ribbonModel.mat65535.Value = false;
+    elseif dataset.labels.maxMaterials == 4294967295 
         ribbonModel.mat4294967295.Value = true;
     end
     
@@ -313,6 +305,12 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
     if logical(segmentationPanelHandles.materialsTableContextShowSelected.Checked) == dataset.showAllMaterials
         segmentationPanelHandles.materialsTableContextShowSelected.Checked = logical(1-dataset.showAllMaterials);
     end
+    
+    % update show 3D lines
+    if segmentationPanelHandles.linesShowLines.Value ~= obj.mibModel.showLines3D
+        segmentationPanelHandles.linesShowLines.Value = obj.mibModel.showLines3D;
+    end
+
     % update useLUT checkbox, see below selectionPanel
 end
 

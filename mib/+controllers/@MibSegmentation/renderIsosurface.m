@@ -13,7 +13,7 @@ function renderIsosurface(obj)
 %
 % Entry points:
 %   - Context menu: ``materialsTable_ContextMenu`` → ``'materialsTableContextRenMat'``
-%   - Ribbon: ``modelRender_Callback`` → ``'MATLAB isosurface'``
+%   - Ribbon: ``model_Callbacks`` → ``'MATLAB isosurface'``
 %
 % Input Arguments:
 %   (none beyond ``obj``)

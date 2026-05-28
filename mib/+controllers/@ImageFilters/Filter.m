@@ -155,7 +155,7 @@ for sourceLayerId = 1:numel(sourceLayersList)
             img = obj.mibModel.getData2D(sourceLayersList{sourceLayerId}, obj.mibModel.I{obj.BatchOpt.id}.getCurrentSliceNumber(), [], colChannel, getDataOptions);
         end
 
-        if strcmp(BatchOptOut.FilterGroup{1}, 'Image Binarization') && size(img{1}, 3) > 1
+        if strcmp(BatchOptOut.FilterGroup{1}, 'Image Binarization') && size(img{1}, 4) > 1
             utils.dlgs.showErrorDialog(obj.view.gui, 'Please select a single color channel before binarization', 'Too many color channels');
             return;
         end
@@ -166,7 +166,9 @@ for sourceLayerId = 1:numel(sourceLayersList)
             if ismember(BatchOptOut.FilterName{1}, {'SlicClustering', 'WatershedClustering'})
                 id = obj.mibModel.getActiveId();
                 viewPort = obj.mibModel.I{id}.image.viewPort;
-                if isnan(colChannel)
+                if isempty(colChannel)
+                    col_channel = obj.mibModel.I{obj.BatchOpt.id}.slices{4};
+                elseif isnan(colChannel)
                     col_channel = 1;
                 else
                     col_channel = colChannel;

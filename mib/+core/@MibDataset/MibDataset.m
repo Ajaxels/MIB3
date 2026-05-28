@@ -119,6 +119,8 @@ classdef MibDataset < matlab.mixin.Copyable
         closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
         [x, y, z] = convertPixelsToUnits(obj, x, y, z)        % Convert pixel coordinates to physical imaging units using pixSize and boundingBox
         [x, y, z] = convertUnitsToPixels(obj, x, y, z)        % Convert physical imaging units to pixel coordinates using pixSize and boundingBox
+        PixelIdxList = convertPixelIdxListCrop2Full(obj, PixelIdxListCrop, options) % Convert PixelIdxList of a cropped sub-volume to the full dataset
+        convertModel(obj, newType, wb)        % convert the segmentation model to a different storage type (63/255/65535/4294967295 or indexed objects)
         result = copySlice(obj, sliceFrom, sliceTo, orient)      % Copy a slice from one position to another across all layers
         createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
         result = cropDataset(obj, cropF, options)        % Crop all layers of the dataset (image, labels, mask, selection); handles Virtual → Standard conversion

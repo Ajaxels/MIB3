@@ -245,10 +245,9 @@ for t = t1:t2
             STATS = regionprops(CC, CC, {'PixelIdxList','Centroid','BoundingBox','MinIntensity'});
             emptyIdx = find(arrayfun(@(s) isempty(s.PixelIdxList), STATS));
             STATS(emptyIdx) = [];
-            CC = struct('PixelIdxList', {STATS(:).PixelIdxList}, ...
+            CC = struct('PixelIdxList', {{STATS(:).PixelIdxList}}, ...
                         'NumObjects', numel({STATS(:).PixelIdxList}), ...
                         'ImageSize', imgSize, 'Connectivity', conn);
-            CC.NumObjects = numel(CC.PixelIdxList);
             [STATS.ObjectId] = STATS.MinIntensity;
             STATS = rmfield(STATS, 'MinIntensity');
         else
@@ -460,10 +459,9 @@ for t = t1:t2
                 STATS = regionprops(CC, CC, [commonProps, {'MinIntensity'}]);
                 emptyIdx = find(arrayfun(@(s) isempty(s.PixelIdxList), STATS));
                 STATS(emptyIdx) = [];
-                CC = struct('PixelIdxList', {STATS(:).PixelIdxList}, ...
+                CC = struct('PixelIdxList', {{STATS(:).PixelIdxList}}, ...
                             'NumObjects', numel({STATS(:).PixelIdxList}), ...
                             'ImageSize', size(slice), 'Connectivity', conn);
-                CC.NumObjects = numel(CC.PixelIdxList);
                 [STATS.ObjectId] = STATS.MinIntensity;
                 STATS = rmfield(STATS, 'MinIntensity');
             else

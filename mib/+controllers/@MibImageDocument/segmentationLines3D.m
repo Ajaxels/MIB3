@@ -118,5 +118,6 @@ switch action
         eventdata = core.ToggleEventData('Connect to node');
 end
 
+obj.mibModel.showLines3D = true;
 notify(obj.mibModel, 'UpdatedLines3D', eventdata);
 end

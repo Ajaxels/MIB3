@@ -202,6 +202,7 @@ classdef Lines3dDialog < handle
             h.deleteBtn.ButtonPushedFcn    = @(~,~) obj.deleteBtn_Callback();
             h.visualizeBtn.ButtonPushedFcn = @(~,~) obj.visualizeBtn_Callback();
             h.refreshBtn.ButtonPushedFcn   = @(~,~) obj.updateWidgets();
+            h.closeBtn.ButtonPushedFcn   = @(~,~) obj.closeWindow();
 
             % Dropdowns
             h.tableSelectionPopup.ValueChangedFcn = @(~,~) obj.updateWidgets();
@@ -264,13 +265,17 @@ classdef Lines3dDialog < handle
                     curTable = obj.view.handles.tableSelectionPopup.Value;
                     obj.view.handles.nodesViewTable.Visible = false;
                     obj.view.handles.edgesViewTable.Visible = false;
+                    obj.view.handles.nodesViewAdditionalField.Visible = false;
+                    obj.view.handles.edgesViewAdditionalField.Visible = false;
                     switch curTable
                         case 'Nodes'
                             obj.updateNodesViewTable(activeTreeIndex, nodeByTree);
                             obj.view.handles.nodesViewTable.Visible = true;
+                            obj.view.handles.nodesViewAdditionalField.Visible = true;
                         case 'Edges'
                             obj.updateEdgesViewTable(activeTreeIndex, nodeByTree);
                             obj.view.handles.edgesViewTable.Visible = true;
+                            obj.view.handles.edgesViewAdditionalField.Visible = true;
                     end
 
                     obj.view.handles.activeTreeText.Text = sprintf('Active tree: %d', activeTreeIndex);

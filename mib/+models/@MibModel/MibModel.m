@@ -88,6 +88,7 @@ classdef MibModel < handle
 
     events
         AddMeasurement       % add a new measurement
+        AxesLimitsChanged    % notify listeners that the image axes limits were changed (zoom/pan), used by Snapshot controller
         DatasetsPanelUpdate  % update widgets of the Datasets panel
         FrameChanged         % change of the current frame of 5D dataset (time)
         KeyPressEvent        % event triggered by a child widget to call for key press callback of MIB
@@ -100,6 +101,7 @@ classdef MibModel < handle
         %                       eventdata = core.ToggleEventData({'selectionPanel'});
         %                       notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
         %                       notify(obj.mibModel, 'ShowImage');
+        ShowLines3D          % enable lines 3D visualization -> 
         SliceChanged         % change of slices of the current dataset (depth)
         StopProtocol         % stop batch protocol from execution
         SyncBatch            % synchronize structure for batch actions
@@ -115,7 +117,6 @@ classdef MibModel < handle
         UpdateToolbar        % request to update buttons in MIB toolbar (requires Options.fastpan = true; eventdata = core.ToggleEventData(Options); notify(obj, 'UpdateToolbar', eventdata);)
         UpdatedLines3D       % notify controllers about updated Lines3D data, carries core.ToggleEventData with the action string (e.g. 'Add node')
         UpdateUserScore      % update user stats
-        AxesLimitsChanged    % notify listeners that the image axes limits were changed (zoom/pan), used by Snapshot controller
     end
 
     methods
@@ -129,6 +130,7 @@ classdef MibModel < handle
         [xOut, yOut] = convertDataToMouseCoordinates(obj, x, y, mode)        % convert dataset coordinates to image axes (screen) coordinates
         [xOut, yOut, zOut, tOut] = convertMouseToDataCoordinates(obj, x, y, mode, permuteSw)        % convert coordinates under the mouse cursor to the coordinates of the dataset
         colorChannelActions(obj, mode, channel1, BatchOptIn)  % handle various color channel operations (insert, delete, copy, invert, rotate, shift, swap)
+        convertModel(obj, ModelType, BatchOptIn)        % convert the segmentation model to a different type; wrapper around core.MibDataset.convertModel
         copySwapSlice(obj, sourceSlice, targetSlice, mode, BatchOptIn)  % Batch-compatible dispatcher for copy, insert, and swap slice operations
         createModel(obj, ModelType, ModelMaterialNames, BatchOptIn)        % create a new model; wrapper around core.MibDataset.createModel
         status = datasetsSetsOps(obj, BatchOptIn)        % operations with sets of the model; compatible with the batch mode.

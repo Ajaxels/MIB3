@@ -24,11 +24,13 @@ function materialsTable_ContextMenu(obj, menuEntry, selectedData)
 %   - ``'materialsTableContextUnlink'`` — unlink material from "Add to" reference material
 %
 
-arguments (Input)
-    obj controllers.MibSegmentation
-    menuEntry matlab.ui.container.Menu
-    selectedData matlab.ui.eventdata.MenuSelectedData
-end
+% arguments (Input)
+%     obj controllers.MibSegmentation
+%     menuEntry matlab.ui.container.Menu
+%     selectedData matlab.ui.eventdata.MenuSelectedData
+% end
+
+if nargin < 3; selectedData = []; end
 
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibSegmentation.materialsTable_ContextMenu: context menu for "obj.view.handles.panels.segmentation.handles.materialsTable" -> selected "%s (%s)"\n', menuEntry.Text, menuEntry.Tag);
@@ -86,6 +88,7 @@ switch menuEntry.Tag
             options.colorChannel = contIndex;
         end
         obj.mibController.startController('controllers.VolRenApp', options);
+    
     case 'materialsTableContextRenMat'
         % render material with MIB isosurfaces
         obj.renderIsosurface();

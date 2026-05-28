@@ -21,7 +21,5 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.modelQuantification_Callback: Model ribbon->Quantification -> obj.handles.ribbonModel.quantification\n');
 end
 
-% obj.handles.ribbonModel.quantification
-obj.mibController.startController('controllers.Quantification');
 
 end

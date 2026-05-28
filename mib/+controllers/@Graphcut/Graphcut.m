@@ -35,6 +35,8 @@ classdef Graphcut < handle
         %   .scaleFactor   - edge weight scaling factor
         %   .dilateMode    - 'pre' or 'post' dilation mode
         %   .tilesX/Y/Z    - grid tile counts
+        graphcutVersion = 2.2 
+        % version of the graphcut structure
         mode
         % active segmentation mode string:
         %   'mode2dCurrentRadio' | 'mode2dRadio' | 'mode3dRadio' | 'mode3dGridRadio'
@@ -91,7 +93,7 @@ classdef Graphcut < handle
             end
         end
 
-        Graphcut = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
+        [G, calcCancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
         % declaration — implemented in calcSupervoxels.m
     end
 
@@ -110,16 +112,17 @@ classdef Graphcut < handle
         % Output Arguments:
         %   - **controller** — handle to the constructed ``Graphcut`` object
             obj.mibModel = mibModel;
-            obj.mibGUI   = mibModel.mibGUI;
+            obj.view.gui   = mibModel.mibGUI;
 
             id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
 
             % check for virtual stacking mode
             %% Virtual mode guard
-            if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if strcmp(dataset.datasetType, 'Virtual')
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
-                utils.dlgs.inputUniversalDlg(obj.mibGUI, '', {''}, ...
+                utils.dlgs.inputUniversalDlg(obj.view.gui, '', {''}, ...
                     {'This tool is not available in virtual stacking mode.\nPlease switch to the memory-resident mode and try again.'}, ...
                     'Not implemented', dlgOpt);
                 obj.closeWindow();
@@ -133,7 +136,7 @@ classdef Graphcut < handle
             obj.graphcut(1).noPix   = [];
             obj.graphcut(1).Graph   = cell(1);
             obj.graphcut(1).grid    = struct;
-            obj.graphcut(1).version = 2.2;
+            obj.graphcut(1).version = obj.graphcutVersion;
 
             obj.shownLabelObj  = cell(1);
             obj.seedObj        = cell(1);
@@ -152,7 +155,7 @@ classdef Graphcut < handle
                     || ~strcmp(obj.view.handles.infoLabel.FontName, Font.FontName)
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
-            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibGUI, 'left');
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 
             obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(s,e) obj.ViewListner_Callback2(obj, s, e));
             obj.listener{2} = addlistener(obj.mibModel, 'NewDataset',       @(s,e) obj.ViewListner_Callback2(obj, s, e));
@@ -196,7 +199,10 @@ classdef Graphcut < handle
             handles.importSuperpixelsBtn.ButtonPushedFcn     = @(~,~) obj.importSuperpixelsBtn_Callback();
             handles.segmentBtn.ButtonPushedFcn               = @(~,~) obj.segmentBtn_Callback();
             handles.segmentAllBtn.ButtonPushedFcn            = @(~,~) obj.segmentAllBtn_Callback();
-            obj.view.handles.closeButton.ButtonPushedFcn       = @(~,~) obj.closeWindow();
+            handles.closeButton.ButtonPushedFcn              = @(~,~) obj.closeWindow();
+            handles.recalculateGraph.ButtonPushedFcn         = @(~,~) obj.recalcGraph_Callback();
+
+            
         end
 
         function closeWindow(obj)
@@ -209,8 +215,9 @@ classdef Graphcut < handle
         function updateWidgets(obj)
         % UPDATEWIDGETS - Refresh all widget states from the current dataset.
             id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
 
-            if obj.mibModel.I{id}.image.depth < 2
+            if dataset.image.depth < 2
                 obj.view.handles.mode3dRadio.Enable = 'off';
                 obj.view.handles.mode3dGridRadio.Enable = 'off';
                 obj.view.handles.mode2dCurrentRadio.Value = true;
@@ -220,7 +227,7 @@ classdef Graphcut < handle
             end
 
             % update color channel dropdown
-            colorsNo = obj.mibModel.I{id}.image.colors;
+            colorsNo = dataset.image.colors;
             colCh = arrayfun(@(i) sprintf('Ch %d', i), 1:colorsNo, 'UniformOutput', false);
             obj.view.handles.imageColChPopup.Items = colCh;
             if ~ismember(obj.view.handles.imageColChPopup.Value, colCh)
@@ -230,7 +237,7 @@ classdef Graphcut < handle
             obj.updateMaterialsBtn_Callback();
 
             if isempty(obj.graphcut(1).slic)
-                [height, width, depth] = obj.mibModel.I{id}.getDatasetDimensions('selection', 3, []);
+                [height, width, depth] = dataset.getDatasetDimensions('selection', 3, []);
                 obj.view.handles.xSubareaEdit.Value = sprintf('%d:%d', 1, width);
                 obj.view.handles.ySubareaEdit.Value = sprintf('%d:%d', 1, height);
                 obj.view.handles.zSubareaEdit.Value = sprintf('%d:%d', 1, depth);
@@ -275,8 +282,8 @@ classdef Graphcut < handle
             status = 0;
 
             if ~isempty(obj.graphcut(1).noPix)
-                button = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
-                    sprintf('!!! Attention !!!\n\nThe pre-processed data will be removed!'), ...
+                button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+                    sprintf('The pre-processed data will be removed!'), ...
                     'Warning!', 'Continue', 'Cancel', 'Cancel');
                 if strcmp(button, 'Cancel'); return; end
             end
@@ -286,7 +293,7 @@ classdef Graphcut < handle
             obj.graphcut(1).noPix   = [];
             obj.graphcut(1).Graph   = cell(1);
             obj.graphcut(1).grid    = struct;
-            obj.graphcut(1).version = 2.2;
+            obj.graphcut(1).version = obj.graphcutVersion;
 
             superPixType = obj.view.handles.superpixTypePopup.Value;
             if strcmp(superPixType, 'SLIC')
@@ -389,8 +396,8 @@ classdef Graphcut < handle
         % Input Arguments:
         %   - **hObject** — handle to the newly selected radio button
             if ~isempty(obj.graphcut(1).noPix)
-                button = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
-                    sprintf('!!! Attention !!!\n\nThe pre-processed data will be removed!'), ...
+                button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+                    sprintf('The pre-processed data will be removed!'), ...
                     'Warning!', 'Continue', 'Cancel', 'Cancel');
                 if strcmp(button, 'Cancel')
                     obj.view.handles.(obj.mode).Value = true;
@@ -426,7 +433,7 @@ classdef Graphcut < handle
             end
             if min(typedValue) < 1 || max(typedValue) > maxVal
                 hObject.Value = sprintf('1:%d', maxVal);
-                utils.dlgs.showErrorDialog(obj.mibGUI, 'Please check the values!', 'Wrong parameters!');
+                utils.dlgs.showErrorDialog(obj.view.gui, 'Please check the values!', 'Wrong parameters!');
                 return;
             end
             obj.clearPreprocessBtn_Callback();
@@ -434,13 +441,14 @@ classdef Graphcut < handle
 
         function resetDimsBtn_Callback(obj)
         % RESETDIMSBTN_CALLBACK - Reset sub-area edit fields to the full dataset extent.
+            status = obj.clearPreprocessBtn_Callback();    
+            if status==0; return; end
             id = obj.mibModel.getActiveId();
             [height, width, depth] = obj.mibModel.I{id}.getDatasetDimensions('selection', 3, []);
             obj.view.handles.xSubareaEdit.Value    = sprintf('1:%d', width);
             obj.view.handles.ySubareaEdit.Value    = sprintf('1:%d', height);
             obj.view.handles.zSubareaEdit.Value    = sprintf('1:%d', depth);
             obj.view.handles.binSubareaEdit.Value  = '1; 1';
-            obj.clearPreprocessBtn_Callback();
         end
 
         function currentViewBtn_Callback(obj)
@@ -461,7 +469,7 @@ classdef Graphcut < handle
                 img = cell2mat(obj.mibModel.getData2D('selection'));
                 STATS = regionprops(img, 'BoundingBox');
                 if numel(STATS) == 0
-                    utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                    utils.dlgs.showErrorDialog(obj.view.gui, ...
                         sprintf('Selection layer was not found!\nPlease make sure that the Selection layer is shown in the Image View panel'), ...
                         'Missing Selection');
                     obj.resetDimsBtn_Callback();
@@ -474,7 +482,7 @@ classdef Graphcut < handle
                 img = cell2mat(obj.mibModel.getData3D('selection', [], 3));
                 STATS = regionprops(img, 'BoundingBox');
                 if numel(STATS) == 0
-                    utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                    utils.dlgs.showErrorDialog(obj.view.gui, ...
                         sprintf('Selection layer was not found!\nPlease make sure that the Selection layer is shown in the Image View panel'), ...
                         'Missing Selection');
                     obj.resetDimsBtn_Callback();
@@ -528,7 +536,7 @@ classdef Graphcut < handle
         function parforCheck_Callback(obj)
         % PARFORCHECK_CALLBACK - Start a parallel pool when the parallel checkbox is ticked.
             if obj.view.handles.parforCheck.Value
-                nWorkers = obj.mibModel.cpuParallelLimit;
+                nWorkers = obj.mibModel.cpuParallelLimitMax;
                 if isempty(gcp('nocreate'))
                     parpool(nWorkers);
                 end
@@ -542,12 +550,13 @@ classdef Graphcut < handle
         % calls ``maxflow_v222``, and writes the resulting mask — either incrementally
         % (when ``shownLabelObj`` is already set) or in full.
             id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
             bgMaterialId   = find(strcmp(obj.view.handles.backgroundMaterialPopup.Items, obj.view.handles.backgroundMaterialPopup.Value));
             seedMaterialId = find(strcmp(obj.view.handles.signalMaterialPopup.Items, obj.view.handles.signalMaterialPopup.Value));
             noMaterials    = numel(obj.view.handles.signalMaterialPopup.Items);
 
             if bgMaterialId == seedMaterialId
-                utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
                     sprintf('Wrong selection of materials!\nPlease select two different materials in the Background and Object combo boxes.'), ...
                     'Wrong materials');
                 return;
@@ -556,7 +565,7 @@ classdef Graphcut < handle
             if isempty(obj.graphcut(1).noPix); obj.superpixelsBtn_Callback(); end
 
             if obj.timerElapsed > obj.timerElapsedMax
-                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+                progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, ...
                     'Message', 'Graphcut segmentation...', 'Title', 'Maxflow/Mincut');
             else
                 progressBar = [];
@@ -566,7 +575,7 @@ classdef Graphcut < handle
                 [winWidth, winHeight] = obj.mibModel.getAxesLimits();
                 centX = mean(winWidth);
                 centY = mean(winHeight);
-                centZ = obj.mibModel.I{id}.slices{3}(1);
+                centZ = dataset.slices{3}(1);
 
                 bbX = mean(vertcat(obj.graphcut(1).grid.bb.x), 2);
                 bbY = mean(vertcat(obj.graphcut(1).grid.bb.y), 2);
@@ -603,8 +612,8 @@ classdef Graphcut < handle
             binHeight = ceil((getDataOptions.y(2)-getDataOptions.y(1)+1) / binVal(1));
             binDepth  = ceil((getDataOptions.z(2)-getDataOptions.z(1)+1) / binVal(2));
 
-            if obj.mibModel.I{id}.maskExist == 0
-                obj.mibModel.I{id}.clearLayer('mask');
+            if dataset.maskExist == 0
+                dataset.clearLayer('mask');
             end
 
             singleToolScores = 1;
@@ -616,7 +625,7 @@ classdef Graphcut < handle
                 seedImg = cell2mat(obj.mibModel.getData2D('labels', [], [], [], get2DOpt));
 
                 if size(obj.graphcut(1).slic, 3) > 1
-                    sliceNo  = obj.mibModel.I{id}.slices{3}(1);
+                    sliceNo  = dataset.slices{3}(1);
                     currSlic = obj.graphcut(1).slic(:,:,sliceNo);
                 else
                     currSlic = obj.graphcut(1).slic;
@@ -695,7 +704,7 @@ classdef Graphcut < handle
                     endIndex   = getDataOptions.z(2);
                     index = 1;
                 else
-                    startIndex = obj.mibModel.I{id}.slices{3}(1);
+                    startIndex = dataset.slices{3}(1);
                     endIndex   = startIndex;
                     index      = startIndex - getDataOptions.z(1) + 1;
                 end
@@ -789,7 +798,7 @@ classdef Graphcut < handle
                         seedImg = utils.resizeImage3d(seedImg, [], resizeOptions);
                     end
                 else
-                    sliceId = obj.mibModel.I{id}.slices{3}(1) - obj.graphcut(1).grid.bb(graphId).z(1) + 1;
+                    sliceId = dataset.slices{3}(1) - obj.graphcut(1).grid.bb(graphId).z(1) + 1;
                     if size(obj.graphcut(graphId).slic, 3) < sliceId
                         if ~isempty(progressBar); delete(progressBar); end
                         return;
@@ -843,7 +852,7 @@ classdef Graphcut < handle
                     T(labelBg,  1) = 999999;  T(labelBg,  2) = 0;
                 catch err
                     dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                    utils.dlgs.inputUniversalDlg(obj.mibGUI, '!!! Warning !!!', {''}, ...
+                    utils.dlgs.inputUniversalDlg(obj.view.gui, '!!! Warning !!!', {''}, ...
                         {sprintf('A supervoxel with index 0 likely exists; try recalculating supervoxels\n\n%s\n%s', err.identifier, err.message)}, ...
                         'Error', dlgOpt);
                 end
@@ -868,13 +877,13 @@ classdef Graphcut < handle
                         setDataOpt.PixelIdxList = find(negIds>0);
                         if ~isempty(setDataOpt.PixelIdxList)
                             setDataOpt.PixelIdxList = vertcat(obj.graphcut(graphId).PixelIdxList{setDataOpt.PixelIdxList});
-                            setDataOpt.PixelIdxList = obj.mibModel.I{id}.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
+                            setDataOpt.PixelIdxList = dataset.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
                             obj.mibModel.setData3D(zeros([numel(setDataOpt.PixelIdxList), 1], 'uint8'), 'mask', [], [], [], setDataOpt);
                         end
                         setDataOpt.PixelIdxList = find(posIds>0);
                         if ~isempty(setDataOpt.PixelIdxList)
                             setDataOpt.PixelIdxList = vertcat(obj.graphcut(graphId).PixelIdxList{setDataOpt.PixelIdxList});
-                            setDataOpt.PixelIdxList = obj.mibModel.I{id}.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
+                            setDataOpt.PixelIdxList = dataset.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
                             obj.mibModel.setData3D(ones([numel(setDataOpt.PixelIdxList), 1], 'uint8'), 'mask', [], [], [], setDataOpt);
                         end
                         if ~isempty(progressBar); delete(progressBar); end
@@ -888,12 +897,12 @@ classdef Graphcut < handle
                         posIds = cast(find(posIds > 0), class(obj.graphcut(graphId).slic));
                         if ~isempty(negIds)
                             setDataOpt.PixelIdxList = find(ismember(obj.graphcut(graphId).slic, negIds)>0);
-                            setDataOpt.PixelIdxList = obj.mibModel.I{id}.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
+                            setDataOpt.PixelIdxList = dataset.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
                             obj.mibModel.setData3D(zeros([numel(setDataOpt.PixelIdxList), 1], 'uint8'), 'mask', [], [], [], setDataOpt);
                         end
                         if ~isempty(posIds)
                             setDataOpt.PixelIdxList = find(ismember(obj.graphcut(graphId).slic, posIds)>0);
-                            setDataOpt.PixelIdxList = obj.mibModel.I{id}.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
+                            setDataOpt.PixelIdxList = dataset.convertPixelIdxListCrop2Full(setDataOpt.PixelIdxList, convertPixelOpt);
                             obj.mibModel.setData3D(ones([numel(setDataOpt.PixelIdxList), 1], 'uint8'), 'mask', [], [], [], setDataOpt);
                         end
                         if ~isempty(progressBar); delete(progressBar); end
@@ -941,6 +950,7 @@ classdef Graphcut < handle
         %     default: ``0``
             if nargin < 2; usePrecomputedSlic = 0; end
             id = obj.mibModel.getActiveId();
+            dataset =  obj.mibModel.I{id};
 
             if usePrecomputedSlic == 0
                 status = obj.clearPreprocessBtn_Callback();
@@ -948,13 +958,13 @@ classdef Graphcut < handle
             end
 
             if obj.view.handles.supervoxelsAutosaveCheck.Value
-                fn_out = obj.mibModel.I{id}.meta('Filename');
+                fn_out = dataset.image.filename;
                 dotIndex = strfind(fn_out, '.');
                 if ~isempty(dotIndex); fn_out = fn_out(1:dotIndex(end)-1); end
                 if isempty(strfind(fn_out,'/')) && isempty(strfind(fn_out,'\'))
-                    fn_out = fullfile(obj.mibModel.myPath, fn_out);
+                    fn_out = fullfile(obj.mibModel.currentDirectory, fn_out);
                 end
-                if isempty(fn_out); fn_out = obj.mibModel.myPath; end
+                if isempty(fn_out); fn_out = obj.mibModel.currentDirectory; end
                 [filename, path] = uiputfile({'*.graph', 'Matlab format (*.graph)'}, 'Save Graph...', fn_out);
                 if isequal(filename, 0); return; end
                 fn_out = fullfile(path, filename);
@@ -963,8 +973,7 @@ classdef Graphcut < handle
             tic
             superPixType = obj.view.handles.superpixTypePopup.Value;
             titleStr = sprintf('%s superpixels/supervoxels', superPixType);
-            progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Initiating...', 'Title', titleStr);
-
+            
             col_channel      = find(strcmp(obj.view.handles.imageColChPopup.Items, obj.view.handles.imageColChPopup.Value));
             superpixelSize   = obj.view.handles.superpixelEdit.Value;
             superpixelCompact = obj.view.handles.superpixelsCompactEdit.Value;
@@ -987,15 +996,17 @@ classdef Graphcut < handle
 
             switch obj.mode
                 case 'mode2dCurrentRadio'
-                    getDataOptions.z = obj.mibModel.I{id}.slices{3}(1);
+                    progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Initiating...', 'Title', titleStr, 'Indeterminate', true, 'Cancelable', true);
+
+                    getDataOptions.z = dataset.slices{3}(1);
                     img = cell2mat(obj.mibModel.getData2D('image', [], [], col_channel, getDataOptions));
                     if binVal(1) ~= 1
                         img = imresize(img, [binHeight binWidth], 'bicubic');
                     end
 
-                    currViewPort = obj.mibModel.I{id}.image.viewPort;
+                    currViewPort = dataset.image.viewPort;
                     if isa(img, 'uint16')
-                        if obj.mibModel.mibLiveStretchCheck
+                        if obj.mibModel.onFlyImageStretch
                             img = imadjust(img, stretchlim(img,[0 1]), []);
                         else
                             img = imadjust(img, [currViewPort.min(col_channel)/65535 currViewPort.max(col_channel)/65535], [0 1], currViewPort.gamma(col_channel));
@@ -1009,7 +1020,7 @@ classdef Graphcut < handle
 
                     dims = size(img);
                     if strcmp(superPixType, 'SLIC')
-                        progressBar.Value = 0.05; progressBar.Message = 'Calculating SLIC superpixels...';
+                        progressBar.Message = 'Calculating SLIC superpixels...';
                         obj.graphcut(1).noPix = ceil(dims(1)*dims(2)/superpixelSize);
                         [obj.graphcut(1).slic, obj.graphcut(1).noPix] = slicmex(img, obj.graphcut(1).noPix, superpixelCompact);
                         obj.graphcut(1).noPix = double(obj.graphcut(1).noPix);
@@ -1022,15 +1033,15 @@ classdef Graphcut < handle
                         for i = 1:size(obj.graphcut(1).Edges{1}, 1)
                             obj.graphcut(1).EdgesValues{1}(i) = abs(meanVals(obj.graphcut(1).Edges{1}(i,1)) - meanVals(obj.graphcut(1).Edges{1}(i,2)));
                         end
-                        progressBar.Value = 0.9; progressBar.Message = 'Calculating boundary weights...';
+                        progressBar.Message = 'Calculating boundary weights...';
                         obj.recalcGraph_Callback();
                     else
-                        progressBar.Value = 0.05; progressBar.Message = 'Calculating Watershed superpixels...';
+                        progressBar.Message = 'Calculating Watershed superpixels...';
                         if blackOnWhite == 1; img = imcomplement(img); end
                         mask = imextendedmin(img, superpixelSize);
                         mask = imimposemin(img, mask);
                         obj.graphcut(1).slic = watershed(mask);
-                        progressBar.Value = 0.5; progressBar.Message = 'Calculating connectivity...';
+                        progressBar.Message = 'Calculating connectivity...';
                         [obj.graphcut(1).Edges{1}, edgeIndsList] = imRichRAG(obj.graphcut(1).slic);
                         obj.graphcut(1).EdgesValues{1} = cell2mat(cellfun(@(idx) mean(img(idx)), edgeIndsList, 'UniformOutput', false));
                         obj.recalcGraph_Callback();
@@ -1042,6 +1053,8 @@ classdef Graphcut < handle
                     end
 
                 case 'mode2dRadio'
+                    progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Initiating...', 'Title', titleStr, 'Indeterminate', true, 'Cancelable', true);
+
                     img = cell2mat(obj.mibModel.getData3D('image', [], [], col_channel, getDataOptions));
                     if binVal(1) ~= 1
                         progressBar.Value = 0.05; progressBar.Message = 'Binning the images...';
@@ -1054,9 +1067,9 @@ classdef Graphcut < handle
                     end
                     img = squeeze(img);
 
-                    currViewPort = obj.mibModel.I{id}.image.viewPort;
+                    currViewPort = dataset.image.viewPort;
                     if isa(img, 'uint16')
-                        if obj.mibModel.mibLiveStretchCheck
+                        if obj.mibModel.onFlyImageStretch
                             for sliceId = 1:size(img, 3)
                                 img(:,:,sliceId) = imadjust(img(:,:,sliceId), stretchlim(img(:,:,sliceId),[0 1]), []);
                             end
@@ -1078,6 +1091,9 @@ classdef Graphcut < handle
                     if numel(dims) == 2; dims(3) = 1; end
                     obj.graphcut(1).slic  = zeros(size(img));
                     obj.graphcut(1).noPix = zeros([size(img,3), 1]);
+                    
+                    progressBar.Indeterminate = false;
+                    progressStep = floor(dims(3)/20);
 
                     if strcmp(superPixType, 'SLIC')
                         noPix = ceil(dims(1)*dims(2)/superpixelSize);
@@ -1095,8 +1111,21 @@ classdef Graphcut < handle
                             end
                             obj.graphcut(1).Edges{i}      = Edges;
                             obj.graphcut(1).EdgesValues{i} = EdgesValues;
-                            progressBar.Value   = i/dims(3);
-                            progressBar.Message = 'Calculating...';
+
+                            if progressBar.CancelRequested()
+                                delete(progressBar);
+                                obj.graphcut = struct();
+                                obj.graphcut(1).slic    = [];
+                                obj.graphcut(1).noPix   = [];
+                                obj.graphcut(1).Graph   = cell(1);
+                                obj.graphcut(1).grid    = struct;
+                                obj.graphcut(1).version = obj.graphcutVersion;
+                                return;
+                            end
+                            if mod(i, progressStep) == 1
+                                progressBar.Value   = i/dims(3);
+                                progressBar.Message = sprintf('Calculating (slice %d of %d)\nPlease wait...', i, dims(3));
+                            end
                         end
                         obj.recalcGraph_Callback();
                     else
@@ -1114,26 +1143,36 @@ classdef Graphcut < handle
                             if strcmp(obj.graphcut(1).dilateMode, 'pre')
                                 obj.graphcut(1).slic(:,:,i) = imdilate(obj.graphcut(1).slic(:,:,i), ones(3));
                             end
-                            progressBar.Value   = i/dims(3);
-                            progressBar.Message = 'Calculating...';
+                            if progressBar.CancelRequested()
+                                delete(progressBar);
+                                obj.graphcut = struct();
+                                obj.graphcut(1).slic    = [];
+                                obj.graphcut(1).noPix   = [];
+                                obj.graphcut(1).Graph   = cell(1);
+                                obj.graphcut(1).grid    = struct;
+                                obj.graphcut(1).version = obj.graphcutVersion;
+                                return;
+                            end
+                            if mod(i, progressStep) == 1
+                                progressBar.Value   = i/dims(3);
+                                progressBar.Message = sprintf('Calculating (slice %d of %d)\nPlease wait...', i, dims(3));
+                            end
                         end
                         obj.recalcGraph_Callback();
                     end
 
                 case {'mode3dRadio', 'mode3dGridRadio'}
                     if strcmp(obj.mode, 'mode3dGridRadio') && (tilesX + tilesY + tilesZ == 3)
-                        dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                        utils.dlgs.inputUniversalDlg(obj.mibGUI, '!!! Attention !!!', {''}, ...
-                            {'The grid has not been defined, please use the Chop fields to specify number of grid blocks.'}, ...
-                            'Grid not defined', dlgOpt);
-                        delete(progressBar);
+                        utils.dlgs.showErrorDialog(obj.view.gui, 'The grid has not been defined, please use the Chop fields to specify number of grid blocks.', ...
+                            'Grid not defined');
                         return;
                     end
+                    progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Initiating...', 'Title', titleStr, 'Indeterminate', true, 'Cancelable', true);
 
-                    parLoopOptions.viewPort.min    = obj.mibModel.I{id}.image.viewPort.min(col_channel);
-                    parLoopOptions.viewPort.max    = obj.mibModel.I{id}.image.viewPort.max(col_channel);
-                    parLoopOptions.viewPort.gamma  = obj.mibModel.I{id}.image.viewPort.gamma(col_channel);
-                    parLoopOptions.mibLiveStretchCheck = obj.mibModel.mibLiveStretchCheck;
+                    parLoopOptions.viewPort.min    = dataset.image.viewPort.min(col_channel);
+                    parLoopOptions.viewPort.max    = dataset.image.viewPort.max(col_channel);
+                    parLoopOptions.viewPort.gamma  = dataset.image.viewPort.gamma(col_channel);
+                    parLoopOptions.onFlyImageStretch = obj.mibModel.onFlyImageStretch;
                     parLoopOptions.binVal          = binVal;
                     parLoopOptions.binHeight       = binHeight;
                     parLoopOptions.binWidth        = binWidth;
@@ -1162,8 +1201,8 @@ classdef Graphcut < handle
                     parallelSwitch = strcmp(obj.mode, 'mode3dGridRadio') && obj.view.handles.parforCheck.Value;
 
                     if parallelSwitch
-                        pw = core.PoolWaitbar(numel(obj.graphcut(1).grid.bb), 'Calculating graphs...', obj.mibGUI, 'Calculating graphs', true);
-                        parfor (graphId = 1:numel(obj.graphcut(1).grid.bb), obj.mibModel.cpuParallelLimit)
+                        pw = core.PoolWaitbar(numel(obj.graphcut(1).grid.bb), 'Calculating graphs...', obj.view.gui, 'Calculating graphs', true, true);
+                        parfor (graphId = 1:numel(obj.graphcut(1).grid.bb), obj.mibModel.cpuParallelLimitMax)
                             G = Graphcut(graphId);
                             G = controllers.Graphcut.calcSupervoxels(G, img{graphId}, parLoopOptions);
                             fNames = fieldnames(G);
@@ -1172,21 +1211,54 @@ classdef Graphcut < handle
                             end
                             pw.increment();
                         end
+                        parCancelled = pw.getCancelState();
                         pw.deletePoolWaitbar(true);
+                        if parCancelled
+                            delete(progressBar);
+                            obj.graphcut = struct();
+                            obj.graphcut(1).slic    = [];
+                            obj.graphcut(1).noPix   = [];
+                            obj.graphcut(1).Graph   = cell(1);
+                            obj.graphcut(1).grid    = struct;
+                            obj.graphcut(1).version = obj.graphcutVersion;
+                            return;
+                        end
                         obj.graphcut = Graphcut;
                         clear Graphcut;
                     else
                         if numel(obj.graphcut(1).grid.bb) == 1
                             parLoopOptions.waitbar = progressBar;
                         end
+                        parLoopOptions.cancelProgressBar = progressBar;
                         for graphId = 1:numel(obj.graphcut(1).grid.bb)
                             progressBar.Value   = graphId/numel(obj.graphcut(1).grid.bb);
                             progressBar.Message = 'Calculating graphcut...';
                             G = Graphcut(graphId);
-                            G = controllers.Graphcut.calcSupervoxels(G, img{graphId}, parLoopOptions, usePrecomputedSlic);
+                            [G, calcCancelled] = controllers.Graphcut.calcSupervoxels(G, img{graphId}, parLoopOptions, usePrecomputedSlic);
+                            if calcCancelled
+                                delete(progressBar);
+                                obj.graphcut = struct();
+                                obj.graphcut(1).slic    = [];
+                                obj.graphcut(1).noPix   = [];
+                                obj.graphcut(1).Graph   = cell(1);
+                                obj.graphcut(1).grid    = struct;
+                                obj.graphcut(1).version = obj.graphcutVersion;
+                                return;
+                            end
                             fNames = fieldnames(G);
                             for fieldId = 1:numel(fNames)
                                 Graphcut(graphId).(fNames{fieldId}) = G.(fNames{fieldId});
+                            end
+
+                            if progressBar.CancelRequested()
+                                delete(progressBar);
+                                obj.graphcut = struct();
+                                obj.graphcut(1).slic    = [];
+                                obj.graphcut(1).noPix   = [];
+                                obj.graphcut(1).Graph   = cell(1);
+                                obj.graphcut(1).grid    = struct;
+                                obj.graphcut(1).version = obj.graphcutVersion;
+                                return;
                             end
                         end
                         obj.graphcut = Graphcut;
@@ -1251,35 +1323,40 @@ classdef Graphcut < handle
         function exportSuperpixelsBtn_Callback(obj)
         % EXPORTSUPERPIXELSBTN_CALLBACK - Export the graphcut struct to workspace, file, model, or 3D lines.
             id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
+
             Graphcut = obj.graphcut;
             if isempty(Graphcut(1).noPix); return; end
 
-            answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Please select where to export the supervoxels', ...
+            dlgOpt.LabelPosition = 'left';
+            dlgOpt.WindowHeight = 220;
+            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Please select where to export the supervoxels', ...
                 {'Export to Matlab'; 'Save to a file'; 'Export to a model'; 'Export to 3DLines'}, ...
-                {false; false; false; false}, 'Export supervoxels');
+                {false; false; false; false}, 'Export supervoxels', dlgOpt);
             if isempty(answer); return; end
 
             if answer{1} == true
-                answer2 = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', ...
-                    {'A variable for the export to Matlab'}, {'Graphcut'}, 'Input variable to export');
+                dlgOpt2.Focus = 1;
+                answer2 = utils.dlgs.inputSingleDlg(obj.view.gui, 'A variable for the export to Matlab', 'Graphcut', 'Input variable to export', dlgOpt2);
                 if isempty(answer2); return; end
-                assignin('base', answer2{1}, Graphcut);
-                fprintf('MIB: export superpixel data ("%s") to Matlab -> done!\n', answer2{1});
+                assignin('base', answer2, Graphcut);
+                fprintf('MIB: export superpixel data ("%s") to Matlab -> done!\n', answer2);
             end
 
             if answer{2} == true
-                fn_out = obj.mibModel.I{id}.meta('Filename');
+                fn_out = dataset.image.filename;
                 dotIndex = strfind(fn_out, '.');
                 if ~isempty(dotIndex); fn_out = fn_out(1:dotIndex(end)-1); end
                 if isempty(strfind(fn_out,'/')) && isempty(strfind(fn_out,'\'))
-                    fn_out = fullfile(obj.mibModel.myPath, fn_out);
+                    fn_out = fullfile(obj.mibModel.currentDirectory, fn_out);
                 end
-                if isempty(fn_out); fn_out = obj.mibModel.myPath; end
+                if isempty(fn_out); fn_out = obj.mibModel.currentDirectory; end
 
                 [filename, path] = uiputfile({'*.graph', 'Matlab format (*.graph)'}, 'Save Graph...', fn_out);
                 if isequal(filename, 0); return; end
                 fn_out = fullfile(path, filename);
-                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0.1, 'Message', 'Saving Graphcut to a file...', 'Title', 'Saving to a file');
+                progressBar = uiprogressdlg(obj.view.gui, ...
+                    'Message', 'Saving Graphcut to a file...', 'Title', 'Saving to a file', 'Indeterminate', true);
                 tic
                 if isfield(Graphcut, 'PixelIdxList'); Graphcut = rmfield(Graphcut, 'PixelIdxList'); end
                 Graphcut = rmfield(Graphcut, 'Graph'); %#ok<NASGU>
@@ -1290,19 +1367,20 @@ classdef Graphcut < handle
             end
 
             if answer{3} == true
-                button = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
-                    sprintf('!!! Warning !!!\n\nIf you continue the existing model will be removed!'), ...
-                    'Export to model', 'Continue', 'Cancel', 'Cancel');
+                dlgOpt3.Icon = 'puffin_warning';
+                button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+                    sprintf('If you continue the existing model will be removed!'), ...
+                    'Export to model', 'Continue', 'Cancel', 'Cancel', dlgOpt3);
                 if strcmp(button, 'Cancel'); return; end
 
-                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Exporting to a model...', 'Title', 'Export');
+                progressBar = uiprogressdlg(obj.view.gui, 'Message', 'Exporting to a model...', 'Title', 'Export', 'Indeterminate', true);
 
                 graphId = 1;
                 if strcmp(obj.mode, 'mode3dGridRadio')
                     [winWidth, winHeight] = obj.mibModel.getAxesLimits();
                     centX = mean(winWidth);
                     centY = mean(winHeight);
-                    centZ = obj.mibModel.I{id}.slices{3}(1);
+                    centZ = dataset.slices{3}(1);
                     bbX = mean(vertcat(obj.graphcut(1).grid.bb.x), 2);
                     bbY = mean(vertcat(obj.graphcut(1).grid.bb.y), 2);
                     bbZ = mean(vertcat(obj.graphcut(1).grid.bb.z), 2);
@@ -1320,12 +1398,12 @@ classdef Graphcut < handle
                     modelType = 4294967295;
                 end
 
-                if obj.mibModel.I{id}.modelExist == 0
-                    obj.mibModel.I{id}.labels.createModel(modelType);
+                if dataset.modelExist == 0
+                    dataset.createModel(modelType);
                 end
-                progressBar.Value = 0.1;
-                if modelType ~= obj.mibModel.I{id}.modelType
-                    obj.mibModel.I{id}.labels.convertModel(modelType);
+
+                if modelType ~= dataset.labels.maxMaterials
+                    dataset.convertModel(modelType);
                 end
 
                 if strcmp(Graphcut(1).mode, 'mode2dCurrentRadio')
@@ -1335,15 +1413,15 @@ classdef Graphcut < handle
                 else
                     obj.mibModel.setData4D({Graphcut(graphId).slic}, 'labels', 3);
                 end
-                obj.mibModel.I{id}.labels.materialNames = {'1','2'}';
-                progressBar.Value = 0.9;
-                if size(obj.mibModel.I{id}.labels.materialColors, 1) < 65535
-                    obj.mibModel.I{id}.labels.materialColors = [obj.mibModel.I{id}.labels.materialColors; rand([65535-Graphcut(graphId).noPix, 3])];
+                dataset.labels.materialNames = {'1','2'}';
+                
+                if size(dataset.labels.materialColors, 1) < 65535
+                    dataset.labels.materialColors = [dataset.labels.materialColors; rand([65535-Graphcut(graphId).noPix, 3])];
                 end
-                [pathTemp, fnTemplate] = fileparts(obj.mibModel.I{id}.meta('Filename'));
-                obj.mibModel.I{id}.labels.filename       = fullfile(pathTemp, ['Labels_' fnTemplate '.model']);
-                obj.mibModel.I{id}.labels.labelsVariable = 'mibModel';
-                progressBar.Value = 1;
+                [pathTemp, fnTemplate] = fileparts(dataset.image.filename);
+                dataset.labels.filename       = fullfile(pathTemp, ['Labels_' fnTemplate '.model']);
+                dataset.labels.labelsVariable = 'mibModel';
+                
                 obj.mibModel.showModel = true;
                 notify(obj.mibModel, 'ShowImage');
                 notify(obj.mibModel, 'UpdateGuiWidgets');
@@ -1351,29 +1429,42 @@ classdef Graphcut < handle
             end
 
             if answer{4} == true
-                button = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
-                    sprintf('!!! Warning !!!\n\nExport to 3D lines is only recommended for a relatively small number of supervoxels!'), ...
-                    'Export to 3d lines', 'Continue', 'Cancel', 'Cancel');
+                dlgOpt4.Icon = 'puffin_info';
+                button = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+                    sprintf('Export to 3D lines is only recommended for a relatively small number of supervoxels!'), ...
+                    'Export to 3d lines', 'Continue', 'Cancel', 'Cancel', dlgOpt4);
                 if strcmp(button, 'Cancel'); return; end
 
-                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Exporting to 3D lines...', 'Title', 'Exporting to 3D lines');
+                progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Exporting to 3D lines...', 'Title', 'Exporting to 3D lines', 'Indeterminate', true);
+
+                % grid.bb(1) stores the subarea in full-dataset pixel indices.
+                % regionprops Centroid values are 1-indexed within the slic array
+                % (local coords), so shift them to full-dataset pixel indices before
+                % passing to replaceGraph, which uses dataset.image.boundingBox to
+                % convert full-dataset pixels to physical units.
+                bb1 = obj.graphcut(1).grid.bb(1);
+                xOffset = bb1.x(1) - 1;
+                yOffset = bb1.y(1) - 1;
+                zOffset = bb1.z(1) - 1;
+
                 switch obj.graphcut.mode
                     case 'mode3dRadio'
-                        obj.mibModel.I{id}.lines3D.clearContents();
+                        dataset.lines3D.clearContents();
                         STATS  = regionprops(Graphcut.slic, 'Centroid');
-                        progressBar.Value = 0.2;
                         points = reshape([STATS.Centroid], [3, numel(STATS)])';
+                        points(:,1) = points(:,1) + xOffset;
+                        points(:,2) = points(:,2) + yOffset;
+                        points(:,3) = points(:,3) + zOffset;
                         NodeTable = table(points, 'VariableNames', {'PointsXYZ'});
                         EdgeTable = table([Graphcut.Edges{1}(:,1), Graphcut.Edges{1}(:,2)], Graphcut.EdgesValues{1}, 'VariableNames', {'EndNodes', 'Weight'});
                         G = graph(EdgeTable, NodeTable);
                         G.Nodes.Properties.VariableUnits = {'pixel'};
-                        G.Nodes.Properties.UserData.pixSize      = obj.mibModel.I{id}.image.pixSize;
-                        G.Nodes.Properties.UserData.BoundingBox  = obj.mibModel.I{id}.image.boundingBox;
-                        progressBar.Value = 0.6;
-                        obj.mibModel.I{id}.lines3D.replaceGraph(G);
+                        G.Nodes.Properties.UserData.pixSize      = dataset.image.pixSize;
+                        G.Nodes.Properties.UserData.BoundingBox  = dataset.image.boundingBox;
+                        dataset.lines3D.replaceGraph(G);
 
                     case 'mode2dRadio'
-                        obj.mibModel.I{id}.lines3D.clearContents();
+                        dataset.lines3D.clearContents();
                         treeNames = {};
                         t = []; s = []; w = []; points = [];
                         maxNodeId = 0;
@@ -1382,49 +1473,56 @@ classdef Graphcut < handle
                             cPoints = reshape([STATS.Centroid], [2, numel(STATS)])';
                             cPoints(:,3) = repmat(z, [size(cPoints,1) 1]);
                             points    = cat(1, points, cPoints);
-                            treeNames = [treeNames; repmat({sprintf('SliceNo_%.4d', z)}, [size(cPoints,1) 1])];
+                            treeNames = [treeNames; repmat({sprintf('SliceNo_%.4d', z + zOffset)}, [size(cPoints,1) 1])];
                             s = [s; Graphcut.Edges{z}(:,1) + maxNodeId];
                             t = [t; Graphcut.Edges{z}(:,2) + maxNodeId];
                             w = [w; Graphcut.EdgesValues{z}];
                             maxNodeId = maxNodeId + max(Graphcut.Edges{z}(:));
-                            progressBar.Value = z/size(Graphcut.slic, 3);
                         end
-                        progressBar.Value = 0.5; progressBar.Message = 'Generating the 3D lines object...';
+                        points(:,1) = points(:,1) + xOffset;
+                        points(:,2) = points(:,2) + yOffset;
+                        points(:,3) = points(:,3) + zOffset;
                         NodeTable = table(points, treeNames, 'VariableNames', {'PointsXYZ', 'TreeName'});
                         EdgeTable = table([s, t], w, 'VariableNames', {'EndNodes', 'Weight'});
                         G = graph(EdgeTable, NodeTable);
                         G.Nodes.Properties.VariableUnits = {'pixel', 'string'};
-                        G.Nodes.Properties.UserData.pixSize     = obj.mibModel.I{id}.image.pixSize;
-                        G.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{id}.image.boundingBox;
-                        progressBar.Value = 0.7; progressBar.Message = 'Submitting the 3D lines object...';
-                        obj.mibModel.I{id}.lines3D.replaceGraph(G);
+                        G.Nodes.Properties.UserData.pixSize     = dataset.image.pixSize;
+                        G.Nodes.Properties.UserData.BoundingBox = dataset.image.boundingBox;
+                        progressBar.Message = 'Submitting the 3D lines object...';
+                        dataset.lines3D.replaceGraph(G);
 
                     case 'mode2dCurrentRadio'
-                        z = obj.mibModel.I{id}.slices{3}(1);
+                        % z is the full-dataset current slice — correct as-is; only x/y need offset
+                        z = dataset.slices{3}(1);
                         STATS  = regionprops(Graphcut.slic, 'Centroid');
-                        progressBar.Value = 0.2;
                         points = reshape([STATS.Centroid], [2, numel(STATS)])';
+                        points(:,1) = points(:,1) + xOffset;
+                        points(:,2) = points(:,2) + yOffset;
                         points(:,3) = repmat(z, [size(points,1) 1]);
                         treeNames   = repmat({sprintf('SliceNo_%.4d', z)}, [size(points,1) 1]);
                         s = Graphcut.Edges{1}(:,1);
                         t = Graphcut.Edges{1}(:,2);
                         w = Graphcut.EdgesValues{1};
-                        progressBar.Value = 0.4;
                         NodeTable = table(points, treeNames, 'VariableNames', {'PointsXYZ', 'TreeName'});
                         EdgeTable = table([s, t], w, 'VariableNames', {'EndNodes', 'Weight'});
                         G = graph(EdgeTable, NodeTable);
                         G.Nodes.Properties.VariableUnits = {'pixel', 'string'};
-                        G.Nodes.Properties.UserData.pixSize     = obj.mibModel.I{id}.image.pixSize;
-                        G.Nodes.Properties.UserData.BoundingBox = obj.mibModel.I{id}.image.boundingBox;
-                        progressBar.Value = 0.7; progressBar.Message = 'Submitting the 3D lines object...';
-                        obj.mibModel.I{id}.lines3D.replaceGraph(G);
+                        G.Nodes.Properties.UserData.pixSize     = dataset.image.pixSize;
+                        G.Nodes.Properties.UserData.BoundingBox = dataset.image.boundingBox;
+                        progressBar.Message = 'Submitting the 3D lines object...';
+                        dataset.lines3D.replaceGraph(G);
 
                     otherwise
-                        utils.dlgs.showErrorDialog(obj.mibGUI, 'This mode is not yet implemented!', 'Not implemented');
+                        utils.dlgs.showErrorDialog(obj.view.gui, 'This mode is not yet implemented!', 'Not implemented');
                         delete(progressBar);
                         return;
                 end
-                progressBar.Value = 1;
+                % make sure that the showLines3D is checked and enabled
+                obj.mibModel.showLines3D = true;
+                eventdata = core.ToggleEventData({'checkboxes'});
+                notify(obj.mibModel, 'UpdateGuiWidgets', eventdata);
+                % render image
+                notify(obj.mibModel, 'ShowImage');
                 delete(progressBar);
             end
         end
@@ -1445,20 +1543,21 @@ classdef Graphcut < handle
             id = obj.mibModel.getActiveId();
 
             if noImportSwitch == 0
-                answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Import graphcut structure or precomputed clusters:', ...
+                dlgOpt.WindowHeight = 180;
+                answer = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Import graphcut structure or precomputed clusters:', ...
                     {'Settings:'}, ...
                     {{'Load from a file', 'Import from Matlab', 'Load precomputed 2D/3D clusters from a file', 1}}, ...
-                    'Import graphcut');
+                    'Import graphcut', dlgOpt);
                 if isempty(answer); return; end
 
                 switch answer{1}
                     case 'Load from a file'
                         [filename, path] = utils.dlgs.mibUiGetFile( ...
                             {'*.graph;', 'Matlab format (*.graph)'}, ...
-                            'Load Graphcut data...', obj.mibModel.myPath);
+                            'Load Graphcut data...', obj.mibModel.currentDirectory);
                         if isequal(filename, 0); return; end
 
-                        progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0.05, 'Message', 'Loading preprocessed Graphcut...', 'Title', 'Loading');
+                        progressBar = uiprogressdlg(obj.view.gui, 'Value', 0.05, 'Message', 'Loading preprocessed Graphcut...', 'Title', 'Loading');
                         tic;
                         obj.clearPreprocessBtn_Callback();
                         res = load(fullfile(path, filename{1}), '-mat');
@@ -1471,14 +1570,14 @@ classdef Graphcut < handle
                         availableVars = evalin('base', 'whos');
                         idx = ismember({availableVars.class}, {'struct'});
                         if sum(idx) == 0
-                            utils.dlgs.showErrorDialog(obj.mibGUI, 'Nothing to import...', 'Nothing to import');
+                            utils.dlgs.showErrorDialog(obj.view.gui, 'Nothing to import...', 'Nothing to import');
                             return;
                         end
                         varNames = {availableVars(idx).name}';
                         idx2 = find(ismember(varNames, 'Graphcut') == 1);
                         if ~isempty(idx2); varNames{end+1} = idx2; end
 
-                        answer2 = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', ...
+                        answer2 = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
                             {'A variable that contains compatible structure:'}, {varNames}, ...
                             'Input variable for import');
                         if isempty(answer2); return; end
@@ -1488,7 +1587,7 @@ classdef Graphcut < handle
                         try
                             Graphcut = evalin('base', answer2{1});
                         catch exception
-                            utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                            utils.dlgs.showErrorDialog(obj.view.gui, ...
                                 sprintf('The variable was not found in the Matlab base workspace:\n\n%s', exception.message), ...
                                 'Missing variable!');
                             return;
@@ -1497,57 +1596,70 @@ classdef Graphcut < handle
 
                     case 'Load precomputed 2D/3D clusters from a file'
                         obj.resetDimsBtn_Callback();
-                        loadOptions.startDir = obj.mibModel.myPath;
+                        loadOptions.startDir = obj.mibModel.currentDirectory;
 
-                        answer2 = utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Import parameters', ...
+                        dlgOpt2.windowHeight = 300;
+                        answer2 = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Import parameters', ...
                             {'Type of clusters:'; 'Clustering mode:'; 'Type of signal (watershed only):'; 'Gaps (watershed only):'; 'Continuous labels:'}, ...
                             {{'Watershed', 'SLIC', 1}; {'2D clusters', '3D clusters', 2}; ...
                              {'black-on-white, dark lines', 'white-on-black, bright lines', 1}; ...
                              {'with gaps', 'without gaps', 1}; {'yes', 'no', 1}}, ...
-                            'Import superpixels');
+                            'Import superpixels', dlgOpt2);
                         if isempty(answer2); return; end
 
-                        % mibLoadImages must be on the MATLAB path (copy from MIB2\ImportExportTools\)
-                        img = mibLoadImages([], loadOptions);
-                        if isempty(img); return; end
-                        img = squeeze(img);
+                        [filenames, path] = utils.dlgs.mibUiGetFile( ...
+                            {'*.tif;*.tiff;*.png;*.jpg;*.jpeg;*.bmp;*.h5;*.hdf5', 'Image files'}, ...
+                            'Load precomputed clusters...', loadOptions.startDir);
+                        if isequal(filenames, 0); return; end
+                        filenames = cellfun(@(f) fullfile(path, f), filenames, 'UniformOutput', false);
 
+                        loaderOptions.waitbar        = true;
+                        loaderOptions.mibPath        = obj.mibModel.mibPath;
+                        loaderOptions.ParentFigure   = obj.mibGUI;
+                        loaderOptions.Font           = obj.mibModel.preferences.System.Font;
+                        loaderOptions.silentMode     = false;
+
+                        extReg     = io.ExtensionRegistryLoad();
+                        loaderInfo = extReg.resolveLoader(filenames{1}, 'Standard', 'Default');
+                        loader     = io.LoaderFactory.create(loaderInfo, loaderOptions);
+
+                        [imginfo, files] = loader.loadMetadata(filenames, loaderOptions);
+                        if isempty(imginfo); return; end
+
+                        [img, imginfo] = loader.loadImages(files, imginfo, loaderOptions);
+                        if isempty(img); return; end
+                        img = squeeze(img(:,:,:,1,1));
+
+                        progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Please wait...', 'Title', 'Processing', 'Indeterminate', true);
                         if strcmp(answer2{5}, 'no')
-                            progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Squeezing the labels...', 'Title', 'Processing');
+                            progressBar.Message = 'Squeezing the labels...';
                             [a, ~, c] = unique(img);
                             if a(1) == 0; c = c - 1; end
-                            progressBar.Value = 0.5;
                             img = reshape(c, size(img));
                             clear c;
-                            delete(progressBar);
                         end
 
                         if strcmp(answer2{2}, '3D clusters')
                             obj.mode2dRadio_Callback(obj.view.handles.mode3dRadio);
                             if strcmp(answer2{4}, 'without gaps')
-                                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Adding gaps...', 'Title', 'Processing');
+                                progressBar.Message = 'Adding gaps...';
                                 Gmag = imgradient3(img, 'intermediate');
-                                progressBar.Value = 0.3;
                                 Gmag = imbinarize(Gmag);
                                 assignin('base', 'Gaps', uint8(Gmag));
-                                progressBar.Value = 0.6;
                                 img(Gmag==1) = 0;
-                                delete(progressBar);
                             end
                             obj.graphcut.mode = 'mode3dRadio';
                         else
                             obj.mode2dRadio_Callback(obj.view.handles.mode2dRadio);
                             if strcmp(answer2{4}, 'without gaps')
-                                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Adding gaps...', 'Title', 'Processing');
+                                progressBar.Message = 'Adding gaps...';
                                 depth = size(img, 3);
                                 for z = 1:depth
                                     gap  = imbinarize(imgradient(img(:,:,z), 'intermediate'));
                                     img2 = img(:,:,z);
                                     img2(gap==1) = 0;
                                     img(:,:,z) = img2;
-                                    progressBar.Value = z/depth;
                                 end
-                                delete(progressBar);
                             end
                             obj.graphcut.mode = 'mode2dRadio';
                         end
@@ -1564,6 +1676,7 @@ classdef Graphcut < handle
                         obj.graphcut.slic  = img;
                         obj.superpixTypePopup_Callback('keep');
                         obj.superpixelsBtn_Callback(1);
+                        delete(progressBar);
                         return;
                 end
 
@@ -1593,8 +1706,8 @@ classdef Graphcut < handle
                 end
             end
 
-            if ~isfield(obj.graphcut(1), 'version') || obj.graphcut(1).version < 2.2
-                utils.dlgs.showErrorDialog(obj.mibGUI, ...
+            if ~isfield(obj.graphcut(1), 'version') || obj.graphcut(1).version < obj.graphcutVersion
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
                     sprintf('Incompatible graphcut structure!\nMost likely from an older MIB version (2.12 or older).'), ...
                     'Wrong Graphcut');
                 return;
@@ -1651,7 +1764,7 @@ classdef Graphcut < handle
             if isempty(obj.graphcut(1).noPix); return; end
             id = obj.mibModel.getActiveId();
 
-            progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Please wait...', 'Title', 'Generating superpixels');
+            progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Please wait...', 'Title', 'Generating superpixels');
 
             if strcmp(obj.mode, 'mode3dGridRadio')
                 [winWidth, winHeight] = obj.mibModel.getAxesLimits();
@@ -1765,14 +1878,14 @@ classdef Graphcut < handle
                     obj.view.handles.chopXedit.Enable = 'on';
                     obj.view.handles.chopYedit.Enable = 'on';
                 end
-                obj.view.handles.superpixelSize.Text    = sprintf('Size of\nsuperpixels:');
+                obj.view.handles.superpixelSize.Text    = sprintf('Size of superpixels');
                 obj.view.handles.superpixelSize.Tooltip = 'set approximate size of each superpixel (2D) or supervoxel (3D); smaller gives better segmentation but slower';
                 obj.view.handles.superpixelEdit.Tooltip = 'set approximate size of each superpixel (2D) or supervoxel (3D); smaller gives better segmentation but slower';
             else
                 obj.view.handles.superpixelEdit.Value           = obj.watershedSize;
                 obj.view.handles.compactnessText.Enable         = 'off';
                 obj.view.handles.superpixelsCompactEdit.Enable  = 'off';
-                obj.view.handles.superpixelSize.Text    = sprintf('Reduce number\nof superpixels:');
+                obj.view.handles.superpixelSize.Text    = sprintf('Reduce superpixels number');
                 obj.view.handles.superpixelSize.Tooltip = 'reduce oversegmentation; higher number gives bigger superpixels';
                 obj.view.handles.superpixelEdit.Tooltip = 'reduce oversegmentation; higher number gives bigger superpixels';
             end
@@ -1804,28 +1917,25 @@ classdef Graphcut < handle
             if nargin < 2; showWaitbar = 0; end
 
             if ~isfield(obj.graphcut(1), 'EdgesValues')
-                utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                utils.dlgs.showErrorDialog(obj.view.gui, ...
                     sprintf('The edges are missing!\nPlease press the Superpixels/Graph button to calculate them.'), ...
                     'Missing edges');
                 return;
             end
 
             if showWaitbar
-                progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Calculating boundary weights...', 'Title', 'Recalculating graph');
+                progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Calculating boundary weights...', 'Title', 'Recalculating graph', 'Indeterminate', true);
             end
 
             for graphId = 1:numel(obj.graphcut)
                 obj.graphcut(graphId).scaleFactor = obj.view.handles.edgeFactorEdit.Value;
-                if showWaitbar; progressBar.Value = (graphId-1)/numel(obj.graphcut) + 0.1; end
-
+                
                 for i = 1:numel(obj.graphcut(graphId).EdgesValues)
                     edgeMax = max(obj.graphcut(graphId).EdgesValues{i});
                     edgeMin = min(obj.graphcut(graphId).EdgesValues{i});
                     edgeVar = edgeMax - edgeMin;
                     normE   = obj.graphcut(graphId).EdgesValues{i} / edgeVar;
                     EdgesValues = exp(-normE * obj.graphcut(graphId).scaleFactor);
-
-                    if showWaitbar; progressBar.Value = (graphId-1)/numel(obj.graphcut) + 0.5; end
 
                     Edges2 = fliplr(obj.graphcut(graphId).Edges{i});
                     Edges  = double([obj.graphcut(graphId).Edges{i}; Edges2]);
@@ -1834,9 +1944,8 @@ classdef Graphcut < handle
                     catch
                     end
                 end
-                if showWaitbar; progressBar.Value = (graphId-1)/numel(obj.graphcut) + 0.9; end
             end
-            if showWaitbar; progressBar.Value = 1; delete(progressBar); end
+            if showWaitbar; delete(progressBar); end
         end
 
         function pixelIdxListCheck_Callback(obj)
@@ -1853,7 +1962,7 @@ classdef Graphcut < handle
                 return;
             end
 
-            progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Calculating PixelIdxList...', 'Title', 'PixelIdxList');
+            progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Calculating PixelIdxList...', 'Title', 'PixelIdxList');
             if obj.view.handles.mode2dCurrentRadio.Value
                 STATS = regionprops(obj.graphcut(1).slic, 'PixelIdxList');
                 obj.graphcut(1).PixelIdxList = struct2cell(STATS);
@@ -1917,8 +2026,9 @@ classdef Graphcut < handle
         function segmentAllBtn_Callback(obj)
         % SEGMENTALLBTN_CALLBACK - Segment every grid tile sequentially and show the result.
             id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
             tic
-            progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, 'Message', 'Segmenting dataset...', 'Title', 'Segmenting');
+            progressBar = uiprogressdlg(obj.view.gui, 'Value', 0, 'Message', 'Segmenting dataset...', 'Title', 'Segmenting');
 
             if ~strcmp(obj.mode, 'mode2dCurrentRadio')
                 obj.mibModel.backup('mask', 1);
@@ -1936,8 +2046,8 @@ classdef Graphcut < handle
                 posX = round(mean(obj.graphcut(1).grid.bb(areaId).x));
                 posY = round(mean(obj.graphcut(1).grid.bb(areaId).y));
                 posZ = round(mean(obj.graphcut(1).grid.bb(areaId).z));
-                obj.mibModel.I{id}.moveView(posX, posY, 3);
-                obj.mibModel.I{id}.slices{3} = [posZ, posZ];
+                dataset.moveView(posX, posY, 3);
+                dataset.slices{3} = [posZ, posZ];
                 notify(obj.mibModel, 'SliceChanged');
                 drawnow;
                 obj.doGraphcutSegmentation();
@@ -1945,7 +2055,7 @@ classdef Graphcut < handle
             end
             obj.realtimeSwitch = realtimeSwitchLocal;
 
-            obj.mibModel.I{id}.maskExist = 1;
+            dataset.maskExist = 1;
             obj.mibModel.showMask = true;
             notify(obj.mibModel, 'ShowImage');
             obj.timerElapsed = toc;

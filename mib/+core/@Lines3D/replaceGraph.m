@@ -105,12 +105,14 @@ end
 % recalculate pixels to image units
 pointsXYZindex = find(ismember(Graph.Nodes.Properties.VariableNames, 'PointsXYZ'));
 if strcmp(Graph.Nodes.Properties.VariableUnits{pointsXYZindex}, 'pixel')
-    orientation = 3;    % assuming xy orientation
-    [Graph.Nodes.PointsXYZ(:,1), Graph.Nodes.PointsXYZ(:,2), Graph.Nodes.PointsXYZ(:,3)] = ...
-        convertPixelsToUnits(Graph.Nodes.PointsXYZ(:,1), Graph.Nodes.PointsXYZ(:,2), Graph.Nodes.PointsXYZ(:,3),...
-        Graph.Nodes.Properties.UserData.BoundingBox, Graph.Nodes.Properties.UserData.pixSize, orientation);
+    bb      = Graph.Nodes.Properties.UserData.BoundingBox;
+    pixSize = Graph.Nodes.Properties.UserData.pixSize;
+    % XY orientation (3) assumed — mirrors MibDataset.convertPixelsToUnits with orientation=3
+    Graph.Nodes.PointsXYZ(:,1) = Graph.Nodes.PointsXYZ(:,1) * pixSize.x + bb(1);
+    Graph.Nodes.PointsXYZ(:,2) = Graph.Nodes.PointsXYZ(:,2) * pixSize.y + bb(3);
+    Graph.Nodes.PointsXYZ(:,3) = Graph.Nodes.PointsXYZ(:,3) * pixSize.z + bb(5) - pixSize.z;
 
-    Graph.Nodes.Properties.VariableUnits{1} =  Graph.Nodes.Properties.UserData.pixSize.units;
+    Graph.Nodes.Properties.VariableUnits{1} = pixSize.units;
     if ismember('Edges', Graph.Edges.Properties.VariableNames)
         Graph.Edges.Edges = [];   % remove edges, they will be recalculated in the Lines3D.replaceGraph function
     end

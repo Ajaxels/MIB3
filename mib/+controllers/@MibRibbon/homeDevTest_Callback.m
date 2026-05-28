@@ -16,7 +16,7 @@ end
 if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
-a = uifigure;
+
 
 %fprintf('Size of obj.mibModel.I{obj.mibModel.id}.image.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.image.sliceSize)));
 %fprintf('Size of obj.mibModel.I{obj.mibModel.id}.labels.sliceSize: %s\n', num2str(size(obj.mibModel.I{obj.mibModel.id}.labels.sliceSize)));

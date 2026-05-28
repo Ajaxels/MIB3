@@ -1,4 +1,4 @@
-function Graphcut = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
+function [Graphcut, cancelled] = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
 % CALCSUPERVOXELS - Generate 3D supervoxels and build the boundary graph for graph-cut.
 %
 % Syntax:
@@ -6,6 +6,7 @@ function Graphcut = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecompute
 %
 %      Graphcut = controllers.Graphcut.calcSupervoxels(Graphcut, img, parLoopOptions)
 %      Graphcut = controllers.Graphcut.calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
+%      [Graphcut, cancelled] = controllers.Graphcut.calcSupervoxels(Graphcut, img, parLoopOptions, usePrecomputedSlic)
 %
 % Input Arguments:
 %   - **Graphcut** — struct with graphcut data (fields modified by this function):
@@ -23,7 +24,9 @@ function Graphcut = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecompute
 %     - ``.binHeight``          — [numeric] pre-calculated binned height
 %     - ``.binWidth``           — [numeric] pre-calculated binned width
 %     - ``.binDepth``           — [numeric] pre-calculated binned depth
-%     - ``.waitbar``            — ``uiprogressdlg`` handle or ``[]`` to skip progress
+%     - ``.waitbar``            — ``uiprogressdlg`` handle or ``[]`` to skip progress updates
+%     - ``.cancelProgressBar``  — ``uiprogressdlg`` handle or ``[]``; checked at phase
+%       boundaries so the user can cancel without disrupting the progress display
 %     - ``.viewPort``           — struct with ``.min``, ``.max``, ``.gamma`` for contrast mapping
 %     - ``.mibLiveStretchCheck``— [logical] use auto-stretch instead of viewPort limits
 %     - ``.superPixType``       — [char] ``'SLIC'`` or ``'Watershed'``
@@ -39,8 +42,13 @@ function Graphcut = calcSupervoxels(Graphcut, img, parLoopOptions, usePrecompute
 % Output Arguments:
 %   - **Graphcut** — updated struct with ``.slic``, ``.noPix``, ``.Edges``,
 %     ``.EdgesValues``, and (Watershed only) ``.dilateMode`` populated
+%   - **cancelled** *(optional)* — [logical] ``true`` when the user cancelled via
+%     ``parLoopOptions.cancelProgressBar``; the caller must detect this and clean up
 
 if nargin < 4; usePrecomputedSlic = 0; end
+cancelled = false;
+if ~isfield(parLoopOptions, 'cancelProgressBar'); parLoopOptions.cancelProgressBar = []; end
+cancelPB = parLoopOptions.cancelProgressBar;
 
 img = squeeze(img);
 
@@ -107,6 +115,9 @@ if strcmp(parLoopOptions.superPixType, 'SLIC')
                         parLoopOptions.superpixelCompact);
                     Graphcut.slic(yMin:yMax, xMin:xMax, :) = slicChop + noPix + 1;
                     noPix = noPixChop + noPix;
+
+                    % check for cancel
+                    if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
                 end
             end
             Graphcut.noPix = double(noPix);
@@ -117,11 +128,16 @@ if strcmp(parLoopOptions.superPixType, 'SLIC')
         end
     end
 
+    % check for cancel
+    if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
+
     if ~isempty(parLoopOptions.waitbar)
         parLoopOptions.waitbar.Value = 0.25;
         parLoopOptions.waitbar.Message = 'Calculating MeanIntensity for labels...';
     end
     STATS = regionprops(Graphcut.slic, img, 'MeanIntensity');
+
+    if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
 
     if ~isempty(parLoopOptions.waitbar)
         parLoopOptions.waitbar.Value = 0.3;
@@ -144,6 +160,8 @@ else    % Watershed supervoxels
                 parLoopOptions.waitbar.Message = 'Complementing the image...';
             end
             img = imcomplement(img);
+            % cancel check
+            if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
         end
 
         if ~isempty(parLoopOptions.waitbar)
@@ -153,22 +171,30 @@ else    % Watershed supervoxels
 
         if parLoopOptions.superpixelSize > 0
             mask = imextendedmin(img, parLoopOptions.superpixelSize);
+            % cancel check
+            if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
             if ~isempty(parLoopOptions.waitbar)
                 parLoopOptions.waitbar.Value = 0.15;
                 parLoopOptions.waitbar.Message = 'Impose minima...';
             end
             mask = imimposemin(img, mask);
+            % cancel check
+            if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
             if ~isempty(parLoopOptions.waitbar)
                 parLoopOptions.waitbar.Value = 0.2;
                 parLoopOptions.waitbar.Message = 'Calculating watershed...';
             end
             Graphcut.slic = watershed(mask);
+            % cancel check
+            if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
         else
             if ~isempty(parLoopOptions.waitbar)
                 parLoopOptions.waitbar.Value = 0.2;
                 parLoopOptions.waitbar.Message = 'Calculating watershed...';
             end
             Graphcut.slic = watershed(img);
+            % cancel check
+            if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
         end
     else
         if parLoopOptions.blackOnWhite == 1
@@ -177,6 +203,8 @@ else    % Watershed supervoxels
                 parLoopOptions.waitbar.Message = 'Complementing the image...';
             end
             img = imcomplement(img);
+            % cancel check
+            if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
         end
     end
 
@@ -186,6 +214,9 @@ else    % Watershed supervoxels
     end
     [Graphcut.Edges{1}, Graphcut.EdgesValues{1}] = imRichRAG(Graphcut.slic, 1, img);
     Graphcut.noPix = double(max(max(max(Graphcut.slic))));
+
+    % cancel check
+    if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
 
     % remove isolated supervoxels not present in the edge list
     vec = sort(unique(Graphcut.Edges{1}));
@@ -205,6 +236,8 @@ else    % Watershed supervoxels
     if strcmp(Graphcut.dilateMode, 'pre')
         Graphcut.slic = imdilate(Graphcut.slic, ones([3 3 3]));
     end
+    % cancel check
+    if ~isempty(cancelPB) && isvalid(cancelPB) && cancelPB.CancelRequested; cancelled = true; return; end
 
     % fix zero-index pixels left after exclusion / dilation
     excludeIndices = find(Graphcut.slic == 0);
