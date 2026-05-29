@@ -63,11 +63,13 @@ Segmentation tool dialogs
    :maxdepth: 1
 
    Annotations
+   GlobalThresholding
    Lines3dDialog
    MeasureTool
    MorphOps
    Quantification
    QuantificationProperties
+   Stereology
    
 
 Deep learning

@@ -269,10 +269,10 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
     segmentationPanelHandles = obj.view.handles.panels.segmentation.handles;
     
     % update show mask checkbox
-    if ~dataset.maskExist
-        if selectionPanelHandles.showMask.Value
-            selectionPanelHandles.showMask.Value = false;
-        end
+    if dataset.maskExist
+        selectionPanelHandles.showMask.Value = obj.mibModel.showMask;
+    else
+        selectionPanelHandles.showMask.Value = false;
         if segmentationPanelHandles.restrictMask.Value
             segmentationPanelHandles.restrictMask.Value = false;
             segmentationPanelHandles.restrictMask.FontColor = segmentationPanelHandles.favoriteTool.FontColor;
@@ -280,6 +280,18 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
         dataset.restrictSelectionToMask = false;
         obj.mibModel.showMask = false;
     end
+
+    % if ~dataset.maskExist
+    %     if selectionPanelHandles.showMask.Value
+    %         selectionPanelHandles.showMask.Value = false;
+    %     end
+    %     if segmentationPanelHandles.restrictMask.Value
+    %         segmentationPanelHandles.restrictMask.Value = false;
+    %         segmentationPanelHandles.restrictMask.FontColor = segmentationPanelHandles.favoriteTool.FontColor;
+    %     end
+    %     dataset.restrictSelectionToMask = false;
+    %     obj.mibModel.showMask = false;
+    % end
 
     % update show model checkbox
     selectionPanelHandles.showModel.Value = obj.mibModel.showModel;

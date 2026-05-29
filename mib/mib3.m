@@ -80,6 +80,7 @@ if false
     % Forces MATLAB Compiler to include dynamically-referenced views.
     % This function is NEVER called at runtime.
     views.DisplayAdjustGUI; %#ok<*UNRCH>
+    views.GlobalThresholdingGUI;
     views.AlignmentGUI;
     views.AmiraImportGUI;
     views.AnnotationsGUI;

@@ -189,6 +189,11 @@ if isempty(initList) || ismember('imaris', initList)
     end
 end
 
+% ------------ add HistThresh thresholding library ------------
+if ~isdeployed
+    addpath(fullfile(obj.mibPath, 'external', 'HistThresh'));
+end
+
 % Restore warning settings
 warning(warningState);
 

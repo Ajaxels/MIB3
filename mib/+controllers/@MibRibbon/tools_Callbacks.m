@@ -28,6 +28,7 @@ switch mode
     case 'Membrane detector'        % obj.handles.ribbonTools.membrane
     case 'Supervoxels classifier'        % obj.handles.ribbonTools.supervoxels
     case sprintf('Global\nthresholding')        % obj.handles.ribbonTools.globalthres
+        obj.mibController.startController('controllers.GlobalThresholding');
     case 'Graphcut'        % obj.handles.ribbonTools.graphcut
         obj.mibController.startController('controllers.Graphcut');
     case 'Watershed'        % obj.handles.ribbonTools.watershed
@@ -40,6 +41,7 @@ switch mode
         obj.mibController.measureLength('freehand');
     case sprintf('Object\nseparation')                  % obj.handles.ribbonTools.objects
     case 'Stereology'                                   % obj.handles.ribbonTools.stereology
+        obj.mibController.startController('controllers.Stereology');
     case sprintf('Wound healing\nassey')                % obj.handles.ribbonTools.wound
 
 end

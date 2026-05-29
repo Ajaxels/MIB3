@@ -243,11 +243,11 @@ obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImag
 % obj.Sections(secIndex).Actions(actionId).Name = 'Invert selection';
 % obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.menuMaskInvert_Callback(''selection'', Batch);'; actionId = actionId + 1;
 
-% secIndex = secIndex + 1;
-% actionId = 1;
-% obj.Sections(secIndex).Name = 'Ribbon -> Tools';
-% obj.Sections(secIndex).Actions(actionId).Name = 'Semi-automatic segmentation --> Global thresholding';
-% obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibHistThresController'', [], Batch);'; actionId = actionId + 1;
+secIndex = secIndex + 1;
+actionId = 1;
+obj.Sections(secIndex).Name = 'Ribbon -> Tools';
+obj.Sections(secIndex).Actions(actionId).Name = 'Global thresholding';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.GlobalThresholding'', [], Batch);'; actionId = actionId + 1;
 
 secIndex = secIndex + 1;
 actionId = 1;

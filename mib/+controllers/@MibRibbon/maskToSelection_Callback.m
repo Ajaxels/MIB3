@@ -24,15 +24,24 @@ end
 
 switch mode
     case 'Add, 2D'      % obj.handles.ribbonMask.maskToSelection2DAdd
+        obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'add');    
     case 'Remove, 2D'   % obj.handles.ribbonMask.maskToSelection2DRemove
+        obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'remove');    
     case 'Replace, 2D'  % obj.handles.ribbonMask.maskToSelection2DReplace
+        obj.mibModel.moveLayers('mask', 'selection', '2D, Slice', 'replace');    
     case 'Add, 3D'      % obj.handles.ribbonMask.maskToSelection3DAdd
+        obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'add');    
     case 'Remove, 3D'   % obj.handles.ribbonMask.maskToSelection3DRemove
+        obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'remove');    
     case 'Replace, 3D'  % obj.handles.ribbonMask.maskToSelection3DReplace
+        obj.mibModel.moveLayers('mask', 'selection', '3D, Stack', 'replace');    
     case 'Add, 4D'      % obj.handles.ribbonMask.maskToSelection4DAdd
+        obj.mibModel.moveLayers('mask', 'selection', '4D, Dataset', 'add');    
     case 'Remove, 4D'   % obj.handles.ribbonMask.maskToSelection4DRemove
+        obj.mibModel.moveLayers('mask', 'selection', '4D, Dataset', 'remove');    
     case 'Replace, 4D'  % obj.handles.ribbonMask.maskToSelection4DReplace
+        obj.mibModel.moveLayers('mask', 'selection', '4D, Dataset', 'replace');    
 end
-
+notify(obj.mibModel, 'ShowImage');
 
 end
