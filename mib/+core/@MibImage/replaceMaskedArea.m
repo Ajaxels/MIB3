@@ -51,11 +51,13 @@ t  = options.timePoint;
 
 logicalMask = logical(maskVolume);
 
+imageData = obj.data{1};
 for colIdx = 1:numel(colorChannels)
     ch = colorChannels(colIdx);
-    imgBlock = obj.data{1}(:,:,z1:z2,ch,t);
+    imgBlock = imageData(:,:,z1:z2,ch,t);
     imgBlock(logicalMask) = colorValues(colIdx);
-    obj.data{1}(:,:,z1:z2,ch,t) = imgBlock;
+    imageData(:,:,z1:z2,ch,t) = imgBlock;
 end
+obj.data{1} = imageData;
 
 end

@@ -213,6 +213,28 @@ Quick rules:
 - Use `dictionary` instead of `containers.Map`: `dictionary(keys, values)` for init, `isKey(d, key)` and `d(key)` for lookups. (R2022b+, supports type inference)
 - Use descriptive variable names — avoid short abbreviations like `vp`, `wb`, `im`, `fn`. Write `viewPort`, `waitbar`, `image`, `filename` etc. in full so the code is self-explanatory without comments.
 
+### Copy-on-write in per-slice loops (performance critical)
+
+Writing to `mibModel.I{id}.image.data{1}(...)` inside a loop is **15× slower** than the equivalent MIB2 code.  The MIB3 chain crosses three handle-class hops (`MibModel → MibDataset → MibImage → data`), which prevents MATLAB from proving single-reference ownership of the cell contents — every indexed assignment triggers a full copy-on-write.
+
+**Rule:** Any loop that writes pixel data must cache `data{1}` in a local variable first, mutate locally, then write back once after the loop.
+
+```matlab
+% WRONG — triggers COW on every iteration (~15× slower)
+for z = 1:depth
+    obj.mibModel.I{id}.image.data{1}(:,:,z,ch,t) = process(...);
+end
+
+% CORRECT — single read, single write
+imageData = obj.mibModel.I{id}.image.data{1};
+for z = 1:depth
+    imageData(:,:,z,ch,t) = process(imageData(:,:,z,ch,t));
+end
+obj.mibModel.I{id}.image.data{1} = imageData;
+```
+
+This applies to any code **outside** `MibImage` methods (controllers, model helpers).  Inside `MibImage` methods `obj.data{1}` is only one hop and is already safe — still worth caching for large nested loops (e.g. `rotateColorChannel`).
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

@@ -133,7 +133,7 @@ if strcmp(format, 'grayscale')
                 numColors = size(I, 4);
                 rgbData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
                 rgbData(:,:,:,1:numColors,:) = I;
-                obj.data{1} = zeros([obj.height, obj.width, obj.depth, 1, obj.time], class(I));
+                imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], class(I));
                 index = 0;
                 for t = 1:obj.time
                     for i = 1:obj.depth
@@ -141,11 +141,12 @@ if strcmp(format, 'grayscale')
                         sliceRGB(:,:,1) = rgbData(:,:,i,1,t);
                         sliceRGB(:,:,2) = rgbData(:,:,i,2,t);
                         sliceRGB(:,:,3) = rgbData(:,:,i,3,t);
-                        obj.data{1}(:,:,i,1,t) = rgb2gray(sliceRGB);
+                        imageData(:,:,i,1,t) = rgb2gray(sliceRGB);
                         index = index + 1;
                         if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                     end
                 end
+                obj.data{1} = imageData;
             end
 
         case 'hsvcolor'
@@ -156,15 +157,16 @@ if strcmp(format, 'grayscale')
         case 'indexed'
             from = 'indexed';
             I = obj.data{1};
-            obj.data{1} = zeros([obj.height, obj.width, obj.depth, 1, obj.time], class(I));
+            imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], class(I));
             index = 0;
             for t = 1:obj.time
                 for i = 1:obj.depth
-                    obj.data{1}(:,:,i,1,t) = ind2gray(I(:,:,i,1,t), obj.colormap);
+                    imageData(:,:,i,1,t) = ind2gray(I(:,:,i,1,t), obj.colormap);
                     index = index + 1;
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
+            obj.data{1} = imageData;
             obj.colormap = [];
     end
     obj.colorType = 'grayscale';
@@ -191,7 +193,7 @@ elseif strcmp(format, 'multichannel')
         case 'hsvcolor'
             from = 'hsvcolor';
             I = obj.data{1};
-            obj.data{1} = zeros([obj.height, obj.width, obj.depth, 3, obj.time], 'uint8');
+            imageData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], 'uint8');
             index = 0;
             for t = 1:obj.time
                 for i = 1:obj.depth
@@ -200,31 +202,33 @@ elseif strcmp(format, 'multichannel')
                     sliceHSV(:,:,2) = double(I(:,:,i,2,t)) / 255;
                     sliceHSV(:,:,3) = double(I(:,:,i,3,t)) / 255;
                     sliceRGB = uint8(hsv2rgb(sliceHSV) * 255);
-                    obj.data{1}(:,:,i,1,t) = sliceRGB(:,:,1);
-                    obj.data{1}(:,:,i,2,t) = sliceRGB(:,:,2);
-                    obj.data{1}(:,:,i,3,t) = sliceRGB(:,:,3);
+                    imageData(:,:,i,1,t) = sliceRGB(:,:,1);
+                    imageData(:,:,i,2,t) = sliceRGB(:,:,2);
+                    imageData(:,:,i,3,t) = sliceRGB(:,:,3);
                     index = index + 1;
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
+            obj.data{1} = imageData;
             if showWb; waitbar.Value = 0.85; end
 
         case 'indexed'
             from = 'indexed';
             I = obj.data{1};
             maxIntValue = double(intmax(class(I)));
-            obj.data{1} = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
+            imageData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
             index = 0;
             for t = 1:obj.time
                 for i = 1:obj.depth
                     sliceRGB = cast(ind2rgb(I(:,:,i,1,t), obj.colormap) * maxIntValue, class(I));
-                    obj.data{1}(:,:,i,1,t) = sliceRGB(:,:,1);
-                    obj.data{1}(:,:,i,2,t) = sliceRGB(:,:,2);
-                    obj.data{1}(:,:,i,3,t) = sliceRGB(:,:,3);
+                    imageData(:,:,i,1,t) = sliceRGB(:,:,1);
+                    imageData(:,:,i,2,t) = sliceRGB(:,:,2);
+                    imageData(:,:,i,3,t) = sliceRGB(:,:,3);
                     index = index + 1;
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
+            obj.data{1} = imageData;
             obj.colormap = [];
     end
     obj.colorType = 'multichannel';
@@ -247,7 +251,7 @@ elseif strcmp(format, 'hsvcolor')
                 return;
             end
             I = obj.data{1};
-            obj.data{1} = zeros([obj.height, obj.width, obj.depth, 3, obj.time], 'uint8');
+            imageData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], 'uint8');
             index = 0;
             for t = 1:obj.time
                 for i = 1:obj.depth
@@ -256,13 +260,14 @@ elseif strcmp(format, 'hsvcolor')
                     sliceRGB(:,:,2) = double(I(:,:,i,2,t)) / 255;
                     sliceRGB(:,:,3) = double(I(:,:,i,3,t)) / 255;
                     sliceHSV = uint8(rgb2hsv(sliceRGB) * 255);
-                    obj.data{1}(:,:,i,1,t) = sliceHSV(:,:,1);
-                    obj.data{1}(:,:,i,2,t) = sliceHSV(:,:,2);
-                    obj.data{1}(:,:,i,3,t) = sliceHSV(:,:,3);
+                    imageData(:,:,i,1,t) = sliceHSV(:,:,1);
+                    imageData(:,:,i,2,t) = sliceHSV(:,:,2);
+                    imageData(:,:,i,3,t) = sliceHSV(:,:,3);
                     index = index + 1;
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
+            obj.data{1} = imageData;
             if showWb; waitbar.Value = 0.85; end
 
         case 'hsvcolor'
@@ -317,15 +322,16 @@ elseif strcmp(format, 'indexed')
         case 'grayscale'
             from = 'grayscale';
             I = obj.data{1};
-            obj.data{1} = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
+            imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
             index = 0;
             for t = 1:obj.time
                 for i = 1:obj.depth
-                    [obj.data{1}(:,:,i,1,t), obj.colormap] = gray2ind(I(:,:,i,1,t), levels);
+                    [imageData(:,:,i,1,t), obj.colormap] = gray2ind(I(:,:,i,1,t), levels);
                     index = index + 1;
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
+            obj.data{1} = imageData;
 
         case 'multichannel'
             from = 'multichannel';
@@ -360,7 +366,7 @@ elseif strcmp(format, 'indexed')
                 % ≤3 channels: direct rgb2ind
                 I = obj.data{1};
                 numColors = size(I, 4);
-                obj.data{1} = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
+                imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
                 index = 0;
                 for t = 1:obj.time
                     for i = 1:obj.depth
@@ -368,11 +374,12 @@ elseif strcmp(format, 'indexed')
                         for c = 1:numColors
                             sliceRGB(:,:,c) = I(:,:,i,c,t);
                         end
-                        [obj.data{1}(:,:,i,1,t), obj.colormap] = rgb2ind(sliceRGB, levels);
+                        [imageData(:,:,i,1,t), obj.colormap] = rgb2ind(sliceRGB, levels);
                         index = index + 1;
                         if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                     end
                 end
+                obj.data{1} = imageData;
             end
     end
     obj.colorType = 'indexed';
@@ -467,10 +474,11 @@ elseif strcmp(format, 'uint16')
             if max(obj.viewPort.min) > 0 || max(obj.viewPort.max) < 65535 || mean(obj.viewPort.gamma) ~= 1
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
+                imageData = obj.data{1};
                 for t = 1:obj.time
                     for c = 1:obj.colors
                         for z = 1:obj.depth
-                            obj.data{1}(:,:,z,c,t) = imadjust(obj.data{1}(:,:,z,c,t), ...
+                            imageData(:,:,z,c,t) = imadjust(imageData(:,:,z,c,t), ...
                                 [obj.viewPort.min(c)/65535 obj.viewPort.max(c)/65535], ...
                                 [0 1], obj.viewPort.gamma(c));
                             if showWb && mod(index, 10) == 0; waitbar.Value = index / maxIndex; end
@@ -478,6 +486,7 @@ elseif strcmp(format, 'uint16')
                         end
                     end
                 end
+                obj.data{1} = imageData;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));
@@ -492,10 +501,11 @@ elseif strcmp(format, 'uint16')
                 obj.data{1} = uint16(obj.data{1});
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
+                imageData = obj.data{1};
                 for t = 1:obj.time
                     for c = 1:obj.colors
                         for z = 1:obj.depth
-                            obj.data{1}(:,:,z,c,t) = imadjust(obj.data{1}(:,:,z,c,t), ...
+                            imageData(:,:,z,c,t) = imadjust(imageData(:,:,z,c,t), ...
                                 [obj.viewPort.min(c)/65535 obj.viewPort.max(c)/65535], ...
                                 [0 1], obj.viewPort.gamma(c));
                             if showWb && mod(index, 10) == 0; waitbar.Value = index / maxIndex; end
@@ -503,6 +513,7 @@ elseif strcmp(format, 'uint16')
                         end
                     end
                 end
+                obj.data{1} = imageData;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));

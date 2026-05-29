@@ -51,12 +51,14 @@ end
 
 noIter = -round(angle / 90);   % rot90 convention: positive n = CCW
 
+imageData = obj.data{1};
 for t = 1:obj.time
     for slice = 1:obj.depth
-        obj.data{1}(:,:,slice,channel1,t) = rot90(obj.data{1}(:,:,slice,channel1,t), noIter);
+        imageData(:,:,slice,channel1,t) = rot90(imageData(:,:,slice,channel1,t), noIter);
     end
     if options.showWaitbar; wb.Value = t / obj.time; end
 end
+obj.data{1} = imageData;
 
 obj.updateActionLog(sprintf('Rotate color channel %d by %d degrees', channel1, angle));
 

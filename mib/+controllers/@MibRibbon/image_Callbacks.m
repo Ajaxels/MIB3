@@ -26,7 +26,9 @@ switch mode
     % ------------------ Mode section ------------------
     case {'Grayscale', 'Multi-channel', 'HSV color', 'Indexed', '8 bit', '16 bit', '32 bit'}
         BatchOpt.Target = {mode};
+        tic
         obj.mibModel.changeImageMode(BatchOpt);
+        toc
     % ------------------ Image adjustment section ------------------
     case sprintf('Adjust\ndisplay')               % obj.handles.ribbonImage.display
         obj.mibController.startController('controllers.DisplayAdjust');

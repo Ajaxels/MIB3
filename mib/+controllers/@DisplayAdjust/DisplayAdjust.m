@@ -1133,7 +1133,7 @@ classdef DisplayAdjust < handle
             % obj.mibModel.I{id}.image.data{1} on every slice (~18x slower in
             % the live MibModel chain than mutating a local variable).
             imageData = obj.mibModel.I{id}.image.data{1};
-            tic
+
             index = 1;
             for t = 1:maxT
                 for z = 1:maxZ
@@ -1152,7 +1152,6 @@ classdef DisplayAdjust < handle
                 end
             end
             obj.mibModel.I{id}.image.data{1} = imageData;
-            toc
 
             log_text = sprintf('ContrastGamma: Channel:%d, Min:%g, Max:%g, Gamma:%g', ...
                 channel, viewPort.min(channel), viewPort.max(channel), viewPort.gamma(channel));
