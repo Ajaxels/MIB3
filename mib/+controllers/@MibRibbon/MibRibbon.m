@@ -14,24 +14,17 @@ classdef MibRibbon
     methods
         % % declaration of functions in the external files, keep empty line in between for the doc generator
         % 
-        datasetRibbon_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
-        homeDevModeEnable_Callback(obj, hWidget, hData)        % Enable or disable developer mode that shows handles of widgets in tooltips
+        dataset_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Dataset tools section of the Dataset ribbon
         homeDevTest_Callback(obj, hWidget, hData)        % Reserved for MIB developmental purposes
         homeExamples_Callback(obj, BatchOptIn)   % callback on press of the Examples buttons in the Home ribbon
-        homeExport_Callback(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Home ribbon
         homeImport_Callback(obj, hWidget, hData)        % callback on press of the import buttons in the Home ribbon
-        homeIOtools_Callback(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
-        homePreferences_Callback(obj, hWidget, hData)        % callback on press of the preferences section buttons in the Home ribbon
+        home_Callbacks(obj, hWidget, hData)        % callback on press of the I/O tools buttons in the Home ribbon
         homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
         homeUpdateRecentDirsList(obj)        % update the recent directories list
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
-        imageMorphOps_Callbacks(obj, hWidget, hData)        % callback on press of morph-ops buttons in the Image ribbon
-        maskImportExportSection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Export section of the Mask ribbon
-        maskToolsQuantifySection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools and Quantification sections of the Mask ribbon
-        maskToSelection_Callback(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
+        mask_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
         model_Callbacks(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
-        selectionConverts_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
-        selectionTools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools section of the Selection ribbon
+        selection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon
         tools_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Tools ribbon
         result = updateVoxelSizes(obj, pixSize, BatchOptIn)        % Update the physical voxel sizes of the currently shown dataset
 
@@ -79,48 +72,46 @@ classdef MibRibbon
             obj.handles.ribbonHome.mriBrain.ItemPushedFcn = @(h,d) obj.homeExamples_Callback(struct('Dataset', {{'MATLAB Brain and model'}}));
 
             %% Add Callbacks for the HOME ribbon -> Export section 
-            obj.handles.ribbonHome.saveFileAs.ButtonPushedFcn = @obj.homeExport_Callback;
-            %obj.handles.ribbonHome.saveFile.ItemPushedFcn = @obj.homeExport_Callback;
-            %obj.handles.ribbonHome.saveFileAs2.ItemPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.export.ButtonPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.exportToMatlab.ItemPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.exportToImaris.ItemPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.snapshot.ButtonPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.movie.ButtonPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.render.ButtonPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.renderMIB.ItemPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.renderMatlab.ItemPushedFcn = @obj.homeExport_Callback;
-            obj.handles.ribbonHome.renderFiji.ItemPushedFcn = @obj.homeExport_Callback;
+            obj.handles.ribbonHome.saveFileAs.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.export.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.exportToMatlab.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.exportToImaris.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.snapshot.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.movie.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.render.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.renderMIB.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.renderMatlab.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.renderFiji.ItemPushedFcn = @obj.home_Callbacks;
 
             %% Add Callbacks for the HOME ribbon -> I/O Tools
-            obj.handles.ribbonHome.batch.ButtonPushedFcn = @obj.homeIOtools_Callback;
-            obj.handles.ribbonHome.chunk.ItemPushedFcn = @obj.homeIOtools_Callback;
-            obj.handles.ribbonHome.stitch.ItemPushedFcn = @obj.homeIOtools_Callback;
-            obj.handles.ribbonHome.shuffle.ItemPushedFcn = @obj.homeIOtools_Callback;
-            obj.handles.ribbonHome.reshuffle.ItemPushedFcn = @obj.homeIOtools_Callback;
+            obj.handles.ribbonHome.batch.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.chunk.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.stitch.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.shuffle.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.reshuffle.ItemPushedFcn = @obj.home_Callbacks;
 
             %% Add Callbacks for the HOME ribbon -> Preferences
-            obj.handles.ribbonHome.loadLayout.ButtonPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.loadLayoutLocalDefault.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.loadLayoutCustom.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.loadLayoutMibDefault.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.saveLayout.ButtonPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.saveLayoutLocalDefault.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.saveLayoutCustom.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.saveLayoutMibDefault.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.preferences.ButtonPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.help.ButtonPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.helpMenu.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.tipOfDay.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.support.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.call4help.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.classReference.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.checkUpdate.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.personalStats.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.licenses.ItemPushedFcn = @obj.homePreferences_Callback;
-            obj.handles.ribbonHome.about.ItemPushedFcn = @obj.homePreferences_Callback;
+            obj.handles.ribbonHome.loadLayout.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.loadLayoutLocalDefault.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.loadLayoutCustom.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.loadLayoutMibDefault.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.saveLayout.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.saveLayoutLocalDefault.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.saveLayoutCustom.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.saveLayoutMibDefault.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.preferences.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.help.ButtonPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.helpMenu.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.tipOfDay.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.support.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.call4help.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.classReference.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.checkUpdate.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.personalStats.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.licenses.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.about.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.devModeSplitBtn.ButtonPushedFcn = @obj.homeDevTest_Callback;
-            obj.handles.ribbonHome.devModeEnabled.ValueChangedFcn = @obj.homeDevModeEnable_Callback;
+            obj.handles.ribbonHome.devModeEnabled.ValueChangedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.devMode.ItemPushedFcn = @obj.homeDevTest_Callback;           
             %obj.handles.ribbonHome.devMode.ButtonPushedFcn = @obj.homeDevTest_Callback;
 
@@ -143,38 +134,38 @@ classdef MibRibbon
             %
 
             %% Add Callbacks for the DATASET ribbon -> Alignment
-            obj.handles.ribbonDataset.alignment.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
+            obj.handles.ribbonDataset.alignment.ButtonPushedFcn = @obj.dataset_Callbacks;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools
-            obj.handles.ribbonDataset.crop.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.resize.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
+            obj.handles.ribbonDataset.crop.ButtonPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.resize.ButtonPushedFcn = @obj.dataset_Callbacks;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools -> Transform
-            obj.handles.ribbonDataset.addframeWidth.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.addframedX.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.flipH.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.flipV.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.flipZ.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.flipT.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.rotPos90.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.rotNeg90.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.transposeYX2YZ.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.transposeYX2XZ.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.transposeYX2XY.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.transposeZ2T.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.transposeZ2C.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
+            obj.handles.ribbonDataset.addframeWidth.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.addframedX.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.flipH.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.flipV.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.flipZ.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.flipT.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.rotPos90.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.rotNeg90.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.transposeYX2YZ.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.transposeYX2XZ.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.transposeYX2XY.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.transposeZ2T.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.transposeZ2C.ItemPushedFcn = @obj.dataset_Callbacks;
             %% Add Callbacks for the DATASET ribbon -> Dataset tools -> Slices
-            obj.handles.ribbonDataset.sliceCopy.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.sliceInsert.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.sliceInterval.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.sliceSwap.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.sliceDelete.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.sliceFrameDelete.ItemPushedFcn = @obj.datasetRibbon_Callbacks;
+            obj.handles.ribbonDataset.sliceCopy.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.sliceInsert.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.sliceInterval.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.sliceSwap.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.sliceDelete.ItemPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.sliceFrameDelete.ItemPushedFcn = @obj.dataset_Callbacks;
             %% Add Callbacks for the DATASET ribbon -> Calibration section
-            obj.handles.ribbonDataset.scalebar.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.boundingbox.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.voxels.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
+            obj.handles.ribbonDataset.scalebar.ButtonPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.boundingbox.ButtonPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.voxels.ButtonPushedFcn = @obj.dataset_Callbacks;
             %% Add Callbacks for the DATASET ribbon -> Metadata section
-            obj.handles.ribbonDataset.log.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
-            obj.handles.ribbonDataset.info.ButtonPushedFcn = @obj.datasetRibbon_Callbacks;
+            obj.handles.ribbonDataset.log.ButtonPushedFcn = @obj.dataset_Callbacks;
+            obj.handles.ribbonDataset.info.ButtonPushedFcn = @obj.dataset_Callbacks;
 
         end
 
@@ -230,16 +221,16 @@ classdef MibRibbon
             obj.handles.ribbonImage.imgFrame.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.whiteBalance.ItemPushedFcn = @obj.image_Callbacks;
             % morph ops
-            obj.handles.ribbonImage.botHat.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.clearBorder.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.morphClose.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.dilate.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.erode.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.fill.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.hMax.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.hMin.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.morphOpen.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
-            obj.handles.ribbonImage.topHat.ItemPushedFcn = @obj.imageMorphOps_Callbacks;
+            obj.handles.ribbonImage.botHat.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.clearBorder.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.morphClose.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.dilate.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.erode.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.fill.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.hMax.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.hMin.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.morphOpen.ItemPushedFcn = @obj.image_Callbacks;
+            obj.handles.ribbonImage.topHat.ItemPushedFcn = @obj.image_Callbacks;
             % intensity profile
             obj.handles.ribbonImage.profileLine.ItemPushedFcn = @obj.image_Callbacks;
             obj.handles.ribbonImage.profileArbitrary.ItemPushedFcn = @obj.image_Callbacks;
@@ -313,34 +304,34 @@ classdef MibRibbon
             %
 
             %% Add Callbacks for the MASK ribbon -> Mask to Selection
-            obj.handles.ribbonMask.maskToSelection2DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection2DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection2DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection3DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection3DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection3DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection4DAdd.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection4DRemove.ItemPushedFcn = @obj.maskToSelection_Callback;
-            obj.handles.ribbonMask.maskToSelection4DReplace.ItemPushedFcn = @obj.maskToSelection_Callback;
+            obj.handles.ribbonMask.maskToSelection2DAdd.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection2DRemove.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection2DReplace.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection3DAdd.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection3DRemove.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection3DReplace.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection4DAdd.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection4DRemove.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.maskToSelection4DReplace.ItemPushedFcn = @obj.mask_Callbacks;
             %% Add Callbacks for the MASK ribbon -> Import section
-            obj.handles.ribbonMask.clear.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.load.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.import.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.importFromMatlab.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.importFromMIB.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.clear.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.load.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.import.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.importFromMatlab.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.importFromMIB.ItemPushedFcn = @obj.mask_Callbacks;
             %% Add Callbacks for the MASK ribbon -> Export section
-            obj.handles.ribbonMask.export.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.exportToMatlab.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.exportToMIB.ItemPushedFcn = @obj.maskImportExportSection_Callbacks;
-            obj.handles.ribbonMask.saveMask.ButtonPushedFcn = @obj.maskImportExportSection_Callbacks;
+            obj.handles.ribbonMask.export.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.exportToMatlab.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.exportToMIB.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.saveMask.ButtonPushedFcn = @obj.mask_Callbacks;
             %% Add Callbacks for the MASK ribbon -> Tools and Quantification section
-            obj.handles.ribbonMask.invert.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
-            obj.handles.ribbonMask.invert2D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
-            obj.handles.ribbonMask.invert3D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
-            obj.handles.ribbonMask.invert4D.ItemPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
-            obj.handles.ribbonMask.replaceImage.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
-            obj.handles.ribbonMask.smooth.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
-            obj.handles.ribbonMask.quantify.ButtonPushedFcn = @obj.maskToolsQuantifySection_Callbacks;
+            obj.handles.ribbonMask.invert.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.invert2D.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.invert3D.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.invert4D.ItemPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.replaceImage.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.smooth.ButtonPushedFcn = @obj.mask_Callbacks;
+            obj.handles.ribbonMask.quantify.ButtonPushedFcn = @obj.mask_Callbacks;
     
         end
 
@@ -355,39 +346,39 @@ classdef MibRibbon
 
             %% Add Callbacks for the SELECTION ribbon -> Converts section
             % Selection to mask
-            obj.handles.ribbonSelection.selectionToMask2DAdd.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask2DRemove.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask2DReplace.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask3DAdd.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask3DRemove.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask3DReplace.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask4DAdd.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask4DRemove.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.selectionToMask4DReplace.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask2DAdd.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask2DRemove.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask2DReplace.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask3DAdd.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask3DRemove.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask3DReplace.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask4DAdd.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask4DRemove.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.selectionToMask4DReplace.ItemPushedFcn = @obj.selection_Callbacks;
             % Selection to buffer
-            obj.handles.ribbonSelection.copy.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.paste.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.pasteAll.ItemPushedFcn = @obj.selectionConverts_Callbacks;
-            obj.handles.ribbonSelection.clear.ItemPushedFcn = @obj.selectionConverts_Callbacks;
+            obj.handles.ribbonSelection.copy.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.paste.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.pasteAll.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.clear.ItemPushedFcn = @obj.selection_Callbacks;
             %% Add Callbacks for the SELECTION ribbon -> Tools section
             % MorphOps
-            obj.handles.ribbonSelection.branch.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.diag.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.endpoints.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.skeleton.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.spur.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.thin.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.ultErosion.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.branch.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.diag.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.endpoints.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.skeleton.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.spur.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.thin.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.ultErosion.ItemPushedFcn = @obj.selection_Callbacks;
             % invert
-            obj.handles.ribbonSelection.invert.ButtonPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.invert2D.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.invert3D.ItemPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.invert4D.ItemPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.invert.ButtonPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.invert2D.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.invert3D.ItemPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.invert4D.ItemPushedFcn = @obj.selection_Callbacks;
             % other tools
-            obj.handles.ribbonSelection.expandToMask.ButtonPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.interpolate.ButtonPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.replaceImage.ButtonPushedFcn = @obj.selectionTools_Callbacks;
-            obj.handles.ribbonSelection.smooth.ButtonPushedFcn = @obj.selectionTools_Callbacks;
+            obj.handles.ribbonSelection.expandToMask.ButtonPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.interpolate.ButtonPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.replaceImage.ButtonPushedFcn = @obj.selection_Callbacks;
+            obj.handles.ribbonSelection.smooth.ButtonPushedFcn = @obj.selection_Callbacks;
         end
 
         function addCallbacksToDatasetTools(obj)

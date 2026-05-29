@@ -534,8 +534,13 @@ end
 % switch on Mask layer
 if strcmp(BatchOptLocal.DestinationLayer{1}, 'mask')
     obj.I{BatchOptLocal.id}.maskExist = 1;
-    obj.showMask = true;
+    if ~obj.showMask
+        obj.showMask = true;
+        eventdata = core.ToggleEventData({'checkboxes'});
+        notify(obj, 'UpdateGuiWidgets', eventdata);
+    end
 end
+
 if switch3d; if showWaitbar; delete(wb); end; toc(t1); end
 
 % notify the batch mode

@@ -23,14 +23,14 @@ if obj.mibModel.preferences.System.DeveloperMode
 end
 
 switch mode
-    %% Mode section
+    % ------------------ Mode section ------------------
     case {'Grayscale', 'Multi-channel', 'HSV color', 'Indexed', '8 bit', '16 bit', '32 bit'}
         BatchOpt.Target = {mode};
         obj.mibModel.changeImageMode(BatchOpt);
-    %% Image adjustment section
+    % ------------------ Image adjustment section ------------------
     case sprintf('Adjust\ndisplay')               % obj.handles.ribbonImage.display
         obj.mibController.startController('controllers.DisplayAdjust');
-    % % Color channels
+    % ------------------ Color channels ------------------
     case 'Insert empty channel...'  % obj.handles.ribbonImage.colorsInsert
         obj.mibModel.colorChannelActions('Insert empty channel');
     case 'Copy channel...'          % obj.handles.ribbonImage.colorsCopy
@@ -45,7 +45,7 @@ switch mode
         obj.mibModel.colorChannelActions('Swap channels');
     case 'Delete channel...'        % obj.handles.ribbonImage.colorsDelete
         obj.mibModel.colorChannelActions('Delete channel');
-    % %  Visualization
+    % ------------------  Visualization ------------------
     case 'Visualization'        % obj.handles.ribbonImage.visualization
         obj.mibController.updateVisualizationMode();
     case 'Bicubic'              % obj.handles.ribbonImage.visBicubic
@@ -54,19 +54,19 @@ switch mode
         obj.mibController.updateVisualizationMode('nearest');
     case 'Automatic'            % obj.handles.ribbonImage.visAuto
         obj.mibController.updateVisualizationMode('auto');
-    % % Contrast
+    % ------------------ Contrast ------------------
     case 'Contrast-limited adaptive histogram equalization'     % obj.handles.ribbonImage.contrastCLAHE
         obj.mibController.startController('controllers.ContrastClahe');
     case 'Normalize layers'                                     % obj.handles.ribbonImage.contrastNorm
         obj.mibController.startController('controllers.ContrastNormalization');
-    % % Invert
+    % ------------------ Invert ------------------
     case 'Shown slice (2D)'         % obj.handles.ribbonImage.invert2D
         obj.mibModel.invertImage('2D, Slice');
     case 'Current stack (3D)'       % obj.handles.ribbonImage.invert3D
         obj.mibModel.invertImage('3D, Stack');
     case {'Invert', 'Complete volume (4D)'}     % obj.handles.ribbonImage.invert4D
         obj.mibModel.invertImage('4D, Dataset');
-    %% Image tools section
+    % ------------------ Image tools section ------------------
     case 'Image filters'                % obj.handles.ribbonImage.filters
         obj.mibController.startController('controllers.ImageFilters');
     % Image tools
@@ -82,7 +82,14 @@ switch mode
         obj.mibController.startController('controllers.ImageFrame');
     case 'White balance correction'          
         obj.mibController.startController('controllers.WhiteBalance');
-    % Intensity profile
+    
+    % ------------------ Image MorphOps section ------------------
+    case {'Bottom-hat filtering','Clear border','Morphological closing','Dilate image', ...
+            'Erode image','Fill regions','H-maxima transform','H-minima transform', ...
+            'Morphological opening','Top-hat filtering'}
+        obj.mibController.startController('controllers.MorphOpsImages', mode);
+
+    % ------------------ Intensity profile ------------------
     case 'Line intensity profile'       % obj.handles.ribbonImage.profileLine
 
     case 'Arbitrary intensity profile'  % obj.handles.ribbonImage.profileArbitrary

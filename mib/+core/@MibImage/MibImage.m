@@ -109,6 +109,7 @@ classdef MibImage < matlab.mixin.Copyable
         deleteColorChannel(obj, channel1, options)           % Delete one or more color channels from obj.data{1}
         insertEmptyColorChannel(obj, channel1, options)     % Insert a zero-filled color channel at the given 1-based position
         invertColorChannel(obj, channel1, options)           % Invert pixel values in channel1 (replaces v with maxInt-v)
+        replaceMaskedArea(obj, maskVolume, colorValues, colorChannels, options)  % Replace pixels where maskVolume==1 directly in obj.data{1} for a given z-range and time point
         rotateColorChannel(obj, channel1, angle, options)   % Rotate channel1 by 90, 180, or -90 degrees (square images only)
         shiftColorChannel(obj, channel1, dx, dy, fillValue, options)  % Shift channel1 by dx/dy pixels; fill vacated border with fillValue
         swapColorChannels(obj, channel1, channel2, options) % Swap two color channels in obj.data{1}

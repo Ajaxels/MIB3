@@ -1,10 +1,10 @@
-function selectionTools_Callbacks(obj, hWidget, hData)
-% SELECTIONTOOLS_CALLBACKS - callback on press of buttons in the Tools section of the Selection ribbon.
+function selection_Callbacks(obj, hWidget, hData)
+% SELECTION_CALLBACKS - callback on press of buttons in the Selection to Mask section of the Selection ribbon.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.selectionTools_Callbacks(hWidget, hData)
+%       obj.selection_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget
@@ -19,10 +19,40 @@ end
 
 mode = hWidget.Text;
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibRibbon.selectionTools_Callbacks: Selection ribbon-> Tools section pressed -> %s\n', mode);
+    fprintf('controllers.MibRibbon.selection_Callbacks: Selection ribbon-> %s\n', mode);
 end
 
 switch mode
+    % ----------- Selection to mask section -------------
+    case 'Add, 2D'        % obj.handles.ribbonSelection.selectionToMask2DAdd 
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'add'); 
+    case 'Remove, 2D'     % obj.handles.ribbonSelection.selectionToMask2DRemove
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'remove');    
+    case 'Replace, 2D'    % obj.handles.ribbonSelection.selectionToMask2DReplace
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'replace');    
+    case 'Add, 3D'        % obj.handles.ribbonSelection.selectionToMask3DAdd 
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'add');    
+    case 'Remove, 3D'     % obj.handles.ribbonSelection.selectionToMask3DRemove
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'remove');    
+    case 'Replace, 3D'    % obj.handles.ribbonSelection.selectionToMask3DReplace
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'replace');    
+    case 'Add, 4D'        % obj.handles.ribbonSelection.selectionToMask4DAdd 
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'add');    
+    case 'Remove, 4D'     % obj.handles.ribbonSelection.selectionToMask4DRemove
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'remove');    
+    case 'Replace, 4D'    % obj.handles.ribbonSelection.selectionToMask4DReplace
+        obj.mibModel.moveLayers('selection', 'mask', '2D, Slice', 'replace');    
+    
+    % ----------- Selection to buffer section -------------
+    case 'Copy (Ctrl+C)'    % obj.handles.ribbonSelection.copy
+        
+    case 'Paste (Ctrl+V)'    % obj.handles.ribbonSelection.paste
+
+    case 'Paste to all slices (Ctrl+Shift+V)'    % obj.handles.ribbonSelection.pasteAll
+
+    case 'Clear'    % obj.handles.ribbonSelection.clear
+
+    % ----------- Selection MorphOps -------------
     case 'Branch points'        % obj.handles.ribbonSelection.branch
         obj.mibModel.sessionSettings.morphOpsImages.Objects3D = false;
         obj.mibModel.sessionSettings.morphOpsImages.MorphOperation   = 'branchpoints';
@@ -31,7 +61,6 @@ switch mode
         obj.mibModel.sessionSettings.morphOpsImages.Objects3D = false;
         obj.mibModel.sessionSettings.morphOpsImages.MorphOperation   = 'diag';
         obj.mibController.startController('controllers.MorphOps');
-    case 'Replace, 2D'    % obj.handles.ribbonSelection.selectionToMask2DReplace
     case 'Endpoints'        % obj.handles.ribbonSelection.endpoints
         obj.mibModel.sessionSettings.morphOpsImages.Objects3D = false;
         obj.mibModel.sessionSettings.morphOpsImages.MorphOperation   = 'endpoints';
@@ -51,16 +80,22 @@ switch mode
     case 'Ultimate erosion'     % obj.handles.ribbonSelection.ultErosion
         obj.mibModel.sessionSettings.morphOpsImages.Objects3D = false;
         obj.mibModel.sessionSettings.morphOpsImages.MorphOperation   = 'bwulterode';
-        obj.mibController.startController('controllers.MorphOps');
-
+        obj.mibController.startController('controllers.MorphOps');    
+    
+        % ----------- Invert Selection -------------
     case 'Shown slice (2D)'        % obj.handles.ribbonSelection.invert2D
+
     case 'Current stack (3D)'        % obj.handles.ribbonSelection.invert3D
+
     case {'Complete volume (4D)', 'Invert'}        % obj.handles.ribbonSelection.invert4D or obj.handles.ribbonSelection.invert
 
+
+        % ----------- Other Selection Tools -------------
     case sprintf('Expand to\nmask border')        % obj.handles.ribbonSelection.expandToMask
     case {sprintf('Interpolate as\nshape'), sprintf('Interpolate as\nline')}        % obj.handles.ribbonSelection.interpolate
         obj.mibController.updateInterpolationMode();
     case sprintf('Replace\nselected areas')        % obj.handles.ribbonSelection.replaceImage
+        obj.mibModel.replaceMaskedArea('selection');
     case sprintf('Smooth\nselection')        % obj.handles.ribbonSelection.smooth
 
 end

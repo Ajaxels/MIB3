@@ -1,10 +1,10 @@
-function homePreferences_Callback(obj, hWidget, hData)
-% HOMEPREFERENCES_CALLBACK - callback on press of the preferences section buttons in the Home ribbon.
+function home_Callbacks(obj, hWidget, hData)
+% HOME_CALLBACKS - callback on press of the I/O tools buttons in the Home ribbon.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%       obj.homePreferences_Callback(hWidget, hData)
+%       obj.home_Callbacks(hWidget, hData)
 %
 % Input Arguments:
 %   - **hWidget** — handle to the pressed widget
@@ -19,10 +19,71 @@ end
 
 mode = hWidget.Text;
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('controllers.MibRibbon.homePreferences_Callback: button in the preferences section pressed -> %s\n', mode);
+    fprintf('controllers.MibRibbon.home_Callbacks: pressed -> %s\n', mode);
 end
 
 switch mode
+    % ------ Export section ------
+    case 'Save as'     % obj.handles.ribbonHome.saveFileAs — save image with dialog
+        obj.mibModel.saveImage('image');
+    case {'Export', 'Export to MATLAB'}     % obj.handles.ribbonHome.export & obj.handles.ribbonHome.exportToMatlab
+        obj.mibModel.exportDataset('image');
+    case 'Export to Imaris'     % obj.handles.ribbonHome.exportToImaris
+        obj.mibModel.exportDatasetToImaris('image');
+    case 'Snapshot'     % obj.handles.ribbonHome.snapshot
+        obj.mibController.startController('controllers.Snapshot');
+    case 'Movie'     % obj.handles.ribbonHome.movie
+        obj.mibController.startController('controllers.MakeMovie');
+    case {'Render', 'MIB Rendering'}     % obj.handles.ribbonHome.render &  obj.handles.ribbonHome.renderMIB
+        obj.mibController.startController('controllers.VolRenApp');
+    case 'MATLAB Volume Viewer'     % obj.handles.ribbonHome.renderMatlab
+        if isdeployed
+            dlgOpts.MsgBoxOnly = true; 
+            dlgOpts.Icon = 'puffin_error';
+            header = sprintf('MATLAB Volume Viewer is only available in MIB for MATLAB!\nPlese use MIB Rendering instead.');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'ObtainDirectoryForAction error', dlgOpts);
+            return;
+        end
+        id = obj.mibModel.getActiveId();
+        dataset = obj.mibModel.I{id};
+        img = cell2mat(obj.mibModel.getData3D('image', [], 3));
+        if size(img, 4) > 1
+            utils.dlgs.showErrorDialog(obj.view.gui, sprintf('Volume viewer is not compatible with multicolor images;\nplease keep only a single color channel displayed and try again!'), 'Not implemented');
+            return;
+        end
+
+        answer = 'Only volume';
+        if dataset.modelExist
+            answer = utils.dlgs.inputQuestDlg(obj.view.gui, sprintf('Would you like to have the model exported together with the volume?'), ...
+                'Include model', 'Volume+labels', 'Only volume', 'Cancel', 'Only volume');
+            if strcmp(answer, 'Cancel'); return; end
+        end
+        pixSize = dataset.image.pixSize;
+        if strcmp(answer, 'Only volume')
+            volumeViewer(squeeze(img), 'VolumeType', 'Volume', 'ScaleFactors', [pixSize.x pixSize.y pixSize.z]);
+        else
+            labels = cell2mat(obj.mibModel.getData3D('labels'));
+            volumeViewer(squeeze(img), labels, 'ScaleFactors', [pixSize.x pixSize.y pixSize.z]);
+        end
+
+    case '3D viewer in Fiji'     % obj.handles.ribbonHome.renderFiji
+        img = cell2mat(obj.mibModel.getData3D('image', [], 3));
+        id = obj.mibModel.getActiveId();
+        utils.renderVolumeWithFiji(img, obj.mibModel.I{id}.image.pixSize, obj.mibModel.mibGUI);
+
+    % ------ IO Tools section ------
+    case sprintf('Batch\nprocessing')   % obj.handles.ribbonHome.batch
+        obj.mibController.startController('controllers.BatchProcessing', obj.mibController);  
+    case 'Chunk dataset'                % obj.handles.ribbonHome.chunk
+        obj.mibController.startController('controllers.ChunkingExport');  
+    case 'Stitch dataset'               % obj.handles.ribbonHome.stitch
+        obj.mibController.startController('controllers.ChunkingImport');  
+    case 'Shuffle images'               % obj.handles.ribbonHome.shuffle
+        obj.mibController.startController('controllers.RenameShuffle');  
+    case 'Restore order'                % obj.handles.ribbonHome.reshuffle
+        obj.mibController.startController('controllers.RenameRestore'); 
+
+        % ------ Preferences section ------
     case {'Load layout', 'Load local default layout'}   % obj.handles.ribbonHome.loadLayout or obj.handles.ribbonHome.loadLayoutLocalDefault
         obj.mibController.loadLayout('localDefault');
     case 'Load custom layout'                           % obj.handles.ribbonHome.loadLayoutCustom
@@ -87,7 +148,21 @@ switch mode
     case 'Licenses'                     % obj.handles.ribbonHome.licenses
     case 'About MIB'                    % obj.handles.ribbonHome.about
         obj.mibController.startController('controllers.About');  % a new appdesigner version
+
+        % ------ Development section ------
+    case 'Developer mode' 
+        statusText = 'DISABLED';
+        if hData.EventData.NewValue
+            statusText = 'ENABLED';
+        end
+        % update DeveloperMode switch
+        obj.mibModel.preferences.System.DeveloperMode = hData.EventData.NewValue;
+
+        options.MsgBoxOnly = true;
+        options.Icon       = 'puffin_info';
+        options.HeaderLines = 1;
+        infoText = 'Restart MIB to update tooltips!';
+        utils.dlgs.inputUniversalDlg(obj.view.gui, sprintf('The developer mode was %s!', statusText), {infoText}, {infoText}, 'Info', options);
+
 end
-
-
 end

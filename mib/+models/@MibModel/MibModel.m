@@ -166,6 +166,7 @@ classdef MibModel < handle
         status = materialsActions(obj, action, BatchOptIn)        % collection of actions related to materials of the model (rename, add, insert, swap, reorder, remove)
         moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType, BatchOptIn)        % move datasets between the layers (selection, mask, model)
         removeMaterial(obj, BatchOptIn)        % remove one or more materials from the current model; wrapper around core.MibDataset.removeMaterial
+        replaceMaskedArea(obj, target, BatchOptIn)   % replace pixel intensities inside the Masked or Selected area with a given value
         renameMaterial(obj, BatchOptIn)        % rename one or all materials of the current model; wrapper around core.MibLabels.renameMaterial
         resliceDataset(obj, sliceNumbers, orientation, BatchOptIn) % Keep only specified slices; remove all others (stride-reslicing)
         fnOut = save(obj, layerType, filename, BatchOptIn)        % Unified BatchOpt-compatible save: writes 'image', 'mask', or 'labels' layer. Handles directory/filename policies, [F] template expansion, SyncBatch event, and StopProtocol notification. See models.MibModel.save for full documentation and usage examples.
