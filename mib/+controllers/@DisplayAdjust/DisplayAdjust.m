@@ -1121,21 +1121,38 @@ classdef DisplayAdjust < handle
 
             pwb = [];
             if obj.BatchOpt.showWaitbar
-                pwb = core.PoolWaitbar(maxT * maxZ, 'Adjusting...', obj.view.gui, 'Adjusting intensities', true);
+                waitbarStep = round(maxT*maxZ/20);
+                pwb = core.PoolWaitbar(20, 'Adjusting...', obj.view.gui, 'Adjusting intensities', true);
             end
+            
 
             [lowIn, highIn, lowOut, highOut] = obj.mibModel.I{id}.image.getImAdjustStretchCoef(channel);
+            gammaVal = viewPort.gamma(channel);
+
+            % Cache data{1} locally — avoids repeated subsref dispatch through
+            % obj.mibModel.I{id}.image.data{1} on every slice (~18x slower in
+            % the live MibModel chain than mutating a local variable).
+            imageData = obj.mibModel.I{id}.image.data{1};
+            tic
+            index = 1;
             for t = 1:maxT
                 for z = 1:maxZ
-                    obj.mibModel.I{id}.image.data{1}(:,:,z,channel,t) = imadjust( ...
-                        obj.mibModel.I{id}.image.data{1}(:,:,z,channel,t), ...
-                        [lowIn, highIn], [lowOut, highOut], viewPort.gamma(channel));
-                    if ~isempty(pwb)
-                        if pwb.getCancelState(); pwb.deletePoolWaitbar(); return; end
+                    imageData(:,:,z,channel,t) = imadjust( ...
+                        imageData(:,:,z,channel,t), ...
+                        [lowIn, highIn], [lowOut, highOut], gammaVal);
+                    if ~isempty(pwb) && mod(index, waitbarStep) == 0
+                        if pwb.getCancelState()
+                            obj.mibModel.I{id}.image.data{1} = imageData;
+                            pwb.deletePoolWaitbar();
+                            return;
+                        end
                         pwb.increment();
                     end
+                    index = index + 1;
                 end
             end
+            obj.mibModel.I{id}.image.data{1} = imageData;
+            toc
 
             log_text = sprintf('ContrastGamma: Channel:%d, Min:%g, Max:%g, Gamma:%g', ...
                 channel, viewPort.min(channel), viewPort.max(channel), viewPort.gamma(channel));

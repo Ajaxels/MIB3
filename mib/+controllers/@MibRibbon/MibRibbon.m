@@ -22,6 +22,7 @@ classdef MibRibbon
         homeSelectRecentDir_Callback(obj, recentDir)        % callback on selection of the recent directory 
         homeUpdateRecentDirsList(obj)        % update the recent directories list
         image_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Image ribbon
+        imageIntensityProfile(obj, mode)            % draw a line/freehand ROI and display the intensity profile in a figure
         mask_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Mask to Selection section of the Mask ribbon
         model_Callbacks(obj, hWidget, hData)        % callback on press of the convert model type buttons in the Model ribbon
         selection_Callbacks(obj, hWidget, hData)        % callback on press of buttons in the Selection to Mask section of the Selection ribbon

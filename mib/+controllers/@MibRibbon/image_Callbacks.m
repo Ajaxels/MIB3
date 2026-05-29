@@ -91,8 +91,9 @@ switch mode
 
     % ------------------ Intensity profile ------------------
     case 'Line intensity profile'       % obj.handles.ribbonImage.profileLine
-
+        obj.imageIntensityProfile('line');
     case 'Arbitrary intensity profile'  % obj.handles.ribbonImage.profileArbitrary
+        obj.imageIntensityProfile('arbitrary');
 
 end
 
