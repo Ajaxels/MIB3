@@ -359,101 +359,16 @@ classdef Annotations < handle
                         Labels.Text, Labels.Positions, Labels.Values);
 
                 case 'Load from a file'
-                    [filename, path, indx] = utils.dlgs.mibUiGetFile( ...
-                        {'*.ann;',  'Matlab format (*.ann)'; ...
-                         '*.csv;',  'CSV format (*.csv)'; ...
-                         '*.landmarkAscii;', 'landmarkAscii Amira format (*.landmarkAscii)'; ...
-                         '*.landmarkBin;',   'landmarkBin Amira format (*.landmarkBin)'; ...
-                         '*.*',     'All Files (*.*)'}, ...
-                        'Load annotations...', obj.mibModel.currentDirectory);
-                    if isequal(filename, 0); return; end
-                    fullFilename = fullfile(path, filename{1});
-
+                    loadOptions.parentFigure     = obj.view.gui;
+                    loadOptions.currentDirectory = obj.mibModel.currentDirectory;
+                    loadOptions.boundingBox      = obj.mibModel.I{id}.image.boundingBox;
+                    loadOptions.pixSize          = obj.mibModel.I{id}.image.pixSize;
+                    loadOptions.currentT         = obj.mibModel.I{id}.slices{5}(1);
                     obj.mibModel.backup('annotations', 0);
-                    switch indx
-                        case 1  % .ann (MATLAB)
-                            res = load(fullFilename, '-mat');
-                            % compatibility with old variable names
-                            if isfield(res, 'labelsList')
-                                res.labelText = res.labelsList;
-                                res = rmfield(res, 'labelsList');
-                            end
-                            if isfield(res, 'labelValues')
-                                res.labelValue = res.labelValues;
-                                res = rmfield(res, 'labelValues');
-                            end
-                            if isfield(res, 'labelPositions')
-                                res.labelPosition = res.labelPositions;
-                                res = rmfield(res, 'labelPositions');
-                            end
-                            if ~isfield(res, 'labelValue')
-                                res.labelValue = ones(numel(res.labelText), 1);
-                            end
-                            if size(res.labelPosition, 2) == 3
-                                res.labelPosition(:,4) = obj.mibModel.I{id}.slices{5}(1);
-                            end
-
-                        case 2  % CSV
-                            opts = detectImportOptions(fullFilename);
-                            T    = readtable(fullFilename, opts);
-                            varNames  = T.Properties.VariableNames;
-                            varNames2 = ['do not import', sort(varNames)];
-
-                            prompts = {'Annotation name'; 'Annotation value'; ...
-                                'Z coordinate (pixels)'; 'X coordinate (pixels)'; ...
-                                'Y coordinate (pixels)'; 'T coordinate (pixels)'};
-                            defAns = {[varNames2, {1}], [varNames2, {1}], [varNames2, {1}], ...
-                                      [varNames2, {1}], [varNames2, {1}], [varNames2, {1}]};
-                            csvOpt.WindowHeight = 320;
-                            csvOpt.Columns     = 1;
-                            answer = utils.dlgs.inputUniversalDlg(obj.view.gui, ...
-                                'Select column names in CSV file that map to these fields', prompts, defAns, 'Import from CSV', csvOpt);
-                            if isempty(answer); return; end
-
-                            N = height(T);
-                            res.labelText     = repmat({'Label'}, [N, 1]);
-                            res.labelValue    = zeros([N, 1]);
-                            res.labelPosition = ones([N, 4]);
-
-                            if ~strcmp(answer{1}, 'do not import')
-                                if isnumeric(T.(answer{1})(1))
-                                    res.labelText = cellstr(string(T.(answer{1})));
-                                else
-                                    res.labelText = T.(answer{1});
-                                end
-                            end
-                            if ~strcmp(answer{2}, 'do not import')
-                                if isnumeric(T.(answer{2})(1))
-                                    res.labelValue = T.(answer{2});
-                                else
-                                    res.labelValue = str2double(T.(answer{2}));
-                                end
-                            end
-                            for fieldId = 3:6
-                                if ~strcmp(answer{fieldId}, 'do not import')
-                                    if isnumeric(T.(answer{fieldId})(1))
-                                        res.labelPosition(:, fieldId-2) = T.(answer{fieldId});
-                                    else
-                                        res.labelPosition(:, fieldId-2) = str2double(T.(answer{fieldId}));
-                                    end
-                                end
-                            end
-
-                        case {3, 4}  % Amira landmark files
-                            amiraLandmarks = io.AmiraMesh.amiraLandmarks2points(fullFilename);
-                            res.labelText     = repmat({'AmiraLandmark'}, [size(amiraLandmarks,1), 1]);
-                            res.labelValue    = ones([size(amiraLandmarks,1), 1]);
-                            res.labelPosition = ones([size(amiraLandmarks,1), 4]);
-                            bb      = obj.mibModel.I{id}.image.boundingBox;
-                            pixSize = obj.mibModel.I{id}.image.pixSize;
-                            res.labelPosition(:,1) = round((amiraLandmarks(:,3) - bb(5) + pixSize.z) / pixSize.z);
-                            res.labelPosition(:,2) = (amiraLandmarks(:,1) - bb(1) + pixSize.x/2) / pixSize.x;
-                            res.labelPosition(:,3) = (amiraLandmarks(:,2) - bb(3) + pixSize.y/2) / pixSize.y;
-                        otherwise
-                            return
-                    end
-                    obj.mibModel.I{id}.annotations.replaceLabels( ...
-                        res.labelText, res.labelPosition, res.labelValue);
+                    status = obj.mibModel.I{id}.annotations.loadAnnotations([], loadOptions);
+                    if ~status; return; end
+                    obj.mibModel.showAnnotations = true;
+                    notify(obj.mibModel, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));
             end
             obj.updateWidgets();
             notify(obj.mibModel, 'ShowImage');

@@ -96,6 +96,18 @@ end
 switch extLower
     case '.mask'
     case '.ann'
+        id = obj.mibModel.getActiveId();
+        loadOptions.parentFigure     = obj.mibModel.mibGUI;
+        loadOptions.currentDirectory = obj.mibModel.currentDirectory;
+        loadOptions.boundingBox      = obj.mibModel.I{id}.image.boundingBox;
+        loadOptions.pixSize          = obj.mibModel.I{id}.image.pixSize;
+        loadOptions.currentT         = obj.mibModel.I{id}.slices{5}(1);
+        obj.mibModel.backup('annotations', 0);
+        status = obj.mibModel.I{id}.annotations.loadAnnotations(filenameList{1}, loadOptions);
+        if ~status; return; end
+        obj.mibModel.showAnnotations = true;
+        notify(obj.mibModel, 'UpdateGuiWidgets', core.ToggleEventData({'checkboxes'}));
+        notify(obj.mibModel, 'ShowImage');
     otherwise % drag and drop image files to open
         BatchOpt.Mode = {'Combine datasets'};
         % sort filenames, otherwise the first file may be the one that was under the focus when drag-n-drop started

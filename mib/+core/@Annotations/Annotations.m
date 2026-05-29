@@ -1042,6 +1042,171 @@ classdef Annotations < matlab.mixin.Copyable
             if options.showWaitbar; delete(wb); end
         end
         
+        % -----------------------------------------------------------------
+        function result = loadAnnotations(obj, filename, options)
+            % LOADANNOTATIONS - Load annotations from a file, replacing the current set.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       result = obj.loadAnnotations(filename, options)
+            %
+            % Input Arguments:
+            %   - **filename** — *(optional)* full path to file; when empty or missing, a file-selection dialog is shown
+            %   - **options** — *(optional)* struct with additional parameters:
+            %
+            %     - ``.parentFigure`` — handle to parent UIFigure for dialogs (required for the CSV column-mapping dialog)
+            %     - ``.currentDirectory`` — starting directory for the file-selection dialog; default ``''``
+            %     - ``.boundingBox`` — ``[x1 width y1 height z1 depth]`` bounding box for Amira coordinate conversion
+            %     - ``.pixSize`` — MIB pixSize struct (``.x`` ``.y`` ``.z``) for Amira coordinate conversion
+            %     - ``.currentT`` — current time point; used when the file stores only 3-column positions; default ``1``
+            %
+            % Output Arguments:
+            %   - **result** — ``1`` on success, ``0`` if cancelled or failed
+            %
+            % Usage:
+            %   **Example 1** — show file dialog, pass image metadata for coordinate conversion:
+            %
+            %   .. code-block:: matlab
+            %
+            %       options.parentFigure     = obj.view.gui;
+            %       options.currentDirectory = obj.mibModel.currentDirectory;
+            %       options.boundingBox      = obj.mibModel.I{id}.image.boundingBox;
+            %       options.pixSize          = obj.mibModel.I{id}.image.pixSize;
+            %       options.currentT         = obj.mibModel.I{id}.slices{5}(1);
+            %       result = obj.mibModel.I{id}.annotations.loadAnnotations([], options);
+            %
+            %   **Example 2** — load directly from a known ``.ann`` file:
+            %
+            %   .. code-block:: matlab
+            %
+            %       result = obj.mibModel.I{id}.annotations.loadAnnotations('/path/to/file.ann');
+            %
+
+            result = 0;
+            if nargin < 3; options = struct(); end
+            if nargin < 2; filename = []; end
+            if ~isfield(options, 'parentFigure');     options.parentFigure = [];    end
+            if ~isfield(options, 'currentDirectory'); options.currentDirectory = ''; end
+            if ~isfield(options, 'currentT');         options.currentT = 1;         end
+
+            if isempty(filename)
+                [fn, path, indx] = utils.dlgs.mibUiGetFile( ...
+                    {'*.ann;',  'Matlab format (*.ann)'; ...
+                     '*.csv;',  'CSV format (*.csv)'; ...
+                     '*.landmarkAscii;', 'landmarkAscii Amira format (*.landmarkAscii)'; ...
+                     '*.landmarkBin;',   'landmarkBin Amira format (*.landmarkBin)'; ...
+                     '*.*',     'All Files (*.*)'}, ...
+                    'Load annotations...', options.currentDirectory);
+                if isequal(fn, 0); return; end
+                filename = fullfile(path, fn{1});
+            else
+                [~, ~, ext] = fileparts(filename);
+                switch lower(ext)
+                    case '.ann';            indx = 1;
+                    case '.csv';            indx = 2;
+                    case '.landmarkascii';  indx = 3;
+                    case '.landmarkbin';    indx = 4;
+                    otherwise;              indx = 1;
+                end
+            end
+
+            switch indx
+                case 1  % .ann (MATLAB)
+                    res = load(filename, '-mat');
+                    % compatibility with old variable names
+                    if isfield(res, 'labelsList')
+                        res.labelText = res.labelsList;
+                        res = rmfield(res, 'labelsList');
+                    end
+                    if isfield(res, 'labelValues')
+                        res.labelValue = res.labelValues;
+                        res = rmfield(res, 'labelValues');
+                    end
+                    if isfield(res, 'labelPositions')
+                        res.labelPosition = res.labelPositions;
+                        res = rmfield(res, 'labelPositions');
+                    end
+                    if ~isfield(res, 'labelValue')
+                        res.labelValue = ones(numel(res.labelText), 1);
+                    end
+                    if size(res.labelPosition, 2) == 3
+                        res.labelPosition(:,4) = options.currentT;
+                    end
+
+                case 2  % CSV
+                    csvOpts = detectImportOptions(filename);
+                    T       = readtable(filename, csvOpts);
+                    varNames  = T.Properties.VariableNames;
+                    varNames2 = ['do not import', sort(varNames)];
+
+                    prompts = {'Annotation name'; 'Annotation value'; ...
+                        'Z coordinate (pixels)'; 'X coordinate (pixels)'; ...
+                        'Y coordinate (pixels)'; 'T coordinate (pixels)'};
+                    defAns = {[varNames2, {1}], [varNames2, {1}], [varNames2, {1}], ...
+                              [varNames2, {1}], [varNames2, {1}], [varNames2, {1}]};
+                    dlgOpt.WindowHeight = 320;
+                    dlgOpt.Columns      = 1;
+                    answer = utils.dlgs.inputUniversalDlg(options.parentFigure, ...
+                        'Select column names in CSV file that map to these fields', ...
+                        prompts, defAns, 'Import from CSV', dlgOpt);
+                    if isempty(answer); return; end
+
+                    N = height(T);
+                    res.labelText     = repmat({'Label'}, [N, 1]);
+                    res.labelValue    = zeros([N, 1]);
+                    res.labelPosition = ones([N, 4]);
+
+                    if ~strcmp(answer{1}, 'do not import')
+                        if isnumeric(T.(answer{1})(1))
+                            res.labelText = cellstr(string(T.(answer{1})));
+                        else
+                            res.labelText = T.(answer{1});
+                        end
+                    end
+                    if ~strcmp(answer{2}, 'do not import')
+                        if isnumeric(T.(answer{2})(1))
+                            res.labelValue = T.(answer{2});
+                        else
+                            res.labelValue = str2double(T.(answer{2}));
+                        end
+                    end
+                    for fieldId = 3:6
+                        if ~strcmp(answer{fieldId}, 'do not import')
+                            if isnumeric(T.(answer{fieldId})(1))
+                                res.labelPosition(:, fieldId-2) = T.(answer{fieldId});
+                            else
+                                res.labelPosition(:, fieldId-2) = str2double(T.(answer{fieldId}));
+                            end
+                        end
+                    end
+
+                case {3, 4}  % Amira landmark files
+                    amiraLandmarks = io.AmiraMesh.amiraLandmarks2points(filename);
+                    res.labelText     = repmat({'AmiraLandmark'}, [size(amiraLandmarks,1), 1]);
+                    res.labelValue    = ones([size(amiraLandmarks,1), 1]);
+                    res.labelPosition = ones([size(amiraLandmarks,1), 4]);
+                    if isfield(options, 'boundingBox') && isfield(options, 'pixSize')
+                        bb      = options.boundingBox;
+                        pixSize = options.pixSize;
+                        res.labelPosition(:,1) = round((amiraLandmarks(:,3) - bb(5) + pixSize.z) / pixSize.z);
+                        res.labelPosition(:,2) = (amiraLandmarks(:,1) - bb(1) + pixSize.x/2) / pixSize.x;
+                        res.labelPosition(:,3) = (amiraLandmarks(:,2) - bb(3) + pixSize.y/2) / pixSize.y;
+                    else
+                        res.labelPosition(:,1) = amiraLandmarks(:,3);
+                        res.labelPosition(:,2) = amiraLandmarks(:,1);
+                        res.labelPosition(:,3) = amiraLandmarks(:,2);
+                    end
+
+                otherwise
+                    return
+            end
+
+            obj.replaceLabels(res.labelText, res.labelPosition, res.labelValue);
+            result = 1;
+        end
+
+        % -----------------------------------------------------------------
         function sortLabels(obj, sortBy, direction)
             % SORTLABELS - Resort the list of annotation labels.
             %

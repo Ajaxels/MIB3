@@ -311,6 +311,12 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
         segmentationPanelHandles.linesShowLines.Value = obj.mibModel.showLines3D;
     end
 
+    % update show annotations
+    if selectionPanelHandles.showAnnotations.Value ~= obj.mibModel.showAnnotations
+        selectionPanelHandles.showAnnotations.Value = obj.mibModel.showAnnotations;
+    end
+    
+
     % update useLUT checkbox, see below selectionPanel
 end
 

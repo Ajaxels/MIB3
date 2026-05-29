@@ -47,7 +47,7 @@ end
 
 wb = uiprogressdlg(obj.view.gui, 'Value', 0, ...
     'Message', sprintf('Calculating statistics for %s\nPlease wait...', materialName), ...
-    'Title', 'Recalculating objects');
+    'Title', 'Recalculating objects', 'Indeterminate', true);
 
 getDataOptions.blockModeSwitch = 0;
 getDataOptions.id = id;
