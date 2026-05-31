@@ -31,8 +31,6 @@ switch mode
         obj.mibController.startController('controllers.GlobalThresholding');
     case 'Graphcut'        % obj.handles.ribbonTools.graphcut
         obj.mibController.startController('controllers.Graphcut');
-    case 'Watershed'        % obj.handles.ribbonTools.watershed
-
     case {'Measure tool', sprintf('Measure\ntool')}   % obj.handles.ribbonTools.measureTool
         obj.mibController.measureLength('tool');        % measure tool starts from measureLength
     case 'Line measure'   % obj.handles.ribbonTools.measure or obj.handles.ribbonTools.measureLine
@@ -40,9 +38,11 @@ switch mode
     case 'Free hand measure'                            % measureFreehand
         obj.mibController.measureLength('freehand');
     case sprintf('Object\nseparation')                  % obj.handles.ribbonTools.objects
+        obj.mibController.startController('controllers.ObjectSeparator');
     case 'Stereology'                                   % obj.handles.ribbonTools.stereology
         obj.mibController.startController('controllers.Stereology');
     case sprintf('Wound healing\nassey')                % obj.handles.ribbonTools.wound
+        obj.mibController.startController('controllers.WoundHealing');
 
 end
 

@@ -66,5 +66,5 @@ end
 
 % update the button icon
 obj.view.handles.ribbonImage.visualization.Icon = fullfile(obj.mibPath, 'assets', 'icons', sprintf('image_%s_24px.png', obj.mibModel.preferences.System.ImageResizeMethod));
-
+notify(obj.mibModel, 'ShowImage');
 end

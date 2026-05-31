@@ -55,7 +55,7 @@ tic
 % ATTENTION! it is important to have the version number between "ver." and "/" 
 % Release syntax example: "ver. 2025.11 / 04.11.2025"
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2026.05 / 21.05.2025 (preview)';  
+mibVersion = 'ver. 2026.06 / 01.06.2025 (preview)';  
 
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs 
 % WHEN COMPILING
@@ -79,32 +79,53 @@ end
 if false
     % Forces MATLAB Compiler to include dynamically-referenced views.
     % This function is NEVER called at runtime.
-    views.DisplayAdjustGUI; %#ok<*UNRCH>
-    views.GlobalThresholdingGUI;
+    views.AboutGUI %#ok<*UNRCH>
+    views.ActionLogGUI;
     views.AlignmentGUI;
     views.AmiraImportGUI;
     views.AnnotationsGUI;
     views.BatchProcessingGUI;
     views.BoundingBoxGUI;
+    views.ChunkingExportGUI;
+    views.ChunkingImportGUI;
+    views.ContentAwareFillGUI;
+    views.ContrastClaheGUI;
+    views.ContrastNormalizationGUI;
     views.CropDatasetGUI;
     views.CropObjectsGUI;
+    views.DatasetInfoGUI;
+    views.DebrisRemovalGUI;
     views.DisplayAdjustGUI;
+    views.GlobalThresholdingGUI;
+    views.GraphcutGUI;
+    views.ImageArithmeticsGUI;
+    views.ImageFiltersGUI;
+    views.ImageFrameGUI;
     views.Lines3dDialog;
+    view.MakeMovieGUI;
     views.MeasureToolGUI;
     views.MibDeepActivationsGUI;
     views.MibDeepAugmentSettingsGUI;
     views.MibDeepGUI;
+    views.MorphOpsGUI;
+    views.MorphOpsImagesGUI;
+    views.ObjectSeparatorGUI;
     views.PreferencesGUI;
     views.QuantificationGUI;
     views.QuantificationPropertiesGUI;
+    views.RenameRestoreGUI;
+    views.RenameShuffleGUI;
     views.ResampleDatasetGUI;
     views.SelectHDFSeriesGUI;
     views.SelectLociSeriesGUI;
     views.SelectModelTypeGUI;
     views.SnapshotGUI;
+    views.StereologyGUI;
     views.TipsAppGUI;
     views.VolRenAppGUI;
     views.VolRenAppViewerGUI;
+    views.WhiteBalanceGUI;
+    views.WoundHealingGUI;
 end
 
 mibPath = utils.getInstallationPath('mib3');

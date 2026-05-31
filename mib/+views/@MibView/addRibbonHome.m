@@ -371,9 +371,6 @@ popupList.add(homeHandles.support);
 % Call 4 help support
 homeHandles.call4help = ListItem('Personal support session', Icon(fullfile(iconPath, 'call4help_16px.png')));
 popupList.add(homeHandles.call4help);
-% Class reference
-homeHandles.classReference = ListItem('API class reference', Icon(fullfile(iconPath, 'class_reference_16px.png')));
-popupList.add(homeHandles.classReference);
 
 % separator
 separator = PopupListSeparator();
@@ -412,9 +409,14 @@ homeHandles.devModeSplitBtn = SplitButton(sprintf("Development"),  Icon(fullfile
 homeHandles.devModeSplitBtn.Description = 'Reserved for developmental purposes';
 % make a popup list for the dropdown button
 popupList = PopupList();
+% developer mode
 homeHandles.devModeEnabled = matlab.ui.internal.toolstrip.ListItemWithCheckBox('Developer mode', false);
 homeHandles.devModeEnabled.Description = 'Enable developer mode that reports handles of widgets in tooltips';
 popupList.add(homeHandles.devModeEnabled);
+% Class reference
+homeHandles.classReference = ListItem('API class reference', Icon(fullfile(iconPath, 'class_reference_16px.png')));
+popupList.add(homeHandles.classReference);
+% development callback
 homeHandles.devMode = ListItem(sprintf("Development"),  Icon(fullfile(iconPath, 'dev_corner_16px.png')));
 homeHandles.devMode.Description = 'Start developer callback ()';
 popupList.add(homeHandles.devMode);

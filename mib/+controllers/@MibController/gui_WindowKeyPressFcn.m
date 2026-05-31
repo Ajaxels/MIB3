@@ -131,7 +131,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Interpolate selection'            % default 'i'
             obj.mibModel.interpolateImage('selection');
         case 'Invert image'                     % default 'Ctrl + i'
-            error("MISSING IMPLEMENTATION: obj.menuImageInvert_Callback('4D');");
+            obj.mibModel.invertImage('4D, Dataset');
         case {'Add to selection to material', 'Subtract from material', 'Replace material with current selection'}
             % default 'a'/'Shift+a', 's'/'Shift+s', 'r'/'Shift+r'
             if dataset.enableSelection == 0; return; end

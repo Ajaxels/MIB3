@@ -84,9 +84,6 @@ popupList.add(widgetHandles.globalthres);
 % Graphcut
 widgetHandles.graphcut =  ListItem('Graphcut', Icon(fullfile(iconPath, 'graphcut_24px.png'))); 
 popupList.add(widgetHandles.graphcut);
-% Watershed
-widgetHandles.watershed =  ListItem('Watershed', Icon(fullfile(iconPath, 'watershed_24px.png'))); 
-popupList.add(widgetHandles.watershed);
 
 widgetHandles.semiauto.Popup = popupList;
 column.add(widgetHandles.semiauto);

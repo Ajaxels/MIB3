@@ -248,6 +248,8 @@ actionId = 1;
 obj.Sections(secIndex).Name = 'Ribbon -> Tools';
 obj.Sections(secIndex).Actions(actionId).Name = 'Global thresholding';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.GlobalThresholding'', [], Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Object separation';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.ObjectSeparator'', [], Batch);'; actionId = actionId + 1;
 
 secIndex = secIndex + 1;
 actionId = 1;

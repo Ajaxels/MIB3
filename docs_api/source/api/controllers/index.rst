@@ -67,9 +67,11 @@ Segmentation tool dialogs
    Lines3dDialog
    MeasureTool
    MorphOps
+   ObjectSeparator
    Quantification
    QuantificationProperties
    Stereology
+   WoundHealing
    
 
 Deep learning

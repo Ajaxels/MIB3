@@ -71,7 +71,7 @@ classdef DatasetInfo < handle
                     || ~strcmp(obj.view.handles.closeButton.FontName, Font.FontName)
                 utils.fontSizeUpdate(obj.view.gui, Font);
             end
-            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
+            obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'right');
 
             obj.view.handles.metaTree.Multiselect = 'on';
             obj.updateWidgets();
