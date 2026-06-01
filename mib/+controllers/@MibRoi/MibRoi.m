@@ -16,6 +16,11 @@ classdef MibRoi < handle
         %   .type         - char: 'Rectangle','Ellipse','Polyline','Lasso'
         %   .dataPos      - data-pixel coords (updated on MovingROI; used by repositionDrawingROI)
         %   .repositioning - logical guard to prevent re-entry during programmatic repositioning
+        %   .placementMode    - logical, true during custom Polyline Stage 1 vertex collection
+        %   .placementVertices - [Nx2 double] data-pixel vertices collected during custom placement
+        %   .placementLine    - handle to line object visualizing polygon outline during placement
+        %   .rubberBandLine   - handle to line object connecting last vertex to current cursor
+        %   .previewPatch     - handle to semi-transparent patch filling the preview polygon
     end
 
 
@@ -30,6 +35,7 @@ classdef MibRoi < handle
         removeROI(obj) % remove selected ROI(s) from the current dataset
         refreshROIList(obj, previousValue) % rebuild the ROI list-box items from current hROI.Data
         repositionDrawingROI(obj) % reposition the active drawing tool after zoom/pan changes the axes coordinate system
+        updatePlacementLine(obj, axH)  % update polygon outline during custom Polyline placement
         roiModify(obj) % interactively modify (redraw) an existing ROI in-place
         roiSave(obj) % save ROIs of the current dataset to a .roi (MAT) file
         roiLoad(obj) % load ROIs from a .roi (MAT) file into the current dataset
@@ -57,7 +63,9 @@ classdef MibRoi < handle
             obj.handles = guiHandles.handles;   % handles for the panel (equal to obj.view.handles.panels.roi.handles ...)
             obj.mibModel = model;               % handle to the main MIB model
             obj.UIFigure = ancestor(obj.gui, 'figure');  % handle to underlying UIFigure
-            obj.drawingROI = struct('active', false, 'roi', [], 'type', '', 'dataPos', [], 'repositioning', false);
+            obj.drawingROI = struct('active', false, 'roi', [], 'type', '', 'dataPos', [], ...
+                'repositioning', false, 'placementMode', false, ...
+                'placementVertices', [], 'placementLine', [], 'rubberBandLine', [], 'previewPatch', []);
 
             % ---------------------- Add CALLBACKS to widgets ----------------------
             % example call using lambda functions

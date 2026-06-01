@@ -42,6 +42,17 @@ switch3d = obj.mibModel.applySegmentationIn3D;
 % check for the mouse inside the image axes
 if ~obj.isInsideAxes; return; end
 
+% Custom Polyline placement: double-click finishes vertex collection
+if strcmp(seltype, 'open')
+    if obj.mibModel.disableSegmentation
+        cRoiCtrl = obj.mibController.cRoi;
+        if ~isempty(cRoiCtrl) && cRoiCtrl.drawingROI.placementMode
+            uiresume(hFig);
+        end
+    end
+    return;
+end
+
 % define operation depending on the state of obj.mibModel.preferences.System.LeftMouseButton = 'select' or 'pan'
 if obj.mibModel.preferences.System.LeftMouseButton(1) == 's'  % the selection mode, options: 'select' or 'pan'
     switch seltype
@@ -62,8 +73,6 @@ if obj.mibModel.preferences.System.LeftMouseButton(1) == 's'  % the selection mo
             end
         case 'extend'   % Shift+RMB, Shift+LMB, MMB, LMB+RMB
             operation = 'select';
-        case 'open'     % double click
-            return
         otherwise
             return
     end
@@ -80,8 +89,6 @@ else
             operation = 'select';
         case 'extend'   % Shift+RMB, Shift+LMB, MMB, LMB+RMB
             operation = 'select';
-        case 'open'     % double click
-            return
         otherwise
             return
     end
@@ -265,7 +272,9 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
         dp   = drawInfo.dataPos;
         %fprintf('[ROI-reposition] active=%d, roiValid=%d, dpEmpty=%d, magFactor=%.3f, type=%s\n', ...
         %    drawInfo.active, ~isempty(roiH) && isvalid(roiH), isempty(dp), magFactor, drawInfo.type);
-        if ~isempty(roiH) && isvalid(roiH) && ~isempty(dp)
+        hasStandardROI = ~isempty(roiH) && isvalid(roiH) && ~isempty(dp);
+        hasPlacementLine = ~isempty(drawInfo.placementLine) && isvalid(drawInfo.placementLine) && ~isempty(drawInfo.placementVertices);
+        if hasStandardROI || hasPlacementLine
             obj.mibController.cRoi.drawingROI.repositioning = true;
             try
                 if magFactor < 1
@@ -280,26 +289,40 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
                     toY = @(y) y ./ magFactor;
                 end
 
-                switch drawInfo.type
-                    case 'Rectangle'
-                        Xax = toX(dp(:,1));  Yax = toY(dp(:,2));
-                        w = Xax(2)-Xax(1);   h = Yax(2)-Yax(1);
-                        if w > 0 && h > 0
-                            roiH.Position = [Xax(1), Yax(1), w, h];
-                        end
-                    case 'Ellipse'
-                        cx_ax = toX(dp(1));  cy_ax = toY(dp(2));
-                        ex_ax = toX(dp(1)+dp(3));
-                        ey_ax = toY(dp(2)+dp(4));
-                        rx_ax = abs(ex_ax - cx_ax);
-                        ry_ax = abs(ey_ax - cy_ax);
-                        if rx_ax > 0 && ry_ax > 0
-                            roiH.Center   = [cx_ax, cy_ax];
-                            roiH.SemiAxes = [rx_ax, ry_ax];
-                        end
-                    otherwise
-                        Xax = toX(dp(:,1));  Yax = toY(dp(:,2));
-                        roiH.Position = [Xax(:), Yax(:)];
+                if hasStandardROI
+                    switch drawInfo.type
+                        case 'Rectangle'
+                            Xax = toX(dp(:,1));  Yax = toY(dp(:,2));
+                            w = Xax(2)-Xax(1);   h = Yax(2)-Yax(1);
+                            if w > 0 && h > 0
+                                roiH.Position = [Xax(1), Yax(1), w, h];
+                            end
+                        case 'Ellipse'
+                            cx_ax = toX(dp(1));  cy_ax = toY(dp(2));
+                            ex_ax = toX(dp(1)+dp(3));
+                            ey_ax = toY(dp(2)+dp(4));
+                            rx_ax = abs(ex_ax - cx_ax);
+                            ry_ax = abs(ey_ax - cy_ax);
+                            if rx_ax > 0 && ry_ax > 0
+                                roiH.Center   = [cx_ax, cy_ax];
+                                roiH.SemiAxes = [rx_ax, ry_ax];
+                            end
+                        otherwise
+                            Xax = toX(dp(:,1));  Yax = toY(dp(:,2));
+                            roiH.Position = [Xax(:), Yax(:)];
+                    end
+                end
+                if hasPlacementLine
+                    pverts = drawInfo.placementVertices;
+                    pX = toX(pverts(:,1));
+                    pY = toY(pverts(:,2));
+                    if numel(pX) >= 2
+                        drawInfo.placementLine.XData = [pX(:); pX(1)];
+                        drawInfo.placementLine.YData = [pY(:); pY(1)];
+                    else
+                        drawInfo.placementLine.XData = pX(:);
+                        drawInfo.placementLine.YData = pY(:);
+                    end
                 end
             catch
             end
@@ -318,7 +341,17 @@ if strcmp(operation, 'pan') %& strcmp(modifier,'alt')
 elseif strcmp(operation, 'select')
     %% Start segmentation mode
     % skip all segmentation when ROI drawing is active (pan still works)
-    if obj.mibModel.disableSegmentation; return; end
+    if obj.mibModel.disableSegmentation
+        % During custom Polyline placement, left-click adds a vertex
+        cRoiCtrl = obj.mibController.cRoi;
+        if ~isempty(cRoiCtrl) && cRoiCtrl.drawingROI.placementMode
+            [dataX, dataY] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown');
+            cRoiCtrl.drawingROI.placementVertices(end+1, :) = [dataX, dataY];
+            cRoiCtrl.drawingROI.dataPos = cRoiCtrl.drawingROI.placementVertices;
+            cRoiCtrl.updatePlacementLine(obj.handles.imViewAxes);
+        end
+        return;
+    end
 
     %y = round(xy(1,2));
     %x = round(xy(1,1));

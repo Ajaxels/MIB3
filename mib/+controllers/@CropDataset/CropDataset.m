@@ -764,6 +764,14 @@ classdef CropDataset < handle
                     position = ceil(position);
                 end
 
+                % Clamp to image bounds
+                opts.blockModeSwitch = 0;
+                [height, width] = obj.mibModel.I{id}.getDatasetDimensions('selection', [], opts);
+                position(1) = max(position(1), 1);
+                position(2) = max(position(2), 1);
+                position(3) = min(position(3), width);
+                position(4) = min(position(4), height);
+
                 % Validate crop area
                 if position(3) <= position(1) || position(4) <= position(2)
                     utils.dlgs.showErrorDialog(obj.view.gui, ...
@@ -771,12 +779,6 @@ classdef CropDataset < handle
                         'Crop error');
                     return;
                 end
-
-                % Clamp to image bounds and build crop_factor
-                opts.blockModeSwitch = 0;
-                [height, width] = obj.mibModel.I{id}.getDatasetDimensions('selection', [], opts);
-                position(3) = min(position(3), width);
-                position(4) = min(position(4), height);
 
                 switch obj.mibModel.I{id}.orientation
                     case 3   % XY plane

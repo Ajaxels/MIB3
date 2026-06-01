@@ -50,6 +50,60 @@ try
     obj.isInsideAxes = xMouse > axXLim(1) && xMouse < axXLim(2) && ...
         yMouse > axYLim(1) && yMouse < axYLim(2);
 
+    % Rubber band + fill preview during custom Polyline Stage 1 placement
+    cRoiCtrl = obj.mibController.cRoi;
+    if ~isempty(cRoiCtrl) && cRoiCtrl.drawingROI.placementMode && ...
+            ~isempty(cRoiCtrl.drawingROI.placementVertices)
+        placementVerts = cRoiCtrl.drawingROI.placementVertices;
+        cursorX = position(1,1);
+        cursorY = position(1,2);
+        nVerts = size(placementVerts, 1);
+
+        % Convert last and first confirmed vertices to axes coords
+        lastVert  = placementVerts(end, :);
+        firstVert = placementVerts(1,   :);
+        [lastAxX,  lastAxY]  = obj.mibModel.convertDataToMouseCoordinates(lastVert(1),  lastVert(2),  'shown');
+        [firstAxX, firstAxY] = obj.mibModel.convertDataToMouseCoordinates(firstVert(1), firstVert(2), 'shown');
+
+        % Rubber band: last → cursor → first (one segment when only 1 vertex)
+        if nVerts == 1
+            rbX = [lastAxX; cursorX];
+            rbY = [lastAxY; cursorY];
+        else
+            rbX = [lastAxX; cursorX; firstAxX];
+            rbY = [lastAxY; cursorY; firstAxY];
+        end
+        lineH = cRoiCtrl.drawingROI.rubberBandLine;
+        if isempty(lineH) || ~isvalid(lineH)
+            lineH = line(imViewAxes, rbX, rbY, ...
+                'Color', [0 0.447 0.741], 'LineWidth', 1, 'LineStyle', '--', ...
+                'Tag', 'polylinePlacement', 'HitTest', 'off', 'PickableParts', 'none');
+            cRoiCtrl.drawingROI.rubberBandLine = lineH;
+        else
+            lineH.XData = rbX;
+            lineH.YData = rbY;
+        end
+
+        % Semi-transparent fill: all confirmed vertices + cursor (needs ≥ 3 total)
+        if nVerts >= 2
+            [allAxX, allAxY] = obj.mibModel.convertDataToMouseCoordinates( ...
+                placementVerts(:,1), placementVerts(:,2), 'shown');
+            patchX = [allAxX(:); cursorX];
+            patchY = [allAxY(:); cursorY];
+            patchH = cRoiCtrl.drawingROI.previewPatch;
+            if isempty(patchH) || ~isvalid(patchH)
+                patchH = patch(imViewAxes, patchX, patchY, [0 0.447 0.741], ...
+                    'EdgeColor', 'none', ...
+                    'Tag', 'polylinePlacement', 'HitTest', 'off', 'PickableParts', 'none');
+                patchH.FaceAlpha = 0.15;
+                cRoiCtrl.drawingROI.previewPatch = patchH;
+            else
+                patchH.XData = patchX;
+                patchH.YData = patchY;
+            end
+        end
+    end
+
     if obj.isInsideAxes
         obj.UIFigure.Pointer = 'crosshair';
         sessionSettings = obj.mibModel.sessionSettings;

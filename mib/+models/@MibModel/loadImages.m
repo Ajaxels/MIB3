@@ -386,6 +386,25 @@ switch BatchOpt.Mode{1}
                 options.customSectionsSettings = obj.sessionSettings.customSections;
             end
 
+            % Show background color dialog if images have different XY dimensions or color count
+            if numel(unique([files.height])) > 1 || numel(unique([files.width])) > 1 || numel(unique([files.color])) > 1
+                if ~isfield(options, 'BackgroundColorIntensity')
+                    maxInt = double(intmax(files(1).imgClass)); 
+                    dlgOpt.Icon = 'puffin_warning';
+                    answer = utils.dlgs.inputSingleDlg(obj.mibGUI, ...
+                        sprintf('The XY dimensions or number of color channels mismatch!\nContinue anyway?\n\nEnter the background color intensity (0-%d):', maxInt), ...
+                         struct('Value', maxInt, 'Limits', [0 maxInt], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d'), ...
+                         'Dimensions mismatch', dlgOpt);
+                    if isempty(answer)
+                        notify(obj, 'StopProtocol');
+                        return;
+                    end
+                    [files.backgroundColor] = deal(answer);
+                else
+                    [files.backgroundColor] = deal(options.BackgroundColorIntensity);
+                end
+            end
+
             % Load images
             [img, img_info] = loader.loadImages(files, img_info, options);
             if isempty(img)

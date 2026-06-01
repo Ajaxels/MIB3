@@ -113,7 +113,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
         skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
 
         if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
-            if isempty(time); time = obj.slices{5}(1); end
+            if isempty(time) || (isscalar(time) && isnan(time)); time = obj.slices{5}(1); end
             if strcmp(type, 'image')
                 if isempty(col_channel); col_channel = obj.slices{4};
                 elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
@@ -153,7 +153,7 @@ end
 if options.blockModeSwitch == 1; options.roiId = -1; end   % turn off the ROI mode, when the block mode is on
 
 if isempty(orient) || isnan(orient); orient = obj.orientation; end
-if isempty(time); time = obj.slices{5}(1); end
+if isempty(time) || (isscalar(time) && isnan(time)); time = obj.slices{5}(1); end
 
 if strcmp(type, 'image')
     if isempty(col_channel)

@@ -70,48 +70,123 @@ if ~isempty(cRoi)
     cRoi.drawingROI.active        = false;
 end
 
-% draw the ROI interactively
-movingLsn = [];
-movedLsn  = [];
-try
-    switch type
-        case 'Lasso'
-            roi = drawfreehand(axH, 'Closed', true);
-        case 'Rectangle'
-            roi = drawrectangle(axH);
-        case 'Ellipse'
-            roi = drawellipse(axH);
-        case 'Polyline'
-            roi = drawpolygon(axH);
-        otherwise
-            roi = drawfreehand(axH, 'Closed', true);
+if strcmp(type, 'Polyline')
+    %% Custom Stage 1: collect vertices via clicks with right-click pan support
+    % drawpolygon exits placement mode on right-click (UIFigure limitation).
+    % Collect vertices manually via gui_WindowButtonDownFcn (left-click adds a
+    % vertex when placementMode is true) and use uiwait/uiresume for sync.
+    % Right-click pan works normally because we never call drawpolygon here.
+
+    cRoi.drawingROI.type              = drawingROIType;  % 'Polygon'
+    cRoi.drawingROI.active            = true;
+    cRoi.drawingROI.placementMode     = true;
+    cRoi.drawingROI.placementVertices = zeros(0, 2);
+    cRoi.drawingROI.placementLine     = [];
+    cRoi.drawingROI.dataPos           = [];
+    cRoi.drawingROI.roi               = [];
+
+    % Capture the initial click position as the first vertex
+    pt = axH.CurrentPoint;
+    [dataX, dataY] = obj.mibModel.convertMouseToDataCoordinates(pt(1,1), pt(1,2), 'shown');
+    cRoi.drawingROI.placementVertices = [dataX, dataY];
+    cRoi.drawingROI.dataPos           = cRoi.drawingROI.placementVertices;
+    cRoi.updatePlacementLine(axH);
+
+    % Block until double-click, Enter, or Escape calls uiresume
+    uiwait(hFig);
+
+    % Retrieve collected vertices and clean up placement state
+    placementVertices = cRoi.drawingROI.placementVertices;
+    if ~isempty(cRoi.drawingROI.placementLine) && isvalid(cRoi.drawingROI.placementLine)
+        delete(cRoi.drawingROI.placementLine);
     end
+    if ~isempty(cRoi.drawingROI.rubberBandLine) && isvalid(cRoi.drawingROI.rubberBandLine)
+        delete(cRoi.drawingROI.rubberBandLine);
+    end
+    if ~isempty(cRoi.drawingROI.previewPatch) && isvalid(cRoi.drawingROI.previewPatch)
+        delete(cRoi.drawingROI.previewPatch);
+    end
+    cRoi.drawingROI.placementLine     = [];
+    cRoi.drawingROI.rubberBandLine    = [];
+    cRoi.drawingROI.previewPatch      = [];
+    cRoi.drawingROI.placementVertices = [];
+    cRoi.drawingROI.placementMode     = false;
+
+    % Check if cancelled or not enough vertices for a polygon
+    if isempty(placementVertices) || size(placementVertices, 1) < 2
+        cRoi.drawingROI.active = false;
+        obj.mibModel.disableSegmentation = false;
+        hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
+        hFig.Pointer = 'crosshair';
+        return;
+    end
+
+    %% Stage 2: create adjustable drawpolygon with collected vertices
+    [axX, axY] = obj.mibModel.convertDataToMouseCoordinates( ...
+        placementVertices(:,1), placementVertices(:,2), 'shown');
+    roi = drawpolygon(axH, 'Position', [axX(:), axY(:)]);
+
+    movingLsn = [];
+    movedLsn  = [];
     if isvalid(roi)
         captureF  = @() captureSegLassoDataPos(roi, drawingROIType, cRoi, obj.mibModel);
         movingLsn = addlistener(roi, 'MovingROI', @(~,~) captureF());
         movedLsn  = addlistener(roi, 'ROIMoved',  @(~,~) captureF());
-        captureF();   % capture initial position
-        if ~isempty(cRoi)
-            cRoi.drawingROI.roi    = roi;
-            cRoi.drawingROI.active = true;
-        end
+        captureF();
+        cRoi.drawingROI.roi    = roi;
+        cRoi.drawingROI.active = true;
     end
-    wait(roi);
-catch
-    % user cancelled or error during drawing
+
+    %% Stage 3: wait for acceptance (double-click) or cancellation (Escape)
+    try
+        wait(roi);
+    catch
+    end
+
+    if ~isempty(movingLsn); delete(movingLsn); end
+    if ~isempty(movedLsn);  delete(movedLsn);  end
+    cRoi.drawingROI.active = false;
+
+else
+    %% Non-Polyline types: use standard interactive draw + wait
+    movingLsn = [];
+    movedLsn  = [];
+    try
+        switch type
+            case 'Lasso'
+                roi = drawfreehand(axH, 'Closed', true);
+            case 'Rectangle'
+                roi = drawrectangle(axH);
+            case 'Ellipse'
+                roi = drawellipse(axH);
+            otherwise
+                roi = drawfreehand(axH, 'Closed', true);
+        end
+        if isvalid(roi)
+            captureF  = @() captureSegLassoDataPos(roi, drawingROIType, cRoi, obj.mibModel);
+            movingLsn = addlistener(roi, 'MovingROI', @(~,~) captureF());
+            movedLsn  = addlistener(roi, 'ROIMoved',  @(~,~) captureF());
+            captureF();
+            if ~isempty(cRoi)
+                cRoi.drawingROI.roi    = roi;
+                cRoi.drawingROI.active = true;
+            end
+        end
+        wait(roi);
+    catch
+        if ~isempty(movingLsn); delete(movingLsn); end
+        if ~isempty(movedLsn);  delete(movedLsn);  end
+        if ~isempty(cRoi); cRoi.drawingROI.active = false; end
+        obj.mibModel.disableSegmentation = false;
+        hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
+        hFig.Pointer = 'crosshair';
+        return;
+    end
+
     if ~isempty(movingLsn); delete(movingLsn); end
     if ~isempty(movedLsn);  delete(movedLsn);  end
     if ~isempty(cRoi); cRoi.drawingROI.active = false; end
-    obj.mibModel.disableSegmentation = false;
-    hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
-    hFig.Pointer = 'crosshair';
-    return;
 end
-
-% cleanup listeners and deactivate drawingROI tracking
-if ~isempty(movingLsn); delete(movingLsn); end
-if ~isempty(movedLsn);  delete(movedLsn);  end
-if ~isempty(cRoi); cRoi.drawingROI.active = false; end
 
 % check if ROI is valid (user may have pressed Escape)
 if ~isvalid(roi)

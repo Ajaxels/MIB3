@@ -377,7 +377,25 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
     end
 else    % all other possible shortcuts
     switch char
+        case 'return'
+            % Finish custom Polyline Stage 1 placement on Enter
+            if obj.mibModel.disableSegmentation
+                cRoiCtrl = obj.cRoi;
+                if ~isempty(cRoiCtrl) && cRoiCtrl.drawingROI.placementMode
+                    uiresume(cImageDoc.UIFigure);
+                    return;
+                end
+            end
         case 'escape'
+            % Cancel custom Polyline Stage 1 placement on Escape
+            if obj.mibModel.disableSegmentation
+                cRoiCtrl = obj.cRoi;
+                if ~isempty(cRoiCtrl) && cRoiCtrl.drawingROI.placementMode
+                    cRoiCtrl.drawingROI.placementVertices = [];  % signal cancellation
+                    uiresume(cImageDoc.UIFigure);
+                    return;
+                end
+            end
             % % detect escape when modifying the measurements, see Measure.drawROI method
             % if ~isempty(dataset.hMeasure.roi.imroi)
             %     if isvalid(dataset.hMeasure.roi.imroi)

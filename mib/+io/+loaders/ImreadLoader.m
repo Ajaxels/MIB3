@@ -638,6 +638,10 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                         end
                     end
 
+                    % Clamp to actual image dimensions — metadata may be wrong if user cancelled during loadMetadata
+                    maxY = min(maxY, size(I, 1));
+                    maxX = min(maxX, size(I, 2));
+
                     % Store slice
                     img(1:maxY, 1:maxX, layerid, 1:size(I,3)) = permute(I(1:maxY, 1:maxX, 1:size(I,3)), [1 2 4 3]);
 
