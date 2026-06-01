@@ -48,9 +48,9 @@ if ~isfield(options, 'showWaitbar');  options.showWaitbar  = true; end
 
 % ---- dimension mismatch check ----------------------------------------
 % MIB3 dimension order: [y, x, z, colors, t]
-if size(obj.data{1}, 1) ~= size(img, 1) || ...
-   size(obj.data{1}, 2) ~= size(img, 2) || ...
-   size(obj.data{1}, 5) ~= size(img, 5)
+if size(obj.data, 1) ~= size(img, 1) || ...
+   size(obj.data, 2) ~= size(img, 2) || ...
+   size(obj.data, 5) ~= size(img, 5)
     if ~isempty(options.ParentFigure)
         selection = uiconfirm(options.ParentFigure, ...
             sprintf('Some of the image dimensions mismatch.\nContinue anyway?'), ...
@@ -66,10 +66,10 @@ if options.showWaitbar
         'Message', 'Please wait...', 'Value', 0);
 end
 
-tMax = min([size(obj.data{1}, 5), size(img, 5)]);
-zMax = min([size(obj.data{1}, 3), size(img, 3)]);
-xMax = min([size(obj.data{1}, 2), size(img, 2)]);
-yMax = min([size(obj.data{1}, 1), size(img, 1)]);
+tMax = min([size(obj.data, 5), size(img, 5)]);
+zMax = min([size(obj.data, 3), size(img, 3)]);
+xMax = min([size(obj.data, 2), size(img, 2)]);
+yMax = min([size(obj.data, 1), size(img, 1)]);
 
 noExistingColors = obj.colors;
 noExtraColors    = size(img, 4);
@@ -77,7 +77,7 @@ noExtraColors    = size(img, 4);
 if isnan(channelId)
     % ---- append new channel(s) ----------------------------------------
     if options.showWaitbar; wb.Value = 0.1; end
-    obj.data{1}(1:yMax, 1:xMax, 1:zMax, noExistingColors+1:noExistingColors+noExtraColors, 1:tMax) = ...
+    obj.data(1:yMax, 1:xMax, 1:zMax, noExistingColors+1:noExistingColors+noExtraColors, 1:tMax) = ...
         img(1:yMax, 1:xMax, 1:zMax, :, 1:tMax);
     if options.showWaitbar; wb.Value = 0.9; end
 
@@ -89,7 +89,7 @@ if isnan(channelId)
 else
     % ---- replace existing channel -------------------------------------
     if options.showWaitbar; wb.Value = 0.1; end
-    obj.data{1}(1:yMax, 1:xMax, 1:zMax, channelId, 1:tMax) = ...
+    obj.data(1:yMax, 1:xMax, 1:zMax, channelId, 1:tMax) = ...
         img(1:yMax, 1:xMax, 1:zMax, 1, 1:tMax);
     if options.showWaitbar; wb.Value = 0.9; end
 

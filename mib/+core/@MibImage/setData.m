@@ -100,16 +100,16 @@ if blockModeSwitchLocal == 0  % set the full dataset
     if strcmp(obj.type, 'image') || isempty(materialIndex)
         if isequal(colChannel, 1:obj.colors)
             % Full channel replacement — reshape incoming data to 5D [H,W,Z,C,T]
-            % so that labels [H,W,Z,T] maps correctly to data{1} [H,W,Z,1,T]
+            % so that labels [H,W,Z,T] maps correctly to data [H,W,Z,1,T]
             nC = numel(colChannel);
             targetShape = [size(dataset,1), size(dataset,2), size(dataset,3), nC, ...
                            numel(dataset) / (size(dataset,1) * size(dataset,2) * size(dataset,3) * nC)];
             dataset = reshape(dataset, targetShape);
-            if isequal(size(obj.data{1}), targetShape)
-                obj.data{1}(:,:,:,colChannel,:) = dataset;
+            if isequal(size(obj.data), targetShape)
+                obj.data(:,:,:,colChannel,:) = dataset;
             else
                 % Container size changed — replace and update dimensions
-                obj.data{1}    = dataset;
+                obj.data    = dataset;
                 obj.height     = targetShape(1);
                 obj.width      = targetShape(2);
                 obj.depth      = targetShape(3);
@@ -118,11 +118,11 @@ if blockModeSwitchLocal == 0  % set the full dataset
                 obj.dim_yxzct  = targetShape;
             end
         else
-            obj.data{1}(:,:,:,colChannel,:) = dataset;
+            obj.data(:,:,:,colChannel,:) = dataset;
         end
     else % labels type
-        obj.data{1}(obj.data{1} == materialIndex) = 0;
-        obj.data{1}(dataset == 1) = materialIndex;
+        obj.data(obj.data == materialIndex) = 0;
+        obj.data(dataset == 1) = materialIndex;
     end
 
 else  % set a part of the dataset
@@ -166,13 +166,13 @@ else  % set a part of the dataset
     end
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
+        obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
     else % labels type, set only specific object
-        currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+        currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
         currentDataset(currentDataset == materialIndex) = 0;
         currentDataset(dataset == 1) = materialIndex;
 
-        obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
+        obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
     end
 end
 result = true;

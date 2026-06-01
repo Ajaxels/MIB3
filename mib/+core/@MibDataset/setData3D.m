@@ -114,6 +114,49 @@ if nargin < 5; orient = []; end
 if nargin < 4; time = []; end
 if nargin < 3; type = 'image'; end
 
+% === FAST PATH ===
+% Standard in-memory, YX orient (3), no ROI, no blockMode, no x/y/z subregion.
+% Directly writes data{1} and skips ROI/Virtual/blockMode machinery.
+% Set options.suppressNotify = true in batch loops to also skip ToggleEventData+notify.
+if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
+    fastOrient = orient;
+    if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
+        fastOrient = obj.orientation;
+    end
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ~isfield(options, 'z')
+        if isfield(options, 'blockModeSwitch')
+            blockIsOff = (options.blockModeSwitch == 0);
+        else
+            blockIsOff = (obj.blockModeSwitch == 0);
+        end
+        noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
+        skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
+                        isnumeric(col_channel) && ~any(isnan(col_channel(:)));
+        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+
+        if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            if isempty(time); time = obj.slices{5}(1); end
+            if strcmp(type, 'image')
+                if isempty(col_channel); col_channel = obj.slices{4};
+                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
+            else
+                col_channel = 1;
+            end
+            if iscell(dataset); dataset = dataset{1}; end
+            obj.(type).setDataFast(dataset, [], col_channel, time);   % [] z ⇒ all-z volume write; single-hop in-place (avoids COW)
+            if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
+            elseif strcmp(type, 'mask'); obj.maskExist = true; end
+            if ~isfield(options, 'suppressNotify') || ~options.suppressNotify
+                setDataOpt.type = type; setDataOpt.mode = '3D';
+                notify(obj, 'SetData', core.ToggleEventData(setDataOpt));
+            end
+            result = true;
+            return;
+        end
+    end
+end
+% === END FAST PATH ===
+
 if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end

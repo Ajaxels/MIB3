@@ -38,15 +38,15 @@ if options.showWaitbar
 end
 
 if channel1 == 1
-    obj.data{1}(:,:,:,2:obj.colors+1,:) = obj.data{1};
-    obj.data{1}(:,:,:,1,:) = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
+    obj.data(:,:,:,2:obj.colors+1,:) = obj.data;
+    obj.data(:,:,:,1,:) = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
     obj.lutColors = [rand([1, 3]); obj.lutColors];
 elseif channel1 == obj.colors + 1
-    obj.data{1}(:,:,:,obj.colors+1,:) = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
+    obj.data(:,:,:,obj.colors+1,:) = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
     obj.lutColors = [obj.lutColors; rand([1, 3])];
 else
-    obj.data{1}(:,:,:,channel1+1:obj.colors+1,:) = obj.data{1}(:,:,:,channel1:obj.colors,:);
-    obj.data{1}(:,:,:,channel1,:) = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
+    obj.data(:,:,:,channel1+1:obj.colors+1,:) = obj.data(:,:,:,channel1:obj.colors,:);
+    obj.data(:,:,:,channel1,:) = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
     obj.lutColors = [obj.lutColors(1:channel1-1,:); rand([1, 3]); obj.lutColors(channel1:end,:)];
 end
 

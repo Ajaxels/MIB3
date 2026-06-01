@@ -6,7 +6,7 @@ function status = convertImage(obj, format, options)
 %
 %       status = obj.convertImage(format, options)
 %
-% Converts the image in ``obj.data{1}`` to the requested color type or bit
+% Converts the image in ``obj.data`` to the requested color type or bit
 % depth.  All color-space paths from MIB2 are preserved.  The data array
 % has layout ``[H, W, Z, C, T]``.
 %
@@ -100,7 +100,7 @@ if strcmp(format, 'grayscale')
 
         case 'multichannel'
             from = 'multichannel';
-            if size(obj.data{1}, 4) > 3
+            if size(obj.data, 4) > 3
                 % LUT blending: blend selected channels into RGB, then grayscale
                 I = zeros([obj.height, obj.width, obj.depth, 1, obj.time], obj.dataClass);
                 selectedColorsLUT = obj.lutColors(options.selectedColorChannels, :);
@@ -112,7 +112,7 @@ if strcmp(format, 'grayscale')
                         G = zeros([obj.height, obj.width], obj.dataClass);
                         B = zeros([obj.height, obj.width], obj.dataClass);
                         for colorId = 1:numel(options.selectedColorChannels)
-                            channelImg = obj.data{1}(:, :, sliceId, options.selectedColorChannels(colorId), t);
+                            channelImg = obj.data(:, :, sliceId, options.selectedColorChannels(colorId), t);
                             adjImg = imadjust(channelImg, ...
                                 [obj.viewPort.min(options.selectedColorChannels(colorId))/maxIntValue ...
                                  obj.viewPort.max(options.selectedColorChannels(colorId))/maxIntValue], ...
@@ -126,10 +126,10 @@ if strcmp(format, 'grayscale')
                         if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                     end
                 end
-                obj.data{1} = I;
+                obj.data = I;
             else
                 % Pad to 3 channels then rgb2gray slice-by-slice
-                I = obj.data{1};
+                I = obj.data;
                 numColors = size(I, 4);
                 rgbData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
                 rgbData(:,:,:,1:numColors,:) = I;
@@ -146,7 +146,7 @@ if strcmp(format, 'grayscale')
                         if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                     end
                 end
-                obj.data{1} = imageData;
+                obj.data = imageData;
             end
 
         case 'hsvcolor'
@@ -156,7 +156,7 @@ if strcmp(format, 'grayscale')
 
         case 'indexed'
             from = 'indexed';
-            I = obj.data{1};
+            I = obj.data;
             imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], class(I));
             index = 0;
             for t = 1:obj.time
@@ -166,7 +166,7 @@ if strcmp(format, 'grayscale')
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
-            obj.data{1} = imageData;
+            obj.data = imageData;
             obj.colormap = [];
     end
     obj.colorType = 'grayscale';
@@ -178,11 +178,11 @@ elseif strcmp(format, 'multichannel')
     switch obj.colorType
         case 'grayscale'
             from = 'grayscale';
-            I = obj.data{1};
-            obj.data{1} = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
-            obj.data{1}(:,:,:,1,:) = I;
-            obj.data{1}(:,:,:,2,:) = I;
-            obj.data{1}(:,:,:,3,:) = I;
+            I = obj.data;
+            obj.data = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
+            obj.data(:,:,:,1,:) = I;
+            obj.data(:,:,:,2,:) = I;
+            obj.data(:,:,:,3,:) = I;
             if showWb; waitbar.Value = 0.85; end
 
         case 'multichannel'
@@ -192,7 +192,7 @@ elseif strcmp(format, 'multichannel')
 
         case 'hsvcolor'
             from = 'hsvcolor';
-            I = obj.data{1};
+            I = obj.data;
             imageData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], 'uint8');
             index = 0;
             for t = 1:obj.time
@@ -209,12 +209,12 @@ elseif strcmp(format, 'multichannel')
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
-            obj.data{1} = imageData;
+            obj.data = imageData;
             if showWb; waitbar.Value = 0.85; end
 
         case 'indexed'
             from = 'indexed';
-            I = obj.data{1};
+            I = obj.data;
             maxIntValue = double(intmax(class(I)));
             imageData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], class(I));
             index = 0;
@@ -228,7 +228,7 @@ elseif strcmp(format, 'multichannel')
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
-            obj.data{1} = imageData;
+            obj.data = imageData;
             obj.colormap = [];
     end
     obj.colorType = 'multichannel';
@@ -245,12 +245,12 @@ elseif strcmp(format, 'hsvcolor')
 
         case 'multichannel'
             from = 'multichannel';
-            if size(obj.data{1}, 4) ~= 3
+            if size(obj.data, 4) ~= 3
                 if showWb; delete(waitbar); end
                 showError('Please convert the image to RGB color!', 'Wrong image format!');
                 return;
             end
-            I = obj.data{1};
+            I = obj.data;
             imageData = zeros([obj.height, obj.width, obj.depth, 3, obj.time], 'uint8');
             index = 0;
             for t = 1:obj.time
@@ -267,7 +267,7 @@ elseif strcmp(format, 'hsvcolor')
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
-            obj.data{1} = imageData;
+            obj.data = imageData;
             if showWb; waitbar.Value = 0.85; end
 
         case 'hsvcolor'
@@ -321,7 +321,7 @@ elseif strcmp(format, 'indexed')
     switch obj.colorType
         case 'grayscale'
             from = 'grayscale';
-            I = obj.data{1};
+            I = obj.data;
             imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
             index = 0;
             for t = 1:obj.time
@@ -331,11 +331,11 @@ elseif strcmp(format, 'indexed')
                     if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                 end
             end
-            obj.data{1} = imageData;
+            obj.data = imageData;
 
         case 'multichannel'
             from = 'multichannel';
-            if size(obj.data{1}, 4) > 3
+            if size(obj.data, 4) > 3
                 % LUT blending for >3 channels
                 I = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
                 selectedColorsLUT = obj.lutColors(options.selectedColorChannels, :);
@@ -347,7 +347,7 @@ elseif strcmp(format, 'indexed')
                         G = zeros([obj.height, obj.width], obj.dataClass);
                         B = zeros([obj.height, obj.width], obj.dataClass);
                         for colorId = 1:numel(options.selectedColorChannels)
-                            channelImg = obj.data{1}(:, :, sliceId, options.selectedColorChannels(colorId), t);
+                            channelImg = obj.data(:, :, sliceId, options.selectedColorChannels(colorId), t);
                             adjImg = imadjust(channelImg, ...
                                 [obj.viewPort.min(options.selectedColorChannels(colorId))/maxIntValue ...
                                  obj.viewPort.max(options.selectedColorChannels(colorId))/maxIntValue], ...
@@ -361,10 +361,10 @@ elseif strcmp(format, 'indexed')
                         if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                     end
                 end
-                obj.data{1} = I;
+                obj.data = I;
             else
                 % ≤3 channels: direct rgb2ind
-                I = obj.data{1};
+                I = obj.data;
                 numColors = size(I, 4);
                 imageData = zeros([obj.height, obj.width, obj.depth, 1, obj.time], classId);
                 index = 0;
@@ -379,7 +379,7 @@ elseif strcmp(format, 'indexed')
                         if showWb && mod(index, 10) == 0; waitbar.Value = index / maxCounter; end
                     end
                 end
-                obj.data{1} = imageData;
+                obj.data = imageData;
             end
     end
     obj.colorType = 'indexed';
@@ -401,13 +401,13 @@ elseif strcmp(format, 'uint8')
         case 'uint16'
             from = obj.dataClass;
             if max(obj.viewPort.min) > 0 || max(obj.viewPort.max) < 65535 || mean(obj.viewPort.gamma) ~= 1
-                img = zeros(size(obj.data{1}), 'uint8');
+                img = zeros(size(obj.data), 'uint8');
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
                 for t = 1:obj.time
                     for c = 1:obj.colors
                         for z = 1:obj.depth
-                            img(:,:,z,c,t) = uint8(imadjust(obj.data{1}(:,:,z,c,t), ...
+                            img(:,:,z,c,t) = uint8(imadjust(obj.data(:,:,z,c,t), ...
                                 [obj.viewPort.min(c)/65535 obj.viewPort.max(c)/65535], ...
                                 [0 1], obj.viewPort.gamma(c)) / 255);
                             if showWb && mod(index, 10) == 0; waitbar.Value = index / maxIndex; end
@@ -415,12 +415,12 @@ elseif strcmp(format, 'uint8')
                         end
                     end
                 end
-                obj.data{1} = img;
+                obj.data = img;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));
             else
-                obj.data{1} = uint8(obj.data{1} / (double(intmax('uint16')) / double(intmax('uint8'))));
+                obj.data = uint8(obj.data / (double(intmax('uint16')) / double(intmax('uint8'))));
             end
         case 'uint32'
             from = obj.dataClass;
@@ -434,7 +434,7 @@ elseif strcmp(format, 'uint8')
                         'Continue conversion without Gamma correction');
                     if strcmp(button, 'Cancel'); if showWb; delete(waitbar); end; return; end
                 end
-                img = zeros(size(obj.data{1}), 'uint8');
+                img = zeros(size(obj.data), 'uint8');
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
                 for t = 1:obj.time
@@ -442,18 +442,18 @@ elseif strcmp(format, 'uint8')
                         minVal = obj.viewPort.min(c);
                         maxVal = obj.viewPort.max(c);
                         for z = 1:obj.depth
-                            img(:,:,z,c,t) = uint8((double(obj.data{1}(:,:,z,c,t)) - minVal) * (256 / (maxVal - minVal)));
+                            img(:,:,z,c,t) = uint8((double(obj.data(:,:,z,c,t)) - minVal) * (256 / (maxVal - minVal)));
                             if showWb && mod(index, 10) == 0; waitbar.Value = index / maxIndex; end
                             index = index + 1;
                         end
                     end
                 end
-                obj.data{1} = img;
+                obj.data = img;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));
             else
-                obj.data{1} = uint8(obj.data{1} / (maxIntValue / double(intmax('uint8'))));
+                obj.data = uint8(obj.data / (maxIntValue / double(intmax('uint8'))));
             end
     end
     obj.dataClass = 'uint8';
@@ -474,7 +474,7 @@ elseif strcmp(format, 'uint16')
             if max(obj.viewPort.min) > 0 || max(obj.viewPort.max) < 65535 || mean(obj.viewPort.gamma) ~= 1
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
-                imageData = obj.data{1};
+                imageData = obj.data;
                 for t = 1:obj.time
                     for c = 1:obj.colors
                         for z = 1:obj.depth
@@ -486,7 +486,7 @@ elseif strcmp(format, 'uint16')
                         end
                     end
                 end
-                obj.data{1} = imageData;
+                obj.data = imageData;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));
@@ -498,10 +498,10 @@ elseif strcmp(format, 'uint16')
         case 'uint8'
             from = obj.dataClass;
             if max(obj.viewPort.min) > 0 || max(obj.viewPort.max) < 255 || mean(obj.viewPort.gamma) ~= 1
-                obj.data{1} = uint16(obj.data{1});
+                obj.data = uint16(obj.data);
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
-                imageData = obj.data{1};
+                imageData = obj.data;
                 for t = 1:obj.time
                     for c = 1:obj.colors
                         for z = 1:obj.depth
@@ -513,12 +513,12 @@ elseif strcmp(format, 'uint16')
                         end
                     end
                 end
-                obj.data{1} = imageData;
+                obj.data = imageData;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));
             else
-                obj.data{1} = uint16(obj.data{1}) * (double(intmax('uint16')) / double(intmax('uint8')));
+                obj.data = uint16(obj.data) * (double(intmax('uint16')) / double(intmax('uint8')));
             end
         case 'uint32'
             from = obj.dataClass;
@@ -532,7 +532,7 @@ elseif strcmp(format, 'uint16')
                         'Continue conversion without Gamma correction');
                     if strcmp(button, 'Cancel'); if showWb; delete(waitbar); end; return; end
                 end
-                img = zeros(size(obj.data{1}), 'uint16');
+                img = zeros(size(obj.data), 'uint16');
                 maxIndex = obj.time * obj.colors * obj.depth;
                 index = 1;
                 for t = 1:obj.time
@@ -540,18 +540,18 @@ elseif strcmp(format, 'uint16')
                         minVal = obj.viewPort.min(c);
                         maxVal = obj.viewPort.max(c);
                         for z = 1:obj.depth
-                            img(:,:,z,c,t) = uint16((double(obj.data{1}(:,:,z,c,t)) - minVal) * (65536 / (maxVal - minVal)));
+                            img(:,:,z,c,t) = uint16((double(obj.data(:,:,z,c,t)) - minVal) * (65536 / (maxVal - minVal)));
                             if showWb && mod(index, 10) == 0; waitbar.Value = index / maxIndex; end
                             index = index + 1;
                         end
                     end
                 end
-                obj.data{1} = img;
+                obj.data = img;
                 logText = ['ContrastGamma: Min:' num2str(obj.viewPort.min') ', Max: ' num2str(obj.viewPort.max') ...
                     ', Gamma: ' num2str(obj.viewPort.gamma')];
                 obj.updateActionLog(regexprep(logText, ' +', ' '));
             else
-                obj.data{1} = uint16(obj.data{1} / (maxIntValue / double(intmax('uint16'))));
+                obj.data = uint16(obj.data / (maxIntValue / double(intmax('uint16'))));
             end
     end
     obj.dataClass = 'uint16';
@@ -573,10 +573,10 @@ elseif strcmp(format, 'uint32')
             return;
         case 'uint8'
             from = obj.dataClass;
-            obj.data{1} = uint32(obj.data{1}) * (double(intmax('uint32')) / double(intmax('uint8')));
+            obj.data = uint32(obj.data) * (double(intmax('uint32')) / double(intmax('uint8')));
         case 'uint16'
             from = obj.dataClass;
-            obj.data{1} = uint32(obj.data{1}) * (double(intmax('uint32')) / double(intmax('uint16')));
+            obj.data = uint32(obj.data) * (double(intmax('uint32')) / double(intmax('uint16')));
     end
     obj.dataClass = 'uint32';
     obj.maxInt = double(intmax('uint32'));
@@ -585,7 +585,7 @@ end
 % =========================================================================
 %  Post-conversion: sync dimension properties, LUT, viewport, action log
 % =========================================================================
-obj.colors = size(obj.data{1}, 4);
+obj.colors = size(obj.data, 4);
 obj.dim_yxzct = [obj.height obj.width obj.depth obj.colors obj.time];
 
 numLutColors = size(obj.lutColors, 1);

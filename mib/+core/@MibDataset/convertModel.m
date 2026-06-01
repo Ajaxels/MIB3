@@ -155,20 +155,20 @@ end
 %% Convert TO type 63 (pack selection and mask bits into uint8 model)
 if newType == 63
     if obj.labels.exists
-        modelData = uint8(obj.labels.data{1});
+        modelData = uint8(obj.labels.data);
     else
         modelData = zeros(dims, 'uint8');
     end
     if ~isempty(wb); wb.Value = 0.2; end
 
     if obj.selection.exists
-        selectionData = obj.selection.data{1};
+        selectionData = obj.selection.data;
         modelData(selectionData == 1) = bitset(modelData(selectionData == 1), 8, 1);
     end
     if ~isempty(wb); wb.Value = 0.5; end
 
     if obj.maskExist && obj.mask.exists
-        maskData = obj.mask.data{1};
+        maskData = obj.mask.data;
         modelData(maskData == 1) = bitset(modelData(maskData == 1), 7, 1);
     end
     if ~isempty(wb); wb.Value = 0.8; end
@@ -201,7 +201,7 @@ end
 
 % Unpack selection and mask from packed bits when coming from type 63
 if currentType == 63 && obj.labels.exists
-    rawData = obj.labels.data{1};
+    rawData = obj.labels.data;
     selectionData = uint8(bitand(rawData, uint8(128)) / 128);
     obj.selection = core.MibLabels(selectionData, meta);
     if obj.maskExist
@@ -210,7 +210,7 @@ if currentType == 63 && obj.labels.exists
     end
     rawModel = bitand(rawData, uint8(63));
 else
-    rawModel = obj.labels.data{1};
+    rawModel = obj.labels.data;
 end
 if ~isempty(wb); wb.Value = 0.4; end
 

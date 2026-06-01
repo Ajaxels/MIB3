@@ -108,47 +108,47 @@ else
 end
 
 % Resize image layer: [H,W,Z,C,T]
-imageData = obj.image.data{1};
+imageData = obj.image.data;
 newImageData = zeros([newHeight, newWidth, depth, colors, timePoints], obj.image.dataClass) + cast(frameColor, obj.image.dataClass); %#ok<ZEROLIKE>
 newImageData(y1:y2, x1:x2, :, :, :) = imageData;
-obj.image.data{1} = newImageData;
+obj.image.data = newImageData;
 clear imageData newImageData;
 
 % Resize label/mask/selection layers: [H,W,Z,1,T]
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
-    % For MibLabels63 mask+selection+labels are packed in obj.labels.data{1}
-    if ~isnan(obj.labels.data{1}(1))
-        layerData = obj.labels.data{1};
+    % For MibLabels63 mask+selection+labels are packed in obj.labels.data
+    if ~isnan(obj.labels.data(1))
+        layerData = obj.labels.data;
         newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
-        obj.labels.data{1} = newLayerData;
+        obj.labels.data = newLayerData;
         updateLayerDims(obj.labels, newHeight, newWidth, depth, timePoints);
         clear layerData newLayerData;
     end
 else
     if obj.modelExist
-        layerData = obj.labels.data{1};
+        layerData = obj.labels.data;
         newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
-        obj.labels.data{1} = newLayerData;
+        obj.labels.data = newLayerData;
         updateLayerDims(obj.labels, newHeight, newWidth, depth, timePoints);
         clear layerData newLayerData;
     end
     
     if obj.maskExist
-        layerData = obj.mask.data{1};
+        layerData = obj.mask.data;
         newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
-        obj.mask.data{1} = newLayerData;
+        obj.mask.data = newLayerData;
         updateLayerDims(obj.mask, newHeight, newWidth, depth, timePoints);
         clear layerData newLayerData;
     end
 
     if obj.enableSelection
-        layerData = obj.selection.data{1};
+        layerData = obj.selection.data;
         newLayerData = zeros([newHeight, newWidth, depth, 1, timePoints], 'uint8');
         newLayerData(y1:y2, x1:x2, :, :, :) = layerData;
-        obj.selection.data{1} = newLayerData;
+        obj.selection.data = newLayerData;
         updateLayerDims(obj.selection, newHeight, newWidth, depth, timePoints);
         clear layerData newLayerData;
     end

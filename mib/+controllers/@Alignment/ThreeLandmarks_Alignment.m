@@ -126,7 +126,7 @@ newH    = size(imageStacked, 1);
 newW    = size(imageStacked, 2);
 nColors = img5D.colors;
 nTime   = img5D.time;
-img5D.data{1}   = reshape(imageStacked, [newH, newW, depth, nColors, nTime]);
+img5D.data   = reshape(imageStacked, [newH, newW, depth, nColors, nTime]);
 img5D.height    = newH;
 img5D.width     = newW;
 img5D.dim_yxzct = [newH, newW, depth, nColors, nTime];
@@ -154,7 +154,7 @@ if isLabels63
     if ~isempty(pwb); pwb.updateText('Warping selection / mask / labels...'); end
     everythingWarped = warpAndStackServiceLayer(obj, 'everything', tform, headOpts, tailOpts, serviceOpts);
     if isempty(everythingWarped); return; end
-    obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
+    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], 'uint8');
     obj.mibModel.I{id}.labels.height    = newH;
     obj.mibModel.I{id}.labels.width     = newW;
     obj.mibModel.I{id}.labels.depth     = depth;
@@ -165,7 +165,7 @@ else
         if ~isempty(pwb); pwb.updateText('Warping labels...'); end
         labelsWarped = warpAndStackServiceLayer(obj, 'labels', tform, headOpts, tailOpts, serviceOpts);
         if isempty(labelsWarped); return; end
-        obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, depth, nTime], class(obj.mibModel.I{id}.labels.data{1}));
+        obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], class(obj.mibModel.I{id}.labels.data));
         obj.mibModel.I{id}.labels.height    = newH;
         obj.mibModel.I{id}.labels.width     = newW;
         obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, depth, 1, nTime];
@@ -175,7 +175,7 @@ else
         if ~isempty(pwb); pwb.updateText('Warping mask...'); end
         maskWarped = warpAndStackServiceLayer(obj, 'mask', tform, headOpts, tailOpts, serviceOpts);
         if isempty(maskWarped); return; end
-        obj.mibModel.I{id}.mask.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
+        obj.mibModel.I{id}.mask.data  = zeros([newH, newW, depth, nTime], 'uint8');
         obj.mibModel.I{id}.mask.height    = newH;
         obj.mibModel.I{id}.mask.width     = newW;
         obj.mibModel.I{id}.mask.dim_yxzct = [newH, newW, depth, 1, nTime];
@@ -185,7 +185,7 @@ else
         if ~isempty(pwb); pwb.updateText('Warping selection...'); end
         selWarped = warpAndStackServiceLayer(obj, 'selection', tform, headOpts, tailOpts, serviceOpts);
         if isempty(selWarped); return; end
-        obj.mibModel.I{id}.selection.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
+        obj.mibModel.I{id}.selection.data  = zeros([newH, newW, depth, nTime], 'uint8');
         obj.mibModel.I{id}.selection.height    = newH;
         obj.mibModel.I{id}.selection.width     = newW;
         obj.mibModel.I{id}.selection.dim_yxzct = [newH, newW, depth, 1, nTime];

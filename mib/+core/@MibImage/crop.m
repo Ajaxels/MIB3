@@ -1,5 +1,5 @@
 function crop(obj, cropF)
-% CROP - Crop *obj.data{1}* in-place and update all scalar dimension properties.
+% CROP - Crop *obj.data* in-place and update all scalar dimension properties.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -50,7 +50,7 @@ t1 = cropF(7);  dt = cropF(8);
 xyChanged = (x1 > 1) || (y1 > 1) || (dx < obj.width) || (dy < obj.height);
 
 % Crop data{1}: layout is [height, width, depth, colors, time]
-obj.data{1} = obj.data{1}( ...
+obj.data = obj.data( ...
     y1:y1+dy-1, ...
     x1:x1+dx-1, ...
     z1:z1+dz-1, ...
@@ -58,10 +58,10 @@ obj.data{1} = obj.data{1}( ...
     t1:t1+dt-1);
 
 % Update scalar dimension properties from the cropped array
-obj.height = size(obj.data{1}, 1);
-obj.width  = size(obj.data{1}, 2);
-obj.depth  = size(obj.data{1}, 3);
-obj.time   = size(obj.data{1}, 5);
+obj.height = size(obj.data, 1);
+obj.width  = size(obj.data, 2);
+obj.depth  = size(obj.data, 3);
+obj.time   = size(obj.data, 5);
 obj.dim_yxzct = [obj.height, obj.width, obj.depth, obj.colors, obj.time];
 
 % Trim sliceName if the dataset had per-slice filenames

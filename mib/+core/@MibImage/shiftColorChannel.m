@@ -47,23 +47,23 @@ end
 
 if dx < 0 && dy < 0
     dx2 = abs(dx); dy2 = abs(dy);
-    obj.data{1}(1:end-dy2, 1:end-dx2, :, channel1, :) = obj.data{1}(dy2+1:end, dx2+1:end, :, channel1, :);
-    obj.data{1}(end-dy2+1:end, :, :, channel1, :)     = fillValue;
-    obj.data{1}(:, end-dx2+1:end, :, channel1, :)     = fillValue;
+    obj.data(1:end-dy2, 1:end-dx2, :, channel1, :) = obj.data(dy2+1:end, dx2+1:end, :, channel1, :);
+    obj.data(end-dy2+1:end, :, :, channel1, :)     = fillValue;
+    obj.data(:, end-dx2+1:end, :, channel1, :)     = fillValue;
 elseif dx <= 0 && dy >= 0
     dx2 = abs(dx);
-    obj.data{1}(dy+1:end, 1:end-dx2, :, channel1, :) = obj.data{1}(1:end-dy, dx2+1:end, :, channel1, :);
-    obj.data{1}(1:dy, :, :, channel1, :)              = fillValue;
-    obj.data{1}(:, end-dx2+1:end, :, channel1, :)     = fillValue;
+    obj.data(dy+1:end, 1:end-dx2, :, channel1, :) = obj.data(1:end-dy, dx2+1:end, :, channel1, :);
+    obj.data(1:dy, :, :, channel1, :)              = fillValue;
+    obj.data(:, end-dx2+1:end, :, channel1, :)     = fillValue;
 elseif dx >= 0 && dy <= 0
     dy2 = abs(dy);
-    obj.data{1}(1:end-dy2, dx+1:end, :, channel1, :) = obj.data{1}(dy2+1:end, 1:end-dx, :, channel1, :);
-    obj.data{1}(end-dy2+1:end, :, :, channel1, :)    = fillValue;
-    obj.data{1}(:, 1:dx, :, channel1, :)             = fillValue;
+    obj.data(1:end-dy2, dx+1:end, :, channel1, :) = obj.data(dy2+1:end, 1:end-dx, :, channel1, :);
+    obj.data(end-dy2+1:end, :, :, channel1, :)    = fillValue;
+    obj.data(:, 1:dx, :, channel1, :)             = fillValue;
 else
-    obj.data{1}(dy+1:end, dx+1:end, :, channel1, :) = obj.data{1}(1:end-dy, 1:end-dx, :, channel1, :);
-    obj.data{1}(1:dy, :, :, channel1, :)            = fillValue;
-    obj.data{1}(:, 1:dx, :, channel1, :)            = fillValue;
+    obj.data(dy+1:end, dx+1:end, :, channel1, :) = obj.data(1:end-dy, 1:end-dx, :, channel1, :);
+    obj.data(1:dy, :, :, channel1, :)            = fillValue;
+    obj.data(:, 1:dx, :, channel1, :)            = fillValue;
 end
 
 if options.showWaitbar; wb.Value = 0.95; end

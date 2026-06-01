@@ -11,7 +11,7 @@ function [dx, dy, rbMatrix] = applyExtendedMode(obj, id, depth, tformMatrix, ...
 % Private helper for the alignment algorithms. Warps every image slice
 % (cubic, no ``OutputView`` so the canvas grows) into ``iMatrix{layer}``
 % with a per-slice :class:`imref2d`, computes the union canvas, replaces
-% ``obj.mibModel.I{id}.image.data{1}`` atomically with the assembled
+% ``obj.mibModel.I{id}.image.data`` atomically with the assembled
 % canvas (and syncs ``dim_yxzct`` / ``slices``), then warps + re-assembles
 % every present service layer (labels / mask / selection, or packed
 % ``everything`` for :class:`core.MibLabels63`) via
@@ -33,7 +33,7 @@ ds       = obj.mibModel.I{id};
 img5D    = ds.image;
 nColors  = img5D.colors;
 nTime    = img5D.time;
-imgClass = class(img5D.data{1});
+imgClass = class(img5D.data);
 isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
 
 % Step A: warp every slice. Slices without a tform reuse the original size
@@ -83,7 +83,7 @@ end
 clear iMatrix;
 
 % Step D: replace the image canvas (setData4D cannot grow data{1})
-img5D.data{1}   = reshape(Iout, [newH, newW, depth, nColors, nTime]);
+img5D.data   = reshape(Iout, [newH, newW, depth, nColors, nTime]);
 img5D.height    = newH;
 img5D.width     = newW;
 img5D.dim_yxzct = [newH, newW, depth, nColors, nTime];
@@ -105,7 +105,7 @@ if isLabels63
     everythingOut = assembleServiceCanvas(obj, 'everything', tformMatrix, ...
         rbMatrix, xmin, ymin, dx, dy, newH, newW, depth, 0);
     if isempty(everythingOut); return; end
-    obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
+    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], 'uint8');
     obj.mibModel.I{id}.labels.height    = newH;
     obj.mibModel.I{id}.labels.width     = newW;
     obj.mibModel.I{id}.labels.depth     = depth;
@@ -117,7 +117,7 @@ else
         labelsOut = assembleServiceCanvas(obj, 'labels', tformMatrix, ...
             rbMatrix, xmin, ymin, dx, dy, newH, newW, depth, NaN);
         if isempty(labelsOut); return; end
-        obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, depth, nTime], class(obj.mibModel.I{id}.labels.data{1}));
+        obj.mibModel.I{id}.labels.data  = zeros([newH, newW, depth, nTime], class(obj.mibModel.I{id}.labels.data));
         obj.mibModel.I{id}.labels.height    = newH;
         obj.mibModel.I{id}.labels.width     = newW;
         obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, depth, 1, nTime];
@@ -128,7 +128,7 @@ else
         maskOut = assembleServiceCanvas(obj, 'mask', tformMatrix, ...
             rbMatrix, xmin, ymin, dx, dy, newH, newW, depth, 0);
         if isempty(maskOut); return; end
-        obj.mibModel.I{id}.mask.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
+        obj.mibModel.I{id}.mask.data  = zeros([newH, newW, depth, nTime], 'uint8');
         obj.mibModel.I{id}.mask.height    = newH;
         obj.mibModel.I{id}.mask.width     = newW;
         obj.mibModel.I{id}.mask.dim_yxzct = [newH, newW, depth, 1, nTime];
@@ -139,7 +139,7 @@ else
         selOut = assembleServiceCanvas(obj, 'selection', tformMatrix, ...
             rbMatrix, xmin, ymin, dx, dy, newH, newW, depth, NaN);
         if isempty(selOut); return; end
-        obj.mibModel.I{id}.selection.data{1}  = zeros([newH, newW, depth, nTime], 'uint8');
+        obj.mibModel.I{id}.selection.data  = zeros([newH, newW, depth, nTime], 'uint8');
         obj.mibModel.I{id}.selection.height    = newH;
         obj.mibModel.I{id}.selection.width     = newW;
         obj.mibModel.I{id}.selection.dim_yxzct = [newH, newW, depth, 1, nTime];

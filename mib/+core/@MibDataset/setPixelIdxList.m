@@ -79,7 +79,7 @@ switch type
         result = true;
 
     case 'mask'
-        if obj.labels.maxMaterials < 255
+        if obj.labels.maxMaterials == 63
             % MibLabels63: mask packed in bit 7 of obj.labels
             obj.labels.setPixelIdxList('mask', dataset, PixelIdxList);
         else
@@ -90,7 +90,7 @@ switch type
         result = true;
 
     case 'selection'
-        if obj.labels.maxMaterials < 255
+        if obj.labels.maxMaterials == 63
             % MibLabels63: selection packed in bit 8 of obj.labels
             obj.labels.setPixelIdxList('selection', dataset, PixelIdxList);
         else

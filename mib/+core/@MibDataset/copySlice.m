@@ -47,7 +47,7 @@ if nargin < 4 || isempty(orient); orient = obj.orientation; end
 result = obj.image.copySlice(sliceFrom, sliceTo, orient);
 if result == 0; return; end
 
-if obj.labels.maxMaterials < 255   % labels63: model+mask+selection packed together
+if obj.labels.maxMaterials == 63   % labels63: model+mask+selection packed together
     if obj.modelExist
         obj.labels.copySlice(sliceFrom, sliceTo, orient);
     end

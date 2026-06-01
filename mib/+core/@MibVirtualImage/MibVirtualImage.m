@@ -6,11 +6,11 @@ classdef MibVirtualImage < core.MibImage
     % pre-loading the entire dataset into memory.
     %
     % **Data storage:**
-    %   The ``obj.data{}`` cell array stores references, not pixel data:
+    %   ``obj.filePaths{}`` stores file references (not pixel data):
     %
     %     - File-path strings (HDF5 / BioFormats mode)
     %     - ``loci.formats.Memoizer`` reader handles (BioFormats mode, when opened)
-    %     - Zarr pyramid path string in ``obj.data{1}`` (Zarr/pyramid mode)
+    %     - Zarr pyramid path string in ``obj.filePaths{1}`` (Zarr/pyramid mode)
     %
     % **Dispatch logic in getData():**
     %   - When ``~isempty(obj.pyramid.levelNames)`` → calls ``getDataZarr()``
@@ -26,10 +26,14 @@ classdef MibVirtualImage < core.MibImage
     %   | Image class | ``obj.dataClass`` | ``obj.meta('imgClass')`` |
 
     properties
+        filePaths = {}
+        % ``{1 x nFiles}`` cell array of file-path strings (or ``loci.formats.Memoizer``
+        % handles in legacy BioFormats mode) used by virtual loader dispatch.
+        % Replaces the earlier pattern of storing paths in ``obj.data{}``.
         Virtual
         % a structure describing the virtual stack layout:
         %
-        % - ``.readerId`` — ``[1 x depth]`` index into ``obj.data{}`` for each slice
+        % - ``.readerId`` — ``[1 x depth]`` index into ``obj.Virtual.filenames`` for each slice
         % - ``.objectType`` — ``{1 x nReaders}`` cell of reader type strings:
         %   ``'bioformats'``, ``'matlab.hdf5'``, ``'hdf5_image'``
         % - ``.seriesName`` — ``{1 x nReaders}`` series name / HDF5 dataset path per reader;

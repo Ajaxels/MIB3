@@ -88,21 +88,21 @@ if blockModeSwitchLocal == 0  % set the full dataset
     switch type
         case 'labels'
             if ~isempty(materialIndex)      % take only specific material
-                obj.data{1}(bitand(obj.data{1}, 63)==materialIndex) = bitand(obj.data{1}(bitand(obj.data{1}, 63)==materialIndex), 192);  % 192 = 11000000, remove Material from the model
-                obj.data{1}(dataset==1) = bitand(obj.data{1}(dataset==1), 192);    % empty positions for the new material
-                obj.data{1}(dataset==1) = bitor(obj.data{1}(dataset==1), materialIndex);    % update new material
+                obj.data(bitand(obj.data, 63)==materialIndex) = bitand(obj.data(bitand(obj.data, 63)==materialIndex), 192);  % 192 = 11000000, remove Material from the model
+                obj.data(dataset==1) = bitand(obj.data(dataset==1), 192);    % empty positions for the new material
+                obj.data(dataset==1) = bitor(obj.data(dataset==1), materialIndex);    % update new material
             else
-                obj.data{1} = bitand(obj.data{1}, 192); % clear current model
-                obj.data{1} = bitor(obj.data{1}, dataset);
+                obj.data = bitand(obj.data, 192); % clear current model
+                obj.data = bitor(obj.data, dataset);
             end
         case 'mask'
-            obj.data{1} = bitset(obj.data{1}, 7, 0);    % clear current mask
-            obj.data{1} = bitor(obj.data{1}, dataset*64);
+            obj.data = bitset(obj.data, 7, 0);    % clear current mask
+            obj.data = bitor(obj.data, dataset*64);
         case 'selection'
-            obj.data{1} = bitset(obj.data{1}, 8, 0);    % clear existing selection
-            obj.data{1} = bitor(obj.data{1}, dataset*128);
+            obj.data = bitset(obj.data, 8, 0);    % clear existing selection
+            obj.data = bitor(obj.data, dataset*128);
         case 'everything'
-            obj.data{1} = dataset;
+            obj.data = dataset;
     end
 else  % set a part of the dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
@@ -147,27 +147,27 @@ else  % set a part of the dataset
     switch type
         case 'labels'
             if ~isempty(materialIndex)      % take only specific material
-                currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+                currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
                 currentDataset(bitand(currentDataset, 63)==materialIndex) = bitand(currentDataset(bitand(currentDataset, 63)==materialIndex), 192);  % 192 = 11000000, remove Material from the model
                 currentDataset(dataset==1) = bitand(currentDataset(dataset==1), 192);    % empty positions for the new material
                 currentDataset(dataset==1) = bitor(currentDataset(dataset==1), materialIndex);
-                obj.data{1}(Ylim(1):Ylim(2),Xlim(1):Xlim(2),Zlim(1):Zlim(2),Tlim(1):Tlim(2)) = currentDataset;
+                obj.data(Ylim(1):Ylim(2),Xlim(1):Xlim(2),Zlim(1):Zlim(2),Tlim(1):Tlim(2)) = currentDataset;
             else
-                currentDataset = bitand(obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)), 192); % clear current model    
-                obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = bitor(currentDataset, dataset);
+                currentDataset = bitand(obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)), 192); % clear current model    
+                obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = bitor(currentDataset, dataset);
             end
         case 'mask'
-            currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+            currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
             currentDataset = bitset(currentDataset, 7, 0);    % clear mask
             currentDataset = bitor(currentDataset, dataset*64);
-            obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
+            obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
         case 'selection'
-            currentDataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+            currentDataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
             currentDataset = bitset(currentDataset, 8, 0);    % clear selection
             currentDataset = bitor(currentDataset, dataset*128);
-            obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
+            obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = currentDataset;
         case 'everything'
-            obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
+            obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) = dataset;
     end
 end
 result = true;

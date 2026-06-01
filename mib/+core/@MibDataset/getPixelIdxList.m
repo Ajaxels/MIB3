@@ -73,7 +73,7 @@ switch type
 
     case 'mask'
         if ~obj.maskExist; return; end
-        if obj.labels.maxMaterials < 255
+        if obj.labels.maxMaterials == 63
             % MibLabels63: mask packed in bit 7 of obj.labels
             dataset = obj.labels.getPixelIdxList('mask', PixelIdxList);
         else
@@ -82,7 +82,7 @@ switch type
         end
 
     case 'selection'
-        if obj.labels.maxMaterials < 255
+        if obj.labels.maxMaterials == 63
             % MibLabels63: selection packed in bit 8 of obj.labels
             dataset = obj.labels.getPixelIdxList('selection', PixelIdxList);
         else

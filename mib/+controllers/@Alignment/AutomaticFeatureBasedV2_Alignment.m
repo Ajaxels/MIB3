@@ -692,7 +692,7 @@ ds       = obj.mibModel.I{id};
 img5D    = ds.image;
 nColors  = img5D.colors;
 nTime    = img5D.time;
-imgClass = class(img5D.data{1});
+imgClass = class(img5D.data);
 isLabels63 = isa(ds.labels, 'core.MibLabels63');
 
 newH = refImgSize.ImageSize(1);
@@ -719,7 +719,7 @@ end
 
 if canvasChanged
     % Replace the image canvas atomically
-    img5D.data{1}   = reshape(Iout, [newH, newW, Depth, nColors, nTime]);
+    img5D.data   = reshape(Iout, [newH, newW, Depth, nColors, nTime]);
     img5D.height    = newH;
     img5D.width     = newW;
     img5D.dim_yxzct = [newH, newW, Depth, nColors, nTime];
@@ -751,7 +751,7 @@ if isLabels63
 else
     if ds.modelExist
         warpAndWriteServiceCanvas(obj, id, 'labels', cumulativeTforms, refImgSize, ...
-            canvasChanged, Depth, nTime, class(ds.labels.data{1}), NaN);
+            canvasChanged, Depth, nTime, class(ds.labels.data), NaN);
     end
     if ds.maskExist
         warpAndWriteServiceCanvas(obj, id, 'mask', cumulativeTforms, refImgSize, ...
@@ -804,7 +804,7 @@ if canvasChanged
         case 'selection';  ds = obj.mibModel.I{id}.selection;
         case 'everything'; ds = obj.mibModel.I{id}.labels;
     end
-    ds.data{1}   = zeros([newH, newW, Depth, nTime], dataClass);
+    ds.data   = zeros([newH, newW, Depth, nTime], dataClass);
     ds.height    = newH;
     ds.width     = newW;
     if isprop(ds, 'depth'); ds.depth = Depth; end

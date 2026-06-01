@@ -88,10 +88,10 @@ end
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        dataset = obj.data{1}(:,:,:,colChannel,:);
+        dataset = obj.data(:,:,:,colChannel,:);
     else % labels type
-        dataset = zeros(size(obj.data{1}), 'uint8');   
-        dataset(obj.data{1} == materialIndex) = 1;
+        dataset = zeros(size(obj.data), 'uint8');   
+        dataset(obj.data == materialIndex) = 1;
     end
 
     if orient==1    % xz; get permuted dataset
@@ -101,10 +101,10 @@ if blockModeSwitchLocal == 0  % return the full dataset
     end
 else  % return a subvolume of the full dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
-    Xlim = [1 size(obj.data{1}, 2)];
-    Ylim = [1 size(obj.data{1}, 1)];
-    Zlim = [1 size(obj.data{1}, 3)];
-    Tlim = [1 size(obj.data{1}, 5)];
+    Xlim = [1 size(obj.data, 2)];
+    Ylim = [1 size(obj.data, 1)];
+    Zlim = [1 size(obj.data, 3)];
+    Tlim = [1 size(obj.data, 5)];
 
     % convert coordinates to the original dataset
     if orient==1     % xz
@@ -127,17 +127,17 @@ else  % return a subvolume of the full dataset
     end
 
     % make sure that the coordinates within the dimensions of the dataset
-    Xlim = [max([Xlim(1) 1]) min([Xlim(2) floor(size(obj.data{1}, 2))])];
-    Ylim = [max([Ylim(1) 1]) min([Ylim(2) floor(size(obj.data{1}, 1))])];
-    Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data{1}, 3)])];
-    Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data{1}, 5)])];
+    Xlim = [max([Xlim(1) 1]) min([Xlim(2) floor(size(obj.data, 2))])];
+    Ylim = [max([Ylim(1) 1]) min([Ylim(2) floor(size(obj.data, 1))])];
+    Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data, 3)])];
+    Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data, 5)])];
 
-    if colChannel == 0; colChannel = 1:size(obj.data{1}, 4); end
+    if colChannel == 0; colChannel = 1:size(obj.data, 4); end
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        dataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+        dataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     else % labels
-        dataset = uint8((obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) == materialIndex));
+        dataset = uint8((obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2)) == materialIndex));
     end
 
     if orient==1     % permute to xz

@@ -53,7 +53,7 @@ timePoints = obj.image.time;
 
 % Rotate image: [H,W,Z,C,T] → [W,H,Z,C,T]
 % rot90 by k=3 gives 90° CW; k=1 gives 90° CCW.
-imageData = obj.image.data{1};    % [H,W,Z,C,T]
+imageData = obj.image.data;    % [H,W,Z,C,T]
 imageOut = zeros([width, height, depth, colors, timePoints], obj.image.dataClass); %#ok<ZEROLIKE>
 if strcmp(mode, 'Rotate 90 degrees')
     k = 3;   % 3×90° CCW = 90° CW
@@ -68,7 +68,7 @@ for t = 1:timePoints
     end
     if showWaitbar; waitbar.Value = t / timePoints * 0.5; end
 end
-obj.image.data{1} = imageOut;
+obj.image.data = imageOut;
 clear imageData imageOut;
 
 % Update image dimension properties (H↔W swapped)
@@ -81,7 +81,7 @@ if showWaitbar; waitbar.Value = 0.5; end
 % Rotate layers [H,W,Z,1,T] → [W,H,Z,1,T]
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if showWaitbar; waitbar.Value = 0.6; waitbar.Message = sprintf('Rotating other layers\nPlease wait...'); end
-    layerData = obj.labels.data{1};    % [H,W,Z,1,T]
+    layerData = obj.labels.data;    % [H,W,Z,1,T]
     layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
     for t = 1:timePoints
         for z = 1:depth
@@ -89,46 +89,46 @@ if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
         end
         if showWaitbar; waitbar.Value = 0.6 + t / timePoints * 0.4; end
     end
-    obj.labels.data{1} = layerOut;
+    obj.labels.data = layerOut;
     updateLayerDims(obj.labels, width, height, depth, timePoints);
     clear layerData layerOut;
 elseif obj.enableSelection
     % Selection layer
-    layerData = obj.selection.data{1};
+    layerData = obj.selection.data;
     layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
     for t = 1:timePoints
         for z = 1:depth
             layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);
         end
     end
-    obj.selection.data{1} = layerOut;
+    obj.selection.data = layerOut;
     updateLayerDims(obj.selection, width, height, depth, timePoints);
     clear layerData layerOut;
     if showWaitbar; waitbar.Value = 0.6; end
 
     if obj.maskExist
-        layerData = obj.mask.data{1};
+        layerData = obj.mask.data;
         layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
         for t = 1:timePoints
             for z = 1:depth
                 layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);
             end
         end
-        obj.mask.data{1} = layerOut;
+        obj.mask.data = layerOut;
         updateLayerDims(obj.mask, width, height, depth, timePoints);
         clear layerData layerOut;
         if showWaitbar; waitbar.Value = 0.75; end
     end
 
     if obj.modelExist
-        layerData = obj.labels.data{1};
+        layerData = obj.labels.data;
         layerOut = zeros([width, height, depth, 1, timePoints], 'uint8');
         for t = 1:timePoints
             for z = 1:depth
                 layerOut(:,:,z,1,t) = rot90(layerData(:,:,z,1,t), k);
             end
         end
-        obj.labels.data{1} = layerOut;
+        obj.labels.data = layerOut;
         updateLayerDims(obj.labels, width, height, depth, timePoints);
         clear layerData layerOut;
     end

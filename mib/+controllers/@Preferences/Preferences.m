@@ -421,7 +421,7 @@ classdef Preferences < handle
                 if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 255 && ~obj.mibModel.I{obj.mibModel.id}.selection.exists
                     obj.mibController.mibModel.clearLayer('selection');
                 elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && ~obj.mibModel.I{obj.mibModel.id}.labels.exists
-                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = zeros(...
+                    obj.mibModel.I{obj.mibModel.id}.labels.data = zeros(...
                         [obj.mibModel.I{obj.mibModel.id}.dim_yxzct(1), obj.mibModel.I{obj.mibModel.id}.dim_yxzct(2), ...
                         obj.mibModel.I{obj.mibModel.id}.dim_yxzct(3), 1, obj.mibModel.I{obj.mibModel.id}.dim_yxzct(5)], 'uint8');
                 end
@@ -508,21 +508,21 @@ classdef Preferences < handle
             end
             
             if obj.preferences.System.EnableSelection
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials >= 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection.data{1}(1))
+                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials >= 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection.data(1))
                     obj.mibController.mibModel.clearLayer('selection');
-                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.labels.data{1}(1))
-                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = zeros(...
+                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.labels.data(1))
+                    obj.mibModel.I{obj.mibModel.id}.labels.data = zeros(...
                         [obj.mibModel.I{obj.mibModel.id}.dim_yxzct(1), obj.mibModel.I{obj.mibModel.id}.dim_yxzct(2), ...
                         obj.mibModel.I{obj.mibModel.id}.dim_yxzct(3), 1, obj.mibModel.I{obj.mibModel.id}.dim_yxzct(5)], 'uint8');
                 end
             else         % turn OFF the Selection, Mask, Model
                 if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63
-                    obj.mibModel.I{obj.mibModel.id}.labels.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.labels.data = NaN;
                     obj.mibModel.I{obj.mibModel.id}.labels.exists = false;
                 else
-                    obj.mibModel.I{obj.mibModel.id}.selection.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.selection.data = NaN;
                     obj.mibModel.I{obj.mibModel.id}.selection.exists = false;
-                    obj.mibModel.I{obj.mibModel.id}.mask.data{1} = NaN;
+                    obj.mibModel.I{obj.mibModel.id}.mask.data = NaN;
                     obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
                 end
                 obj.mibModel.Backup.clearContents();  % delete backup history

@@ -79,11 +79,13 @@ switch parameter
             progressBar = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, ...
                 'Message', 'Pasting selection to layers...', ...
                 'Title', 'Paste selection');
+            tic
             for sliceIndex = 1:depth
                 currentSelection = cell2mat(obj.mibModel.getData2D('selection', sliceIndex, [], NaN, options));
                 obj.mibModel.setData2D(bitor(obj.mibModel.storedSelection, currentSelection), 'selection', sliceIndex, [], NaN, options);
                 progressBar.Value = sliceIndex / depth;
             end
+            toc
             delete(progressBar);
             notify(obj.mibModel, 'ShowImage');
         else

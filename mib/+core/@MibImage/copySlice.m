@@ -6,7 +6,7 @@ function result = copySlice(obj, sliceFrom, sliceTo, orient)
 %
 %       result = obj.copySlice(sliceFrom, sliceTo, orient)
 %
-% Pure data-manipulation layer: operates only on ``obj.data{1}``.  No dialogs,
+% Pure data-manipulation layer: operates only on ``obj.data``.  No dialogs,
 % no waitbars, no annotation handling.  Caller (``core.MibDataset.copySlice``)
 % is responsible for auxiliary-layer operations and action-log updates.
 %
@@ -43,7 +43,7 @@ function result = copySlice(obj, sliceFrom, sliceTo, orient)
 if nargin < 4 || isempty(orient); orient = 3; end
 
 result = 0;
-maxSlice = size(obj.data{1}, orient);
+maxSlice = size(obj.data, orient);
 if any(sliceFrom > maxSlice) || any(sliceTo > maxSlice) || any(sliceFrom < 1) || any(sliceTo < 0)
     return;
 end
@@ -51,13 +51,13 @@ if numel(sliceFrom) ~= numel(sliceTo); return; end
 
 switch orient
     case 3  % depth (z) — dim 3 in MIB3
-        obj.data{1}(:, :, sliceTo, :, :) = obj.data{1}(:, :, sliceFrom, :, :);
+        obj.data(:, :, sliceTo, :, :) = obj.data(:, :, sliceFrom, :, :);
     case 1  % height (y)
-        obj.data{1}(sliceTo, :, :, :, :) = obj.data{1}(sliceFrom, :, :, :, :);
+        obj.data(sliceTo, :, :, :, :) = obj.data(sliceFrom, :, :, :, :);
     case 2  % width (x)
-        obj.data{1}(:, sliceTo, :, :, :) = obj.data{1}(:, sliceFrom, :, :, :);
+        obj.data(:, sliceTo, :, :, :) = obj.data(:, sliceFrom, :, :, :);
     case 5  % time (t)
-        obj.data{1}(:, :, :, :, sliceTo) = obj.data{1}(:, :, :, :, sliceFrom);
+        obj.data(:, :, :, :, sliceTo) = obj.data(:, :, :, :, sliceFrom);
     otherwise
         return;
 end

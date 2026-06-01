@@ -946,9 +946,9 @@ classdef DisplayAdjust < handle
                 for colId = 1:numel(colorCh)
                     if threshold == 0
                         minval(colId) = min(min(min(min( ...
-                            obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:)))));
+                            obj.mibModel.I{id}.image.data(:,:,:,colorCh(colId),:)))));
                     else
-                        img  = obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:);
+                        img  = obj.mibModel.I{id}.image.data(:,:,:,colorCh(colId),:);
                         img  = sort(img(:));
                         n    = numel(img);
                         minval(colId) = (double(img(max(1, floor(n*threshold/100)))) + ...
@@ -1035,9 +1035,9 @@ classdef DisplayAdjust < handle
                 for colId = 1:numel(colorCh)
                     if threshold == 0
                         maxval(colId) = max(max(max(max( ...
-                            obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:)))));
+                            obj.mibModel.I{id}.image.data(:,:,:,colorCh(colId),:)))));
                     else
-                        img  = obj.mibModel.I{id}.image.data{1}(:,:,:,colorCh(colId),:);
+                        img  = obj.mibModel.I{id}.image.data(:,:,:,colorCh(colId),:);
                         img  = sort(img(:));
                         n    = numel(img);
                         maxval(colId) = (double(img(max(1, floor(n*(1-threshold/100))))) + ...
@@ -1130,9 +1130,9 @@ classdef DisplayAdjust < handle
             gammaVal = viewPort.gamma(channel);
 
             % Cache data{1} locally — avoids repeated subsref dispatch through
-            % obj.mibModel.I{id}.image.data{1} on every slice (~18x slower in
+            % obj.mibModel.I{id}.image.data on every slice (~18x slower in
             % the live MibModel chain than mutating a local variable).
-            imageData = obj.mibModel.I{id}.image.data{1};
+            imageData = obj.mibModel.I{id}.image.data;
 
             index = 1;
             for t = 1:maxT
@@ -1142,7 +1142,7 @@ classdef DisplayAdjust < handle
                         [lowIn, highIn], [lowOut, highOut], gammaVal);
                     if ~isempty(pwb) && mod(index, waitbarStep) == 0
                         if pwb.getCancelState()
-                            obj.mibModel.I{id}.image.data{1} = imageData;
+                            obj.mibModel.I{id}.image.data = imageData;
                             pwb.deletePoolWaitbar();
                             return;
                         end
@@ -1151,7 +1151,7 @@ classdef DisplayAdjust < handle
                     index = index + 1;
                 end
             end
-            obj.mibModel.I{id}.image.data{1} = imageData;
+            obj.mibModel.I{id}.image.data = imageData;
 
             log_text = sprintf('ContrastGamma: Channel:%d, Min:%g, Max:%g, Gamma:%g', ...
                 channel, viewPort.min(channel), viewPort.max(channel), viewPort.gamma(channel));

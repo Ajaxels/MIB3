@@ -76,7 +76,7 @@ mib/
 ### Core Data (`+core/`)
 
 - **`MibDataset`** — one open dataset; layers: `image` (MibImage), `labels` (MibLabels/MibLabels63), `mask`, `selection`, `annotations`, `lines3D`
-- **`MibImage`** — pixel data as `data{1}` with dims `[height, width, depth, colors, time]`; types: `'Standard'`, `'Virtual'`, `'BigData'`
+- **`MibImage`** — pixel data as `data` (plain numeric array) with dims `[height, width, depth, colors, time]`; types: `'Standard'`, `'Virtual'`, `'BigData'`
 - **`MibBackup`** — undo history; **`ChildView`** — base class for child dialog views
 
 ### I/O Layer (`+io/`)
@@ -215,25 +215,25 @@ Quick rules:
 
 ### Copy-on-write in per-slice loops (performance critical)
 
-Writing to `mibModel.I{id}.image.data{1}(...)` inside a loop is **15× slower** than the equivalent MIB2 code.  The MIB3 chain crosses three handle-class hops (`MibModel → MibDataset → MibImage → data`), which prevents MATLAB from proving single-reference ownership of the cell contents — every indexed assignment triggers a full copy-on-write.
+`MibImage.data` is a plain numeric array (not a cell — the former `data{1}` cell wrapper was removed). This means `getData2D`/`setData2D` fast paths can write in-place through the two-handle chain (`MibDataset → MibImage → data`). However, caching into a local variable before a tight loop is still the fastest pattern for heavy bulk operations — it eliminates repeated handle-chain traversal and ensures zero allocations per iteration.
 
-**Rule:** Any loop that writes pixel data must cache `data{1}` in a local variable first, mutate locally, then write back once after the loop.
+**Rule:** Any loop that writes pixel data directly (bypassing `getData2D`) must cache `data` in a local variable first, mutate locally, then write back once after the loop.
 
 ```matlab
-% WRONG — triggers COW on every iteration (~15× slower)
+% WRONG — repeated handle-chain traversal, potentially slower in tight loops
 for z = 1:depth
-    obj.mibModel.I{id}.image.data{1}(:,:,z,ch,t) = process(...);
+    obj.mibModel.I{id}.image.data(:,:,z,ch,t) = process(...);
 end
 
 % CORRECT — single read, single write
-imageData = obj.mibModel.I{id}.image.data{1};
+imageData = obj.mibModel.I{id}.image.data;
 for z = 1:depth
     imageData(:,:,z,ch,t) = process(imageData(:,:,z,ch,t));
 end
-obj.mibModel.I{id}.image.data{1} = imageData;
+obj.mibModel.I{id}.image.data = imageData;
 ```
 
-This applies to any code **outside** `MibImage` methods (controllers, model helpers).  Inside `MibImage` methods `obj.data{1}` is only one hop and is already safe — still worth caching for large nested loops (e.g. `rotateColorChannel`).
+This applies to any code **outside** `MibImage` methods (controllers, model helpers).  Inside `MibImage` methods `obj.data` is only one hop and is already safe — still worth caching for large nested loops (e.g. `rotateColorChannel`).
 
 ## graphify
 

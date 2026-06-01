@@ -126,7 +126,7 @@ if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || 
     if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
         axOrder = obj.pyramid.axisOrder;
     end
-    obj.loaders{1} = io.loaders.Zarr3VirtualLoader(obj.data{1}, axOrder);
+    obj.loaders{1} = io.loaders.Zarr3VirtualLoader(obj.filePaths{1}, axOrder);
 end
 
 % --- colour selection (1-based inclusive for Zarr3VirtualLoader) ----------

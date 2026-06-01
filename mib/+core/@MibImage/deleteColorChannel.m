@@ -1,5 +1,5 @@
 function deleteColorChannel(obj, channel1, options)
-% DELETECOLORCHANNEL - Delete one or more color channels from obj.data{1}.
+% DELETECOLORCHANNEL - Delete one or more color channels from obj.data.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -47,7 +47,7 @@ end
 
 colorList      = 1:obj.colors;
 keepMask       = ~ismember(colorList, channel1);
-obj.data{1}    = obj.data{1}(:,:,:,keepMask,:);
+obj.data    = obj.data(:,:,:,keepMask,:);
 obj.colors     = obj.colors - numel(channel1);
 obj.dim_yxzct(4) = obj.colors;
 

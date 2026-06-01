@@ -93,6 +93,45 @@ if nargin < 4; orient = []; end
 if nargin < 3; slice_no = []; end
 if nargin < 2; type = 'image'; end
 
+% === FAST PATH ===
+% Shortcut for the most common case: Standard in-memory dataset, YX orientation (orient==3),
+% no ROI, no viewport crop, no x/y/z subregion. Bypasses MibImage.getData() entirely
+% (eliminates 3 function-call levels, ~25 guard checks, blockMode limit clamping, and cell
+% boxing overhead per call — critical for slice-by-slice batch loops).
+if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
+    fastOrient = orient;
+    if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
+        fastOrient = obj.orientation;
+    end
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ~isfield(options, 'z')
+        if isfield(options, 'blockModeSwitch')
+            blockIsOff = (options.blockModeSwitch == 0);
+        else
+            blockIsOff = (obj.blockModeSwitch == 0);
+        end
+        noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
+        % Exclude: labels with a material index (needs binary mask extraction → slow path)
+        skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
+                        isnumeric(col_channel) && ~any(isnan(col_channel(:)));
+        % Exclude: MibLabels63 model where selection/mask are packed into obj.labels
+        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+
+        if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            if isempty(slice_no); slice_no = obj.slices{fastOrient}(1); end
+            if isfield(options, 't'); timeT = options.t(1); else; timeT = obj.slices{5}(1); end
+            if strcmp(type, 'image')
+                if isempty(col_channel); col_channel = obj.slices{4};
+                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
+            else
+                col_channel = 1;  % selection / mask / labels: single colour channel
+            end
+            dataset = {squeeze(obj.(type).data(:,:,slice_no,col_channel,timeT))};
+            return;
+        end
+    end
+end
+% === END FAST PATH ===
+
 % define datasetVariable for obj.(datasetVariable).getData
 datasetVariable = type;
 if obj.labels.maxMaterials == 63 

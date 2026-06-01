@@ -51,14 +51,14 @@ else
     % where >= index, repack with preserved mask/selection bits
     numT = obj.time;
     for t = 1:numT
-        packed = obj.data{1}(:,:,:,1,t);
+        packed = obj.data(:,:,:,1,t);
         modelData = bitand(packed, uint8(63));          % bits 1-6
         otherBits = bitand(packed, uint8(192));          % bits 7-8 (mask + selection)
 
         mask = modelData >= uint8(index);
         modelData(mask) = modelData(mask) + 1;
 
-        obj.data{1}(:,:,:,1,t) = bitor(otherBits, modelData);
+        obj.data(:,:,:,1,t) = bitor(otherBits, modelData);
         if ~isempty(wb); wb.Value = t / numT * 0.9; end
     end
 

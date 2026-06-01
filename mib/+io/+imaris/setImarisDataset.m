@@ -55,7 +55,7 @@ function connImaris = setImarisDataset(mibDataset, connImaris, options)
 %   image.meta('imgClass') -> image.dataClass
 %   modelMaterialNames -> labels.materialNames
 %   modelMaterialColors -> labels.materialColors
-%   model{1} -> labels.data{1}
+%   model{1} -> labels.data
 %   getBoundingBox() -> image.boundingBox (direct property [xMin xMax yMin yMax zMin zMax])
 %   meta('ImageDescription') -> core.MibImage.buildImageDescription(...)
 %   Virtual.virtual -> strcmp(datasetType,'Virtual')
@@ -138,7 +138,7 @@ switch options.type
         else
             noColors = numel(options.modelIndex);
         end
-        dataClass = class(mibDataset.labels.data{1});
+        dataClass = class(mibDataset.labels.data);
 end
 
 updateBoundingBox = 1;

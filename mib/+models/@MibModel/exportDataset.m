@@ -212,7 +212,7 @@ switch BatchOpt.LayerType{1}
     case 'image'
         colorType = obj.I{BatchOpt.id}.image.colorType;
         if ~strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
-            imageData = obj.I{BatchOpt.id}.image.data{1};
+            imageData = obj.I{BatchOpt.id}.image.data;
         else
             imageData = cell2mat(obj.getData4D('image', 3, NaN, getDataOptions));
         end

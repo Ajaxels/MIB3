@@ -8,7 +8,7 @@ function invertColorChannel(obj, channel1, options)
 %       obj.invertColorChannel(channel1, options)
 %
 % Each pixel value ``v`` is replaced by ``maxInt - v``.
-% Operates directly on ``obj.data{1}`` (no ROI support; use
+% Operates directly on ``obj.data`` (no ROI support; use
 % ``MibModel.invertImage`` for ROI-aware 2D inversion).
 %
 % Input Arguments:
@@ -65,7 +65,7 @@ if options.showWaitbar
         'Indeterminate','on');
 end
 
-obj.data{1}(:,:,z1:z2,channel1,t1:t2) = obj.maxInt - obj.data{1}(:,:,z1:z2,channel1,t1:t2);
+obj.data(:,:,z1:z2,channel1,t1:t2) = obj.maxInt - obj.data(:,:,z1:z2,channel1,t1:t2);
 
 if isscalar(channel1)
     chStr = num2str(channel1);

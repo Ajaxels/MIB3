@@ -592,7 +592,7 @@ classdef ResampleDataset < handle
             end
             img5D = obj.mibModel.I{id}.image;
             oldBB = img5D.boundingBox;          % save physical extent before any changes
-            img5D.data{1}   = imgOut;
+            img5D.data   = imgOut;
             img5D.height    = newH;
             img5D.width     = newW;
             img5D.depth     = newZ;
@@ -623,7 +623,7 @@ classdef ResampleDataset < handle
             isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
 
             if isLabels63
-                labelsExist = obj.mibModel.I{id}.labels.exists && ~isnan(obj.mibModel.I{id}.labels.data{1}(1));
+                labelsExist = obj.mibModel.I{id}.labels.exists && ~isnan(obj.mibModel.I{id}.labels.data(1));
             else
                 labelsExist = obj.mibModel.I{id}.modelExist;
             end
@@ -674,7 +674,7 @@ classdef ResampleDataset < handle
                 % Regular MibLabels is handled generically by MibImage.setData
                 % which auto-resizes data{1} on full-container replacement.
                 if isLabels63
-                    obj.mibModel.I{id}.labels.data{1}    = zeros([newH, newW, newZ, maxT], 'uint8');
+                    obj.mibModel.I{id}.labels.data    = zeros([newH, newW, newZ, maxT], 'uint8');
                     obj.mibModel.I{id}.labels.height      = newH;
                     obj.mibModel.I{id}.labels.width       = newW;
                     obj.mibModel.I{id}.labels.depth       = newZ;
@@ -685,7 +685,7 @@ classdef ResampleDataset < handle
             elseif isLabels63
                 % no model data — reset packed container to new size
                 newDims = [newH, newW, newZ, maxT];
-                obj.mibModel.I{id}.labels.data{1} = zeros(newDims, 'uint8');
+                obj.mibModel.I{id}.labels.data = zeros(newDims, 'uint8');
                 obj.mibModel.I{id}.labels.height   = newH;
                 obj.mibModel.I{id}.labels.width    = newW;
                 obj.mibModel.I{id}.labels.depth    = newZ;

@@ -21,9 +21,7 @@ function moveMaskToModelDataset(obj, action_type, options)
 %
 %     - ``.contSelIndex`` — index of the Select from material
 %     - ``.contAddIndex`` — index of the Add to material
-%     - ``.selected_sw`` — [0/1] limit actions to the selected material only
-%     - ``.level`` *(optional)*, index of image level from the image pyramid, default = 1
-%
+%     - ``.selected_sw`` — [0/1] limit actions to the selected material only%
 % Output Arguments:
 %
 % Usage:
@@ -49,8 +47,6 @@ function moveMaskToModelDataset(obj, action_type, options)
 if ~isfield(options, 'contSelIndex'); options.contSelIndex = obj.getSelectedMaterialIndex(); end
 if ~isfield(options, 'contAddIndex'); options.contAddIndex = obj.getSelectedMaterialIndex('AddTo'); end
 if ~isfield(options, 'selected_sw'); options.selected_sw = obj.restrictSelectionToMaterial; end
-if ~isfield(options, 'level'); options.level = 1; end
-
 if obj.modelExist == 0
     error('moveMaskToModelDataset: the model is not yet created');
 end
@@ -61,7 +57,7 @@ isType63 = isa(obj.labels, 'core.MibLabels63');
 useFiltered = false;
 filteredImg = [];
 if isType63
-    D = obj.labels.data{options.level};
+    D = obj.labels.data;
     if options.selected_sw && obj.modelExist
         useFiltered = true;
         filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 64)/64);
@@ -69,8 +65,8 @@ if isType63
 else
     if options.selected_sw && obj.modelExist
         useFiltered = true;
-        filteredImg = uint8(obj.labels.data{options.level} == options.contSelIndex);
-        filteredImg = bitand(obj.mask.data{options.level}, filteredImg);
+        filteredImg = uint8(obj.labels.data == options.contSelIndex);
+        filteredImg = bitand(obj.mask.data, filteredImg);
     end
 end
 
@@ -85,15 +81,15 @@ switch action_type
                 D(filteredImg == 1) = bitand(D(filteredImg == 1), 192);
                 D(filteredImg == 1) = bitor(D(filteredImg == 1), options.contAddIndex);
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            labelsD = obj.labels.data{options.level};
+            labelsD = obj.labels.data;
             if ~useFiltered
-                labelsD(obj.mask.data{options.level} == 1) = options.contAddIndex;
+                labelsD(obj.mask.data == 1) = options.contAddIndex;
             else
                 labelsD(filteredImg == 1) = options.contAddIndex;
             end
-            obj.labels.data{options.level} = labelsD;
+            obj.labels.data = labelsD;
         end
 
     case 'remove'
@@ -104,15 +100,15 @@ switch action_type
             else
                 D(filteredImg == 1) = bitand(D(filteredImg == 1), 192);
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            labelsD = obj.labels.data{options.level};
+            labelsD = obj.labels.data;
             if ~useFiltered
-                labelsD(obj.mask.data{options.level} == 1) = 0;
+                labelsD(obj.mask.data == 1) = 0;
             else
                 labelsD(filteredImg == 1) = 0;
             end
-            obj.labels.data{options.level} = labelsD;
+            obj.labels.data = labelsD;
         end
 
     case 'replace'
@@ -130,17 +126,17 @@ switch action_type
                 D(filteredImg == 1) = options.contAddIndex;
                 D = bitor(D, M);
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            labelsD = obj.labels.data{options.level};
+            labelsD = obj.labels.data;
             if ~useFiltered
                 labelsD(labelsD == options.contAddIndex) = 0;
-                labelsD(obj.mask.data{options.level} == 1) = options.contAddIndex;
+                labelsD(obj.mask.data == 1) = options.contAddIndex;
             else
                 labelsD(filteredImg == 1) = 0;
                 labelsD(filteredImg == 1) = options.contAddIndex;
             end
-            obj.labels.data{options.level} = labelsD;
+            obj.labels.data = labelsD;
         end
 end
 end

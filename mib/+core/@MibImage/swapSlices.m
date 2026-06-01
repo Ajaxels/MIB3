@@ -6,7 +6,7 @@ function result = swapSlices(obj, sliceFrom, sliceTo, orient)
 %
 %       result = obj.swapSlices(sliceFrom, sliceTo, orient)
 %
-% Pure data-manipulation layer: operates only on ``obj.data{1}``.  No dialogs,
+% Pure data-manipulation layer: operates only on ``obj.data``.  No dialogs,
 % no waitbars, no annotation handling.  Caller (``core.MibDataset.swapSlices``)
 % is responsible for auxiliary-layer operations and action-log updates.
 %
@@ -44,28 +44,28 @@ if nargin < 4 || isempty(orient); orient = 3; end
 
 result = 0;
 if numel(sliceFrom) ~= numel(sliceTo); return; end
-maxSlice = size(obj.data{1}, orient);
+maxSlice = size(obj.data, orient);
 if max(sliceFrom) > maxSlice || max(sliceTo) > maxSlice || min(sliceFrom) < 1 || min(sliceTo) < 1
     return;
 end
 
 switch orient
     case 3  % depth (z) — dim 3 in MIB3
-        temp = obj.data{1}(:, :, sliceTo, :, :);
-        obj.data{1}(:, :, sliceTo, :, :) = obj.data{1}(:, :, sliceFrom, :, :);
-        obj.data{1}(:, :, sliceFrom, :, :) = temp;
+        temp = obj.data(:, :, sliceTo, :, :);
+        obj.data(:, :, sliceTo, :, :) = obj.data(:, :, sliceFrom, :, :);
+        obj.data(:, :, sliceFrom, :, :) = temp;
     case 1  % height (y)
-        temp = obj.data{1}(sliceTo, :, :, :, :);
-        obj.data{1}(sliceTo, :, :, :, :) = obj.data{1}(sliceFrom, :, :, :, :);
-        obj.data{1}(sliceFrom, :, :, :, :) = temp;
+        temp = obj.data(sliceTo, :, :, :, :);
+        obj.data(sliceTo, :, :, :, :) = obj.data(sliceFrom, :, :, :, :);
+        obj.data(sliceFrom, :, :, :, :) = temp;
     case 2  % width (x)
-        temp = obj.data{1}(:, sliceTo, :, :, :);
-        obj.data{1}(:, sliceTo, :, :, :) = obj.data{1}(:, sliceFrom, :, :, :);
-        obj.data{1}(:, sliceFrom, :, :, :) = temp;
+        temp = obj.data(:, sliceTo, :, :, :);
+        obj.data(:, sliceTo, :, :, :) = obj.data(:, sliceFrom, :, :, :);
+        obj.data(:, sliceFrom, :, :, :) = temp;
     case 5  % time (t)
-        temp = obj.data{1}(:, :, :, :, sliceTo);
-        obj.data{1}(:, :, :, :, sliceTo) = obj.data{1}(:, :, :, :, sliceFrom);
-        obj.data{1}(:, :, :, :, sliceFrom) = temp;
+        temp = obj.data(:, :, :, :, sliceTo);
+        obj.data(:, :, :, :, sliceTo) = obj.data(:, :, :, :, sliceFrom);
+        obj.data(:, :, :, :, sliceFrom) = temp;
     otherwise
         return;
 end

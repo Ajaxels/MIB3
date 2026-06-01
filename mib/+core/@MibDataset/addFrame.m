@@ -78,7 +78,7 @@ else
 end
 
 % Process image layer [H,W,Z,C,T]
-imageData = obj.image.data{1};
+imageData = obj.image.data;
 imageOut  = zeros([newH, newW, depth, colors, timePoints], obj.image.dataClass); %#ok<ZEROLIKE>
 for t = 1:timePoints
     img = imageData(:,:,:,:,t);   % [H,W,Z,C]
@@ -93,14 +93,14 @@ for t = 1:timePoints
     end
     if ~isempty(waitbar); waitbar.Value = t / timePoints * 0.5; end
 end
-obj.image.data{1} = imageOut;
+obj.image.data = imageOut;
 clear imageData imageOut;
 
 % Process layers [H,W,Z,1,T]
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if ~isempty(waitbar); waitbar.Value = 0.5; waitbar.Message = sprintf('Adding a frame to other layers\nPlease wait...'); end
-    if ~isnan(obj.labels.data{1}(1))
-        layerData = obj.labels.data{1};
+    if ~isnan(obj.labels.data(1))
+        layerData = obj.labels.data;
         layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);   % [H,W,Z]
@@ -115,14 +115,14 @@ if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
             end
             if ~isempty(waitbar); waitbar.Value = 0.5 + t / timePoints * 0.5; end
         end
-        obj.labels.data{1} = layerOut;
+        obj.labels.data = layerOut;
         updateLayerDims(obj.labels, newH, newW, depth, timePoints);
         clear layerData layerOut;
     end
 else
     if obj.enableSelection
         if ~isempty(waitbar); waitbar.Value = 0.55; waitbar.Message = sprintf('Adding a frame to the selection layer\nPlease wait...'); end
-        layerData = obj.selection.data{1};
+        layerData = obj.selection.data;
         layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);
@@ -136,7 +136,7 @@ else
                 layerOut(:,:,:,1,t) = slice(-extH+1:end+extH, -extW+1:end+extW, :);
             end
         end
-        obj.selection.data{1} = layerOut;
+        obj.selection.data = layerOut;
         updateLayerDims(obj.selection, newH, newW, depth, timePoints);
         clear layerData layerOut;
         if ~isempty(waitbar); waitbar.Value = 0.65; end
@@ -144,7 +144,7 @@ else
 
     if obj.maskExist
         if ~isempty(waitbar); waitbar.Value = 0.65; waitbar.Message = sprintf('Adding a frame to the mask layer\nPlease wait...'); end
-        layerData = obj.mask.data{1};
+        layerData = obj.mask.data;
         layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);
@@ -158,7 +158,7 @@ else
                 layerOut(:,:,:,1,t) = slice(-extH+1:end+extH, -extW+1:end+extW, :);
             end
         end
-        obj.mask.data{1} = layerOut;
+        obj.mask.data = layerOut;
         updateLayerDims(obj.mask, newH, newW, depth, timePoints);
         clear layerData layerOut;
         if ~isempty(waitbar); waitbar.Value = 0.8; end
@@ -166,7 +166,7 @@ else
 
     if obj.modelExist
         if ~isempty(waitbar); waitbar.Value = 0.8; waitbar.Message = sprintf('Adding a frame to the labels layer\nPlease wait...'); end
-        layerData = obj.labels.data{1};
+        layerData = obj.labels.data;
         layerOut  = zeros([newH, newW, depth, 1, timePoints], 'uint8');
         for t = 1:timePoints
             slice = layerData(:,:,:,1,t);
@@ -180,7 +180,7 @@ else
                 layerOut(:,:,:,1,t) = slice(-extH+1:end+extH, -extW+1:end+extW, :);
             end
         end
-        obj.labels.data{1} = layerOut;
+        obj.labels.data = layerOut;
         updateLayerDims(obj.labels, newH, newW, depth, timePoints);
         clear layerData layerOut;
     end

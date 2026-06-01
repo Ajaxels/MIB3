@@ -21,9 +21,7 @@ function moveModelToSelectionDataset(obj, action_type, options)
 %
 %     - ``.contSelIndex`` — [numeric] index of the "Select from" material
 %     - ``.contAddIndex`` — [numeric] index of the "Add to" material
-%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)
-%     - ``.level`` *(optional)* — [numeric] image level index from pyramid (default: ``1``)
-%
+%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)%
 % Output Arguments:
 %   (none)
 %
@@ -46,15 +44,13 @@ function moveModelToSelectionDataset(obj, action_type, options)
 if ~isfield(options, 'contSelIndex'); options.contSelIndex = obj.getSelectedMaterialIndex(); end
 if ~isfield(options, 'contAddIndex'); options.contAddIndex = obj.getSelectedMaterialIndex('AddTo'); end
 if ~isfield(options, 'maskedAreaSw'); options.maskedAreaSw = obj.restrictSelectionToMask; end
-if ~isfield(options, 'level'); options.level = 1; end
-
 isType63 = isa(obj.labels, 'core.MibLabels63');
 
 % compute filtered image if restricting to masked area
 useFiltered = false;
 filteredImg = [];
 if isType63
-    D = obj.labels.data{options.level};
+    D = obj.labels.data;
     if options.maskedAreaSw == 1
         useFiltered = true;
         filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 64)/64);
@@ -62,7 +58,7 @@ if isType63
 else
     if options.maskedAreaSw == 1
         useFiltered = true;
-        filteredImg = bitand(obj.mask.data{options.level}, uint8(obj.labels.data{options.level} == options.contSelIndex));
+        filteredImg = bitand(obj.mask.data, uint8(obj.labels.data == options.contSelIndex));
     end
 end
 
@@ -75,15 +71,15 @@ switch action_type
             else
                 D = bitor(D, filteredImg * 128);
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            selD = obj.selection.data{options.level};
+            selD = obj.selection.data;
             if ~useFiltered
-                selD(obj.labels.data{options.level} == options.contSelIndex) = 1;
+                selD(obj.labels.data == options.contSelIndex) = 1;
             else
                 selD = bitor(selD, filteredImg);
             end
-            obj.selection.data{options.level} = selD;
+            obj.selection.data = selD;
         end
 
     case 'remove'
@@ -94,15 +90,15 @@ switch action_type
             else
                 D = D - bitand(D, filteredImg * 128);
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            selD = obj.selection.data{options.level};
+            selD = obj.selection.data;
             if ~useFiltered
-                selD = selD - uint8(obj.labels.data{options.level} == options.contSelIndex);
+                selD = selD - uint8(obj.labels.data == options.contSelIndex);
             else
                 selD = selD - filteredImg;
             end
-            obj.selection.data{options.level} = selD;
+            obj.selection.data = selD;
         end
 
     case 'replace'
@@ -114,14 +110,14 @@ switch action_type
             else
                 D = bitor(D, filteredImg * 128);
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
             if ~useFiltered
-                obj.selection.data{options.level} = uint8(obj.labels.data{options.level} == options.contSelIndex);
+                obj.selection.data = uint8(obj.labels.data == options.contSelIndex);
             else
-                selD = zeros(size(obj.selection.data{options.level}), 'uint8');
+                selD = zeros(size(obj.selection.data), 'uint8');
                 selD = bitor(selD, filteredImg);
-                obj.selection.data{options.level} = selD;
+                obj.selection.data = selD;
             end
         end
 end

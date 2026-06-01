@@ -184,7 +184,7 @@ if isempty(imageStackOut); return; end
 img5D = obj.mibModel.I{id}.image;
 newH  = size(imageStackOut, 1);
 newW  = size(imageStackOut, 2);
-img5D.data{1}   = reshape(imageStackOut, [newH, newW, img5D.depth, img5D.colors, img5D.time]);
+img5D.data   = reshape(imageStackOut, [newH, newW, img5D.depth, img5D.colors, img5D.time]);
 img5D.height    = newH;
 img5D.width     = newW;
 img5D.dim_yxzct = [newH, newW, img5D.depth, img5D.colors, img5D.time];
@@ -212,7 +212,7 @@ if isLabels63
     layer = cell2mat(obj.mibModel.getData4D('everything', [], 0));
     shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
     if isempty(shifted); return; end
-    obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+    obj.mibModel.I{id}.labels.data  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
     obj.mibModel.I{id}.labels.height    = newH;
     obj.mibModel.I{id}.labels.width     = newW;
     obj.mibModel.I{id}.labels.depth     = img5D.depth;
@@ -224,7 +224,7 @@ else
         layer = cell2mat(obj.mibModel.getData4D('labels', [], NaN));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
-        obj.mibModel.I{id}.labels.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], class(obj.mibModel.I{id}.labels.data{1}));
+        obj.mibModel.I{id}.labels.data  = zeros([newH, newW, img5D.depth, img5D.time], class(obj.mibModel.I{id}.labels.data));
         obj.mibModel.I{id}.labels.height    = newH;
         obj.mibModel.I{id}.labels.width     = newW;
         obj.mibModel.I{id}.labels.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
@@ -235,7 +235,7 @@ else
         layer = cell2mat(obj.mibModel.getData4D('mask', [], 0));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
-        obj.mibModel.I{id}.mask.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+        obj.mibModel.I{id}.mask.data  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
         obj.mibModel.I{id}.mask.height    = newH;
         obj.mibModel.I{id}.mask.width     = newW;
         obj.mibModel.I{id}.mask.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];
@@ -246,7 +246,7 @@ else
         layer = cell2mat(obj.mibModel.getData4D('selection', [], NaN));
         shifted = utils.align.crossShiftStack(layer, obj.shiftsX, obj.shiftsY, serviceShiftOpts);
         if isempty(shifted); return; end
-        obj.mibModel.I{id}.selection.data{1}  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
+        obj.mibModel.I{id}.selection.data  = zeros([newH, newW, img5D.depth, img5D.time], 'uint8');
         obj.mibModel.I{id}.selection.height    = newH;
         obj.mibModel.I{id}.selection.width     = newW;
         obj.mibModel.I{id}.selection.dim_yxzct = [newH, newW, img5D.depth, 1, img5D.time];

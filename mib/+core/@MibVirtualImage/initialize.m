@@ -46,7 +46,7 @@ if nargin < 2; data = []; end
 if isempty(meta); meta = core.MibImage.initializeImgInfo(); end
 
 % --- close any previously open virtual readers and loader objects --------
-if iscell(obj.data) && ~isempty(obj.data)
+if ~isempty(obj.filePaths)
     obj.closeVirtualDataset();
 end
 obj.loaders = {};
@@ -62,7 +62,7 @@ if isempty(data)
             mibInstallPath = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))));
         end
     end
-    obj.data{1} = fullfile(mibInstallPath, 'assets', 'images', 'default.h5');
+    obj.filePaths{1} = fullfile(mibInstallPath, 'assets', 'images', 'default.h5');
     obj.exists   = false;
 
     % dimensions: use meta if populated, otherwise fall back to 1
@@ -74,8 +74,8 @@ if isempty(data)
 
 elseif iscell(data)
     % caller is providing the actual file paths (e.g. after user selects files)
-    obj.data   = data;
-    obj.exists = true;
+    obj.filePaths = data;
+    obj.exists    = true;
 
     % dimensions must come from meta (set by the loader before calling initialize)
     obj.height = max([1, double(meta{'Height'})]);

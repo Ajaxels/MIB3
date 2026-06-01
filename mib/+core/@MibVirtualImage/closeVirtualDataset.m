@@ -24,11 +24,11 @@ for i = 1:numel(obj.loaders)
 end
 obj.loaders = {};
 
-% --- legacy: readers stored directly in obj.data (old approach) -----------
-if iscell(obj.data) && ~isempty(obj.data) && isa(obj.data{1}, 'loci.formats.Memoizer')
-    for imgId = 1:numel(obj.data)
+% --- legacy: readers stored directly in obj.filePaths (old approach) -----
+if ~isempty(obj.filePaths) && isa(obj.filePaths{1}, 'loci.formats.Memoizer')
+    for imgId = 1:numel(obj.filePaths)
         try
-            obj.data{imgId}.close();
+            obj.filePaths{imgId}.close();
         catch
             % reader may already be closed; ignore
         end

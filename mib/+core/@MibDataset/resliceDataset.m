@@ -63,7 +63,7 @@ end
 if options.showWaitbar; wb.Value = 0.3; end
 
 if obj.datasetType(1) ~= 'V'
-    if obj.labels.maxMaterials < 255   % labels63: model+mask+selection packed together
+    if obj.labels.maxMaterials == 63   % labels63: model+mask+selection packed together
         if obj.modelExist
             obj.labels.resliceDataset(sliceNumbers, orient);
         end

@@ -382,9 +382,9 @@ classdef GuiTutorial < handle
         %
         % Important: setData4D cannot be used for a type conversion because
         % MibImage.setData writes into the existing typed container via
-        % indexed assignment (obj.data{1}(...) = dataset), which silently
+        % indexed assignment (obj.data(...) = dataset), which silently
         % casts the incoming array back to the container's original type.
-        % We therefore write directly to MibImage.data{1} and update the
+        % We therefore write directly to MibImage.data and update the
         % associated metadata properties (dataClass, maxInt, viewPort).
 
             id        = obj.mibModel.getActiveId();
@@ -421,14 +421,14 @@ classdef GuiTutorial < handle
 
             % Directly replace the data container.  setData casts to the
             % existing type via indexed assignment, so we bypass it entirely
-            % and write the new typed array straight into MibImage.data{1}.
+            % and write the new typed array straight into MibImage.data.
             % After replacing the data we must update three interdependent
             % metadata properties on MibImage:
             %   dataClass  — the MATLAB class string ('uint8', 'uint16', …)
             %   maxInt     — the maximum displayable integer for this class
             %   viewPort   — per-channel display range [min, max, gamma]
             imageObj           = obj.mibModel.I{id}.image;
-            imageObj.data{1}   = img{1};
+            imageObj.data   = img{1};
             imageObj.dataClass = class(img{1});
             imageObj.maxInt    = double(intmax(class(img{1})));
             imageObj.getDefaultViewPort();  % resets viewPort.max to new maxInt

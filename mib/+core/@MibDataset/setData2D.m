@@ -100,6 +100,52 @@ if nargin < 5; orient = []; end
 if nargin < 4; slice_no = []; end
 if nargin < 3; type = 'image'; end
 
+% === FAST PATH ===
+% Shortcut for the most common case: Standard in-memory, YX orient, no ROI, no blockMode.
+% Directly writes data{1}(...) and skips all ROI/Virtual/blockMode machinery.
+% Also skips the notify(obj,'SetData') call when options.suppressNotify==true — the
+% MibDataset.SetData event currently has no registered listeners, so the overhead is pure waste
+% for batch loops. Future callers that need the event should leave suppressNotify unset (default).
+if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
+    fastOrient = orient;
+    if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
+        fastOrient = obj.orientation;
+    end
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ~isfield(options, 'z')
+        if isfield(options, 'blockModeSwitch')
+            blockIsOff = (options.blockModeSwitch == 0);
+        else
+            blockIsOff = (obj.blockModeSwitch == 0);
+        end
+        noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
+        skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
+                        isnumeric(col_channel) && ~any(isnan(col_channel(:)));
+        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+
+        if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            if isempty(slice_no); slice_no = obj.slices{fastOrient}(1); end
+            if isfield(options, 't'); timeT = options.t(1); else; timeT = obj.slices{5}(1); end
+            if strcmp(type, 'image')
+                if isempty(col_channel); col_channel = obj.slices{4};
+                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
+            else
+                col_channel = 1;
+            end
+            if iscell(dataset); dataset = dataset{1}; end
+            obj.(type).setDataFast(dataset, slice_no, col_channel, timeT);   % single-hop in-place write (avoids COW)
+            if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
+            elseif strcmp(type, 'mask'); obj.maskExist = true; end
+            if ~isfield(options, 'suppressNotify') || ~options.suppressNotify
+                setDataOpt.type = type; setDataOpt.mode = '2D';
+                notify(obj, 'SetData', core.ToggleEventData(setDataOpt));
+            end
+            result = true;
+            return;
+        end
+    end
+end
+% === END FAST PATH ===
+
 if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end

@@ -739,7 +739,7 @@ methods (Access = private)
         imginfo{"Depth"}    = sz(3);
         imginfo{"viewPort"} = obj.buildViewPort(files.color, imginfo{"MaxInt"});
 
-        img = data; % bare numeric array; MibImage.initialize wraps it as obj.data{1}
+        img = data; % bare numeric array; MibImage.initialize wraps it as obj.data
     end
 
     function [img, imginfo] = loadImagesVirtual(~, files, imginfo)

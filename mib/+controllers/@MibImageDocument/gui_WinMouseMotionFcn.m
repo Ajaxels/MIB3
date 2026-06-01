@@ -164,9 +164,9 @@ try
             % Get pixel values based on orientation
             if orientation == 3  % YX orientation
                 if dataset.datasetType(1) ~= 'V'
-                    colorValues = squeeze(dataset.image.data{1}(yImage, xImage, sliceNo, cImage, tImage));
+                    colorValues = squeeze(dataset.image.data(yImage, xImage, sliceNo, cImage, tImage));
                     if dataset.modelExist
-                        modelValues = dataset.labels.data{1}(yImage, xImage, sliceNo, tImage);
+                        modelValues = dataset.labels.data(yImage, xImage, sliceNo, tImage);
                     end
                 else  % Virtual stacking mode
                     colorValues = 0;
@@ -178,14 +178,14 @@ try
                     end
                 end
             elseif orientation == 1 && dataset.datasetType(1) ~= 'V'  % ZX orientation
-                colorValues = squeeze(dataset.image.data{1}(sliceNo, yImage, xImage, cImage, tImage));
+                colorValues = squeeze(dataset.image.data(sliceNo, yImage, xImage, cImage, tImage));
                 if dataset.modelExist
-                    modelValues = dataset.labels.data{1}(sliceNo, yImage, xImage, tImage);
+                    modelValues = dataset.labels.data(sliceNo, yImage, xImage, tImage);
                 end
             elseif orientation == 2 && dataset.datasetType(1) ~= 'V'  % ZY orientation
-                colorValues = squeeze(dataset.image.data{1}(yImage, sliceNo, xImage, cImage, tImage));
+                colorValues = squeeze(dataset.image.data(yImage, sliceNo, xImage, cImage, tImage));
                 if dataset.modelExist
-                    modelValues = dataset.labels.data{1}(yImage, sliceNo, xImage, tImage);
+                    modelValues = dataset.labels.data(yImage, sliceNo, xImage, tImage);
                 end
             end
 

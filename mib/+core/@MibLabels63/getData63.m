@@ -78,11 +78,11 @@ end
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
     if orient==3 % yx orientation
-        dataset = obj.data{1}(:,:,:,colChannel,:);
+        dataset = obj.data(:,:,:,colChannel,:);
     elseif orient==1    % xz; get permuted dataset
-        dataset = permute(obj.data{1}(:,:,:,colChannel,:), [2 3 1 4 5]);
+        dataset = permute(obj.data(:,:,:,colChannel,:), [2 3 1 4 5]);
     elseif orient==2    % yz; get permuted dataset
-        dataset = permute(obj.data{1}(:,:,:,colChannel,:), [1 3 2 4 5]);
+        dataset = permute(obj.data(:,:,:,colChannel,:), [1 3 2 4 5]);
     end
 
     % extract required layer
@@ -102,10 +102,10 @@ if blockModeSwitchLocal == 0  % return the full dataset
     end
 else  % return a subvolume of the full dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
-    Xlim = [1 size(obj.data{1}, 2)];
-    Ylim = [1 size(obj.data{1}, 1)];
-    Zlim = [1 size(obj.data{1}, 3)];
-    Tlim = [1 size(obj.data{1}, 5)];
+    Xlim = [1 size(obj.data, 2)];
+    Ylim = [1 size(obj.data, 1)];
+    Zlim = [1 size(obj.data, 3)];
+    Tlim = [1 size(obj.data, 5)];
 
     % convert coordinates to the original dataset
     if orient==1     % xz
@@ -128,12 +128,12 @@ else  % return a subvolume of the full dataset
     end
 
     % make sure that the coordinates within the dimensions of the dataset
-    Xlim = [max([Xlim(1) 1]) min([Xlim(2) floor(size(obj.data{1}, 2))])];
-    Ylim = [max([Ylim(1) 1]) min([Ylim(2) floor(size(obj.data{1}, 1))])];
-    Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data{1}, 3)])];
-    Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data{1}, 5)])];
+    Xlim = [max([Xlim(1) 1]) min([Xlim(2) floor(size(obj.data, 2))])];
+    Ylim = [max([Ylim(1) 1]) min([Ylim(2) floor(size(obj.data, 1))])];
+    Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data, 3)])];
+    Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data, 5)])];
 
-    dataset = obj.data{1}(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
+    dataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));
     if orient==1     % permute to xz
         dataset = permute(dataset,[2 3 1 4 5]);
     elseif orient==2 % permute to yz

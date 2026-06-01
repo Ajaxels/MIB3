@@ -1,5 +1,5 @@
 function insertSlice(obj, img, insertPosition, dim, options)
-% INSERTSLICE - Low-level insert of img into obj.data{1} along the depth (z) or time (t) dimension.
+% INSERTSLICE - Low-level insert of img into obj.data along the depth (z) or time (t) dimension.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -12,7 +12,7 @@ function insertSlice(obj, img, insertPosition, dim, options)
 %
 % Input Arguments:
 %   - **img** — 5D array [height, width, depth, colors, time] to insert; must already
-%     be the correct class. Use the same conventions as obj.data{1}.
+%     be the correct class. Use the same conventions as obj.data.
 %   - **insertPosition** — 1-based insertion index (already clamped to a valid range
 %     by the caller). 0 or NaN means append to the end.
 %   - **dim** — 'depth' (default) inserts along dimension 3 (z);
@@ -27,7 +27,7 @@ function insertSlice(obj, img, insertPosition, dim, options)
 %   none
 %
 %   After the call the following properties are updated:
-%   obj.data{1}, obj.height, obj.width, obj.depth, obj.colors, obj.time,
+%   obj.data, obj.height, obj.width, obj.depth, obj.colors, obj.time,
 %   obj.dim_yxzct, obj.sliceName, obj.sliceSize (when applicable)
 %
 % Usage:
@@ -108,13 +108,13 @@ if strcmp(dim, 'depth')
         imgOut = zeros([yMax, xMax, D1_z+D2_z, cMax, tMax], obj.dataClass);
     end
     imgOut(1:D1_y, 1:D1_x, Z1_part1(1):Z1_part1(2), 1:D1_c, 1:D1_t) = ...
-        obj.data{1}(:, :, 1:Z1_part1(2)-Z1_part1(1)+1, :, :);
+        obj.data(:, :, 1:Z1_part1(2)-Z1_part1(1)+1, :, :);
     imgOut(1:D2_y, 1:D2_x, Z2_part1(1):Z2_part1(2), 1:D2_c, 1:D2_t) = img;
     if ~isempty(Z1_part2)
         imgOut(1:D1_y, 1:D1_x, Z1_part2(1):Z1_part2(2), 1:D1_c, 1:D1_t) = ...
-            obj.data{1}(:, :, Z1_part1(2)+1:end, :, :);
+            obj.data(:, :, Z1_part1(2)+1:end, :, :);
     end
-    obj.data{1} = imgOut;
+    obj.data = imgOut;
     obj.depth = D1_z + D2_z;
 
     % ---- update sliceName ----
@@ -174,13 +174,13 @@ else  % time
         imgOut = zeros([yMax, xMax, zMax, cMax, D1_t+D2_t], obj.dataClass);
     end
     imgOut(1:D1_y, 1:D1_x, 1:D1_z, 1:D1_c, T1_part1(1):T1_part1(2)) = ...
-        obj.data{1}(:, :, :, :, 1:T1_part1(2)-T1_part1(1)+1);
+        obj.data(:, :, :, :, 1:T1_part1(2)-T1_part1(1)+1);
     imgOut(1:D2_y, 1:D2_x, 1:D2_z, 1:D2_c, T2_part1(1):T2_part1(2)) = img;
     if ~isempty(T1_part2)
         imgOut(1:D1_y, 1:D1_x, 1:D1_z, 1:D1_c, T1_part2(1):T1_part2(2)) = ...
-            obj.data{1}(:, :, :, :, T1_part1(2)+1:end);
+            obj.data(:, :, :, :, T1_part1(2)+1:end);
     end
-    obj.data{1} = imgOut;
+    obj.data = imgOut;
     obj.time = D1_t + D2_t;
 end
 

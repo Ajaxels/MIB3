@@ -7,7 +7,7 @@ function insertMaterial(obj, materialIndex, materialName, wb)
 %       obj.insertMaterial(materialIndex, materialName, wb)
 %
 % Delegates to obj.labels.insertMaterial which handles both the pixel
-% data shifting (via direct obj.data{1} access) and the metadata
+% data shifting (via direct obj.data access) and the metadata
 % update (names, colours, materialsCount).
 %
 % Input Arguments:

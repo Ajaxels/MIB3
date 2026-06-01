@@ -97,7 +97,7 @@ if strcmp(mode, 'Transpose Z<->C')
     if showWaitbar; waitbar.Value = 0.05; end
 
     viewPortOld = obj.image.viewPort;
-    imageData = obj.image.data{1};    % [H,W,Z,C,T]
+    imageData = obj.image.data;    % [H,W,Z,C,T]
     imageOut = zeros([height, width, depthNew, colorsNew, timePoints], obj.image.dataClass); %#ok<ZEROLIKE>
 
     for t = 1:timePoints
@@ -115,7 +115,7 @@ if strcmp(mode, 'Transpose Z<->C')
     end
 
     % Replace image data and update dimension properties
-    obj.image.data{1} = imageOut;
+    obj.image.data = imageOut;
     obj.image.height  = height;
     obj.image.width   = width;
     obj.image.depth   = depthNew;
@@ -141,14 +141,14 @@ if strcmp(mode, 'Transpose Z<->C')
     clear imageData imageOut;
 
     % Clear labels/mask/selection — dimensions are now inconsistent with new Z
-    obj.labels.data{1} = zeros([height, width, depthNew, 1, timePoints], 'uint8');
+    obj.labels.data = zeros([height, width, depthNew, 1, timePoints], 'uint8');
     updateLayerDims(obj.labels, height, width, depthNew, timePoints);
     obj.modelExist = false;
     if ~isa(obj.labels, 'core.MibLabels63')
-        obj.mask.data{1} = zeros([height, width, depthNew, 1, timePoints], 'uint8');
+        obj.mask.data = zeros([height, width, depthNew, 1, timePoints], 'uint8');
         updateLayerDims(obj.mask, height, width, depthNew, timePoints);
         obj.maskExist = false;
-        obj.selection.data{1} = zeros([height, width, depthNew, 1, timePoints], 'uint8');
+        obj.selection.data = zeros([height, width, depthNew, 1, timePoints], 'uint8');
         updateLayerDims(obj.selection, height, width, depthNew, timePoints);
     end
 
@@ -164,7 +164,7 @@ end
 if strcmp(mode, 'Transpose Z<->T')
     if showWaitbar; waitbar.Value = 0.1; end
     % Image [H,W,Z,C,T]: swap Z(dim3)↔T(dim5) → [H,W,T,C,Z] = new [H,W,Z',C,T']
-    obj.image.data{1} = permute(obj.image.data{1}, [1,2,5,4,3]);
+    obj.image.data = permute(obj.image.data, [1,2,5,4,3]);
     obj.image.depth = timePoints;
     obj.image.time  = depth;
     obj.image.dim_yxzct = [height, width, timePoints, colors, depth];
@@ -173,19 +173,19 @@ if strcmp(mode, 'Transpose Z<->T')
     % Layers [H,W,Z,1,T]: swap Z(dim3)↔T(dim5) → [H,W,T,1,Z]
     if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
         if showWaitbar; waitbar.Value = 0.5; waitbar.Message = sprintf('Transposing other layers\nPlease wait...'); end
-        obj.labels.data{1} = permute(obj.labels.data{1}, [1,2,5,4,3]);
+        obj.labels.data = permute(obj.labels.data, [1,2,5,4,3]);
         updateLayerDims(obj.labels, height, width, timePoints, depth);
     elseif obj.enableSelection
-        obj.selection.data{1} = permute(obj.selection.data{1}, [1,2,5,4,3]);
+        obj.selection.data = permute(obj.selection.data, [1,2,5,4,3]);
         updateLayerDims(obj.selection, height, width, timePoints, depth);
         if showWaitbar; waitbar.Value = 0.6; end
         if obj.maskExist
-            obj.mask.data{1} = permute(obj.mask.data{1}, [1,2,5,4,3]);
+            obj.mask.data = permute(obj.mask.data, [1,2,5,4,3]);
             updateLayerDims(obj.mask, height, width, timePoints, depth);
             if showWaitbar; waitbar.Value = 0.75; end
         end
         if obj.modelExist
-            obj.labels.data{1} = permute(obj.labels.data{1}, [1,2,5,4,3]);
+            obj.labels.data = permute(obj.labels.data, [1,2,5,4,3]);
             updateLayerDims(obj.labels, height, width, timePoints, depth);
         end
     end
@@ -250,7 +250,7 @@ pixSizeNew.units  = obj.image.pixSize.units;
 pixSizeNew.tunits = obj.image.pixSize.tunits;
 
 % Permute image
-obj.image.data{1} = permute(obj.image.data{1}, perm);
+obj.image.data = permute(obj.image.data, perm);
 obj.image.height  = newH;
 obj.image.width   = newW;
 obj.image.depth   = newZ;
@@ -260,19 +260,19 @@ if showWaitbar; waitbar.Value = 0.5; end
 % Permute layers
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if showWaitbar; waitbar.Value = 0.6; waitbar.Message = sprintf('Transposing other layers\nPlease wait...'); end
-    obj.labels.data{1} = permute(obj.labels.data{1}, perm);
+    obj.labels.data = permute(obj.labels.data, perm);
     updateLayerDims(obj.labels, newH, newW, newZ, timePoints);
 elseif obj.enableSelection
-    obj.selection.data{1} = permute(obj.selection.data{1}, perm);
+    obj.selection.data = permute(obj.selection.data, perm);
     updateLayerDims(obj.selection, newH, newW, newZ, timePoints);
     if showWaitbar; waitbar.Value = 0.65; end
     if obj.maskExist
-        obj.mask.data{1} = permute(obj.mask.data{1}, perm);
+        obj.mask.data = permute(obj.mask.data, perm);
         updateLayerDims(obj.mask, newH, newW, newZ, timePoints);
         if showWaitbar; waitbar.Value = 0.8; end
     end
     if obj.modelExist
-        obj.labels.data{1} = permute(obj.labels.data{1}, perm);
+        obj.labels.data = permute(obj.labels.data, perm);
         updateLayerDims(obj.labels, newH, newW, newZ, timePoints);
     end
 end

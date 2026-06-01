@@ -7,7 +7,7 @@ function result = setPixelIdxList(obj, type, dataset, PixelIdxList)
 %       result = obj.setPixelIdxList(type, dataset, PixelIdxList)
 %
 % For standard MibImage and MibLabels the raw data are written directly to
-% obj.data{1}.  For MibLabels63 (bit-packed) the values are packed into the
+% obj.data.  For MibLabels63 (bit-packed) the values are packed into the
 % appropriate bits:
 % - 'labels'    — bits 1-6: clear old label (bitand 192) then bitor new value
 % - 'mask'      — bit 7:   bitset position 7
@@ -23,7 +23,7 @@ function result = setPixelIdxList(obj, type, dataset, PixelIdxList)
 %     - ``'selection'`` — selection layer values (0/1)
 %     - ``'everything'`` — raw packed byte (MibLabels63 only)
 %   - **dataset** — numeric vector of values to write; must match numel(PixelIdxList)
-%   - **PixelIdxList** — numeric vector of linear pixel indices into obj.data{1}
+%   - **PixelIdxList** — numeric vector of linear pixel indices into obj.data
 %     in the XY orientation (standard MATLAB column-major order)
 %
 % Output Arguments:
@@ -58,20 +58,20 @@ if isa(obj, 'core.MibLabels63')
     % bit-packed container: labels in bits 1-6, mask in bit 7, selection in bit 8
     switch type
         case 'labels'
-            obj.data{1}(PixelIdxList) = bitand(obj.data{1}(PixelIdxList), uint8(192)); % clear bits 1-6
-            obj.data{1}(PixelIdxList) = bitor(obj.data{1}(PixelIdxList), dataset);
+            obj.data(PixelIdxList) = bitand(obj.data(PixelIdxList), uint8(192)); % clear bits 1-6
+            obj.data(PixelIdxList) = bitor(obj.data(PixelIdxList), dataset);
         case 'mask'
-            obj.data{1}(PixelIdxList) = bitset(obj.data{1}(PixelIdxList), 7, dataset);
+            obj.data(PixelIdxList) = bitset(obj.data(PixelIdxList), 7, dataset);
         case 'selection'
-            obj.data{1}(PixelIdxList) = bitset(obj.data{1}(PixelIdxList), 8, dataset);
+            obj.data(PixelIdxList) = bitset(obj.data(PixelIdxList), 8, dataset);
         case 'everything'
-            obj.data{1}(PixelIdxList) = dataset;
+            obj.data(PixelIdxList) = dataset;
         otherwise
             error('setPixelIdxList: unknown type ''%s'' for MibLabels63', type);
     end
 else
     % Standard MibImage or MibLabels — raw write
-    obj.data{1}(PixelIdxList) = dataset;
+    obj.data(PixelIdxList) = dataset;
 end
 
 result = true;

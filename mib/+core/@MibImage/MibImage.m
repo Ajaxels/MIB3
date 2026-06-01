@@ -12,7 +12,7 @@ classdef MibImage < matlab.mixin.Copyable
         depth
         % number of stacks in the dataset
         dim_yxzct 
-        % a matrix with dimensions of the dataset [height, width, depth, colors, time] equal to size obj.data{1} 
+        % a matrix with dimensions of the dataset [height, width, depth, colors, time] equal to size obj.data 
         exists = false
         % logical switch indicating whether the obj.data exists or it is empty/dummy place maker
         filename = 'none.tif';
@@ -20,7 +20,7 @@ classdef MibImage < matlab.mixin.Copyable
         height
         % image height, px
         data = []
-        % a cell array to keep the 'Image' layer. The layer data{1} has image in full resolution.
+        % numeric array ``[height × width × depth × colors × time]`` holding the pixel data.
         % Note: The 'Image' layer dimensions: ``[1:height, 1:width, 1:depth, 1:colors, 1:time]``
         dataClass
         % a char with image class, 'uint8', 'uint16', 'uint32';
@@ -106,18 +106,18 @@ classdef MibImage < matlab.mixin.Copyable
         % declaration of methods in external files
         output = addColorChannel(obj, img, channelId, lutColors, options)    % Add or replace a color channel in the dataset
         copyColorChannel(obj, channel1, channel2, options)  % Copy channel1 intensity to channel2 position (appends if channel2 > obj.colors)
-        deleteColorChannel(obj, channel1, options)           % Delete one or more color channels from obj.data{1}
+        deleteColorChannel(obj, channel1, options)           % Delete one or more color channels from obj.data
         insertEmptyColorChannel(obj, channel1, options)     % Insert a zero-filled color channel at the given 1-based position
         invertColorChannel(obj, channel1, options)           % Invert pixel values in channel1 (replaces v with maxInt-v)
-        replaceMaskedArea(obj, maskVolume, colorValues, colorChannels, options)  % Replace pixels where maskVolume==1 directly in obj.data{1} for a given z-range and time point
+        replaceMaskedArea(obj, maskVolume, colorValues, colorChannels, options)  % Replace pixels where maskVolume==1 directly in obj.data for a given z-range and time point
         rotateColorChannel(obj, channel1, angle, options)   % Rotate channel1 by 90, 180, or -90 degrees (square images only)
         shiftColorChannel(obj, channel1, dx, dy, fillValue, options)  % Shift channel1 by dx/dy pixels; fill vacated border with fillValue
-        swapColorChannels(obj, channel1, channel2, options) % Swap two color channels in obj.data{1}
+        swapColorChannels(obj, channel1, channel2, options) % Swap two color channels in obj.data
         clearLayer(obj, layerName, y, x, z, t, blockModeSwitch)        % Clear the layer, use parameters to specify the area where the layer should be cleared.
         status = convertImage(obj, format, options)     % Convert pixel data to a new color type or bit depth
-        crop(obj, cropF)        % Crop obj.data{1} in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
-        result = copySlice(obj, sliceFrom, sliceTo, orient)     % Copy a slice from one position to another within obj.data{1}
-        result = deleteSlice(obj, sliceNumbers, orient)         % Remove slices from obj.data{1} along the specified dimension; updates dim_yxzct and sliceName
+        crop(obj, cropF)        % Crop obj.data in-place and update scalar dimension properties (height, width, depth, time, dim_yxzct, sliceName)
+        result = copySlice(obj, sliceFrom, sliceTo, orient)     % Copy a slice from one position to another within obj.data
+        result = deleteSlice(obj, sliceNumbers, orient)         % Remove slices from obj.data along the specified dimension; updates dim_yxzct and sliceName
         dataset = getData(obj, layerType, orient, colChannel, options)   % Get dataset from MibImage class
         varargout = getDatasetDimensions(obj, orient, splitDims, blockModeSwitch)        % Get dimensions of the dataset
         viewPort = getDefaultViewPort(obj)        % get default view port for stretching the image for visualization
@@ -125,13 +125,14 @@ classdef MibImage < matlab.mixin.Copyable
         dataset = getPixelIdxList(obj, type, PixelIdxList)          % Get pixel values at a list of linear indices; handles MibLabels63 bit-unpacking automatically
         meta = getMeta(obj)        % collect properties into a metadata dictionary (inverse of initialize)
         initialize(obj, data, meta, type);  % initialize the class using default or provided values
-        insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data{1} along depth or time; updates sliceName
-        result = resliceDataset(obj, sliceNumbers, orient)      % Keep only the indexed slices; remove all others from obj.data{1}
+        insertSlice(obj, img, insertPosition, dim, options)    % Low-level insert of img into obj.data along depth or time; updates sliceName
+        result = resliceDataset(obj, sliceNumbers, orient)      % Keep only the indexed slices; remove all others from obj.data
         setMeta(obj, meta)        % apply a metadata dictionary to properties (inverse of getMeta)
         result = setData(obj, dataset, layerType, orient, col_channel, options)        % update contents of the class
+        setDataFast(obj, dataset, z, colChannel, t)        % In-place slice/volume write used by the MibDataset fast paths (single handle hop, avoids copy-on-write)
         result = setPixelIdxList(obj, type, dataset, PixelIdxList)  % Write pixel values at a list of linear indices; handles MibLabels63 bit-packing automatically
         fnOut = save(obj, filename, options)        % save image data to file; see core.MibImage.save for details. Lowest-level saver; works standalone without MibDataset/MibModel.
-        result = swapSlices(obj, sliceFrom, sliceTo, orient)    % Swap two or more slices within obj.data{1}
+        result = swapSlices(obj, sliceFrom, sliceTo, orient)    % Swap two or more slices within obj.data
         updateActionLog(obj, logEntry, action, entryIndex)    % Append, insert, delete, or modify a timestamped entry in obj.actionLog.
         updateBoundingBox(obj, newBB, xyzShift, imgDims)    % Update obj.boundingBox and recalculate obj.pixSize from the new extent; pass [] as newBB to shift the existing box by xyzShift.
 

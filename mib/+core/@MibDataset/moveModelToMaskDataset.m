@@ -20,9 +20,7 @@ function moveModelToMaskDataset(obj, action_type, options)
 %   - **options** — [struct] structure with additional parameters:
 %
 %     - ``.contSelIndex`` — [numeric] index of the "Select from" material
-%     - ``.contAddIndex`` — [numeric] index of the "Add to" material
-%     - ``.level`` *(optional)* — [numeric] image level index from pyramid (default: ``1``)
-%
+%     - ``.contAddIndex`` — [numeric] index of the "Add to" material%
 % Output Arguments:
 %   (none)
 %
@@ -44,45 +42,43 @@ function moveModelToMaskDataset(obj, action_type, options)
 
 if ~isfield(options, 'contSelIndex'); options.contSelIndex = obj.getSelectedMaterialIndex(); end
 if ~isfield(options, 'contAddIndex'); options.contAddIndex = obj.getSelectedMaterialIndex('AddTo'); end
-if ~isfield(options, 'level'); options.level = 1; end
-
 isType63 = isa(obj.labels, 'core.MibLabels63');
 
 switch action_type
     case 'add'
         if isType63
-            D = obj.labels.data{options.level};
+            D = obj.labels.data;
             matMask = uint8(bitand(D, 63) == options.contSelIndex) * 64;
             D = bitor(D, matMask);
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            maskD = obj.mask.data{options.level};
-            maskD(obj.labels.data{options.level} == options.contSelIndex) = 1;
-            obj.mask.data{options.level} = maskD;
+            maskD = obj.mask.data;
+            maskD(obj.labels.data == options.contSelIndex) = 1;
+            obj.mask.data = maskD;
         end
 
     case 'remove'
         if isType63
-            D = obj.labels.data{options.level};
+            D = obj.labels.data;
             matMask = uint8(bitand(D, 63) == options.contSelIndex) * 64;
             D = D - bitand(D, matMask);
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            maskD = obj.mask.data{options.level};
-            maskD = maskD - uint8(obj.labels.data{options.level} == options.contSelIndex);
-            obj.mask.data{options.level} = maskD;
+            maskD = obj.mask.data;
+            maskD = maskD - uint8(obj.labels.data == options.contSelIndex);
+            obj.mask.data = maskD;
         end
 
     case 'replace'
         if isType63
-            D = obj.labels.data{options.level};
+            D = obj.labels.data;
             D = bitset(D, 7, 0);                     % clear mask
             matMask = uint8(bitand(D, 63) == options.contSelIndex) * 64;
             D = bitor(D, matMask);
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            maskD = uint8(obj.labels.data{options.level} == options.contSelIndex);
-            obj.mask.data{options.level} = maskD;
+            maskD = uint8(obj.labels.data == options.contSelIndex);
+            obj.mask.data = maskD;
         end
 end
 end

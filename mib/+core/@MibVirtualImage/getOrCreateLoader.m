@@ -50,12 +50,12 @@ switch objectType
             obj.bioFormatsMemoizerMemoDir);
 
     case 'zarr3'
-        % Zarr v3 OME-Zarr — root path is in obj.data{1}, axis order from pyramid
+        % Zarr v3 OME-Zarr — root path is in obj.filePaths{1}, axis order from pyramid
         axOrder = 'tczyx';
         if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
             axOrder = obj.pyramid.axisOrder;
         end
-        loader = io.loaders.Zarr3VirtualLoader(obj.data{1}, axOrder);
+        loader = io.loaders.Zarr3VirtualLoader(obj.filePaths{1}, axOrder);
 
     otherwise
         error('core:MibVirtualImage:unknownObjectType', ...

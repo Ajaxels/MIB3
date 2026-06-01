@@ -7,7 +7,7 @@ function dataset = getPixelIdxList(obj, type, PixelIdxList)
 %       dataset = obj.getPixelIdxList(type, PixelIdxList)
 %
 % For standard MibImage and MibLabels the raw data are read directly from
-% obj.data{1}.  For MibLabels63 (bit-packed) the values are unpacked
+% obj.data.  For MibLabels63 (bit-packed) the values are unpacked
 % according to the layer type:
 % - 'labels'    — lower 6 bits  (bitand with 63)
 % - 'mask'      — bit 7         (bitget position 7)
@@ -22,7 +22,7 @@ function dataset = getPixelIdxList(obj, type, PixelIdxList)
 %     - ``'mask'`` — mask layer values (0/1)
 %     - ``'selection'`` — selection layer values (0/1)
 %     - ``'everything'`` — raw packed byte (MibLabels63 only)
-%   - **PixelIdxList** — numeric vector of linear pixel indices into obj.data{1}
+%   - **PixelIdxList** — numeric vector of linear pixel indices into obj.data
 %     in the XY orientation (standard MATLAB column-major order)
 %
 % Output Arguments:
@@ -58,18 +58,18 @@ if isa(obj, 'core.MibLabels63')
     % bit-packed container: labels in bits 1-6, mask in bit 7, selection in bit 8
     switch type
         case 'labels'
-            dataset = bitand(obj.data{1}(PixelIdxList), 63);
+            dataset = bitand(obj.data(PixelIdxList), 63);
         case 'mask'
-            dataset = bitget(obj.data{1}(PixelIdxList), 7);
+            dataset = bitget(obj.data(PixelIdxList), 7);
         case 'selection'
-            dataset = bitget(obj.data{1}(PixelIdxList), 8);
+            dataset = bitget(obj.data(PixelIdxList), 8);
         case 'everything'
-            dataset = obj.data{1}(PixelIdxList);
+            dataset = obj.data(PixelIdxList);
         otherwise
             error('getPixelIdxList: unknown type ''%s'' for MibLabels63', type);
     end
 else
     % Standard MibImage or MibLabels — raw read
-    dataset = obj.data{1}(PixelIdxList);
+    dataset = obj.data(PixelIdxList);
 end
 end

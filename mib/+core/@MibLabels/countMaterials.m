@@ -42,10 +42,10 @@ if obj.maxMaterials < 256
 else
     % Large models (65535+): materialNames has only placeholder entries,
     % scan pixel data for the highest occupied index
-    if obj.exists && ~isempty(obj.data) && ~isempty(obj.data{1})
+    if obj.exists && ~isempty(obj.data)
         maxVal = 0;
         for t = 1:obj.time
-            img = obj.data{1}(:,:,:,1,t);
+            img = obj.data(:,:,:,1,t);
             maxVal = max(maxVal, double(max(img(:))));
         end
         obj.materialsCount = maxVal;

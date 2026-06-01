@@ -1,5 +1,5 @@
 function swapColorChannels(obj, channel1, channel2, options)
-% SWAPCOLORCHANNELS - Swap two color channels in obj.data{1}.
+% SWAPCOLORCHANNELS - Swap two color channels in obj.data.
 %
 % Syntax:
 %   .. code-block:: matlab
@@ -37,11 +37,11 @@ if options.showWaitbar
         'Value', 0);
 end
 
-dummy = obj.data{1}(:,:,:,channel1,:);
+dummy = obj.data(:,:,:,channel1,:);
 if options.showWaitbar; wb.Value = 0.33; end
-obj.data{1}(:,:,:,channel1,:) = obj.data{1}(:,:,:,channel2,:);
+obj.data(:,:,:,channel1,:) = obj.data(:,:,:,channel2,:);
 if options.showWaitbar; wb.Value = 0.66; end
-obj.data{1}(:,:,:,channel2,:) = dummy;
+obj.data(:,:,:,channel2,:) = dummy;
 
 obj.updateActionLog(sprintf('Swap color channels %d and %d', channel1, channel2));
 

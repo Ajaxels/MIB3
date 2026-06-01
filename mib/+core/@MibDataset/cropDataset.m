@@ -85,7 +85,7 @@ if ~strcmp(obj.datasetType(1), 'V')
     if isa(obj.labels, 'core.MibLabels63')
         % Packed model: single array holds model + mask + selection bits.
         % Only crop when data is present (not a NaN sentinel).
-        if obj.labels.exists && ~isnan(obj.labels.data{1}(1))
+        if obj.labels.exists && ~isnan(obj.labels.data(1))
             obj.labels.crop(cropF);
         end
     else
@@ -95,7 +95,7 @@ if ~strcmp(obj.datasetType(1), 'V')
         if obj.maskExist
             obj.mask.crop(cropF);
         end
-        if obj.enableSelection && obj.selection.exists && ~isnan(obj.selection.data{1}(1))
+        if obj.enableSelection && obj.selection.exists && ~isnan(obj.selection.data(1))
             obj.selection.crop(cropF);
         end
     end
@@ -130,21 +130,21 @@ else
     if obj.enableSelection
         if isa(obj.labels, 'core.MibLabels63')
             % Single packed array: zeros = no model/mask/selection
-            obj.labels.data{1}  = zeros(emptyDims, 'uint8');
+            obj.labels.data  = zeros(emptyDims, 'uint8');
             obj.labels.height   = emptyDims(1);
             obj.labels.width    = emptyDims(2);
             obj.labels.depth    = emptyDims(3);
             obj.labels.time     = emptyDims(5);
             obj.labels.dim_yxzct = emptyDims;
         else
-            obj.labels.data{1}    = NaN;
-            obj.mask.data{1}      = zeros(emptyDims, 'uint8');
-            obj.selection.data{1} = zeros(emptyDims, 'uint8');
+            obj.labels.data    = NaN;
+            obj.mask.data      = zeros(emptyDims, 'uint8');
+            obj.selection.data = zeros(emptyDims, 'uint8');
         end
     else
-        obj.labels.data{1}    = NaN;
-        obj.mask.data{1}      = NaN;
-        obj.selection.data{1} = NaN;
+        obj.labels.data    = NaN;
+        obj.mask.data      = NaN;
+        obj.selection.data = NaN;
     end
     if ~isempty(wb); wb.Value = 0.7; end
 end

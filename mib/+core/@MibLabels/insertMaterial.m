@@ -10,7 +10,7 @@ function insertMaterial(obj, index, name, wb)
 % - When appending at the end (index == nMats+1): only adds the name
 % and a colour entry, no pixel shift is needed.
 % - When inserting in the middle: shifts all pixel values >= index
-% upward by 1 across every time-point in obj.data{1}, then inserts
+% upward by 1 across every time-point in obj.data, then inserts
 % the name at the correct position and appends a colour if the
 % colour array is shorter than the name list.
 %
@@ -62,10 +62,10 @@ if modelType < 256
         % Shift pixel data: values >= index get incremented by 1
         numT = obj.time;
         for t = 1:numT
-            img = obj.data{1}(:,:,:,1,t);
+            img = obj.data(:,:,:,1,t);
             mask = img >= cast(index, class(img));
             img(mask) = img(mask) + 1;
-            obj.data{1}(:,:,:,1,t) = img;
+            obj.data(:,:,:,1,t) = img;
             if ~isempty(wb); wb.Value = t / numT * 0.9; end
         end
 
@@ -87,10 +87,10 @@ else
     %% Large models — pixel shift only, no name/colour changes
     numT = obj.time;
     for t = 1:numT
-        img = obj.data{1}(:,:,:,1,t);
+        img = obj.data(:,:,:,1,t);
         mask = img >= cast(index, class(img));
         img(mask) = img(mask) + 1;
-        obj.data{1}(:,:,:,1,t) = img;
+        obj.data(:,:,:,1,t) = img;
         if ~isempty(wb); wb.Value = t / numT * 0.9; end
     end
     obj.materialsCount = obj.materialsCount + 1;

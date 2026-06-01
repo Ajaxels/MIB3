@@ -22,9 +22,7 @@ function moveSelectionToMaskDataset(obj, action_type, options)
 %     - ``.contSelIndex`` — [numeric] index of the "Select from" material
 %     - ``.contAddIndex`` — [numeric] index of the "Add to" material
 %     - ``.selected_sw`` — [logical] limit actions to the selected material only (``0`` or ``1``)
-%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)
-%     - ``.level`` *(optional)* — [numeric] image level index from pyramid (default: ``1``)
-%
+%     - ``.maskedAreaSw`` — [logical] limit actions to masked areas only (``0`` or ``1``)%
 % Output Arguments:
 %   (none)
 %
@@ -49,15 +47,13 @@ if ~isfield(options, 'contSelIndex'); options.contSelIndex = obj.getSelectedMate
 if ~isfield(options, 'contAddIndex'); options.contAddIndex = obj.getSelectedMaterialIndex('AddTo'); end
 if ~isfield(options, 'selected_sw'); options.selected_sw = obj.restrictSelectionToMaterial; end
 if ~isfield(options, 'maskedAreaSw'); options.maskedAreaSw = obj.restrictSelectionToMask; end
-if ~isfield(options, 'level'); options.level = 1; end
-
 isType63 = isa(obj.labels, 'core.MibLabels63');
 
 % compute filtered image based on selected_sw and maskedAreaSw
 useFiltered = false;
 filteredImg = [];
 if isType63
-    D = obj.labels.data{options.level};
+    D = obj.labels.data;
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 0
         useFiltered = true;
         filteredImg = bitand(uint8(bitand(D, 63) == options.contSelIndex), bitand(D, 128)/128);
@@ -76,21 +72,21 @@ if isType63
 else
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 0
         useFiltered = true;
-        filteredImg = uint8(obj.labels.data{options.level} == options.contSelIndex);
-        filteredImg = bitand(obj.selection.data{options.level}, filteredImg);
+        filteredImg = uint8(obj.labels.data == options.contSelIndex);
+        filteredImg = bitand(obj.selection.data, filteredImg);
     end
     if options.maskedAreaSw && options.selected_sw == 0
         if strcmp(action_type, 'add'); return; end
         if strcmp(action_type, 'replace')
             useFiltered = true;
-            filteredImg = bitand(obj.selection.data{options.level}, obj.mask.data{options.level});
+            filteredImg = bitand(obj.selection.data, obj.mask.data);
         end
     end
     if options.selected_sw && obj.modelExist && options.maskedAreaSw == 1
         if strcmp(action_type, 'add'); return; end
         useFiltered = true;
-        filteredImg = uint8(obj.labels.data{options.level} == options.contSelIndex);
-        filteredImg = bitand(bitand(filteredImg, obj.mask.data{options.level}), obj.selection.data{options.level});
+        filteredImg = uint8(obj.labels.data == options.contSelIndex);
+        filteredImg = bitand(bitand(filteredImg, obj.mask.data), obj.selection.data);
     end
 end
 
@@ -103,21 +99,21 @@ switch action_type
                 D = bitor(D, filteredImg * 64);
             end
             D = bitand(D, 127);                       % clear selection
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
             if obj.maskExist == 0
-                obj.mask.data{options.level} = zeros(size(obj.selection.data{options.level}), 'uint8');
+                obj.mask.data = zeros(size(obj.selection.data), 'uint8');
             end
-            maskD = obj.mask.data{options.level};
-            selD = obj.selection.data{options.level};
+            maskD = obj.mask.data;
+            selD = obj.selection.data;
             if ~useFiltered
                 maskD = bitor(selD, maskD);
             else
                 maskD = bitor(maskD, filteredImg);
             end
             selD(:) = 0;
-            obj.mask.data{options.level} = maskD;
-            obj.selection.data{options.level} = selD;
+            obj.mask.data = maskD;
+            obj.selection.data = selD;
         end
 
     case 'remove'
@@ -132,16 +128,16 @@ switch action_type
                 D = bitand(D, 63);                     % clear selection and mask
                 D = bitor(D, filteredImg * 64);        % set mask
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
-            maskD = obj.mask.data{options.level};
+            maskD = obj.mask.data;
             if ~useFiltered
-                maskD = maskD - obj.selection.data{options.level};
+                maskD = maskD - obj.selection.data;
             else
                 maskD = maskD - filteredImg;
             end
-            obj.mask.data{options.level} = maskD;
-            obj.selection.data{options.level}(:) = 0;
+            obj.mask.data = maskD;
+            obj.selection.data(:) = 0;
         end
 
     case 'replace'
@@ -154,14 +150,14 @@ switch action_type
                 D = bitand(D, 63);                     % clear selection and mask
                 D = bitor(D, filteredImg * 64);        % set mask
             end
-            obj.labels.data{options.level} = D;
+            obj.labels.data = D;
         else
             if ~useFiltered
-                obj.mask.data{options.level} = obj.selection.data{options.level};
+                obj.mask.data = obj.selection.data;
             else
-                obj.mask.data{options.level} = filteredImg;
+                obj.mask.data = filteredImg;
             end
-            obj.selection.data{options.level}(:) = 0;
+            obj.selection.data(:) = 0;
         end
 end
 obj.maskExist = 1;

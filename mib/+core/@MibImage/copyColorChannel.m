@@ -42,7 +42,7 @@ if options.showWaitbar
 end
 
 if channel2 > obj.colors
-    obj.data{1}(:,:,:,channel2,:) = obj.data{1}(:,:,:,channel1,:);
+    obj.data(:,:,:,channel2,:) = obj.data(:,:,:,channel1,:);
     obj.colors = obj.colors + 1;
     obj.dim_yxzct(4) = obj.colors;
     obj.viewPort.min(channel2)   = 0;
@@ -53,7 +53,7 @@ if channel2 > obj.colors
         obj.lutColors(end+1, :) = rand(1, 3);
     end
 else
-    obj.data{1}(:,:,:,channel2,:) = obj.data{1}(:,:,:,channel1,:);
+    obj.data(:,:,:,channel2,:) = obj.data(:,:,:,channel1,:);
     obj.viewPort.min(channel2)   = obj.viewPort.min(channel1);
     obj.viewPort.max(channel2)   = obj.viewPort.max(channel1);
     obj.viewPort.gamma(channel2) = obj.viewPort.gamma(channel1);

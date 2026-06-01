@@ -92,9 +92,48 @@ if nargin < 4; orient = []; end
 if nargin < 3; time = []; end
 if nargin < 2; type = 'image'; end
 
+% === FAST PATH ===
+% Standard in-memory, YX orient (3), no ROI, no blockMode, no x/y/z subregion.
+% Directly indexes data{1} and returns without going through MibImage.getData.
+% Output matches slow path: non-image → cell{[H,W,Z,1]}; image → cell{[H,W,Z,C,1]}.
+if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
+    fastOrient = orient;
+    if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
+        fastOrient = obj.orientation;
+    end
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ~isfield(options, 'z')
+        if isfield(options, 'blockModeSwitch')
+            blockIsOff = (options.blockModeSwitch == 0);
+        else
+            blockIsOff = (obj.blockModeSwitch == 0);
+        end
+        noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
+        skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
+                        isnumeric(col_channel) && ~any(isnan(col_channel(:)));
+        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+
+        if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            if isempty(time); time = obj.slices{5}(1); end
+            if strcmp(type, 'image')
+                if isempty(col_channel); col_channel = obj.slices{4};
+                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
+                dataset = {obj.(type).data(:,:,:,col_channel,time)};
+            else
+                col_channel = 1;
+                rawVol = obj.(type).data(:,:,:,col_channel,time);
+                % Replicate slow-path reshape: MibImage.getData drops singleton C dim for non-image
+                sz = size(rawVol);
+                dataset = {reshape(rawVol, sz(1), sz(2), sz(3), 1)};
+            end
+            return;
+        end
+    end
+end
+% === END FAST PATH ===
+
 % define datasetVariable for obj.(datasetVariable).getData
 datasetVariable = type;
-if obj.labels.maxMaterials < 255 
+if obj.labels.maxMaterials == 63 
     if ismember(type, {'selection', 'mask', 'everything'}) 
         datasetVariable = 'labels';
     end

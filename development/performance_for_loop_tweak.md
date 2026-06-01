@@ -14,28 +14,36 @@ Measured impact:
 
 ### The chain difference
 
-| | MIB2 chain | MIB3 chain |
-|-|------------|------------|
-| Path | `obj.mibModel.I{Id}.img{1}(...)` | `obj.mibModel.I{id}.image.data{1}(...)` |
-| Handle hops before cell | **one** (`mibImage` handle from `I{Id}`) | **two** (`MibDataset` from `I{id}`, then `.image` → `MibImage`) |
+| | MIB2 chain | MIB3 chain (pre-fix) | MIB3 chain (post-fix) |
+|-|------------|----------------------|-----------------------|
+| Path | `obj.mibModel.I{Id}.img{1}(...)` | `obj.mibModel.I{id}.image.data{1}(...)` | `obj.mibModel.I{id}.image.data(...)` |
+| Storage | cell property, 1 handle hop | cell property, **2** handle hops | **plain array** property, 2 handle hops |
 
 Visually the chains look the same length, but MIB3 inserted a `MibDataset` wrapper between `I{id}` and the image data. That extra `.image` dereference crosses a second handle-class boundary.
 
-### Why two hops break in-place modification
+### Why two hops + a cell broke in-place modification
 
 When MATLAB compiles `chain{1}(idx) = value`, it tries to mutate the cell's stored numeric array in place. In-place mutation is only valid if MATLAB can prove the cell array has a single reference. The proof traverses the assignment chain back through every `subsref/subsasgn` dispatch.
 
 - **One handle in front** (MIB2): `mibImage.img{1}(idx) = val` — MATLAB resolves `img` as single-ref on the handle, mutates in place. No allocation per iteration.
-- **Two handles in front** (MIB3): `MibDataset.image.data{1}(idx) = val` — analysis crosses an extra class boundary, MATLAB conservatively treats the cell content as shared, and triggers **copy-on-write of the entire array on every slice**. For a 512×512×100×3 uint8 dataset that's ~75 MB allocated and freed per slice.
+- **Two handles in front + cell** (MIB3 pre-fix): `MibDataset.image.data{1}(idx) = val` — analysis crosses an extra class boundary, MATLAB conservatively treats the cell content as shared, and triggers **copy-on-write of the entire array on every slice**. For a 512×512×100×3 uint8 dataset that's ~75 MB allocated and freed per slice.
 
-### Why the local-variable fix works
+### Architectural fix applied (2025)
+
+`MibImage.data` was changed from a cell (`data{1}` — legacy image-pyramid format) to a plain numeric array (`data`). This eliminates the cell-COW root cause entirely. All 481 occurrences of `.data{1}` were replaced with `.data` across 61 source files. `MibVirtualImage` (which stored file paths in `data{}`) was migrated to use a new `filePaths` property.
+
+After the fix, `MibDataset.getData2D`/`setData2D` fast paths write `obj.(type).data(:,:,z,1,t) = slice` — a direct numeric-array property write through two handle hops. MATLAB can do this in-place because plain numeric array properties on handle classes are uniquely owned by those handles.
+
+### Why the local-variable pattern is still the fastest
+
+Even after the architectural fix, caching the full array into a local variable before a tight loop eliminates repeated handle-chain traversal overhead and is measurably faster for heavy bulk operations:
 
 ```matlab
-imageData = obj.mibModel.I{id}.image.data{1};   % shallow ref (cheap)
+imageData = obj.mibModel.I{id}.image.data;   % shallow ref (cheap)
 for z = 1:depth
     imageData(:,:,z,ch,t) = process(imageData(:,:,z,ch,t));
 end
-obj.mibModel.I{id}.image.data{1} = imageData;   % shallow ref back
+obj.mibModel.I{id}.image.data = imageData;   % shallow ref back
 ```
 
 Once `imageData` is a plain workspace variable, the LHS chain has **zero handles** in front of it. MATLAB sees a unique reference and mutates in place every iteration. The single read at the start and single write at the end each cost ~one reference bump.
@@ -51,24 +59,24 @@ MIB2 stored `mibImage` handles directly in `obj.mibModel.I{Id}`. The cell array 
 ```matlab
 % WRONG — triggers COW on every iteration
 for z = 1:depth
-    obj.mibModel.I{id}.image.data{1}(:,:,z,ch,t) = process(...);
+    obj.mibModel.I{id}.image.data(:,:,z,ch,t) = process(...);
 end
 
 % CORRECT — one read, one write
-imageData = obj.mibModel.I{id}.image.data{1};
+imageData = obj.mibModel.I{id}.image.data;
 for z = 1:depth
     imageData(:,:,z,ch,t) = process(imageData(:,:,z,ch,t));
 end
-obj.mibModel.I{id}.image.data{1} = imageData;
+obj.mibModel.I{id}.image.data = imageData;
 ```
 
 ### When this rule applies
 
 | Caller location | Chain depth | At risk? |
 |-----------------|-------------|----------|
-| Controller / other class | `mibModel.I{id}.image.data{1}` — 2 handle hops | **YES** — always cache |
-| Inside `MibImage` methods | `obj.data{1}` — 0 handle hops | Safe, but cache for very large loops to avoid future regression if refactored |
-| Inside `MibLabels` / `MibLabels63` methods | `obj.data{1}` — 0 handle hops | Same — safe but cache for hot loops |
+| Controller / other class | `mibModel.I{id}.image.data` — 2 handle hops, plain array | Still benefits from caching in tight loops |
+| Inside `MibImage` methods | `obj.data` — 0 handle hops | Safe, but cache for very large loops |
+| Inside `MibLabels` / `MibLabels63` methods | `obj.data` — 0 handle hops | Same — safe but cache for hot loops |
 
 ### Cancel-path handling
 
@@ -76,7 +84,7 @@ If a loop can return early on user cancel, flush the local back to the model bef
 
 ```matlab
 if pwb.getCancelState()
-    obj.mibModel.I{id}.image.data{1} = imageData;
+    obj.mibModel.I{id}.image.data = imageData;
     pwb.deletePoolWaitbar();
     return;
 end
@@ -87,13 +95,13 @@ end
 ## Files Changed
 
 ### `+controllers/@DisplayAdjust/DisplayAdjust.m` — `applyBtn_Callback`
-- Cached `obj.mibModel.I{id}.image.data{1}` into `imageData` before nested t/z imadjust loop.
+- Cached `obj.mibModel.I{id}.image.data` into `imageData` before nested t/z imadjust loop.
 - Hoisted `viewPort.gamma(channel)` out of the loop.
 - Cancel path flushes `imageData` back before return.
 - **Result:** 2.361 s → 0.160 s
 
 ### `+core/@MibImage/convertImage.m`
-Seven per-slice loops rewritten to use `imageData` local + single write-back. Some loops already used a local `I` cache for *reads*; the LHS writes still went through `obj.data{1}(...)` and triggered COW because `data` is a cell-array property (one hop within MibImage, not the two-hop case, but still measurably slow for tight loops).
+Seven per-slice loops rewritten to use `imageData` local + single write-back. Some loops already used a local `I` cache for *reads*; the LHS writes still went through `obj.data(...)` and triggered COW because `data` is a cell-array property (one hop within MibImage, not the two-hop case, but still measurably slow for tight loops).
 
 Paths fixed:
 - multichannel → grayscale (≤3 channels) — rgb2gray per slice
@@ -106,7 +114,7 @@ Paths fixed:
 - uint16 → uint16 (with viewport stretch) — imadjust per slice
 - uint8 → uint16 (with viewport stretch) — imadjust per slice
 
-Paths that were already safe (built local `I` or `img`, wrote `obj.data{1} = img` once):
+Paths that were already safe (built local `I` or `img`, wrote `obj.data = img` once):
 - multichannel (>3) → grayscale (LUT blending)
 - multichannel (>3) → indexed (LUT blending)
 - uint16 → uint8, uint32 → uint8, uint32 → uint16 (already used local `img`)
@@ -114,10 +122,13 @@ Paths that were already safe (built local `I` or `img`, wrote `obj.data{1} = img
 **Result for the multichannel→grayscale path:** 3.168 s → ~0.016 s (~200×)
 
 ### `+core/@MibImage/rotateColorChannel.m`
-Cached `obj.data{1}` before the nested t/slice `rot90` loop.
+Cached `obj.data` before the nested t/slice `rot90` loop.
 
 ### `+core/@MibImage/replaceMaskedArea.m`
-Cached `obj.data{1}` before the color-channel loop, even though only 1–3 channels — same pattern for consistency.
+Cached `obj.data` before the color-channel loop, even though only 1–3 channels — same pattern for consistency.
+
+### `MibImage.data` cell → plain array (2025 architectural fix)
+`MibImage.data` changed from a cell (`{5D_array}`) to a plain numeric array. 481 occurrences of `.data{1}` updated across 61 files. `MibVirtualImage` migrated to use `filePaths` property for its file-path storage. This eliminates the cell-COW root cause for `getData2D`/`setData2D` fast paths.
 
 ### `CLAUDE.md`
 Added a `Copy-on-write in per-slice loops` subsection under MATLAB Coding Rules documenting the rule and a before/after example.
@@ -141,8 +152,8 @@ These iterate per time-point and pull one 3D `(:,:,:,1,t)` block into a local va
 To find similar hotspots in future work, search for the pattern:
 
 ```
-obj.data{1}(...) = ...    inside a for loop
-mibModel.I{*}.image.data{1}(...) = ...   inside a for loop
+obj.data(...) = ...    inside a for loop
+mibModel.I{*}.image.data(...) = ...   inside a for loop
 ```
 
 The `+core/@MibImage/*.m` and `+core/@MibLabels*/*.m` methods are the primary candidates because they own the bulk array operations. Any controller writing into the data chain inside a loop is also at risk.

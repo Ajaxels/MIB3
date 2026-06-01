@@ -56,22 +56,22 @@ end
 if strcmp(mode, 'Flip T')
     % Collect all time-points in forward order, then write in reverse.
     % Works directly on data{1}: [H,W,Z,C,T] for image, [H,W,Z,1,T] for layers.
-    obj.image.data{1} = flip(obj.image.data{1}, 5);
+    obj.image.data = flip(obj.image.data, 5);
     if showWaitbar; waitbar.Value = 0.4; end
 
     % Flip other layers
     if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
         if showWaitbar; waitbar.Value = 0.5; waitbar.Message = sprintf('Flipping other layers\nPlease wait...'); end
-        obj.labels.data{1} = flip(obj.labels.data{1}, 5);
+        obj.labels.data = flip(obj.labels.data, 5);
     elseif obj.enableSelection
-        obj.selection.data{1} = flip(obj.selection.data{1}, 5);
+        obj.selection.data = flip(obj.selection.data, 5);
         if showWaitbar; waitbar.Value = 0.6; end
         if obj.maskExist
-            obj.mask.data{1} = flip(obj.mask.data{1}, 5);
+            obj.mask.data = flip(obj.mask.data, 5);
             if showWaitbar; waitbar.Value = 0.75; end
         end
         if obj.modelExist
-            obj.labels.data{1} = flip(obj.labels.data{1}, 5);
+            obj.labels.data = flip(obj.labels.data, 5);
         end
     end
     if showWaitbar; waitbar.Value = 1; waitbar.Message = sprintf('Finishing...'); end
@@ -83,22 +83,22 @@ end
 
 % Flip image (Flip horizontally / Flip vertically / Flip Z) using data{1} directly.
 % Image layout: [H,W,Z,C,T] — Flip H=dim1, W=dim2, Z=dim3.
-obj.image.data{1} = flipDimension(obj.image.data{1}, mode);
+obj.image.data = flipDimension(obj.image.data, mode);
 if showWaitbar; waitbar.Value = 0.5; end
 
 % Flip other layers. Layer layout: [H,W,Z,1,T] — same dims 1/2/3 as image.
 if isa(obj.labels, 'core.MibLabels63') && obj.enableSelection
     if showWaitbar; waitbar.Value = 0.6; waitbar.Message = sprintf('Flipping other layers\nPlease wait...'); end
-    obj.labels.data{1} = flipDimension(obj.labels.data{1}, mode);
+    obj.labels.data = flipDimension(obj.labels.data, mode);
 elseif obj.enableSelection
-    obj.selection.data{1} = flipDimension(obj.selection.data{1}, mode);
+    obj.selection.data = flipDimension(obj.selection.data, mode);
     if showWaitbar; waitbar.Value = 0.7; end
     if obj.maskExist
-        obj.mask.data{1} = flipDimension(obj.mask.data{1}, mode);
+        obj.mask.data = flipDimension(obj.mask.data, mode);
         if showWaitbar; waitbar.Value = 0.8; end
     end
     if obj.modelExist
-        obj.labels.data{1} = flipDimension(obj.labels.data{1}, mode);
+        obj.labels.data = flipDimension(obj.labels.data, mode);
     end
 end
 

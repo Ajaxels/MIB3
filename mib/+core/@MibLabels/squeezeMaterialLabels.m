@@ -46,10 +46,10 @@ numT = obj.time;
 maxLabel = 0;
 
 for t = 1:numT
-    img = obj.data{1}(:,:,:,1,t);
+    img = obj.data(:,:,:,1,t);
     [a, ~, c] = unique(img);
     if a(1) == 0; c = c - 1; end   % keep background at 0
-    obj.data{1}(:,:,:,1,t) = reshape(cast(c, class(img)), size(img));
+    obj.data(:,:,:,1,t) = reshape(cast(c, class(img)), size(img));
 
     % Track the highest label across all time-points
     nLabels = numel(a);

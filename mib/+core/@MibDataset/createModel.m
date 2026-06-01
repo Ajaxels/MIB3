@@ -74,8 +74,8 @@ if modelType == 63
         % Already type 63: clear model bits (bits 1–6), preserve mask (bit 7)
         % and selection (bit 8)
         if obj.labels.exists
-            obj.labels.data{1} = bitand(obj.labels.data{1}, uint8(192));
-            [h, w, d, ~, t] = size(obj.labels.data{1});
+            obj.labels.data = bitand(obj.labels.data, uint8(192));
+            [h, w, d, ~, t] = size(obj.labels.data);
             obj.labels.height    = h;
             obj.labels.width     = w;
             obj.labels.depth     = d;
@@ -89,11 +89,11 @@ if modelType == 63
         % Was type 255+: pack existing selection/mask into a single uint8 matrix
         newData = zeros(dims, 'uint8');
         if obj.selection.exists
-            selData = obj.selection.data{1};
+            selData = obj.selection.data;
             newData(selData == 1) = bitset(newData(selData == 1), 8, 1);
         end
         if obj.maskExist && obj.mask.exists
-            maskData = obj.mask.data{1};
+            maskData = obj.mask.data;
             newData(maskData == 1) = bitset(newData(maskData == 1), 7, 1);
         end
         obj.labels    = core.MibLabels63(newData, meta);
@@ -105,10 +105,10 @@ else
     % Switching to type 255, 65535, or 4294967295
     if currentModelType == 63 && obj.labels.exists
         % Extract selection and mask from packed bits before replacing the labels
-        selData = uint8(bitand(obj.labels.data{1}, uint8(128)) / 128);
+        selData = uint8(bitand(obj.labels.data, uint8(128)) / 128);
         obj.selection = core.MibLabels(selData, meta);
         if obj.maskExist
-            maskData = uint8(bitand(obj.labels.data{1}, uint8(64)) / 64);
+            maskData = uint8(bitand(obj.labels.data, uint8(64)) / 64);
             obj.mask = core.MibLabels(maskData, meta);
         end
     end

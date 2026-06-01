@@ -299,7 +299,7 @@ obj.createModel(modelType);
 % Rebuild the labels object from rawModel using the class constructor so that
 % ALL dimension properties (height, width, depth, colors, time, dim_yxzct,
 % maxInt, dataClass) are derived from the actual data via MibImage.initialize().
-% Direct assignment (obj.labels.data{1} = rawModel) leaves those properties stale
+% Direct assignment (obj.labels.data = rawModel) leaves those properties stale
 % when createModel took the type-63 fast path and reused the existing object.
 modelMeta = core.MibImage.initializeImgInfo( ...
     'pixSize', obj.image.pixSize, ...

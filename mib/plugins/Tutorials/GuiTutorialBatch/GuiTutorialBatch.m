@@ -584,7 +584,7 @@ classdef GuiTutorialBatch < handle
 
             % -- 2. Virtual-stack guard --------------------------------------
             % The Convert and Invert operations access pixels directly through
-            % MibImage.data{1} or getData2D, which require in-memory data.
+            % MibImage.data or getData2D, which require in-memory data.
             % Virtual datasets stream tiles from disk and do not support this.
             if isprop(obj.mibModel.I{id}, 'datasetType') && ...
                     strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
@@ -744,7 +744,7 @@ classdef GuiTutorialBatch < handle
         % Important: setData4D cannot be used for a type conversion because
         % MibImage.setData writes into the existing typed container via
         % indexed assignment, which silently casts the incoming array back to
-        % the original type.  We therefore write directly to MibImage.data{1}
+        % the original type.  We therefore write directly to MibImage.data
         % and manually update the three interdependent metadata properties.
         %
         % In contrast with GuiTutorial.convertDataset() (which uses
@@ -800,13 +800,13 @@ classdef GuiTutorialBatch < handle
 
             if showProgress; progressBar.increment(); end  % step 1/2
 
-            % Write the converted array directly to MibImage.data{1} and update
+            % Write the converted array directly to MibImage.data and update
             % the three interdependent metadata properties:
             %   dataClass — the MATLAB class string ('uint8', 'uint16', …)
             %   maxInt    — the maximum representable integer for this class
             %   viewPort  — per-channel display range [min, max, gamma]
             imageObj           = obj.mibModel.I{id}.image;
-            imageObj.data{1}   = img{1};
+            imageObj.data   = img{1};
             imageObj.dataClass = class(img{1});
             imageObj.maxInt    = double(intmax(class(img{1})));
             imageObj.getDefaultViewPort();  % resets viewPort.max to the new maxInt
