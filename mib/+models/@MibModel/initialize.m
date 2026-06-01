@@ -51,6 +51,13 @@ obj.storedSelection = [];   % initialize stored selection buffer
 obj.connImaris = [];    % empty connection to Imaris
 
 obj.Backup = core.MibBackup();    % create instance for keeping undo information
+% seed undo settings from the saved preferences; otherwise the constructor
+% defaults (enableSwitch=1, max3d_steps=1) override the user's Undo prefs for
+% the whole session unless the Preferences dialog is opened. In particular a
+% saved Undo.Max3dUndoHistory==0 would still keep max3d_steps=1, so every 3D
+% operation (e.g. Resample) would do a full-volume backup instead of bailing.
+obj.Backup.enableSwitch = logical(obj.preferences.Undo.Enable);
+obj.Backup.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
 obj.pythonEnv = [];     % Python environment for MIB
 
 %% define default Set

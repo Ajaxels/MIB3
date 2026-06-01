@@ -227,10 +227,8 @@ classdef MibBackup < handle
             % calculate number of stored 3d datasets
             newMinIndex = 1;
             if options.switch3d    % adding 3D dataset
-                if (numel(obj.index3d)) == obj.max3d_steps - 1 && obj.max3d_steps > 1
-                    newMinIndex = obj.index3d(1)+1;   % the element of obj.undoList with this index is going to be number 1
-                elseif (numel(obj.index3d)) == obj.max3d_steps && obj.max3d_steps == 1
-                    newMinIndex = obj.index3d(1) + 1;   % tweak for a single stored 3D dataset
+                if numel(obj.index3d) == obj.max3d_steps
+                    newMinIndex = obj.index3d(1) + 1;
                 elseif numel(obj.undoList) == obj.max_steps + 1
                     newMinIndex = 2;
                 end

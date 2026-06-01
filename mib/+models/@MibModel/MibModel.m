@@ -160,6 +160,7 @@ classdef MibModel < handle
         initializePreferences(obj)        % initialize and update MIB preferences from a file
         intensityProjection(obj, BatchOptIn)        % Calculate intensity projection (Max, Min, Mean, Median, Sum) along a chosen dimension
         invertImage(obj, datasetType, BatchOptIn) % Invert pixel intensities in the image dataset
+        invertMask(obj, type, sel_switch, BatchOptIn)  % invert the Mask or Selection layer for a chosen scope (2D/3D/4D)
         insertEmptySlice(obj, BatchOptIn)           % Insert one or more empty (background-filled) slices into the volume
         interpolateImage(obj, imgType, intType, BatchOptIn)        % interpolate 'mask', 'selection', or 'labels' layer between slices using shape or line algorithm
         loadImages(obj, parameter, BatchOptIn)        % load images and arrange them into a stack
@@ -181,6 +182,7 @@ classdef MibModel < handle
         result = setData4D(obj, dataset, type, orient, col_channel, options)        % set the complete 4D dataset; wrapper around core.MibDataset.setData4D
         setDefaultColorPalette(obj, paletteName, colorsNo)        % set default color palette for materials of the model
         setMagFactor(obj, magFactor, id)        % set magnification for the currently shown or id dataset
+        smoothImage(obj, type, BatchOptIn)      % smooth the selection, mask, or labels layer with a Gaussian kernel (2D or 3D)
         status = transformDataset(obj, BatchOptIn)  % Dispatcher for dataset geometry transforms (flip, rotate, transpose, add frame)
         undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
 

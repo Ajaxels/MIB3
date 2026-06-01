@@ -64,13 +64,16 @@ switch mode
         obj.mibModel.saveMask([]);
 
         % -------------- Mask tools section --------------
-    case 'Invert'        % obj.handles.ribbonMask.export or obj.handles.ribbonMask.invert
     case 'Shown slice (2D)'       % obj.handles.ribbonMask.invert2D
+        obj.mibModel.invertMask('mask', '2D, Slice');
     case 'Current stack (3D)'                     % obj.handles.ribbonMask.invert3D
-    case 'Complete volume (4D)'                     % obj.handles.ribbonMask.invert4D
+        obj.mibModel.invertMask('mask', '3D, Stack');
+    case {'Complete volume (4D)', 'Invert'}                    % obj.handles.ribbonMask.invert4D
+        obj.mibModel.invertMask('mask', '4D, Dataset');
     case sprintf('Replace\nmasked areas')                     % obj.handles.ribbonMask.replaceImage
         obj.mibModel.replaceMaskedArea('mask');
     case sprintf('Smooth\nmask')                    % obj.handles.ribbonMask.smooth
+        obj.mibModel.smoothImage('mask');
     case 'Quantify'                    % obj.handles.ribbonMask.quantify
         id = obj.mibModel.getActiveId();
         selMaterial = obj.mibModel.I{id}.selectedMaterial;

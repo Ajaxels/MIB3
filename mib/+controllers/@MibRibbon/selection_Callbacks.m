@@ -85,11 +85,11 @@ switch mode
     
         % ----------- Invert Selection -------------
     case 'Shown slice (2D)'        % obj.handles.ribbonSelection.invert2D
-
+        obj.mibModel.invertMask('selection', '2D, Slice');
     case 'Current stack (3D)'        % obj.handles.ribbonSelection.invert3D
-
+        obj.mibModel.invertMask('selection', '3D, Stack');
     case {'Complete volume (4D)', 'Invert'}        % obj.handles.ribbonSelection.invert4D or obj.handles.ribbonSelection.invert
-
+        obj.mibModel.invertMask('selection', '4D, Dataset');
 
         % ----------- Other Selection Tools -------------
     case sprintf('Expand to\nmask border')        % obj.handles.ribbonSelection.expandToMask
@@ -98,7 +98,7 @@ switch mode
     case sprintf('Replace\nselected areas')        % obj.handles.ribbonSelection.replaceImage
         obj.mibModel.replaceMaskedArea('selection');
     case sprintf('Smooth\nselection')        % obj.handles.ribbonSelection.smooth
-
+        obj.mibModel.smoothImage('selection');
 end
 
 end

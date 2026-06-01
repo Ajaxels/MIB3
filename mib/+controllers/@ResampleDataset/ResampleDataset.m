@@ -476,7 +476,8 @@ classdef ResampleDataset < handle
             BatchOptLoc = obj.BatchOpt;
             
             pixSize = obj.mibModel.I{id}.image.pixSize;
-
+            
+            tic;
             wb = [];
             if BatchOptLoc.showWaitbar && ~batchModeSwitch
                 wb = uiprogressdlg(obj.view.gui, ...
@@ -484,7 +485,7 @@ classdef ResampleDataset < handle
                     'Message', sprintf('Resampling image...\ndoing backup...'), ...
                     'Title', 'Resampling...', 'Cancelable', 'off');
             end
-
+            
             % backup before destructive operation (GUI path only)
             if ~batchModeSwitch
                 obj.mibModel.backup('image', 1);
@@ -559,8 +560,13 @@ classdef ResampleDataset < handle
             end
             
             opts.blockModeSwitch = 0;
-            % allocate output in MIB3 layout [h, w, d, c, t]
-            imgOut = zeros([newH, newW, newZ, obj.color, maxT], imgClass);
+            % allocate output in MIB3 layout [h, w, d, c, t].
+            % getData3D(..., NaN, ...) below returns ALL color channels of the
+            % dataset, so size the buffer by the total channel count — not
+            % obj.color, which counts only the currently selected/shown channels
+            % (obj.slices{4}) and would be too small for multi-channel data.
+            totalColors = obj.mibModel.I{id}.image.colors;
+            imgOut = zeros([newH, newW, newZ, totalColors, maxT], imgClass);
             opts.height  = newH;
             opts.width   = newW;
             opts.depth   = newZ;
@@ -622,11 +628,15 @@ classdef ResampleDataset < handle
             labelsOpts.imgType = '3D';
             isLabels63 = isa(obj.mibModel.I{id}.labels, 'core.MibLabels63');
 
-            if isLabels63
-                labelsExist = obj.mibModel.I{id}.labels.exists && ~isnan(obj.mibModel.I{id}.labels.data(1));
-            else
-                labelsExist = obj.mibModel.I{id}.modelExist;
-            end
+            % Only resample the model when a real model exists. modelExist is the
+            % authoritative flag (false by default, set true by createModel/loadModel/
+            % setData*/moveLayers). Using labels.exists here would be wrong for the
+            % 63-material packed container: it always "exists" (it also holds the
+            % selection layer), so an EMPTY model would be needlessly resampled —
+            % which is what made MIB3 slower than MIB2 (MIB2 gates on modelExist and
+            % skips an absent model). An empty model falls through to the cheap
+            % zeros-reallocation branch below instead.
+            labelsExist = obj.mibModel.I{id}.modelExist;
 
             modelDataType = 'labels';
             if labelsExist || (isLabels63 && obj.mibModel.I{id}.maskExist)
@@ -743,7 +753,8 @@ classdef ResampleDataset < handle
                 wb.Value = 1;
                 delete(wb);
             end
-    
+            toc;
+
             obj.returnBatchOpt(obj.BatchOpt);
 
             notify(obj.mibModel, 'NewDataset');

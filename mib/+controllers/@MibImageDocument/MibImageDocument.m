@@ -77,7 +77,10 @@ classdef MibImageDocument < handle
         sliderTShiftStep = 10    % t-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
         sliderZStep = 1          % z-slider step, can be updated in obj.sliceNumberSlider_ContextMenu
         sliderZShiftStep = 10    % z-slider step with shift pressed obj.sliceNumberSlider_ContextMenu
-        sliderDebounceTimer = [] % timer used to debounce rapid slider dragging (slice and frame sliders);
+        sliderDebounceTimer = [] % timer used to debounce rapid slider dragging (Zarr virtual datasets);
+        sliderDragging = false       % true while the user is actively dragging a slice/frame slider
+        lastSliderRenderTime = []    % tic id of the last throttled slider redraw (wall-clock throttle)
+        sliderThrottleInterval = 0.04 % min seconds between slider-driven redraws (~25 fps)
 
         trackerYXZ = [NaN; NaN; NaN]  % [y; x; z] coordinates for the Membrane ClickTracker tool starting point
 
@@ -95,6 +98,8 @@ classdef MibImageDocument < handle
         listener_frameChanged(obj)    % Listener for MibModel 'FrameChanged' event — syncs frame widgets and redraws
         listener_sliceChanged(obj)    % Listener for MibModel 'SliceChanged' event — syncs slice widgets and redraws
         frameNumberSlider_Callback(obj, sliderValue)        % Change the currently displayed frame using the time-number slider
+        sliderDragCallback(obj, sliderType, value, isFinal)        % Handle slider dragging with a throttle + final render
+        renderSlider(obj, sliderType, value)        % Commit a slider value to the model and redraw the image
         title = getTitle(obj)        % Get the title of this image document
         gui_panAxesFcn(obj, xy, imgWidth, imgHeight)        % Moves the image in obj.handles.imViewAxes during a pan gesture.
         gui_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View documents obj.cImageDoc{setId}
@@ -234,6 +239,12 @@ classdef MibImageDocument < handle
             %
 
             try
+                % Stop and delete any pending slider throttle/debounce timer
+                if ~isempty(obj.sliderDebounceTimer) && isvalid(obj.sliderDebounceTimer)
+                    stop(obj.sliderDebounceTimer);
+                    delete(obj.sliderDebounceTimer);
+                end
+
                 % Delete brush cursor if it exists
                 if ~isempty(obj.brushCursor) && isvalid(obj.brushCursor)
                     delete(obj.brushCursor);

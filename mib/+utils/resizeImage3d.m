@@ -60,6 +60,10 @@ function imgOut = resizeImage3d(img, scale, options)
 % 11.04.2017, IB added imresize3 if it is available
 % 2026, IB fixed imresize3 API (Method must be name-value pair); added
 %           options.wb and options.ParentFigure progress-bar propagation
+% 2026, IB process natively in the MIB3 [y,x,z,c] layout — removed the
+%           unconditional input/output permutes (and per-channel squeeze) that
+%           added two full-volume copies per call; the legacy pre-R2017a
+%           imresize fallback keeps a permute confined to its own branch
 
 imgOut = [];
 if nargin < 3; options = struct(); end
@@ -72,9 +76,12 @@ if ~isfield(options, 'imgType')
         options.imgType = '3D';
     end
 end
-img = permute(img, [1 2 4 3]);  % 3D:[y,x,z]→[y,x,1,z]; 4D new layout:[y,x,z,c]→[y,x,c,z]
-
-[height, width, colors, depth] = size(img);
+% Process natively in the MIB3 layout [y,x,z,c] — no permute.
+% A 3D input [y,x,z] reports colors=1, which the per-channel loops handle directly.
+height = size(img, 1);
+width  = size(img, 2);
+depth  = size(img, 3);
+colors = size(img, 4);
 
 if ~isempty(scale) && numel(scale) == 1
     scale = [scale, scale, scale];
@@ -152,80 +159,80 @@ end
 % ---------------------------------------------------------------------------
 
 if strcmp(options.algorithm, 'imresize')
-    imgOut = zeros([newH, newW, colors, newZ], class(img));   %#ok<ZEROLIKE> % allocate space
-    
-    if ~isempty(which('imresize3')) && ndims(img)>3     % use imresize3 if it exist, introduced in R2017a, seems to be 30% faster
+    if ~isempty(which('imresize3')) && (depth > 1 || newZ > 1)   % imresize3 (R2017a+); per-channel on [y,x,z]
+        imgOut = zeros([newH, newW, newZ, colors], class(img));   %#ok<ZEROLIKE> % allocate space
         % imresize3 uses 'cubic' for what imresize calls 'bicubic'
         imresize3Method = options.method;
         if strcmp(imresize3Method, 'bicubic'); imresize3Method = 'cubic'; end
         for colId=1:colors
-            % Method must be passed as a name-value pair, not positionally
-            imgOut(:,:,colId,:) = permute(imresize3(squeeze(img(:,:,colId,:)), [newH, newW, newZ], 'Method', imresize3Method), [1 2 4 3]);
+            % img(:,:,:,colId) is already [y,x,z]; Method must be a name-value pair
+            imgOut(:,:,:,colId) = imresize3(img(:,:,:,colId), [newH, newW, newZ], 'Method', imresize3Method);
         end
-    else    % use older implementation via imresize
+    else    % older implementation via imresize (pre-R2017a / 2D): work in [y,x,c,z] within this branch only
+        imgL = permute(img, [1 2 4 3]);   % [y,x,z,c] -> [y,x,c,z]
+        imgOutL = zeros([newH, newW, colors, newZ], class(img));   %#ok<ZEROLIKE> % allocate space
         if newW ~= width || newH ~= height  % resize xy dimension
             imgOut2 = zeros(newH, newW, colors, depth, class(img)); %#ok<ZEROLIKE>
             modVal = round(depth/10);
             for zIndex = 1:depth
                 if ~strcmp(options.method, 'osc')
-                    imgOut2(:,:,:,zIndex) = imresize(img(:, :, :, zIndex), [newH newW], options.method);
+                    imgOut2(:,:,:,zIndex) = imresize(imgL(:, :, :, zIndex), [newH newW], options.method);
                 else
-                    imgOut2(:,:,:,zIndex) = imresize(img(:, :, :, zIndex), [newH newW], {@mibOscResampling, 4});
+                    imgOut2(:,:,:,zIndex) = imresize(imgL(:, :, :, zIndex), [newH newW], {@mibOscResampling, 4});
                 end
                 if mod(zIndex, modVal) == 0 && options.showWaitbar && ~isempty(wb); mibUpdateWaitbar(wb, zIndex/depth); end
             end
         end
         if newZ ~= depth
-            if exist('imgOut2','var') == 0; imgOut2 = img; end
+            if exist('imgOut2','var') == 0; imgOut2 = imgL; end
             if size(imgOut2, 1)*1.82 < size(imgOut2, 2)
                 modVal = round(newH/10);
                 for hIndex = 1:newH
                     tempImg = imresize(permute(imgOut2(hIndex, :, :, :), [4 2 3 1]), [newZ, newW], options.method);
-                    imgOut(hIndex,:,:,:) = permute(tempImg, [4 2 3 1]);
+                    imgOutL(hIndex,:,:,:) = permute(tempImg, [4 2 3 1]);
                     if mod(hIndex,modVal) == 0 && options.showWaitbar && ~isempty(wb); mibUpdateWaitbar(wb, hIndex/newH); end
                 end
             else
                 modVal = round(newW/10);
                 for wIndex = 1:newW
                     tempImg = imresize(permute(imgOut2(:, wIndex, :, :), [1 4 3 2]), [newH newZ], options.method);
-                    imgOut(:,wIndex,:,:) = permute(tempImg, [1 4 3 2]);
+                    imgOutL(:,wIndex,:,:) = permute(tempImg, [1 4 3 2]);
                     if mod(wIndex,modVal) == 0 && options.showWaitbar && ~isempty(wb); mibUpdateWaitbar(wb, wIndex/newW); end
                 end
             end
         else
-            imgOut = imgOut2;
+            imgOutL = imgOut2;
         end
+        imgOut = permute(imgOutL, [1 2 4 3]);   % [y,x,c,z] -> [y,x,z,c]
     end
 elseif strcmp(options.algorithm, 'interpn')
-    imgOut = zeros([newH, newW, colors, newZ], class(img));   %#ok<ZEROLIKE> % allocate space
+    imgOut = zeros([newH, newW, newZ, colors], class(img));   %#ok<ZEROLIKE> % allocate space
     [xi,yi,zi] = ndgrid(linspace(1, height, newH), linspace(1, width, newW), linspace(1, depth, newZ));
     if options.showWaitbar && ~isempty(wb); mibUpdateWaitbar(wb, 0.1); end
     for colId=1:colors
+        vol = img(:,:,:,colId);   % already [y,x,z]
         if strcmp(options.method,'nearest')
-            imgOut(:,:,colId,:) = permute(interpn(squeeze(img(:,:,colId,:)), xi, yi, zi, options.method),[1 2 4 3]);
+            imgOut(:,:,:,colId) = interpn(vol, xi, yi, zi, options.method);
         else
             if isa(img,'uint8')
-                imgOut(:,:,colId,:) = permute(uint8(interpn(single(squeeze(img(:,:,colId,:))), xi, yi, zi, options.method)),[1 2 4 3]);
+                imgOut(:,:,:,colId) = uint8(interpn(single(vol), xi, yi, zi, options.method));
             elseif isa(img,'uint16')
-                imgOut(:,:,colId,:) = permute(uint16(interpn(single(squeeze(img(:,:,colId,:))), xi, yi, zi, options.method)),[1 2 4 3]);
+                imgOut(:,:,:,colId) = uint16(interpn(single(vol), xi, yi, zi, options.method));
             end
         end
         if options.showWaitbar && ~isempty(wb); mibUpdateWaitbar(wb, colId/colors); end
     end
     if options.showWaitbar && ~isempty(wb); mibUpdateWaitbar(wb, 0.9); end
 else
-    imgOut = zeros([newH, newW, colors, newZ], class(img));   %#ok<ZEROLIKE> % allocate space
+    imgOut = zeros([newH, newW, newZ, colors], class(img));   %#ok<ZEROLIKE> % allocate space
     hgtForm = makehgtform('scale',[newW/width, newH/height, newZ/depth]);
     tForm = maketform('affine', hgtForm);
     R = makeresampler(options.method, 'replicate');
-    
+
     for colId=1:colors
-        imgOut(:,:,colId,:) = permute(tformarray(squeeze(img(:,:,colId,:)), tForm, R, [1 2 3], [1 2 3], [newH, newW, newZ], [], 0), [1 2 4 3]);
+        imgOut(:,:,:,colId) = tformarray(img(:,:,:,colId), tForm, R, [1 2 3], [1 2 3], [newH, newW, newZ], [], 0);
     end
 end
-
-
-imgOut = permute(imgOut, [1 2 4 3]);  % internal [y,x,c,z] → new layout [y,x,z,c]
 
 % only delete waitbars that were created here; caller-owned handles are left intact
 if ~isempty(localWb); try; delete(localWb); catch; end; end

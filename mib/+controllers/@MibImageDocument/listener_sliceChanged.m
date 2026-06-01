@@ -39,9 +39,13 @@ if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 dataset     = obj.mibModel.I{obj.mibModel.id};
 sliceNumber = dataset.slices{dataset.orientation}(1);
 
-% Sync widgets directly — no callbacks to avoid re-entrant SliceChanged loop
-obj.handles.sliceNumber.Value       = sliceNumber;
-obj.handles.sliceNumberSlider.Value = sliceNumber;
+% Sync widgets directly — no callbacks to avoid re-entrant SliceChanged loop.
+% Do not move the slider thumb while the user is actively dragging it (that would
+% fight the drag and make the thumb appear to lag/jump).
+obj.handles.sliceNumber.Value = sliceNumber;
+if ~obj.sliderDragging
+    obj.handles.sliceNumberSlider.Value = sliceNumber;
+end
 
 % Update slice-name title for YX orientation
 if dataset.orientation == 3 && ~isempty(dataset.image.sliceName)

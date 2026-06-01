@@ -102,13 +102,13 @@ BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during exec
 
 if nargin == 5  % batch mode
     if isstruct(BatchOptIn) == 0
-        if isnan(BatchOptIn)
+        if isscalar(BatchOptIn) && isnan(BatchOptIn)
             BatchOpt = rmfield(BatchOpt, 'id');
             notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
         else
-            ErrorDlgOpt.Title = 'Error';
-            ErrorDlgOpt.String = 'A structure as the 5th parameter is required!';
-            ErrorDlgOpt.Icon = 'puffin_error';
+            ErrorDlgOpt.winTitle       = 'BatchOpt Error';
+            ErrorDlgOpt.optionalPrefix = 'Error in MibModel.copySwapSlice';
+            ErrorDlgOpt.err            = 'A structure as the 5th parameter is required!';
             notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
         end
         return;

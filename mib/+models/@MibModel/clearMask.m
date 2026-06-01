@@ -73,14 +73,14 @@ BatchOpt.mibBatchActionName  = 'Clear mask';
 %% Batch mode check
 if nargin == 3
     if isstruct(BatchOptIn) == 0
-        if isnan(BatchOptIn)    % return default options for batch editor
+        if isscalar(BatchOptIn) && isnan(BatchOptIn)    % return default options for batch editor
             BatchOpt = rmfield(BatchOpt, 'id');
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj, 'SyncBatch', eventdata);
         else
-            ErrorDlgOpt.Title   = 'BatchOpt Error';
-            ErrorDlgOpt.String  = 'A structure as the 3rd parameter is required!';
-            ErrorDlgOpt.Icon    = 'puffin_error';
+            ErrorDlgOpt.winTitle       = 'BatchOpt Error';
+            ErrorDlgOpt.optionalPrefix = 'Error in MibModel.clearMask';
+            ErrorDlgOpt.err            = 'A structure as the 3rd parameter is required!';
             notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
         end
         return;

@@ -1,10 +1,10 @@
-# Graph Report - C:\Matlab\MIB3\mib  (2026-05-27)
+# Graph Report - C:\Matlab\MIB3\mib  (2026-06-02)
 
 ## Corpus Check
-- Large corpus: 791 files · ~610,848 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
+- Large corpus: 802 files · ~641,468 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder, or use --no-semantic to run AST-only.
 
 ## Summary
-- 1704 nodes · 2855 edges · 110 communities (90 shown, 20 thin omitted)
+- 1704 nodes · 2855 edges · 109 communities (89 shown, 20 thin omitted)
 - Extraction: 75% EXTRACTED · 25% INFERRED · 0% AMBIGUOUS · INFERRED: 705 edges (avg confidence: 0.73)
 - Token cost: 0 input · 0 output
 
@@ -36,6 +36,7 @@
 - [[_COMMUNITY_Community 24|Community 24]]
 - [[_COMMUNITY_Community 25|Community 25]]
 - [[_COMMUNITY_Community 26|Community 26]]
+- [[_COMMUNITY_Community 27|Community 27]]
 - [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 29|Community 29]]
 - [[_COMMUNITY_Community 30|Community 30]]
@@ -43,12 +44,11 @@
 - [[_COMMUNITY_Community 32|Community 32]]
 - [[_COMMUNITY_Community 33|Community 33]]
 - [[_COMMUNITY_Community 34|Community 34]]
-- [[_COMMUNITY_Community 35|Community 35]]
+- [[_COMMUNITY_Community 36|Community 36]]
 - [[_COMMUNITY_Community 37|Community 37]]
 - [[_COMMUNITY_Community 38|Community 38]]
 - [[_COMMUNITY_Community 39|Community 39]]
 - [[_COMMUNITY_Community 40|Community 40]]
-- [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
 - [[_COMMUNITY_Community 44|Community 44]]
@@ -57,16 +57,15 @@
 - [[_COMMUNITY_Community 48|Community 48]]
 - [[_COMMUNITY_Community 49|Community 49]]
 - [[_COMMUNITY_Community 50|Community 50]]
-- [[_COMMUNITY_Community 51|Community 51]]
 - [[_COMMUNITY_Community 52|Community 52]]
 - [[_COMMUNITY_Community 53|Community 53]]
 - [[_COMMUNITY_Community 54|Community 54]]
 - [[_COMMUNITY_Community 55|Community 55]]
-- [[_COMMUNITY_Community 57|Community 57]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 58|Community 58]]
 - [[_COMMUNITY_Community 59|Community 59]]
 - [[_COMMUNITY_Community 60|Community 60]]
 - [[_COMMUNITY_Community 61|Community 61]]
-- [[_COMMUNITY_Community 62|Community 62]]
 - [[_COMMUNITY_Community 63|Community 63]]
 - [[_COMMUNITY_Community 64|Community 64]]
 - [[_COMMUNITY_Community 65|Community 65]]
@@ -74,19 +73,19 @@
 - [[_COMMUNITY_Community 68|Community 68]]
 - [[_COMMUNITY_Community 69|Community 69]]
 - [[_COMMUNITY_Community 70|Community 70]]
-- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 74|Community 74]]
 - [[_COMMUNITY_Community 76|Community 76]]
-- [[_COMMUNITY_Community 77|Community 77]]
+- [[_COMMUNITY_Community 78|Community 78]]
 - [[_COMMUNITY_Community 79|Community 79]]
 - [[_COMMUNITY_Community 80|Community 80]]
 - [[_COMMUNITY_Community 81|Community 81]]
 - [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
 - [[_COMMUNITY_Community 84|Community 84]]
-- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
 - [[_COMMUNITY_Community 87|Community 87]]
 - [[_COMMUNITY_Community 88|Community 88]]
-- [[_COMMUNITY_Community 89|Community 89]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `updateBatchOptFromGUI` - 4 edges
@@ -103,7 +102,7 @@
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
 
-## Communities (110 total, 20 thin omitted)
+## Communities (109 total, 20 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.04
@@ -133,43 +132,47 @@ Nodes (35): addCallbacks, Annotations, annotationTable_CellEditCallback, annotat
 Cohesion: 0.05
 Nodes (30): addCallbacks, closeWindow, cropBtn_Callback, cropMaskCheck_Callback, cropModelCheck_Callback, CropObjects, dirEdit_Callback, generate3DPatches_Callback (+22 more)
 
-### Community 13 - "Community 13"
+### Community 14 - "Community 14"
 Cohesion: 0.07
 Nodes (3): MibDeep, tif3DFileRead, viewListner_Callback
 
 ### Community 16 - "Community 16"
 Cohesion: 0.07
-Nodes (27): addCallbacks, axesLimitsChanged_Callback, binCheck_Callback, binMagButtons_Callback, closeWindow, crop_Callback, FileFormat_Callback, FileFormatTabGroup_Callback (+19 more)
+Nodes (29): addParentToPath, removeTempDir, setupTempDir, testAttributesPersist, testCreate, testCreateArray, testCreateArrayFromData, testCreateExisting (+21 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.07
-Nodes (29): addParentToPath, removeTempDir, setupTempDir, testAttributesPersist, testCreate, testCreateArray, testCreateArrayFromData, testCreateExisting (+21 more)
+Nodes (29): addCallbacks, addFindBtnContextMenus, adjHelpBtn_Callback, applyBtn_Callback, autoHistCheck_Callback, closeWindow, colorChannelCombo_Callback, DisplayAdjust (+21 more)
 
 ### Community 18 - "Community 18"
 Cohesion: 0.07
-Nodes (29): addCallbacks, addFindBtnContextMenus, adjHelpBtn_Callback, applyBtn_Callback, autoHistCheck_Callback, closeWindow, colorChannelCombo_Callback, DisplayAdjust (+21 more)
+Nodes (27): addCallbacks, axesLimitsChanged_Callback, binCheck_Callback, binMagButtons_Callback, closeWindow, crop_Callback, FileFormat_Callback, FileFormatTabGroup_Callback (+19 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.07
-Nodes (23): BioFormatsStdLoader, loadImages, loadMetadata, BioFormatsVirtualSetupLoader, loadImages, loadMetadata, initView, loadBioFormatsLibrary (+15 more)
+Nodes (21): create, getAvailableLoaders, ImodLoader, loadImages, loadMetadata, ImreadLoader, loadImages, loadMetadata (+13 more)
 
 ### Community 20 - "Community 20"
+Cohesion: 0.07
+Nodes (23): BioFormatsStdLoader, loadImages, loadMetadata, BioFormatsVirtualSetupLoader, loadImages, loadMetadata, initView, loadBioFormatsLibrary (+15 more)
+
+### Community 21 - "Community 21"
 Cohesion: 0.15
 Nodes (7): addCallbacks, BatchProcessing, closeWindow, createContextMenus, fitTableColumns, listener_Callbacks, updateWidgets
-
-### Community 24 - "Community 24"
-Cohesion: 0.08
-Nodes (18): create, getAvailableLoaders, ImodLoader, loadImages, loadMetadata, autoDetectModelType, loadImages, loadMetadata (+10 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.09
 Nodes (20): axisOrderToLabels, buildViewPort, classMaxInt, colorType, extractAxisOrder, extractAxisUnit, extractMultiscales, extractScaleFromCT (+12 more)
 
-### Community 28 - "Community 28"
+### Community 26 - "Community 26"
 Cohesion: 0.09
 Nodes (21): addCallbacks, closeWindow, deleteBtn_Callback, edgesViewTable_cb, edgesViewTable_CellEditCallback, edgesViewTable_CellSelectionCallback, Lines3dDialog, loadBtn_Callback (+13 more)
 
-### Community 30 - "Community 30"
+### Community 28 - "Community 28"
+Cohesion: 0.16
+Nodes (18): addCallbacks, closeWindow, continueBtn_Callback, crop_Callback, directionPopup_Callback, formatPopup_Callback, heightEdit_Callback, help (+10 more)
+
+### Community 29 - "Community 29"
 Cohesion: 0.1
 Nodes (20): BioFormatsReader_ValueChanged, closeWindow, Convert, generatePyramidalTIF, generateZarr, getPNGwithoutColormap, helpButton_Callback, ImageConverter (+12 more)
 
@@ -177,21 +180,21 @@ Nodes (20): BioFormatsReader_ValueChanged, closeWindow, Convert, generatePyramid
 Cohesion: 0.1
 Nodes (18): HDF5NoHeaderLoader, loadImages, loadMetadata, HDF5VirtualSetupLoader, loadImages, loadMetadata, calculateTransMatrix, initView (+10 more)
 
-### Community 32 - "Community 32"
-Cohesion: 0.17
-Nodes (18): addCallbacks, closeWindow, continueBtn_Callback, crop_Callback, directionPopup_Callback, formatPopup_Callback, heightEdit_Callback, help (+10 more)
-
-### Community 34 - "Community 34"
+### Community 33 - "Community 33"
 Cohesion: 0.1
 Nodes (16): delete, deletePoolWaitbar, getCancelState, getCurrentIteration, getMaxNumberOfIterations, getText, getWaitbarHandle, increaseMaxNumberOfIterations (+8 more)
 
-### Community 35 - "Community 35"
+### Community 34 - "Community 34"
 Cohesion: 0.11
 Nodes (18): buildBytesCodec, buildChunkKeyEncoding, buildCodec, buildTransposeCodec, create, createFromData, dataType, defaultChunkShape (+10 more)
 
-### Community 37 - "Community 37"
+### Community 36 - "Community 36"
 Cohesion: 0.19
 Nodes (10): addCallbacks, captureSessionSettings, closeWindow, ContrastNormalization, defaultSessionSettings, returnBatchOpt, updateBatchOptFromGUI, updateContextualWidgets (+2 more)
+
+### Community 37 - "Community 37"
+Cohesion: 0.11
+Nodes (17): buttonGroup_Callback, Calculate, canShowWaitbar, closeWindow, continueBtn_Callback, convertDataset, cropDataset, getDialogParent (+9 more)
 
 ### Community 38 - "Community 38"
 Cohesion: 0.11
@@ -199,13 +202,9 @@ Nodes (17): addCallbacks, captureCropDataPos, closeWindow, cropBtn_Callback, Cro
 
 ### Community 39 - "Community 39"
 Cohesion: 0.11
-Nodes (17): buttonGroup_Callback, Calculate, canShowWaitbar, closeWindow, continueBtn_Callback, convertDataset, cropDataset, getDialogParent (+9 more)
-
-### Community 40 - "Community 40"
-Cohesion: 0.11
 Nodes (17): addMeasurementsToPlot, clearContents, clearData, computeAngle, computeCircleFit, computeDistance, computeKymograph, computeProfile (+9 more)
 
-### Community 41 - "Community 41"
+### Community 40 - "Community 40"
 Cohesion: 0.18
 Nodes (10): addCallbacks, Alignment, closeWindow, defaultAutomaticOptions, defaultTooltips, findMatchingPairs, returnBatchOpt, updateBatchOptFromGUI (+2 more)
 
@@ -223,7 +222,7 @@ Nodes (15): addROIsToPlot, clearContents, clearData, convertLegacyTypes, crop, f
 
 ### Community 46 - "Community 46"
 Cohesion: 0.13
-Nodes (12): closeWindow, nextTipBtn_Callback, previousTipBtn_Callback, updateWidgets, WelcomeTips, AmiraImportDlg, initView, onCancel (+4 more)
+Nodes (13): ChildView, getChildren, buttonGroup_Callback, closeWindow, continueBtn_Callback, convertDataset, cropDataset, GuiTutorial (+5 more)
 
 ### Community 47 - "Community 47"
 Cohesion: 0.14
@@ -231,33 +230,33 @@ Nodes (13): changeImage, closeWindow, getActivations, getNewImage, makeCollage, 
 
 ### Community 48 - "Community 48"
 Cohesion: 0.14
-Nodes (13): getBoundingBox, getLabelsVariable, getMaterialColors, getMaterialNames, getModelType, getSupportedFormats, MatlabSaver, save (+5 more)
+Nodes (11): closeWindow, updateWidgets, ViewListner_Callback, VolRenAppViewer, AmiraImportDlg, initView, onCancel, onContinue (+3 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.14
-Nodes (13): addParentToPath, createTestMetadataJson, removeTempDir, setupTempDir, testCreateArray, testCreateWithMismatchedDimensions, testInfo, testInfoFromNonExistentPath (+5 more)
+Nodes (13): getBoundingBox, getLabelsVariable, getMaterialColors, getMaterialNames, getModelType, getSupportedFormats, MatlabSaver, save (+5 more)
 
 ### Community 50 - "Community 50"
+Cohesion: 0.14
+Nodes (13): addParentToPath, createTestMetadataJson, removeTempDir, setupTempDir, testCreateArray, testCreateWithMismatchedDimensions, testInfo, testInfoFromNonExistentPath (+5 more)
+
+### Community 52 - "Community 52"
 Cohesion: 0.13
 Nodes (9): getSupportedFormats, ImodContourSaver, save, getSupportedFormats, JpgSaver, save, getSupportedFormats, PngSaver (+1 more)
 
-### Community 51 - "Community 51"
+### Community 53 - "Community 53"
 Cohesion: 0.15
 Nodes (12): addCallbacks, closeWindow, editbox_Callback, helpBtn_Callback, radio_Callback, resampleBtn_Callback, ResampleDataset, returnBatchOpt (+4 more)
 
-### Community 52 - "Community 52"
+### Community 54 - "Community 54"
 Cohesion: 0.17
 Nodes (11): addCallbacks, applyButton_Callback, BoundingBox, closeButton_Callback, closeWindow, helpButton_Callback, importBtn_Callback, returnBatchOpt (+3 more)
 
-### Community 53 - "Community 53"
-Cohesion: 0.17
-Nodes (11): buttonGroup_Callback, closeWindow, continueBtn_Callback, convertDataset, cropDataset, GuiTutorial, helpBtn_Callback, invertDataset (+3 more)
-
-### Community 54 - "Community 54"
+### Community 55 - "Community 55"
 Cohesion: 0.17
 Nodes (11): closeWindow, computeMeshVolume, computeSurfaceArea, extractComponent, isClosedMesh, runButton_Callback, selectDirButton_Callback, SurfaceMeasurements (+3 more)
 
-### Community 57 - "Community 57"
+### Community 58 - "Community 58"
 Cohesion: 0.25
 Nodes (4): MibVirtualImage, computePermutation, readRegion, Zarr3VirtualLoader
 
@@ -269,13 +268,9 @@ Nodes (9): create, createArray, createArrayFromData, createGroup, list, listCont
 Cohesion: 0.2
 Nodes (8): addCallbacks, cancelBtn_Callback, checkallBtn_Callback, closeWindow, okBtn_Callback, QuantificationProperties, uncheckallBtn_Callback, updateWidgets
 
-### Community 62 - "Community 62"
-Cohesion: 0.22
-Nodes (8): initView, onCancel, onKeyPress, onOK, onSelectionChanged, run, selectModelTypeDlg, updateDescription
-
 ### Community 63 - "Community 63"
 Cohesion: 0.22
-Nodes (6): closeWindow, updateWidgets, ViewListner_Callback, VolRenAppViewer, ChildView, getChildren
+Nodes (8): initView, onCancel, onKeyPress, onOK, onSelectionChanged, run, selectModelTypeDlg, updateDescription
 
 ### Community 64 - "Community 64"
 Cohesion: 0.22
@@ -301,7 +296,11 @@ Nodes (7): fetchMetadata, getAttribute, getAttributes, isHttpUrl, joinPath, setA
 Cohesion: 0.25
 Nodes (7): defaultLoaderId, ExtensionRegistryLoad, generateKey, getAllowedExtensions, initDefaults, resolveLoader, setAllowedExtensions
 
-### Community 73 - "Community 73"
+### Community 72 - "Community 72"
+Cohesion: 0.29
+Nodes (5): closeWindow, nextTipBtn_Callback, previousTipBtn_Callback, updateWidgets, WelcomeTips
+
+### Community 74 - "Community 74"
 Cohesion: 0.29
 Nodes (3): getSupportedFormats, OmeTiffSaver, save
 
@@ -309,7 +308,7 @@ Nodes (3): getSupportedFormats, OmeTiffSaver, save
 Cohesion: 0.33
 Nodes (5): BioFormatsVirtualLoader, close, delete, openReader, readPlane
 
-### Community 77 - "Community 77"
+### Community 78 - "Community 78"
 Cohesion: 0.33
 Nodes (5): HDF5HeaderLoader, loadBigDataViewerFormat, loadImages, loadMetadata, parseXMLHeader
 
@@ -332,10 +331,6 @@ Nodes (3): Calculate, closeWindow, PluginWithoutGUI
 ### Community 84 - "Community 84"
 Cohesion: 0.5
 Nodes (3): HDF5VirtualLoader, readRegion, resolveAxisOrder
-
-### Community 85 - "Community 85"
-Cohesion: 0.5
-Nodes (3): ImreadLoader, loadImages, loadMetadata
 
 ## Knowledge Gaps
 - **793 isolated node(s):** `ViewListner_Callback2`, `findMatchingPairs`, `Alignment`, `updateWidgets`, `addCallbacks` (+788 more)

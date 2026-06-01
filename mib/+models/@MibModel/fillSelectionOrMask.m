@@ -93,14 +93,14 @@ BatchOpt.mibBatchTooltip.showWaitbar  = 'Show or not the progress dialog during 
 %% Batch mode check
 batchModeSwitch = 0;
 if isstruct(BatchOptIn) == 0
-    if isnan(BatchOptIn)
+    if isscalar(BatchOptIn) && isnan(BatchOptIn)
         BatchOpt = rmfield(BatchOpt, 'id');
         eventdata = core.ToggleEventData(BatchOpt);
         notify(obj, 'SyncBatch', eventdata);
     else
-        ErrorDlgOpt.Title  = 'BatchOpt Error';
-        ErrorDlgOpt.String = 'A structure as the 2nd parameter is required!';
-        ErrorDlgOpt.Icon   = 'puffin_error';
+        ErrorDlgOpt.winTitle       = 'BatchOpt Error';
+        ErrorDlgOpt.optionalPrefix = 'Error in MibModel.fillSelectionOrMask';
+        ErrorDlgOpt.err            = 'A structure as the 2nd parameter is required!';
         notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
     end
     return;

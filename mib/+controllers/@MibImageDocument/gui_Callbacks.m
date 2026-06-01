@@ -50,26 +50,10 @@ switch mode
         currentSlice = obj.handles.sliceNumber.Value;
         nextSlice = min([currentSlice+1, round(obj.handles.sliceNumber.Limits(2))]);
         obj.sliceNumber_Callback(nextSlice);
-    case 'sliceNumberSlider'
-        isZarrVirtual = obj.mibModel.I{obj.mibModel.id}.datasetType(1) == 'V' && ...
-            ~isempty(obj.mibModel.I{obj.mibModel.id}.image.pyramid.levelNames);
-        if isZarrVirtual
-            % Zarr: update numeric display immediately, defer disk read
-            % until the user pauses dragging for 150 ms.
-            obj.handles.sliceNumber.Value = round(hData.Value);
-            if ~isempty(obj.sliderDebounceTimer) && isvalid(obj.sliderDebounceTimer)
-                stop(obj.sliderDebounceTimer);
-                delete(obj.sliderDebounceTimer);
-            end
-            sliderVal = hData.Value;
-            obj.sliderDebounceTimer = timer( ...
-                'ExecutionMode', 'singleShot', ...
-                'StartDelay',    0.1, ...
-                'TimerFcn',      @(~,~) obj.sliceNumberSlider_Callback(sliderVal));
-            start(obj.sliderDebounceTimer);
-        else
-            obj.sliceNumberSlider_Callback(hData.Value);
-        end
+    case 'sliceNumberSlider'        % live ValueChanging while dragging
+        obj.sliderDragCallback('slice', hData.Value, false);
+    case 'sliceNumberSliderFinal'   % ValueChanged on release
+        obj.sliderDragCallback('slice', hData.Value, true);
     case 'prevSlice'
         currentSlice = obj.handles.sliceNumber.Value;
         nextSlice = max([currentSlice-1, 1]);
@@ -86,24 +70,10 @@ switch mode
         currentFrame = obj.handles.frameNumber.Value;
         nextFrame = max([currentFrame-1, 1]);
         obj.frameNumber_Callback(nextFrame);
-    case 'frameNumberSlider'
-        isZarrVirtual = obj.mibModel.I{obj.mibModel.id}.datasetType(1) == 'V' && ...
-            ~isempty(obj.mibModel.I{obj.mibModel.id}.image.pyramid.levelNames);
-        if isZarrVirtual
-            obj.handles.frameNumber.Value = round(hData.Value);
-            if ~isempty(obj.sliderDebounceTimer) && isvalid(obj.sliderDebounceTimer)
-                stop(obj.sliderDebounceTimer);
-                delete(obj.sliderDebounceTimer);
-            end
-            sliderVal = hData.Value;
-            obj.sliderDebounceTimer = timer( ...
-                'ExecutionMode', 'singleShot', ...
-                'StartDelay',    0.1, ...
-                'TimerFcn',      @(~,~) obj.frameNumberSlider_Callback(sliderVal));
-            start(obj.sliderDebounceTimer);
-        else
-            obj.frameNumberSlider_Callback(hData.Value);
-        end
+    case 'frameNumberSlider'        % live ValueChanging while dragging
+        obj.sliderDragCallback('frame', hData.Value, false);
+    case 'frameNumberSliderFinal'   % ValueChanged on release
+        obj.sliderDragCallback('frame', hData.Value, true);
     case 'nextFrame'
         currentFrame = obj.handles.frameNumber.Value;
         nextFrame = min([currentFrame+1, round(obj.handles.frameNumber.Limits(2))]);

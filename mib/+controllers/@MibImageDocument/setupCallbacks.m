@@ -48,6 +48,7 @@ obj.handles.frameNumberSliderContextSetStep.MenuSelectedFcn = @obj.sliceNumberSl
 obj.handles.lastSlice.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.prevSlice.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.sliceNumberSlider.ValueChangingFcn = @obj.gui_Callbacks;
+obj.handles.sliceNumberSlider.ValueChangedFcn = @(h,d) obj.gui_Callbacks(h, d, 'sliceNumberSliderFinal');
 obj.handles.nextSlice.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.firstSlice.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.sliceNumber.ValueChangedFcn = @obj.gui_Callbacks;
@@ -55,6 +56,7 @@ obj.handles.frameNumber.ValueChangedFcn = @obj.gui_Callbacks;
 obj.handles.firstFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.prevFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.frameNumberSlider.ValueChangingFcn = @obj.gui_Callbacks;
+obj.handles.frameNumberSlider.ValueChangedFcn = @(h,d) obj.gui_Callbacks(h, d, 'frameNumberSliderFinal');
 obj.handles.nextFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 obj.handles.lastFrame.ButtonPushedFcn = @obj.gui_Callbacks;
 

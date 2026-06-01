@@ -40,9 +40,12 @@ if obj.mibModel.Sets.selectedSet ~= obj.setOfDatasetsIndex; return; end
 
 frameNumber = obj.mibModel.I{obj.mibModel.id}.slices{5}(1);
 
-% Sync widgets directly — no callbacks to avoid re-entrant FrameChanged loop
-obj.handles.frameNumber.Value       = frameNumber;
-obj.handles.frameNumberSlider.Value = frameNumber;
+% Sync widgets directly — no callbacks to avoid re-entrant FrameChanged loop.
+% Do not move the slider thumb while the user is actively dragging it.
+obj.handles.frameNumber.Value = frameNumber;
+if ~obj.sliderDragging
+    obj.handles.frameNumberSlider.Value = frameNumber;
+end
 
 obj.mibController.showImage();
 

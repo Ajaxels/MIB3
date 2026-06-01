@@ -135,13 +135,13 @@ BatchOpt.mibBatchTooltip.showWaitbar   = 'Show or not the progress bar during ex
 %% batch mode check
 if nargin == 4  % batch mode
     if isstruct(BatchOptIn) == 0
-        if isnan(BatchOptIn)
+        if isscalar(BatchOptIn) && isnan(BatchOptIn)
             BatchOpt = rmfield(BatchOpt, 'id');
             notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
         else
-            ErrorDlgOpt.Title  = 'Error';
-            ErrorDlgOpt.String = 'A structure as the 2nd parameter is required!';
-            ErrorDlgOpt.Icon   = 'puffin_error';
+            ErrorDlgOpt.winTitle       = 'BatchOpt Error';
+            ErrorDlgOpt.optionalPrefix = 'Error in MibModel.colorChannelActions';
+            ErrorDlgOpt.err            = 'A structure as the 2nd parameter is required!';
             notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
         end
         return;
@@ -264,9 +264,8 @@ end
 if strcmp(BatchOpt.Action{1}, 'Rotate channel')
     rotAngle = str2double(BatchOpt.RotationAngle{1});
     if isnan(rotAngle) || mod(rotAngle, 90) ~= 0
-        ErrorDlgOpt.Title  = 'Wrong rotation angle';
-        ErrorDlgOpt.String = 'The rotation angle must be 90, 180, or -90.';
-        ErrorDlgOpt.Icon   = 'puffin_error';
+        ErrorDlgOpt.winTitle = 'Wrong rotation angle';
+        ErrorDlgOpt.err      = 'The rotation angle must be 90, 180, or -90.';
         notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
         notify(obj, 'StopProtocol');
         return;
