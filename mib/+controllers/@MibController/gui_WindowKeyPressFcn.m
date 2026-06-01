@@ -265,13 +265,15 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.mibModel.saveImage('image');
 
         case 'Copy to buffer selection from the current slice'  % default 'Ctrl + c'
-            error("MISSING IMPLEMENTATION: obj.menuSelectionBuffer_Callback('copy');")
+            obj.cRibbon.selectionBuffer('copy');
 
         case 'Paste buffered selection to the current slice'    % default 'Ctrl + v'
-            error("MISSING IMPLEMENTATION: obj.menuSelectionBuffer_Callback('paste');")
+            obj.currentModifier = {};   % clear before selectionBuffer may open a dialog
+            obj.cRibbon.selectionBuffer('paste');
 
         case 'Paste buffered selection to all slices'           % default 'Ctrl + Shift + v'
-            error("MISSING IMPLEMENTATION: obj.menuSelectionBuffer_Callback('pasteall');")
+            obj.currentModifier = {};   % clear before uiprogressdlg steals the KeyRelease event
+            obj.cRibbon.selectionBuffer('pasteall');
 
         case 'Toggle between the selected material and exterior' % default 'e'
             cSegmentation.materialsTable_CellSelectionCallback([dataset.lastSegmSelection(1), 2]);

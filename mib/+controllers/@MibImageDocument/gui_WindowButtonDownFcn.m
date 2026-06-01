@@ -27,7 +27,7 @@ function gui_WindowButtonDownFcn(obj)
 % ---- Get figure handle + input state ----
 hFig = obj.UIFigure;
 seltype = hFig.SelectionType;          % 'normal','alt','extend','open'
-modifier = hFig.CurrentModifier;       % cell array: {'shift','control',...}
+modifier = obj.mibController.currentModifier;  % authoritative modifier state; never stale after blocking dialogs (unlike hFig.CurrentModifier)
 % Get mouse coordinates in axes space (data units)
 xy = obj.handles.imViewAxes.CurrentPoint;  % 2x3, use row(1,1:2)
 % Get selected tool in the segmentation panel
@@ -53,10 +53,8 @@ if obj.mibModel.preferences.System.LeftMouseButton(1) == 's'  % the selection mo
                 operation = 'select';
             end
         case 'alt'      % RMB, Ctrl+LMB
-            % Use 'control' specifically — not just any non-empty modifier.
-            % UIFigure.CurrentModifier can stay stale as {'shift'} after a
-            % blocking Python call; checking for 'control' prevents a stale
-            % Shift state from turning a plain RMB pan into a select.
+            % seltype 'alt' covers both plain RMB and Ctrl+LMB.
+            % Use mibController.currentModifier (reliable) to distinguish them.
             if any(strcmp(modifier, 'control'))
                 operation = 'select';
             else

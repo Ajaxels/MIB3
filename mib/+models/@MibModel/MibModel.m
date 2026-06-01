@@ -78,6 +78,8 @@ classdef MibModel < handle
         % Queried by MibController.showImage for live propagation.
         connImaris = []
         % handle to an active IceImarisConnector connection; [] when not connected
+        storedSelection = []
+        % buffer for the selection layer, used by selectionBuffer (copy/paste/clear)
     end
 
     properties (SetObservable)

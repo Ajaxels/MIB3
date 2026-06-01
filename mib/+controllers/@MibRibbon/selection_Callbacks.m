@@ -45,12 +45,13 @@ switch mode
     
     % ----------- Selection to buffer section -------------
     case 'Copy (Ctrl+C)'    % obj.handles.ribbonSelection.copy
-        
+        obj.selectionBuffer('copy');
     case 'Paste (Ctrl+V)'    % obj.handles.ribbonSelection.paste
-
+        obj.selectionBuffer('paste');
     case 'Paste to all slices (Ctrl+Shift+V)'    % obj.handles.ribbonSelection.pasteAll
-
+        obj.selectionBuffer('pasteall');
     case 'Clear'    % obj.handles.ribbonSelection.clear
+        obj.selectionBuffer('clear');
 
     % ----------- Selection MorphOps -------------
     case 'Branch points'        % obj.handles.ribbonSelection.branch
