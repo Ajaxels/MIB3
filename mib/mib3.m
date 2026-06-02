@@ -74,6 +74,26 @@ if isdeployed()
     s = settings;
     % Make sure that documents are docked in the compiled application
     s.matlab.ui.figure.DockFigureInDeployment.TemporaryValue = true;
+else
+    % add folders to path in case mib3 was started without the project
+    func_name='mib3.m';
+    func_dir=which(func_name);
+    func_dir=fileparts(func_dir);
+    addpath(func_dir);
+    addpath(fullfile(func_dir, 'external'));
+    addpath(fullfile(func_dir, 'external', 'bioformats'));
+    addpath(fullfile(func_dir, 'external', 'CellMigration'));
+    addpath(fullfile(func_dir, 'external', 'export_fig'));
+    addpath(fullfile(func_dir, 'external', 'FastMarching'));
+    addpath(fullfile(func_dir, 'external', 'HistThresh'));
+    addpath(fullfile(func_dir, 'external', 'matGeom', 'geom2d'));
+    addpath(fullfile(func_dir, 'external', 'matGeom', 'geom3d'));
+    addpath(fullfile(func_dir, 'external', 'MatTomo'));
+    addpath(fullfile(func_dir, 'external', 'nrrd'));
+    addpath(fullfile(func_dir, 'external', 'RegionGrowing'));
+    addpath(fullfile(func_dir, 'external', 'Supervoxels'));
+    addpath(fullfile(func_dir, 'external', 'Zarr3Matlab'));
+    addpath(fullfile(func_dir, 'legacy'));    
 end
 
 if false
