@@ -104,6 +104,11 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 dataset.current_yxz(3) = xy(1);
             end
             obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.yx_orientation, true);
+            % Refresh pixel label so the NEXT keypress reads YX coordinates, not stale ones from the
+            % previous orientation.  orientationChange() physically moves the cursor via
+            % centerCursorInAxes() but gui_WinMouseMotionFcn doesn't fire until the next event-loop
+            % tick — calling it explicitly here keeps the label in sync.
+            cImageDoc.gui_WinMouseMotionFcn();
         case 'Switch dataset to ZY orientation'         % default 'Alt + 2'
             if dataset.orientation == 2 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || strcmp(dataset.datasetType, 'Virtual'); return; end
             if dataset.orientation == 1
@@ -116,6 +121,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 dataset.current_yxz(3) = dataset.slices{3}(1);
             end
             obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.yz_orientation, true);
+            cImageDoc.gui_WinMouseMotionFcn();  % keep pixel label in sync after cursor reposition
         case 'Switch dataset to ZX orientation'         % default 'Alt + 3'
             if dataset.orientation == 1 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || strcmp(dataset.datasetType, 'Virtual'); return; end
             if dataset.orientation == 2
@@ -128,6 +134,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
                 dataset.current_yxz(3) = dataset.slices{3}(1);
             end
             obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.xz_orientation, true);
+            cImageDoc.gui_WinMouseMotionFcn();  % keep pixel label in sync after cursor reposition
         case 'Interpolate selection'            % default 'i'
             obj.mibModel.interpolateImage('selection');
         case 'Invert image'                     % default 'Ctrl + i'
@@ -332,6 +339,12 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             % fire there and never reach gui_WindowKeyReleaseFcn.
             obj.currentModifier = {};
             obj.mibModel.undo();
+            % When Membrane ClickTracker is active, pop the last tracker
+            % point so the next click continues from the previous chain point
+            if strcmp(cSegmentation.handles.segmTool.Value, 'Membrane ClickTracker') && ...
+                    size(cImageDoc.trackerYXZ, 2) > 1
+                cImageDoc.trackerYXZ = cImageDoc.trackerYXZ(:, 1:end-1);
+            end
             obj.showImage();
 
         case 'Find material under cursor'               % default 'Ctrl + f'

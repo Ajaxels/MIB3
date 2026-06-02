@@ -21,8 +21,10 @@ import matlab.ui.internal.toolstrip.Icon
 iconPath = fullfile(obj.controller.mibPath, 'assets', 'icons');
 
 %% Populate Quick Access Bar
-% Add Common Controls to the QAB from right-to-left
-% Possible options
+% Add Common Controls to the QAB from right-to-left:
+% the LAST button added becomes the LEFTMOST (Alt+1), the first becomes rightmost.
+%
+% Possible button types:
 % matlab.ui.internal.toolstrip.qab.QABHelpButton
 % matlab.ui.internal.toolstrip.qab.QABPushButton
 % matlab.ui.internal.toolstrip.qab.QABRedoButton
@@ -141,6 +143,18 @@ qab.undo = QABPushButton(Icon.UNDO_16);
 qab.undo.Text = 'Undo the last operation';
 qab.undo.Description = 'Undo the last operation';
 obj.gui.add(qab.undo);
+
+% Three empty placeholder buttons added last → occupy Alt+1, Alt+2, Alt+3
+% (leftmost QAB positions).  MATLAB fires QAB button N when Alt+N is pressed,
+% independently of gui_WindowKeyPressFcn.  Without these placeholders, Alt+1
+% triggers the Undo button and silently undoes the last operation while the
+% user switches orientation via the Alt+1/2/3 keyboard shortcuts.
+divider = QABPushButton();
+obj.gui.add(divider);
+divider = QABPushButton();
+obj.gui.add(divider);
+divider = QABPushButton();
+obj.gui.add(divider);
 
 obj.handles.qab = qab;
 

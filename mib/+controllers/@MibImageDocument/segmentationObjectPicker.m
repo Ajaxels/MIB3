@@ -52,6 +52,7 @@ if colchannel == -1
     type = 'mask';
     if ~obj.mibModel.I{id}.maskExist
         dlgOpt.MsgBoxOnly = true;
+        dlgOpt.WindowStyle = 'modal';
         header = sprintf('No mask found!\nGenerate the mask layer first');
         dlgOpt.HeaderLines = 2;
         utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Object picker error', dlgOpt);

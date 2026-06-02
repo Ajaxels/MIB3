@@ -101,6 +101,7 @@ classdef MibImageDocument < handle
         sliderDragCallback(obj, sliderType, value, isFinal)        % Handle slider dragging with a throttle + final render
         renderSlider(obj, sliderType, value)        % Commit a slider value to the model and redraw the image
         title = getTitle(obj)        % Get the title of this image document
+        centerCursorInAxes(obj)        % Move the OS mouse cursor to the centre of this document's image axes
         gui_panAxesFcn(obj, xy, imgWidth, imgHeight)        % Moves the image in obj.handles.imViewAxes during a pan gesture.
         gui_Callbacks(obj, hWidget, hData, mode)        % callbacks for widgets of the Image View documents obj.cImageDoc{setId}
         gui_ScrollWheelFcn(obj, eventdata)        % Callback for mouse scroll wheel

@@ -141,6 +141,7 @@ classdef MibModel < handle
         deleteSlice(obj, orientation, sliceNumber, BatchOptIn)  % Delete one or more slices or time-frames from the dataset
         dilateImage(obj, BatchOptIn)       % dilate (expand) the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
         erodeImage(obj, BatchOptIn)        % erode the selection, mask, or labels layer (2D or 3D strel, sequential or parallel)
+        expandSelectionToMaskBorder(obj, BatchOptIn)   % snap each selection CC to the enclosing mask CC (3D/4D scope)
         exportDataset(obj, layerType, BatchOptIn)        % export image, mask, or labels layer to MATLAB workspace
         exportDatasetToImaris(obj, layerType, BatchOptIn)        % export image, mask, or model layer to Imaris via IceImarisConnector
         exportDatasetToMib(obj, layerType, BatchOptIn)           % copy mask or model layer to another MIB container

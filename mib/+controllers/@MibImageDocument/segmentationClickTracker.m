@@ -16,7 +16,8 @@ function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
 %   - **modifier** — [char] specify action with generated selection:
 %
 %     - ``''`` — trace membrane from starting to selected point
-%     - ``'shift'`` — define starting point of membrane (2D/3D mode)
+%     - ``'control'`` — define starting point of membrane (2D mode)
+%     - ``'shift'`` — define starting point of membrane (3D straight-line mode)
 %
 % Output Arguments:
 %   - **output** — [char] define next action in ``gui_WindowButtonDownFcn``:
@@ -24,11 +25,11 @@ function output = segmentationClickTracker(obj, yxzCoordinate, yx, modifier)
 %     - ``'continue'`` — continue with script
 %     - ``'return'`` — stop execution and return
 %
-% **Example 1** — define starting point:
+% **Example 1** — define starting point (2D mode, Ctrl+click):
 %
 %   .. code-block:: matlab
 %
-%      output = obj.segmentationClickTracker([50, 75, 1], [25, 38], 'shift');
+%      output = obj.segmentationClickTracker([50, 75, 1], [25, 38], {'control'});
 %
 % **Example 2** — trace to endpoint:
 %
@@ -77,7 +78,7 @@ if switch3d
     h = yxzCoordinate(1);
     w = yxzCoordinate(2);
     z = yxzCoordinate(3);
-    if strcmp(modifier, 'shift')    % defines first point for the tracer, with the Shift button
+    if any(strcmp(modifier, 'shift'))    % defines first point for the tracer, with the Shift button
         obj.mibModel.backup('selection', 0);
 
         obj.trackerYXZ = [h; w; z];
@@ -91,14 +92,14 @@ if switch3d
         if isnan(obj.trackerYXZ(1))
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_warning';
+            dlgOpt.WindowStyle = 'modal';
             header = 'Please use Shift+Mouse click to define the starting point!';
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing the starting point', dlgOpt);
             return;
         end
 
-        obj.trackerYXZ = obj.trackerYXZ(:,end);
         [height, width, thick] = obj.mibModel.I{id}.image.getDatasetDimensions(3);
-        p1 = obj.trackerYXZ;
+        p1 = obj.trackerYXZ(:,end);
         p2 = [h; w; z];
         dv = p2 - p1;
 
@@ -165,7 +166,7 @@ if switch3d
         if isempty(find(se_size == 0, 1))    % dilate to make line thicker
             selareaCrop = imdilate(selareaCrop, se);
         end
-        obj.trackerYXZ(:,2) = [h; w; z];
+        obj.trackerYXZ = [obj.trackerYXZ, [h; w; z]];
         % combine selections
         obj.mibModel.setData3D(bitor(currSelection, selareaCrop), 'selection', [], orient, [], options);
         notify(obj.mibModel, 'ShowImage');
@@ -179,7 +180,7 @@ else
     z = yxzCoordinate(3);
     options.blockModeSwitch = 1;
     options.id = id;
-    if strcmp(modifier, 'shift')    % defines first point for the tracer
+    if any(strcmp(modifier, 'control'))    % defines first point for the tracer
         obj.trackerYXZ = [yCrop; xCrop; z];
         currentSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], options));
         selarea = zeros(size(currentSelection), 'uint8');
@@ -188,16 +189,18 @@ else
         if isnan(obj.trackerYXZ(1))
             dlgOpt.MsgBoxOnly = true;
             dlgOpt.Icon = 'puffin_warning';
+            dlgOpt.WindowStyle = 'modal';
             header = 'Please use Ctrl+Mouse click to define the starting point!';
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing the starting point', dlgOpt);
             return;
         end
-        obj.trackerYXZ = obj.trackerYXZ(:,end);
+        startPoint = obj.trackerYXZ(:,end);
         [axesX, axesY] = obj.mibModel.getAxesLimits();
-        pointY = obj.trackerYXZ(1) - max([0, floor(axesY(1))]);
-        pointX = obj.trackerYXZ(2) - max([0, floor(axesX(1))]);
+        pointY = startPoint(1) - max([0, floor(axesY(1))]);
+        pointX = startPoint(2) - max([0, floor(axesX(1))]);
         if pointY < 1 || pointX < 1 || pointX > axesX(2) || pointY > axesY(2)
             dlgOpt.MsgBoxOnly = true;
+            dlgOpt.WindowStyle = 'modal';
             header = 'Please shift the window to see both the starting and the ending points!';
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong view!', dlgOpt);
             return;
@@ -208,7 +211,7 @@ else
             pnts(2,:) = [ceil(yx(2)*magFactor), ceil(yx(1)*magFactor)];
             selarea = zeros(size(currentSelection), 'uint8');
             selarea = utils.connectPoints(selarea, pnts);
-            obj.trackerYXZ(:,2) = [yCrop; xCrop; z];
+            obj.trackerYXZ = [obj.trackerYXZ, [yCrop; xCrop; z]];
         else            % connect points using accurate fast marching function
             colorId = obj.mibModel.I{id}.selectedColorChannel;
             if colorId == 0
@@ -230,7 +233,7 @@ else
             currImage = cell2mat(obj.mibModel.getData2D('image', [], [], [], options));
 
             [selarea, status] = utils.traceCurve(currImage, traceOptions);
-            if status == 1; obj.trackerYXZ(:,2) = [yCrop; xCrop; z]; end
+            if status == 1; obj.trackerYXZ = [obj.trackerYXZ, [yCrop; xCrop; z]]; end
         end
     end
     if line_width > 0

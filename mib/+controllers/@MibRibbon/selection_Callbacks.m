@@ -93,6 +93,7 @@ switch mode
 
         % ----------- Other Selection Tools -------------
     case sprintf('Expand to\nmask border')        % obj.handles.ribbonSelection.expandToMask
+        obj.mibModel.expandSelectionToMaskBorder();
     case {sprintf('Interpolate as\nshape'), sprintf('Interpolate as\nline')}        % obj.handles.ribbonSelection.interpolate
         obj.mibController.updateInterpolationMode();
     case sprintf('Replace\nselected areas')        % obj.handles.ribbonSelection.replaceImage

@@ -64,8 +64,8 @@ popupList.add(header1);
 widgetHandles.membrane =  ListItem( 'Membrane detector', Icon(fullfile(iconPath, 'classification_membrane_24px.png'))); 
 popupList.add(widgetHandles.membrane);
 % Supervoxels classifier
-widgetHandles.supervoxels =  ListItem( 'Supervoxels classifier', Icon(fullfile(iconPath, 'classification_super_24px.png'))); 
-popupList.add(widgetHandles.supervoxels);
+%widgetHandles.supervoxels =  ListItem( 'Supervoxels classifier', Icon(fullfile(iconPath, 'classification_super_24px.png'))); 
+%popupList.add(widgetHandles.supervoxels);
 
 widgetHandles.classifiers.Popup = popupList;
 column.add(widgetHandles.classifiers);

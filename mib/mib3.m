@@ -91,6 +91,10 @@ else
     addpath(fullfile(func_dir, 'external', 'MatTomo'));
     addpath(fullfile(func_dir, 'external', 'nrrd'));
     addpath(fullfile(func_dir, 'external', 'RegionGrowing'));
+    addpath(fullfile(func_dir, 'external', 'RandomForest'));
+    addpath(fullfile(func_dir, 'external', 'RandomForest', 'MembraneDetection'));
+    addpath(fullfile(func_dir, 'external', 'RandomForest', 'RF_Class_C'));
+    addpath(fullfile(func_dir, 'external', 'RandomForest', 'RF_Reg_C'));
     addpath(fullfile(func_dir, 'external', 'Supervoxels'));
     addpath(fullfile(func_dir, 'external', 'Zarr3Matlab'));
     addpath(fullfile(func_dir, 'legacy'));    

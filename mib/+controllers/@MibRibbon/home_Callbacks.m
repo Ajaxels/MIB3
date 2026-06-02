@@ -69,7 +69,7 @@ switch mode
     case '3D viewer in Fiji'     % obj.handles.ribbonHome.renderFiji
         img = cell2mat(obj.mibModel.getData3D('image', [], 3));
         id = obj.mibModel.getActiveId();
-        utils.renderVolumeWithFiji(img, obj.mibModel.I{id}.image.pixSize, obj.mibModel.mibGUI);
+        utils.fiji.renderVolumeWithFiji(img, obj.mibModel.I{id}.image.pixSize, obj.mibModel.mibGUI);
 
     % ------ IO Tools section ------
     case sprintf('Batch\nprocessing')   % obj.handles.ribbonHome.batch

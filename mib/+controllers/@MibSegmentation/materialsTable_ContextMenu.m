@@ -94,8 +94,28 @@ switch menuEntry.Tag
         obj.renderIsosurface();
 
     case 'materialsTableContextRenFiji'
-        % render material with Fiji viewer
-    
+        % render material with Fiji 3D viewer
+        id = obj.mibModel.getActiveId();
+        options.fillBg = 0;
+        contIndex = obj.mibModel.I{id}.getSelectedMaterialIndex();
+        if contIndex == -1
+            modelData = obj.mibModel.getData3D('mask', [], 3, [], options);
+            contIndex = 1;
+            modelColors = obj.mibModel.preferences.Colors.MaskColor;
+        else
+            modelData = obj.mibModel.getData3D('labels', [], 3, [], options);
+            if obj.mibModel.I{id}.showAllMaterials == 1; contIndex = 0; end
+            modelColors = obj.mibModel.I{id}.labels.materialColors;
+        end
+        if numel(modelData) > 1
+            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+                'Please select only one ROI to render!', 'Selection error');
+            return;
+        end
+        utils.fiji.renderModelWithFiji(modelData{1}, contIndex, ...
+            obj.mibModel.I{id}.image.pixSize, modelColors, obj.mibModel.mibGUI);
+
+
         %% Unlink material from Add to
     case 'materialsTableContextUnlink'
         if strcmp(menuEntry.Checked, 'off')

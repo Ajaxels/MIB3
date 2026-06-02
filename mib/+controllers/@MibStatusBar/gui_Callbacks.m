@@ -63,7 +63,7 @@ end
 
 switch mode
     case 'selectWorkingDirectory'
-        newPath = uigetdir(obj.handles.currentDirectory.Value, 'Choose Directory');
+        newPath = uigetdir(obj.handles.currentDirectory.Value, 'Choose directory');
         if newPath == 0; return; end
         obj.mibModel.currentDirectory = newPath;
         obj.handles.currentDirectory.Value = newPath;

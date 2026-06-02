@@ -383,7 +383,11 @@ classdef AmiraMeshLoader < io.loaders.BaseImageLoader
             if strcmp(imgClass, 'int16'); imgClass = 'uint16'; end
 
             % Pre-allocate image array: [Y, X, C, Z, T]
-            img = zeros(height, width, maxZ, color, time, imgClass);
+            if isfield(files, 'backgroundColor')
+                img = zeros(height, width, maxZ, color, time, imgClass)+files(1).backgroundColor;
+            else
+                img = zeros(height, width, maxZ, color, time, imgClass);
+            end
 
             % Calculate waitbar update frequency
             pixPerSlice = size(img, 1) * size(img, 2);

@@ -79,11 +79,18 @@ end
 if ~isempty(charMode)
     switch charMode
         case '2D'
-            % current slice only
-            zCur = obj.slices{obj.orientation}(1);
+            % current slice only — map slice index to the correct axis
             tCur = obj.slices{5}(1);
-            z = [zCur, zCur];
             t = [tCur, tCur];
+            sliceCur = obj.slices{obj.orientation}(1);
+            switch obj.orientation
+                case 3  % XY: slice index is Z
+                    z = [sliceCur, sliceCur];
+                case 1  % ZX: slice index is Y
+                    y = [sliceCur, sliceCur];
+                case 2  % ZY: slice index is X
+                    x = [sliceCur, sliceCur];
+            end
         case '3D'
             % full z-stack at the current time point
             tCur = obj.slices{5}(1);

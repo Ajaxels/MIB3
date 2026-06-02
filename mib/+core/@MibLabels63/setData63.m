@@ -73,6 +73,7 @@ if isfield(options, 'y') || isfield(options, 'x') || isfield(options, 'z') || (i
     blockModeSwitchLocal = 1;
 end
 
+if isempty(dataset); return; end
 % convert from optional logical
 if islogical(dataset(1)); dataset = uint8(dataset); end
 

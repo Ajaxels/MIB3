@@ -97,6 +97,7 @@ switch mode
     case 'MATLAB isosurface'      % obj.handles.ribbonModel.renderMatlab
         obj.mibController.cSegmentation.renderIsosurface();
     case 'MATLAB isosurface and export to Imaris'      % obj.handles.ribbonModel.renderMatlabImaris
+
     case 'MATLAB volume viewer'      % obj.handles.ribbonModel.renderMatlabVolView
         if isdeployed
             utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
@@ -137,9 +138,18 @@ switch mode
         end
 
     case 'Fiji volume viewer'      % obj.handles.ribbonModel.renderFiji
-        
+        menuEntry.Tag = 'materialsTableContextRenFiji';
+        menuEntry.Text = 'Ribbon->Models->Rendering->Fiji volume viewer';
+        obj.mibController.cSegmentation.materialsTable_ContextMenu(menuEntry);
     case 'Imaris surface'      % obj.handles.ribbonModel.renderImaris
-    
+        id = obj.mibModel.getActiveId();
+        if obj.mibModel.I{id}.showAllMaterials == 1
+            options.materialIndex = 0;
+        else
+            options.materialIndex = obj.mibModel.I{id}.getSelectedMaterialIndex();
+        end
+        obj.mibModel.connImaris = io.imaris.renderModelImaris(obj.mibModel.I{id}, obj.mibModel.connImaris, options);
+
     %% -------------- Quantification section --------------
     case 'Quantify'
         obj.mibController.startController('controllers.Quantification');

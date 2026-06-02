@@ -24,9 +24,12 @@ end
 
 switch mode
     case 'Load'
-        utils.dlgs.showErrorDialog(obj.view.gui, ...
-            'Not implemented', ...
-            'homeImport_Callback');
+        newPath = uigetdir(obj.mibModel.currentDirectory, 'Choose directory');
+        if newPath == 0; return; end
+        obj.mibModel.currentDirectory = newPath;
+        obj.handles.currentDirectory.Value = newPath;
+        obj.mibController.cDirContents.updateFileList_Callback();
+        
     case {'Import', 'MATLAB'}  % obj.handles.ribbonHome.import &  obj.handles.ribbonHome.importFromMatlab
         obj.mibModel.importDataset('image');
     case 'System Clipboard'    % obj.handles.ribbonHome.importFromClipboard

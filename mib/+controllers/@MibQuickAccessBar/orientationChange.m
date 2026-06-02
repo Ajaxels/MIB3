@@ -105,10 +105,16 @@ obj.mibController.updateGuiWidgets({'depthSlider'}); % only depth slider needs t
 % Render the image
 obj.mibController.showImage();
 
+cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
+
+% Orientation switch changes coef_z (pixel aspect ratio).  showImage() has
+% just updated imageHandle.XData with the new coef_z, so the stored brush
+% cursor offset (computed for the old orientation) is now wrong.  Clear it
+% so the next updateBrushCursor call recomputes the ellipse from fresh data.
+cImageDoc.brushCursorOffset = [];
+
 % ---- Move mouse cursor to the pivot point (for keyboard shortcut callers) ----
 if moveMouseSw
-    cImageDoc = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet};
-
     % Determine pivot coordinates in dataset space for the new orientation
     switch hWidget.Description
         case 'Switch dataset to the YX orientation'
@@ -126,30 +132,6 @@ if moveMouseSw
     dataset.moveView(x, y);
     obj.mibController.showImage();
 
-    % Get panel / axes geometry to compute screen coordinates of axes centre
-    leftPanelW = 0;
-    if isfield(obj.view.gui.Layout.panelLayout, 'left')
-        leftPanelW   = obj.view.gui.Layout.panelLayout.left.freeDimension;
-        if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW   = 0; end
-    end
-    bottomPanelH = 0;
-    if isfield(obj.view.gui.Layout.panelLayout, 'bottom')
-        bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
-        if obj.view.gui.Layout.panelLayout.bottom.collapsed; bottomPanelH = 0; end
-    end
-
-    winBounds = obj.view.gui.WindowBounds;          % [left, top, width, height], top-left origin
-    posAxes = cImageDoc.handles.imViewAxes.Position; % [left, bottom, width, height], bottom-left within document
-
-    screenX = winBounds(1) + leftPanelW + posAxes(1) + posAxes(3)/2;
-    screenY = winBounds(2) + winBounds(4) - bottomPanelH - posAxes(2) - posAxes(4)/2;
-
-    scaling = obj.mibModel.preferences.System.GUI.systemscaling;
-    screenSize = get(0, 'ScreenSize');
-    pointerX = (screenX + 8) * scaling;
-    pointerY = (screenSize(4) - screenY + 26) * scaling;
-
-    gr = groot();
-    gr.PointerLocation = [pointerX, pointerY];
+    cImageDoc.centerCursorInAxes();
 end
 end

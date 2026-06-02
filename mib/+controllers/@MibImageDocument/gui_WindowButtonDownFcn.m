@@ -400,6 +400,7 @@ elseif strcmp(operation, 'select')
             end
             if recenterSw == 1 && isempty(modifier)  % recenter the view
                 dataset.moveView(w, h);
+                obj.centerCursorInAxes();
             end
 
             obj.mibController.showImage();
@@ -524,6 +525,7 @@ elseif strcmp(operation, 'select')
                 % recenter the view if enabled
                 if obj.mibController.cSegmentation.handles.membraneRecenterView.Value && isempty(modifier)
                     dataset.moveView(w, h);
+                    obj.centerCursorInAxes();
                     obj.mibController.showImage();
                 end
                 return;
@@ -532,6 +534,7 @@ elseif strcmp(operation, 'select')
             % recenter the view after placing a starting point
             if obj.mibController.cSegmentation.handles.membraneRecenterView.Value && isempty(modifier)
                 dataset.moveView(w, h);
+                obj.centerCursorInAxes();
             end
 
         case 'Segment-anything model'

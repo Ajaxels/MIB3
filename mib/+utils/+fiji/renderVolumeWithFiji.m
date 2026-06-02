@@ -8,8 +8,8 @@ function result = renderVolumeWithFiji(Volume, pixSize, mibGUI)
 % Syntax:
 %   .. code-block:: matlab
 %
-%      result = utils.renderVolumeWithFiji(Volume, pixSize)
-%      result = utils.renderVolumeWithFiji(Volume, pixSize, mibGUI)
+%      result = utils.fiji.renderVolumeWithFiji(Volume, pixSize)
+%      result = utils.fiji.renderVolumeWithFiji(Volume, pixSize, mibGUI)
 %
 % Input Arguments:
 %   - **Volume** — [uint8] 3D volume to visualize, dimensions [height, width, colors, z]
@@ -165,10 +165,10 @@ elseif size(Volume, 4) == 2
     R = squeeze(Volume(:,:,:,1));
     G = squeeze(Volume(:,:,:,2));
     B = zeros(size(squeeze(Volume(:,:,:,1))),class(Volume));
-else    
+else
     R = squeeze(Volume(:,:,:,1));
     G = squeeze(Volume(:,:,:,2));
-    B = squeeze(Volume(:,:,:,3));  
+    B = squeeze(Volume(:,:,:,3));
 end
 
 % We now put them together into one 3D color image (that is, with 4D). To
@@ -215,7 +215,7 @@ if size(Volume,4) == 1 % grayscale
     imp = MIJ.createImage('im_browser data', squeeze(Volume), false);
 else
     pwb.updateText('Creating the color data...'); pwb.setCurrentIteration(69); pwb.increment();
-    imp = MIJ.createColor('im_browser data', J, false);    
+    imp = MIJ.createColor('im_browser data', J, false);
 end
 
 %%

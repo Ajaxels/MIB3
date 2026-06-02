@@ -261,8 +261,8 @@ popupList.add(widgetHandles.renderMIB);
 widgetHandles.renderMatlab =  ListItem('MATLAB isosurface', Icon.MATLAB_24);
 popupList.add(widgetHandles.renderMatlab);
 % % MATLAB isosurface+Imaris
-widgetHandles.renderMatlabImaris =  ListItem('MATLAB isosurface and export to Imaris', Icon(fullfile(iconPath, 'model_render_matImaris_24px.png')));
-popupList.add(widgetHandles.renderMatlabImaris);
+%widgetHandles.renderMatlabImaris =  ListItem('MATLAB isosurface and export to Imaris', Icon(fullfile(iconPath, 'model_render_matImaris_24px.png')));
+%popupList.add(widgetHandles.renderMatlabImaris);
 % % MATLAB volume viewer
 widgetHandles.renderMatlabVolView =  ListItem('MATLAB volume viewer', Icon(fullfile(iconPath, 'model_render_matVolView_24px.png')));
 popupList.add(widgetHandles.renderMatlabVolView);

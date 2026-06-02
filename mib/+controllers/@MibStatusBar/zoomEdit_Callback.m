@@ -136,78 +136,7 @@ BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
 
 if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     obj.mibModel.I{obj.mibModel.id}.moveView(xy2(1), xy2(2));
-
-    % get panel positions from the layout
-    leftPanelW = 0;
-    if isfield(obj.view.gui.Layout.panelLayout, 'left')
-        leftPanelW = obj.view.gui.Layout.panelLayout.left.freeDimension;
-        if obj.view.gui.Layout.panelLayout.left.collapsed
-            leftPanelW = 0;
-        end
-    end
-
-    bottomPanelH = 0;
-    if isfield(obj.view.gui.Layout.panelLayout, 'bottom')
-        bottomPanelH = obj.view.gui.Layout.panelLayout.bottom.freeDimension;
-        if obj.view.gui.Layout.panelLayout.bottom.collapsed
-            bottomPanelH = 0;
-        end
-    end
-
-    winBounds = obj.view.gui.WindowBounds;   % [left, top, width, height], top-left origin, virtual desktop
-    posAxes = obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.handles.imViewAxes.Position;
-
-    % add horizontal offset of preceding documents in split view
-    splitOffsetX = 0;
-    if numel(obj.mibController.cImageDoc) > 1 && obj.mibModel.Sets.selectedSet > 1
-        for iDoc = 1:obj.mibModel.Sets.selectedSet-1
-            figPos = obj.mibController.cImageDoc{iDoc}.figureDoc.Figure.Position;
-            splitOffsetX = splitOffsetX + figPos(3);
-        end
-    end
-
-    % original center calculation, plus split-view horizontal offset
-    screenX = winBounds(1) + leftPanelW + splitOffsetX + posAxes(1) + posAxes(3)/2;
-    screenY = winBounds(2) + winBounds(4) - bottomPanelH - posAxes(2) - posAxes(4)/2;
-
-    scaling = obj.mibModel.preferences.System.GUI.systemscaling;
-    monPos = get(groot, 'MonitorPositions');   % [x y width height]
-
-    % select monitor from X position
-    idx = find(screenX >= monPos(:,1) & screenX <= (monPos(:,1) + monPos(:,3) - 1), 1, 'first');
-    if isempty(idx)
-        [~, idx] = min(abs(screenX - (monPos(:,1) + monPos(:,3)/2)));
-    end
-
-    % convert top-based virtual Y to monitor-local Y, then to root PointerLocation Y
-    monitorY0 = monPos(idx,2);
-    monitorH = monPos(idx,4);
-    monitorTop = monitorY0 + monitorH - 1;
-
-    pointerX = round((screenX + 8) * scaling);
-    pointerY = round((monitorTop - (screenY - monitorY0) + 26) * scaling);
-
-    % % --- DIAGNOSTIC: remove after fixing ---
-    % fprintf('=== zoomEdit_Callback recenter diagnostic ===\n');
-    % fprintf('selectedSet=%d, numDocs=%d\n', obj.mibModel.Sets.selectedSet, numel(obj.mibController.cImageDoc));
-    % fprintf('winBounds: [%.1f, %.1f, %.1f, %.1f]\n', winBounds);
-    % fprintf('posAxes: [%.1f, %.1f, %.1f, %.1f]\n', posAxes);
-    % fprintf('leftPanelW=%.1f bottomPanelH=%.1f splitOffsetX=%.1f\n', leftPanelW, bottomPanelH, splitOffsetX);
-    % fprintf('screenX=%.1f screenY=%.1f\n', screenX, screenY);
-    % fprintf('scaling=%.3f\n', scaling);
-    % fprintf('monitor index=%d\n', idx);
-    % fprintf('monitorY0=%.1f monitorH=%.1f monitorTop=%.1f\n', monitorY0, monitorH, monitorTop);
-    % fprintf('pointerX=%.1f pointerY=%.1f\n', pointerX, pointerY);
-    % fprintf('MonitorPositions:\n'); disp(monPos);
-    % fprintf('current PointerLocation before set: [%.1f, %.1f]\n', groot().PointerLocation);
-    % for iDoc = 1:numel(obj.mibController.cImageDoc)
-    %     figPos = obj.mibController.cImageDoc{iDoc}.figureDoc.Figure.Position;
-    %     fprintf(' cImageDoc{%d}.figureDoc.Figure.Position: [%.1f, %.1f, %.1f, %.1f]\n', iDoc, figPos);
-    % end
-    % % --- END DIAGNOSTIC ---
-
-    gr = groot();
-    gr.PointerLocation = [pointerX, pointerY];
+    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centerCursorInAxes();
 end
 
 %% Execute the selected magnification mode
