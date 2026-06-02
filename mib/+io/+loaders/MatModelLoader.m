@@ -332,8 +332,11 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
             %      [img, imginfo]   = loader.loadImages(files, imginfo);
             %
 
-            H        = imginfo{"Height"};
-            W        = imginfo{"Width"};
+            H        = max([files.height]);
+            W        = max([files.width]);
+
+            %H        = imginfo{"Height"};
+            %W        = imginfo{"Width"};
             T        = imginfo{"Time"};
             imgClass = imginfo{"imgClass"};
             totalZ   = sum([files.noLayers]);
@@ -350,7 +353,7 @@ classdef MatModelLoader < io.loaders.BaseImageLoader
                 if numel(files) == 1 %#ok<ISCL>
                     img = files(iFile).data;
                 else    
-                    img(:, :, z1:z2, 1, :) = files(iFile).data;
+                    img(1:files(iFile).height, 1:files(iFile).width, z1:z2, 1, :) = files(iFile).data;
                 end
                 z1 = z2 + 1;
             end

@@ -1,4 +1,4 @@
-VERSION = "2026.04";
+VERSION = "2026.06"; % <-- UPDATE THE VERSION!
 projectRoot = "/nfs/home/456500414f5b2c6d/Matlab/MIB3";   % <-- update this path
 os_id = 'linux';
 showTerminal = true;
