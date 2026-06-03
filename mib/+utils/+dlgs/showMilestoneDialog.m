@@ -384,6 +384,11 @@ end
 fig.CloseRequestFcn = @(~,~) onClose();
 fig.Visible = 'on';
 drawnow;
+% Re-apply WindowStyle on the realized (visible) figure — setting it while a
+% cached figure is hidden does not take effect (notably in the deployed web
+% engine), so the dialog would otherwise come up non-modal on reuse.
+fig.WindowStyle = lower(windowStyle);
+drawnow;
 focus(okBtn);
 uiwait(fig);
 
@@ -413,12 +418,14 @@ uiwait(fig);
 
     function onOK()
         stopTimer();
+        fig.WindowStyle = 'normal';   % release modal grab before hiding (else parent stays blocked)
         fig.Visible = 'off';
         uiresume(fig);
     end
 
     function onClose()
         stopTimer();
+        fig.WindowStyle = 'normal';   % release modal grab before hiding
         fig.Visible = 'off';
         uiresume(fig);
     end

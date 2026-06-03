@@ -865,6 +865,12 @@ fig.CloseRequestFcn = @(~,~) onCancel();
 fig.Visible = 'on';
 drawnow;
 
+% Re-apply WindowStyle on the realized (visible) figure. Setting it while a
+% cached figure is hidden does not take effect (notably in the deployed web
+% engine), so the dialog would otherwise come up non-modal on reuse.
+if strcmpi(options.WindowStyle, 'modal'); fig.WindowStyle = 'modal'; else; fig.WindowStyle = 'normal'; end
+drawnow;
+
 % Set focus
 if options.MsgBoxOnly || options.Focus == 0
     % Default: focus on OK button to enable Enter key
@@ -956,7 +962,10 @@ uiwait(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        % Hide and unblock instead of deleting so the figure can be reused
+        % Hide and unblock instead of deleting so the figure can be reused.
+        % Reset WindowStyle first: a hidden but still-modal figure keeps its
+        % input grab on the parent and would freeze the main GUI.
+        fig.WindowStyle = 'normal';
         fig.Visible = 'off';
         uiresume(fig);
     end
@@ -967,6 +976,7 @@ uiwait(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
+        fig.WindowStyle = 'normal';   % release modal grab before hiding
         fig.Visible = 'off';
         uiresume(fig);
     end

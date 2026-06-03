@@ -60,9 +60,11 @@ switch mode
         end
         pixSize = dataset.image.pixSize;
         if strcmp(answer, 'Only volume')
+            %#exclude volumeViewer
             volumeViewer(squeeze(img), 'VolumeType', 'Volume', 'ScaleFactors', [pixSize.x pixSize.y pixSize.z]);
         else
             labels = cell2mat(obj.mibModel.getData3D('labels'));
+            %#exclude volumeViewer
             volumeViewer(squeeze(img), labels, 'ScaleFactors', [pixSize.x pixSize.y pixSize.z]);
         end
 

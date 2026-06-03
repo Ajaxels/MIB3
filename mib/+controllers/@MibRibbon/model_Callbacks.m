@@ -125,6 +125,7 @@ switch mode
             tform(2,2) = pixSize.y;
             tform(3,3) = pixSize.z;
             tform(4,4) = 1;
+            %#exclude volumeViewer
             volumeViewer(img, tform);
         else
             volume = cell2mat(obj.mibModel.getData3D('image', [], 3));
@@ -134,6 +135,7 @@ switch mode
                     'Not implemented');
                 return;
             end
+            %#exclude volumeViewer
             volumeViewer(squeeze(volume), img, 'ScaleFactors', [pixSize.x pixSize.y pixSize.z]);
         end
 

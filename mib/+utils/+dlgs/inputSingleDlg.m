@@ -340,6 +340,12 @@ answer = [];
 fig.Visible = 'on';
 drawnow;
 
+% Re-apply WindowStyle on the realized (visible) figure — setting it while a
+% cached figure is hidden does not take effect (notably in the deployed web
+% engine), so the dialog would otherwise come up non-modal on reuse.
+fig.WindowStyle = lower(options.WindowStyle);
+drawnow;
+
 % Direct focus on input widget — no java.awt.Robot, no timer
 focus(inputCtrl);
 
@@ -353,12 +359,14 @@ uiwait(fig);
         else
             answer = char(inputCtrl.Value);
         end
+        fig.WindowStyle = 'normal';   % release modal grab before hiding (else parent stays blocked)
         fig.Visible = 'off';
         uiresume(fig);
     end
 
     function onCancel()
         answer = [];
+        fig.WindowStyle = 'normal';   % release modal grab before hiding
         fig.Visible = 'off';
         uiresume(fig);
     end

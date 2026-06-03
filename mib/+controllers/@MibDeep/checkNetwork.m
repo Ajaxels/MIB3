@@ -54,6 +54,7 @@ function checkNetwork(obj, fn)
 
     obj.wb.Value = 0.6;
     if ~isdeployed
+        %#exclude analyzeNetwork
         analyzeNetwork(lgraph);
     else
         uiFig = uifigure('Visible', 'off');

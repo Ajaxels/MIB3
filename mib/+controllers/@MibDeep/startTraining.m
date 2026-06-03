@@ -565,6 +565,7 @@ try
             utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Please use the "same" padding instead'}, 'Not implemented', mgsOpt);
             return;
         else
+            %#exclude analyzeNetwork
             analyzeNetwork(lgraph);
             prompts = {sprintf('Please enter the output patch size from the Network Analyzer window. It is displayer in the Activations column for the Softmax-Layer\n\nOutput patch size:')};
             defAns = {obj.BatchOpt.T_InputPatchSize};
