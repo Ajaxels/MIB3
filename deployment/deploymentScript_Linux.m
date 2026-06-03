@@ -58,17 +58,33 @@ AdditionalFolders = [...
     "jars", ...
     "plugins"];
 
-% generate full paths as string array
-AdditionalFiles = strings(numel(AdditionalFolders), 1);
+AdditionalFiles = [...
+    fullfile(projectRoot, "mib", "mib3_override_params.md")];
+
+
+% generate full paths for folders
+packageAdditionalFiles = strings(numel(AdditionalFolders), 1);
 for i = 1:numel(AdditionalFolders)
-    AdditionalFiles(i) = fullfile(projectRoot, "mib", AdditionalFolders{i});
+    packageAdditionalFiles(i) = fullfile(projectRoot, "mib", AdditionalFolders(i));
 end
-packageOpts.AdditionalFiles = AdditionalFiles;
+
+% append individual files
+packageAdditionalFiles = [packageAdditionalFiles; AdditionalFiles(:)];
+
+packageOpts.AdditionalFiles = packageAdditionalFiles;
 compiler.package.installer(buildResult, "Options", packageOpts);
 
-% manually copy required files to files distribution
+% copy folders
 for i = 1:numel(AdditionalFolders)
-    src = packageOpts.AdditionalFiles{i};
-    dst = fullfile(projectRoot, "deployed", os_id, "files", AdditionalFolders{i});
+    src = packageAdditionalFiles(i);
+    dst = fullfile(projectRoot, "deployed", os_id, "files", AdditionalFolders(i));
+    copyfile(src, dst);
+end
+
+% copy individual files
+for i = numel(AdditionalFolders)+1:numel(packageAdditionalFiles)
+    src = packageAdditionalFiles(i);
+    [~, fname, ext] = fileparts(src);
+    dst = fullfile(projectRoot, "deployed", os_id, "files", fname + ext);
     copyfile(src, dst);
 end

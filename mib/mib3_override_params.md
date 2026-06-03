@@ -9,7 +9,7 @@ either for all workstations or for a specific one.
 
 Applies the same settings to every workstation.
 
-**Required file:** `mib3_prefs_override2.mat`
+**Required file:** `mib3_prefs_override.mat`
 
 **Steps:**
 1. Start MIB and configure all required settings
