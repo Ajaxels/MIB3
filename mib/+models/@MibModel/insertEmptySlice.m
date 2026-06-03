@@ -103,7 +103,8 @@ BatchOpt.BackgroundColor{2} = [0, maxIntValue];
 
 %% interactive dialog
 if nargin < 2
-    dlgOpt.WindowHeight = 270;
+    dlgOpt.WindowHeight = 300;
+    dlgOpt.HeaderLines = 2;
     answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
         sprintf('Slice position range: 1 (first) to %d; 0 = append to end', maxSlice), ...
         {'Dimension:', ...

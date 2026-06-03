@@ -22,6 +22,8 @@ function computerName = identifyComputerName()
 computerName = '';
 try
     if ispc
+        % alternative, does not work on Linux
+        % java.net.InetAddress.getLocalHost.getHostName
         computerName = getenv('COMPUTERNAME');
     else
         [~, computerName] = system('hostname');

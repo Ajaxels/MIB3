@@ -18,7 +18,7 @@ function scaleBarCalibration(obj)
 %
 
 % Step 1 — explain the procedure
-choiceOpt.WindowHeight = 200;
+choiceOpt.WindowHeight = 220;
 choiceOpt.WindowWidth  = 540;
 choiceOpt.Icon         = 'puffin_info';
 choice = utils.dlgs.inputQuestDlg(obj.view.gui, ...
