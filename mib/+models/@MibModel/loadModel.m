@@ -84,6 +84,7 @@ end
 BatchOpt.DirectoryName   = {'Inherit from dataset filename'};
 BatchOpt.DirectoryName{2} = {'Inherit from dataset filename', obj.currentDirectory, 'Inherit from Directory/File loop'};
 BatchOpt.FilenameFilter  = 'Labels_[F].model';
+BatchOpt.Filenames       = {};   % cell array of full paths; bypasses filter/browser when non-empty
 BatchOpt.showWaitbar     = true;
 BatchOpt.id              = id;
 
@@ -114,6 +115,12 @@ if nargin == 3 && ~isempty(BatchOptIn)
     else
         BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
         batchModeSwitch = isfield(BatchOptIn, 'mibBatchTooltip') || isfield(BatchOptIn, 'FilenameFilter');
+        % updateBatchOptCombineFields_Shared copies only {1} from cell fields
+        % that exist in the default — restore the full list when the caller
+        % supplied multiple files (e.g. drag-and-drop of several model files).
+        if isfield(BatchOptIn, 'Filenames') && numel(BatchOptIn.Filenames) > 1
+            BatchOpt.Filenames = BatchOptIn.Filenames;
+        end
     end
 end
 
@@ -219,6 +226,7 @@ if ~isempty(model)
     notify(obj, 'ShowImage');
 
     if batchModeSwitch
+        BatchOpt.Filenames = BatchOpt.Filenames(1);   % BatchProcessing expects single-value entries
         eventdata = core.ToggleEventData(BatchOpt);
         notify(obj, 'SyncBatch', eventdata);
     end
@@ -235,7 +243,11 @@ if strcmp(BatchOpt.DirectoryName{1}, 'Inherit from Directory/File loop')
     % do nothing — already a real path when running in loop
 end
 
-if batchModeSwitch
+if ~isempty(BatchOpt.Filenames)
+    % ---- DIRECT FILENAMES (e.g. drag-and-drop): bypass filter / browser ----
+    filenames = BatchOpt.Filenames;
+    if ischar(filenames); filenames = {filenames}; end
+elseif batchModeSwitch
     % ---- BATCH MODE: expand [F] template and glob ----
     [~, baseFilename] = fileparts(obj.I{id}.image.filename);
     filterExpanded = strrep(BatchOpt.FilenameFilter, '[F]', baseFilename);
@@ -321,6 +333,7 @@ notify(obj, 'UpdateGuiWidgets');
 notify(obj, 'ShowImage');
 
 if batchModeSwitch
+    BatchOpt.Filenames = BatchOpt.Filenames(1);   % BatchProcessing expects single-value entries
     eventdata = core.ToggleEventData(BatchOpt);
     notify(obj, 'SyncBatch', eventdata);
 end

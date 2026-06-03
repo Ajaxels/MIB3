@@ -83,8 +83,7 @@ end
 
 if loadAsModel
     BatchOpt = struct();
-    BatchOpt.DirectoryName  = {path};
-    BatchOpt.FilenameFilter = filenameList{1};   % full path -> loadModel's isfile branch loads this specific file
+    BatchOpt.Filenames = sort(filenameList);   % full paths; supports single or multiple files
     obj.mibModel.loadModel([], BatchOpt);
     obj.mibModel.currentDirectory = path;
     obj.cDirContents.updateFileList_Callback([fn ext]);

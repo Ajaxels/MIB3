@@ -275,19 +275,37 @@ if modelH ~= imgH || modelW ~= imgW
     modelW = imgW;
 end
 
-% Adjust depth: crop if too many slices, pad if too few
+% Adjust depth: crop if too many slices, insert at current slice if too few
+isPartialImport = false;
+insertStart     = 1;
+insertEnd       = imgD;
 if modelD > imgD
     rawModel = rawModel(:, :, 1:imgD, :, :);
     modelD = imgD;
 elseif modelD < imgD
+    % Place the sub-stack starting at the currently viewed slice
+    isPartialImport = true;
+    insertStart  = obj.slices{3}(1);
+    insertEnd    = min(insertStart + modelD - 1, imgD);
+    insertCount  = insertEnd - insertStart + 1;
     padded = zeros(modelH, modelW, imgD, 1, modelT, class(rawModel));
-    padded(:, :, 1:modelD, :, :) = rawModel;
+    padded(:, :, insertStart:insertEnd, :, :) = rawModel(:, :, 1:insertCount, :, :);
     rawModel = padded;
     modelD = imgD;
 end
 
 % Ensure 5D: [H W D 1 T]
 rawModel = reshape(rawModel, [modelH, modelW, modelD, 1, modelT]);
+
+%% Preserve existing labels on non-imported slices
+
+% When a sub-stack is imported into an existing same-type model, save the
+% current label data before createModel wipes the layer, so the slices
+% outside the insertion window can be restored afterwards.
+existingLabelsData = [];
+if isPartialImport && obj.modelExist && obj.labels.exists && obj.labels.maxMaterials == modelType
+    existingLabelsData = obj.labels.data;
+end
 
 %% Create model and assign data
 
@@ -310,6 +328,13 @@ if modelType == 63
 else
     obj.labels = core.MibLabels(rawModel, modelMeta);
     obj.labels.maxMaterials = modelType;
+end
+
+% Merge existing labels back into the slices outside the insertion window
+if ~isempty(existingLabelsData)
+    mergedData = existingLabelsData;
+    mergedData(:, :, insertStart:insertEnd, :, :) = rawModel(:, :, insertStart:insertEnd, :, :);
+    obj.labels.data = mergedData;
 end
 
 %% Assign material metadata
