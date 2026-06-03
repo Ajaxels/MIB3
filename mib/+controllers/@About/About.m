@@ -86,11 +86,7 @@ classdef About < handle
             end
             
             % get computer name for override default settings file
-            computerName = '';
-            try
-                computerName = char(java.net.InetAddress.getLocalHost.getHostName);
-            catch
-            end
+            computerName = utils.identifyComputerName();
 
             obj.view.handles.descriptionText.Value = {
                 'image segmentation and beyond'

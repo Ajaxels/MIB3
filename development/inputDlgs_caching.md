@@ -1,6 +1,6 @@
 # UIFigure & Icon Caching for MIB3 Dialogs
 
-**Status**: Implemented (2026-05-27)
+**Status**: Implemented (2026-05-27); modal-caching fix added (2026-06-03)
 
 ---
 
@@ -67,9 +67,12 @@ fig.Position(3:4) = [...];
 | Before | After |
 |--------|-------|
 | `waitfor(fig)` | `uiwait(fig)` |
-| `delete(fig)` in callbacks | `fig.Visible = 'off'; uiresume(fig)` |
+| `delete(fig)` in callbacks | `fig.WindowStyle = 'normal'; fig.Visible = 'off'; uiresume(fig)` |
 
 Widget values are read BEFORE hiding — widgets are still valid at that point.
+
+The `WindowStyle = 'normal'` reset before hiding is **mandatory for modal
+dialogs** — see [Modal figure caching](#modal-figure-caching) below.
 
 ### drawnow ordering
 
@@ -85,6 +88,75 @@ Set **after** layout is built (callbacks reference nested functions):
 ```matlab
 fig.CloseRequestFcn = @(~,~) onCancel();  % or onClose()
 ```
+
+---
+
+## Modal figure caching
+
+**Status**: fixed 2026-06-03. Applies to every cached dialog that can be
+`WindowStyle='modal'`: `inputUniversalDlg`, `inputSingleDlg` and — because they
+**default to modal** — `inputQuestDlg`, `showErrorDialog`, `showMilestoneDialog`.
+
+Caching (hide-and-reuse instead of delete) breaks modal `uifigure`s in two ways.
+Both bite hardest in the **compiled / deployed** build, where the web-engine
+realizes windows differently than in the MATLAB desktop.
+
+### Symptom 1 — GUI freezes after a modal dialog closes
+
+A `uifigure` with `WindowStyle='modal'` that is **hidden** (`Visible='off'`)
+rather than **deleted** keeps its modal input grab on the parent window. The
+invisible-but-still-modal cached figure goes on blocking the main MIB GUI →
+complete freeze. The grab is only refreshed/cleared on the next `Visible='on'`,
+which the user can never reach because input is already blocked.
+
+First reported via `@MibImageDocument/segmentationAnnotation.m`: the first
+annotation worked, then every subsequent click was dead. Non-modal dialogs
+release input on hide, so they were unaffected.
+
+**Fix** — release the grab *before* hiding, in **every** hide-for-reuse
+callback (`onOK`/`onCancel`/`onButton`/`doCancel`/`onClose`):
+
+```matlab
+fig.WindowStyle = 'normal';   % release modal grab before hiding (else parent stays blocked)
+fig.Visible = 'off';
+uiresume(fig);
+```
+
+(For `showMilestoneDialog`, place the reset **after** the existing
+`stopTimer()` call.)
+
+### Symptom 2 — dialog comes up non-modal on reuse
+
+Once Symptom 1 is fixed, the figure is hidden as `'normal'`. Re-setting
+`WindowStyle='modal'` on the **hidden** cached figure (the pre-show set near the
+top, after the cache check) **does not take effect** — most visibly in deployed,
+where it then shows as a normal window. The style must be applied to a
+**realized** (visible) figure.
+
+**Fix** — re-apply `WindowStyle` *after* `Visible='on'` + `drawnow`, then
+`drawnow` again, before focusing:
+
+```matlab
+fig.Visible = 'on';
+drawnow;
+% Re-apply WindowStyle on the realized (visible) figure — setting it while the
+% cached figure is hidden does not take effect (notably in the deployed engine).
+fig.WindowStyle = lower(options.WindowStyle);   % showMilestoneDialog uses local `windowStyle`
+drawnow;
+focus(targetWidget);
+```
+
+The pre-show `WindowStyle` assignment (after the cache-check block) is kept but
+is no longer authoritative — the post-show re-apply is what makes modal stick.
+
+### Net pattern for modal-capable cached dialogs
+
+1. **On show:** `Visible='on'` → `drawnow` → set `WindowStyle` → `drawnow` → `focus`.
+2. **On close:** read widget values → set `WindowStyle='normal'` → `Visible='off'` → `uiresume`.
+
+This keeps the figure-caching performance win while guaranteeing the dialog is
+genuinely modal on every call (fresh or reused) and never leaves a stale grab
+on the main GUI.
 
 ---
 
@@ -130,6 +202,7 @@ Dialogs that use `uiimage(..., 'ImageSource', iconPath)` (file path directly) do
 - **Figure tag**: `'inputUniversalDlg'`
 - **Blocking**: `waitfor` → `uiwait`; `delete` → hide+uiresume in `onOK`/`onCancel`
 - **Bug fixes**: Added `CloseRequestFcn` (was missing — X button returned stale answer); `drawnow` reorder
+- **Modal fix (2026-06-03)**: `WindowStyle='normal'` before hide in `onOK`/`onCancel`; re-apply `WindowStyle` after `Visible='on'`+`drawnow`. See [Modal figure caching](#modal-figure-caching).
 
 ### inputQuestDlg.m
 
@@ -138,6 +211,7 @@ Dialogs that use `uiimage(..., 'ImageSource', iconPath)` (file path directly) do
 - **Blocking**: `waitfor` → `uiwait`; `delete` → hide+uiresume in `onButton`/`doCancel`
 - **Callbacks**: `WindowKeyPressFcn` and `CloseRequestFcn` wired after layout (were set at creation before)
 - Already had `CloseRequestFcn` → `onClose` → `doCancel`
+- **Defaults to modal** — modal fix (2026-06-03) applies: `WindowStyle='normal'` before hide in `onButton`/`doCancel`; re-apply after show.
 
 ### inputSingleDlg.m
 
@@ -146,6 +220,7 @@ Dialogs that use `uiimage(..., 'ImageSource', iconPath)` (file path directly) do
 - **No icon cache**: uses `uiimage('ImageSource', iconPath)` — file path, no alpha compositing
 - **Blocking**: `waitfor` → `uiwait`; `delete` → hide+uiresume in `onOK`/`onCancel`
 - **Bug fix**: Added `CloseRequestFcn = @(~,~) onCancel()` (was missing)
+- **Modal fix (2026-06-03)**: `WindowStyle='normal'` before hide in `onOK`/`onCancel`; re-apply after show.
 
 ### showErrorDialog.m
 
@@ -154,6 +229,7 @@ Dialogs that use `uiimage(..., 'ImageSource', iconPath)` (file path directly) do
 - **No icon cache**: uses `uiimage('ImageSource', iconPath)` — file path, no alpha compositing
 - **Blocking**: already used `uiwait`; changed `uiresume+delete` → `hide+uiresume` in `onClose`
 - `CloseRequestFcn` set after layout build
+- **Defaults to modal** — modal fix (2026-06-03) applies: `WindowStyle='normal'` before hide in `onClose`; re-apply after show.
 - **Note**: `ParentFigure=[]` triggers legacy `errordlg()` fallback (line ~148) — bypasses cached figure entirely
 
 ### showMilestoneDialog.m
@@ -165,6 +241,7 @@ Dialogs that use `uiimage(..., 'ImageSource', iconPath)` (file path directly) do
 - **Video timer**: `stopTimer()` called before hiding — timer is stopped and deleted before figure is hidden
 - `CloseRequestFcn` set after layout build (was set at creation before)
 - VideoReader and timer are local variables — cleaned up when function returns after `uiresume`
+- **Defaults to modal** (for `'milestoneReached'`) — modal fix (2026-06-03) applies: `WindowStyle='normal'` after `stopTimer()` and before hide in `onOK`/`onClose`; re-apply `lower(windowStyle)` after show.
 
 ---
 
@@ -197,8 +274,15 @@ Tested in MATLAB (2026-05-27):
 - Not tested interactively (requires `userPrefs.Tiers` struct)
 - Code analysis clean; follows same proven pattern
 
+### Modal fix (2026-06-03)
+- Reproduced original freeze in the **deployed** build via repeated text
+  annotations (`segmentationAnnotation` → modal `inputUniversalDlg`)
+- After `WindowStyle='normal'`-before-hide: freeze gone, but dialogs showed as
+  non-modal on reuse
+- After re-applying `WindowStyle` post-show: dialogs are genuinely modal on
+  every call **and** no freeze — confirmed working in the deployed build
+
 ### Still to verify
-- Modal dialogs across all four dialog types
 - Compiled standalone build — measure actual latency improvement
 - Sequential rapid opens (10+ dialogs) for each type
 - showMilestoneDialog with video playback + figure reuse

@@ -56,11 +56,7 @@ else
     % ------------ check for preference override file ------------
     % Override file allows system-wide preference defaults
     % get computer name:
-    computerName = '';
-    try
-        computerName = char(java.net.InetAddress.getLocalHost.getHostName);
-    catch
-    end
+    computerName = utils.identifyComputerName();
     overridePreferencesFile = fullfile(obj.mibPath, sprintf('mib3_prefs_override_%s.mat', computerName));
     if ~isfile(overridePreferencesFile)
         overridePreferencesFile = fullfile(obj.mibPath, 'mib3_prefs_override.mat');
