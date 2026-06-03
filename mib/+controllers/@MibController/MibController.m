@@ -16,6 +16,8 @@ classdef MibController < handle
         % Controller for the Selection and View settings panel
         cRibbon
         % Controller for the top ribbon panel
+        cFiji
+        % Controller for the Fiji Connect panel
         cRoi
         % Controller for the ROI panel
         cSegmentation

@@ -2,36 +2,39 @@
   "majorVersion": 3,
   "minorVersion": 1,
   "panelLayout": {
-    "referenceWidth": 1489,
+    "referenceWidth": 1400,
     "referenceHeight": 837,
     "centerExpanded": false,
     "centerCollapsed": false,
     "left": {
-      "freeDimension": 288,
+      "freeDimension": 306,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.19341840161182,
+      "portion": 0.21857142857142858,
       "children": [
         {
           "id": "panel1",
-          "collapsed": false
+          "collapsed": false,
+          "portion": 0.091383812010443863
         },
         {
           "id": "panel2",
-          "collapsed": false
+          "collapsed": false,
+          "portion": 0.29895561357702349
         },
         {
           "id": "panel3",
-          "collapsed": false
+          "collapsed": false,
+          "portion": 0.60966057441253263
         }
       ],
       "showingContextSetId": "global"
     },
     "bottom": {
-      "freeDimension": 181,
+      "freeDimension": 171,
       "collapsed": false,
       "expanded": false,
-      "portion": 0.21624850657108721,
+      "portion": 0.20430107526881722,
       "children": [
         {
           "id": "panel4",
@@ -39,6 +42,9 @@
         },
         {
           "id": "panel5"
+        },
+        {
+          "id": "panel6"
         }
       ]
     }
@@ -50,17 +56,17 @@
     },
     "tileCount": 1,
     "tileCoverage": 0,
-    "referenceWidth": 1200,
-    "referenceHeight": 655,
+    "referenceWidth": 1093,
+    "referenceHeight": 665,
     "columnWeights": 1,
     "rowWeights": 1,
     "columnLeft": [
       0,
-      1200
+      1093
     ],
     "rowTop": [
       0,
-      655
+      665
     ],
     "tileOccupancy": {
       "children": {
@@ -73,15 +79,15 @@
     },
     "emptyTileCount": 0,
     "selectionOrder": {
-      "imageViewDocGroup_document1": 1
+      "imageViewDocGroup_document1": 3
     },
     "reserveDocumentSpace": false,
     "lastSelectedDocumentId": "document1"
   },
   "windowBounds": {
-    "x": 1793,
-    "y": 143,
-    "w": 1505,
+    "x": 1759,
+    "y": 126,
+    "w": 1416,
     "h": 1019
   },
   "toolstripCollapsed": false,

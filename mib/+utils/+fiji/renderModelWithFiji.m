@@ -135,13 +135,13 @@ if exist('MIJ', 'class') == 8
     if ~isempty(ij.gui.Toolbar.getInstance)
         ijInstance = char(ij.gui.Toolbar.getInstance.toString);
         if numel(strfind(ijInstance, 'invalid')) > 0
-            io.Fiji.Miji_wrapper(true);
+            utils.fiji.Miji_wrapper(true);
         end
     else
-        io.Fiji.Miji_wrapper(true);
+        utils.fiji.Miji_wrapper(true);
     end
 else
-    io.Fiji.Miji_wrapper(true);
+    utils.fiji.Miji_wrapper(true);
 end
 
 pwb.updateText('Creating image data...'); pwb.setCurrentIteration(69); pwb.increment();

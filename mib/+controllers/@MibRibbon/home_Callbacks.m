@@ -87,11 +87,29 @@ switch mode
 
         % ------ Preferences section ------
     case {'Load layout', 'Load local default layout'}   % obj.handles.ribbonHome.loadLayout or obj.handles.ribbonHome.loadLayoutLocalDefault
-        obj.mibController.loadLayout('localDefault');
+        status = obj.mibController.loadLayout('localDefault');
+        if ~status
+            dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_error', 'HeaderLines', 1, 'WindowType', 'modal');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                'The local default layout could not be restored!', ...
+                {}, {'The saved layout was created with a different panel configuration'}, 'Load Layout', dlgOpt);
+        end
     case 'Load custom layout'                           % obj.handles.ribbonHome.loadLayoutCustom
-        obj.mibController.loadLayout('custom');
+        status = obj.mibController.loadLayout('custom');
+        if ~status
+            dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_error', 'HeaderLines', 1, 'WindowType', 'modal');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                'The custom layout could not be restored!', ...
+                {}, {'The saved layout was created with a different panel configuration'}, 'Load Layout', dlgOpt);
+        end
     case 'Load MIB default layout'                      % obj.handles.ribbonHome.loadLayoutMibDefault
-        obj.mibController.loadLayout('globalDefault');
+        status = obj.mibController.loadLayout('globalDefault');
+        if ~status
+            dlgOpt = struct('MsgBoxOnly', true, 'Icon', 'puffin_error', 'HeaderLines', 1, 'WindowType', 'modal');
+            utils.dlgs.inputUniversalDlg(obj.view.gui, ...
+                'The MIB global default layout could not be restored!', ...
+                {}, {'The saved layout was created with a different panel configuration'}, 'Load Layout', dlgOpt);
+        end
     case {'Save layout', 'Save the current layout as default'}  % obj.handles.ribbonHome.saveLayout or obj.handles.ribbonHome.saveLayoutLocalDefault
         obj.mibController.saveLayout('localDefault');
     case 'Save the current layout in a custom file'             % obj.handles.ribbonHome.saveLayoutCustom

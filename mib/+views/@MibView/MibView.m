@@ -58,6 +58,8 @@ classdef MibView < handle
 
         widgetHandles = addRibbonPlugins(obj, lazyInit)        % build the Plugins tab group (obj.handles.ribbon.plugins) and add it to obj.handles.ribbon.global 
         
+        panelHandles = addFijiConnectPanel(obj) % add the Fiji Connect panel, add context menus and callbacks for widgets
+        
         panelHandles = addRoiPanel(obj) % add the ROI panel, add context menus and callbacks for widgets
         
         panelHandles = addSegmentationPanel(obj) % add the Segmentation panel, add context menus and callbacks for widgets

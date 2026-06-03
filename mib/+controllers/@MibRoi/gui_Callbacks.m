@@ -104,7 +104,7 @@ switch mode
     case 'roiHeight' % define height of the added ROI
         %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s -> %f\n', mode, hWidget.Value);
     case 'roiToSelection' % highlight the ROI area using the selection layer
-        %fprintf('controller.roiPanel_Callbacks: Clicked on a widget of the ROI panel (obj.handles.panels.roi): %s\n', mode);
+        obj.roiToSelection();
 end
 
 end

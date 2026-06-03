@@ -39,6 +39,7 @@ classdef MibRoi < handle
         roiModify(obj) % interactively modify (redraw) an existing ROI in-place
         roiSave(obj) % save ROIs of the current dataset to a .roi (MAT) file
         roiLoad(obj) % load ROIs from a .roi (MAT) file into the current dataset
+        roiToSelection(obj) % rasterise selected ROI(s) into the Selection layer
 
         function obj = MibRoi(mainCtrl, view, guiHandles, model)
             % MIBROI - Initialize ROI panel controller.

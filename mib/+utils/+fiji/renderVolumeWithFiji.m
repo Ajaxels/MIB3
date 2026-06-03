@@ -192,13 +192,13 @@ if exist('MIJ','class') == 8
         ij_instance = char(ij.gui.Toolbar.getInstance.toString);
         % -> ij.gui.Toolbar[canvas1,3,41,548x27,invalid]
         if numel(strfind(ij_instance, 'invalid')) > 0    % instance already exist, but not shown
-            io.Fiji.Miji_wrapper(true);     % wrapper to Miji.m file
+            utils.fiji.Miji_wrapper(true);     % wrapper to Miji.m file
         end
     else
-        io.Fiji.Miji_wrapper(true);     % wrapper to Miji.m file
+        utils.fiji.Miji_wrapper(true);     % wrapper to Miji.m file
     end
 else
-    io.Fiji.Miji_wrapper(true);     % wrapper to Miji.m file
+    utils.fiji.Miji_wrapper(true);     % wrapper to Miji.m file
 end
 
 

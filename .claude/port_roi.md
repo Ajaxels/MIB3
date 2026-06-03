@@ -1,7 +1,6 @@
 # ROI Class Conversion: MIB2 → MIB3
 
-**Status: DONE** (core + controller ported)
-**Remaining: `roiToSelection`** — rasterise selected ROI into selection layer (medium priority)
+**Status: DONE** (core + controller ported, including `roiToSelection`)
 
 ---
 
@@ -64,12 +63,6 @@ ROI stays anchored to image pixels during zoom/pan:
 
 ---
 
-## Remaining Work
-
-| Task | Priority |
-|------|----------|
-| `roiToSelection` — rasterise selected ROI into selection layer | Medium |
-
 ---
 
 ## Widget Handles (Roi.mlapp)
@@ -87,5 +80,5 @@ ROI stays anchored to image pixels during zoom/pan:
 | `roiLoad`, `roiSave` | Button | File I/O |
 | `roiModify` | Button | Modify selected ROI interactively |
 | `roiOptions` | Button | Edit display options |
-| `roiToSelection` | Button | Burn ROI to selection (not yet implemented) |
+| `roiToSelection` | Button | Burn ROI to selection |
 | `roiMode` (QuickAccessBar) | Toggle | Master ROI visibility |

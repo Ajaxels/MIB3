@@ -83,6 +83,25 @@ end
 
 % Load the layout from the JSON file
 layoutData = jsondecode(fileread(layoutFilename));
+
+% Guard: if the saved layout was created before a panel was added, the
+% children counts will differ — applying it would hide the new panel.
+for position = {'left', 'right', 'bottom'}
+    positionName = position{1};
+    if isfield(obj.view.gui.PanelLayout, positionName)
+        currentCount = numel(obj.view.gui.PanelLayout.(positionName).children);
+        if isfield(layoutData.panelLayout, positionName)
+            loadedCount = numel(layoutData.panelLayout.(positionName).children);
+        else
+            loadedCount = 0;
+        end
+        if currentCount ~= loadedCount
+            status = false;
+            return;
+        end
+    end
+end
+
 % Restore the layout using the loaded data
 obj.view.gui.PanelLayout = layoutData.panelLayout;
 

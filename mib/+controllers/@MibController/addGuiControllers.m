@@ -35,6 +35,10 @@ obj.cSelection = controllers.MibSelection(obj, obj.view, panelHandles, obj.mibMo
 panelHandles = obj.view.addRoiPanel();  % add ROI panel and return its handles (the handles are also in obj.view.handles.panels.roi.handles)
 obj.cRoi = controllers.MibRoi(obj, obj.view, panelHandles, obj.mibModel); % start ROI controller
 
+% Create the FijiConnect panel UI and controller
+panelHandles = obj.view.addFijiConnectPanel();  % add ROI panel and return its handles (the handles are also in obj.view.handles.panels.fiji.handles)
+obj.cFiji = controllers.MibFijiConnect(obj, obj.view, panelHandles, obj.mibModel); % start FijiConnect controller
+
 % Create the Status bar UI and controller
 panelHandles = obj.view.addStatusBar();  % add ROI panel and return its handles (the handles are also in obj.view.handles.status)
 obj.cStatus = controllers.MibStatusBar(obj, obj.view, panelHandles, obj.mibModel); % start Status bar controller

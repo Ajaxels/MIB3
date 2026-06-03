@@ -13,8 +13,8 @@ function Miji_deploy(open_imagej)
 % Syntax:
 %   .. code-block:: matlab
 %
-%      io.Fiji.Miji_deploy()
-%      io.Fiji.Miji_deploy(open_imagej)
+%      utils.fiji.Miji_deploy()
+%      utils.fiji.Miji_deploy(open_imagej)
 %
 % Input Arguments:
 %   - **open_imagej** *(optional)* — [logical] when ``true`` (default), opens
