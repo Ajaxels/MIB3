@@ -141,8 +141,8 @@ end
 % Update model state
 obj.modelExist = true;
 obj.labels.labelsVariable = 'mibModel';
-[~, baseFn] = fileparts(obj.image.filename);
-obj.labels.filename = sprintf('Labels_%s.model', baseFn);
+[imgPath, baseFn] = fileparts(obj.image.filename);
+obj.labels.filename = fullfile(imgPath, sprintf('Labels_%s.model', baseFn));
 if isprop(obj.labels, 'maskFilename')
     obj.labels.maskFilename = obj.image.maskFilename;
 end

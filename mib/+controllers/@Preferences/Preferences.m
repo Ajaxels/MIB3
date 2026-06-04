@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
-% Date: 25.04.2023
-
 classdef Preferences < handle
 % PREFERENCES - Controller for the preferences dialog — displays MIB3 settings.
 %
@@ -210,6 +194,8 @@ classdef Preferences < handle
                 obj.view.handles.FontSizeDireContentsEditField.Value = obj.preferences.System.FontSizeDirView;
 
                 obj.view.handles.RecheckPeriod.Value = obj.preferences.System.Update.RecheckPeriod;
+                obj.view.handles.CpuParallelLimit.Limits = [1 obj.mibModel.cpuParallelLimitMax];
+                obj.view.handles.CpuParallelLimit.Value = obj.preferences.System.cpuParallelLimit;
                 
                 obj.view.handles.SystemScalingEditField.Value = obj.preferences.System.GUI.systemscaling;
                 obj.view.handles.mibScalingFactorEditField.Value = obj.preferences.System.GUI.scaling;
@@ -455,6 +441,7 @@ classdef Preferences < handle
             %scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
             
             notify(obj.mibModel, 'ShowImage');
+            notify(obj.mibModel, 'UpdateGuiWidgets');
             status = 1;
         end
         
@@ -798,6 +785,8 @@ classdef Preferences < handle
                     figure(obj.view.gui);   % set focus to main preference window and move it in front
                 case 'RecheckPeriod'
                     obj.preferences.System.Update.RecheckPeriod = obj.view.handles.RecheckPeriod.Value;
+                case 'CpuParallelLimit'
+                    obj.preferences.System.cpuParallelLimit = obj.view.handles.CpuParallelLimit.Value;
                 case 'SystemScalingEditField'
                     obj.preferences.System.GUI.systemscaling = obj.view.handles.SystemScalingEditField.Value;
                 case 'mibScalingFactorEditField'

@@ -618,7 +618,7 @@ classdef MibDeep < handle
             obj.view = utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
 
             obj.view.handles.PreprocessingParForWorkers.Limits = [0 obj.mibModel.cpuParallelLimitMax];
-            obj.view.handles.PreprocessingParForWorkers.Value = obj.mibModel.cpuParallelLimitMax;
+            obj.view.handles.PreprocessingParForWorkers.Value = obj.mibModel.preferences.System.cpuParallelLimit;
 
             % generate colormaps
             obj.colormap6 = [166 67 33; 71 178 126; 79 107 171; 150 169 213; 26 51 111; 255 204 102 ]/255;

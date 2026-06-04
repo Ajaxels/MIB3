@@ -129,4 +129,5 @@ Application settings, 3D rendering, and informational dialogs.
    Preferences
    VolRenApp
    VolRenAppViewer
+   UpdateCheck
    WelcomeTips

@@ -536,7 +536,7 @@ classdef Graphcut < handle
         function parforCheck_Callback(obj)
         % PARFORCHECK_CALLBACK - Start a parallel pool when the parallel checkbox is ticked.
             if obj.view.handles.parforCheck.Value
-                nWorkers = obj.mibModel.cpuParallelLimitMax;
+                nWorkers = obj.mibModel.preferences.System.cpuParallelLimit;
                 if isempty(gcp('nocreate'))
                     parpool(nWorkers);
                 end
@@ -1202,7 +1202,7 @@ classdef Graphcut < handle
 
                     if parallelSwitch
                         pw = core.PoolWaitbar(numel(obj.graphcut(1).grid.bb), 'Calculating graphs...', obj.view.gui, 'Calculating graphs', true, true);
-                        parfor (graphId = 1:numel(obj.graphcut(1).grid.bb), obj.mibModel.cpuParallelLimitMax)
+                        parfor (graphId = 1:numel(obj.graphcut(1).grid.bb), obj.mibModel.preferences.System.cpuParallelLimit)
                             G = Graphcut(graphId);
                             G = controllers.Graphcut.calcSupervoxels(G, img{graphId}, parLoopOptions);
                             fNames = fieldnames(G);

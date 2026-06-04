@@ -68,7 +68,7 @@ for sliceNo = 1:size(labelsData, 3)
     if ~exist(featuresFilename, 'file')
         obj.updateLoglist(sprintf('Extracting membrane features for slice: %d...', sliceNo));
         imageSlice = cell2mat(obj.mibModel.getData2D('image', sliceNo, [], [], getDataOptions));
-        fm = membraneFeatures(imageSlice, contextSize, membraneThickness, contextSize, obj.mibModel.cpuParallelLimitMax);
+        fm = membraneFeatures(imageSlice, contextSize, membraneThickness, contextSize, obj.mibModel.preferences.System.cpuParallelLimit);
         fm(isnan(fm)) = 0;
         save(featuresFilename, 'fm', '-mat', '-v7.3');
     else

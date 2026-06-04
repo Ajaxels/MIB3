@@ -284,12 +284,12 @@ classdef TripleAreaIntensity < handle
             warning('off', 'MATLAB:xlswrite:AddSheet');
             s = {'TripleAreaIntensity: triple material intensity analysis and ratio calculation'};
             s(2,1) = {'Image directory:'};
-            s(2,2) = {fileparts(obj.mibModel.I{id}.meta('Filename'))};
+            s(2,2) = {fileparts(obj.mibModel.I{id}.image.filename)};
             s(3,1) = {['Calculating: ' parameterToCalculate]};
             s(3,4) = {['Color channel: ' num2str(colorChannel)]};
 
             TripleArea.info = 'TripleAreaIntensity: triple material intensity analysis and ratio calculation';
-            TripleArea.imgDir = fileparts(obj.mibModel.I{id}.meta('Filename'));
+            TripleArea.imgDir = fileparts(obj.mibModel.I{id}.image.filename);
             TripleArea.calcPar = parameterToCalculate;
             TripleArea.colChannel = colorChannel;
             TripleArea.subtractedBg = subtractBackgroundCheck;
@@ -344,13 +344,13 @@ classdef TripleAreaIntensity < handle
                 selectionData = zeros(size(model1), class(model1));
             end
 
-            if isKey(obj.mibModel.I{id}.meta, 'SliceName')
-                inputFilenames = obj.mibModel.I{id}.meta('SliceName');
-                if numel(inputFilenames) < size(imageData, 4)
-                    inputFilenames = repmat(inputFilenames(1), [size(imageData,4), 1]);
+            if ~isempty(obj.mibModel.I{id}.image.sliceName)
+                inputFilenames = obj.mibModel.I{id}.image.sliceName;
+                if numel(inputFilenames) < size(imageData, 3)
+                    inputFilenames = repmat(inputFilenames(1), [size(imageData,3), 1]);
                 end
             else
-                [~, baseName, ext] = fileparts(obj.mibModel.I{id}.meta('Filename'));
+                [~, baseName, ext] = fileparts(obj.mibModel.I{id}.image.filename);
                 inputFilenames = [baseName ext];
             end
 
@@ -405,7 +405,7 @@ classdef TripleAreaIntensity < handle
                     end
                     mask = zeros(size(model1, 1), size(model1, 2), 'uint8');
                 end
-                slice = squeeze(imageData(:,:,:,sliceId));
+                slice = imageData(:,:,sliceId);
 
                 % average background when object counts differ
                 if backgroundCheck == 1 && CC1.NumObjects ~= BG_CC.NumObjects

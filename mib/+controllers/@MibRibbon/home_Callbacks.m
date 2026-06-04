@@ -94,6 +94,7 @@ switch mode
                 'The local default layout could not be restored!', ...
                 {}, {'The saved layout was created with a different panel configuration'}, 'Load Layout', dlgOpt);
         end
+        
     case 'Load custom layout'                           % obj.handles.ribbonHome.loadLayoutCustom
         status = obj.mibController.loadLayout('custom');
         if ~status
@@ -102,6 +103,7 @@ switch mode
                 'The custom layout could not be restored!', ...
                 {}, {'The saved layout was created with a different panel configuration'}, 'Load Layout', dlgOpt);
         end
+
     case 'Load MIB default layout'                      % obj.handles.ribbonHome.loadLayoutMibDefault
         status = obj.mibController.loadLayout('globalDefault');
         if ~status
@@ -110,12 +112,14 @@ switch mode
                 'The MIB global default layout could not be restored!', ...
                 {}, {'The saved layout was created with a different panel configuration'}, 'Load Layout', dlgOpt);
         end
+
     case {'Save layout', 'Save the current layout as default'}  % obj.handles.ribbonHome.saveLayout or obj.handles.ribbonHome.saveLayoutLocalDefault
         obj.mibController.saveLayout('localDefault');
     case 'Save the current layout in a custom file'             % obj.handles.ribbonHome.saveLayoutCustom
         obj.mibController.saveLayout('custom');
     case 'Save the current layout as MIB default'               % obj.handles.ribbonHome.saveLayoutMibDefault
         obj.mibController.saveLayout('globalDefault');
+
     case 'Preferences'                  % obj.handles.ribbonHome.preferences
         % update obj.mibModel.preferences.Colors from the current dataset
         % otherwise the materials color table won't be properly populated
@@ -123,11 +127,14 @@ switch mode
         obj.mibModel.preferences.Colors.ModelMaterialColors = obj.mibModel.I{id}.labels.materialColors;
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
+        web(fullfile(obj.mibModel.mibPath, 'docs/site/index.html'), '-browser');
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
+        web(fullfile(obj.mibModel.mibPath, 'docs/site/index.html'), '-browser');
     case 'Tip of the day'               % obj.handles.ribbonHome.tipOfDay
         obj.mibModel.preferences.Tips.ShowTips = true;
         obj.mibController.startController('controllers.WelcomeTips');
     case 'Support on image.sc'          % obj.handles.ribbonHome.support
+        web('https://forum.image.sc/tag/mib', '-browser');
     case 'Personal support session'     % obj.handles.ribbonHome.call4help
         link = 'http://mib.helsinki.fi/web-update/call4help.json';
         try
@@ -160,12 +167,19 @@ switch mode
 
 
     case 'API class reference'          % obj.handles.ribbonHome.classReference
+        web('https://mib.helsinki.fi/help/api3/index.html', '-browser');
+
     case 'Check for update'             % obj.handles.ribbonHome.checkUpdate
+        obj.mibController.startController('controllers.UpdateCheck');
+
     case 'Your personal stats'          % obj.handles.ribbonHome.personalStats
         utils.dlgs.showMilestoneDialog(obj.mibController.view.gui, ...
             obj.mibModel.preferences.Users, ...
             'currentStats', struct('mibPath', obj.mibModel.mibPath, 'WindowStyle', 'normal'));
+
     case 'Licenses'                     % obj.handles.ribbonHome.licenses
+        web('https://mib.helsinki.fi/license.html', '-browser');
+
     case 'About MIB'                    % obj.handles.ribbonHome.about
         obj.mibController.startController('controllers.About');  % a new appdesigner version
 

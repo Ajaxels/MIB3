@@ -215,6 +215,13 @@ switch lower(layerType)
         % Delegate to MibLabels.save()
         fnOut = obj.labels.save(filename, options);
 
+        % Store saved path so subsequent "Save" (no dialog) reuses it
+        if ~isempty(fnOut)
+            if iscell(fnOut); obj.labels.filename = fnOut{1};
+            else;             obj.labels.filename = fnOut;
+            end
+        end
+
     case 'mask'
         % Validate that a mask exists
         if ~obj.maskExist

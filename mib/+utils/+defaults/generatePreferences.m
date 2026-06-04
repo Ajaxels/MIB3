@@ -43,6 +43,9 @@ Prefs.System.Font.FontName = 'Helvetica';
 Prefs.System.Font.FontSize = 12;
 Prefs.System.FontSizeDirView = 12;     
 
+% define number of CPU to use for parallel processing
+Prefs.System.cpuParallelLimit = 2; % should be smaller than obj.mibModel.cpuParallelLimitMax, defined in utils.getMaxParpoolWorkers
+
 % define GUI scaling settings for guide apps
 Prefs.System.GUI.scaling = 1;   % scaling factor
 Prefs.System.GUI.systemscaling = 1;   % scaling factor for the operating system (on Windows->Screen resolution->Make text and other items larger or smaller->

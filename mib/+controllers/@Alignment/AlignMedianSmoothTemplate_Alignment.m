@@ -171,7 +171,7 @@ if ~shiftsLoaded
 
     % Parallel pool setup (optional)
     if obj.BatchOpt.UseParallelComputing
-        parforArg = obj.mibModel.cpuParallelLimitMax;
+        parforArg = obj.mibModel.preferences.System.cpuParallelLimit;
         if isempty(gcp('nocreate')); parpool(parforArg); end
     else
         parforArg = 0;

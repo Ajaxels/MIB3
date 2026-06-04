@@ -154,7 +154,7 @@ if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
     end
 
     if BatchOpt.Use2DParallelComputing
-        parforArg = obj.cpuParallelLimitMax;
+        parforArg = obj.preferences.System.cpuParallelLimit;
         if isempty(gcp('nocreate')); parpool(parforArg); end
     else
         parforArg = 0;

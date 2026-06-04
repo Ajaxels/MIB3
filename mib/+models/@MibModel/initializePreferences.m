@@ -96,6 +96,9 @@ if exist('mib_pars', 'var') && isfield(mib_pars, 'mibVersion')  %#ok<NODEF>
     end
 end
 
+% force update of cpuParallelLimit
+obj.preferences.System.cpuParallelLimit = min([obj.preferences.System.cpuParallelLimit, obj.cpuParallelLimitMax]);
+
 % ------------ restore user statistics ------------
 % Load user tier statistics from separate file
 userStatsFn = fullfile(prefdir, 'mib_user.mat');

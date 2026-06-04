@@ -142,7 +142,7 @@ end
 
 % --- Parallel pool setup
 if parameters.UseParallelComputing
-    parforArg = obj.mibModel.cpuParallelLimitMax;
+    parforArg = obj.mibModel.preferences.System.cpuParallelLimit;
     if isempty(gcp('nocreate')); parpool(parforArg); end
 else
     parforArg = 0;

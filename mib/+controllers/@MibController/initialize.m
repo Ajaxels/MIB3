@@ -101,36 +101,42 @@ if obj.mibModel.preferences.Tips.ShowTips == 1
     end
 end
 
-% % check for update
-% currentDate = floor(now);
-% if currentDate - obj.mibModel.preferences.System.Update.SinceLastCheck > obj.mibModel.preferences.System.Update.RecheckPeriod
-%     % check for update
-%     obj.mibModel.preferences.System.Update.SinceLastCheck = currentDate;
-%     if isdeployed
-%         if ismac
-%             link = 'http://mib.helsinki.fi/web-update/mib2_mac.txt';
-%         elseif isunix
-%             link = 'http://mib.helsinki.fi/web-update/mib2_linux.txt';
-%         else
-%             link = 'http://mib.helsinki.fi/web-update/mib2_win.txt';
-%         end
-%     else
-%         link = 'http://mib.helsinki.fi/web-update/mib2_matlab.txt';
-%     end
-%     try
-%         urlText = urlread(link, 'Timeout', 4);
-%     catch err
-%         urlText = sprintf('0.305\n<html>\ntest\n</html>\n---Info---\n<html>\n<div style="font-family: arial;">\n<b>The update file has not been detected...</b>\n</html>');
-%     end
-% 
-%     linefeedPos = strfind(urlText, sprintf('\n'));
-%     availableVersion = str2double(urlText(1:linefeedPos(1)));
-%     if availableVersion - obj.mibVersionNumeric > 0
-%         anwser = questdlg(sprintf('A new version %f of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later from Menu->Help->Check for Update', availableVersion),'New version', 'Update now', 'Later', 'Update now');
-%         if strcmp(anwser, 'Update now')
-%             obj.startController('mibUpdateCheckController', obj);
-%         end
-%     end
-% end
+% check for update
+currentDate = floor(now);  %#ok<TNOW1>
+if currentDate - obj.mibModel.preferences.System.Update.SinceLastCheck > ...
+        obj.mibModel.preferences.System.Update.RecheckPeriod
+    obj.mibModel.preferences.System.Update.SinceLastCheck = currentDate;
+    if isdeployed
+        if ismac
+            link = 'http://mib.helsinki.fi/web-update/mib3_mac.txt';
+        elseif isunix
+            link = 'http://mib.helsinki.fi/web-update/mib3_linux.txt';
+        else
+            link = 'http://mib.helsinki.fi/web-update/mib3_win.txt';
+        end
+    else
+        link = 'http://mib.helsinki.fi/web-update/mib3_matlab.txt';
+    end
+    try
+        urlText = urlread(link, 'Timeout', 4);  %#ok<URLRD>
+    catch
+        urlText = '0';
+    end
+    linefeedPositions = strfind(urlText, sprintf('\n'));
+    if ~isempty(linefeedPositions)
+        availableVersion = str2double(urlText(1:linefeedPositions(1)));
+    else
+        availableVersion = str2double(urlText);
+    end
+    mibVersionNumeric = utils.getMibVersionNumberic(obj.mibModel.mibVersion);
+    if availableVersion - mibVersionNumeric > 0
+        answer = utils.dlgs.inputQuestDlg(obj.mibModel.mibGUI, ...
+            sprintf('A new version %g of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later via Help \x2192 Check for Update.', availableVersion), ...
+            'New version available', 'Update now', 'Later', 'Update now');
+        if strcmp(answer, 'Update now')
+            obj.startController('controllers.UpdateCheck', obj);
+        end
+    end
+end
 
 end
