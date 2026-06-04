@@ -40,6 +40,7 @@ classdef MibSegmentation
         thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
         thresholdSlider_ContextMenu(obj, menuEntry, selectedData)        % context menu callbacks for threshold sliders (Default, Set step...)
         update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
+        updateCheckboxes(obj, BatchOptIn)       % batch function to tweak the state of checkboxes in the Segmentation panel
         updateInterpolationSettings(obj) % show dialog to modify selection interpolation settings for the brush tool
         updateMaterialsTable(obj, position)                 % update the segmentation table from model
         updateSamSettings(obj)        % Open SAM settings dialog for configuring SAM1 or SAM2 parameters

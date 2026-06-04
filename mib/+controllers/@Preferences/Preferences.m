@@ -149,148 +149,161 @@ classdef Preferences < handle
             %
             % Input Arguments:
             %   - **panelId** *(optional)* — [char] tag of panel to update; when missing, all panels are updated
-            
+
             panelsList = {'UserInterfacePanel', 'ColorsPanel', 'BackupAndUndoPanel', ...
                 'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel'};
-            
+
             if nargin < 2
-                panelId = 'All'; 
+                panelId = 'All';
                 obj.renderedPanels = zeros([numel(panelsList) 1]);     % indices of the rendered panels
             end
-            
+
+            handles = obj.view.handles;
+
             % % ---------  UserInterfacePanel ------------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'UserInterfacePanel')
                 if obj.renderedPanels(1) == 1; return; end  % already rendered
-                if strcmp(obj.preferences.System.MouseWheel, 'zoom')   % zoom or scroll
-                    obj.view.handles.MouseWheelActionDropDown.Value = 'Zoom In/Out';
-                else
-                    obj.view.handles.MouseWheelActionDropDown.Value = 'Change slices/frames';
-                end
-                if strcmp(obj.preferences.System.LeftMouseButton, 'pan')   % pan or select
-                    obj.view.handles.LeftMouseActionDropDown.Value = 'Pan image';
-                else
-                    obj.view.handles.LeftMouseActionDropDown.Value = 'Selection/drawing';
-                end
-                obj.view.handles.ImageResizeMethodDropDown.Value = obj.preferences.System.ImageResizeMethod;
-                
-                if obj.preferences.System.AltWithScrollWheel
-                    obj.view.handles.AltWithScrollWheel.Value = 'Scroll time points';
-                else
-                    obj.view.handles.AltWithScrollWheel.Value = 'Return to the slice';
-                end
+                systemPrefs = obj.preferences.System;
+                guiScalingPrefs = obj.preferences.System.GUI;
+                activeDataset = obj.mibModel.I{obj.mibModel.id};
 
-                if obj.mibModel.I{obj.mibModel.id}.enableSelection
-                    obj.view.handles.EnableSelectionDropDown.Value = 'yes';
+                if strcmp(systemPrefs.MouseWheel, 'zoom')   % zoom or scroll
+                    handles.MouseWheelActionDropDown.Value = 'Zoom In/Out';
                 else
-                    obj.view.handles.EnableSelectionDropDown.Value = 'no';
+                    handles.MouseWheelActionDropDown.Value = 'Change slices/frames';
+                end
+                if strcmp(systemPrefs.LeftMouseButton, 'pan')   % pan or select
+                    handles.LeftMouseActionDropDown.Value = 'Pan image';
+                else
+                    handles.LeftMouseActionDropDown.Value = 'Selection/drawing';
+                end
+                handles.ImageResizeMethodDropDown.Value = systemPrefs.ImageResizeMethod;
+
+                if systemPrefs.AltWithScrollWheel
+                    handles.AltWithScrollWheel.Value = 'Scroll time points';
+                else
+                    handles.AltWithScrollWheel.Value = 'Return to the slice';
                 end
 
-                obj.view.handles.RecentDirsNumber.Value = obj.preferences.System.Dirs.RecentDirsNumber;
-                obj.view.handles.RenderingEngine.Value = obj.preferences.System.RenderingEngine;
+                if activeDataset.enableSelection
+                    handles.EnableSelectionDropDown.Value = 'yes';
+                else
+                    handles.EnableSelectionDropDown.Value = 'no';
+                end
 
-                obj.view.handles.CurrentFontLabel.Text = ...
-                    sprintf('Current font: [ %s, %d ]', obj.preferences.System.Font.FontName,  obj.preferences.System.Font.FontSize);
-                obj.view.handles.FontSizeEditField.Value = obj.preferences.System.Font.FontSize;
-                obj.view.handles.FontSizeDireContentsEditField.Value = obj.preferences.System.FontSizeDirView;
+                handles.RecentDirsNumber.Value = systemPrefs.Dirs.RecentDirsNumber;
+                handles.RenderingEngine.Value = systemPrefs.RenderingEngine;
 
-                obj.view.handles.RecheckPeriod.Value = obj.preferences.System.Update.RecheckPeriod;
-                obj.view.handles.CpuParallelLimit.Limits = [1 obj.mibModel.cpuParallelLimitMax];
-                obj.view.handles.CpuParallelLimit.Value = obj.preferences.System.cpuParallelLimit;
-                
-                obj.view.handles.SystemScalingEditField.Value = obj.preferences.System.GUI.systemscaling;
-                obj.view.handles.mibScalingFactorEditField.Value = obj.preferences.System.GUI.scaling;
-                obj.view.handles.uibuttongroup.Value = obj.preferences.System.GUI.uibuttongroup;
-                obj.view.handles.uipanel.Value = obj.preferences.System.GUI.uipanel;
-                obj.view.handles.uitab.Value = obj.preferences.System.GUI.uitab;
-                obj.view.handles.uitabgroup.Value = obj.preferences.System.GUI.uitabgroup;
-                obj.view.handles.axes.Value = obj.preferences.System.GUI.axes;
-                obj.view.handles.uitable.Value = obj.preferences.System.GUI.uitable;
-                obj.view.handles.uicontrol.Value = obj.preferences.System.GUI.uicontrol;
+                handles.CurrentFontLabel.Text = ...
+                    sprintf('Current font: [ %s, %d ]', systemPrefs.Font.FontName, systemPrefs.Font.FontSize);
+                handles.FontSizeEditField.Value = systemPrefs.Font.FontSize;
+                handles.FontSizeDireContentsEditField.Value = systemPrefs.FontSizeDirView;
+
+                handles.RecheckPeriod.Value = systemPrefs.Update.RecheckPeriod;
+                handles.CpuParallelLimit.Limits = [1 obj.mibModel.cpuParallelLimitMax];
+                handles.CpuParallelLimit.Value = systemPrefs.cpuParallelLimit;
+
+                handles.SystemScalingEditField.Value = guiScalingPrefs.systemscaling;
+                handles.mibScalingFactorEditField.Value = guiScalingPrefs.scaling;
+                handles.uibuttongroup.Value = guiScalingPrefs.uibuttongroup;
+                handles.uipanel.Value = guiScalingPrefs.uipanel;
+                handles.uitab.Value = guiScalingPrefs.uitab;
+                handles.uitabgroup.Value = guiScalingPrefs.uitabgroup;
+                handles.axes.Value = guiScalingPrefs.axes;
+                handles.uitable.Value = guiScalingPrefs.uitable;
+                handles.uicontrol.Value = guiScalingPrefs.uicontrol;
                 obj.renderedPanels(1) = 1;
             end
-            
+
             % % ---------  ColorsPanel ------------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'ColorsPanel')
                 if obj.renderedPanels(2) == 1; return; end  % already rendered
-                
-                obj.view.handles.SelectionColorButton.BackgroundColor = obj.preferences.Colors.SelectionColor;
-                obj.view.handles.MaskColorButton.BackgroundColor = obj.preferences.Colors.MaskColor;
-                obj.view.handles.AnnotationsColorButton.BackgroundColor = obj.preferences.SegmTools.Annotations.Color;
+                colorPrefs = obj.preferences.Colors;
+                contourStyles = obj.preferences.Styles.Contour;
+                activeDataset = obj.mibModel.I{obj.mibModel.id};
+
+                handles.SelectionColorButton.BackgroundColor = colorPrefs.SelectionColor;
+                handles.MaskColorButton.BackgroundColor = colorPrefs.MaskColor;
+                handles.AnnotationsColorButton.BackgroundColor = obj.preferences.SegmTools.Annotations.Color;
 
                 % updating options for color palettes
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials < 256
-                    materialsNumber = numel(obj.mibModel.I{obj.mibModel.id}.labels.materialNames);
+                if activeDataset.labels.maxMaterials < 256
+                    materialsNumber = numel(activeDataset.labels.materialNames);
                 else
-                    materialsNumber = obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials;
+                    materialsNumber = activeDataset.labels.maxMaterials;
                 end
 
                 if materialsNumber > 12
                     paletteList = {'Distinct colors, 20 colors', 'Matlab Jet','Matlab Gray','Matlab Bone','Matlab HSV', 'Matlab Cool', 'Matlab Hot','Random Colors'};
-                    obj.view.handles.PaletteGeneratorDropDown.Items = paletteList;
+                    handles.PaletteGeneratorDropDown.Items = paletteList;
                 elseif materialsNumber > 11
                     paletteList = {'Distinct colors, 20 colors', 'Qualitative (Monte Carlo->Half Baked), 3-12 colors','Matlab Jet','Matlab Gray','Matlab Bone','Matlab HSV', 'Matlab Cool', 'Matlab Hot','Random Colors'};
-                    obj.view.handles.PaletteGeneratorDropDown.Items = paletteList;
+                    handles.PaletteGeneratorDropDown.Items = paletteList;
                 elseif materialsNumber > 9
                     paletteList = {'Distinct colors, 20 colors', 'Qualitative (Monte Carlo->Half Baked), 3-12 colors','Diverging (Deep Bronze->Deep Teal), 3-11 colors','Diverging (Ripe Plum->Kaitoke Green), 3-11 colors',...
                         'Diverging (Bordeaux->Green Vogue), 3-11 colors, 3-11 colors', 'Diverging (Carmine->Bay of Many), 3-11 colors',...
                         'Matlab Jet','Matlab Gray','Matlab Bone','Matlab HSV', 'Matlab Cool', 'Matlab Hot','Random Colors'};
-                    obj.view.handles.PaletteGeneratorDropDown.Items = paletteList;
+                    handles.PaletteGeneratorDropDown.Items = paletteList;
                 elseif materialsNumber > 6
                     paletteList = {'Distinct colors, 20 colors', 'Qualitative (Monte Carlo->Half Baked), 3-12 colors','Diverging (Deep Bronze->Deep Teal), 3-11 colors','Diverging (Ripe Plum->Kaitoke Green), 3-11 colors',...
                         'Diverging (Bordeaux->Green Vogue), 3-11 colors, 3-11 colors', 'Diverging (Carmine->Bay of Many), 3-11 colors','Sequential (Kaitoke Green), 3-9 colors',...
                         'Sequential (Catalina Blue), 3-9 colors', 'Sequential (Maroon), 3-9 colors', 'Sequential (Astronaut Blue), 3-9 colors', 'Sequential (Downriver), 3-9 colors',...
                         'Matlab Jet','Matlab Gray','Matlab Bone','Matlab HSV', 'Matlab Cool', 'Matlab Hot','Random Colors'};
-                    obj.view.handles.PaletteGeneratorDropDown.Items = paletteList;
+                    handles.PaletteGeneratorDropDown.Items = paletteList;
                 else
                     paletteList = {'Default, 6 colors', 'Distinct colors, 20 colors', 'Qualitative (Monte Carlo->Half Baked), 3-12 colors','Diverging (Deep Bronze->Deep Teal), 3-11 colors','Diverging (Ripe Plum->Kaitoke Green), 3-11 colors',...
                         'Diverging (Bordeaux->Green Vogue), 3-11 colors', 'Diverging (Carmine->Bay of Many), 3-11 colors','Sequential (Kaitoke Green), 3-9 colors',...
                         'Sequential (Catalina Blue), 3-9 colors', 'Sequential (Maroon), 3-9 colors', 'Sequential (Astronaut Blue), 3-9 colors', 'Sequential (Downriver), 3-9 colors',...
                         'Matlab Jet','Matlab Gray','Matlab Bone','Matlab HSV', 'Matlab Cool', 'Matlab Hot', 'Random Colors'};
-                    obj.view.handles.PaletteGeneratorDropDown.Items = paletteList;
+                    handles.PaletteGeneratorDropDown.Items = paletteList;
                 end
                 obj.updateColorsTables('ModelsColorsTable');  % redraw the color table
                 obj.updateColorsTables('LUTColorsTable');  % redraw LUT color table
-                obj.renderedPanels(2) = 1;
 
                 % Contours and mask styles
-                obj.view.handles.ContourThicknessRendering.Value = obj.preferences.Styles.Contour.ThicknessRendering;
-                obj.view.handles.ContourThicknessModels.Value = obj.preferences.Styles.Contour.ThicknessModels;
-                obj.view.handles.ContourThicknessMasks.Value = obj.preferences.Styles.Contour.ThicknessMasks;
-                obj.view.handles.ContourThicknessMasksMethod.Value = obj.preferences.Styles.Contour.ThicknessMethodMasks;
-                obj.view.handles.LabelsShowAsContours.Value = obj.preferences.Styles.Labels.ShowAsContours;
-                obj.view.handles.MaskShowAsContours.Value = obj.preferences.Styles.Masks.ShowAsContours;
+                handles.ContourThicknessRendering.Value = contourStyles.ThicknessRendering;
+                handles.ContourThicknessModels.Value = contourStyles.ThicknessModels;
+                handles.ContourThicknessMasks.Value = contourStyles.ThicknessMasks;
+                handles.ContourThicknessMasksMethod.Value = contourStyles.ThicknessMethodMasks;
+                handles.LabelsShowAsContours.Value = obj.preferences.Styles.Labels.ShowAsContours;
+                handles.MaskShowAsContours.Value = obj.preferences.Styles.Masks.ShowAsContours;
+                obj.renderedPanels(2) = 1;
             end
-            
+
             % % -------------- BackupAndUndoPanel ----------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'BackupAndUndoPanel')
                 if obj.renderedPanels(3) == 1; return; end  % already rendered
-                if obj.preferences.Undo.Enable
-                    obj.view.handles.EnableUndo.Value = true;
-                    obj.view.handles.maxUndoHistory.Enable = 'on';
-                    obj.view.handles.max3dUndoHistory.Enable = 'on';
+                undoPrefs = obj.preferences.Undo;
+
+                if undoPrefs.Enable
+                    handles.EnableUndo.Value = true;
+                    handles.maxUndoHistory.Enable = 'on';
+                    handles.max3dUndoHistory.Enable = 'on';
                 else
-                    obj.view.handles.EnableUndo.Value = false;
-                    obj.view.handles.maxUndoHistory.Enable = 'off';
-                    obj.view.handles.max3dUndoHistory.Enable = 'off';
+                    handles.EnableUndo.Value = false;
+                    handles.maxUndoHistory.Enable = 'off';
+                    handles.max3dUndoHistory.Enable = 'off';
                 end
-                
-                obj.view.handles.maxUndoHistory.Value = obj.preferences.Undo.MaxUndoHistory;
-                obj.view.handles.max3dUndoHistory.Value = obj.preferences.Undo.Max3dUndoHistory;
-                obj.renderedPanels(3) = 1; 
+
+                handles.maxUndoHistory.Value = undoPrefs.MaxUndoHistory;
+                handles.max3dUndoHistory.Value = undoPrefs.Max3dUndoHistory;
+                obj.renderedPanels(3) = 1;
             end
-            
+
             % % -------------- ExternalDirectoriesPanel ----------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'ExternalDirectoriesPanel')
                 if obj.renderedPanels(4) == 1; return; end  % already rendered
-                obj.view.handles.FijiInstallationPath.Value = char(obj.preferences.ExternalDirs.FijiInstallationPath);
-                obj.view.handles.OmeroInstallationPath.Value = char(obj.preferences.ExternalDirs.OmeroInstallationPath);
-                obj.view.handles.ImarisInstallationPath.Value  = char(obj.preferences.ExternalDirs.ImarisInstallationPath);
-                obj.view.handles.bm3dInstallationPath.Value = char(obj.preferences.ExternalDirs.bm3dInstallationPath);
-                obj.view.handles.bm4dInstallationPath.Value = char(obj.preferences.ExternalDirs.bm4dInstallationPath);
-                obj.view.handles.BioFormatsMemoizerMemoDir.Value = char(obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir);
-                obj.view.handles.PythonInstallationPath.Value = char(obj.preferences.ExternalDirs.PythonInstallationPath);
-                obj.view.handles.DeepMIBDir.Value = char(obj.preferences.ExternalDirs.DeepMIBDir);
-                obj.renderedPanels(4) = 1; 
+                externalDirPrefs = obj.preferences.ExternalDirs;
+
+                handles.FijiInstallationPath.Value = char(externalDirPrefs.FijiInstallationPath);
+                handles.OmeroInstallationPath.Value = char(externalDirPrefs.OmeroInstallationPath);
+                handles.ImarisInstallationPath.Value  = char(externalDirPrefs.ImarisInstallationPath);
+                handles.bm3dInstallationPath.Value = char(externalDirPrefs.bm3dInstallationPath);
+                handles.bm4dInstallationPath.Value = char(externalDirPrefs.bm4dInstallationPath);
+                handles.BioFormatsMemoizerMemoDir.Value = char(externalDirPrefs.BioFormatsMemoizerMemoDir);
+                handles.PythonInstallationPath.Value = char(externalDirPrefs.PythonInstallationPath);
+                handles.DeepMIBDir.Value = char(externalDirPrefs.DeepMIBDir);
+                obj.renderedPanels(4) = 1;
             end
 
             % % -------------- KeyboardShortcutsPanel ----------------
@@ -300,47 +313,48 @@ classdef Preferences < handle
                 % Column names and column format
                 ColumnName =    {'',    'Action name',  'Key',      'Shift',    'Control',  'Alt'};
                 ColumnFormat =  {'char','char',         'char',     'logical',  'logical',  'logical'};
-                obj.view.handles.shortcutsTable.ColumnName = ColumnName;
-                obj.view.handles.shortcutsTable.ColumnFormat = ColumnFormat;
-                
+                handles.shortcutsTable.ColumnName = ColumnName;
+                handles.shortcutsTable.ColumnFormat = ColumnFormat;
+
                 data(:,2) = obj.preferences.KeyShortcuts.Action;
                 data(:,3) = obj.preferences.KeyShortcuts.Key;
                 data(:,4) = num2cell(logical(obj.preferences.KeyShortcuts.shift));
                 data(:,5) = num2cell(logical(obj.preferences.KeyShortcuts.control));
                 data(:,6) = num2cell(logical(obj.preferences.KeyShortcuts.alt));
 
-                obj.view.handles.shortcutsTable.ColumnWidth = {8, 'auto', 62, 46, 56, 46};
-                
-                removeStyle(obj.view.handles.shortcutsTable);    % remove current styles
+                handles.shortcutsTable.ColumnWidth = {8, 'auto', 62, 46, 56, 46};
+
+                removeStyle(handles.shortcutsTable);    % remove current styles
 
                 s1 = uistyle;
                 s1.BackgroundColor = [0 1 0];
-                addStyle(obj.view.handles.shortcutsTable, s1, 'column', 1);
+                addStyle(handles.shortcutsTable, s1, 'column', 1);
                 drawnow;
-                
+
                 ColumnEditable = [false false true true true true];
-                obj.view.handles.shortcutsTable.ColumnEditable = ColumnEditable;
-                obj.view.handles.shortcutsTable.Data = data;
-                obj.renderedPanels(5) = 1; 
+                handles.shortcutsTable.ColumnEditable = ColumnEditable;
+                handles.shortcutsTable.Data = data;
+                obj.renderedPanels(5) = 1;
             end
 
-            
+
             % % -------------- SegmentationToolsPanel ----------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'SegmentationToolsPanel')
                 if obj.renderedPanels(6) == 1; return; end  % already rendered
-                
-                obj.view.handles.annotationFontSize.Value = obj.view.handles.annotationFontSize.Items{obj.preferences.SegmTools.Annotations.FontSize};
-                obj.view.handles.annotationShownExtraDepth.Value = obj.preferences.SegmTools.Annotations.ShownExtraDepth;
-                obj.view.handles.AnnotationsColorButton2.BackgroundColor = obj.preferences.SegmTools.Annotations.Color;
+                segmToolsPrefs = obj.preferences.SegmTools;
 
-                obj.view.handles.InterpolationType.Value = obj.preferences.SegmTools.Interpolation.Type;
-                obj.view.handles.InterpolationNumberOfPoints.Value = obj.preferences.SegmTools.Interpolation.NoPoints;
-                obj.view.handles.InterpolationLineWidth.Value = obj.preferences.SegmTools.Interpolation.LineWidth;
+                handles.annotationFontSize.Value = handles.annotationFontSize.Items{segmToolsPrefs.Annotations.FontSize};
+                handles.annotationShownExtraDepth.Value = segmToolsPrefs.Annotations.ShownExtraDepth;
+                handles.AnnotationsColorButton2.BackgroundColor = segmToolsPrefs.Annotations.Color;
 
-                obj.view.handles.FavoriteToolA.Value = obj.preferences.SegmTools.FavoriteToolA;
-                obj.view.handles.FavoriteToolB.Value = obj.preferences.SegmTools.FavoriteToolB;
+                handles.InterpolationType.Value = segmToolsPrefs.Interpolation.Type;
+                handles.InterpolationNumberOfPoints.Value = segmToolsPrefs.Interpolation.NoPoints;
+                handles.InterpolationLineWidth.Value = segmToolsPrefs.Interpolation.LineWidth;
 
-                obj.renderedPanels(6) = 1; 
+                handles.FavoriteToolA.Value = segmToolsPrefs.FavoriteToolA;
+                handles.FavoriteToolB.Value = segmToolsPrefs.FavoriteToolB;
+
+                obj.renderedPanels(6) = 1;
             end
         end
         
@@ -378,68 +392,69 @@ classdef Preferences < handle
             %
             %      status = obj.ApplyButtonPushedCallback();
             
-            %global scalingGUI;
             status = 0;
-            
+            activeDataset = obj.mibModel.I{obj.mibModel.id};
+            systemPrefs = obj.preferences.System;
+            colorPrefs = obj.preferences.Colors;
+            controllerFontSettings = obj.mibController.cActiveDataset.handles.sets;
+
             % update font size
-            if obj.mibController.cActiveDataset.handles.sets.FontSize ~= obj.preferences.System.Font.FontSize || ...
-                    ~strcmp(obj.mibController.cActiveDataset.handles.sets.FontName, obj.preferences.System.Font.FontName)
-                utils.fontSizeUpdate(obj.mibController.view.gui, obj.preferences.System.Font);
+            if controllerFontSettings.FontSize ~= systemPrefs.Font.FontSize || ...
+                    ~strcmp(controllerFontSettings.FontName, systemPrefs.Font.FontName)
+                utils.fontSizeUpdate(obj.mibController.view.gui, systemPrefs.Font);
             end
-            obj.mibController.cDirContents.handles.fileList.FontSize = obj.preferences.System.FontSizeDirView;
-            
+            obj.mibController.cDirContents.handles.fileList.FontSize = systemPrefs.FontSizeDirView;
+
             % update key shortcuts
             if numel(obj.duplicateEntries) > 1
                 uialert(obj.view.gui, ...
                     'Please check for duplicates in key shortcuts!', 'Duplicate shortcuts');
                 return;
             end
-            
+
             data = obj.view.handles.shortcutsTable.Data;
             obj.preferences.KeyShortcuts.Action = data(:, 2)';
             obj.preferences.KeyShortcuts.Key = data(:, 3)';
             obj.preferences.KeyShortcuts.shift = cell2mat(data(:, 4))';
             obj.preferences.KeyShortcuts.control = cell2mat(data(:, 5))';
             obj.preferences.KeyShortcuts.alt = cell2mat(data(:, 6))';
-            
+
             % deal with change of selection mode
-            if obj.preferences.System.EnableSelection   % turn ON the Selection
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 255 && ~obj.mibModel.I{obj.mibModel.id}.selection.exists
+            if systemPrefs.EnableSelection   % turn ON the Selection
+                if activeDataset.labels.maxMaterials == 255 && ~activeDataset.selection.exists
                     obj.mibController.mibModel.clearLayer('selection');
-                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && ~obj.mibModel.I{obj.mibModel.id}.labels.exists
-                    obj.mibModel.I{obj.mibModel.id}.labels.data = zeros(...
-                        [obj.mibModel.I{obj.mibModel.id}.dim_yxzct(1), obj.mibModel.I{obj.mibModel.id}.dim_yxzct(2), ...
-                        obj.mibModel.I{obj.mibModel.id}.dim_yxzct(3), 1, obj.mibModel.I{obj.mibModel.id}.dim_yxzct(5)], 'uint8');
+                elseif activeDataset.labels.maxMaterials == 63 && ~activeDataset.labels.exists
+                    activeDataset.labels.data = zeros(...
+                        [activeDataset.dim_yxzct(1), activeDataset.dim_yxzct(2), ...
+                        activeDataset.dim_yxzct(3), 1, activeDataset.dim_yxzct(5)], 'uint8');
                 end
             else         % turn OFF the Selection, Mask, Model
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63
-                    obj.mibModel.I{obj.mibModel.id}.labels.data = [];
-                    obj.mibModel.I{obj.mibModel.id}.labels.exists = false;
+                if activeDataset.labels.maxMaterials == 63
+                    activeDataset.labels.data = [];
+                    activeDataset.labels.exists = false;
                 else
-                    obj.mibModel.I{obj.mibModel.id}.selection.data = [];
-                    obj.mibModel.I{obj.mibModel.id}.selection.exists = false;
-                    obj.mibModel.I{obj.mibModel.id}.mask.data = [];
-                    obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
+                    activeDataset.selection.data = [];
+                    activeDataset.selection.exists = false;
+                    activeDataset.mask.data = [];
+                    activeDataset.mask.exists = false;
                 end
                 obj.mibModel.Backup.clearContents();  % delete backup history
             end
-            obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
-            
+            activeDataset.enableSelection = systemPrefs.EnableSelection;
+
             obj.mibModel.preferences = obj.preferences;
-            
-            obj.mibModel.I{obj.mibModel.id}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
-            obj.mibModel.I{obj.mibModel.id}.labels.lutColors = obj.preferences.Colors.LUTColors;
-            
+
+            activeDataset.labels.materialColors = colorPrefs.ModelMaterialColors;
+            activeDataset.labels.lutColors = colorPrefs.LUTColors;
+
             obj.mibController.updateInterpolationMode(true);  % update the interpolation button icon
             obj.mibController.updateVisualizationMode('keepcurrent');  % update image visualization mode
-            
-            % update imaris path using IMARISPATH enviromental variable
+
+            % update imaris path using IMARISPATH environmental variable
             if ~isempty(obj.mibModel.preferences.ExternalDirs.ImarisInstallationPath)
                 setenv('IMARISPATH', obj.mibModel.preferences.ExternalDirs.ImarisInstallationPath);
             end
-            
-            %scalingGUI = obj.preferences.System.GUI;   % update scalingGUI
-            
+
             notify(obj.mibModel, 'ShowImage');
             notify(obj.mibModel, 'UpdateGuiWidgets');
             status = 1;
@@ -482,44 +497,44 @@ classdef Preferences < handle
             
             status = obj.ApplyButtonPushedCallback();
             if status == 0; return; end
-            
-            if obj.preferences.Undo.Enable
-                obj.mibModel.Backup.enableSwitch = true;
+
+            activeDataset = obj.mibModel.I{obj.mibModel.id};
+            undoPrefs = obj.preferences.Undo;
+            backup = obj.mibModel.Backup;
+
+            if undoPrefs.Enable
+                backup.enableSwitch = true;
             else
-                obj.mibModel.Backup.clearContents();
-                obj.mibModel.Backup.enableSwitch = false;
+                backup.clearContents();
+                backup.enableSwitch = false;
             end
-            
-            if obj.preferences.Undo.Max3dUndoHistory ~= obj.mibModel.Backup.max3d_steps || obj.preferences.Undo.MaxUndoHistory ~= obj.mibModel.Backup.max_steps
-                obj.mibModel.Backup.setNumberOfHistorySteps(obj.preferences.Undo.MaxUndoHistory, obj.preferences.Undo.Max3dUndoHistory);
+
+            if undoPrefs.Max3dUndoHistory ~= backup.max3d_steps || undoPrefs.MaxUndoHistory ~= backup.max_steps
+                backup.setNumberOfHistorySteps(undoPrefs.MaxUndoHistory, undoPrefs.Max3dUndoHistory);
             end
-            
+
             if obj.preferences.System.EnableSelection
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials >= 255 && isnan(obj.mibModel.I{obj.mibModel.id}.selection.data(1))
+                if activeDataset.labels.maxMaterials >= 255 && isnan(activeDataset.selection.data(1))
                     obj.mibController.mibModel.clearLayer('selection');
-                elseif obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63 && isnan(obj.mibModel.I{obj.mibModel.id}.labels.data(1))
-                    obj.mibModel.I{obj.mibModel.id}.labels.data = zeros(...
-                        [obj.mibModel.I{obj.mibModel.id}.dim_yxzct(1), obj.mibModel.I{obj.mibModel.id}.dim_yxzct(2), ...
-                        obj.mibModel.I{obj.mibModel.id}.dim_yxzct(3), 1, obj.mibModel.I{obj.mibModel.id}.dim_yxzct(5)], 'uint8');
+                elseif activeDataset.labels.maxMaterials == 63 && isnan(activeDataset.labels.data(1))
+                    activeDataset.labels.data = zeros(...
+                        [activeDataset.dim_yxzct(1), activeDataset.dim_yxzct(2), ...
+                        activeDataset.dim_yxzct(3), 1, activeDataset.dim_yxzct(5)], 'uint8');
                 end
             else         % turn OFF the Selection, Mask, Model
-                if obj.mibModel.I{obj.mibModel.id}.labels.maxMaterials == 63
-                    obj.mibModel.I{obj.mibModel.id}.labels.data = NaN;
-                    obj.mibModel.I{obj.mibModel.id}.labels.exists = false;
+                if activeDataset.labels.maxMaterials == 63
+                    activeDataset.labels.data = NaN;
+                    activeDataset.labels.exists = false;
                 else
-                    obj.mibModel.I{obj.mibModel.id}.selection.data = NaN;
-                    obj.mibModel.I{obj.mibModel.id}.selection.exists = false;
-                    obj.mibModel.I{obj.mibModel.id}.mask.data = NaN;
-                    obj.mibModel.I{obj.mibModel.id}.mask.exists = false;
+                    activeDataset.selection.data = NaN;
+                    activeDataset.selection.exists = false;
+                    activeDataset.mask.data = NaN;
+                    activeDataset.mask.exists = false;
                 end
-                obj.mibModel.Backup.clearContents();  % delete backup history
+                backup.clearContents();  % delete backup history
             end
-            obj.mibModel.I{obj.mibModel.id}.enableSelection = obj.preferences.System.EnableSelection;
-            
-            % remove the brush cursor
-            % controllers.MibSegmentation.segmentationTool_Callback();
-            % obj.mibController.updateGuiWidgets();
-            
+            activeDataset.enableSelection = obj.preferences.System.EnableSelection;
+
             notify(obj.mibModel, 'ShowImage');
             obj.closeWindow();
         end
@@ -1112,7 +1127,7 @@ classdef Preferences < handle
             %
             %      obj.TableCellEditCallback(event)
             %
-            % Paramters:
+            % Parameters:
             % event:  a handle to the event structure
             indices = event.Indices;
             newData = event.NewData;
