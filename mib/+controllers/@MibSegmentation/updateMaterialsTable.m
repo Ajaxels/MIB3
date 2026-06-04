@@ -174,7 +174,7 @@ userData.maxColor = maxColor;
 tableHandle.UserData = userData;
 
 % Force update
-drawnow;
+drawnow limitrate;
 
 % Handle scrolling
 if ~isempty(position)

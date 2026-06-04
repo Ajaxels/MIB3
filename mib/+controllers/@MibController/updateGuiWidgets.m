@@ -301,17 +301,30 @@ if isempty(updatePanels) || ismember('checkboxes', updatePanels)
         dataset.restrictSelectionToMaterial = false;
     end
 
-    % update Restrict to Mask status
+    % update Restrict to Mask status — inline font-color update to avoid
+    % the focus() call inside restrictMask_Callback, which raises the window
     if segmentationPanelHandles.restrictMask.Value ~= dataset.restrictSelectionToMask
         segmentationPanelHandles.restrictMask.Value = dataset.restrictSelectionToMask;
-        obj.cSegmentation.restrictMask_Callback();
+        if dataset.restrictSelectionToMask && dataset.maskExist
+            segmentationPanelHandles.restrictMask.FontColor = [0.784 0 1];
+        else
+            segmentationPanelHandles.restrictMask.FontColor = segmentationPanelHandles.favoriteTool.FontColor;
+        end
     end
 
-    % update Restrict to Material status and redraw Materials table
-    % using obj.updateSegmentationTable() inside mibSegmSelectedOnlyCheck_Callback
+    % update Restrict to Material status and redraw Materials table —
+    % call updateMaterialsTable directly to avoid the focus() call inside
+    % restrictMaterial_Callback, which raises the main MIB window
     segmentationPanelHandles.restrictMaterial.Value = dataset.restrictSelectionToMaterial;
-    % update materialsTable
-    obj.cSegmentation.restrictMaterial_Callback();
+    if dataset.restrictSelectionToMaterial
+        segmentationPanelHandles.restrictMaterial.FontColor = 'r';
+    else
+        segmentationPanelHandles.restrictMaterial.FontColor = segmentationPanelHandles.favoriteTool.FontColor;
+        if ~dataset.unlinkMaterials
+            dataset.selectedAddToMaterial = dataset.selectedMaterial;
+        end
+    end
+    obj.cSegmentation.updateMaterialsTable();
 
     % update Show selected material only
     if logical(segmentationPanelHandles.materialsTableContextShowSelected.Checked) == dataset.showAllMaterials
