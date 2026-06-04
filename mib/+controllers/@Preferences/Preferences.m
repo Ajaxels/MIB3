@@ -386,7 +386,7 @@ classdef Preferences < handle
                     ~strcmp(obj.mibController.cActiveDataset.handles.sets.FontName, obj.preferences.System.Font.FontName)
                 utils.fontSizeUpdate(obj.mibController.view.gui, obj.preferences.System.Font);
             end
-            obj.mibController.view.handles.mibFilesListbox.FontSize = obj.preferences.System.FontSizeDirView;
+            obj.mibController.cDirContents.handles.fileList.FontSize = obj.preferences.System.FontSizeDirView;
             
             % update key shortcuts
             if numel(obj.duplicateEntries) > 1

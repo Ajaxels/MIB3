@@ -1,126 +1,148 @@
 % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi 
+% part of Microscopy Image Browser, http:\\mib.helsinki.fi
 % Date: 25.04.2023
 % Written with a help of an old code SurfacesFromSegmentationImage.m by
 % Igor Beati, Bitplane.
 
-function connImaris = renderModelImaris(mibImage, connImaris, options)
-% RENDERMODELIMARIS - Render a model in Imaris.
+function connImaris = renderModelImaris(mibDataset, connImaris, options)
+% RENDERMODELIMARIS - Render model materials as surfaces in Imaris.
 %
 % Syntax:
-%   function connImaris = renderModelImaris(mibImage, connImaris, options)
+%   .. code-block:: matlab
+%
+%      connImaris = io.imaris.renderModelImaris(mibDataset, connImaris)
+%      connImaris = io.imaris.renderModelImaris(mibDataset, connImaris, options)
 %
 % Input Arguments:
-%   - **mibImage** — an instance of mibImage with the model to export to Imaris
-%   - **connImaris** — *(optional)* a handle to imaris connection
-%   - **options** — an optional structure with additional settings
-%     - .materialIndex - an index of material to render. When 0 - render all
+%   - **mibDataset** — instance of ``core.MibDataset`` with the model to render
+%   - **connImaris** — *(optional)* handle to an existing Imaris connection
+%   - **options** — *(optional)* struct with additional settings:
+%
+%     - ``.materialIndex`` — [integer] index of material to render; ``0`` = all materials (default: ``0``)
+%     - ``.mibGUI`` — *(optional)* handle to the main MIB UIFigure for modal dialogs
 %
 % Output Arguments:
-%   - **connImaris** — a handle to imaris connection
+%   - **connImaris** — handle to the Imaris connection
 %
-
-
-% @note 
-% uses IceImarisConnector bindings
-% @b Requires:
-% 1. set system environment variable IMARISPATH to the installation
-% directory, for example "c:\tools\science\imaris"
-% 2. restart Matlab
-
-
-%|
-% @b Examples:
-% @code obj.connImaris = io.imaris.renderModelImaris(obj.mibModel.I{obj.mibModel.id}, obj.connImaris);     // call from mibController; render the model in Imaris @endcode
-
+% .. note::
+%    Uses IceImarisConnector bindings. Requires:
 %
-% Updates
-% 25.09.2017 IB updated connection to Imaris
-
-global mibPath;
+%    1. Set system environment variable ``IMARISPATH`` to the Imaris installation directory
+%    2. Restart MATLAB
+%
+% **Example** — render all model materials as Imaris surfaces:
+%
+%   .. code-block:: matlab
+%
+%      opts.mibGUI = obj.mibController.view.gui;
+%      obj.connImaris = io.imaris.renderModelImaris(obj.mibModel.I{obj.mibModel.id}, obj.connImaris, opts);
 
 if nargin < 3; options = struct(); end
 if nargin < 2; connImaris = []; end
 
-if ~isfield(options, 'materialIndex'); options.materialIndex = 0; end  % render all materials by default
+if ~isfield(options, 'materialIndex'); options.materialIndex = 0; end
+if ~isfield(options, 'mibGUI'); options.mibGUI = []; end
 
-answer = inputdlg(sprintf('!!! ATTENTION !!!\n\nA volume that is currently open in Imaris will be removed!\nYou can preserve it by importing it into MIB and exporting it back to Imaris after the surface is generated.\n\nTo proceed further please define a smoothing factor,\na number, 0 or higher (IN IMAGE UNITS);\ncurrent voxel size: %.4f x %.4f x %.4f:', ...
-    mibImage.pixSize.x, mibImage.pixSize.y, mibImage.pixSize.z), 'Smoothing factor', 1, {'0'});
+pixSize = mibDataset.image.pixSize;
+
+% prompt for smoothing factor
+if ~isempty(options.mibGUI)
+    answer = utils.dlgs.inputUniversalDlg(options.mibGUI, ...
+        sprintf('Currently open in Imaris volume will be removed!\nYou can preserve it by importing it into MIB and exporting it back to Imaris after the surface is generated.'), ...
+        {sprintf('Smoothing factor (IN IMAGE UNITS); voxel size: %.4f x %.4f x %.4f:', pixSize.x, pixSize.y, pixSize.z)}, ...
+        {'0'}, 'Smoothing factor', struct('HeaderLines', 3, 'WindowHeight', 200));
+else
+    answer = inputdlg(sprintf('Currently open in Imaris volume will be removed!\nYou can preserve it by importing it into MIB and exporting it back to Imaris after the surface is generated.\n\nSmoothing factor (IN IMAGE UNITS); voxel size: %.4f x %.4f x %.4f:', ...
+        pixSize.x, pixSize.y, pixSize.z), 'Smoothing factor', 1, {'0'});
+end
 if isempty(answer); return; end
-vSmoothing = str2double(answer{1});
+smoothingFactor = str2double(answer{1});
 
-% establishing connection to Imaris
-connImaris = io.imaris.connectToImaris(connImaris);
+% establish connection to Imaris
+connImaris = io.imaris.connectToImaris(connImaris, options.mibGUI);
 if isempty(connImaris); return; end
 
-% define index of material to model, NaN - model all
-if options.materialIndex == 0    % all materials
-    materialStart = 1;  
-    materialEnd = numel(mibImage.modelMaterialNames);  
-    vNumberOfObjects = numel(mibImage.modelMaterialNames);
+% define range of materials to render
+if options.materialIndex == 0
+    materialStart = 1;
+    materialEnd = numel(mibDataset.labels.materialNames);
+    numberOfMaterials = numel(mibDataset.labels.materialNames);
 else
-    materialStart = options.materialIndex;  
-    materialEnd = options.materialIndex;  
-    vNumberOfObjects = 1;
+    materialStart = options.materialIndex;
+    materialEnd = options.materialIndex;
+    numberOfMaterials = 1;
 end
 
-if mibImage.time > 1
-    mode = questdlg(sprintf('Would you like to export currently shown 3D (W:H:C:Z) stack or complete 4D (W:H:C:Z:T) dataset to Imaris?'),...
-        'Export to Imaris', '3D', '4D', 'Cancel', '3D');
-    if strcmp(mode, 'Cancel'); return; end
+if mibDataset.image.time > 1
+    if ~isempty(options.mibGUI)
+        mode = utils.dlgs.inputQuestDlg(options.mibGUI, ...
+            'Export currently shown 3D (W×H×C×Z) stack or complete 4D (W×H×C×Z×T) dataset?', ...
+            'Export to Imaris', '3D', '4D', '3D');
+    else
+        mode = questdlg('Export currently shown 3D (W×H×C×Z) stack or complete 4D (W×H×C×Z×T) dataset?', ...
+            'Export to Imaris', '3D', '4D', 'Cancel', '3D');
+    end
+    if isempty(mode) || strcmp(mode, 'Cancel'); return; end
 else
     mode = '3D';
 end
+
+imarisOptions = struct();
 if ~isempty(connImaris.mImarisApplication.GetDataSet) && strcmp(mode, '3D')
-    [vSizeX, vSizeY, vSizeZ, vSizeC, vSizeT] = connImaris.getSizes();
-    if vSizeZ > 1 && vSizeT > 1 && strcmp(mode, '3D')
-        insertInto = mibInputDlg({mibPath}, sprintf('!!! Warning !!!\n\nA 5D dataset is open in Imaris!\nPlease enter a time point to update (starting from 0)\nor type "-1" to replace dataset completely'), 'Time point', mibImage.slices{5}(1));
-        if isempty(insertInto); return; end
-        imarisOptions.insertInto = insertInto;
+    [~, ~, imarisDepth, ~, imarisTime] = connImaris.getSizes();
+    if imarisDepth > 1 && imarisTime > 1
+        if ~isempty(options.mibGUI)
+            answer = utils.dlgs.inputUniversalDlg(options.mibGUI, '', ...
+                {sprintf('A 5D dataset is open in Imaris!\nEnter a time point to update (starting from 0), or -1 to replace completely:')}, ...
+                {num2str(mibDataset.slices{5}(1))}, 'Time point', struct());
+        else
+            answer = inputdlg(sprintf('!!! Warning !!!\n\nA 5D dataset is open in Imaris!\nPlease enter a time point to update (starting from 0)\nor type "-1" to replace dataset completely'), ...
+                'Time point', 1, {num2str(mibDataset.slices{5}(1))});
+        end
+        if isempty(answer); return; end
+        imarisOptions.insertInto = answer;
     end
 end
-imarisOptions.type = 'model';
+imarisOptions.type = 'labels';
 imarisOptions.mode = mode;
+imarisOptions.mibGUI = options.mibGUI;
 
-wb = waitbar(0, 'Please wait...','Name','onFlyImageStretch model in Imaris');
+if ~isempty(options.mibGUI)
+    progressDlg = uiprogressdlg(options.mibGUI, 'Value', 0, 'Message', 'Rendering model in Imaris...', 'Title', 'Render model in Imaris');
+else
+    progressDlg = waitbar(0, 'Rendering model in Imaris...');
+end
 tic
-for vIndex = materialStart:materialEnd
-    imarisOptions.modelIndex = vIndex;
-    %-- to export as multiple color channels --% imarisOptions.modelIndex = NaN;
-    connImaris = io.imaris.setImarisDataset(mibImage, connImaris, imarisOptions);
-    aDataSet = connImaris.mImarisApplication.GetDataSet();
-    if isempty(aDataSet)
-        errordlg(sprintf('!!! Error !!!\nThe dataset was not transferred...'),'Error');
-        delete(wb);
+for materialIdx = materialStart:materialEnd
+    imarisOptions.modelIndex = materialIdx;
+    connImaris = io.imaris.setImarisDataset(mibDataset, connImaris, imarisOptions);
+    imarisDataset = connImaris.mImarisApplication.GetDataSet();
+    if isempty(imarisDataset)
+        if ~isempty(options.mibGUI)
+            utils.dlgs.showErrorDialog(options.mibGUI, 'The dataset was not transferred to Imaris.', 'Transfer Error');
+        else
+            errordlg('The dataset was not transferred to Imaris.', 'Transfer Error');
+        end
+        if ~isempty(options.mibGUI); close(progressDlg); else; delete(progressDlg); end
         return;
     end
-    
+
     % generate surface
-    vSurfaces = connImaris.mImarisApplication.GetImageProcessing.DetectSurfaces(...
-       aDataSet, [], 0, vSmoothing, 0, 0, .5, '');     
-    
-%-- to export as multiple color channels --%     for vIndex = materialStart:materialEnd
-%-- to export as multiple color channels --%         vSurfaces = connImaris.mImarisApplication.GetImageProcessing.DetectSurfaces(...
-%-- to export as multiple color channels --%             aDataSet, [], vIndex-1, vSmoothing, 0, 0, .5, '');
-%-- to export as multiple color channels --%         vSurfaces.SetName(mibImage.modelMaterialNames{vIndex});
-%-- to export as multiple color channels --%         % set color for the surface
-%-- to export as multiple color channels --%         ColorRGBA = [mibImage.modelMaterialColors(vIndex,:), 0];
-%-- to export as multiple color channels --%         ColorRGBA = connImaris.mapRgbaVectorToScalar(ColorRGBA);
-%-- to export as multiple color channels --%         vSurfaces.SetColorRGBA(ColorRGBA);
-%-- to export as multiple color channels --%         % add surface to scene
-%-- to export as multiple color channels --%         connImaris.mImarisApplication.GetSurpassScene.AddChild(vSurfaces, -1);
-%-- to export as multiple color channels --%     end
-    
-    vSurfaces.SetName(mibImage.modelMaterialNames{vIndex});
-    % set color for the surface
-    ColorRGBA = [mibImage.modelMaterialColors(vIndex,:), 0];
-    ColorRGBA = connImaris.mapRgbaVectorToScalar(ColorRGBA);
-    vSurfaces.SetColorRGBA(ColorRGBA);
-    
-    % add surface to scene
-    connImaris.mImarisApplication.GetSurpassScene.AddChild(vSurfaces, -1);
-    waitbar(vIndex / vNumberOfObjects, wb);
+    surfaces = connImaris.mImarisApplication.GetImageProcessing.DetectSurfaces(...
+        imarisDataset, [], 0, smoothingFactor, 0, 0, .5, '');
+
+    surfaces.SetName(mibDataset.labels.materialNames{materialIdx});
+    colorRGBA = [mibDataset.labels.materialColors(materialIdx, :), 0];
+    colorRGBA = connImaris.mapRgbaVectorToScalar(colorRGBA);
+    surfaces.SetColorRGBA(colorRGBA);
+    connImaris.mImarisApplication.GetSurpassScene.AddChild(surfaces, -1);
+
+    if ~isempty(options.mibGUI)
+        progressDlg.Value = materialIdx / numberOfMaterials;
+    else
+        waitbar(materialIdx / numberOfMaterials, progressDlg);
+    end
 end
-delete(wb);
+if ~isempty(options.mibGUI); close(progressDlg); else; delete(progressDlg); end
 toc
 end
