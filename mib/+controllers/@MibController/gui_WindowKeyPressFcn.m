@@ -348,7 +348,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.showImage();
 
         case 'Find material under cursor'               % default 'Ctrl + f'
-            error("MISSING IMPLEMENTATION: obj.mibFindMaterialUnderCursor();")
+            obj.findMaterialUnderCursor();
 
         case {'Previous time point', 'Next time point'} % default leftarrow / rightarrow
             if dataset.image.time == 1; return; end

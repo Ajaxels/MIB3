@@ -100,6 +100,7 @@ classdef MibController < handle
         status = loadLayout(obj, mode, layoutFilename)       % restore MIB layout from file
         filename = saveLayout(obj, mode) % store the current layout of panels
         measureLength(obj, type)                % quick line or freehand path length measurement
+        findMaterialUnderCursor(obj)            % select the model material located under the mouse cursor (Ctrl+F)
         scaleBarCalibration(obj) % Calibrate pixel size using a scale bar drawn on the image
         showImage(obj, resizeToMagnification, setId, sImgIn)        % show the current image in the Image View panel
         [hSplashScreen, hSplashAxes, hLabel] = showSplashScreen(obj, titleText, initText)   % show MIB splash screen
