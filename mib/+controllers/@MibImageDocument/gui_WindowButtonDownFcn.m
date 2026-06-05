@@ -408,8 +408,17 @@ elseif strcmp(operation, 'select')
 
         case 'Annotations'
             % add text annotation
+            % Shift+click reliably reports as SelectionType 'extend' even when
+            % the bare Shift key press was missed by WindowKeyPressFcn (leaving
+            % currentModifier empty). Promote 'extend' to a 'shift' modifier so
+            % segmentationAnnotation takes the interpolation branch and keeps the
+            % value/text prompt suppressed regardless of the keyboard state.
+            annModifier = modifier;
+            if strcmp(seltype, 'extend') && ~any(strcmp(annModifier, 'shift'))
+                annModifier{end+1} = 'shift';
+            end
             [w, h, z, t] = obj.mibModel.convertMouseToDataCoordinates(xy(1,1), xy(1,2), 'shown', 0);
-            obj.segmentationAnnotation(h, w, z, t, modifier);
+            obj.segmentationAnnotation(h, w, z, t, annModifier);
 
         case 'Brush'
             % the Brush mode

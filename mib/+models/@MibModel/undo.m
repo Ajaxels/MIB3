@@ -105,26 +105,35 @@ obj.Backup.replaceItem(newIndex, NaN, {NaN}, NaN, storeOptions);
 % store the current situation before applying undo data
 if obj.preferences.Undo.Max3dUndoHistory <= 1 && storeOptions.switch3d
     % tweak for storing a single 3D dataset
-    if ~strcmp(type, 'mibDataset')
-        dataStore = cell([size(storeOptions.x, 1), 1]);
-        for roiId = 1:size(storeOptions.x, 1)
-            getDataOptions.x = storeOptions.x(roiId, :);
-            getDataOptions.y = storeOptions.y(roiId, :);
-            if strcmp(type, 'image')
-                dataStore(roiId) = obj.I{id}.getData3D(type, getDataOptions.t(1), getDataOptions.orient, 0, getDataOptions);
-            else
-                dataStore(roiId) = obj.I{id}.getData3D(type, getDataOptions.t(1), getDataOptions.orient, NaN, getDataOptions);
+    switch type
+        case 'annotations'
+            % non-pixel types have no getData3D; snapshot the full state
+            [labels.labelText, labels.labelValue, labels.labelPosition] = obj.I{id}.annotations.getLabels();
+            obj.Backup.replaceItem(newDataIndex, type, {labels}, NaN, storeOptions);
+        case 'measurements'
+            obj.Backup.replaceItem(newDataIndex, type, {obj.I{id}.measure.Data}, NaN, storeOptions);
+        case 'lines3d'
+            obj.Backup.replaceItem(newDataIndex, type, {copy(obj.I{id}.lines3D)}, NaN, storeOptions);
+        case 'mibDataset'
+            datasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
+            obj.Backup.replaceItem(newDataIndex, type, datasetCopy, NaN, storeOptions);
+        otherwise
+            dataStore = cell([size(storeOptions.x, 1), 1]);
+            for roiId = 1:size(storeOptions.x, 1)
+                getDataOptions.x = storeOptions.x(roiId, :);
+                getDataOptions.y = storeOptions.y(roiId, :);
+                if strcmp(type, 'image')
+                    dataStore(roiId) = obj.I{id}.getData3D(type, getDataOptions.t(1), getDataOptions.orient, 0, getDataOptions);
+                else
+                    dataStore(roiId) = obj.I{id}.getData3D(type, getDataOptions.t(1), getDataOptions.orient, NaN, getDataOptions);
+                end
             end
-        end
-        if strcmp(type, 'image')
-            storeOptions.viewPort = obj.I{id}.image.viewPort;
-            obj.Backup.replaceItem(newDataIndex, type, dataStore, obj.I{id}.image.getMeta(), storeOptions);
-        else
-            obj.Backup.replaceItem(newDataIndex, type, dataStore, NaN, storeOptions);
-        end
-    else
-        datasetCopy = obj.deepCopyDataset(id, [], struct('showWaitbar', false));
-        obj.Backup.replaceItem(newDataIndex, type, datasetCopy, NaN, storeOptions);
+            if strcmp(type, 'image')
+                storeOptions.viewPort = obj.I{id}.image.viewPort;
+                obj.Backup.replaceItem(newDataIndex, type, dataStore, obj.I{id}.image.getMeta(), storeOptions);
+            else
+                obj.Backup.replaceItem(newDataIndex, type, dataStore, NaN, storeOptions);
+            end
     end
 else
     % store the current situation

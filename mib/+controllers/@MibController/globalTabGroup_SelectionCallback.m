@@ -43,7 +43,13 @@ switch hWidget
             utils.overrideDescriptions(obj.cRibbon.handles.ribbonDataset, true, 'obj.cRibbon.handles.ribbonDataset');
         end
     case 'Image'
-        if isfield(obj.view.handles, 'ribbonImage') % already initialized
+        % Verify the ribbon is *fully* built, not just a partial struct that
+        % may have been auto-vivified (e.g. updateVisualizationMode writing
+        % ribbonImage.visualization.Icon before the tab was lazily initialized).
+        % A real widget is an object; a partial auto-vivified field is a struct.
+        if isfield(obj.view.handles, 'ribbonImage') && ...
+                isfield(obj.view.handles.ribbonImage, 'visualization') && ...
+                isobject(obj.view.handles.ribbonImage.visualization) % already initialized
             return;
         end
         obj.cRibbon.handles.ribbonImage = obj.view.addRibbonImage(); % lazily init the ribbon

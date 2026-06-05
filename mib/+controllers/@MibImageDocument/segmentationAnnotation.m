@@ -77,11 +77,11 @@ defaultAnnotationValue = dataset.annotations.defaultAnnotationValue;
 if isnan(defaultAnnotationValue); defaultAnnotationValue = 1; end
 
 % do backup
-if isShift  % 3D
-    obj.mibModel.backup('annotations', 1);
-else        % 2D
-    obj.mibModel.backup('annotations', 0);
-end
+% Annotations are dataset-global: backup snapshots the entire label list
+% regardless of the 2D/3D switch, so always use the 2D path (switch3d = 0).
+% This also avoids the single-step-3D undo branch (Max3dUndoHistory <= 1),
+% which has no 'annotations' case and would error in getData3D.
+obj.mibModel.backup('annotations', 0);
 
 if ~isCtrl && ~isShift   % ---- add annotation ----
     if obj.mibController.cSegmentation.handles.annShowPrompt.Value

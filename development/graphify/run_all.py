@@ -12,9 +12,20 @@ Run from repository root:
     python development/graphify/run_all.py
 """
 
+import os
 import sys
 from pathlib import Path
 import subprocess
+
+# Ensure Unicode glyphs (✓, 📊, …) can be printed on a default Windows console,
+# which uses a legacy code page (cp1252) that cannot encode them and would
+# otherwise raise UnicodeEncodeError. reconfigure() exists on Python 3.7+;
+# errors='replace' keeps output flowing even if a glyph is unsupported.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass  # non-reconfigurable stream (e.g. redirected/non-TTY) — best effort
 
 # Find Python executable used to run this script
 PYTHON = sys.executable
@@ -27,7 +38,10 @@ def run_step(script_name, description):
     print(f'{description}')
     print(f'{"="*60}')
     print(f'Running: {script_path}')
-    result = subprocess.run([PYTHON, str(script_path)], cwd=str(ROOT))
+    # Force UTF-8 stdio in the child so its own Unicode output can't crash on
+    # a legacy Windows code page either.
+    child_env = dict(os.environ, PYTHONIOENCODING='utf-8')
+    result = subprocess.run([PYTHON, str(script_path)], cwd=str(ROOT), env=child_env)
     if result.returncode != 0:
         print(f'\n❌ ERROR: {script_name} failed with exit code {result.returncode}')
         sys.exit(1)

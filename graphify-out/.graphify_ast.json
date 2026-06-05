@@ -1023,6 +1023,13 @@
       "source_location": "L1"
     },
     {
+      "id": "controllers_mibcontroller_findmaterialundercursor_m",
+      "label": "findMaterialUnderCursor.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibController\\findMaterialUnderCursor.m",
+      "source_location": "L1"
+    },
+    {
       "id": "controllers_mibcontroller_globaltabgroup_selectioncallback_m",
       "label": "globalTabGroup_SelectionCallback.m",
       "file_type": "code",
@@ -25001,6 +25008,16 @@
     },
     {
       "source": "controllers_mibcontroller_mibcontroller_m",
+      "target": "controllers_mibcontroller_findmaterialundercursor_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\MibController.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_mibcontroller_m",
       "target": "controllers_mibcontroller_globaltabgroup_selectioncallback_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -42122,6 +42139,16 @@
     {
       "source": "controllers_mibcontroller_gui_windowkeypressfcn_m",
       "target": "controllers_mibcontroller_showimage_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibController\\gui_WindowKeyPressFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_gui_windowkeypressfcn_m",
+      "target": "controllers_mibcontroller_findmaterialundercursor_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,

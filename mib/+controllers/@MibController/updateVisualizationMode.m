@@ -64,7 +64,17 @@ elseif ~strcmp(mode, 'keepcurrent')
     obj.mibModel.preferences.System.ImageResizeMethod = mode;
 end
 
-% update the button icon
-obj.view.handles.ribbonImage.visualization.Icon = fullfile(obj.mibPath, 'assets', 'icons', sprintf('image_%s_24px.png', obj.mibModel.preferences.System.ImageResizeMethod));
+% update the button icon — only when the Image ribbon has actually been built
+% (lazy init). Writing into obj.view.handles.ribbonImage before that would
+% auto-vivify a partial 'visualization' struct, which then fools the
+% isfield(...,'ribbonImage') guard in globalTabGroup_SelectionCallback into
+% skipping the real initialization. addRibbonImage sets this icon from the
+% current ImageResizeMethod preference when it builds the tab, so nothing is
+% lost by skipping it here.
+if isfield(obj.view.handles, 'ribbonImage') && ...
+        isfield(obj.view.handles.ribbonImage, 'visualization') && ...
+        isobject(obj.view.handles.ribbonImage.visualization)
+    obj.view.handles.ribbonImage.visualization.Icon = fullfile(obj.mibPath, 'assets', 'icons', sprintf('image_%s_24px.png', obj.mibModel.preferences.System.ImageResizeMethod));
+end
 notify(obj.mibModel, 'ShowImage');
 end

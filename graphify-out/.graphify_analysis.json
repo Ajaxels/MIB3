@@ -56,6 +56,60 @@
       "controllers_volrenapp_volrenapp_volrenapp"
     ],
     "1": [
+      "controllers_mibcontroller_updateframenumber_m",
+      "controllers_mibcontroller_updateslicenumber_m",
+      "controllers_mibimagedocument_segmentationmagicwand_m",
+      "controllers_mibimagedocument_segmentblackwhitethreshold_m",
+      "core_toggleeventdata_toggleeventdata_m",
+      "core_toggleeventdata_toggleeventdata_toggleeventdata",
+      "models_mibmodel_addmaterial_m",
+      "models_mibmodel_backup_m",
+      "models_mibmodel_clearlayer_m",
+      "models_mibmodel_clearselection_m",
+      "models_mibmodel_createmodel_m",
+      "models_mibmodel_datasetssetsops_m",
+      "models_mibmodel_deepcopydataset_m",
+      "models_mibmodel_deleteannotations_m",
+      "models_mibmodel_dilateimage_m",
+      "models_mibmodel_erodeimage_m",
+      "models_mibmodel_exportdataset_m",
+      "models_mibmodel_exportdatasettoimaris_m",
+      "models_mibmodel_exportdatasettomib_m",
+      "models_mibmodel_fillselectionormask_m",
+      "models_mibmodel_getactiveid_m",
+      "models_mibmodel_getdata2d_m",
+      "models_mibmodel_getdata3d_m",
+      "models_mibmodel_getdata4d_m",
+      "models_mibmodel_getimageproperty_m",
+      "models_mibmodel_getlinkeddataset_m",
+      "models_mibmodel_importdataset_m",
+      "models_mibmodel_importdatasetfrommib_m",
+      "models_mibmodel_initialize_m",
+      "models_mibmodel_initializepreferences_m",
+      "models_mibmodel_interpolateimage_m",
+      "models_mibmodel_loadimages_m",
+      "models_mibmodel_loadmodel_m",
+      "models_mibmodel_materialsactions_m",
+      "models_mibmodel_mibmodel_m",
+      "models_mibmodel_mibmodel_mibmodel",
+      "models_mibmodel_movelayers_m",
+      "models_mibmodel_removematerial_m",
+      "models_mibmodel_renamematerial_m",
+      "models_mibmodel_saveimage_m",
+      "models_mibmodel_savelabels_m",
+      "models_mibmodel_setaxeslimits_m",
+      "models_mibmodel_setdata2d_m",
+      "models_mibmodel_setdata3d_m",
+      "models_mibmodel_setdata4d_m",
+      "models_mibmodel_setdefaultcolorpalette_m",
+      "models_mibmodel_setmagfactor_m",
+      "models_mibmodel_undo_m",
+      "utils_defaults_generatesessionsettings_m",
+      "utils_interpolatelines_m",
+      "utils_interpolateshapes_m",
+      "utils_updatebatchoptcombinefields_shared_m"
+    ],
+    "2": [
       "controllers_measuretool_addcallbacks_m",
       "controllers_measuretool_addmeasurement_m",
       "controllers_measuretool_contextmenu_m",
@@ -109,7 +163,7 @@
       "utils_dlgs_inputsingledlg_m",
       "utils_imageprofileintegrate_m"
     ],
-    "2": [
+    "3": [
       "controllers_mibactivedataset_buffers_callback_m",
       "controllers_mibactivedataset_datasettypechange_callback_m",
       "controllers_mibactivedataset_mibactivedataset_m",
@@ -160,7 +214,7 @@
       "controllers_mibstatusbar_mibstatusbar_mibstatusbar",
       "controllers_mibstatusbar_zoomedit_callback_m"
     ],
-    "3": [
+    "4": [
       "external_mattomo_mrcimage_addlabel_m",
       "external_mattomo_mrcimage_addsphere_m",
       "external_mattomo_mrcimage_backproject_m",
@@ -208,7 +262,7 @@
       "external_mattomo_mrcimage_writevtk_m",
       "external_mattomo_mrcimage_zero_m"
     ],
-    "4": [
+    "5": [
       "external_zarr3matlab_tests_zarrarraytest_addparenttopath",
       "external_zarr3matlab_tests_zarrarraytest_m",
       "external_zarr3matlab_tests_zarrarraytest_removetempdir",
@@ -255,53 +309,53 @@
       "external_zarr3matlab_tests_zarrarraytest_testwritewithoutbbox",
       "external_zarr3matlab_tests_zarrarraytest_testwritewithwrongdatatype"
     ],
-    "5": [
-      "models_mibmodel_backup_m",
-      "models_mibmodel_clearlayer_m",
-      "models_mibmodel_clearselection_m",
-      "models_mibmodel_convertdatatomousecoordinates_m",
-      "models_mibmodel_convertmousetodatacoordinates_m",
-      "models_mibmodel_datasetssetsops_m",
-      "models_mibmodel_deepcopydataset_m",
-      "models_mibmodel_deleteannotations_m",
-      "models_mibmodel_dilateimage_m",
-      "models_mibmodel_erodeimage_m",
-      "models_mibmodel_exportdataset_m",
-      "models_mibmodel_exportdatasettoimaris_m",
-      "models_mibmodel_exportdatasettomib_m",
-      "models_mibmodel_fillselectionormask_m",
-      "models_mibmodel_getactiveid_m",
-      "models_mibmodel_getaxeslimits_m",
-      "models_mibmodel_getdata2d_m",
-      "models_mibmodel_getdata3d_m",
-      "models_mibmodel_getdata4d_m",
-      "models_mibmodel_getimageproperty_m",
-      "models_mibmodel_getlinkeddataset_m",
-      "models_mibmodel_getmagfactor_m",
-      "models_mibmodel_getrgbimage_m",
-      "models_mibmodel_importdataset_m",
-      "models_mibmodel_importdatasetfrommib_m",
-      "models_mibmodel_initialize_m",
-      "models_mibmodel_initializepreferences_m",
-      "models_mibmodel_interpolateimage_m",
-      "models_mibmodel_loadimages_m",
-      "models_mibmodel_loadmodel_m",
-      "models_mibmodel_mibmodel_m",
-      "models_mibmodel_mibmodel_mibmodel",
-      "models_mibmodel_movelayers_m",
-      "models_mibmodel_setaxeslimits_m",
-      "models_mibmodel_setdata2d_m",
-      "models_mibmodel_setdata3d_m",
-      "models_mibmodel_setdata4d_m",
-      "models_mibmodel_setdefaultcolorpalette_m",
-      "models_mibmodel_setmagfactor_m",
-      "models_mibmodel_undo_m",
-      "utils_addtext2img_m",
-      "utils_defaults_generatesessionsettings_m",
-      "utils_interpolatelines_m",
-      "utils_interpolateshapes_m"
-    ],
     "6": [
+      "controllers_mibimagedocument_clearquickmeasure_m",
+      "controllers_mibimagedocument_framenumber_callback_m",
+      "controllers_mibimagedocument_framenumberslider_callback_m",
+      "controllers_mibimagedocument_gettitle_m",
+      "controllers_mibimagedocument_gui_brush_scrollwheelfcn_m",
+      "controllers_mibimagedocument_gui_callbacks_m",
+      "controllers_mibimagedocument_gui_panaxesfcn_m",
+      "controllers_mibimagedocument_gui_scrollwheelfcn_m",
+      "controllers_mibimagedocument_gui_sizechangedfcn_m",
+      "controllers_mibimagedocument_gui_windowbrushmotionfcn_m",
+      "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
+      "controllers_mibimagedocument_gui_windowbuttonupdraganddropfcn_m",
+      "controllers_mibimagedocument_gui_windowbuttonupfcn_m",
+      "controllers_mibimagedocument_gui_windowdraganddropmotionfcn_m",
+      "controllers_mibimagedocument_gui_windowkeypressfcn_brushsuperpixel_m",
+      "controllers_mibimagedocument_gui_winmousemotionfcn_m",
+      "controllers_mibimagedocument_listener_framechanged_m",
+      "controllers_mibimagedocument_listener_slicechanged_m",
+      "controllers_mibimagedocument_mibimagedocument_delete",
+      "controllers_mibimagedocument_mibimagedocument_m",
+      "controllers_mibimagedocument_mibimagedocument_mibimagedocument",
+      "controllers_mibimagedocument_recalculateobjects_m",
+      "controllers_mibimagedocument_segmentationball3d_m",
+      "controllers_mibimagedocument_segmentationbrush_m",
+      "controllers_mibimagedocument_segmentationclicktracker_m",
+      "controllers_mibimagedocument_segmentationdraganddrop_m",
+      "controllers_mibimagedocument_segmentationlasso_m",
+      "controllers_mibimagedocument_segmentationlassomanual_m",
+      "controllers_mibimagedocument_segmentationlines3d_m",
+      "controllers_mibimagedocument_segmentationobjectpicker_m",
+      "controllers_mibimagedocument_segmentationregiongrowing_m",
+      "controllers_mibimagedocument_segmentationspot_m",
+      "controllers_mibimagedocument_selectdocument_m",
+      "controllers_mibimagedocument_setdescription_m",
+      "controllers_mibimagedocument_settitle_m",
+      "controllers_mibimagedocument_setupcallbacks_m",
+      "controllers_mibimagedocument_slicenumber_callback_m",
+      "controllers_mibimagedocument_slicenumberslider_callback_m",
+      "controllers_mibimagedocument_syncactiveset_m",
+      "controllers_mibimagedocument_updatebrushcursor_m",
+      "controllers_mibimagedocument_updatebrushcursoroffset_m",
+      "controllers_mibimagedocument_updatemeasuretext_m",
+      "utils_connectpoints_m",
+      "utils_tracecurve_m"
+    ],
+    "7": [
       "external_mattomo_imodcontour_freadcontour_m",
       "external_mattomo_imodcontour_getnpoints_m",
       "external_mattomo_imodcontour_getpoints_m",
@@ -347,7 +401,7 @@
       "external_mattomo_imodmodel_sortpoints_m",
       "external_mattomo_imodmodel_write_m"
     ],
-    "7": [
+    "8": [
       "controllers_mibribbon_datasetcalibration_callback_m",
       "controllers_mibribbon_datasetmetadata_callback_m",
       "controllers_mibribbon_datasettools_callback_m",
@@ -391,7 +445,7 @@
       "controllers_mibribbon_selectiontools_callbacks_m",
       "controllers_mibribbon_tools_callbacks_m"
     ],
-    "8": [
+    "9": [
       "controllers_annotations_annotations_addcallbacks",
       "controllers_annotations_annotations_annotations",
       "controllers_annotations_annotations_annotationtable_celleditcallback",
@@ -432,7 +486,7 @@
       "io_amiramesh_points2amiralandmarks_m",
       "io_amiramesh_points2psi_m"
     ],
-    "9": [
+    "10": [
       "controllers_cropobjects_cropobjects_addcallbacks",
       "controllers_cropobjects_cropobjects_closewindow",
       "controllers_cropobjects_cropobjects_cropbtn_callback",
@@ -472,7 +526,7 @@
       "io_savers_tiffsaver_tiffsaver",
       "io_savers_tiffsaver_writetiffstack"
     ],
-    "10": [
+    "11": [
       "controllers_mibcontroller_deleteimagedocument_m",
       "controllers_mibcontroller_dragndrop_callback_m",
       "controllers_mibcontroller_exitprogram_m",
@@ -512,7 +566,7 @@
       "utils_purgechildcontroller_m",
       "utils_startcontroller_m"
     ],
-    "11": [
+    "12": [
       "external_iceimarisconnector_autocast_m",
       "external_iceimarisconnector_closeimaris_m",
       "external_iceimarisconnector_createandsetspots_m",
@@ -550,40 +604,6 @@
       "external_iceimarisconnector_startimaris_m",
       "external_iceimarisconnector_startimarisserver_m",
       "external_iceimarisconnector_version_m"
-    ],
-    "12": [
-      "controllers_mibimagedocument_clearquickmeasure_m",
-      "controllers_mibimagedocument_framenumber_callback_m",
-      "controllers_mibimagedocument_framenumberslider_callback_m",
-      "controllers_mibimagedocument_gettitle_m",
-      "controllers_mibimagedocument_gui_brush_scrollwheelfcn_m",
-      "controllers_mibimagedocument_gui_callbacks_m",
-      "controllers_mibimagedocument_gui_scrollwheelfcn_m",
-      "controllers_mibimagedocument_gui_sizechangedfcn_m",
-      "controllers_mibimagedocument_gui_windowbrushmotionfcn_m",
-      "controllers_mibimagedocument_gui_windowbuttonupdraganddropfcn_m",
-      "controllers_mibimagedocument_gui_windowbuttonupfcn_m",
-      "controllers_mibimagedocument_gui_windowdraganddropmotionfcn_m",
-      "controllers_mibimagedocument_gui_windowkeypressfcn_brushsuperpixel_m",
-      "controllers_mibimagedocument_gui_winmousemotionfcn_m",
-      "controllers_mibimagedocument_listener_framechanged_m",
-      "controllers_mibimagedocument_listener_slicechanged_m",
-      "controllers_mibimagedocument_mibimagedocument_delete",
-      "controllers_mibimagedocument_mibimagedocument_m",
-      "controllers_mibimagedocument_mibimagedocument_mibimagedocument",
-      "controllers_mibimagedocument_recalculateobjects_m",
-      "controllers_mibimagedocument_segmentationbrush_m",
-      "controllers_mibimagedocument_segmentationdraganddrop_m",
-      "controllers_mibimagedocument_selectdocument_m",
-      "controllers_mibimagedocument_setdescription_m",
-      "controllers_mibimagedocument_settitle_m",
-      "controllers_mibimagedocument_setupcallbacks_m",
-      "controllers_mibimagedocument_slicenumber_callback_m",
-      "controllers_mibimagedocument_slicenumberslider_callback_m",
-      "controllers_mibimagedocument_syncactiveset_m",
-      "controllers_mibimagedocument_updatebrushcursor_m",
-      "controllers_mibimagedocument_updatebrushcursoroffset_m",
-      "controllers_mibimagedocument_updatemeasuretext_m"
     ],
     "13": [
       "controllers_mibdeep_channelwisepreprocess_m",
@@ -650,6 +670,38 @@
       "utils_unfocus_m"
     ],
     "15": [
+      "controllers_snapshot_snapshot_addcallbacks",
+      "controllers_snapshot_snapshot_axeslimitschanged_callback",
+      "controllers_snapshot_snapshot_bincheck_callback",
+      "controllers_snapshot_snapshot_binmagbuttons_callback",
+      "controllers_snapshot_snapshot_closewindow",
+      "controllers_snapshot_snapshot_crop_callback",
+      "controllers_snapshot_snapshot_fileformat_callback",
+      "controllers_snapshot_snapshot_fileformattabgroup_callback",
+      "controllers_snapshot_snapshot_height_callback",
+      "controllers_snapshot_snapshot_help",
+      "controllers_snapshot_snapshot_m",
+      "controllers_snapshot_snapshot_measurements_callback",
+      "controllers_snapshot_snapshot_measurementsoptions_callback",
+      "controllers_snapshot_snapshot_outputdir_callback",
+      "controllers_snapshot_snapshot_returnbatchopt",
+      "controllers_snapshot_snapshot_scalebar_callback",
+      "controllers_snapshot_snapshot_selectfilebtn_callback",
+      "controllers_snapshot_snapshot_snapshot",
+      "controllers_snapshot_snapshot_snapshotbtn_callback",
+      "controllers_snapshot_snapshot_splitchannels_callback",
+      "controllers_snapshot_snapshot_updatebatchoptfromgui",
+      "controllers_snapshot_snapshot_updatecropmode",
+      "controllers_snapshot_snapshot_updatedestination",
+      "controllers_snapshot_snapshot_updateroiindex",
+      "controllers_snapshot_snapshot_updatewidgets",
+      "controllers_snapshot_snapshot_updatewidthheight",
+      "controllers_snapshot_snapshot_viewlistner_callback2",
+      "controllers_snapshot_snapshot_width_callback",
+      "utils_addscalebar_m",
+      "utils_mibimwrite_m"
+    ],
+    "16": [
       "external_zarr3matlab_tests_zarrgrouptest_addparenttopath",
       "external_zarr3matlab_tests_zarrgrouptest_m",
       "external_zarr3matlab_tests_zarrgrouptest_removetempdir",
@@ -681,7 +733,7 @@
       "external_zarr3matlab_tests_zarrgrouptest_testsetandgetattributes",
       "external_zarr3matlab_tests_zarrgrouptest_testsetandgetsingleattribute"
     ],
-    "16": [
+    "17": [
       "controllers_displayadjust_displayadjust_addcallbacks",
       "controllers_displayadjust_displayadjust_addfindbtncontextmenus",
       "controllers_displayadjust_displayadjust_adjhelpbtn_callback",
@@ -712,37 +764,6 @@
       "controllers_displayadjust_displayadjust_updatesliders",
       "controllers_displayadjust_displayadjust_updatewidgets",
       "controllers_displayadjust_displayadjust_viewlistner_callback2"
-    ],
-    "17": [
-      "controllers_snapshot_snapshot_addcallbacks",
-      "controllers_snapshot_snapshot_axeslimitschanged_callback",
-      "controllers_snapshot_snapshot_bincheck_callback",
-      "controllers_snapshot_snapshot_binmagbuttons_callback",
-      "controllers_snapshot_snapshot_closewindow",
-      "controllers_snapshot_snapshot_crop_callback",
-      "controllers_snapshot_snapshot_fileformat_callback",
-      "controllers_snapshot_snapshot_fileformattabgroup_callback",
-      "controllers_snapshot_snapshot_height_callback",
-      "controllers_snapshot_snapshot_help",
-      "controllers_snapshot_snapshot_m",
-      "controllers_snapshot_snapshot_measurements_callback",
-      "controllers_snapshot_snapshot_measurementsoptions_callback",
-      "controllers_snapshot_snapshot_outputdir_callback",
-      "controllers_snapshot_snapshot_returnbatchopt",
-      "controllers_snapshot_snapshot_scalebar_callback",
-      "controllers_snapshot_snapshot_selectfilebtn_callback",
-      "controllers_snapshot_snapshot_snapshot",
-      "controllers_snapshot_snapshot_snapshotbtn_callback",
-      "controllers_snapshot_snapshot_splitchannels_callback",
-      "controllers_snapshot_snapshot_updatebatchoptfromgui",
-      "controllers_snapshot_snapshot_updatecropmode",
-      "controllers_snapshot_snapshot_updatedestination",
-      "controllers_snapshot_snapshot_updateroiindex",
-      "controllers_snapshot_snapshot_updatewidgets",
-      "controllers_snapshot_snapshot_updatewidthheight",
-      "controllers_snapshot_snapshot_viewlistner_callback2",
-      "controllers_snapshot_snapshot_width_callback",
-      "utils_mibimwrite_m"
     ],
     "18": [
       "io_bioformats_bfopen5_m",
@@ -900,10 +921,10 @@
       "io_loaders_imodloader_loadimages",
       "io_loaders_imodloader_loadmetadata",
       "io_loaders_imodloader_m",
-      "io_loaders_mibimgloader_loadimages",
-      "io_loaders_mibimgloader_loadmetadata",
-      "io_loaders_mibimgloader_m",
-      "io_loaders_mibimgloader_mibimgloader",
+      "io_loaders_imreadloader_imreadloader",
+      "io_loaders_imreadloader_loadimages",
+      "io_loaders_imreadloader_loadmetadata",
+      "io_loaders_imreadloader_m",
       "io_loaders_nrrdloader_loadimages",
       "io_loaders_nrrdloader_loadmetadata",
       "io_loaders_nrrdloader_m",
@@ -914,31 +935,6 @@
       "io_loaders_videoreaderloader_videoreaderloader"
     ],
     "24": [
-      "controllers_mibimagedocument_gui_panaxesfcn_m",
-      "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
-      "controllers_mibimagedocument_segmentationannotation_m",
-      "controllers_mibimagedocument_segmentationball3d_m",
-      "controllers_mibimagedocument_segmentationclicktracker_m",
-      "controllers_mibimagedocument_segmentationlasso_m",
-      "controllers_mibimagedocument_segmentationlassomanual_m",
-      "controllers_mibimagedocument_segmentationlines3d_m",
-      "controllers_mibimagedocument_segmentationmagicwand_m",
-      "controllers_mibimagedocument_segmentationobjectpicker_m",
-      "controllers_mibimagedocument_segmentationregiongrowing_m",
-      "controllers_mibimagedocument_segmentationsam2_m",
-      "controllers_mibimagedocument_segmentationsam_m",
-      "controllers_mibimagedocument_segmentationsam_requirements_m",
-      "controllers_mibimagedocument_segmentationspot_m",
-      "controllers_mibimagedocument_slicenumberslider_contextmenu_m",
-      "controllers_mibribbon_homepreferences_callback_m",
-      "io_imaris_getimarisdataset_standardconnection_m",
-      "io_loaders_baseimageloader_m",
-      "utils_connectpoints_m",
-      "utils_dlgs_inputuniversaldlg_m",
-      "utils_dlgs_showmilestonedialog_m",
-      "utils_tracecurve_m"
-    ],
-    "25": [
       "core_mibimage_initializeimginfo_m",
       "io_loaders_zarr3virtualsetuploader_axisordertolabels",
       "io_loaders_zarr3virtualsetuploader_buildviewport",
@@ -963,31 +959,7 @@
       "io_loaders_zarr3virtualsetuploader_zarrtypetomatlabclass",
       "utils_defaults_initializepixsize_m"
     ],
-    "26": [
-      "controllers_batchprocessing_directoryloopaction_callback_m",
-      "controllers_batchprocessing_directoryoperationsaction_callback_m",
-      "controllers_batchprocessing_fileloopaction_callback_m",
-      "controllers_batchprocessing_fileoperationsaction_callback_m",
-      "controllers_batchprocessing_initialize_m",
-      "controllers_mibcontroller_updateframenumber_m",
-      "controllers_mibcontroller_updateslicenumber_m",
-      "controllers_mibimagedocument_segmentblackwhitethreshold_m",
-      "controllers_mibribbon_homeexamples_callback_m",
-      "controllers_mibribbon_updatevoxelsizes_m",
-      "core_toggleeventdata_toggleeventdata_m",
-      "core_toggleeventdata_toggleeventdata_toggleeventdata",
-      "models_mibmodel_addmaterial_m",
-      "models_mibmodel_createmodel_m",
-      "models_mibmodel_materialsactions_m",
-      "models_mibmodel_removematerial_m",
-      "models_mibmodel_renamematerial_m",
-      "models_mibmodel_saveimage_m",
-      "models_mibmodel_savelabels_m",
-      "utils_calculatepixsizes_m",
-      "utils_updatebatchoptcombinefields_shared_m",
-      "utils_updatepixsizeandresolution_m"
-    ],
-    "27": [
+    "25": [
       "controllers_lines3ddialog_lines3ddialog_addcallbacks",
       "controllers_lines3ddialog_lines3ddialog_closewindow",
       "controllers_lines3ddialog_lines3ddialog_deletebtn_callback",
@@ -1011,7 +983,7 @@
       "controllers_lines3ddialog_lines3ddialog_viewlistner_callback2",
       "controllers_lines3ddialog_lines3ddialog_visualizebtn_callback"
     ],
-    "28": [
+    "26": [
       "external_mattomo_imodobject_appendcontour_m",
       "external_mattomo_imodobject_freadobject_m",
       "external_mattomo_imodobject_freadobjectmat_m",
@@ -1035,30 +1007,7 @@
       "external_mattomo_imodobject_showheader_m",
       "external_mattomo_imodobject_write_m"
     ],
-    "29": [
-      "controllers_makemovie_gui_callbacks_m",
-      "controllers_makemovie_makemovie_addcallbacks",
-      "controllers_makemovie_makemovie_closewindow",
-      "controllers_makemovie_makemovie_continuebtn_callback",
-      "controllers_makemovie_makemovie_crop_callback",
-      "controllers_makemovie_makemovie_directionpopup_callback",
-      "controllers_makemovie_makemovie_formatpopup_callback",
-      "controllers_makemovie_makemovie_heightedit_callback",
-      "controllers_makemovie_makemovie_help",
-      "controllers_makemovie_makemovie_m",
-      "controllers_makemovie_makemovie_makemovie",
-      "controllers_makemovie_makemovie_outputdir_callback",
-      "controllers_makemovie_makemovie_roipopup_callback",
-      "controllers_makemovie_makemovie_scalebarcheck_callback",
-      "controllers_makemovie_makemovie_selectfilebtn_callback",
-      "controllers_makemovie_makemovie_splitchannelscheck_callback",
-      "controllers_makemovie_makemovie_updatewidgets",
-      "controllers_makemovie_makemovie_updatewidthheight",
-      "controllers_makemovie_makemovie_viewlistner_callback2",
-      "controllers_makemovie_makemovie_widthedit_callback",
-      "utils_addscalebar_m"
-    ],
-    "30": [
+    "27": [
       "plugins_fileprocessing_imageconverter_imageconverter_bioformatsreader_valuechanged",
       "plugins_fileprocessing_imageconverter_imageconverter_closewindow",
       "plugins_fileprocessing_imageconverter_imageconverter_convert",
@@ -1081,7 +1030,30 @@
       "plugins_fileprocessing_imageconverter_imageconverter_writeimagewithprogress",
       "plugins_fileprocessing_imageconverter_imageconverter_zarrversionvaluechanged"
     ],
-    "31": [
+    "28": [
+      "controllers_alignment_aligndriftcorrectionhdd_alignment_m",
+      "controllers_alignment_alignmediansmoothtemplate_alignment_m",
+      "controllers_alignment_automaticfeaturebased_alignment_m",
+      "controllers_alignment_automaticfeaturebasedhdd_alignment_m",
+      "controllers_alignment_automaticfeaturebasedhddv2_alignment_m",
+      "controllers_alignment_automaticfeaturebasedv2_alignment_m",
+      "controllers_alignment_continuebtn_callback_m",
+      "controllers_alignment_driftcorrection_alignment_m",
+      "controllers_alignment_landmarkmultipoint_alignment_m",
+      "controllers_alignment_previewfeaturesbtn_callback_m",
+      "controllers_alignment_singlelandmark_alignment_m",
+      "controllers_alignment_updateautomaticoptions_m",
+      "controllers_mibactivedataset_buffers_contextmenu_m",
+      "io_loadimageswrapper_m",
+      "utils_align_calcshifts_m",
+      "utils_align_crossshiftstack_m",
+      "utils_align_detectfeatures_m",
+      "utils_align_runningaveragesmoothpoints_m",
+      "utils_align_subtractrunningaverage_m",
+      "utils_align_windv_m",
+      "utils_dlgs_inputquestdlg_m"
+    ],
+    "29": [
       "utils_overridedescriptions_m",
       "views_mibview_addactivedatasetpanel_m",
       "views_mibview_adddircontentspanel_m",
@@ -1104,7 +1076,7 @@
       "views_mibview_mibview_mibview",
       "views_mibview_recentergui_m"
     ],
-    "32": [
+    "30": [
       "io_loaders_hdf5noheaderloader_hdf5noheaderloader",
       "io_loaders_hdf5noheaderloader_loadimages",
       "io_loaders_hdf5noheaderloader_loadmetadata",
@@ -1127,7 +1099,29 @@
       "utils_dlgs_selecthdfseries_run",
       "utils_dlgs_selecthdfseries_selecthdfseries"
     ],
-    "33": [
+    "31": [
+      "controllers_makemovie_gui_callbacks_m",
+      "controllers_makemovie_makemovie_addcallbacks",
+      "controllers_makemovie_makemovie_closewindow",
+      "controllers_makemovie_makemovie_continuebtn_callback",
+      "controllers_makemovie_makemovie_crop_callback",
+      "controllers_makemovie_makemovie_directionpopup_callback",
+      "controllers_makemovie_makemovie_formatpopup_callback",
+      "controllers_makemovie_makemovie_heightedit_callback",
+      "controllers_makemovie_makemovie_help",
+      "controllers_makemovie_makemovie_m",
+      "controllers_makemovie_makemovie_makemovie",
+      "controllers_makemovie_makemovie_outputdir_callback",
+      "controllers_makemovie_makemovie_roipopup_callback",
+      "controllers_makemovie_makemovie_scalebarcheck_callback",
+      "controllers_makemovie_makemovie_selectfilebtn_callback",
+      "controllers_makemovie_makemovie_splitchannelscheck_callback",
+      "controllers_makemovie_makemovie_updatewidgets",
+      "controllers_makemovie_makemovie_updatewidthheight",
+      "controllers_makemovie_makemovie_viewlistner_callback2",
+      "controllers_makemovie_makemovie_widthedit_callback"
+    ],
+    "32": [
       "core_mibimage_addcolorchannel_m",
       "core_mibimage_buildimagedescription_m",
       "core_mibimage_clearlayer_m",
@@ -1149,29 +1143,7 @@
       "core_mibimage_updateboundingbox_m",
       "utils_calculateresolution_m"
     ],
-    "34": [
-      "controllers_alignment_aligndriftcorrectionhdd_alignment_m",
-      "controllers_alignment_alignmediansmoothtemplate_alignment_m",
-      "controllers_alignment_automaticfeaturebased_alignment_m",
-      "controllers_alignment_automaticfeaturebasedhdd_alignment_m",
-      "controllers_alignment_automaticfeaturebasedhddv2_alignment_m",
-      "controllers_alignment_automaticfeaturebasedv2_alignment_m",
-      "controllers_alignment_continuebtn_callback_m",
-      "controllers_alignment_driftcorrection_alignment_m",
-      "controllers_alignment_landmarkmultipoint_alignment_m",
-      "controllers_alignment_singlelandmark_alignment_m",
-      "controllers_alignment_updateautomaticoptions_m",
-      "controllers_mibactivedataset_buffers_contextmenu_m",
-      "io_loadimageswrapper_m",
-      "utils_align_calcshifts_m",
-      "utils_align_crossshiftstack_m",
-      "utils_align_detectfeatures_m",
-      "utils_align_runningaveragesmoothpoints_m",
-      "utils_align_subtractrunningaverage_m",
-      "utils_align_windv_m",
-      "utils_dlgs_inputquestdlg_m"
-    ],
-    "35": [
+    "33": [
       "controllers_alignment_threelandmarks_alignment_m",
       "controllers_batchprocessing_saveprotocol_m",
       "core_poolwaitbar_poolwaitbar_delete",
@@ -1193,7 +1165,28 @@
       "core_poolwaitbar_poolwaitbar_updatetext",
       "utils_align_crossshiftstacks_m"
     ],
-    "36": [
+    "34": [
+      "controllers_batchprocessing_directoryloopaction_callback_m",
+      "controllers_batchprocessing_directoryoperationsaction_callback_m",
+      "controllers_batchprocessing_fileloopaction_callback_m",
+      "controllers_batchprocessing_fileoperationsaction_callback_m",
+      "controllers_batchprocessing_initialize_m",
+      "controllers_mibimagedocument_segmentationannotation_m",
+      "controllers_mibimagedocument_segmentationsam2_m",
+      "controllers_mibimagedocument_segmentationsam_m",
+      "controllers_mibimagedocument_segmentationsam_requirements_m",
+      "controllers_mibimagedocument_slicenumberslider_contextmenu_m",
+      "controllers_mibribbon_homepreferences_callback_m",
+      "io_imaris_getimarisdataset_standardconnection_m",
+      "io_loaders_baseimageloader_m",
+      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_calculate",
+      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_closewindow",
+      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_m",
+      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_pluginwithoutgui",
+      "utils_dlgs_inputuniversaldlg_m",
+      "utils_dlgs_showmilestonedialog_m"
+    ],
+    "35": [
       "external_zarr3matlab_zarrarray_buildbytescodec",
       "external_zarr3matlab_zarrarray_buildchunkkeyencoding",
       "external_zarr3matlab_zarrarray_buildcodec",
@@ -1214,7 +1207,7 @@
       "external_zarr3matlab_zarrarray_write",
       "external_zarr3matlab_zarrarray_zarrarray"
     ],
-    "37": [
+    "36": [
       "controllers_contrastnormalization_collectslicestats_m",
       "controllers_contrastnormalization_continuebtn_callback_m",
       "controllers_contrastnormalization_contrastnormalization_addcallbacks",
@@ -1233,6 +1226,26 @@
       "controllers_contrastnormalization_normalizemaskedarea_m",
       "controllers_contrastnormalization_normalizetimeseries_m",
       "controllers_contrastnormalization_normalizezstack_m"
+    ],
+    "37": [
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_buttongroup_callback",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_calculate",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_canshowwaitbar",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_closewindow",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_continuebtn_callback",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_convertdataset",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_cropdataset",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_getdialogparent",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_guitutorialbatch",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_helpbtn_callback",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_invertdataset",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_normalizebatchoptforcurrentdataset",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_resizedataset",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_returnbatchopt",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_updatebatchoptfromgui",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_updatewidgets",
+      "plugins_tutorials_guitutorialbatch_guitutorialbatch_viewlistner_callback2"
     ],
     "38": [
       "controllers_cropdataset_cropdataset_addcallbacks",
@@ -1255,26 +1268,6 @@
       "controllers_cropdataset_cropdataset_zarrpyramidlevel_callback"
     ],
     "39": [
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_buttongroup_callback",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_calculate",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_canshowwaitbar",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_closewindow",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_continuebtn_callback",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_convertdataset",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_cropdataset",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_getdialogparent",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_guitutorialbatch",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_helpbtn_callback",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_invertdataset",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_m",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_normalizebatchoptforcurrentdataset",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_resizedataset",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_returnbatchopt",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_updatebatchoptfromgui",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_updatewidgets",
-      "plugins_tutorials_guitutorialbatch_guitutorialbatch_viewlistner_callback2"
-    ],
-    "40": [
       "core_measurements_measurements_addmeasurementstoplot",
       "core_measurements_measurements_clearcontents",
       "core_measurements_measurements_cleardata",
@@ -1294,7 +1287,7 @@
       "core_measurements_measurements_storemeasurement",
       "core_measurements_measurements_updateoptions"
     ],
-    "41": [
+    "40": [
       "controllers_alignment_algorithm_callback_m",
       "controllers_alignment_alignment_addcallbacks",
       "controllers_alignment_alignment_alignment",
@@ -1309,9 +1302,27 @@
       "controllers_alignment_alignment_viewlistner_callback2",
       "controllers_alignment_getsearchwindow_callback_m",
       "controllers_alignment_gui_callbacks_m",
+      "controllers_alignment_landmarkmultipointcolor_alignment_m",
       "controllers_alignment_loadshiftscheck_callback_m",
-      "controllers_alignment_previewfeaturesbtn_callback_m",
       "controllers_alignment_subwindowedit_callback_m"
+    ],
+    "41": [
+      "controllers_mibdeepaugmentsettings_accept",
+      "controllers_mibdeepaugmentsettings_closewindow",
+      "controllers_mibdeepaugmentsettings_disableaugmentations",
+      "controllers_mibdeepaugmentsettings_enablestatechange",
+      "controllers_mibdeepaugmentsettings_help",
+      "controllers_mibdeepaugmentsettings_m",
+      "controllers_mibdeepaugmentsettings_mibdeepaugmentsettings",
+      "controllers_mibdeepaugmentsettings_previewaugmentations",
+      "controllers_mibdeepaugmentsettings_resetaugmentations",
+      "controllers_mibdeepaugmentsettings_restorepreviousseed",
+      "controllers_mibdeepaugmentsettings_setpreviewaugmentationsettings",
+      "controllers_mibdeepaugmentsettings_updateaugmentationparameters",
+      "controllers_mibdeepaugmentsettings_updatewidgets",
+      "controllers_mibdeepaugmentsettings_viewlistner_callback",
+      "deepmib_augmentandcrop2dpatchmultigpu_m",
+      "deepmib_augmentandcrop3dpatchmultigpu_m"
     ],
     "42": [
       "plugins_fileprocessing_multirenametool_multirenametool_autopreviewvaluechanged",
@@ -1332,24 +1343,6 @@
       "plugins_fileprocessing_multirenametool_multirenametool_viewlistner_callback"
     ],
     "43": [
-      "controllers_mibdeepaugmentsettings_accept",
-      "controllers_mibdeepaugmentsettings_closewindow",
-      "controllers_mibdeepaugmentsettings_disableaugmentations",
-      "controllers_mibdeepaugmentsettings_enablestatechange",
-      "controllers_mibdeepaugmentsettings_help",
-      "controllers_mibdeepaugmentsettings_m",
-      "controllers_mibdeepaugmentsettings_mibdeepaugmentsettings",
-      "controllers_mibdeepaugmentsettings_previewaugmentations",
-      "controllers_mibdeepaugmentsettings_resetaugmentations",
-      "controllers_mibdeepaugmentsettings_restorepreviousseed",
-      "controllers_mibdeepaugmentsettings_setpreviewaugmentationsettings",
-      "controllers_mibdeepaugmentsettings_updateaugmentationparameters",
-      "controllers_mibdeepaugmentsettings_updatewidgets",
-      "controllers_mibdeepaugmentsettings_viewlistner_callback",
-      "deepmib_augmentandcrop2dpatchmultigpu_m",
-      "deepmib_augmentandcrop3dpatchmultigpu_m"
-    ],
-    "44": [
       "core_roiregion_roiregion_addroistoplot",
       "core_roiregion_roiregion_clearcontents",
       "core_roiregion_roiregion_cleardata",
@@ -1367,8 +1360,7 @@
       "core_roiregion_roiregion_storeroi",
       "core_roiregion_roiregion_updateoptions"
     ],
-    "45": [
-      "controllers_alignment_landmarkmultipointcolor_alignment_m",
+    "44": [
       "controllers_alignment_private_savetformstofile_m",
       "controllers_mibdeep_balanceclasses_m",
       "controllers_mibdeep_countlabels_m",
@@ -1385,57 +1377,7 @@
       "io_amiramesh_bitmap2amiramesh_m",
       "utils_dlgs_showerrordialog_m"
     ],
-    "46": [
-      "controllers_mibdeep_activationlayerchangecallback_m",
-      "controllers_mibdeep_bioformatscallback_m",
-      "controllers_mibdeep_customtrainingprogresswindow_callback_m",
-      "controllers_mibdeep_loadconfig_m",
-      "controllers_mibdeep_previewimagepatches_callback_m",
-      "controllers_mibdeep_selectarchitecture_m",
-      "controllers_mibdeep_selectworkflow_m",
-      "controllers_mibdeep_setsegmentationlayer_m",
-      "controllers_mibdeep_singlemodeltrainingfilevaluechanged_m",
-      "controllers_mibdeep_toggleaugmentations_m",
-      "controllers_mibdeep_updatebatchoptfromgui_m",
-      "controllers_mibdeep_updatepreprocessingmode_m",
-      "controllers_mibdeep_updatewidgets_m",
-      "deepmib_convertrelativetoabsolutepath_m",
-      "utils_updateguifrombatchopt_shared_m"
-    ],
-    "47": [
-      "core_childview_childview_childview",
-      "core_childview_childview_getchildren",
-      "core_childview_childview_m",
-      "plugins_tutorials_guitutorial_guitutorial_buttongroup_callback",
-      "plugins_tutorials_guitutorial_guitutorial_closewindow",
-      "plugins_tutorials_guitutorial_guitutorial_continuebtn_callback",
-      "plugins_tutorials_guitutorial_guitutorial_convertdataset",
-      "plugins_tutorials_guitutorial_guitutorial_cropdataset",
-      "plugins_tutorials_guitutorial_guitutorial_guitutorial",
-      "plugins_tutorials_guitutorial_guitutorial_helpbtn_callback",
-      "plugins_tutorials_guitutorial_guitutorial_invertdataset",
-      "plugins_tutorials_guitutorial_guitutorial_m",
-      "plugins_tutorials_guitutorial_guitutorial_resizedataset",
-      "plugins_tutorials_guitutorial_guitutorial_updatewidgets",
-      "plugins_tutorials_guitutorial_guitutorial_viewlistner_callback2"
-    ],
-    "48": [
-      "controllers_volrenappviewer_volrenappviewer_closewindow",
-      "controllers_volrenappviewer_volrenappviewer_m",
-      "controllers_volrenappviewer_volrenappviewer_updatewidgets",
-      "controllers_volrenappviewer_volrenappviewer_viewlistner_callback",
-      "controllers_volrenappviewer_volrenappviewer_volrenappviewer",
-      "utils_dlgs_amiraimportdlg_amiraimportdlg",
-      "utils_dlgs_amiraimportdlg_initview",
-      "utils_dlgs_amiraimportdlg_m",
-      "utils_dlgs_amiraimportdlg_oncancel",
-      "utils_dlgs_amiraimportdlg_oncontinue",
-      "utils_dlgs_amiraimportdlg_onkeypress",
-      "utils_dlgs_amiraimportdlg_onzstepchange",
-      "utils_dlgs_amiraimportdlg_run",
-      "utils_movewindowoutside_m"
-    ],
-    "49": [
+    "45": [
       "controllers_mibdeepactivations_changeimage",
       "controllers_mibdeepactivations_closewindow",
       "controllers_mibdeepactivations_getactivations",
@@ -1451,7 +1393,23 @@
       "controllers_mibdeepactivations_updatewidgets",
       "controllers_mibdeepactivations_viewlistner_callback"
     ],
-    "50": [
+    "46": [
+      "controllers_volrenappviewer_volrenappviewer_closewindow",
+      "controllers_volrenappviewer_volrenappviewer_m",
+      "controllers_volrenappviewer_volrenappviewer_updatewidgets",
+      "controllers_volrenappviewer_volrenappviewer_viewlistner_callback",
+      "controllers_volrenappviewer_volrenappviewer_volrenappviewer",
+      "utils_dlgs_amiraimportdlg_amiraimportdlg",
+      "utils_dlgs_amiraimportdlg_initview",
+      "utils_dlgs_amiraimportdlg_m",
+      "utils_dlgs_amiraimportdlg_oncancel",
+      "utils_dlgs_amiraimportdlg_oncontinue",
+      "utils_dlgs_amiraimportdlg_onkeypress",
+      "utils_dlgs_amiraimportdlg_onzstepchange",
+      "utils_dlgs_amiraimportdlg_run",
+      "utils_movewindowoutside_m"
+    ],
+    "47": [
       "io_savers_matlabsaver_getboundingbox",
       "io_savers_matlabsaver_getlabelsvariable",
       "io_savers_matlabsaver_getmaterialcolors",
@@ -1467,7 +1425,7 @@
       "io_savers_matlabsaver_savemodelcat",
       "io_savers_matlabsaver_savemodelv1"
     ],
-    "51": [
+    "48": [
       "external_zarr3matlab_tests_zarrmextest_addparenttopath",
       "external_zarr3matlab_tests_zarrmextest_createtestmetadatajson",
       "external_zarr3matlab_tests_zarrmextest_m",
@@ -1483,7 +1441,7 @@
       "external_zarr3matlab_tests_zarrmextest_testresize",
       "external_zarr3matlab_tests_zarrmextest_testwriteandread"
     ],
-    "52": [
+    "49": [
       "controllers_mibdeep_prepraretrainingoptions_m",
       "controllers_mibdeep_prepraretrainingoptionsinstances_m",
       "controllers_mibdeep_selectgpudevice_m",
@@ -1498,7 +1456,7 @@
       "deepmib_savetrainingplot_m",
       "deepmib_stoptrainingcallback_m"
     ],
-    "53": [
+    "50": [
       "io_imod_mibexportmodeltoimodmodel_m",
       "io_savers_imodcontoursaver_getsupportedformats",
       "io_savers_imodcontoursaver_imodcontoursaver",
@@ -1513,7 +1471,7 @@
       "io_savers_pngsaver_pngsaver",
       "io_savers_pngsaver_save"
     ],
-    "54": [
+    "51": [
       "controllers_resampledataset_resampledataset_addcallbacks",
       "controllers_resampledataset_resampledataset_closewindow",
       "controllers_resampledataset_resampledataset_editbox_callback",
@@ -1528,7 +1486,7 @@
       "controllers_resampledataset_resampledataset_updatewidgets",
       "controllers_resampledataset_resampledataset_viewlistner_callback2"
     ],
-    "55": [
+    "52": [
       "controllers_boundingbox_boundingbox_addcallbacks",
       "controllers_boundingbox_boundingbox_applybutton_callback",
       "controllers_boundingbox_boundingbox_boundingbox",
@@ -1542,7 +1500,7 @@
       "controllers_boundingbox_boundingbox_updatewidgets",
       "controllers_boundingbox_boundingbox_viewlistner_callback2"
     ],
-    "56": [
+    "53": [
       "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_closewindow",
       "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_computemeshvolume",
       "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_computesurfacearea",
@@ -1556,7 +1514,21 @@
       "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_updatewidgets",
       "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_viewlistner_callback2"
     ],
-    "57": [
+    "54": [
+      "plugins_tutorials_guitutorial_guitutorial_buttongroup_callback",
+      "plugins_tutorials_guitutorial_guitutorial_closewindow",
+      "plugins_tutorials_guitutorial_guitutorial_continuebtn_callback",
+      "plugins_tutorials_guitutorial_guitutorial_convertdataset",
+      "plugins_tutorials_guitutorial_guitutorial_cropdataset",
+      "plugins_tutorials_guitutorial_guitutorial_guitutorial",
+      "plugins_tutorials_guitutorial_guitutorial_helpbtn_callback",
+      "plugins_tutorials_guitutorial_guitutorial_invertdataset",
+      "plugins_tutorials_guitutorial_guitutorial_m",
+      "plugins_tutorials_guitutorial_guitutorial_resizedataset",
+      "plugins_tutorials_guitutorial_guitutorial_updatewidgets",
+      "plugins_tutorials_guitutorial_guitutorial_viewlistner_callback2"
+    ],
+    "55": [
       "core_mibdataset_addmaterial_m",
       "core_mibdataset_createmodel_m",
       "core_mibdataset_loadmodel_m",
@@ -1570,7 +1542,7 @@
       "core_miblabels_squeezemateriallabels_m",
       "core_miblabels_swapmaterials_m"
     ],
-    "58": [
+    "56": [
       "core_mibdataset_getaxeslimits_m",
       "core_mibdataset_getdata2d_m",
       "core_mibdataset_getdata3d_m",
@@ -1583,7 +1555,7 @@
       "core_mibdataset_setdata4d_m",
       "core_mibdataset_swapmaterials_m"
     ],
-    "59": [
+    "57": [
       "core_mibvirtualimage_getdata_m",
       "core_mibvirtualimage_getdatavirt_m",
       "core_mibvirtualimage_getdatazarr_m",
@@ -1596,7 +1568,7 @@
       "io_loaders_zarr3virtualloader_readregion",
       "io_loaders_zarr3virtualloader_zarr3virtualloader"
     ],
-    "60": [
+    "58": [
       "controllers_mibdeep_duplicateconfigandnetwork_m",
       "controllers_mibdeep_importnetwork_m",
       "controllers_mibdeep_saveconfig_m",
@@ -1608,7 +1580,19 @@
       "io_amiramesh_amiramesh2bitmap_m",
       "utils_dlgs_mibuigetfile_m"
     ],
-    "61": [
+    "59": [
+      "controllers_welcometips_welcometips_closewindow",
+      "controllers_welcometips_welcometips_m",
+      "controllers_welcometips_welcometips_nexttipbtn_callback",
+      "controllers_welcometips_welcometips_previoustipbtn_callback",
+      "controllers_welcometips_welcometips_updatewidgets",
+      "controllers_welcometips_welcometips_welcometips",
+      "core_childview_childview_childview",
+      "core_childview_childview_getchildren",
+      "core_childview_childview_m",
+      "utils_fontsizeupdate_m"
+    ],
+    "60": [
       "core_miblabels63_countmaterials_m",
       "core_miblabels63_getdata63_m",
       "core_miblabels63_insertmaterial_m",
@@ -1620,7 +1604,7 @@
       "core_miblabels63_setdata63_m",
       "core_miblabels63_swapmaterials_m"
     ],
-    "62": [
+    "61": [
       "external_zarr3matlab_zarrgroup_create",
       "external_zarr3matlab_zarrgroup_createarray",
       "external_zarr3matlab_zarrgroup_createarrayfromdata",
@@ -1632,7 +1616,7 @@
       "external_zarr3matlab_zarrgroup_opengroup",
       "external_zarr3matlab_zarrgroup_zarrgroup"
     ],
-    "63": [
+    "62": [
       "controllers_quantificationproperties_quantificationproperties_addcallbacks",
       "controllers_quantificationproperties_quantificationproperties_cancelbtn_callback",
       "controllers_quantificationproperties_quantificationproperties_checkallbtn_callback",
@@ -1644,7 +1628,7 @@
       "controllers_quantificationproperties_quantificationproperties_updatewidgets",
       "utils_childwindowkeypressfcn_m"
     ],
-    "64": [
+    "63": [
       "controllers_mibdeep_checknetwork_m",
       "controllers_mibdeep_createnetwork_m",
       "controllers_mibdeep_generate3ddeeplabv3network_m",
@@ -1655,7 +1639,7 @@
       "controllers_mibdeep_updatenetworkinputlayer_m",
       "deepmib_createanisotropic3dunet_m"
     ],
-    "65": [
+    "64": [
       "plugins_tutorials_demoplugin_demoplugin_calculate",
       "plugins_tutorials_demoplugin_demoplugin_closewindow",
       "plugins_tutorials_demoplugin_demoplugin_demoplugin",
@@ -1666,7 +1650,7 @@
       "plugins_tutorials_demoplugin_demoplugin_viewlistner_callback2",
       "utils_updatebatchoptfromgui_shared_m"
     ],
-    "66": [
+    "65": [
       "utils_dlgs_selectmodeltypedlg_initview",
       "utils_dlgs_selectmodeltypedlg_m",
       "utils_dlgs_selectmodeltypedlg_oncancel",
@@ -1677,7 +1661,7 @@
       "utils_dlgs_selectmodeltypedlg_selectmodeltypedlg",
       "utils_dlgs_selectmodeltypedlg_updatedescription"
     ],
-    "67": [
+    "66": [
       "core_mibiconcache_mibiconcache_buildresourcefile",
       "core_mibiconcache_mibiconcache_get",
       "core_mibiconcache_mibiconcache_getdefaultassetsdir",
@@ -1688,7 +1672,7 @@
       "utils_getinstallationpath_m",
       "utils_getmaxparpoolworkers_m"
     ],
-    "68": [
+    "67": [
       "io_hdf5_image2hdf5_m",
       "io_hdf5_savebigdataviewerformat_m",
       "io_hdf5_savexmlheader_m",
@@ -1698,6 +1682,16 @@
       "io_savers_hdf5saver_m",
       "io_savers_hdf5saver_save",
       "utils_resizeimage3d_m"
+    ],
+    "68": [
+      "controllers_mibdeep_customtrainingprogresswindow_callback_m",
+      "controllers_mibdeep_loadconfig_m",
+      "controllers_mibdeep_previewimagepatches_callback_m",
+      "controllers_mibdeep_selectarchitecture_m",
+      "controllers_mibdeep_selectworkflow_m",
+      "controllers_mibdeep_singlemodeltrainingfilevaluechanged_m",
+      "controllers_mibdeep_updatebatchoptfromgui_m",
+      "deepmib_convertrelativetoabsolutepath_m"
     ],
     "69": [
       "core_mibbackup_mibbackup_clearcontents",
@@ -1730,13 +1724,13 @@
       "io_extensionregistryload_setallowedextensions"
     ],
     "72": [
-      "controllers_welcometips_welcometips_closewindow",
-      "controllers_welcometips_welcometips_m",
-      "controllers_welcometips_welcometips_nexttipbtn_callback",
-      "controllers_welcometips_welcometips_previoustipbtn_callback",
-      "controllers_welcometips_welcometips_updatewidgets",
-      "controllers_welcometips_welcometips_welcometips",
-      "utils_fontsizeupdate_m"
+      "controllers_mibdeep_activationlayerchangecallback_m",
+      "controllers_mibdeep_bioformatscallback_m",
+      "controllers_mibdeep_setsegmentationlayer_m",
+      "controllers_mibdeep_toggleaugmentations_m",
+      "controllers_mibdeep_updatepreprocessingmode_m",
+      "controllers_mibdeep_updatewidgets_m",
+      "utils_updateguifrombatchopt_shared_m"
     ],
     "73": [
       "core_mibdataset_closevirtualdataset_m",
@@ -1825,122 +1819,132 @@
       "io_saverfactory_m"
     ],
     "84": [
-      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_calculate",
-      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_closewindow",
-      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_m",
-      "plugins_tutorials_pluginwithoutgui_pluginwithoutgui_pluginwithoutgui"
+      "models_mibmodel_convertdatatomousecoordinates_m",
+      "models_mibmodel_convertmousetodatacoordinates_m",
+      "models_mibmodel_getaxeslimits_m",
+      "models_mibmodel_getmagfactor_m"
     ],
     "85": [
+      "controllers_mibribbon_homeexamples_callback_m",
+      "controllers_mibribbon_updatevoxelsizes_m",
+      "utils_calculatepixsizes_m",
+      "utils_updatepixsizeandresolution_m"
+    ],
+    "86": [
       "io_loaders_hdf5virtualloader_hdf5virtualloader",
       "io_loaders_hdf5virtualloader_m",
       "io_loaders_hdf5virtualloader_readregion",
       "io_loaders_hdf5virtualloader_resolveaxisorder"
     ],
-    "86": [
+    "87": [
       "controllers_mibribbon_homeexport_callback_m",
       "io_fiji_miji_deploy_m",
       "io_fiji_miji_wrapper_m",
       "utils_rendervolumewithfiji_m"
     ],
-    "87": [
-      "io_loaders_imreadloader_imreadloader",
-      "io_loaders_imreadloader_loadimages",
-      "io_loaders_imreadloader_loadmetadata",
-      "io_loaders_imreadloader_m"
-    ],
     "88": [
+      "io_loaders_mibimgloader_loadimages",
+      "io_loaders_mibimgloader_loadmetadata",
+      "io_loaders_mibimgloader_m",
+      "io_loaders_mibimgloader_mibimgloader"
+    ],
+    "89": [
       "external_mattomo_imodmesh_freadmesh_m",
       "external_mattomo_imodmesh_getverticesandnormals_m",
       "external_mattomo_imodmesh_imodmesh_imodmesh",
       "external_mattomo_imodmesh_imodmesh_m"
     ],
-    "89": [
+    "90": [
       "legacy_dicepixelcustomclassificationlayer_dicepixelcustomclassificationlayer",
       "legacy_dicepixelcustomclassificationlayer_forwardloss",
       "legacy_dicepixelcustomclassificationlayer_m"
     ],
-    "90": [
+    "91": [
       "external_mattomo_imodchunk_freadchunk_m",
       "external_mattomo_imodchunk_imodchunk_imodchunk",
       "external_mattomo_imodchunk_imodchunk_m"
     ],
-    "91": [
+    "92": [
+      "models_mibmodel_getrgbimage_m",
+      "utils_addtext2img_m"
+    ],
+    "93": [
       "utils_getexelocation_c",
       "utils_getexelocation_mexfunction"
     ],
-    "92": [
+    "94": [
       "utils_attachfilednd_m",
       "views_mibview_dopostinitializationtasks_m"
     ],
-    "93": [
+    "95": [
       "mib3_deploy_m"
     ],
-    "94": [
+    "96": [
       "controllers_alignment_private_applycroppedmode_m"
     ],
-    "95": [
+    "97": [
       "controllers_alignment_private_applyextendedmode_m"
     ],
-    "96": [
+    "98": [
       "controllers_alignment_private_assembleservicecanvas_m"
     ],
-    "97": [
+    "99": [
       "controllers_alignment_private_relocateannotations_m"
     ],
-    "98": [
+    "100": [
       "deepmib_stoptrainingwithoutplots_m"
     ],
-    "99": [
+    "101": [
       "deepmib_storeloadcategorical_m"
     ],
-    "100": [
+    "102": [
       "deepmib_storeloadmodel_m"
     ],
-    "101": [
+    "103": [
       "deepmib_trainingstructupdateaxes_m"
     ],
-    "102": [
+    "104": [
       "io_amiramesh_bitmap2amiralabels2_m"
     ],
-    "103": [
+    "105": [
       "io_bioformats_bfopen3_m"
     ],
-    "104": [
+    "106": [
       "io_imaris_imaris_send_data_test_m"
     ],
-    "105": [
+    "107": [
       "io_imaris_surfacesfromsegmentationimage_m"
     ],
-    "106": [
+    "108": [
       "utils_saveprojectstructure_m"
     ],
-    "107": [
+    "109": [
       "utils_struct2array_m"
     ],
-    "108": [
+    "110": [
       "utils_dlgs_showerrordialogstd_m"
     ],
-    "109": [
+    "111": [
       "plugins_fileprocessing_imageconverter_extracttoxmlmetafromfibicstifs_m"
     ],
-    "110": [
+    "112": [
       "plugins_fileprocessing_imageconverter_readmetadatafromfibicstifs_m"
     ]
   },
   "cohesion": {
     "0": 0.04,
-    "1": 0.07,
-    "2": 0.06,
-    "3": 0.04,
+    "1": 0.12,
+    "2": 0.07,
+    "3": 0.06,
     "4": 0.04,
-    "5": 0.1,
-    "6": 0.05,
+    "5": 0.04,
+    "6": 0.1,
     "7": 0.05,
     "8": 0.05,
     "9": 0.05,
-    "10": 0.09,
-    "11": 0.05,
-    "12": 0.13,
+    "10": 0.05,
+    "11": 0.09,
+    "12": 0.05,
     "13": 0.07,
     "14": 0.08,
     "15": 0.07,
@@ -1952,51 +1956,51 @@
     "21": 0.14,
     "22": 0.11,
     "23": 0.08,
-    "24": 0.14,
+    "24": 0.09,
     "25": 0.09,
-    "26": 0.17,
-    "27": 0.09,
-    "28": 0.09,
-    "29": 0.16,
+    "26": 0.09,
+    "27": 0.1,
+    "28": 0.23,
+    "29": 0.18,
     "30": 0.1,
-    "31": 0.18,
-    "32": 0.1,
-    "33": 0.11,
-    "34": 0.24,
-    "35": 0.1,
-    "36": 0.11,
-    "37": 0.19,
+    "31": 0.17,
+    "32": 0.11,
+    "33": 0.1,
+    "34": 0.14,
+    "35": 0.11,
+    "36": 0.19,
+    "37": 0.11,
     "38": 0.11,
     "39": 0.11,
-    "40": 0.11,
-    "41": 0.19,
+    "40": 0.18,
+    "41": 0.12,
     "42": 0.12,
     "43": 0.12,
-    "44": 0.12,
-    "45": 0.23,
-    "46": 0.2,
-    "47": 0.13,
+    "44": 0.25,
+    "45": 0.14,
+    "46": 0.14,
+    "47": 0.14,
     "48": 0.14,
-    "49": 0.14,
-    "50": 0.14,
-    "51": 0.14,
-    "52": 0.21,
-    "53": 0.13,
-    "54": 0.15,
-    "55": 0.17,
-    "56": 0.17,
-    "57": 0.18,
+    "49": 0.21,
+    "50": 0.13,
+    "51": 0.15,
+    "52": 0.17,
+    "53": 0.17,
+    "54": 0.17,
+    "55": 0.18,
+    "56": 0.24,
+    "57": 0.25,
     "58": 0.24,
-    "59": 0.25,
-    "60": 0.24,
-    "61": 0.22,
+    "59": 0.2,
+    "60": 0.22,
+    "61": 0.2,
     "62": 0.2,
-    "63": 0.2,
+    "63": 0.22,
     "64": 0.22,
     "65": 0.22,
     "66": 0.22,
     "67": 0.22,
-    "68": 0.22,
+    "68": 0.43,
     "69": 0.25,
     "70": 0.25,
     "71": 0.25,
@@ -2012,14 +2016,14 @@
     "81": 0.6,
     "82": 0.4,
     "83": 0.4,
-    "84": 0.5,
+    "84": 0.67,
     "85": 0.5,
     "86": 0.5,
     "87": 0.5,
     "88": 0.5,
-    "89": 0.67,
+    "89": 0.5,
     "90": 0.67,
-    "91": 1.0,
+    "91": 0.67,
     "92": 1.0,
     "93": 1.0,
     "94": 1.0,
@@ -2038,7 +2042,9 @@
     "107": 1.0,
     "108": 1.0,
     "109": 1.0,
-    "110": 1.0
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0
   },
   "gods": [
     {
@@ -2117,17 +2123,17 @@
     {
       "type": "low_cohesion",
       "question": "Should `Community 1` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.07 - nodes in this community are weakly interconnected."
+      "why": "Cohesion score 0.12 - nodes in this community are weakly interconnected."
     },
     {
       "type": "low_cohesion",
       "question": "Should `Community 2` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.06 - nodes in this community are weakly interconnected."
+      "why": "Cohesion score 0.07 - nodes in this community are weakly interconnected."
     },
     {
       "type": "low_cohesion",
       "question": "Should `Community 3` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.04 - nodes in this community are weakly interconnected."
+      "why": "Cohesion score 0.06 - nodes in this community are weakly interconnected."
     }
   ]
 }

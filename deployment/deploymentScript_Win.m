@@ -1,5 +1,5 @@
 %% UPDATE THE VERSION!
-VERSION = "2026.06.03";
+VERSION = "2026.06.05";
 projectRoot = "c:\Matlab\MIB3\";
 os_id = 'win';  % win, mac, linux
 showTerminal = true;
