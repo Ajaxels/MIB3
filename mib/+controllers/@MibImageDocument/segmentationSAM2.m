@@ -406,7 +406,8 @@ try
             % it requires addition of init_state_from_array function into sam2_video_predictor.py in order to work
 
             if localWaitbar && t1==t2
-                wb.Value = 0.05; wb.Message = sprintf('%s: preparing data\nPlease wait...', BatchOpt.Method{1});
+                wb.Message = sprintf('%s: preparing data\nPlease wait...', BatchOpt.Method{1});
+                wb.Indeterminate = true;
                 drawnow;
             end
 
@@ -447,11 +448,11 @@ try
                     dataset2(:,:,z,:) = imresize(imgDataset(:,:,z,:), [1024 1024], 'bicubic');
                 end
                 if localWaitbar && t1==t2
-                    wb.Value = 0.15; wb.Message = sprintf('%s: starting SAM\nPlease wait...', BatchOpt.Method{1});
+                    wb.Message = sprintf('%s: starting SAM\nPlease wait...', BatchOpt.Method{1});
                 end
                 dataset2 = pointsVideoSAM(dataset2, labelPositions, labelValues, castDataType);
                 if localWaitbar && t1==t2
-                    wb.Value = 0.9; wb.Message = sprintf('%s: upsampling results\nPlease wait...', BatchOpt.Method{1});
+                    wb.Message = sprintf('%s: upsampling results\nPlease wait...', BatchOpt.Method{1});
                 end
                 imgDataset = zeros([h1 w1 d1], class(dataset2));
                 sigma = 1/min([scaleH scaleW]);
@@ -461,13 +462,14 @@ try
                 end
             else
                 if localWaitbar && t1==t2
-                    wb.Value = 0.15; wb.Message = sprintf('%s: starting SAM\nPlease wait...', BatchOpt.Method{1});
+                    wb.Message = sprintf('%s: doing SAM\nPlease wait...', BatchOpt.Method{1});
                     drawnow;
                 end
                
                 imgDataset = pointsVideoSAM(imgDataset, labelPositions, labelValues, castDataType);
                 if localWaitbar && t1==t2
-                    wb.Value = 0.9; wb.Message = sprintf('%s: finalizing\nPlease wait...', BatchOpt.Method{1});
+                    wb.Message = sprintf('%s: finalizing\nPlease wait...', BatchOpt.Method{1});
+                    drawnow;
                 end
             end
 

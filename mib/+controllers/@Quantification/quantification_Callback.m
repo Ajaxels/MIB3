@@ -160,7 +160,7 @@ wb = [];
 isUiDlg = false;
 if obj.BatchOpt.showWaitbar
     if batchModeSwitch == 0 && ~isempty(parentFig)
-        wb = uiprogressdlg(parentFig, 'Title', 'Object shape stats', 'Message', waitbarTitle, 'Value', 0);
+        wb = uiprogressdlg(parentFig, 'Title', 'Object shape stats', 'Message', waitbarTitle, 'Value', 0, 'Cancelable', 'on');
         isUiDlg = true;
     else
         wb = waitbar(0, waitbarTitle, 'Name', 'Object shape stats...', 'WindowStyle', 'modal');
@@ -189,6 +189,11 @@ intProps = {'SumIntensity','StdIntensity','MeanIntensity','MaxIntensity','MinInt
 pixSize = dataset.image.pixSize;
 
 for t = t1:t2
+    if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+        if ~isempty(wb); delete(wb); end
+        notify(obj.mibModel, 'StopProtocol');
+        return;
+    end
     start_id = 1; % init for proper visualization of progress bar
     end_id = 2;   % init for proper visualization of progress bar
     if strcmp(obj.BatchOpt.ObjectShape{1}, 'Shape3D')
@@ -304,6 +309,11 @@ for t = t1:t2
             if ismember('SecondAxisLength', property); [STATS.SecondAxisLength] = deal(STATS2.SecondAxisLength); end
             if ismember('ThirdAxisLength',  property); [STATS.ThirdAxisLength]  = deal(STATS2.ThirdAxisLength);  end
         end
+        if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+            if ~isempty(wb); delete(wb); end
+            notify(obj.mibModel, 'StopProtocol');
+            return;
+        end
 
         % EndpointsLength (3D)
         if ~isempty(property(ismember(property, 'EndpointsLength')))
@@ -331,6 +341,11 @@ for t = t1:t2
             end
             [STATS.EndpointsLength] = deal(STATS3.EndpointsLength);
         end
+        if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+            if ~isempty(wb); delete(wb); end
+            notify(obj.mibModel, 'StopProtocol');
+            return;
+        end
 
         % Intensity properties (3D)
         prop1 = property(ismember(property, intProps));
@@ -349,6 +364,12 @@ for t = t1:t2
             end
         end
 
+        if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+            if ~isempty(wb); delete(wb); end
+            notify(obj.mibModel, 'StopProtocol');
+            return;
+        end
+
         % ConvexVolume, EquivDiameter, Extent, Solidity, SurfaceArea
         prop1 = property(ismember(property, {'ConvexVolume','EquivDiameter','Extent','Solidity','SurfaceArea'}));
         if ~isempty(prop1)
@@ -356,6 +377,11 @@ for t = t1:t2
             STATS2 = table2struct(regionprops3(CC, prop1));
             fn = fieldnames(STATS2);
             for i = 1:numel(fn); [STATS.(fn{i})] = STATS2.(fn{i}); end
+        end
+        if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+            if ~isempty(wb); delete(wb); end
+            notify(obj.mibModel, 'StopProtocol');
+            return;
         end
 
         % Correlation (3D)
@@ -369,6 +395,11 @@ for t = t1:t2
             end
         end
         [STATS.TimePnt] = deal(t);
+        if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+            if ~isempty(wb); delete(wb); end
+            notify(obj.mibModel, 'StopProtocol');
+            return;
+        end
 
         % Unit conversion (3D)
         if ~strcmp(obj.BatchOpt.Units{1}, 'pixels')
@@ -436,6 +467,11 @@ for t = t1:t2
         for lay_id = start_id:end_id
             if obj.BatchOpt.showWaitbar && end_id > start_id
                 mibSetWb(wb, isUiDlg, (lay_id-start_id)/(end_id-start_id), waitbarTitle);
+            end
+            if obj.BatchOpt.showWaitbar && checkCancel(wb, isUiDlg)
+                if ~isempty(wb); delete(wb); end
+                notify(obj.mibModel, 'StopProtocol');
+                return;
             end
 
             if selectedMaterial == -1
@@ -687,4 +723,18 @@ else
     end
 end
 drawnow;
+end
+
+% -------------------------------------------------------------------------
+function tf = checkCancel(wb, isUiDlg)
+% CHECKCANCEL - local helper: true when the user pressed Cancel on the uiprogressdlg.
+%
+% Syntax:
+%   function tf = checkCancel(wb, isUiDlg)
+%
+% Returns false for the legacy waitbar path (no cancel button) so callers
+% can use a uniform check regardless of the progress dialog type.
+tf = false;
+if isempty(wb) || ~isUiDlg; return; end
+if isvalid(wb) && wb.CancelRequested; tf = true; end
 end
