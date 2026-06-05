@@ -78,7 +78,7 @@ switch menuEntry.Tag
         contIndex = obj.mibModel.I{id}.getSelectedMaterialIndex();
         if contIndex == -1
             if obj.mibModel.I{id}.maskExist == 0
-                utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, 'Mask was not found!', 'Missing mask');
+                utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), 'Mask was not found!', 'Missing mask');
                 return;
             end
             options.dataType = 'mask';
@@ -108,12 +108,12 @@ switch menuEntry.Tag
             modelColors = obj.mibModel.I{id}.labels.materialColors;
         end
         if numel(modelData) > 1
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 'Please select only one ROI to render!', 'Selection error');
             return;
         end
         utils.fiji.renderModelWithFiji(modelData{1}, contIndex, ...
-            obj.mibModel.I{id}.image.pixSize, modelColors, obj.mibModel.mibGUI);
+            obj.mibModel.I{id}.image.pixSize, modelColors, obj.mibModel.getProgressBarParent());
 
 
         %% Unlink material from Add to

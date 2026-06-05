@@ -105,7 +105,7 @@ switch action
             dlgOpt.MsgBoxOnly = true;
             header = sprintf('!!! Error !!!\nPlease select first an active node!\nA new node will be inserted after the active node');
             dlgOpt.HeaderLines = 3;
-            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Missing active node', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Missing active node', dlgOpt);
             return;
         end
         dataset.lines3D.insertNode(activeNodeId, x, y, z);

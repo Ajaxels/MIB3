@@ -185,7 +185,7 @@ else
         options.mibPath = obj.mibPath;
         defAns = struct('Value', 2, 'Limits', [1 Inf], 'ValueDisplayFormat', '%d');
         dlgText = sprintf('There are %d file selected; please enter the loading step:\n\nFor example when step is 2 \nMIB loads each second dataset', numel(BatchOpt.Filenames));
-        answer = utils.dlgs.inputSingleDlg(obj.mibGUI, dlgText, defAns, 'Enter the step', options);
+        answer = utils.dlgs.inputSingleDlg(obj.getProgressBarParent(), dlgText, defAns, 'Enter the step', options);
         if isempty(answer); return; end
 
         BatchOpt.EachNthStep = num2str(answer);
@@ -393,7 +393,7 @@ switch BatchOpt.Mode{1}
                     dlgOpt.Icon = 'puffin_warning';
                     dlgOpt.HeaderLines = 5;
                     dlgOpt.WindowHeight = 200;
-                    answer = utils.dlgs.inputSingleDlg(obj.mibGUI, ...
+                    answer = utils.dlgs.inputSingleDlg(obj.getProgressBarParent(), ...
                         sprintf('The XY dimensions or number of color channels mismatch!\nContinue anyway?\n\nEnter the background color intensity (0-%d):', maxInt), ...
                          struct('Value', maxInt, 'Limits', [0 maxInt], 'Step', 1, 'Round', true, 'ValueDisplayFormat', '%d'), ...
                          'Dimensions mismatch', dlgOpt);

@@ -65,12 +65,12 @@ switch menuEntry.Tag
             dlgOpts.WindowStyle = 'normal';
             dlgOpts.WindowHeight = 150';
             dlgOpts.Icon = 'puffin_warning';
-            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Rename file', dlgOpts);
+            utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Rename file', dlgOpts);
             return;
         end
         [filePath, filename, ext] = fileparts(fullfile(obj.mibModel.currentDirectory, obj.mibModel.selectedFiles{1}));
         dlgOpts.mibPath = obj.mibModel.mibPath;
-        answer = utils.dlgs.inputSingleDlg(obj.mibModel.mibGUI, 'Please enter new file name', [filename, ext], 'Rename file', dlgOpts);
+        answer = utils.dlgs.inputSingleDlg(obj.mibModel.getProgressBarParent(), 'Please enter new file name', [filename, ext], 'Rename file', dlgOpts);
         if isempty(answer); return; end
         movefile(fullfile(filePath, [filename, ext]), fullfile(filePath, answer));
         obj.updateFileList_Callback(answer);
@@ -111,7 +111,7 @@ switch menuEntry.Tag
         dlgOpts.WindowStyle = 'normal';
         dlgOpts.Icon = 'puffin_info';
         dlgOpts.IconWidth = 96;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'File info', dlgOpts);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'File info', dlgOpts);
 
 end
 

@@ -18,6 +18,8 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 % Input Arguments:
 %   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to centre the dialog. Pass ``[]`` to reuse the cached handle from a prior call.
+%     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
+%     active dataset window when it is undocked.
 %   - **prompt** — [char|string] prompt text displayed above the input field.
 %     Supports newlines, e.g. ``sprintf('Line 1\nLine 2')``.
 %   - **defAns** — default value for the input widget:

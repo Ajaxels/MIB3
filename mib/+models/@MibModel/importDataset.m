@@ -64,7 +64,7 @@ if ismember(layerType, {'mask', 'model'})
         dlgOpt.Icon = 'puffin_error';
         dlgOpt.HeaderLines = 1;
         dlgOpt.WindowHeight = 190;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Not implemented!', {''}, {warningBody}, ...
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'Not implemented!', {''}, {warningBody}, ...
             'MibModel.importDataset: Ops!!!', dlgOpt);
         notify(obj, 'StopProtocol');
         return;
@@ -78,7 +78,7 @@ if ismember(layerType, {'mask', 'model'})
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.HeaderLines = 1;
         dlgOpt.WindowHeight = 180;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The selection layers are switched off!', {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The selection layers are switched off!', {''}, ...
             {sprintf('Make sure that the "Enable selection" option in the Preferences dialog:\nRibbon -> Home -> Preferences\nis set to "yes" and try again...')}, ...
             'Selection layers disabled', dlgOpt);
         notify(obj, 'StopProtocol');
@@ -128,7 +128,7 @@ if nargin < 3
             numericClasses = {'uint8','uint16','uint32','uint64','int8','int16','int32','int64','double','single'};
             idxNum = ismember({availableVars.class}, numericClasses);
             if sum(idxNum) == 0
-                utils.dlgs.showErrorDialog(obj.mibGUI, 'No numeric variables found in the MATLAB workspace!', 'Nothing to import');
+                utils.dlgs.showErrorDialog(obj.getProgressBarParent(), 'No numeric variables found in the MATLAB workspace!', 'Nothing to import');
                 return;
             end
             filteredVars = availableVars(idxNum);
@@ -150,7 +150,7 @@ if nargin < 3
             prompts  = {'Image variable (H x W x color x Z x T):', 'Metadata variable (optional):'};
             defAns   = {[imageVarsDetails(:)', {defaultImgIdx}], [metaVars(:)', {defaultMetaIdx}]};
             dlgOpt.WindowHeight = 175;
-            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, ...
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, ...
                 'Import image from MATLAB', dlgOpt);
             if isempty(answer); return; end
 
@@ -166,7 +166,7 @@ if nargin < 3
             numericClasses = {'uint8','uint16','uint32','uint64','int8','int16','int32','int64','double','single','logical'};
             idxNum = ismember({availableVars.class}, numericClasses);
             if sum(idxNum) == 0
-                utils.dlgs.showErrorDialog(obj.mibGUI, 'No numeric variables found in the MATLAB workspace!', 'Nothing to import');
+                utils.dlgs.showErrorDialog(obj.getProgressBarParent(), 'No numeric variables found in the MATLAB workspace!', 'Nothing to import');
                 return;
             end
             filteredVars = availableVars(idxNum);
@@ -180,7 +180,7 @@ if nargin < 3
 
             prompts  = {'Mask variable (H x W x Z x T):'};
             defAns   = {[maskVarsDetails(:)', {defaultIdx}]};
-            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, ...
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, ...
                 'Import mask from MATLAB', struct());
             if isempty(answer); return; end
             BatchOpt.MaskVariable = maskVars{selIndex(1)};
@@ -189,7 +189,7 @@ if nargin < 3
             modelClasses = {'uint8','uint16','uint32','struct'};
             idxModel = ismember({availableVars.class}, modelClasses);
             if sum(idxModel) == 0
-                utils.dlgs.showErrorDialog(obj.mibGUI, 'No suitable variables (uint8/uint16/uint32/struct) found in the MATLAB workspace!', 'Nothing to import');
+                utils.dlgs.showErrorDialog(obj.getProgressBarParent(), 'No suitable variables (uint8/uint16/uint32/struct) found in the MATLAB workspace!', 'Nothing to import');
                 return;
             end
             filteredVars = availableVars(idxModel);
@@ -204,7 +204,7 @@ if nargin < 3
             dlgOpt.WindowHeight=200;
             prompts  = {sprintf('Model variable\nnumeric array or struct with:\n\t.model\n\t.modelMaterialNames\n\t.modelMaterialColors\n\t.modelType:')};
             defAns   = {[modelVarsDetails(:)', {defaultIdx}]};
-            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, ...
+            [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, ...
                 'Import model from MATLAB', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.ModelVariable = modelVars{selIndex(1)};
@@ -241,7 +241,7 @@ switch BatchOpt.LayerType{1}
         try
             img = evalin('base', BatchOpt.ImageVariable);
         catch exception
-            utils.dlgs.showErrorDialog(obj.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 sprintf('Variable not found in the MATLAB workspace:\n%s', exception.message), 'Missing variable');
             notify(obj, 'StopProtocol'); return;
         end
@@ -257,11 +257,11 @@ switch BatchOpt.LayerType{1}
             elseif maxVal <= double(intmax('uint32'))
                 convertClass = 'uint32';
             else
-                utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                     'Cannot convert: double values exceed uint32 range.', 'Conversion error');
                 notify(obj, 'StopProtocol'); return;
             end
-            convertBtn = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
+            convertBtn = utils.dlgs.inputQuestDlg(obj.getProgressBarParent(), ...
                 sprintf('The variable is in double format.\nConvert to %s and continue?', convertClass), ...
                 'Convert', 'Proceed', 'Cancel', 'Proceed');
             if strcmp(convertBtn, 'Cancel'); return; end
@@ -275,7 +275,7 @@ switch BatchOpt.LayerType{1}
         % A 3D workspace array [H, W, K] is read as D=K, C=1 by default.
         % Only ask when K is small enough to plausibly be a color channel count.
         if ndims(img) == 3 && size(img, 3) > 1 && size(img, 3) <= 6
-            colorBtn = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
+            colorBtn = utils.dlgs.inputQuestDlg(obj.getProgressBarParent(), ...
                 sprintf('The image is 3D (%d x %d x %d).\nIs the 3rd dimension color channels (not depth/Z)?', ...
                         size(img,1), size(img,2), size(img,3)), ...
                 'Image dimensions', 'Yes (colors)', 'No (depth/Z)', 'No (depth/Z)');
@@ -310,7 +310,7 @@ switch BatchOpt.LayerType{1}
         try
             maskData = evalin('base', BatchOpt.MaskVariable);
         catch exception
-            utils.dlgs.showErrorDialog(obj.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 sprintf('Variable not found in the MATLAB workspace:\n%s', exception.message), 'Missing variable');
             notify(obj, 'StopProtocol'); return;
         end
@@ -323,7 +323,7 @@ switch BatchOpt.LayerType{1}
                 'Image: %d x %d\nMask:  %d x %d'], ...
                 obj.I{BatchOpt.id}.image.height, obj.I{BatchOpt.id}.image.width, ...
                 size(maskData,1), size(maskData,2));
-            utils.dlgs.showErrorDialog(obj.mibGUI, errorMsg, 'Dimensions mismatch');
+            utils.dlgs.showErrorDialog(obj.getProgressBarParent(), errorMsg, 'Dimensions mismatch');
             notify(obj, 'StopProtocol'); return;
         end
 
@@ -333,7 +333,7 @@ switch BatchOpt.LayerType{1}
         obj.backup('mask', 1, backupOptions);
 
         if BatchOpt.showWaitbar
-            progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0.1, ...
+            progressBar = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0.1, ...
                 'Message', 'Importing mask...', 'Title', 'Import mask');
         end
 
@@ -359,7 +359,7 @@ switch BatchOpt.LayerType{1}
         try
             varIn = evalin('base', BatchOpt.ModelVariable);
         catch exception
-            utils.dlgs.showErrorDialog(obj.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 sprintf('Variable not found in the MATLAB workspace:\n%s', exception.message), 'Missing variable');
             notify(obj, 'StopProtocol'); return;
         end

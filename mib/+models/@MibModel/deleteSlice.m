@@ -71,7 +71,7 @@ switch orientation
     case 3; BatchOpt.Dimension = {'depth'};
     case 5; BatchOpt.Dimension = {'time'};
     otherwise
-        utils.dlgs.showErrorDialog(obj.mibGUI, ...
+        utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
             sprintf('MibModel.deleteSlice: unsupported orientation %d', orientation), 'Error');
         notify(obj, 'StopProtocol');
         return;
@@ -124,7 +124,7 @@ maxSlice = obj.I{BatchOpt.id}.dim_yxzct(orientation);
 %% interactive dialog
 if nargin < 4
     dlgOpt.WindowHeight = 180;
-    answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
+    answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), ...
         sprintf('Slice/frame range: 1:%d; 0 = last', maxSlice), ...
         {'Dimension:', 'Slice index(es) to delete (e.g. 5, 7, 10:20, 0 = last):'}, ...
         {[BatchOpt.Dimension{2}, find(ismember(BatchOpt.Dimension{2}, BatchOpt.Dimension{1}), 1)], ...
@@ -133,7 +133,7 @@ if nargin < 4
     if isempty(answer); return; end
 
     if isnan(str2num(answer{2})) %#ok<ST2NM>
-        utils.dlgs.showErrorDialog(obj.mibGUI, 'Wrong number format!', 'Error');
+        utils.dlgs.showErrorDialog(obj.getProgressBarParent(), 'Wrong number format!', 'Error');
         return;
     end
 

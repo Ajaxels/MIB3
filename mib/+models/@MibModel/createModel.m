@@ -91,7 +91,7 @@ if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     header = sprintf('Models are not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again');
     dlgOpt.WindowHeight = 170;
     dlgOpt.HeaderLines = 3;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {}, {}, 'Not implemented', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {}, {}, 'Not implemented', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end
@@ -105,14 +105,14 @@ if obj.I{BatchOpt.id}.enableSelection == 0
     text = sprintf(['Please make sure that the "Enable selection" option in the Preferences dialog ' ...
         '(Ribbon->Home->Preferences) is set to "yes" and try again...']);
     dlgOpt.WindowHeight = 190;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {text}, {text}, 'Models are disabled', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {text}, {text}, 'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end
 
 % Warn if an existing model will be overwritten
 if obj.I{BatchOpt.id}.modelExist && nargin < 4
-    button = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
+    button = utils.dlgs.inputQuestDlg(obj.getProgressBarParent(), ...
         sprintf('You are about to start a new model,\nthe existing model will be deleted!'), ...
         'Start new model', 'Continue', 'Cancel', 'Cancel');
     if strcmp(button, 'Cancel'); return; end
@@ -120,7 +120,7 @@ end
 
 % Show model-type selection dialog when the type was not provided
 if isempty(ModelType) && nargin < 4
-    dlg = utils.dlgs.selectModelTypeDlg(obj.mibGUI, obj.mibPath);
+    dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath);
     drawnow;
     selectedType = dlg.run();
     if isempty(selectedType); return; end
@@ -129,7 +129,7 @@ end
 
 %%
 if BatchOpt.showWaitbar
-    wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+    wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
         'Message', 'Creating model, please wait...', ...
         'Title', 'Create model', 'Indeterminate', 'on');
 end

@@ -38,7 +38,7 @@ if nargin == 2
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, 'A structure as the 2nd parameter is required!', 'BatchOpt Error');
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), 'A structure as the 2nd parameter is required!', 'BatchOpt Error');
         end
         return;
     else
@@ -61,7 +61,7 @@ if ismember(BatchOpt.Dataset{1}, {'Synthetic 2D Large spots', 'Synthetic 2D smal
 end
 
 if BatchOpt.showWaitbar
-    wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, ...
+    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, ...
         'Message', sprintf('Importing %s dataset\nPlease wait...', BatchOpt.Dataset{1}), ...
         'Title', 'Example dataset', 'Indeterminate', 'on');
 end
@@ -202,7 +202,7 @@ switch BatchOpt.Dataset{1}
 
     case 'MATLAB Brain and model'
         if isdeployed
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 'MATLAB brain dataset is only available in MIB for MATLAB!', 'Not available');
             return;
         end

@@ -265,7 +265,7 @@ else
             dlgOpts.Icon = 'puffin_warning';
             dlgOpts.mibPath = obj.mibPath;
             dlgOpts.WindowHeight = 150;
-            utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The output format was not selected!', {}, {}, 'Missing output format', dlgOpts);
+            utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The output format was not selected!', {}, {}, 'Missing output format', dlgOpts);
             return;
         end
 

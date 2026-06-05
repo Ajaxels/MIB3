@@ -127,7 +127,7 @@ end
 if nargin < 2
     if obj.I{activeId}.modelExist || obj.I{activeId}.maskExist
         dlgOpt.Icon = 'puffin_warning';
-        button = utils.dlgs.inputQuestDlg(obj.mibGUI, ...
+        button = utils.dlgs.inputQuestDlg(obj.getProgressBarParent(), ...
             sprintf('The existing model and mask will be removed during calculation of the intensity projection!'), ...
             'Intensity projection', 'Continue', 'Cancel', 'Cancel', dlgOpt);
         if strcmp(button, 'Cancel'); return; end
@@ -147,7 +147,7 @@ if nargin < 2
     dlgOptions.mibPath = obj.mibPath;
     dlgOptions.WindowHeight = 240;
     dlgOptions.HelpUrl = fullfile(obj.mibPath, 'techdoc/html/user-interface/menu/image/image-tools-projections.html');
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, ...
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, ...
         'Intensity projection', dlgOptions);
     if isempty(answer); return; end
 
@@ -175,7 +175,7 @@ dataClass = obj.I{activeId}.image.dataClass;
 
 %% Progress bar
 if BatchOpt.showWaitbar
-    progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+    progressBar = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
         'Message', 'Generating the projection...', ...
         'Title', 'Intensity projection');
 end

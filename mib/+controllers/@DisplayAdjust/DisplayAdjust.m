@@ -212,7 +212,7 @@ classdef DisplayAdjust < handle
                 dlgOpt.Icon         = 'puffin_warning';
                 prompts = {sprintf('Indexed images cannot be adjusted!\nPlease convert to Grayscale or RGB first:\nMenu -> Image -> Mode ->')};
                 defAns  = {''};
-                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, prompts, defAns, 'Indexed colors', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), prompts, defAns, 'Indexed colors', dlgOpt);
             end
 
             % ---- register event listeners

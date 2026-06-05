@@ -8,7 +8,11 @@ classdef PoolWaitbar < handle
     %
     % MIB3 note:  Only uiprogressdlg is supported (the classic figure-based
     % waitbar is not used in MIB3).  Always supply either a UIFigure parent
-    % handle or an already-open uiprogressdlg handle.
+    % handle or an already-open uiprogressdlg handle.  For progress shown over
+    % the active dataset, pass ``obj.mibModel.getProgressBarParent()`` (or
+    % ``obj.getProgressBarParent()`` inside MibModel methods) as the parent — it
+    % returns the document window when undocked, so the bar follows the dataset
+    % across monitors, and the main MIB window otherwise.
     %
     % Requires: Parallel Computing Toolbox (parallel.pool.DataQueue).
     %
@@ -36,8 +40,8 @@ classdef PoolWaitbar < handle
     %   .. code-block:: matlab
     %
     %
-    %     % Use with docked panels in the main MIB window; parent = obj.gui.Parent (container)
-    %     pwb = core.PoolWaitbar(nItems, 'Processing...', obj.view.gui, 'My Task', true);
+    %     % Parent to the active image document so the bar follows it when undocked
+    %     pwb = core.PoolWaitbar(nItems, 'Processing...', obj.mibModel.getProgressBarParent(), 'My Task', true);
     %     for ii = 1:nItems
     %         % ... process item ...
     %           if ~isempty(pwb)
@@ -126,8 +130,11 @@ classdef PoolWaitbar < handle
             %     default 'Please wait...'
             %   - **parentOrHandle** — *(optional)* either:
             %
-            %     - ``matlab.ui.Figure`` — parent UIFigure; a new ``uiprogressdlg``
-            %       is created automatically
+            %     - ``matlab.ui.Figure`` / ``matlab.ui.container.internal.AppContainer`` —
+            %       parent window; a new ``uiprogressdlg`` is created automatically.
+            %       Prefer ``obj.mibModel.getProgressBarParent()`` (or
+            %       ``obj.getProgressBarParent()`` inside MibModel methods) so the bar
+            %       follows the active dataset window when it is undocked
             %     - ``matlab.ui.dialog.ProgressDialog`` — existing dialog to
             %       reuse (its Value is reset to 0 and Message/Title updated)
             %     - ``[]`` — error; a parent is required in MIB3
@@ -145,7 +152,7 @@ classdef PoolWaitbar < handle
             %   .. code-block:: matlab
             %
             %
-            %     pwb = core.PoolWaitbar(200, 'Eroding...', obj.mibModel.mibGUI, 'Erode');
+            %     pwb = core.PoolWaitbar(200, 'Eroding...', obj.mibModel.getProgressBarParent(), 'Erode');
             %
             %   **Example 2** — Reuse an open dialog
             %

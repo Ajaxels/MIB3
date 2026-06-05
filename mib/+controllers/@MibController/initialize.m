@@ -42,6 +42,7 @@ obj.matlabVersion = obj.mibModel.matlabVersion;
 %% ----------------- INIT THE MAIN VIEW -----------------
 obj.view = views.MibView(obj);
 obj.mibModel.mibGUI = obj.view.gui;
+obj.mibModel.mibController = obj;   % back-reference, used by MibModel.getProgressBarParent to reach the active document
 % --- create controller for panels and add view into them
 obj.addGuiControllers();
 
@@ -130,7 +131,7 @@ if currentDate - obj.mibModel.preferences.System.Update.SinceLastCheck > ...
     end
     mibVersionNumeric = utils.getMibVersionNumberic(obj.mibModel.mibVersion);
     if availableVersion - mibVersionNumeric > 0
-        answer = utils.dlgs.inputQuestDlg(obj.mibModel.mibGUI, ...
+        answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
             sprintf('A new version %g of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later via Help \x2192 Check for Update.', availableVersion), ...
             'New version available', 'Update now', 'Later', 'Update now');
         if strcmp(answer, 'Update now')

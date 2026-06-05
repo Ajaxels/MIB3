@@ -66,7 +66,7 @@ switch orientation
     case 2; BatchOpt.Dimension = {'width'};
     case 3; BatchOpt.Dimension = {'depth'};
     otherwise
-        utils.dlgs.showErrorDialog(obj.mibGUI, ...
+        utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
             sprintf('MibModel.resliceDataset: unsupported orientation %d', orientation), 'Error');
         notify(obj, 'StopProtocol');
         return;
@@ -115,7 +115,7 @@ maxSlice = obj.I{BatchOpt.id}.dim_yxzct(orientation);
 if nargin < 4
     dlgOpt.WindowHeight = 212;
     dlgOpt.HeaderLines = 2;
-    answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
+    answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), ...
         sprintf('Slice range: 1:%d\n(all others will be deleted)', maxSlice), ...
         {'Dimension:', 'Slice index(es) to keep (e.g. 1, 5, 10, 20:30, 50:5:end):'}, ...
         {[BatchOpt.Dimension{2}, find(ismember(BatchOpt.Dimension{2}, BatchOpt.Dimension{1}), 1)], ...
@@ -132,7 +132,7 @@ sliceStr = strrep(BatchOpt.SliceNumbers, 'end', num2str(maxSlice));
 keepSlices = str2num(sliceStr); %#ok<ST2NM>
 
 if isempty(keepSlices)
-    utils.dlgs.showErrorDialog(obj.mibGUI, 'Wrong slice number format!', 'Error');
+    utils.dlgs.showErrorDialog(obj.getProgressBarParent(), 'Wrong slice number format!', 'Error');
     return;
 end
 

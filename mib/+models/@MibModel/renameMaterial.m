@@ -110,7 +110,7 @@ if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.Icon        = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 160;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The models are switched off!', {''}, ...
         {'Please make sure that the "Enable selection" option in the Preferences dialog (Ribbon->Home->Preferences) is set to "yes" and try again...'}, ...
         'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -121,7 +121,7 @@ if ~obj.I{BatchOpt.id}.modelExist
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'No model exists!', {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'No model exists!', {''}, ...
         {'Please create a model first (Ribbon -> Models -> New Model).'}, ...
         'No model', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -144,7 +144,7 @@ if nargin < 2
         defAns = {obj.I{id}.labels.materialNames{materialIndex}};
         dlgOpt.PromptLines = 3;
     end
-    answer = utils.dlgs.inputSingleDlg(obj.mibGUI, prompts, defAns, 'Rename material', dlgOpt);
+    answer = utils.dlgs.inputSingleDlg(obj.getProgressBarParent(), prompts, defAns, 'Rename material', dlgOpt);
     if isempty(answer); return; end
     BatchOpt.MaterialName = answer;
 end

@@ -78,7 +78,7 @@ if nargin == 3  % batch mode
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, sprintf('A structure as the 2nd parameter is required!'), 'Error');
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), sprintf('A structure as the 2nd parameter is required!'), 'Error');
         end
         return;
     else
@@ -90,7 +90,7 @@ if nargin == 3  % batch mode
         dlgOpt.MsgBoxOnly = true;
         header = sprintf('"%s" mode is not available in the batch processing mode!', BatchOpt.Method{1});
         dlgOpt.HeaderLines = 2;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Error', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Error', dlgOpt);
         return;
     end
 end
@@ -105,7 +105,7 @@ if strcmp(dataset.datasetType, 'Virtual')
     dlgOpt.Icon = 'puffin_warning';
     header = sprintf('The %s not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again', toolname);
     dlgOpt.HeaderLines = 3;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Not implemented', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Not implemented', dlgOpt);
     return;
 end
 
@@ -133,7 +133,7 @@ switch BatchOpt.Method{1}
                 dlgOpt.Icon = 'puffin_warning';
                 header = sprintf('Please create the Model and add there a material first!\n\nPress the "+" in the Segmentation panel');
                 dlgOpt.HeaderLines = 3;
-                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'The model is missing!', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'The model is missing!', dlgOpt);
                 return;
             end
             if dataset.selectedMaterial < 2; return; end
@@ -146,7 +146,7 @@ if isempty(obj.mibModel.pythonEnv)
     status = obj.segmentationSAM_requirements();
     if ~status; return; end
     if BatchOpt.showWaitbar
-        wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, 'Message', ...
+        wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
             sprintf('Initializing Python environment\n%s\nPlease wait...', obj.mibModel.preferences.SegmTools.SAM1.backbone), ...
             'Title', 'SAM segmentation');
     end
@@ -255,7 +255,7 @@ if strcmp(BatchOpt.Method{1}, 'Interactive') && ~obj.mibModel.preferences.SegmTo
     localWaitbar = false;
 end
 
-if localWaitbar; wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, 'Message', sprintf('%s\nPlease wait...', BatchOpt.Method{1}), 'Title', 'Segment anything'); end
+if localWaitbar; wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', sprintf('%s\nPlease wait...', BatchOpt.Method{1}), 'Title', 'Segment anything'); end
 
 currViewPort = dataset.image.viewPort;
 max_int = double(dataset.image.maxInt);
@@ -325,7 +325,7 @@ try
                 dlgOpt.MsgBoxOnly = true;
                 header = sprintf('Segmentation using segment-everything model is only available for grayscale and RGB images\nFor multi-channel images select a single channel in the Colors table and try again!');
                 dlgOpt.HeaderLines = 3;
-                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'SAM segmentation error', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'SAM segmentation error', dlgOpt);
                 if localWaitbar; close(wb); end
                 return;
             end
@@ -439,7 +439,7 @@ try
         end
     end
 catch err
-    utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, err, 'Problem', '', ...
+    utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), err, 'Problem', '', ...
         'You might be running out of GPU memory; try to decrease "Set the number of points run simultaneously by the model in SAM settings"');
     if localWaitbar; close(wb); end
     return;

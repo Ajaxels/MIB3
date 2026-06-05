@@ -18,6 +18,8 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 % Input Arguments:
 %   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to center the dialog. Pass ``[]`` to use the cached handle from a prior call.
+%     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
+%     active dataset window when it is undocked.
 %     To supply the MIB installation path use ``options.mibPath``.
 %   - **question** — [char|string|cell] question text; when cell, lines are joined with ``\n``.
 %   - **options** *(optional)* — structure with the following fields:

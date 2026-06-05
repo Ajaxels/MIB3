@@ -29,7 +29,7 @@ if strcmp(obj.mibModel.I{activeId}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, ...
+    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
         '!!! Warning !!!', {''}, ...
         {sprintf('This action is not yet available in the virtual stacking mode.\nPlease switch to the memory-resident mode and try again')}, ...
         'Not implemented', dlgOpt);
@@ -48,7 +48,7 @@ switch parameter
 
     case 'paste'
         if isempty(obj.mibModel.storedSelection)
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, 'The selection buffer is empty!', 'Error!');
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), 'The selection buffer is empty!', 'Error!');
             return;
         end
         
@@ -61,14 +61,14 @@ switch parameter
             obj.mibModel.setData2D(bitor(obj.mibModel.storedSelection, currentSelection), 'selection', [], [], NaN, options);
             notify(obj.mibModel, 'ShowImage');
         else
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 sprintf('The size of the buffered and current selections mismatch!\nTry to change the orientation of the dataset...'), ...
                 'Error!');
         end
 
     case 'pasteall'
         if isempty(obj.mibModel.storedSelection)
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, 'The selection buffer is empty!', 'Error!');
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), 'The selection buffer is empty!', 'Error!');
             return;
         end
         currentSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], NaN, options));
@@ -76,7 +76,7 @@ switch parameter
             depth = obj.mibModel.I{activeId}.image.depth;
             backupOptions.id = activeId;
             obj.mibModel.backup('selection', 1, backupOptions);
-            progressBar = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, ...
+            progressBar = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, ...
                 'Message', 'Pasting selection to layers...', ...
                 'Title', 'Paste selection');
             tic
@@ -89,7 +89,7 @@ switch parameter
             delete(progressBar);
             notify(obj.mibModel, 'ShowImage');
         else
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 sprintf('The size of the buffered and current selections mismatch!\nTry to change the orientation of the dataset...'), ...
                 'Error!');
         end

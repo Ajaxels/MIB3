@@ -27,11 +27,14 @@ classdef MibModel < handle
         % index of the selected dataset
         matlabVersion
         % version of Matlab
+        mibController
+        % handle to controllers.MibController, used to reach the active image
+        % document (cImageDoc) when parenting progress dialogs (getProgressBarParent)
         mibGUI
         % handle to the main MIB window, to be used in child controllers to
         % align them relative to the main window (utils.moveWindowOutside)
         % place
-        mibPath 
+        mibPath
         % path to MIB installation directory also available in MibController
         mibVersion
         % char with the current version of MIB
@@ -147,6 +150,7 @@ classdef MibModel < handle
         exportDatasetToMib(obj, layerType, BatchOptIn)           % copy mask or model layer to another MIB container
         fillSelectionOrMask(obj, targetLayer, BatchOptIn)   % fill holes in the selection or mask layer (2D/3D/4D scope, sequential or parallel)
         id = getActiveId(obj)        % compute the correct dataset index from Sets.selectedSet (immune to mouse-motion corruption of obj.id)
+        parentFig = getProgressBarParent(obj)   % parent figure for progress dialogs: active document window when undocked, else main GUI
         [axesX, axesY] = getAxesLimits(obj, id)        % get axes limits for the currently shown or id dataset
         dataset = getData2D(obj, type, slice_no, orient, col_channel, options)        % get a 2D slice from the current dataset; wrapper around core.MibDataset.getData2D
         dataset = getData3D(obj, type, time, orient, col_channel, options)        % get a 3D dataset from the current dataset; wrapper around core.MibDataset.getData3D

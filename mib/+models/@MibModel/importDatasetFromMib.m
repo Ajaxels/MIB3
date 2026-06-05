@@ -62,7 +62,7 @@ if strcmp(obj.I{activeId}.datasetType, 'Virtual')
     dlgOpt.Icon = 'puffin_error';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 190;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Not implemented!', {''}, {warningBody}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'Not implemented!', {''}, {warningBody}, ...
         'MibModel.importDatasetFromMib: Ops!!!', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
@@ -74,7 +74,7 @@ if obj.I{activeId}.enableSelection == 0
     dlgOpt.Icon = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 180;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The selection layers are switched off!', {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The selection layers are switched off!', {''}, ...
         {sprintf('Make sure that the "Enable selection" option in the Preferences dialog:\nRibbon -> Home -> Preferences\nis set to "yes" and try again...')}, ...
         'Selection layers disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -131,7 +131,7 @@ if nargin < 3
     dlgOptions.mibPath       = obj.mibPath;
     dlgOptions.LabelPosition = 'left';
     dlgOptions.Focus         = 2;
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, ...
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, ...
         'Import from MIB container', dlgOptions);
     if isempty(answer); return; end
 
@@ -169,7 +169,7 @@ destId   = BatchOpt.id;
 
 %% Same-container guard
 if sourceId == destId
-    utils.dlgs.showErrorDialog(obj.mibGUI, ...
+    utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
         'Source and destination containers are the same!', 'Wrong container');
     notify(obj, 'StopProtocol'); return;
 end
@@ -178,13 +178,13 @@ end
 switch BatchOpt.LayerType{1}
     case 'mask'
         if ~obj.I{sourceId}.maskExist
-            utils.dlgs.showErrorDialog(obj.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 sprintf('Mask layer not found in container %d!', sourceId), 'Missing mask');
             notify(obj, 'StopProtocol'); return;
         end
     case 'model'
         if ~obj.I{sourceId}.modelExist
-            utils.dlgs.showErrorDialog(obj.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.getProgressBarParent(), ...
                 sprintf('Model not found in container %d!', sourceId), 'Missing model');
             notify(obj, 'StopProtocol'); return;
         end
@@ -202,7 +202,7 @@ if obj.I{sourceId}.image.height ~= obj.I{destId}.image.height || ...
         obj.I{sourceId}.image.depth,  obj.I{sourceId}.image.time, ...
         obj.I{destId}.image.height,   obj.I{destId}.image.width, ...
         obj.I{destId}.image.depth,    obj.I{destId}.image.time);
-    utils.dlgs.showErrorDialog(obj.mibGUI, errorMsg, 'Wrong dimensions');
+    utils.dlgs.showErrorDialog(obj.getProgressBarParent(), errorMsg, 'Wrong dimensions');
     notify(obj, 'StopProtocol');
     return;
 end
@@ -217,7 +217,7 @@ end
 
 %% Progress bar
 if BatchOpt.showWaitbar
-    progressBar = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+    progressBar = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
         'Message', sprintf('Importing the %s...', BatchOpt.LayerType{1}), ...
         'Title', 'Import from MIB container');
 end

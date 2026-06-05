@@ -12,6 +12,8 @@ function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
 % Input Arguments:
 %   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to center the dialog. Pass ``[]`` to use the cached handle from a prior call.
+%     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
+%     active dataset window when it is undocked.
 %     To supply the MIB installation path use ``options.mibPath``.
 %   - **userPrefs** — struct — ``mibModel.preferences.Users`` (provides tier data and stats)
 %   - **mode** — [char] display mode:

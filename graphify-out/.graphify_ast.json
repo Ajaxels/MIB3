@@ -806,6 +806,139 @@
       "source_location": "L1"
     },
     {
+      "id": "controllers_membranepixclassifier_addcallbacks_m",
+      "label": "addCallbacks.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_classifierfilenamebtn_callback_m",
+      "label": "classifierFilenameBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\classifierFilenameBtn_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_classifierfilenameedit_callback_m",
+      "label": "classifierFilenameEdit_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\classifierFilenameEdit_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_closewindow_m",
+      "label": "closeWindow.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\closeWindow.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_keypresscallback_m",
+      "label": "keyPressCallback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\keyPressCallback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "label": "MembranePixClassifier.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_modetoggle_callback_m",
+      "label": "modeToggle_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\modeToggle_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_predictdataset_m",
+      "label": "predictDataset.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\predictDataset.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_predictslice_callback_m",
+      "label": "predictSlice_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\predictSlice_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_returnbatchopt_m",
+      "label": "returnBatchOpt.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\returnBatchOpt.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_saveclassifierbtn_callback_m",
+      "label": "saveClassifierBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\saveClassifierBtn_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_tempdiredit_callback_m",
+      "label": "tempDirEdit_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\tempDirEdit_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_tempdirselectbtn_callback_m",
+      "label": "tempDirSelectBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\tempDirSelectBtn_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_trainclassifier_m",
+      "label": "trainClassifier.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\trainClassifier.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_trainclassifierbtn_callback_m",
+      "label": "trainClassifierBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\trainClassifierBtn_Callback.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_updatebatchoptfromgui_m",
+      "label": "updateBatchOptFromGUI.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\updateBatchOptFromGUI.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_updateloglist_m",
+      "label": "updateLoglist.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\updateLoglist.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_updatewidgets_m",
+      "label": "updateWidgets.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\updateWidgets.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_membranepixclassifier_wipetempdirbtn_callback_m",
+      "label": "wipeTempDirBtn_Callback.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\wipeTempDirBtn_Callback.m",
+      "source_location": "L1"
+    },
+    {
       "id": "controllers_mibactivedataset_buffers_callback_m",
       "label": "buffers_Callback.m",
       "file_type": "code",
@@ -1646,6 +1779,62 @@
       "source_location": "L1"
     },
     {
+      "id": "controllers_mibfijiconnect_exporttofiji_m",
+      "label": "exportToFiji.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\exportToFiji.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibfijiconnect_gui_callbacks_m",
+      "label": "gui_Callbacks.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\gui_Callbacks.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibfijiconnect_importfromfiji_m",
+      "label": "importFromFiji.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\importFromFiji.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibfijiconnect_listener_updatepanelposition_m",
+      "label": "listener_updatePanelPosition.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\listener_updatePanelPosition.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "label": "MibFijiConnect.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibfijiconnect_runmacro_m",
+      "label": "runMacro.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\runMacro.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibimagedocument_axescenterpointerlocation_m",
+      "label": "axesCenterPointerLocation.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibImageDocument\\axesCenterPointerLocation.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibimagedocument_centercursorinaxes_m",
+      "label": "centerCursorInAxes.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibImageDocument\\centerCursorInAxes.m",
+      "source_location": "L1"
+    },
+    {
       "id": "controllers_mibimagedocument_clearquickmeasure_m",
       "label": "clearQuickMeasure.m",
       "file_type": "code",
@@ -2206,6 +2395,13 @@
       "source_location": "L1"
     },
     {
+      "id": "controllers_mibroi_roitoselection_m",
+      "label": "roiToSelection.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibRoi\\roiToSelection.m",
+      "source_location": "L1"
+    },
+    {
       "id": "controllers_mibroi_updateplacementline_m",
       "label": "updatePlacementLine.m",
       "file_type": "code",
@@ -2371,6 +2567,13 @@
       "label": "thresholdSlider_ContextMenu.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibSegmentation\\thresholdSlider_ContextMenu.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_mibsegmentation_updatecheckboxes_m",
+      "label": "updateCheckboxes.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
       "source_location": "L1"
     },
     {
@@ -2819,6 +3022,13 @@
       "label": "Stereology.m",
       "file_type": "code",
       "source_file": "+controllers\\@Stereology\\Stereology.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_m",
+      "label": "UpdateCheck.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
       "source_location": "L1"
     },
     {
@@ -4180,20 +4390,6 @@
       "source_location": "L1"
     },
     {
-      "id": "io_fiji_miji_deploy_m",
-      "label": "Miji_deploy.m",
-      "file_type": "code",
-      "source_file": "+io\\+Fiji\\Miji_deploy.m",
-      "source_location": "L1"
-    },
-    {
-      "id": "io_fiji_miji_wrapper_m",
-      "label": "Miji_wrapper.m",
-      "file_type": "code",
-      "source_file": "+io\\+Fiji\\Miji_wrapper.m",
-      "source_location": "L1"
-    },
-    {
       "id": "io_hdf5_image2hdf5_m",
       "label": "image2hdf5.m",
       "file_type": "code",
@@ -4621,6 +4817,13 @@
       "source_location": "L1"
     },
     {
+      "id": "models_mibmodel_expandselectiontomaskborder_m",
+      "label": "expandSelectionToMaskBorder.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": "L1"
+    },
+    {
       "id": "models_mibmodel_exportdataset_m",
       "label": "exportDataset.m",
       "file_type": "code",
@@ -4702,6 +4905,13 @@
       "label": "getMagFactor.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\getMagFactor.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "models_mibmodel_getprogressbarparent_m",
+      "label": "getProgressBarParent.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\getProgressBarParent.m",
       "source_location": "L1"
     },
     {
@@ -5062,6 +5272,13 @@
       "source_location": "L1"
     },
     {
+      "id": "utils_identifycomputername_m",
+      "label": "identifyComputerName.m",
+      "file_type": "code",
+      "source_file": "+utils\\identifyComputerName.m",
+      "source_location": "L1"
+    },
+    {
       "id": "utils_imageprofileintegrate_m",
       "label": "imageProfileIntegrate.m",
       "file_type": "code",
@@ -5129,13 +5346,6 @@
       "label": "removeSaltAndPepperNoise.m",
       "file_type": "code",
       "source_file": "+utils\\removeSaltAndPepperNoise.m",
-      "source_location": "L1"
-    },
-    {
-      "id": "utils_rendervolumewithfiji_m",
-      "label": "renderVolumeWithFiji.m",
-      "file_type": "code",
-      "source_file": "+utils\\renderVolumeWithFiji.m",
       "source_location": "L1"
     },
     {
@@ -5384,6 +5594,48 @@
       "source_location": "L1"
     },
     {
+      "id": "utils_fiji_miji_deploy_m",
+      "label": "Miji_deploy.m",
+      "file_type": "code",
+      "source_file": "+utils\\+fiji\\Miji_deploy.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "utils_fiji_miji_wrapper_m",
+      "label": "Miji_wrapper.m",
+      "file_type": "code",
+      "source_file": "+utils\\+fiji\\Miji_wrapper.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "utils_fiji_rendermodelwithfiji_m",
+      "label": "renderModelWithFiji.m",
+      "file_type": "code",
+      "source_file": "+utils\\+fiji\\renderModelWithFiji.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "utils_fiji_rendervolumewithfiji_m",
+      "label": "renderVolumeWithFiji.m",
+      "file_type": "code",
+      "source_file": "+utils\\+fiji\\renderVolumeWithFiji.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "utils_fiji_startfiji_m",
+      "label": "startFiji.m",
+      "file_type": "code",
+      "source_file": "+utils\\+fiji\\startFiji.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "utils_fiji_stopfiji_m",
+      "label": "stopFiji.m",
+      "file_type": "code",
+      "source_file": "+utils\\+fiji\\stopFiji.m",
+      "source_location": "L1"
+    },
+    {
       "id": "views_mibview_addactivedatasetpanel_m",
       "label": "addActiveDatasetPanel.m",
       "file_type": "code",
@@ -5395,6 +5647,13 @@
       "label": "addDirContentsPanel.m",
       "file_type": "code",
       "source_file": "+views\\@MibView\\addDirContentsPanel.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_mibview_addfijiconnectpanel_m",
+      "label": "addFijiConnectPanel.m",
+      "file_type": "code",
+      "source_file": "+views\\@MibView\\addFijiConnectPanel.m",
       "source_location": "L1"
     },
     {
@@ -5563,6 +5822,27 @@
       "label": "MultiRenameTool.m",
       "file_type": "code",
       "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_mibconnectpoints_m",
+      "label": "mibConnectPoints.m",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\mibConnectPoints.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_mibfindmatchingpairs_m",
+      "label": "mibFindMatchingPairs.m",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\mibFindMatchingPairs.m",
+      "source_location": "L1"
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "label": "TripleAreaIntensity.m",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
       "source_location": "L1"
     },
     {
@@ -9374,6 +9654,28 @@
       "contributor": null
     },
     {
+      "id": "controllers_membranepixclassifier_membranepixclassifier_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_membranepixclassifier_membranepixclassifier_membranepixclassifier",
+      "label": "MembranePixClassifier",
+      "file_type": "code",
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibactivedataset_mibactivedataset_mibactivedataset",
       "label": "MibActiveDataset",
       "file_type": "code",
@@ -9444,6 +9746,17 @@
       "label": "MibDirContents",
       "file_type": "code",
       "source_file": "+controllers\\@MibDirContents\\MibDirContents.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibfijiconnect_mibfijiconnect_mibfijiconnect",
+      "label": "MibFijiConnect",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -11446,6 +11759,83 @@
       "label": "doStereologyBtn_Callback",
       "file_type": "code",
       "source_file": "+controllers\\@Stereology\\Stereology.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_updatecheck",
+      "label": "UpdateCheck",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_downloadbtn_callback",
+      "label": "downloadBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_updatebtn_callback",
+      "label": "updateBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_recheckperiodspinner_callback",
+      "label": "recheckPeriodSpinner_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_updatecheck_updatecheck_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -19318,6 +19708,138 @@
       "contributor": null
     },
     {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_viewlistner_callback2",
+      "label": "ViewListner_Callback2",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_tripleareaintensity",
+      "label": "TripleAreaIntensity",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_closewindow",
+      "label": "closeWindow",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_addcallbacks",
+      "label": "addCallbacks",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_updatewidgets",
+      "label": "updateWidgets",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_exportmatlabcheck_callback",
+      "label": "exportMatlabCheck_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_savetoexcel_callback",
+      "label": "savetoExcel_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_selectfilenamebtn_callback",
+      "label": "selectFilenameBtn_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_backgroundcheck_callback",
+      "label": "backgroundCheck_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_additionalthresholdingcheck_callback",
+      "label": "additionalThresholdingCheck_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_helpbtn_callback",
+      "label": "helpBtn_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_continuebtn_callback",
+      "label": "continueBtn_Callback",
+      "file_type": "code",
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_viewlistner_callback2",
       "label": "ViewListner_Callback2",
       "file_type": "code",
@@ -24158,6 +24680,206 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_addcallbacks_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_classifierfilenamebtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_classifierfilenameedit_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_closewindow_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_keypresscallback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_modetoggle_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_predictdataset_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_predictslice_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_returnbatchopt_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_saveclassifierbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_tempdiredit_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_tempdirselectbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_trainclassifier_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_trainclassifierbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_updatebatchoptfromgui_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_updateloglist_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_updatewidgets_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_wipetempdirbtn_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_membranepixclassifier_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "controllers_membranepixclassifier_membranepixclassifier_membranepixclassifier",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibactivedataset_mibactivedataset_m",
       "target": "controllers_mibactivedataset_buffers_callback_m",
       "relation": "contains",
@@ -25388,6 +26110,86 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "controllers_mibfijiconnect_exporttofiji_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "controllers_mibfijiconnect_gui_callbacks_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "controllers_mibfijiconnect_importfromfiji_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "controllers_mibfijiconnect_listener_updatepanelposition_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "controllers_mibfijiconnect_runmacro_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "controllers_mibfijiconnect_mibfijiconnect_mibfijiconnect",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_mibimagedocument_m",
+      "target": "controllers_mibimagedocument_axescenterpointerlocation_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\MibImageDocument.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_mibimagedocument_m",
+      "target": "controllers_mibimagedocument_centercursorinaxes_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\MibImageDocument.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_mibimagedocument_m",
       "target": "controllers_mibimagedocument_clearquickmeasure_m",
       "relation": "contains",
@@ -26249,6 +27051,16 @@
     },
     {
       "source": "controllers_mibroi_mibroi_m",
+      "target": "controllers_mibroi_roitoselection_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRoi\\MibRoi.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibroi_mibroi_m",
       "target": "controllers_mibroi_updateplacementline_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -26490,6 +27302,16 @@
     {
       "source": "controllers_mibsegmentation_mibsegmentation_m",
       "target": "controllers_mibsegmentation_update_frommodel_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\MibSegmentation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_mibsegmentation_m",
+      "target": "controllers_mibsegmentation_updatecheckboxes_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -28704,6 +29526,76 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@Stereology\\Stereology.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_updatecheck",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_downloadbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_updatebtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_recheckperiodspinner_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "controllers_updatecheck_updatecheck_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -31969,6 +32861,16 @@
     },
     {
       "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_expandselectiontomaskborder_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_exportdataset_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -32080,6 +32982,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_getmagfactor_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -32420,6 +33332,16 @@
     {
       "source": "views_mibview_mibview_m",
       "target": "views_mibview_adddircontentspanel_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+views\\@MibView\\MibView.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_mibview_mibview_m",
+      "target": "views_mibview_addfijiconnectpanel_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -37868,6 +38790,126 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_viewlistner_callback2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_tripleareaintensity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_closewindow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_addcallbacks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_updatewidgets",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_exportmatlabcheck_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_savetoexcel_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_selectfilenamebtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_backgroundcheck_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_additionalthresholdingcheck_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_helpbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_continuebtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_m",
       "target": "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_viewlistner_callback2",
       "relation": "contains",
@@ -40658,6 +41700,246 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_closewindow_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_keypresscallback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_trainclassifierbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_predictslice_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_saveclassifierbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_wipetempdirbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_tempdirselectbtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_classifierfilenamebtn_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_tempdiredit_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_classifierfilenameedit_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_updatebatchoptfromgui_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_addcallbacks_m",
+      "target": "controllers_membranepixclassifier_modetoggle_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\addCallbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_classifierfilenamebtn_callback_m",
+      "target": "controllers_membranepixclassifier_classifierfilenameedit_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\classifierFilenameBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_keypresscallback_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MembranePixClassifier\\keyPressCallback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_predictdataset_m",
+      "target": "controllers_membranepixclassifier_updateloglist_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\predictDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_predictslice_callback_m",
+      "target": "controllers_membranepixclassifier_predictdataset_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\predictSlice_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_returnbatchopt_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MembranePixClassifier\\returnBatchOpt.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_saveclassifierbtn_callback_m",
+      "target": "controllers_membranepixclassifier_updateloglist_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\saveClassifierBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_tempdirselectbtn_callback_m",
+      "target": "controllers_membranepixclassifier_tempdiredit_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\tempDirSelectBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_trainclassifier_m",
+      "target": "controllers_membranepixclassifier_updateloglist_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\trainClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_trainclassifierbtn_callback_m",
+      "target": "controllers_membranepixclassifier_trainclassifier_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\trainClassifierBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_trainclassifierbtn_callback_m",
+      "target": "controllers_membranepixclassifier_predictdataset_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\trainClassifierBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_wipetempdirbtn_callback_m",
+      "target": "controllers_membranepixclassifier_updateloglist_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MembranePixClassifier\\wipeTempDirBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibactivedataset_buffers_contextmenu_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -40780,6 +42062,16 @@
     {
       "source": "controllers_mibcontroller_addguicontrollers_m",
       "target": "controllers_mibroi_mibroi_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibController\\addGuiControllers.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_addguicontrollers_m",
+      "target": "controllers_mibfijiconnect_mibfijiconnect_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -41898,6 +43190,56 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibfijiconnect_gui_callbacks_m",
+      "target": "controllers_mibfijiconnect_exporttofiji_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibFijiConnect\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_gui_callbacks_m",
+      "target": "controllers_mibfijiconnect_importfromfiji_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibFijiConnect\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_gui_callbacks_m",
+      "target": "controllers_mibfijiconnect_runmacro_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibFijiConnect\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_mibfijiconnect_m",
+      "target": "views_mibview_mibview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibFijiConnect\\MibFijiConnect.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_centercursorinaxes_m",
+      "target": "controllers_mibimagedocument_axescenterpointerlocation_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibImageDocument\\centerCursorInAxes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_framenumber_callback_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -42030,6 +43372,16 @@
     {
       "source": "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
       "target": "controllers_mibimagedocument_segmentationlines3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibImageDocument\\gui_WindowButtonDownFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_gui_windowbuttondownfcn_m",
+      "target": "controllers_mibimagedocument_centercursorinaxes_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -42818,6 +44170,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibroi_gui_callbacks_m",
+      "target": "controllers_mibroi_roitoselection_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibRoi\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibroi_mibroi_m",
       "target": "views_mibview_mibview_m",
       "relation": "calls",
@@ -42944,6 +44306,56 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibSegmentation\\samPanel_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "controllers_mibsegmentation_restrictmaterial_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "controllers_mibsegmentation_restrictmask_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "controllers_mibsegmentation_brushpanel_callback_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "controllers_mibsegmentation_updatematerialstable_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -43904,6 +45316,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+controllers\\@Stereology\\Stereology.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45048,6 +46470,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_addmaterial_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\addMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_backup_m",
       "target": "models_mibmodel_getactiveid_m",
       "relation": "calls",
@@ -45099,6 +46531,16 @@
     },
     {
       "source": "models_mibmodel_changeimagemode_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\changeImageMode.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_changeimagemode_m",
       "target": "models_mibmodel_backup_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -45138,6 +46580,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_clearlayer_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\clearLayer.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_clearmask_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -45150,6 +46602,16 @@
     {
       "source": "models_mibmodel_clearmask_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\clearMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_clearmask_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45180,6 +46642,16 @@
     {
       "source": "models_mibmodel_clearselection_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\clearSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_clearselection_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45210,6 +46682,16 @@
     {
       "source": "models_mibmodel_colorchannelactions_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\colorChannelActions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_colorchannelactions_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45278,6 +46760,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_convertmodel_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\convertModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_convertmousetodatacoordinates_m",
       "target": "models_mibmodel_getmagfactor_m",
       "relation": "calls",
@@ -45319,6 +46811,16 @@
     },
     {
       "source": "models_mibmodel_copyswapslice_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\copySwapSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_copyswapslice_m",
       "target": "models_mibmodel_getdata2d_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -45350,6 +46852,16 @@
     {
       "source": "models_mibmodel_createmodel_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\createModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_createmodel_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45428,6 +46940,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_deleteslice_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\deleteSlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_dilateimage_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -45460,6 +46982,16 @@
     {
       "source": "models_mibmodel_dilateimage_m",
       "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\dilateImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_dilateimage_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45529,6 +47061,16 @@
     },
     {
       "source": "models_mibmodel_erodeimage_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\erodeImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_erodeimage_m",
       "target": "models_mibmodel_getdata3d_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -45544,6 +47086,56 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\erodeImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "models_mibmodel_getdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45560,6 +47152,16 @@
     {
       "source": "models_mibmodel_exportdataset_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\exportDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_exportdataset_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45598,6 +47200,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_exportdatasettoimaris_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\exportDatasetToImaris.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_exportdatasettomib_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -45610,6 +47222,16 @@
     {
       "source": "models_mibmodel_exportdatasettomib_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\exportDatasetToMib.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_exportdatasettomib_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45660,6 +47282,16 @@
     {
       "source": "models_mibmodel_fillselectionormask_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\fillSelectionOrMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_fillselectionormask_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45729,6 +47361,16 @@
     },
     {
       "source": "models_mibmodel_importdataset_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importdataset_m",
       "target": "models_mibmodel_backup_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -45780,6 +47422,16 @@
     {
       "source": "models_mibmodel_importdatasetfrommib_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importDatasetFromMib.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importdatasetfrommib_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45868,6 +47520,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_insertemptyslice_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\insertEmptySlice.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_intensityprojection_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -45890,6 +47552,16 @@
     {
       "source": "models_mibmodel_intensityprojection_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\intensityProjection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_intensityprojection_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -45939,6 +47611,16 @@
     },
     {
       "source": "models_mibmodel_interpolateimage_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\interpolateImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_interpolateimage_m",
       "target": "models_mibmodel_getdata3d_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -45979,6 +47661,16 @@
     },
     {
       "source": "models_mibmodel_invertimage_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\invertImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_invertimage_m",
       "target": "models_mibmodel_backup_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -46010,6 +47702,16 @@
     {
       "source": "models_mibmodel_invertmask_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\invertMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_invertmask_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46098,6 +47800,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_loadimages_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\loadImages.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_loadmask_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -46118,6 +47830,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_loadmask_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_loadmodel_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -46130,6 +47852,16 @@
     {
       "source": "models_mibmodel_loadmodel_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\loadModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmodel_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46150,6 +47882,16 @@
     {
       "source": "models_mibmodel_materialsactions_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\materialsActions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_materialsactions_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46229,6 +47971,16 @@
     },
     {
       "source": "models_mibmodel_movelayers_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\moveLayers.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_movelayers_m",
       "target": "models_mibmodel_backup_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -46250,6 +48002,16 @@
     {
       "source": "models_mibmodel_removematerial_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\removeMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_removematerial_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46288,6 +48050,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_renamematerial_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\renameMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_replacemaskedarea_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -46300,6 +48072,16 @@
     {
       "source": "models_mibmodel_replacemaskedarea_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\replaceMaskedArea.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_replacemaskedarea_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46348,6 +48130,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_reslicedataset_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\resliceDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_saveimage_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -46360,6 +48152,16 @@
     {
       "source": "models_mibmodel_saveimage_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\saveImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_saveimage_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46418,6 +48220,16 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_setdefaultcolorpalette_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\setDefaultColorPalette.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_smoothimage_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
@@ -46430,6 +48242,16 @@
     {
       "source": "models_mibmodel_smoothimage_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\smoothImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_smoothimage_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -46480,6 +48302,16 @@
     {
       "source": "models_mibmodel_transformdataset_m",
       "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\transformDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_transformdataset_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -47098,6 +48930,16 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "core_childview_childview_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_organelleanalysis_surfacemeasurements_surfacemeasurements_m",
       "target": "core_childview_childview_m",
       "relation": "calls",
@@ -47184,6 +49026,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "plugins\\Tutorials\\PluginWithoutGUI\\PluginWithoutGUI.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_about_about_m",
+      "target": "utils_identifycomputername_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@About\\About.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -49638,6 +51490,126 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "utils_updateguifrombatchopt_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_membranepixclassifier_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\MembranePixClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_predictdataset_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\predictDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_saveclassifierbtn_callback_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\saveClassifierBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_saveclassifierbtn_callback_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\saveClassifierBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_trainclassifier_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\trainClassifier.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_updatebatchoptfromgui_m",
+      "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\updateBatchOptFromGUI.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_updatewidgets_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\updateWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_membranepixclassifier_wipetempdirbtn_callback_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MembranePixClassifier\\wipeTempDirBtn_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibactivedataset_buffers_contextmenu_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -49754,6 +51726,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibController\\gui_WindowKeyPressFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_initialize_m",
+      "target": "utils_getmibversionnumberic_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\initialize.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_initialize_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\initialize.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -50978,6 +52970,96 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibfijiconnect_exporttofiji_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\exportToFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_exporttofiji_m",
+      "target": "utils_fiji_miji_wrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\exportToFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_exporttofiji_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\exportToFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_gui_callbacks_m",
+      "target": "utils_fiji_startfiji_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_gui_callbacks_m",
+      "target": "utils_fiji_stopfiji_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\gui_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_importfromfiji_m",
+      "target": "utils_fiji_miji_wrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\importFromFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_importfromfiji_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\importFromFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_importfromfiji_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\importFromFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibfijiconnect_runmacro_m",
+      "target": "utils_fiji_miji_wrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibFijiConnect\\runMacro.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_framenumber_callback_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -51389,7 +53471,7 @@
     },
     {
       "source": "controllers_mibribbon_home_callbacks_m",
-      "target": "utils_rendervolumewithfiji_m",
+      "target": "utils_fiji_rendervolumewithfiji_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -51480,6 +53562,16 @@
     {
       "source": "controllers_mibribbon_model_callbacks_m",
       "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRibbon\\model_Callbacks.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibribbon_model_callbacks_m",
+      "target": "io_imaris_rendermodelimaris_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -51588,6 +53680,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibroi_roitoselection_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRoi\\roiToSelection.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibsegmentation_colorwheel_contextmenu_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -51630,6 +53732,16 @@
     {
       "source": "controllers_mibsegmentation_materialstable_contextmenu_m",
       "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\materialsTable_ContextMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_materialstable_contextmenu_m",
+      "target": "utils_fiji_rendermodelwithfiji_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -51684,6 +53796,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibSegmentation\\thresholdSlider_ContextMenu.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatecheckboxes_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\updateCheckboxes.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52658,6 +54790,46 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "utils_getmibversionnumberic_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_updatecheck_updatecheck_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@UpdateCheck\\UpdateCheck.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_volrenapp_volrenapp_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -53538,16 +55710,6 @@
       "weight": 1.0
     },
     {
-      "source": "io_fiji_miji_wrapper_m",
-      "target": "io_fiji_miji_deploy_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+Fiji\\Miji_wrapper.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
       "source": "io_hdf5_savebigdataviewerformat_m",
       "target": "utils_resizeimage3d_m",
       "relation": "calls",
@@ -53609,6 +55771,16 @@
     },
     {
       "source": "io_imaris_rendermodelimaris_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+imaris\\renderModelImaris.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_imaris_rendermodelimaris_m",
       "target": "io_imaris_connecttoimaris_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -53619,7 +55791,27 @@
     },
     {
       "source": "io_imaris_rendermodelimaris_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+imaris\\renderModelImaris.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_imaris_rendermodelimaris_m",
       "target": "io_imaris_setimarisdataset_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+imaris\\renderModelImaris.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_imaris_rendermodelimaris_m",
+      "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -54348,6 +56540,26 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_expandselectiontomaskborder_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\expandSelectionToMaskBorder.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_exportdataset_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -54560,6 +56772,16 @@
     {
       "source": "models_mibmodel_initializepreferences_m",
       "target": "utils_getprefdir_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\initializePreferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_initializepreferences_m",
+      "target": "utils_identifycomputername_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -55278,6 +57500,106 @@
       "weight": 1.0
     },
     {
+      "source": "utils_fiji_miji_wrapper_m",
+      "target": "utils_fiji_miji_deploy_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\Miji_wrapper.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_rendermodelwithfiji_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\renderModelWithFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_rendermodelwithfiji_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\renderModelWithFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_rendermodelwithfiji_m",
+      "target": "utils_fiji_miji_wrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\renderModelWithFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_rendervolumewithfiji_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\renderVolumeWithFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_rendervolumewithfiji_m",
+      "target": "utils_fiji_miji_wrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\renderVolumeWithFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_startfiji_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\startFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_startfiji_m",
+      "target": "utils_fiji_miji_wrapper_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\startFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_stopfiji_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\stopFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_fiji_stopfiji_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+fiji\\stopFiji.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "utils_doimagefiltering_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -55314,26 +57636,6 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+utils\\getInstallationPath.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "utils_rendervolumewithfiji_m",
-      "target": "utils_dlgs_inputuniversaldlg_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+utils\\renderVolumeWithFiji.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "utils_rendervolumewithfiji_m",
-      "target": "io_fiji_miji_wrapper_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+utils\\renderVolumeWithFiji.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55394,6 +57696,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+views\\@MibView\\addDirContentsPanel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "views_mibview_addfijiconnectpanel_m",
+      "target": "utils_overridedescriptions_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+views\\@MibView\\addFijiConnectPanel.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -55674,6 +57986,56 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "plugins\\FileProcessing\\MultiRenameTool\\MultiRenameTool.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "utils_fontsizeupdate_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_intensityanalysis_tripleareaintensity_tripleareaintensity_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\IntensityAnalysis\\TripleAreaIntensity\\TripleAreaIntensity.m",
       "source_location": null,
       "weight": 1.0
     },

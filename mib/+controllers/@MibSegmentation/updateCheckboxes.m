@@ -62,7 +62,7 @@ if nargin == 2
             eventdata = core.ToggleEventData(BatchOpt);
             notify(obj.mibModel, 'SyncBatch', eventdata);
         else
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 'A structure as the 2nd parameter is required!', 'Parameter error');
         end
         return;

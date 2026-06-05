@@ -9,7 +9,7 @@ classdef selectModelTypeDlg < handle
 % Usage:
 %   Example 1::
 %
-%       dlg = utils.dlgs.selectModelTypeDlg(obj.mibModel.mibGUI, obj.mibModel.mibPath);
+%       dlg = utils.dlgs.selectModelTypeDlg(obj.mibModel.getProgressBarParent(), obj.mibModel.mibPath);
 %       modelType = dlg.run();
 %       if isempty(modelType); return; end
 %
@@ -49,7 +49,8 @@ classdef selectModelTypeDlg < handle
             %
             % Input Arguments:
             %   - **ParentFigure** — handle to the parent GUI (AppContainer or uifigure);
-            %     used to center the dialog
+            %     used to center the dialog. In MIB pass ``obj.mibModel.getProgressBarParent()``
+            %     so the dialog follows the active dataset window when it is undocked.
             %   - **mibPath** — *(optional)* char, path to the MIB installation directory;
             %     used to locate icon images.  Pass [] or '' to use auto-detection.
             %

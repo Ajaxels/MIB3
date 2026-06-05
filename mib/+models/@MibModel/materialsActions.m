@@ -150,7 +150,7 @@ if obj.I{BatchOpt.id}.enableSelection == 0
     dlgOpt.Icon        = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
     dlgOpt.WindowHeight = 160;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The models are switched off!', {''}, ...
         {'Please make sure that the "Enable selection" option in the Preferences dialog (Ribbon->Home->Preferences) is set to "yes" and try again...'}, ...
         'Models are disabled', dlgOpt);
     notify(obj, 'StopProtocol');
@@ -161,7 +161,7 @@ if ~obj.I{BatchOpt.id}.modelExist
     dlgOpt.MsgBoxOnly  = true;
     dlgOpt.Icon        = 'puffin_warning';
     dlgOpt.HeaderLines = 1;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'No model exists!', {''}, ...
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'No model exists!', {''}, ...
         {'Please create a model first (Ribbon -> Models -> New Model).'}, ...
         'No model', dlgOpt);
     return;
@@ -200,7 +200,7 @@ switch BatchOpt.Action{1}
             prompts = {sprintf('Material name\n(no spaces / no letters as the 1st character):'); ...
                        sprintf('Index where material needs to be inserted\n[number between 1-%d]:', nMats + 1)};
             defAns = {sprintf('mat%.3d', nMats + 1); BatchOpt.MaterialIndex1};
-            answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, 'Insert material', dlgOpt);
+            answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, 'Insert material', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.MaterialName = answer{1};
             BatchOpt.MaterialIndex1 = answer{2};
@@ -208,7 +208,7 @@ switch BatchOpt.Action{1}
 
         wb = [];
         if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+            wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
                 'Message', 'Inserting material, please wait...', ...
                 'Title', 'Insert material');
         end
@@ -223,7 +223,7 @@ switch BatchOpt.Action{1}
             prompts = {sprintf('Index of the first material to swap\n[number between 1-%d]:', nMats); ...
                        sprintf('Index of the second material to swap\n[number between 1-%d]:', nMats)};
             defAns = {BatchOpt.MaterialIndex1; BatchOpt.MaterialIndex2};
-            answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defAns, 'Swap materials', dlgOpt);
+            answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defAns, 'Swap materials', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.MaterialIndex1 = answer{1};
             BatchOpt.MaterialIndex2 = answer{2};
@@ -231,7 +231,7 @@ switch BatchOpt.Action{1}
 
         wb = [];
         if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+            wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
                 'Message', 'Swapping materials, please wait...', ...
                 'Title', 'Swap materials');
         end
@@ -244,7 +244,7 @@ switch BatchOpt.Action{1}
             dlgOpt.MsgBoxOnly  = true;
             header      = 'Not implemented';
             dlgOpt.HeaderLines = 1;
-            utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
+            utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {''}, ...
                 {'Reordering of materials is only supported for models with up to 256 materials!'}, ...
                 'Not implemented', dlgOpt);
             return;
@@ -255,7 +255,7 @@ switch BatchOpt.Action{1}
             defAns = {num2str(1:nMats)};
             dlgOpt.WindowWidth = 600;
             dlgOpt.Focus = 1;
-            answer = utils.dlgs.inputSingleDlg(obj.mibGUI, prompts, defAns, 'Reorder materials', dlgOpt);
+            answer = utils.dlgs.inputSingleDlg(obj.getProgressBarParent(), prompts, defAns, 'Reorder materials', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.MaterialIndex1 = answer;
         end
@@ -267,7 +267,7 @@ switch BatchOpt.Action{1}
             dlgOpt.HeaderLines = 1;
             dlgOpt.WindowWidth = 450;
             dlgOpt.WindowHeight = 150;
-            utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
+            utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {''}, ...
                 {sprintf('The current model has %d materials, but %d indices were specified.', nMats, numel(newOrder))}, ...
                 'Wrong number', dlgOpt);
             return;
@@ -275,7 +275,7 @@ switch BatchOpt.Action{1}
 
         wb = [];
         if BatchOpt.showWaitbar
-            wb = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+            wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
                 'Message', sprintf('%s\nPlease wait...', BatchOpt.MaterialIndex1), ...
                 'Title', 'Reordering materials');
         end
@@ -289,7 +289,7 @@ switch BatchOpt.Action{1}
         dlgOpt.Icon        = 'puffin_warning';
         header      = 'Not yet implemented';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {''}, ...
             {'Export material is not yet ported to MIB3.'}, ...
             'Export material', dlgOpt);
         return;
@@ -300,7 +300,7 @@ switch BatchOpt.Action{1}
         dlgOpt.Icon        = 'puffin_warning';
         header      = 'Not yet implemented';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {''}, ...
             {'Save material to file is not yet ported to MIB3.'}, ...
             'Save material to file', dlgOpt);
         return;

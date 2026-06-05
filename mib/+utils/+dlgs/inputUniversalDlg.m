@@ -15,6 +15,9 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 % Input Arguments:
 %   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or ``[]``);
 %     used to centre the dialog. Pass ``[]`` to use the cached handle from a prior call.
+%     In MIB controllers / model methods pass ``obj.mibModel.getProgressBarParent()``
+%     (or ``obj.getProgressBarParent()`` inside MibModel) so the dialog follows the
+%     active dataset window when it is undocked.
 %   - **header** *(optional)* — [char] bold label shown above all widgets.
 %     Supersedes ``options.Header`` when non-empty.
 %   - **prompts** — ``{n x 1}`` cell array of prompt strings, one per widget row.
@@ -131,7 +134,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %    dlgOpt.MsgBoxOnly  = true;
 %    dlgOpt.Icon        = 'puffin_warning';
 %    dlgOpt.HeaderLines = 1;
-%    utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
+%    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), 'The models are switched off!', {''}, ...
 %        {'Please enable "Enable selection" in Preferences and try again.'}, ...
 %        'Models are disabled', dlgOpt);
 %
@@ -147,7 +150,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %    htmlBody = ['<html><p style="font-size:10pt">This message has ' ...
 %                '<b>rich text</b> and a list:<ul><li>Item 1</li>' ...
 %                '<li>Item 2</li></ul></p></html>'];
-%    [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
+%    [answer, selIndex, dontShow] = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
 %        'Please Read', {''}, {htmlBody}, 'Information', options);
 %
 % **Example 5** — Minimalist warning with everything in the header
@@ -157,7 +160,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %    dlgOpt.MsgBoxOnly  = true;
 %    dlgOpt.Icon        = 'puffin_warning';
 %    dlgOpt.HeaderLines = 3;
-%    utils.dlgs.inputUniversalDlg(obj.mibGUI, ...
+%    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
 %        sprintf('!!! Warning !!!\n\nThe output format was not selected!'), ...
 %        {}, {}, 'Warning', dlgOpt);
 %

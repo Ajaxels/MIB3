@@ -66,7 +66,7 @@ if ismember(layerType, {'mask', 'model'})
         dlgOpt.Icon = 'puffin_error';
         dlgOpt.HeaderLines = 1;
         dlgOpt.WindowHeight = 190;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, 'Not implemented!', {''}, {warningBody}, 'MibModel.exportDataset: Ops!!!', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'Not implemented!', {''}, {warningBody}, 'MibModel.exportDataset: Ops!!!', dlgOpt);
         notify(obj, 'StopProtocol');
         return;
     end
@@ -79,7 +79,7 @@ if strcmp(layerType, 'model')
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.HeaderLines = 1;
         dlgOpt.WindowHeight = 180;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The models are switched off!', {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The models are switched off!', {''}, ...
             {sprintf('Make sure that the "Enable selection" option in the Preferences dialog:\nRibbon -> Home -> Preferences\nis set to "yes" and try again...')}, ...
             'Models are disabled', dlgOpt);
         notify(obj, 'StopProtocol');
@@ -90,7 +90,7 @@ if strcmp(layerType, 'model')
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.HeaderLines = 1;
-        utils.dlgs.inputUniversalDlg(obj.mibGUI, 'The model is not yet created!', {''}, ...
+        utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), 'The model is not yet created!', {''}, ...
             {sprintf('Create or load a model first!')}, ...
             'The model is missing!', dlgOpt);
         notify(obj, 'StopProtocol');
@@ -158,7 +158,7 @@ if nargin < 3
                 prompts = {'Variable for the image:'};
                 defaultAnswers = {BatchOpt.ImageVariable};
             end
-            answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defaultAnswers, 'Export image to MATLAB', dlgOpt);
+            answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defaultAnswers, 'Export image to MATLAB', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.ImageVariable = answer{1};
             if numel(answer) == 2
@@ -166,7 +166,7 @@ if nargin < 3
             end
 
         case 'mask'
-            answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', {'Variable for the mask image:'}, {BatchOpt.MaskVariable}, 'Export mask to MATLAB', struct());
+            answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', {'Variable for the mask image:'}, {BatchOpt.MaskVariable}, 'Export mask to MATLAB', struct());
             if isempty(answer); return; end
             BatchOpt.MaskVariable = answer{1};
 
@@ -174,7 +174,7 @@ if nargin < 3
             prompts = {'Output variable:'; 'Material index [empty = export whole model]:'; 'Output material index [when single material exported]:'};
             defaultAnswers = {BatchOpt.LabelsVariable; BatchOpt.MaterialIndex; BatchOpt.MaterialOutputIndex};
             dlgOpt.WindowHeight = 190;
-            answer = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', prompts, defaultAnswers, 'Export model to MATLAB', dlgOpt);
+            answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), '', prompts, defaultAnswers, 'Export model to MATLAB', dlgOpt);
             if isempty(answer); return; end
             BatchOpt.LabelsVariable      = answer{1};
             BatchOpt.MaterialIndex       = answer{2};
@@ -227,7 +227,7 @@ switch BatchOpt.LayerType{1}
 
     case 'mask'
         if BatchOpt.showWaitbar
-            waitbar = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+            waitbar = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
                 'Message', 'Exporting the mask...', ...
                 'Title', 'Export mask');
         end
@@ -240,7 +240,7 @@ switch BatchOpt.LayerType{1}
     case 'model'
         materialIndex = str2double(BatchOpt.MaterialIndex);   % NaN when MaterialIndex is ''
         if BatchOpt.showWaitbar
-            waitbar = uiprogressdlg(obj.mibGUI, 'Value', 0, ...
+            waitbar = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
                 'Message', 'Exporting the model...', ...
                 'Title', 'Export model');
         end

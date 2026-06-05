@@ -42,7 +42,7 @@ if isempty(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath) || ~isf
     header = 'Location of python interpreter (python.exe) is not specified or python.exe is missing!';
     dlgOpt.HeaderLines = 2;
     dlgOpt.WindowHeight = 190;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {''}, {sprintf('<html><p style="font-size:10pt">Specify Python location using<br>Menu->File->Preferences->External dirs...')}, 'Missing Python location', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {''}, {sprintf('<html><p style="font-size:10pt">Specify Python location using<br>Menu->File->Preferences->External dirs...')}, 'Missing Python location', dlgOpt);
     return;
 end
 
@@ -51,7 +51,7 @@ if isempty(obj.mibModel.preferences.SegmTools.(samVersionName).sam_installation_
     dlgOpt.MsgBoxOnly = true;
     header = sprintf('Location of segment-anything is not specified!\nSpecify its location using SAM settings dialog');
     dlgOpt.HeaderLines = 2;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Missing SAM location', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Missing SAM location', dlgOpt);
     return;
 end
 
@@ -64,7 +64,7 @@ if exist(linksFile, 'file') == 0
         'Specify its location using SAM settings dialog, ' ...
         'the default location in Resources directory under MIB installation']);
     dlgOpt.HeaderLines = 4;
-    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Missing sam_links.json location', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Missing sam_links.json location', dlgOpt);
     return;
 end
 % read links with backbones
@@ -105,7 +105,7 @@ while checkpointIsMissing
     if checkpointExists == 0 || onnxExists == 0 || modelCfgExists == 0
         questDlgOpt.WindowHeight = 300;
         questDlgOpt.WindowWidth = 500;
-        answer = utils.dlgs.inputQuestDlg(obj.mibModel.mibGUI, ...
+        answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
             sprintf(['The following files were not found and will be downloaded\n' ...
                 '  - checkpoint:    %s\n' ...
                 '  - onnx (SAM1):   %s\n' ...
@@ -137,7 +137,7 @@ end
 
 % download checkpoint file
 if checkpointExists == 0
-    wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, 'Message', ...
+    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
         sprintf('Downloading checkpoint %s...\nNote that the progress bar won''t be updated', obj.mibModel.preferences.SegmTools.(samVersionName).backbone), ...
         'Title', 'Downloading checkpoint file', 'Indeterminate', true);
     drawnow;
@@ -152,7 +152,7 @@ if checkpointExists == 0
 end
 
 if onnxExists == 0
-    wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, 'Message', ...
+    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
         sprintf('Downloading onnx %s...\nNote that the progress bar won''t be updated', obj.mibModel.preferences.SegmTools.(samVersionName).backbone), ...
         'Title', 'Downloading onnx file', 'Indeterminate', true);
     drawnow;
@@ -163,7 +163,7 @@ if onnxExists == 0
 end
 
 if modelCfgExists == 0
-    wb = uiprogressdlg(obj.mibModel.mibGUI, 'Value', 0, 'Message', ...
+    wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, 'Message', ...
         sprintf('Downloading model config for "%s"\nNote that the progress bar won''t be updated', obj.mibModel.preferences.SegmTools.(samVersionName).backbone), ...
         'Title', 'Downloading yaml file', 'Indeterminate', true);
     drawnow;

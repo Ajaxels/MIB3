@@ -62,7 +62,7 @@ switch menuEntry.Tag
         id = obj.mibModel.getActiveId();
         matCount = numel(obj.mibModel.I{id}.labels.materialNames);
         if matCount < 2
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 'At least two materials are required to swap colors!', 'Swap colors');
             return;
         end
@@ -75,12 +75,12 @@ switch menuEntry.Tag
                    sprintf('Index of the second material [1-%d]:', matCount)};
         defAns = {num2str(mat1def); num2str(mat2def)};
         dlgOpt.PromptLines = [1, 1];
-        answer = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, '', prompts, defAns, 'Swap material colors', dlgOpt);
+        answer = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', prompts, defAns, 'Swap material colors', dlgOpt);
         if isempty(answer); return; end
         mat1 = str2double(answer{1});
         mat2 = str2double(answer{2});
         if isnan(mat1) || isnan(mat2) || mat1 < 1 || mat2 < 1 || mat1 > matCount || mat2 > matCount
-            utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                 sprintf('Material indices must be integers between 1 and %d!', matCount), 'Swap colors');
             return;
         end

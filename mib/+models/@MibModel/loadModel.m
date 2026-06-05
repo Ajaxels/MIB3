@@ -134,7 +134,7 @@ if strcmp(obj.I{id}.datasetType, 'Virtual')
     dlgOpt.WindowHeight = 170;
     dlgOpt.HeaderLines  = 2;
     dlgOpt.mibPath      = obj.mibPath;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {}, {}, 'Not implemented', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {}, {}, 'Not implemented', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end
@@ -148,7 +148,7 @@ if obj.I{id}.enableSelection == 0
         '(Ribbon->Home->Preferences) is set to "yes" and try again.']);
     dlgOpt.WindowHeight = 190;
     dlgOpt.mibPath      = obj.mibPath;
-    utils.dlgs.inputUniversalDlg(obj.mibGUI, header, {bodyText}, {bodyText}, 'Segmentation disabled', dlgOpt);
+    utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), header, {bodyText}, {bodyText}, 'Segmentation disabled', dlgOpt);
     notify(obj, 'StopProtocol');
     return;
 end

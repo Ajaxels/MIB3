@@ -11,7 +11,9 @@ function showErrorDialog(ParentFigure, err, winTitle, optionalPrefix, optionalSu
 %
 % Input Arguments:
 %   - **ParentFigure** — handle to the parent window (AppContainer, uifigure, or [])
-%     When empty or a legacy GUIDE figure, falls back to errordlg()
+%     When empty or a legacy GUIDE figure, falls back to errordlg().
+%     In MIB pass ``obj.mibModel.getProgressBarParent()`` so the dialog follows the
+%     active dataset window when it is undocked.
 %   - **err** — error source, one of:
 %
 %     - [char|string] plain error message text

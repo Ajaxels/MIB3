@@ -214,7 +214,7 @@ classdef DebrisRemoval < handle
             if nargin < 3; batchModeSwitch = false; end
 
             if obj.mibModel.I{obj.BatchOpt.id}.image.colors ~= 1
-                utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                     'Debris removal is only available for grayscale (single-channel) images!', ...
                     'Wrong image type');
                 notify(obj.mibModel, 'StopProtocol');
@@ -236,7 +236,7 @@ classdef DebrisRemoval < handle
                 if obj.BatchOpt.showWaitbar; delete(progressBar); end
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
-                utils.dlgs.inputUniversalDlg(obj.mibGUI, '', {''}, ...
+                utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
                     {sprintf('This plugin is not compatible with the virtual stacking mode!\nPlease switch to the memory-resident mode and try again')}, ...
                     'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
@@ -261,7 +261,7 @@ classdef DebrisRemoval < handle
                 z2 = z1;
                 if z1 < 2 || z2 > depth-1
                     if obj.BatchOpt.showWaitbar; delete(progressBar); end
-                    utils.dlgs.showErrorDialog(obj.mibGUI, ...
+                    utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
                         sprintf('The current slice should be between 2 and %d', depth-1), 'Wrong slice');
                     return;
                 end

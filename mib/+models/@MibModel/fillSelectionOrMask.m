@@ -163,7 +163,7 @@ if ~strcmp(BatchOpt.DatasetType{1}, '2D, Slice')
     if BatchOpt.showWaitbar
         pwb = core.PoolWaitbar(max_size2, ...
             sprintf('Filling holes in %s\nPlease wait...', BatchOpt.TargetLayer{1}), ...
-            obj.mibGUI, 'Filling holes...');
+            obj.getProgressBarParent(), 'Filling holes...');
     end
     showWaitbar = BatchOpt.showWaitbar;
 end

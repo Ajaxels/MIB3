@@ -224,7 +224,7 @@ classdef ContentAwareFill < handle
 
             if ~any(mask(:)); return; end
 
-            waitbarHandle = uiprogressdlg(obj.mibGUI, 'Indeterminate', 'on', ...
+            waitbarHandle = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Indeterminate', 'on', ...
                 'Message', 'Applying content-aware fill...', 'Title', 'Preview');
             filteredImg = obj.applyFilter(img, logical(mask));
             delete(waitbarHandle);

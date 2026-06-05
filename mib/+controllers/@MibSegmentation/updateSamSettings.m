@@ -72,11 +72,11 @@ if strcmp(SAM.samVersion, 'SAM1')
     options.Focus = 1;
     options.HelpUrl = 'https://mib.helsinki.fi/downloads_systemreq_sam.html';
     options.mibPath = obj.mibModel.mibPath;
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     if answer{7}
-        answer2 = utils.dlgs.inputQuestDlg(obj.mibModel.mibGUI, ...
+        answer2 = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
             sprintf(['!!! Warning !!!\n\nYou are going to reset SAM settings to default values!\n\n' ...
             'Note!\n' ...
             'After that you need to specify location of segment-anything and update other settings if needed']), ...
@@ -149,7 +149,7 @@ if strcmp(SAM.samVersion, 'SAM1')
         dlgOpt.MsgBoxOnly = true;
         header = sprintf('The provided file:\n%s\nwith SAM links does not exist!\n\nKeeping the previous version:\n%s', newLinksFile, linksFile);
         dlgOpt.HeaderLines = 5;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Wrong JSON file', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Wrong JSON file', dlgOpt);
     else
         SAM1.linksFile = answer{4};
     end
@@ -208,12 +208,12 @@ else
     options.HelpUrl = 'https://mib.helsinki.fi/downloads_systemreq_sam2.html';
     options.mibPath = obj.mibModel.mibPath;
 
-    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, prompts, defAns, dlgTitle, options);
+    [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, prompts, defAns, dlgTitle, options);
     if isempty(answer); return; end
 
     if answer{7}
         questOpt.WindowHeight = 240;
-        answer2 = utils.dlgs.inputQuestDlg(obj.mibModel.mibGUI, ...
+        answer2 = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
             sprintf(['You are going to reset SAM2 settings to default values!\n\n' ...
             'Note!\n' ...
             'After that you need to specify location of segment-anything-2 and update other settings if needed']), ...
@@ -286,7 +286,7 @@ else
         dlgOpt.MsgBoxOnly = true;
         header = sprintf('The provided file:\n%s\nwith SAM links does not exist!\n\nKeeping the previous version:\n%s', newLinksFile, linksFile);
         dlgOpt.HeaderLines = 5;
-        utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Wrong JSON file', dlgOpt);
+        utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Wrong JSON file', dlgOpt);
     else
         SAM2.linksFile = answer{4};
     end

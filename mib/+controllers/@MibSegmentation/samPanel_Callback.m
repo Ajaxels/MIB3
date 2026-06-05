@@ -80,7 +80,7 @@ switch mode
             dlgOpt.MsgBoxOnly = true;
             header = sprintf('To use segment-anything in the automatic mode the model should be able to keep 65535 or more materials!\n\nCreate a new model or change the type of the current model from\nMenu->Models->Convert type');
             dlgOpt.HeaderLines = 4;
-            utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {}, 'Wrong model type', dlgOpt);
+            utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Wrong model type', dlgOpt);
             return;
         end
 
