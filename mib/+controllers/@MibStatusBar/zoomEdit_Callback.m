@@ -73,23 +73,47 @@ if recenterSwitch
     numDocs = numel(obj.mibController.cImageDoc);
     if numDocs > 1
         scaling = obj.mibModel.preferences.System.GUI.systemscaling;
-        curScreenX = groot().PointerLocation(1) / scaling - 8;  % back to winBounds space
+        pointerLogical = groot().PointerLocation / scaling;  % back to logical (winBounds) space
+        detectedDocIdx = [];
 
-        leftPanelW_det = 0;
-        if isfield(obj.view.gui.Layout.panelLayout, 'left')
-            leftPanelW_det = obj.view.gui.Layout.panelLayout.left.freeDimension;
-            if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW_det = 0; end
-        end
-        winBounds_det = obj.view.gui.WindowBounds;
-        docEdge = winBounds_det(1) + leftPanelW_det;
-        detectedDocIdx = obj.mibModel.Sets.selectedSet;  % fallback
+        % First, hit-test any FLOATING (undocked) document windows directly.
+        % Their figureDoc.WindowBounds use the same bottom-left-origin
+        % coordinate system as groot().PointerLocation (in logical pixels).
         for iDoc = 1:numDocs
-            docEdge = docEdge + obj.mibController.cImageDoc{iDoc}.figureDoc.Figure.Position(3);
-            if curScreenX < docEdge
-                detectedDocIdx = iDoc;
-                break;
+            cDoc = obj.mibController.cImageDoc{iDoc};
+            if ~cDoc.figureDoc.Docked
+                wb = cDoc.figureDoc.WindowBounds;
+                if pointerLogical(1) >= wb(1) && pointerLogical(1) <= wb(1) + wb(3) && ...
+                   pointerLogical(2) >= wb(2) && pointerLogical(2) <= wb(2) + wb(4)
+                    detectedDocIdx = iDoc;
+                    break;
+                end
             end
         end
+
+        % Otherwise, detect the docked split-panel document from the cursor X.
+        if isempty(detectedDocIdx)
+            curScreenX = pointerLogical(1) - 8;  % back to winBounds space
+
+            leftPanelW_det = 0;
+            if isfield(obj.view.gui.Layout.panelLayout, 'left')
+                leftPanelW_det = obj.view.gui.Layout.panelLayout.left.freeDimension;
+                if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW_det = 0; end
+            end
+            winBounds_det = obj.view.gui.WindowBounds;
+            docEdge = winBounds_det(1) + leftPanelW_det;
+            detectedDocIdx = obj.mibModel.Sets.selectedSet;  % fallback
+            for iDoc = 1:numDocs
+                cDoc = obj.mibController.cImageDoc{iDoc};
+                if ~cDoc.figureDoc.Docked; continue; end  % floating docs are not in the docked row
+                docEdge = docEdge + cDoc.figureDoc.Figure.Position(3);
+                if curScreenX < docEdge
+                    detectedDocIdx = iDoc;
+                    break;
+                end
+            end
+        end
+
         if detectedDocIdx ~= obj.mibModel.Sets.selectedSet
             obj.mibModel.Sets.selectedSet = detectedDocIdx;
             obj.mibModel.id = obj.mibModel.Sets.selectedDataset(detectedDocIdx) + ...
@@ -136,7 +160,7 @@ BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
 
 if recenterSwitch && ismember(BatchOpt.Mode{1}, {'Zoom in', 'Zoom out'})
     obj.mibModel.I{obj.mibModel.id}.moveView(xy2(1), xy2(2));
-    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centerCursorInAxes();
+    obj.mibController.cImageDoc{obj.mibModel.Sets.selectedSet}.centerCursorInAxes(true);  % cursor is over the axes
 end
 
 %% Execute the selected magnification mode
