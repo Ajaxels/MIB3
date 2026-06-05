@@ -66,54 +66,23 @@ end
 if isempty(recenterSwitch); recenterSwitch = false; end
 
 if recenterSwitch
-    % In split-panel mode selectedSet can be stale when the cursor is over
-    % a panel that is not the currently "active" set. Detect the true active
-    % document from the physical cursor X position before doing anything
-    % document-specific (CurrentPoint, convertMouseToDataCoordinates, moveView).
+    % With multiple documents selectedSet can be stale when the cursor is over
+    % a document that is not the currently "active" set. Detect the document the
+    % cursor is physically over before doing anything document-specific
+    % (CurrentPoint, convertMouseToDataCoordinates, moveView, centerCursorInAxes).
     numDocs = numel(obj.mibController.cImageDoc);
     if numDocs > 1
-        scaling = obj.mibModel.preferences.System.GUI.systemscaling;
-        pointerLogical = groot().PointerLocation / scaling;  % back to logical (winBounds) space
-        detectedDocIdx = [];
-
-        % First, hit-test any FLOATING (undocked) document windows directly.
-        % Their figureDoc.WindowBounds use the same bottom-left-origin
-        % coordinate system as groot().PointerLocation (in logical pixels).
+        % isInsideAxes is set by each document's own mouse-motion handler, so it
+        % is correct regardless of docked/floating and tabbed/split layout (the
+        % previous docEdge width heuristic was wrong for stacked tabs and always
+        % selected doc 1).
+        detectedDocIdx = obj.mibModel.Sets.selectedSet;
         for iDoc = 1:numDocs
-            cDoc = obj.mibController.cImageDoc{iDoc};
-            if ~cDoc.figureDoc.Docked
-                wb = cDoc.figureDoc.WindowBounds;
-                if pointerLogical(1) >= wb(1) && pointerLogical(1) <= wb(1) + wb(3) && ...
-                   pointerLogical(2) >= wb(2) && pointerLogical(2) <= wb(2) + wb(4)
-                    detectedDocIdx = iDoc;
-                    break;
-                end
+            if obj.mibController.cImageDoc{iDoc}.isInsideAxes
+                detectedDocIdx = iDoc;
+                break;
             end
         end
-
-        % Otherwise, detect the docked split-panel document from the cursor X.
-        if isempty(detectedDocIdx)
-            curScreenX = pointerLogical(1) - 8;  % back to winBounds space
-
-            leftPanelW_det = 0;
-            if isfield(obj.view.gui.Layout.panelLayout, 'left')
-                leftPanelW_det = obj.view.gui.Layout.panelLayout.left.freeDimension;
-                if obj.view.gui.Layout.panelLayout.left.collapsed; leftPanelW_det = 0; end
-            end
-            winBounds_det = obj.view.gui.WindowBounds;
-            docEdge = winBounds_det(1) + leftPanelW_det;
-            detectedDocIdx = obj.mibModel.Sets.selectedSet;  % fallback
-            for iDoc = 1:numDocs
-                cDoc = obj.mibController.cImageDoc{iDoc};
-                if ~cDoc.figureDoc.Docked; continue; end  % floating docs are not in the docked row
-                docEdge = docEdge + cDoc.figureDoc.Figure.Position(3);
-                if curScreenX < docEdge
-                    detectedDocIdx = iDoc;
-                    break;
-                end
-            end
-        end
-
         if detectedDocIdx ~= obj.mibModel.Sets.selectedSet
             obj.mibModel.Sets.selectedSet = detectedDocIdx;
             obj.mibModel.id = obj.mibModel.Sets.selectedDataset(detectedDocIdx) + ...

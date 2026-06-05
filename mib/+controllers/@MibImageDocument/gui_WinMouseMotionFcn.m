@@ -50,6 +50,19 @@ try
     obj.isInsideAxes = xMouse > axXLim(1) && xMouse < axXLim(2) && ...
         yMouse > axYLim(1) && yMouse < axYLim(2);
 
+    % Only one document can hold the cursor at a time. This figure is the one
+    % currently receiving motion events, so clear any stale isInsideAxes flags on
+    % the other documents — otherwise in split view both flags stay true and the
+    % zoom / keyboard-navigation handlers act on the wrong document.
+    cImageDocs = obj.mibController.cImageDoc;
+    if numel(cImageDocs) > 1
+        for iOtherDoc = 1:numel(cImageDocs)
+            if cImageDocs{iOtherDoc} ~= obj
+                cImageDocs{iOtherDoc}.isInsideAxes = false;
+            end
+        end
+    end
+
     % Rubber band + fill preview during custom Polyline Stage 1 placement
     cRoiCtrl = obj.mibController.cRoi;
     if ~isempty(cRoiCtrl) && cRoiCtrl.drawingROI.placementMode && ...

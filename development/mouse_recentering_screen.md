@@ -21,9 +21,10 @@ display-scaling cases were also fragile.
 |------|------|
 | `+controllers/@MibImageDocument/centerCursorInAxes.m` | thin wrapper: gets the target and assigns `groot().PointerLocation` |
 | `+controllers/@MibImageDocument/axesCenterPointerLocation.m` | computes the target screen-pixel location (all the logic) |
-| `+controllers/@MibStatusBar/zoomEdit_Callback.m` | zoom recenter; also picks which split-panel/floating doc the cursor is over |
+| `+controllers/@MibStatusBar/zoomEdit_Callback.m` | zoom recenter; also picks which document the cursor is over (multi-doc) |
 | `+controllers/@MibImageDocument/gui_WindowButtonDownFcn.m` | middle-click / click `moveView` recenter (×3 call sites) |
 | `+controllers/@MibQuickAccessBar/orientationChange.m` | orientation switch recenter (ribbon-triggered) |
+| `+controllers/@MibImageDocument/gui_WinMouseMotionFcn.m` | maintains the per-doc `isInsideAxes` flag used to pick the hovered document |
 
 `centerCursorInAxes(cursorOverAxes)` and
 `axesCenterPointerLocation(cursorOverAxes)` take an optional logical flag telling
@@ -85,6 +86,55 @@ pointerX = (screenX + 9) * scaling;
 pointerY = (monitorTop - (screenY - monPos(idx,2)) + 31) * scaling;
 ```
 
+## Picking which document the cursor is over (multiple sets)
+
+With more than one open set the recenter must act on the document the cursor is
+**physically over** — otherwise the wrong set is zoomed/moved and the cursor is
+recentered using a *hidden* document's stale `fig.CurrentPoint`, flinging it out of
+the window. `zoomEdit_Callback` selects the target document like this:
+
+```matlab
+detectedDocIdx = obj.mibModel.Sets.selectedSet;
+for iDoc = 1:numDocs
+    if obj.mibController.cImageDoc{iDoc}.isInsideAxes
+        detectedDocIdx = iDoc;  break;
+    end
+end
+% then sync Sets.selectedSet / id to detectedDocIdx
+```
+
+`isInsideAxes` is the right primitive — each document's own `gui_WinMouseMotionFcn`
+sets it from the axes `CurrentPoint` vs `XLim/YLim`, so it is correct regardless of
+docked/floating and **tabbed/split** layout. (The earlier `figureDoc.Figure
+.Position(3)` width-accumulation heuristic was wrong: new sets are added as **stacked
+tabs** — same `Tile`, identical `Figure.Position`, only one `Showing` — so the
+width walk always selected doc 1.) The keyboard zoom handler
+(`gui_WindowKeyPressFcn`) already uses the same `isInsideAxes` loop to set
+`Sets.selectedSet` before calling the zoom.
+
+### `isInsideAxes` staleness fix (split view)
+
+`isInsideAxes` is only updated by the figure currently receiving motion events; it
+was **never reset when the cursor left** a document. In split view that left *both*
+documents with `isInsideAxes = 1`, and the first-match loop picked doc 1 — so zooming
+the right panel zoomed the left one. Fix: since only one figure can hold the cursor,
+`gui_WinMouseMotionFcn` now clears the *other* documents' flags on every motion
+event:
+
+```matlab
+cImageDocs = obj.mibController.cImageDoc;
+if numel(cImageDocs) > 1
+    for iOtherDoc = 1:numel(cImageDocs)
+        if cImageDocs{iOtherDoc} ~= obj
+            cImageDocs{iOtherDoc}.isInsideAxes = false;
+        end
+    end
+end
+```
+
+This makes `isInsideAxes` single-valued, fixing both the zoom detection and the
+keyboard handler's `hoverDocIdx` in split view.
+
 ## Coordinate-system facts discovered (live probing of `FigureDocument`)
 
 The `matlab.ui.internal.FigureDocument` docked/floating API is undocumented; these
@@ -135,6 +185,8 @@ MIB, all confirmed pixel-accurate:
 | Floating, primary monitor | ✅ |
 | Floating, second monitor | ✅ (after adding the `monPos(m,2)` Y-offset) |
 | OS scaling 1.25 (pref set to 1.25) | ✅ |
+| Multiple sets, tabbed (stacked) | ✅ (after switching detection to `isInsideAxes`) |
+| Multiple sets, split (side-by-side) | ✅ (after the `isInsideAxes` staleness fix) |
 
 ## Known residual (left as-is)
 
