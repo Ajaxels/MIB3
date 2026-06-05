@@ -310,6 +310,7 @@ if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visibl
 else
     fig = uifigure('Name', dlgTitle, 'Visible', 'off');
     fig.Tag = 'inputUniversalDlg';
+    fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
     fig.AutoResizeChildren = 'off';
     cachedFigure = fig;
 end
