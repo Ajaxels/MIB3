@@ -54,9 +54,9 @@ for sectionId = 1:numel(pluginSections)
     names = {pluginList.name};
     pluginList = names(isDir & ~ismember(names, {'.', '..'}));
 
-    % add space before capital letter
-    categoryName = regexprep(pluginSections{sectionId}, '([A-Z])', ' $1');
-    categoryName = strtrim(categoryName); % Remove possible leading space
+    % split on lowercase→uppercase boundary (preserves acronyms like MC, GUI)
+    categoryName = regexprep(pluginSections{sectionId}, '([a-z])([A-Z])', '$1 $2');
+    categoryName = strtrim(categoryName);
     % Create the gallery categories
     category = matlab.ui.internal.toolstrip.GalleryCategory(categoryName);
 
@@ -70,9 +70,9 @@ for sectionId = 1:numel(pluginSections)
         end
         icon = matlab.ui.internal.toolstrip.Icon(iconFileName);
         pluginClassName = pluginList{pluginId};
-        % add space before capital letter
-        pluginName = regexprep(pluginClassName, '([A-Z])', ' $1');
-        pluginName = strtrim(pluginName); % Remove possible leading space
+        % split on lowercase→uppercase boundary (preserves acronyms like MC, GUI)
+        pluginName = regexprep(pluginClassName, '([a-z])([A-Z])', '$1 $2');
+        pluginName = strtrim(pluginName);
 
         item = matlab.ui.internal.toolstrip.GalleryItem(pluginName, icon);
         %item.Description = 'Trypanosoma brucei cell and a model of nuclei, endoplasmic reticulum, mitochondria, vesicles, lipid droplets, and cytoplasm';
