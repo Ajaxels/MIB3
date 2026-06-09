@@ -100,7 +100,72 @@ Text with icons:
         Admonition text 2
     ```
     Here is my main text
-        
+       
+=== "Default styles"
+
+    ??? note "note"
+            
+            ??? note "note"
+            note: octicons/tag-16
+            
+    ??? abstract "abstract"
+            
+            ??? abstract "abstract"
+            abstract: octicons/checklist-16
+    
+    
+    ??? info "info"
+
+            ??? info "info"
+            * info: octicons/info-16
+    
+    ??? tip "tip"
+            
+            ??? tip "tip"
+            * tip: octicons/squirrel-16
+    
+    
+    ??? success "success"
+
+            ??? success "success"
+            * success: octicons/check-16
+
+    ??? question "question"
+
+            ??? question "question"
+            * question: octicons/question-16
+
+    ??? warning "warning"
+
+            ??? warning "warning"
+            * warning: octicons/alert-16
+
+    ??? failure "failure"
+
+            ??? failure "failure"
+            * failure: octicons/x-circle-16
+
+    ??? danger "danger"
+
+            ??? danger "danger"
+            * danger: octicons/zap-16
+
+    ??? bug "bug"
+
+            ??? bug "bug"
+            * bug: octicons/bug-16
+            
+    ??? example "example"
+
+            ??? example "example"
+            * example: octicons/beaker-16
+            
+    ??? quote "quote"
+
+            ??? quote "quote"
+            * quote: octicons/quote-16
+
+
 ---
 
 ## Annotations
@@ -113,10 +178,12 @@ Add annotations (1), and one the link (2).
 2. [https://squidfunk.github.io/mkdocs-material/reference/annotations/](https://squidfunk.github.io/mkdocs-material/reference/annotations/)
 
 ```
-Add annotations (1) some other text.
+Add annotations (1) some other text (2).
 {.annotate }
     
-1. :man_raising_hand: I'm an annotation!<br>
+1. :man_raising_hand: I'm an annotation!
+2. [https://squidfunk.github.io/mkdocs-material/reference/annotations/](https://squidfunk.github.io/mkdocs-material/reference/annotations/)
+
 
 ```
 
@@ -171,7 +238,7 @@ Footnote A[^3] and Footnote B [^4]
 -   :material-scale-balance:{ .lg .middle } **Open Source, MIT**
         
     ---
-    Material for MkDocs is licensed under MIT and available on [GitHub]<br>
+    Material for MkDocs is licensed under MIT and available on \[GitHub\]<br>
     [:octicons-arrow-right-24: License](index.md)
 
 </div>
@@ -261,6 +328,11 @@ Toggle over the following text to see a hover tooltip:
     * Item 1 -> `* Item 1`
     * Item 2 -> `* Item 2`
     * Item 3 -> `* Item 3`
+    ```
+    * Item 1 -> `* Item 1`
+    * Item 2 -> `* Item 2`
+    * Item 3 -> `* Item 3
+    ```
 
 === "Ordered list"
 

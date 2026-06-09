@@ -1,7 +1,5 @@
 # Morphological 2D/3D Operations
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Selection](index.md)*
-
 ---
 
 ## Description

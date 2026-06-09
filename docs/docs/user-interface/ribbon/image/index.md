@@ -1,7 +1,5 @@
 # Image Ribbon Tab
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md)*
-
 ---
 
 ## Overview
@@ -25,7 +23,7 @@ Allows changing the mode and color depth of the shown dataset.
 - **RGB Color**: converts image to the RGB color space.
 - **HSV Color**: converts image to the HSV (hue, saturation, value) color space.
 - **Indexed**: converts image to indexed colors (not implemented for True Color images).
-- **8 bit**: converts dataset to 8-bit format; intensities are scaled to preserve adjustments from the [Display dialog](../../panels/viewsettings/index.md#contrast-panel).
+- **8 bit**: converts dataset to 8-bit format; intensities are scaled to preserve adjustments from the [Display dialog](../../panels/selection_imview/viewsettings.md#contrast-panel).
 - **16 bit**: converts dataset to 16-bit format; intensities are scaled to preserve original contrast.
 - **32 bit**: converts dataset to 32-bit format; intensities are scaled to preserve original contrast.
 
@@ -34,7 +32,7 @@ Allows changing the mode and color depth of the shown dataset.
 ## Adjust Display/Image
 
 Starts a dialog to adjust display settings or resample image intensities.
-<br>See more in the [Adjust display window section](../../panels/viewsettings/viewsettings-adjustments.md).
+<br>See more in the [Adjust display window section](../../panels/selection_imview/viewsettings-adjustments.md).
 
 ---
 
@@ -61,7 +59,7 @@ Perform actions with color channels of the image.
 - **Swap channels...**: swap two color channels.
 - **Delete channel...**: delete a specified color channel from the dataset.
 
-It is also possible to perform color channel operations from the *Colors* table in the [View settings panel](../../panels/viewsettings/index.md).
+It is also possible to perform color channel operations from the *Colors* table in the [View settings panel](../../panels/selection_imview/viewsettings.md).
 
 ---
 
@@ -71,7 +69,7 @@ It is also possible to perform color channel operations from the *Colors* table 
 
 <div class="clear-float"></div>
 
-Adjust contrast of the dataset. For linear contrast stretching, use the Image Adjustment dialog via the <span class="widget widget-button">Display</span> button in the [View Settings panel](../../panels/viewsettings/index.md).
+Adjust contrast of the dataset. For linear contrast stretching, use the Image Adjustment dialog via the <span class="widget widget-button">Display</span> button in the [View Settings panel](../../panels/selection_imview/viewsettings.md).
 
 <div class="h3-like">Demonstration</div>
 
@@ -79,7 +77,7 @@ Adjust contrast of the dataset. For linear contrast stretching, use the Image Ad
 
 <div class="h3-like">List of contrast adjustment operations</div>
 
-- **Linear contrast**: no longer available in MIB; use the <span class="widget widget-button">Display</span> button in the [View Settings panel](../../panels/viewsettings/index.md).
+- **Linear contrast**: no longer available in MIB; use the <span class="widget widget-button">Display</span> button in the [View Settings panel](../../panels/selection_imview/viewsettings.md).
 - **Contrast-limited adaptive histogram equalization**: CLAHE enhances contrast in small regions (tiles) rather than the entire image. Each tile’s contrast is adjusted to match a specified histogram (*Distribution* parameter), with neighboring tiles combined using bilinear interpolation to smooth boundaries. Contrast in homogeneous areas can be limited to avoid noise amplification. See MATLAB’s [adapthisteq](https://se.mathworks.com/help/images/ref/adapthisteq.html) for details.
   - **Normalize layers**: normalizes intensities between slices:  
       1. calculates mean intensity and standard deviation (std) for the whole dataset;  

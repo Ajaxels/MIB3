@@ -1,7 +1,5 @@
 # MIB Panels
 
-*Back to [MIB](../../index.md) | [User interface](../index.md)*
-
 ---
 
 ## Overview
@@ -17,38 +15,23 @@ advanced tasks like segmentation and filtering.
 
 These panels are always visible and provide core functionality for navigating and interacting with your datasets:
 
-- **[Path](path/index.md)**: view and modify the current working directory or file path.
+- **[Datasets](../datasets/index.md)**: manage up to 10 open dataset buffers per set; switch between them, duplicate, sync or link views, and set the memory access mode.
 - **[Directory Contents](dircontents/index.md)**: navigate your files and folders, select images to load, options to switch between interchangeable panels using dropdown menus.
-- **[Image View](imview/index.md)**: display and interact with your images.
-- **[Selection](selection/index.md)**: make and refine selections on your images, with tools for manual and automated selection processes.
-- **[View Settings](viewsettings/index.md)**: adjust display options, such as live auto-contrast, color channels, toggle visibility of layers to optimize image viewing.
+- **[Segmentation](segm/index.md)**: suite of tools for segmenting images, including 3D ball, brush, and advanced AI-based segmentation (e.g., Segment Anything Model).
+- **[Selection and View Settings](selection_imview/index.md)**: manipulate the Selection layer (add, subtract, replace, erode, dilate) and control layer visibility, color channels, and contrast.
+- **[ROIs](roi/index.md)**: define and manage Regions of Interest for focused analysis or measurements.
+- **[Fiji Connect](fijiconnect/index.md)**: integrate with Fiji (ImageJ) for additional processing capabilities, bridging MIB with external tools.
 
 ---
 
-## Left interchangeable panels
+## Other panels
 
-![Left Interchangeable Panels](images/Panels_left.png){.on-glb align=left width="300"}
+These panels provide additional controls or are retained for reference:
 
-These panels can be swapped using the dropdown menu in the [Directory Contents](../panels/dircontents/index.md) panel, allowing you to choose the toolset that best suits your current task.
-
-<div class="clear-float"></div>
-
-- **[Segmentation Panel](../panels/segm/index.md)**: Offers a suite of tools for segmenting images, including 3D ball, brush, and advanced AI-based segmentation (e.g., Segment Anything Model).
-- **[ROI Panel](../panels/roi/index.md)**: Define and manage regions of interest (ROIs) for focused analysis or measurements.
-
----
-
-## Right interchangeable panels
-
-![Right Interchangeable Panels](images/Panels_right.png){.on-glb align=left width="300"}
-
-These panels are also interchangeable via the [Directory Contents](../panels/dircontents/index.md) dropdown, providing specialized tools for image enhancement and external integration.
-
-<div class="clear-float"></div>
-
-- **[Image Filters](../panels/imfilters/index.md)**: Apply filters to enhance or preprocess your images, with options for custom adjustments.
-- **[Mask Generators](../panels/maskgen/index.md)**: Create masks to isolate specific image regions, useful for downstream analysis or segmentation.
-- **[Fiji Connect](../panels/fijiconnect/index.md)**: Integrate with Fiji (ImageJ) for additional processing capabilities, bridging MIB with external tools.
+- **[Status Bar](../statusbar/index.md)**: strip at the bottom of the window with the working directory picker, live pixel info, and zoom control.
+- **[Path](path/index.md)**: view and modify the current working directory or file path. *(MIB2 reference)*
+- **[Image Filters](imfilters/index.md)**: apply filters to enhance or preprocess your images.
+- **[Mask Generators](maskgen/index.md)**: create masks to isolate specific image regions.
 
 ---
 

@@ -1,8 +1,6 @@
-﻿# Help
+# Help
 
 Access help files and resources in Microscopy Image Browser from **Ribbon → Home → Help**.
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md)*
 
 ---
 

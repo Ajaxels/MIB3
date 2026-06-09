@@ -1,36 +1,34 @@
-# Welcome to MkDocs
+# Zensical documentation framework
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+For full documentation visit [zensical.org](https://zensical.org).
 
 ## Commands
 
-* `mkdocs new [dir-name]` - Create a new project; or `mkdocs new` in the current folder
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-* youtube tutorial: [:fontawesome-brands-youtube:{.red-color}](https://www.youtube.com/watch?v=xlABhbnNrfI)
+* `zensical serve` - Start the live-reloading docs server (localhost:8000)
+* `zensical serve -o` - Start server and open browser automatically
+* `zensical build` - Build the documentation site to `site/`
+* `zensical -h` - Print help message and exit
 
-## Links 
+## Links
 
-* [Setup](https://squidfunk.github.io/mkdocs-material/setup/) 
-* [Reference docs](https://squidfunk.github.io/mkdocs-material/reference/)
+* [Zensical documentation](https://zensical.org/docs/)
+* [Setup](https://zensical.org/docs/setup/basics/)
+* [Authoring](https://zensical.org/docs/authoring/)
+* [Customization](https://zensical.org/docs/customization/)
 * [Icons search](https://squidfunk.github.io/mkdocs-material/reference/icons-emojis)
 
 ## Installation
 
 * Create a new virtual environment
-* Install mkdocs, type in the console:
+* Install Zensical, type in the console:
 ```
-	>> pip install mkdocs
-	>> pip install mkdocs-material
-    >> pip install mkdocs-glightbox
+    >> pip install zensical
 ```
-* Start the live-reloading docs server: `mkdocs serve`
-
+* Start the live-reloading docs server: `zensical serve`
 
 ## Project layout
 
-    mkdocs.yml    # The configuration file.
+    zensical.toml    # The configuration file (TOML format).
     docs
      |----/assets/          # Folder for images etc
      |        logo.png      # Logo image

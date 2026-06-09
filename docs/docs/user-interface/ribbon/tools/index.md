@@ -1,6 +1,4 @@
-﻿# Tools Ribbon Tab
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md)*
+# Tools Ribbon Tab
 
 ---
 

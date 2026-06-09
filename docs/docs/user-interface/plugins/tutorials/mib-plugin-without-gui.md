@@ -1,7 +1,5 @@
 # MIB Plugin without GUI
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Tutorials](index.md)*
-
 ---
 
 ## Overview

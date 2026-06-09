@@ -1,7 +1,5 @@
 # Directory Contents Panel
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md)*
-
 ---
 
 ## Overview
@@ -54,9 +52,9 @@ Selecting <span class="widget widget-dropdown">Filter: all known</span> displays
 
 <div class="h3-like">Navigating folders</div>
 
-- Double-clicking <span class="widget widget-dropdown">[.]</span> changes the folder to the top level of the current logical drive.
-- Double-clicking <span class="widget widget-dropdown">[..]</span> changes the folder to one level up.
-- Double-clicking <span class="widget widget-dropdown">[DIR NAME]</span> navigates MIB into the clicked directory and shows files inside it
+- Double-clicking <span class="widget widget-dropdown">\[.\]</span> changes the folder to the top level of the current logical drive.
+- Double-clicking <span class="widget widget-dropdown">\[..\]</span> changes the folder to one level up.
+- Double-clicking <span class="widget widget-dropdown">\[DIR NAME\]</span> navigates MIB into the clicked directory and shows files inside it
 <br>(`MIB_Algn` folder in the snapshot)
 
 <div class="h3-like">Selecting and loading datasets</div>

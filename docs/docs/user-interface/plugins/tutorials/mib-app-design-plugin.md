@@ -1,6 +1,4 @@
-﻿ # MIB AppDesigner Plugin
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Tutorials](index.md)*
+ # MIB AppDesigner Plugin
 
 ---
 
@@ -69,14 +67,14 @@ These properties will be available to all functions within the plugin class.<br>
         % name of each field should be displayed in a tooltip of GUI
         % it is recommended that the Tags of widgets match the name of the
         % fields in this structure
-        % .Parameter - [editbox], char/string 
-        % .Checkbox - [checkbox], logical value true or false
-        % .Dropdown{1} - [dropdown],  cell string for the dropdown
-        % .Dropdown{2} - [optional], an array with possible options
-        % .Radio - [radiobuttons], cell string 'Radio1' or 'Radio2'...
-        % .ParameterNumeric{1} - [numeric editbox], cell with a number 
-        % .ParameterNumeric{2} - [optional], vector with limits [min, max]
-        % .ParameterNumeric{3} - [optional], string 'on' - to round the value, 'off' to do not round the value
+        % .Parameter - \[editbox\], char/string 
+        % .Checkbox - \[checkbox\], logical value true or false
+        % .Dropdown{1} - \[dropdown\],  cell string for the dropdown
+        % .Dropdown{2} - \[optional\], an array with possible options
+        % .Radio - \[radiobuttons\], cell string 'Radio1' or 'Radio2'...
+        % .ParameterNumeric{1} - \[numeric editbox\], cell with a number 
+        % .ParameterNumeric{2} - \[optional\], vector with limits \[min, max\]
+        % .ParameterNumeric{3} - \[optional\], string 'on' - to round the value, 'off' to do not round the value
     end
     ``` 
 
@@ -142,7 +140,7 @@ patterns for various widget types:
     obj.BatchOpt.Dropdown{2} = {'Option 1', 'Option 2', 'Option 3'}; % dropdown options
     obj.BatchOpt.Radio = {'Radio2'};  % selected radio button value
     obj.BatchOpt.ParameterNumeric{1} = 512.125;     % numeric edit box or spinner
-    obj.BatchOpt.ParameterNumeric{2} = [0 1024];    % possible limits value
+    obj.BatchOpt.ParameterNumeric{2} = \[0 1024\];    % possible limits value
     obj.BatchOpt.ParameterNumeric{3} = 'off';    % round the numeric value
     obj.BatchOpt.showWaitbar = true; 	% show or not the progress waitbar
     obj.BatchOpt.id = obj.mibModel.Id;  % optional        
@@ -224,7 +222,7 @@ the provided `BatchOptIn` from the **Batch processing** dialog.
     ```
     Add the following code: <br>
     ```matlab
-    obj.Sections(secIndex).Actions(actionId).Name = 'mib App Design Plugin [any suitable name]';
+    obj.Sections(secIndex).Actions(actionId).Name = 'mib App Design Plugin \[any suitable name\]';
     obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''mibAppDesignPluginController'', [], Batch);'; actionId = actionId + 1;
     ```        
 

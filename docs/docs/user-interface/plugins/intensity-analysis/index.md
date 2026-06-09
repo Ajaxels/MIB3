@@ -1,7 +1,5 @@
 # Intensity Analysis Plugins
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md)*
-
 ---
 
 The **Intensity Analysis** plugins in **Microscopy Image Browser (MIB)** provide tools for measuring and analyzing intensity in image datasets. These plugins are located in the `Plugins/Intensity Analysis` folder of your MIB installation and are automatically detected when MIB starts.

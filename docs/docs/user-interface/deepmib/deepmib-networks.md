@@ -1,6 +1,4 @@
-﻿# Deep MIB - Network Panel
-
-*Back to [MIB](../../index.md) | [User interface](../index.md) |  [DeepMIB](index.md)*
+# Deep MIB - Network Panel
 
 Configuration of workflows and network architectures for deep learning segmentation 
 in Microscopy Image Browser.

@@ -1,6 +1,4 @@
-﻿# Image Filters Panel
-
-*Back to [MIB](../../../index.md) | [User Guide](../../index.md) | [Panels](../index.md)*
+# Image Filters Panel
 
 ---
 

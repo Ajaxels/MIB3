@@ -1,6 +1,4 @@
-﻿# Surface Area 3D
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Organelle Analysis](index.md)*
+# Surface Area 3D
 
 ---
 ![Surface Area 3D Overview](images/surface-area-3d.jpg){.on-glb align=left width="300"}
@@ -35,7 +33,7 @@ points (e.g., 3 uses every third point for triangulation).
 - <span class="widget widget-edit">Z Sampling</span> similar to XY sampling, 
 applied to Z-dimension.
 - <span class="widget widget-checkbox">Show Points</span> display detected points in 
-the [Selection](../../panels/selection/index.md) layer. Clear afterward with ++shift+c++ to avoid model conflicts.
+the [Selection](../../panels/selection_imview/selection.md) layer. Clear afterward with ++shift+c++ to avoid model conflicts.
 - <span class="widget widget-checkbox">Export Results to MATLAB</span> generate a 
 structure in the main MATLAB workspace.
 ??? abstract "Configiration of the export structure"

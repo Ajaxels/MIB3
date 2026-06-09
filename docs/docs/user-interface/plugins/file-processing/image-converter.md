@@ -1,6 +1,4 @@
-﻿# Image Converter
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [File processing](index.md)*
+# Image Converter
 
 ---
 
@@ -161,7 +159,7 @@ In this mode, MIB can convert files from variety formats into [OME-Zarr](https:/
 - 'image' - intensity/volumetric image data (microscopy, CT, etc).
 - 'labels' - segmentation or annotation data (integer label maps).
 
-<span class="widget widget-edit">Chunk sizes</span>, the chunk size for storing data, written as a comma-separated list in the order [X, Y, Z, C, T]. 
+<span class="widget widget-edit">Chunk sizes</span>, the chunk size for storing data, written as a comma-separated list in the order \[X, Y, Z, C, T\]. 
 Each chunk forms a file with these dimensions, for Zarr version 3, the chunks are merged into shards to minimize number of files. This parameter controls input/output performance:
 the smaller chunks give faster random access, while the larger chunks give faster sequential access. 
 
@@ -169,7 +167,7 @@ the smaller chunks give faster random access, while the larger chunks give faste
 
     Example: '128, 128, 64, 1, 1' - chunks of 128×128×64 voxels per channel per timepoint.
 
-<span class="widget widget-edit">Shard X factors</span>, sharding factor for Zarr v3 (how many chunks are grouped together into a shard). Written as [X, Y, Z, C, T].
+<span class="widget widget-edit">Shard X factors</span>, sharding factor for Zarr v3 (how many chunks are grouped together into a shard). Written as \[X, Y, Z, C, T\].
 Reduces overhead when dealing with many small chunks, improves cloud performance.
 
 ??? note "Example"
@@ -189,13 +187,13 @@ For anisotropic datasets, the downsampling procedure brings the volume first to 
 
 <span class="widget widget-edit">Compression level</span>, compression level settings: **1..9** - compression levels, the higher the value the more compression output is expected, but with the slowest computation times.
 
-<span class="widget widget-edit">Voxel size</span>, physical voxel size of the dataset in order [X, Y, Z], given in the specified units. 
+<span class="widget widget-edit">Voxel size</span>, physical voxel size of the dataset in order \[X, Y, Z\], given in the specified units. 
 
 ??? note "Example"
 
     Example: '0.013, 0.013, 0.030' - voxel size 13 nm x 13 nm x 30 nm if units = micrometers.
 
-<span class="widget widget-edit">Bounding box shift</span>, offset (translation) applied to the dataset bounding box along [X, Y, Z]. 
+<span class="widget widget-edit">Bounding box shift</span>, offset (translation) applied to the dataset bounding box along \[X, Y, Z\]. 
 Useful when aligning multiple datasets into a common coordinate system.
 
 ??? note "Example"

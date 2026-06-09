@@ -1,7 +1,5 @@
 # Deep MIB - Options Tab
 
-*Back to [MIB](../../index.md) | [User interface](../index.md) |  [DeepMIB](index.md)*
-
 Additional options and settings for deep learning segmentation in Microscopy Image Browser.
 
 

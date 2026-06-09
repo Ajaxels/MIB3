@@ -1,6 +1,4 @@
-﻿# Multi-Rename Tool
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [File processing](index.md)*
+# Multi-Rename Tool
 
 ---
 

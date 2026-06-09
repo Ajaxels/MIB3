@@ -1,7 +1,5 @@
 # Deep MIB - Predict Tab
 
-*Back to [MIB](../../index.md) | [User interface](../index.md) |  [DeepMIB](index.md)*
-
 Settings for efficient prediction (inference) and semantic segmentation model generation in Microscopy Image Browser.
 
 ---

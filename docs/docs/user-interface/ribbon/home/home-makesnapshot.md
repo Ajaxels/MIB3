@@ -1,7 +1,5 @@
 # Make Snapshot
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*
-
 ---
 
 ## Overview
@@ -30,7 +28,7 @@ Define the destination for the rendered snapshot:
 ![Make a Snapshot Dialog, Options->Crop](images/menuFileSnapshot-crop.png){align=left}
 
 - **Full image**: make snapshot of the whole image.
-- **Shown area**: make snapshot of the displayed in the [Image View panel](../../panels/imview/index.md) area only.
+- **Shown area**: make snapshot of the displayed in the [Image View panel](../../panels/selection_imview/imview.md) area only.
 - **ROI**: use selected ROI (the ROI may be defined using [the ROI panel](../../panels/roi/index.md)) as area for the snapshot.
 
 ---

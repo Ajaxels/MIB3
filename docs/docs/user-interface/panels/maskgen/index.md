@@ -1,6 +1,4 @@
-﻿# Mask Generators Panel
-
-*Back to [MIB](../../../index.md) | [User Guide](../../index.md) | [Panels](../index.md)*
+# Mask Generators Panel
 
 ---
 
@@ -57,7 +55,7 @@ ridges (Frangi [1998](http://www.dtic.upf.edu/~afrangi/articles/miccai1998.pdf),
 May require compilation; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#frangi).
 
 ???+ info "Parameters"
-    - **Range**: Sigma range (default: [1-6]).
+    - **Range**: Sigma range (default: \[1-6\]).
     - **Ratio**: Step size between sigmas (default: 2).
     - **beta1**: Frangi correction constant (default: 0.9).
     - **beta2**: Frangi correction constant (default: 15).

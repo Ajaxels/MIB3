@@ -1,7 +1,5 @@
 # Adjust Display Window
 
-*Back to [MIB](../../../index.md) | [User Guide](../../index.md) | [Panels](../index.md) | [View Settings](index.md)*
-
 ---
 
 ## Overview

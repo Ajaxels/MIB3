@@ -1,6 +1,4 @@
-﻿# Deep MIB - Directories and Preprocessing Tab
-
-*Back to [MIB](../../index.md) | [User interface](../index.md) | [DeepMIB](index.md)*
+# Deep MIB - Directories and Preprocessing Tab
 
 Configuration of directories and preprocessing settings for deep learning segmentation in Microscopy Image Browser.
 
@@ -158,7 +156,7 @@ and validation sets
 
 Sections below provide schemes for directories organization for several cases:
 
-- [Automatic file splitting](deepmib-dirs.md#automatic-file-splitting) [**recommended for most cases**] without file conversion, with automatic splitting of files for training and validation
+- [Automatic file splitting](deepmib-dirs.md#automatic-file-splitting) \[**recommended for most cases**\] without file conversion, with automatic splitting of files for training and validation
 - [Manual file splitting](deepmib-dirs.md#manual-file-splitting) without file conversion, files arranged manually into correct folders
 - [Conversion of files](deepmib-dirs.md#conversion-of-files) with preprocessing/file conversion, files are converted to `.mibImg` and `.mibCat` formats and split for training and validation
 - [Patch-wise workflow](deepmib-dirs.md#patch-wise-workflow) this workflow requires slightly different organization of directories 

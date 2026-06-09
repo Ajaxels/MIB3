@@ -1,6 +1,4 @@
-﻿# Threshold Analysis for Objects
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Organelle Analysis](index.md)*
+# Threshold Analysis for Objects
 
 ---
 
@@ -112,8 +110,8 @@ start <span class="widget widget-checkbox">Autoprint dialog</span> for automatic
       graph with properties:
     `ThreshAnalysisGraph` is a graph object with the fillowing fields:
     ```
-        Edges: [39×1 table]
-        Nodes: [18×2 table]
+        Edges: \[39×1 table\]
+        Nodes: \[18×2 table\]
     ```
 
 <span class="widget widget-checkbox">Excel</span> save results in Microsoft Excel format `.xls`
@@ -160,7 +158,7 @@ Follow these steps to analyze objects:
 **Run Analysis**:
 
 - Click <span class="widget widget-button">Start</span> to segment objects and compute metrics.
-- Results appear in MIB’s [Image View](../../panels/imview/index.md) panel or exported files.
+- Results appear in MIB’s [Image View](../../panels/selection_imview/imview.md) panel or exported files.
    
 **Review Results**:
 ??? info "Snapshot with results"

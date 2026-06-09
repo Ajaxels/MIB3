@@ -1,6 +1,4 @@
-﻿# GUI Tutorial
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Tutorials](index.md)*
+# GUI Tutorial
 
 ---
 

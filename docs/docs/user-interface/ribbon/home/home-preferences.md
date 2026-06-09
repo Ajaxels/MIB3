@@ -1,7 +1,5 @@
 # Preferences
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*
-
 The Preferences dialog lets you customize Microscopy Image Browser to suit your workflow, 
 from interface appearance to tool behavior and external integrations.<br>
 Open it via [Ribbon → Home → Preferences](../index.md). 
@@ -66,7 +64,7 @@ Fine-tune how the mouse and rendering work:
     selecting any of these options swaps the mouse button so that <mouse class="right"></mouse> takes the other role.
 
 <span class="widget widget-dropdown">Image resize method</span>: a dropdown to choose how images are 
-interpolated for visualization in the [Image View Panel](../../panels/imview/index.md):
+interpolated for visualization in the [Image View Panel](../../panels/selection_imview/imview.md):
 
 - `auto`: uses `nearest` for >100% zoom, `bicubic` for <100% (default).
 - `nearest`: fastest, lower quality.
@@ -215,7 +213,7 @@ scaled between 0 and 255.
 **LUT Colors for Color Channels** - is a table with columns for Red, Green, Blue, and a Preview, used for 
 definition of LUT (**L**ook **U**p **T**able) colors to visualize individual color channels of the dataset.
 <br><br>
-The LUT color channel is also available from the View Settings panel. Whenever <span class="widget widget-checkbox">LUT</span> is checked in the [View Settings->LUT table](../../panels/viewsettings/index.md#colors-table-and-lut-checkbox)
+The LUT color channel is also available from the View Settings panel. Whenever <span class="widget widget-checkbox">LUT</span> is checked in the [View Settings->LUT table](../../panels/selection_imview/viewsettings.md#colors-table-and-lut-checkbox)
 these colors are used.
 
 <div class="clear-float"></div>

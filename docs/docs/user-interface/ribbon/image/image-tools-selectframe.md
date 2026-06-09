@@ -1,7 +1,5 @@
 # Select Image Frame
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Image](index.md)*
-
 ---
 
 ## Description

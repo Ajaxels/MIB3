@@ -1,6 +1,4 @@
-﻿# The Brush Tool
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
+# The Brush Tool
 
 ---
 
@@ -33,7 +31,7 @@ Use the brush to make selections, with size regulated by the <span class="widget
 - ![Interpolation Settings](images/PanelsSegmentationToolsBrushInterpolation.png){.on-glb align=left width="200"}
   **Interpolation settings**: modify settings via dialog (also adjustable in<br>
   [Ribbon → Home -> Preferences -> Segmentation tools](../../ribbon/home/home-preferences.md)<br> 
-  or in [toolbar](../../quick-access-bar/index.md#interpolation-type)).
+  or in [toolbar](../../quick-access-bar/index.md)).
 
 <div class="clear-float"></div>
 - <span class="widget widget-checkbox">Watershed</span>: cluster pixels with the watershed algorithm for selection as clusters.

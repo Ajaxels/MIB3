@@ -1,6 +1,4 @@
-﻿# Watershed Segmentation
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Menu](../index.md) | [Tools](index.md)*
+# Watershed Segmentation
 
 Semi-automated image segmentation using the Watershed method in 
 Microscopy Image Browser.
@@ -27,7 +25,7 @@ The *Mode panel* lets you select the segmentation scope.
 
 ![Mode panel options](images/menuToolsWatershed_Mode.jpg){align=left}
 
-- <label class="widget widget-checkbox">2D, current slice only</label> segments only the current slice in the [Image View panel](../../panels/imview/index.md)
+- <label class="widget widget-checkbox">2D, current slice only</label> segments only the current slice in the [Image View panel](../../panels/selection_imview/imview.md)
 - <label class="widget widget-checkbox">2D, slice-by-slice</label> applies 2D segmentation to each slice individually
 - <label class="widget widget-checkbox">3D, volume</label> performs 3D segmentation on the entire dataset or a subarea (see *Subarea panel* below)
 - <span class="widget widget-edit">Aspect ratio for 3D...</span> displays the dataset’s 
@@ -47,7 +45,7 @@ The *Subarea panel* defines a dataset subset for processing, useful for large da
 - <span class="widget widget-edit">Y:...</span> sets the height range
 - <span class="widget widget-edit">Z:...</span> sets the z-slice range
 - <span class="widget widget-button">from Selection</span> fills *X*, *Y*, and *Z* with coordinates from the *Selection* layer’s bounding box
-- <span class="widget widget-button">Current View</span> limits *X* and *Y* to the visible area in the [Image View panel](../../panels/imview/index.md)
+- <span class="widget widget-button">Current View</span> limits *X* and *Y* to the visible area in the [Image View panel](../../panels/selection_imview/imview.md)
 - <span class="widget widget-button">Reset</span> restores full dataset dimensions
 - <span class="widget widget-edit">Bin x times...</span> applies a binning factor to reduce detail for faster processing
 
@@ -79,7 +77,7 @@ it preferable for most cases.
   - <label class="widget widget-checkbox">Gradient</label> applies a gradient filter to enhance object borders
   - <label class="widget widget-checkbox">Eigenvalue of Hessian</label> preprocesses data for improved Watershed results; adjust with *Sigma* fields
   - <label class="widget widget-checkbox">Export to MATLAB</label> sends preprocessed data to the MATLAB workspace
-  - <label class="widget widget-checkbox">Preview</label> displays preprocessing results in the [Image View panel](../../panels/imview/index.md)
+  - <label class="widget widget-checkbox">Preview</label> displays preprocessing results in the [Image View panel](../../panels/selection_imview/imview.md)
   - <span class="widget widget-button">Pre-process</span> starts preprocessing (turns green when data is ready)
   - <span class="widget widget-button">Import from MATLAB</span> loads a dataset from the MATLAB workspace for segmentation
   - <span class="widget widget-button">Clear</span> removes preprocessed data from memory

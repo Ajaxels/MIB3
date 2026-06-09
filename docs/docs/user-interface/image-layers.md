@@ -1,13 +1,11 @@
-﻿# Image Layers
-
-*Back to [MIB](../index.md) | [User Interface](index.md)*
+# Image Layers
 
 Microscopy Image Browser (MIB) organizes datasets in a layered structure, storing each opened image in the **Image** layer. This is supplemented by **Model**, **Mask**, and **Selection** layers, all matching the Image layer’s X, Y, Z dimensions. These additional layers support the image segmentation process.
 
 ## General Organization
 
-For visualization, MIB combines all layers to produce the image shown in the [Image View Panel](panels/imview/index.md). 
-You can toggle each layer on or off, adjust transparency, and change colors (see the [View Settings Panel](panels/viewsettings/index.md) docs).
+For visualization, MIB combines all layers to produce the image shown in the [Image View Panel](panels/selection_imview/imview.md). 
+You can toggle each layer on or off, adjust transparency, and change colors (see the [View Settings Panel](panels/selection_imview/viewsettings.md) docs).
 
 ![Schematic of data layers combined into the final image](images/dataLayersToFinalImage.jpg)
 

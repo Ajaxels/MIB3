@@ -1,7 +1,5 @@
 # The Annotations Tool
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
-
 ---
 
 ## Overview

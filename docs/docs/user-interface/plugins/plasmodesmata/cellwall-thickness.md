@@ -1,7 +1,5 @@
 # Cell Wall Thickness
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Plasmodesmata](index.md)*
-
 ---
 
 ![Cell Wall Thickness](images/cellwall-thickness.png){align=left}

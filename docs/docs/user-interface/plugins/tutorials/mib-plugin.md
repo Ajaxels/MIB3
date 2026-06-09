@@ -1,6 +1,4 @@
-﻿# MIB Plugin with GUI
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Tutorials](index.md)*
+# MIB Plugin with GUI
 
 ---
 
@@ -206,11 +204,11 @@ which is the <span class="widget widget-button">Calculate</span> button that sta
         threhsoldValue = str2double(value); 
         wb = waitbar(0, 'Please wait'); % add a waitbar to follow the progress
                 
-        [height, width, ~, depth] = obj.mibModel.I{obj.mibModel.Id}.getDatasetDimensions('image');  % get dataset dimensions
+        \[height, width, ~, depth\] = obj.mibModel.I{obj.mibModel.Id}.getDatasetDimensions('image');  % get dataset dimensions
         img = cell2mat(obj.mibModel.getData2D('image'));    % get the currently displayed image
         waitbar(0.5, wb);   % update the waitbar
     
-        mask = zeros([height, width, depth], 'uint8'); % allocate space for the mask layer
+        mask = zeros(\[height, width, depth\], 'uint8'); % allocate space for the mask layer
         mask(img<threhsoldValue) = 1; % threshold image
         waitbar(0.95, wb);     % update the waitbar
                 

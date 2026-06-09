@@ -1,6 +1,9 @@
-﻿# Image View Panel
+# Image View Panel
 
-*Back to [MIB](../../../index.md) | [User Guide](../../index.md) | [Panels](../index.md)*
+!!! info "MIB3"
+    In MIB3 this component is replaced by the **[Image Document](../../image-document/index.md)**,
+    which adds multi-document (tabbed/split) layout, per-document slice and frame navigation,
+    and drag-and-drop loading. This page is retained for MIB2 reference.
 
 ---
 

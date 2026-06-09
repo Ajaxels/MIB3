@@ -1,7 +1,5 @@
 # Selection Panel
 
-*Back to [MIB](../../../index.md) | [User Guide](../../index.md) | [Panels](../index.md)*
-
 ---
 
 ## Overview

@@ -1,7 +1,5 @@
 # Contact and Support
 
-*Back to [MIB](../index.md) | [Getting started](index.md)*
-
 ---
 
 The **Microscopy Image Browser (MIB)** team is here to help you with your image segmentation, processing, and analysis needs. 

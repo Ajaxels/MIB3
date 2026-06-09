@@ -1,7 +1,5 @@
 # MCcalc 
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Organelle Analysis](index.md)*
-
 ---
 ## Overview
 

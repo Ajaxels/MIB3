@@ -1,6 +1,4 @@
-﻿# Random Forest Classifier
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Menu](../index.md) | [Tools](index.md)*
+# Random Forest Classifier
 
 Tools for automatic image segmentation using a train-and-predict scheme based on random forest classification.
 

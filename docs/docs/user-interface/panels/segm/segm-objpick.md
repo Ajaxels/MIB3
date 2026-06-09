@@ -1,6 +1,4 @@
-﻿# Object Picker
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
+# Object Picker
 
 ---
 

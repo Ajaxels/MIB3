@@ -1,7 +1,5 @@
 # Global Black-and-White Thresholding
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Tools](index.md)*
-
 Tools for performing global black-and-white thresholding on datasets in Microscopy Image Browser (MIB).
 
 ---
@@ -65,7 +63,7 @@ each suited to different image characteristics.
 - An iterative algorithm similar to OTSU but less computationally intensive
 - Starts with an initial guess for threshold *t*
 - Calculates means *μt* and *νt* for the two classes
-- Updates *t = [(μt + νt) / 2]* and recalculates *μt* and *νt*
+- Updates *t = \[(μt + νt) / 2\]* and recalculates *μt* and *νt*
 - Repeats until *t* stabilizes across iterations
 - Results may depend heavily on the initial *t* value
 - Use MEAN for comparable object and background areas; use INTERMODES for small objects relative to the background
@@ -85,7 +83,7 @@ each suited to different image characteristics.
 - An alternative to MINIMUM, assuming a bimodal histogram
 - Identifies two peaks (local maxima) *yj* and *yk*
 - Sets *t = (j + k) / 2*
-- Refines *t = [(μt + νt) / 2]* and recalculates *μt* and *νt*
+- Refines *t = \[(μt + νt) / 2\]* and recalculates *μt* and *νt*
 - Unsuitable for histograms with extremely unequal peaks
 
 !!! abstract "References and Acknowledgements"
@@ -220,11 +218,11 @@ This tool supports batch scripting for automation.
     BatchOpt.colChannel = 2;         % define color channel for thresholding
     BatchOpt.Mode = '3D, Stack';     % mode to use
     BatchOpt.Method = 'Otsu';        % thresholding algorithm
-    BatchOpt.Destination = 'selection'; % [optional] destination layer, 'mask' or 'selection'
-    BatchOpt.t = [1 1];              % [optional] time points, [t1, t2]
-    BatchOpt.z = [10 20];            % [optional] slices, [z1, z2]
-    BatchOpt.x = [10 120];           % [optional] part of the image, [x1, x2]
-    BatchOpt.Orientation = 4;        % [optional] dataset orientation
+    BatchOpt.Destination = 'selection'; % \[optional\] destination layer, 'mask' or 'selection'
+    BatchOpt.t = \[1 1\];              % \[optional\] time points, \[t1, t2\]
+    BatchOpt.z = \[10 20\];            % \[optional\] slices, \[z1, z2\]
+    BatchOpt.x = \[10 120\];           % \[optional\] part of the image, \[x1, x2\]
+    BatchOpt.Orientation = 4;        % \[optional\] dataset orientation
     obj.startController('mibHistThresController', [], BatchOpt); % start thresholding
     ```
 ---

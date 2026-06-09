@@ -1,6 +1,4 @@
-﻿# MIB 3D Volume Rendering
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*
+# MIB 3D Volume Rendering
 
 ---
 
@@ -104,9 +102,9 @@ to modify position of the camera.
 
 - <span class="widget widget-edit">Zoom</span> camera zoom level.
 - <span class="widget widget-edit">Distance</span> distance from camera to the scene center.
-- <span class="widget widget-edit">Position</span> camera position as a 3-element vector [x y z]. See [Camera Graphics Terminology](https://se.mathworks.com/help/matlab/creating_plots/defining-scenes-with-camera-graphics.html).
-- <span class="widget widget-edit">Target</span> camera target as a 3-element vector [x y z].
-- <span class="widget widget-edit">Up vector</span> upwards direction as a 3-element vector [x y z] (default: [0 0 1]).
+- <span class="widget widget-edit">Position</span> camera position as a 3-element vector \[x y z\]. See [Camera Graphics Terminology](https://se.mathworks.com/help/matlab/creating_plots/defining-scenes-with-camera-graphics.html).
+- <span class="widget widget-edit">Target</span> camera target as a 3-element vector \[x y z\].
+- <span class="widget widget-edit">Up vector</span> upwards direction as a 3-element vector \[x y z\] (default: \[0 0 1\]).
 
 <div class="clear-float"></div>
 
@@ -134,7 +132,7 @@ List of widgets for tweaking visualization settings:
 
 - <span class="widget widget-dropdown">Opacity</span> / <span class="widget widget-dropdown">iso-value</span>: slider to tweak **GradientOpacity** and **Isosurface** settings.
 - <span class="widget widget-dropdown">Color map</span>: update the colormap; use <label class="widget widget-checkbox">Invert</label>, <span class="widget widget-edit">Black point</span>, and <span class="widget widget-edit">White point</span> for adjustments.
-- <span class="widget widget-dropdown">Slices</span> [*only for SlicePlanes*]: sliders to change orthogonal slice positions.
+- <span class="widget widget-dropdown">Slices</span> \[*only for SlicePlanes*\]: sliders to change orthogonal slice positions.
 - **Alpha curve**: define transparency for the volume (1 = opaque, 0 = transparent).
   - <mouse class="right"></mouse>: select the point.
   - <mouse class="left"></mouse>: change position of the selected point.

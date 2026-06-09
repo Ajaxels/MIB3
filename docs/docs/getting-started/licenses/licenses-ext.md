@@ -1,7 +1,5 @@
 # External Licenses
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md) | [Licenses](index.md)*
-
 Microscopy Image Browser (MIB) adapts code from multiple open-source projects. 
 Below are the licenses for the external functions and libraries used in MIB.
 

@@ -1,7 +1,5 @@
 # Plasmodesmata Plugins
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md)*
-
 ---
 
 The **Plasmodesmata** plugins in **Microscopy Image Browser (MIB)** provide tools tailored for analyzing plasmodesmata in plant biology, 

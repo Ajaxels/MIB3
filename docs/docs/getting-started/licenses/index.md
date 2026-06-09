@@ -1,7 +1,5 @@
 # Licenses
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md)*
-
 Microscopy Image Browser (MIB) is distributed under specific licensing terms that vary depending on its usage and components. 
 This section outlines the licenses for MIB and its dependencies, organized into three categories: MIB for MATLAB, 
 MIB standalone, and external libraries or tools used by MIB.

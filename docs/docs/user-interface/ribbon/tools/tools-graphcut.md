@@ -1,6 +1,4 @@
-﻿# Graphcut Segmentation
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Tools](index.md)*
+# Graphcut Segmentation
 
 Semi-automated image segmentation using the max-flow/min-cut graphcut method in Microscopy Image Browser (MIB).
 
@@ -53,12 +51,12 @@ The *Mode panel* lets you select the segmentation scope.
 
 ![Mode panel options](images/menuToolsGraphcut_Mode.jpg){align=left}
 
-- <label class="widget widget-checkbox">2D, current slice only</label> segments only the current slice in the [Image View panel](../../panels/imview/index.md)
+- <label class="widget widget-checkbox">2D, current slice only</label> segments only the current slice in the [Image View panel](../../panels/selection_imview/imview.md)
 - <label class="widget widget-checkbox">2D, slice-by-slice</label> applies 2D segmentation to each slice individually
 - <label class="widget widget-checkbox">3D, volume</label> performs 3D segmentation on the entire dataset or a subarea (see *Subarea panel* below)
 - <label class="widget widget-checkbox">3D, volume, grid</label> segments a large dataset by dividing it 
 into subvolumes (defined by *Chop* fields). the subvolume centered in 
-the [Image View panel](../../panels/imview/index.md) is processed 
+the [Image View panel](../../panels/selection_imview/imview.md) is processed 
 (enable the center marker via 
 ![](../../quick-access-bar/images/toolbar-centralmarker.png) on the Quick Access Bar). <br>Use <span class="widget widget-button">Segment All</span> to process all subvolumes
 
@@ -76,7 +74,7 @@ The *Subarea panel* defines a dataset subset for processing, useful for large da
 - <span class="widget widget-edit">Y:...</span> sets the height range
 - <span class="widget widget-edit">Z:...</span> sets the z-slice range
 - <span class="widget widget-button">from Selection</span> fills *X*, *Y*, and *Z* with coordinates from the *Selection* layer’s bounding box
-- <span class="widget widget-button">Current View</span> limits *X* and *Y* to the visible area in the [Image View panel](../../panels/imview/index.md)
+- <span class="widget widget-button">Current View</span> limits *X* and *Y* to the visible area in the [Image View panel](../../panels/selection_imview/imview.md)
 - <span class="widget widget-button">Reset</span> restores full dataset dimensions
 - <span class="widget widget-edit">Bin x times...</span> applies a binning factor to reduce detail for faster processing
 

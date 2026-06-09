@@ -1,7 +1,5 @@
 # Path Panel
 
-*Back to [MIB](../../index.md) | [User interface](../index.md) | [Panels](../index.md)*
-
 Specifies the current directory of image datasets in Microscopy Image Browser.
 
 ---

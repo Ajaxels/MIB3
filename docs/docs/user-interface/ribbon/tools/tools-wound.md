@@ -1,7 +1,5 @@
 # Wound Healing Assay
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Menu](../index.md) | [Tools](index.md)*
-
 The wound healing assay is a microscopy-based technique used to study cell migration. 
 A "wound" or gap is created in a cell monolayer, and the movement of cells into this gap 
 is monitored over time using time-lapse imaging to assess healing dynamics.

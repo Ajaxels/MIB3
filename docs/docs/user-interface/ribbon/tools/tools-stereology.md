@@ -1,7 +1,5 @@
 # Stereology
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Tools](index.md)*
-
 Counts intersections between model materials and grid lines, with spacing definable in pixels or image units. Results can be exported to MATLAB or Excel.
 
 [:fontawesome-brands-youtube:{.red-color} Demonstration](https://youtu.be/5gOiyVNr2vY)

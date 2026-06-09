@@ -1,7 +1,5 @@
 # Slice menu
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Dataset](index.md)*
-
 ---
 
 ![Slice Dataset Dialog](images/menuDatasetSlice.png){align=left}

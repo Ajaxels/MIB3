@@ -1,7 +1,5 @@
 # MIB Standalone (compiled, deployed) License
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md) | [Licenses](index.md)*
-
 ---
 
 ## License for compiled application of Microscopy Image Browser

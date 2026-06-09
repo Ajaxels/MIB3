@@ -1,7 +1,5 @@
 # Deep MIB - Train Tab
 
-*Back to [MIB](../../index.md) | [User interface](../index.md) |  [DeepMIB](index.md)*
-
 Settings for generating and training deep convolutional networks in Microscopy Image Browser.
 
 ---

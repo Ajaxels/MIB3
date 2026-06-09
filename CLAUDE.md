@@ -193,18 +193,14 @@ BatchOpt.id = obj.getActiveId();  % CORRECT — always uses Sets.selectedSet
 
 ## Documentation
 
-All MATLAB docblocks use **RST format** compatible with `sphinxcontrib-matlabdomain` (Sphinx).
-See `development/docs_api_sphinx.md` for the complete style guide and `docs_api/README.md` for build instructions.
+Two separate documentation systems exist — see each directory's `CLAUDE.md` for full details:
 
-Quick rules:
-- **Header line:** `% FUNCTIONNAME - One-line description.` — all-caps name, no function call in the text
-- **Syntax:** `.. code-block:: matlab` (never bare `::`)
-- **Parameter names:** `**bold**` with em-dash `—` separator
-- **Struct fields:** nested RST bullets with backtick field names — `` ``.fieldName`` — description ``
-- **Optional params:** `*(optional)*` after the bold name
-- **Examples:** `**Example N** — title` heading + `.. code-block:: matlab`
-- **Inline code / defaults:** double backticks `` ``value`` ``
-- **No Doxygen:** replace `@b`, `@li`, `[@em optional]`, `@ Note:` with RST equivalents
+| System | Location | Guide |
+|--------|----------|-------|
+| **User docs** (Zensical/MkDocs) | `docs/` | [`docs/CLAUDE.md`](docs/CLAUDE.md) — nav editing, custom elements, CSS tokens, build commands |
+| **API reference** (Sphinx/RST) | `docs_api/` | [`docs_api/CLAUDE.md`](docs_api/CLAUDE.md) — docblock format, when to add RST entries, build steps |
+
+**Rule:** whenever you add, rename, or significantly change a public method or UI feature, update the corresponding documentation in the relevant system.
 
 ---
 

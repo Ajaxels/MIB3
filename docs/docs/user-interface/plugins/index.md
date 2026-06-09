@@ -1,6 +1,4 @@
-﻿# Plugins
-
-*Back to [MIB](../../index.md) | [User Interface](../index.md)*
+# Plugins
 
 ---
 

@@ -1,7 +1,5 @@
 # Hitrory of Releases
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md) | [Current release notes](index.md)*
-
 ---
 
 This page lists the release history for **Microscopy Image Browser (MIB)**, detailing new features, improvements, and fixes across versions.<br> 
@@ -22,13 +20,13 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Added paste of annotation values from clipboard
     - Added auto fill switch to the Selection panel to fill the shapes after use of brush
     - Added jitter coordinates option into crop out patches for annotations and objects
-    - Added [F] template for exporting statistics via batch processing
+    - Added \[F\] template for exporting statistics via batch processing
     - Added saving of projects, copy to clipboard and open in file explorer for directories in Rename and Shuffle->Restore
     - Added possibility to load measurements (*.measure) from multiple files and added filename to export of measurement in the Excel format
     - Added possibility update colors of annotations into the Annotation list window
     - Added key shortcuts to zoom in to 100% and fit to view
     - Added key shortcut to rename materials (default F2)
-    - Added key shortcuts to change the brush size (default '[' and ']')
+    - Added key shortcuts to change the brush size (default '\[' and '\]')
     - Added possibility to hide the Path and the bottom panels via a dropdown menu
     - Added filename identifier when exporting object quantification
     - Added filename identifier when exporting annotations to Excel or CSV
@@ -53,34 +51,34 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Fixed Add frame when dX or dY is 0
     - Fixed Resize of models that have more than 255 materials
     - Updated Bio-Formats to 7.2.0
-    - **[DeepMIB]** Added 2.5D network architectures for semantic segmentation
-    - **[DeepMIB]** Added training using Multi-GPU configuration
-    - **[DeepMIB]** Added prediction using Multi-GPU configuration
-    - **[DeepMIB]** Added new dialog to specify augmentation settings
-    - **[DeepMIB]** Added drag-and-drop of "mibCfg" project files
-    - **[DeepMIB]** Added duplication operation to make a copy of a trained network
-    - **[DeepMIB]** Added padding parameter to symmetrically pad the image
-    - **[DeepMIB]** Added symmetric padding for prediction
-    - **[DeepMIB]** Added export of the trained network to TensorFlow format
-    - **[DeepMIB]** Added 'MATLAB non-compressed format (range 0-1)'
-    - **[DeepMIB]** Added possibility to predict images that are not under Images subfolder
-    - **[DeepMIB]** Added an option to calculate loss excluding Exterior
-    - **[DeepMIB]** Added sending of email notifications about training progress
-    - **[DeepMIB]** Added preview of a network stored in mibDeep file
-    - **[DeepMIB]** Added possibility to mask-away areas without preprocessing
-    - **[DeepMIB]** Improved handling of directories
-    - **[DeepMIB]** Extended the Evaluate segmentation plot
-    - [2.9002] Updated GUI windows
-    - [2.9003] Added 'mib_prefs_override.mat' file to override default settings
-    - [2.9004] Fix accidental incompatibility augmentation settings bug
-    - [2.9005] Added update on zoom for snapshot and movie maker tools
-    - [2.9006] Added usage of a reference slice for contrast normalization
-    - [2.9007] Fixed import of older DeepMIB configs
-    - [2.9008] Fixed selection of 2D objects in Get Statistics
-    - [2.9009] Added SAM for YZ and XZ orientations
-    - [2.9010] Fix of file check during transfer learning
-    - [2.9011] Added "add, +next material" to SAM
-    - [2.9012] Added currently selected material to move layers; fixed indices for annotations; added import of landmarkAscii and landmarkBin
+    - **\[DeepMIB\]** Added 2.5D network architectures for semantic segmentation
+    - **\[DeepMIB\]** Added training using Multi-GPU configuration
+    - **\[DeepMIB\]** Added prediction using Multi-GPU configuration
+    - **\[DeepMIB\]** Added new dialog to specify augmentation settings
+    - **\[DeepMIB\]** Added drag-and-drop of "mibCfg" project files
+    - **\[DeepMIB\]** Added duplication operation to make a copy of a trained network
+    - **\[DeepMIB\]** Added padding parameter to symmetrically pad the image
+    - **\[DeepMIB\]** Added symmetric padding for prediction
+    - **\[DeepMIB\]** Added export of the trained network to TensorFlow format
+    - **\[DeepMIB\]** Added 'MATLAB non-compressed format (range 0-1)'
+    - **\[DeepMIB\]** Added possibility to predict images that are not under Images subfolder
+    - **\[DeepMIB\]** Added an option to calculate loss excluding Exterior
+    - **\[DeepMIB\]** Added sending of email notifications about training progress
+    - **\[DeepMIB\]** Added preview of a network stored in mibDeep file
+    - **\[DeepMIB\]** Added possibility to mask-away areas without preprocessing
+    - **\[DeepMIB\]** Improved handling of directories
+    - **\[DeepMIB\]** Extended the Evaluate segmentation plot
+    - \[2.9002\] Updated GUI windows
+    - \[2.9003\] Added 'mib_prefs_override.mat' file to override default settings
+    - \[2.9004\] Fix accidental incompatibility augmentation settings bug
+    - \[2.9005\] Added update on zoom for snapshot and movie maker tools
+    - \[2.9006\] Added usage of a reference slice for contrast normalization
+    - \[2.9007\] Fixed import of older DeepMIB configs
+    - \[2.9008\] Fixed selection of 2D objects in Get Statistics
+    - \[2.9009\] Added SAM for YZ and XZ orientations
+    - \[2.9010\] Fix of file check during transfer learning
+    - \[2.9011\] Added "add, +next material" to SAM
+    - \[2.9012\] Added currently selected material to move layers; fixed indices for annotations; added import of landmarkAscii and landmarkBin
 
 ??? abstract "2.84 / 09.12.2022 (new 3D viewer and HDD alignment)"
     - Added Example datasets
@@ -89,7 +87,7 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Added alignment of datasets without loading
     - Added white balance correction
     - Added modification of annotation size
-    - Added [F] template for saving images
+    - Added \[F\] template for saving images
     - Added showWaitbar option to Batch Processing
     - Added resizing of panels to batch processing
     - Added erosion of models with parallel processing
@@ -104,15 +102,15 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Fixed slow update of selected directory
     - Fixed application of MorphOps
     - Fixed loading of some jpg files
-    - **[DeepMIB]** Added prediction of 3D stacks with 2D models
-    - **[DeepMIB]** Added possibility to specify patch size during augmentation
-    - **[DeepMIB]** Added 'DeepLabV3 Xception' and 'DeepLabV3 Inception-ResNet-v2'
-    - **[DeepMIB]** Added swish activation layer
-    - **[DeepMIB]** Added a function to balance classes
-    - **[DeepMIB]** Added network preview for deployed version
-    - **[DeepMIB]** Added saving of custom training plot
-    - **[DeepMIB]** Added scaling of loss function plot
-    - **[DeepMIB]** Fixed generation of score maps
+    - **\[DeepMIB\]** Added prediction of 3D stacks with 2D models
+    - **\[DeepMIB\]** Added possibility to specify patch size during augmentation
+    - **\[DeepMIB\]** Added 'DeepLabV3 Xception' and 'DeepLabV3 Inception-ResNet-v2'
+    - **\[DeepMIB\]** Added swish activation layer
+    - **\[DeepMIB\]** Added a function to balance classes
+    - **\[DeepMIB\]** Added network preview for deployed version
+    - **\[DeepMIB\]** Added saving of custom training plot
+    - **\[DeepMIB\]** Added scaling of loss function plot
+    - **\[DeepMIB\]** Fixed generation of score maps
 
 ??? abstract "2.831 / 21.06.2022; 2.83 / 19.06.2022 (blockedImage and 2D patch-wise)"
     - Added generation of image 2D and 3D patches around annotation labels
@@ -120,29 +118,29 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Added Info field to measurements
     - Added generation of pyramidal TIF files
     - Added the "show prompt" option to Annotations tool
-    - Added [InheritLastDIR] tag to inherit directory name
+    - Added \[InheritLastDIR\] tag to inherit directory name
     - Added "end" tag to crop operation
     - Added Drag-and-drop model files
-    - [2.831] Added Destination: Current to Crop
+    - \[2.831\] Added Destination: Current to Crop
     - Correction of pixel size for pyramidal formats
     - Fixed loading of partial AM files
     - Fixed loading of TIF files with YCbCr color space
-    - [2.831] MATLAB versions compatibility bug fixes
+    - \[2.831\] MATLAB versions compatibility bug fixes
     - Updated Bio-Formats to 6.10.0
-    - **[DeepMIB]** Rearranged Architecture into Workflow
-    - **[DeepMIB]** Optimized to work without preprocessing
-    - **[DeepMIB]** Added blockedImage mode
-    - **[DeepMIB]** Added dynamic masking
-    - **[DeepMIB]** Added 2D Patch-wise mode
-    - **[DeepMIB]** Added Resnet18, Resnet50, Resnet101, Xception networks
-    - **[DeepMIB]** Added alternative arrangement of files
-    - **[DeepMIB]** Added "Load models" to Options tab
-    - **[DeepMIB]** Added frequency of saving checkpoint networks
-    - **[DeepMIB]** Added percentage parameter to overlapping tiles
-    - **[DeepMIB]** Added possibility to select a single augmentation
-    - **[DeepMIB]** Added new 3D augmentations
-    - **[DeepMIB]** Added DeepLabV3-Resnet50
-    - **[DeepMIB]** Fixed preview of patches
+    - **\[DeepMIB\]** Rearranged Architecture into Workflow
+    - **\[DeepMIB\]** Optimized to work without preprocessing
+    - **\[DeepMIB\]** Added blockedImage mode
+    - **\[DeepMIB\]** Added dynamic masking
+    - **\[DeepMIB\]** Added 2D Patch-wise mode
+    - **\[DeepMIB\]** Added Resnet18, Resnet50, Resnet101, Xception networks
+    - **\[DeepMIB\]** Added alternative arrangement of files
+    - **\[DeepMIB\]** Added "Load models" to Options tab
+    - **\[DeepMIB\]** Added frequency of saving checkpoint networks
+    - **\[DeepMIB\]** Added percentage parameter to overlapping tiles
+    - **\[DeepMIB\]** Added possibility to select a single augmentation
+    - **\[DeepMIB\]** Added new 3D augmentations
+    - **\[DeepMIB\]** Added DeepLabV3-Resnet50
+    - **\[DeepMIB\]** Fixed preview of patches
 
 ??? abstract "2.82 / 12.04.2022 (DeepLabV3, kymographs, key callbacks)"
     - Added generation of kymographs
@@ -161,13 +159,13 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Fixed delete operation of a single tree
     - Fixed resize in batch processing
     - Bug fixes
-    - **[DeepMIB]** Added 2D DeepLabV3-Resnet18 architecture
-    - **[DeepMIB]** Added selection of output format
-    - **[DeepMIB]** Added return of trained network
-    - **[DeepMIB]** Added indicator of iteration
-    - **[DeepMIB]** Fixed probability of augmented patch
-    - [MCcalc] Added calculation of areas
-    - [MCcalc] Added calculation contacts
+    - **\[DeepMIB\]** Added 2D DeepLabV3-Resnet18 architecture
+    - **\[DeepMIB\]** Added selection of output format
+    - **\[DeepMIB\]** Added return of trained network
+    - **\[DeepMIB\]** Added indicator of iteration
+    - **\[DeepMIB\]** Fixed probability of augmented patch
+    - \[MCcalc\] Added calculation of areas
+    - \[MCcalc\] Added calculation contacts
 
 ??? abstract "2.81 / 14.10.2021"
     - Added contrast adjustment for 16-bit
@@ -179,8 +177,8 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Fixed bug in Stereology tool
     - Fixed automatic feature-based alignment
     - Updated Bio-Formats to 6.7.0
-    - **[DeepMIB]** Added counting of labels
-    - **[DeepMIB]** Fixed bug with Multi GPU
+    - **\[DeepMIB\]** Added counting of labels
+    - **\[DeepMIB\]** Fixed bug with Multi GPU
 
 ??? abstract "2.802 / 01.06.2021"
     - Added HDD mode to align datasets
@@ -196,22 +194,22 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Added plugin detection of contacts
     - Added shift of color channels
     - Added check for new version
-    - **[DeepMIB]** Added selection of GPU/CPU
-    - **[DeepMIB]** Added GPU Info window
-    - **[DeepMIB]** Added training without preprocessing
-    - **[DeepMIB]** Added parallel pre-processing
-    - **[DeepMIB]** Added compatibility with TIF and PNG
-    - **[DeepMIB]** Added masking
-    - **[DeepMIB]** Added 19 2D augmentation operations
-    - **[DeepMIB]** Added configurable preview
-    - **[DeepMIB]** Added configurable preview during training
-    - **[DeepMIB]** Added selection of activation layers
-    - **[DeepMIB]** Added Transfer Learning
-    - **[DeepMIB]** Added setting of mini-batch size
-    - **[DeepMIB]** Added export of prediction scores
-    - **[DeepMIB]** Added Sørensen-Dice similarity
-    - **[DeepMIB]** Added export to CSV
-    - **[DeepMIB]** Added export to ONNX format
+    - **\[DeepMIB\]** Added selection of GPU/CPU
+    - **\[DeepMIB\]** Added GPU Info window
+    - **\[DeepMIB\]** Added training without preprocessing
+    - **\[DeepMIB\]** Added parallel pre-processing
+    - **\[DeepMIB\]** Added compatibility with TIF and PNG
+    - **\[DeepMIB\]** Added masking
+    - **\[DeepMIB\]** Added 19 2D augmentation operations
+    - **\[DeepMIB\]** Added configurable preview
+    - **\[DeepMIB\]** Added configurable preview during training
+    - **\[DeepMIB\]** Added selection of activation layers
+    - **\[DeepMIB\]** Added Transfer Learning
+    - **\[DeepMIB\]** Added setting of mini-batch size
+    - **\[DeepMIB\]** Added export of prediction scores
+    - **\[DeepMIB\]** Added Sørensen-Dice similarity
+    - **\[DeepMIB\]** Added export to CSV
+    - **\[DeepMIB\]** Added export to ONNX format
     - Updated reading of NRRD files
     - Updated export statistics
     - Updated Bio-Formats to 6.6.1
@@ -360,9 +358,9 @@ For the latest updates, visit [MIB website](https://mib.helsinki.fi/downloads.ht
     - Added recentering the view
     - Added export of TransformationMatrix
     - Fix of cropping objects
-    - [2.301] Added filter for filenames
-    - [2.302] Fixed export of 3D lines
-    - [2.302] Fixed recalculation of pixels
+    - \[2.301\] Added filter for filenames
+    - \[2.302\] Fixed export of 3D lines
+    - \[2.302\] Fixed recalculation of pixels
 
 ??? abstract "2.22 / 16.03.2018"
     - Added value field for annotations

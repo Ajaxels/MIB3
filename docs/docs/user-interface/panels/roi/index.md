@@ -1,6 +1,4 @@
-﻿# ROI Panel
-
-*Back to [MIB](../../../index.md) | [User Guide](../../index.md) | [Panels](../index.md)*
+# ROI Panel
 
 ---
 
@@ -100,7 +98,7 @@ Select single or all ROIs for filtering/analysis.
 - <span class="widget widget-checkbox">Show label</span>: displays ROI labels in the [Image View Panel](../imview/index.md) when checked.
 - <span class="widget widget-checkbox">Show ROI</span>: shows ROIs in the [Image View Panel](../imview/index.md) when checked. 
 Alternatively, toggle visibility with the <span class="widget widget-button">R</span> 
-button in the [Toolbar](../../quick-access-bar/index.md#show-roi-switch).
+button in the [Toolbar](../../quick-access-bar/index.md#roi-mode-switch).
 
 ---
 

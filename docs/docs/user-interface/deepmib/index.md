@@ -1,6 +1,4 @@
-﻿# Deep MIB - Segmentation Using Deep Learning
-
-*Back to [MIB](../../index.md) | [User interface](../index.md)*
+# Deep MIB - Segmentation Using Deep Learning
 
 Tools for training and applying deep convolutional networks for image segmentation 
 in Microscopy Image Browser.

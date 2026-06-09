@@ -1,7 +1,5 @@
 # Installation
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md)*
-
 This page provides an overview of how to get started with **Microscopy Image Browser (MIB)**,
 including downloading, installing, and ensuring your system meets the requirements.<br>
 For detailed guidance, visit our main website at [mib.helsinki.fi](http://mib.helsinki.fi).

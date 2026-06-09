@@ -1,7 +1,5 @@
 # Black and White Thresholding
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
-
 ---
 
 ## Overview

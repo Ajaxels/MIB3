@@ -1,6 +1,4 @@
-﻿# Key and Mouse Shortcuts
-
-*Back to [MIB](../index.md) | [User Interface](index.md)*
+# Key and Mouse Shortcuts
 
 ---
 
@@ -34,12 +32,12 @@ These shortcuts assume default settings:
 - :material-cursor-default:{.orange-color} **move cursor**: Displays intensity and coordinates in the [Path Panel](panels/path/index.md#pixel-info-field).
 - :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**: changes slices or zooms (depening on settings in [Preferences](ribbon/home/home-preferences.md)).
 - ++shift++ + :material-mouse-scroll-wheel:{.orange-color}:  **mouse wheel**: jumps 10 slices up/down (adjustable via <mouse class="right"></mouse> on the 
-slice slider in the [Image View Panel](panels/imview/index.md#extra-parameters-for-the-slice-slider)).
+slice slider in the [Image View Panel](panels/selection_imview/imview.md#extra-parameters-for-the-slice-slider)).
 - ++alt++ + :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**:
      - scrolls time points for 5D datasets (if set in [Preferences -> User Interface -> Hold Alt with Scroll Wheel: Scroll time points](ribbon/home/home-preferences.md#user-interface)).
      - returns to the original slice (if set to *Return to the slice* in [Preferences](ribbon/home/home-preferences.md#user-interface)).
 - ++alt++ + ++shift++ + :material-mouse-scroll-wheel:{.orange-color}:  **mouse wheel**: jumps 10 time points (adjustable via <mouse class="right"></mouse> on the slice 
-  slider in the [Image View Panel](panels/imview/index.md#extra-parameters-for-the-slice-slider)).
+  slider in the [Image View Panel](panels/selection_imview/imview.md#extra-parameters-for-the-slice-slider)).
 - <mouse class="left"></mouse>: selects pixels based on the method in the [Segmentation Panel](panels/segm/index.md).
 - Hold <mouse class="right"></mouse> to pan the image left/right and up/down.
 !!! info "Alternative syntax" 
@@ -103,10 +101,10 @@ then select **Edit**.
 | ++shift++ + ++f++                                                                          | fills holes in Selection (all slices).                                                                                                               |
 | ++shift++ + ++alt++ + ++f++                                                                | fills holes in Selection (all slices and time points).                                                                                               |
 | ++ctrl++ + ++f++                                                                           | finds material index under the cursor and selects it in the [Segmentation Table](panels/segm/index.md#segmentation-table).                           |
-| ++z++                                                                                      | erodes (shrinks) Selection (current slice; 3D if enabled in [Selection Panel](panels/selection/index.md)).                                           |
+| ++z++                                                                                      | erodes (shrinks) Selection (current slice; 3D if enabled in [Selection Panel](panels/selection_imview/selection.md)).                                           |
 | ++shift++ + ++z++                                                                          | erodes Selection (all slices, 2D).                                                                                                                   |
 | ++shift++ + ++alt++ + ++z++                                                                | erodes Selection (all slices and time points, 2D).                                                                                                   |
-| ++x++                                                                                      | dilates (expands) Selection (current slice; 3D if enabled in [Selection Panel](panels/selection/index.md)).                                          |
+| ++x++                                                                                      | dilates (expands) Selection (current slice; 3D if enabled in [Selection Panel](panels/selection_imview/selection.md)).                                          |
 | ++shift++ + ++x++                                                                          | dilates Selection (all slices, 2D).                                                                                                                  |
 | ++shift++ + ++alt++ + ++x++                                                                | dilates Selection (all slices and time points, 2D).                                                                                                  |
 | ++bracket-left++ or ++bracket-right++ <br>++shift++ + ++bracket-left++ / ++bracket-right++ | Changes brush/selection tool size<br>(also via ++ctrl++ + ++shift++ + :material-mouse-scroll-wheel:{.orange-color} **Mouse wheel**).                 |

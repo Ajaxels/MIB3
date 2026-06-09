@@ -1,7 +1,5 @@
 # MIB for MATLAB License
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md) | [Licenses](index.md)*
-
 ---
 
 ## MIB for MATLAB License

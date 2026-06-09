@@ -1,6 +1,4 @@
-﻿# The 3D Ball Tool
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
+# The 3D Ball Tool
 
 ---
 ## 3D ball overview

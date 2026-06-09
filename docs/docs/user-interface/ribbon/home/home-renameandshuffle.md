@@ -1,7 +1,5 @@
 # Rename and Shuffle
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*
-
 ---
 
 ## Overview

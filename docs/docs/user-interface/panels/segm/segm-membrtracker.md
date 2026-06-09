@@ -1,7 +1,5 @@
 ## The Membrane Click Tracker Tool
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
-
 ---
 
 ## Overview
@@ -27,7 +25,7 @@ Tracks membrane-type objects using two mouse clicks to define start and end poin
 - <span class="widget widget-checkbox">Straight line</span>: connect points with a straight line.
 
     !!! note
-        When the 3D switch in the [Selection panel](../../panels/selection/index.md) is enabled, it connects points linearly in 3D (useful for microtubules).
+        When the 3D switch in the [Selection panel](../../panels/selection_imview/selection.md) is enabled, it connects points linearly in 3D (useful for microtubules).
         Alternatively, use the [3D lines tool](segm-3dlines.md).
 
 ???+ info "Reference and compilation"

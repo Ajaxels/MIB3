@@ -1,0 +1,555 @@
+# ============================================================================
+#
+# The configuration produced by default is meant to highlight the features
+# that Zensical provides and to serve as a starting point for your own
+# projects.
+#
+# ============================================================================
+
+[project]
+
+# The site_name is shown in the page header and the browser window title
+#
+# Read more: https://zensical.org/docs/setup/basics/#site_name
+site_name = "Microscopy Image Browser v3"
+
+# The site_description is included in the HTML head and should contain a
+# meaningful description of the site content for use by search engines.
+#
+# Read more: https://zensical.org/docs/setup/basics/#site_description
+site_description = "Microscopy Image Browser (MIB) — GUI tool for segmentation and analysis of multidimensional microscopy datasets."
+
+# The site_author attribute. This is used in the HTML head element.
+#
+# Read more: https://zensical.org/docs/setup/basics/#site_author
+site_author = "Ilya Belevich"
+
+# The site_url is the canonical URL for your site. When building online
+# documentation you should set this.
+# Read more: https://zensical.org/docs/setup/basics/#site_url
+site_url = "https://mib.helsinki.fi"
+
+# The copyright notice appears in the page footer and can contain an HTML
+# fragment.
+#
+# Read more: https://zensical.org/docs/setup/basics/#copyright
+copyright = "Copyright &copy; 2010 - 2026 Ilya Belevich"
+
+# Zensical supports both implicit navigation and explicitly defined navigation.
+# If you decide not to define a navigation here then Zensical will simply
+# derive the navigation structure from the directory structure of your
+# "docs_dir". The definition below demonstrates how a navigation structure
+# can be defined using TOML syntax.
+#
+# Read more: https://zensical.org/docs/setup/navigation/
+nav = [
+  { "Microscopy Image Browser" = "index.md" },
+  { "Getting Started" = [
+    "getting-started/index.md",
+    { "Installation" = ["getting-started/installation/index.md"] },
+    { "Features" = "https://mib.helsinki.fi/features_all.html" },
+    { "Tutorials" = ["getting-started/tutorials/index.md"] },
+    { "Acknowledgements" = "getting-started/acknowledgements.md" },
+    { "Licenses" = [
+      "getting-started/licenses/index.md",
+      { "MIB for MATLAB" = "getting-started/licenses/license-mib-matlab.md" },
+      { "MIB standalone" = "getting-started/licenses/license-mib-standalone.md" },
+      { "External licenses" = "getting-started/licenses/licenses-ext.md" },
+    ]},
+    { "Contact and Support" = "getting-started/support.md" },
+    { "Release notes" = [
+      "getting-started/releasenotes/index.md",
+      { "History" = "getting-started/releasenotes/release-notes-history.md" },
+    ]},
+  ]},
+  { "User interface" = [
+    "user-interface/index.md",
+    { "Ribbon" = [
+      "user-interface/ribbon/index.md",
+      { "Home" = [
+        "user-interface/ribbon/home/index.md",
+        { "Batch processing" = "user-interface/ribbon/home/home-batchprocessing.md" },
+        { "Chopped images" = "user-interface/ribbon/home/home-choppedimages.md" },
+        { "Rename and shuffle" = "user-interface/ribbon/home/home-renameandshuffle.md" },
+        { "Make video" = "user-interface/ribbon/home/home-makevideo.md" },
+        { "Make snapshot" = "user-interface/ribbon/home/home-makesnapshot.md" },
+        { "MIB 3D Viewer" = "user-interface/ribbon/home/home-mib3Dviewer.md" },
+        { "Preferences" = "user-interface/ribbon/home/home-preferences.md" },
+      ]},
+      { "Dataset" = [
+        "user-interface/ribbon/dataset/index.md",
+        { "Alignment tool" = "user-interface/ribbon/dataset/dataset-alignment.md" },
+        { "Crop" = "user-interface/ribbon/dataset/dataset-crop.md" },
+        { "Resample" = "user-interface/ribbon/dataset/dataset-resample.md" },
+        { "Transform" = "user-interface/ribbon/dataset/dataset-transform.md" },
+        { "Slice" = "user-interface/ribbon/dataset/dataset-slice.md" },
+        { "Bounding box" = "user-interface/ribbon/dataset/dataset-bb.md" },
+      ]},
+      { "Image" = [
+        "user-interface/ribbon/image/index.md",
+        { "Image filters" = "user-interface/ribbon/image/image-filters.md" },
+        { "-> content aware fill" = "user-interface/ribbon/image/image-tools-awarefill.md" },
+        { "-> debris removal" = "user-interface/ribbon/image/image-tools-debris.md" },
+        { "-> image arithmetics" = "user-interface/ribbon/image/image-tools-arithmetic.md" },
+        { "-> intensity projection" = "user-interface/ribbon/image/image-tools-projections.md" },
+        { "-> select image frame" = "user-interface/ribbon/image/image-tools-selectframe.md" },
+        { "-> white balance correction" = "user-interface/ribbon/image/image-tools-whitebalance.md" },
+        { "Morphological ops" = "user-interface/ribbon/image/image-morphops.md" },
+      ]},
+      { "Model" = [
+        "user-interface/ribbon/model/index.md",
+        { "Statistics" = "user-interface/ribbon/mask/mask-stats.md" },
+      ]},
+      { "Mask" = [
+        "user-interface/ribbon/mask/index.md",
+        { "Statistics" = "user-interface/ribbon/mask/mask-stats.md" },
+      ]},
+      { "Selection" = [
+        "user-interface/ribbon/selection/index.md",
+        { "Morphological ops" = "user-interface/ribbon/selection/selection-morphops.md" },
+      ]},
+      { "Tools" = [
+        "user-interface/ribbon/tools/index.md",
+        { "Deep learning" = "user-interface/deepmib/index.md" },
+        { "Global thresholding" = "user-interface/ribbon/tools/tools-globalthres.md" },
+        { "Graphcut" = "user-interface/ribbon/tools/tools-graphcut.md" },
+        { "Measure tool" = "user-interface/ribbon/tools/tools-measuretool.md" },
+        { "Object separation" = "user-interface/ribbon/tools/tools-objectsep.md" },
+        { "Random forest classifier" = "user-interface/ribbon/tools/tools-randforest.md" },
+        { "Random forest superpixels" = "user-interface/ribbon/tools/tools-randforest-slic.md" },
+        { "Stereology" = "user-interface/ribbon/tools/tools-stereology.md" },
+        { "Watershed" = "user-interface/ribbon/tools/tools-watershed.md" },
+        { "Wound healing assay" = "user-interface/ribbon/tools/tools-wound.md" },
+      ]},
+      { "Plugins" = ["user-interface/ribbon/plugins/index.md"] },
+      { "Help" = ["user-interface/ribbon/help/index.md"] },
+    ]},
+    { "Quick Access Bar" = ["user-interface/quick-access-bar/index.md"] },
+    { "Image Document" = ["user-interface/image-document/index.md"] },
+    { "Panels" = [
+      "user-interface/panels/index.md",
+      { "Datasets" = ["user-interface/datasets/index.md"] },
+      { "Directory contents" = ["user-interface/panels/dircontents/index.md"] },
+      { "Segmentation" = [
+        "user-interface/panels/segm/index.md",
+        { "3D ball" = "user-interface/panels/segm/segm-3dball.md" },
+        { "3D lines" = "user-interface/panels/segm/segm-3dlines.md" },
+        { "Annotations" = "user-interface/panels/segm/segm-annotations.md" },
+        { "Brush" = "user-interface/panels/segm/segm-brush.md" },
+        { "BW Thresholding" = "user-interface/panels/segm/segm-bwthres.md" },
+        { "Deep learning" = "user-interface/deepmib/deepmib-networks.md" },
+        { "Drag & Drop materials" = "user-interface/panels/segm/segm-dragdrop.md" },
+        { "Graphcut" = "user-interface/ribbon/tools/tools-graphcut.md" },
+        { "Lasso" = "user-interface/panels/segm/segm-lasso.md" },
+        { "MagicWand-RegionGrowing" = "user-interface/panels/segm/segm-magicwand.md" },
+        { "Membrane ClickTracker" = "user-interface/panels/segm/segm-membrtracker.md" },
+        { "Object Picker" = "user-interface/panels/segm/segm-objpick.md" },
+        { "Segment Anything Model" = "user-interface/panels/segm/segm-sam.md" },
+        { "Spot" = "user-interface/panels/segm/segm-spot.md" },
+      ]},
+      { "Selection and View settings" = [
+        "user-interface/panels/selection_imview/index.md",
+        { "Selection" = "user-interface/panels/selection_imview/selection.md" },
+        { "View settings" = [
+          "user-interface/panels/selection_imview/viewsettings.md",
+          { "Image adjustment" = "user-interface/panels/selection_imview/viewsettings-adjustments.md" },
+        ]},
+        { "Image view (MIB2)" = "user-interface/panels/selection_imview/imview.md" },
+      ]},
+      { "ROIs" = ["user-interface/panels/roi/index.md"] },
+      { "Fiji connect" = ["user-interface/panels/fijiconnect/index.md"] },
+      { "Status Bar" = ["user-interface/statusbar/index.md"] },
+      { "Path" = ["user-interface/panels/path/index.md"] },
+      { "Image filters" = ["user-interface/panels/imfilters/index.md"] },
+      { "Mask generators" = ["user-interface/panels/maskgen/index.md"] },
+    ]},
+    { "Plugins" = [
+      "user-interface/plugins/index.md",
+      { "File processing" = [
+        "user-interface/plugins/file-processing/index.md",
+        { "Image converter" = "user-interface/plugins/file-processing/image-converter.md" },
+        { "Multi rename tool" = "user-interface/plugins/file-processing/multi-rename-tool.md" },
+      ]},
+      { "Intensity analysis" = [
+        "user-interface/plugins/intensity-analysis/index.md",
+        { "Triple area intensity" = "user-interface/plugins/intensity-analysis/triple-area-intensity.md" },
+      ]},
+      { "Organelle analysis" = [
+        "user-interface/plugins/organelle-analysis/index.md",
+        { "Granularity" = "user-interface/plugins/organelle-analysis/granularity.md" },
+        { "MCcalc" = "user-interface/plugins/organelle-analysis/mccalc.md" },
+        { "Surface area 3d" = "user-interface/plugins/organelle-analysis/surface-area-3d.md" },
+        { "Thres analysis for objects" = "user-interface/plugins/organelle-analysis/thres-analysis-for-objects.md" },
+      ]},
+      { "Plasmodesmata" = [
+        "user-interface/plugins/plasmodesmata/index.md",
+        { "Cell wall thickness" = "user-interface/plugins/plasmodesmata/cellwall-thickness.md" },
+        { "Spacial control points" = "user-interface/plugins/plasmodesmata/spacial-control-points.md" },
+      ]},
+      { "Tutorials" = [
+        "user-interface/plugins/tutorials/index.md",
+        { "GUI Tutorial" = "user-interface/plugins/tutorials/gui-tutorial.md" },
+        { "MIB App Design plugin" = "user-interface/plugins/tutorials/mib-app-design-plugin.md" },
+        { "MIB Plugin" = "user-interface/plugins/tutorials/mib-plugin.md" },
+        { "MIB Plugin without GUI" = "user-interface/plugins/tutorials/mib-plugin-without-gui.md" },
+      ]},
+    ]},
+    { "DeepMIB" = [
+      "user-interface/deepmib/index.md",
+      { "Networks" = "user-interface/deepmib/deepmib-networks.md" },
+      { "Dirs" = "user-interface/deepmib/deepmib-dirs.md" },
+      { "Train" = "user-interface/deepmib/deepmib-train.md" },
+      { "Predict" = "user-interface/deepmib/deepmib-predict.md" },
+      { "Options" = "user-interface/deepmib/deepmib-options.md" },
+    ]},
+    { "Key and mouse shortcuts" = "user-interface/key-and-mouse-shortcuts.md" },
+    { "Image layers" = "user-interface/image-layers.md" },
+  ]},
+  { "Dev corner" = [
+    { "Markdown" = "markdown.md" },
+    { "Markdown examples" = "Markdown_examples.md" },
+  ]},
+]
+
+# With the "extra_css" option you can add your own CSS styling to customize
+# your Zensical project according to your needs. You can add any number of
+# CSS files.
+#
+# The path provided should be relative to the "docs_dir".
+#
+# Read more: https://zensical.org/docs/customization/#additional-css
+#
+extra_css = ["css/styles.css"]
+
+# With the `extra_javascript` option you can add your own JavaScript to your
+# project to customize the behavior according to your needs.
+#
+# The path provided should be relative to the "docs_dir".
+#
+# Read more: https://zensical.org/docs/customization/#additional-javascript
+extra_javascript = ["css/extra.js"]
+
+# ----------------------------------------------------------------------------
+# Section for configuring theme options
+# ----------------------------------------------------------------------------
+[project.theme]
+
+# change this to "classic" to use the traditional Material for MkDocs look.
+#variant = "classic"
+
+# Zensical allows you to override specific blocks, partials, or whole
+# templates as well as to define your own templates. To do this, uncomment
+# the custom_dir setting below and set it to a directory in which you
+# keep your template overrides.
+#
+# Read more:
+# - https://zensical.org/docs/customization/#extending-the-theme
+#
+#custom_dir = "overrides"
+
+# With the "favicon" option you can set your own image to use as the icon
+# browsers will use in the browser title bar or tab bar. The path provided
+# must be relative to the "docs_dir".
+#
+# Read more:
+# - https://zensical.org/docs/setup/logo-and-icons/#favicon
+# - https://developer.mozilla.org/en-US/docs/Glossary/Favicon
+#
+favicon = "assets/mib_icon.png"
+
+# Zensical supports more than 60 different languages. This means that the
+# labels and tooltips that Zensical's templates produce are translated.
+# The "language" option allows you to set the language used. This language
+# is also indicated in the HTML head element to help with accessibility
+# and guide search engines and translation tools.
+#
+# The default language is "en" (English). It is possible to create
+# sites with multiple languages and configure a language selector. See
+# the documentation for details.
+#
+# Read more:
+# - https://zensical.org/docs/setup/language/
+#
+language = "en"
+
+# Zensical provides a number of feature toggles that change the behavior
+# of the documentation site.
+features = [
+    # Zensical includes an announcement bar. This feature allows users to
+    # dismiss it when they have read the announcement.
+    # https://zensical.org/docs/setup/header/#announcement-bar
+    "announce.dismiss",
+
+    # If you have a repository configured and turn on this feature, Zensical
+    # will generate an edit button for the page. This works for common
+    # repository hosting services.
+    # https://zensical.org/docs/setup/repository/#content-actions
+    #"content.action.edit",
+
+    # If you have a repository configured and turn on this feature, Zensical
+    # will generate a button that allows the user to view the Markdown
+    # code for the current page.
+    # https://zensical.org/docs/setup/repository/#content-actions
+    #"content.action.view",
+
+    # Code annotations allow you to add an icon with a tooltip to your
+    # code blocks to provide explanations at crucial points.
+    # https://zensical.org/docs/authoring/code-blocks/#code-annotations
+    "content.code.annotate",
+
+    # This feature turns on a button in code blocks that allow users to
+    # copy the content to their clipboard without first selecting it.
+    # https://zensical.org/docs/authoring/code-blocks/#code-copy-button
+    "content.code.copy",
+
+    # Code blocks can include a button to allow for the selection of line
+    # ranges by the user.
+    # https://zensical.org/docs/authoring/code-blocks/#code-selection-button
+    "content.code.select",
+
+    # Zensical can render footnotes as inline tooltips, so the user can read
+    # the footnote without leaving the context of the document.
+    # https://zensical.org/docs/authoring/footnotes/#footnote-tooltips
+    "content.footnote.tooltips",
+
+    # If you have many content tabs that have the same titles (e.g., "Python",
+    # "JavaScript", "Cobol"), this feature causes all of them to switch to
+    # at the same time when the user chooses their language in one.
+    # https://zensical.org/docs/authoring/content-tabs/#linked-content-tabs
+    "content.tabs.link",
+
+    # With this feature enabled users can add tooltips to links that will be
+    # displayed when the mouse pointer hovers the link.
+    # https://zensical.org/docs/authoring/tooltips/#improved-tooltips
+    "content.tooltips",
+
+    # With this feature enabled, Zensical will automatically hide parts
+    # of the header when the user scrolls past a certain point.
+    # https://zensical.org/docs/setup/header/#automatic-hiding
+    "header.autohide",
+
+    # Turn on this feature to expand all collapsible sections in the
+    # navigation sidebar by default.
+    # https://zensical.org/docs/setup/navigation/#navigation-expansion
+    # "navigation.expand",
+
+    # This feature turns on navigation elements in the footer that allow the
+    # user to navigate to a next or previous page.
+    # https://zensical.org/docs/setup/footer/#navigation
+    "navigation.footer",
+
+    # When section index pages are enabled, documents can be directly attached
+    # to sections, which is particularly useful for providing overview pages.
+    # https://zensical.org/docs/setup/navigation/#section-index-pages
+    "navigation.indexes",
+
+    # When instant navigation is enabled, clicks on all internal links will be
+    # intercepted and dispatched via XHR without fully reloading the page.
+    # NOTE: must be disabled when using the offline plugin (file:// browsing).
+    # https://zensical.org/docs/setup/navigation/#instant-navigation
+    # "navigation.instant",
+
+    # With instant prefetching, your site will start to fetch a page once the
+    # user hovers over a link. This will reduce the perceived loading time
+    # for the user.
+    # https://zensical.org/docs/setup/navigation/#instant-prefetching
+    # "navigation.instant.prefetch",
+
+    # In order to provide a better user experience on slow connections when
+    # using instant navigation, a progress indicator can be enabled.
+    # https://zensical.org/docs/setup/navigation/#progress-indicator
+    # "navigation.instant.progress",
+
+    # When navigation paths are activated, a breadcrumb navigation is rendered
+    # above the title of each page
+    # https://zensical.org/docs/setup/navigation/#navigation-path
+    "navigation.path",
+
+    # When pruning is enabled, only the visible navigation items are included
+    # in the rendered HTML, reducing the size of the built site by 33% or more.
+    # https://zensical.org/docs/setup/navigation/#navigation-pruning
+    #"navigation.prune",
+
+    # When sections are enabled, top-level sections are rendered as groups in
+    # the sidebar for viewports above 1220px, but remain as-is on mobile.
+    # https://zensical.org/docs/setup/navigation/#navigation-sections
+    "navigation.sections",
+
+    # When tabs are enabled, top-level sections are rendered in a menu layer
+    # below the header for viewports above 1220px, but remain as-is on mobile.
+    # https://zensical.org/docs/setup/navigation/#navigation-tabs
+    #"navigation.tabs",
+
+    # When sticky tabs are enabled, navigation tabs will lock below the header
+    # and always remain visible when scrolling down.
+    # https://zensical.org/docs/setup/navigation/#sticky-navigation-tabs
+    #"navigation.tabs.sticky",
+
+    # A back-to-top button can be shown when the user, after scrolling down,
+    # starts to scroll up again.
+    # https://zensical.org/docs/setup/navigation/#back-to-top-button
+    "navigation.top",
+
+    # When anchor tracking is enabled, the URL in the address bar is
+    # automatically updated with the active anchor as highlighted in the table
+    # of contents.
+    # https://zensical.org/docs/setup/navigation/#anchor-tracking
+    "navigation.tracking",
+
+    # When search highlighting is enabled and a user clicks on a search result,
+    # Zensical will highlight all occurrences after following the link.
+    # https://zensical.org/docs/setup/search/#search-highlighting
+    "search.highlight",
+
+    # When search suggest is enabled, the search will display suggestions
+    # while the user is typing.
+    # https://zensical.org/docs/setup/search/
+    "search.suggest",
+
+    # When anchor following for the table of contents is enabled, the sidebar
+    # is automatically scrolled so that the active anchor is always visible.
+    # https://zensical.org/docs/setup/navigation/#anchor-following
+    # "toc.follow",
+
+    # When navigation integration for the table of contents is enabled, it is
+    # always rendered as part of the navigation sidebar on the left.
+    # https://zensical.org/docs/setup/navigation/#navigation-integration
+    #"toc.integrate",
+]
+
+# ----------------------------------------------------------------------------
+# You can configure your own logo to be shown in the header using the "logo"
+# option in the "theme" subsection. The logo must be a relative path to a file
+# in your "docs_dir", e.g., to use `docs/assets/logo.png` you would set:
+# ----------------------------------------------------------------------------
+logo = "assets/mib_icon.png"
+
+# ----------------------------------------------------------------------------
+# If you don't have a dedicated project logo, you can use a built-in icon from
+# the icon sets shipped in Zensical. Please note that the setting lives in a
+# different subsection, and that the above take precedence over the icon.
+#
+# Read more:
+# - https://zensical.org/docs/setup/logo-and-icons
+# - https://github.com/zensical/ui/tree/master/dist/.icons
+# ----------------------------------------------------------------------------
+[project.theme.icon]
+# annotation icon (material/chevron-right-circle) — was set in MkDocs but
+# Zensical only documents: menu, search, close, top, edit, view, repo, admonition, tag.
+# Uncomment below if Zensical adds support for annotation icon override.
+# annotation = "material/chevron-right-circle"
+
+# ----------------------------------------------------------------------------
+# In the "font" subsection you can configure the fonts used. By default, fonts
+# are loaded from Google Fonts, giving you a wide range of choices from a set
+# of suitably licensed fonts. There are options for a normal text font and for
+# a monospaced font used in code blocks.
+# ----------------------------------------------------------------------------
+[project.theme.font]
+text = "Roboto"
+code = "Roboto Mono"
+
+# ----------------------------------------------------------------------------
+# In the "palette" subsection you can configure options for the color scheme.
+# You can configure different color schemes, e.g., to turn on dark mode,
+# that the user can switch between. Each color scheme can be further
+# customized.
+#
+# Read more:
+# - https://zensical.org/docs/setup/colors/
+# ----------------------------------------------------------------------------
+[[project.theme.palette]]
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "green"
+accent = "orange"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+# ----------------------------------------------------------------------------
+# The "extra" section contains miscellaneous settings.
+# ----------------------------------------------------------------------------
+[project.extra]
+# Controls the URL that the logo and site title link to (defaults to site_url).
+homepage = "https://mib.helsinki.fi/help/main3/"
+
+[[project.extra.social]]
+icon = "fontawesome/solid/house-chimney"
+link = "https://mib.helsinki.fi"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/Ajaxels/MIB3"
+
+# ----------------------------------------------------------------------------
+# In this section you can configure the Markdown extensions that are used when
+# rendering your documentation. We enable the most useful extensions by default,
+# but you can customize this list to your needs.
+#
+# Read more:
+# - https://zensical.org/docs/setup/extensions/
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Plugins
+# ----------------------------------------------------------------------------
+
+# The offline plugin makes the built site fully browsable from the local
+# filesystem (file:// protocol) by rewriting internal links to include
+# explicit index.html. Requires instant navigation to be disabled (above).
+#
+# Read more: https://zensical.org/docs/setup/offline/
+[project.plugins.offline]
+enabled = true
+
+# ----------------------------------------------------------------------------
+# Markdown extensions
+# ----------------------------------------------------------------------------
+[project.markdown_extensions.abbr]
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
+[project.markdown_extensions.pymdownx.betterem]
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.emoji]
+emoji_generator = "zensical.extensions.emoji.to_svg"
+emoji_index = "zensical.extensions.emoji.twemoji"
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.snippets]
+[project.markdown_extensions.pymdownx.keys]
+[project.markdown_extensions.pymdownx.magiclink]
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.smartsymbols]
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+combine_header_slug = true
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true
+[project.markdown_extensions.pymdownx.tilde]
+[project.markdown_extensions.pymdownx.blocks.caption]
+
+# GLightbox — image lightbox/zoom overlay.
+# auto = false: only images tagged {.on-glb} open in lightbox (matches original glightbox manual:true).
+# Use {.off-glb} on any image to suppress lightbox when auto = true.
+[project.markdown_extensions.zensical.extensions.glightbox]
+auto = false
+auto_caption = true
+caption_position = "bottom"

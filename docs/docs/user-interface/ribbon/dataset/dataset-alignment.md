@@ -1,7 +1,5 @@
 # Alignment and Drift Correction
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Dataset](index.md)*
-
 ---
 
 ## Overview
@@ -199,7 +197,7 @@ or <span class="widget widget-button">Get from Selection</span>.
 
   - <span class="widget widget-dropdown">Extension</span>: file extension to align.
   - <label class="widget widget-checkbox">Bio</label>: enable Bio-Formats reader for microscope formats.
-  - <span class="widget widget-edit">Index</span>: series index to load from a container [Bio-Formats only].
+  - <span class="widget widget-edit">Index</span>: series index to load from a container \[Bio-Formats only\].
   - <span class="widget widget-button">...</span>: select directory with images.
   - **Output subfolder and extension**: specify output subfolder (relative to input) and file format.
 

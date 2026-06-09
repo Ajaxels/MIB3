@@ -1,7 +1,5 @@
 # Tutorials Plugins
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md)*
-
 ---
 
 The **Tutorials** plugins in **Microscopy Image Browser (MIB)** provide examples to help users learn plugin development for MIB. 

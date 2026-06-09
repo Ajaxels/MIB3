@@ -1,6 +1,4 @@
-﻿# Quick Access Bar
-
-*Back to [MIB](../../index.md) | [User interface](../index.md)*
+# Quick Access Bar
 
 The **Quick Access Bar (QAB)** runs along the top of the MIB window and gives one-click access to the most frequently used actions, without switching ribbon tabs.
 
@@ -31,7 +29,7 @@ Set undo history length in [Ribbon → Home → Preferences → Backup and Undo]
 |--------|--------|
 | ![Zoom in](images/toolbar_zoomin.jpg){.inline-image} **Zoom in** | Increases magnification by 1.5×. |
 | ![1:1](images/toolbar_zoom100.jpg){.inline-image} **1:1** | Sets magnification to 100%. |
-| ![Fit](images/toolbar_zoomfit.jpg){.inline-image} **Fit** | Fits the image to the [Image View panel](../panels/imview/index.md). |
+| ![Fit](images/toolbar_zoomfit.jpg){.inline-image} **Fit** | Fits the image to the [Image View panel](../panels/selection_imview/imview.md). |
 | ![Zoom out](images/toolbar_zoomout.jpg){.inline-image} **Zoom out** | Decreases magnification by 1.5×. |
 
 ---
@@ -40,7 +38,7 @@ Set undo history length in [Ribbon → Home → Preferences → Backup and Undo]
 
 ![Fast pan](images/toolbar_fastpan.jpg){align=left}
 
-Enables fast panning (moving the image in the [Image View panel](../panels/imview/index.md)) with <mouse class="right"></mouse>.
+Enables fast panning (moving the image in the [Image View panel](../panels/selection_imview/imview.md)) with <mouse class="right"></mouse>.
 
 !!! info
     Normally, panning fetches the full-sized image, causing lag for large images.

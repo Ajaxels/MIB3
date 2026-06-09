@@ -1,6 +1,4 @@
-﻿# Granularity
-
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Organelle Analysis](index.md)*
+# Granularity
 
 ---
 
@@ -82,7 +80,7 @@ Follow these steps to analyze granularity:
 
 - Click <span class="widget widget-button">Calculate</span> to
     compute granularity metrics.
-- Results are displayed in the [Image View](../../panels/imview/index.md) panel.
+- Results are displayed in the [Image View](../../panels/selection_imview/imview.md) panel.
 
 <div class="clear-float"></div>
 

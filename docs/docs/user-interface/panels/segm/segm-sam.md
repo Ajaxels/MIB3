@@ -1,7 +1,5 @@
 # Segment Anything Model
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md) | [Segmentation](index.md)*
-
 ---
 
 ## Overview
@@ -20,7 +18,7 @@ Uses Segment-anything model (SAM1 or SAM2) for object segmentation with one or f
 Developed by [Meta AI Research, FAIR](https://ai.facebook.com/research), SAM segments objects or entire images with minimal clicks.  
 
 - SAM-1: [https://segment-anything.com](https://segment-anything.com)  
-- SAM-2 [*recommended*]: [https://ai.meta.com/sam2/](https://ai.meta.com/sam2/), faster than SAM-1; can also work in 3D
+- SAM-2 \[*recommended*\]: [https://ai.meta.com/sam2/](https://ai.meta.com/sam2/), faster than SAM-1; can also work in 3D
 
 Implemented in MIB via an external Python interpreter. See [Requirements and installation](https://mib.helsinki.fi/downloads_systemreq_sam2.html).
 

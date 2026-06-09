@@ -1,7 +1,5 @@
 # Debris Removal
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Image](index.md)*
-
 ---
 
 ![Debris Removal](images/menuImageToolsDebrisRemoval2.png){.on-glb align=left width="360"}

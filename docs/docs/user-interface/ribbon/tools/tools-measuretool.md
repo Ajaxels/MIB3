@@ -1,7 +1,5 @@
 # Measure Tool
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Tools](index.md)*
-
 ---
 
 ## Overview
@@ -13,7 +11,7 @@ Based on the [Image Measurement Utility](http://www.mathworks.com/matlabcentral/
 !!! note
     Visualization of measurements can be switched on/off using 
     the <label class="widget widget-checkbox">Ann/Measure</label> checkbox in 
-    the [View Settings panel](../../panels/viewsettings/index.md).
+    the [View Settings panel](../../panels/selection_imview/viewsettings.md).
 
 <div class="clear-float"></div>
 
@@ -105,7 +103,7 @@ Defines the measurement type, started with the <span class="widget widget-button
 
 ![Plot panel](images/menuToolsMeasure-plotpanel.png){.on-glb align=left}  
 
-Controls which measurement parts display in the [Image View panel](../../panels/imview/index.md). 
+Controls which measurement parts display in the [Image View panel](../../panels/selection_imview/imview.md). 
 <br>Customize line and marker appearance with the <span class="widget widget-button">Options</span> button.
 
 <div class="clear-float"></div>
@@ -130,13 +128,13 @@ Displays measurement results.<br> Filter types with
 the <span class="widget widget-dropdown">Filter</span> combo box. 
 <br>Intensity profiles for selected measurements appear in a plot below the table. 
 <br>With <label class="widget widget-checkbox">Jump on selection</label> checked, 
-the [Image View panel](../../panels/imview/index.md) centers on the selected measurement.
+the [Image View panel](../../panels/selection_imview/imview.md) centers on the selected measurement.
 
 <div class="clear-float"></div>
 
 <div class="h3-like">Right-click a selected item for a context menu:</div>
 
-- **Jump to measurement**: centers the selected measurement in the [Image View panel](../../panels/imview/index.md).
+- **Jump to measurement**: centers the selected measurement in the [Image View panel](../../panels/selection_imview/imview.md).
 - **Modify measurement**: enters edit mode to adjust shape and size.
 - **Recalculate selected measurements...**: updates distances and intensity profiles if pixel size or color channels change.
 - **Duplicate measurement**: duplicates the measurement.

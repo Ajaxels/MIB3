@@ -1,7 +1,5 @@
 # Tutorials
 
-*Back to [MIB](../../index.md) | [Getting started](../index.md)*
-
 Microscopy Image Browser (MIB) offers a range of tutorials to help you master its features, 
 from basic navigation to advanced image segmentation. 
 These resources are available in two formats: 

@@ -1,6 +1,4 @@
-﻿# Segmentation Panel
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md)*
+# Segmentation Panel
 
 ---
 
@@ -27,7 +25,7 @@ several materials overlapping above the same pixel of the image.
 ???+ example "Example of a model 4x4 pixels"
 
     ```
-    Model = [1 1 0 0; 1 1 0 0; 0 0 2 2; 0 0 2 2]
+    Model = \[1 1 0 0; 1 1 0 0; 0 0 2 2; 0 0 2 2\]
        
     [   1 1 0 0
         1 1 0 0
@@ -76,7 +74,7 @@ drag-and-drop a `*.model` file to the [Image View panel](../imview/index.md) or 
 
 ---
 
-## [+], [-], [>|], [Squeeze], [Recolor] buttons
+## \[+\], \[-\], \[>|\], \[Squeeze\], \[Recolor\] buttons
 
 These buttons are located in the Segmentation panel above the segmentation table and depending on the model type
 do different operations.

@@ -1,8 +1,6 @@
-﻿# Object Separation with Watershed
+# Object Separation with Watershed
 
 Tools for separating objects that can be stored as materials in the current model, the mask layer, or the selection layer.
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Menu](../index.md) | [Tools](../tools/index.md)*
 
 ---
 
@@ -20,7 +18,7 @@ The *Mode panel* allows you to choose the segmentation scope, determining whethe
 
 ![Mode panel for watershed/graphcut segmentation](images/menuToolsWatershed_Mode.jpg){align=left}
 
-- <label class="widget widget-checkbox">2D, current slice only</label> performs segmentation only on the currently displayed slice in the [Image View panel](../../panels/imview/index.md)
+- <label class="widget widget-checkbox">2D, current slice only</label> performs segmentation only on the currently displayed slice in the [Image View panel](../../panels/selection_imview/imview.md)
 - <label class="widget widget-checkbox">2D, slice-by-slice</label> applies 2D segmentation individually to each slice in the dataset
 - <label class="widget widget-checkbox">3D, volume</label> executes 3D segmentation across the entire dataset or a selected subvolume (see *Subarea panel* below)
 - <span class="widget widget-edit">Aspect ratio for 3D...</span> displays the dataset's aspect ratio, calculated from voxel sizes found in [Ribbon → Dataset → Parameters](../dataset/index.md#parameters). this ratio is used when watershed segmentation relies on a distance map (see *Object separation settings* below)
@@ -39,7 +37,7 @@ The *Subarea panel* enables you to define a specific portion of the dataset for 
 - <span class="widget widget-edit">Y:...</span>: defines the height range of the dataset to process
 - <span class="widget widget-edit">Z:...</span>: sets the z-slice range of the dataset to process
 - <span class="widget widget-button">from Selection</span>: populates the *X*, *Y*, and *Z* fields with coordinates from a bounding box around the *Selection* layer
-- <span class="widget widget-button">Current View</span>: restricts the *X* and *Y* ranges to the currently visible area in the [Image View panel](../../panels/imview/index.md)
+- <span class="widget widget-button">Current View</span>: restricts the *X* and *Y* ranges to the currently visible area in the [Image View panel](../../panels/selection_imview/imview.md)
 - <span class="widget widget-button">Reset</span>: restores the subarea fields to the full dimensions of the dataset
 - <span class="widget widget-edit">Bin x times...</span>: applies a binning factor to downsample the data before segmentation, speeding up the process at the cost of detail.
 

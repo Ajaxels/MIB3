@@ -1,7 +1,5 @@
 # Organelle Analysis Plugins
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md)*
-
 ---
 
 The **Organelle Analysis** plugins in **Microscopy Image Browser (MIB)** offer specialized tools for studying organelle structures and properties in microscopy images. These plugins are located in the `Plugins/Organelle Analysis` folder of your MIB installation and are automatically detected when MIB starts.

@@ -1,6 +1,4 @@
-﻿# Classifier of Superpixels/Supervoxels
-
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Menu](../index.md) | [Tools](index.md)*
+# Classifier of Superpixels/Supervoxels
 
 Tools for automatic image segmentation using a train-and-predict scheme based on superpixel/supervoxel classification.
 
@@ -77,7 +75,7 @@ Training involves manually defining regions of interest (object and background) 
     - Choose a classifier type in <span class="widget widget-dropdown">Classifier</span>
     - Click <span class="widget widget-button">Train classifier</span> to start training
     - Click <span class="widget widget-button">Predict dataset</span> to predict segmentation
-* Check results in the [Image View panel](../../panels/imview/index.md). refine by adding more markers and repeating training and prediction
+* Check results in the [Image View panel](../../panels/selection_imview/imview.md). refine by adding more markers and repeating training and prediction
 
 ??? abstract "Snapshot"
     ![Segmentation results](images/superpix_06.jpg){.on-glb}

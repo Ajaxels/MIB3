@@ -1,7 +1,5 @@
 # Spatial Control Points
 
-*Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Plugins](../index.md) | [Plasmodesmata](index.md)*
-
 ---
 
 ## Overview

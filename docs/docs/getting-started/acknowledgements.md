@@ -1,7 +1,5 @@
 # Acknowledgements
 
-*Back to [MIB](../index.md) | [Getting started](index.md)*
-
 **Powered by MATLAB, [The MathWorks, Inc.](https://www.mathworks.com/)**
 
 ## Special Thanks

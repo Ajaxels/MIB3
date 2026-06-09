@@ -1,7 +1,5 @@
 # Transform Dataset
 
-*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Dataset](index.md)*
-
 ---
 
 ![Transform Dataset Dialog](images/menuDatasetTransform.png){align=left}
