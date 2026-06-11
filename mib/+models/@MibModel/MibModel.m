@@ -15,8 +15,6 @@ classdef MibModel < handle
         % autofill the selection layer during segmentation, updated by press of obj.cSelection.handles.autoFillSelection
         currentDirectory
         % current working directory for MIB
-        cpuParallelLimitMax
-        % max number of parallel workers available
         differenceSelection = false
         % apply erode and dilate operations to get only a difference with the original selection, updated by press of obj.cSelection.handles.differenceSelection
         extensionRegistryLoad
@@ -89,6 +87,19 @@ classdef MibModel < handle
         disableSegmentation = false;
         % when 1, segmentation tool callbacks return early (pan still works);
         % used during interactive ROI drawing — mirrors MIB2 mibModel.disableSegmentation
+    end
+
+    properties (Dependent)
+        cpuParallelLimitMax
+        % max number of parallel workers available; computed lazily on first
+        % access (parcluster query takes ~250 ms) unless an explicit value was
+        % passed to the constructor; warmed up by MibController.deferredStartupTasks
+    end
+
+    properties (Access = private)
+        cpuParallelLimitMaxCached = []
+        % cached backing field for cpuParallelLimitMax; empty until the first
+        % access or when no explicit value was passed to the constructor
     end
 
     events
@@ -191,6 +202,21 @@ classdef MibModel < handle
         status = transformDataset(obj, BatchOptIn)  % Dispatcher for dataset geometry transforms (flip, rotate, transpose, add frame)
         undo(obj, newIndex)        % undo/redo the recent changes (Ctrl+Z)
 
+        function value = get.cpuParallelLimitMax(obj)
+            % lazily query the parallel cluster profile; parcluster('local')
+            % takes ~250 ms, so it is skipped during startup
+            if isempty(obj.cpuParallelLimitMaxCached)
+                obj.cpuParallelLimitMaxCached = utils.getMaxParpoolWorkers();
+                % clamp the saved preference: the preferences file may
+                % originate from a machine with more parallel workers
+                if ~isempty(obj.preferences)
+                    obj.preferences.System.cpuParallelLimit = ...
+                        min([obj.preferences.System.cpuParallelLimit, obj.cpuParallelLimitMaxCached]);
+                end
+            end
+            value = obj.cpuParallelLimitMaxCached;
+        end
+
         function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             % MIBMODEL - Construct an instance of this class.
             %
@@ -198,22 +224,24 @@ classdef MibModel < handle
             %   function obj = MibModel(cpuParallelLimitMax, mibPath, mibVersion)
             %
             % Input Arguments:
-            %   - **cpuParallelLimit** — integer, maximal number of possible workers for parallel processing
+            %   - **cpuParallelLimitMax** — integer, maximal number of possible workers for parallel
+            %     processing; when empty (default) the value is computed lazily on the first access
+            %     of ``obj.cpuParallelLimitMax`` via ``utils.getMaxParpoolWorkers``
             %   - **mibPath** — char with the location of MIB3
             %   - **mibVersion** — char with the MIB version as
             %     ATTENTION! it is important to have the version number between "ver." and "/"
             %     Release syntax example: "ver. 2025.11 / 04.11.2025"
             %     Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
             %
-            
+
             arguments
                 % https://se.mathworks.com/help/releases/R2025a/matlab/input-and-output-arguments.html
-                cpuParallelLimitMax (1,1) double {mustBePositive, mustBeInteger} = 1
+                cpuParallelLimitMax double {mustBeScalarOrEmpty} = []
                 mibPath (1,:) char = ''
                 mibVersion (1,:) char = 'ver. 2025.12 / 05.12.2025 (alpha)'
             end
-            
-            obj.cpuParallelLimitMax = cpuParallelLimitMax;
+
+            obj.cpuParallelLimitMaxCached = cpuParallelLimitMax;
             obj.mibPath = mibPath;
             obj.mibVersion = mibVersion;
             obj.initialize();

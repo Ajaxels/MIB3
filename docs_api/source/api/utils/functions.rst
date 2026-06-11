@@ -19,6 +19,8 @@ Standalone utility functions
 
 .. autofunction:: connectPoints
 
+.. autofunction:: ensureJavaLibraries
+
 .. autofunction:: fontSizeUpdate
 
 .. autofunction:: generateSequentialFilename

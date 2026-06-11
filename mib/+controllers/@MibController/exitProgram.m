@@ -28,6 +28,13 @@ end
 % answer = questdlg(char(prompt), 'Close', 'Yes', 'No', 'No');
 % if strcmp(answer, 'Yes'); result = true; end
 
+% stop and delete the check-for-update timer, if it has not fired yet
+if ~isempty(obj.updateCheckTimer) && isvalid(obj.updateCheckTimer)
+    stop(obj.updateCheckTimer);
+    delete(obj.updateCheckTimer);
+end
+obj.updateCheckTimer = [];
+
 % close child controllers
 for i=numel(obj.childControllers):-1:1
     child = obj.childControllers{i};

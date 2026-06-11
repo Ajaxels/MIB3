@@ -29,6 +29,9 @@ function connImaris = connectToImaris(connImaris, mibGUI)
 if nargin < 2; mibGUI = []; end
 if nargin < 1; connImaris = []; end
 
+% link the Imaris Java library on the first use (lazy, skipped at MIB startup)
+utils.ensureJavaLibraries({'imaris'});
+
 % show progress dialog
 if ~isempty(mibGUI)
     progressDialog = uiprogressdlg(mibGUI, 'Value', 0, ...

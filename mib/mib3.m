@@ -57,11 +57,12 @@ tic
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
 mibVersion = 'ver. 2026.0605 / 05.06.2025 (preview)';  
 
-% MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs 
+% MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs
 % WHEN COMPILING
-% define max number of parallel workers for deployed versions
-% define workers for parallel pools
-cpuParallelLimitMax = utils.getMaxParpoolWorkers();
+% max number of parallel workers is computed lazily on the first access of
+% MibModel.cpuParallelLimitMax (utils.getMaxParpoolWorkers queries the slow
+% parcluster profile); pass an explicit value here to override
+cpuParallelLimitMax = [];
 
 % Enable GPU Future compatibility
 % https://se.mathworks.com/help/parallel-computing/parallel.gpu.enablecudaforwardcompatibility.html

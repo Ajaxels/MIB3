@@ -201,7 +201,9 @@ classdef Preferences < handle
 
                 handles.RecheckPeriod.Value = systemPrefs.Update.RecheckPeriod;
                 handles.CpuParallelLimit.Limits = [1 obj.mibModel.cpuParallelLimitMax];
-                handles.CpuParallelLimit.Value = systemPrefs.cpuParallelLimit;
+                % clamp: systemPrefs is a local copy that may predate the lazy
+                % clamp applied inside get.cpuParallelLimitMax
+                handles.CpuParallelLimit.Value = min([systemPrefs.cpuParallelLimit, obj.mibModel.cpuParallelLimitMax]);
 
                 handles.SystemScalingEditField.Value = guiScalingPrefs.systemscaling;
                 handles.mibScalingFactorEditField.Value = guiScalingPrefs.scaling;
@@ -454,6 +456,11 @@ classdef Preferences < handle
             if ~isempty(obj.mibModel.preferences.ExternalDirs.ImarisInstallationPath)
                 setenv('IMARISPATH', obj.mibModel.preferences.ExternalDirs.ImarisInstallationPath);
             end
+
+            % refresh the external dirs cached by the lazy Java library
+            % gateway, so updated Fiji/OMERO/Imaris paths are picked up
+            % without restarting MIB
+            utils.ensureJavaLibraries({}, '', obj.mibModel.preferences.ExternalDirs);
 
             notify(obj.mibModel, 'ShowImage');
             notify(obj.mibModel, 'UpdateGuiWidgets');

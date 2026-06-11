@@ -33,6 +33,7 @@ switch mode
     case {'Import', 'MATLAB'}  % obj.handles.ribbonHome.import &  obj.handles.ribbonHome.importFromMatlab
         obj.mibModel.importDataset('image');
     case 'System Clipboard'    % obj.handles.ribbonHome.importFromClipboard
+        utils.ensureJavaLibraries({'imageselection'});  % link ImageSelection.java on the first use
         img = imclipboard('paste');
         if isempty(img)
             utils.dlgs.showErrorDialog(obj.view.gui, 'Image is missing in the clipboard!', 'Clipboard import');

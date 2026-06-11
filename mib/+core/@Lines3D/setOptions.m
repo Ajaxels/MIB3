@@ -16,6 +16,6 @@ fieldNames = fieldnames(options);
 for fieldId = 1:numel(fieldNames)
     obj.(fieldNames{fieldId}) = options.(fieldNames{fieldId});
 end
-obj.updateNodeStrel(obj.nodeRadius);     % update strel element
+obj.nodeStrel = [];     % invalidate the strel cache; rebuilt lazily in addLinesToImage
 
 end

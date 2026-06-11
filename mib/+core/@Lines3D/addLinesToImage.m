@@ -173,6 +173,8 @@ if ~isempty(nodes)
     nodes(:,2) = round(nodes(:,2)/unitsPerPixelY);
     nodes(nodes==0) = 1;  % replace nodes that have value 0
 
+    % build the strel element lazily on first use (skipped during startup)
+    if isempty(obj.nodeStrel); obj.updateNodeStrel(obj.nodeRadius); end
     nodeStrelCopy = obj.nodeStrel;
     seWidth = floor(size(nodeStrelCopy, 1)/2);
 

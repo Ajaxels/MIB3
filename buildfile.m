@@ -31,7 +31,22 @@ plan("test") = TestTask("tests", IncludeSubfolders=true, Tag="Unit", ...
 plan("testAll") = TestTask("tests", IncludeSubfolders=true, ...
     Tag=["Unit" "Integration" "Performance"], SourceFiles="mib");
 
+% The test framework only adds folders that directly contain test files
+% (tests\core, tests\models, ...) to the path, never the tests\ root that
+% holds the +mibtest package. Without it, every test's TestClassSetup fails
+% with "Unable to resolve mibtest.fixtures.MibPathFixture". Make the test
+% tasks depend on a task that puts tests\ on the path first.
+plan("test").Dependencies = "addTestPath";
+plan("testAll").Dependencies = "addTestPath";
+plan("perf").Dependencies = "addTestPath";
+
 plan.DefaultTasks = ["check" "test"];
+end
+
+function addTestPathTask(context)
+% ADDTESTPATH - put the tests\ root on the path so the +mibtest package
+% (fixtures, helpers) resolves during test setup.
+addpath(fullfile(context.Plan.RootFolder, "tests"));
 end
 
 function perfTask(context)
@@ -39,7 +54,7 @@ function perfTask(context)
 % baseline for this machine+release. Set MIB3_UPDATE_PERF_BASELINE=1 to
 % (re)write the baseline instead of comparing.
 testsFolder = fullfile(context.Plan.RootFolder, "tests");
-addpath(testsFolder);   % make +mibtest visible
+% tests\ is already on the path via the addTestPath dependency
 results = runtests(testsFolder, IncludeSubfolders=true, Tag="Performance");
 mibtest.perf.PerfBaselineStore.finalizeRun();   % write/print before asserting
 % assertSuccess counts Incomplete (assumption-filtered) as failure — check only actual failures

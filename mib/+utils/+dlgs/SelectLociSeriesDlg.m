@@ -162,12 +162,7 @@ classdef SelectLociSeriesDlg < handle
             % Output Arguments:
             %   (none)
             %
-            if ~isdeployed
-                javapath = javaclasspath('-all');
-                if isempty(cell2mat(strfind(javapath, 'bioformats_package.jar')))
-                    javaaddpath(fullfile(fileparts(mfilename('fullpath')), 'bioformats_package.jar'));
-                end
-            end
+            utils.ensureJavaLibraries({'bioformats'});
         end
         
         function initView(obj)

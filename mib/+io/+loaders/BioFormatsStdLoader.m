@@ -46,6 +46,9 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
             %      loader = io.loaders.BioFormatsStdLoader(options);
             %
 
+            % link the Bio-Formats Java library on the first use (lazy, skipped at MIB startup)
+            utils.ensureJavaLibraries({'bioformats'});
+
             % default Options settings
             obj.Options = struct();
             obj.Options.Font = struct('FontName', 'Helvetica', 'FontSize', 12);
@@ -165,7 +168,11 @@ classdef BioFormatsStdLoader < io.loaders.BaseImageLoader
                         % 'ERROR' - Errors only
                         % 'FATAL' - Fatal errors only
                         % 'OFF' - No logging
-                        loci.common.DebugTools.setRootLevel('WARN');
+                        % use 'ERROR' so the Memoizer's harmless Kryo stack
+                        % traces (printed at WARN when a stale .bfmemo cache is
+                        % regenerated after a Bio-Formats version change) are
+                        % suppressed; the file is still re-read and loaded fine
+                        loci.common.DebugTools.setRootLevel('ERROR');
 
                         filesTemp.hDataset = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(options.bioFormatsMemoizerMemoDir));
                         filesTemp.hDataset.setId(filenames{fnIndex});

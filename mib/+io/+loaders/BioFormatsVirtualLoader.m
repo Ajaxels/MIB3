@@ -146,6 +146,9 @@ methods (Access = private)
         %
         % Called lazily on the first readPlane call.
 
+        % link the Bio-Formats Java library on the first use (lazy, skipped at MIB startup)
+        utils.ensureJavaLibraries({'bioformats'});
+
         obj.reader = loci.formats.Memoizer(bfGetReader(), 0, java.io.File(obj.memoDir));
         obj.reader.setId(obj.filename);
         obj.reader.setSeries(obj.seriesIndex);

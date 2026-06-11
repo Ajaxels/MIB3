@@ -33,8 +33,10 @@ if ~isfile(resourceFile)
     % h.brushButton.Icon = imgBrush;
 end
 
-% Initialize all external libraries and Java paths
-obj.initializeLibraries();   
+% Initialize the cheap non-Java libraries and configure the lazy Java library
+% gateway (utils.ensureJavaLibraries caches mibPath/ExternalDirs); Java
+% libraries (Bio-Formats, Fiji, Imaris, ...) are linked on their first use
+obj.initializeLibraries({'bm3d'});
 
 % get the current version of Matlab
 obj.matlabVersion = obj.mibModel.matlabVersion;
@@ -102,42 +104,11 @@ if obj.mibModel.preferences.Tips.ShowTips == 1
     end
 end
 
-% check for update
-currentDate = floor(now);  %#ok<TNOW1>
-if currentDate - obj.mibModel.preferences.System.Update.SinceLastCheck > ...
-        obj.mibModel.preferences.System.Update.RecheckPeriod
-    obj.mibModel.preferences.System.Update.SinceLastCheck = currentDate;
-    if isdeployed
-        if ismac
-            link = 'http://mib.helsinki.fi/web-update/mib3_mac.txt';
-        elseif isunix
-            link = 'http://mib.helsinki.fi/web-update/mib3_linux.txt';
-        else
-            link = 'http://mib.helsinki.fi/web-update/mib3_win.txt';
-        end
-    else
-        link = 'http://mib.helsinki.fi/web-update/mib3_matlab.txt';
-    end
-    try
-        urlText = urlread(link, 'Timeout', 4);  %#ok<URLRD>
-    catch
-        urlText = '0';
-    end
-    linefeedPositions = strfind(urlText, sprintf('\n'));
-    if ~isempty(linefeedPositions)
-        availableVersion = str2double(urlText(1:linefeedPositions(1)));
-    else
-        availableVersion = str2double(urlText);
-    end
-    mibVersionNumeric = utils.getMibVersionNumberic(obj.mibModel.mibVersion);
-    if availableVersion - mibVersionNumeric > 0
-        answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
-            sprintf('A new version %g of MIB is available!\nWould you like to download/install it?\n\nYou can always do that later via Help \x2192 Check for Update.', availableVersion), ...
-            'New version available', 'Update now', 'Later', 'Update now');
-        if strcmp(answer, 'Update now')
-            obj.startController('controllers.UpdateCheck', obj);
-        end
-    end
-end
+% run deferred startup tasks (parallel limit warm-up, check for update) from
+% a single-shot timer, so the slow parcluster query and the network request
+% (up to 4 s timeout when offline) never block the startup
+obj.updateCheckTimer = timer('StartDelay', 8, 'ExecutionMode', 'singleShot', ...
+    'TimerFcn', @(~,~) obj.deferredStartupTasks(), 'Name', 'MIB-DeferredStartup');
+start(obj.updateCheckTimer);
 
 end

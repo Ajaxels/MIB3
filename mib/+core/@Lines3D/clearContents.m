@@ -31,6 +31,6 @@ obj.defaultNodeName = 'Node';
 obj.defaultTreeName = 'Tree';
 obj.filename = [];
 
-obj.updateNodeStrel(obj.nodeRadius);     % update strel element
+obj.nodeStrel = [];     % invalidate the strel cache; rebuilt lazily in addLinesToImage
 
 end

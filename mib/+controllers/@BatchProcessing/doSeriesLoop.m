@@ -42,6 +42,9 @@ switch obj.Protocol(startStep).Batch.DirectoryName{1}
         filename = fullfile(obj.Protocol(startStep).Batch.DirectoryName{1}, ...
             obj.Protocol(startStep).Batch.FilenameFilter);
 end
+% link the Bio-Formats Java library on the first use (lazy, skipped at MIB startup)
+utils.ensureJavaLibraries({'bioformats'});
+
 % get number of series in the container
 hDataset = loci.formats.Memoizer(bfGetReader(), 0, ...
     java.io.File(obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir));

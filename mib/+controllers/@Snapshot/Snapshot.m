@@ -870,6 +870,7 @@ classdef Snapshot < handle
                 utils.mibImWrite(imgOut, dataset.snapshotFilename, parameters);
             elseif obj.view.handles.Clipboard.Value  % copy to Clipboard
                 progressBar.updateText('Exporting to clipboard, please wait...');
+                utils.ensureJavaLibraries({'imageselection'});  % link ImageSelection.java on the first use
                 imclipboard('copy', imgOut);
             end
             progressBar.deletePoolWaitbar();

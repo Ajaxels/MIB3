@@ -121,10 +121,12 @@ switch BatchOpt.Mode{1}
 
         % get index of the next dataset
         nextDatasetIndex = (numel(obj.Sets.names)-1) * obj.Sets.datasetsInSet + 1;
+        % read the default image once; MibDataset copies the array, and
+        % dictionary is a value type, so both can be shared between iterations
+        fn = fullfile(obj.mibPath, 'assets', 'images', 'default.png');
+        I = imread(fn);
+        meta = dictionary();
         for i=nextDatasetIndex:nextDatasetIndex+obj.Sets.datasetsInSet-1  % initialize mibDataset
-            fn = fullfile(obj.mibPath, 'assets', 'images', 'default.png');
-            I = imread(fn);
-            meta = dictionary();
 
             % update MibDataset using the default values
             if ~isempty(obj.preferences) % standard call when obj.preferences is initialized

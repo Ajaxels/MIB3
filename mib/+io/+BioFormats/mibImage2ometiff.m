@@ -96,6 +96,9 @@ result = 0;
 if nargin < 3; options = struct(); end
 if nargin < 2; msgbox('Please provide filename and image!', 'Error!', 'error', 'modal'); return; end
 
+% link the Bio-Formats Java library on the first use (lazy, skipped at MIB startup)
+utils.ensureJavaLibraries({'bioformats'});
+
 if ~isfield(options, 'pixSize')
     options.pixSize = struct();
     options.pixSize.x = 1;

@@ -13,8 +13,13 @@ end
 
 drawnow nocallbacks;
 
-% restore the default layout
-pause(2);
+% restore the default layout; wait until the AppContainer reaches the RUNNING
+% state so that PanelLayout can be applied (bounded poll instead of a fixed pause)
+layoutWaitTimer = tic;
+while obj.gui.State ~= matlab.ui.container.internal.appcontainer.AppState.RUNNING ...
+        && toc(layoutWaitTimer) < 5
+    pause(0.05);
+end
 status = obj.controller.loadLayout('localDefault');
 drawnow nocallbacks;
 

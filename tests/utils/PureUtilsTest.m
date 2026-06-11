@@ -4,6 +4,9 @@ classdef PureUtilsTest < matlab.unittest.TestCase
 % Covers:
 %   utils.updatePixSizeAndResolution  — pixSize derivation from img_info
 %   utils.updateBatchOptCombineFields_Shared — batch-opt merge semantics
+%   utils.calculatePixSizes           — resolution → physical pixel size
+%   utils.calculateResolution         — physical pixel size → resolution
+%   MibDataset.convertPixelsToUnits / convertUnitsToPixels — round-trip
 
     methods (TestClassSetup)
         function addPaths(testCase)
@@ -129,6 +132,91 @@ classdef PureUtilsTest < matlab.unittest.TestCase
 
             testCase.verifyTrue(isfield(merged, 'newField'));
             testCase.verifyEqual(merged.newField, 99);
+        end
+
+        % -----------------------------------------------------------------
+        % utils.calculatePixSizes
+        % -----------------------------------------------------------------
+
+        function calculatePixSizes_knownValue_1pixPerInch(testCase)
+            % 1 pixel/inch = 25400 µm/pixel
+            pixSize = utils.calculatePixSizes([1 1], 'Inch', 'um');
+
+            testCase.verifyEqual(pixSize.x, 25400.0, 'AbsTol', 1e-6);
+            testCase.verifyEqual(pixSize.y, 25400.0, 'AbsTol', 1e-6);
+        end
+
+        % -----------------------------------------------------------------
+        % utils.calculateResolution
+        % -----------------------------------------------------------------
+
+        function calculateResolution_knownValue_25400umPerPix(testCase)
+            % 25400 µm/pixel → 1 pixel/inch
+            pixSizeIn.x     = 25400;
+            pixSizeIn.y     = 25400;
+            pixSizeIn.units = 'um';
+
+            resolution = utils.calculateResolution(pixSizeIn);
+
+            testCase.verifyEqual(resolution(1), 1.0, 'AbsTol', 1e-9);
+            testCase.verifyEqual(resolution(2), 1.0, 'AbsTol', 1e-9);
+        end
+
+        % -----------------------------------------------------------------
+        % calculatePixSizes / calculateResolution round-trip
+        % -----------------------------------------------------------------
+
+        function calculatePixSizesAndResolution_roundTrip_um(testCase)
+            % Start with an arbitrary pixSize, convert to resolution, then back.
+            pixSizeIn.x     = 0.065;
+            pixSizeIn.y     = 0.065;
+            pixSizeIn.units = 'um';
+
+            resolution = utils.calculateResolution(pixSizeIn);
+            pixSizeOut = utils.calculatePixSizes(resolution, 'Inch', 'um');
+
+            testCase.verifyEqual(pixSizeOut.x, pixSizeIn.x, 'AbsTol', 1e-10);
+            testCase.verifyEqual(pixSizeOut.y, pixSizeIn.y, 'AbsTol', 1e-10);
+        end
+
+        % -----------------------------------------------------------------
+        % MibDataset.convertPixelsToUnits / convertUnitsToPixels round-trip
+        % -----------------------------------------------------------------
+
+        function convertPixelsToUnits_roundTrip_orientation3(testCase)
+            % Pixel coords → physical units → pixel coords must be identity.
+            % Round-trip is algebraically exact for any pixSize/bb combination.
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 8]);
+            ds = mibModel.I{1};
+
+            xPx = 5; yPx = 7; zPx = 3;
+            [xU, yU, zU]       = ds.convertPixelsToUnits(xPx, yPx, zPx);
+            [xPx2, yPx2, zPx2] = ds.convertUnitsToPixels(xU, yU, zU);
+
+            testCase.verifyEqual(xPx2, xPx, 'AbsTol', 1e-9);
+            testCase.verifyEqual(yPx2, yPx, 'AbsTol', 1e-9);
+            testCase.verifyEqual(zPx2, zPx, 'AbsTol', 1e-9);
+        end
+
+        function convertUnitsToPixels_roundTrip_orientation3(testCase)
+            % Physical unit coords → pixel coords → physical units must be identity.
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 8]);
+            ds = mibModel.I{1};
+
+            % Use physical coords within the dataset extent
+            pixSize = ds.image.pixSize;
+            xU = 3.0 * pixSize.x;
+            yU = 4.0 * pixSize.y;
+            zU = 2.0 * pixSize.z;
+
+            [xPx, yPx, zPx]   = ds.convertUnitsToPixels(xU, yU, zU);
+            [xU2, yU2, zU2]   = ds.convertPixelsToUnits(xPx, yPx, zPx);
+
+            testCase.verifyEqual(xU2, xU, 'AbsTol', 1e-9);
+            testCase.verifyEqual(yU2, yU, 'AbsTol', 1e-9);
+            testCase.verifyEqual(zU2, zU, 'AbsTol', 1e-9);
         end
 
     end

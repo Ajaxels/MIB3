@@ -57,6 +57,10 @@ classdef MibController < handle
         % version of MIB in numerical form
         mibWebWindow
         % handle of the underlying matlab.internal.webwindow class window (used for drag-and-drop of files
+        updateCheckTimer = []
+        % single-shot timer that runs deferredStartupTasks (parallel limit
+        % warm-up, check-for-update) shortly after startup, so the slow
+        % parcluster query and the network request never block the GUI
         dndBridgeButton = []
         % hidden uibutton returned by utils.attachFileDnD; state for the
         % drag-and-drop bridge lives in its UserData
@@ -87,6 +91,8 @@ classdef MibController < handle
         listener_updateToolbar(obj, src, evtData) % update buttons in MIB toolbar "obj.view.handles.qab.handles"
         % METHODS
         addGuiControllers(obj)  % add GUI components to the main view obj.view
+        checkForUpdate(obj)     % check the MIB website for a newer version, executed from deferredStartupTasks
+        deferredStartupTasks(obj) % run startup tasks deferred to keep startup fast, executed from obj.updateCheckTimer
         deleteImageDocument(obj, docIndex)        % Delete an image document and reindex remaining documents
         datasetSlices(obj, parameter)             % Dispatcher for Menu -> Dataset -> Slice operations (copy, swap, insert, delete, reslice)
         result = exitProgram(obj, target)        % exit mib 

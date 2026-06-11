@@ -19,6 +19,9 @@ function Miji_wrapper(open_imagej)
 %
 
 
+% link the Fiji Java libraries on the first use (lazy, skipped at MIB startup)
+utils.ensureJavaLibraries({'mij.jar', 'fiji'});
+
 if ~isdeployed
     Miji(open_imagej);     % from Matlab, use original Miji script in the Fiji/scripts folder
     %MIJ.start;

@@ -40,9 +40,11 @@ obj.extensionRegistryLoad = io.ExtensionRegistryLoad; % registry of filename ext
 % update mibModel parameters
 obj.currentDirectory = obj.preferences.System.Dirs.LastPath;  % define current working directory
 
-% get the current version of Matlab; keep this variable to be faster and not call ver function
-v = ver('matlab'); %#ok<VERMATLAB>
-obj.matlabVersion = str2double(v(1).Version);   % conversion is not correct as version named as 9.8, 9.9, 9.10, 26.10 .....
+% get the current version of Matlab; parse version() output ('26.1.0.123456')
+% instead of ver('matlab') which takes ~900 ms scanning all toolboxes;
+% str2double of the 'major.minor' substring keeps the same numeric semantics
+% (conversion is not correct as version named as 9.8, 9.9, 9.10, 26.10 .....)
+obj.matlabVersion = str2double(regexp(version, '^\d+\.\d+', 'match', 'once'));
 
 %obj.newDatasetSwitch = 0;
 %obj.showAllMaterials = 1;   % display all materials of the model

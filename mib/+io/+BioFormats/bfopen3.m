@@ -60,6 +60,9 @@ function [result] = bfopen3(r, seriesNumber, sliceNo, options)
 if nargin < 4;     options = struct;   end
 if nargin < 3;     sliceNo = NaN;   end
 
+% link the Bio-Formats Java library on the first use (lazy, skipped at MIB startup)
+utils.ensureJavaLibraries({'bioformats'});
+
 % check MATLAB version, since typecast function requires MATLAB 7.1+
 canTypecast = versionCheck(version, 7, 1);
 
