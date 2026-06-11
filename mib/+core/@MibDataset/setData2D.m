@@ -132,6 +132,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
                 col_channel = 1;
             end
             if iscell(dataset); dataset = dataset{1}; end
+            if strcmp(type, 'mask') && ~obj.mask.exists; obj.allocateMask(); end
             obj.(type).setDataFast(dataset, slice_no, col_channel, timeT);   % single-hop in-place write (avoids COW)
             if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
             elseif strcmp(type, 'mask'); obj.maskExist = true; end

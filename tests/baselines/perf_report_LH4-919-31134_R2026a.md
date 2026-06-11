@@ -1,0 +1,89 @@
+# MIB3 Performance Report
+
+- **Host:** LH4-919-31134
+- **MATLAB:** R2026a
+- **MIB version:** ver. 2026.0605 / 05.06.2025 (preview)
+- **Generated:** 2026-06-11T13:55:40Z
+
+| Measurement | ms/call | baseline | ratio | status |
+|-------------|--------:|--------:|------:|--------|
+| GetSetDataPerf/getRGBimage/labels63 | 1.520 | 2.114 | 0.72 | OK |
+| GetSetDataPerf/getRGBimage/labels255 | 1.835 | 2.028 | 0.90 | OK |
+| GetSetDataPerf/getRGBimage/labels65535 | 1.456 | 2.163 | 0.67 | OK |
+| GetSetDataPerf/get4D_image/labels63 | 0.535 | 0.255 | 2.10 | FAIL |
+| GetSetDataPerf/get4D_image/labels255 | 0.045 | 0.046 | 0.98 | OK |
+| GetSetDataPerf/get4D_image/labels65535 | 0.041 | 0.042 | 0.97 | OK |
+| GetSetDataPerf/get4D_labels/labels63 | 1.399 | 2.079 | 0.67 | OK |
+| GetSetDataPerf/get4D_labels/labels255 | 0.050 | 0.073 | 0.68 | OK |
+| GetSetDataPerf/get4D_labels/labels65535 | 0.043 | 0.059 | 0.72 | OK |
+| GetSetDataPerf/set4D_image/labels63 | 0.380 | 0.454 | 0.84 | OK |
+| GetSetDataPerf/set4D_image/labels255 | 0.057 | 0.056 | 1.02 | OK |
+| GetSetDataPerf/set4D_image/labels65535 | 0.053 | 0.052 | 1.02 | OK |
+| GetSetDataPerf/set4D_labels/labels63 | 2.627 | 3.227 | 0.81 | OK |
+| GetSetDataPerf/set4D_labels/labels255 | 0.060 | 0.074 | 0.82 | OK |
+| GetSetDataPerf/set4D_labels/labels65535 | 0.168 | 0.131 | 1.28 | WARN |
+| GetSetDataPerf/get3D_image/labels63 | 0.368 | 0.496 | 0.74 | OK |
+| GetSetDataPerf/get3D_image/labels255 | 0.033 | 0.033 | 0.98 | OK |
+| GetSetDataPerf/get3D_image/labels65535 | 0.031 | 0.035 | 0.90 | OK |
+| GetSetDataPerf/get3D_labels/labels63 | 1.462 | 1.225 | 1.19 | WARN |
+| GetSetDataPerf/get3D_labels/labels255 | 0.040 | 0.074 | 0.54 | OK |
+| GetSetDataPerf/get3D_labels/labels65535 | 0.039 | 0.036 | 1.09 | OK |
+| GetSetDataPerf/get3D_mask/labels63 | 1.166 | 1.174 | 0.99 | OK |
+| GetSetDataPerf/get3D_mask/labels255 | 0.031 | 0.049 | 0.64 | OK |
+| GetSetDataPerf/get3D_mask/labels65535 | 0.034 | 0.030 | 1.13 | OK |
+| GetSetDataPerf/get3D_selection/labels63 | 1.085 | 1.410 | 0.77 | OK |
+| GetSetDataPerf/get3D_selection/labels255 | 0.046 | 0.030 | 1.50 | FAIL |
+| GetSetDataPerf/get3D_selection/labels65535 | 0.061 | 0.029 | 2.13 | FAIL |
+| GetSetDataPerf/get3D_labelsMaterial/labels63 | 3.077 | 1.979 | 1.55 | FAIL |
+| GetSetDataPerf/get3D_labelsMaterial/labels255 | 2.614 | 2.217 | 1.18 | WARN |
+| GetSetDataPerf/get3D_labelsMaterial/labels65535 | 1.765 | 1.810 | 0.97 | OK |
+| GetSetDataPerf/get3D_imageOrient1/labels63 | 3.581 | 2.478 | 1.45 | FAIL |
+| GetSetDataPerf/get3D_imageOrient1/labels255 | 3.428 | 5.487 | 0.62 | OK |
+| GetSetDataPerf/get3D_imageOrient1/labels65535 | 2.527 | 1.871 | 1.35 | FAIL |
+| GetSetDataPerf/get3D_everything/labels63 | 0.319 | 0.311 | 1.02 | OK |
+| GetSetDataPerf/set3D_image/labels63 | 0.280 | 0.340 | 0.82 | OK |
+| GetSetDataPerf/set3D_image/labels255 | 0.048 | 0.049 | 0.98 | OK |
+| GetSetDataPerf/set3D_image/labels65535 | 0.048 | 0.050 | 0.95 | OK |
+| GetSetDataPerf/set3D_labels/labels63 | 3.490 | 2.254 | 1.55 | FAIL |
+| GetSetDataPerf/set3D_labels/labels255 | 0.047 | 0.051 | 0.92 | OK |
+| GetSetDataPerf/set3D_labels/labels65535 | 0.086 | 0.052 | 1.65 | FAIL |
+| GetSetDataPerf/set3D_mask/labels63 | 2.498 | 2.348 | 1.06 | OK |
+| GetSetDataPerf/set3D_mask/labels255 | 0.097 | 0.074 | 1.30 | WARN |
+| GetSetDataPerf/set3D_mask/labels65535 | 0.085 | 0.067 | 1.27 | WARN |
+| GetSetDataPerf/set3D_selection/labels63 | 4.482 | 2.433 | 1.84 | FAIL |
+| GetSetDataPerf/set3D_selection/labels255 | 0.053 | 0.118 | 0.45 | OK |
+| GetSetDataPerf/set3D_selection/labels65535 | 0.054 | 0.044 | 1.22 | WARN |
+| GetSetDataPerf/set3D_labelsMaterial/labels63 | 15.924 | 17.907 | 0.89 | OK |
+| GetSetDataPerf/set3D_labelsMaterial/labels255 | 17.371 | 17.855 | 0.97 | OK |
+| GetSetDataPerf/set3D_labelsMaterial/labels65535 | 20.307 | 20.202 | 1.01 | OK |
+| GetSetDataPerf/set3D_everything/labels63 | 0.591 | 0.349 | 1.69 | FAIL |
+| GetSetDataPerf/get2D_image/labels63 | 0.086 | 0.080 | 1.07 | OK |
+| GetSetDataPerf/get2D_image/labels255 | 0.060 | 0.071 | 0.84 | OK |
+| GetSetDataPerf/get2D_image/labels65535 | 0.080 | 0.079 | 1.01 | OK |
+| GetSetDataPerf/get2D_labels/labels63 | 0.225 | 0.254 | 0.89 | OK |
+| GetSetDataPerf/get2D_labels/labels255 | 0.060 | 0.056 | 1.07 | OK |
+| GetSetDataPerf/get2D_labels/labels65535 | 0.069 | 0.055 | 1.25 | WARN |
+| GetSetDataPerf/get2D_mask/labels63 | 0.204 | 0.126 | 1.62 | FAIL |
+| GetSetDataPerf/get2D_mask/labels255 | 0.079 | 0.075 | 1.05 | OK |
+| GetSetDataPerf/get2D_mask/labels65535 | 0.054 | 0.057 | 0.96 | OK |
+| GetSetDataPerf/get2D_selection/labels63 | 0.139 | 0.132 | 1.06 | OK |
+| GetSetDataPerf/get2D_selection/labels255 | 0.080 | 0.057 | 1.40 | FAIL |
+| GetSetDataPerf/get2D_selection/labels65535 | 0.060 | 0.057 | 1.04 | OK |
+| GetSetDataPerf/get2D_labelsMaterial/labels63 | 0.389 | 0.321 | 1.21 | WARN |
+| GetSetDataPerf/get2D_labelsMaterial/labels255 | 0.285 | 0.278 | 1.02 | OK |
+| GetSetDataPerf/get2D_labelsMaterial/labels65535 | 0.289 | 0.318 | 0.91 | OK |
+| GetSetDataPerf/set2D_image/labels63 | 0.892 | 0.878 | 1.02 | OK |
+| GetSetDataPerf/set2D_image/labels255 | 0.932 | 0.897 | 1.04 | OK |
+| GetSetDataPerf/set2D_image/labels65535 | 0.880 | 1.021 | 0.86 | OK |
+| GetSetDataPerf/set2D_labels/labels63 | 1.170 | 1.236 | 0.95 | OK |
+| GetSetDataPerf/set2D_labels/labels255 | 0.878 | 0.922 | 0.95 | OK |
+| GetSetDataPerf/set2D_labels/labels65535 | 1.564 | 1.523 | 1.03 | OK |
+| GetSetDataPerf/set2D_mask/labels63 | 1.173 | 1.183 | 0.99 | OK |
+| GetSetDataPerf/set2D_mask/labels255 | 0.842 | 0.887 | 0.95 | OK |
+| GetSetDataPerf/set2D_mask/labels65535 | 0.827 | 0.872 | 0.95 | OK |
+| GetSetDataPerf/set2D_selection/labels63 | 1.166 | 1.219 | 0.96 | OK |
+| GetSetDataPerf/set2D_selection/labels255 | 0.768 | 0.867 | 0.88 | OK |
+| GetSetDataPerf/set2D_selection/labels65535 | 0.815 | 0.857 | 0.95 | OK |
+| GetSetDataPerf/set2D_labelsMaterial/labels63 | 1.755 | 1.822 | 0.96 | OK |
+| GetSetDataPerf/set2D_labelsMaterial/labels255 | 1.633 | 1.567 | 1.04 | OK |
+| GetSetDataPerf/set2D_labelsMaterial/labels65535 | 2.314 | 2.456 | 0.94 | OK |

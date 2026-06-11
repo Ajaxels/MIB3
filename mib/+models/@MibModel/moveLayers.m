@@ -5,7 +5,7 @@ function moveLayers(obj, SourceLayer, DestinationLayer, DatasetType, ActionType,
 %   .. code-block:: matlab
 %
 %      obj.moveLayers(SourceLayer, DestinationLayer, DatasetType, ActionType)
-%      obj.moveLayers(SourceLayer, DestinationLayer, DatasetType, ActionType, BatchOptIn)
+%      obj.moveLayers(SourceLayer, Destinabuildtool testAlltionLayer, DatasetType, ActionType, BatchOptIn)
 %
 % Move data between the selection, mask, and labels layers. Supports operations like
 % moving selection to mask, or selection to a specified material of the labels layer.
