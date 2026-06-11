@@ -117,13 +117,23 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
             if strcmp(type, 'image')
                 if isempty(col_channel); col_channel = obj.slices{4};
                 elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
-                dataset = {obj.(type).data(:,:,:,col_channel,time)};
+                if size(obj.image.data, 5) == 1 && isequal(col_channel, 1:size(obj.image.data, 4))
+                    % single time point, all channels: return a copy-on-write
+                    % alias of the full array (O(1)) instead of a deep copy
+                    dataset = {obj.image.data};
+                else
+                    dataset = {obj.(type).data(:,:,:,col_channel,time)};
+                end
             else
                 col_channel = 1;
-                rawVol = obj.(type).data(:,:,:,col_channel,time);
-                % Replicate slow-path reshape: MibImage.getData drops singleton C dim for non-image
-                sz = size(rawVol);
-                dataset = {reshape(rawVol, sz(1), sz(2), sz(3), 1)};
+                if size(obj.(type).data, 5) == 1
+                    rawVol = obj.(type).data;   % COW alias, no copy
+                else
+                    rawVol = obj.(type).data(:,:,:,col_channel,time);
+                end
+                % Replicate slow-path reshape: MibImage.getData drops singleton C dim
+                % for non-image types (reshape shares memory — still zero-copy)
+                dataset = {reshape(rawVol, size(rawVol,1), size(rawVol,2), size(rawVol,3), 1)};
             end
             return;
         end

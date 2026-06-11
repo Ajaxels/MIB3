@@ -146,7 +146,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
             obj.(type).setDataFast(dataset, [], col_channel, time);   % [] z ⇒ all-z volume write; single-hop in-place (avoids COW)
             if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
             elseif strcmp(type, 'mask'); obj.maskExist = true; end
-            if ~isfield(options, 'suppressNotify') || ~options.suppressNotify
+            if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
                 setDataOpt.type = type; setDataOpt.mode = '3D';
                 notify(obj, 'SetData', core.ToggleEventData(setDataOpt));
             end
@@ -240,11 +240,11 @@ if options.roiId >= 0
             mask = mask(bb(3):bb(4), bb(1):bb(2));
             if iscell(dataset)
                 mask = repmat(mask, [1, 1, size(dataset{roiId2}, 3), size(dataset{roiId2}, max([ndims(dataset{roiId2}) 4]))]);
-                sliceTemp = obj.I{options.id}.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
+                sliceTemp = obj.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
                 sliceTemp(mask==1) = dataset{roiId2}(mask==1);
             else
                 mask = repmat(mask, [1, 1, size(dataset, 3), size(dataset, max([ndims(dataset) 3]))]);
-                sliceTemp = obj.I{options.id}.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
+                sliceTemp = obj.(datasetVariable).getData(type, orient, col_channel, options);     % get current dataset
                 sliceTemp(mask==1) = dataset(mask==1);
             end
             result = obj.(datasetVariable).setData(sliceTemp, type, orient, col_channel, options);
@@ -280,9 +280,12 @@ elseif strcmp(type, 'mask')
     obj.maskExist = true;
 end
 
-% notify about setData method used
-setDataOpt.type = type;
-setDataOpt.mode = '3D';
-eventdata = core.ToggleEventData(setDataOpt);
-notify(obj, 'SetData', eventdata);
+% notify about setData method used; skipped when nothing listens or the
+% caller passed options.suppressNotify = true (batch loops)
+if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
+    setDataOpt.type = type;
+    setDataOpt.mode = '3D';
+    eventdata = core.ToggleEventData(setDataOpt);
+    notify(obj, 'SetData', eventdata);
+end
 end

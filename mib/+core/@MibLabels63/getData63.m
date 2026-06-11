@@ -77,12 +77,15 @@ end
 
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
+    % the color dimension is always 1 — operate on obj.data directly:
+    % orient 3 passes a copy-on-write alias (no copy); the bit-unpacking
+    % below produces the single output copy
     if orient==3 % yx orientation
-        dataset = obj.data(:,:,:,colChannel,:);
+        dataset = obj.data;
     elseif orient==1    % xz; get permuted dataset
-        dataset = permute(obj.data(:,:,:,colChannel,:), [2 3 1 4 5]);
+        dataset = permute(obj.data, [2 3 1 4 5]);
     elseif orient==2    % yz; get permuted dataset
-        dataset = permute(obj.data(:,:,:,colChannel,:), [1 3 2 4 5]);
+        dataset = permute(obj.data, [1 3 2 4 5]);
     end
 
     % extract required layer
@@ -91,14 +94,14 @@ if blockModeSwitchLocal == 0  % return the full dataset
             if ~isempty(materialIndex)      % take only specific material
                 dataset = uint8(bitand(dataset, 63) == materialIndex(1));
             else                            % get all labels objects
-                dataset = bitand(dataset, 63);     
+                dataset = bitand(dataset, 63);
             end
         case 'mask'
-            dataset = bitand(dataset, 64)/64;  % 64 = 01000000
+            dataset = bitget(dataset, 7);   % bit 7 = 64 = 01000000
         case 'selection'
-            dataset = bitand(dataset, 128)/128;  % 128 = 10000000
+            dataset = bitget(dataset, 8);   % bit 8 = 128 = 10000000
         case 'everything'
-            % do nothing
+            % do nothing — orient 3 returns a copy-on-write alias of obj.data
     end
 else  % return a subvolume of the full dataset
     % get coordinates of the shown block for the original dataset in the yx dimension
@@ -148,9 +151,9 @@ else  % return a subvolume of the full dataset
                 dataset = bitand(dataset, 63);     % get all model objects
             end
         case 'mask'
-            dataset = bitand(dataset, 64)/64;  % 64 = 01000000
+            dataset = bitget(dataset, 7);   % bit 7 = 64 = 01000000
         case 'selection'
-            dataset = bitand(dataset, 128)/128;  % 128 = 10000000
+            dataset = bitget(dataset, 8);   % bit 8 = 128 = 10000000
         case 'everything'
             % do nothing
     end

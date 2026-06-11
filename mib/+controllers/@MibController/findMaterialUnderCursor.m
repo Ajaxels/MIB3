@@ -22,14 +22,15 @@ function findMaterialUnderCursor(obj)
 % Updates
 %
 
-id = obj.mibModel.id;
+id = obj.mibModel.getActiveId();
 dataset = obj.mibModel.I{id};
 
 % cancel when model is not present
 if dataset.modelExist == 0; return; end
 
 % cancel when the cursor is not above the image
-cImageDoc = obj.cImageDoc{id};
+% cImageDoc is indexed by the set index, not by the dataset id
+cImageDoc = obj.cImageDoc{obj.mibModel.Sets.selectedSet};
 if isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage; return; end
 
 % cursor coordinates from the status-bar pixel label ("x:y (...)")
@@ -53,6 +54,7 @@ switch dataset.orientation
         y = y1;
         z = x1;
 end
+options.id = id;   % pin to the active dataset; the wrapper default obj.id may be stale
 options.blockModeSwitch = 0;
 options.y = [y y];
 options.x = [x x];

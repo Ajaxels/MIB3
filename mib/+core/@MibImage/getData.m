@@ -88,10 +88,15 @@ end
 % split the operations for better performance
 if blockModeSwitchLocal == 0  % return the full dataset
     if strcmp(obj.type, 'image') || isempty(materialIndex)
-        dataset = obj.data(:,:,:,colChannel,:);
-    else % labels type
-        dataset = zeros(size(obj.data), 'uint8');   
-        dataset(obj.data == materialIndex) = 1;
+        if isequal(colChannel, 1:size(obj.data, 4))
+            % all channels requested: return a copy-on-write alias of the full
+            % array (O(1)) instead of forcing a deep copy via indexed extraction
+            dataset = obj.data;
+        else
+            dataset = obj.data(:,:,:,colChannel,:);
+        end
+    else % labels type: extract the requested material as a binary mask
+        dataset = uint8(obj.data == materialIndex);
     end
 
     if orient==1    % xz; get permuted dataset
@@ -132,7 +137,7 @@ else  % return a subvolume of the full dataset
     Zlim = [max([Zlim(1) 1]) min([Zlim(2) size(obj.data, 3)])];
     Tlim = [max([Tlim(1) 1]) min([Tlim(2) size(obj.data, 5)])];
 
-    if colChannel == 0; colChannel = 1:size(obj.data, 4); end
+    if isscalar(colChannel) && colChannel == 0; colChannel = 1:size(obj.data, 4); end
 
     if strcmp(obj.type, 'image') || isempty(materialIndex)
         dataset = obj.data(Ylim(1):Ylim(2), Xlim(1):Xlim(2), Zlim(1):Zlim(2), colChannel, Tlim(1):Tlim(2));

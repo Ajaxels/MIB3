@@ -105,10 +105,13 @@ if blockModeSwitchLocal == 0  % set the full dataset
             targetShape = [size(dataset,1), size(dataset,2), size(dataset,3), nC, ...
                            numel(dataset) / (size(dataset,1) * size(dataset,2) * size(dataset,3) * nC)];
             dataset = reshape(dataset, targetShape);
-            if isequal(size(obj.data), targetShape)
+            if isequal(size(obj.data), targetShape) && ~strcmp(class(dataset), class(obj.data))
+                % same container but different numeric class — keep the indexed
+                % write so the implicit class conversion applies
                 obj.data(:,:,:,colChannel,:) = dataset;
             else
-                % Container size changed — replace and update dimensions
+                % Full replacement — O(1) copy-on-write swap of the array header
+                % instead of an element-wise write; also covers container resizing
                 obj.data    = dataset;
                 obj.height     = targetShape(1);
                 obj.width      = targetShape(2);

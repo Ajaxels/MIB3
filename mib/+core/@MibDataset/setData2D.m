@@ -135,7 +135,7 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
             obj.(type).setDataFast(dataset, slice_no, col_channel, timeT);   % single-hop in-place write (avoids COW)
             if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
             elseif strcmp(type, 'mask'); obj.maskExist = true; end
-            if ~isfield(options, 'suppressNotify') || ~options.suppressNotify
+            if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
                 setDataOpt.type = type; setDataOpt.mode = '2D';
                 notify(obj, 'SetData', core.ToggleEventData(setDataOpt));
             end
@@ -247,10 +247,13 @@ elseif strcmp(type, 'mask')
     obj.maskExist = true;
 end
 
-% notify about setData method used
-setDataOpt.type = type;
-setDataOpt.mode = '2D';
-eventdata = core.ToggleEventData(setDataOpt);
-notify(obj, 'SetData', eventdata);
+% notify about setData method used; skipped when nothing listens or the
+% caller passed options.suppressNotify = true (batch loops)
+if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
+    setDataOpt.type = type;
+    setDataOpt.mode = '2D';
+    eventdata = core.ToggleEventData(setDataOpt);
+    notify(obj, 'SetData', eventdata);
+end
 
 end

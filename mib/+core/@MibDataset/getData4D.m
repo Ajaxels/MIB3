@@ -88,6 +88,48 @@ if nargin < 4; col_channel = [];   end
 if nargin < 3; orient = []; end
 if nargin < 2; type = 'image'; end
 
+% === FAST PATH ===
+% Standard in-memory, YX orient (3), no ROI, no blockMode, no x/y/z/t subregion.
+% Returns a copy-on-write alias of the full array (O(1)) when all channels are
+% requested; bypasses MibImage.getData entirely.
+if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
+    fastOrient = orient;
+    if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
+        fastOrient = obj.orientation;
+    end
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ...
+            ~isfield(options, 'z') && ~isfield(options, 't')
+        if isfield(options, 'blockModeSwitch')
+            blockIsOff = (options.blockModeSwitch == 0);
+        else
+            blockIsOff = (obj.blockModeSwitch == 0);
+        end
+        noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
+        skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
+                        isnumeric(col_channel) && ~any(isnan(col_channel(:)));
+        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+
+        if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            if strcmp(type, 'image')
+                if isempty(col_channel); col_channel = obj.slices{4};
+                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
+                if isequal(col_channel, 1:size(obj.image.data, 4))
+                    dataset = {obj.image.data};   % COW alias, no copy
+                else
+                    dataset = {obj.image.data(:,:,:,col_channel,:)};
+                end
+            else
+                % Replicate slow-path reshape: MibImage.getData drops singleton C dim
+                % for non-image types (reshape shares memory — still zero-copy)
+                rawVol = obj.(type).data;   % COW alias, no copy
+                dataset = {reshape(rawVol, size(rawVol,1), size(rawVol,2), size(rawVol,3), size(rawVol,5))};
+            end
+            return;
+        end
+    end
+end
+% === END FAST PATH ===
+
 % define datasetVariable for obj.(datasetVariable).getData
 datasetVariable = type;
 if obj.labels.maxMaterials == 63 

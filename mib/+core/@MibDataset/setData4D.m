@@ -107,6 +107,56 @@ if nargin < 5; col_channel = NaN; end
 if nargin < 4; orient = NaN; end
 if nargin < 3; type = 'image'; end
 
+% === FAST PATH ===
+% Standard in-memory, YX orient (3), no ROI, no blockMode, no x/y/z/t subregion.
+% Routes through MibImage.setDataFast (single handle hop, in-place / O(1) full-array
+% swap) and skips all ROI/Virtual/blockMode machinery. Falls through to the slow
+% path when the incoming array would resize the container (handled there).
+if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
+    fastOrient = orient;
+    if isempty(fastOrient) || (isscalar(fastOrient) && isnan(fastOrient))
+        fastOrient = obj.orientation;
+    end
+    if fastOrient == 3 && ~isfield(options, 'x') && ~isfield(options, 'y') && ...
+            ~isfield(options, 'z') && ~isfield(options, 't')
+        if isfield(options, 'blockModeSwitch')
+            blockIsOff = (options.blockModeSwitch == 0);
+        else
+            blockIsOff = (obj.blockModeSwitch == 0);
+        end
+        noROI = ~isfield(options, 'roiId') || (isscalar(options.roiId) && options.roiId < 0);
+        skipLabelsIdx = strcmp(type, 'labels') && ~isempty(col_channel) && ...
+                        isnumeric(col_channel) && ~any(isnan(col_channel(:)));
+        skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
+
+        if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            if strcmp(type, 'image')
+                if isempty(col_channel); col_channel = obj.slices{4};
+                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
+                channelsNo = numel(col_channel);
+            else
+                col_channel = 1;
+                channelsNo = 1;
+            end
+            if iscell(dataset); dataset = dataset{1}; end
+            layerData = obj.(type).data;
+            expectedNumel = size(layerData,1)*size(layerData,2)*size(layerData,3)*channelsNo*size(layerData,5);
+            if numel(dataset) == expectedNumel
+                obj.(type).setDataFast(dataset, [], col_channel, []);   % [] z & [] t ⇒ full-extent write
+                if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
+                elseif strcmp(type, 'mask'); obj.maskExist = true; end
+                if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
+                    setDataOpt.type = type; setDataOpt.mode = '4D';
+                    notify(obj, 'SetData', core.ToggleEventData(setDataOpt));
+                end
+                result = true;
+                return;
+            end
+        end
+    end
+end
+% === END FAST PATH ===
+
 if ~isfield(options, 'fillBg'); options.fillBg = NaN; end
 if ~isfield(options, 'roiId');    options.roiId = -1;  end
 if isempty(options.roiId); options.roiId = obj.selectedROI; end
@@ -221,9 +271,12 @@ elseif strcmp(type, 'mask')
     obj.maskExist = true;
 end
 
-% notify about setData method used
-setDataOpt.type = type;
-setDataOpt.mode = '4D';
-eventdata = core.ToggleEventData(setDataOpt);
-notify(obj, 'SetData', eventdata);
+% notify about setData method used; skipped when nothing listens or the
+% caller passed options.suppressNotify = true (batch loops)
+if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
+    setDataOpt.type = type;
+    setDataOpt.mode = '4D';
+    eventdata = core.ToggleEventData(setDataOpt);
+    notify(obj, 'SetData', eventdata);
+end
 end
