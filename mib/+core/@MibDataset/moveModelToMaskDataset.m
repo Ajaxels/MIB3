@@ -43,6 +43,9 @@ function moveModelToMaskDataset(obj, action_type, options)
 if ~isfield(options, 'contSelIndex'); options.contSelIndex = obj.getSelectedMaterialIndex(); end
 if ~isfield(options, 'contAddIndex'); options.contAddIndex = obj.getSelectedMaterialIndex('AddTo'); end
 isType63 = isa(obj.labels, 'core.MibLabels63');
+% allocate the mask container when it is missing (no-op for MibLabels63);
+% also sets mask.exists so reads through getData do not return empty
+obj.allocateMask();
 
 switch action_type
     case 'add'

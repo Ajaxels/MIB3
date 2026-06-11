@@ -115,6 +115,7 @@ classdef MibDataset < matlab.mixin.Copyable
         addFrame(obj, BatchOpt, parentFigure)                   % add a frame by specifying dX/dY padding
         addFrameToImage(obj, BatchOpt, parentFigure)            % add a frame by specifying new absolute width and height
         [result, newMaterialIndex] = addMaterial(obj, materialName, newMaterialIndex, wb)        % add a material; scans time-points for large models, checks capacity, updates metadata
+        allocateMask(obj)        % allocate a zero-filled Mask layer when it is missing; no-op for MibLabels63 models (mask lives in the packed bits)
         clearLayer(obj, layer, y, x, z, t, blockModeSwitch)    % Clear the layer, a wrapper function that is using obj.labels.clearLayer or obj.(layer).clearLayer
         closeVirtualDataset(obj)        % Close opened virtual dataset readers, otherwise the files locked
         [x, y, z] = convertPixelsToUnits(obj, x, y, z)        % Convert pixel coordinates to physical imaging units using pixSize and boundingBox

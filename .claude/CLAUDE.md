@@ -22,6 +22,7 @@ Supplementary to the root `CLAUDE.md` (architecture, conventions, essential conv
 | [plan_crop.md](plan_crop.md) | CropDataset port log: all widget/event/BatchOpt conversions, runtime fixes, mlapp startupFcn pattern, pending `cropDataset` backend |
 | [link_views_plan.md](link_views_plan.md) | Linked-view propagation: `linkedPairs` on MibModel, propagation in `showImage`, buffer-switch sync |
 | [plan_resample.md](plan_resample.md) | ResampleDataset port log: all fixes, data-write pattern, boundingBox/dim sync, remaining tests |
+| [../tests/plan_unittests.md](../tests/plan_unittests.md) | Unit-test & perf-benchmark system: phased implementation plan incl. recommended model per phase; Phase 0 (headless spike) done — findings in `tests/phase0_findings.md` |
 
 ---
 

@@ -60,6 +60,12 @@ if ismember(BatchOpt.Dataset{1}, {'Synthetic 2D Large spots', 'Synthetic 2D smal
     if BatchOpt.DirectoryName{1} == 0; return; end
 end
 
+% developer check
+if obj.mibModel.preferences.System.DeveloperMode
+    fprintf('controllers.MibRibbon.homeExamples_Callback: pressed -> %s\n', BatchOpt.Dataset{1});
+end
+
+
 if BatchOpt.showWaitbar
     wb = uiprogressdlg(obj.mibModel.getProgressBarParent(), 'Value', 0, ...
         'Message', sprintf('Importing %s dataset\nPlease wait...', BatchOpt.Dataset{1}), ...

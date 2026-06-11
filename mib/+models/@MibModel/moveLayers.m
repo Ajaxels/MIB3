@@ -399,6 +399,8 @@ else
                 end
                 obj.I{BatchOptLocal.id}.setData4D(selection, 'selection', orient, NaN, BatchOptLocal);
             case 'mask'
+                % allocate the mask container when it is missing (no-op for MibLabels63)
+                obj.I{BatchOptLocal.id}.allocateMask();
                 obj.I{BatchOptLocal.id}.maskExist = 1;
                 switch BatchOptLocal.ActionType{1}
                     case 'add'
@@ -461,6 +463,8 @@ else
                 end
                 obj.I{obj.id}.setData2D(selection, 'selection', [], [], [], BatchOptLocal);
             case 'mask'
+                % allocate the mask container when it is missing (no-op for MibLabels63)
+                obj.I{BatchOptLocal.id}.allocateMask();
                 obj.I{BatchOptLocal.id}.maskExist = 1;
                 switch BatchOptLocal.ActionType{1}
                     case 'add'

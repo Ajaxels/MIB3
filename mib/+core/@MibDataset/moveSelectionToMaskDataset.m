@@ -48,6 +48,9 @@ if ~isfield(options, 'contAddIndex'); options.contAddIndex = obj.getSelectedMate
 if ~isfield(options, 'selected_sw'); options.selected_sw = obj.restrictSelectionToMaterial; end
 if ~isfield(options, 'maskedAreaSw'); options.maskedAreaSw = obj.restrictSelectionToMask; end
 isType63 = isa(obj.labels, 'core.MibLabels63');
+% allocate the mask container when it is missing (no-op for MibLabels63);
+% also sets mask.exists so reads through getData do not return empty
+obj.allocateMask();
 
 % compute filtered image based on selected_sw and maskedAreaSw
 useFiltered = false;
@@ -101,9 +104,6 @@ switch action_type
             D = bitand(D, 127);                       % clear selection
             obj.labels.data = D;
         else
-            if obj.maskExist == 0
-                obj.mask.data = zeros(size(obj.selection.data), 'uint8');
-            end
             maskD = obj.mask.data;
             selD = obj.selection.data;
             if ~useFiltered
