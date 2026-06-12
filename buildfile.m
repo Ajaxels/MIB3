@@ -18,29 +18,33 @@ function plan = buildfile
 % >> buildtool perf
 
 import matlab.buildtool.tasks.CodeIssuesTask
-import matlab.buildtool.tasks.TestTask
 
 plan = buildplan(localfunctions);
 
 plan("check") = CodeIssuesTask("mib", IncludeSubfolders=true, ...
     WarningThreshold=Inf);   % non-blocking on warnings; tighten later
 
-plan("test") = TestTask("tests", IncludeSubfolders=true, Tag="Unit", ...
-    SourceFiles="mib");
-
-plan("testAll") = TestTask("tests", IncludeSubfolders=true, ...
-    Tag=["Unit" "Integration" "Performance"], SourceFiles="mib");
-
-% The test framework only adds folders that directly contain test files
-% (tests\core, tests\models, ...) to the path, never the tests\ root that
-% holds the +mibtest package. Without it, every test's TestClassSetup fails
-% with "Unable to resolve mibtest.fixtures.MibPathFixture". Make the test
-% tasks depend on a task that puts tests\ on the path first.
-plan("test").Dependencies = "addTestPath";
+% test / testAll / perf are custom function tasks (see below) so they are
+% never skipped as "up-to-date" — tests always run when explicitly invoked.
+plan("test").Dependencies    = "addTestPath";
 plan("testAll").Dependencies = "addTestPath";
-plan("perf").Dependencies = "addTestPath";
+plan("perf").Dependencies    = "addTestPath";
 
 plan.DefaultTasks = ["check" "test"];
+end
+
+function testTask(context)
+% TEST - run Unit-tagged tests (fast, synthetic, offline).
+testsFolder = fullfile(context.Plan.RootFolder, "tests");
+results = runtests(testsFolder, IncludeSubfolders=true, Tag="Unit");
+assert(~any([results.Failed]), sprintf('%d unit test(s) failed', sum([results.Failed])));
+end
+
+function testAllTask(context)
+% TESTALL - run Unit + Integration + Performance tests.
+testsFolder = fullfile(context.Plan.RootFolder, "tests");
+results = runtests(testsFolder, IncludeSubfolders=true, Tag=["Unit" "Integration" "Performance"]);
+assert(~any([results.Failed]), sprintf('%d test(s) failed', sum([results.Failed])));
 end
 
 function addTestPathTask(context)

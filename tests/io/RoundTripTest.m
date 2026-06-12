@@ -111,6 +111,46 @@ classdef RoundTripTest < matlab.unittest.TestCase
             testCase.verifyEqual(squeeze(loaded), squeeze(data));
         end
 
+        function tifTwoChannelRoundtrip_imwriteLimitation(testCase)
+            % TiffSaver.writeTiffStack uses imwrite, which does not support 2-component TIFFs.
+            % This test documents the known limitation and must be updated when TiffSaver
+            % gains multi-channel support via the MATLAB Tiff API.
+            tempFolder = testCase.applyFixture( ...
+                matlab.unittest.fixtures.TemporaryFolderFixture);
+            outFile = fullfile(tempFolder.Folder, 'image_2ch.tif');
+
+            rng(7, 'twister');
+            data = uint8(randi(255, [32 32 6 2 1]));
+
+            saver = io.SaverFactory.create('TIF format uncompressed (*.tif)');
+            opts  = RoundTripTest.imageSaveOpts('TIF format uncompressed (*.tif)');
+
+            testCase.verifyError( ...
+                @() saver.save(data, RoundTripTest.makeImageMeta(data), outFile, opts), ...
+                'MATLAB:imagesci:writetif:invalidComponentsNumber', ...
+                'TiffSaver must produce this imwrite error until multi-channel Tiff API support is added');
+        end
+
+        function hdf5TwoChannelRoundtrip(testCase)
+            % HDF5 write verified directly via h5read (loader requires interactive selection).
+            % The dataset name equals the output file basename, so use a short name to keep
+            % the h5read path predictable.
+            tempFolder = testCase.applyFixture( ...
+                matlab.unittest.fixtures.TemporaryFolderFixture);
+            outFile = fullfile(tempFolder.Folder, 'image2.h5');
+
+            rng(8, 'twister');
+            data = uint8(randi(255, [8 8 4 2 1]));
+
+            saver = io.SaverFactory.create('Hierarchical Data Format (*.h5)');
+            opts  = RoundTripTest.hdf5SaveOpts();
+            meta  = RoundTripTest.makeImageMeta(data);
+            saver.save(data, meta, outFile, opts);
+
+            loaded = h5read(outFile, '/image2');
+            testCase.verifyEqual(squeeze(loaded), squeeze(data));
+        end
+
     end
 
     % =====================================================================
@@ -166,9 +206,10 @@ classdef RoundTripTest < matlab.unittest.TestCase
     methods (Static, Access = private)
 
         function meta = makeImageMeta(data)
+            numColors      = size(data, 4);
             meta.filename  = 'synthetic.tif';
             meta.colorType = 'grayscale';
-            meta.lutColors = [1 1 1];
+            meta.lutColors = repmat([1 1 1], numColors, 1);
             meta.dataClass = class(data);
             meta.maxInt    = double(intmax(class(data)));
             meta.sliceName = {};

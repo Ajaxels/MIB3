@@ -9,25 +9,28 @@ function [mibModel, groundTruth] = buildSyntheticModel(options)
 % Options:
 %   modelType : 'labels63' (default) | 'labels255' | 'labels65535'
 %   dims      : [h w z]  (default [64 64 16])
+%   numColors : number of color channels (default 1)
 %
 % groundTruth fields:
-%   .image     [h w z 1] uint8
+%   .image     [h w z numColors] uint8
 %   .labels    [h w z]   uint8 (labels63/labels255) | uint16 (labels65535)
 %   .mask      [h w z]   uint8 binary
 %   .selection [h w z]   uint8 binary
 
 arguments
-    options.modelType (1,:) char = 'labels63'
-    options.dims      (1,3) double = [64 64 16]
+    options.modelType  (1,:) char   = 'labels63'
+    options.dims       (1,3) double = [64 64 16]
+    options.numColors  (1,1) double = 1
 end
 
 rng(0, 'twister');   % determinism — never remove; tests depend on this seed
 
-height = options.dims(1);
-width  = options.dims(2);
-depth  = options.dims(3);
+height    = options.dims(1);
+width     = options.dims(2);
+depth     = options.dims(3);
+numColors = options.numColors;
 
-groundTruth.image     = reshape(uint8(randi(255, [height width depth])), [height width depth 1]);
+groundTruth.image     = uint8(randi(255, [height width depth numColors]));
 groundTruth.labels    = uint8(randi([0 6], [height width depth]));
 groundTruth.mask      = uint8(rand([height width depth]) > 0.7);
 groundTruth.selection = uint8(rand([height width depth]) > 0.9);

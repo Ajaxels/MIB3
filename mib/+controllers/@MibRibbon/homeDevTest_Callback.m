@@ -258,13 +258,19 @@ end
 
 %% =========================================================================
 function ms = timeCall(fcn, nIter)
-% time a function handle over nIter iterations, return mean ms per call
-fcn();   % warm-up call, excluded from timing
-tStart = tic;
-for k = 1:nIter
-    fcn();
+% Return mean ms per call.  Delegates to the shared mibtest.perf.timeCallSamples
+% when tests\ is on the path; falls back to a loop-level timer otherwise
+% (e.g. compiled / deployed build where tests\ is excluded).
+if exist('mibtest.perf.timeCallSamples', 'file')
+    ms = mean(mibtest.perf.timeCallSamples(fcn, nIter)) * 1000;
+else
+    fcn();   % warm-up
+    tStart = tic;
+    for k = 1:nIter
+        fcn();
+    end
+    ms = toc(tStart) / nIter * 1000;
 end
-ms = toc(tStart)/nIter*1000;
 end
 
 function timings = addTiming(timings, name, id, ms)

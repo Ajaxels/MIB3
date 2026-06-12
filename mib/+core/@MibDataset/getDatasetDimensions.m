@@ -102,7 +102,7 @@ if options.splitDims
     varargout{4} = colors;
     varargout{5} = time;
 else
-    varargout{1} = dim_yxzct;
+    varargout{1} = [height, width, depth, colors, time];
 end
 
 end

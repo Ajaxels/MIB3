@@ -262,6 +262,72 @@ classdef GetSetDataCorrectnessTest < matlab.unittest.TestCase
     end
 
     % =====================================================================
+    % Multi-channel (numColors=2) — read isolation, write isolation
+    % =====================================================================
+    methods (Test, TestTags = {'Unit'})
+
+        function twoChannel_colorCountIsTwo(testCase)
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 4], 'numColors', 2);
+            testCase.verifyEqual(mibModel.I{1}.image.colors, 2);
+        end
+
+        function get3D_twoChannel_nanCol_returnsBothChannels(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 4], 'numColors', 2);
+            opt = struct('id', 1, 'blockModeSwitch', 0);
+
+            result = mibModel.getData3D('image', 1, 3, NaN, opt);
+
+            testCase.verifyEqual(result{1}, gt.image(:,:,:,:,1), ...
+                'getData3D with col=NaN on 2-channel must return [h w z 2]');
+        end
+
+        function get2D_twoChannel_colIndex_isolatesEachChannel(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 4], 'numColors', 2);
+            opt      = struct('id', 1, 'blockModeSwitch', 0);
+            midSlice = 2;
+
+            result1 = mibModel.getData2D('image', midSlice, 3, 1, opt);
+            result2 = mibModel.getData2D('image', midSlice, 3, 2, opt);
+
+            testCase.verifyEqual(result1{1}, squeeze(gt.image(:,:,midSlice,1)), ...
+                'getData2D col=1 must return only the first channel');
+            testCase.verifyEqual(result2{1}, squeeze(gt.image(:,:,midSlice,2)), ...
+                'getData2D col=2 must return only the second channel');
+        end
+
+        function set2D_twoChannel_writeDoesNotBleedToOtherChannel(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 4], 'numColors', 2);
+            opt      = struct('id', 1, 'blockModeSwitch', 0);
+            midSlice = 2;
+
+            zeros2D = zeros(16, 16, 'uint8');
+            mibModel.setData2D(zeros2D, 'image', midSlice, 3, 1, opt);
+
+            result2 = mibModel.getData2D('image', midSlice, 3, 2, opt);
+            testCase.verifyEqual(result2{1}, squeeze(gt.image(:,:,midSlice,2)), ...
+                'setData2D to channel 1 must not alter channel 2');
+        end
+
+        function set3D_twoChannel_writeDoesNotBleedToOtherChannel(testCase)
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 4], 'numColors', 2);
+            opt = struct('id', 1, 'blockModeSwitch', 0);
+
+            zeros3D = zeros(16, 16, 4, 1, 'uint8');
+            mibModel.setData3D(zeros3D, 'image', 1, 3, 1, opt);
+
+            result2 = mibModel.getData3D('image', 1, 3, 2, opt);
+            testCase.verifyEqual(result2{1}, gt.image(:,:,:,2,1), ...
+                'setData3D to channel 1 must not alter channel 2');
+        end
+
+    end
+
+    % =====================================================================
     % State preservation — all pure roundtrip writes leave data unchanged
     % =====================================================================
     methods (Test, TestTags = {'Unit'})

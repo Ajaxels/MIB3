@@ -500,14 +500,12 @@ Use plain `matlab.unittest.TestCase` + fixed iterations (NOT `matlab.perftest`/`
 default suite — deterministic and fast (<1 min). `runperf`-based statistical measurement on real data is
 an optional Phase 2 extra.
 
-### 5.8 `homeDevTest_Callback.m` shim (optional in Phase 1, required by Phase 2 end)
+### 5.8 `homeDevTest_Callback.m` shim — **DONE 2026-06-12**
 
-Refactor so the ribbon button keeps working but shares code: the button keeps its current behavior
-(operates on GUI-loaded datasets, prints the table) but calls `mibtest.perf.timeCallSamples` and the
-ported check helpers instead of its private copies. **Do not change its output format.** If `tests\` is
-not on the deployed path, guard with `exist('mibtest.perf.timeCallSamples','file')` and keep local
-fallbacks — simplest safe option: leave the button untouched until Phase 2 and only delete its local
-duplicates once the shared versions are proven.
+`timeCall` now delegates to `mibtest.perf.timeCallSamples` when `tests\` is on the path, with
+a loop-level fallback for compiled/deployed builds where `tests\` is absent. Output format
+(mean ms per call) unchanged. `addTiming`, `addCheck`, `stateChecksum`, `layerChecksum` are
+specific to the benchmark table and have no counterparts in shared infra — left untouched.
 
 ### 5.9 `.gitignore`
 
@@ -667,6 +665,150 @@ model/core layer** (not the controller layer). Where exact numeric output matter
 result once (run `C:\Matlab\MIB2\`, save the output array as `.mat` under `tests\data\expected\` —
 small arrays only, <1 MB) and `verifyEqual` against it. Update `tests\CLAUDE.md` and the root
 `CLAUDE.md` porting-workflow section to state this rule.
+
+### 8a. Phase 4 — Coverage snapshot (as of 2026-06-12)
+
+#### Already covered
+
+| Test file | Methods exercised |
+|---|---|
+| `tests/core/MibImageTest.m` | MibImage construction, dims, `dataClass`, auto-permute `[h w c]→[h w 1 c]` |
+| `tests/core/MibDatasetTest.m` | MibDataset construction (labels63/labels255), layer presence, `clearLayer` scopes |
+| `tests/core/MaterialsTest.m` | `addMaterial`, `renameMaterial`, `reorderMaterials`, `removeMaterial`, `convertModel` (MibDataset level) |
+| `tests/core/SpatialOpsTest.m` | `flipDataset`, `swapSlices`, `deleteSlice`, `insertSlice` (MibDataset); `insertEmptySlice`, `copySwapSlice`, `cropDataset`, `rotateDataset` (MibModel/MibDataset) |
+| `tests/models/BackupUndoTest.m` | `backup` (2D/3D), `undo`, `enableSelection` early-return guard |
+| `tests/models/ChangeImageModeTest.m` | `changeImageMode` — 8→16→32 bit, round-trip, `maxInt`, dims stable |
+| `tests/models/ClearLayerTest.m` | `clearLayer` via MibModel (all layers, all scopes) |
+| `tests/models/FillOpsTest.m` | `fillSelectionOrMask` — mask/selection targets, ring fill, 3D stack |
+| `tests/models/GetSetDataCorrectnessTest.m` | `getData2D/3D/4D`, `setData2D/3D/4D` — all layer types, orient 3 |
+| `tests/models/GetSetDataPerfTest.m` | `getData`/`setData` performance baseline |
+| `tests/models/ImageOpsTest.m` | `invertImage` — complement, round-trip, layer isolation |
+| `tests/models/MaskOpsTest.m` | `invertMask` — mask and selection targets, labels63/255 |
+| `tests/models/MorphOpsTest.m` | `dilateImage`, `erodeImage`, `smoothImage` — expansion/shrink, round-trips |
+| `tests/models/MoveLayersTest.m` | `moveLayers` — sel↔mask (add/remove/replace), labels63/255, 3D scope |
+| `tests/models/ProjectionTest.m` | `intensityProjection` — Max/Min/Mean along Z; depth=1 output, dims preserved |
+| `tests/models/ReplaceMaskedAreaTest.m` | `replaceMaskedArea` — masked fill, unmasked pixels intact, empty/full mask, selection target |
+| `tests/models/ResliceTransformTest.m` | `resliceDataset` — stride-2, keep-all; `transformDataset` — flip round-trips, status return |
+| `tests/io/RoundTripTest.m` | imread, HDF5, MibImg IO round-trips |
+| `tests/utils/PureUtilsTest.m` | `calculatePixSizes`, `updatePixSizeAndResolution`, `updateBatchOptCombineFields_Shared`, `convertPixelsToUnits/ToPixels` |
+| `tests/models/ColorChannelTest.m` | `MibModel.colorChannelActions` — invert identity, invert complement, insert/delete color count, swap pixels |
+| `tests/models/ExpandSelectionTest.m` | `MibModel.expandSelectionToMaskBorder` — expands inside mask blob, clears when outside, empty stays zero |
+| `tests/models/DeleteSliceModelTest.m` | `MibModel.deleteSlice` (BatchOpt wrapper) — single delete, range delete, content shift |
+| `tests/models/DeepCopyTest.m` | `MibModel.deepCopyDataset` — independence after pixel mutation, slot install |
+| `tests/models/RGBImageTest.m` | `MibModel.getRGBimage` — size/class, all-white → max=255, all-black → max=0 |
+| `tests/models/InterpolateImageTest.m` | `MibModel.interpolateImage` — z=2 gap fills after annotating z=1 and z=3; mask target; empty stays zero |
+| `tests/core/AllocateMaskTest.m` | `MibDataset.allocateMask` — maskExist becomes true, dims match, no-op on second call |
+| `tests/core/SwapMaterialsTest.m` | `MibDataset.swapMaterials` — pixel exchange, background unchanged, names swapped |
+| `tests/core/TransposeDatasetTest.m` | `MibDataset.transposeDataset` — Z↔T dim swap, round-trip, YX→XY, YX→YZ |
+| `tests/core/LayerMoveFastPathTest.m` | Fast-path layer-move: 6 directions × replace mode; sel↔mask add (union) |
+| `tests/core/GetDatasetDimensionsTest.m` | `MibDataset.getDatasetDimensions` — splitDims true/false, labels type |
+| `tests/core/SetPixSizeTest.m` | `MibDataset.setPixSize` — x/y/z propagated, units synced, labels layer synced |
+| `tests/models/GetImagePropertyTest.m` | `MibModel.getImageProperty` — orientation, enableSelection, datasetType, unknown→[], explicit id |
+| `tests/models/MaterialsActionsTest.m` | `MibModel.materialsActions` (wrapper) — Insert, Swap, Reorder at MibModel level |
+| `tests/models/DatasetSetsOpsTest.m` | `MibModel.datasetsSetsOps` — Rename/Add/Select/Remove sets |
+| `tests/core/AddFrameTest.m` | `MibDataset.addFrame` (both/pre dirs, content preserved), `addFrameToImage` (dims, center offset) |
+| `tests/io/SaveLoadImageTest.m` | `MibModel.saveImage('image')`, `MibModel.loadImages` — TIF pixel round-trip, dimensions preserved |
+| `tests/io/SaveLoadLabelsTest.m` | `MibModel.saveImage('labels')`, `MibModel.loadModel` — material names + pixel values preserved |
+| `tests/io/SaveLoadMaskTest.m` | `MibModel.saveImage('mask')`, `MibModel.loadMask` — pixel round-trip, checksum preserved |
+| `tests/io/MibFormatRoundTripTest.m` | `MibModel.exportDatasetToMib`, `MibModel.importDatasetFromMib` — labels export/import, mask export between containers |
+
+#### Untested methods — prioritised backlog
+
+> **Status (2026-06-12):** All P1, P2, and P3 items below have been implemented and pass. See "Already covered" table above for the new files.
+
+**P1 — Headless, batch-compatible, high signal; implement next.**
+
+| File to create | Methods | Call pattern | Notes |
+|---|---|---|---|
+| `tests/models/ColorChannelTest.m` | `MibModel.colorChannelActions` | `batchOpt.Action={'Invert channel'}; batchOpt.Channel1={1,[1,C],'on'}; batchOpt.showWaitbar=false; batchOpt.id=1;` | Test: invert ch1 → double-invert = identity; swap ch1↔ch2 → pixel values exchanged; insert empty → color count + 1; delete → color count − 1. No `mibBatchTooltip` needed. |
+| `tests/models/ExpandSelectionTest.m` | `MibModel.expandSelectionToMaskBorder` | `batchOpt.DatasetType={'3D, Stack'}; batchOpt.showWaitbar=false; batchOpt.id=1;` | Paint small selection inside mask blob → after expand selection equals full mask blob. Also: selection outside all mask blobs → unchanged (no-op). No `mibBatchTooltip` needed. |
+| `tests/models/DeleteSliceModelTest.m` | `MibModel.deleteSlice` (BatchOpt wrapper) | `batchOpt.Dimension={'depth'}; batchOpt.DeletePosition='3'; batchOpt.showWaitbar=false; batchOpt.id=1; mibModel.deleteSlice([],[],batchOpt)` | Verify depth decreases by 1; content at surviving positions correct. Distinct from `MibDataset.deleteSlice` already tested in `SpatialOpsTest`. |
+| `tests/models/DeepCopyTest.m` | `MibModel.deepCopyDataset` | `opts.showWaitbar=false; opts.UIFigure=[]; copy = mibModel.deepCopyDataset(1,[],opts)` | Copy must be independent: mutate original image → copy image unchanged. Verify `copy.image.height == original.image.height`. |
+| `tests/models/RGBImageTest.m` | `MibModel.getRGBimage` | `opts.blockModeSwitch=0; opts.resizeToMagnification=false; [rgb,~] = mibModel.getRGBimage(opts, 1)` | Output size = `[h, w, 3]`; class = `uint8`; known white pixel (image=255) maps to [255,255,255]. Phase 0 confirmed headless-safe. |
+| `tests/models/InterpolateImageTest.m` | `MibModel.interpolateImage` | `batchOpt.Target={'selection'}; batchOpt.InterpolationType={'shape'}; batchOpt.showWaitbar=false; batchOpt.id=1; mibModel.interpolateImage([],[],batchOpt)` | Set selection at z=1 and z=3; leave z=2 empty; call interpolate; verify z=2 selection is non-zero. |
+| `tests/core/AllocateMaskTest.m` | `MibDataset.allocateMask` | `mibModel.I{1}.clearLayer('mask'); mibModel.I{1}.allocateMask()` | After call: `maskExist==true`; mask size matches image dims; second call is a no-op (still `true`). labels63 model: method returns without allocating (mask lives in packed bits). |
+| `tests/core/SwapMaterialsTest.m` | `MibDataset.swapMaterials` | `mibModel.I{1}.swapMaterials(1, 2, [])` | Pixel with label=1 before → label=2 after; pixel with label=2 → label=1. Unlabelled pixels unchanged. |
+| `tests/core/TransposeDatasetTest.m` | `MibDataset.transposeDataset` | `mibModel.I{1}.transposeDataset('Transpose YX -> YZ', [], false)` (×2 for round-trip, or 4× for Z↔T) | `Transpose Z<->T` on `[h,w,d,c,t]` → `[h,w,t,c,d]` (depth and time swap); double-transpose = identity. |
+| `tests/core/LayerMoveFastPathTest.m` | `moveSelectionToModelDataset`, `moveSelectionToMaskDataset`, `moveMaskToModelDataset`, `moveModelToSelectionDataset`, `moveModelToMaskDataset`, `moveModelToSelectionDataset` | `opts.contSelIndex=1; opts.contAddIndex=1; opts.selected_sw=0; opts.maskedAreaSw=0; mibModel.I{1}.moveSelectionToModelDataset('replace', opts)` | Selection painted at known position → material at that position = `contAddIndex` after replace. Mask painted → move to selection → selection matches original mask. Six actions × 3 modes (add/remove/replace) = 18 cases; cover at least replace mode for each direction. |
+
+**P2 — Useful, slightly more involved; do when porting the corresponding controller.**
+
+| File to create | Methods | Notes |
+|---|---|---|
+| `tests/models/MaterialsActionsTest.m` | `MibModel.materialsActions` (Insert, Swap, Reorder) | BatchOpt wrapper level; distinct from `MaterialsTest` which tests MibDataset directly. `batchOpt.Action={'Insert material'}; batchOpt.Name='new'; batchOpt.Position={2,...}; batchOpt.showWaitbar=false; batchOpt.id=1`. |
+| `tests/models/DatasetSetsOpsTest.m` | `MibModel.datasetsSetsOps` | `batchOpt.Mode={'Add set'}; batchOpt.SetName='TestSet'; mibModel.datasetsSetsOps(batchOpt)` → `numel(mibModel.Sets.names)` increases by 1. |
+| `tests/core/AddFrameTest.m` | `MibDataset.addFrame` / `addFrameToImage` | After `addFrame`, `image.time` increases by 1. New frame is zero-filled (or copy of last). |
+| `tests/core/SetPixSizeTest.m` | `MibDataset.setPixSize` | Set `pixSize.x=0.5`; read back via `mibModel.I{1}.image.pixSize.x`; must equal 0.5. |
+| `tests/core/GetDatasetDimensionsTest.m` | `MibDataset.getDatasetDimensions` | Returns `[h, w, d, c, t]`; verify against known `buildSyntheticModel` dims. |
+| `tests/models/GetImagePropertyTest.m` | `MibModel.getImageProperty` | `getImageProperty('orientation')` returns 3; `getImageProperty('pixSize')` returns struct with `.x .y .z`. Headless, no batch opt needed. |
+
+~~**P3 — IO-dependent; Integration tag, real filesystem, test separately. DONE 2026-06-12.**~~
+
+| ~~File to create~~ | ~~Methods~~ | ~~Notes~~ |
+|---|---|---|
+| ~~`tests/io/SaveLoadImageTest.m`~~ | ~~`MibModel.saveImage`, `MibModel.loadImages`~~ | ~~Write to `tempdir`; reload; verify pixel round-trip. Tag `Integration`.~~ |
+| ~~`tests/io/SaveLoadLabelsTest.m`~~ | ~~`MibModel.saveLabels`, `MibModel.loadModel`~~ | ~~Save model as `.model`; reload; verify material count and pixel values. Tag `Integration`.~~ |
+| ~~`tests/io/SaveLoadMaskTest.m`~~ | ~~`MibModel.saveMask`, `MibModel.loadMask`~~ | ~~Save mask; reload; verify checksum. Tag `Integration`.~~ |
+| ~~`tests/io/MibFormatRoundTripTest.m`~~ | ~~`MibModel.exportDatasetToMib`, `MibModel.importDatasetFromMib`~~ | ~~Full MIB format round-trip. Tag `Integration`.~~ |
+
+**P4 — Virtual dataset coverage. Feasible headlessly; requires loader API discovery first.**
+
+Virtual datasets use a completely separate code path in `getData2D`/`getData3D`: the Standard
+fast-path is skipped; slices are loaded on demand via `MibVirtualImage.getData()` →
+`getDataVirt()` → `HDF5VirtualLoader`. This path is currently untested.
+
+Construction approach (Integration tag, HDF5 only — BioFormats deferred, needs external JAR):
+1. Write a small known HDF5 stack to `TemporaryFolderFixture` using the existing HDF5 saver.
+2. Open it as a Virtual dataset via `io.loaders.HDF5VirtualSetupLoader` (`loadMetadata` + `loadImages`).
+3. Call `getData2D`/`getData3D`; verify pixel values against the written ground truth.
+
+| File to create | Methods | Notes |
+|---|---|---|
+| `tests/io/VirtualDatasetTest.m` | `getData2D` / `getData3D` on Virtual HDF5 dataset | Write HDF5 → open as Virtual → verify pixel round-trip. Tag `Integration`. Discover loader options struct from `HDF5VirtualSetupLoader` source before implementing. |
+| extend `VirtualDatasetTest.m` | `closeVirtualDataset` / `switchDatasetMode` | Once basic Virtual construction works, add mode-switch tests. Currently deferred only because Virtual construction was thought non-trivial — now known feasible. |
+
+BioFormats Virtual (`BioFormatsVirtualLoader`) — keep deferred: requires external JAR on MATLAB path, not part of the repo.
+
+**Deferred / skip — require display state or external tools.**
+
+- `getAxesLimits` / `setAxesLimits` / `getMagFactor` / `setMagFactor` / `getProgressBarParent` — need axes/figure handles from AppContainer
+- `convertDataToMouseCoordinates` / `convertMouseToDataCoordinates` — depend on axes limits and magnification state
+- `exportDatasetToImaris` — external Imaris installation required
+- `getLinkedDataset` — requires multi-model linked-view configuration
+
+#### Pattern quick-reference for future implementers
+
+```matlab
+% Standard BatchOpt skeleton (no dialog):
+batchOpt.SomeField   = {'value'};
+batchOpt.SomeField{2}= {'value', 'alt1', 'alt2'};   % allowed values list
+batchOpt.showWaitbar = false;
+batchOpt.id          = 1;
+% Call the method — nargin check in method triggers batch mode:
+mibModel.someMethod(batchOpt);
+
+% When the method shows an interactive dialog at batchModeSwitch==0
+% (check the method for a ~batchModeSwitch branch that calls questdlg/inputdlg):
+batchOpt.mibBatchTooltip = struct('Field1','','Field2','');  % field names = BatchOpt keys
+% Known: replaceMaskedArea requires this; fillSelectionOrMask / dilateImage do NOT.
+
+% Spinner numeric fields (3-element cell):
+batchOpt.MyValue = {5, [1, 100], 'on'};   % value, [min max], 'on'=integer
+% Read with:  batchOpt.MyValue{1}  (already numeric, no str2double)
+
+% getData3D returns a cell — extract array:
+imgArray = cell2mat(mibModel.getData3D('image', 1, 3, NaN, struct('id',1,'blockModeSwitch',0)));
+
+% sum across all dims (R2022b+):
+total = sum(double(array), 'all');
+
+% Fast-path layer-move methods (MibDataset level):
+opts.contSelIndex = 1;   % "Select from" material
+opts.contAddIndex = 1;   % "Add to" material
+opts.selected_sw  = 0;
+opts.maskedAreaSw = 0;
+mibModel.I{1}.moveSelectionToModelDataset('replace', opts);
+```
 
 ## 9. Phase 5 (later, optional) — GUI smoke + CI
 
