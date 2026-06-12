@@ -459,6 +459,8 @@ Toggle over the following text to see a hover tooltip:
 `[hover me](index.md "hit to return back to index.html")`
 * Icon with a tooltip :material-information-outline:{ title="Important information" }<br>
 `:material-information-outline:{ title="Important information" }`
+* Icon with a tooltip :material-information-outline:{.red-color title="Important information" }<br>
+`:material-information-outline:{.red-color title="Important information" }`
 
 ---
 

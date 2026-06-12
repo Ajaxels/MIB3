@@ -13,26 +13,12 @@ to show volumes using volume rendering techniques, models as overlays and genera
 
 ---
 
-## How to enable the new 3D viewer for MATLAB R2022b or newer
-
-Use MIB Preferences dialog<br>
-`MIB → Ribbon → Home → Preferences → User interface → 3D rendering engine`
-<br>to select the default rendering engine.
-
-![Preferences Dialog](images/menuFileRenderingPreferences.png){.on-glb align=left width="340"}
-<div class="clear-float"></div>
-
-- <span class="widget widget-dropdown">Viewer3d, R2022b</span> selects the new version of the viewer described on this page.
-- <span class="widget widget-dropdown">Volshow, R2018b</span> selects an older version of the viewer available from R2018b.
-
----
-
 ## Downsampling of datasets
 
 Whenever 3D volume rendering is selected, the current image volume is transferred into the 3D viewer. 
 During the transfer, it is possible to select color channels or downsample the dataset to improve rendering performance:
 
-![Downsampling Dialog](images/menuFileRenderingMIB_downsample.png){.on-glb align=left width="300"}
+![Downsampling Dialog](images/menuFileRenderingMIB_downsample.png){.on-glb align=left}
 <div class="clear-float"></div>
 
 ---

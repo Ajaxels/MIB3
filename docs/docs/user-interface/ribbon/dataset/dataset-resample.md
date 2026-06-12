@@ -1,10 +1,6 @@
-## Resample dataset
-
----
-
 ## Overview
 
-![Resample Dataset Dialog](images/menuDatasetResample.png){.on-glb align=left width="260"}
+![Resample Dataset Dialog](images/menuDatasetResample.png){.on-glb align=left width="320"}
 
 Resample the image and corresponding Selection, Mask, and Model layers to 
 adjust voxel sizes or dataset dimensions. 
@@ -77,7 +73,7 @@ The resampling process adjusts all layers to
 match the new voxel dimensions.
 
 !!! info
-    The voxel size of the dataset are specified in [Ribbon → Dataset →Parameters](index.md#parameters)
+    The voxel size of the dataset are specified in [Ribbon → Dataset →Parameters](index.md#voxels)
 
 ## Percentage XYZ Mode
 

@@ -29,7 +29,7 @@ The *Mode panel* lets you select the segmentation scope.
 - <label class="widget widget-checkbox">2D, slice-by-slice</label> applies 2D segmentation to each slice individually
 - <label class="widget widget-checkbox">3D, volume</label> performs 3D segmentation on the entire dataset or a subarea (see *Subarea panel* below)
 - <span class="widget widget-edit">Aspect ratio for 3D...</span> displays the dataset’s 
-aspect ratio, derived from voxel sizes in ([Ribbon → Dataset → Parameters](../dataset/index.md#parameters)). this is used when Watershed relies on a distance map (see *Image segmentation settings* below)
+aspect ratio, derived from voxel sizes in ([Ribbon → Dataset → Parameters](../dataset/index.md#voxels)). this is used when Watershed relies on a distance map (see *Image segmentation settings* below)
 
 <div class="clear-float"></div>
 

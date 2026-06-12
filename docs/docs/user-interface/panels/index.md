@@ -15,7 +15,7 @@ advanced tasks like segmentation and filtering.
 
 These panels are always visible and provide core functionality for navigating and interacting with your datasets:
 
-- **[Datasets](../datasets/index.md)**: manage up to 10 open dataset buffers per set; switch between them, duplicate, sync or link views, and set the memory access mode.
+- **[Datasets](datasets/index.md)**: manage up to 10 open dataset buffers per set; switch between them, duplicate, sync or link views, and set the memory access mode.
 - **[Directory Contents](dircontents/index.md)**: navigate your files and folders, select images to load, options to switch between interchangeable panels using dropdown menus.
 - **[Segmentation](segm/index.md)**: suite of tools for segmenting images, including 3D ball, brush, and advanced AI-based segmentation (e.g., Segment Anything Model).
 - **[Selection and View Settings](selection_imview/index.md)**: manipulate the Selection layer (add, subtract, replace, erode, dilate) and control layer visibility, color channels, and contrast.

@@ -357,10 +357,15 @@ classdef BoundingBox < handle
             if nargin < 2; batchModeSw = 0; end
 
             str = clipboard('paste');
-            lineFeeds = strfind(str, sprintf('\n')); %#ok<SPRINTFN>
-            equalSigns = strfind(str, sprintf('='));
+            % Normalize line endings — Windows clipboard uses \r\n
+            str = strrep(str, sprintf('\r\n'), sprintf('\n'));
+            str = strrep(str, sprintf('\r'), sprintf('\n'));
+            str = [str sprintf('\n')];  % guarantee last line has a terminator
 
-            switch obj.mibModel.I{obj.BatchOpt.id}.pixSize.units
+            lineFeeds  = strfind(str, sprintf('\n')); %#ok<SPRINTFN>
+            equalSigns = strfind(str, '=');
+
+            switch obj.mibModel.I{obj.BatchOpt.id}.image.pixSize.units
                 case 'm';  coef = 1e6;
                 case 'cm'; coef = 1e4;
                 case 'mm'; coef = 1e3;
@@ -370,45 +375,45 @@ classdef BoundingBox < handle
             end
 
             % read pixel size X
-            pos = strfind(str, sprintf('ScaleX'));
+            pos = strfind(str, 'ScaleX');
             if ~isempty(pos)
-                ScaleX = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(ScaleX)
+                ScaleX = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(ScaleX)
                     obj.pixSize.x = ScaleX;
-                    dx = (max([obj.mibModel.I{obj.BatchOpt.id}.width  2]) - 1) * obj.pixSize.x * coef;
+                    dx = (max([obj.mibModel.I{obj.BatchOpt.id}.image.width  2]) - 1) * obj.pixSize.x * coef;
                     obj.bb(2) = obj.bb(1) + dx;
                 end
             end
             % read pixel size Y
-            pos = strfind(str, sprintf('ScaleY'));
+            pos = strfind(str, 'ScaleY');
             if ~isempty(pos)
-                ScaleY = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(ScaleY)
+                ScaleY = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(ScaleY)
                     obj.pixSize.y = ScaleY;
-                    dy = (max([obj.mibModel.I{obj.BatchOpt.id}.height 2]) - 1) * obj.pixSize.y * coef;
+                    dy = (max([obj.mibModel.I{obj.BatchOpt.id}.image.height 2]) - 1) * obj.pixSize.y * coef;
                     obj.bb(4) = obj.bb(3) + dy;
                 end
             end
             % read pixel size Z
-            pos = strfind(str, sprintf('ScaleZ'));
+            pos = strfind(str, 'ScaleZ');
             if ~isempty(pos)
-                ScaleZ = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(ScaleZ)
+                ScaleZ = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(ScaleZ)
                     if ScaleZ == 0
                         obj.pixSize.z = obj.pixSize.x;
                     else
                         obj.pixSize.z = ScaleZ;
                     end
-                    dz = (max([obj.mibModel.I{obj.BatchOpt.id}.depth  2]) - 1) * obj.pixSize.z * coef;
+                    dz = (max([obj.mibModel.I{obj.BatchOpt.id}.image.depth  2]) - 1) * obj.pixSize.z * coef;
                     obj.bb(6) = obj.bb(5) + dz;
                 end
             end
 
             % read center X
-            pos = strfind(str, sprintf('xPos'));
+            pos = strfind(str, 'xPos');
             if ~isempty(pos)
-                centerX = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(centerX)
+                centerX = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(centerX)
                     obj.BatchOpt.Xcenter = num2str(centerX);
                     if batchModeSw == 0
                         obj.view.handles.Xcenter.Value = num2str(centerX);
@@ -417,10 +422,10 @@ classdef BoundingBox < handle
             end
 
             % read center Y
-            pos = strfind(str, sprintf('yPos'));
+            pos = strfind(str, 'yPos');
             if ~isempty(pos)
-                centerY = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(centerY)
+                centerY = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(centerY)
                     obj.BatchOpt.Ycenter = num2str(centerY);
                     if batchModeSw == 0
                         obj.view.handles.Ycenter.Value = num2str(centerY);
@@ -429,10 +434,10 @@ classdef BoundingBox < handle
             end
 
             % read Z
-            pos = strfind(str, sprintf('Z Position'));
+            pos = strfind(str, 'Z Position');
             if ~isempty(pos)
-                posZ = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(posZ)
+                posZ = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(posZ)
                     obj.BatchOpt.Zmin = num2str(posZ);
                     if batchModeSw == 0
                         obj.view.handles.Zmin.Value = posZ;
@@ -441,10 +446,10 @@ classdef BoundingBox < handle
             end
 
             % read Rotation
-            pos = strfind(str, sprintf('Rotation'));
+            pos = strfind(str, 'Rotation');
             if ~isempty(pos)
-                rotationVal = str2double(str(equalSigns(find(equalSigns > pos, 1))+1 : lineFeeds(find(lineFeeds > pos, 1))));
-                if isnumeric(rotationVal)
+                rotationVal = str2double(str(equalSigns(find(equalSigns > pos(1), 1))+1 : lineFeeds(find(lineFeeds > pos(1), 1))));
+                if ~isnan(rotationVal)
                     obj.BatchOpt.StageRotationBias = num2str(45 - rotationVal);
                     if batchModeSw == 0
                         obj.view.handles.StageRotationBias.Value = num2str(45 - rotationVal);

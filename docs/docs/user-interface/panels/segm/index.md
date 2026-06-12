@@ -195,7 +195,7 @@ See [Ribbon → Model → Model/Mask statistics](../../ribbon/mask/mask-stats.md
 - **Show as volume (MIB)** visualize the selected material using [MIB 3D Viewer](../../ribbon/home/home-mib3Dviewer.md) (MATLAB R2018b+).
 - **Show isosurface (MATLAB)** visualize the model or selected material 
 (if **Show selected material only** is checked) as an [isosurface](../../ribbon/model/index.md#matlab-isosurface).
-- **Show as volume (Fiji)** visualize using [Fiji 3D viewer](../../ribbon/model/index.md#fiji-volume).
+- **Show as volume (Fiji)** visualize using [Fiji 3D viewer](../../ribbon/model/index.md#fiji-volume-viewer).
 - **Unlink material from Add to** prevent the **Add to** column from changing with material selection.
 
 <div class="clear-float"></div>

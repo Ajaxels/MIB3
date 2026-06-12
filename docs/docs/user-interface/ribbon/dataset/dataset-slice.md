@@ -13,7 +13,7 @@ Selection, Mask, and Model layers.
 
 <div class="clear-float"></div>
 
-Select an action from [Ribbon → Dataset →Slice](index.md#slice)
+Select an action from [Ribbon → Dataset →Slice](index.md#slices)
 to perform operations such as copying, inserting, swapping, or deleting slices or frames. 
 
 ## Copy Slice

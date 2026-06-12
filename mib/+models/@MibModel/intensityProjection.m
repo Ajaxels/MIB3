@@ -67,7 +67,7 @@ if isVirtual
     PossibleProjections = {'Max', 'Min', 'Mean', 'Sum'};
     PossibleDimensions  = {'Z'};
 else
-    PossibleProjections = {'Max', 'Min', 'Mean', 'Median', 'Sum'};
+    PossibleProjections = {'Max', 'Min', 'Mean', 'Median', 'Sum', 'Focus stacking'};
     PossibleDimensions  = {'Y', 'X', 'Z', 'C', 'T'};
 end
 
@@ -99,7 +99,7 @@ BatchOpt.id          = activeId;
 
 BatchOpt.mibBatchSectionName = 'Ribbon -> Image';
 BatchOpt.mibBatchActionName  = 'Tools for Images -> Intensity projection';
-BatchOpt.mibBatchTooltip.ProjectionType = 'Projection type; when Sum is used the image class may change';
+BatchOpt.mibBatchTooltip.ProjectionType = 'Projection type; when Sum is used the image class may change; Focus stacking requires a Z-stack of at least 3 slices';
 BatchOpt.mibBatchTooltip.Dimension      = 'Dimension for the projection calculation';
 BatchOpt.mibBatchTooltip.Set            = 'Name of the destination set';
 BatchOpt.mibBatchTooltip.Container      = sprintf('Destination buffer within the set (1-%d)', obj.Sets.datasetsInSet);
@@ -185,21 +185,52 @@ getDataOptions.blockModeSwitch = 0;
 getDataOptions.id = activeId;
 
 if ~isVirtual
-    I = cell2mat(obj.getData4D('image', 3, NaN, getDataOptions));   % [h,w,z,c,t]
-    if BatchOpt.showWaitbar; progressBar.Value = 0.2; end
-    switch projectionType
-        case 'max';    I = max(I,   [], dim);
-        case 'min';    I = min(I,   [], dim);
-        case 'mean';   I = cast(mean(double(I), dim), dataClass);
-        case 'median'; I = cast(median(I,        dim), dataClass);
-        case 'sum';    I = sum(double(I), dim);
-    end
-    if BatchOpt.showWaitbar; progressBar.Value = 0.7; end
-    % For Y or X projections, move the collapsed singleton into the Z position (dim 3)
-    if dim == 1          % Y collapsed: [1,w,z,c,t] → [z,w,1,c,t]
-        I = permute(I, [3, 2, 1, 4, 5]);
-    elseif dim == 2      % X collapsed: [h,1,z,c,t] → [h,z,1,c,t]
-        I = permute(I, [1, 3, 2, 4, 5]);
+    if strcmp(projectionType, 'focus stacking')
+        if depth < 3
+            ErrorDlgOpt.winTitle       = 'Focus stacking error';
+            ErrorDlgOpt.optionalPrefix = 'Error in MibModel.intensityProjection';
+            ErrorDlgOpt.err            = 'Focus stacking requires at least 3 images assembled into a Z-stack!';
+            ErrorDlgOpt.WindowHeight   = 150;
+            notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+            if BatchOpt.showWaitbar; delete(progressBar); end
+            return;
+        end
+        if ~strcmp(BatchOpt.Dimension{1}, 'Z')
+            dlgOpt.Icon = 'puffin_warning';
+            button = utils.dlgs.inputQuestDlg(obj.getProgressBarParent(), ...
+                'Focus stacking is only available for the Z dimension. Continue using Z?', ...
+                'Dimension issue', 'Continue', 'Cancel', 'Continue', dlgOpt);
+            if strcmp(button, 'Cancel')
+                if BatchOpt.showWaitbar; delete(progressBar); end
+                return;
+            end
+            BatchOpt.Dimension(1) = {'Z'};
+        end
+        I = zeros([height, width, 1, colors, time], dataClass);
+        fstackOptions.showWaitbar = false;
+        for t = 1:time
+            Iin = cell2mat(obj.getData3D('image', t, 3, NaN, getDataOptions));  % [h,w,z,c]
+            Iin = permute(Iin, [1, 2, 4, 3]);                                   % [h,w,c,z] for fstack_mib
+            I(:,:,1,:,t) = reshape(utils.fstack_mib(Iin, fstackOptions), height, width, 1, colors);
+            if BatchOpt.showWaitbar; progressBar.Value = 0.1 + 0.7*t/time; end
+        end
+    else
+        I = cell2mat(obj.getData4D('image', 3, NaN, getDataOptions));   % [h,w,z,c,t]
+        if BatchOpt.showWaitbar; progressBar.Value = 0.2; end
+        switch projectionType
+            case 'max';    I = max(I,   [], dim);
+            case 'min';    I = min(I,   [], dim);
+            case 'mean';   I = cast(mean(double(I), dim), dataClass);
+            case 'median'; I = cast(median(I,        dim), dataClass);
+            case 'sum';    I = sum(double(I), dim);
+        end
+        if BatchOpt.showWaitbar; progressBar.Value = 0.7; end
+        % For Y or X projections, move the collapsed singleton into the Z position (dim 3)
+        if dim == 1          % Y collapsed: [1,w,z,c,t] → [z,w,1,c,t]
+            I = permute(I, [3, 2, 1, 4, 5]);
+        elseif dim == 2      % X collapsed: [h,1,z,c,t] → [h,z,1,c,t]
+            I = permute(I, [1, 3, 2, 4, 5]);
+        end
     end
 else
     % Virtual: slice-by-slice Z projection only

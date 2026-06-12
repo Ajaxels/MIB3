@@ -31,6 +31,94 @@ zensical build        # generate static site into docs/site/
 
 ---
 
+## Documentation conversion workflow
+
+When porting documentation from MIB2 (`temp/docs_mib2_md/`) or updating existing pages to match MIB3:
+
+1. **Source of truth for widget names** — launch the actual MIB3 dialog in MATLAB and dump widget handles:
+   ```matlab
+   h = controllers.XxxClass(mib.mibModel, mib);   % open dialog
+   t = findall(h.view.gui);
+   for i = 1:numel(t); try; fprintf('%s | %s\n', t(i).Tag, t(i).Text); catch; end; end
+   ```
+   Use the exact `.Text` values (including capitalisation) for all `<span class="widget ...">` labels.
+
+2. **Always edit `docs/docs/`** — never `temp/`. The `temp/` tree is scratch space only.
+
+3. **Cross-check with the ribbon source** — for ribbon tab pages, read
+   `mib/+views/@MibView/addRibbon<Tab>.m` to get the definitive section names,
+   button labels, and dropdown item order before updating the docs.
+
+---
+
+## Ribbon tab page structure
+
+All ribbon tab index pages (`user-interface/ribbon/<tab>/index.md`) follow this hierarchy:
+
+| Level | Markdown | Maps to |
+|-------|----------|---------|
+| Page title | `#` | Tab name, e.g. `# Home Ribbon Tab` |
+| Ribbon section | `##` | `addSection("…")` call in the ribbon source, e.g. `## Import Image Section` |
+| Ribbon button / item | `###` | Individual button or dropdown, e.g. `### Make Snapshot` |
+| Dropdown sub-item | `####` | Sub-menu item inside a dropdown, e.g. `#### Flip...` |
+
+Rules:
+- Section `##` headings use the exact name from the ribbon source + " Section" suffix (e.g. `## Dataset Tools Section`).
+- Button `###` headings use the exact label string from the ribbon source (PascalCase as displayed in the UI).
+- Dropdown items under a `###` button are listed as a bullet list **or** promoted to `####` when they have enough content to warrant a heading.
+- Sub-pages linked with `[See details](sub-page.md)` keep their own page structure independently of the index hierarchy.
+
+### Widget label spans
+
+Use the exact `.Text` value from the widget dump inside the span — including colons, lowercase letters, and special characters exactly as they appear in the dialog:
+
+```markdown
+<span class="widget widget-button">Rename and Shuffle</span>
+<span class="widget widget-dropdown">Mask method</span>
+<span class="widget widget-checkbox">enable undo</span>
+<span class="widget widget-edit">Number of CPUs</span>
+```
+
+### Preference page sections
+
+Category names in the overview list must match the actual tree-node `.Text` values (lowercase second word):
+- `User interface`, `Colors and styles`, `Backup and undo`, `External directories`, `Keyboard shortcuts`, `Segmentation tools`
+
+Sub-sections within each category use `###` headings; individual widgets use inline `<span>` elements.
+
+---
+
+## Keeping cross-links valid after page edits
+
+Zensical generates anchor IDs from heading text by lowercasing and replacing spaces with hyphens.
+Renaming a `##` or `###` heading therefore **changes its anchor**, breaking any links pointing to it from other pages.
+
+**After renaming a section heading:**
+
+1. Find all `#old-anchor` references across the docs tree:
+   ```powershell
+   cd "C:\MATLAB\MIB_CONVERSION\MIB3\docs"
+   & "C:\Python\Miniforge\envs\mkdocs\Scripts\zensical.exe" build 2>&1 |
+     ForEach-Object { $_ -replace '\x1b\[[0-9;]*[mGKHFa-zA-Z]','' } |
+     Select-String "anchor|Warning" | ForEach-Object { $_.Line.Trim() } |
+     Where-Object { $_ -ne '' }
+   ```
+2. Update every broken `#old-anchor` to `#new-anchor` in the files reported.
+3. Re-run the build until no anchor warnings remain.
+
+**Common anchor-breaking operations and what to update:**
+
+| Operation | Anchor that breaks | Search pattern |
+|-----------|-------------------|----------------|
+| Rename `### Parameters` → `### Voxels` | `#parameters` | `#parameters)` |
+| Rename `## Slice` → `### Slices` | `#slice` | `#slice)` |
+| Rename any section | `#old-name` | `#old-name)` |
+
+Anchor rules: all lowercase, spaces → `-`, special characters stripped.
+Example: `### My Section` → `#my-section`.
+
+---
+
 ## When to update docs alongside code changes
 
 | Change | File(s) to update |

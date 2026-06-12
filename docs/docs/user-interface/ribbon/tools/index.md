@@ -36,7 +36,7 @@ Results will appear in a pop-up, printed to MATLAB’s main window, and copied t
 Also accessible from the [Quick Access Bar](../../quick-access-bar/index.md).
 
 !!! note
-    Pixel sizes are set in [Dataset parameters](../dataset/index.md#parameters).
+    Pixel sizes are set in [Dataset parameters](../dataset/index.md#voxels).
 
 
 ### Free hand measure

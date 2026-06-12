@@ -21,7 +21,7 @@ Explore the following subsections to learn more about each part of the MIB user 
 view orientations or toggling ROI or blockmode switches.
 - **[Image Document](image-document/index.md)**: the central workspace where each dataset is displayed as a dockable, 
 tabbed document; includes slice/frame navigation, mouse interactions, and drag-and-drop loading.
-- **[Datasets](datasets/index.md)**: panel for managing dataset buffers and sets — switch between up to 10 open datasets per set, duplicate, sync, or link their views, and set the memory access mode.
+- **[Datasets](panels/datasets/index.md)**: panel for managing dataset buffers and sets — switch between up to 10 open datasets per set, duplicate, sync, or link their views, and set the memory access mode.
 - **[Panels](panels/index.md)**: detailed controls for image viewing, segmentation, 
 and processing, such as the Directory Contents and Segmentation Panel.
 - **[Status Bar](statusbar/index.md)**: strip at the bottom of the window with the working directory picker, 

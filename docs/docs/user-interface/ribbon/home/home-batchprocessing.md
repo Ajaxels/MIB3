@@ -37,8 +37,8 @@ these steps are automatically added to the protocol.
 
 ### Manual Selection
 
-Use the <span class="widget widget-dropdown">Protocol steps->Section</span> and 
-<span class="widget widget-dropdown">Protocol steps->Action</span> dropdowns to manually 
+Use the <span class="widget widget-dropdown">Protocol step->Section</span> and 
+<span class="widget widget-dropdown">Protocol step->Action</span> dropdowns to manually 
 select and configure steps, which can then be added to the protocol.
 
 ### Service Steps
@@ -108,14 +108,15 @@ update the selected action with the updated settings
 
 ### Options
 
-* <span class="widget widget-dropdown">Section</span>: selects a group of actions; 
+* <span class="widget widget-dropdown">Section</span>: selects a group of actions (*e.g. Ribbon->Home*); 
 in general each group combines operations that can be found in the corresponding section of MIB GUI. 
     
 !!! info "Loops"
     Loops require a *LOOP START* followed by *LOOP STOP*.
 
-* <span class="widget widget-dropdown">Action</span>: chooses a specific action within the section.
-* **Parameters Table**: shows and edits action options using widgets (e.g., <span class="widget widget-edit">value</span>, <span class="widget widget-dropdown">option</span>).
+* <span class="widget widget-dropdown">Action</span>: chooses a specific action within the section (*e.g. Combine selected images*).
+* **Parameters Table**: shows and edits action options using widgets (e.g., <span class="widget widget-edit">value</span>)
+![Protocol Steps Panel](images/menuFileBatchMode_protocol-parameters.png){.on-glb align=left}
 * <span class="widget widget-button">Update protocol</span>: applies changes to the selected step.
 * <span class="widget widget-button">Add to protocol</span>: appends the step to the protocol.
 * <span class="widget widget-button">Insert into protocol</span>: inserts the step at the highlighted position.

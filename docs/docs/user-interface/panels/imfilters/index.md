@@ -69,7 +69,7 @@ and <span class="widget widget-edit">Iter</span>.
 
 !!! note
     If <span class="widget widget-dropdown">HSize</span> is a single number, the 3D kernel 
-    size is based on pixel size from [Ribbon → Dataset -> Parameters](../../ribbon/dataset/index.md#parameters). 
+    size is based on pixel size from [Ribbon → Dataset -> Parameters](../../ribbon/dataset/index.md#voxels). 
     If two numbers (e.g., `3;3`), the kernel is 3x3x3.
 
 ---

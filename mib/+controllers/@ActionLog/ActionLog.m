@@ -195,8 +195,9 @@ classdef ActionLog < handle
                 editableText = entryText;
             end
 
+            dlgOpt.Focus = 1;
             answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', ...
-                {'Modify entry text:'}, {editableText}, 'Modify log entry');
+                {'Modify entry text:'}, {editableText}, 'Modify log entry', dlgOpt);
             if isempty(answer); return; end
             if isempty(strtrim(answer{1})); return; end
 

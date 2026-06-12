@@ -16,7 +16,7 @@ When holding ++ctrl++ and using the eraser (++ctrl++ + <mouse class="left"></mou
 
 !!! note
     The aspect ratio for the depth size of the 3D ball is defined by pixel dimensions.<br>
-    See *Dataset Parameters* in [Ribbon → Dataset -> Parameters](../../ribbon/dataset/index.md#parameters).
+    See *Dataset Parameters* in [Ribbon → Dataset -> Parameters](../../ribbon/dataset/index.md#voxels).
 
 
 !!! info "Selection modifiers"

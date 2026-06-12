@@ -4,7 +4,7 @@
 
 ## Description
 
-![Select Frame](images/menuImageToolsDebrisRemoval-borderdetection2.png){.on-glb align=left width="300"}
+![Select Frame](images/menuImageTools-borderdetection.png){.on-glb align=left width="300"}
 
 Detects a frame (an area of uniform intensity touching the image edge) in a 4D dataset. 
 The detected frame can be assigned to the **Selection** or **Mask** layers as a binary 

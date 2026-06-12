@@ -1,10 +1,10 @@
-# Chopped Images
+# Dataset Chunking
 
 ---
 
 ## Overview
 
-The **Chopped Images** tool in MIB allows you to split a large dataset into smaller 
+The **Dataset Chunking** tool in MIB allows you to split a large dataset into smaller 
 pieces and later restore them. This feature is useful for parallel segmentation of 
 large datasets across multiple workstations.
 
@@ -14,11 +14,11 @@ large datasets across multiple workstations.
 
 ---
 
-## Chopped images -> Export 
+## Dataset Chunking -> Chunk dataset 
 
 ![Chopped images -> Export Dialog](images/menuFileChopExport.png){.on-glb align=left width="300"}
 
-The *Export* command chops a large dataset into smaller pieces.
+The *Chunk dataset* command chops a large dataset into smaller pieces.
 
 <div class="clear-float"></div>
 
@@ -35,10 +35,10 @@ The *Export* command chops a large dataset into smaller pieces.
 - <span class="widget widget-edit">Filename template</span>: sets the naming pattern; MIB appends `_Znn_Xnn_Ynn` (e.g., `_Z01_X01_Y01`) to each block’s filename, where `nn` is the block index.
 - <span class="widget widget-dropdown">Output format for images</span>: choose from 
 
-    - Amira Mesh 
-    - NRRD 
-    - 3D-TIF
-    - HDF5 with XML header
+    - [x] Amira Mesh 
+    - [x] NRRD 
+    - [x] 3D-TIF
+    - [x] HDF5 with XML header
   
 - <span class="widget widget-dropdown">Output format for models</span>: options include MATLAB, Amira Mesh, NRRD, TIF, or HDF5; saved with a `Labels_` prefix.
 
@@ -48,11 +48,11 @@ Masks are saved in MATLAB format with the template `Mask_[FN].mask`, where `[FN]
 
 ---
 
-## Chopped images -> Import
+## Dataset Chunking -> Stitch dataset
 
 ![Chopped images -> Import Dialog](images/menuFileChopImport.png){.on-glb align=left width="300"}
 
-The *Import* command restores previously chopped dataset or fuse the cropped dataset into the currently open dataset.
+The *Stitch dataset* command restores previously chopped dataset or fuse the cropped dataset into the currently open dataset.
 
 <div class="clear-float"></div>
 

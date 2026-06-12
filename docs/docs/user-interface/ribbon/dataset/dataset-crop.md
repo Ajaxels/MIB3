@@ -2,7 +2,7 @@
 
 ---
 
-![Crop Dataset Dialog](images/menuDatasetCrop.png){.on-glb align=left width="260"}
+![Crop Dataset Dialog](images/menuDatasetCrop.png){.on-glb align=left}
 
 Crop the image and corresponding Selection, Mask, and Model layers. 
 
@@ -24,11 +24,6 @@ When the **Interactive** mode is selected, you can draw a rectangular area on th
 by pressing and holding the <mouse class="left"></mouse> button. 
 This area defines the region to be cropped.
 
-!!! warning "The Interactive mode is not compatible with zooming"
-
-    Whenever you are using the interactive crop do not change magnification, as it
-    is not yet implemented
-
 ### Manual mode
 
 Alternatively, enable the <label class="widget widget-checkbox">Manual</label> 
@@ -47,12 +42,12 @@ crop the current dataset.<br>
 Alternatively, use the 
 <span class="widget widget-button">Crop to</span> button to copy the cropped dataset
 to another buffer. Buffers are managed via the buttons at the top of 
-the [Directory Contents panel](../../panels/dircontents/index.md).
+the [Datasets panel](../../panels/datasets/index.md).
 
 !!! note
     To restore a cropped dataset into the original, use the **Fuse into existing** mode 
-    of the **Chop image tool** available at 
-    [Ribbon → Home → Chopped Images → Import](../home/home-choppedimages.md).
+    of **Dataset Chunking → Stitch dataset** available at 
+    [Ribbon → Home → Dataset Chunking → Stitch dataset](../home/home-choppedimages.md#dataset-chunking-stitch-dataset).
 
 ---
 

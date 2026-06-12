@@ -12,12 +12,12 @@ The dialog organizes settings into six categories, shown as nodes in the **Categ
 
 ![Preferences dialog](images/file-preferences-ui.png){.on-glb align=left width="300"}
 
-- **User Interface**: controls fonts, GUI scaling, mouse actions, and update checks settings.
-- **Colors and Styles**: sets colors for models, masks, annotations, and contour styles.
-- **Backup and Undo**: configures undo history for 2D and 3D operations.
-- **External Directories**: specifies paths for external tools like Fiji or Python.
-- **Keyboard Shortcuts**: defines custom key bindings for MIB actions.
-- **Segmentation Tools**: adjusts settings and options for segmentation tools.
+- **User interface**: controls fonts, GUI scaling, mouse actions, and update checks settings.
+- **Colors and styles**: sets colors for models, masks, annotations, and contour styles.
+- **Backup and undo**: configures undo history for 2D and 3D operations.
+- **External directories**: specifies paths for external tools like Fiji or Python.
+- **Keyboard shortcuts**: defines custom key bindings for MIB actions.
+- **Segmentation tools**: adjusts settings and options for segmentation tools.
 
 At the bottom, you’ll find buttons to manage changes:
 
@@ -31,7 +31,7 @@ At the bottom, you’ll find buttons to manage changes:
 - <span class="widget widget-button">Apply</span>: saves changes without closing.
 - <span class="widget widget-button">Cancel</span>: discards changes and closes.
 
-Use the **Categories Tree** to switch between panels. Click a node (e.g., **User Interface**) 
+Use the **Categories Tree** to switch between panels. Click a node (e.g., **User interface**) 
 to show its settings. Changes are saved only when you click **OK** or **Apply**.
 
 ## User Interface
@@ -85,11 +85,11 @@ directories MIB remembers.
 <span class="widget widget-dropdown">3D rendering engine</span>: a dropdown to select the engine for 3D visualization:
 
 - `Viewer3d, R2022b`: Modern engine, available in R2022b or newer version of MATLAB (default).
-- `Volshow, R2018b`: Legacy engine, available in R2018b or newer. 
+- `Volshow, R2018b`: Legacy engine, available in R2018b or newer :material-information-outline:{.red-color title="Not implemented for MIB3" }. 
 <br>
 
-<span class="widget widget-dropdown">Hold Alt with scroll wheel</span>: a dropdown to define behavior 
-when holding ++alt++ while scrolling:
+<span class="widget widget-dropdown">Hold Alt with Scroll Wheel</span>: a dropdown to define behavior 
+when holding ++alt++ while scrolling :material-information-outline:{.red-color title="May not work yet in MIB3 due to a limitations of a new AppContainers framework" }:
 
 - `Return to the slice`: returns to the current slice upon release of ++alt++ (default)
 - `Scroll time points`: ++alt++ + :material-mouse-scroll-wheel:{.orange-color} **mouse wheel** scrolls through time points.
@@ -116,6 +116,18 @@ Adjust the font used across MIB interface:
   to set the font size for GUI widgets, like buttons and labels.
 - <span class="widget widget-edit">Font size for directory contents</span>: a numeric field (minimum 1) 
   to set the font size for the file list in the [Directory Contents Panel](../../panels/dircontents/index.md).
+
+### Parallel Processing
+
+![Preferences, GUI scaling](images/file-preferences-ui-parfor.png){align=left}
+
+<span class="widget widget-edit">Number of CPUs</span>: a numeric field to set the maximum number of CPU cores
+used for parallel processing operations. Reducing this value frees CPU resources for other applications running
+on the same workstation.
+
+!!! warning "Compiled (standalone) version"
+    In the compiled version of MIB the upper limit is fixed by the number of CPU cores available on the
+    workstation that was used to compile MIB. It cannot exceed that value even if your machine has more cores.
 
 ### GUI Scaling
 
@@ -240,18 +252,32 @@ Adjust how contours are drawn for models and masks:
 <br>
 <span class="widget widget-edit">Mask thickness</span>: a numeric field for line thickness in Contour mode for masks (default: 1).
     
-<span class="widget widget-dropdown">Mask Method</span>: a dropdown for Mask contour direction:
+<span class="widget widget-dropdown">Mask method</span>: a dropdown for Mask contour direction:
 
   - `inwards`: Shrinks the mask object (default).
   - `outwards`: Grows the mask object.
+
+### Labels
+
+![Labels Preferences](images/file-preferences-colors-labels.png){align=left}
+
+Control Labels layer appearance:<br>
+<span class="widget widget-checkbox widget-checkbox-unchecked">show as contours</span>: show the Labels layer as filled shapes (*default*)<br>
+<span class="widget widget-checkbox">show as contours</span>: show the Labels layer as contours instead of filled shapes
+
+??? tip "Quick toggle from the Segmentation panel"
+    The contour/filled rendering for Labels can also be switched directly via the eye button in the [Segmentation panel](../../panels/segm/index.md).
 
 ### Masks
 
 ![Masks Preferences](images/file-preferences-colors-masks.png){align=left}
 
 Control Mask layer appearance:<br>
-<span class="widget widget-checkbox">Show as contours</span>: show the Mask layer as contours instead of filled shapes (*default*)<br>
-<span class="widget widget-checkbox widget-checkbox-unchecked">Show as contours</span> show the mask as filled shape
+<span class="widget widget-checkbox">show as contours</span>: show the Mask layer as contours instead of filled shapes (*default*)<br>
+<span class="widget widget-checkbox widget-checkbox-unchecked">show as contours</span> show the mask as filled shape
+
+??? tip "Quick toggle from the Segmentation panel"
+    The contour/filled rendering for Masks can also be switched directly via the eye button in the [Segmentation panel](../../panels/segm/index.md).
 
 ???+ info "Examples of different mask visualization styles"
     ![Masks styles](images/file-preferences-colors-mask-styles.png)
@@ -264,7 +290,7 @@ Control Mask layer appearance:<br>
 
 Configure undo functionality for editing operations:
 
-<span class="widget widget-checkbox">Enable undo</span>: a checkbox to turn on undo support.<br>
+<span class="widget widget-checkbox">enable undo</span>: a checkbox to turn on undo support.<br>
 
 <div class="clear-float"></div>
 
@@ -287,27 +313,28 @@ Specify paths for external tools and packages that integrate with MIB. Leave fie
 
 <div class="clear-float"></div>
 
-<span class="widget widget-edit">Fiji Installation Directory</span>: a text field and <span class="widget widget-button">...</span> to set the path 
+<span class="widget widget-edit">Fiji installation directory</span>: a text field and <span class="widget widget-button">...</span> to set the path 
 to [Fiji](https://imagej.net/software/fiji/), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji) section.
 <br><br>
-<span class="widget widget-edit">OMERO Installation Directory</span>: a text field and <span class="widget widget-button">...</span> to set 
+<span class="widget widget-edit">OMERO installation directory</span>: a text field and <span class="widget widget-button">...</span> to set 
 the path to [OMERO](https://omero.readthedocs.io/en/stable/developers/Matlab.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) section.
-<span class="widget widget-edit">Imaris Installation Directory</span>: a text field and <span class="widget widget-button">...</span> 
+<br><br>
+<span class="widget widget-edit">Imaris installation directory</span>: a text field and <span class="widget widget-button">...</span> 
 to set the path to [Imaris](https://imaris.oxinst.com/), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#imaris) section.
 <br><br>
-<span class="widget widget-edit">BM3D Installation Directory</span>: a text field and <span class="widget widget-button">...</span> 
+<span class="widget widget-edit">BM3D installation directory</span>: a text field and <span class="widget widget-button">...</span> 
 to set the path to [BM3D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
 <br><br>
-<span class="widget widget-edit">M4D Installation Directory</span>: a text field and <span class="widget widget-button">...</span> 
+<span class="widget widget-edit">BM4D installation directory</span>: a text field and <span class="widget widget-button">...</span> 
 to set the path to [BM4D](https://webpages.tuni.fi/foi/GCF-BM3D/index.html), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq.html#BMxD) section.
 <br><br>
-<span class="widget widget-edit">Bioformats Memoizer Temporary Directory</span>: a text field and <span class="widget widget-button">...</span> to set the temporary directory for Bioformats Memoizer. 
+<span class="widget widget-edit">Bioformats Memoizer temporary directory</span>: a text field and <span class="widget widget-button">...</span> to set the temporary directory for Bioformats Memoizer. 
 Use any temporary directory available on your system. The created files can be removed any moment.
 <br><br>
-<span class="widget widget-edit">Directory to Store Network Architectures for DeepMIB</span>: a text field and 
-<span class="widget widget-button">...</span>to set the [DeepMIB](../../deepmib/index.md) and [SAM](../../panels/segm/segm-sam.md) network storage paths.
+<span class="widget widget-edit">Directory to store network architectures for DeepMIB</span>: a text field and 
+<span class="widget widget-button">...</span> to set the [DeepMIB](../../deepmib/index.md) and [SAM](../../panels/segm/segm-sam.md) network storage paths.
 <br><br>
-<span class="widget widget-edit">Python Installation Path</span>: a text field and <span class="widget widget-button">...</span> 
+<span class="widget widget-edit">Python installation path</span>: a text field and <span class="widget widget-button">...</span> 
 button to set the path to Python, required for [SAM](../../panels/segm/segm-sam.md), see more in the [System requirements](https://mib.helsinki.fi/downloads_systemreq_sam2.html) section.
 
 ---
@@ -341,10 +368,10 @@ Adjust settings for segmentation tools, including interpolation, annotations, an
 
 Customize how annotations appear:
 
-<span class="widget widget-dropdown">Font size</span>: a dropdown for annotation font size:
+<span class="widget widget-dropdown">Font size:</span>: a dropdown for annotation font size:
   - Options: 1 (pt 8), 2 (pt 10), 3 (pt 12), 4 (pt 14), 5 (pt 16), 6 (pt 18), 7 (pt 20) (default: 1).
 <div class="clear-float"></div>
-<span class="widget widget-edit">Extra depth to show</span>: a spinner (minimum 0) to extend annotation visibility 
+<span class="widget widget-edit">Extra depth to show:</span>: a spinner (minimum 0) to extend annotation visibility 
 across slices (*e.g.*, 3 shows annotations 3 slices before and after).
 <br><br>
 <span class="widget widget-button">Color</span>: a button to pick the annotation color (same as in Colors and Styles).
@@ -366,7 +393,7 @@ Configure how MIB interpolates between points:
 <span class="widget widget-edit">Number of points</span>: a numeric field for points used in interpolation. 
 Higher values improve quality but slow performance.
 <br><br>
-<span class="widget widget-edit">Line width</span>: a numeric field for the thickness of lines in `line` interpolation.
+<span class="widget widget-edit">Line width, px</span>: a numeric field for the thickness of lines in `line` interpolation.
 
 ### Favorite Tools
 
@@ -374,16 +401,16 @@ Higher values improve quality but slow performance.
 
 Set quick-access segmentation tools:
 
-<span class="widget widget-dropdown">Favorite Tool A</span>: a dropdown to select a tool accessed via ++shift+d++:
+<span class="widget widget-dropdown">Favorite tool A</span>: a dropdown to select a tool accessed via ++shift+d++:
 
   - Options: 3D ball, 3D lines, Annotations, Brush, BW Thresholding, 
   Drag & Drop materials, Lasso, MagicWand-RegionGrowing, Membrane ClickTracker, Object Picker, 
   Segment-anything model, Spot (default: Brush).
 <br><br>
   - 
-<span class="widget widget-dropdown">Favorite Tool B</span>: a dropdown to select a tool accessed via ++ctrl+d++:
-  - Same options as Favorite Tool A (default: Segment-anything model).
+<span class="widget widget-dropdown">Favorite tool B</span>: a dropdown to select a tool accessed via ++ctrl+d++:
+  - Same options as Favorite tool A (default: Segment-anything model).
 
-c
+---
 
 *Back to [MIB](../../../index.md) | [User Interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*

@@ -4,7 +4,7 @@
 
 ## Description
 
-![Intensity Projection](images/menuImageToolsIntensityProjection.png){align=left}
+![Intensity Projection](images/menuImageToolsIntensityProjection.png){.on-glb align=left width="360"}
 
 Generate a 2D intensity projection from the dataset across a specified dimension, affecting the image and corresponding Selection, Mask, and Model layers.
 

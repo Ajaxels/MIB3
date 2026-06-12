@@ -1,11 +1,14 @@
 # Debris Removal
 
+*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Image](index.md)*
+
 ---
 
-![Debris Removal](images/menuImageToolsDebrisRemoval2.png){.on-glb align=left width="360"}
+![Debris Removal dialog](images/menuImageToolsDebrisRemoval2.png){.on-glb align=left width="360"}
 
-Automatically or manually restore areas of volumetric datasets corrupted by 
-debris, updating the image and corresponding Selection, Mask, and Model layers.
+Automatically or manually restore areas of volumetric datasets corrupted by
+debris, replacing affected pixels with the average of the previous and following slices.
+Updates the image and the corresponding Selection, Mask, and Labels layers.
 
 <div class="h3-like">Demonstration</div>
 
@@ -13,85 +16,73 @@ debris, updating the image and corresponding Selection, Mask, and Model layers.
 
 <div class="clear-float"></div>
 
-Select a debris removal mode from the <span class="widget widget-dropdown">Detection Mode</span> 
-dropdown to process the dataset. Areas can be detected automatically or specified using 
-the Mask or Selection layers in the [Segmentation panel](../../panels/segm/index.md). 
-Configure parameters as needed, then click the <span class="widget widget-button">Current</span>
-button to restore the affected areas on the current slice or
-<span class="widget widget-button">Remove all</span> across the dataset.
+!!! warning "Limitations"
 
-Use the <span class="widget widget-button">Close</span> button to close the 
-dialog without changes.
-
-## Automatic Detection
-
-This mode automatically identifies and removes debris by analyzing differences
-between adjacent slices:
-
-- <span class="widget widget-edit">Intensity threshold</span> set the threshold for 
-detecting debris, applied to the summed difference between the current, previous, and 
-following slices. The smaller values increase the area size that will be detected.
-- <span class="widget widget-edit">Object size threshold</span> specify the minimum 
-size (in pixels) of debris areas to remove, filtering out smaller regions.
-- <span class="widget widget-edit">Strel size</span> define the size of the 
-structuring element (in pixels) for erosion and dilation, refining the detected areas.
-- <span class="widget widget-dropdown">Highlight as</span> pick the destination layer to see
-the detected areas.
-
-The process computes differences between slices, thresholds the result, 
-removes small objects, and applies morphological operations 
-(erosion followed by dilation). 
-
-Detected debris areas are replaced with an average of the previous 
-and following slices, ensuring smooth restoration. 
-
-This mode is ideal for datasets with scattered debris, such as dust or artifacts, 
-without requiring manual selection.
+    - Debris removal is available for **grayscale (single-channel) images only**.
+    - The **first and last slices** of the stack are never processed — the algorithm needs one slice before and one slice after each target slice.
 
 ---
 
-## Masked Areas
+## Settings
 
-This mode performs debris removal on areas defined in the Mask layer:
+<span class="widget widget-dropdown">Detection mode</span>: how debris areas are identified — see sections below for details.
 
-- No additional parameters are required beyond the Mask layer content.
+The following parameters are active for **Automatic detection** only:
 
-Use the [Segmentation panel](../../panels/segm/index.md) to create or refine the 
-Mask layer, marking areas corrupted by debris. 
+- <span class="widget widget-edit">Intensity threshold</span>: threshold applied to the summed difference between a slice and its neighbours. Lower values detect larger regions.
+- <span class="widget widget-edit">Object size threshold</span>: minimum area (pixels) for a detected region to be considered debris; smaller objects are ignored.
+- <span class="widget widget-edit">Strel size</span>: radius of the disk structuring element (pixels) used for morphological refinement of the detected area.
+- <span class="widget widget-dropdown">Highlight as</span>: layer used to mark detected debris — `mask` or `selection`.
 
-The selected regions are restored by interpolating data from surrounding slices, 
-typically averaging the previous and following slices. 
-
-This mode is useful when debris locations are known and manually segmented, 
+Click <span class="widget widget-button">Current</span> to process the current slice only, or <span class="widget widget-button">Remove all</span> to process the entire stack.
 
 ---
 
-## Selected Areas
+## Automatic detection
 
-This mode performs debris removal on areas defined in the Selection layer:
+Detects debris by comparing each slice to its neighbours:
 
-- No additional parameters are required beyond the Selection layer content.
+1. Computes the intensity difference between the current slice and its previous and following slices.
+2. Thresholds the summed difference using <span class="widget widget-edit">Intensity threshold</span>.
+3. Removes connected regions smaller than <span class="widget widget-edit">Object size threshold</span>.
+4. Refines the mask with morphological operations (dilation → fill → erosion) controlled by <span class="widget widget-edit">Strel size</span>.
+5. Replaces debris pixels with the average of the previous and following slices.
+6. Writes the detected area to the layer selected in <span class="widget widget-dropdown">Highlight as</span>.
 
-Define debris areas in the Selection layer using tools in 
-the [Segmentation panel](../../panels/segm/index.md). The marked regions are 
-inpainted using data from adjacent slices, similar to the Masked areas mode. 
-This mode is suited for quick, interactive corrections where debris is identified 
-during visual inspection, allowing flexible restoration without a permanent mask.
+Best for datasets with scattered artifacts (dust, staining residues) that were not pre-segmented.
+
+!!! tip
+    Test on the current slice with <span class="widget widget-button">Current</span> before applying to the full stack.
+
+---
+
+## Masked areas
+
+Restores regions defined in the **Mask** layer. No detection parameters are required.
+
+Use the [Segmentation panel](../../panels/segm/index.md) to paint or refine the Mask layer over the debris, then run debris removal. Each marked pixel is replaced with the average of the corresponding pixel in the previous and following slices.
+
+Suitable when debris locations are already known and manually segmented.
+
+---
+
+## Selected areas
+
+Restores regions defined in the **Selection** layer. No detection parameters are required.
+
+Define debris areas in the Selection layer using tools in the [Segmentation panel](../../panels/segm/index.md). Processing is identical to the Masked areas mode.
+
+Useful for quick interactive corrections during visual inspection without modifying the permanent Mask layer.
+
+---
 
 ## Example
 
-Application of Debris removal
-
-![Debris Removal Dialog](images/menuImageToolsDebrisRemoval.png)
+![Debris Removal example](images/menuImageToolsDebrisRemoval.png)
 
 <div class="clear-float"></div>
 
-This example shows the debris removal dialog with automatic detection 
-settings applied to a volumetric dataset, highlighting the restoration of 
-corrupted areas.
-
-!!! tip
-    Test debris removal on the current slice before processing the entire dataset.
+Debris removal applied to a volumetric dataset with automatic detection settings.
 
 ---
 

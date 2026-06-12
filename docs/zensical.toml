@@ -68,12 +68,12 @@ nav = [
       "user-interface/ribbon/index.md",
       { "Home" = [
         "user-interface/ribbon/home/index.md",
-        { "Batch processing" = "user-interface/ribbon/home/home-batchprocessing.md" },
-        { "Chopped images" = "user-interface/ribbon/home/home-choppedimages.md" },
-        { "Rename and shuffle" = "user-interface/ribbon/home/home-renameandshuffle.md" },
-        { "Make video" = "user-interface/ribbon/home/home-makevideo.md" },
         { "Make snapshot" = "user-interface/ribbon/home/home-makesnapshot.md" },
+        { "Make video" = "user-interface/ribbon/home/home-makevideo.md" },
         { "MIB 3D Viewer" = "user-interface/ribbon/home/home-mib3Dviewer.md" },
+        { "Batch processing" = "user-interface/ribbon/home/home-batchprocessing.md" },
+        { "Dataset chunking" = "user-interface/ribbon/home/home-choppedimages.md" },
+        { "Image shuffling" = "user-interface/ribbon/home/home-renameandshuffle.md" },
         { "Preferences" = "user-interface/ribbon/home/home-preferences.md" },
       ]},
       { "Dataset" = [
@@ -128,7 +128,7 @@ nav = [
     { "Image Document" = ["user-interface/image-document/index.md"] },
     { "Panels" = [
       "user-interface/panels/index.md",
-      { "Datasets" = ["user-interface/datasets/index.md"] },
+      { "Datasets" = ["user-interface/panels/datasets/index.md"] },
       { "Directory contents" = ["user-interface/panels/dircontents/index.md"] },
       { "Segmentation" = [
         "user-interface/panels/segm/index.md",

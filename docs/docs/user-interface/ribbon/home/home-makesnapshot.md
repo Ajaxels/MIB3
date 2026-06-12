@@ -1,5 +1,7 @@
 # Make Snapshot
 
+*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*
+
 ---
 
 ## Overview
@@ -12,9 +14,9 @@ This dialog provides access to different settings for making snapshots.
 
 ---
 
-## Target
+## Destination
 
-![Make a Snapshot Dialog, Options->Target](images/menuFileSnapshot-target.png){align=left}
+![Make a Snapshot Dialog, Destination](images/menuFileSnapshot-target.png){align=left}
 
 Define the destination for the rendered snapshot:
 
@@ -25,78 +27,98 @@ Define the destination for the rendered snapshot:
 
 ## Crop
 
-![Make a Snapshot Dialog, Options->Crop](images/menuFileSnapshot-crop.png){align=left}
+![Make a Snapshot Dialog, Crop](images/menuFileSnapshot-crop.png){align=left}
 
 - **Full image**: make snapshot of the whole image.
-- **Shown area**: make snapshot of the displayed in the [Image View panel](../../panels/selection_imview/imview.md) area only.
+- **Shown area**: make snapshot of the displayed area in the [Image View panel](../../panels/selection_imview/imview.md) only.
 - **ROI**: use selected ROI (the ROI may be defined using [the ROI panel](../../panels/roi/index.md)) as area for the snapshot.
 
 ---
 
 ## Resize
 
-![Make a Snapshot Dialog, Options->Resize](images/menuFileSnapshot-resize.png){align=left}
+![Make a Snapshot Dialog, Resize](images/menuFileSnapshot-resize.png){align=left}
 
-- <span class="widget widget-edit">Width</span> modifies width of the snapshot, or the width of a single panel when the <label class="widget widget-checkbox">Split channel</label> mode is enabled.
-- <span class="widget widget-edit">Height</span> modifies height of the snapshot, or the height of a single panel when the <label class="widget widget-checkbox">Split channel</label> mode is enabled.
-- <span class="widget widget-dropdown">Resizing method</span> select one of possible resizing methods.
+- <span class="widget widget-edit">Width</span>: modifies width of the snapshot, or the width of a single panel when <label class="widget widget-checkbox">Split channels</label> mode is enabled.
+- <span class="widget widget-edit">Height</span>: modifies height of the snapshot, or the height of a single panel when <label class="widget widget-checkbox">Split channels</label> mode is enabled.
+- <span class="widget widget-dropdown">Resizing method</span>: select one of the possible resizing methods.
 
 ??? info "List of image resizing methods"
-    - *nearest*: nearest-neighbor interpolation; the output pixel is assigned the value of the pixel that the point falls within. No other pixels are considered; best for upsampling of the images.
-    - *bilinear*: bilinear interpolation; the output pixel value is a weighted average of pixels in the nearest 2-by-2 neighborhood.
-    - *bicubic*: bicubic interpolation; the output pixel value is a weighted average of pixels in the nearest 4-by-4 neighborhood; best for downsampling of the images.
+    - ***nearest***: nearest-neighbor interpolation; the output pixel is assigned the value of the pixel that the point falls within. No other pixels are considered; best for upsampling of the images.
+    - ***bilinear***: bilinear interpolation; the output pixel value is a weighted average of pixels in the nearest 2-by-2 neighborhood.
+    - ***bicubic***: bicubic interpolation; the output pixel value is a weighted average of pixels in the nearest 4-by-4 neighborhood; best for downsampling of the images.
 
-- <label class="widget widget-checkbox">Bin</label>: when checked, the <span class="widget widget-button">bin2</span>, <span class="widget widget-button">bin4</span>, and 
-<span class="widget widget-button">bin8</span> buttons reduce image size; otherwise, they become <span class="widget widget-button">mag2</span>, 
-<span class="widget widget-button">mag4</span>, and <span class="widget widget-button">mag8</span> and increase the image size.
-  - <span class="widget widget-button">bin2/mag2</span>: update the dimensions of the snapshot after decreasing/increasing the image size in 2 times.
-  - <span class="widget widget-button">bin4/mag4</span>: update the dimensions of the snapshot after decreasing/increasing the image size in 4 times.
-  - <span class="widget widget-button">bin8/mag8</span>: update the dimensions of the snapshot after decreasing/increasing the image size in 8 times.
+- <label class="widget widget-checkbox">bin</label>: when checked, the buttons below reduce the image size by the specified factor and update the Width/Height fields accordingly.
+  - <span class="widget widget-button">bin x2</span>: decrease image dimensions by a factor of 2.
+  - <span class="widget widget-button">bin x4</span>: decrease image dimensions by a factor of 4.
+  - <span class="widget widget-button">bin x8</span>: decrease image dimensions by a factor of 8.
 
 ---
 
 ## Options
 
-![Make a Snapshot Dialog, Options->Options](images/menuFileSnapshot-options.png)
+![Make a Snapshot Dialog, Options](images/menuFileSnapshot-options.png)
 
-- <label class="widget widget-checkbox">Split channel</label>: generate a montage image, where each panel has only one color channel.
-
-- The dimensions of the montage image can be specified using the <span class="widget widget-edit">Cols</span> 
-(number of horizontal panels) and <span class="widget widget-edit">Rows</span> (number of vertical panels) 
-edit boxes. 
-- In addition, it is possible to force rendering of individual color channels in the grayscale mode (the <label class="widget widget-checkbox">Grayscale</label> checkbox).
+- <label class="widget widget-checkbox">Split channels</label>: generate a montage image where each panel shows only one color channel.
+- <span class="widget widget-edit">Cols</span>: number of horizontal panels in the montage.
+- <span class="widget widget-edit">Rows</span>: number of vertical panels in the montage.
+- <label class="widget widget-checkbox">Grayscale</label>: render individual color channels in grayscale mode.
+- <label class="widget widget-checkbox">whiteBg</label>: render background in white color for the split channel mode and the scale bars.
+- <span class="widget widget-edit">Margin:</span>: gap in pixels between panels in the montage.
 
 ???+ example "Split channel example"
     ![Split Channel Example](images/menuFileSnapshot_split.jpg){.on-glb align=left width="300"}
     <div class="clear-float"></div>
 
-- <label class="widget widget-checkbox">White Bg</label>: render background in white color for the split channel mode and the scale bars.
 - <label class="widget widget-checkbox">Scale bar</label>: add a scale bar to the snapshot.
 
 !!! warning "Scale bar"
-    **Note!** if the width of the snapshot is too small the scale bar is not generated.
+    If the width of the snapshot is too small the scale bar is not generated.
 
 - <label class="widget widget-checkbox">Measurements</label>: add the displayed measurements to the snapshot.
-
-!!! warning "Measurements"
-    Warning! The resulting image may have border artifacts, at least in MATLAB R2014b. The snapshot is done using the *export_fig* function written by [Oliver Woodford and Yair Altman](http://www.mathworks.com/matlabcentral/fileexchange/23629-export-fig).
-
-- <span class="widget widget-button">Options</span>: define visualization options for the measurements.
+- <span class="widget widget-button">Options</span> (next to Measurements): define visualization options for the measurements.
 
 ---
 
 ## Format
 
-![Make a Snapshot Dialog, Options->File format settings](images/menuFileSnapshot-format.png)
+![Make a Snapshot Dialog, File format settings](images/menuFileSnapshot-format.png)
 
-Select one of the possible formats:
+Select the output format from the <span class="widget widget-dropdown">File format</span> dropdown. Each format exposes additional settings:
 
-- **BMP**: windows Bitmap (BMP); 1-bit, 8-bit, and 24-bit uncompressed images.
-- **JPG**: joint Photographic Experts Group (JPEG), 8-bit, 12-bit, and 16-bit Baseline JPEG images.
-- **PNG**: portable Network Graphics (PNG) format.
-- **TIF**: baseline Tagged Image File Format images, including 1-bit, 8-bit, 16-bit, and 24-bit uncompressed images.
+### BMP
+
+Windows Bitmap; 1-bit, 8-bit, and 24-bit uncompressed images. No additional settings.
+
+### JPG
+
+Joint Photographic Experts Group (JPEG).
+
+- <span class="widget widget-edit">Quality</span>: compression quality from 0–100; higher values give better quality and larger files.
+- <span class="widget widget-dropdown">Mode</span>: color mode (e.g. RGB, grayscale).
+- <span class="widget widget-dropdown">Bitdepth</span>: output bit depth.
+- <span class="widget widget-edit">Comment</span>: optional text comment embedded in the file metadata.
+
+### PNG
+
+Portable Network Graphics. No additional settings.
+
+### TIF
+
+Tagged Image File Format.
+
+- <span class="widget widget-dropdown">Compression</span>: compression type (e.g. none, LZW, Deflate).
+- <span class="widget widget-dropdown">Color space</span>: output color space.
+- <span class="widget widget-edit">Resolution</span>: pixel resolution written to the file metadata.
+- <span class="widget widget-edit">RowsPerStrip</span>: number of rows per TIFF strip; affects read performance for large files.
+- <span class="widget widget-edit">Description</span>: optional text description embedded in the file metadata.
+
+---
+
+## Output filename
+
+- <span class="widget widget-edit">Output filename</span>: name and location of the destination file. Use <span class="widget widget-button">...</span> to browse.
 
 ---
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md) | [Home](index.md)*
-

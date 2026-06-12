@@ -810,7 +810,10 @@ uiwait(fig);
             % Move focus away from the current widget so it can commit its
             % pending value (e.g. typed text in a uispinner or uieditfield).
             try; focus(okBtn); catch; end
-            drawnow;  % process the focus change so the widget commits its value
+            drawnow;     % dispatch the focus change to the renderer
+            pause(0.1);  % allow the editfield value round-trip to commit before reading
+                         % (drawnow alone is too fast: a text uieditfield commits its typed
+                         %  value via an async browser round-trip that one drawnow misses)
             if strcmpi(options.DefaultKey, 'Cancel') && ~isempty(cancelBtn) && isvalid(cancelBtn)
                 onCancel();
             else

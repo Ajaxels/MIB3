@@ -308,8 +308,11 @@ uiwait(fig);
         if isequal(evt.Key, 'escape')
             onCancel();
         elseif isequal(evt.Key, 'return')
-            focus(okBtn);  % Move focus to button, commits editfield value
-            drawnow;       % process the focus change so the widget commits its value
+            focus(okBtn);  % Move focus to button to commit the editfield value
+            drawnow;       % dispatch the focus change to the renderer
+            pause(0.1);    % allow the editfield value round-trip to commit before reading
+                           % (drawnow alone is too fast: the typed value commits via an
+                           %  async browser round-trip that one drawnow misses)
             onOK();
         end
     end

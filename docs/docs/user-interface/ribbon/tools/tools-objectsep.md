@@ -21,7 +21,7 @@ The *Mode panel* allows you to choose the segmentation scope, determining whethe
 - <label class="widget widget-checkbox">2D, current slice only</label> performs segmentation only on the currently displayed slice in the [Image View panel](../../panels/selection_imview/imview.md)
 - <label class="widget widget-checkbox">2D, slice-by-slice</label> applies 2D segmentation individually to each slice in the dataset
 - <label class="widget widget-checkbox">3D, volume</label> executes 3D segmentation across the entire dataset or a selected subvolume (see *Subarea panel* below)
-- <span class="widget widget-edit">Aspect ratio for 3D...</span> displays the dataset's aspect ratio, calculated from voxel sizes found in [Ribbon → Dataset → Parameters](../dataset/index.md#parameters). this ratio is used when watershed segmentation relies on a distance map (see *Object separation settings* below)
+- <span class="widget widget-edit">Aspect ratio for 3D...</span> displays the dataset's aspect ratio, calculated from voxel sizes found in [Ribbon → Dataset → Parameters](../dataset/index.md#voxels). this ratio is used when watershed segmentation relies on a distance map (see *Object separation settings* below)
 
 <div class="clear-float"></div>
 

@@ -20,7 +20,7 @@ The panel contains three areas from top to bottom:
 
 A **set** is a named group of 10 buffers, each capable of holding one dataset.
 Multiple sets allow you to organise unrelated groups of datasets independently.
-Each set corresponds to one [Image Document](../image-document/index.md) tab in the main workspace.
+Each set corresponds to one [Image Document](../../image-document/index.md) tab in the main workspace.
 
 ### Sets dropdown
 
@@ -121,4 +121,4 @@ Changing this type closes the current dataset — a confirmation dialog is shown
 
 ---
 
-*Back to [MIB](../../index.md) | [User interface](../index.md) | [Panels](../panels/index.md)*
+*Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Panels](../index.md)*

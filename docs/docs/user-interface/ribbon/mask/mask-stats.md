@@ -74,7 +74,7 @@ or select objects (<mouse class="right"></mouse> for context menu).
 
 <div class="clear-float"></div>
 
-- **New annotations**: adds labels to selected objects, accessible via [Ribbon → Model→Annotations→List of annotations](../model/index.md#annotations) or <br> 
+- **New annotations**: adds labels to selected objects, accessible via [Ribbon → Model→Annotations→List of annotations](../model/index.md#list-of-annotations) or <br> 
 [Segmentation panel→Segmentation tools→Annotations](../../panels/segm/segm-annotations.md).
 - **Add to annotations**: adds highlighted objects to the annotation list.
 - **Remove from annotations**: removes highlighted objects from the annotation list.

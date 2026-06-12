@@ -40,33 +40,27 @@ to the selected folder.
   the **Export image to** command [:fontawesome-brands-youtube:{.red-color} Brief demo](https://youtu.be/zUJ1RUuTLVs)
 - **System Clipboard**: Paste an image from the system clipboard  
   Uses the [IMCLIPBOARD](http://www.mathworks.com/matlabcentral/fileexchange/28708-imclipboard) function by Jiro Doke, MathWorks, 2010 [:fontawesome-brands-youtube:{.red-color} Brief demo](https://youtu.be/kcN0Na_YC_U)
-- **Imaris**: Import a dataset from Imaris (1)  
+- **Imaris**: Import a dataset from Imaris :material-information-outline:{.red-color title="Converted from MIB2, but not tested" }  
   Requires [Imaris and ImarisXT](http://www.bitplane.com/) and uses [IceImarisConnector](http://www.scs2.net/next/index.php?id=110) by Aaron C. Ponti, ETH Zurich  
   [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/MbK2JcTrZFw?list=PLGkFvW985wz8cj8CWmXOFkXpvoX_HwXzj)
-{.annotate}
 
-    1. :warning: Converted from MIB2, but not tested
+- **OMERO**: connect to an OMERO server and load images.  
+??? failure "Not implemented"
 
-- **OMERO**: connect to an OMERO server and load images (2).
-
-??? failure "Not implemented yet"
-  
-    :warning: Import from OMERO server is not implemented yet
-    
-    Requires [OMERO server](http://www.openmicroscopy.org/site) files; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) for installation details.
+    Requires [OMERO server](http://www.openmicroscopy.org/site) files; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) for installation details.  
     [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/iR7OL0eJGuw)
 
     1. Select a server (do not copy/paste the password):  
-     ![OMERO Login](images/menuFileImportOmero1.png)
-     2. Choose a dataset and range:  
-        ![OMERO Selection](images/menuFileImportOmero2.png){.on-glb align=left width="400"}
+    ![OMERO Login](images/menuFileImportOmero1.png)
+    2. Choose a dataset and range:  
+    ![OMERO Selection](images/menuFileImportOmero2.png){.on-glb align=left width="400"}
+
+    <div class="clear-float"></div>
 
 - **URL**: Open an image from a URL address  
   The link must include the protocol (e.g., `http://`)  [:fontawesome-brands-youtube:{.red-color} Brief demo](https://youtu.be/FNEVgKzbGqQ)
 
----
-
-## Example datasets
+### Example datasets
 
 Quickly access demo datasets and full DeepMIB projects for image segmentation, grouped by data collection techniques.
 
@@ -203,65 +197,9 @@ Quickly access demo datasets and full DeepMIB projects for image segmentation, g
 
 ---
 
-## OMERO Import
+## Export Image Section
 
-Connect to an OMERO server and load images. Requires [OMERO server](http://www.openmicroscopy.org/site) 
-files; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#omero) for installation details.
-
-[:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/iR7OL0eJGuw)
-
-1. Select a server (do not copy/paste the password):  
-   ![OMERO Login](images/menuFileImportOmero1.png)
-2. Choose a dataset and range:  
-   ![OMERO Selection](images/menuFileImportOmero2.png){.on-glb align=left width="400"}
-
-
----
-
-## Batch Processing
-
-![Automate operations using batch processing](images/menuFileBatchMode.png){.on-glb align=left width="300"}
-
-Batch processing dialog.
-
-Design and apply image processing workflows to multiple images automatically.  
-See [Batch Processing](home-batchprocessing.md) for details.
-
-<div class="clear-float"></div>
-
----
-
-## Chopped Images
-
-![Chopping images dialog for splitting of datasets is smaller chunks](images/menuFileChopExport.png){.on-glb align=left width="300"}
-
-Split a large dataset into smaller parts and recombine them later, or fuse previously cropped datasets.  
-See [Chopped Images](home-choppedimages.md) for details.
-
-<div class="clear-float"></div>
-
----
-
-## Rename and Shuffle
-
-![Rename and Shuffle dialog for anonymization of images towards unbiased analysis](images/menuFileRandomizeDlg.png){.on-glb align=left width="300"}
-
-Shuffle files for blind modeling and revert models to original filenames for analysis.  
-See [Rename and Shuffle](home-renameandshuffle.md) for details.
-
-<div class="clear-float"></div>
----
-
-## Export Image To
-
-Export images to external applications:
-
-- **MATLAB**: Export includes a `containers.Map` with dataset parameters for re-import into MIB [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/zUJ1RUuTLVs)
-- **Imaris**: Export to Imaris (requires Imaris installation)
-
----
-
-## Save Image As
+### Save Image As
 
 Save the open dataset to disk in various formats:
 
@@ -276,9 +214,68 @@ Save the open dataset to disk in various formats:
     - **TIF format, LZW compressed**: Multilayered or sequence of 2D files (max 2GB due to 32-bit offsets)
     - **TIF format, non-compressed**: Same as above, uncompressed
 
----
+### Export Image To
 
-## Make Movie
+Export the current dataset to external applications:
+
+- **MATLAB**: Export includes a `dictionary` with dataset parameters for re-import into MIB [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/zUJ1RUuTLVs)
+- **Imaris**: Export to Imaris (requires Imaris installation) :material-information-outline:{.red-color title="Converted from MIB2, but not tested" }
+
+### Make Snapshot
+
+![Make snapshot dialog](images/menuFileSnapshot.png){.on-glb align=left width="350"}
+
+Capture a snapshot of the current slice, including all visible objects.  
+See [Make Snapshot](home-makesnapshot.md) for details.
+
+<div class="clear-float"></div>
+
+### Render Volume
+
+Visualize volumes in 3D using three methods:
+
+#### MIB Rendering (recommended)
+
+Hardware-accelerated volume rendering in MIB (since version 2.5, MATLAB R2018b).  
+Supports downsampling, snapshots, and animations. Updated in MIB 2.84+ (MATLAB R2022b) to render 1-3 color channels with models (MATLAB-only as of 2.84).  
+See [3D Viewer](home-mib3Dviewer.md) for details, [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/4CrfdOiZebk).
+
+??? info "Volume Rendering Engines of MIB"
+    - [x] MIB3 has only the new rendering engine available  
+
+    | MIB 2.84+, R2022b or newer<br>(Volumes 1-3 colors + models) | MIB 2.5, R2018b or newer<br>(1-channel volumes or single material models) |
+    |---------------------------------------------------------|---------------------------------------------------------|
+    | ![Direct MIB rendering from MATLAB R2022b](images/menuFileRenderingMIB_R2022b.png){.on-glb}     | ![Direct MIB rendering from MATLAB R2018b](images/menuFileRenderingMIB_R2018b.jpg){.on-glb}       |
+    | **Limitations**:<br>- Available only for MIB for MATLAB (as of 2.84)<br>- One volume at a time | **Limitations**:<br>- One volume at a time (image or model material)<br>- Grayscale only (single channel)<br>- No scale bar |
+
+
+#### MATLAB Volume Viewer
+
+Export to MATLAB's Volume Viewer app<br>
+:warning: *not available in compiled MIB*  
+[:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/J70V33f7bas)<br>
+![Rendering in MATLAB Viewer](images/menuFileRenderingMatlabVolRen.jpg){.on-glb width=500}
+
+#### 3D viewer in Fiji
+
+Render via Fiji (requires installation; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji)). 
+<br>[:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/DZ1Tj3Fh2HM)
+
+![Rendering using Fiji Viewer directly from MIB](images/menuFileRenderingFiji.jpg){.on-glb align=left width="300"}
+
+Additional parameters:  
+![Additional Fiji rendering options](images/menuFileRenderFiji.png){.on-glb align=left width="300" data-desc="The Home ribbon tab dropdown in MIB"} 
+
+<div class="clear-float"></div>
+
+- <span class="widget widget-edit">Reduce the volume down to, max width pixels</span>: Resize dataset (0 for no resizing)  
+- <span class="widget widget-edit">Smoothing 3D kernel, width</span>: Apply Gaussian blur (0 for no smoothing)  
+- <span class="widget widget-edit">Invert? \[0-no, 1-yes\]</span>: Invert for electron microscopy  
+- <span class="widget widget-edit">Transparency threshold</span>: Set transparency (comma-separated for each channel), adjustable in Fiji's 3D Viewer (**Edit → Attributes → Adjust threshold**)
+
+<div class="clear-float"></div>
+
+### Make Movie
 
 ![Make movie dialog](images/menuFileMakeMovie.png){.on-glb align=left width="300"}
 
@@ -290,64 +287,70 @@ Save the dataset as a movie file, capturing all visible objects in the image vie
 See [Make Movie](home-makevideo.md) for details.  
 
 <div class="clear-float"></div>
+
 ---
 
-## Make Snapshot
+## I/O Tools Section
 
-![Make snapshot dialog](images/menuFileSnapshot.png){.on-glb align=left width="350"}
+### Batch Processing
 
-Capture a snapshot of the current slice, including all visible objects.  
-See [Make Snapshot](home-makesnapshot.md) for details.
+![Automate operations using batch processing](images/menuFileBatchMode.png){.on-glb align=left width="300"}
 
-<div class="clear-float"></div>
----
-
-## Render Volume
-
-Visualize volumes in 3D using three methods:
-
-### MIB Rendering (recommended)
-
-Hardware-accelerated volume rendering in MIB (since version 2.5, MATLAB R2018b).  
-Supports downsampling, snapshots, and animations. Updated in MIB 2.84 (MATLAB R2022b) to render 1-3 color channels with models (MATLAB-only as of 2.84).  
-See [3D Viewer](home-mib3Dviewer.md) for details.
-
-??? info "Volume Rendering Engines of MIB"
-    | MIB 2.84, R2022b or newer<br>(Volumes 1-3 colors + models) | MIB 2.5, R2018b or newer<br>(1-channel volumes or single material models) |
-    |---------------------------------------------------------|---------------------------------------------------------|
-    | ![Direct MIB rendering from MATLAB R2022b](images/menuFileRenderingMIB_R2022b.png){.on-glb}     | ![Direct MIB rendering from MATLAB R2018b](images/menuFileRenderingMIB_R2018b.jpg){.on-glb}       |
-    | **Limitations**:<br>- Available only for MIB for MATLAB (as of 2.84)<br>- One volume at a time | **Limitations**:<br>- One volume at a time (image or model material)<br>- Grayscale only (single channel)<br>- No scale bar |
-
-Select the engine in:  
-**MIB → Ribbon → Home → Preferences → User interface → 3D rendering engine**  
-[:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/4CrfdOiZebk)
-
-### MATLAB Volume Viewer
-
-Export to MATLAB’s Volume Viewer app (R2017a or newer, not available in compiled MIB).  
-![Rendering in MATLAB Viewer](images/menuFileRenderingMatlabVolRen.jpg){.on-glb width=500}   
-[:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/J70V33f7bas)
-
-### Fiji 3D Viewer
-
-Render via Fiji (requires installation; see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji)). [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/DZ1Tj3Fh2HM)
-
-![Rendering using Fiji Viewer directly from MIB](images/menuFileRenderingFiji.jpg){.on-glb align=left width="300"}
-
-Additional parameters:  
-![Additional Fiji rendering options](images/menuFileRenderFiji.png){.on-glb align=left width="300" data-desc="The Home ribbon tab dropdown in MIB"} 
+Design and apply image processing workflows to multiple images automatically.  
+See [Batch Processing](home-batchprocessing.md) for details.
 
 <div class="clear-float"></div>
 
-- **Reduce the volume down to, max width pixels**: Resize dataset (0 for no resizing)  
-- **Smoothing 3D kernel, width**: Apply Gaussian blur (0 for no smoothing)  
-- **Invert? \[0-no, 1-yes\]**: Invert for electron microscopy  
-- **Transparency threshold**: Set transparency (comma-separated for each channel), adjustable in Fiji’s 3D Viewer (**Edit → Attributes → Adjust threshold**)
+### Dataset Chunking
+
+![Dataset chunking dialog for splitting datasets into smaller subvolumes](images/menuFileChopExport.png){.on-glb align=left width="300"}
+
+Split a large dataset into smaller subvolumes and reassemble them later, or fuse previously cropped datasets.
+Use the **Dataset chunking** dropdown to access:
+
+- **Chunk dataset**: Split the image into smaller chunks for block-based or parallel processing
+- **Stitch dataset**: Reassemble previously chunked subvolumes back into the full image
+
+See [Dataset Chunking](home-choppedimages.md) for details.
 
 <div class="clear-float"></div>
+
+### Image Shuffling
+
+![Image shuffling dialog for anonymization of images towards unbiased analysis](images/menuFileRandomizeDlg.png){.on-glb align=left width="300"}
+
+Shuffle files for blind modelling and revert models to original filenames for analysis.
+Use the **Image shuffling** dropdown to access:
+
+- **Shuffle images**: Randomly reorder and rename images to reduce processing bias
+- **Restore order**: Revert images to their original order and filenames
+
+See [Image Shuffling](home-renameandshuffle.md) for details.
+
+<div class="clear-float"></div>
+
 ---
 
-## Preferences
+## Preferences Section
+
+### Layout Management
+
+Save and restore the arrangement of MIB panels using the **Load layout** and **Save layout** buttons.
+
+**Load layout** options:
+
+- **Load local default layout**: Restore the layout saved as your personal default (`mibDefaultLayout.json` located in the MIB preferences folder)
+- **Load custom layout**: Load a layout from a custom file
+- **Load MIB default layout**: Restore the factory default MIB layout
+
+**Save layout** options:
+
+- **Save the current layout as default**: Save the current panel arrangement as your personal default  
+  Stored as `mibDefaultLayout.json` in the MIB preferences folder (shown at startup as `MIB parameters file: ...`)
+- **Save the current layout in a custom file**: Save to a custom file for sharing or backup
+- **Save the current layout as MIB default**: Override the factory default layout (affects all users of this MIB installation)
+
+### Preferences
 
 ![MIB Preferences dialog](images/menuFilePreferences_UI.png){.on-glb align=left width="350"}
 
@@ -359,13 +362,47 @@ See [Preferences](home-preferences.md) for details.
 MIB saves configuration in a file generated upon closing:
 
 ??? info "Configuration File Location"
-    - **Windows**: `C:\Users\Username\MATLAB\mib.mat` or TEMP directory (`C:\Users\Username\AppData\Local\Temp\`)  
+    - **Windows**: `C:\Users\Username\MATLAB\mib3.mat` or TEMP directory (`C:\Users\Username\AppData\Local\Temp\`)  
       Access TEMP via **Windows → Start → %TEMP%**  
     - **Linux**: `/home/username/Matlab` or local TEMP directory  
     - **MacOS**: `/Users/username/Matlab` or local TEMP directory
     
     Location of the configuration file is shown upon MIB startup as:<br>
-    `MIB parameters file: C:\Users\username\Matlab\mib.mat`
+    `MIB parameters file: C:\Users\username\Matlab\mib3.mat`
+
+### Help
+
+Access help and application information via the **Help** dropdown:
+
+- **Open MIB help**: Open the MIB documentation website
+- **Tip of the day**: Display a random usage tip
+- **Support on image.sc**: Open the [image.sc](https://forum.image.sc) community forum for MIB questions and support
+- **Personal support session**: Request a one-on-one remote support session with the MIB team
+- **Check for update**: Check for a newer version of MIB and download it if available
+- **Your personal stats**: View your cumulative MIB usage statistics
+- **Licenses**: View licenses for MIB and all included third-party tools
+- **About MIB**: Show MIB version information and credits
+
+---
+
+## Dev Corner Section
+
+### Developer mode
+
+When enabled, widget tooltips display the internal handle name of each ribbon control - useful for identifying widgets when customizing or scripting MIB.
+
+### API class reference
+
+Opens the MIB API class reference documentation.
+
+### Development
+
+Calls `controllers.MibRibbon.homeDevTest_Callback()` — a reserved entry point for internal debugging. Can also be invoked directly from the MATLAB command line:
+
+```matlab
+mib.cRibbon.homeDevTest_Callback();
+```
+
 ---
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md)*
