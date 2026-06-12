@@ -74,7 +74,7 @@ if ~isfield(options, 'WindowWidth'); options.WindowWidth = 420; end
 if ~isfield(options, 'WindowHeight'); options.WindowHeight = 160; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'modal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
-if ~isfield(options, 'IconWidth'); options.IconWidth = 48; end
+if ~isfield(options, 'IconWidth'); options.IconWidth = dlgIconDefaultWidth(options.Icon); end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
 if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'default'; end
 if ~isfield(options, 'FontSize'); options.FontSize = 14; end
@@ -82,41 +82,11 @@ if ~isfield(options, 'ButtonFontSize'); options.ButtonFontSize = 12; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
 
-% ---------- Resolve mibDir ----------
-persistent mibDir
-persistent parentFigureHandle   % cached handle to the main GUI window
-persistent cachedFigure         % reusable hidden uifigure shell
-persistent iconCompositeCache   % dictionary: cacheKey -> composited uint8 image
-persistent iconCacheBgColor     % RGB triplet used for compositing
+% ---------- Resolve mibDir and the parent window (shared helper caches) ----------
+mibDir = dlgResolveMibDir(options.mibPath);
 
-% ParentFigure param takes priority; update cache
-% Use isvalid() not ishandle() — AppContainer satisfies isvalid but not ishandle.
-if ~isempty(ParentFigure) && isvalid(ParentFigure)
-    parentFigureHandle = ParentFigure;
-end
-
-% Resolve mibDir — update cache when options.mibPath is supplied
-if ~isempty(options.mibPath)
-    mibDir = options.mibPath;
-elseif isempty(mibDir)
-    if isdeployed
-        [~, result] = system('path');
-        toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
-        if ~isempty(toks); mibDir = char(toks{1}); else; mibDir = pwd; end
-    else
-        mibDir = fileparts(which('mib3'));
-        if isempty(mibDir); mibDir = pwd; end
-    end
-end
-
-% Resolve options.ParentFigure from param or cache
-if ~isempty(ParentFigure) && isvalid(ParentFigure)
-    options.ParentFigure = ParentFigure;
-elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
-    options.ParentFigure = parentFigureHandle;
-elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
-    parentFigureHandle = options.ParentFigure;
-end
+% ParentFigure first-param takes priority over options.ParentFigure and the cached handle
+options.ParentFigure = dlgResolveParent(ParentFigure, options.ParentFigure);
 
 % ---------- Normalize question ----------
 if iscell(question)
@@ -189,68 +159,17 @@ if any(strcmp(buttons, 'Cancel'))
     cancelLabel = 'Cancel';
 end
 
-% ---------- Icon path ----------
-switch options.Icon
-    case 'warning_48px',  iconFilename = 'warning_48px.png';
-    case 'question_48px', iconFilename = 'question_48px.png';
-    case 'celebrate',     iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
-    case 'call4help',     iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3));
-    case 'puffin_info'
-        iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
-        options.IconWidth = 96;
-    case 'puffin_warning'         
-        iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
-        options.IconWidth = 96;
-    otherwise  % 'puffin_question
-        % get random icon
-        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
-        options.IconWidth = 96;
-end
-iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
-
 % ---------- Create uifigure ----------
 selection = '';
 dontShowAgain = false;
 
-% Reuse a cached hidden figure when available
-if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
-    fig = cachedFigure;
-    delete(fig.Children);
-    fig.Name = dlgTitle;
-    fig.WindowKeyPressFcn = '';
-    fig.CloseRequestFcn = 'closereq';
-else
-    fig = uifigure('Name', dlgTitle, 'Visible', 'off');
-    fig.AutoResizeChildren = 'off';
-    fig.Tag = 'inputQuestDlg';
-    cachedFigure = fig;
-end
+% Reuse a cached hidden figure when available; a temporary (non-cached) shell
+% must be deleted on close instead of hidden
+[fig, isCachedFigure] = dlgAcquireFigure('inputQuestDlg', dlgTitle, mibDir);
 if strcmpi(options.WindowStyle, 'modal')
     fig.WindowStyle = 'modal';
 else
     fig.WindowStyle = 'normal';
-end
-fig.Position(3) = options.WindowWidth;
-fig.Position(4) = options.WindowHeight;
-
-% Center on parent — AppContainer uses WindowBounds (top-left origin);
-% uifigure/figure use Position (bottom-left origin).
-if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
-    try
-        if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
-            parentPos  = options.ParentFigure.WindowBounds;
-            screenSize = get(0, 'ScreenSize');
-            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
-        else
-            parentPos = options.ParentFigure.Position;
-            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-        end
-        fig.Position(1) = x1;
-        fig.Position(2) = y1;
-    catch
-    end
 end
 
 % ---- Layout constants ----
@@ -269,7 +188,6 @@ for iBtn = 1:nBtn
 end
 btnsTotalW = sum(btnWidths) + (nBtn - 1) * btnGap;
 
-chkH  = 24;
 iconW = options.IconWidth;
 
 % Grow the dialog width when buttons would otherwise crowd the question
@@ -278,6 +196,14 @@ neededWidth = btnsTotalW + iconW + 40;
 if options.WindowWidth < neededWidth
     options.WindowWidth = neededWidth;
 end
+
+% Center on the parent and apply the geometry in a single Position write
+% (after the width grow above, so the grown width actually takes effect)
+xy = dlgCenterOnParent(options.ParentFigure, options.WindowWidth, options.WindowHeight);
+newPosition = fig.Position;
+if ~isempty(xy); newPosition(1:2) = xy; end
+newPosition(3:4) = [options.WindowWidth, options.WindowHeight];
+fig.Position = newPosition;
 
 % Bottom row height: single row with checkbox and buttons side by side
 bottomRowH = btnH + 8;
@@ -291,47 +217,9 @@ outerGrid.RowSpacing  = 8;
 outerGrid.ColumnSpacing  = 8;
 
 % ---- Content area: icon column (fixed) + text column (flex) ----
-% Pre-load and alpha-composite the icon before building UI (same pattern
-% as inputUniversalDlg, so the uiimage receives a pre-blended uint8 array).
-figBgColor = fig.Color;
-iconImg = [];
-if exist(iconPath, 'file')
-    try
-        % Initialize icon composite cache
-        if isempty(iconCompositeCache)
-            iconCompositeCache = configureDictionary("string", "cell");
-            iconCacheBgColor = figBgColor;
-        end
-        % Invalidate cache on background color change (theme switch)
-        if ~isequal(iconCacheBgColor, figBgColor)
-            iconCompositeCache = configureDictionary("string", "cell");
-            iconCacheBgColor = figBgColor;
-        end
-
-        cacheKey = string(sprintf('%s_%d', iconFilename, iconW));
-        if isKey(iconCompositeCache, cacheKey)
-            iconImg = iconCompositeCache{cacheKey};
-        else
-            [img, ~, alpha] = imread(iconPath);
-            if ~isempty(alpha)
-                img    = im2double(img);
-                alpha  = im2double(alpha);
-                for k = 1:3
-                    img(:,:,k) = img(:,:,k) .* alpha + figBgColor(k) .* (1 - alpha);
-                end
-                iconImg = im2uint8(img);
-            else
-                iconImg = img;
-            end
-            if ~isempty(iconImg)
-                iconImg = imresize(iconImg, [NaN iconW]);
-                iconCompositeCache(cacheKey) = {iconImg};
-            end
-        end
-    catch
-        iconImg = [];
-    end
-end
+% Icon loading: composited against the figure background and cached by the
+% shared helper, so the uiimage receives a pre-blended uint8 array.
+[iconImg, iconW] = dlgLoadIcon(options.Icon, iconW, fig.Color, mibDir);
 
 contentGrid = uigridlayout(outerGrid, [1, 2]);
 contentGrid.Layout.Row    = 1;
@@ -408,13 +296,12 @@ fig.CloseRequestFcn   = @onClose;
 
 % Show figure after layout is fully built
 fig.Visible = 'on';
-drawnow;
+drawnow;   % realize the figure before re-applying WindowStyle
 
 % Re-apply WindowStyle on the realized (visible) figure — setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 if strcmpi(options.WindowStyle, 'modal'); fig.WindowStyle = 'modal'; else; fig.WindowStyle = 'normal'; end
-drawnow;
 
 % Focus the default button
 idx = find(strcmp(buttons, defaultBtn), 1, 'first');
@@ -437,9 +324,7 @@ uiwait(fig);
     function onButton(src, ~)
         selection = src.Text;
         storeDontShow();
-        fig.WindowStyle = 'normal';   % release modal grab before hiding (else parent stays blocked)
-        fig.Visible = 'off';
-        uiresume(fig);
+        closeDialog();
     end
 
     function doCancel()
@@ -449,9 +334,22 @@ uiwait(fig);
             selection = '';
         end
         storeDontShow();
-        fig.WindowStyle = 'normal';   % release modal grab before hiding
-        fig.Visible = 'off';
-        uiresume(fig);
+        closeDialog();
+    end
+
+    function closeDialog()
+        % Reset WindowStyle first: a hidden but still-modal figure keeps its
+        % input grab on the parent and would freeze the main GUI.
+        fig.WindowStyle = 'normal';
+        if isCachedFigure
+            % Hide and unblock instead of deleting so the figure can be reused
+            fig.Visible = 'off';
+            uiresume(fig);
+        else
+            % Temporary second instance (the cached shell was busy) —
+            % deleting the figure also releases uiwait
+            delete(fig);
+        end
     end
 
     function onClose(~, ~)

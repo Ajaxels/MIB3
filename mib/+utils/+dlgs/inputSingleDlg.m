@@ -2,7 +2,7 @@ function answer = inputSingleDlg(ParentFigure, prompt, defAns, dlgTitle, options
 % INPUTSINGLEDLG - Single-input dialog for one text (``uieditfield``) or numeric (``uispinner``) value.
 %
 % Uses direct ``focus()`` for immediate keyboard focus — no ``java.awt.Robot`` dependency.
-% The dialog blocks the caller via ``waitfor()`` until accepted or cancelled.
+% The dialog blocks the caller via ``uiwait()`` until accepted or cancelled.
 %
 % Keyboard shortcuts:
 %
@@ -150,30 +150,10 @@ arguments
     options struct = struct()
 end
 
-persistent mibDir
-persistent parentFigureHandle  % cached handle to the main GUI window
-persistent cachedFigure        % reusable hidden uifigure shell
-
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 
-% ParentFigure param takes priority; update cache
-if ~isempty(ParentFigure) && isvalid(ParentFigure)
-    parentFigureHandle = ParentFigure;
-end
-
-% Resolve mibDir — update cache when options.mibPath is supplied
-if ~isempty(options.mibPath)
-    mibDir = options.mibPath;
-elseif isempty(mibDir)
-    if isdeployed
-        [~, result] = system('path');
-        toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
-        if ~isempty(toks); mibDir = char(toks{1}); else; mibDir = pwd; end
-    else
-        mibDir = fileparts(which('mib3'));
-        if isempty(mibDir); mibDir = pwd; end
-    end
-end
+% MIB path resolution for icons — the helper caches it; options.mibPath refreshes the cache
+mibDir = dlgResolveMibDir(options.mibPath);
 
 % Defaults
 if ~isfield(options, 'Type'); options.Type = 'editfield'; end
@@ -186,66 +166,37 @@ if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 if isstruct(defAns) && strcmp(options.Type, 'editfield')
     options.Type = 'spinner';
 end
-if ~isfield(options, 'IconWidth')
-    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_measure', 'puffin_info', 'puffin_waiting'})
-        options.IconWidth = 96;
-    else
-        options.IconWidth = 48;
-    end
-end
+if ~isfield(options, 'IconWidth'); options.IconWidth = dlgIconDefaultWidth(options.Icon); end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-% use ParentFigure param first, then options.ParentFigure, then cached handle
-if ~isempty(ParentFigure) && isvalid(ParentFigure)
-    options.ParentFigure = ParentFigure;
-elseif isempty(options.ParentFigure) && ~isempty(parentFigureHandle) && isvalid(parentFigureHandle)
-    options.ParentFigure = parentFigureHandle;
-elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
-    parentFigureHandle = options.ParentFigure;
-end
+% ParentFigure first-param takes priority over options.ParentFigure and the cached handle
+options.ParentFigure = dlgResolveParent(ParentFigure, options.ParentFigure);
 
-% Icon selection and loading
-switch options.Icon
-    case 'warning_48px',     iconFilename = 'warning_48px.png';
-    case 'question_48px',    iconFilename = 'question_48px.png';
-    case 'celebrate',        iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2));
-    case 'call4help',        iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3));
-    case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
-    case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
-    case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
-    case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(5));
-    case 'puffin_info';      iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
-    case 'puffin_waiting';   iconFilename = sprintf('puffin_waiting_%d_96px.png', randi(3));
-    otherwise
-        % puffin_question
-        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
-end
-
-iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
-
-% Reuse a cached hidden figure when available
-if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
-    fig = cachedFigure;
-    delete(fig.Children);
-    fig.Name = dlgTitle;
-    fig.WindowKeyPressFcn = '';
-    fig.CloseRequestFcn = 'closereq';
-else
-    fig = uifigure('Name', dlgTitle, 'Visible', 'off');
-    fig.Tag = 'inputSingleDlg';
-    fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
-    cachedFigure = fig;
-end
+% Reuse a cached hidden figure when available; a temporary (non-cached) shell
+% must be deleted on close instead of hidden
+[fig, isCachedFigure] = dlgAcquireFigure('inputSingleDlg', dlgTitle, mibDir);
 fig.WindowStyle = lower(options.WindowStyle);
-fig.Position(3:4) = [options.WindowWidth, options.WindowHeight];
+
+% Font-aware height of a single widget row (22 px at the factory 12 px font)
+rowHeight = dlgRowHeight(fig);
+
+% Center on the parent and apply the geometry in a single Position write
+xy = dlgCenterOnParent(options.ParentFigure, options.WindowWidth, options.WindowHeight);
+newPosition = fig.Position;
+if ~isempty(xy); newPosition(1:2) = xy; end
+newPosition(3:4) = [options.WindowWidth, options.WindowHeight];
+fig.Position = newPosition;
+
+% Icon loading: composited against the figure background and cached by the helper
+[iconImg, iconImgWidth] = dlgLoadIcon(options.Icon, options.IconWidth, fig.Color, mibDir);
 
 mainGrid = uigridlayout(fig, [3 2], ...
-    'RowHeight', {'1x', 22, 22}, ...
-    'ColumnWidth', {options.IconWidth, '1x'}, ...
+    'RowHeight', {'1x', rowHeight, rowHeight}, ...
+    'ColumnWidth', {iconImgWidth, '1x'}, ...
     'Padding', [10 10 10 10], 'RowSpacing', 10, 'ColumnSpacing', 12);
 
 % Column 1: Icon (all rows)
-if exist(iconPath, 'file')
-    iconUI = uiimage(mainGrid, 'ImageSource', iconPath, 'ScaleMethod', 'fit');
+if ~isempty(iconImg)
+    iconUI = uiimage(mainGrid, 'ImageSource', iconImg);
     iconUI.Layout.Row = [1 3];  % Span all rows
     iconUI.Layout.Column = 1;
     iconUI.VerticalAlignment = 'top';
@@ -306,47 +257,16 @@ cancelBtn.Layout.Column = 3;
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
 fig.CloseRequestFcn = @(~,~) onCancel();
 
-% Center dialog on parent figure if provided
-if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
-    try
-        if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
-            parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
-
-            % Get screen size to convert from top-left to bottom-left origin
-            screenSize = get(0, 'ScreenSize'); % [left bottom width height]
-
-            % Center in parent's coordinates (bottom-left origin)
-            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            % Convert Y from top-left to bottom-left origin
-            % parentPos(2) is distance from top of screen
-            % Need to convert to distance from bottom of screen
-            y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
-        elseif isa(options.ParentFigure, 'matlab.ui.Figure')
-            parentPos = options.ParentFigure.Position;      % [x y w h]
-
-            % Center in parent's coordinates (bottom-left origin)
-            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-        end
-
-        fig.Position(1) = x1;
-        fig.Position(2) = y1;
-    catch
-        % If centering fails, MATLAB will use default position
-    end
-end
-
 % Initialize output
 answer = [];
 
 fig.Visible = 'on';
-drawnow;
+drawnow;   % realize the figure before re-applying WindowStyle
 
 % Re-apply WindowStyle on the realized (visible) figure — setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 fig.WindowStyle = lower(options.WindowStyle);
-drawnow;
 
 % Direct focus on input widget — no java.awt.Robot, no timer
 focus(inputCtrl);
@@ -361,16 +281,27 @@ uiwait(fig);
         else
             answer = char(inputCtrl.Value);
         end
-        fig.WindowStyle = 'normal';   % release modal grab before hiding (else parent stays blocked)
-        fig.Visible = 'off';
-        uiresume(fig);
+        closeDialog();
     end
 
     function onCancel()
         answer = [];
-        fig.WindowStyle = 'normal';   % release modal grab before hiding
-        fig.Visible = 'off';
-        uiresume(fig);
+        closeDialog();
+    end
+
+    function closeDialog()
+        % Reset WindowStyle first: a hidden but still-modal figure keeps its
+        % input grab on the parent and would freeze the main GUI.
+        fig.WindowStyle = 'normal';
+        if isCachedFigure
+            % Hide and unblock instead of deleting so the figure can be reused
+            fig.Visible = 'off';
+            uiresume(fig);
+        else
+            % Temporary second instance (the cached shell was busy) —
+            % deleting the figure also releases uiwait
+            delete(fig);
+        end
     end
 
     function onKey(evt)
@@ -378,7 +309,7 @@ uiwait(fig);
             onCancel();
         elseif isequal(evt.Key, 'return')
             focus(okBtn);  % Move focus to button, commits editfield value
-            pause(0.1);
+            drawnow;       % process the focus change so the widget commits its value
             onOK();
         end
     end

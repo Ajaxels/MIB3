@@ -65,7 +65,7 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %       (default: ``'fit'`` for labels and ``'1x'`` for widgets)
 %     - ``.WindowHeight`` — [numeric] dialog height in pixels (default: auto-calculated, min 200, max 800)
 %     - ``.WindowStyle`` — [char] ``'normal'`` (default) or ``'modal'``
-%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 560)
+%     - ``.WindowWidth`` — [numeric] dialog width in pixels (default: 450)
 %
 % Output Arguments:
 %   - **answer** — ``{n x 1}`` cell array of entered values; ``[]`` when cancelled.
@@ -175,12 +175,6 @@ arguments
     options struct = struct
 end
 
-persistent mibDirPersistent;       % cached MIB installation path
-persistent parentFigurePersistent; % cached handle to the main GUI window
-persistent cachedFigure;           % reusable hidden uifigure shell
-persistent iconCompositeCache;     % dictionary: cacheKey -> composited uint8 image
-persistent iconCacheBgColor;       % RGB triplet used for compositing
-
 % Normalize options field names to their canonical casing.
 % MATLAB struct field lookup is case-sensitive, so options.msgboxonly would be
 % silently ignored. This loop finds any supplied field whose name matches a known
@@ -190,9 +184,9 @@ knownOptionFields = {'Icon','IconWidth','WindowStyle','Columns','MainColumnWidth
     'LabelPosition','SectionsColumnWidths','Focus','LastItemColumns', ...
     'OkBtnText','HelpBtnText','HelpUrl','MsgBoxOnly','PromptLines', ...
     'HeaderLines','Header','WindowWidth','WindowHeight','DoNotShowAgain', ...
-    'DoNotShowAgainText','ParentFigure','DefaultKey'};
-for suppliedField = fieldnames(options)'
-    suppliedField = suppliedField{1};
+    'DoNotShowAgainText','ParentFigure','DefaultKey','mibPath'};
+for suppliedFieldCell = fieldnames(options)'
+    suppliedField = suppliedFieldCell{1};
     canonicalIdx  = find(strcmpi(knownOptionFields, suppliedField), 1);
     if ~isempty(canonicalIdx) && ~strcmp(suppliedField, knownOptionFields{canonicalIdx})
         % Rename the misspelled/wrong-case field to the canonical name
@@ -200,7 +194,6 @@ for suppliedField = fieldnames(options)'
         options = rmfield(options, suppliedField);
     end
 end
-clear suppliedField canonicalIdx knownOptionFields
 
 % Defaults
 if ~isfield(options, 'MsgBoxOnly'); options.MsgBoxOnly = false; end
@@ -215,13 +208,7 @@ if ~isfield(options, 'Icon')
         options.Icon = 'puffin_question';
     end
 end
-if ~isfield(options, 'IconWidth')
-    if ismember(options.Icon, {'puffin_question', 'puffin_warning', 'puffin_error', 'puffin_info', 'puffin_waiting'})
-        options.IconWidth = 96; 
-    else
-        options.IconWidth = 48; 
-    end
-end
+if ~isfield(options, 'IconWidth'); options.IconWidth = dlgIconDefaultWidth(options.Icon); end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Columns'); options.Columns = 1; end
 if ~isfield(options, 'MainColumnWidths'); options.MainColumnWidths = repmat({'1x'}, 1, options.Columns); end
@@ -238,31 +225,24 @@ if ~isfield(options, 'HeaderLines')
     if options.MsgBoxOnly; options.HeaderLines = 3; end
 end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 450; end
-if ~isfield(options, 'WindowHeight'); options.WindowHeight = 150; end
+if ~isfield(options, 'WindowHeight'); options.WindowHeight = []; end   % [] = auto-calculate from content
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
 if ~isfield(options, 'ParentFigure'); options.ParentFigure = []; end
-% ParentFigure first-param takes priority; update cache and options.ParentFigure
-if ~isempty(ParentFigure) && isvalid(ParentFigure)
-    parentFigurePersistent = ParentFigure;
-    options.ParentFigure = ParentFigure;
-elseif isempty(options.ParentFigure) && ~isempty(parentFigurePersistent) && isvalid(parentFigurePersistent)
-    options.ParentFigure = parentFigurePersistent;
-elseif ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
-    parentFigurePersistent = options.ParentFigure;   % cache for future calls
-end
+% ParentFigure first-param takes priority over options.ParentFigure and the cached handle
+options.ParentFigure = dlgResolveParent(ParentFigure, options.ParentFigure);
 if ~isfield(options, 'DefaultKey'); options.DefaultKey = 'OK'; end
 
 % In MsgBoxOnly mode auto-wrap plain-text defAns with the standard HTML
 % font tag so callers do not need to embed HTML themselves.
-if options.MsgBoxOnly && numel(defAns) == 1 && (ischar(defAns{1}) || isstring(defAns{1})) ...
-        && ~strncmpi(char(defAns{1}), '<html>', 6)
+if options.MsgBoxOnly && isscalar(defAns) && (ischar(defAns{1}) || isstring(defAns{1})) ...
+        && ~strncmpi(strtrim(char(defAns{1})), '<html', 5)
     defAns{1} = sprintf('<html><p style="font-size:10pt">%s</p></html>', strrep(defAns{1}, newline, '<br>'));
 end
 
 % Normalize PromptLines
-if numel(options.PromptLines) == 1
+if isscalar(options.PromptLines)
     PromptLines = repmat(options.PromptLines, numel(prompts), 1);
 else
     PromptLines = options.PromptLines(:);
@@ -281,184 +261,77 @@ if strcmpi(options.LabelPosition, 'left')
     end
 end
 
-% MIB path resolution for icons — update cache when options.mibPath is supplied
-if ~isempty(options.mibPath)
-    mibDirPersistent = options.mibPath;   % caller provided a fresh path; cache it
-end
-
-if isempty(mibDirPersistent)
-    if isdeployed
-        [~, result] = system('path');
-        toks = regexp(result, 'Path=(.*?);', 'tokens', 'once');
-        if ~isempty(toks); mibDirPersistent = char(toks{1}); else; mibDirPersistent = pwd; end
-    else
-        mibDirPersistent = fileparts(which('mib3'));
-        if isempty(mibDirPersistent); mibDirPersistent = pwd; end
-    end
-end
-mibDir = mibDirPersistent;
+% MIB path resolution for icons — the helper caches it; options.mibPath refreshes the cache
+mibDir = dlgResolveMibDir(options.mibPath);
 
 % Build figure (before icon loading to get background color)
-% Reuse a cached hidden figure when available to avoid ~200-400ms uifigure creation cost
-if ~isempty(cachedFigure) && isvalid(cachedFigure) && strcmp(cachedFigure.Visible, 'off')
-    fig = cachedFigure;
-    delete(fig.Children);
-    fig.Name = dlgTitle;
-    fig.KeyPressFcn = '';
-    fig.WindowKeyPressFcn = '';
-    fig.CloseRequestFcn = 'closereq';
-else
-    fig = uifigure('Name', dlgTitle, 'Visible', 'off');
-    fig.Tag = 'inputUniversalDlg';
-    fig.Icon = fullfile(mibDir, 'assets', 'icons', 'mib_icon_16px.png');
-    fig.AutoResizeChildren = 'off';
-    cachedFigure = fig;
-end
+% Reuse a cached hidden figure when available to avoid ~200-400ms uifigure creation cost.
+% When isCachedFigure is false the shell is a temporary second instance (the cached
+% one is busy showing another dialog) and must be deleted on close, not hidden.
+[fig, isCachedFigure] = dlgAcquireFigure('inputUniversalDlg', dlgTitle, mibDir);
 if strcmpi(options.WindowStyle,'modal'); fig.WindowStyle='modal'; else; fig.WindowStyle='normal'; end
-fig.Position(3) = options.WindowWidth;
+
+% Font-aware height of a single widget row (22 px at the factory 12 px font)
+rowHeight = dlgRowHeight(fig);
+
+% Determine if we have a header (the header parameter was folded into options.Header above)
+hasHeader = isfield(options, 'Header') && ~isempty(options.Header);
 
 % Calculate or set height
 if isempty(options.WindowHeight)
-    numRegular = numel(prompts) - (options.LastItemColumns == 1 && ~options.MsgBoxOnly);
     if options.MsgBoxOnly
-        itemsPerCol = 1;  % Only one row for message box
-        estimatedHeight = 300;
+        % Estimate from header lines plus body lines (text length at ~7 px/char
+        % after stripping HTML tags, plus explicit breaks and list items)
+        bodyLines = 0;
+        if ~isempty(defAns) && ~isempty(defAns{1}) && (ischar(defAns{1}) || isstring(defAns{1}))
+            bodyText = char(defAns{1});
+            plainText = regexprep(bodyText, '<[^>]*>', '');
+            charsPerLine = max(20, floor((options.WindowWidth - 140) / 7));
+            bodyLines = ceil(numel(plainText) / charsPerLine) ...
+                + numel(strfind(lower(bodyText), '<br')) ...
+                + numel(strfind(lower(bodyText), '<li'));
+            % block elements (<p>, <ul>, <ol>) render with extra vertical margins
+            bodyLines = bodyLines + numel(strfind(lower(bodyText), '<p')) ...
+                + numel(strfind(lower(bodyText), '<ul')) ...
+                + numel(strfind(lower(bodyText), '<ol'));
+        end
+        estimatedHeight = (options.HeaderLines + bodyLines) * rowHeight + 110;
+        windowHeight = max(150, min(800, estimatedHeight));
     else
+        % Per-item heights, distributed into columns the same way the widget builder does
+        numRegular = numel(prompts) - (options.LastItemColumns == 1);
         itemsPerCol = max(1, ceil(numRegular / options.Columns));
-        if strcmpi(options.LabelPosition, 'top')
-            % Vertical layout: each item takes ~50 pixels (label + widget)
-            estimatedHeight = 100 + (itemsPerCol * 50) + 50;
-        else
-            % Horizontal layout: each item takes ~35 pixels
-            estimatedHeight = 100 + (itemsPerCol * 35) + 50;
-        end
-    end
-    fig.Position(4) = max(200, min(800, estimatedHeight));
-else
-    fig.Position(4) = options.WindowHeight;
-end
-
-% Center dialog on parent figure if provided
-if ~isempty(options.ParentFigure) && isvalid(options.ParentFigure)
-    try
-        if isa(options.ParentFigure, 'matlab.ui.container.internal.AppContainer')
-            parentPos = options.ParentFigure.WindowBounds;  % [x y w h]
-            
-            % Get screen size to convert from top-left to bottom-left origin
-            screenSize = get(0, 'ScreenSize'); % [left bottom width height]
-
-            % Center in parent's coordinates (bottom-left origin)
-            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            % Convert Y from top-left to bottom-left origin
-            % parentPos(2) is distance from top of screen
-            % Need to convert to distance from bottom of screen
-            y1 = screenSize(4) - parentPos(2) - parentPos(4) + (parentPos(4) - options.WindowHeight) / 2;
-        elseif isa(options.ParentFigure, 'matlab.ui.Figure')
-            parentPos = options.ParentFigure.Position;      % [x y w h]
-
-            % Center in parent's coordinates (bottom-left origin)
-            x1 = parentPos(1) + (parentPos(3) - options.WindowWidth)  / 2;
-            y1 = parentPos(2) + (parentPos(4) - options.WindowHeight) / 2;
-
-        end
-
-        % Optionally clamp to screen
-        % screenSize = get(0, 'ScreenSize');
-        % x1 = max(0, min(x1, screenSize(3) - options.WindowWidth));
-        % y1 = max(0, min(y1, screenSize(4) - options.WindowHeight));
-
-        fig.Position(1) = x1;
-        fig.Position(2) = y1;
-    catch
-        % If centering fails, MATLAB will use default position
-    end
-end
-
-% Get figure background color for alpha blending
-figBgColor = fig.Color;
-
-% Icon selection and loading
-switch options.Icon
-    case 'warning_48px';     iconFilename = 'warning_48px.png';
-    case 'question_48px';    iconFilename = 'question_48px.png';
-    case 'celebrate';        iconFilename =  sprintf('puffin_cheering_%d_220px.png', randi(2)); options.IconWidth = 220;
-    case 'call4help';        iconFilename =  sprintf('puffin_call4help_%d_220px.png', randi(3)); options.IconWidth = 220;
-    case 'puffin_error';     iconFilename = sprintf('puffin_error_%d_96px.png', randi(4));
-    case 'puffin_warning';   iconFilename = sprintf('puffin_warning_%d_96px.png', randi(3));
-    case 'puffin_question';  iconFilename = sprintf('puffin_quest_%d_96px.png', randi(7));
-    case 'puffin_measure';   iconFilename = sprintf('puffin_measure_%d_96px.png', randi(5));
-    case 'puffin_info';      iconFilename = sprintf('puffin_info_%d_96px.png', randi(5));
-    case 'puffin_waiting';      iconFilename = sprintf('puffin_waiting_%d_96px.png', randi(3));
-    otherwise
-        % get random icon
-        iconFilename = sprintf('puffin_quest_%d_96px.png', randi(6));
-        options.IconWidth = 96;
-end
-iconPath = fullfile(mibDir, 'assets', 'images', iconFilename);
-iconImg = [];
-iconImgWidth = 48;  % Default icon width
-if exist(iconPath, 'file')
-    try
-        % Initialize icon composite cache
-        if isempty(iconCompositeCache)
-            iconCompositeCache = configureDictionary("string", "cell");
-            iconCacheBgColor = figBgColor;
-        end
-        % Invalidate cache on background color change (theme switch)
-        if ~isequal(iconCacheBgColor, figBgColor)
-            iconCompositeCache = configureDictionary("string", "cell");
-            iconCacheBgColor = figBgColor;
-        end
-
-        iconWidth = options.IconWidth;
-        if isempty(iconWidth); iconWidth = 0; end
-        cacheKey = string(sprintf('%s_%d', iconFilename, iconWidth));
-
-        if isKey(iconCompositeCache, cacheKey)
-            iconImg = iconCompositeCache{cacheKey};
-            iconImgWidth = size(iconImg, 2);
-        else
-            % Read image with alpha channel
-            [img, ~, alpha] = imread(iconPath);
-
-            % Handle alpha channel by compositing with figure background
-            if ~isempty(alpha)
-                img = im2double(img);
-                alpha = im2double(alpha);
-                bgColor = figBgColor;
-
-                if size(img, 3) == 3
-                    for k = 1:3
-                        img(:,:,k) = img(:,:,k) .* alpha + bgColor(k) * (1 - alpha);
-                    end
-                else
-                    bgGray = mean(bgColor);
-                    img = img .* alpha + bgGray * (1 - alpha);
-                end
-                iconImg = im2uint8(img);
+        columnHeights = zeros(options.Columns, 1);
+        for itemIdx = 1:numel(prompts)
+            colIdx = min(options.Columns, ceil(itemIdx / itemsPerCol));
+            if options.LastItemColumns == 1 && itemIdx == numel(prompts); colIdx = 1; end
+            if strcmpi(options.LabelPosition, 'top')
+                % label row (its 'fit' height plus the 2px row spacings comes
+                % out at roughly one rowHeight) + widget row
+                itemHeight = rowHeight * (1 + PromptLines(itemIdx));
             else
-                iconImg = img;
+                itemHeight = rowHeight * PromptLines(itemIdx) + 6;   % shared row + 6px spacing
             end
-
-            % Resize icon
-            iconImgWidth = size(iconImg, 2);
-            if ~isempty(options.IconWidth)
-                iconImg = imresize(iconImg, [NaN options.IconWidth]);
-                iconImgWidth = options.IconWidth;
-            end
-
-            % Store in cache
-            if ~isempty(iconImg)
-                iconCompositeCache(cacheKey) = {iconImg};
-            end
+            columnHeights(colIdx) = columnHeights(colIdx) + itemHeight;
         end
-    catch
-        iconImg = [];
+        % outer padding (20) + content/button row spacing (10) + button row (24)
+        estimatedHeight = 54 + max(columnHeights);
+        if hasHeader; estimatedHeight = estimatedHeight + options.HeaderLines * rowHeight + 10; end
+        windowHeight = max(110, min(800, estimatedHeight));
     end
+else
+    windowHeight = options.WindowHeight;
 end
 
-% Determine if we have a header
-hasHeader = isfield(options,'Header') && ~isempty(options.Header);
+% Center on the parent and apply the geometry in a single Position write
+xy = dlgCenterOnParent(options.ParentFigure, options.WindowWidth, windowHeight);
+newPosition = fig.Position;
+if ~isempty(xy); newPosition(1:2) = xy; end
+newPosition(3:4) = [options.WindowWidth, windowHeight];
+fig.Position = newPosition;
+
+% Icon loading: composited against the figure background and cached by the helper
+[iconImg, iconImgWidth] = dlgLoadIcon(options.Icon, options.IconWidth, fig.Color, mibDir);
 
 % Main grid structure
 totalCols = 1 + options.Columns;
@@ -466,7 +339,7 @@ mainColWidths = [{iconImgWidth} options.MainColumnWidths];  % Icon column with s
 
 if hasHeader
     % 3 rows: header row, content row, button row
-    headerRowHeight = options.HeaderLines * 22;  % ~22px per line
+    headerRowHeight = options.HeaderLines * rowHeight;
     mainGrid = uigridlayout(fig, [3 totalCols], ...
         'RowHeight', {headerRowHeight, '1x', 24}, ...
         'ColumnWidth', mainColWidths, ...
@@ -514,10 +387,8 @@ if hasHeader
     end
 end
 
-% Prepare outputs
+% Widget bookkeeping (the answer/selectedIndices outputs are initialized just before uiwait)
 n = numel(prompts);
-answer = defAns;
-selectedIndices = ones(n,1);
 widgets = gobjects(n,1);
 isPlaceholder = false(n,1);
 isCheckbox = false(n,1);
@@ -603,162 +474,100 @@ else
     numRegular = n - (options.LastItemColumns == 1);
     itemsPerCol = max(1, ceil(numRegular / options.Columns));
     
-    % Build widgets
+    % Build widgets — each widget is parented directly into the column grid using a
+    % fixed-height row (no per-widget wrapper grids: saves one container per row)
     regIdx = 0;
     for i = 1:n
         isLastSpanning = (options.LastItemColumns == 1 && i == n);
-        
+
         % Select parent grid
+        regIdx = regIdx + 1;
         if isLastSpanning
-            regIdx = regIdx + 1;
             colIdx = 1;
-            par = colGrids{colIdx};
-            currentRow = colRowCounters(colIdx);
         else
-            regIdx = regIdx + 1;
             colIdx = min(options.Columns, ceil(regIdx / itemsPerCol));
-            par = colGrids{colIdx};
-            currentRow = colRowCounters(colIdx);
         end
-        
+        par = colGrids{colIdx};
+        currentRow = colRowCounters(colIdx);
+
         % Detect placeholder (NaN)
         if isnumeric(defAns{i}) && isscalar(defAns{i}) && isnan(defAns{i})
             isPlaceholder(i) = true;
         end
-        
-        % Placeholder: single row
+
+        % Placeholder: a single label row spanning the grid
         if isPlaceholder(i)
-            if strcmpi(options.LabelPosition, 'top')
-                % Vertical layout
-                if currentRow > numel(par.RowHeight)
-                    par.RowHeight{end+1} = 'fit';
-                end
-                lab = uilabel(par, 'Text', prompts{i}, 'HorizontalAlignment', 'left', 'WordWrap', 'on');
-                lab.Layout.Row = currentRow;
-                lab.Layout.Column = 1;
-                colRowCounters(colIdx) = colRowCounters(colIdx) + 1;
-            else
-                % Horizontal layout
-                if currentRow > numel(par.RowHeight)
-                    par.RowHeight{end+1} = 'fit';
-                end
-                lab = uilabel(par, 'Text', prompts{i}, 'HorizontalAlignment', 'left', 'WordWrap', 'on');
-                lab.Layout.Row = currentRow;
-                lab.Layout.Column = [1 2];
-                colRowCounters(colIdx) = colRowCounters(colIdx) + 1;
+            if currentRow > numel(par.RowHeight)
+                par.RowHeight{end+1} = 'fit';
             end
+            lab = uilabel(par, 'Text', prompts{i}, 'HorizontalAlignment', 'left', 'WordWrap', 'on');
+            lab.Layout.Row = currentRow;
+            if strcmpi(options.LabelPosition, 'top')
+                lab.Layout.Column = 1;
+            else
+                lab.Layout.Column = [1 2];
+            end
+            colRowCounters(colIdx) = colRowCounters(colIdx) + 1;
             continue;
         end
-        
-        % Build label and widget based on layout mode
+
+        isCheckbox(i) = islogical(defAns{i}) && isscalar(defAns{i});
+
+        % Height of the widget row: PromptLines(i) text lines for multi-line widgets
+        if PromptLines(i) > 1 && ~isCheckbox(i)
+            widgetHeight = rowHeight * PromptLines(i);
+        else
+            widgetHeight = rowHeight;
+        end
+
         if strcmpi(options.LabelPosition, 'top')
-            % === VERTICAL LAYOUT: Label above widget ===
-            
-            % Extend rows if needed for label
+            % === VERTICAL LAYOUT: label row ('fit') above a fixed-height widget row ===
             if currentRow > numel(par.RowHeight)
                 par.RowHeight{end+1} = 'fit';  % Label row
             end
-            
-            % Label above widget
             lab = uilabel(par, 'Text', prompts{i}, 'HorizontalAlignment', 'left', ...
                 'VerticalAlignment', 'bottom', 'WordWrap', 'on');
             lab.Layout.Row = currentRow;
             lab.Layout.Column = 1;
-            
-            % Move to next row for widget
+
+            % Widget goes into the next, fixed-height row
             currentRow = currentRow + 1;
-            colRowCounters(colIdx) = currentRow + 1;  % Reserve current row for widget
-            
-            % Checkbox: Label above, checkbox below
-            if islogical(defAns{i}) && isscalar(defAns{i})
-                isCheckbox(i) = true;
-                
-                % Extend rows for widget
-                if currentRow > numel(par.RowHeight)
-                    par.RowHeight{end+1} = 22;  % Fixed height for checkbox
-                end
-                
-                % Wrapper grid for checkbox
-                wrapperGrid = uigridlayout(par, [1 1], 'RowHeight', {22}, 'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
-                wrapperGrid.Layout.Row = currentRow;
-                wrapperGrid.Layout.Column = 1;
-                
-                cb = uicheckbox(wrapperGrid, 'Text', '', 'Value', defAns{i});
-                widgets(i) = cb;
-                continue;
-            end
-            
-            % Create wrapper grid for widget with fixed or variable height based on PromptLines
-            if PromptLines(i) > 1
-                % Multi-line text input: use textarea with height based on PromptLines
-                widgetHeight = 22 * PromptLines(i);  % 22 pixels per line
-                if currentRow > numel(par.RowHeight)
-                    par.RowHeight{end+1} = widgetHeight;
-                end
-                wrapperGrid = uigridlayout(par, [1 1], 'RowHeight', {widgetHeight}, 'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
-            else
-                % Single-line input: fixed 22 pixel height
-                if currentRow > numel(par.RowHeight)
-                    par.RowHeight{end+1} = 22;
-                end
-                wrapperGrid = uigridlayout(par, [1 1], 'RowHeight', {22}, 'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
-            end
-            wrapperGrid.Layout.Row = currentRow;
-            wrapperGrid.Layout.Column = 1;
-            
-        else
-            % === HORIZONTAL LAYOUT: Label left of widget ===
-            
-            % Extend rows if needed
             if currentRow > numel(par.RowHeight)
-                par.RowHeight{end+1} = 'fit';
+                par.RowHeight{end+1} = widgetHeight;
+            else
+                par.RowHeight{currentRow} = widgetHeight;
+            end
+            colRowCounters(colIdx) = currentRow + 1;
+            widgetColumn = 1;
+        else
+            % === HORIZONTAL LAYOUT: label left of widget, sharing one row ===
+            % Single-line rows stay 'fit' (they grow when the label wraps);
+            % multi-line rows are fixed to PromptLines(i) text lines
+            if PromptLines(i) > 1
+                rowSpec = widgetHeight;
+            else
+                rowSpec = 'fit';
+            end
+            if currentRow > numel(par.RowHeight)
+                par.RowHeight{end+1} = rowSpec;
+            else
+                par.RowHeight{currentRow} = rowSpec;
             end
             colRowCounters(colIdx) = colRowCounters(colIdx) + 1;
-            
-            % Checkbox entry: label in left column, checkbox without text in right column
-            if islogical(defAns{i}) && isscalar(defAns{i})
-                isCheckbox(i) = true;
-                
-                % Label in column 1
-                lab = uilabel(par, 'Text', prompts{i}, 'HorizontalAlignment', 'right', ...
-                    'VerticalAlignment', 'top', 'WordWrap', 'on');
-                lab.Layout.Row = currentRow;
-                lab.Layout.Column = 1;
-                
-                % Wrapper grid for checkbox with fixed height
-                wrapperGrid = uigridlayout(par, [1 1], 'RowHeight', {22}, 'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
-                wrapperGrid.Layout.Row = currentRow;
-                wrapperGrid.Layout.Column = 2;
-                
-                cb = uicheckbox(wrapperGrid, 'Text', '', 'Value', defAns{i});
-                widgets(i) = cb;
-                continue;
-            end
-            
-            % Label in column 1
+
             lab = uilabel(par, 'Text', prompts{i}, 'HorizontalAlignment', 'right', ...
                 'VerticalAlignment', 'top', 'WordWrap', 'on');
             lab.Layout.Row = currentRow;
             lab.Layout.Column = 1;
-            
-            % Create wrapper grid for widget with fixed or variable height based on PromptLines
-            if PromptLines(i) > 1
-                % Multi-line text input: use textarea with height based on PromptLines
-                widgetHeight = 22 * PromptLines(i);  % 22 pixels per line
-                wrapperGrid = uigridlayout(par, [1 1], 'RowHeight', {widgetHeight}, 'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
-            else
-                % Single-line input: fixed 22 pixel height
-                wrapperGrid = uigridlayout(par, [1 1], 'RowHeight', {22}, 'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
-            end
-            wrapperGrid.Layout.Row = currentRow;
-            wrapperGrid.Layout.Column = 2;
+            widgetColumn = 2;
         end
-        
-        % Determine control type and create widget (common for both layouts)
-        ctrl = [];
+
+        % Determine control type and create the widget (common for both layouts)
         val = defAns{i};
-        
-        if iscell(val)
+        if isCheckbox(i)
+            ctrl = uicheckbox(par, 'Text', '', 'Value', defAns{i});
+
+        elseif iscell(val)
             % Dropdown
             isDropdown(i) = true;
             entries = val;
@@ -767,9 +576,8 @@ else
                 selIdx = max(1, min(numel(val)-1, val{end}));
                 entries = val(1:end-1);
             end
-            ctrl = uidropdown(wrapperGrid, 'Items', entries, 'Value', entries{selIdx});
-            selectedIndices(i) = selIdx;
-            
+            ctrl = uidropdown(par, 'Items', entries, 'Value', entries{selIdx});
+
         elseif isstruct(val) && isfield(val,'Spinner') && val.Spinner
             % Spinner
             isSpinner(i) = true;
@@ -777,9 +585,9 @@ else
             if isfield(val,'Value'); v = val.Value; end
             if isfield(val,'Limits'); lo = val.Limits(1); hi = val.Limits(2); end
             if isfield(val,'Step'); step = val.Step; end
-            
-            ctrl = uispinner(wrapperGrid, 'Limits', [lo hi], 'Value', v, 'Step', step);
-            
+
+            ctrl = uispinner(par, 'Limits', [lo hi], 'Value', v, 'Step', step);
+
             % Handle optional Round and ValueDisplayFormat
             if isfield(val,'Round') && val.Round
                 ctrl.RoundFractionalValues = 'on';
@@ -787,25 +595,23 @@ else
             if isfield(val,'ValueDisplayFormat')
                 ctrl.ValueDisplayFormat = val.ValueDisplayFormat;
             end
-            
+
+        elseif isnumeric(val) && isscalar(val) && ~isempty(val)
+            isNumericEdit(i) = true;
+            ctrl = uieditfield(par, 'numeric', 'Value', double(val), 'ValueDisplayFormat','%.3g');
+
         else
-            % Check if it's numeric ONLY if non-empty or explicitly a number
-            if isnumeric(val) && isscalar(val) && ~isempty(val)
-                isNumericEdit(i) = true;
-                ctrl = uieditfield(wrapperGrid, 'numeric', 'Value', double(val), 'ValueDisplayFormat','%.3g');
+            % Everything else is text input: textarea for multi-line, uieditfield for single-line
+            if isempty(val); val = ''; end
+            if PromptLines(i) > 1
+                ctrl = uitextarea(par, 'Value', char(val));
             else
-                % Everything else is text input: use textarea for multi-line, uieditfield for single-line
-                if isempty(val); val = ''; end
-                if PromptLines(i) > 1
-                    % Multi-line textarea
-                    ctrl = uitextarea(wrapperGrid, 'Value', char(val));
-                else
-                    % Single-line edit field
-                    ctrl = uieditfield(wrapperGrid, 'text', 'Value', char(val));
-                end
+                ctrl = uieditfield(par, 'text', 'Value', char(val));
             end
         end
-        
+
+        ctrl.Layout.Row = currentRow;
+        ctrl.Layout.Column = widgetColumn;
         widgets(i) = ctrl;
     end
 end
@@ -817,7 +623,6 @@ btnRow.Layout.Row = buttonRow;
 btnRow.Layout.Column = [1 totalCols];
 
 % Button components
-helpBtn = [];
 if ~isempty(options.HelpUrl)
     helpBtn = uibutton(btnRow, 'Text', options.HelpBtnText, 'ButtonPushedFcn', @(~,~) onHelp());
     helpBtn.Layout.Row = 1;
@@ -860,20 +665,19 @@ else
     cancelBtn = uibutton(btnBox, 'Text', 'Cancel', 'ButtonPushedFcn', @(~,~) onCancel());
 end
 
-% Key handling
-fig.KeyPressFcn = @(~, evt) onKey(evt);
+% Key handling — WindowKeyPressFcn only; binding KeyPressFcn as well would
+% fire the handler twice when the figure itself has keyboard focus
 fig.WindowKeyPressFcn = @(~, evt) onKey(evt);
 fig.CloseRequestFcn = @(~,~) onCancel();
 
 % show the dialog
 fig.Visible = 'on';
-drawnow;
+drawnow;   % realize the figure before re-applying WindowStyle
 
 % Re-apply WindowStyle on the realized (visible) figure. Setting it while a
 % cached figure is hidden does not take effect (notably in the deployed web
 % engine), so the dialog would otherwise come up non-modal on reuse.
 if strcmpi(options.WindowStyle, 'modal'); fig.WindowStyle = 'modal'; else; fig.WindowStyle = 'normal'; end
-drawnow;
 
 % Set focus
 if options.MsgBoxOnly || options.Focus == 0
@@ -915,7 +719,6 @@ uiwait(fig);
                     evalin('base', H)
                 catch err
                     utils.dlgs.showErrorDialog(ParentFigure, err);
-                    try eval(H); catch, end
                 end
             end
         end
@@ -966,12 +769,7 @@ uiwait(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        % Hide and unblock instead of deleting so the figure can be reused.
-        % Reset WindowStyle first: a hidden but still-modal figure keeps its
-        % input grab on the parent and would freeze the main GUI.
-        fig.WindowStyle = 'normal';
-        fig.Visible = 'off';
-        uiresume(fig);
+        closeDialog();
     end
 
     function onCancel()
@@ -980,9 +778,22 @@ uiwait(fig);
         if options.DoNotShowAgain && ~isempty(chkDontShow) && isvalid(chkDontShow)
             dontShowAgain = logical(chkDontShow.Value);
         end
-        fig.WindowStyle = 'normal';   % release modal grab before hiding
-        fig.Visible = 'off';
-        uiresume(fig);
+        closeDialog();
+    end
+
+    function closeDialog()
+        % Reset WindowStyle first: a hidden but still-modal figure keeps its
+        % input grab on the parent and would freeze the main GUI.
+        fig.WindowStyle = 'normal';
+        if isCachedFigure
+            % Hide and unblock instead of deleting so the figure can be reused
+            fig.Visible = 'off';
+            uiresume(fig);
+        else
+            % Temporary second instance (the cached shell was busy) —
+            % deleting the figure also releases uiwait
+            delete(fig);
+        end
     end
 
     function onKey(evt)
@@ -999,7 +810,7 @@ uiwait(fig);
             % Move focus away from the current widget so it can commit its
             % pending value (e.g. typed text in a uispinner or uieditfield).
             try; focus(okBtn); catch; end
-            pause(0.1);  % allow widget to commit its value
+            drawnow;  % process the focus change so the widget commits its value
             if strcmpi(options.DefaultKey, 'Cancel') && ~isempty(cancelBtn) && isvalid(cancelBtn)
                 onCancel();
             else

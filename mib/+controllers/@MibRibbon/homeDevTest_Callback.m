@@ -24,7 +24,7 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
-benchmarkGetSetData(obj.mibModel);
+%benchmarkGetSetData(obj.mibModel);
 end
 
 %% =========================================================================
