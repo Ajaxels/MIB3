@@ -23,6 +23,7 @@ Supplementary to the root `CLAUDE.md` (architecture, conventions, essential conv
 | [link_views_plan.md](link_views_plan.md) | Linked-view propagation: `linkedPairs` on MibModel, propagation in `showImage`, buffer-switch sync |
 | [plan_resample.md](plan_resample.md) | ResampleDataset port log: all fixes, data-write pattern, boundingBox/dim sync, remaining tests |
 | [../development/plan_startup.md](../development/plan_startup.md) | Startup speed-up (13.35→6.34 s): lazy Java gateway `utils.ensureJavaLibraries`, deferred update-check timer, lazy `cpuParallelLimitMax`; pending cold-start + deployed-build checks |
+| [../development/plan_inputUniversalDlg.md](../development/plan_inputUniversalDlg.md) | Dialog audit/refactor log (done): shared `+dlgs/private/` helpers, 10 bug fixes incl. figure-shell leak, font-aware auto-height formula + calibration, wrapper-grid removal, `temp\dlgTestHarness.m` usage; pending deployed-build modal check |
 | [../tests/plan_unittests.md](../tests/plan_unittests.md) | Unit-test & perf-benchmark system: phased implementation plan incl. recommended model per phase; Phase 0 (headless spike) done — findings in `tests/phase0_findings.md` |
 
 ---

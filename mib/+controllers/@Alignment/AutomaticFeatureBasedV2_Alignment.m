@@ -728,9 +728,6 @@ if canvasChanged
     oldSlices = ds.slices;
     ds.slices{1} = [1, newH];
     ds.slices{2} = [1, newW];
-    ds.slices{3} = 1:Depth;
-    ds.slices{4} = [1, 1];
-    ds.slices{5} = [1, 1];
     ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 else
     % Cropped mode — write back per slice

@@ -138,9 +138,6 @@ ds.dim_yxzct = img5D.dim_yxzct;
 oldSlices = ds.slices;
 ds.slices{1} = [1, newH];
 ds.slices{2} = [1, newW];
-ds.slices{3} = 1:depth;
-ds.slices{4} = [1, 1];
-ds.slices{5} = [1, 1];
 ds.slices{ds.orientation} = repmat(oldSlices{ds.orientation}(1), 1, 2);
 
 % --- Warp + concatenate service layers (labels / mask / selection or packed everything)
