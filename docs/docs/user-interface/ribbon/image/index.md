@@ -364,7 +364,7 @@ The **Intensity profile** dropdown contains:
 - **Line intensity profile**: profile along a straight line.
 - **Arbitrary intensity profile**: profile along a user-drawn path.
 
-For intensity profiles, use the [Measure length tool](../tools/index.md#measure-length).
+For intensity profiles, use the [Measure tool](../tools/index.md#measure-tool).
 
 ---
 

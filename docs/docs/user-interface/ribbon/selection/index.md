@@ -14,56 +14,109 @@ See more about segmentation layers in the [Data layers section](../../image-laye
 
 ---
 
-## Selection to Buffer
+## Convert Section
 
-Allows copying (++ctrl+c++) the *Selection* of the currently shown slice to a buffer, 
-which can later be pasted to any slice (++ctrl+v++) or all slices (++ctrl+shift+v++).<br> 
-The buffer can be cleared via `Ribbon → Selection → Selection to Buffer → Clear`, 
-affecting only the buffer, not other layers (*Selection*, *Mask*, *Model*).
+### Selection→Mask
+
+![Selection→Mask](images/menuSelection-convert.png){.on-glb align=left width="250"}
+
+Transfers the *Selection* layer into the *Mask* layer. The main button opens a dropdown to choose
+the dataset extent and the transfer mode.
+
+<div class="clear-float"></div>
+
+| Scope | Add | Remove | Replace |
+|-------|-----|--------|---------|
+| **Shown slice (2D)** | Add, 2D | Remove, 2D | Replace, 2D |
+| **Current stack (3D)** | Add, 3D | Remove, 3D | Replace, 3D |
+| **Complete volume (4D)** | Add, 4D | Remove, 4D | Replace, 4D |
+
+- **Add** — adds selected pixels/voxels to the existing Mask.
+- **Remove** — removes selected pixels/voxels from the existing Mask.
+- **Replace** — replaces the Mask with the Selection.
 
 ---
 
-## ..→Mask
+### Selection to buffer
 
-Allows modification of the *Mask* layer by the *Selection* layer. Options include replacing 
-the mask with the selection, adding selection to the mask, or removing selection from the mask. 
-Can be applied to the current slice or entire volume.
+![Selection to buffer](images/menuSelection-clipboard.png){align=left}
+
+Copies the *Selection* of the currently displayed slice to a temporary buffer for later pasting.
+
+| Action | Shortcut | Description |
+|--------|----------|-------------|
+| **Copy** | ++ctrl+c++ | Copy the current slice Selection to the buffer. |
+| **Paste** | ++ctrl+v++ | Paste the buffer onto the current slice. |
+| **Paste to all slices** | ++ctrl+shift+v++ | Paste the buffer onto every slice in the dataset. |
+| **Clear** | — | Clear the buffer (does not affect the Selection, Mask, or Model). |
 
 ---
 
-## Morphological 2D/3D operations
+## Tools Section
+
+### Morphological 2D/3D operations
 
 ![Morphological Ops](images/menuSelectionMorphOps.png){.on-glb align=left width="300"}
 
-Performs morphological operations on 2D and 3D objects in the *Selection* layer. 
-See MATLAB’s [bwmorph](https://se.mathworks.com/help/releases/R2024b/images/ref/bwmorph.html), 
-[bwmorph3](https://se.mathworks.com/help/releases/R2024b/images/ref/bwmorph3.html), and 
-[bwskel](https://se.mathworks.com/help/releases/R2024b/images/ref/bwskel.html) functions for details.
+Opens the [Morphological Operations](selection-morphops.md) dialog pre-set to the chosen operation.
+All operations work on the *Selection* layer.
+
+See MATLAB's [bwmorph](https://se.mathworks.com/help/images/ref/bwmorph.html),
+[bwmorph3](https://se.mathworks.com/help/images/ref/bwmorph3.html), and
+[bwskel](https://se.mathworks.com/help/images/ref/bwskel.html) for full details.
 
 [:fontawesome-brands-youtube:{.red-color} Demonstration](https://youtu.be/L-w8eGDfUkU)  
 [:fontawesome-brands-youtube:{.red-color} Skeleton for 3D objects](https://youtu.be/Au4vb7max9Q)
 
-See more on [Morphological Ops](selection-morphops.md)
-
 <div class="clear-float"></div>
 
+| Item | Operation | Description |
+|------|-----------|-------------|
+| **Branch points** | `branchpoints` | Detects branch points of skeleton lines. |
+| **Diagonal fill** | `diag` | Fills diagonal connections to remove 8-connectivity artifacts. |
+| **Endpoints** | `endpoints` | Detects endpoints of skeleton lines. |
+| **Skeleton** | `skel` | Reduces objects to 1-pixel-wide skeletons. |
+| **Spur** | `spur` | Removes small spurs (short branches) from skeletons. |
+| **Thin** | `thin` | Iteratively thins objects without removing endpoints. |
+| **Ultimate erosion** | `bwulterode` | Erodes objects to their ultimate eroded points (local maxima of the distance transform). |
+
 ---
 
-## Expand to mask borders
+### Invert
 
-Expands each selected area to match the borders of the containing mask.
+![Morphological Ops](images/menuSelection-invert.png){align=left}
+
+Inverts the *Selection* layer — selected pixels become background and background becomes selected.
+Clicking the main button inverts the complete volume (4D). The dropdown selects the scope:
+
+- **Shown slice (2D)** — inverts the selection on the currently displayed slice only.
+- **Current stack (3D)** — inverts the selection across all slices in the current Z-stack.
+- **Complete volume (4D)** — inverts the selection across the entire dataset including all time points.
 
 ---
 
-## Interpolate
+### Expand to mask border
 
-Reconstructs the *Selection* layer on empty slices between two slices with selection, using shortcut ++i++. 
-Choose the interpolator type in the [Preferences dialog](../../ribbon/home/home-preferences.md).
+![Expand to mask border](images/menuSelection-expand.png){align=left}
 
-<div class="h3-like">Shape interpolation example</div>
+Expands each selected area to fill the containing mask region — selected pixels grow outward until
+they reach the boundary of the *Mask* layer.
 
-- **shape**: ideal for interpolating blobs (filled structures); [:fontawesome-brands-youtube:{.red-color} demo](https://youtu.be/ZcJQb59YzUA?t=4m3s).
-- **line**: suited for interpolating unclosed lines (e.g., membranes); [:fontawesome-brands-youtube:{.red-color} demo](https://youtu.be/ZcJQb59YzUA?t=2m22s)
+---
+
+### Interpolate as shape
+
+![Interpolate](images/menuSelection-interpolate.png){align=left}
+
+Reconstructs the *Selection* layer on empty slices between two annotated slices (shortcut ++i++).
+The button label and icon reflect the active interpolation type set in
+[Preferences](../../ribbon/home/home-preferences.md):
+
+- **Interpolate as shape** — ideal for blobs and filled structures. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/ZcJQb59YzUA?t=4m3s)
+- **Interpolate as line** — suited for unclosed lines such as membranes. [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/ZcJQb59YzUA?t=2m22s)
+
+!!! warning
+    Only one object should be present in the *Selection* layer on both the starting and ending slices.
 
 ??? example "Shape interpolation example"
     ![Shape Interpolation](images/menuSelectionInterpolationShape.jpg){.on-glb align=left}
@@ -72,17 +125,15 @@ Choose the interpolator type in the [Preferences dialog](../../ribbon/home/home-
     ![Line Interpolation](images/menuSelectionInterpolationLine.jpg){.on-glb align=left}
 
 <div class="clear-float"></div>
-!!! warning
-    Only one object should be in the *Selection* layer on the starting and ending slices
 
 ---
 
-## Replace selected area in the image
+### Replace selected areas
 
 ![Replace Color](../mask/images/menuMaskReplaceColor.png){.on-glb align=left width="220"}
 
-Replaces image intensities in selected areas with new values. 
-A dialog prompts for intensities, slices, and color channels.
+Replaces image intensities in selected areas with new values.
+A dialog prompts for the replacement intensity, the slice range, and the color channels to affect.
 
 [:fontawesome-brands-youtube:{.red-color} Demonstration](https://youtu.be/fNz1vGq7Hb0)
 
@@ -90,24 +141,17 @@ A dialog prompts for intensities, slices, and color channels.
 
 ---
 
-## Smooth selection
+### Smooth selection
 
-![Replace Color](../mask/images/menuMaskSmooth.png){.on-glb align=left width="300"}
+![Smooth selection](../mask/images/menuMaskSmooth.png){.on-glb align=left width="300"}
 
 Smooths the *Selection* layer in 2D or 3D space.
 
 !!! info "Selection smoothing"
     
-    It is recommended to use [Image Filters](../image/image-filters.md) for interactive evaluation of smoothing results
+    Use [Image Filters](../image/image-filters.md) for interactive evaluation of smoothing results before committing.
 
 <div class="clear-float"></div>
-
----
-
-
-## Invert selection
-
-Inverts the current selection across the entire dataset.
 
 ---
 

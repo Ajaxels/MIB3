@@ -35,7 +35,7 @@ zensical build        # generate static site into docs/site/
 
 When porting documentation from MIB2 (`temp/docs_mib2_md/`) or updating existing pages to match MIB3:
 
-1. **Source of truth for widget names** — launch the actual MIB3 dialog in MATLAB and dump widget handles:
+1. **Source of truth for widget names** — launch the actualz MIB3 dialog in MATLAB and dump widget handles:
    ```matlab
    h = controllers.XxxClass(mib.mibModel, mib);   % open dialog
    t = findall(h.view.gui);

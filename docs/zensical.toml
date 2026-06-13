@@ -98,11 +98,11 @@ nav = [
       ]},
       { "Model" = [
         "user-interface/ribbon/model/index.md",
-        { "Statistics" = "user-interface/ribbon/mask/mask-stats.md" },
+        { "Quantification" = "user-interface/ribbon/mask/mask-stats.md" },
       ]},
       { "Mask" = [
         "user-interface/ribbon/mask/index.md",
-        { "Statistics" = "user-interface/ribbon/mask/mask-stats.md" },
+        { "Quantification" = "user-interface/ribbon/mask/mask-stats.md" },
       ]},
       { "Selection" = [
         "user-interface/ribbon/selection/index.md",
@@ -110,16 +110,13 @@ nav = [
       ]},
       { "Tools" = [
         "user-interface/ribbon/tools/index.md",
-        { "Deep learning" = "user-interface/deepmib/index.md" },
         { "Global thresholding" = "user-interface/ribbon/tools/tools-globalthres.md" },
         { "Graphcut" = "user-interface/ribbon/tools/tools-graphcut.md" },
         { "Measure tool" = "user-interface/ribbon/tools/tools-measuretool.md" },
         { "Object separation" = "user-interface/ribbon/tools/tools-objectsep.md" },
-        { "Random forest classifier" = "user-interface/ribbon/tools/tools-randforest.md" },
-        { "Random forest superpixels" = "user-interface/ribbon/tools/tools-randforest-slic.md" },
+        { "Membrane detector" = "user-interface/ribbon/tools/tools-randforest.md" },
         { "Stereology" = "user-interface/ribbon/tools/tools-stereology.md" },
-        { "Watershed" = "user-interface/ribbon/tools/tools-watershed.md" },
-        { "Wound healing assay" = "user-interface/ribbon/tools/tools-wound.md" },
+{ "Wound healing assay" = "user-interface/ribbon/tools/tools-wound.md" },
       ]},
       { "Plugins" = ["user-interface/ribbon/plugins/index.md"] },
       { "Help" = ["user-interface/ribbon/help/index.md"] },

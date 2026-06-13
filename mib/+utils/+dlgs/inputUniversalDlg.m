@@ -317,7 +317,7 @@ if isempty(options.WindowHeight)
         % outer padding (20) + content/button row spacing (10) + button row (24)
         estimatedHeight = 54 + max(columnHeights);
         if hasHeader; estimatedHeight = estimatedHeight + options.HeaderLines * rowHeight + 10; end
-        windowHeight = max(110, min(800, estimatedHeight));
+        windowHeight = max(150, min(800, estimatedHeight));
     end
 else
     windowHeight = options.WindowHeight;

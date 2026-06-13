@@ -7,6 +7,8 @@ Plugins extend MIB with custom tools, batch workflows, and third-party integrati
 
 ## Overview
 
+![Plugins Ribbon Tab](../../plugins/images/menuPlugins.png)
+
 Plugins are organized in a two-tier category/plugin structure and are detected automatically at startup from the `Plugins` directory of your MIB installation.
 Each category appears as a submenu; individual plugins are listed beneath it.
 

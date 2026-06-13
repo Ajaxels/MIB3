@@ -158,7 +158,7 @@ mibDir = dlgResolveMibDir(options.mibPath);
 % Defaults
 if ~isfield(options, 'Type'); options.Type = 'editfield'; end
 if ~isfield(options, 'WindowWidth'); options.WindowWidth = 400; end
-if ~isfield(options, 'WindowHeight'); options.WindowHeight = 112; end
+if ~isfield(options, 'WindowHeight'); options.WindowHeight = 150; end
 if ~isfield(options, 'WindowStyle'); options.WindowStyle = 'normal'; end
 if ~isfield(options, 'Icon'); options.Icon = 'puffin_question'; end
 

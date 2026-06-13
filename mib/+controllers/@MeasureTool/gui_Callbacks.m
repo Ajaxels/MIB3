@@ -41,9 +41,9 @@ switch source.Tag
                 hHandles.autoPointSpacing.Enable = 'on';
         end
         if hHandles.integrateCheck.Value == 1
-            hHandles.handles.integrationWidth.Enable = 'on';
+            hHandles.integrationWidth.Enable = 'on';
         else
-            hHandles.handles.integrationWidth.Enable = 'off';
+            hHandles.integrationWidth.Enable = 'off';
         end
 
     case 'integrateCheck'

@@ -177,15 +177,15 @@ Prompts for a filename and format to save the model.
 
 <div class="h4-like">Available formats</div>
 
-- **.AM, Amira Mesh**: RAW, RAW-ASCII, or RLE compressed formats (RLE is slow).
-- **.MAT, MATLAB format**: Native format for MIB version 1.
-- **.MODEL, MATLAB format** (*default*): Native format for MIB version 2.
-- **.MOD, IMOD format**: Contours for IMOD.
-- **.MRC, IMOD format**: Volume for IMOD.
-- **.NRRD, Nearly Raw Raster Data**: Compatible with [3D Slicer](https://www.slicer.org).
-- **.PNG**: 2D slices in Portable Network Graphic format.
-- **.STL, STL format**: Triangulated mesh for visualization programs like Blender.
-- **.TIF, TIF format**: 2D slices or 3D volumes.
+- [x] **AM (Amira Mesh)**: RAW, RAW-ASCII, or RLE compressed formats (RLE is slow).
+- [x] **MAT (MATLAB format)**: Native format for MIB version 1.
+- [x] **MODEL (MATLAB format)** (*default*): Native format for MIB version 2.
+- [x] **MOD (IMOD format)**: Contours for IMOD.
+- [x] **MRC (IMOD format)**: Volume for IMOD.
+- [x] **NRRD (Nearly Raw Raster Data)**: Compatible with [3D Slicer](https://www.slicer.org).
+- [x] **PNG**: 2D slices in Portable Network Graphic format.
+- [x] **STL (STL format)**: Triangulated mesh for visualization programs like Blender.
+- [x] **TIF (TIF format)**: 2D slices or 3D volumes.
 
 ---
 
@@ -193,13 +193,11 @@ Prompts for a filename and format to save the model.
 
 ### Materials
 
-![Model materials operations](images/menuModelMaterials.png){align=left}
+![Model materials operations](images/menuModelMaterials.png){.on-glb align=left width="190"}
 
 Operations for model materials, also available by right-clicking the [Segmentation table](../../panels/segm/index.md#segmentation-table).
 
 [:fontawesome-brands-youtube:{.red-color} Materials menu demo](https://youtu.be/l1RkVkq59To)
-
-<div class="clear-float"></div>
 
 The **Materials** dropdown contains:
 
@@ -212,17 +210,17 @@ The **Materials** dropdown contains:
 - **Save material to file**: Save the selected material to a file.
 - **Remove materials**: Remove selected material(s) from the model.
 
+<div class="clear-float"></div>
+
 ---
 
 ### List of annotations
 
-![Annotations operations](images/menuModelsAnnotationsMenu.png){align=left}
+![Annotations operations](images/menuModelsAnnotationsMenu.png){.on-glb align=left width="190"}
 
 Operations for the *Annotations* layer.
 
 [:fontawesome-brands-youtube:{.red-color} Demonstration](https://youtu.be/3lARjx9dPi0)
-
-<div class="clear-float"></div>
 
 The **List of annotations** dropdown contains:
 
@@ -230,11 +228,17 @@ The **List of annotations** dropdown contains:
 - **Export to Imaris as Spots**: exports annotations as Spots in Imaris (export the dataset first).
 - **Remove all annotations**: deletes all annotations in the model.
 
+<div class="clear-float"></div>
+
 ---
 
 ### Render
 
+![Render options](images/menuModelsRenderMenu.png){.on-glb align=left width="190"}
+
 Renders segmented models using various methods. The **Render** dropdown contains:
+
+<div class="clear-float"></div>
 
 #### MIB rendering
 
@@ -266,9 +270,7 @@ Uses MATLAB to generate and visualize isosurfaces with a modified [view3d](http:
 <div class="h4-like">Controls</div>
 
 - Double <mouse class="left"></mouse> to restore the original view.
-- ++z++: Switch to *ZOOM* mode. <mouse class="left"></mouse> to zoom.
-- Hold middle mouse to *PAN*.
-- ++r++: Switch to *ROTATION* mode. <mouse class="left"></mouse> for XY-axis rotation; middle mouse for Z-axis rotation.
+- other controls available from a toolbar menu in the upper-right corner and via <mouse class="right"></mouse>
 
 ---
 
@@ -276,7 +278,10 @@ Uses MATLAB to generate and visualize isosurfaces with a modified [view3d](http:
 
 ![MATLAB Volume Viewer](images/menuModelsRendering-Matlabvolvewer.jpg){.on-glb align=left width="300"}
 
-Renders the model using MATLAB's Volume Viewer (R2017b+). In R2019b+, materials can be displayed alongside the volume.
+Renders the model using MATLAB's Volume Viewer (R2017b+). In R2019b+, materials can be displayed 
+alongside the volume.
+
+:warning: only for the MATLAB version of MIB
 
 <div class="h4-like">Demonstrations</div>
 
@@ -321,15 +326,15 @@ The rendered material is specified in the Materials list of the [Segmentation Pa
 
 ### Quantify
 
-Gets statistics for the selected material, usable to filter the model by object properties.
+Gets quantification statistics for the selected material, usable to filter the model by object properties.
 
-![Start quantification directly from the Segmentation table](images/menuModelStats-frompanel.png){align=left}
+![Start quantification directly from the Segmentation table](images/menuModelStats-frompanel.png){.on-glb align=left width="230"}
 
-Accessible also via `Segmentation Panel → Materials List → Right-click → Get statistics...`
+Accessible also via `Segmentation Panel → Materials List → Right-click → Quantify material...`
 
 <div class="clear-float"></div>
 
-See [Mask and Model Statistics](../mask/mask-stats.md) for details.
+See [Mask and Model Quantification](../mask/mask-stats.md) for details.
 
 ---
 

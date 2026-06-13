@@ -12,72 +12,56 @@ Additional tools available in MIB.
 
 ---
 
-## Measure length
+## Segmentation Section
 
-Allows measuring the length on the image.
+### Deep learning segmentation
 
-![Measure length](images/menuToolsMeasure.png){align=left}
+![Deep learning segmentation](images/menuTools-dl.png){align=left}
 
-<div class="clear-float"></div>
+Provides training of deep convolutional networks on user data and their use for image segmentation.
 
-### Measure Tool
-
-Based on the [Image Measurement Utility](http://www.mathworks.com/matlabcentral/fileexchange/25964-image-measurement-utility)
-by Jan Neggers, Eindhoven University of Technology.
-Enables various length measurements and generates corresponding intensity profiles.<br> 
-See [Measure Tool details](tools-measuretool.md).
-
-### Line measure
-
-Measures the linear distance between two points.<br> 
-Press and hold <mouse class="left"></mouse> to draw a line between objects. <br>
-Results will appear in a pop-up, printed to MATLAB’s main window, and copied to the clipboard 
-(paste with ++ctrl+v++).<br> 
-Also accessible from the [Quick Access Bar](../../quick-access-bar/index.md).
-
-!!! note
-    Pixel sizes are set in [Dataset parameters](../dataset/index.md#voxels).
-
-
-### Free hand measure
-
-Similar to line measure, but allows arbitrary drawing of the measured distance.
-
----
-
-## Deep learning segmentation
-
-Provides training of deep convolutional networks on user data and their use for image segmentation.<br>
 See [Deep Learning details](../../deepmib/index.md).
 
 ---
 
-## Classifiers
+### Classifiers
 
-Two classifiers are available in MIB.
+![Classifiers](images/menuTools-pixclass.png){align=left}
 
-- **Membrane detection**: Uses a Random Forest classifier for automatic segmentation, 
-  based on [Random Forest for Membrane Detection](http://www.kaynig.de/demos.html) by Verena Kaynig 
-  and [randomforest-matlab](https://code.google.com/p/randomforest-matlab/) by Abhishek Jaiantilal. 
-  Works for membranes and other objects. See [Random Forest help](tools-randforest.md).
-- **Superpixels classification**: Ideal for objects with distinct intensity properties. 
-Calculates SLIC superpixels (2D) or supervoxels (3D) and classifies them using provided 
-labels for objects and background. 
-See [Superpixels example](tools-randforest-slic.md).
-
----
-
-## Semi-automatic segmentation
-
-![Measure length](images/menuToolsSemiAuto.png){align=left}
-
-Methods for automated image segmentation and object separation.
+Pixel classification methods for automated segmentation.
 
 <div class="clear-float"></div>
 
-- [Global thresholding](tools-globalthres.md)
-- [Graphcut segmentation](tools-graphcut.md) (*recommended*)
-- [Watershed segmentation](tools-watershed.md)
+#### Membrane detector
+
+Uses a Random Forest classifier for automatic segmentation based on membrane or other object appearance.
+
+Based on [Random Forest for Membrane Detection](http://www.kaynig.de/demos.html) by Verena Kaynig
+and [randomforest-matlab](https://code.google.com/p/randomforest-matlab/) by Abhishek Jaiantilal.
+
+See [Random Forest help](tools-randforest.md).
+
+---
+
+### Semi-automatic segmentation
+
+Methods for automated image segmentation.
+
+![Semi-automatic segmentation](images/menuToolsSemiAuto.png){align=left}
+
+<div class="clear-float"></div>
+
+#### Global thresholding
+
+Segments objects by intensity threshold applied across the whole dataset.
+
+See [Global thresholding details](tools-globalthres.md).
+
+#### Graphcut
+
+Graph-cut based segmentation — robust for objects with overlapping intensity distributions.
+
+See [Graphcut segmentation details](tools-graphcut.md).
 
 !!! example "Graphcut and watershed example"
 
@@ -87,10 +71,55 @@ Methods for automated image segmentation and object separation.
 
 ---
 
-## Object separation
+## Misc Section
 
-Tools for separating objects in the current model, mask, or selection layers.<br>
-[See more on object separation](tools-objectsep.md)
+### Measure tool
+
+![Measure length](images/menuToolsMeasure.png){align=left}
+
+Interactive measurement tools for distances and intensity profiles.
+
+<div class="clear-float"></div>
+
+#### Measure tool
+
+![Measure length](images/menuToolsMeasure-measure.png){align=left}
+
+Based on the [Image Measurement Utility](http://www.mathworks.com/matlabcentral/fileexchange/25964-image-measurement-utility)
+by Jan Neggers, Eindhoven University of Technology.
+Enables various length measurements and generates corresponding intensity profiles.
+
+See [Measure Tool details](tools-measuretool.md).
+
+#### Line measure
+
+![Measure length](images/menuToolsMeasure-line.png){align=left}
+
+Measures the linear distance between two points.
+Press and hold <mouse class="left"></mouse> to draw a line between objects.
+Results appear in a pop-up, printed to MATLAB's main window, and copied to the clipboard
+(paste with ++ctrl+v++).
+
+Also accessible from the [Quick Access Bar](../../quick-access-bar/index.md).
+
+!!! note
+    Pixel sizes are set in [Dataset parameters](../dataset/index.md#voxels).
+
+#### Free hand measure
+
+![Measure length](images/menuToolsMeasure-line.png){align=left}
+
+Similar to line measure, but allows drawing an arbitrary path for the measured distance.
+
+---
+
+### Object separation
+
+![Measure length](images/menuToolsMeasure-objsep.png){align=left}
+
+Tools for separating touching or overlapping objects in the current model, mask, or selection layers.
+
+See [Object separation details](tools-objectsep.md).
 
 !!! example "Example of seeded watersheding of cells"
 
@@ -100,23 +129,29 @@ Tools for separating objects in the current model, mask, or selection layers.<br
 
 ---
 
-## Stereology
-Generate a grid and counts model materials at grid line intersections.<br> 
-Results can be exported to MATLAB or Excel.<br>
-[See more on about Stereology](tools-stereology.md)
+### Stereology
 
-??? example "Application of stereology to quantify surface fractions" 
+![Measure length](images/menuToolsMeasure-stereo.png){align=left}
+
+Generates a grid and counts model materials at grid-line intersections.
+Results can be exported to MATLAB or Excel.
+
+See [Stereology details](tools-stereology.md).
+
+??? example "Application of stereology to quantify surface fractions"
     ![Application of stereology to quantify surface fractions](images/menuToolsStereology_example.jpg){.on-glb align=left}
 
 ---
 
-## Wound healing assay
+### Wound healing assay
 
-The wound healing assay is a microscopy-based technique used to study cell migration. 
-The Wound healing assay tool of MIB can be used to identify the wound area and measure its width.<br>
-[See more about wound healing assay](tools-wound.md)
+![Measure length](images/menuToolsMeasure-wound.png){align=left}
+
+The wound healing assay is a microscopy-based technique used to study cell migration.
+This tool identifies the wound area and measures its width.
+
+See [Wound healing assay details](tools-wound.md).
 
 ---
 
 *Back to [MIB](../../../index.md) | [User interface](../../index.md) | [Ribbon](../index.md)*
-

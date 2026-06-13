@@ -21,7 +21,7 @@ Use the brush to make selections, with size regulated by the <span class="widget
 
 !!! tip
     Connect objects across slices using *Interpolation* (<span class="widget widget-button">i</span> shortcut or 
-    [Ribbon → Selection -> Interpolate](../../ribbon/selection/index.md#interpolate)).
+    [Ribbon → Selection -> Interpolate](../../ribbon/selection/index.md#interpolate-as-shape)).
 
 
 ## Widgets of the brush panel

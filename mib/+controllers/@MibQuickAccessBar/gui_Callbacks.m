@@ -31,6 +31,12 @@ switch mode
     case 'Open MIB documentation'
     case 'Make a snapshot'
     case 'Save model to a file'
+        activeId = obj.mibModel.getActiveId();
+        if isempty(obj.mibModel.I{activeId}.labels.filename)
+            obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
+        else
+            obj.mibModel.saveLabels();
+        end
     case 'Enable the blocked mode to process only visible portion of the dataset'
          obj.mibModel.I{obj.mibModel.id}.blockModeSwitch = hWidget.Selected;
     case 'Enable the ROI mode'

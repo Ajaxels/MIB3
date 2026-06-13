@@ -352,11 +352,12 @@ classdef ObjectSeparator < handle
             obj.view.handles.ReduceOversegmentation.Visible = ~obj.BatchOpt.UseSeeds;
 
             % Intensity-mode widgets visibility
-            isIntensity = strcmp(obj.BatchOpt.WatershedSource{1}, 'Intensity');
-            obj.view.handles.watSourceTxt1.Visible = isIntensity;
-            obj.view.handles.watSourceTxt2.Visible = isIntensity;
-            obj.view.handles.ColorChannel.Visible  = isIntensity;
-            obj.view.handles.InvertImage.Visible   = isIntensity;
+            intensityVisibility = 'off';
+            if strcmp(obj.BatchOpt.WatershedSource{1}, 'Intensity'); intensityVisibility = 'on'; end
+            obj.view.handles.ColorchannelDropDownLabel.Visible = intensityVisibility;
+            obj.view.handles.ColorChannel.Visible              = intensityVisibility;
+            obj.view.handles.SignalDropDownLabel.Visible       = intensityVisibility;
+            obj.view.handles.InvertImage.Visible               = intensityVisibility;
         end
 
         % -----------------------------------------------------------
@@ -422,9 +423,12 @@ classdef ObjectSeparator < handle
         function watershedSourceChanged_Callback(obj, event)
             % WATERSHEDSOURCECHANGED_CALLBACK - Toggle intensity-widget visibility.
             obj.BatchOpt.WatershedSource{1} = event.NewValue.Tag;
-            isIntensity = strcmp(obj.BatchOpt.WatershedSource{1}, 'Intensity');
-            obj.view.handles.ColorChannel.Enable  = isIntensity;
-            obj.view.handles.InvertImage.Enable   = isIntensity;
+            intensityVisibility = 'off';
+            if strcmp(obj.BatchOpt.WatershedSource{1}, 'Intensity'); intensityVisibility = 'on'; end
+            obj.view.handles.ColorchannelDropDownLabel.Visible = intensityVisibility;
+            obj.view.handles.ColorChannel.Visible              = intensityVisibility;
+            obj.view.handles.SignalDropDownLabel.Visible       = intensityVisibility;
+            obj.view.handles.InvertImage.Visible               = intensityVisibility;
         end
 
         % -----------------------------------------------------------

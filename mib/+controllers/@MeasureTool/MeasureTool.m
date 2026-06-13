@@ -56,7 +56,7 @@ classdef MeasureTool < handle
         annotationText = measureDistance(obj, datasetId, colCh, finetuneCheck, integrationWidth, calcIntensity, insertIndex)
         annotationText = measureDistancePoly(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
         annotationText = measureDistanceFree(obj, datasetId, colCh, finetuneCheck, calcIntensity, insertIndex)
-        measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
+        annotationText = measurePoint(obj, datasetId, colCh, finetuneCheck, calcIntensity, showInfoDlg, insertIndex)
         [pixelX, pixelY, wasCancelled] = drawROI(obj, roiType, finetuneCheck, maxVertices, initialDataPos)
         generateKymograph(obj, datasetId, measurementIndex)
         loadMeasurements(obj)

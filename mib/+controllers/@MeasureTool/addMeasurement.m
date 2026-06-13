@@ -24,7 +24,7 @@ try
     finetuneCheck    = obj.view.handles.finetuneCheck.Value;
     calcIntensity    = obj.view.handles.calcIntensityCheck.Value;
     showInfoDlg      = obj.view.handles.showEditInfoDlg.Value;
-    integrationWidth = str2double(obj.view.handles.integrationWidth.Value);
+    integrationWidth = obj.view.handles.integrationWidth.Value;
     measureType      = obj.view.handles.measureTypeDropdown.Value;
 
     measureSettings = obj.mibModel.sessionSettings.measureTool;

@@ -58,8 +58,13 @@ switch mode
         obj.mibModel.exportDatasetToImaris('model');
     case 'Export model to another MIB dataset'   % obj.handles.ribbonModel.exportToMIB
         obj.mibModel.exportDatasetToMib('model');
-    case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filenam
-        obj.mibModel.saveLabels();
+    case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filename
+        activeId = obj.mibModel.getActiveId();
+        if isempty(obj.mibModel.I{activeId}.labels.filename)
+            obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
+        else
+            obj.mibModel.saveLabels();
+        end
     case sprintf('Save\nmodel as...')            % obj.handles.ribbonModel.saveAs — save with dialog
         obj.mibModel.saveLabels([]);
 

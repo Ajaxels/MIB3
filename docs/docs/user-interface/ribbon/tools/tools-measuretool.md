@@ -1,12 +1,10 @@
 # Measure Tool
 
----
-
 ## Overview
 
-Based on the [Image Measurement Utility](http://www.mathworks.com/matlabcentral/fileexchange/25964-image-measurement-utility) by Jan Neggers, Eindhoven University of Technology. This tool enables various length measurements and generates corresponding intensity profiles.
-
 ![Measure Tool](images/menuToolsMeasureTool.png){.on-glb align=left width="300"}
+
+Based on the [Image Measurement Utility](http://www.mathworks.com/matlabcentral/fileexchange/25964-image-measurement-utility) by Jan Neggers, Eindhoven University of Technology. This tool enables various length measurements and generates corresponding intensity profiles.
 
 !!! note
     Visualization of measurements can be switched on/off using 
@@ -19,12 +17,24 @@ Based on the [Image Measurement Utility](http://www.mathworks.com/matlabcentral/
 
 ## Measure panel
 
-![Measure Tool -> Measure panel](images/menuToolsMeasure-measurepanel.png){ align=left}
+![Measure Tool -> Measure panel](images/menuToolsMeasure-measurepanel.png){.on-glb align=left width="340"}
 
-Defines the measurement type, started with the <span class="widget widget-button">Add</span> button. 
-<br>Select the color channel for intensity profiles via the <span class="widget widget-dropdown">Color channel</span> combo box.
+Defines the measurement type, started with the <span class="widget widget-button">Add</span> button.
 
 <div class="clear-float"></div>
+
+- <span class="widget widget-dropdown">Type</span>: measurement type —
+  *Angle*, *Caliper*, *Circle (R)*, *Distance (freehand)*, *Distance (linear)*, *Distance (polyline)*, *Point*.
+- <span class="widget widget-dropdown">Color channel</span>: color channel used for intensity profiles.
+- <label class="widget widget-checkbox">Fine-tuning</label>: allows position adjustment of each vertex during placement before accepting.
+- <label class="widget widget-checkbox">Calculate intensity</label>: generates an intensity profile along each measurement.
+- <label class="widget widget-checkbox">Show info dialog</label>: after placing a measurement, prompts for an annotation text label.
+- <label class="widget widget-checkbox">Preview intensity</label> (*Distance, linear* only): shows a live intensity profile while drawing the line.
+- <label class="widget widget-checkbox">Integrate</label> (*Distance, linear* only): laterally integrates the intensity profile across the line.
+  Set the integration half-width with the <span class="widget widget-edit">Width</span> edit box.
+- <label class="widget widget-checkbox">automatic point spacing</label> (*Distance, freehand* only): when checked, the freehand path is automatically simplified (every 10th raw point is kept). When unchecked, a dialog prompts for a density reduction factor.
+- <span class="widget widget-dropdown">Interpolation</span> (*Distance, freehand* and *Distance, polyline* only): spline interpolation method used to compute the path arc-length.
+
 
 ### Examples of tools for manual measurement
 
@@ -46,7 +56,7 @@ Defines the measurement type, started with the <span class="widget widget-button
 
 <div class="clear-float"></div>
 
-* **Circle**: measures the radius of a circle.  
+* **Circle (R)**: measures the radius of a circle.  
   ![Circle](images/menuToolsMeasureOverviewCircle.jpg){.on-glb align=left}  
   a) place a point at the circle’s center;  
   b) place a point at the edge;  
@@ -58,8 +68,9 @@ Defines the measurement type, started with the <span class="widget widget-button
   ![Freehand](images/menuToolsMeasureOverviewFreehand.jpg){.on-glb align=left}  
   a) select interpolation type with the <span class="widget widget-dropdown">Interpolation</span> combo box;  
   b) press <span class="widget widget-button">Add</span>;  
-  c) draw the path;  
-  d) convert to polyline, providing a factor to reduce vertices;  
+  c) draw the freehand path;  
+  d) if <label class="widget widget-checkbox">automatic point spacing</label> is unchecked,
+     enter a density reduction factor to simplify the path;  
   e) adjust if needed; double-click above the path to accept.
 
 <div class="clear-float"></div>
@@ -72,13 +83,12 @@ Defines the measurement type, started with the <span class="widget widget-button
 
 <div class="clear-float"></div>
 
-* **Distance (polyline)**: measures a path with a set number of vertices.  
+* **Distance (polyline)**: measures a path defined by a series of clicked vertices.  
   ![Polyline](images/menuToolsMeasureOverviewFreehand.jpg){.on-glb align=left}  
-  a) set vertex count with the <span class="widget widget-edit">Number of points</span> edit box;  
-  b) select interpolation type with the <span class="widget widget-dropdown">Interpolation</span> combo box;  
-  c) press <span class="widget widget-button">Add</span>;  
-  d) place the defined number of points;  
-  e) adjust if needed; press ++a++ and use the left mouse button to add a vertex, then double-click above the path to accept.
+  a) select interpolation type with the <span class="widget widget-dropdown">Interpolation</span> combo box;  
+  b) press <span class="widget widget-button">Add</span>;  
+  c) click to place vertices;  
+  d) adjust if needed; double-click above the path to accept.
 
 <div class="clear-float"></div>
 
@@ -89,24 +99,21 @@ Defines the measurement type, started with the <span class="widget widget-button
 
 <div class="clear-float"></div>
 
-- <label class="widget widget-checkbox">Fine-tuning</label>: allows position adjustments during placement.
-- <label class="widget widget-checkbox">Calculate intensities</label>: generates an intensity profile for each measurement.
-- <span class="widget widget-checkbox">Edit info</span>: automatically show a dialog to provide additional information related to an added measurement
-- <span class="widget widget-checkbox">Preview intensity</span> (Distance, linear only): shows an intensity profile during placement.
-- <span class="widget widget-button">Integrate</span> (Distance, linear only): integrates multiple points for intensity profiles, with point count set via the <span class="widget widget-edit">Width</span> edit box.
-- <label class="widget widget-checkbox">fixed number of points</label> (freehand mode only): skips the vertex reduction dialog.
-- <span class="widget widget-edit">Number of points</span> (freehand and polyline modes): sets the number of points to place.
-
 ---
 
 ## Plot panel
 
 ![Plot panel](images/menuToolsMeasure-plotpanel.png){.on-glb align=left}  
 
-Controls which measurement parts display in the [Image View panel](../../panels/selection_imview/imview.md). 
-<br>Customize line and marker appearance with the <span class="widget widget-button">Options</span> button.
+Controls which measurement parts are drawn on the image.
+
+- <label class="widget widget-checkbox">Markers</label>: show vertex markers (dots) for each measurement.
+- <label class="widget widget-checkbox">Lines</label>: show the measurement lines or paths.
+- <label class="widget widget-checkbox">Text</label>: show the numeric result and annotation label next to each measurement.
+- <span class="widget widget-button">Options</span>: opens a dialog to customise line width, marker size, and color for each measurement type.
 
 <div class="clear-float"></div>
+
 ---
 
 ## Voxel sizes panel
@@ -132,14 +139,17 @@ the [Image View panel](../../panels/selection_imview/imview.md) centers on the s
 
 <div class="clear-float"></div>
 
+<span class="widget widget-button">Refresh table</span>: refreshes the measurement table.
+
 <div class="h3-like">Right-click a selected item for a context menu:</div>
 
+- **Modify info...**: edits the annotation text label stored with the measurement.
 - **Jump to measurement**: centers the selected measurement in the [Image View panel](../../panels/selection_imview/imview.md).
-- **Modify measurement**: enters edit mode to adjust shape and size.
-- **Recalculate selected measurements...**: updates distances and intensity profiles if pixel size or color channels change.
-- **Duplicate measurement**: duplicates the measurement.
-- **Generate kymograph**: creates a depth projection image under the profile (linear, polyline, freehand only), previewable or savable in TIF, MATLAB, or CSV formats. [:fontawesome-brands-youtube:{.red-color} Tutorial](https://youtu.be/ifr6bWtcnUg)
-- **Plot intensity profile**: plots intensity profile in a new figure.
+- **Modify measurement...**: enters edit mode to reposition vertices and adjust the shape.
+- **Recalculate selected...**: recomputes distances and intensity profiles for the selected measurement (useful after pixel size or color channel changes).
+- **Duplicate measurement**: duplicates the selected measurement.
+- **Generate kymograph (line, polyline)**: creates a depth projection image beneath the profile for linear, polyline, or freehand measurements. Previewable or savable in TIF, MATLAB, or CSV formats. [:fontawesome-brands-youtube:{.red-color} Tutorial](https://youtu.be/ifr6bWtcnUg)
+- **Plot intensity profile...**: opens the intensity profile in a new figure.
 - **Delete measurement**: removes the measurement from the list.
 
 ---
@@ -152,7 +162,6 @@ the [Image View panel](../../panels/selection_imview/imview.md) centers on the s
 
 - <span class="widget widget-button">Load</span>: loads a measurement structure from a file or MATLAB workspace.
 - <span class="widget widget-button">Save</span>: saves measurements and intensity profiles to a file (MATLAB or Excel) or MATLAB workspace.
-- <span class="widget widget-button">Refresh table</span>: refreshes the measurement table.
 - <span class="widget widget-button">Delete all</span>: removes all measurements.
 - <span class="widget widget-button">?</span>: opens this help page.
 - <span class="widget widget-button">Add</span>: adds a new measurement of the type selected in the *Measure panel*.

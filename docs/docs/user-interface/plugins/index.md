@@ -4,7 +4,7 @@
 
 ## Overview
 
-![Plugins menu](images/PanelsPlugins.png){align=left}
+![Plugins menu](images/menuPlugins.png){align=left}
 
 <div class="clear-float"></div>
 

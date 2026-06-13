@@ -66,7 +66,9 @@ getDataOptions.fillBg = 0;
 if contIndex == -1
     % Render mask layer
     if dataset.maskExist == 0
-        utils.dlgs.showErrorDialog(obj.mibController.mibGUI, 'Mask was not found!', 'Missing mask');
+        utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
+            sprintf('Mask was not found!\n\nTo render the model, make sure that a material of the model is selected in the segmentation table.'), ...
+            'Missing mask');
         return;
     end
     modelData      = cell2mat(obj.mibModel.getData3D('mask', [], 3, NaN, getDataOptions));
@@ -77,7 +79,7 @@ else
     % Render labels layer
     rawData = obj.mibModel.getData3D('labels', [], 3, NaN, getDataOptions);
     if numel(rawData) > 1
-        utils.dlgs.showErrorDialog(obj.mibController.mibGUI, ...
+        utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
             'Please select which ROI you would like to render!', 'Multiple ROIs');
         return;
     end
@@ -88,7 +90,6 @@ else
     if dataset.showAllMaterials
         prompts2 = {sprintf('Specify material indices to render\n(leave empty to render all)\nExample: 2,4,6:8')};
         defAns2  = {num2str(contIndex)};
-
         answer2 = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', prompts2, defAns2, ...
             'Select materials');
         if isempty(answer2); return; end

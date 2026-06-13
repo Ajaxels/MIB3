@@ -81,7 +81,7 @@ Use shortcuts with the mouse over the intersection of colored lines:
 ![Measure](images/toolbar_measure.jpg){align=left}
 
 Measures linear distances.<br>
-See more [Ribbon → Tools → Measure length](../ribbon/tools/index.md#measure-length).
+See more [Ribbon → Tools → Measure tool](../ribbon/tools/index.md#measure-tool).
 
 <div class="clear-float"></div>
 
