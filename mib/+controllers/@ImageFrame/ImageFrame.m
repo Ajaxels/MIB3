@@ -115,11 +115,11 @@ classdef ImageFrame < handle
             end
 
             %% Virtual mode guard
-            if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-                    {'This tool is not available in virtual stacking mode.\nPlease switch to the memory-resident mode and try again.'}, ...
+                    {'This tool is not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.'}, ...
                     'Not implemented', dlgOpt);
                 notify(obj, 'CloseEvent');
                 return;

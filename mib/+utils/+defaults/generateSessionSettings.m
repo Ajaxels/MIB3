@@ -45,8 +45,8 @@ sessionSettings.contentAwareFill.FillOrder   = 'gradient';
 pixelsPerInch = get(0, 'ScreenPixelsPerInch');
 sessionSettings.metersPerPixel = 0.0254/pixelsPerInch;
 
-% structure to keep list of dialogs that should not be shown again
-sessionSettings.DoNotShowDialogs = struct;
-
+% NOTE: the "do not show again" registry moved to a persistent location:
+% preferences.DoNotShowDialogs (see utils.defaults.generatePreferences), so the
+% choice survives across sessions.
 
 end

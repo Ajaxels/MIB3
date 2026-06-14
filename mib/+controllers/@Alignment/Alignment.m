@@ -131,12 +131,12 @@ classdef Alignment < handle
             dataset = obj.mibModel.I{id};
 
             % Reject virtual-stacking mode early
-            if strcmp(dataset.datasetType, 'Virtual')
+            if any(dataset.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
-                    'Alignment is not available in virtual stacking mode', {''}, ...
+                    'Alignment is not available in virtual or BigData mode', {''}, ...
                     {'Switch to memory-resident mode and try again.'}, ...
                     'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');

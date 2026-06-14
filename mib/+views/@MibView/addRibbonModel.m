@@ -142,6 +142,10 @@ popupList.add(widgetHandles.exportToMIB);
 % export to Imaris
 widgetHandles.exportToImaris = ListItem('Export model to Imaris as volume', Icon(fullfile(iconPath, 'export_model_imaris_24px.png')));
 popupList.add(widgetHandles.exportToImaris);
+% export to Zarr3 (OME-Zarr v3 multiscales pyramid of label indices)
+widgetHandles.exportToZarr3 = ListItem('Export model to Zarr3', Icon(fullfile(iconPath, 'zarr3_24px.png')));
+widgetHandles.exportToZarr3.Description = 'Export the model as an OME-Zarr v3 pyramid of label indices';
+popupList.add(widgetHandles.exportToZarr3);
 
 % add the popup list to the SplitButton button
 widgetHandles.export.Popup = popupList;

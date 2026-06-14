@@ -40,12 +40,12 @@ function datasetSlices(obj, parameter)
 %
 
 activeId = obj.mibModel.getActiveId();
-if strcmp(obj.mibModel.I{activeId}.datasetType, 'Virtual')
+if any(obj.mibModel.I{activeId}.datasetType(1) == ['V' 'B'])
     warnOpt.MsgBoxOnly  = true;
     warnOpt.Icon        = 'puffin_warning';
     warnOpt.HeaderLines = 1;
     utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '!!! Warning !!!', {''}, ...
-        {sprintf('Slice actions are not yet available in the virtual stacking mode.\nPlease switch to the memory-resident mode and try again.')}, ...
+        {sprintf('Slice actions are not yet available in the virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.')}, ...
         'Not implemented', warnOpt);
     return;
 end

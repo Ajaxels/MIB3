@@ -17,13 +17,13 @@ id = obj.mibModel.getActiveId();
 datasetType = obj.handles.imageType.Value;   % 'image' | 'labels' | 'mask' | 'selection'
 
 % virtual stacking mode does not support layer exports other than image
-if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
     if ismember(datasetType, {'labels', 'mask', 'selection'})
         dlgOpt.MsgBoxOnly = true;
         dlgOpt.Icon = 'puffin_warning';
         dlgOpt.HeaderLines = 3;
         utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
-            sprintf('It is not yet possible to export "%s" in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again.', datasetType), ...
+            sprintf('It is not yet possible to export "%s" in the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again.', datasetType), ...
             {}, {}, 'Not implemented', dlgOpt);
         return;
     end

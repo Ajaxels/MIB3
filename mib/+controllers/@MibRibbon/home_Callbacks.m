@@ -30,6 +30,35 @@ switch mode
         obj.mibModel.exportDataset('image');
     case 'Export to Imaris'     % obj.handles.ribbonHome.exportToImaris
         obj.mibModel.exportDatasetToImaris('image');
+    case 'Export to Zarr3'      % obj.handles.ribbonHome.exportToZarr3
+        % write the current image as an OME-Zarr v3 pyramid (openable as BigData)
+        parentFig = obj.mibModel.getProgressBarParent();
+        id = obj.mibModel.getActiveId();
+        ds = obj.mibModel.I{id};
+        if strcmp(ds.image.filename, 'none.tif') || ~ds.image.exists
+            utils.dlgs.showErrorDialog(parentFig, 'No image is open to export.', 'Export to Zarr3');
+            return;
+        end
+        [imgPath, imgStem] = fileparts(ds.image.filename);
+        if isempty(imgPath); imgPath = obj.mibModel.currentDirectory; end
+        if isempty(imgStem); imgStem = 'dataset'; end
+        [zFile, zDir] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
+            'Export image to Zarr3', fullfile(imgPath, [imgStem '.zarr3']));
+        if isequal(zFile, 0); return; end
+        outPath = fullfile(zDir, zFile);
+        zOpt = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, false);
+        if isempty(zOpt); return; end   % cancelled the settings dialog
+        wb = uiprogressdlg(parentFig, 'Title', 'Export to Zarr3', ...
+            'Message', 'Writing OME-Zarr v3 pyramid, please wait...', 'Indeterminate', 'on');
+        try
+            io.savers.Zarr3Saver.exportDataset(obj.mibModel, id, outPath, zOpt);
+            delete(wb);
+            uialert(parentFig, sprintf('Image exported to:\n%s', outPath), ...
+                'Export to Zarr3', 'Icon', 'success');
+        catch ME
+            if isvalid(wb); delete(wb); end
+            utils.dlgs.showErrorDialog(parentFig, ME.message, 'Export to Zarr3 failed');
+        end
     case 'Snapshot'     % obj.handles.ribbonHome.snapshot
         obj.mibController.startController('controllers.Snapshot');
     case 'Movie'     % obj.handles.ribbonHome.movie

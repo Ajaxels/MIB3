@@ -942,7 +942,7 @@ classdef DisplayAdjust < handle
                 pwb = core.PoolWaitbar(numel(colorCh), 'Calculating minimum value...', obj.view.gui, 'Find Min', true);
             end
 
-            if ~strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if ~any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 for colId = 1:numel(colorCh)
                     if threshold == 0
                         minval(colId) = min(min(min(min( ...
@@ -1031,7 +1031,7 @@ classdef DisplayAdjust < handle
                 pwb = core.PoolWaitbar(numel(colorCh), 'Calculating maximum value...', obj.view.gui, 'Find Max', true);
             end
 
-            if ~strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if ~any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 for colId = 1:numel(colorCh)
                     if threshold == 0
                         maxval(colId) = max(max(max(max( ...
@@ -1097,9 +1097,9 @@ classdef DisplayAdjust < handle
 
             id = obj.mibModel.getActiveId();
 
-            if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                header = 'Intensity recalculation is not available in Virtual mode!';
+                header = 'Intensity recalculation is not available in Virtual or BigData mode!';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
@@ -1182,9 +1182,9 @@ classdef DisplayAdjust < handle
 
             id = obj.mibModel.getActiveId();
 
-            if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                header = 'Intensity recalculation is not available in Virtual mode!';
+                header = 'Intensity recalculation is not available in Virtual or BigData mode!';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');

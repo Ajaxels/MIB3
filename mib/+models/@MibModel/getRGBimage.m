@@ -163,9 +163,10 @@ else
 end
 clear sImgIn;
 
-% Store raw image for virtual stacking mode
+% Store raw image for on-demand modes (Virtual / BigData) — used by the
+% cursor pixel-value readout (gui_WinMouseMotionFcn reads mibModel.Iraw)
 imgRAW = [];
-if strcmp(dataset.datasetType, 'Virtual'); imgRAW = sImg; end
+if any(dataset.datasetType(1) == ['V' 'B']); imgRAW = sImg; end
 
 %% Apply display adjustments to image
 % Hide image if requested
@@ -244,6 +245,25 @@ if dataset.enableSelection && obj.preferences.Colors.SelectionTransparency < 1
     end
 else
     selectionLayer = NaN;
+end
+
+%% Match overlay resolution to the displayed image (on-demand datasets)
+% For pyramidal Virtual/BigData datasets panModeException==1, so the model/
+% mask/selection overlays are NOT resized above. The BigData model store is
+% full-resolution while the image is shown at the pyramid/zoom resolution, so
+% the layers can differ in size. Resize each overlay (nearest, labels are
+% categorical) to the displayed image size so compositing indices line up.
+if any(dataset.datasetType(1) == ['V' 'B'])
+    targetSize = [size(sImg, 1), size(sImg, 2)];
+    if ~isnan(sOver1(1)) && ~isequal([size(sOver1, 1), size(sOver1, 2)], targetSize)
+        sOver1 = imresize(sOver1, targetSize, 'nearest');
+    end
+    if ~isnan(sOver2(1)) && ~isequal([size(sOver2, 1), size(sOver2, 2)], targetSize)
+        sOver2 = imresize(sOver2, targetSize, 'nearest');
+    end
+    if ~isnan(selectionLayer(1)) && ~isequal([size(selectionLayer, 1), size(selectionLayer, 2)], targetSize)
+        selectionLayer = imresize(selectionLayer, targetSize, 'nearest');
+    end
 end
 
 %% Generate RGB channels from image data

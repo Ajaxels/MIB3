@@ -78,6 +78,7 @@ classdef MibRibbon
             obj.handles.ribbonHome.export.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.exportToMatlab.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.exportToImaris.ItemPushedFcn = @obj.home_Callbacks;
+            obj.handles.ribbonHome.exportToZarr3.ItemPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.snapshot.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.movie.ButtonPushedFcn = @obj.home_Callbacks;
             obj.handles.ribbonHome.render.ButtonPushedFcn = @obj.home_Callbacks;
@@ -267,6 +268,7 @@ classdef MibRibbon
             obj.handles.ribbonModel.exportToMatlab.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.exportToMIB.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.exportToImaris.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.exportToZarr3.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.save.ButtonPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.saveAs.ButtonPushedFcn = @obj.model_Callbacks;
             %% Add Callbacks for the MODEL ribbon -> Model tools section

@@ -214,6 +214,8 @@ classdef MibImage < matlab.mixin.Copyable
                     obj.type = 'image';
                 case 'core.MibVirtualImage'
                     obj.type = 'virtual';
+                case 'core.MibBigDataImage'
+                    obj.type = 'bigdata';
                 case 'core.MibLabels'
                     obj.type = 'labels';
                 case 'core.MibLabels63'

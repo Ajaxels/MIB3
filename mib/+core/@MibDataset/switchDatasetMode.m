@@ -52,8 +52,8 @@ if isempty(newMode); return; end
 % set the virtual mode switch
 switch newMode
     case 1 % new dataset type is 'Standard'
-        if obj.datasetType(1) == 'V' % current mode is Virtual
-            obj.closeVirtualDataset();    % close the virtual datasets
+        if any(obj.datasetType(1) == ['V' 'B']) % current mode is Virtual or BigData
+            obj.closeVirtualDataset();    % close the on-demand readers
             obj.image.pyramid.levelNames = {};  % clear level names for zarr pyramid
         end
         datasetType = 'Standard';
@@ -62,6 +62,7 @@ switch newMode
         enableSelection = false; % disable segmentation
     case 3 % new dataset type is 'BigData'
         datasetType = 'BigData';
+        enableSelection = false; % browse-only until a model is created (Phase 2)
 end
 
 % initialize

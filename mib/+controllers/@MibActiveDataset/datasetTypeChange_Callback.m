@@ -27,6 +27,85 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibActiveDataset.datasetTypeChange_Callback: selection of "obj.handles.panels.activeDataset.handles.datasetType" -> "%s"\n',  hWidget.Value);
 end
 
+% Special path: convert an OPEN (Standard/Virtual) dataset to BigData by writing
+% it as an OME-Zarr v3 pyramid and reopening it in BigData mode — rather than the
+% generic "close current + start blank" switch below. Only when a real image is open.
+convId = obj.mibModel.getActiveId();
+convDs = obj.mibModel.I{convId};
+isRealImage = ~strcmp(convDs.image.filename, 'none.tif') && convDs.image.exists;
+if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') && isRealImage
+    questOpt = struct('Icon', 'puffin_question', 'WindowWidth', 540, 'WindowHeight', 240);
+    if ~isempty(obj.mibModel.mibPath); questOpt.mibPath = obj.mibModel.mibPath; end
+    sel = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+        sprintf(['A dataset is currently open. Switch to BigData by:\n\n' ...
+        ' \x2022 "Convert current": write the open image as an OME-Zarr v3 pyramid on disk and ' ...
+        'reopen it in BigData mode;\n' ...
+        ' \x2022 "New (default)": discard the open dataset and start an empty BigData dataset.\n\n' ...
+        'BigData is browse-only until you create a model.']), 'Switch to BigData', ...
+        'Convert current', 'New (default)', 'Cancel', 'Convert current', questOpt);
+    switch sel
+        case {'Cancel', ''}
+            hWidget.Value = hData.PreviousValue;
+            return;
+        case 'New (default)'
+            % discard the open dataset and start an empty BigData placeholder
+            defH5 = {fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.h5')};
+            updatedMode = obj.mibModel.I{convId}.switchDatasetMode(3, ...
+                obj.mibModel.preferences.System.EnableSelection, defH5);
+            if isempty(updatedMode) || updatedMode ~= 3
+                hWidget.Value = hData.PreviousValue;
+                return;
+            end
+            obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, ...
+                obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = 'BigData';
+            notify(obj.mibModel, 'NewDataset');
+            obj.mibController.cDirContents.updateFileList_Callback();
+            return;
+        case 'Convert current'
+            % fall through to the conversion below
+        otherwise
+            % dialog closed / unexpected — abort the switch
+            hWidget.Value = hData.PreviousValue;
+            return;
+    end
+
+    [imgPath, imgStem] = fileparts(convDs.image.filename);
+    if isempty(imgPath); imgPath = obj.mibModel.currentDirectory; end
+    if isempty(imgStem); imgStem = 'dataset'; end
+    [zFile, zDir] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
+        'Save BigData (zarr3) as', fullfile(imgPath, [imgStem '.zarr3']));
+    if isequal(zFile, 0); hWidget.Value = hData.PreviousValue; return; end
+    outPath = fullfile(zDir, zFile);
+    zOpt = io.savers.Zarr3Saver.optionsDialog(obj.view.gui, obj.mibModel.mibPath, false);
+    if isempty(zOpt); hWidget.Value = hData.PreviousValue; return; end   % cancelled settings
+
+    wb = uiprogressdlg(obj.view.gui, 'Title', 'Convert to BigData', ...
+        'Message', 'Writing OME-Zarr v3 pyramid, please wait...', 'Indeterminate', 'on');
+    try
+        io.savers.Zarr3Saver.exportDataset(obj.mibModel, convId, outPath, zOpt);   % write (reads old dataset)
+        % reopen the written store as BigData into this buffer
+        lo = struct('datasetMode', 'BigData', 'ParentFigure', obj.mibModel.getProgressBarParent(), ...
+            'showWaitbar', false, 'mibPath', obj.mibModel.mibPath);
+        loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+        [imginfo, files] = loader.loadMetadata({outPath}, lo);
+        [img, imginfo] = loader.loadImages(files, imginfo, lo);
+        obj.mibModel.I{convId}.initialize(img, imginfo, 'BigData', [], false);
+        delete(wb);
+    catch ME
+        if isvalid(wb); delete(wb); end
+        utils.dlgs.showErrorDialog(obj.view.gui, ME.message, 'Convert to BigData failed');
+        hWidget.Value = hData.PreviousValue;
+        return;
+    end
+
+    % update the panel type cache and refresh
+    obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, ...
+        obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = 'BigData';
+    notify(obj.mibModel, 'NewDataset');
+    obj.mibController.cDirContents.updateFileList_Callback();
+    return;
+end
+
 % confirm the operation
 selection = uiconfirm(obj.view.gui, ...
     sprintf('You are going to switch to the %s mode\nThe current dataset will be closed!', hWidget.Value), ...
@@ -48,8 +127,11 @@ switch hWidget.Value % Get the selected dataset type from the dropdown
         newMode = 2;
         initWithImage = {fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.h5')};
     case 'BigData'
-        % Placeholder for future big data handling
+        % BigData mode: on-demand reader for pyramidal/chunked datasets.
+        % Start from a blank placeholder; the user then opens an OME-Zarr v3
+        % pyramid via File -> Open to populate it.
         newMode = 3;
+        initWithImage = {fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.h5')};
 end
 
 updatedMode = obj.mibModel.I{obj.mibModel.id}.switchDatasetMode(newMode, obj.mibModel.preferences.System.EnableSelection, initWithImage);

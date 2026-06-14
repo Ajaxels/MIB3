@@ -130,9 +130,9 @@ if nargin == 2  % batch mode
 end
 
 % check for the virtual stacking mode and return
-if obj.mibModel.I{BatchOpt.id}.datasetType(1) == 'V'
+if any(obj.mibModel.I{BatchOpt.id}.datasetType(1) == ['V' 'B'])
     dlgOpt.MsgBoxOnly = true;
-    header = sprintf('The black-and-white thresholding is not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again');
+    header = sprintf('The black-and-white thresholding is not yet available in the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again');
     dlgOpt.HeaderLines = 4;
     utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Black and white thresholding', dlgOpt);
     return;

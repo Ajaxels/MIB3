@@ -119,11 +119,11 @@ classdef Graphcut < handle
 
             % check for virtual stacking mode
             %% Virtual mode guard
-            if strcmp(dataset.datasetType, 'Virtual')
+            if any(dataset.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.view.gui, '', {''}, ...
-                    {'This tool is not available in virtual stacking mode.\nPlease switch to the memory-resident mode and try again.'}, ...
+                    {'This tool is not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.'}, ...
                     'Not implemented', dlgOpt);
                 obj.closeWindow();
                 return;

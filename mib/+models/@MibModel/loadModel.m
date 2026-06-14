@@ -126,6 +126,87 @@ end
 
 id = BatchOpt.id;
 
+%% BigData mode — attach a disk-backed model store by reference
+% The BigData model is a pyramidal zarr GROUP (a folder), not a single file, and
+% must be attached by reference (openStore) rather than read fully into memory.
+% Handled here, before the enableSelection guard, because BigData is browse-only
+% until a model exists. Done inline (no core-class signature change).
+if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
+    if ~isempty(BatchOpt.Filenames)
+        storePath = BatchOpt.Filenames{1};
+    elseif batchModeSwitch
+        [~, baseFilename] = fileparts(obj.I{id}.image.filename);
+        storePath = strrep(BatchOpt.FilenameFilter, '[F]', baseFilename);
+        if ~isfolder(storePath)
+            storePath = fullfile(BatchOpt.DirectoryName{1}, storePath);
+        end
+    else
+        selDir = uigetdir(defaultDir, 'Select the BigData model store (.zarr3 folder)');
+        if isequal(selDir, 0); return; end   % cancelled
+        storePath = selDir;
+    end
+
+    if isempty(storePath) || ~isfolder(storePath)
+        ErrorDlgOpt.winTitle = 'Model store not found';
+        ErrorDlgOpt.err = sprintf('The BigData model store was not found:\n%s', storePath);
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'StopProtocol');
+        return;
+    end
+
+    ds = obj.I{id};
+    bigMeta = core.MibImage.initializeImgInfo('pixSize', ds.image.pixSize, ...
+        'Height', ds.image.height, 'Width', ds.image.width, ...
+        'Depth', ds.image.depth, 'Time', ds.image.time, 'Colors', 1);
+    newLabels = core.MibBigDataLabels([], bigMeta);
+    try
+        newLabels.openStore(storePath);
+    catch ME
+        ErrorDlgOpt.winTitle = 'Invalid model store';
+        ErrorDlgOpt.err = sprintf('"%s" is not a valid BigData model store:\n%s', storePath, ME.message);
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'StopProtocol');
+        return;
+    end
+
+    % the model's finest level must match the image's full resolution
+    if newLabels.height ~= ds.image.height || newLabels.width ~= ds.image.width || ...
+            newLabels.depth ~= ds.image.depth
+        ErrorDlgOpt.winTitle = 'Dimension mismatch';
+        ErrorDlgOpt.err = sprintf(['Model size [%d x %d x %d] does not match the image ' ...
+            '[%d x %d x %d]. The model belongs to a different dataset.'], ...
+            newLabels.height, newLabels.width, newLabels.depth, ...
+            ds.image.height, ds.image.width, ds.image.depth);
+        notify(obj, 'ShowErrorDialog', core.ToggleEventData(ErrorDlgOpt));
+        notify(obj, 'StopProtocol');
+        return;
+    end
+
+    ds.labels = newLabels;
+    % openStore restores material names/colours from the store when present;
+    % fall back to the default palette only when none were saved.
+    if isempty(ds.labels.materialColors)
+        ds.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
+    end
+    ds.labels.labelsVariable  = 'mibModel';
+    ds.labels.filename        = storePath;
+    ds.modelExist             = true;
+    ds.enableSelection        = true;   % browse-only BigData becomes segmentable
+    ds.selectedMaterial       = 2;
+    ds.selectedAddToMaterial  = 2;
+    ds.lastSegmSelection      = [2 1];
+
+    obj.showModel = true;
+    notify(obj, 'UpdateGuiWidgets');
+    notify(obj, 'ShowImage');
+
+    if batchModeSwitch
+        BatchOpt.Filenames = {storePath};
+        notify(obj, 'SyncBatch', core.ToggleEventData(BatchOpt));
+    end
+    return;
+end
+
 %% Virtual mode guard
 if strcmp(obj.I{id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly   = true;

@@ -429,6 +429,13 @@ switch parameter
             obj.mibModel.I{targetGlobalId}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;
         end
 
+        % reset the dataset-type shown in the Datasets panel: the replacement is
+        % a Standard dataset, so Sets.datasetTypes (which drives the type dropdown
+        % in buffers_Callback) must be reset — otherwise it keeps showing 'BigData'
+        % / 'Virtual' after closing such a dataset.
+        targetSet = floor((targetGlobalId - 1) / obj.mibModel.Sets.datasetsInSet) + 1;
+        obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = 'Standard';
+
         % unlink this dataset: reset partner's context menu text and remove from linkedPairs
         partnerOfTarget = obj.mibModel.getLinkedDataset(targetGlobalId);
         if ~isempty(partnerOfTarget)
@@ -509,6 +516,9 @@ switch parameter
             if obj.mibModel.I{globalI}.image.colors < size(obj.mibModel.preferences.Colors.LUTColors, 1)
                 obj.mibModel.I{globalI}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;
             end
+
+            % the replacement is a Standard dataset — reset the panel type label
+            obj.mibModel.Sets.datasetTypes{targetSet, iButton} = 'Standard';
 
             % reset buffer buttons only when closing the currently visible set
             if targetSet == selectedSet

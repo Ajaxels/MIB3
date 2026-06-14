@@ -152,6 +152,11 @@ end
 %% Delegate to MibLabels
 obj.I{id}.labels.renameMaterial(materialIndex, BatchOpt.MaterialName);
 
+% BigData: persist the updated material names into the disk-backed store
+if isa(obj.I{id}.labels, 'core.MibBigDataLabels')
+    obj.I{id}.labels.writeMaterialMetadata();
+end
+
 notify(obj, 'UpdateGuiWidgets');
 notify(obj, 'ShowImage');
 

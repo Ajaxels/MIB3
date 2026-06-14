@@ -167,6 +167,11 @@ end
 
 if BatchOpt.showWaitbar; wb.Value = 1; end
 
+% BigData: persist the updated material list into the disk-backed store
+if isa(obj.I{BatchOpt.id}.labels, 'core.MibBigDataLabels')
+    obj.I{BatchOpt.id}.labels.writeMaterialMetadata();
+end
+
 notify(obj, 'UpdateGuiWidgets');
 notify(obj, 'ShowImage');
 

@@ -232,12 +232,12 @@ classdef DebrisRemoval < handle
                     'Message', 'Please wait...', 'Title', 'Debris removal');
             end
 
-            if strcmp(obj.mibModel.I{obj.BatchOpt.id}.datasetType, 'Virtual')
+            if any(obj.mibModel.I{obj.BatchOpt.id}.datasetType(1) == ['V' 'B'])
                 if obj.BatchOpt.showWaitbar; delete(progressBar); end
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-                    {sprintf('This plugin is not compatible with the virtual stacking mode!\nPlease switch to the memory-resident mode and try again')}, ...
+                    {sprintf('This plugin is not compatible with the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again')}, ...
                     'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 obj.closeWindow();

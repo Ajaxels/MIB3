@@ -51,6 +51,7 @@ if ~isempty(ModelMaterialNames)
 else
     BatchOpt.ModelMaterialNames = '';
 end
+BatchOpt.ModelStorePath = '';   % [BigData only] disk path of the .zarr3 model store; empty -> asked interactively
 BatchOpt.showWaitbar = true;
 BatchOpt.id = obj.getActiveId();
 
@@ -60,6 +61,8 @@ BatchOpt.mibBatchTooltip.ModelType = ...
     'Specify type of the new model; the model type indicates the maximum number of materials. More materials require more memory and are slower to work with';
 BatchOpt.mibBatchTooltip.ModelMaterialNames = sprintf( ...
     '[For 63 and 255 only]\nOptionally, specify names for materials as a semicolon-separated list: "mat1; mat2; mat3"');
+BatchOpt.mibBatchTooltip.ModelStorePath = sprintf( ...
+    '[BigData only]\nDisk location (.zarr3) for the on-disk model store; if empty you are asked for it');
 BatchOpt.mibBatchTooltip.showWaitbar = 'Show or not the progress bar during execution';
 
 %% Batch mode check actions
@@ -84,6 +87,14 @@ if nargin == 4  % batch mode
 end
 
 %% Initial checks
+% BigData: only the packed 63-material disk-backed model is supported; force
+% the type and skip the type-selection dialog below.
+isBigData = strcmp(obj.I{BatchOpt.id}.datasetType, 'BigData');
+if isBigData
+    BatchOpt.ModelType{1} = '63';
+    ModelType = 63;
+end
+
 % Check for virtual stacking mode
 if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     dlgOpt.MsgBoxOnly = true;
@@ -96,8 +107,10 @@ if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
     return;
 end
 
-% Check that selection/segmentation layers are enabled
-if obj.I{BatchOpt.id}.enableSelection == 0
+% Check that selection/segmentation layers are enabled.
+% BigData is intentionally browse-only (enableSelection==0) until a model is
+% created — creating the model is what enables segmentation — so skip this gate.
+if obj.I{BatchOpt.id}.enableSelection == 0 && ~isBigData
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     header = 'The models are switched off!';
@@ -119,12 +132,31 @@ if obj.I{BatchOpt.id}.modelExist && nargin < 4
 end
 
 % Show model-type selection dialog when the type was not provided
-if isempty(ModelType) && nargin < 4
+% (skipped for BigData, which forced the type to 63 above)
+if isempty(ModelType) && nargin < 4 && ~isBigData
     dlg = utils.dlgs.selectModelTypeDlg(obj.getProgressBarParent(), obj.mibPath);
     drawnow;
     selectedType = dlg.run();
     if isempty(selectedType); return; end
     BatchOpt.ModelType{1} = num2str(selectedType);
+end
+
+% BigData: ask where to keep the on-disk model store (unless given via batch).
+% The model is persisted on disk, so a deliberate location is required rather
+% than a hidden temp folder.
+if isBigData && isempty(BatchOpt.ModelStorePath) && nargin < 4
+    [imgPath, imgStem] = fileparts(obj.I{BatchOpt.id}.image.filename);
+    if isempty(imgPath) || strcmp(obj.I{BatchOpt.id}.image.filename, 'none.tif'); imgPath = pwd; end
+    if isempty(imgStem); imgStem = 'dataset'; end
+    [storeFile, storePathDir] = uiputfile( ...
+        {'*.zarr3', 'OME-Zarr v3 model store (*.zarr3)'}, ...
+        'Select location for the BigData model store', ...
+        fullfile(imgPath, ['Model_' imgStem '.zarr3']));
+    if isequal(storeFile, 0)   % user cancelled
+        notify(obj, 'StopProtocol');
+        return;
+    end
+    BatchOpt.ModelStorePath = fullfile(storePathDir, storeFile);
 end
 
 %%
@@ -134,20 +166,87 @@ if BatchOpt.showWaitbar
         'Title', 'Create model', 'Indeterminate', 'on');
 end
 
-switch BatchOpt.ModelType{1}
-    case {'63', '255'}
-        ModelMaterialNames = BatchOpt.ModelMaterialNames;
-        if ~isempty(ModelMaterialNames)
-            splitCells = regexp(ModelMaterialNames, '([^ ;,]*)', 'tokens');
-            ModelMaterialNames = cat(2, splitCells{:});
+if isBigData
+    % BigData: build the disk-backed packed (63-material) model here so the
+    % chosen store path is honored WITHOUT changing core.MibDataset.createModel's
+    % signature — a parameter-count change cannot hot-reload while the running
+    % app holds dataset instances (MATLAB only hot-swaps method bodies).
+    ds = obj.I{BatchOpt.id};
+    bigMeta = core.MibImage.initializeImgInfo( ...
+        'pixSize', ds.image.pixSize, ...
+        'Height',  ds.image.height, ...
+        'Width',   ds.image.width,  ...
+        'Depth',   ds.image.depth,  ...
+        'Time',    ds.image.time,   ...
+        'Colors',  1);
+    ds.labels = core.MibBigDataLabels([], bigMeta);
+    ds.labels.createStore([ds.image.height, ds.image.width, ds.image.depth], ...
+        BatchOpt.ModelStorePath, ds.image.pyramid);   % mirror the image pyramid levels
+    ds.labels.materialColors  = obj.preferences.Colors.ModelMaterialColors;
+    ds.labels.labelsVariable  = 'mibModel';
+    ds.labels.filename        = '';
+    bigNames = BatchOpt.ModelMaterialNames;
+    if ~isempty(bigNames)
+        splitCells = regexp(bigNames, '([^ ;,]*)', 'tokens');
+        bigNames = cat(2, splitCells{:});
+        bigNames = bigNames(~cellfun(@isempty, bigNames));
+        ds.labels.materialNames  = bigNames(:);
+        ds.labels.materialsCount = numel(bigNames);
+    else
+        ds.labels.materialNames  = {};
+        ds.labels.materialsCount = 0;
+    end
+    ds.modelExist          = true;
+    ds.enableSelection     = true;   % browse-only BigData becomes segmentable
+    ds.selectedMaterial    = 2;
+    ds.selectedAddToMaterial = 2;
+    ds.lastSegmSelection   = [2 1];
+    ds.annotations.clearContents();
+    ds.labels.writeMaterialMetadata();   % persist names/colours into the store
+
+    % One-time explainer: the BigData model persists live to disk (no Save step).
+    % Honour a session-scoped "Do not show again" flag (see generateSessionSettings).
+    if nargin < 4   % interactive only
+        if ~isfield(obj.preferences, 'DoNotShowDialogs') || ~isstruct(obj.preferences.DoNotShowDialogs)
+            obj.preferences.DoNotShowDialogs = struct();
         end
-        obj.I{BatchOpt.id}.createModel(str2double(BatchOpt.ModelType{1}), ModelMaterialNames);
-        % Update material colors from preferences
-        obj.I{BatchOpt.id}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
-    case '65535'
-        obj.I{BatchOpt.id}.createModel(65535);
-    case '4294967295'
-        obj.I{BatchOpt.id}.createModel(4294967295);
+        if ~isfield(obj.preferences.DoNotShowDialogs, 'BigDataModelCreated') || ...
+                ~obj.preferences.DoNotShowDialogs.BigDataModelCreated
+            htmlBody = sprintf(['<html><p style="font-size:10pt">The model is already written to ' ...
+                'disk <b>continuously</b> — every edit goes to its <b>.zarr3</b> store, so ' ...
+                '&quot;save&quot; happens <b>live</b>. There is no separate Save step.<br><br>' ...
+                'Model store:<br><i>%s</i><br><br>Use <b>Load model</b> to reopen this store in a ' ...
+                'later session and continue segmenting.</p></html>'], char(ds.labels.modelStorePath));
+            dlgOpt = struct();
+            dlgOpt.MsgBoxOnly      = true;
+            dlgOpt.Icon            = 'puffin_info';
+            dlgOpt.HeaderLines     = 1;
+            dlgOpt.WindowHeight    = 230;
+            dlgOpt.WindowWidth    = 650;
+            dlgOpt.DoNotShowAgain  = true;
+            dlgOpt.mibPath         = obj.mibPath;
+            [~, ~, obj.preferences.DoNotShowDialogs.BigDataModelCreated] = ...
+                utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), ...
+                'BigData model is saved live to disk', {htmlBody}, {htmlBody}, ...
+                'BigData model', dlgOpt);
+        end
+    end
+else
+    switch BatchOpt.ModelType{1}
+        case {'63', '255'}
+            ModelMaterialNames = BatchOpt.ModelMaterialNames;
+            if ~isempty(ModelMaterialNames)
+                splitCells = regexp(ModelMaterialNames, '([^ ;,]*)', 'tokens');
+                ModelMaterialNames = cat(2, splitCells{:});
+            end
+            obj.I{BatchOpt.id}.createModel(str2double(BatchOpt.ModelType{1}), ModelMaterialNames);
+            % Update material colors from preferences
+            obj.I{BatchOpt.id}.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
+        case '65535'
+            obj.I{BatchOpt.id}.createModel(65535);
+        case '4294967295'
+            obj.I{BatchOpt.id}.createModel(4294967295);
+    end
 end
 
 % Make the model layer visible

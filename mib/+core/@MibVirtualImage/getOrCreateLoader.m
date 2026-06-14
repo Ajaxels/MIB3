@@ -13,7 +13,7 @@ function loader = getOrCreateLoader(obj, fileIdx)
 % 'zarr3' io.loaders.Zarr3VirtualLoader
 %
 % Input Arguments:
-%   - **fileIdx** — [numeric] 1-based index into obj.data{} / obj.Virtual arrays
+%   - **fileIdx** — [numeric] 1-based index into obj.filePaths{} / obj.Virtual arrays
 %
 % Output Arguments:
 %   - **loader** — loader object (HDF5VirtualLoader or BioFormatsVirtualLoader)
@@ -28,7 +28,7 @@ if fileIdx <= numel(obj.loaders) && ~isempty(obj.loaders{fileIdx})
 end
 
 objectType = obj.Virtual.objectType{fileIdx};
-filename   = obj.data{fileIdx};
+filename   = obj.filePaths{fileIdx};
 
 switch objectType
     case {'matlab.hdf5', 'hdf5_image'}

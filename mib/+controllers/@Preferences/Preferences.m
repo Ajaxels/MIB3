@@ -151,7 +151,8 @@ classdef Preferences < handle
             %   - **panelId** *(optional)* — [char] tag of panel to update; when missing, all panels are updated
 
             panelsList = {'UserInterfacePanel', 'ColorsPanel', 'BackupAndUndoPanel', ...
-                'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel'};
+                'ExternalDirectoriesPanel', 'KeyboardShortcutsPanel', 'SegmentationToolsPanel', ...
+                'InputOutputPanel'};
 
             if nargin < 2
                 panelId = 'All';
@@ -358,6 +359,24 @@ classdef Preferences < handle
 
                 obj.renderedPanels(6) = 1;
             end
+
+            % % -------------- InputOutputPanel ----------------
+            if strcmp(panelId, 'All') || strcmp(panelId, 'InputOutputPanel')
+                if obj.renderedPanels(7) == 1; return; end  % already rendered
+                handles.ZarrLibrary.Value = obj.preferences.IO.ZarrLibrary;
+                handles.ZarrLibraryLabel.Text = obj.zarrLibraryDescription(obj.preferences.IO.ZarrLibrary);
+                obj.renderedPanels(7) = 1;
+            end
+        end
+
+        function txt = zarrLibraryDescription(~, value)
+            % ZARRLIBRARYDESCRIPTION - one-line description of a zarr3 I/O backend.
+            switch char(value)
+                case 'native'
+                    txt = 'Native zarrMex engine: bundled with MIB, no external dependencies (recommended)';
+                otherwise   % 'python'
+                    txt = 'zarr-python (v2 and v3) via the Python interpreter set in External dirs; requires the zarr and numpy packages';
+            end
         end
         
         function helpBtnCallback(obj)
@@ -445,6 +464,11 @@ classdef Preferences < handle
             activeDataset.enableSelection = systemPrefs.EnableSelection;
 
             obj.mibModel.preferences = obj.preferences;
+
+            % activate the selected OME-Zarr v3 backend so open/save of zarr3
+            % uses it without restarting MIB (io.zarr.Array / io.zarr.Group)
+            io.zarr.Config.setLibrary(obj.mibModel.preferences.IO.ZarrLibrary);
+            io.zarr.Config.setPythonPath(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath);
 
             activeDataset.labels.materialColors = colorPrefs.ModelMaterialColors;
             activeDataset.labels.lutColors = colorPrefs.LUTColors;
@@ -669,6 +693,29 @@ classdef Preferences < handle
                     obj.updateWidgets();
             end
                 
+        end
+
+        function InputOutputPanelCallbacks(obj, event)
+            % INPUTOUTPUTPANELCALLBACKS - callbacks for modification of the input / output panel.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.InputOutputPanelCallbacks(event)
+            %
+            % Input Arguments:
+            %   - **event** — [struct] event data from the GUI element that triggered callback
+            %
+        
+            switch event.Source.Tag
+                case 'ZarrLibrary'
+                    obj.preferences.IO.ZarrLibrary = obj.view.handles.ZarrLibrary.Value;
+                    obj.view.handles.ZarrLibraryLabel.Text = ...
+                        obj.zarrLibraryDescription(obj.preferences.IO.ZarrLibrary);
+                    % Note: this only updates the dialog's working copy of preferences;
+                    % the backend is committed in ApplyButtonPushedCallback.
+            end
+
         end
         
         function SegmentationPanelCallbacks(obj, event)

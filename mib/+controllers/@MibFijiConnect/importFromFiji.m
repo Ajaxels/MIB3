@@ -74,12 +74,12 @@ datasetName  = answer{1};
 datasetType  = answer{2};   % 'image' | 'labels' | 'mask' | 'selection'
 
 % virtual stacking mode is not supported for any layer import
-if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
     utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', ...
         {}, {sprintf('Switch to memory-resident mode before importing "%s"!\nUse the Active Dataset panel to change the mode.', datasetType)}, ...
-        'Virtual mode', dlgOpt);
+        'Virtual / BigData mode', dlgOpt);
     return;
 end
 

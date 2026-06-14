@@ -172,8 +172,10 @@ try
                 otherwise; coef_z = dataset.image.pixSize.z / dataset.image.pixSize.y;
             end
 
-            % Handle Virtual mode
-            if dataset.datasetType(1) == 'V'
+            % Handle Virtual / BigData mode (on-demand readers; pixel readout
+            % comes from the rendered Iraw, never from dataset.image.data which
+            % is empty for these types)
+            if any(dataset.datasetType(1) == ['V' 'B'])
                 % Iraw is the raw image displayed on screen.
                 % When zoomed in (magFactor < 1): Iraw is a full-res crop of the
                 % dataset — use 'blockmode' to get position within that crop.
@@ -230,7 +232,7 @@ try
 
             % Get pixel values based on orientation
             if orientation == 3  % YX orientation
-                if dataset.datasetType(1) ~= 'V'
+                if ~any(dataset.datasetType(1) == ['V' 'B'])
                     colorValues = squeeze(dataset.image.data(yImage, xImage, sliceNo, cImage, tImage));
                     if dataset.modelExist
                         modelValues = dataset.labels.data(yImage, xImage, sliceNo, tImage);
@@ -244,12 +246,12 @@ try
                         colorValues = squeeze(obj.mibModel.Iraw(yImage, xImage, cImage));
                     end
                 end
-            elseif orientation == 1 && dataset.datasetType(1) ~= 'V'  % ZX orientation
+            elseif orientation == 1 && ~any(dataset.datasetType(1) == ['V' 'B'])  % ZX orientation
                 colorValues = squeeze(dataset.image.data(sliceNo, yImage, xImage, cImage, tImage));
                 if dataset.modelExist
                     modelValues = dataset.labels.data(sliceNo, yImage, xImage, tImage);
                 end
-            elseif orientation == 2 && dataset.datasetType(1) ~= 'V'  % ZY orientation
+            elseif orientation == 2 && ~any(dataset.datasetType(1) == ['V' 'B'])  % ZY orientation
                 colorValues = squeeze(dataset.image.data(yImage, sliceNo, xImage, cImage, tImage));
                 if dataset.modelExist
                     modelValues = dataset.labels.data(yImage, sliceNo, xImage, tImage);

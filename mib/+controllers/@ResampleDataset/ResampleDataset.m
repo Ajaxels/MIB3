@@ -588,7 +588,7 @@ classdef ResampleDataset < handle
 
             % write image back — replace the data container directly (setData4D
             % writes into the existing fixed-size array and would error on a size change)
-            if obj.mibModel.I{id}.datasetType(1) == 'V'
+            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 newMode = obj.mibModel.I{id}.switchDatasetMode(0);
                 if isempty(newMode)
                     if ~isempty(wb); delete(wb); end

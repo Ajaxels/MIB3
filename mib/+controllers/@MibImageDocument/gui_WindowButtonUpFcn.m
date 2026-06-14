@@ -46,6 +46,11 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
     getDataOptions.roiId = -1;
     currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], NaN, getDataOptions));
 
+    % With no committed selection layer (e.g. a BigData set opened browse-only,
+    % no model created yet) getData2D returns empty — skip the commit instead of
+    % crashing on a 0-size imresize. The callback cleanup further below still runs.
+    if ~isempty(currSelection)
+
     % Fill holes in brush stroke if the auto-fill option is enabled
     if obj.mibModel.autoFillSelection
         obj.brushSelection{1}.selection = imfill(obj.brushSelection{1}.selection, 'holes');
@@ -97,6 +102,7 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
         obj.mibModel.preferences.Users.Tiers.brushTravelDistance + travelInMeters;
     obj.mibModel.preferences.Users.Tiers.collectedPoints = ...
         obj.mibModel.preferences.Users.Tiers.collectedPoints + travelInMeters * 10; % add to scores
+    end   % if ~isempty(currSelection)
 end
 
 % ---- 2. Clear brush state and update ROI positions ----

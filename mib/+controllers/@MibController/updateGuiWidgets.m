@@ -468,7 +468,9 @@ if isempty(updatePanels) || ismember('selectionPanel', updatePanels)
 end
 
 % update additional settings depending on the type of the loaded dataset
-if dataset.datasetType(1) == 'V'  % virtual dataset
+% Virtual is always browse-only; BigData is browse-only until a model is
+% created (then it supports segmentation like a Standard dataset).
+if dataset.datasetType(1) == 'V' || (dataset.datasetType(1) == 'B' && ~dataset.modelExist)
     obj.view.brushCursorShow = false;
 else
     obj.view.brushCursorOffset = []; % reset offset to re-render cursor

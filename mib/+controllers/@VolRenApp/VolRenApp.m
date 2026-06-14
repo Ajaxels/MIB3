@@ -233,9 +233,9 @@ classdef VolRenApp < handle
             obj.surfListAlpha = []; % array of alpha values for the generated surfaces
 
             % check for the virtual stacking mode and close the controller
-            if strcmp(obj.mibModel.I{id}.datasetType, 'Virtual')
+            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                header = 'The 3D volume rendering is not available in the virtual stacking mode!';
+                header = 'The 3D volume rendering is not available in the virtual or BigData mode!';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Switch to the memory-resident mode and try again'}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');

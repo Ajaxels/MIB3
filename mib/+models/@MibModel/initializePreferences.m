@@ -120,6 +120,16 @@ end
 if isdir(obj.preferences.System.Dirs.LastPath) == 0 %#ok<*ISDIR> isfolder is not compatible with empty strings: isfolder([])
     obj.preferences.System.Dirs.LastPath = start_path;
 end
+% ------------ OME-Zarr v3 backend selection ------------
+% Push the configured zarr backend into the process-wide io.zarr.Config used
+% by io.zarr.Array / io.zarr.Group. Guard for older saved prefs that predate
+% the IO field (same-version restore replaces the whole struct, see above).
+if ~isfield(obj.preferences, 'IO') || ~isfield(obj.preferences.IO, 'ZarrLibrary')
+    obj.preferences.IO.ZarrLibrary = 'native';
+end
+io.zarr.Config.setLibrary(obj.preferences.IO.ZarrLibrary);
+io.zarr.Config.setPythonPath(obj.preferences.ExternalDirs.PythonInstallationPath);
+
 % preload an image used for filter previews
 % move preloading to the first call of the image filters dialog
 obj.sessionSettings.ImageFilters.TestImg = []; %imread(fullfile(obj.mibPath, 'assets', 'images', 'test_img_for_previews.png'));

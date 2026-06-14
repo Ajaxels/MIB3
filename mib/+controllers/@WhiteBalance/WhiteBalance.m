@@ -278,12 +278,12 @@ classdef WhiteBalance < handle
                     'Message', 'Please wait...', 'Title', 'White balance correction');
             end
 
-            if strcmp(dataset.datasetType, 'Virtual')
+            if any(dataset.datasetType(1) == ['V' 'B'])
                 if obj.BatchOpt.showWaitbar; delete(progressBar); end
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', {''}, ...
-                    {sprintf('This plugin is not compatible with the virtual stacking mode!\nPlease switch to the memory-resident mode and try again')}, ...
+                    {sprintf('This plugin is not compatible with the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again')}, ...
                     'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 obj.closeWindow();

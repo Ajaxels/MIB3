@@ -53,6 +53,45 @@ function createModel(obj, modelType, modelMaterialNames)
 if nargin < 3; modelMaterialNames = []; end
 if nargin < 2; modelType = NaN; end
 
+% BigData: the model is kept on disk as a packed pyramidal zarr (not in
+% memory). Only the 63-material packed type is supported. Creating the model
+% allocates the disk store and enables segmentation for the browse-only set.
+if strcmp(obj.datasetType, 'BigData')
+    meta = core.MibImage.initializeImgInfo( ...
+        'pixSize', obj.image.pixSize, ...
+        'Height',  obj.image.height, ...
+        'Width',   obj.image.width,  ...
+        'Depth',   obj.image.depth,  ...
+        'Time',    obj.image.time,   ...
+        'Colors',  1);
+    % Direct/batch callers get a temp-scratch store; the interactive path
+    % (MibModel.createModel) builds the store at a user-chosen location instead.
+    % Either way the model mirrors the image pyramid levels.
+    obj.labels = core.MibBigDataLabels([], meta);
+    obj.labels.createStore([obj.image.height, obj.image.width, obj.image.depth], ...
+        '', obj.image.pyramid);
+    obj.labels.labelsVariable = 'mibModel';
+    obj.labels.filename = '';   % not saved yet; Phase 3 "save as" suggests the name
+    if ~isempty(modelMaterialNames)
+        if size(modelMaterialNames, 1) < size(modelMaterialNames, 2)
+            obj.labels.materialNames = modelMaterialNames';
+        else
+            obj.labels.materialNames = modelMaterialNames;
+        end
+        obj.labels.materialsCount = numel(modelMaterialNames);
+    else
+        obj.labels.materialNames = {};
+        obj.labels.materialsCount = 0;
+    end
+    obj.modelExist = true;
+    obj.enableSelection = true;   % BigData starts browse-only; a model enables segmentation
+    obj.selectedMaterial = 2;
+    obj.selectedAddToMaterial = 2;
+    obj.lastSegmSelection = [2 1];
+    obj.annotations.clearContents();
+    return;
+end
+
 % Determine current model type from the labels class
 currentModelType = obj.labels.maxMaterials;
 

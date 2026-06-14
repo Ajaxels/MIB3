@@ -100,11 +100,11 @@ dataset = obj.mibModel.I{BatchOpt.id};
 selectedColorChannel = dataset.selectedColorChannel; % 0 - all, otherwise 1,2,3...
 
 % check for the virtual stacking mode and return
-if strcmp(dataset.datasetType, 'Virtual')
+if any(dataset.datasetType(1) == ['V' 'B'])
     toolname = 'segment-everything-2 model is';
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    header = sprintf('The %s not yet available in the virtual stacking mode!\nPlease switch to the memory-resident mode and try again', toolname);
+    header = sprintf('The %s not yet available in the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again', toolname);
     dlgOpt.HeaderLines = 3;
     utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Not implemented', dlgOpt);
     return;

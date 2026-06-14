@@ -58,6 +58,33 @@ switch mode
         obj.mibModel.exportDatasetToImaris('model');
     case 'Export model to another MIB dataset'   % obj.handles.ribbonModel.exportToMIB
         obj.mibModel.exportDatasetToMib('model');
+    case 'Export model to Zarr3'                  % obj.handles.ribbonModel.exportToZarr3
+        parentFig = obj.mibModel.getProgressBarParent();
+        id = obj.mibModel.getActiveId();
+        ds = obj.mibModel.I{id};
+        if ~ds.modelExist
+            utils.dlgs.showErrorDialog(parentFig, 'There is no model to export.', 'Export model to Zarr3');
+            return;
+        end
+        [imgPath, imgStem] = fileparts(ds.image.filename);
+        if isempty(imgPath); imgPath = obj.mibModel.currentDirectory; end
+        if isempty(imgStem); imgStem = 'dataset'; end
+        [zFile, zDir] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
+            'Export model to Zarr3', fullfile(imgPath, ['Labels_' imgStem '.zarr3']));
+        if isequal(zFile, 0); return; end
+        zOpt = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, true);
+        if isempty(zOpt); return; end   % cancelled the settings dialog
+        wb = uiprogressdlg(parentFig, 'Title', 'Export model to Zarr3', ...
+            'Message', 'Writing OME-Zarr v3 pyramid, please wait...', 'Indeterminate', 'on');
+        try
+            io.savers.Zarr3Saver.exportModel(obj.mibModel, id, fullfile(zDir, zFile), zOpt);
+            delete(wb);
+            uialert(parentFig, sprintf('Model exported to:\n%s', fullfile(zDir, zFile)), ...
+                'Export model to Zarr3', 'Icon', 'success');
+        catch ME
+            if isvalid(wb); delete(wb); end
+            utils.dlgs.showErrorDialog(parentFig, ME.message, 'Export model to Zarr3 failed');
+        end
     case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filename
         activeId = obj.mibModel.getActiveId();
         if isempty(obj.mibModel.I{activeId}.labels.filename)

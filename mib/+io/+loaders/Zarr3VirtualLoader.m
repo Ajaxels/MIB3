@@ -58,6 +58,12 @@ properties (SetAccess = private)
     toMIB3perm
     % [1x5] permutation vector: permute(raw_from_zarrMex, toMIB3perm) -> [y,x,z,c,t].
     % Precomputed from axisOrder in the constructor.
+    cachedLevelPath = ''
+    % [char] full path of the level whose io.zarr.Array is currently cached.
+    cachedArray = []
+    % [io.zarr.Array] reused across slice reads at the same pyramid level, so the
+    % backend handle (and, for python, the open py array + metadata) is opened once
+    % per level rather than per read. Refreshed when the requested level changes.
 end
 
 methods
@@ -170,9 +176,15 @@ methods
             end
         end
 
-        % Read from zarr
-        arr = ZarrArray(fullPath);
-        raw = arr.read(bbox);               % returns data in zarr C-order
+        % Read from zarr through the backend-selectable facade
+        % (native zarrMex or python zarr, per io.zarr.Config / preferences.IO.ZarrLibrary).
+        % Cache the level handle so the backend (and python py-handle/metadata) is
+        % opened once per level instead of per slice read.
+        if isempty(obj.cachedArray) || ~strcmp(fullPath, obj.cachedLevelPath)
+            obj.cachedArray     = io.zarr.Array(fullPath);
+            obj.cachedLevelPath = fullPath;
+        end
+        raw = obj.cachedArray.read(bbox);   % returns data in zarr C-order
 
         % Permute to MIB3 [y, x, z, c, t]
         block = permute(raw, obj.toMIB3perm);

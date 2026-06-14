@@ -161,6 +161,13 @@ else
     end
 end
 
+%% ----------- IO (input/output) PANEL -----------
+% Backend for OME-Zarr v3 (zarr3) read/write used by the io.zarr facade:
+%   'native' - bundled zarrMex engine (no external dependency, default)
+%   'python' - zarr-python (v3) via the interpreter in
+%              Prefs.ExternalDirs.PythonInstallationPath
+Prefs.IO.ZarrLibrary = 'native';
+
 %% ----------- KEY SHORTCUTS PANEL -----------
 Prefs.KeyShortcuts = utils.defaults.generateKeyShortcuts();
 
@@ -485,6 +492,13 @@ Prefs.Deep.SendReports.SMTP_username = 'user@gmail.com';
 Prefs.Deep.SendReports.SMTP_password = '';
 Prefs.Deep.SendReports.sendWhenFinished = false;
 Prefs.Deep.SendReports.sendDuringRun = false;
+
+%% ----------- "DO NOT SHOW AGAIN" DIALOGS --------------
+% Persistent registry of one-time informational dialogs the user has dismissed
+% with a "Do not show again" checkbox. Each field is a logical keyed by a dialog
+% name, e.g. Prefs.DoNotShowDialogs.BigDataModelCreated = true. Stored in
+% preferences (not sessionSettings) so the choice survives across sessions.
+Prefs.DoNotShowDialogs = struct();
 
 %% ----------- TIP OF THE DAY --------------
 % index of the next tip to show

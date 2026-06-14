@@ -182,8 +182,11 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
 
     str2 = ['Distance = ' num2str(distance) ' ' pixSize.units];
 
-    if ~isfield(obj.mibModel.sessionSettings.DoNotShowDialogs, 'MeasureLength') || ...
-            ~obj.mibModel.sessionSettings.DoNotShowDialogs.MeasureLength
+    if ~isfield(obj.mibModel.preferences, 'DoNotShowDialogs') || ~isstruct(obj.mibModel.preferences.DoNotShowDialogs)
+        obj.mibModel.preferences.DoNotShowDialogs = struct();
+    end
+    if ~isfield(obj.mibModel.preferences.DoNotShowDialogs, 'MeasureLength') || ...
+            ~obj.mibModel.preferences.DoNotShowDialogs.MeasureLength
         str3 = 'Hints: hold Shift to snap line to 15-degree angles; finalise with double-click or Enter';
         htmlContent = sprintf('%s\nThe measured length has been also copied to the system clipboard\n\n%s', str2, str3);
         dlgTitle = 'Quick measurement';
@@ -195,7 +198,7 @@ function doFinalize(pos, datasetId, obj, cImageDoc)
         options.WindowHeight   = 180;
         options.mibPath        = obj.mibPath;
         options.DoNotShowAgain = true;
-        [~, ~, obj.mibModel.sessionSettings.DoNotShowDialogs.MeasureLength] = ...
+        [~, ~, obj.mibModel.preferences.DoNotShowDialogs.MeasureLength] = ...
             utils.dlgs.inputUniversalDlg(obj.view.gui, '', {htmlContent}, {htmlContent}, dlgTitle, options);
     end
 

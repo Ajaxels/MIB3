@@ -213,6 +213,10 @@ popupList.add(homeHandles.exportToMatlab);
 homeHandles.exportToImaris = ListItem('Export to Imaris', Icon(fullfile(iconPath, 'imaris_24px.png')));
 homeHandles.exportToImaris.Description = 'Export the current dataset to Imaris';
 popupList.add(homeHandles.exportToImaris);
+% Export to Zarr3 (OME-Zarr v3 pyramid; openable as a BigData dataset)
+homeHandles.exportToZarr3 = ListItem('Export to Zarr3', Icon(fullfile(iconPath, 'zarr3_24px.png')));
+homeHandles.exportToZarr3.Description = 'Export the current image as an OME-Zarr v3 pyramid (openable in BigData mode)';
+popupList.add(homeHandles.exportToZarr3);
 
 % add the popup list to the SplitButton button
 homeHandles.export.Popup = popupList;

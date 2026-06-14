@@ -61,8 +61,9 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
         meta = utils.concatenateDictionaries(metaDefault, meta);
     end
 
-    % close open bio-format readers, otherwise the files locked
-    if ~isempty(obj.datasetType) && obj.datasetType(1)=='V'; obj.closeVirtualDataset();  end  
+    % close open bio-format / virtual readers (Virtual and BigData both use
+    % on-demand readers), otherwise the files stay locked
+    if ~isempty(obj.datasetType) && any(obj.datasetType(1)==['V' 'B']); obj.closeVirtualDataset();  end
 
     % reset the state of the main layers
     obj.image = NaN;
@@ -99,7 +100,19 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
             obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
 
         case 'BigData'
-            error('core.MibDataset.initialize: BigData - not implemented');
+            % BigData reads on demand from a pyramidal OME-Zarr v3 dataset.
+            % The image reader reuses the Virtual zarr path (MibBigDataImage
+            % subclasses MibVirtualImage). The labels layer is a placeholder
+            % empty MibLabels63; a disk-backed pyramidal model is created on
+            % demand when the user starts segmentation (Phase 2).
+            obj.image = core.MibBigDataImage(img, meta);
+            obj.labels = core.MibLabels63(zeros([], 'uint8'), meta);
+            % BigData opens browse-only: there is no in-memory selection/model
+            % layer until a disk-backed model is created (createModel) or loaded
+            % (loadModel), both of which set enableSelection = true. Forcing it
+            % false here (regardless of the caller / preferences) prevents the
+            % segmentation tools from acting on a non-existent selection layer.
+            enableSelection = false;
     end
     
     % update the dataset type

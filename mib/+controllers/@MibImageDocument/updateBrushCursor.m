@@ -45,8 +45,11 @@ if isempty(lineStyle); lineStyle = ':'; end
 % Use this document's local id — mibModel.id is stale in split view.
 localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
     (obj.setOfDatasetsIndex - 1) * obj.mibModel.Sets.datasetsInSet;
+% Virtual is browse-only; BigData supports the brush only once a model exists.
+dsLocal = obj.mibModel.I{localId};
+browseOnly = dsLocal.datasetType(1) == 'V' || (dsLocal.datasetType(1) == 'B' && ~dsLocal.modelExist);
 shouldShow = obj.view.brushCursorShow && obj.isInsideImage && ...
-    obj.mibModel.I{localId}.datasetType(1) ~= 'V' && ~obj.mibModel.disableSegmentation;
+    ~browseOnly && ~obj.mibModel.disableSegmentation;
 
 if resetOffset; obj.brushCursorOffset = []; end
 
