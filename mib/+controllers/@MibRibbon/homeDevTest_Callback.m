@@ -24,6 +24,8 @@ if obj.mibModel.preferences.System.DeveloperMode
     fprintf('controllers.MibRibbon.homeDevTest_Callback: pressed\n');
 end
 
+%io.zarr.Config.setSmoothing(true);
+
 %benchmarkGetSetData(obj.mibModel);
 end
 

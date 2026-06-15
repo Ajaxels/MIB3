@@ -98,6 +98,19 @@ obj.dataClass   = imgClass;
 obj.maxInt      = double(intmax(imgClass));
 obj.dim_yxzct   = [obj.height, obj.width, obj.depth, obj.colors, obj.time];
 
+% default bounding box (physical units) from dims x voxel size. Virtual/BigData
+% (zarr) datasets carry no ImageDescription "BoundingBox" tag, so unlike
+% core.MibImage.initialize it is never parsed — leaving boundingBox empty and
+% breaking convertPixelsToUnits / Lines3D / the 3D-lines overlay. Compute the
+% same default MibImage uses (origin at 0). Use the metadata pixSize, which is
+% the source of obj.pixSize.
+if isempty(obj.boundingBox) && isKey(meta, 'pixSize') && ~isempty(meta{'pixSize'})
+    bbPixSize = meta{'pixSize'};
+    obj.boundingBox = [0, (max([obj.width,  2]) - 1) * bbPixSize.x, ...
+                       0, (max([obj.height, 2]) - 1) * bbPixSize.y, ...
+                       0, (max([obj.depth,  2]) - 1) * bbPixSize.z];
+end
+
 if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
 obj.filename = meta{'Filename'};
 

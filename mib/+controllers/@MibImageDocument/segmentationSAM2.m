@@ -99,15 +99,48 @@ end
 dataset = obj.mibModel.I{BatchOpt.id};
 selectedColorChannel = dataset.selectedColorChannel; % 0 - all, otherwise 1,2,3...
 
-% check for the virtual stacking mode and return
-if any(dataset.datasetType(1) == ['V' 'B'])
-    toolname = 'segment-everything-2 model is';
+% Virtual stacking is browse-only and has no on-disk model — not supported.
+% BigData IS supported: the on-demand image reader feeds SAM, and results are
+% written through setData2D/setData3D, which route to the disk-backed 63-class
+% model store (setData63) — exactly like the brush.
+if dataset.datasetType(1) == 'V'
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_warning';
-    header = sprintf('The %s not yet available in the virtual or BigData mode!\nPlease switch to the memory-resident mode and try again', toolname);
+    header = sprintf('The segment-everything-2 model is not yet available in the virtual stacking mode!\nPlease switch to the memory-resident or BigData mode and try again');
     dlgOpt.HeaderLines = 3;
     utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Not implemented', dlgOpt);
     return;
+end
+
+% BigData-specific restrictions. Supported methods: 'Interactive', 'Landmarks'
+% and 'Interactive 3D'. All read the image at the displayed pyramid level (via
+% getData2D/getData3D + the injected magFactor) and write through
+% setData2D/setData3D, which route to the disk-backed 63-class model store
+% (setData63) like the brush. Only 'Automatic everything' is unsupported.
+if dataset.datasetType(1) == 'B'
+    if strcmp(BatchOpt.Method{1}, 'Automatic everything')
+        % "Automatic everything" produces a 65535-material model, which the
+        % packed 63-material BigData store cannot hold.
+        dlgOpt.MsgBoxOnly = true;
+        dlgOpt.Icon = 'puffin_warning';
+        header = sprintf(['"Automatic everything" generates a 65535-material model, which the ' ...
+            'disk-backed 63-material BigData model cannot store.\n\n' ...
+            'For BigData use the "Interactive", "Interactive 3D" or "Landmarks" methods instead.']);
+        dlgOpt.HeaderLines = 4;
+        utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Not supported for BigData', dlgOpt);
+        return;
+    end
+    if ~dataset.modelExist
+        % selection / mask / materials all live in the model store, so a model
+        % must be created before SAM can write to a BigData dataset.
+        dlgOpt.MsgBoxOnly = true;
+        dlgOpt.Icon = 'puffin_warning';
+        header = sprintf(['A model is required to segment a BigData dataset!\n\n' ...
+            'Create a model first (press the "+" in the Segmentation panel), then run SAM again.']);
+        dlgOpt.HeaderLines = 3;
+        utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), header, {}, {}, 'Model required', dlgOpt);
+        return;
+    end
 end
 
 % check for switch that disables segmentation tools
@@ -412,6 +445,12 @@ try
             end
 
             getDataOpt.z = [z1 z2];
+            % Pyramidal (BigData/Virtual) reads are level-aware: pass the current
+            % magFactor so getData3D returns the displayed pyramid level over the
+            % seeded z-range (and the subsequent write targets the same level).
+            % Z is never downsampled by the pyramid, so only XY is at display res.
+            % Standard reads full-resolution and ignores magFactor.
+            if any(dataset.datasetType(1) == ['V' 'B']); getDataOpt.magFactor = dataset.magFactor; end
             imgDataset = cell2mat(obj.mibModel.getData3D('image', t, dataset.orientation, selectedColorChannel, getDataOpt));
             % check for correct number of color channels, adjust contast, do image padding and convert to RGB
             [imgDataset, padSize] = checkAndPreprocessImage(imgDataset, methodToUse, currViewPort, colCh, liveStretch, true);
@@ -424,9 +463,12 @@ try
             labelPositions = obj.mibModel.sessionSettings.SAMsegmenter.Points.Position(:, 1:3);
             labelValues = obj.mibModel.sessionSettings.SAMsegmenter.Points.Value;
 
-            % shift coordinates
-            labelPositions(:,1) = ceil((labelPositions(:,1) - max([0 floor(dataset.axesX(1))])) +padSize);
-            labelPositions(:,2) = ceil((labelPositions(:,2) - max([0 floor(dataset.axesY(1))])) +padSize);
+            % shift coordinates; for pyramidal datasets the image is at display
+            % resolution, so scale XY seeds by magFactor (Z is never downsampled).
+            coef = 1;
+            if any(dataset.datasetType(1) == ['V' 'B']); coef = dataset.magFactor; end
+            labelPositions(:,1) = ceil((labelPositions(:,1) - max([0 floor(dataset.axesX(1))]))/coef + padSize);
+            labelPositions(:,2) = ceil((labelPositions(:,2) - max([0 floor(dataset.axesY(1))]))/coef + padSize);
             labelPositions(:,3) = labelPositions(:,3) - z1;
 
             % do SAM2 segmentation using the provided list of points using predictor for video
@@ -539,9 +581,16 @@ try
                         labelPositions = obj.mibModel.sessionSettings.SAMsegmenter.Points.Position(pntIndices, 1:2);
                         labelValues = obj.mibModel.sessionSettings.SAMsegmenter.Points.Value(pntIndices);
 
-                        % shift coordinates
-                        labelPositions(:,1) = ceil((labelPositions(:,1) - max([0 floor(dataset.axesX(1))])) +padSize);
-                        labelPositions(:,2) = ceil((labelPositions(:,2) - max([0 floor(dataset.axesY(1))])) +padSize);
+                        % shift coordinates to the block-mode image. For pyramidal
+                        % (BigData/Virtual) datasets getData2D returns the image at the
+                        % DISPLAY resolution (downsampled by magFactor) while the click
+                        % positions are in full-resolution dataset units, so divide by
+                        % magFactor to land on the right image pixel. Standard returns
+                        % full-resolution pixels, so coef stays 1.
+                        coef = 1;
+                        if any(dataset.datasetType(1) == ['V' 'B']); coef = dataset.magFactor; end
+                        labelPositions(:,1) = ceil((labelPositions(:,1) - max([0 floor(dataset.axesX(1))]))/coef + padSize);
+                        labelPositions(:,2) = ceil((labelPositions(:,2) - max([0 floor(dataset.axesY(1))]))/coef + padSize);
 
                         % do SAM2 segmentation using the provided list of points
                         [h1, w1, ~] = size(imgIn);
@@ -602,6 +651,13 @@ try
                     case 3  % Landmarks
                         % get labels, keep only x,y
                         labelPositions = labelPositions(:,2:3);
+                        % getSliceLabels(shiftCoordinates) returns block-relative
+                        % full-resolution coordinates (it does not divide by the
+                        % magnification). For pyramidal (BigData/Virtual) datasets the
+                        % image is at display resolution, so scale the seeds to it.
+                        if any(dataset.datasetType(1) == ['V' 'B'])
+                            labelPositions = labelPositions / dataset.magFactor;
+                        end
                         imgOut = pointsSAM(imgIn, labelPositions, labelValues);
                         % auto fill the shape when auto fill is checked
                         if obj.mibModel.autoFillSelection

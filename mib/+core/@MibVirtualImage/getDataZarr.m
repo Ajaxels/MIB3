@@ -67,57 +67,44 @@ else
     [~, levelIdx]   = min(differences);
 end
 
-% --- map orient to pyramid dimension indices ------------------------------
-% pyramid.levelImageSizes columns: [y, x, z]
+% --- map screen options to physical data ranges, scale to level, clamp ----
+% options: .x = horizontal screen range, .y = vertical, .z = slice/depth.
+% Each orientation maps these onto the physical data axes (Y, X, Z); each
+% physical range is then scaled by THAT axis' own pyramid factor and clamped to
+% THAT physical dimension. (The previous version clamped screen-axis ranges
+% against the dimension mapped to that screen axis, so for XZ/YZ the slice
+% coordinate was clamped against the wrong dimension and produced inverted
+% bounding boxes. The permute below — which defines the on-screen arrangement —
+% is unchanged, so only the region selection is corrected; YX is identical.)
+fullSize = obj.pyramid.levelImageSizes(1, :);   % [Y X Z]
 switch orient
-    case 1  % xz
-        outDimYind = 3;   % data Z  -> screen Y
-        outDimXind = 1;   % data Y  -> screen X
-        outDimZind = 2;   % data X  -> screen Z
-    case 2  % yz
-        outDimYind = 1;   % data Y  -> screen Y
-        outDimXind = 3;   % data Z  -> screen X
-        outDimZind = 2;   % data X  -> screen Z
-    case 3  % yx  (MIB3 default; MIB2 used case 4)
-        outDimYind = 1;   % data Y  -> screen Y
-        outDimXind = 2;   % data X  -> screen X
-        outDimZind = 3;   % data Z  -> screen Z
-    otherwise
-        error('core.MibVirtualImage.getDataZarr: unsupported orientation %d', orient);
+    case 1  % xz: vertical = X, horizontal = Z, slice = Y
+        if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(2)]; end
+        if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(3)]; end
+        if ~isfield(options, 'z') || isempty(options.z); options.z = [1, fullSize(1)]; end
+        physYfull = options.z; physXfull = options.y; physZfull = options.x;
+    case 2  % yz: vertical = Y, horizontal = Z, slice = X
+        if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(1)]; end
+        if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(3)]; end
+        if ~isfield(options, 'z') || isempty(options.z); options.z = [1, fullSize(2)]; end
+        physYfull = options.y; physXfull = options.z; physZfull = options.x;
+    otherwise  % 3 yx: vertical = Y, horizontal = X, slice = Z
+        if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(1)]; end
+        if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(2)]; end
+        if ~isfield(options, 'z') || isempty(options.z); options.z = [1, fullSize(3)]; end
+        physYfull = options.y; physXfull = options.x; physZfull = options.z;
 end
-
-% --- full-resolution size and default coordinate ranges ------------------
-fullSize = obj.pyramid.levelImageSizes(1, :);   % [y, x, z]
-
-if ~isfield(options, 'x') || isempty(options.x); options.x = [1, fullSize(outDimXind)]; end
-if ~isfield(options, 'y') || isempty(options.y); options.y = [1, fullSize(outDimYind)]; end
-if ~isfield(options, 'z') || isempty(options.z); options.z = [1, fullSize(outDimZind)]; end
 if ~isfield(options, 't') || isempty(options.t); options.t = [1, obj.time]; end
 
-% --- scale coordinates to the chosen pyramid level -----------------------
-sf = obj.pyramid.levelScaleFactors(levelIdx, :);  % [yScale, xScale, zScale]
-
-switch orient
-    case 1  % xz
-        Xidx = ceil(options.y ./ sf(outDimXind));
-        Yidx = ceil(options.z ./ sf(outDimYind));
-        Zidx = ceil(options.x ./ sf(outDimZind));
-    case 2  % yz
-        Xidx = ceil(options.z ./ sf(outDimXind));
-        Yidx = ceil(options.y ./ sf(outDimYind));
-        Zidx = ceil(options.x ./ sf(outDimZind));
-    case 3  % yx
-        Xidx = ceil(options.x ./ sf(outDimXind));
-        Yidx = ceil(options.y ./ sf(outDimYind));
-        Zidx = ceil(options.z ./ sf(outDimZind));
-end
-Tidx = [options.t(1), options.t(2)];
-
-% clamp to valid pyramid-level dimensions
-Xidx = [max([Xidx(1) 1]),  min([Xidx(2), obj.pyramid.levelImageSizes(levelIdx, outDimXind)])];
-Yidx = [max([Yidx(1) 1]),  min([Yidx(2), obj.pyramid.levelImageSizes(levelIdx, outDimYind)])];
-Zidx = [max([Zidx(1) 1]),  min([Zidx(2), obj.pyramid.levelImageSizes(levelIdx, outDimZind)])];
-Tidx = [max([Tidx(1) 1]),  min([Tidx(2), obj.time])];
+sf  = obj.pyramid.levelScaleFactors(levelIdx, :);   % [yScale xScale zScale]
+lvl = obj.pyramid.levelImageSizes(levelIdx, :);      % [Y X Z]
+physYlim = ceil(physYfull ./ sf(1));
+physXlim = ceil(physXfull ./ sf(2));
+physZlim = ceil(physZfull ./ sf(3));
+physYlim = [max(physYlim(1), 1), min(physYlim(2), lvl(1))];
+physXlim = [max(physXlim(1), 1), min(physXlim(2), lvl(2))];
+physZlim = [max(physZlim(1), 1), min(physZlim(2), lvl(3))];
+Tidx = [max(options.t(1), 1), min(options.t(2), obj.time)];
 
 % --- lazy-create / retrieve cached Zarr3VirtualLoader --------------------
 if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
@@ -136,24 +123,6 @@ if strcmp(type, 'image')
     else
         Clim = [colChannel(1), colChannel(end)];
     end
-end
-
-% --- remap screen-coordinate Idx variables to physical Y/X/Z ranges ------
-% After the coordinate math above, Xidx/Yidx/Zidx hold SCREEN-axis ranges
-% (what slice of each pyramid dimension to show on each screen axis).
-% readRegion always expects PHYSICAL dimension ranges.
-%
-%   orient=1 (xz): outDimXind=1=Y, outDimYind=3=Z, outDimZind=2=X
-%     => Xidx=Z_phys, Yidx=X_phys, Zidx=Y_phys
-%     => physY=Zidx,  physX=Yidx,  physZ=Xidx
-%
-%   orient=2 (yz) and orient=3 (yx): Idx variables are already physical
-%     => physY=Yidx, physX=Xidx, physZ=Zidx
-switch orient
-    case 1  % xz
-        physYlim = Zidx; physXlim = Yidx; physZlim = Xidx;
-    otherwise  % yz and yx
-        physYlim = Yidx; physXlim = Xidx; physZlim = Zidx;
 end
 
 % --- zarr path for this level --------------------------------------------

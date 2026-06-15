@@ -120,14 +120,28 @@ end
 if isdir(obj.preferences.System.Dirs.LastPath) == 0 %#ok<*ISDIR> isfolder is not compatible with empty strings: isfolder([])
     obj.preferences.System.Dirs.LastPath = start_path;
 end
-% ------------ OME-Zarr v3 backend selection ------------
-% Push the configured zarr backend into the process-wide io.zarr.Config used
-% by io.zarr.Array / io.zarr.Group. Guard for older saved prefs that predate
-% the IO field (same-version restore replaces the whole struct, see above).
-if ~isfield(obj.preferences, 'IO') || ~isfield(obj.preferences.IO, 'ZarrLibrary')
-    obj.preferences.IO.ZarrLibrary = 'native';
+% ------------ OME-Zarr v3 settings ------------
+% Push the configured zarr backend + label-smoothing flag into the process-wide
+% io.zarr.Config used by io.zarr.Array / io.zarr.Group / MibBigDataLabels.
+% Guard for older saved prefs: the flat IO.ZarrLibrary field was migrated to the
+% nested IO.Zarr.Library struct; carry an old value over if present.
+if ~isfield(obj.preferences, 'IO'); obj.preferences.IO = struct(); end
+if ~isfield(obj.preferences.IO, 'Zarr'); obj.preferences.IO.Zarr = struct(); end
+if ~isfield(obj.preferences.IO.Zarr, 'Library')
+    if isfield(obj.preferences.IO, 'ZarrLibrary')   % migrate old flat field
+        obj.preferences.IO.Zarr.Library = obj.preferences.IO.ZarrLibrary;
+    else
+        obj.preferences.IO.Zarr.Library = 'native';
+    end
 end
-io.zarr.Config.setLibrary(obj.preferences.IO.ZarrLibrary);
+if isfield(obj.preferences.IO, 'ZarrLibrary')
+    obj.preferences.IO = rmfield(obj.preferences.IO, 'ZarrLibrary');   % drop legacy field
+end
+if ~isfield(obj.preferences.IO.Zarr, 'Smoothing')
+    obj.preferences.IO.Zarr.Smoothing = true;
+end
+io.zarr.Config.setLibrary(obj.preferences.IO.Zarr.Library);
+io.zarr.Config.setSmoothing(obj.preferences.IO.Zarr.Smoothing);
 io.zarr.Config.setPythonPath(obj.preferences.ExternalDirs.PythonInstallationPath);
 
 % preload an image used for filter previews

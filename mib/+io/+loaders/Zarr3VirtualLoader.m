@@ -177,7 +177,7 @@ methods
         end
 
         % Read from zarr through the backend-selectable facade
-        % (native zarrMex or python zarr, per io.zarr.Config / preferences.IO.ZarrLibrary).
+        % (native zarrMex or python zarr, per io.zarr.Config / preferences.IO.Zarr.Library).
         % Cache the level handle so the backend (and python py-handle/metadata) is
         % opened once per level instead of per slice read.
         if isempty(obj.cachedArray) || ~strcmp(fullPath, obj.cachedLevelPath)

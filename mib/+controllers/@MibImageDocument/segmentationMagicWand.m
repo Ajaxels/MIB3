@@ -182,6 +182,11 @@ if ~switch3d
         options = struct();
     end
     options.id = id;
+    % Pyramidal (BigData/Virtual): read the image at FULL resolution. getData2D
+    % otherwise returns the slice at the displayed pyramid level (downsampled by
+    % magFactor) while the seed coordinates (x,y) are full-res — so currImage(y,x)
+    % and bwselect would sample/seed the wrong pixel.
+    if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
 
     currImage = cell2mat(obj.mibModel.getData2D('image', [], [], col_channel, options));
     val = currImage(y, x);
@@ -263,6 +268,10 @@ else
         obj.mibModel.backup('selection', 1);
     end
     options.id = id;
+    % full-resolution read for pyramidal datasets (getData3D does not inject
+    % magFactor, but set it explicitly so seed coords match the data and to stay
+    % robust if that changes).
+    if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
     if BatchOpt.showWaitbar; wb.Value = 0.05; end
 
     datasetImage = cell2mat(obj.mibModel.getData3D('image', [], 3, col_channel, options));

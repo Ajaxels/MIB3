@@ -162,11 +162,16 @@ else
 end
 
 %% ----------- IO (input/output) PANEL -----------
-% Backend for OME-Zarr v3 (zarr3) read/write used by the io.zarr facade:
-%   'native' - bundled zarrMex engine (no external dependency, default)
-%   'python' - zarr-python (v3) via the interpreter in
-%              Prefs.ExternalDirs.PythonInstallationPath
-Prefs.IO.ZarrLibrary = 'native';
+% Settings for OME-Zarr v3 (zarr3) I/O used by the io.zarr facade.
+%   Library - backend for read/write:
+%       'native' - bundled zarrMex engine (no external dependency, default)
+%       'python' - zarr-python (v3) via the interpreter in
+%                  Prefs.ExternalDirs.PythonInstallationPath
+%   Smoothing - when true (default), the BigData label pyramid smooths boundaries
+%       when a coarse (zoomed-out) edit is propagated up into finer levels,
+%       instead of a blocky nearest-neighbour upsample.
+Prefs.IO.Zarr.Library   = 'native';
+Prefs.IO.Zarr.Smoothing = true;
 
 %% ----------- KEY SHORTCUTS PANEL -----------
 Prefs.KeyShortcuts = utils.defaults.generateKeyShortcuts();

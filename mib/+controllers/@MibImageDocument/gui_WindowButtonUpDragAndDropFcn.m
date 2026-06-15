@@ -113,6 +113,14 @@ end
 
 getDataOptions.blockModeSwitch = 0;
 getDataOptions.id = BatchOpt.id;
+% Pyramidal (BigData/Virtual) datasets: read/write the layer at FULL resolution.
+% getData2D/getData3D would otherwise return the slice at the displayed pyramid
+% level (downsampled by magFactor), while width/height below and the shift
+% (diffX/diffY are already converted to full-res via *magFactor) are full-res —
+% the size mismatch breaks the selAreaOut/selarea shift indexing.
+if any(obj.mibModel.I{BatchOpt.id}.datasetType(1) == ['V' 'B'])
+    getDataOptions.magFactor = 1;
+end
 [height, width, depth, ~, time] = obj.mibModel.I{BatchOpt.id}.getDatasetDimensions('image', [], getDataOptions);
 
 switch mode

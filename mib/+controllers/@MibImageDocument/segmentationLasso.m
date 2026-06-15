@@ -206,12 +206,14 @@ try
             verticesX = [p(1); p(1)+p(3); p(1)+p(3); p(1)];
             verticesY = [p(2); p(2); p(2)+p(4); p(2)+p(4)];
         case 'Ellipse'
-            c = roi.Center;
-            sa = roi.SemiAxes;
-            rotRad = deg2rad(roi.RotationAngle);
-            theta = linspace(0, 2*pi, 720)';
-            verticesX = c(1) + sa(1)*cos(theta)*cos(rotRad) - sa(2)*sin(theta)*sin(rotRad);
-            verticesY = c(2) + sa(1)*cos(theta)*sin(rotRad) + sa(2)*sin(theta)*cos(rotRad);
+            % Use the ROI's own polygon vertices rather than reconstructing the
+            % ellipse from Center/SemiAxes/RotationAngle. images.roi.Ellipse uses a
+            % CLOCKWISE RotationAngle; the previous manual cos/sin formula used a
+            % counter-clockwise rotation matrix, so a rotated ellipse came out
+            % mirrored/rotated the wrong way. roi.Vertices is exactly the drawn shape.
+            verts = roi.Vertices;
+            verticesX = verts(:,1);
+            verticesY = verts(:,2);
         otherwise  % Freehand, Polygon
             verts = roi.Position;
             verticesX = verts(:,1);
@@ -234,6 +236,11 @@ obj.mibModel.disableSegmentation = false;
 
 % create mask at full data resolution from data coordinates
 getDataOptions.blockModeSwitch = 0;
+% Pyramidal (BigData/Virtual): force full resolution so the mask canvas (size of
+% currSelection) matches the full-resolution data coordinates returned by
+% convertMouseToDataCoordinates. Otherwise getData2D returns the slice at the
+% display level and poly2mask rasterises the polygon at the wrong scale/position.
+if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); getDataOptions.magFactor = 1; end
 currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], getDataOptions));
 selected_mask = uint8(poly2mask(double(dataX), double(dataY), size(currSelection, 1), size(currSelection, 2)));
 

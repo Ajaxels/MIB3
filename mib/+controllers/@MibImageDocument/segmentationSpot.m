@@ -204,6 +204,12 @@ for index = 1:numel(xVec)
     options.y = [yVec(index)-radius(2), yVec(index)+radius(2)];
     options.z = [zVec(index), zVec(index)];
     options.blockModeSwitch = 0;
+    % Coordinates and radius are in full-resolution dataset pixels. For pyramidal
+    % (BigData/Virtual) datasets getData2D would return this small region at the
+    % displayed pyramid level (downsampled by magFactor), making the spot smaller
+    % and shifted relative to the click. Force full resolution so the spot is
+    % computed and written in full-res units (the region is tiny — radius-bounded).
+    if any(dataset.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
 
     % local centre inside the cropped sub-image
     xLocal = radius(1) + min([options.x(1), 1]);

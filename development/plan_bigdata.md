@@ -1,5 +1,48 @@
 # Plan: BigData image type for MIB3 (hybrid blockedImage + Zarr3)
 
+## 🗣 To discuss later: full-res editing convention for click tools (WSI-safe)
+
+Recurring "wrong place / wrong size" bugs across click tools (Spot, Lasso, Magic Wand, Drag&Drop, SAM)
+all stem from ONE mismatch: the **coordinate conversion is shared and correct**
+(`convertMouseToDataCoordinates` → full-res dataset coords for every dataset type), but **layer data
+reads are not uniform**. `getData2D` auto-injects `magFactor` → returns a pyramidal slice at the
+**displayed (downsampled) level**; `getData3D` does NOT inject it (full-res). Tools then do pixel math
+(`currImage(y,x)`, `bwselect`, `poly2mask`, shift-indexing) with full-res coords on display-res data.
+`segmentationClickTracker` uses yet another convention (multiplies coords by `magFactor`). So there is
+**no single shared resolution convention** today.
+
+**Proposed convention (NOT yet adopted):** *editing tools read/write only the **bounding box of their
+edit footprint**, at full resolution (`magFactor=1`), with click coords offset to that bbox origin* —
+so cost scales with edit size, never slide size. `getData2D/setData2D` with `options.x/y` + `magFactor=1`
+already read/write only that finest-level sub-region.
+
+**Key constraint (raised by user): BigData includes extremely large slides (WSI / gigapixel).**
+"Full-res on the whole slice" is catastrophic there (a single full-res slice can be many GB; you can't
+`getData2D` it nor `poly2mask` a canvas that size). Must be footprint-bounded.
+
+**Tool classification under this convention:**
+- Already footprint-bounded + correct (efficient on WSI): **Spot** (`[x±r,y±r]`), **Magic Wand radius>0**
+  (`[x±r]`). The `magFactor=1` fixes there are both correct AND cheap.
+- Whole-slice today, but CAN be narrowed to a bbox → **rework needed**: **Lasso / Ellipse / Rectangle**
+  (current fix reads the whole slice as the poly2mask canvas; should use the polygon bbox: read bbox,
+  poly2mask onto bbox-sized canvas with offset coords, write bbox only).
+- Inherently whole-slice (no small footprint) → **not WSI-safe as-is, needs a strategy**:
+  **Magic Wand radius=0** (flood fill can span the slide) and **Drag&Drop** (shifts the entire layer).
+  Options: (1) operate at the displayed coarse level + rely on pyramid propagation (cheap, precision =
+  zoom, same tradeoff as brush/coarse-edit smoothing); (2) tile/stream full-res out-of-core (precise,
+  complex — flood fill across tiles is hard; drag is a bounded shift so more tractable); (3) cap+warn
+  beyond a memory budget.
+
+**Open questions to resolve before implementing:**
+1. Lasso → adopt bbox-bounded full-res (clearly correct + cheap)? (expected: yes)
+2. flood-fill-no-radius & Drag&Drop on WSI → coarse-level+propagation, or cap+warn (stream later)?
+3. Add a shared memory-budget guard that refuses a full-res read above N megapixels, as a safety net
+   while tools are converted one by one?
+
+**Caveat on current state:** the already-shipped **Lasso** and **Drag&Drop** `magFactor=1` fixes use
+full-res WHOLE-SLICE reads — correct on modest datasets but NOT WSI-safe; revisit per the above.
+Spot / Magic Wand fixes are footprint-bounded and fine.
+
 ## ⚠ Deferred TODO
 
 - **Processing-tool guard audit for BigData** — ✅ DONE 2026-06-14. Extended every controller that
@@ -257,17 +300,266 @@ Note `backup`'s `'Virtual'` guard (line 143) does NOT catch BigData, which is co
 should support undo). Memory caveat: a 3D backup/clear of a very large model still materialises a
 full-res block — fine interactively (2D/per-slice), heavy for whole-volume ops.
 
+**Resolved since this note was first written (kept for history):**
+- ✅ `getRGBimage` model/mask/selection overlay for BigData/Virtual — DONE. Pyramidal datasets take
+  `panModeException=1` (image already at display size); the V/B branch (`getRGBimage.m` ~250-267)
+  `imresize`s each overlay (`nearest`, categorical) to the displayed image size so compositing lines
+  up at any zoom.
+- ✅ Re-enable segmentation UI for a BigData set that HAS a model — DONE. The blanket `'B'`
+  suppression became the precise predicate `datasetType(1)=='V' || (datasetType(1)=='B' && ~modelExist)`
+  in both `@MibImageDocument/updateBrushCursor` (line 50) and `@MibController/updateGuiWidgets`
+  (line 473): Virtual is always browse-only; BigData is browse-only only until `modelExist`.
+- ✅ Cross-level propagation — DONE (`setData63` writes the working level then propagates to all
+  others), and since 2026-06-15 the propagation is **deferred/coalesced** (see entry below).
+- ✅ backup/undo + clearLayer for the disk-backed model — DONE (Phase 2c above).
+- ✅ Processing-tool `datasetType,'Virtual'` guard audit — DONE 2026-06-14 (see top TODO list).
+
 **Still pending (2c):**
-- Orientation-switch keys (ZX/ZY) remain disabled for BigData (getData63 supports orient, the key
-  nav is gated off like Virtual).
-- backup/undo + clearLayer coverage for the disk-backed model; T>1 (time-series) model.
-- Audit of processing-tool `datasetType,'Virtual'` guards for BigData.
-- (Was the original 2b note:) interactive segmentation in the live app needs (1) `getRGBimage` model overlay
-for BigData/Virtual so the model is visible over the image at any zoom, and (2) re-enabling the
-segmentation UI for a BigData set that HAS a model — currently `updateGuiWidgets`/`updateBrushCursor`
-suppress the brush cursor for all `'B'` datasets (set in the Phase 1 interaction fix); that
-suppression must become "browse-only BigData" rather than "all BigData". Also: model pyramid +
-cross-level propagation, and backup/clearLayer coverage.
+- `removeMaterial` pixel renumbering on the disk-backed model (only the material-name list is
+  persisted today; the on-disk indices are not renumbered).
+- T>1 (time-series) model — `MibBigDataLabels` assumes a single time point.
+- Whole-volume backup/clear still materialises a full-res block (fine per-slice; heavy for 3D/4D ops).
+
+### Fix (2026-06-15): createStore chunk mapping crashed on non-5D datasets
+
+`MibBigDataLabels.createStore` hard-coded the image chunk as 5-D `[t c z y x]`
+(`ch = [c(4), c(5), c(3)]`), so creating a model on a **3-D** BigData dataset (chunk
+`[y x z]`, 3 elements) threw *"Index exceeds the number of array elements"* from
+`createModel`. Now the chunk is indexed by the dataset's `axisOrder` (resolved from
+`pyramid.axisOrder`, default `'tczyx'`): `yIdx/xIdx/zIdx = find(axisOrder=='y'|'x'|'z')`,
+each guarded against exceeding the chunk rank (falls back to the `[256 256 16]` default
+dim). The default `'tczyx'` reproduces the old mapping exactly; `'yxz'`/`'zyx'` now map
+correctly. Verified for 3-D `yxz`, 5-D `tczyx`, and a no-`axisOrder` fallback.
+
+### Fix (2026-06-15): empty boundingBox crashed Lines3D / convertPixelsToUnits on BigData
+
+`core.MibImage.initialize` parses/derives `boundingBox` from the ImageDescription tag, but
+`core.MibVirtualImage.initialize` (shared by Virtual and BigData) never set it — zarr datasets carry no
+such tag — leaving `boundingBox = []`. `convertPixelsToUnits` then indexed `bb(1)` → "Index exceeds
+array bounds" (hit via `segmentationLines3D` on a click; also affects the 3D-lines overlay and any
+pixel↔unit conversion). Fixed by computing the same default `MibImage` uses (origin 0, dims × voxel
+size from the metadata `pixSize`) in `MibVirtualImage.initialize`, guarded by `isempty`. Verified:
+boundingBox now `[0 11.38 0 12.42 0 5.1]` for the test dataset and `convertPixelsToUnits` returns
+without error; the live (already-loaded) image was patched in place. Note Lines3D needs no magFactor
+scaling — it stores physical (pixSize-based) coordinates from the full-res click, unlike the
+image-pixel tools (SAM2/Spot).
+
+### Systemic: click tools mix full-res coords with display-res getData2D on BigData
+
+Root cause of the recurring "wrong place / wrong size" bugs across segmentation tools: the **coordinate
+conversion is shared and correct** (`convertMouseToDataCoordinates` returns full-res dataset coords for
+all dataset types), but layer **data reads are not uniform**. `getData2D` auto-injects `magFactor` and
+returns a pyramidal (BigData/Virtual) slice at the **displayed level** (downsampled), while
+`getData3D` does NOT inject it (full-res). Tools then do pixel math with full-res click coords:
+- Tools assuming full-res data (broke on BigData, fixed with `options.magFactor=1`): **Spot, Lasso,
+  Drag&Drop, Magic Wand (2D), SAM/SAM2**.
+- `segmentationClickTracker` uses a DIFFERENT convention — it reads display-res and multiplies the
+  click coords by `magFactor` (`selarea(ceil(yx*magFactor))`), so a blanket `magFactor=1` would
+  double-correct it.
+There is no single shared resolution convention today — each tool handles magnification (or ignores
+it) independently. A proper fix is to standardise: editing tools read/write layers at full resolution
+and use full-res click coords. Until then each tool is fixed individually per its own logic.
+
+### Fix (2026-06-15): Magic Wand seeded the wrong pixel on BigData
+
+`segmentationMagicWand` 2D path read the image via `getData2D` (display-res for BigData) then sampled
+the seed `currImage(y,x)` and `bwselect(...,x,y)` with full-res coords → wrong seed/threshold. Forced
+`options.magFactor=1` for `'V'`/`'B'` in the 2D path (and explicitly in the 3D path, which already
+read full-res via getData3D). Clean under `check_matlab_code`.
+
+### Fix (2026-06-15): Drag&Drop and Lasso tools mis-scaled/shifted on BigData
+
+Same display-vs-full-res root cause as the Spot fix, in two more click tools — both forced to full
+resolution by `options.magFactor = 1` for `'V'`/`'B'`:
+- `@MibImageDocument/gui_WindowButtonUpDragAndDropFcn.m` — read the layer with `blockModeSwitch=0`
+  (display-res for BigData) but indexed it with full-res `width`/`height` and a full-res shift
+  (`diffX/diffY × magFactor`) → "size of left side ... right side ..." assignment error. Now reads/
+  writes the full slice at full res; verified the read size matches `width×height` (887×813 vs the
+  603×553 display).
+- `@MibImageDocument/segmentationLasso.m` — built the mask with
+  `poly2mask(dataX, dataY, size(currSelection,...))` where `dataX/dataY` are full-res
+  (`convertMouseToDataCoordinates 'shown'`) but `currSelection` was the display-res slice → polygon
+  rasterised at the wrong scale/position. Now the canvas is full-res; verified `[887 813]` matches the
+  coordinate space (display canvas was 639×585).
+  - Also fixed (general, not BigData-specific): the Lasso **Ellipse** shape reconstructed its polygon
+    from `Center/SemiAxes/RotationAngle` with a counter-clockwise rotation matrix, but
+    `images.roi.Ellipse.RotationAngle` is CLOCKWISE — so a rotated ellipse came out mirrored/rotated.
+    Now uses `roi.Vertices` (the ROI's own polygon). Verified: at the max-X vertex the old formula gave
+    y=100.5 vs the ROI's actual 59.6; `roi.Vertices` matches.
+
+### Fix (2026-06-15): Spot tool placed a smaller/shifted spot on BigData
+
+`@MibImageDocument/segmentationSpot.m` requests a small explicit region
+`options.x/y = [centre ± radius]` (full-res) with no `magFactor`, so getData2D returned it at the
+DISPLAY pyramid level (down/up-sampled), while the spot math (`xLocal = radius+1`, disk `<= radius`)
+is in full-res units — so the disk was the wrong size and off-centre, then written back through
+`setData63`. Fixed by forcing `options.magFactor = 1` for `'V'`/`'B'` so the (radius-bounded, tiny)
+region is read/computed/written in full-resolution units. Verified: crop is now exactly `2r+1` square
+with the centre matching `xLocal` (was 23×23/off-centre at the test zoom). Same root cause as the SAM2
+seed-scaling bug; other click-driven tools that pass explicit `options.x/y` without `magFactor` may
+need the same one-liner.
+
+### Phase 2c — DONE (2026-06-15): SAM2 segmentation for BigData (2D methods)
+
+`@MibImageDocument/segmentationSAM2.m` now supports BigData (was blanket-blocked for `'V'`/`'B'`).
+The blanket guard was split: Virtual stays blocked (browse-only, no on-disk model); BigData is allowed
+with two restrictions:
+- **Supported:** `Interactive` and `Landmarks`. Both read the image via `getData2D` (which injects the
+  current `magFactor`, so the displayed pyramid level is returned) and write via `setData2D`, which
+  routes selection/mask/materials to the disk-backed 63-class store (`setData63`) — the exact path the
+  brush already uses, so no new write plumbing was needed.
+- **Interactive 3D** is now ALSO supported (2026-06-15). `getData3D` does not auto-inject `magFactor`
+  (unlike `getData2D`), so the SAM2 3D path now passes `getDataOpt.magFactor = dataset.magFactor` for
+  `'V'`/`'B'` — `getData3D` forwards it to `getDataZarr`, returning the displayed pyramid level over the
+  seeded z-range (z1..z2 = min..max of the placed seeds). The read is bounded by shown-level × shown-XY
+  × z-span (verified: 581×553×16 vs 854×813×16 full-res — and the XY saving grows with zoom-out), no
+  worse than Standard 3D SAM. XY seeds scaled by `/magFactor` (same as the 2D fix); Z left unscaled
+  (the pyramid never downsamples Z, so block z-index maps 1:1 via `seedZ - z1`). Verified numerically:
+  centre-of-view seed maps to the block XY centre.
+- **Blocked for BigData:** only `Automatic everything` (generates a 65535-material model the packed
+  63-class store cannot hold — `createModel` forces 63 for BigData).
+- **Model required:** for BigData, selection/mask/materials all live in the model store, so SAM is
+  gated on `modelExist` (clear "create a model first" message otherwise).
+Verified: guard resolves correctly on the live dataset (Interactive/Landmarks ALLOWED, 3D/Automatic
+blocked, model-required path), file clean under `check_matlab_code` (only pre-existing helper-function
+warnings).
+
+**Coordinate fix (same day):** the first cut segmented at the wrong place on BigData because seed
+coordinates were not scaled to the display resolution. `getData2D('image')` returns a pyramidal image
+at DISPLAY resolution (downsampled/upsampled by `magFactor`), but the click positions are full-res
+dataset coordinates; Standard returns full-res so it needed only the block-mode offset. Fixed by
+dividing the offset-shifted coordinates by `magFactor` for `'V'`/`'B'` datasets in the Interactive
+case, and likewise scaling the Landmarks seeds (`getSliceLabels` hardcodes `magnificationFactor=1`, so
+its shift is full-res only). Verified numerically on the live dataset: a centre-of-view click now maps
+to the image centre (was off into the top-left quadrant). Output masks are display-res and written
+through `setData2D`→`setData63`, which up-samples them into the full-res visible region, so placement
+is correct. Note: the actual SAM inference needs a Python env + GPU + checkpoints, so end-to-end
+interactive segmentation is left for the user to confirm; the MATLAB-side data plumbing is the
+brush-equivalent path. (`Interactive 3D` for BigData was subsequently implemented — see the method
+list above.) Follow-up: `segmentationSAM.m` (SAM v1) likely needs the same level-aware-read + seed
+scaling treatment.
+
+### Phase 2c — DONE (2026-06-15): ZX/ZY orientation switching for BigData
+
+Orientation switching (Alt+1/2/3 and the QAB buttons) now works for BigData. The keys were
+blanket-gated (`any(datasetType(1)==['V' 'B'])`); lifted for BigData (Virtual stays gated — browse-only,
+may use non-zarr backends), now `datasetType(1)=='V'`.
+
+The real work was an **alignment bug**: `getData63` (model) and `getDataZarr` (image) used different
+orientation/scaling conventions, so in XZ/YZ the model overlay came out transposed and mis-scaled vs
+the image (e.g. XZ image plane `[117 813]` but model `[554 171]`). Root cause: the old `getData63`
+divided the Z range by `yScale` (sf(1)) instead of `zScale` — but the pyramid does not downsample Z.
+Fix:
+- New shared private helper `MibBigDataLabels.orientPhysRanges(levelIdx, orient, options)` reproduces
+  `getDataZarr`'s exact convention (per-screen-axis `outDim` mapping, per-axis scale factor, clamp,
+  screen→physical remap). Both `getData63` (read) and `setData63` (write) use it, so they are inverses
+  by construction. `getData63` then permutes physical→screen (`[2 3 1]`/`[1 3 2]`) and applies the same
+  single-factor `magFactor/yScale` display resize as the image; `setData63` inverts the permute and
+  derives full-res ranges (level range × per-axis scale) for cross-level propagation.
+- Verified: headless read↔write round-trips exactly in YX/XZ/YZ on a single-level store. `transpose`
+  already only updates orientation/slices (never rearranges on-demand data), so it was safe.
+
+**Follow-up fix (same day): getDataZarr inverted-bbox crash in XZ/YZ.** Enabling orientation exposed a
+pre-existing bug in the shared image reader `MibVirtualImage.getDataZarr` (also reachable via the QAB
+buttons, which were never gated): it clamped each *screen-axis* range against the dimension mapped to
+that screen axis, so for XZ/YZ a single-slice coordinate (e.g. X=397) was clamped against the *wrong*
+dimension (Z=171), giving an inverted bbox `min>max` → `zarrMex` "Bounding box has invalid shape".
+It only ever worked with full-range defaults (never with a single-slice view). Rewrote the coordinate
+step in BOTH `getDataZarr` and `MibBigDataLabels.orientPhysRanges` to the correct physical
+formulation: map `options.x/y/z` (horizontal/vertical/slice) to the physical data axes per
+orientation, scale each by ITS OWN pyramid factor, clamp each to ITS OWN physical dimension. The
+permute that defines on-screen arrangement is unchanged, so only region selection is corrected; **YX
+is provably identical** (formulas match the old code), and XZ/YZ were non-functional before so cannot
+regress. Side effect: corrected an X/Z swap in the XZ image plane (was `[117 813]`, now `[554 117]` =
+`[X Z]`). Verified live: YZ→XZ→YX switching now succeeds end-to-end (no crash); model read/write
+round-trips in all orientations; image and model share the identical formulation so overlays align by
+construction. All edited files clean under `check_matlab_code`.
+
+### Fixes (2026-06-15): load-model colour crash, Preferences-OK crash, store name
+
+- **Load BigData model → "Invalid color value" in `updateMaterialsTable`.** `MibBigDataLabels.openStore`
+  restored `materialColors` straight from the `mibMaterials` zarr attribute, but the JSON/attribute
+  round-trip flattens/transposes the `[nMaterials x 3]` matrix (a single `1x3` colour came back as
+  `3x1`), so `materialColors(i,:)` was a scalar → invalid RGB. `openStore` now normalises to `N x 3`
+  (transpose when `cols~=3 && rows==3`).
+- **Preferences → OK with a BigData model open → "Index exceeds array bounds".**
+  `Preferences.OKButtonPushedCallback` indexed `labels.data(1)` to lazily (de)allocate in-memory
+  layers, but BigData/Virtual layers are disk-backed/on-demand (`data` empty). Guarded that whole
+  block with `~any(datasetType(1)==['V' 'B'])` (NaN-ing `data`/`exists` would also have broken the
+  live disk-backed model); the `enableSelection` flag is still applied for all types.
+- **Default model store filename** for BigData changed `Model_<stem>.zarr3` → `Labels_<stem>.zarr3`
+  (`MibModel.createModel`).
+
+### Phase 2c — DONE (2026-06-15): smooth coarse→fine label up-propagation + IO.Zarr pref restructure
+
+Editing a BigData model while zoomed out writes the coarse working level, and the
+nearest-neighbour up-propagation to finer levels made the result look **blocky** at high
+magnification. Now up-sampling (source coarser than target) uses a **label-aware smoothing**
+resize when enabled:
+- `MibBigDataLabels.resizeBlockSmooth` unpacks the three layers (material bits 1-6, mask bit 7,
+  selection bit 8) and up-samples each in YX (Z matched first with nearest — the pyramid keeps Z),
+  then repacks. Down-sampling and equal-size still use `resizeBlockNearest`.
+- **Smoothing method = signed distance transform + Gaussian** (`smoothDistField`): bilinear-on-binary
+  (first attempt) only rounded a 1-px ramp and was barely better than nearest. Instead each region's
+  signed distance field `D = bwdist(~M) - bwdist(M)` is bicubic-upsampled and Gaussian-smoothed
+  (sigma = half the up-sampling factor), then thresholded at 0 — reconstructing a smooth boundary at
+  sub-pixel accuracy. Materials: per-label SDF + arg-max (`smoothLabelUpsampleYX`); mask/selection:
+  `signedDistUpsample`. Sigma = up/2 was chosen to erase working-level stair-steps while NOT eroding
+  thin structures (sigma = up halves a 1-coarse-px strip; up/2 preserves it).
+- `propagateRegion` picks smooth vs nearest per target level: smooth only when up-sampling **and**
+  `io.zarr.Config.smoothing()` is true.
+- **Preference restructure (per user):** the flat `preferences.IO.ZarrLibrary` became nested
+  `preferences.IO.Zarr.Library`, and a new `preferences.IO.Zarr.Smoothing` (default `true`) was
+  added. `generatePreferences` writes both; `initializePreferences` ensures/migrates the nested
+  struct (carries an old flat `IO.ZarrLibrary` over, then drops it) and pushes Library + Smoothing
+  + pythonPath into `io.zarr.Config` (new `Config.smoothing`/`setSmoothing`). `Preferences`
+  controller reads/writes `IO.Zarr.Library`, commits Library+Smoothing in
+  `ApplyButtonPushedCallback`; `InputOutputPanelCallbacks` has a `ZarrSmoothing` case ready for an
+  optional boolean widget (the user wires the dialog control itself).
+- Verified: `resizeBlockSmooth` preserves labels/area and survives mask+selection bits; against an
+  ideal circle the finest-level error drops ~32% vs nearest (8× upsample through the real
+  setData63→propagate→getData63 path: 1129→765; SDF+Gaussian is ~2× better than the bilinear first
+  cut). Config toggle gates it. All edited files clean under `check_matlab_code`.
+- **Capture-step fix (2026-06-15, after user still saw 5×5 blocks):** the dominant blockiness was
+  NOT the cross-level propagation but `setData63`'s display→working-level resize (line ~62), which was
+  always `resizeBlockNearest`. When drawing zoomed-out the brush arrives at a COARSER display
+  resolution than the working level, so that step UP-samples and baked in the display-grid blocks
+  *before* propagation ran. Now `setData63` uses `resizeLayerSmooth` (new static: per-z SDF upsample
+  for binary selection/mask/single-material, `smoothLabelUpsampleYX` for a full material map; nearest
+  fallback when not up-sampling; `'everything'`/undo never smoothed) when `io.zarr.Config.smoothing`
+  is on. Verified on a 2-level pyramid (full + full/2) with a circle drawn at full/5: the finest level
+  changes by ~1.5k boundary px (staircase → smooth curve). Note the smoothing flag is process-wide in
+  `io.zarr.Config`; editing it (or test code) mid-session affects the live app — it is (re)pushed from
+  `preferences.IO.Zarr.Smoothing` at start-up / on Preferences Apply.
+- **Fundamental limit (told to user):** an edit drawn zoomed-out is captured at the *working level*
+  resolution (the pyramid level nearest the zoom), so reconstruction at full res can only be as
+  accurate as that coarse mask (±~1 working-level px). Smoothing rounds the boundary into a smooth
+  curve but cannot invent detail finer than the level the user drew at — for crisp full-res
+  boundaries, draw at higher zoom.
+
+### Phase 2c — DONE (2026-06-15): deferred / coalesced cross-level propagation
+
+Brush strokes used to pay one `writePackedLevel` per pyramid level per stroke (working level + all
+coarser/finer), which is invisible on a shallow native pyramid but laggy on a deep pyramid or the
+out-of-process **python** backend (per-write IPC). `MibBigDataLabels.setData63` now writes **only the
+working level synchronously** (the one the display reads) and **defers** propagation to the other
+levels: the merged block + its full-res region are pushed onto `propagationQueue` and a singleShot
+debounce timer (`propagationDelay`, default 0.3 s, `schedulePropagationFlush`) flushes them on idle.
+- **Single-threaded by design** — no `parfeval`/`parfor`. A worker would need its own store handle,
+  and with the python backend that means a 2nd interpreter per worker (the fragile path we avoid).
+  The timer flush runs on the main thread, so it works identically for native and python with zero
+  concurrency/Python hazards. A true parallel native-only path can be added later if needed.
+- **Correctness guards:** `getData63` flushes before reading a level it marked stale
+  (`dirtyLevels`), so a zoom change always sees up-to-date data; reads at the *editing* zoom hit the
+  always-clean working level and never flush (the perf win). `closeStore` flushes before releasing
+  handles; `delete` stops the timer. `dirtyLevels` is conservative: a level is clean only if every
+  queued edit shares that working level (mixed working levels ⇒ all dirty).
+- **"Saved live" window:** the working level is always immediately on disk; other levels lag ≤
+  `propagationDelay`. Set `deferPropagation=false` for fully synchronous writes (legacy behaviour).
+- Verified headless (native backend) — deferred queue/dirty state, fast working-level read (no
+  flush), flush-on-read for a coarse level, flush-on-close survives reopen-from-disk (131072 px),
+  timer-on-idle flush after `pause`, synchronous fallback, and mixed-working-level dirty logic. All
+  edited files clean under `check_matlab_code`.
 
 
 

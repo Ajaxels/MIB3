@@ -363,8 +363,8 @@ classdef Preferences < handle
             % % -------------- InputOutputPanel ----------------
             if strcmp(panelId, 'All') || strcmp(panelId, 'InputOutputPanel')
                 if obj.renderedPanels(7) == 1; return; end  % already rendered
-                handles.ZarrLibrary.Value = obj.preferences.IO.ZarrLibrary;
-                handles.ZarrLibraryLabel.Text = obj.zarrLibraryDescription(obj.preferences.IO.ZarrLibrary);
+                handles.ZarrLibrary.Value = obj.preferences.IO.Zarr.Library;
+                handles.ZarrLibraryLabel.Text = obj.zarrLibraryDescription(obj.preferences.IO.Zarr.Library);
                 obj.renderedPanels(7) = 1;
             end
         end
@@ -467,7 +467,8 @@ classdef Preferences < handle
 
             % activate the selected OME-Zarr v3 backend so open/save of zarr3
             % uses it without restarting MIB (io.zarr.Array / io.zarr.Group)
-            io.zarr.Config.setLibrary(obj.mibModel.preferences.IO.ZarrLibrary);
+            io.zarr.Config.setLibrary(obj.mibModel.preferences.IO.Zarr.Library);
+            io.zarr.Config.setSmoothing(obj.mibModel.preferences.IO.Zarr.Smoothing);
             io.zarr.Config.setPythonPath(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath);
 
             activeDataset.labels.materialColors = colorPrefs.ModelMaterialColors;
@@ -544,25 +545,31 @@ classdef Preferences < handle
                 backup.setNumberOfHistorySteps(undoPrefs.MaxUndoHistory, undoPrefs.Max3dUndoHistory);
             end
 
-            if obj.preferences.System.EnableSelection
-                if activeDataset.labels.maxMaterials >= 255 && isnan(activeDataset.selection.data(1))
-                    obj.mibController.mibModel.clearLayer('selection');
-                elseif activeDataset.labels.maxMaterials == 63 && isnan(activeDataset.labels.data(1))
-                    activeDataset.labels.data = zeros(...
-                        [activeDataset.dim_yxzct(1), activeDataset.dim_yxzct(2), ...
-                        activeDataset.dim_yxzct(3), 1, activeDataset.dim_yxzct(5)], 'uint8');
+            % Virtual / BigData layers are read-on-demand / disk-backed: obj.data is
+            % empty by design, so the in-memory (de)allocation below does not apply
+            % (and indexing data(1) would error / NaN-ing it would break the live
+            % disk-backed model). Just apply the enableSelection flag for those.
+            if ~any(activeDataset.datasetType(1) == ['V' 'B'])
+                if obj.preferences.System.EnableSelection
+                    if activeDataset.labels.maxMaterials >= 255 && isnan(activeDataset.selection.data(1))
+                        obj.mibController.mibModel.clearLayer('selection');
+                    elseif activeDataset.labels.maxMaterials == 63 && isnan(activeDataset.labels.data(1))
+                        activeDataset.labels.data = zeros(...
+                            [activeDataset.dim_yxzct(1), activeDataset.dim_yxzct(2), ...
+                            activeDataset.dim_yxzct(3), 1, activeDataset.dim_yxzct(5)], 'uint8');
+                    end
+                else         % turn OFF the Selection, Mask, Model
+                    if activeDataset.labels.maxMaterials == 63
+                        activeDataset.labels.data = NaN;
+                        activeDataset.labels.exists = false;
+                    else
+                        activeDataset.selection.data = NaN;
+                        activeDataset.selection.exists = false;
+                        activeDataset.mask.data = NaN;
+                        activeDataset.mask.exists = false;
+                    end
+                    backup.clearContents();  % delete backup history
                 end
-            else         % turn OFF the Selection, Mask, Model
-                if activeDataset.labels.maxMaterials == 63
-                    activeDataset.labels.data = NaN;
-                    activeDataset.labels.exists = false;
-                else
-                    activeDataset.selection.data = NaN;
-                    activeDataset.selection.exists = false;
-                    activeDataset.mask.data = NaN;
-                    activeDataset.mask.exists = false;
-                end
-                backup.clearContents();  % delete backup history
             end
             activeDataset.enableSelection = obj.preferences.System.EnableSelection;
 
@@ -709,11 +716,15 @@ classdef Preferences < handle
         
             switch event.Source.Tag
                 case 'ZarrLibrary'
-                    obj.preferences.IO.ZarrLibrary = obj.view.handles.ZarrLibrary.Value;
+                    obj.preferences.IO.Zarr.Library = obj.view.handles.ZarrLibrary.Value;
                     obj.view.handles.ZarrLibraryLabel.Text = ...
-                        obj.zarrLibraryDescription(obj.preferences.IO.ZarrLibrary);
+                        obj.zarrLibraryDescription(obj.preferences.IO.Zarr.Library);
                     % Note: this only updates the dialog's working copy of preferences;
                     % the backend is committed in ApplyButtonPushedCallback.
+                case 'ZarrSmoothing'
+                    % optional widget (boolean) — smooth coarse->fine label propagation
+                    obj.preferences.IO.Zarr.Smoothing = logical(obj.view.handles.ZarrSmoothing.Value);
+                    % committed in ApplyButtonPushedCallback.
             end
 
         end

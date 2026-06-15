@@ -4,8 +4,15 @@ function dataset = getData63(obj, type, orient, materialIndex, options)
 % Override of ``core.MibLabels63.getData63``. Selects the pyramid level that
 % matches ``options.magFactor`` (or ``options.pyramidLevel``), reads the
 % requested region from that level, and resizes it to the displayed resolution
-% exactly like the image reader (``MibVirtualImage.getDataZarr``) so the model
-% lines up with the image. Bit semantics and the return shape match the parent.
+% **exactly like the image reader** (``MibVirtualImage.getDataZarr``) so the
+% model overlay lines up with the image in every orientation (YX, XZ, YZ).
+%
+% The coordinate math mirrors ``getDataZarr`` precisely: each screen axis maps to
+% a data dimension (``outDim*ind``), each axis is scaled by its OWN pyramid scale
+% factor (so Z — which the pyramid does not downsample — is handled correctly),
+% the screen ranges are remapped to physical Y/X/Z, and the block is permuted to
+% the requested screen orientation before a single-factor display resize. Bit
+% semantics and the return shape match the parent.
 %
 % Input/Output: see core.MibLabels63.getData63.
 
@@ -19,61 +26,48 @@ if isempty(type); type = 'labels'; end
 if isempty(orient); orient = 3; end
 if ~strcmp(type, 'labels'); materialIndex = []; end
 
-% --- full-resolution (level-0) sub-block from options + orientation -------
-fullX = [1, obj.width];
-fullY = [1, obj.height];
-fullZ = [1, obj.depth];
-switch orient
-    case 1  % xz
-        if isfield(options, 'x'); fullZ = [options.x(1), options.x(end)]; end
-        if isfield(options, 'z'); fullY = floor([options.z(1), options.z(end)]); end
-        if isfield(options, 'y'); fullX = floor([options.y(1), options.y(end)]); end
-    case 2  % yz
-        if isfield(options, 'x'); fullZ = [options.x(1), options.x(end)]; end
-        if isfield(options, 'y'); fullY = floor([options.y(1), options.y(end)]); end
-        if isfield(options, 'z'); fullX = floor([options.z(1), options.z(end)]); end
-    otherwise  % 3, yx
-        if isfield(options, 'x'); fullX = floor([options.x(1), options.x(end)]); end
-        if isfield(options, 'y'); fullY = floor([options.y(1), options.y(end)]); end
-        if isfield(options, 'z'); fullZ = [options.z(1), options.z(end)]; end
-end
-fullX = [max(fullX(1), 1), min(fullX(2), obj.width)];
-fullY = [max(fullY(1), 1), min(fullY(2), obj.height)];
-fullZ = [max(fullZ(1), 1), min(fullZ(2), obj.depth)];
-
-% --- select level and scale the coordinates to it -------------------------
+% --- select level ---------------------------------------------------------
 levelIdx = obj.pickLevel(options);
-sf       = obj.modelScaleFactors(levelIdx, :);    % [yS xS zS]
-lvlSize  = obj.modelLevelSizes(levelIdx, :);
-Yl = core.MibBigDataLabels.clampRange([ceil(fullY(1)/sf(1)), ceil(fullY(2)/sf(1))], lvlSize(1));
-Xl = core.MibBigDataLabels.clampRange([ceil(fullX(1)/sf(2)), ceil(fullX(2)/sf(2))], lvlSize(2));
-Zl = core.MibBigDataLabels.clampRange([ceil(fullZ(1)/sf(3)), ceil(fullZ(2)/sf(3))], lvlSize(3));
 
-packed = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);   % [ny nx nz], native [y x z]
+% If deferred propagation left this level stale on disk, flush the queue so the
+% read returns the up-to-date model (the working level is never stale, so reads
+% at the editing zoom stay fast and only zoom changes pay the flush).
+if ~isempty(obj.propagationQueue) && levelIdx <= numel(obj.dirtyLevels) && obj.dirtyLevels(levelIdx)
+    obj.flushPropagation();
+end
 
-% --- resize to display resolution (mirror getDataZarr) --------------------
+% --- physical [Y X Z] ranges for this level (shared with setData63) -------
+[physYlim, physXlim, physZlim] = obj.orientPhysRanges(levelIdx, orient, options);
+sf = obj.modelScaleFactors(levelIdx, :);   % [yScale, xScale, zScale]
+
+% --- read the physical [y x z] packed region ------------------------------
+packed = obj.readPackedLevel(levelIdx, physYlim, physXlim, physZlim);   % [ny nx nz]
+packed = reshape(packed, size(packed, 1), size(packed, 2), size(packed, 3), 1, 1);
+
+% --- permute [y,x,z] to the requested screen orientation (mirror getDataZarr)
+switch orient
+    case 1  % xz: [y,x,z] -> [x, z, y]
+        packed = permute(packed, [2 3 1 4 5]);
+    case 2  % yz: [y,x,z] -> [y, z, x]
+        packed = permute(packed, [1 3 2 4 5]);
+end
+
+% --- single-factor display resize (mirror getDataZarr) --------------------
 mf = 1;
 if isfield(options, 'magFactor') && ~isempty(options.magFactor); mf = options.magFactor; end
 explicitLevel = isfield(options, 'pyramidLevel') && ~isempty(options.pyramidLevel);
-resizeFactor = mf / sf(1);
+currentMag = sf(1);
+resizeFactor = mf / currentMag;
 if ~explicitLevel && abs(resizeFactor - 1) > 1e-3
     newY = max(1, round(size(packed, 1) / resizeFactor));
     newX = max(1, round(size(packed, 2) / resizeFactor));
-    if ~isequal([newY newX], [size(packed,1) size(packed,2)])
+    if ~isequal([newY newX], [size(packed, 1), size(packed, 2)])
         resized = zeros(newY, newX, size(packed, 3), 'uint8');
         for z = 1:size(packed, 3)
             resized(:, :, z) = imresize(packed(:, :, z), [newY newX], 'nearest');
         end
-        packed = resized;
+        packed = reshape(resized, newY, newX, size(packed, 3), 1, 1);
     end
-end
-
-% --- shape to [ny, nx, nz, 1, 1] and orient -------------------------------
-packed = reshape(packed, size(packed, 1), size(packed, 2), size(packed, 3), 1, 1);
-if orient == 1
-    packed = permute(packed, [2 3 1 4 5]);
-elseif orient == 2
-    packed = permute(packed, [1 3 2 4 5]);
 end
 
 % --- unpack the requested layer -------------------------------------------

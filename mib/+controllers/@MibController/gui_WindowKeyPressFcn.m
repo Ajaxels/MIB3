@@ -95,7 +95,9 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
         case 'Add measurement (Measure tool)'   % add measurement, works with Measure Tool, default 'm'
             notify(obj.mibModel, 'AddMeasurement');
         case 'Switch dataset to XY orientation'         % default 'Alt + 1'
-            if dataset.orientation == 3 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || any(dataset.datasetType(1) == ['V' 'B']); return; end
+            % BigData supports orientation switching (getData63/getDataZarr handle
+            % orient); Virtual stays gated (browse-only, may use non-zarr backends).
+            if dataset.orientation == 3 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || dataset.datasetType(1) == 'V'; return; end
             if dataset.orientation == 1
                 dataset.current_yxz(2) = xy(2);
                 dataset.current_yxz(3) = xy(1);
@@ -110,7 +112,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             % tick — calling it explicitly here keeps the label in sync.
             cImageDoc.gui_WinMouseMotionFcn();
         case 'Switch dataset to ZY orientation'         % default 'Alt + 2'
-            if dataset.orientation == 2 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || any(dataset.datasetType(1) == ['V' 'B']); return; end
+            if dataset.orientation == 2 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || dataset.datasetType(1) == 'V'; return; end
             if dataset.orientation == 1
                 dataset.current_yxz(1) = dataset.slices{1}(1);
                 dataset.current_yxz(2) = xy(2);
@@ -123,7 +125,7 @@ if ~isempty(ActionId) % find in the list of existing shortcuts
             obj.cQuickAccessBar.orientationChange(obj.cQuickAccessBar.handles.yz_orientation, true);
             cImageDoc.gui_WinMouseMotionFcn();  % keep pixel label in sync after cursor reposition
         case 'Switch dataset to ZX orientation'         % default 'Alt + 3'
-            if dataset.orientation == 1 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || any(dataset.datasetType(1) == ['V' 'B']); return; end
+            if dataset.orientation == 1 || isnan(cImageDoc.isInsideImage) || ~cImageDoc.isInsideImage || dataset.datasetType(1) == 'V'; return; end
             if dataset.orientation == 2
                 dataset.current_yxz(1) = xy(2);
                 dataset.current_yxz(2) = dataset.slices{2}(1);

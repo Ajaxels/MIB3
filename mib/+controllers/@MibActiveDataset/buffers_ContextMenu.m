@@ -411,6 +411,10 @@ switch parameter
         targetLocalId = mod(targetGlobalId-1, obj.mibModel.Sets.datasetsInSet) + 1;
         targetBufferStr = sprintf('buffer%d', targetLocalId);
 
+        % remember the currently selected dataset type so closing keeps the buffer
+        % in that mode (Virtual / BigData) instead of always reverting to Standard
+        prevDatasetType = obj.mibModel.I{targetGlobalId}.datasetType;
+
         obj.mibModel.I{targetGlobalId}.closeVirtualDataset();
         delete(obj.mibModel.I{targetGlobalId});
 
@@ -429,12 +433,22 @@ switch parameter
             obj.mibModel.I{targetGlobalId}.image.lutColors = obj.mibModel.preferences.Colors.LUTColors;
         end
 
-        % reset the dataset-type shown in the Datasets panel: the replacement is
-        % a Standard dataset, so Sets.datasetTypes (which drives the type dropdown
-        % in buffers_Callback) must be reset — otherwise it keeps showing 'BigData'
-        % / 'Virtual' after closing such a dataset.
+        % keep the buffer in the previously selected dataset type: if it was
+        % Virtual / BigData, switch the fresh placeholder into that mode (empty,
+        % browse-only) so the type dropdown and Sets.datasetTypes stay consistent
+        % rather than reverting to Standard. Standard is left as created above.
         targetSet = floor((targetGlobalId - 1) / obj.mibModel.Sets.datasetsInSet) + 1;
-        obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = 'Standard';
+        switch prevDatasetType
+            case 'Virtual'
+                defH5 = {fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.h5')};
+                obj.mibModel.I{targetGlobalId}.switchDatasetMode(2, ...
+                    obj.mibModel.preferences.System.EnableSelection, defH5);
+            case 'BigData'
+                defH5 = {fullfile(obj.mibModel.mibPath, 'assets', 'images', 'default.h5')};
+                obj.mibModel.I{targetGlobalId}.switchDatasetMode(3, ...
+                    obj.mibModel.preferences.System.EnableSelection, defH5);
+        end
+        obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = prevDatasetType;
 
         % unlink this dataset: reset partner's context menu text and remove from linkedPairs
         partnerOfTarget = obj.mibModel.getLinkedDataset(targetGlobalId);

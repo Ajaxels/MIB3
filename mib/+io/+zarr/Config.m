@@ -13,9 +13,15 @@ classdef Config < handle
 %   * **pythonPath** — the Python interpreter used by the python backend
 %     (normally ``preferences.ExternalDirs.PythonInstallationPath``).
 %
-% ``models.MibModel.initializePreferences`` pushes both from
-% ``preferences.IO.ZarrLibrary`` / ``preferences.ExternalDirs.PythonInstallationPath``
-% at start-up; the Preferences dialog should call ``setLibrary`` /
+%   * **smoothing** — when ``true`` (default), the BigData label pyramid smooths
+%     boundaries when an edit made at a coarse (zoomed-out) level is propagated
+%     **up** into finer levels, instead of a blocky nearest-neighbour upsample
+%     (see ``core.MibBigDataLabels.resizeBlockSmooth``).
+%
+% ``models.MibModel.initializePreferences`` pushes these from
+% ``preferences.IO.Zarr.Library`` / ``preferences.IO.Zarr.Smoothing`` /
+% ``preferences.ExternalDirs.PythonInstallationPath`` at start-up; the
+% Preferences dialog should call ``setLibrary`` / ``setSmoothing`` /
 % ``setPythonPath`` again whenever the user changes them.
 %
 % Metadata operations (creating arrays/groups, attributes, resize) are always
@@ -32,6 +38,10 @@ classdef Config < handle
 %      tf  = io.zarr.Config.isPython();               % true
 %      lib = io.zarr.Config.library();                % 'python'
 %      io.zarr.Config.setLibrary('native');           % back to zarrMex
+%
+%      io.zarr.Config.setSmoothing(false);            % blocky (nearest) up-propagation
+%      sm = io.zarr.Config.smoothing();               % false
+%      io.zarr.Config.setSmoothing(true);             % smooth coarse->fine edits (default)
 
     methods (Static)
         function out = library(name)
@@ -68,6 +78,71 @@ classdef Config < handle
         function setPythonPath(p)
             % SETPYTHONPATH - set the python interpreter used by the python backend.
             io.zarr.Config.pythonPath(p);
+        end
+
+        function out = smoothing(tf)
+            % SMOOTHING - get or set the BigData label up-propagation smoothing flag.
+            %
+            % Process-wide flag controlling how a BigData segmentation edit made at a
+            % coarse (zoomed-out) pyramid level is propagated **up** into the finer
+            % levels by ``core.MibBigDataLabels``:
+            %
+            %   - ``true`` *(default)* — boundaries are reconstructed with a signed
+            %     distance transform + Gaussian smoothing (``smoothLabelUpsampleYX`` /
+            %     ``signedDistUpsample``), so a coarse circle becomes a smooth curve
+            %     instead of a blocky, stair-stepped one at full magnification.
+            %   - ``false`` — plain nearest-neighbour up-sampling (faster, blocky).
+            %
+            % Only affects **up-sampling** (coarse edit -> finer level); down-sampling
+            % always uses nearest. Note this rounds the stair-steps but cannot recover
+            % detail finer than the level the edit was drawn at.
+            %
+            % Set at start-up from ``preferences.IO.Zarr.Smoothing`` by
+            % ``models.MibModel.initializePreferences`` and committed by the Preferences
+            % dialog (``controllers.Preferences.ApplyButtonPushedCallback``); takes
+            % effect immediately, no restart needed.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      tf = io.zarr.Config.smoothing();      % query current flag
+            %      io.zarr.Config.smoothing(false);      % disable
+            %
+            % Input Arguments:
+            %   - **tf** — *(optional)* [logical] new value; omit (or pass ``[]``) to
+            %     query without changing it.
+            %
+            % Output Arguments:
+            %   - **out** — [logical] the current (possibly just-updated) flag.
+            %
+            % See also:
+            %   ``io.zarr.Config.setSmoothing``, ``core.MibBigDataLabels.resizeBlockSmooth``
+            persistent sm
+            if isempty(sm); sm = true; end
+            if nargin >= 1 && ~isempty(tf); sm = logical(tf); end
+            out = sm;
+        end
+
+        function setSmoothing(tf)
+            % SETSMOOTHING - enable/disable smooth boundary up-propagation in the
+            % BigData label pyramid.
+            %
+            % Thin setter wrapper around ``smoothing`` for symmetry with
+            % ``setLibrary`` / ``setPythonPath``; the Preferences dialog calls it to
+            % push ``preferences.IO.Zarr.Smoothing`` into the process-wide config.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      io.zarr.Config.setSmoothing(true);
+            %
+            % Input Arguments:
+            %   - **tf** — [logical] ``true`` to smooth coarse->fine label propagation,
+            %     ``false`` for nearest-neighbour.
+            %
+            % See also:
+            %   ``io.zarr.Config.smoothing``, ``core.MibBigDataLabels.resizeBlockSmooth``
+            io.zarr.Config.smoothing(tf);
         end
     end
 

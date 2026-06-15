@@ -23,29 +23,9 @@ if ~strcmp(type, 'labels'); materialIndex = []; end
 if isempty(dataset); return; end
 if islogical(dataset(1)); dataset = uint8(dataset); end
 
-% --- full-resolution (level-0) sub-block from options + orientation -------
-fullX = [1, obj.width];
-fullY = [1, obj.height];
-fullZ = [1, obj.depth];
-switch orient
-    case 1  % xz
-        if isfield(options, 'x'); fullZ = [options.x(1), options.x(end)]; end
-        if isfield(options, 'z'); fullY = floor([options.z(1), options.z(end)]); end
-        if isfield(options, 'y'); fullX = floor([options.y(1), options.y(end)]); end
-    case 2  % yz
-        if isfield(options, 'x'); fullZ = [options.x(1), options.x(end)]; end
-        if isfield(options, 'y'); fullY = floor([options.y(1), options.y(end)]); end
-        if isfield(options, 'z'); fullX = floor([options.z(1), options.z(end)]); end
-    otherwise  % 3, yx
-        if isfield(options, 'x'); fullX = floor([options.x(1), options.x(end)]); end
-        if isfield(options, 'y'); fullY = floor([options.y(1), options.y(end)]); end
-        if isfield(options, 'z'); fullZ = [options.z(1), options.z(end)]; end
-end
-fullX = [max(fullX(1), 1), min(fullX(2), obj.width)];
-fullY = [max(fullY(1), 1), min(fullY(2), obj.height)];
-fullZ = [max(fullZ(1), 1), min(fullZ(2), obj.depth)];
-
 % --- incoming data into native [y, x, z] order ----------------------------
+% getData63 permutes physical [y x z] -> screen orientation; invert that here
+% so the incoming screen-oriented block returns to native [y x z].
 if orient == 1
     dataset = ipermute(dataset, [2 3 1 4 5]);
 elseif orient == 2
@@ -53,13 +33,33 @@ elseif orient == 2
 end
 dataset = reshape(dataset, size(dataset, 1), size(dataset, 2), []);   % [dy dx dz]
 
-% --- working level + its region ------------------------------------------
+% --- working level + its physical region (same convention as getData63) ---
+% Use the shared orientPhysRanges helper so write lands exactly where read
+% takes it from, in every orientation (the two are inverses by construction).
 levelIdx = obj.pickLevel(options);
-[Yl, Xl, Zl] = levelRegion(obj, levelIdx, fullY, fullX, fullZ);
+[Yl, Xl, Zl] = obj.orientPhysRanges(levelIdx, orient, options);
 wSize = [Yl(2)-Yl(1)+1, Xl(2)-Xl(1)+1, Zl(2)-Zl(1)+1];
 
-% resize the displayed-resolution data down/up to the working level region
-dataLevel = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
+% full-resolution physical ranges for cross-level propagation: scale the
+% working-level region back up by this level's per-axis factor.
+sf = obj.modelScaleFactors(levelIdx, :);
+fullY = [(Yl(1)-1)*sf(1)+1, min(Yl(2)*sf(1), obj.height)];
+fullX = [(Xl(1)-1)*sf(2)+1, min(Xl(2)*sf(2), obj.width)];
+fullZ = [(Zl(1)-1)*sf(3)+1, min(Zl(2)*sf(3), obj.depth)];
+
+% resize the displayed-resolution data down/up to the working level region.
+% When zoomed out the brush arrives at a COARSER display resolution than the
+% working level, so this is an UP-sample — use the smooth (signed-distance)
+% reconstruction when enabled so the stored boundary isn't blocky at the
+% working-level grid (the propagation below then carries it to other levels).
+% 'everything' (undo/restore of packed bytes) is never smoothed; it must be exact.
+smoothOn = io.zarr.Config.smoothing();
+if smoothOn && ~strcmp(type, 'everything')
+    isLabelMap = strcmp(type, 'labels') && isempty(materialIndex);
+    dataLevel = core.MibBigDataLabels.resizeLayerSmooth(dataset, wSize, isLabelMap);
+else
+    dataLevel = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
+end
 
 % --- read / merge / write the working level ------------------------------
 packed = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);
@@ -67,25 +67,18 @@ packed = mergePacked(packed, dataLevel, type, materialIndex);
 obj.writePackedLevel(levelIdx, packed, Yl, Xl, Zl);
 
 % --- propagate the merged region to every other level --------------------
-for L2 = 1:size(obj.modelLevelSizes, 1)
-    if L2 == levelIdx; continue; end
-    [A2, B2, C2] = levelRegion(obj, L2, fullY, fullX, fullZ);
-    t2 = [A2(2)-A2(1)+1, B2(2)-B2(1)+1, C2(2)-C2(1)+1];
-    block2 = core.MibBigDataLabels.resizeBlockNearest(packed, t2);
-    obj.writePackedLevel(L2, block2, A2, B2, C2);
+% The working level is now authoritative on disk; the other levels are kept
+% in sync. By default this is DEFERRED: the edit is queued and a debounce
+% timer flushes it on idle (so rapid brush strokes don't pay N level-writes
+% per stroke). Correctness is preserved because getData63 flushes before
+% reading a stale level and closeStore flushes before releasing the store.
+if obj.deferPropagation
+    obj.enqueuePropagation(packed, fullY, fullX, fullZ, levelIdx);
+else
+    obj.propagateRegion(packed, fullY, fullX, fullZ, levelIdx);
 end
 
 result = true;
-end
-
-% ------------------------------------------------------------------------
-function [Yl, Xl, Zl] = levelRegion(obj, levelIdx, fullY, fullX, fullZ)
-% map a full-resolution YXZ region to a level's clamped index range
-sf = obj.modelScaleFactors(levelIdx, :);
-lv = obj.modelLevelSizes(levelIdx, :);
-Yl = core.MibBigDataLabels.clampRange([ceil(fullY(1)/sf(1)), ceil(fullY(2)/sf(1))], lv(1));
-Xl = core.MibBigDataLabels.clampRange([ceil(fullX(1)/sf(2)), ceil(fullX(2)/sf(2))], lv(2));
-Zl = core.MibBigDataLabels.clampRange([ceil(fullZ(1)/sf(3)), ceil(fullZ(2)/sf(3))], lv(3));
 end
 
 % ------------------------------------------------------------------------

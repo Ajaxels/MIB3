@@ -8,7 +8,7 @@ making it easy to tweak everything from fonts to undo history.
 
 ## Overview
 
-The dialog organizes settings into six categories, shown as nodes in the **Categories Tree** on the left side:
+The dialog organizes settings into seven categories, shown as nodes in the **Categories Tree** on the left side:
 
 ![Preferences dialog](images/file-preferences-ui.png){.on-glb align=left width="300"}
 
@@ -18,6 +18,7 @@ The dialog organizes settings into six categories, shown as nodes in the **Categ
 - **External directories**: specifies paths for external tools like Fiji or Python.
 - **Keyboard shortcuts**: defines custom key bindings for MIB actions.
 - **Segmentation tools**: adjusts settings and options for segmentation tools.
+- **Input / output**: selects the OME-Zarr (zarr3) read/write engine and BigData label smoothing.
 
 At the bottom, you’ll find buttons to manage changes:
 
@@ -410,6 +411,51 @@ Set quick-access segmentation tools:
   - 
 <span class="widget widget-dropdown">Favorite tool B</span>: a dropdown to select a tool accessed via ++ctrl+d++:
   - Same options as Favorite tool A (default: Segment-anything model).
+
+---
+
+## Input / Output
+
+![Input / Output Preferences](images/file-preferences-io.png){.on-glb align=left width="300"}
+
+This category configures reading and writing of **OME-Zarr v3** (`.zarr3`) datasets, used by the
+BigData and virtual dataset modes.
+
+<div class="clear-float"></div>
+
+### Zarr library
+
+![Preferences, Zarr library](images/file-preferences-io-zarr.png){align=left}
+
+<span class="widget widget-dropdown">Zarr library</span>: a dropdown to select the engine used for
+reading and writing zarr3 data:
+
+- `native`: the bundled **zarrMex** engine — no external dependencies (*default, recommended*).
+- `python`: the **zarr-python** (v3) library, called through the Python interpreter set in
+  [External directories → Python installation path](#external-directories). Requires the `zarr` and
+  `numpy` packages installed in that environment.
+
+A short description of the selected library is shown in the label beneath the dropdown. The setting
+takes effect immediately on <span class="widget widget-button">OK</span> / <span class="widget widget-button">Apply</span> — no restart needed.
+
+!!! info
+    Metadata (array/group creation, attributes, resizing) is always handled by the native engine for
+    an identical on-disk structure; only the bulk pixel read/write honours this selection. Remote
+    (HTTP/HTTPS) zarr datasets always use the native engine.
+
+### Smoothing
+
+<span class="widget widget-checkbox">Smoothing</span>: a checkbox controlling how a segmentation edit
+made at a low-magnification (zoomed-out) level of a **BigData** model is propagated into the
+higher-resolution pyramid levels (*default: enabled*).
+
+- When **enabled**, coarse edits are reconstructed with a signed-distance transform so boundaries
+  appear as smooth curves instead of blocky steps when you zoom in.
+- When **disabled**, a faster nearest-neighbour upsampling is used, leaving blockier boundaries.
+
+!!! note
+    Smoothing rounds the staircase pattern of a coarse edit but cannot add detail finer than the
+    level you drew at — draw at a higher magnification for crisp boundaries.
 
 ---
 
