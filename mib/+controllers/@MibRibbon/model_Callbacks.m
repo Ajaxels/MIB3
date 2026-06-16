@@ -90,7 +90,20 @@ switch mode
         if isempty(obj.mibModel.I{activeId}.labels.filename)
             obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
         else
-            obj.mibModel.saveLabels();
+            % confirm before overwriting the existing model file
+            [~, modelName, modelExt] = fileparts(obj.mibModel.I{activeId}.labels.filename);
+            questOpt = struct('WindowStyle', 'modal', 'mibPath', obj.mibModel.mibPath);
+            answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
+                sprintf('Overwrite the existing model file?\n\n%s%s', modelName, modelExt), ...
+                'Save model', 'Overwrite', 'Save as...', 'Cancel', 'Overwrite', questOpt);
+            switch answer
+                case 'Overwrite'
+                    obj.mibModel.saveLabels();
+                case 'Save as...'
+                    obj.mibModel.saveLabels([]);   % prompt for a new filename
+                otherwise   % 'Cancel' or dialog closed
+                    return;
+            end
         end
     case sprintf('Save\nmodel as...')            % obj.handles.ribbonModel.saveAs — save with dialog
         obj.mibModel.saveLabels([]);

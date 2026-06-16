@@ -46,7 +46,11 @@ hFig = obj.UIFigure;
 dataset = obj.mibModel.I{obj.mibModel.id};
 
 % ---- do backup ----
-backupOptions.blockModeSwitch = false;
+% The brush only edits the shown area and commits it via block mode, so on BigData
+% bound the undo backup to the visible block (full-resolution) instead of capturing
+% the whole full-res slice per stroke — WSI-safe. backup() records the block's
+% coordinates, so undo restores the correct region regardless of later pan/zoom.
+backupOptions.blockModeSwitch = (dataset.datasetType(1) == 'B');
 obj.mibModel.backup('selection', 0, backupOptions);
 
 % ---- read brush radius ----

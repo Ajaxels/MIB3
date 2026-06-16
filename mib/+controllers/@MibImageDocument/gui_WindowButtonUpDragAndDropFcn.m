@@ -113,21 +113,63 @@ end
 
 getDataOptions.blockModeSwitch = 0;
 getDataOptions.id = BatchOpt.id;
-% Pyramidal (BigData/Virtual) datasets: read/write the layer at FULL resolution.
-% getData2D/getData3D would otherwise return the slice at the displayed pyramid
-% level (downsampled by magFactor), while width/height below and the shift
-% (diffX/diffY are already converted to full-res via *magFactor) are full-res —
-% the size mismatch breaks the selAreaOut/selarea shift indexing.
+% Pyramidal (BigData/Virtual) datasets: read/write the layer at FULL resolution so
+% the shift (diffX/diffY are full-res) and the array indexing line up.
 if any(obj.mibModel.I{BatchOpt.id}.datasetType(1) == ['V' 'B'])
     getDataOptions.magFactor = 1;
 end
-[height, width, depth, ~, time] = obj.mibModel.I{BatchOpt.id}.getDatasetDimensions('image', [], getDataOptions);
+
+% BigData single-object drag (WSI-safe): bound the read/write to the visible∪shifted
+% window at full resolution instead of the whole layer. The object can't be dragged
+% more than ~one screen, so this window always contains both its source and
+% destination. Only the YX orientation is bounded; ZX/ZY fall back to whole-layer.
+is3D = any(strcmp(mode, {'3D, Stack', 'Object3D'}));
+isBoundedDrag = false;
+winXoff = 0; winYoff = 0;
+if obj.mibModel.I{BatchOpt.id}.datasetType(1) == 'B' && ...
+        any(strcmp(mode, {'Object2D', 'Object3D'})) && ...
+        obj.mibModel.I{BatchOpt.id}.orientation == 3
+    [axesX, axesY] = obj.mibModel.getAxesLimits(BatchOpt.id);
+    fullW = obj.mibModel.I{BatchOpt.id}.image.width;
+    fullH = obj.mibModel.I{BatchOpt.id}.image.height;
+    vx = [ceil(axesX(1)), ceil(axesX(2))];
+    vy = [ceil(axesY(1)), ceil(axesY(2))];
+    winX = [max(1, min(vx(1), vx(1)+diffX)), min(fullW, max(vx(2), vx(2)+diffX))];
+    winY = [max(1, min(vy(1), vy(1)+diffY)), min(fullH, max(vy(2), vy(2)+diffY))];
+    getDataOptions.x = winX;
+    getDataOptions.y = winY;
+    winXoff = winX(1) - 1;
+    winYoff = winY(1) - 1;
+    isBoundedDrag = true;
+end
+
+% Undo backup for BigData (the interactive setup skipped it so it can be bounded
+% here): windowed when bounded, otherwise a full backup (+ warn) for ZX/ZY.
+if obj.mibModel.I{BatchOpt.id}.datasetType(1) == 'B'
+    if isBoundedDrag
+        obj.mibModel.backup(BatchOpt.Target{1}, double(is3D), ...
+            struct('id', BatchOpt.id, 'x', winX, 'y', winY, 'magFactor', 1));
+    else
+        utils.warnLargeFullResRead(obj.mibModel.I{BatchOpt.id}.image.height, ...
+            obj.mibModel.I{BatchOpt.id}.image.width);
+        obj.mibModel.backup(BatchOpt.Target{1}, double(is3D), ...
+            struct('id', BatchOpt.id, 'magFactor', 1));
+    end
+end
+
+if isBoundedDrag
+    width  = winX(2) - winX(1) + 1;
+    height = winY(2) - winY(1) + 1;
+else
+    [height, width] = obj.mibModel.I{BatchOpt.id}.getDatasetDimensions('image', [], getDataOptions);
+end
 
 switch mode
     case {'2D, Slice', 'Object2D'}
         selarea = cell2mat(obj.mibModel.getData2D(BatchOpt.Target{1}, [], [], [], getDataOptions));
         if strcmp(mode, 'Object2D')
             [xOut, yOut] = obj.mibModel.convertMouseToDataCoordinates(obj.brushPrevXY(1), obj.brushPrevXY(2), 'shown', 1);
+            xOut = xOut - winXoff; yOut = yOut - winYoff;   % offset to the read window (0 unless bounded)
 
             if strcmp(BatchOpt.Target{1}, 'labels')
                 materialId = selarea(ceil(yOut), ceil(xOut));
@@ -171,6 +213,7 @@ switch mode
         selarea = cell2mat(obj.mibModel.getData3D(BatchOpt.Target{1}, [], [], [], getDataOptions));
         if strcmp(mode, 'Object3D')
             [xOut, yOut] = obj.mibModel.convertMouseToDataCoordinates(obj.brushPrevXY(1), obj.brushPrevXY(2), 'shown', 1);
+            xOut = xOut - winXoff; yOut = yOut - winYoff;   % offset to the read window (0 unless bounded)
             zOut = obj.mibModel.I{BatchOpt.id}.getCurrentSliceNumber();
             if strcmp(BatchOpt.Target{1}, 'labels')
                 materialId = selarea(ceil(yOut), ceil(xOut), zOut);

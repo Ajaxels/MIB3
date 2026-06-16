@@ -234,31 +234,54 @@ hFig.WindowButtonDownFcn = @(~, ~) obj.gui_WindowButtonDownFcn();
 hFig.Pointer = 'crosshair';
 obj.mibModel.disableSegmentation = false;
 
-% create mask at full data resolution from data coordinates
+% --- rasterise the ROI and bound the operation to its bounding box -------
+% WSI-safe convention: in the YX orientation, read / rasterise / write only the
+% polygon's bounding box at full resolution, so cost scales with the ROI size and
+% not the slide size. Other orientations keep the whole-slice path (with a
+% warn-only guard). Pyramidal datasets force magFactor=1 so the bbox window is the
+% finest level and matches the full-res coordinates from convertMouseToDataCoordinates.
 getDataOptions.blockModeSwitch = 0;
-% Pyramidal (BigData/Virtual): force full resolution so the mask canvas (size of
-% currSelection) matches the full-resolution data coordinates returned by
-% convertMouseToDataCoordinates. Otherwise getData2D returns the slice at the
-% display level and poly2mask rasterises the polygon at the wrong scale/position.
+getDataOptions.id = id;
 if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); getDataOptions.magFactor = 1; end
-currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], getDataOptions));
-selected_mask = uint8(poly2mask(double(dataX), double(dataY), size(currSelection, 1), size(currSelection, 2)));
-
-% calculating bounding box for the backup
-CC = regionprops(selected_mask, 'BoundingBox');
-if isempty(CC); return; end
-bb = CC.BoundingBox;
 
 orientation = obj.mibModel.I{id}.orientation;
-if orientation == 3      % XY
-    backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
-    backupOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
-elseif orientation == 1  % ZX
-    backupOptions.x = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
-    backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
-elseif orientation == 2  % ZY
-    backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
-    backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+boundToBBox = (orientation == 3);   % bound to the ROI bbox in YX (the WSI case)
+backupOptions = struct();
+backupOptions.id = id;
+
+if boundToBBox
+    imgW = obj.mibModel.I{id}.image.width;
+    imgH = obj.mibModel.I{id}.image.height;
+    xmin = max(1, floor(min(dataX)));  xmax = min(imgW, ceil(max(dataX)));
+    ymin = max(1, floor(min(dataY)));  ymax = min(imgH, ceil(max(dataY)));
+    if xmax < xmin || ymax < ymin      % ROI entirely outside the image
+        notify(obj.mibModel, 'ShowImage');
+        return;
+    end
+    getDataOptions.x = [xmin, xmax];
+    getDataOptions.y = [ymin, ymax];
+    backupOptions.x  = [xmin, xmax];
+    backupOptions.y  = [ymin, ymax];
+    % rasterise onto a bbox-sized canvas with coordinates offset to the bbox origin
+    selected_mask = uint8(poly2mask(double(dataX) - xmin + 1, double(dataY) - ymin + 1, ...
+        ymax - ymin + 1, xmax - xmin + 1));
+else
+    % non-YX orientation: whole-slice path (warn for huge pyramidal reads)
+    if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+        utils.warnLargeFullResRead(obj.mibModel.I{id}.image.height, obj.mibModel.I{id}.image.width);
+    end
+    currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], getDataOptions));
+    selected_mask = uint8(poly2mask(double(dataX), double(dataY), size(currSelection, 1), size(currSelection, 2)));
+    CC = regionprops(selected_mask, 'BoundingBox');
+    if isempty(CC); return; end
+    bb = CC.BoundingBox;
+    if orientation == 1      % ZX
+        backupOptions.x = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
+        backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+    elseif orientation == 2  % ZY
+        backupOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
+        backupOptions.z = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
+    end
 end
 
 if switch3d     % 3D case
@@ -294,7 +317,12 @@ if switch3d     % 3D case
     wb.Value = 1;
     close(wb);
 else    % 2D case
-    obj.mibModel.backup('selection', 0);
+    if boundToBBox
+        obj.mibModel.backup('selection', 0, backupOptions);
+    else
+        obj.mibModel.backup('selection', 0);
+    end
+    currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], getDataOptions));
     selarea = selected_mask;
 
     % limit to the selected material of the model

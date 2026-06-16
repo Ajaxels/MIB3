@@ -1,6 +1,24 @@
 # Plan: BigData image type for MIB3 (hybrid blockedImage + Zarr3)
 
-## 🗣 To discuss later: full-res editing convention for click tools (WSI-safe)
+## ✅ Decided (2026-06-16): WSI-safe editing convention
+
+Resolved with the user. Convention = **footprint-bounded full-res reads** (cost ∝ edit size, not slide
+size). Per-tool decisions:
+- **Lasso / Ellipse / Rectangle** → read/write only the **ROI bounding box** at full res (interactive
+  `segmentationLasso`; the manual-entry `segmentationLassoManual` already reads only its bbox).
+- **Magic Wand** → **always radius-limited** on BigData (the radius window is the footprint). `radius=0`
+  must not read the whole slide — guard it.
+- **Drag&Drop** → restricted to a **single selected object**, moved with a **pan-mode-like live preview
+  (not fast-pan)**; the working region is bounded because an object can't be dragged more than ~one
+  screen away (object bbox ∪ shifted bbox). No whole-layer shift on BigData.
+- **Spot** and **Magic Wand (radius>0)** are already footprint-bounded — no change.
+- **Safety guard** → **warn-only** (Q2): a shared check emits a non-blocking warning when a full-res
+  read on BigData/Virtual would exceed a megapixel budget; it never blocks (so a legitimate large edit
+  still proceeds), but surfaces accidental whole-slice reads while tools are converted.
+
+Implementation status tracked in the dated "WSI-safe" fixes below.
+
+## 🗣 (resolved — see above) full-res editing convention for click tools (WSI-safe)
 
 Recurring "wrong place / wrong size" bugs across click tools (Spot, Lasso, Magic Wand, Drag&Drop, SAM)
 all stem from ONE mismatch: the **coordinate conversion is shared and correct**
@@ -109,6 +127,27 @@ Spot / Magic Wand fixes are footprint-bounded and fine.
   readable directly in BigData mode (they work in Standard/Virtual). Path to use them: the **ingest
   converter** (read via BioFormats/OpenSlide → write a `.zarr3` pyramid → open as BigData). Broaden
   `BigData.*` registry entries once a streaming reader or the converter exists.
+- **Remote OME-Zarr over HTTP/URL — possible future development.** Investigated 2026-06-17 with two
+  real URLs. Findings:
+  - **`Import → URL` cannot open zarr** — `controllers.MibRibbon.homeImport_Callback` (`'URL'` case)
+    uses `imfinfo`/`imread`, which only handle single-file images, not a chunked Zarr store. It never
+    routes to the zarr loader.
+  - **The zarr loader already supports HTTP for metadata + (in principle) reads.**
+    `Zarr3VirtualSetupLoader.loadMetadata` fetches `zarr.json` via `webread` (handles NGFF v0.4
+    `attributes.multiscales`, v0.5 `attributes.ome.multiscales`, top-level), and
+    `Zarr3VirtualLoader.readRegion` opens an `io.zarr.Array` on the URL; `io.zarr.Array` forces the
+    **native** backend for `http(s)://` (`ZarrArray`→`zarrMex`). Verified on a webKnossos v3 URL: the
+    metadata parsed perfectly (10 levels, 22896×18250×3380, uint8).
+  - **But pixel reads can fail per-server.** `zarrMex` (tensorstore HTTP kvstore) reads chunk bytes via
+    **HTTP Range requests**; the webKnossos demo server rejected them with **400 Bad Request** (the
+    EMPIAR example was additionally OME-Zarr **v2**, which the v3-only `Zarr3Matlab` engine can't read).
+  - **No GUI entry point** feeds a URL to the Virtual/BigData open path (File→Open is a local dialog).
+  - **Future work to enable remote zarr browsing:** (1) add an **"Open OME-Zarr from URL"** UI entry
+    that routes to `Zarr3VirtualSetupLoader` (Virtual/BigData) instead of `imread`; (2) for servers
+    without HTTP Range support, add a **whole-chunk GET** read path (e.g. python `zarr`+`fsspec`, which
+    `io.zarr` currently forbids for remote — HTTP is forced to native); (3) optionally a **Zarr v2 read
+    path** so NGFF v0.4 stores (EMPIAR/BioImage-Archive) open too. Range-capable hosts (most S3/object
+    stores) with a v3 store at the **group root** should already work via the existing native path.
 
 ## Context
 
@@ -364,6 +403,66 @@ returns a pyramidal (BigData/Virtual) slice at the **displayed level** (downsamp
 There is no single shared resolution convention today — each tool handles magnification (or ignores
 it) independently. A proper fix is to standardise: editing tools read/write layers at full resolution
 and use full-res click coords. Until then each tool is fixed individually per its own logic.
+
+### WSI-safe (2026-06-16, part 1): warn guard + Lasso/Wand/RegionGrowing footprint-bounding
+
+Implementing the agreed WSI-safe convention (see "✅ Decided" at top).
+- **Warn-only guard** — new `utils.warnLargeFullResRead(height, width [, budgetMP])`: non-blocking,
+  throttled-once-per-session `warning` when a full-res read on a pyramidal dataset exceeds a megapixel
+  budget (default 256). Verified: silent < budget, warns > budget, throttled.
+- **Magic Wand** & **Region Growing** — `radius=0` (the only unbounded path) now calls the guard for
+  `'V'`/`'B'` (2D and 3D). With a radius they were already footprint-bounded.
+- **Lasso (interactive `segmentationLasso`)** — reworked to **bbox-bounded** in the YX orientation:
+  computes the polygon bbox from the full-res data coords, reads/rasterises (`poly2mask` with
+  offset coords)/backs-up/writes only that bounding box at full res. ZX/ZY keep the whole-slice path
+  with the warn guard. Verified the underlying read returns only the ROI window (e.g. a 121×131 ROI →
+  `131×121` read, not the full `887×813` slice). `segmentationLassoManual` was already bbox-bounded.
+- **Spot** and **Magic Wand (radius>0)** unchanged (already footprint-bounded).
+All changed files clean under `check_matlab_code`.
+
+### WSI-safe (2026-06-16, part 2): Drag&Drop bounded to a single object
+
+Per the user's spec ("single selected object; pan-mode-like (not fast-pan); can't drag more than ~one
+screen"):
+- **`segmentationDragAndDrop`** (init): on BigData the all-objects drag (`shift`) is **blocked** with a
+  message — only single-object (`Ctrl`) drag is allowed. The full-slice undo backup is **skipped** on
+  BigData (deferred to the commit so it can be bounded). The live preview
+  (`gui_WindowDragAndDropMotionFcn`) is unchanged — it already works in shown/display coords (screen-
+  bounded, shows real data = "not fast-pan"). Removed adjacent dead code (`options`/`blockHeight`).
+- **`gui_WindowButtonUpDragAndDropFcn`** (commit): for a BigData single-object drag in YX, the
+  read/write is **bounded to the visible∪shifted window** at full resolution (`getDataOptions.x/y`),
+  the seed is offset to the window origin, and a **windowed undo backup** of the dragged layer is taken
+  (ZX/ZY fall back to whole-layer with the warn guard). The object can't be dragged more than ~one
+  screen, so the window always holds both its source and destination.
+- Verified (array sim): the window grows to exactly source∪dest (visible 171×201 + shift → 201×241,
+  **not** the full 887×813), the object moves by the exact drag vector with no clipping, and the
+  seed-offset placement is correct. All changed files clean under `check_matlab_code`.
+
+**WSI-safe convention — essentially complete.** All editing tools are now footprint-bounded on BigData
+(Spot/Wand-radius/RegionGrowing-radius/Lasso-bbox/Drag&Drop-window) or guarded (Wand/RegionGrowing
+radius=0 warn; Object Picker / BW threshold blocked) or work at the displayed level + propagation
+(Brush, ClickTracker, SAM).
+
+### WSI-safe (2026-06-17, part 3): bound the undo-backups too
+
+Reads/writes were footprint-bounded but several tools still captured the **whole full-res slice** for
+undo. Bounded those (BigData only; Standard/Virtual paths unchanged, except radius-window backups which
+are correct for all since the edit ⊆ the window):
+- **Brush** (`segmentationBrush`): undo-backup now `blockModeSwitch=true` on BigData → captures the
+  visible block (the brush only edits the shown area), not the whole slice. backup() records the block
+  coords so undo is position-correct after pan/zoom.
+- **Magic Wand 2D** & **Region Growing 2D**: the backup was taken *before* the radius window was built
+  (so it was full-slice). Moved it after, passing `options` → **radius-window-bounded** backup
+  (radius=0 → full slice + the warn already added).
+- **Membrane ClickTracker** (2D trace + 3D start-point): undo-backup now block-mode on BigData
+  (it edits only the visible block).
+- Already bounded: **Spot**, **3D Ball**, **Lasso** (bbox), **manual Lasso** (bbox), **Drag&Drop**
+  (window), **Magic Wand/Region Growing 3D radius**. Coordinate layers (**3D Lines**, **Annotations**)
+  back up small structures, not pixels.
+All changed files clean under `check_matlab_code`; bounded-read mechanism verified earlier (a windowed
+`getData63` returns only the window, not the full slice). **WSI-safe convention is now complete** —
+every BigData edit (read, write, and undo) scales with the edit footprint, not the slide size; the only
+remaining whole-slice reads are the explicitly-warned radius=0 flood paths.
 
 ### Docs + fix (2026-06-16): BigData save-format sections + per-tool compatibility notes
 

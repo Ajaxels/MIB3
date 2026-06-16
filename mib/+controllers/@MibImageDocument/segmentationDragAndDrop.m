@@ -42,10 +42,22 @@ obj.brushPrevXY = [x, y];
 layer = obj.mibController.cSegmentation.handles.dragLayer.Value;
 if strcmp(layer, 'model'); layer = 'labels'; end
 
-% get full dataset dimensions (blockModeSwitch off)
-options.blockModeSwitch = 0;
 id = obj.mibModel.getActiveId();
-[blockHeight, blockWidth] = obj.mibModel.I{id}.getDatasetDimensions('image', [], options);
+isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
+
+% BigData: only single-object drag (Ctrl) is supported. Dragging the whole layer
+% ('shift') would need a whole-slice full-resolution read/write — not WSI-safe.
+if isBigData && strcmp(modifier, 'shift')
+    dlgOpt.MsgBoxOnly = true;
+    dlgOpt.Icon = 'puffin_warning';
+    dlgOpt.WindowStyle = 'modal';
+    dlgOpt.HeaderLines = 2;
+    header = sprintf('Dragging the whole layer is not available in BigData mode.\nUse Ctrl + drag to move a single object.');
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Drag & Drop', dlgOpt);
+    obj.brushSelection = [];
+    obj.brushPrevXY = [];
+    return;
+end
 
 obj.brushSelection = {};
 
@@ -65,12 +77,14 @@ if strcmp(modifier, 'shift')
     obj.brushSelection = selarea;
     obj.brushSelection(selarea > 0) = 1;
 elseif strcmp(modifier, 'control')
+    % For BigData the undo backup is deferred to the commit (gui_WindowButtonUp-
+    % DragAndDropFcn), where it is bounded to the visible∪shifted window.
     if ~obj.mibModel.applySegmentationIn3D
         mode = 'Object2D';
-        obj.mibModel.backup('selection', 0);
+        if ~isBigData; obj.mibModel.backup('selection', 0); end
     else
         mode = 'Object3D';
-        obj.mibModel.backup('selection', 1);
+        if ~isBigData; obj.mibModel.backup('selection', 1); end
     end
     if strcmp(layer, 'labels')
         materialId = selarea(y, x);

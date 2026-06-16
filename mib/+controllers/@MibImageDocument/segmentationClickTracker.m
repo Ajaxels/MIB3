@@ -87,7 +87,9 @@ if switch3d
     w = yxzCoordinate(2);
     z = yxzCoordinate(3);
     if any(strcmp(modifier, 'shift'))    % defines first point for the tracer, with the Shift button
-        obj.mibModel.backup('selection', 0);
+        % bound the undo backup to the visible block on BigData (the tracker edits
+        % only the shown area); full slice otherwise.
+        obj.mibModel.backup('selection', 0, struct('blockModeSwitch', isPyramidalDataset, 'id', id));
 
         obj.trackerYXZ = [h; w; z];
         options.blockModeSwitch = 1;
@@ -184,7 +186,9 @@ if switch3d
         return;
     end
 else
-    obj.mibModel.backup('selection', 0);
+    % bound the undo backup to the visible block on BigData (2D tracing edits only
+    % the shown area); full slice otherwise.
+    obj.mibModel.backup('selection', 0, struct('blockModeSwitch', isPyramidalDataset, 'id', id));
     yCrop = yxzCoordinate(1);
     xCrop = yxzCoordinate(2);
     z = yxzCoordinate(3);

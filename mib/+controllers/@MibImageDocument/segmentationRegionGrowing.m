@@ -154,7 +154,6 @@ if obj.mibModel.I{id}.image.depth < 3; switch3d = false; end
 if ~switch3d
     x = coords(2);
     y = coords(1);
-    obj.mibModel.backup('selection', 0);
 
     if magicWandRadius > 0
         options.x = [x-magicWandRadius x+magicWandRadius];
@@ -170,6 +169,13 @@ if ~switch3d
     % pixels match the full-res seed coordinates. Otherwise getData2D returns the
     % displayed (downsampled) level and the grown region lands shifted/rescaled.
     if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
+    % WSI safety net (warn-only): a radius-less region grow reads the whole full-res slice.
+    if magicWandRadius == 0 && any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+        utils.warnLargeFullResRead(obj.mibModel.I{id}.image.height, obj.mibModel.I{id}.image.width);
+    end
+    % backup AFTER the options window is set so it is bounded to the radius region
+    % (radius=0 has no window → full-slice backup, already warned above).
+    obj.mibModel.backup('selection', 0, options);
 
     currImage = cell2mat(obj.mibModel.getData2D('image', [], [], col_channel, options));
     selarea = uint8(regiongrowing(currImage, dMaxDif, [y, x]));
@@ -240,6 +246,10 @@ else
     % Pyramidal (Virtual/BigData): force full-resolution read/write to match the
     % full-res seed coordinates (see the 2D branch above).
     if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
+    % WSI safety net (warn-only): a radius-less region grow reads the whole full-res volume.
+    if magicWandRadius == 0 && any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+        utils.warnLargeFullResRead(obj.mibModel.I{id}.image.height, obj.mibModel.I{id}.image.width);
+    end
     if BatchOpt.showWaitbar; wb.Value = 0.05; end
 
     datasetImage = squeeze(cell2mat(obj.mibModel.getData3D('image', [], 3, col_channel, options)));
