@@ -173,6 +173,13 @@ BatchOpt.FilenameGenerator    = {'Use sequential filename'};   % --- filename ge
 BatchOpt.FilenameGenerator{2} = {'Use original filename', 'Use sequential filename'};
 BatchOpt.Saving3DPolicy    = {'3D stack'};   % --- 3D policy ---
 BatchOpt.Saving3DPolicy{2} = {'3D stack', '2D sequence'};
+% --- pyramid level (Virtual / BigData only): 1 = full resolution (s0) ---
+saveImageNumLevels = 1;
+saveImageImgObj = obj.I{BatchOpt.id}.image;
+if isa(saveImageImgObj, 'core.MibVirtualImage') && ~isempty(saveImageImgObj.pyramid.levelNames)
+    saveImageNumLevels = numel(saveImageImgObj.pyramid.levelNames);
+end
+BatchOpt.PyramidLevel = {1, [1, max(saveImageNumLevels, 1)], 'on'};
 BatchOpt.MaterialIndex = '';   % % --- material index (labels only):'= all, 'NaN' = currently selected
 BatchOpt.showWaitbar = true; % --- waitbar ---
 
@@ -198,6 +205,7 @@ BatchOpt.mibBatchTooltip.OutputDirectoryPolicy = sprintf('Subfolder: relative to
 BatchOpt.mibBatchTooltip.DestinationDirectory  = sprintf('Target directory for Subfolder (no leading slash) or Full path policy. Use [InheritLastDIR] to inherit from a preceding DIR LOOP batch action. Compatible with "..\\".');
 BatchOpt.mibBatchTooltip.FilenameGenerator     = sprintf('Use original filename: derive output filenames from SliceName metadata. Use sequential filename: generate numbered filenames from the provided stem.');
 BatchOpt.mibBatchTooltip.Saving3DPolicy        = sprintf('[TIF/PNG only] 3D stack: save all Z-slices in one file. 2D sequence: one file per slice.');
+BatchOpt.mibBatchTooltip.PyramidLevel          = sprintf('[Virtual/BigData only] Pyramid resolution level to export: 1 = full resolution (s0), higher = coarser. Slices are streamed from disk so the full volume is never loaded.');
 BatchOpt.mibBatchTooltip.MaterialIndex         = sprintf('[Labels only] Material index to export. Empty = all materials. NaN = currently selected material. Integer = specific material (exported as binary 0/1).');
 BatchOpt.mibBatchTooltip.showWaitbar           = sprintf('Show or hide the progress bar during saving.');
 
@@ -219,6 +227,8 @@ if nargin == 4  % BatchOptIn was explicitly provided
     else
         % Merge caller's struct with our defaults
         BatchOpt = utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn);
+        % refresh PyramidLevel spinner limits to the dataset's actual level count
+        BatchOpt.PyramidLevel{2} = [1, max(saveImageNumLevels, 1)];
     end
 else
     % ----------------------------------------------------------------
@@ -235,6 +245,11 @@ else
         saveOpts.overwrite    = true;
         saveOpts.ParentFigure = obj.mibGUI;
         saveOpts.mibPath      = obj.mibPath;
+        if isfield(BatchOptIn, 'PyramidLevel') && ~isempty(BatchOptIn.PyramidLevel)
+            pyrLvl = BatchOptIn.PyramidLevel;
+            if iscell(pyrLvl); pyrLvl = pyrLvl{1}; end
+            saveOpts.PyramidLevel = pyrLvl;
+        end
         fnOut = obj.I{BatchOpt.id}.saveImage(layerType, filename, saveOpts);
     else
         % No filename = show a save-file dialog so the user can choose
@@ -290,10 +305,36 @@ else
         saveOpts.ParentFigure = obj.mibGUI;
         saveOpts.mibPath      = obj.mibPath;
 
+        % --- pyramid level selection (Virtual / BigData with >1 level) ---
+        % The chosen level is streamed slice-by-slice on save, so the full volume
+        % is never loaded. A coarse level is also smaller in XY (and possibly Z).
+        isPyramidalImage = isa(saveImageImgObj, 'core.MibVirtualImage') && ...
+            ~isempty(saveImageImgObj.pyramid.levelNames);
+        saveOpts.PyramidLevel = 1;
+        if saveImageNumLevels > 1
+            levelSizes = saveImageImgObj.pyramid.levelImageSizes;   % [nLev x 3] [Y X Z]
+            levelItems = cell(1, saveImageNumLevels);
+            for levelId = 1:saveImageNumLevels
+                levelItems{levelId} = sprintf('s%d — %d×%d×%d (W×H×Z)', levelId-1, ...
+                    levelSizes(levelId,2), levelSizes(levelId,1), levelSizes(levelId,3));
+            end
+            dlgLevelOpts.mibPath     = obj.mibPath;
+            dlgLevelOpts.WindowStyle = 'modal';
+            answerLevel = utils.dlgs.inputUniversalDlg(obj.mibGUI, '', ...
+                {'Pyramid resolution level to export:'}, {[levelItems, {1}]}, ...
+                'Select pyramid level', dlgLevelOpts);
+            if isempty(answerLevel); return; end   % user cancelled
+            selectedLevel = find(strcmp(levelItems, answerLevel{1}), 1);
+            if isempty(selectedLevel); selectedLevel = 1; end
+            saveOpts.PyramidLevel = selectedLevel;
+        end
+
         % When saving image data: prompt the user to review / update voxel sizes
         % before the file is written (equivalent to MIB2 saveImageAsDialog ->
-        % updatePixSizeResolution() call).
-        if strcmpi(layerType, 'image')
+        % updatePixSizeResolution() call). Skipped for pyramidal (Virtual/BigData)
+        % images: their obj.image.pixSize is empty and the exported level's voxel
+        % size is derived automatically from the pyramid metadata.
+        if strcmpi(layerType, 'image') && ~isPyramidalImage
             ds = obj.I{BatchOpt.id};
             dlgOpts.showDialog   = true;
             dlgOpts.ParentFigure = obj.mibGUI;
@@ -332,6 +373,9 @@ if ~isfield(BatchOptIn, 'mibBatchTooltip')
     saveOpts.overwrite    = true;
     saveOpts.ParentFigure = obj.mibGUI;
     saveOpts.mibPath      = obj.mibPath;
+    if isfield(saveOpts, 'PyramidLevel') && iscell(saveOpts.PyramidLevel)
+        saveOpts.PyramidLevel = saveOpts.PyramidLevel{1};   % normalise cell → scalar
+    end
     if isfield(BatchOpt,'MaterialIndex') && ~isempty(BatchOpt.MaterialIndex)
         materialIndex = str2double(BatchOpt.MaterialIndex);
         if ~isnan(materialIndex); saveOpts.MaterialIndex = materialIndex; end
@@ -413,6 +457,13 @@ saveOpts.silent            = true;   % batch mode → no interactive dialogs
 saveOpts.overwrite         = true;
 saveOpts.ParentFigure      = obj.mibGUI;
 saveOpts.mibPath           = obj.mibPath;
+if isfield(BatchOpt, 'PyramidLevel')
+    if iscell(BatchOpt.PyramidLevel)
+        saveOpts.PyramidLevel = BatchOpt.PyramidLevel{1};
+    else
+        saveOpts.PyramidLevel = BatchOpt.PyramidLevel;
+    end
+end
 
 % Parse MaterialIndex from string (batch controller stores it as char)
 if isfield(BatchOpt,'MaterialIndex') && ~isempty(BatchOpt.MaterialIndex)

@@ -368,12 +368,220 @@ classdef TiffSaver < io.savers.BaseSaver
             fprintf('TiffSaver: saved → %s\n', filename);
         end
 
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - Streaming TIFF writer: one Z-slice from the provider at a time.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.saveStream(provider, metadata, filename, options)
+            %
+            % Memory-bounded twin of ``save``: instead of receiving a full
+            % ``[H W D C T]`` array it pulls each slice from ``provider.getSlice(z, t)``
+            % (an ``io.savers.SliceProvider``) and appends it to the output, so a large
+            % pyramid level can be exported without ever holding the whole volume.
+            % Honors the same compression / resolution / colormap / 3D-stack vs
+            % 2D-sequence options as ``save``.
+            %
+            % Input/Output: see ``io.savers.BaseSaver.saveStream``.
+            %
+            % **Example** — stream a BigData image level to a 3-D TIFF stack:
+            %
+            %   .. code-block:: matlab
+            %
+            %      img      = mibModel.I{mibModel.getActiveId()}.image;   % MibBigDataImage
+            %      numZ     = img.pyramid.levelImageSizes(1,3);
+            %      zScale   = img.pyramid.levelScaleFactors(1,3);
+            %      provider = io.savers.MibImageSliceProvider(img,'image',1,[],numZ,img.time,zScale);
+            %      saver    = io.savers.TiffSaver(struct());
+            %      meta.colorType='grayscale'; meta.dataClass=img.dataClass; meta.imageDescription='';
+            %      opts = struct('Saving3DPolicy','3D stack','silent',true,'showWaitbar',false, ...
+            %                    'FilenameGenerator','Use sequential filename');
+            %      saver.saveStream(provider, meta, 'C:\out\level0.tif', opts);
+            if nargin < 5; options = struct(); end
+            fnOut = [];
+
+            callerSetFilename = isfield(options, 'FilenameGenerator');
+
+            % --- defaults (mirror save) ---
+            if ~isfield(options, 'showWaitbar');       options.showWaitbar = true; end
+            if ~isfield(options, 'silent');            options.silent      = false; end
+            if ~isfield(options, 'overwrite');         options.overwrite   = true;  end
+            if ~isfield(options, 'Saving3DPolicy');    options.Saving3DPolicy = '3D stack'; end
+            if ~isfield(options, 'FilenameGenerator'); options.FilenameGenerator = 'Use sequential filename'; end
+
+            % --- compression ---
+            if isfield(options, 'Compression')
+                compression = options.Compression;
+            elseif isfield(options, 'Format') && contains(options.Format, 'LZW')
+                compression = 'lzw';
+            elseif isfield(options, 'Format') && strcmp(options.Format, 'TIF format (*.tif)')
+                compression = 'lzw';
+            else
+                compression = 'none';
+            end
+
+            % --- resolution ---
+            xRes = 72; yRes = 72;
+            if isfield(metadata, 'xResolution') && ~isempty(metadata.xResolution); xRes = metadata.xResolution; end
+            if isfield(metadata, 'yResolution') && ~isempty(metadata.yResolution); yRes = metadata.yResolution; end
+            resolution = [xRes, yRes];
+
+            % --- colormap for indexed images ---
+            cmap = NaN;
+            if isfield(metadata, 'colorType') && strcmp(metadata.colorType, 'indexed')
+                if isfield(metadata, 'colormap') && ~isempty(metadata.colormap)
+                    cmap = metadata.colormap;
+                elseif isfield(metadata, 'lutColors') && size(metadata.lutColors,1) > 1
+                    cmap = metadata.lutColors;
+                end
+            end
+
+            imgDescBase = '';
+            if isfield(metadata, 'imageDescription'); imgDescBase = metadata.imageDescription; end
+
+            % --- decompose filename ---
+            [pathStr, baseName, ext] = obj.splitFilename(filename);
+            if isempty(ext); ext = '.tif'; end
+            if isempty(pathStr); pathStr = pwd; end
+            if exist(pathStr, 'dir') ~= 7; mkdir(pathStr); end
+
+            sz = provider.OutputSize;
+            nD = sz(3); nC = sz(4); nT = sz(5);
+
+            if nC > 3
+                warning('TiffSaver:tooManyChannels', ...
+                    'TIFF supports ≤3 colour channels; got %d. Use Amira or HDF5 for multichannel data.', nC);
+                return;
+            end
+
+            % --- "TIF saving settings" dialog (mirror save) ---
+            hasSliceSizes = isfield(metadata, 'sliceSize') && size(metadata.sliceSize, 1) == nD;
+            if ~options.silent && ~callerSetFilename && nD > 1
+                prompts = {'Filename generator:'; 'Multi-dimensional saving policy:'};
+                defAns  = {{'Use original filename', 'Use sequential filename', 2}; ...
+                           {'3D stack', '2D sequence', 1}};
+                if hasSliceSizes
+                    prompts{end+1} = 'Restore original slice dimensions:';
+                    defAns{end+1}  = {'No', 'Yes', 1};
+                end
+                dlgOpts.mibPath     = obj.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, '', prompts, defAns, ...
+                    'TIF saving settings', dlgOpts);
+                if isempty(answer); return; end
+                options.FilenameGenerator = answer{1};
+                options.Saving3DPolicy    = answer{2};
+                if hasSliceSizes
+                    options.RestoreOriginalSize = strcmp(answer{3}, 'Yes');
+                end
+            end
+
+            wbOuter = [];
+            if options.showWaitbar && nT > 1
+                wbOuter = obj.createProgressDialog('Saving images...', 'Saving TIFF series...', true);
+            end
+
+            allFn = cell(nT, 1);
+            try
+                for t = 1:nT
+                    if ~isempty(wbOuter) && wbOuter.CancelRequested; delete(wbOuter); return; end
+                    if nT > 1
+                        fnThisT = [baseName sprintf('_T%03d', t) ext];
+                    else
+                        fnThisT = [baseName ext];
+                    end
+                    outPath = fullfile(pathStr, fnThisT);
+                    imgDescArr = repmat({imgDescBase}, nD, 1);
+
+                    if strcmp(options.Saving3DPolicy, '3D stack')
+                        cancelled = obj.writeTiffStackStream(outPath, provider, t, cmap, ...
+                            imgDescArr, compression, resolution, options);
+                        if cancelled; if ~isempty(wbOuter); delete(wbOuter); end; return; end
+                        allFn{t} = outPath;
+                    else
+                        sliceNames = obj.buildSliceNames(baseName, pathStr, nD, ext, options, metadata);
+                        if nT > 1
+                            for z = 1:nD
+                                [~, sn, se] = fileparts(sliceNames{z});
+                                sliceNames{z} = fullfile(pathStr, sprintf('%s_T%03d%s', sn, t, se));
+                            end
+                        end
+                        wbInner = [];
+                        if options.showWaitbar && isempty(wbOuter)
+                            wbInner = obj.createProgressDialog('Saving images...', sprintf('Saving TIFF — %s', baseName), true);
+                        end
+                        for z = 1:nD
+                            if ~isempty(wbInner) && wbInner.CancelRequested; delete(wbInner); return; end
+                            img2D = squeeze(provider.getSlice(z, t));   % [H, W, C]
+                            if isfield(options, 'RestoreOriginalSize') && options.RestoreOriginalSize && hasSliceSizes
+                                img2D = obj.cropSliceToOriginalSize(img2D, metadata.sliceSize(z, :));
+                            end
+                            descArgs = {};
+                            if ~isempty(imgDescArr{z}); descArgs = {'Description', imgDescArr{z}}; end
+                            if isnan(cmap)
+                                imwrite(img2D, sliceNames{z}, 'tif', 'Compression', compression, descArgs{:}, 'Resolution', resolution);
+                            else
+                                imwrite(img2D, cmap, sliceNames{z}, 'tif', 'Compression', compression, descArgs{:}, 'Resolution', resolution);
+                            end
+                            if ~isempty(wbInner); wbInner.Value = z/nD; end
+                        end
+                        if ~isempty(wbInner); delete(wbInner); end
+                        allFn{t} = sliceNames;
+                    end
+                    if ~isempty(wbOuter); wbOuter.Value = t/nT; end
+                end
+            catch ME
+                if ~isempty(wbOuter); delete(wbOuter); end
+                rethrow(ME);
+            end
+            if ~isempty(wbOuter); delete(wbOuter); end
+
+            if strcmp(options.Saving3DPolicy, '3D stack') && nT == 1
+                fnOut = allFn{1};
+            else
+                fnOut = allFn;
+            end
+            fprintf('TiffSaver: streamed → %s\n', filename);
+        end
+
     end
 
     % ------------------------------------------------------------------ %
     %   Private helpers                                                    %
     % ------------------------------------------------------------------ %
     methods (Access = private)
+
+        function cancelled = writeTiffStackStream(obj, outPath, provider, t, cmap, ...
+                imgDescArr, compression, resolution, options)
+            % WRITETIFFSTACKSTREAM - Append a multi-frame TIFF stack pulling each frame from provider.
+            %
+            % Streaming counterpart of ``writeTiffStack``: frame ``z`` is obtained via
+            % ``provider.getSlice(z, t)`` so the full stack is never resident.
+            cancelled = false;
+            nD = provider.NumSlices;
+            wb = [];
+            if options.showWaitbar
+                wb = obj.createProgressDialog('Saving TIFF...', sprintf('Writing %s', outPath), true);
+            end
+            for z = 1:nD
+                if ~isempty(wb) && wb.CancelRequested; delete(wb); cancelled = true; return; end
+                frame = squeeze(provider.getSlice(z, t));   % [H, W, C]
+                writeMode = 'overwrite';
+                if z > 1; writeMode = 'append'; end
+                descArgs = {};
+                if ~isempty(imgDescArr{z}); descArgs = {'Description', imgDescArr{z}}; end
+                if isnan(cmap)
+                    imwrite(frame, outPath, 'tif', 'WriteMode', writeMode, ...
+                        'Compression', compression, descArgs{:}, 'Resolution', resolution);
+                else
+                    imwrite(frame, cmap, outPath, 'tif', 'WriteMode', writeMode, ...
+                        'Compression', compression, descArgs{:}, 'Resolution', resolution);
+                end
+                if ~isempty(wb); wb.Value = z/nD; end
+            end
+            if ~isempty(wb); delete(wb); end
+        end
 
         function cancelled = writeTiffStack(obj, outPath, slice4D, cmap, imgDescArr, ...
                 compression, resolution, options)

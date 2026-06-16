@@ -113,6 +113,25 @@ if ~isfield(options,'pixSize') || isempty(options.pixSize)
     options.pixSize = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
 end
 
+% --- pyramid level selection (disk-backed BigData model only) -------------
+% A BigData model mirrors the image pyramid; a chosen level is streamed
+% slice-by-slice so the full model volume is never loaded. The level's voxel
+% size is pixSize scaled by the level's scale factors (XY, and Z when the
+% pyramid downsamples Z); the physical bounding box is identical across levels.
+isPyramidalModel = isa(obj, 'core.MibBigDataLabels') && obj.exists && ~isempty(obj.modelLevelNames);
+exportLevel = 1;
+if isfield(options, 'PyramidLevel') && ~isempty(options.PyramidLevel)
+    exportLevel = round(options.PyramidLevel);
+end
+if isPyramidalModel
+    nLevels = numel(obj.modelLevelNames);
+    exportLevel = max(1, min(exportLevel, nLevels));
+    levelScale = obj.modelScaleFactors(exportLevel, :);   % [yScale xScale zScale]
+    options.pixSize.y = options.pixSize.y * levelScale(1);
+    options.pixSize.x = options.pixSize.x * levelScale(2);
+    options.pixSize.z = options.pixSize.z * levelScale(3);
+end
+
 % Show indeterminate progress dialog immediately so the user sees feedback
 % while the (potentially slow) data-extraction step runs.
 earlyWb = [];
@@ -147,7 +166,9 @@ metadata.maxInt         = obj.maxInt;
 metadata.pixSize        = options.pixSize;
 metadata.materialNames  = obj.materialNames;
 metadata.materialColors = obj.materialColors;
-metadata.labelsVariable = strrep(obj.labelsVariable, '-', '_');
+labelsVar = obj.labelsVariable;
+if ~(ischar(labelsVar) || isstring(labelsVar)); labelsVar = ''; end   % opened models may leave this empty
+metadata.labelsVariable = strrep(char(labelsVar), '-', '_');
 metadata.layerType      = options.layerType;
 metadata.modelType      = obj.maxMaterials;   % 63
 
@@ -178,14 +199,8 @@ else
 end
 options.FilenamePrefix = 'Labels_';
 
-% --- get data [H, W, D, C, T] using getData63 to unpack bits 1-6 ---
-% getData63 with type='labels' returns unpacked uint8 material indices (0..63)
-if isempty(selMaterial)
-    data = obj.getData63('labels', 3, []);   % all materials → multi-valued uint8
-else
-    data = obj.getData63('labels', 3, selMaterial);  % binary: 1 where == selMaterial
-
-    % Trim metadata to single material
+% --- trim metadata to a single material when requested (both paths) ---
+if ~isempty(selMaterial)
     nMat = numel(metadata.materialNames);
     if selMaterial >= 1 && selMaterial <= nMat
         metadata.materialNames  = metadata.materialNames(selMaterial);
@@ -193,14 +208,32 @@ else
     end
 end
 
-% Check if user cancelled during data extraction
-if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
-    delete(earlyWb);
-    fnOut = [];
-    return;
-end
-
 % --- dispatch ---
+% getData63 with type='labels' returns unpacked uint8 material indices (0..63),
+% or a binary 0/1 volume when a single material is requested.
 saver = io.SaverFactory.create(options.Format, options);
-fnOut = saver.save(data, metadata, filename, options);
+
+if isPyramidalModel
+    % Stream the selected model pyramid level slice-by-slice (memory bounded to
+    % one slice; non-streaming savers gather only this single level).
+    numSlices = obj.modelLevelSizes(exportLevel, 3);
+    zScale    = obj.modelScaleFactors(exportLevel, 3);
+    provider  = io.savers.MibImageSliceProvider(obj, 'labels', exportLevel, selMaterial, numSlices, 1, zScale);
+    fnOut = saver.saveStream(provider, metadata, filename, options);
+else
+    if isempty(selMaterial)
+        data = obj.getData63('labels', 3, []);   % all materials → multi-valued uint8
+    else
+        data = obj.getData63('labels', 3, selMaterial);  % binary: 1 where == selMaterial
+    end
+
+    % Check if user cancelled during data extraction
+    if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
+        delete(earlyWb);
+        fnOut = [];
+        return;
+    end
+
+    fnOut = saver.save(data, metadata, filename, options);
+end
 end

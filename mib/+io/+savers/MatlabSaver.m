@@ -214,6 +214,40 @@ classdef MatlabSaver < io.savers.BaseSaver
             end
         end
 
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - Memory-bounded save from a SliceProvider.
+            %
+            % Streams the native ``.model`` (3-D) format slice-by-slice via a
+            % writable ``matfile`` (the label volume is grown on disk, never held
+            % whole). All other Matlab formats fall back to the gather-based
+            % default (bounded by the selected pyramid level).
+            %
+            % See ``io.savers.BaseSaver.saveStream``.
+            %
+            % **Example** — stream a BigData model level to a native ``.model`` file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      labels   = mibModel.I{mibModel.getActiveId()}.labels;   % MibBigDataLabels
+            %      numZ     = labels.modelLevelSizes(1,3);
+            %      zScale   = labels.modelScaleFactors(1,3);
+            %      provider = io.savers.MibImageSliceProvider(labels,'labels',1,[],numZ,1,zScale);
+            %      saver    = io.savers.MatlabSaver(struct());
+            %      meta.materialNames = labels.materialNames; meta.materialColors = labels.materialColors;
+            %      meta.modelType = labels.maxMaterials; meta.boundingBox = [0 1 0 1 0 1];
+            %      saver.saveStream(provider, meta, 'C:\out\Labels_stack.model', ...
+            %          struct('Format','Matlab format (*.model)','silent',true,'showWaitbar',false));
+            if nargin < 5; options = struct(); end
+            if ~isfield(options,'Format'); options.Format = 'Matlab format (*.model)'; end
+            switch options.Format
+                case 'Matlab format (*.model)'
+                    fnOut = obj.saveModel3DStream(provider, metadata, filename, options);
+                otherwise
+                    % gather the (level-bounded) volume and use the standard save
+                    fnOut = saveStream@io.savers.BaseSaver(obj, provider, metadata, filename, options);
+            end
+        end
+
     end  % public
 
     % ------------------------------------------------------------------ %
@@ -312,6 +346,72 @@ classdef MatlabSaver < io.savers.BaseSaver
             if ~isempty(wb); wb.Value = 1; delete(wb); end
             fnOut = filename;
             fprintf('MatlabSaver: model saved → %s\n', filename);
+        end
+
+        function fnOut = saveModel3DStream(obj, provider, metadata, filename, options)
+            % SAVEMODEL3DSTREAM - Stream a full 3-D ``.model`` via a writable matfile.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.saveModel3DStream(provider, metadata, filename, options)
+            %
+            % Writes the same top-level variables as ``saveModel3D`` (``<labVar>``,
+            % ``modelMaterialNames``, ``modelMaterialColors``, ``BoundingBox``,
+            % ``modelVariable``, ``modelType``, optional annotations), but grows the
+            % label volume on disk one Z-slice at a time from ``provider`` so the full
+            % model is never resident in memory.
+            %
+            % **Example** — usually reached via ``saveStream`` rather than directly:
+            %
+            %   .. code-block:: matlab
+            %
+            %      provider = io.savers.MibImageSliceProvider(labels, 'labels', 1, [], numZ, 1, zScale);
+            %      meta.materialNames = labels.materialNames; meta.labelsVariable = 'mibModel';
+            %      fnOut = io.savers.MatlabSaver(struct()).saveModel3DStream( ...
+            %          provider, meta, 'C:\out\model.model', struct('showWaitbar',false));
+            fnOut = [];
+            labVar = obj.getLabelsVariable(metadata);
+            sz = provider.OutputSize;
+            H = sz(1); W = sz(2); D = sz(3);
+            dataClass = provider.DataClass;
+
+            wb = [];
+            if options.showWaitbar
+                [~, fn, ex] = fileparts(filename);
+                wb = obj.createProgressDialog('Saving model', ...
+                    sprintf('%s\n%s', fileparts(filename), [fn ex]), true);
+            end
+
+            % Fresh file (matfile would otherwise merge into an existing one)
+            if exist(filename, 'file'); delete(filename); end
+            m = matfile(filename, 'Writable', true);
+
+            % Pre-allocate the label volume on disk (sets the last element; disk
+            % op, not a full in-memory allocation), then fill slice by slice.
+            m.(labVar)(H, W, D) = cast(0, dataClass);
+            for z = 1:D
+                if ~isempty(wb) && wb.CancelRequested; delete(wb); return; end
+                m.(labVar)(:, :, z) = cast(reshape(provider.getSlice(z, 1), H, W), dataClass);
+                if ~isempty(wb); wb.Value = z / D; end
+            end
+
+            % Scalar / small metadata variables (top-level, matching saveModel3D)
+            m.modelMaterialNames  = obj.getMaterialNames(metadata);
+            m.modelMaterialColors = obj.getMaterialColors(metadata);
+            m.BoundingBox         = obj.getBoundingBox(metadata);
+            m.modelVariable       = labVar;
+            m.modelType           = obj.getModelType(metadata);
+            if isfield(metadata, 'annotations') && ~isempty(metadata.annotations)
+                ann = metadata.annotations;
+                m.labelText     = ann.labelText;
+                m.labelValue    = ann.labelValue;
+                m.labelPosition = ann.labelPosition;
+            end
+
+            if ~isempty(wb); delete(wb); end
+            fnOut = filename;
+            fprintf('MatlabSaver: model streamed → %s\n', filename);
         end
 
         function fnOut = saveModel2DSeq(obj, data, metadata, filename, options)

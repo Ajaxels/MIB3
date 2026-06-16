@@ -43,6 +43,23 @@ function segmentationObjectPicker(obj, yxzCoordinate, modifier)
 if obj.mibModel.disableSegmentation; return; end
 
 id = obj.mibModel.getActiveId();
+
+% Object Picker is not supported for BigData datasets. Its sub-modes rely on
+% whole-volume object statistics held in memory (maskStats) and on
+% getPixelIdxList/setPixelIdxList, which index the in-memory model array — empty
+% for a disk-backed BigData model. The ROI/Click paths also mix full-res click
+% coordinates with display-resolution reads. Guard it with a clear message until
+% an out-of-core implementation is available.
+if obj.mibModel.I{id}.datasetType(1) == 'B'
+    dlgOpt.MsgBoxOnly = true;
+    dlgOpt.Icon = 'puffin_warning';
+    dlgOpt.WindowStyle = 'modal';
+    dlgOpt.HeaderLines = 2;
+    header = sprintf('Object Picker is not available for BigData datasets!\nUse another segmentation tool (e.g. Brush, Region Growing).');
+    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Object Picker not supported', dlgOpt);
+    return;
+end
+
 switch3d = obj.mibModel.applySegmentationIn3D;
 options.blockModeSwitch = obj.mibModel.I{id}.blockModeSwitch;
 

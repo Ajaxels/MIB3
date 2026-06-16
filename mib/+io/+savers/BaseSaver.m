@@ -147,6 +147,67 @@ classdef (Abstract) BaseSaver < handle
     end
 
     % ------------------------------------------------------------------ %
+    %   Streaming interface (per-slice, memory-bounded)                    %
+    % ------------------------------------------------------------------ %
+    methods
+
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - Write a dataset one Z-slice at a time from a SliceProvider.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      fnOut = obj.saveStream(provider, metadata, filename, options)
+            %
+            % This is the memory-bounded entry point used by ``core.MibImage.save`` /
+            % ``core.MibLabels.save`` to export pyramidal (Virtual / BigData) datasets
+            % without ever gathering the full volume: the saver pulls each slice from
+            % ``provider`` (an ``io.savers.SliceProvider``) on demand.
+            %
+            % **Default implementation** (this method) is a *fallback*: it gathers the
+            % provider into a full ``[H W D C T]`` array and delegates to ``obj.save``.
+            % That keeps every not-yet-migrated saver working — memory is still bounded
+            % by the **selected pyramid level** (the caller chooses a coarse level), but
+            % a level is held whole. Savers override ``saveStream`` to write truly
+            % slice-by-slice (e.g. ``io.savers.TiffSaver``).
+            %
+            % Input Arguments:
+            %   - **provider** — ``io.savers.SliceProvider`` exposing ``OutputSize``,
+            %     ``DataClass``, ``NumSlices``, ``NumFrames``, ``NumChannels`` and
+            %     ``getSlice(z, t)``
+            %   - **metadata** — struct (see class-level description)
+            %   - **filename** — [char] full output path including extension
+            %   - **options** — struct of runtime options (see ``save``)
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char | cell of char] saved path(s); ``[]`` on failure
+            %
+            % **Example** — stream a resident volume to any registered format:
+            %
+            %   .. code-block:: matlab
+            %
+            %      data     = uint8(rand(128,128,20,1,1) * 255);   % [H W D C T]
+            %      provider = io.savers.InMemorySliceProvider(data);
+            %      saver    = io.SaverFactory.create('NRRD Data Format (*.nrrd)');
+            %      meta.colorType = 'grayscale'; meta.dataClass = 'uint8';
+            %      meta.pixSize   = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
+            %      fnOut = saver.saveStream(provider, meta, 'C:\out\vol.nrrd', struct('silent',true));
+            if nargin < 5; options = struct(); end
+
+            sz = provider.OutputSize;
+            H = sz(1); W = sz(2); D = sz(3); C = sz(4); T = sz(5);
+            data = zeros(sz, provider.DataClass);
+            for t = 1:T
+                for z = 1:D
+                    data(:, :, z, :, t) = reshape(provider.getSlice(z, t), H, W, 1, C);
+                end
+            end
+            fnOut = obj.save(data, metadata, filename, options);
+        end
+
+    end
+
+    % ------------------------------------------------------------------ %
     %   Protected shared utilities                                         %
     % ------------------------------------------------------------------ %
     methods (Access = protected)

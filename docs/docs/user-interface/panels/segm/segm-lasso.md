@@ -1,5 +1,8 @@
 # The Lasso Tool
 
+!!! success "BigData mode: supported"
+    The Lasso tool works with **BigData** datasets (interactive Lasso/Rectangle/Ellipse/Polyline and manual entry).
+
 ---
 
 ## Overview

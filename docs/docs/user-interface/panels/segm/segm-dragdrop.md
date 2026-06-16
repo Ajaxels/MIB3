@@ -1,5 +1,8 @@
 # Drag & Drop Materials
 
+!!! success "BigData mode: supported"
+    Drag & Drop of materials works with **BigData** datasets.
+
 ---
 
 ## Overview

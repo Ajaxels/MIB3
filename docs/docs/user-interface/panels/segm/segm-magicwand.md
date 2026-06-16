@@ -1,5 +1,8 @@
 # The Magic Wand + Region Growing Tools
 
+!!! success "BigData mode: supported"
+    Both the Magic Wand and Region Growing work with **BigData** datasets; the region is read at full resolution around the clicked point.
+
 ---
 
 ## Overview

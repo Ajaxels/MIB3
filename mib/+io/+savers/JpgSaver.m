@@ -130,6 +130,27 @@ classdef JpgSaver < io.savers.BaseSaver
             % Output Arguments:
             %   - **fnOut** — cell of char with all saved paths, or single char if only one slice
             %
+            % JPEG is inherently per-slice, so ``save`` is a thin wrapper over the
+            % streaming primitive ``saveStream`` (single code path).
+            if nargin < 5; options = struct(); end
+            fnOut = obj.saveStream(io.savers.InMemorySliceProvider(data), metadata, filename, options);
+        end
+
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - Write a JPEG 2-D sequence one slice at a time from a SliceProvider.
+            % See ``io.savers.BaseSaver.saveStream``.
+            %
+            % **Example** — stream a level to a JPEG sequence (quality 90):
+            %
+            %   .. code-block:: matlab
+            %
+            %      provider = io.savers.MibImageSliceProvider(img, 'image', 2, [], numZ, 1, zScale);
+            %      saver    = io.savers.JpgSaver(struct());
+            %      meta.colorType = 'grayscale';
+            %      saver.saveStream(provider, meta, 'C:\out\frame.jpg', ...
+            %          struct('silent',true,'showWaitbar',false,'Quality',90,'Compression','lossy', ...
+            %                 'FilenameGenerator','Use sequential filename'));
+            if nargin < 5; options = struct(); end
 
             fnOut = [];
 
@@ -154,7 +175,7 @@ classdef JpgSaver < io.savers.BaseSaver
             if isempty(pathStr); pathStr = pwd; end
             if exist(pathStr,'dir') ~= 7; mkdir(pathStr); end
 
-            [~, ~, nD, nC, nT] = size(data);
+            sz = provider.OutputSize; nD = sz(3); nC = sz(4); nT = sz(5);
 
             % JPEG supports ≤3 channels; multichannel must be uint8
             if nC > 3
@@ -162,9 +183,9 @@ classdef JpgSaver < io.savers.BaseSaver
                     'JPEG supports ≤3 colour channels; got %d.', nC);
                 return;
             end
-            if nC > 1 && ~isa(data,'uint8')
+            if nC > 1 && ~strcmp(provider.DataClass, 'uint8')
                 warning('JpgSaver:wrongClass', ...
-                    'Multichannel JPEG requires uint8; got %s. Skipping.', class(data));
+                    'Multichannel JPEG requires uint8; got %s. Skipping.', provider.DataClass);
                 return;
             end
 
@@ -232,8 +253,8 @@ classdef JpgSaver < io.savers.BaseSaver
             % already at canvas size (no padding was added for those slices)
             needsCrop = false(nD, 1);
             if doRestoreSize
-                paddedH = size(data, 1);
-                paddedW = size(data, 2);
+                paddedH = provider.SliceSize(1);
+                paddedW = provider.SliceSize(2);
                 needsCrop = metadata.sliceSize(:,1) < paddedH | ...
                             metadata.sliceSize(:,2) < paddedW;
             end
@@ -241,7 +262,7 @@ classdef JpgSaver < io.savers.BaseSaver
             try
                 for t = 1:nT
                     for z = 1:nD
-                        img2D = squeeze(data(:,:,z,:,t));  % [H, W, C]
+                        img2D = squeeze(provider.getSlice(z, t));  % [H, W, C]
                         if doRestoreSize && needsCrop(z)
                             img2D = obj.cropSliceToOriginalSize(img2D, metadata.sliceSize(z, :));
                         end

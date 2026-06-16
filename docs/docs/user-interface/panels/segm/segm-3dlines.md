@@ -1,5 +1,8 @@
 # The 3D Lines Tool
 
+!!! success "BigData mode: supported"
+    The 3D Lines tool works with **BigData** datasets (lines and nodes are stored as coordinates, independent of resolution).
+
 ---
 
 ## 3D Lines overview

@@ -1,5 +1,8 @@
 # Black and White Thresholding
 
+!!! warning "BigData mode: not supported"
+    Black-and-white thresholding is **not available** in **BigData** (or Virtual) mode. Switch to a memory-resident (**Standard**) dataset to use it.
+
 ---
 
 ## Overview

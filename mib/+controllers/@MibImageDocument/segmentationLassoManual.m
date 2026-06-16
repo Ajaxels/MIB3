@@ -164,6 +164,10 @@ end
 getDataOptions.y = [ceil(bb(2)) ceil(bb(2))+floor(bb(4))-1];
 getDataOptions.x = [ceil(bb(1)) ceil(bb(1))+floor(bb(3))-1];
 getDataOptions.id = id;
+% Pyramidal (Virtual/BigData): read/write the bbox window at FULL resolution so it
+% matches the full-resolution shape mask built from the (full-res) bounding box;
+% otherwise getData2D returns the displayed (downsampled) window and the sizes mismatch.
+if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); getDataOptions.magFactor = 1; end
 
 % generate the shape mask within the bounding box
 roiHeight = floor(bb(4));

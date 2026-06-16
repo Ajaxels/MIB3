@@ -1,5 +1,8 @@
 # Segment Anything Model
 
+!!! info "BigData mode: partially supported"
+    The **Interactive**, **Landmarks** and **Interactive 3D** modes work with **BigData** datasets (a model must already exist). **Automatic everything** is *not* available in BigData mode — it produces a 65535-material model that the disk-backed BigData model cannot hold.
+
 ---
 
 ## Overview

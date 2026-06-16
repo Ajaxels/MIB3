@@ -156,6 +156,30 @@ classdef PngSaver < io.savers.BaseSaver
             %
             % **Example** — see class-level documentation above.
             %
+            % PNG is inherently per-slice, so ``save`` is a thin wrapper over the
+            % streaming primitive ``saveStream`` (single code path).
+            if nargin < 5; options = struct(); end
+            fnOut = obj.saveStream(io.savers.InMemorySliceProvider(data), metadata, filename, options);
+        end
+
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - Write a PNG 2-D sequence one slice at a time from a SliceProvider.
+            %
+            % Memory-bounded twin of ``save``: pulls each Z-slice (per time point)
+            % from ``provider.getSlice(z, t)`` and writes it as an individual PNG.
+            % See ``io.savers.BaseSaver.saveStream``.
+            %
+            % **Example** — stream a level to a numbered PNG sequence:
+            %
+            %   .. code-block:: matlab
+            %
+            %      provider = io.savers.MibImageSliceProvider(img, 'image', 2, [], numZ, 1, zScale);
+            %      saver    = io.savers.PngSaver(struct());
+            %      meta.colorType = 'grayscale';
+            %      saver.saveStream(provider, meta, 'C:\out\slice.png', ...
+            %          struct('silent',true,'showWaitbar',false,'FilenameGenerator','Use sequential filename'));
+            %      % → C:\out\slice_001.png … slice_NNN.png
+            if nargin < 5; options = struct(); end
 
             fnOut = [];
 
@@ -193,7 +217,7 @@ classdef PngSaver < io.savers.BaseSaver
             if isempty(pathStr); pathStr = pwd; end
             if exist(pathStr,'dir') ~= 7; mkdir(pathStr); end
 
-            [~, ~, nD, nC, nT] = size(data);
+            sz = provider.OutputSize; nD = sz(3); nC = sz(4); nT = sz(5);
 
             % PNG supports max 3 colour channels + optional alpha
             if nC > 3
@@ -251,7 +275,7 @@ classdef PngSaver < io.savers.BaseSaver
             try
                 for t = 1:nT
                     for z = 1:nD
-                        img2D = squeeze(data(:,:,z,:,t));  % [H, W, C]
+                        img2D = squeeze(provider.getSlice(z, t));  % [H, W, C]
                         if isfield(options, 'RestoreOriginalSize') && options.RestoreOriginalSize && ...
                                 hasSliceSizes
                             img2D = obj.cropSliceToOriginalSize(img2D, metadata.sliceSize(z, :));

@@ -179,6 +179,30 @@ if isfield(options, 'mibImage')     % tweak to save HDF5 in the virtual mode, wi
             counterIndex = counterIndex + 1;
         end
     end
+elseif isfield(options, 'sliceProvider') && ~isempty(options.sliceProvider)
+    % Streaming write: pull one Z-slice at a time from an io.savers.SliceProvider
+    % (memory bounded to one slice). The slice arrives as MIB3 native [H W C]; it is
+    % reshaped into the caller's axis order with singleton z/t for the hyperslab.
+    provider = options.sliceProvider;
+    maxIndex = options.time * options.depth;
+    for t = 1:options.time
+        for z = 1:options.depth
+            slice = provider.getSlice(z, t);   % [H, W, C]
+            switch options.order
+                case 'yxczt'
+                    chunk = reshape(slice, options.height, options.width, options.colors, 1, 1);
+                otherwise  % 'yxzct' (MIB3 native)
+                    chunk = reshape(slice, options.height, options.width, 1, options.colors, 1);
+            end
+            chunkStartMap = struct('y',1,'x',1,'z',z,'c',1,'t',t);
+            chunkStart    = cellfun(@(d) chunkStartMap.(d), num2cell(options.order));
+            h5write(filename, options.DatasetName, chunk, chunkStart, size(chunk, 1:5));
+            if ~isempty(wb)
+                if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value = counterIndex/maxIndex; else; waitbar(counterIndex/maxIndex, wb); end
+            end
+            counterIndex = counterIndex + 1;
+        end
+    end
 else
     h5write(filename, options.DatasetName, imageS, writeStart, size(imageS, 1:5));
 end

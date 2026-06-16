@@ -51,6 +51,14 @@ id = obj.mibModel.getActiveId();
 switch3d = obj.mibModel.applySegmentationIn3D;
 output = 'continue';
 
+% Pyramidal (Virtual/BigData) datasets: read/write the visible block at FULL
+% resolution. This tool maps the screen click to data coordinates as yx*magFactor
+% (full-res) and offsets the stored start point against the full-res axes origin;
+% if getData2D/getData3D returned the downsampled (displayed-level) block instead,
+% the traced line/point would land shifted and rescaled. magFactor=1 forces the
+% block to full resolution so both conventions line up (Standard behaviour).
+isPyramidalDataset = any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']);
+
 if obj.mibModel.I{id}.blockModeSwitch
     dlgOpt.MsgBoxOnly = true;
     dlgOpt.Icon = 'puffin_error';
@@ -84,6 +92,7 @@ if switch3d
         obj.trackerYXZ = [h; w; z];
         options.blockModeSwitch = 1;
         options.id = id;
+        if isPyramidalDataset; options.magFactor = 1; end
         currentSelection = cell2mat(obj.mibModel.getData2D('selection', [], orient, [], options));
         selarea = zeros(size(currentSelection), 'uint8');
         selarea(ceil(yx(1)*magFactor), ceil(yx(2)*magFactor)) = 1;
@@ -151,6 +160,7 @@ if switch3d
         options.y = [minY-shiftY1, maxY+shiftY2];
         options.z = [minZ-shiftZ1, maxZ+shiftZ2];
         options.id = id;
+        if isPyramidalDataset; options.magFactor = 1; end   % full-res window (coords are full-res)
 
         % do backup
         obj.mibModel.backup('selection', 1, options);
@@ -180,6 +190,7 @@ else
     z = yxzCoordinate(3);
     options.blockModeSwitch = 1;
     options.id = id;
+    if isPyramidalDataset; options.magFactor = 1; end
     if any(strcmp(modifier, 'control'))    % defines first point for the tracer
         obj.trackerYXZ = [yCrop; xCrop; z];
         currentSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], [], options));

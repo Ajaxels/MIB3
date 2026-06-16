@@ -352,13 +352,98 @@ all dataset types), but layer **data reads are not uniform**. `getData2D` auto-i
 returns a pyramidal (BigData/Virtual) slice at the **displayed level** (downsampled), while
 `getData3D` does NOT inject it (full-res). Tools then do pixel math with full-res click coords:
 - Tools assuming full-res data (broke on BigData, fixed with `options.magFactor=1`): **Spot, Lasso,
-  Drag&Drop, Magic Wand (2D), SAM/SAM2**.
-- `segmentationClickTracker` uses a DIFFERENT convention — it reads display-res and multiplies the
-  click coords by `magFactor` (`selarea(ceil(yx*magFactor))`), so a blanket `magFactor=1` would
-  double-correct it.
+  Drag&Drop, Magic Wand (2D), Region Growing, Membrane ClickTracker, SAM/SAM2**.
+- `segmentationClickTracker` looks different but is the SAME fix: it reads the visible **block**
+  (`blockModeSwitch=1`) and maps the screen click as `yx*magFactor` (→ full-res offset within the block)
+  and offsets the stored start point against the full-res axes origin. Those conventions require the
+  block to be **full-res**; on BigData `getData2D` returns a downsampled block, so the line lands
+  shifted. Fixed by `options.magFactor=1` (forces a full-res block) while **keeping** `yx*magFactor` —
+  no double-correction, because `yx*magFactor` produces full-res coords that a full-res block expects.
+  (Earlier note here said `magFactor=1` would double-correct — that was wrong; verified by tracing the
+  block-mode `options.x/y` = full-res axes limits.)
 There is no single shared resolution convention today — each tool handles magnification (or ignores
 it) independently. A proper fix is to standardise: editing tools read/write layers at full resolution
 and use full-res click coords. Until then each tool is fixed individually per its own logic.
+
+### Docs + fix (2026-06-16): BigData save-format sections + per-tool compatibility notes
+
+- **User docs (Zensical):** added a collapsible **"BigData — format compatibility & memory use"** table to
+  *Home → Save Image As* and *Model → Save model as...* — all formats can save a chosen pyramid level;
+  **memory-optimized (streamed)** = TIF/PNG/JPEG/HDF5/OME-Zarr v3 (image) and MODEL/TIF/HDF5/OME-Zarr v3
+  (model); the rest gather the selected level whole. Added a **per-tool BigData status admonition** to all
+  12 `panels/segm/segm-*.md` files: supported (Brush, Spot, Lasso, Magic Wand + Region Growing, Membrane
+  ClickTracker, Drag&Drop, 3D Ball, 3D Lines, Annotations), partial (SAM — interactive yes, Automatic no),
+  not supported (Object Picker, Black-and-White Thresholding). `zensical build` clean (no issues).
+- **Code fix:** `segmentationLassoManual.m` (manual Rectangle/Ellipse entry sub-mode) had the
+  display-vs-full-res mismatch — full-res shape mask vs display-res `getData2D` window. Added
+  `getDataOptions.magFactor = 1` for `'V'`/`'B'` so the Lasso tool (incl. manual entry) is fully BigData-
+  compatible, matching the doc note. Clean under `check_matlab_code`.
+
+### Audit (2026-06-16): Brush is BigData-compatible (no change needed)
+
+Audited `segmentationBrush` + `gui_WindowBrushMotionFcn` + `gui_WindowButtonUpFcn`. **Correct on BigData**,
+because the brush works entirely in **shown/display coordinates** (mask = `false(shownH,shownW)`) and never
+uses full-res click coords — so it avoids the systemic display-vs-full-res bug. Commit reads the selection
+with `blockModeSwitch=1` (display block), `imresize`s the brush mask to it, then writes with
+`blockModeSwitch=1`; `MibBigDataLabels.setData63` (`pickLevel`→finest, `orientPhysRanges`) resizes the
+display-res block up to the finest visible region (smooth/SDF), writes it, and propagates to all levels.
+It's effectively the reference tool the BigData model was designed around. **Undo is correct too** thanks to
+the backup `magFactor=1` fix (full-res slice captured → restored at finest + propagate). No code change.
+Efficiency note (not a bug): brush undo-backup uses `blockModeSwitch=false`, so on BigData it captures the
+**whole full-res slice** per stroke — heavy for true gigapixel slides; candidate for block-mode/footprint
+backup in the deferred WSI-safe-editing rework. Live confirmation (brush at non-100% zoom + Ctrl+Z) left to
+the user; code paths verified by tracing.
+
+### Guard (2026-06-16): Object Picker disabled for BigData
+
+`@MibImageDocument/segmentationObjectPicker.m` is **not BigData-compatible** and is now guarded with a
+modal "not available for BigData" message (returns early when `datasetType(1)=='B'`). Why it can't work
+as-is:
+- **3D Click** depends on `maskStats` (whole-volume connected-component analysis held in memory) and on
+  `getPixelIdxList`/`setPixelIdxList`, which exist only in `@MibImage` and index the in-memory `obj.data`
+  — empty for a disk-backed `MibBigDataLabels` (verified: `getPixelIdxList('selection',1)` → "Index
+  exceeds array bounds"). Needs out-of-core object stats + a disk-backed PixelIdxList to support.
+- **2D Click** mixes full-res click coords with display-res `getData2D` (the systemic bug); fixable with
+  `magFactor=1` but floods over the whole full-res slice.
+- **Lasso/Rectangle/Ellipse/Polyline** work in display-res block space but mix display-res bbox offsets
+  with the full-res axes origin and write display-res — coordinate-inconsistent on BigData.
+- **Mask within Selection** is the closest (3D variant is coordinate-correct via getData3D/setData3D).
+User chose to guard the whole tool for now (cleanest/honest) rather than partially enable it.
+
+### Fix (2026-06-16): Undo painted the selection in the wrong place on BigData (zoom-dependent)
+
+`@MibModel/backup.m` snapshots the layer via `getData2D`/`getData3D` with **no `magFactor`**, so for
+BigData it captured the **displayed (downsampled) level**: at 50% zoom the stored slice was half-size and
+`MibBackup.store` recorded its coordinates in *displayed* pixels (`x=[1 407]` instead of `[1 813]`). On
+undo, `setData2D` writes the finest level, so the half-size snapshot was painted into the top-left
+`[1..407]×[1..444]` of the full `887×813` slice → "another segment drawn elsewhere"; fine at 100%
+(magFactor 1), broken when zoomed. Fixed by forcing `getDataOptions.magFactor = 1` for `'V'`/`'B'` in
+`backup` (only when the caller hasn't set it). The value is stored in the undo entry, so the redo
+re-capture (`undo.m` uses the stored options) and the restore stay full-resolution too. `setData2D` has
+no magFactor/level handling (always writes finest), so the restore needed no change. Verified on the live
+model: `getData63('everything', magFactor=1)` captures full `887×813` vs `444×407` at `magFactor=2`.
+Clean under `check_matlab_code`.
+
+### Fix (2026-06-16): Membrane ClickTracker shifted on BigData
+
+`@MibImageDocument/segmentationClickTracker.m` reads the visible block (`blockModeSwitch=1`) and maps
+the screen click as `yx*magFactor` (full-res offset) and the stored start point as
+`startPoint - axesOrigin` (full-res offset). On BigData the block came back downsampled (displayed
+level) while those offsets stayed full-res → the traced line/point landed shifted & rescaled. Fixed by
+`options.magFactor = 1` for `'V'`/`'B'` at all three option sites (2D block, 3D-shift block, 3D-trace
+window); `yx*magFactor` is intentionally kept. Confirmed from `core.MibDataset.getData2D` that
+block-mode `options.x/y` are the **full-res axes limits**, so `magFactor=1` returns the full-res visible
+block that the click math expects (no double-correction). Clean under `check_matlab_code`.
+
+### Fix (2026-06-16): Region Growing shifted on BigData
+
+`@MibImageDocument/segmentationRegionGrowing.m` read the image via `getData2D` (display-res for
+BigData) but grew from the full-res seed `[y,x]`, so the result landed shifted/rescaled. Forced
+`options.magFactor = 1` for `'V'`/`'B'` in both the 2D path (after `options.id`) and the 3D path
+(harmless/explicit there — `getData3D` already reads full-res). Verified the mechanism on the live
+pyramid: a radius-`R` window read at `magFactor=1` is full-res `(2R+1)²` with the local seed correctly
+centred (`[51 51]` for R=50), whereas the auto display-level read (`magFactor=4`) returned only `26²`
+so the full-res seed fell outside → the shift. Clean under `check_matlab_code`.
 
 ### Fix (2026-06-15): Magic Wand seeded the wrong pixel on BigData
 
@@ -800,6 +885,170 @@ Key findings (carry into Phases 1–3):
 - **`info` fields**: `shape`, `dataType`, `chunkShape`, `shardShape`. Adapter maps
   `chunkShape` → `IOBlockSize`, clamped to level Size (blockedImage requires
   `IOBlockSize <= Size`; coarse levels can have chunk > size).
+
+---
+
+## Export pyramid level → standard formats (streaming) — see `~/.claude/plans/mib-has-now-2-noble-teapot.md`
+
+New sub-feature: export a chosen pyramid **level** of a BigData/Virtual dataset to MIB's ordinary
+formats (TIFF/HDF5/NRRD/…), **streaming z-by-z** so the full volume is never resident. Backend-neutral
+(routes through polymorphic `MibImage.getData`, never `getDataZarr` directly) so future BioFormats/
+OpenSlide BigData readers work unchanged. User decisions: explicit level dropdown; per-slice streaming;
+**all** formats must stream eventually.
+
+### Phase 1 — DONE (2026-06-16): streaming contract + providers + TIFF
+
+- **`io.savers.SliceProvider`** (abstract) + **`InMemorySliceProvider`** (wraps resident `[H W D C T]`)
+  + **`MibImageSliceProvider`** (reads one slice at a time via `src.getData(layerType,3,col,opt)` with
+  `opt.pyramidLevel` + `opt.z`). Works for image **and** label objects (both `MibImage` subclasses;
+  `getData` dispatches labels to `getData63`).
+- **`BaseSaver.saveStream(provider, …)`** — new memory-bounded primitive; **default** impl gathers the
+  provider into a full array and delegates to `save` (safe fallback for not-yet-migrated savers; memory
+  still bounded by the *selected level*). Savers override `saveStream` to stream truly.
+- **`TiffSaver.saveStream`** — first true streaming saver (3D-stack append + 2D-sequence), mirrors
+  `save`'s compression/resolution/colormap/dialog.
+- **`MibImage.save`** — for pyramidal images (`isa(...,'core.MibVirtualImage') && ~isempty(pyramid.levelNames)`):
+  reads `options.PyramidLevel` (1-based, default 1, clamped), scales `pixSize` by the level XY scale
+  (`pixSize.z` by Z scale — **this pyramid DOES downsample Z at coarse levels**, scale e.g. 1,1,2,4,8),
+  builds a provider and calls `saveStream`. Standard images keep the old `getData`+`save` path.
+- **Coordinate gotcha:** `getData`/`getDataZarr` interpret `options.z` in **full-resolution** coords and
+  divide by the level Z-scale. So `MibImageSliceProvider` maps level-slice `k` → full-res
+  `z=(k-1)*zScale+1` (constructor takes the level's Z scale factor).
+
+Verified (MCP, native backend): in-memory grayscale+multichannel TIFF stream == `save` (bit-identical);
+NRRD gather-fallback byte-identical to `save`; on a live 5-level pyramid (`trypanosoma.zarr3`, sizes
+887×813×171 … 56×51×22) per-slice provider == direct `getData` and full-level TIFF export reopens
+**exactly** for level 1 and the Z-downsampled level 3; level-aware TIFF XResolution scales (L3 = L1/4).
+All changed files clean under `check_matlab_code`.
+
+**Phase 2 note:** `MibVirtualImage.pixSize` is **empty** (`[]`) for virtual datasets — full-res voxel
+size lives on the dataset / `pyramid.levelVoxelSizes(1,:)`. `MibDataset.saveImage` must inject a proper
+full-res `pixSize` struct into `options` before `MibImage.save` (the level-scaling then produces the
+level voxel size). The dropdown UI + `BatchOpt.PyramidLevel` + labels/mask paths are Phase 2/3.
+
+### Phase 2 — DONE (2026-06-16): level selection (UI + batch) + image & model export
+
+- **`MibModel.saveImage`**: new `BatchOpt.PyramidLevel` (`{1,[1 nLevels],'on'}`, limits refreshed after
+  batch-merge) + tooltip; interactive `uiputfile` branch shows a **level dropdown** (`s0 — W×H×Z …`
+  from `pyramid.levelImageSizes`) when the image is pyramidal with >1 level, and **skips the voxel-size
+  dialog** for pyramidal images (their `image.pixSize` is empty). `PyramidLevel` threaded to `saveOpts`
+  in all four dispatch branches (filename-provided, uiputfile, parameterised, full-batch; cell→scalar
+  normalised).
+- **`MibDataset.saveImage`**: reconstructs a full-res `pixSize` struct from `pyramid.levelVoxelSizes(1,:)`
+  when `image.pixSize` is empty (only fires for standalone-built virtual images; a normally-constructed
+  `MibDataset` already has a valid `image.pixSize`).
+- **`MibImage.save`** (image) and **`MibLabels63.save`** (model, incl. `MibBigDataLabels`): pyramidal
+  branch reads `options.PyramidLevel`, scales `pixSize` by the level's [y x z] scale factors, builds a
+  `MibImageSliceProvider` and calls `saveStream`; Standard/in-memory keep the old gather+`save` path.
+  Model path reuses the same provider via `getData63` (label dispatch), with single-material trim applied
+  on both paths.
+
+Verified (MCP, native backend, live datasets):
+- **Image** — `MibDataset.saveImage('image', …, PyramidLevel=2)` on `trypanosoma.zarr3` streams a TIFF
+  that reopens **exactly** == direct `getData('image',pyramidLevel=2)` (444×407×171). Level voxel size
+  is preserved via the ImageDescription **BoundingBox** (physical extent ÷ level dims → e.g. level-2
+  `pixSize.x = 0.026 = 0.013×2`).
+- **Model** — opened a real `MibBigDataLabels` store; `save('labels', PyramidLevel=2)` → TIFF round-trips
+  exactly, and `.model` (gather-fallback) round-trips exactly (444×407×171).
+
+**Known pre-existing gap (not this feature):** zarr datasets carry `pixSize.units = 'micrometers'`, which
+`utils.calculateResolution` does not map (only `'um'/'mm'/'nm'/…`), so the TIFF **Resolution tag** falls
+back to 72 dpi. The authoritative voxel size still round-trips via the BoundingBox tag. A one-line units
+alias in `calculateResolution` would fix the dpi tag for ALL zarr saves — deferred (shared code).
+
+**Deferred to Phase 3:** mask export of a BigData dataset still uses `getData3D('mask')` (full level-0
+load) — `MibDataset.saveImage` 'mask' branch needs the provider too. Low priority (mask lives in the
+packed model bit 7; user's focus is image+model).
+
+### Phase 3 — DONE (2026-06-16): true per-slice streaming for the high-value formats
+
+**Key finding:** every saver *except* TIFF/PNG/JPG delegates to a shared low-level writer that consumes
+the **full array** (`io.BioFormats.mibImage2ometiff`, `bitmap2amiraMesh/Labels`, `bitmap2nrrd`,
+`io.mibImage2mrc`, `io.HDF5.image2hdf5`, matfile `save`, `io.IMOD.mibExportModelToImodModel`,
+`utils.isosurfaceMibRendering`). So true streaming for those is not a mechanical refactor. Per user
+decision: stream the two highest-value targets (**HDF5** + native **`.model`**) and leave the rest on the
+bounded gather-fallback (functional at any selected level).
+
+**Truly streaming now (override `saveStream`, peak memory ≈ one slice):**
+- **TiffSaver** — 3D-stack (imwrite append) + 2D-sequence.
+- **PngSaver**, **JpgSaver** — `save` refactored to a thin wrapper over `saveStream`
+  (`InMemorySliceProvider`); single code path. PNG sequence export round-trips **exactly** (86 files,
+  level 3).
+- **HDF5Saver** — `saveStream` writes the standard/XML HDF5 via `io.HDF5.image2hdf5` with a new
+  `options.sliceProvider` branch (h5create + per-slice hyperslab `h5write`, reusing the existing
+  axistags/attribute code). BDV variant uses the gather-fallback (it builds a pyramid from the whole
+  volume). Verified: image→`.h5` and image→`.xml`+`.h5` and **model→`.h5`** round-trip **exactly**
+  (444×407×171, uint8).
+- **MatlabSaver** — `.model` (3-D) streams via a writable `matfile` (label volume pre-allocated on disk,
+  grown one Z-slice at a time); identical top-level variables to `saveModel3D`. Verified: model→`.model`
+  round-trips **exactly** (444×407×171, modelType 63). Other Matlab formats (`.mask`/`.mibCat`/`.mat`/
+  2D-seq) use the gather-fallback.
+
+**Still gather-fallback (work at any level; full *selected* level held):** OME-TIFF, Amira, NRRD, MRC,
+IMOD `.mod`, STL, and the non-`.model` Matlab formats. Deep per-writer streaming for these is a future
+follow-up (STL isosurface / IMOD contours are inherently whole-volume).
+
+**New shared capability:** `io.HDF5.image2hdf5` now accepts `options.sliceProvider` (an
+`io.savers.SliceProvider`) — a reusable streaming write path alongside the existing `options.mibImage`
+one.
+
+**Also fixed (drive-by):** `MibLabels63.save` guarded `strrep(obj.labelsVariable,…)` against a non-char
+`labelsVariable` (opened models leave it empty) — removes a warning on every BigData model save.
+
+### Phase 4 — DONE (2026-06-16): zarr3 in the generic Save dialog + streaming ingest
+
+- **`Zarr3Saver` is now an `io.savers.BaseSaver`** (was a bare `handle`): added a constructor
+  `Zarr3Saver(options)` (so `SaverFactory.create` can instantiate it) and `getSupportedFormats`
+  (`'OME-Zarr v3 (*.zarr3)'`). Existing static helpers (`exportDataset`/`exportModel`/`optionsDialog`)
+  unchanged.
+- **Registered in `io.SaverFactory`**: `buildRegistry` maps `'OME-Zarr v3 (*.zarr3)'` →
+  `io.savers.Zarr3Saver`; added to `getFormats('image')` and `getFormats('labels')`; `getDefaultFormat`
+  maps the `zarr3` extension. The format now appears in the generic "Save image/model as…" dialog
+  (live — no restart; only ribbon *items* need a restart).
+- **True streaming `Zarr3Saver.saveStream`** (out-of-core ingest): creates every pyramid level array up
+  front, then streams each Z-slice from the provider — writing level 0 and its XY-downsampled copies via
+  region (`bbox`) `Array.write` — so the whole volume is never resident. Closes the old
+  "writer needs the full volume in memory" follow-up.
+- **Label correctness** in both `save` and `saveStream`: label layers (detected via `options.layerType`
+  or `metadata.materialNames`) force **nearest** downsampling and persist a `mibMaterials` attribute
+  (names + colours), so a model exported through the generic dialog round-trips.
+
+Verified (MCP, native backend): `SaverFactory.create('OME-Zarr v3 (*.zarr3)')` works and the format is
+listed for image+labels; streaming write of a synthetic volume reopens through the real
+`Zarr3VirtualSetupLoader` with level 0 **exact** and coarse level == `imresize(level0)`; full pipeline
+`MibDataset.saveImage('image', …, PyramidLevel=2)` → reopened level 0 == source level 2 (444×407×171);
+model→zarr3 reopens exact with `mibMaterials` preserved (nearest downsampling). All changed files clean
+under `check_matlab_code`.
+
+**Fix (2026-06-16): generic Save → OME-Zarr v3 now shows the settings dialog.** The generic
+"Save image/model as…" path went straight to `save`/`saveStream` with defaults, unlike the
+"Export to Zarr3" ribbon action (which calls `Zarr3Saver.optionsDialog`). Added a private
+`Zarr3Saver.resolveExportOptions(options, metadata)` called at the top of both `save` and `saveStream`:
+when interactive (valid `ParentFigure`, not `silent`) and the caller hasn't pre-supplied settings, it
+shows `optionsDialog` (levels / chunk [Y X Z] / compression / downsample) and merges the result; cancel
+aborts. Headless/scripted (no `ParentFigure`), `silent`, and pre-configured calls (e.g. the Export
+ribbon, which already ran `optionsDialog`) skip it — so no double dialog and no scripted-path regression
+(verified: scripted/silent/preset still round-trip).
+
+**Export dialog (2026-06-16): auto-levels description + sharding setting.** `Zarr3Saver.optionsDialog`
+now (a) explains the **auto pyramid-level rule** in its header — level 0 = full res, each further level
+halves X&Y (Z kept), adding levels while the next halving keeps `min(Y,X) >= MinLevelSize` (256), capped
+at `MaxLevels` (8); a fixed 1–12 count overrides — and (b) adds a **"Shard size [Y, X, Z]"** field
+(0 = no sharding) plus a plain-language explanation of what sharding is (bundles a grid of chunks into
+one file → fewer files on disk). New `options.ShardSize` is threaded through `save` + `saveStream`; a
+static `computeShard(chunk, shardReq)` rounds each spatial axis **up to a whole multiple of the chunk**
+(zarr v3 sharding requirement; c/t axes keep the chunk extent) and is passed as `'shardShape'` to
+`grp.createArray`. Verified (MCP): chunk `[128 128 8]` + shard `[256 256 16]` writes a sharded array
+(`info.shardShape=[256 256 16]`, a 2×2×2 chunk grid/file) that round-trips exactly; the default
+(no `ShardSize`) leaves `shardShape == chunkShape` (unsharded).
+
+**Dialog header fix:** the multi-line description was invisible because `inputUniversalDlg` clips the
+header to `options.HeaderLines` rows (default **1**). Fixed by building the header as a cell of lines and
+passing `dlgOpts.HeaderLines = numel(headerLines)` (9) with `WindowWidth = 560` so nothing wraps/clips.
+
+**Export feature COMPLETE.** Remaining (lower-priority, documented above): true per-slice streaming for
+OME-TIFF/Amira/NRRD/MRC/IMOD/STL (currently bounded gather-fallback); mask-of-BigData full-load in
+`MibDataset.saveImage`; the `'micrometers'` units alias in `utils.calculateResolution`.
 - **blockedImage construction**: read = `blockedImage(src, Adapter=adapter)`;
   write = `blockedImage(dest, imageSize, blockSize, initVal, Mode="w", Adapter=adapter)`.
   `getInfo`/`getIOBlock`/`openToRead` are the only required overrides;

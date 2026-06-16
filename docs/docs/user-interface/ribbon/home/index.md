@@ -210,9 +210,31 @@ Save the open dataset to disk in various formats:
     - **MRC, MRC format for IMOD**: Compatible with IMOD
     - **NRRD, Nearly Raw Raster Data**: Compatible with [3D Slicer](https://www.slicer.org)
     - **OME-TIFF 5D (*.ome.tiff)**: 5D stack using BioFormats library
+    - **OME-Zarr v3 (*.zarr3)**: Chunked, pyramidal OME-Zarr v3 store — reopenable in MIB as a [BigData](../../panels/datasets/index.md) dataset and by external OME-Zarr tools. Choosing this format opens an export-settings dialog (pyramid levels, chunk size, sharding, compression)
     - **PNG, Portable Network Graphics (*.png)**: Lossless format
     - **TIF format, LZW compressed**: Multilayered or sequence of 2D files (max 2GB due to 32-bit offsets)
     - **TIF format, non-compressed**: Same as above, uncompressed
+
+!!! tip "Exporting a pyramid level (Virtual / BigData datasets)"
+
+    When the open dataset is pyramidal (a **Virtual** or **BigData** OME-Zarr dataset), the *Save Image As* dialog adds a <span class="widget widget-dropdown">Pyramid level</span> selector listing each resolution level with its dimensions (`s0` = full resolution … `sN` = coarsest). Pick the level you want to write out.
+
+    The selected level is **streamed to disk one slice at a time**, so the full volume is never loaded into memory — useful for very large slides. The saved file carries the chosen level's voxel size (derived from the dataset bounding box). True per-slice streaming is available for **TIFF, PNG, JPEG, HDF5** and **OME-Zarr v3**; other formats write the selected level as a whole.
+
+??? info "BigData datasets — format compatibility & memory use"
+
+    **All** image formats above can save a **BigData** (or pyramidal **Virtual**) dataset at the chosen pyramid level. They differ only in how much memory the write needs:
+
+    | Format | BigData | Memory-optimized (streamed slice-by-slice) |
+    |--------|:-------:|:------------------------------------------:|
+    | TIF (uncompressed / LZW) | ✅ | ✅ |
+    | PNG | ✅ | ✅ |
+    | JPEG | ✅ | ✅ |
+    | HDF5 (`*.h5` / `*.xml`) | ✅ | ✅ |
+    | OME-Zarr v3 (`*.zarr3`) | ✅ | ✅ |
+    | Amira Mesh, Big Data Viewer HDF5, OME-TIFF, MRC, NRRD | ✅ | ❌ selected level is gathered whole before writing |
+
+    Use the <span class="widget widget-dropdown">Pyramid level</span> dropdown to bound memory — a coarse level is small. The **memory-optimized** formats never hold even one full level in memory, so prefer them when exporting the full-resolution level (`s0`) of a very large slide.
 
 ### Export Image To
 

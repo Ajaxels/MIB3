@@ -157,6 +157,17 @@ if nargin < 3; switch3d = 1; end
 if ~isfield(getDataOptions, 'id'); getDataOptions.id = obj.getActiveId(); end
 id = getDataOptions.id;
 
+% Pyramidal (BigData/Virtual) datasets: capture the snapshot at FULL resolution.
+% Otherwise getData2D returns the displayed (downsampled) level — at e.g. 50% zoom
+% the stored slice is half-size and store() records its coordinates in displayed
+% pixels, so undo (setData writes the finest level) paints that small snapshot into
+% a wrong, smaller region. magFactor=1 makes the capture, the stored coordinates and
+% the restore all full-resolution — matching the editing tools' full-res writes. The
+% value is stored in the undo entry so the redo re-capture and restore stay full-res.
+if any(obj.I{id}.datasetType(1) == ['V' 'B']) && ~isfield(getDataOptions, 'magFactor')
+    getDataOptions.magFactor = 1;
+end
+
 if isfield(getDataOptions, 'blockModeSwitch') && getDataOptions.blockModeSwitch == true
     [axesX, axesY] = obj.getAxesLimits(id);
     if obj.I{id}.orientation == 3       % yx

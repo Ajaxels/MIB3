@@ -1,5 +1,8 @@
 # The Brush Tool
 
+!!! success "BigData mode: supported"
+    The Brush works with **BigData** datasets. Strokes are applied at the displayed pyramid level and propagated to all resolution levels on disk.
+
 ---
 
 ## Overview

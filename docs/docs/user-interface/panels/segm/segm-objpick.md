@@ -1,5 +1,8 @@
 # Object Picker
 
+!!! warning "BigData mode: not supported"
+    Object Picker is **not available** for **BigData** datasets. It relies on whole-volume object statistics and in-memory pixel-index operations that a disk-backed BigData model does not provide. Use the Brush, Magic Wand or Region Growing instead.
+
 ---
 
 ## Overview

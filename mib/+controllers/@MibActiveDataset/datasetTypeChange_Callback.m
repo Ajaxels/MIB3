@@ -32,17 +32,23 @@ end
 % generic "close current + start blank" switch below. Only when a real image is open.
 convId = obj.mibModel.getActiveId();
 convDs = obj.mibModel.I{convId};
-isRealImage = ~strcmp(convDs.image.filename, 'none.tif') && convDs.image.exists;
+% A "real" (user-loaded) dataset — as opposed to an empty placeholder slot
+% ('none.tif'), a non-existent image, or one of the default asset images
+% (assets/images/default.png|.h5) loaded as a dummy when a buffer is initialized
+% or its mode switched. Only a real dataset needs a "will be closed" warning.
+assetsImagesDir = fullfile(obj.mibModel.mibPath, 'assets', 'images');
+isRealImage = convDs.image.exists && ...
+    ~strcmp(convDs.image.filename, 'none.tif') && ...
+    ~startsWith(lower(convDs.image.filename), lower(assetsImagesDir));
 if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') && isRealImage
     questOpt = struct('Icon', 'puffin_question', 'WindowWidth', 540, 'WindowHeight', 240);
     if ~isempty(obj.mibModel.mibPath); questOpt.mibPath = obj.mibModel.mibPath; end
     sel = utils.dlgs.inputQuestDlg(obj.view.gui, ...
         sprintf(['A dataset is currently open. Switch to BigData by:\n\n' ...
-        ' \x2022 "Convert current": write the open image as an OME-Zarr v3 pyramid on disk and ' ...
-        'reopen it in BigData mode;\n' ...
-        ' \x2022 "New (default)": discard the open dataset and start an empty BigData dataset.\n\n' ...
+        ' \x2022 "New (default)": discard the open dataset and start an empty BigData dataset\n' ...
+        ' \x2022 "Convert current": write the open image as an OME-Zarr v3 pyramid on disk and reopen it in BigData mode\n\n' ...
         'BigData is browse-only until you create a model.']), 'Switch to BigData', ...
-        'Convert current', 'New (default)', 'Cancel', 'Convert current', questOpt);
+        'New (default)', 'Convert current', 'Cancel', 'New (default)', questOpt);
     switch sel
         case {'Cancel', ''}
             hWidget.Value = hData.PreviousValue;
@@ -106,13 +112,16 @@ if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') &&
     return;
 end
 
-% confirm the operation
-selection = uiconfirm(obj.view.gui, ...
-    sprintf('You are going to switch to the %s mode\nThe current dataset will be closed!', hWidget.Value), ...
-    'Switch dataset mode', 'Icon', 'warning', 'DefaultOption', 2);
-if strcmp(selection, 'Cancel')
-    hWidget.Value = hData.PreviousValue;
-    return; 
+% confirm the operation — only when a real dataset is loaded. Switching the type
+% of an empty placeholder / dummy buffer closes nothing, so no warning is needed.
+if isRealImage
+    selection = uiconfirm(obj.view.gui, ...
+        sprintf('You are going to switch to the %s mode\nThe current dataset will be closed!', hWidget.Value), ...
+        'Switch dataset mode', 'Icon', 'warning', 'DefaultOption', 2);
+    if strcmp(selection, 'Cancel')
+        hWidget.Value = hData.PreviousValue;
+        return;
+    end
 end
 
 initWithImage = [];

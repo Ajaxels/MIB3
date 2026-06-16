@@ -1,4 +1,4 @@
-classdef Zarr3Saver < handle
+classdef Zarr3Saver < io.savers.BaseSaver
 % ZARR3SAVER - write an image as an OME-Zarr v3 multi-resolution (multiscales) pyramid.
 %
 % Produces a chunked OME-Zarr v3 group with one downsampled level per
@@ -98,7 +98,19 @@ classdef Zarr3Saver < handle
 %      % files.levelImageSizes / files.levelScaleFactors describe the pyramid
 
     methods
-        function fnOut = save(obj, data, metadata, filename, options) %#ok<INUSL>
+        function obj = Zarr3Saver(options)
+            % ZARR3SAVER - Constructor (accepts the optional saver options struct).
+            if nargin < 1; options = struct(); end
+            obj.Options = options;
+            obj.initBaseProps(options);
+        end
+
+        function formats = getSupportedFormats(~)
+            % GETSUPPORTEDFORMATS - format strings handled by Zarr3Saver.
+            formats = {'OME-Zarr v3 (*.zarr3)'};
+        end
+
+        function fnOut = save(obj, data, metadata, filename, options)
             % SAVE - write ``data`` as an OME-Zarr v3 multiscales pyramid.
             %
             % Input Arguments:
@@ -111,6 +123,8 @@ classdef Zarr3Saver < handle
             %     - ``.MinLevelSize`` — stop auto-pyramid when min(Y,X) < this (default 256)
             %     - ``.MaxLevels`` — cap on auto levels (default 8)
             %     - ``.ChunkSize`` — [y x z] chunk shape (default [256 256 16], clamped)
+            %     - ``.ShardSize`` — [y x z] shard shape; ``[]`` = no sharding. Each axis is
+            %       rounded up to a whole multiple of the chunk (zarr v3 sharding codec)
             %     - ``.Compressors`` — codec spec for ZarrArray.create (default 'zstd')
             %     - ``.DownsampleMethod`` — imresize method for levels (default 'bilinear')
             %
@@ -119,12 +133,25 @@ classdef Zarr3Saver < handle
 
             if nargin < 5; options = struct(); end
             if nargin < 4 || isempty(filename); error('io:Zarr3Saver:noFilename', 'Output filename is required'); end
+
+            % Interactive GUI save → collect pyramid/chunk/compression settings (same
+            % dialog as the "Export to Zarr3" ribbon action); cancel aborts the save.
+            [options, cancelled] = obj.resolveExportOptions(options, metadata);
+            if cancelled; fnOut = []; return; end
+
             if ~isfield(options, 'Levels');          options.Levels = []; end
             if ~isfield(options, 'MinLevelSize');    options.MinLevelSize = 256; end
             if ~isfield(options, 'MaxLevels');       options.MaxLevels = 8; end
             if ~isfield(options, 'ChunkSize');       options.ChunkSize = [256 256 16]; end
+            if ~isfield(options, 'ShardSize');       options.ShardSize = []; end
             if ~isfield(options, 'Compressors');     options.Compressors = 'zstd'; end
             if ~isfield(options, 'DownsampleMethod'); options.DownsampleMethod = 'bilinear'; end
+
+            % Label layers are categorical → must downsample nearest-neighbour, never
+            % interpolate. Detected from the injected layerType or material metadata.
+            isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
+                (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
+            if isLabelLayer; options.DownsampleMethod = 'nearest'; end
 
             % physical voxel size (default 1)
             pixSize = struct('x', 1, 'y', 1, 'z', 1);
@@ -194,8 +221,11 @@ classdef Zarr3Saver < handle
                 if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
 
                 name = num2str(L - 1);
-                arr = grp.createArray(name, keepShape, imgClass, ...
-                    'chunkShape', chunk, 'compressors', options.Compressors);
+                createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
+                if ~isempty(options.ShardSize)
+                    createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
+                end
+                arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
                 arr.write(lvl);
 
                 % per-level scale in axes order (XY doubles per level; Z constant)
@@ -212,9 +242,190 @@ classdef Zarr3Saver < handle
                 axesCells{a} = struct('name', axesNames{a}, 'type', axesTypes{a});
             end
             ms = struct('version', '0.4', 'axes', {axesCells}, 'datasets', {datasets});
-            grp.setAttributes(struct('multiscales', {{ms}}));
+            attrStruct = struct('multiscales', {{ms}});
+            % persist material names/colours for label layers (model round-trip)
+            if isLabelLayer && isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames)
+                mm = struct('materialNames', {metadata.materialNames});
+                if isfield(metadata,'materialColors') && ~isempty(metadata.materialColors)
+                    mm.materialColors = metadata.materialColors;
+                end
+                attrStruct.mibMaterials = mm;
+            end
+            grp.setAttributes(attrStruct);
 
             fnOut = filename;
+        end
+
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - write an OME-Zarr v3 pyramid streaming one Z-slice at a time.
+            %
+            % Memory-bounded twin of ``save``: instead of a full ``[y x z c t]`` array
+            % it pulls each Z-slice from ``provider`` (an ``io.savers.SliceProvider``),
+            % writes it to level 0, and writes its XY-downsampled copies to the coarser
+            % levels — all via region (``bbox``) writes — so the whole volume is never
+            % resident. This is the out-of-core ingest path (e.g. a large source → zarr3).
+            %
+            % See ``io.savers.BaseSaver.saveStream``.
+            %
+            % **Example** — stream a volume into a fresh OME-Zarr v3 pyramid:
+            %
+            %   .. code-block:: matlab
+            %
+            %      vol      = uint16(rand(900, 800, 6) * 1000);            % [y x z]
+            %      provider = io.savers.InMemorySliceProvider(reshape(vol, 900, 800, 6, 1, 1));
+            %      meta     = struct('pixSize', struct('x',0.02,'y',0.02,'z',0.1));
+            %      io.savers.Zarr3Saver(struct()).saveStream(provider, meta, 'C:\out\vol.zarr3', ...
+            %          struct('showWaitbar', false));
+            %      % reopen via io.loaders.Zarr3VirtualSetupLoader (datasetMode = 'BigData')
+            if nargin < 5; options = struct(); end
+            if nargin < 4 || isempty(filename); error('io:Zarr3Saver:noFilename', 'Output filename is required'); end
+
+            % Interactive GUI save → show the export-settings dialog (cancel aborts).
+            [options, cancelled] = obj.resolveExportOptions(options, metadata);
+            if cancelled; fnOut = []; return; end
+
+            if ~isfield(options, 'Levels');           options.Levels = []; end
+            if ~isfield(options, 'MinLevelSize');     options.MinLevelSize = 256; end
+            if ~isfield(options, 'MaxLevels');        options.MaxLevels = 8; end
+            if ~isfield(options, 'ChunkSize');        options.ChunkSize = [256 256 16]; end
+            if ~isfield(options, 'ShardSize');        options.ShardSize = []; end
+            if ~isfield(options, 'Compressors');      options.Compressors = 'zstd'; end
+            if ~isfield(options, 'DownsampleMethod'); options.DownsampleMethod = 'bilinear'; end
+
+            isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
+                (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
+            if isLabelLayer; options.DownsampleMethod = 'nearest'; end
+
+            pixSize = struct('x', 1, 'y', 1, 'z', 1);
+            if isstruct(metadata) && isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
+                ps = metadata.pixSize;
+                if isfield(ps,'x'); pixSize.x = ps.x; end
+                if isfield(ps,'y'); pixSize.y = ps.y; end
+                if isfield(ps,'z'); pixSize.z = ps.z; end
+            end
+
+            sz = provider.OutputSize;
+            Y = sz(1); X = sz(2); Z = sz(3); C = sz(4); T = sz(5);
+            imgClass = provider.DataClass;
+
+            axesNames = {'y','x','z'}; axesTypes = {'space','space','space'};
+            if C > 1; axesNames{end+1} = 'c'; axesTypes{end+1} = 'channel'; end
+            if T > 1; axesNames{end+1} = 't'; axesTypes{end+1} = 'time'; end
+            nKeep = numel(axesNames);
+
+            if ~isempty(options.Levels)
+                nLevels = max(1, options.Levels);
+            else
+                nLevels = 1; m = min(Y, X);
+                while floor(m/2) >= options.MinLevelSize && nLevels < options.MaxLevels
+                    m = floor(m/2); nLevels = nLevels + 1;
+                end
+            end
+
+            filename = char(filename);
+            if isfolder(filename); rmdir(filename, 's'); end
+            grp = io.zarr.Group.create(filename);
+
+            % --- create every level array up front ---
+            levelInfo = repmat(struct('factor',1,'Yl',Y,'Xl',X,'arr',[],'name',''), 1, nLevels);
+            datasets  = cell(1, nLevels);
+            for L = 1:nLevels
+                factor = 2^(L-1);
+                Yl = max(1, round(Y / factor));
+                Xl = max(1, round(X / factor));
+                keepShape = [Yl, Xl, Z];
+                if C > 1; keepShape(end+1) = C; end %#ok<AGROW>
+                if T > 1; keepShape(end+1) = T; end %#ok<AGROW>
+                chunk = min(options.ChunkSize(1:3), keepShape(1:3));
+                chunk = max(chunk, [1 1 1]);
+                if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
+                name = num2str(L - 1);
+                levelInfo(L).factor = factor;
+                levelInfo(L).Yl = Yl; levelInfo(L).Xl = Xl; levelInfo(L).name = name;
+                createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
+                if ~isempty(options.ShardSize)
+                    createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
+                end
+                levelInfo(L).arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
+                scaleVec = [pixSize.y * factor, pixSize.x * factor, pixSize.z];
+                if C > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
+                if T > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
+                datasets{L} = struct('path', name, ...
+                    'coordinateTransformations', {{struct('type','scale','scale',scaleVec)}});
+            end
+
+            % --- stream slices: write each (z,t) to every level ---
+            wb = obj.createProgressDialog('Saving Zarr3...', sprintf('Writing %s', filename), true);
+            total = Z * T; done = 0;
+            for t = 1:T
+                for z = 1:Z
+                    if ~isempty(wb) && wb.CancelRequested; delete(wb); fnOut = []; return; end
+                    slice = provider.getSlice(z, t);   % [Y X C]
+                    for L = 1:nLevels
+                        Yl = levelInfo(L).Yl; Xl = levelInfo(L).Xl;
+                        if L == 1
+                            ls = slice;
+                        else
+                            ls = imresize(slice, [Yl Xl], options.DownsampleMethod);
+                        end
+                        % per-slice data shaped to the level's declared axes (z,t singleton)
+                        sliceData = reshape(ls, Yl, Xl, 1, C);   % [Yl Xl 1 C]
+                        if C == 1; sliceData = reshape(sliceData, Yl, Xl, 1); end
+                        if T > 1;  sliceData = reshape(sliceData, [size(sliceData,1:max(3,ndims(sliceData))), 1]); end
+                        bbox = [1 Yl+1; 1 Xl+1; z z+1];
+                        if C > 1; bbox = [bbox; 1 C+1]; end %#ok<AGROW>
+                        if T > 1; bbox = [bbox; t t+1]; end %#ok<AGROW>
+                        levelInfo(L).arr.write(cast(sliceData, imgClass), bbox);
+                    end
+                    done = done + 1;
+                    if ~isempty(wb); wb.Value = done/total; end
+                end
+            end
+            if ~isempty(wb); delete(wb); end
+
+            % --- OME-NGFF multiscales (+ materials for labels) ---
+            axesCells = cell(1, nKeep);
+            for a = 1:nKeep; axesCells{a} = struct('name', axesNames{a}, 'type', axesTypes{a}); end
+            ms = struct('version', '0.4', 'axes', {axesCells}, 'datasets', {datasets});
+            attrStruct = struct('multiscales', {{ms}});
+            if isLabelLayer && isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames)
+                mm = struct('materialNames', {metadata.materialNames});
+                if isfield(metadata,'materialColors') && ~isempty(metadata.materialColors)
+                    mm.materialColors = metadata.materialColors;
+                end
+                attrStruct.mibMaterials = mm;
+            end
+            grp.setAttributes(attrStruct);
+
+            fnOut = filename;
+            fprintf('Zarr3Saver: streamed → %s\n', filename);
+        end
+    end
+
+    methods (Access = private)
+        function [options, cancelled] = resolveExportOptions(obj, options, metadata)
+            % RESOLVEEXPORTOPTIONS - show the zarr3 export-settings dialog when interactive.
+            %
+            % Brings the generic "Save image/model as… → OME-Zarr v3" path in line with
+            % the "Export to Zarr3" ribbon action: when called from a GUI save (a valid
+            % ``ParentFigure``, not ``silent``) and the caller has not already supplied
+            % pyramid/chunk/compression settings, it shows ``Zarr3Saver.optionsDialog``
+            % and merges the result into ``options``. Returns ``cancelled = true`` if the
+            % user cancels. Headless/scripted use (no ``ParentFigure``), batch/``silent``
+            % calls, and pre-configured option structs all skip the dialog.
+            cancelled = false;
+            if isfield(options,'silent') && options.silent; return; end
+            if isempty(obj.ParentFigure); return; end   % headless/scripted → use defaults
+            % settings already provided (e.g. by the Export-ribbon optionsDialog)?
+            if isfield(options,'ChunkSize') || isfield(options,'Compressors') || isfield(options,'Levels')
+                return;
+            end
+            isModel = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
+                (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
+            dlgOptions = io.savers.Zarr3Saver.optionsDialog(obj.ParentFigure, obj.mibPath, isModel);
+            if isempty(dlgOptions); cancelled = true; return; end
+            fn = fieldnames(dlgOptions);
+            for k = 1:numel(fn); options.(fn{k}) = dlgOptions.(fn{k}); end
         end
     end
 
@@ -296,25 +507,55 @@ classdef Zarr3Saver < handle
             % dropdown. ``isModel`` hides the downsample-method choice (models are
             % always written nearest-neighbour).
             %
+            % **Pyramid levels — auto rule (when "Pyramid levels" = 0):** level 0 is
+            % full resolution; each further level halves X and Y (Z is kept — XY-only
+            % downsampling). Levels are added while the *next* halving would keep
+            % ``min(Y, X) >= MinLevelSize`` (default 256 px), capped at ``MaxLevels``
+            % (default 8). So a 4000×3000 image → levels 4000², 2000², 1000², 500²
+            % (stops: 250 < 256) = 4 levels. A fixed count (1..12) overrides the rule.
+            %
+            % **Sharding:** a shard is a single file holding a grid of chunks (zarr v3
+            % sharding codec). "Shard size [Y, X, Z]" = 0 (any axis) disables sharding;
+            % otherwise each shard dimension is rounded up to a whole multiple of the
+            % chunk size, so one ``.zarr3`` file then bundles, e.g., a 4×4×1 block of
+            % chunks — far fewer files on disk for large pyramids.
+            %
             % Output Arguments:
             %   - **options** — struct with optional fields ``Levels`` (omitted when
-            %     auto), ``ChunkSize`` [y x z], ``Compressors``, ``DownsampleMethod``;
-            %     ``[]`` when the user cancels.
+            %     auto), ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (omitted when no
+            %     sharding), ``Compressors``, ``DownsampleMethod``; ``[]`` when cancelled.
             if nargin < 3; isModel = false; end
             if nargin < 2; mibPath = ''; end
 
-            prompts = {'Pyramid levels (0 = auto):', 'Chunk size [Y, X, Z]:', 'Compression:'};
-            defAns  = {struct('Spinner', true, 'Value', 0, 'Limits', [0 12], 'Step', 1, 'Round', true), ...
-                       '256, 256, 16', ...
+            % Multi-line explanatory header. inputUniversalDlg clips the header to
+            % options.HeaderLines rows, so HeaderLines must match the line count below.
+            headerLines = { ...
+                'Pyramid levels = 0 (auto): level 0 = full resolution; each'; ...
+                'further level halves X & Y (Z is kept), adding a level while'; ...
+                'the next halving keeps min(Y,X) >= 256 px, up to 8 levels;'; ...
+                'a fixed count (1-12) overrides the auto rule.'; ...
+                ''; ...
+                'Sharding bundles a grid of chunks into one file (zarr v3'; ...
+                'sharding codec) -> far fewer files on disk for big pyramids.'; ...
+                'Shard size 0 = no sharding; else each axis is rounded up to'; ...
+                'a whole multiple of the chunk size.'};
+            header = strjoin(headerLines, newline);
+
+            prompts = {'Pyramid levels (0 = auto):'; 'Chunk size [Y, X, Z]:'; ...
+                       'Shard size [Y, X, Z] (0 = none):'; 'Compression:'};
+            defAns  = {struct('Spinner', true, 'Value', 0, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
+                       '256, 256, 16'; ...
+                       '0, 0, 0'; ...
                        {'zstd', 'gzip', 'none', 1}};
             if ~isModel
                 prompts{end+1} = 'Downsampling method:';
                 defAns{end+1}  = {'bilinear', 'nearest', 'bicubic', 1};
             end
 
-            dlgOpts = struct('LabelPosition', 'left', 'WindowWidth', 430);
+            dlgOpts = struct('LabelPosition', 'left', 'WindowWidth', 560, ...
+                'HeaderLines', numel(headerLines));
             if ~isempty(mibPath); dlgOpts.mibPath = mibPath; end
-            answer = utils.dlgs.inputUniversalDlg(parentFig, 'Zarr3 (OME-Zarr v3) export settings', ...
+            answer = utils.dlgs.inputUniversalDlg(parentFig, header, ...
                 prompts, defAns, 'Export to Zarr3', dlgOpts);
             if isempty(answer); options = []; return; end
 
@@ -322,11 +563,29 @@ classdef Zarr3Saver < handle
             if answer{1} > 0; options.Levels = answer{1}; end       % 0 -> auto
             chunk = str2num(answer{2}); %#ok<ST2NM>
             if numel(chunk) == 3; options.ChunkSize = chunk; end
-            options.Compressors = answer{3};
+            shard = str2num(answer{3}); %#ok<ST2NM>
+            if numel(shard) == 3 && all(shard > 0); options.ShardSize = shard; end   % 0 = no sharding
+            options.Compressors = answer{4};
             if ~isModel
-                options.DownsampleMethod = answer{4};
+                options.DownsampleMethod = answer{5};
             else
                 options.DownsampleMethod = 'nearest';
+            end
+        end
+
+        function shard = computeShard(chunk, shardReq)
+            % COMPUTESHARD - per-level shard shape aligned to the chunk shape.
+            %
+            % zarr v3 sharding requires each shard dimension to be a whole multiple of
+            % the chunk dimension. Each requested spatial size (``shardReq``, [y x z]) is
+            % rounded UP to the nearest chunk multiple (>= one chunk); colour/time axes
+            % keep the chunk extent. ``shard`` has the same length as ``chunk``.
+            shard = chunk;
+            n = min(3, numel(shardReq));
+            for i = 1:n
+                if shardReq(i) > 0
+                    shard(i) = chunk(i) * max(1, ceil(shardReq(i) / chunk(i)));
+                end
             end
         end
     end

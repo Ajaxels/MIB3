@@ -1,5 +1,8 @@
 ## The Membrane Click Tracker Tool
 
+!!! success "BigData mode: supported"
+    The Membrane Click Tracker works with **BigData** datasets.
+
 ---
 
 ## Overview

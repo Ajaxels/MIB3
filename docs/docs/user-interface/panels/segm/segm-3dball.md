@@ -1,5 +1,8 @@
 # The 3D Ball Tool
 
+!!! success "BigData mode: supported"
+    The 3D Ball tool works with **BigData** datasets (it reads/writes the full-resolution region around the ball).
+
 ---
 ## 3D ball overview
 

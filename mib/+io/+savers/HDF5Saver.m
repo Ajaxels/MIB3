@@ -371,6 +371,92 @@ classdef HDF5Saver < io.savers.BaseSaver
             end
         end
 
+        function fnOut = saveStream(obj, provider, metadata, filename, options)
+            % SAVESTREAM - Memory-bounded HDF5 save from a SliceProvider.
+            %
+            % Standard / XML-header HDF5 is written slice-by-slice via
+            % ``io.HDF5.image2hdf5`` with ``options.sliceProvider`` (h5create +
+            % per-slice hyperslab ``h5write``), so the full volume is never resident.
+            % The BigDataViewer variant builds an image pyramid from the whole volume,
+            % so it uses the gather-based default (bounded by the selected level).
+            % The interactive HDF5-settings dialog is skipped in the streaming path;
+            % chunk/deflate/order come from ``options`` or sensible defaults.
+            %
+            % See ``io.savers.BaseSaver.saveStream``.
+            %
+            % **Example** — stream a BigData image level to a standard HDF5 file:
+            %
+            %   .. code-block:: matlab
+            %
+            %      provider = io.savers.MibImageSliceProvider(img, 'image', 1, [], numZ, img.time, zScale);
+            %      saver    = io.savers.HDF5Saver(struct());
+            %      meta.pixSize = img.pixSize;   % (or a reconstructed struct for virtual datasets)
+            %      saver.saveStream(provider, meta, 'C:\out\vol.h5', ...
+            %          struct('Format','Hierarchical Data Format (*.h5)','silent',true,'showWaitbar',false));
+            if nargin < 5; options = struct(); end
+            fnOut = [];
+
+            if ~isfield(options, 'showWaitbar'); options.showWaitbar = true;    end
+            if ~isfield(options, 'silent');      options.silent      = false;   end
+            if ~isfield(options, 'overwrite');   options.overwrite   = true;    end
+            if ~isfield(options, 'layerType');   options.layerType   = 'image'; end
+            if ~isfield(options, 'Format');      options.Format      = 'Hierarchical Data Format (*.h5)'; end
+
+            isXmlFormat   = contains(options.Format, 'xml',             'IgnoreCase', true);
+            isBDVByFormat = contains(options.Format, 'Big Data Viewer', 'IgnoreCase', true);
+            isBDV = isBDVByFormat || ...
+                (isfield(options,'DimOrder') && ~isempty(options.DimOrder) && strcmpi(options.DimOrder,'bdv'));
+
+            if isBDV
+                % BDV builds an image pyramid from the full volume → gather fallback.
+                fnOut = saveStream@io.savers.BaseSaver(obj, provider, metadata, filename, options);
+                return;
+            end
+
+            sz = provider.OutputSize; nH = sz(1); nW = sz(2); nD = sz(3); nC = sz(4); nT = sz(5);
+
+            % --- decompose filename (mirror save) ---
+            [pathStr, baseName, ext] = obj.splitFilename(filename);
+            if isXmlFormat
+                if isempty(ext); ext = '.xml'; end
+                h5Filename = fullfile(pathStr, [baseName '.h5']);
+            else
+                if isempty(ext); ext = '.h5'; end
+                h5Filename = fullfile(pathStr, [baseName ext]);
+            end
+            if isempty(pathStr); pathStr = pwd; end
+            if exist(pathStr, 'dir') ~= 7; mkdir(pathStr); end
+
+            % --- streaming defaults (no interactive dialog in this path) ---
+            if ~isfield(options,'DimOrder') || isempty(options.DimOrder) || strcmpi(options.DimOrder,'bdv')
+                options.DimOrder = 'yxzct';
+            end
+            if ~isfield(options,'Deflate'); options.Deflate = 0; end
+            if ~isfield(options,'ChunkSize') || isempty(options.ChunkSize)
+                options.ChunkSize = [min(64,nH); min(64,nW); min(64,max(1,nD))];
+            end
+
+            HDFoptions = obj.buildCommonHDFOptions(options, metadata, baseName, nH, nW, nD, nC, nT);
+            HDFoptions.Format        = 'matlab.hdf5';
+            HDFoptions.order         = options.DimOrder;
+            HDFoptions.SubSampling   = [1;1;1];
+            HDFoptions.ChunkSize     = options.ChunkSize(:)';
+            HDFoptions.DatasetClass  = provider.DataClass;   % imageS is [] in streaming mode
+            HDFoptions.sliceProvider = provider;
+
+            io.HDF5.image2hdf5(h5Filename, [], HDFoptions);
+
+            if isXmlFormat
+                io.HDF5.saveXMLheader(h5Filename, HDFoptions);
+                [~, bn, ~] = fileparts(h5Filename);
+                fnOut = fullfile(pathStr, [bn '.xml']);
+                fprintf('HDF5Saver: streamed → %s + %s\n', h5Filename, fnOut);
+            else
+                fnOut = h5Filename;
+                fprintf('HDF5Saver: streamed → %s\n', h5Filename);
+            end
+        end
+
     end
 
     methods (Access = private)

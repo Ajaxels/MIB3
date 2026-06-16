@@ -183,9 +183,28 @@ Prompts for a filename and format to save the model.
 - [x] **MOD (IMOD format)**: Contours for IMOD.
 - [x] **MRC (IMOD format)**: Volume for IMOD.
 - [x] **NRRD (Nearly Raw Raster Data)**: Compatible with [3D Slicer](https://www.slicer.org).
+- [x] **OME-Zarr v3 (*.zarr3)**: Chunked, pyramidal OME-Zarr v3 store. Labels are downsampled with nearest-neighbour and material names/colours are preserved; reopenable as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr tools. Choosing this format opens an export-settings dialog (pyramid levels, chunk size, sharding, compression).
 - [x] **PNG**: 2D slices in Portable Network Graphic format.
 - [x] **STL (STL format)**: Triangulated mesh for visualization programs like Blender.
 - [x] **TIF (TIF format)**: 2D slices or 3D volumes.
+
+!!! tip "Exporting a pyramid level (BigData models)"
+
+    For a disk-backed **BigData** model, the *Save model as...* dialog adds a <span class="widget widget-dropdown">Pyramid level</span> selector (`s0` = full resolution … `sN` = coarsest). The chosen level is **streamed to disk one slice at a time**, so the full model is never loaded into memory. Per-slice streaming is available for **TIFF**, the native **MODEL** (`*.model`), **HDF5** and **OME-Zarr v3**; other formats write the selected level as a whole.
+
+??? info "BigData models — format compatibility & memory use"
+
+    **All** formats above can save a **BigData** model at the chosen pyramid level. They differ only in how much memory the write needs:
+
+    | Format | BigData | Memory-optimized (streamed slice-by-slice) |
+    |--------|:-------:|:------------------------------------------:|
+    | MODEL (`*.model`) — *native* | ✅ | ✅ disk-backed matfile |
+    | TIF | ✅ | ✅ |
+    | HDF5 (`*.h5`) | ✅ | ✅ |
+    | OME-Zarr v3 (`*.zarr3`) | ✅ | ✅ |
+    | AM, MAT, MOD, MRC, NRRD, PNG, STL, mibCat | ✅ | ❌ selected level is gathered whole before writing |
+
+    Use the <span class="widget widget-dropdown">Pyramid level</span> dropdown to bound memory — a coarse level is small. The **memory-optimized** formats never hold even one full level in memory, so prefer them when exporting the full-resolution level (`s0`) of a large model.
 
 ---
 

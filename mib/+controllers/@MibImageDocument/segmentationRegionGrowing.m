@@ -166,6 +166,10 @@ if ~switch3d
         options = struct();
     end
     options.id = id;
+    % Pyramidal (Virtual/BigData) datasets: read/write at FULL resolution so the
+    % pixels match the full-res seed coordinates. Otherwise getData2D returns the
+    % displayed (downsampled) level and the grown region lands shifted/rescaled.
+    if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
 
     currImage = cell2mat(obj.mibModel.getData2D('image', [], [], col_channel, options));
     selarea = uint8(regiongrowing(currImage, dMaxDif, [y, x]));
@@ -233,6 +237,9 @@ else
         obj.mibModel.backup('selection', 1);
     end
     options.id = id;
+    % Pyramidal (Virtual/BigData): force full-resolution read/write to match the
+    % full-res seed coordinates (see the 2D branch above).
+    if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B']); options.magFactor = 1; end
     if BatchOpt.showWaitbar; wb.Value = 0.05; end
 
     datasetImage = squeeze(cell2mat(obj.mibModel.getData3D('image', [], 3, col_channel, options)));

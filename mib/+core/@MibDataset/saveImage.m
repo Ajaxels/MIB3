@@ -158,6 +158,16 @@ if ~isfield(options,'Saving3DPolicy'); options.Saving3DPolicy = '3D stack'; end
 options.pixSize    = obj.image.pixSize;
 options.layerType  = layerType;
 
+% Virtual / BigData images do not populate obj.image.pixSize (the full-res voxel
+% size lives in the pyramid metadata). Reconstruct a full-resolution pixSize struct
+% from the level-0 voxel size so MibImage.save can scale it to the exported level.
+if (~isstruct(options.pixSize) || isempty(options.pixSize)) && ...
+        isa(obj.image, 'core.MibVirtualImage') && ~isempty(obj.image.pyramid.levelNames)
+    voxel0 = obj.image.pyramid.levelVoxelSizes(1, :);   % [y x z] at full resolution
+    options.pixSize = struct('x', voxel0(2), 'y', voxel0(1), 'z', voxel0(3), ...
+        't', 1, 'units', 'um', 'tunits', 's');
+end
+
 % boundingBox lives on obj.image (core.MibImage); access it directly.
 % It is used below for label/mask saves that bypass MibImage.save().
 % For the 'image' case MibImage.save() reads obj.image.boundingBox itself.

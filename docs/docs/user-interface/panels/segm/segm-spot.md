@@ -1,5 +1,8 @@
 # The Spot Tool
 
+!!! success "BigData mode: supported"
+    The Spot tool works with **BigData** datasets (the spot is written at full resolution at the clicked position).
+
 ---
 
 ## Overview

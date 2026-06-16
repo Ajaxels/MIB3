@@ -1,5 +1,8 @@
 # The Annotations Tool
 
+!!! success "BigData mode: supported"
+    Annotations work with **BigData** datasets (they are stored as coordinates, independent of resolution).
+
 ---
 
 ## Overview

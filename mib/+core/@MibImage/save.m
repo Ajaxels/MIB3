@@ -181,6 +181,26 @@ if ~isfield(options,'pixSize') || isempty(options.pixSize)
     options.pixSize = struct('x',1,'y',1,'z',1,'t',1,'units','um','tunits','s');
 end
 
+% --- pyramid level selection (Virtual / BigData only) ---------------------
+% A pyramidal image can be exported at a chosen resolution level. The slices
+% are streamed from disk one at a time (see below), so the full volume is never
+% loaded. The selected level's voxel size is pixSize scaled by the level's XY
+% scale factor (the pyramid downsamples XY only, so pixSize.z is unchanged); the
+% physical bounding box is identical across levels and stays as-is.
+isPyramidal = isa(obj, 'core.MibVirtualImage') && ~isempty(obj.pyramid.levelNames);
+exportLevel = 1;
+if isfield(options, 'PyramidLevel') && ~isempty(options.PyramidLevel)
+    exportLevel = round(options.PyramidLevel);
+end
+if isPyramidal
+    nLevels = numel(obj.pyramid.levelNames);
+    exportLevel = max(1, min(exportLevel, nLevels));
+    levelScale = obj.pyramid.levelScaleFactors(exportLevel, :);   % [yScale xScale zScale]
+    options.pixSize.y = options.pixSize.y * levelScale(1);
+    options.pixSize.x = options.pixSize.x * levelScale(2);
+    options.pixSize.z = options.pixSize.z * levelScale(3);
+end
+
 % Show indeterminate progress dialog immediately so the user sees feedback
 % while the (potentially slow) data-extraction step runs.
 earlyWb = [];
@@ -236,18 +256,29 @@ if isfield(obj,'colormap') && ~isempty(obj.colormap)
     metadata.colormap = obj.colormap;
 end
 
-% --- get full 5-D data [H, W, D, C, T] ---
-data = obj.getData('image', 3, []);
-
-% Check if user cancelled during data extraction
-if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
-    delete(earlyWb);
-    fnOut = [];
-    return;
-end
-
 % --- dispatch to appropriate saver ---
 saver = io.SaverFactory.create(options.Format, options);
-fnOut = saver.save(data, metadata, filename, options);
+
+if isPyramidal
+    % Stream the selected pyramid level slice-by-slice — memory stays bounded
+    % to one slice (savers that haven't migrated to true streaming fall back to
+    % gathering this single level inside BaseSaver.saveStream).
+    numSlices = obj.pyramid.levelImageSizes(exportLevel, 3);
+    zScale    = obj.pyramid.levelScaleFactors(exportLevel, 3);
+    provider  = io.savers.MibImageSliceProvider(obj, 'image', exportLevel, [], numSlices, obj.time, zScale);
+    fnOut = saver.saveStream(provider, metadata, filename, options);
+else
+    % --- get full 5-D data [H, W, D, C, T] ---
+    data = obj.getData('image', 3, []);
+
+    % Check if user cancelled during data extraction
+    if ~isempty(earlyWb) && isvalid(earlyWb) && earlyWb.CancelRequested
+        delete(earlyWb);
+        fnOut = [];
+        return;
+    end
+
+    fnOut = saver.save(data, metadata, filename, options);
+end
 end
 
