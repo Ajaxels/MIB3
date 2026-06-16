@@ -41,9 +41,16 @@ obj.mibModel.id = buttonId + (obj.mibModel.Sets.selectedSet-1)*obj.mibModel.Sets
 
 % update the background color for the selected buffer
 if ~strcmp(prevBufferStringId, newBufferStringId)
-    if strcmp(obj.mibModel.I{prevDatasetId}.image.filename, 'none.tif')  % no dataset loaded
-        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+    prevImg = obj.mibModel.I{prevDatasetId}.image;
+    if strcmp(prevImg.filename, 'none.tif') && prevImg.height == 512 && prevImg.width == 512 && prevImg.depth == 1 && prevImg.time == 1
+        % Empty placeholder buffer
+        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = ...
+            obj.view.handles.panels.dirContents.handles.updateFileList.BackgroundColor;
+    elseif strcmp(prevImg.filename, 'none.tif')
+        % In-memory dataset — data present but no file on disk
+        obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [1 0.85 0.6];
     else
+        % File-backed dataset
         obj.view.handles.panels.activeDataset.handles.(prevBufferStringId).BackgroundColor = [0.7 1 0.7];
     end
 

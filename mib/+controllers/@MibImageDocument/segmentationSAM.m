@@ -384,7 +384,11 @@ try
 
                     % limit to the selected material of the model
                     if dataset.restrictSelectionToMaterial == 1
-                        imgOut = bitand(imgOut, obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelected);
+                        % Fetch fresh 2D mask for this slice to avoid stale
+                        % 3D initialImageSelected from a prior Shift+click series.
+                        selectedFixToMaterialSAM = dataset.getSelectedMaterialIndex();
+                        materialMaskSAM = uint8(cell2mat(obj.mibModel.getData2D('labels', z, dataset.orientation, selectedFixToMaterialSAM, getDataOpt)));
+                        imgOut = bitand(imgOut, materialMaskSAM);
                     end
 
                     switch BatchOpt.Mode{1}

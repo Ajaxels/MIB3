@@ -526,7 +526,15 @@ try
 
             % limit to the selected material of the model
             if dataset.restrictSelectionToMaterial == true
-                imgDataset = bitand(imgDataset, obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelected);
+                % Fetch the material mask with dimensions matching imgDataset
+                % (getDataOpt.z = [z1,z2] guarantees a size match).
+                % Using the cached initialImageSelected is unreliable: it may
+                % have been stored over a wider z-range from a previous
+                % Shift+click series, causing bitand to broadcast imgDataset
+                % to the wrong (stale) depth and break the subsequent setData3D.
+                selectedFixToMaterial = dataset.getSelectedMaterialIndex();
+                materialMask3D = uint8(cell2mat(obj.mibModel.getData3D('labels', t, dataset.orientation, selectedFixToMaterial, getDataOpt)));
+                imgDataset = bitand(imgDataset, materialMask3D);
             end
 
             selMaterialIndex = dataset.getSelectedMaterialIndex('AddTo');
@@ -623,7 +631,11 @@ try
 
                         % limit to the selected material of the model
                         if dataset.restrictSelectionToMaterial == 1
-                            imgOut = bitand(imgOut, obj.mibModel.sessionSettings.SAMsegmenter.initialImageSelected);
+                            % Fetch fresh 2D mask for this slice to avoid stale
+                            % 3D initialImageSelected from a prior Shift+click series.
+                            selectedFixToMaterial2D = dataset.getSelectedMaterialIndex();
+                            materialMask2D = uint8(cell2mat(obj.mibModel.getData2D('labels', z, NaN, selectedFixToMaterial2D, getDataOpt)));
+                            imgOut = bitand(imgOut, materialMask2D);
                         end
                         selMaterialIndex = dataset.getSelectedMaterialIndex('AddTo');
                         switch BatchOpt.Mode{1}

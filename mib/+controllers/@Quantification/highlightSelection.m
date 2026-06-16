@@ -37,8 +37,8 @@ if nargin < 4; sliceNumbers = []; end
 if nargin < 3 || isempty(mode); mode = obj.view.handles.selectionModePanel.SelectedObject.Text; end
 
 id = obj.mibModel.getActiveId();
-mode2Options.blockModeSwitch = 0;
-[img_height, img_width, ~, img_depth] = obj.mibModel.I{id}.getDatasetDimensions('image', [], mode2Options);
+getDataOptions.blockModeSwitch = 0;
+[img_height, img_width, img_depth] = obj.mibModel.I{id}.getDatasetDimensions('image', [], getDataOptions);
 shape2D = strcmp(obj.BatchOpt.DatasetType{1}, '2D, Slice') && strcmp(obj.view.handles.ObjectShape.SelectedObject.Tag, 'Shape2D');
 single2D = strcmp(obj.view.handles.ObjectShape.SelectedObject.Tag, 'Shape2D') && numel(object_list) == 1;
 
@@ -150,11 +150,10 @@ end
 fprintf('Quantification: selected %d objects\n', numel(object_list));
 
 if strcmp(mode, 'obj2model')
-    numberOfObjects = max(cell2mat(arrayfun(@(x) x, struct2cell(obj.mibModel.I{id}.labels.materialColors), 'UniformOutput', false)), [], 'all');
-    obj.mibModel.I{id}.labels.materialNames = strtrim(cellstr(num2str((1:numel(object_list)).')));
+    obj.mibModel.I{id}.labels.materialNames = strtrim(cellstr(num2str((1:numberOfObjects).')));
     noColors = size(obj.mibModel.I{id}.labels.materialColors, 1);
-    if noColors < numel(object_list)
-        obj.mibModel.I{id}.labels.materialColors(noColors+1:numel(object_list),:) = rand(numel(object_list)-noColors, 3);
+    if noColors < numberOfObjects
+        obj.mibModel.I{id}.labels.materialColors(noColors+1:numberOfObjects,:) = rand(numberOfObjects-noColors, 3);
     end
     notify(obj.mibModel, 'UpdateGuiWidgets');
 end

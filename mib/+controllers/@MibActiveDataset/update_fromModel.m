@@ -107,12 +107,19 @@ for datasetId = 1:Sets.datasetsInSet
     buttonHandle = obj.handles.(bufferId);
 
     globalIndex = datasetId + ((selectedSet-1) * Sets.datasetsInSet);
-    if strcmp(obj.mibModel.I{globalIndex}.image.filename, 'none.tif')  % no dataset loaded
+    img = obj.mibModel.I{globalIndex}.image;
+    if strcmp(img.filename, 'none.tif') && img.height == 512 && img.width == 512 && img.depth == 1 && img.time == 1
+        % Empty placeholder buffer — no data loaded
         buttonHandle.BackgroundColor = defaultBackgroundColor;
         buttonHandle.Tooltip = 'use RMB for a context menu with additional options';
+    elseif strcmp(img.filename, 'none.tif')
+        % In-memory dataset — data present but no file on disk (e.g. loaded from Examples)
+        buttonHandle.BackgroundColor = [1 0.85 0.6];
+        buttonHandle.Tooltip = sprintf('In-memory dataset (%dx%dx%d); use File -> Save to save', img.width, img.height, img.depth);
     else
+        % File-backed dataset
         buttonHandle.BackgroundColor = [0.6 1 0.6];
-        buttonHandle.Tooltip = obj.mibModel.I{globalIndex}.image.filename;
+        buttonHandle.Tooltip = img.filename;
     end
 
     % add DeveloperMode tag
