@@ -30,7 +30,12 @@ end
 status = false;
 
 if obj.mibModel.preferences.System.DeveloperMode
-    fprintf('MibController.dragNdrop_Callback: drag-and-drop file into MIB:\n%s\n', parameterIn{2});
+    if size(parameterIn{2},1) < 2
+        fprintf('MibController.dragNdrop_Callback: drag-and-drop file into MIB:\n%s\n', parameterIn{2});
+    else
+        fprintf('MibController.dragNdrop_Callback: drag-and-drop file into MIB:\n');
+        disp(cellstr(parameterIn{2}));
+    end
 end
 
 filenameList = cell(size(parameterIn{2},1), 1);

@@ -232,6 +232,7 @@ based routing + a confirmation dialog is the robust fallback.
 | File opens while still dragging, before mouse release | You wired `webwindow.FileDragDropCallback` directly instead of using the helper | Use `utils.attachFileDnD` |
 | Dropped text file replaces the whole app UI | DOM defaults not cancelled | Use `utils.attachFileDnD` |
 | Save-As dialog appears after a binary drop | Chromium's default for binaries | Use `utils.attachFileDnD` |
+| **MATLAB hard-crashes (ntdll.dll `STATUS_HEAP_CORRUPTION`) when dropping JPEG (or PNG/GIF) files** | CEF's native JPEG decoder runs even when JS `preventDefault()` is set — the decoder has a heap-corruption bug in some MATLAB/CEF versions when it runs concurrently with `imread` | Fixed in `utils.attachFileDnD`: `webwin.allowNavigation(false)` is called on drag-enter to block the CEF-level navigation before the decoder starts; `allowNavigation(true)` is restored after the drop callback returns |
 | Red no-parking 🚫 cursor while dragging | `dropEffect` not set (you modified the helper's JS and removed `dropEffect = 'copy'`) | Set it on **both** `ondragenter` and `ondragover` |
 | Drop does nothing, no error | JS can't find the bridge button | Button must be a child of a `uifigure` rendered in the **same** Chromium document as the webwindow. Open DevTools (`webwin.openDevTools()`) and run the `querySelectorAll` line by hand to confirm. |
 | Works in development, not deployed | `enableDragAndDropAll` called before webwindow is visible | Move the `attachFileDnD` call into a post-init hook, after `drawnow; pause(...)` |
@@ -271,40 +272,72 @@ This section is only relevant if you need to modify `attachFileDnD` itself.
    `e.dataTransfer.dropEffect = 'copy'` to mean "I accept the drop". Set on
    `ondragenter` **and** `ondragover`, otherwise the cursor shows 🚫.
 
+4. **CEF heap corruption on browser-renderable file types (JPEG, PNG, …).**
+   In some MATLAB/CEF versions, when a JPEG is dropped Chromium starts its
+   native image decoder at the C++ level *before* JS `preventDefault()` can
+   stop the navigation. If MATLAB's `imread` opens the same file
+   concurrently, the JPEG decoder corrupts the native heap — producing an
+   `ntdll.dll STATUS_HEAP_CORRUPTION` crash. `webwin.allowNavigation(false)`
+   (called from `FileDragDropCallback` / drag-enter) blocks the CEF-level
+   navigation before the decoder starts; `allowNavigation(true)` is restored
+   after the user callback returns.  A `cancelBridge` path (triggered by
+   `ondragleave` when the drag leaves without a drop) also restores
+   `allowNavigation(true)` so help links and other in-app navigations keep
+   working.
+
 ### Bridge pattern
 
 ```
-┌──────────┐ dragenter  ┌─────────────────────────┐
-│ Chromium │ ─────────▶ │ FileDragDropCallback    │
-│  (CEF)   │ filenames  │ → stash in btn.UserData │
-└──────────┘            └─────────────────────────┘
+┌──────────┐ dragenter  ┌──────────────────────────────────────────┐
+│ Chromium │ ─────────▶ │ FileDragDropCallback                     │
+│  (CEF)   │ filenames  │ → stash in btn.UserData                  │
+└──────────┘            │ → allowNavigation(false)  ← JPEG fix     │
+                        └──────────────────────────────────────────┘
 
    user releases mouse
    ▼
 ┌──────────┐ document.  ┌─────────────────────────┐
-│ Chromium │ ondrop ──▶ │ JS: click hidden button │
+│ Chromium │ ondrop ──▶ │ JS: click bridge button │
 │  (CEF)   │            │ by textContent lookup   │
 └──────────┘            └────────────┬────────────┘
                                      │
                                      ▼
-                        ┌─────────────────────────┐
-                        │ ButtonPushedFcn         │
-                        │ → user callback(params) │
-                        └─────────────────────────┘
+                        ┌─────────────────────────────────────────┐
+                        │ ButtonPushedFcn (fireBridge)            │
+                        │ → user callback(params)                 │
+                        │ → allowNavigation(true)   ← JPEG fix   │
+                        └─────────────────────────────────────────┘
+
+   OR: drag leaves window without drop
+   ▼
+┌──────────┐ document.     ┌───────────────────────────────────────┐
+│ Chromium │ ondragleave ▶ │ JS: click cancel button (debounced    │
+│  (CEF)   │               │ with setTimeout to skip intra-doc     │
+└──────────┘               │ element transitions)                  │
+                           └──────────────┬────────────────────────┘
+                                          │
+                                          ▼
+                           ┌─────────────────────────────────────────┐
+                           │ cancelButton ButtonPushedFcn            │
+                           │ → allowNavigation(true)   ← JPEG fix   │
+                           └─────────────────────────────────────────┘
 ```
 
 Components:
-- **Hidden `uibutton`** with a unique `Text` (`mibDnDBridge_<n>`); state lives
-  in its `UserData` as `struct('pendingFiles', {{}}, 'callback', fcn)`.
-- **`FileDragDropCallback`** on the webwindow — only writes into
-  `UserData.pendingFiles`, no opening.
+- **Hidden bridge `uibutton`** with unique `Text` (`mibDnDBridge_<n>`); state lives
+  in its `UserData` as `struct('pendingFiles', {{}}, 'callback', fcn, 'webwin', ww)`.
+- **Hidden cancel `uibutton`** with unique `Text` (`mibDnDBridgeCancel_<n>`); kept
+  alive by `parentFigure`. Clicked by `ondragleave` when drag leaves the window.
+- **`FileDragDropCallback`** on the webwindow — writes into `UserData.pendingFiles`
+  and calls `allowNavigation(false)`.
 - **`DownloadCallback`** on the webwindow — calls `stopDownload()` as a
   belt-and-braces against any download prompt that slips through.
-- **Three DOM handlers** injected via `executeJS`: `ondragenter` and
-  `ondragover` call `preventDefault` and set `dropEffect = 'copy'`; `ondrop`
-  calls `preventDefault` and then locates the bridge button by walking
-  `document.querySelectorAll('button, [role="button"]')` and matching
-  `textContent` against the unique id, then `.click()`s it.
+- **Four DOM handlers** injected via `executeJS`: `ondragenter` (increments
+  `_mibDragCount`, `preventDefault`, `dropEffect = 'copy'`); `ondragover`
+  (`preventDefault`, `dropEffect = 'copy'`); `ondrop` (resets `_mibDragCount` to 0,
+  `preventDefault`, clicks bridge button); `ondragleave` (decrements
+  `_mibDragCount`, defers zero-check via `setTimeout(0)`, clicks cancel button
+  when count reaches 0).
 
 ### Why the button's `UserData`, not a class property?
 
