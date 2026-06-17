@@ -43,7 +43,6 @@ Format sub-packages
 
    AmiraMesh
    BioFormats
-   Fiji
    HDF5
    imaris
    IMOD

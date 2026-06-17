@@ -12585,6 +12585,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_delete",
+      "label": "delete",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibbigdatalabels_mibbigdatalabels_openstore",
       "label": "openStore",
       "file_type": "code",
@@ -12640,6 +12651,94 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_enqueuepropagation",
+      "label": "enqueuePropagation",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_flushpropagation",
+      "label": "flushPropagation",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_orientphysranges",
+      "label": "orientPhysRanges",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_regionforlevel",
+      "label": "regionForLevel",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_propagateregion",
+      "label": "propagateRegion",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_schedulepropagationflush",
+      "label": "schedulePropagationFlush",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_onpropagationtimer",
+      "label": "onPropagationTimer",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_stoppropagationtimer",
+      "label": "stopPropagationTimer",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibbigdatalabels_mibbigdatalabels_writemultiscales",
       "label": "writeMultiscales",
       "file_type": "code",
@@ -12653,6 +12752,61 @@
     {
       "id": "core_mibbigdatalabels_mibbigdatalabels_resizeblocknearest",
       "label": "resizeBlockNearest",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_resizeblocksmooth",
+      "label": "resizeBlockSmooth",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_resizelayersmooth",
+      "label": "resizeLayerSmooth",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_smoothdistfield",
+      "label": "smoothDistField",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_signeddistupsample",
+      "label": "signedDistUpsample",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabels_mibbigdatalabels_smoothlabelupsampleyx",
+      "label": "smoothLabelUpsampleYX",
       "file_type": "code",
       "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
       "source_location": null,
@@ -18591,6 +18745,17 @@
       "contributor": null
     },
     {
+      "id": "io_savers_hdf5saver_savestream",
+      "label": "saveStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\HDF5Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_hdf5saver_buildcommonhdfoptions",
       "label": "buildCommonHDFOptions",
       "file_type": "code",
@@ -18646,6 +18811,39 @@
       "contributor": null
     },
     {
+      "id": "io_savers_inmemorysliceprovider_m",
+      "label": "InMemorySliceProvider.m",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\InMemorySliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_inmemorysliceprovider_inmemorysliceprovider",
+      "label": "InMemorySliceProvider",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\InMemorySliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_inmemorysliceprovider_getslice",
+      "label": "getSlice",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\InMemorySliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_jpgsaver_m",
       "label": "JpgSaver.m",
       "file_type": "code",
@@ -18681,6 +18879,17 @@
     {
       "id": "io_savers_jpgsaver_save",
       "label": "save",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\JpgSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_jpgsaver_savestream",
+      "label": "saveStream",
       "file_type": "code",
       "source_file": "+io\\+savers\\JpgSaver.m",
       "source_location": null,
@@ -18734,6 +18943,17 @@
       "contributor": null
     },
     {
+      "id": "io_savers_matlabsaver_savestream",
+      "label": "saveStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\MatlabSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_matlabsaver_savemask",
       "label": "saveMask",
       "file_type": "code",
@@ -18747,6 +18967,17 @@
     {
       "id": "io_savers_matlabsaver_savemodel3d",
       "label": "saveModel3D",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\MatlabSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_matlabsaver_savemodel3dstream",
+      "label": "saveModel3DStream",
       "file_type": "code",
       "source_file": "+io\\+savers\\MatlabSaver.m",
       "source_location": null,
@@ -18837,6 +19068,50 @@
       "label": "getModelType",
       "file_type": "code",
       "source_file": "+io\\+savers\\MatlabSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_mibimagesliceprovider_m",
+      "label": "MibImageSliceProvider.m",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_mibimagesliceprovider_mibimagesliceprovider",
+      "label": "MibImageSliceProvider",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_mibimagesliceprovider_getslice",
+      "label": "getSlice",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_mibimagesliceprovider_readraw",
+      "label": "readRaw",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -19020,6 +19295,17 @@
       "contributor": null
     },
     {
+      "id": "io_savers_pngsaver_savestream",
+      "label": "saveStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\PngSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_stlsaver_m",
       "label": "StlSaver.m",
       "file_type": "code",
@@ -19108,6 +19394,28 @@
       "contributor": null
     },
     {
+      "id": "io_savers_tiffsaver_savestream",
+      "label": "saveStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\TiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_tiffsaver_writetiffstackstream",
+      "label": "writeTiffStackStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\TiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_tiffsaver_writetiffstack",
       "label": "writeTiffStack",
       "file_type": "code",
@@ -19130,8 +19438,52 @@
       "contributor": null
     },
     {
+      "id": "io_savers_zarr3saver_zarr3saver",
+      "label": "Zarr3Saver",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_getsupportedformats",
+      "label": "getSupportedFormats",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_zarr3saver_save",
       "label": "save",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_savestream",
+      "label": "saveStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_resolveexportoptions",
+      "label": "resolveExportOptions",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -19165,6 +19517,17 @@
     {
       "id": "io_savers_zarr3saver_optionsdialog",
       "label": "optionsDialog",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_computeshard",
+      "label": "computeShard",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -19396,6 +19759,28 @@
     {
       "id": "io_zarr_config_setpythonpath",
       "label": "setPythonPath",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_config_smoothing",
+      "label": "smoothing",
+      "file_type": "code",
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_zarr_config_setsmoothing",
+      "label": "setSmoothing",
       "file_type": "code",
       "source_file": "+io\\+zarr\\Config.m",
       "source_location": null,
@@ -34528,6 +34913,16 @@
     },
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_delete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_openstore",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34578,6 +34973,86 @@
     },
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_enqueuepropagation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_flushpropagation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_orientphysranges",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_regionforlevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_propagateregion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_schedulepropagationflush",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_onpropagationtimer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_stoppropagationtimer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_writemultiscales",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34589,6 +35064,56 @@
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_resizeblocknearest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_resizeblocksmooth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_resizelayersmooth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_smoothdistfield",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_signeddistupsample",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_smoothlabelupsampleyx",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -39598,6 +40123,16 @@
     },
     {
       "source": "io_savers_hdf5saver_m",
+      "target": "io_savers_hdf5saver_savestream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\HDF5Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_hdf5saver_m",
       "target": "io_savers_hdf5saver_buildcommonhdfoptions",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39637,6 +40172,26 @@
       "weight": 1.0
     },
     {
+      "source": "io_savers_inmemorysliceprovider_m",
+      "target": "io_savers_inmemorysliceprovider_inmemorysliceprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\InMemorySliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_inmemorysliceprovider_m",
+      "target": "io_savers_inmemorysliceprovider_getslice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\InMemorySliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_savers_jpgsaver_m",
       "target": "io_savers_jpgsaver_jpgsaver",
       "relation": "contains",
@@ -39659,6 +40214,16 @@
     {
       "source": "io_savers_jpgsaver_m",
       "target": "io_savers_jpgsaver_save",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\JpgSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_jpgsaver_m",
+      "target": "io_savers_jpgsaver_savestream",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -39698,6 +40263,16 @@
     },
     {
       "source": "io_savers_matlabsaver_m",
+      "target": "io_savers_matlabsaver_savestream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\MatlabSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_matlabsaver_m",
       "target": "io_savers_matlabsaver_savemask",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39709,6 +40284,16 @@
     {
       "source": "io_savers_matlabsaver_m",
       "target": "io_savers_matlabsaver_savemodel3d",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\MatlabSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_matlabsaver_m",
+      "target": "io_savers_matlabsaver_savemodel3dstream",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -39793,6 +40378,36 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+io\\+savers\\MatlabSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_mibimagesliceprovider_m",
+      "target": "io_savers_mibimagesliceprovider_mibimagesliceprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_mibimagesliceprovider_m",
+      "target": "io_savers_mibimagesliceprovider_getslice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_mibimagesliceprovider_m",
+      "target": "io_savers_mibimagesliceprovider_readraw",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\MibImageSliceProvider.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -39917,6 +40532,16 @@
       "weight": 1.0
     },
     {
+      "source": "io_savers_pngsaver_m",
+      "target": "io_savers_pngsaver_savestream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\PngSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_savers_stlsaver_m",
       "target": "io_savers_stlsaver_stlsaver",
       "relation": "contains",
@@ -39978,6 +40603,26 @@
     },
     {
       "source": "io_savers_tiffsaver_m",
+      "target": "io_savers_tiffsaver_savestream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\TiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_tiffsaver_m",
+      "target": "io_savers_tiffsaver_writetiffstackstream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\TiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_tiffsaver_m",
       "target": "io_savers_tiffsaver_writetiffstack",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39988,7 +40633,47 @@
     },
     {
       "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_zarr3saver",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_getsupportedformats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
       "target": "io_savers_zarr3saver_save",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_savestream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_resolveexportoptions",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -40019,6 +40704,16 @@
     {
       "source": "io_savers_zarr3saver_m",
       "target": "io_savers_zarr3saver_optionsdialog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_computeshard",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -40209,6 +40904,26 @@
     {
       "source": "io_zarr_config_m",
       "target": "io_zarr_config_setpythonpath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_config_m",
+      "target": "io_zarr_config_smoothing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+zarr\\Config.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_zarr_config_m",
+      "target": "io_zarr_config_setsmoothing",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -50158,6 +50873,26 @@
     },
     {
       "source": "core_mibbigdatalabels_getdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_flushpropagation",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\getData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_getdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_orientphysranges",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\getData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_getdata63_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_readpackedlevel",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -50198,6 +50933,16 @@
     },
     {
       "source": "core_mibbigdatalabels_setdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_orientphysranges",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_setdata63_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_readpackedlevel",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -50209,6 +50954,26 @@
     {
       "source": "core_mibbigdatalabels_setdata63_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_writepackedlevel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_setdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_enqueuepropagation",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_setdata63_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_propagateregion",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -50948,6 +51713,16 @@
     },
     {
       "source": "core_mibimage_save_m",
+      "target": "io_savers_mibimagesliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibImage\\save.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibimage_save_m",
       "target": "core_mibimage_getdata_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -50993,6 +51768,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+core\\@MibLabels63\\MibLabels63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_miblabels63_save_m",
+      "target": "io_savers_mibimagesliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibLabels63\\save.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -53553,6 +54338,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "+io\\+savers\\JpgSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_jpgsaver_m",
+      "target": "io_savers_inmemorysliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+io\\+savers\\JpgSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_pngsaver_m",
+      "target": "io_savers_inmemorysliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+io\\+savers\\PngSaver.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -57967,6 +58772,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibimagedocument_gui_windowbuttonupdraganddropfcn_m",
+      "target": "utils_warnlargefullresread_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\gui_WindowButtonUpDragAndDropFcn.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_gui_windowbuttonupfcn_m",
       "target": "utils_dlgs_showmilestonedialog_m",
       "relation": "calls",
@@ -58057,6 +58872,26 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibimagedocument_segmentationdraganddrop_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationDragAndDrop.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_segmentationlasso_m",
+      "target": "utils_warnlargefullresread_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationLasso.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_segmentationlassomanual_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -58107,6 +58942,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibimagedocument_segmentationmagicwand_m",
+      "target": "utils_warnlargefullresread_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationMagicWand.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_segmentationobjectpicker_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -58129,6 +58974,16 @@
     {
       "source": "controllers_mibimagedocument_segmentationregiongrowing_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationRegionGrowing.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_segmentationregiongrowing_m",
+      "target": "utils_warnlargefullresread_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -60767,6 +61622,16 @@
       "weight": 1.0
     },
     {
+      "source": "io_savers_hdf5saver_m",
+      "target": "io_savers_basesaver_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\HDF5Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_savers_imodcontoursaver_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -60793,6 +61658,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+io\\+savers\\JpgSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_matlabsaver_m",
+      "target": "io_savers_basesaver_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\MatlabSaver.m",
       "source_location": null,
       "weight": 1.0
     },

@@ -1,9 +1,10 @@
 Fiji
 ======
 
-Imaris connection and data-exchange utilities.
+Fiji/ImageJ connection and data-exchange utilities.
 
-.. currentmodule:: io.Fiji
+.. note::
 
-.. automodule:: io.Fiji
-   :members:
+   The Fiji integration controller is located in
+   ``+controllers/@MibFijiConnect``.  RST documentation for that class
+   has not been added yet.

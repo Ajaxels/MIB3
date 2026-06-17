@@ -2,64 +2,44 @@
 """
 Complete graphify pipeline for MIB3.
 Runs all steps in the correct order:
-  1. detect_graph.py     — scan mib/ folder
-  2. build_ast.py        — extract AST from code
-  3. matlab_edges.py     — inject MATLAB-specific edges
-  4. cluster_graph.py    — cluster into communities
-  5. gen_html.py         — generate HTML visualization
-
-Run from repository root:
-    python development/graphify/run_all.py
+  1. detect_graph.py
+  2. build_ast.py
+  3. matlab_edges.py
+  4. cluster_graph.py
+  5. gen_html.py
 """
 
-import os
-import sys
+import sys, os
 from pathlib import Path
 import subprocess
 
-# Ensure Unicode glyphs (✓, 📊, …) can be printed on a default Windows console,
-# which uses a legacy code page (cp1252) that cannot encode them and would
-# otherwise raise UnicodeEncodeError. reconfigure() exists on Python 3.7+;
-# errors='replace' keeps output flowing even if a glyph is unsupported.
-for _stream in (sys.stdout, sys.stderr):
-    try:
-        _stream.reconfigure(encoding='utf-8', errors='replace')
-    except (AttributeError, ValueError):
-        pass  # non-reconfigurable stream (e.g. redirected/non-TTY) — best effort
+# Force UTF-8 output so checkmarks don't crash on Windows cp1252 terminals
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
 
-# Find Python executable used to run this script
 PYTHON = sys.executable
 ROOT = Path(__file__).parent.parent.parent  # C:\Matlab\MIB3
 
 def run_step(script_name, description):
-    """Run a single step and report results."""
     script_path = ROOT / 'development' / 'graphify' / script_name
-    print(f'\n{"="*60}')
-    print(f'{description}')
-    print(f'{"="*60}')
+    print(f'\n=== {description} ===')
     print(f'Running: {script_path}')
-    # Force UTF-8 stdio in the child so its own Unicode output can't crash on
-    # a legacy Windows code page either.
-    child_env = dict(os.environ, PYTHONIOENCODING='utf-8')
-    result = subprocess.run([PYTHON, str(script_path)], cwd=str(ROOT), env=child_env)
+    result = subprocess.run([PYTHON, str(script_path)], cwd=str(ROOT))
     if result.returncode != 0:
-        print(f'\n❌ ERROR: {script_name} failed with exit code {result.returncode}')
+        print(f'ERROR: {script_name} failed with exit code {result.returncode}')
         sys.exit(1)
-    print(f'✓ {description} complete')
+    print(f'OK: {description} complete')
 
 
 def main():
-    print('\n' + '='*60)
     print('MIB3 Graphify Pipeline')
-    print('='*60)
     print(f'Python: {PYTHON}')
     print(f'Root: {ROOT}')
 
     steps = [
-        ('detect_graph.py', 'Step 1: Detect files in mib/'),
-        ('build_ast.py', 'Step 2: Extract AST from code files'),
+        ('detect_graph.py', 'Step 1: Detect files'),
+        ('build_ast.py', 'Step 2: Extract AST from code'),
         ('matlab_edges.py', 'Step 3: Inject MATLAB-specific edges'),
-        ('cluster_graph.py', 'Step 4: Cluster graph and generate report'),
+        ('cluster_graph.py', 'Step 4: Cluster graph'),
         ('gen_html.py', 'Step 5: Generate HTML visualization'),
     ]
 
@@ -67,22 +47,13 @@ def main():
         run_step(script, desc)
 
     print('\n' + '='*60)
-    print('✓ Graphify update complete!')
+    print('Graphify update complete!')
     print('='*60)
-    print(f'\nOutputs in: {ROOT}/graphify-out/')
-    print('  📊 graph.html         — open in browser')
-    print('  📋 GRAPH_REPORT.md    — architecture insights')
-    print('  📦 graph.json         — raw graph data')
-    print('\nNext: open graph.html or read GRAPH_REPORT.md')
-    print()
+    print(f'Outputs: {ROOT}/graphify-out/')
+    print('  - graph.html (open in browser)')
+    print('  - GRAPH_REPORT.md (architecture insights)')
+    print('  - graph.json (raw data)')
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('\n\n⚠️  Interrupted by user')
-        sys.exit(130)
-    except Exception as e:
-        print(f'\n❌ Fatal error: {e}')
-        sys.exit(1)
+    main()
