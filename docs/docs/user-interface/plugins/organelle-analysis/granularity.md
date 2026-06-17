@@ -80,7 +80,7 @@ Follow these steps to analyze granularity:
 
 - Click <span class="widget widget-button">Calculate</span> to
     compute granularity metrics.
-- Results are displayed in the [Image View](../../panels/selection_imview/imview.md) panel.
+- Results are displayed in the [Image Document](../../image-document/index.md) panel.
 
 <div class="clear-float"></div>
 

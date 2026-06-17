@@ -31,12 +31,13 @@ Use the brush to make selections, with size regulated by the <span class="widget
 
 - **Radius**: define brush radius in pixels.
 - **Eraser, x**: define eraser size multiplier.
-- ![Interpolation Settings](images/PanelsSegmentationToolsBrushInterpolation.png){.on-glb align=left width="200"}
+- ![Interpolation Settings](images/PanelsSegmentationToolsBrushInterpolation.png){.on-glb align=left width="320"}
   **Interpolation settings**: modify settings via dialog (also adjustable in<br>
   [Ribbon → Home -> Preferences -> Segmentation tools](../../ribbon/home/home-preferences.md)<br> 
   or in [toolbar](../../quick-access-bar/index.md)).
 
 <div class="clear-float"></div>
+- <span class="widget widget-checkbox">No clusters</span>: the standard mode, selection of pixels under the brush cursor. 
 - <span class="widget widget-checkbox">Watershed</span>: cluster pixels with the watershed algorithm for selection as clusters.
 - <span class="widget widget-checkbox">SLIC</span>: cluster pixels with the SLIC algorithm for selection as clusters.
 
@@ -68,10 +69,7 @@ Use the brush to make selections, with size regulated by the <span class="widget
 
     SLIC boundaries use _drawregionboundaries.m_ by [Peter Kovesi](http://www.peterkovesi.com/projects/segmentation/).  
     !!! note
-        * **Note 1**: Sensitive to <span class="widget widget-checkbox">Adapt.</span> in the 
-        [Selection panel](../selection/index.md), selecting superpixels based on mean ± standard deviation × <span class="widget widget-edit">Adapt.</span> factor.  
-        * **Note 2**: Adjust <span class="widget widget-edit">Adapt.</span>  with the mouse wheel while drawing.  
-        * **Note 3**: Requires compiling [slicmex.c](https://mib.helsinki.fi/downloads_systemreq.html#superpixels) for your OS.
+        * **Note**: Requires compiling [slicmex.c](https://mib.helsinki.fi/downloads_systemreq.html#superpixels) for your OS.
 
     !!! abstract "References"  
     - Achanta et al., *SLIC Superpixels Compared to State-of-the-art Superpixel Methods*, IEEE TPAMI, 2012.  

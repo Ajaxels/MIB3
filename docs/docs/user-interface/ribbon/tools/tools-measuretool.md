@@ -135,7 +135,7 @@ Displays measurement results.<br> Filter types with
 the <span class="widget widget-dropdown">Filter</span> combo box. 
 <br>Intensity profiles for selected measurements appear in a plot below the table. 
 <br>With <label class="widget widget-checkbox">Jump on selection</label> checked, 
-the [Image View panel](../../panels/selection_imview/imview.md) centers on the selected measurement.
+the [Image View panel](../../image-document/index.md) centers on the selected measurement.
 
 <div class="clear-float"></div>
 
@@ -144,7 +144,7 @@ the [Image View panel](../../panels/selection_imview/imview.md) centers on the s
 <div class="h3-like">Right-click a selected item for a context menu:</div>
 
 - **Modify info...**: edits the annotation text label stored with the measurement.
-- **Jump to measurement**: centers the selected measurement in the [Image View panel](../../panels/selection_imview/imview.md).
+- **Jump to measurement**: centers the selected measurement in the [Image View panel](../../image-document/index.md).
 - **Modify measurement...**: enters edit mode to reposition vertices and adjust the shape.
 - **Recalculate selected...**: recomputes distances and intensity profiles for the selected measurement (useful after pixel size or color channel changes).
 - **Duplicate measurement**: duplicates the selected measurement.

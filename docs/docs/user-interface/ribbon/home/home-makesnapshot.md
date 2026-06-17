@@ -30,7 +30,7 @@ Define the destination for the rendered snapshot:
 ![Make a Snapshot Dialog, Crop](images/menuFileSnapshot-crop.png){align=left}
 
 - **Full image**: make snapshot of the whole image.
-- **Shown area**: make snapshot of the displayed area in the [Image View panel](../../panels/selection_imview/imview.md) only.
+- **Shown area**: make snapshot of the displayed area in the [Image Document](../../image-document/index.md) only.
 - **ROI**: use selected ROI (the ROI may be defined using [the ROI panel](../../panels/roi/index.md)) as area for the snapshot.
 
 ---

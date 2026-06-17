@@ -4,7 +4,7 @@ Microscopy Image Browser (MIB) organizes datasets in a layered structure, storin
 
 ## General Organization
 
-For visualization, MIB combines all layers to produce the image shown in the [Image View Panel](panels/selection_imview/imview.md). 
+For visualization, MIB combines all layers to produce the image shown in the [Image Document](image-document/index.md). 
 You can toggle each layer on or off, adjust transparency, and change colors (see the [View Settings Panel](panels/selection_imview/viewsettings.md) docs).
 
 ![Schematic of data layers combined into the final image](images/dataLayersToFinalImage.jpg)

@@ -117,7 +117,7 @@ Access the plugin via: `Ribbon → Plugins → Intensity Analysis → TripleArea
 
 Click <span class="widget widget-button">Continue</span> to calculate intensities.
 
-Results appear in the [Image View](../../panels/selection_imview/imview.md) panel (e.g., Background: 142.3671, Nucleus: 340.2101, Cytosol: 99.7331, with background subtracted).
+Results appear in the [Image Document](../../image-document/index.md) panel (e.g., Background: 142.3671, Nucleus: 340.2101, Cytosol: 99.7331, with background subtracted).
 
 Annotations are stored in `Ribbon → Model → Annotations`.
 !!! note "Show connections"

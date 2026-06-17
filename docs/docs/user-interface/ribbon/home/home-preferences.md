@@ -65,7 +65,7 @@ Fine-tune how the mouse and rendering work:
     selecting any of these options swaps the mouse button so that <mouse class="right"></mouse> takes the other role.
 
 <span class="widget widget-dropdown">Image resize method</span>: a dropdown to choose how images are 
-interpolated for visualization in the [Image View Panel](../../panels/selection_imview/imview.md):
+interpolated for visualization in the [Image Document](../../image-document/index.md):
 
 - `auto`: uses `nearest` for >100% zoom, `bicubic` for <100% (default).
 - `nearest`: fastest, lower quality.
@@ -81,7 +81,7 @@ interpolated for visualization in the [Image View Panel](../../panels/selection_
 <span class="widget widget-edit">Number of recent dirs</span>: a numeric field to set how many recently accessed 
 directories MIB remembers.
 ??? info "Where to find recently used directories"
-    the previously accessed directories available via a dedicated dropdown in the [Path](../../panels/path/index.md#list-of-recently-used-directories) panel.
+    The previously accessed directories are available via a dedicated dropdown in the [Status Bar](../../statusbar/index.md#working-directory) working directory group.
 
 <span class="widget widget-dropdown">3D rendering engine</span>: a dropdown to select the engine for 3D visualization:
 
@@ -215,9 +215,9 @@ or by <mouse class="left"></mouse> the colored cells.<br>
 scaled between 0 and 255.
 
 ??? tip "Update material colors directly from the Segmentation table"
-    The colors can be changed via a context ment of the [Segmentation table -> Color scheme...](../../panels/segm/index.md#segmentation-table)
+    The colors can be changed via a context menu of the [Segmentation table -> Recolor...](../../panels/segm/index.md#-squeeze-recolor-buttons) <img src="../../panels/segm/images/PanelsSegmentation_recolor_button.png">
        
-    ![Colors and Styles Preferences](images/file-preferences-colors-table-panel.png){.on-glb align=left}
+    ![Colors and Styles Preferences](../../panels/segm/images/PanelsSegmentation_recolor_context.png){.on-glb align=left}
  
 ### Colors for LUT and image layers
 

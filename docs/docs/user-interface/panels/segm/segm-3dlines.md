@@ -15,6 +15,8 @@ The **3D lines** tool allows drawing lines in 3D space, arranging them as graphs
 
 Modify nodes with mouse clicks, extended by key modifiers (<span class="widget widget-button">Shift</span>, <span class="widget widget-button">Ctrl</span>, <span class="widget widget-button">Alt</span>) for various actions (see below).
 
+Press <span class="widget widget-button">Table view</span> to open a dialog with properties of the 3D lines (see below)
+
 <div class="clear-float"></div>
 
 ???+ info "Available actions"
@@ -27,14 +29,22 @@ Modify nodes with mouse clicks, extended by key modifiers (<span class="widget w
     - <span class="widget widget-dropdown">New tree</span> add a node to a new, unconnected tree.
     - <span class="widget widget-dropdown">Split tree</span> split a tree by deleting the closest node.
 
-    Use <span class="widget widget-checkbox">Show lines</span> to toggle visibility of edges in the [Image View panel](../imview/index.md).  
+    Use <span class="widget widget-checkbox">Show lines</span> to toggle visibility of edges in the [Image View panel](../../image-document/index.md).  
     Press <span class="widget widget-button">Table view</span> to open a window with tables describing the 3D lines (see below).
+
+## Presets
+Use the following key shortcuts to define and restore presets
+
+- ++shift+1++, ++shift+2++, ++shift+3++ - store preset 1, 2, or 3 correspondingly
+- ++1++, ++2++, ++3++ - restore preset 1, 2, or 3 correspondingly
+
+---
 
 ##Lines 3D View
 
 ### List of trees table
 
-![Lines 3D View](images/PanelsSegmentationTools3DLinesDlg.png){.on-glb align=left}
+![Lines 3D View](images/PanelsSegmentationTools3DLinesDlg.png){.on-glb align=left width="320"}
 
 **Table with the list of trees**  
 The upper table in the **Lines 3D View** window lists trees and their node counts. Each tree must have a unique name.
@@ -55,7 +65,7 @@ The upper table in the **Lines 3D View** window lists trees and their node count
 - **Active node** index of the active node.
 - <span class="widget widget-dropdown">Table</span> select *Nodes* or *Edges* for the lower table.
 - <span class="widget widget-dropdown">Field</span> add an extra field (*Radius* or *Weights* by default) to the lower table.
-- <span class="widget widget-checkbox">Auto jump</span> jump to the selected node and show it in the [Image View panel](../imview/index.md).
+- <span class="widget widget-checkbox">Auto jump</span> jump to the selected node and show it in the [Image View panel](../../image-document/index.md).
 - <span class="widget widget-checkbox">Auto refresh</span> automatically refresh tables (may be slow with many nodes).
 
 ### Nodes table
@@ -64,7 +74,7 @@ The upper table in the **Lines 3D View** window lists trees and their node count
 
 Lists nodes with actions via a popup menu:  
 
-- <span class="widget widget-dropdown">Jump to the node</span> center the selected node in the [Image View panel](../imview/index.md).
+- <span class="widget widget-dropdown">Jump to the node</span> center the selected node in the [Image View panel](../../image-document/index.md).
 - <span class="widget widget-dropdown">Set as active node</span> make the selected node active.
 - <span class="widget widget-dropdown">Rename selected nodes</span> assign a new name.
 - <span class="widget widget-dropdown">Show coordinates in pixels</span> show node coordinates in pixels 
@@ -80,7 +90,7 @@ Lists nodes with actions via a popup menu:
 
 Lists edges with actions via a popup menu:
 
-- <span class="widget widget-dropdown">Jump to the node ▼</span>: center the selected node in the [Image View panel](../imview/index.md).
+- <span class="widget widget-dropdown">Jump to the node ▼</span>: center the selected node in the [Image View panel](../../image-document/index.md).
 - <span class="widget widget-dropdown">Set as active node ▼</span>: make the selected node active.
 
 
@@ -95,17 +105,10 @@ Lists edges with actions via a popup menu:
     - **MATLAB format, *.lines3d**: recommended format.
     - **Amira Spatial graph, *.am**: Amira-compatible (binary or ASCII).
     - **Excel format, *.xls**: export Nodes and Edges tables.
-- <span class="widget widget-button">Refresh</span>: refresh the tables.
-- <span class="widget widget-button">Delete all</span>: delete all 3D lines.
 - <span class="widget widget-button">Visualize in 3D</span>: plot all trees in 3D.
-- <span class="widget widget-button">Settings</span>: modify color and thickness of 3D lines.
-
----
-## Presets
-Use the following key shortcuts to define and restore presets
-
-- ++shift+1++, ++shift+2++, ++shift+3++ - store preset 1, 2, or 3 correspondingly
-- ++1++, ++2++, ++3++ - restore preset 1, 2, or 3 correspondingly
+- <span class="widget widget-button">Delete all</span>: delete all 3D lines.
+- ![Image title](images/PanelsSegmentation_settings_button.png){.off-glb }: modify color and thickness of 3D lines.
+- <span class="widget widget-button">Refresh</span>: refresh the tables.
 
 ---
 

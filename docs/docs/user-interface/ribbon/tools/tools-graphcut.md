@@ -50,12 +50,12 @@ The *Mode panel* lets you select the segmentation scope.
 
 ![Mode panel options](images/menuToolsGraphcut_Mode.png){align=left}
 
-- <span class="widget widget-radio">2D, current slice only</span> — segments only the current slice in the [Image View panel](../../panels/selection_imview/imview.md)
+- <span class="widget widget-radio">2D, current slice only</span> — segments only the current slice in the [Image View panel](../../image-document/index.md)
 - <span class="widget widget-radio">2D, slice-by-slice</span> — applies 2D segmentation to each slice individually
 - <span class="widget widget-radio">3D, volume</span> — performs 3D segmentation on the entire dataset or a subarea (see *Subarea panel* below)
 - <span class="widget widget-radio">3D, volume, grid</span> — segments a large dataset by dividing it
   into subvolumes (defined by *Chop* fields); the subvolume centred in
-  the [Image View panel](../../panels/selection_imview/imview.md) is processed
+  the [Image View panel](../../image-document/index.md) is processed
   (enable the centre marker via
   ![](../../quick-access-bar/images/toolbar-centralmarker.png) on the Quick Access Bar).  
   Use <span class="widget widget-button">Segment All</span> to process all subvolumes.
@@ -74,7 +74,7 @@ The *Subarea panel* defines a dataset subset for processing, useful for large da
 - <span class="widget widget-edit">Y</span> sets the height range
 - <span class="widget widget-edit">Z</span> sets the z-slice range
 - <span class="widget widget-button">from Selection</span> fills *X*, *Y*, and *Z* with coordinates from the *Selection* layer's bounding box
-- <span class="widget widget-button">Current View</span> limits *X* and *Y* to the visible area in the [Image View panel](../../panels/selection_imview/imview.md)
+- <span class="widget widget-button">Current View</span> limits *X* and *Y* to the visible area in the [Image View panel](../../image-document/index.md)
 - <span class="widget widget-button">Reset</span> restores full dataset dimensions
 - <span class="widget widget-edit">Bin, xtimes:</span> binning factor `XY; Z` to reduce resolution for faster processing (e.g., `2; 1` halves XY)
 

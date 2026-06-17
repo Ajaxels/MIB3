@@ -53,7 +53,7 @@ Displays the active working directory. You can also type or paste a path directl
 
 ## Pixel info
 
-Displays the pixel coordinates and intensity values under the mouse cursor as it moves over the [Image View panel](../panels/selection_imview/imview.md):
+Displays the pixel coordinates and intensity values under the mouse cursor as it moves over the [Image Document](../image-document/index.md):
 
 ```
 Pixel: X:Y (R:G:B) / [material index]

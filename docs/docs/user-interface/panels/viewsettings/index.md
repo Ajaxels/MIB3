@@ -102,7 +102,7 @@ The contrast panel can be used to quickly adjust image contrast settings:
 contrast stretching by defining black and white points for the dataset.
 <div class="clear-float"></div>
 - <label class="widget widget-checkbox">On fly</label>: automatically adjusts contrast for each displayed image without altering the underlying data. 
-The contrast stretching coefficients are taken from the portion of the image that is currently visible in the [Image View panel](../imview/index.md)].
+The contrast stretching coefficients are taken from the portion of the image that is currently visible in the [Image Document](../../image-document/index.md).
 - <span class="widget widget-button">Auto</span>: adjusts brightness across the entire dataset, prompting for saturation parameters (low/high intensity borders).
 This recalculates image intensities to boost contrast. 
 
@@ -134,7 +134,7 @@ Adjust layer transparency from opaque (left) to transparent (right):
 
 ![View settings panel -> context menu](images/PanelsViewSettings-context.png){align=left}
 
-Right-click an empty area to open a dropdown menu for hiding/showing panels, expanding the [Image View Panel](../../panels/imview/index.md) space.
+Right-click an empty area to open a dropdown menu for hiding/showing panels, expanding the [Image Document](../../image-document/index.md) space.
 
 
 <div class="clear-float"></div>

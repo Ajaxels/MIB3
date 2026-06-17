@@ -52,7 +52,7 @@ The **Adjust Display window** lets you fine-tune the contrast of your dataset fo
 ## Histogram 
 
 The histogram plots intensity values (X-axis) against pixel counts 
-(Y-axis) for the image shown in the [Image View Panel](../imview/index.md) — not the full slice. 
+(Y-axis) for the image shown in the [Image Document](../../image-document/index.md) — not the full slice. 
 !!! warning
     Adjustments to **Gamma** are not reflected here.
 

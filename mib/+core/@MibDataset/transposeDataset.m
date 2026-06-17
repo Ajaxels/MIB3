@@ -191,6 +191,13 @@ if strcmp(mode, 'Transpose Z<->T')
     end
 
     obj.dim_yxzct = obj.image.dim_yxzct;
+
+    % After Z↔T swap the view indices must follow: old T-frame → new Z-slice, old Z-slice → new T-frame
+    oldZslice = obj.slices{3}(1);
+    oldTframe = obj.slices{5}(1);
+    obj.slices{3} = repmat(min(oldTframe, obj.image.depth), 1, 2);
+    obj.slices{5} = repmat(min(oldZslice, obj.image.time),  1, 2);
+
     if showWaitbar; waitbar.Value = 1; waitbar.Message = sprintf('Finishing...'); end
     obj.image.updateActionLog('Transpose: mode=Z->T');
     if showWaitbar; delete(waitbar); end

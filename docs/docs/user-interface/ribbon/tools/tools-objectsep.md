@@ -21,7 +21,7 @@ The *Mode panel* controls the segmentation scope.
 
 ![Mode panel for watershed segmentation](images/menuToolsWatershed_Mode.png){align=left}
 
-- <span class="widget widget-radio">2D, current slice only</span> — applies watershed only to the currently displayed slice in the [Image View panel](../../panels/selection_imview/imview.md)
+- <span class="widget widget-radio">2D, current slice only</span> — applies watershed only to the currently displayed slice in the [Image View panel](../../image-document/index.md)
 - <span class="widget widget-radio">2D, slice-by-slice</span> — applies 2D watershed to each slice individually
 - <span class="widget widget-radio">3D, volume</span> — performs 3D watershed across the entire dataset or a selected subvolume (see *Subarea panel* below)
 - <span class="widget widget-edit">Aspect ratio</span> — voxel aspect ratio used for 3D distance-transform watershed, expressed as three space-separated values (e.g., `1.00 1.00 3.50`). Computed automatically from the pixel sizes in [Dataset → Parameters](../dataset/index.md#voxels).
@@ -40,7 +40,7 @@ The *Subarea panel* limits processing to a portion of the dataset.
 - <span class="widget widget-edit">Y</span> — pixel height range
 - <span class="widget widget-edit">Z</span> — slice range
 - <span class="widget widget-button">from Selection</span> — fills *X*, *Y*, and *Z* from the bounding box of the *Selection* layer
-- <span class="widget widget-button">Current View</span> — limits *X* and *Y* to the visible area in the [Image View panel](../../panels/selection_imview/imview.md)
+- <span class="widget widget-button">Current View</span> — limits *X* and *Y* to the visible area in the [Image View panel](../../image-document/index.md)
 - <span class="widget widget-edit">Bin, xtimes:</span> — binning factor `XY; Z` to downsample before processing (e.g., `2; 1` halves XY resolution)
 - <span class="widget widget-button">Reset</span> — restores all fields to the full dataset dimensions
 

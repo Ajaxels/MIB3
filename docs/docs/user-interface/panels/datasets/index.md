@@ -1,8 +1,12 @@
 # Datasets Panel
 
+![Datasets panel](images/datasets_overview.png){align=left}
+
 The **Datasets panel** manages all open datasets in MIB.
 It provides numbered buffer buttons to switch between datasets, a sets dropdown to organise buffers into named groups,
 and a dataset-type selector that controls how each dataset is stored in memory.
+
+<div class="clear-float"></div>
 
 ---
 
@@ -10,13 +14,94 @@ and a dataset-type selector that controls how each dataset is stored in memory.
 
 The panel contains three areas from top to bottom:
 
-1. **Sets** — named groups of buffers, with controls to add and manage them.
-2. **Buffers 1–10** — individual dataset slots within the active set.
+1. **Buffers 1–10** — individual dataset slots within the active set.
+2. **Sets** — named groups of buffers, with controls to add and manage them.
 3. **Dataset type** — memory/access mode for the dataset in the active buffer.
 
 ---
 
+## Buffer buttons
+
+![Buffers](images/datasets_buffers.png){align=left}
+
+Ten numbered buttons (**1** through **10**) represent the dataset containers (buffers) within the active set.
+
+<div class="clear-float"></div>
+
+* <mouse class="left"></mouse> to make it the active buffer — its dataset is shown in the Image Document.
+* <mouse class="right"></mouse> to open a context menu with additional options (see below)
+* Hover over any button to see the filename of the dataset loaded in that buffer
+
+Button color indicates the state of each buffer:
+
+| Color        | Meaning                                                   |
+|--------------|-----------------------------------------------------------|
+| Bright green | Active buffer — currently displayed in the Image Document |
+| Light green  | Buffer contains a loaded dataset                          |
+| Light orange | Buffer contains a loaded but not saved dataset            |
+| Default      | Buffer is empty                                           |
+
+### Buffer context menu
+
+![Buffers](images/datasets_buffers_context.png){align=right}
+
+<mouse class="right"></mouse> any buffer button for per-buffer operations:
+
+<div class="clear-float"></div>
+
+| Menu item | Action |
+|-----------|--------|
+| **Duplicate** | Copy this dataset to another buffer (prompts for destination set and buffer) |
+| **Sync XY** | Copy view position and zoom from another buffer |
+| **Sync XYZ** | Copy view position, zoom, and current Z-slice from another buffer |
+| **Sync XYZT** | Copy view position, zoom, Z-slice, and time frame from another buffer |
+| **Link view with… \[Unlinked\]** | Link this buffer's view to another buffer — scrolling one updates the other |
+| **\[Linked: A ↔ B\] press to unlink** | Unlink the currently linked pair |
+| **Close** | Close the dataset in this buffer (resets it to an empty placeholder) |
+| **Close Set** | Close all datasets in the entire current set |
+
+#### Duplicate
+
+![Buffer duplicate](images/datasets_buffers_duplicate.png){align=right width="300" .on-glb}
+
+Copies the full dataset (image, labels, mask, selection, annotations) to a destination buffer.
+A dialog lets you choose the destination set and buffer number.
+
+!!! warning
+    Duplicating to a non-empty buffer overwrites the existing dataset after a confirmation prompt.
+
+<div class="clear-float"></div>
+
+#### Sync views
+
+All three sync modes align the view of one buffer to match another:
+
+| Mode | Dimensions synced |
+|------|------------------|
+| **Sync XY** | Pan position + zoom |
+| **Sync XYZ** | Pan + zoom + Z slice |
+| **Sync XYZT** | Pan + zoom + Z slice + time frame |
+
+!!! warning 
+    Both datasets must be in the same orientation (XY, ZX, or ZY) for sync to work.
+
+#### Link views
+
+When two buffers are linked, navigating in one (slice, zoom, pan) automatically mirrors the same
+view state in the other. Useful for comparing two registered datasets side by side.
+
+Toggle buffers with <span class="widget widget-button">Ctrl</span> + <span class="widget widget-button">E</span>.  
+  [:fontawesome-brands-youtube:{.red-color} Demonstration](https://youtu.be/DvSBBSuEiDo)
+
+!!! warning
+    Both buffers must be in the same orientation before linking.
+    Linked-view state is shown in the button tooltip and in the context menu label.
+
+---
+
 ## Sets
+
+![Sets context](images/datasets_sets_context.png){align=left}
 
 A **set** is a named group of 10 buffers, each capable of holding one dataset.
 Multiple sets allow you to organise unrelated groups of datasets independently.
@@ -46,75 +131,19 @@ Shortcut to add a new set, equivalent to *Sets context menu → Add set*.
 
 ---
 
-## Buffer buttons
-
-Ten numbered buttons (**1** through **10**) represent the dataset containers (buffers) within the active set.
-Button color indicates the state of each buffer:
-
-| Color | Meaning |
-|-------|---------|
-| Bright green | Active buffer — currently displayed in the Image Document |
-| Light green | Buffer contains a loaded dataset |
-| Default | Buffer is empty |
-
-Hover over any button to see the filename of the dataset loaded in that buffer.
-
-**Click** a button to make it the active buffer — its dataset is shown in the Image Document.
-
-### Buffer context menu
-
-<mouse class="right"></mouse> any buffer button for per-buffer operations:
-
-| Menu item | Action |
-|-----------|--------|
-| **Duplicate** | Copy this dataset to another buffer (prompts for destination set and buffer) |
-| **Sync XY** | Copy view position and zoom from another buffer |
-| **Sync XYZ** | Copy view position, zoom, and current Z-slice from another buffer |
-| **Sync XYZT** | Copy view position, zoom, Z-slice, and time frame from another buffer |
-| **Link view with… \[Unlinked\]** | Link this buffer's view to another buffer — scrolling one updates the other |
-| **\[Linked: A ↔ B\] press to unlink** | Unlink the currently linked pair |
-| **Close** | Close the dataset in this buffer (resets it to an empty placeholder) |
-| **Close Set** | Close all datasets in the entire current set |
-
-#### Duplicate
-
-Copies the full dataset (image, labels, mask, selection, annotations) to a destination buffer.
-A dialog lets you choose the destination set and buffer number.
-
-!!! warning
-    Duplicating to a non-empty buffer overwrites the existing dataset after a confirmation prompt.
-
-#### Sync views
-
-All three sync modes align the view of one buffer to match another:
-
-| Mode | Dimensions synced |
-|------|------------------|
-| **Sync XY** | Pan position + zoom |
-| **Sync XYZ** | Pan + zoom + Z slice |
-| **Sync XYZT** | Pan + zoom + Z slice + time frame |
-
-Both datasets must be in the same orientation (XY, ZX, or ZY) for sync to work.
-
-#### Link views
-
-When two buffers are linked, navigating in one (slice, zoom, pan) automatically mirrors the same
-view state in the other. Useful for comparing two registered datasets side by side.
-
-!!! info
-    Both buffers must be in the same orientation before linking.
-    Linked-view state is shown in the button tooltip and in the context menu label.
-
----
-
 ## Dataset types
+
+![Dataset types](images/datasets_type.png){align=left}
 
 <span class="widget widget-dropdown">Standard</span>
 Sets the memory/access mode for the dataset in the active buffer.
 
 When a real dataset is open, switching the type shows a confirmation first (the current dataset is closed
-or converted); switching the type of an empty/placeholder buffer happens silently. Choosing **BigData**
-while a dataset is open offers **Convert current** (write the open image to an OME-Zarr v3 pyramid on disk
+or converted); switching the type of an empty/placeholder buffer happens silently. 
+
+<div class="clear-float"></div>
+
+Choosing **BigData** while a dataset is open offers **Convert current** (write the open image to an OME-Zarr v3 pyramid on disk
 and reopen it in BigData mode) or **New** (start an empty BigData placeholder).
 
 | Type | In memory? | Editable model? | Typical use |
@@ -173,14 +202,15 @@ larger than memory and survives across sessions.
 - Export any pyramid level to standard formats, streamed slice-by-slice for the memory-optimized formats
   (see [Save Image As](../../ribbon/home/index.md#save-image-as) and
   [Save model as...](../../ribbon/model/index.md#save-model-as)).
-- Selectable Zarr backend (native `zarrMex` or `zarr-python`).
+- Selectable Zarr backend (native `zarrMex` or `zarr-python`); define in [Preferences->Input / Output](../../ribbon/home/home-preferences.md#input-output)
 
 <div class="h4-like">Limitations</div>
 
 - Reads **OME-Zarr v3 only**. Other formats (TIFF, HDF5, BioFormats/WSI, …) must first be **converted** —
-  switch the type dropdown to *BigData → Convert current*, or use *Ribbon → Home → Export → Export to Zarr3*.
+  switch the type dropdown to *BigData → Convert current*, or use *Ribbon → Home → Export → Export to Zarr3*, or use
+  [Image converter plugin](../../plugins/file-processing/image-converter.md)
 - **Browse-only until a model exists** — create a model (Segmentation panel → *Create*, or *Ribbon → Model →
-  New model*) or load one to enable segmentation.
+  New model*, or load one to enable segmentation.
 - Up to **63 materials** (packed model), and **a single time point** (time-series is not yet supported).
 - The **source image is read-only** — you edit the model, not the image pixels. To change image pixels,
   convert the (cropped) region to Standard.

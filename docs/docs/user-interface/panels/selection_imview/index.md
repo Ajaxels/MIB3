@@ -22,7 +22,7 @@ The panel is divided into two functional areas:
     |------|------|
     | Selection (top half) | Selection Panel |
     | View Settings (bottom half) | View Settings Panel |
-    | *(image display context menu)* | [Image View Panel](imview.md) |
+    | *(image display context menu)* | [Image Document](../../image-document/index.md) |
 
 ---
 

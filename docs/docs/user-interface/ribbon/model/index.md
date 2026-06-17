@@ -94,7 +94,7 @@ Loads a model from disk. By default, MIB reads models in MATLAB format (`.model`
 Alternatively, use the <span class="widget widget-button">Load</span> button in the [Segmentation Panel](../../panels/segm/index.md).
 
 !!! note
-    Models can also be opened by drag-and-dropping model files into the [Image view document](../../panels/imview/index.md).
+    Models can also be opened by drag-and-dropping model files into the [Image Document](../../image-document/index.md).
 
 ---
 

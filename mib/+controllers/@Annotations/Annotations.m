@@ -1066,11 +1066,13 @@ classdef Annotations < handle
                     end
 
                 case 'Interpolate'
-                    if isempty(obj.indices) || size(obj.indices,1) == 1; return; end
+                    if isempty(obj.indices); return; end
+                    uniqueRows = unique(obj.indices(:,1));
+                    if numel(uniqueRows) < 2; return; end
                     [labelNames, labelValues, labelPosition, labelIndices] = ...
-                        obj.mibModel.I{id}.annotations.getLabelsById(obj.indices(:,1));
+                        obj.mibModel.I{id}.annotations.getLabelsById(uniqueRows);
 
-                    if numel(unique(labelPosition(:,1))) ~= size(obj.indices,1)
+                    if numel(unique(labelPosition(:,1))) ~= numel(uniqueRows)
                         dlgOpt.MsgBoxOnly  = true;
                         dlgOpt.HeaderLines = 1;
                         utils.dlgs.inputUniversalDlg(obj.view.gui, ...
@@ -1079,7 +1081,7 @@ classdef Annotations < handle
                         return;
                     end
 
-                    nPts = size(obj.indices, 1);
+                    nPts = numel(uniqueRows);
                     interpolationMethod = {'linear'};
                     if nPts > 2; interpolationMethod{end+1} = 'cubic'; end
                     if nPts > 3; interpolationMethod{end+1} = 'spline'; end

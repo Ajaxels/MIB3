@@ -29,15 +29,15 @@ These shortcuts assume default settings:
 
 ## Combination of mouse and keys
 
-- :material-cursor-default:{.orange-color} **move cursor**: Displays intensity and coordinates in the [Path Panel](panels/path/index.md#pixel-info-field).
+- :material-cursor-default:{.orange-color} **move cursor**: Displays intensity and coordinates in the [Status Bar](statusbar/index.md#pixel-info).
 - :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**: changes slices or zooms (depening on settings in [Preferences](ribbon/home/home-preferences.md)).
 - ++shift++ + :material-mouse-scroll-wheel:{.orange-color}:  **mouse wheel**: jumps 10 slices up/down (adjustable via <mouse class="right"></mouse> on the 
-slice slider in the [Image View Panel](panels/selection_imview/imview.md#extra-parameters-for-the-slice-slider)).
+slice slider in the [Image View Panel](image-document/index.md#slider-step-size)).
 - ++alt++ + :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**:
      - scrolls time points for 5D datasets (if set in [Preferences -> User Interface -> Hold Alt with Scroll Wheel: Scroll time points](ribbon/home/home-preferences.md#user-interface)).
      - returns to the original slice (if set to *Return to the slice* in [Preferences](ribbon/home/home-preferences.md#user-interface)).
 - ++alt++ + ++shift++ + :material-mouse-scroll-wheel:{.orange-color}:  **mouse wheel**: jumps 10 time points (adjustable via <mouse class="right"></mouse> on the slice 
-  slider in the [Image View Panel](panels/selection_imview/imview.md#extra-parameters-for-the-slice-slider)).
+  slider in the [Image View Panel](image-document/index.md#slider-step-size)).
 - <mouse class="left"></mouse>: selects pixels based on the method in the [Segmentation Panel](panels/segm/index.md).
 - Hold <mouse class="right"></mouse> to pan the image left/right and up/down.
 !!! info "Alternative syntax" 

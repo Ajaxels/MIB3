@@ -151,15 +151,11 @@ nav = [
           "user-interface/panels/selection_imview/viewsettings.md",
           { "Image adjustment" = "user-interface/panels/selection_imview/viewsettings-adjustments.md" },
         ]},
-        { "Image view (MIB2)" = "user-interface/panels/selection_imview/imview.md" },
       ]},
       { "ROIs" = ["user-interface/panels/roi/index.md"] },
       { "Fiji connect" = ["user-interface/panels/fijiconnect/index.md"] },
-      { "Status Bar" = ["user-interface/statusbar/index.md"] },
-      { "Path" = ["user-interface/panels/path/index.md"] },
-      { "Image filters" = ["user-interface/panels/imfilters/index.md"] },
-      { "Mask generators" = ["user-interface/panels/maskgen/index.md"] },
     ]},
+    { "Status Bar" = ["user-interface/statusbar/index.md"] },
     { "Plugins" = [
       "user-interface/plugins/index.md",
       { "File processing" = [

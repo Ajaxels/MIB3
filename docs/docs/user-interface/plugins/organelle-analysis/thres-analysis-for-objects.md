@@ -158,7 +158,7 @@ Follow these steps to analyze objects:
 **Run Analysis**:
 
 - Click <span class="widget widget-button">Start</span> to segment objects and compute metrics.
-- Results appear in MIB’s [Image View](../../panels/selection_imview/imview.md) panel or exported files.
+- Results appear in MIB’s [Image Document](../../image-document/index.md) panel or exported files.
    
 **Review Results**:
 ??? info "Snapshot with results"

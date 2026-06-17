@@ -1,10 +1,10 @@
-# Statistics for Mask or Model Objects
+# Quantification for Mask or Model Objects
 
 ---
 
 ## Overview
 
-This dialog provides access to statistic values for shapes and intensities of model and mask 2D or 3D objects.
+This dialog provides access to quantify properties for shapes and intensities of model and mask 2D or 3D objects.
 
 ---
 

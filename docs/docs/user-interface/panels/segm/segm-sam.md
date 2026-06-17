@@ -116,7 +116,7 @@ Best for 3D segmentation:
 - ++ctrl++ + <mouse class="left"></mouse>: constrain the object from the clicked area (negative seed).
 - Scroll to another slice, use ++shift++ + <mouse class="left"></mouse> to segment between slices.  
 !!! warning
-    - **Note**: Only the image area visible in the [Image View](../imview/index.md) panel is processed. 
+    - **Note**: Only the image area visible in the [Image Document](../../image-document/index.md) panel is processed. 
 
 
 ### Landmarks

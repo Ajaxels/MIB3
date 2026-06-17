@@ -30,7 +30,7 @@ Right-click (<mouse class="right"></mouse>) on sliders opens a popup menu to set
 <div class="clear-float"></div>
 
 The <span class="widget widget-checkbox">Adaptive</span> checkbox enables adaptive thresholding with 
-<span class="widget widget-edit">Sensitivity</span> and <span class="widget widget-edit">Width</span> parameters adjusted by scroll bars.
+<span class="widget widget-edit">Low</span> (**Sensitivity**) and <span class="widget widget-edit">High</span> (**Width**) parameters adjusted by scroll bars.
 
 !!! tips "Usage notes"  
     For large 3D/4D datasets: 

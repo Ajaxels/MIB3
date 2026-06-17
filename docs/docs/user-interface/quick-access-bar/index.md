@@ -25,13 +25,13 @@ Set undo history length in [Ribbon → Home → Preferences → Backup and Undo]
 
 ## Zoom controls
 
-These buttons adjust the magnification of the image in the [Image View panel](../panels/selection_imview/imview.md).
+These buttons adjust the magnification of the image in the [Image View panel](../image-document/index.md).
 
 | Button                                                              | Action |
 |---------------------------------------------------------------------|--------|
 | ![Zoom in](images/toolbar_zoomin.png){.inline-image} **Zoom in**    | Increases magnification by 1.5×. |
 | ![1:1](images/toolbar_zoom100.png){.inline-image} **1:1**           | Sets magnification to 100%. |
-| ![Fit](images/toolbar_zoomfit.png){.inline-image} **Fit**           | Fits the image to the [Image View panel](../panels/selection_imview/imview.md). |
+| ![Fit](images/toolbar_zoomfit.png){.inline-image} **Fit**           | Fits the image to the [Image View panel](../image-document/index.md). |
 | ![Zoom out](images/toolbar_zoomout.png){.inline-image} **Zoom out** | Decreases magnification by 1.5×. |
 
 !!! tip "Keyboard shortcuts are faster"
@@ -44,7 +44,7 @@ These buttons adjust the magnification of the image in the [Image View panel](..
 
 ![Fast pan](images/toolbar_fastpan.png){align=left}
 
-Toggles **Fast pan** mode for panning the image in the [Image View panel](../panels/selection_imview/imview.md) with <mouse class="right"></mouse>.
+Toggles **Fast pan** mode for panning the image in the [Image View panel](../image-document/index.md) with <mouse class="right"></mouse>.
 
 <div class="clear-float"></div>
 
