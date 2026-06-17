@@ -99,6 +99,8 @@ else
     addpath(fullfile(func_dir, 'external', 'Supervoxels'));
     addpath(fullfile(func_dir, 'external', 'Zarr3Matlab'));
     addpath(fullfile(func_dir, 'legacy'));    
+    addpath(fullfile(func_dir, 'assets'));    
+    addpath(fullfile(func_dir, 'assets', 'icons'));
 end
 
 if false
