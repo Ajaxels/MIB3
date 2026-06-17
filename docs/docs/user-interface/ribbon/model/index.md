@@ -143,15 +143,16 @@ Save or export the model to files and external programs.
 
 ### Export
 
-![Export model from MIB](images/menuModelExportModel.png){align=left}
+![Export model from MIB](images/menuModelExportModel.png){.on-glb align=left width="350"}
 
 Exports the model to an external destination. The **Export** dropdown contains:
 
-<div class="clear-float"></div>
+<div class="clear-float"></div> 
 
 - **Export model to MATLAB**: Exports to the main MATLAB workspace as a structure (see [Import model from MATLAB](#import-model-from-matlab) for structure fields). Can be re-imported using *Import model from MATLAB*.
 - **Export model to another MIB dataset**: Copies the model into another currently open MIB dataset.
 - **Export model to Imaris as volume**: Exports to Imaris if available. See [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#imaris) for details.
+- **Export model to Zarr3**: Export the model as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) — material names and colours are preserved, labels are downsampled with nearest-neighbour interpolation; reopenable in MIB as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr–compatible tools
 
 ---
 

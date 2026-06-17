@@ -69,7 +69,7 @@ end
 % everything else goes through loadImages
 modelOnlyExts  = {'.model', '.mibcat'};
 ambiguousExts  = {'.am', '.h5', '.hdf5', '.mat', '.mrc', '.rec', '.st', ...
-                  '.nrrd', '.tif', '.tiff', '.xml'};
+                  '.nrrd', '.tif', '.png', '.tiff', '.xml'};
 
 loadAsModel = false;
 if any(strcmp(extLower, modelOnlyExts))

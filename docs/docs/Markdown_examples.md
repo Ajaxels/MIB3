@@ -15,6 +15,8 @@ some useful markdown style examples
 * right mouse click `<mouse class="right"></mouse>` -> <mouse class="right"></mouse>
 * `---` -> horizontal line across the page
 * [URL links](https://mib.helsinki.fi/): `[linktext](https://link)`
+* Icon with a tooltip :material-information-outline:{.red-color title="Important information" }<br>
+`:material-information-outline:{.red-color title="Important information" }`
 * <div class="h3-like">Demo</div> `<div class="h3-like">Demonstration</div>` 
 * <div class="h4-like">Section</div> `<div class="h4-like">Section</div>` 
 ---

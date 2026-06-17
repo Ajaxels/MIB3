@@ -64,8 +64,13 @@ if isempty(img)
         return;
     end
 
-    getDataOptions.roiId = -1;
-    getDataOptions.id = obj.BatchOpt.id;
+    id = obj.BatchOpt.id;
+    if obj.mibModel.I{id}.roiShow
+        getDataOptions.roiId = 0;   % restrict to all shown ROIs
+    else
+        getDataOptions.roiId = -1;  % no ROI restriction
+    end
+    getDataOptions.id = id;
 
     if strcmp(BatchOptOut.FilterGroup{1}, 'Image Binarization')
         backupLayer = BatchOptOut.DestinationLayer{1};

@@ -44,8 +44,6 @@ switch menuEntry.Tag
     case {'sliceNumberSliderContextSetStep', 'frameNumberSliderContextSetStep'}
         prompt = {'Enter step for use with arrows or Q/W buttons:', 'Enter step for use with Shift+arrows or Shift+Q/W buttons:'};
         defAns = {obj.(sliderStep), obj.(sliderShiftStep)};
-        mibInputMultiDlgOpt.PromptLines = [1, 1];
-        mibInputMultiDlgOpt.WindowHeight = 120;
         mibInputMultiDlgOpt.ParentFigure = obj.view.gui;
         mibInputMultiDlgOpt.mibPath  = obj.mibModel.mibPath;
         answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompt, defAns, 'Set step...', mibInputMultiDlgOpt);

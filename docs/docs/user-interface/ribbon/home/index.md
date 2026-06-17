@@ -238,10 +238,13 @@ Save the open dataset to disk in various formats:
 
 ### Export Image To
 
+![Export Image To](images/menuFileExport.png){.on-glb align=left width="350"}
+
 Export the current dataset to external applications:
 
 - **MATLAB**: Export includes a `dictionary` with dataset parameters for re-import into MIB [:fontawesome-brands-youtube:{.red-color} Demo](https://youtu.be/zUJ1RUuTLVs)
 - **Imaris**: Export to Imaris (requires Imaris installation) :material-information-outline:{.red-color title="Converted from MIB2, but not tested" }
+- **Zarr3**: Export the dataset as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) — readable by MIB as a [BigData](../../panels/datasets/index.md) dataset and by external OME-Zarr–compatible tools
 
 ### Make Snapshot
 

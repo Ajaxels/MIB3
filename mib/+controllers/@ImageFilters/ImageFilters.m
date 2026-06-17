@@ -641,8 +641,26 @@ classdef ImageFilters < handle
                 return;
             end
 
+            imgPreFilter = img;  % keep original block for ROI-masked preview
             img = obj.Filter(img);
             if isempty(img); return; end
+
+            % Restrict preview to the ROI area when ROI is shown
+            if dataset.roiShow
+                roiMask = logical(dataset.hROI.returnMask(0, size(imgPreFilter,1), size(imgPreFilter,2), dataset.orientation, 1));
+                isImageSource = strcmp(obj.BatchOpt.SourceLayer{1}, 'image') && ...
+                                ~strcmp(obj.BatchOpt.FilterGroup{1}, 'Image Binarization');
+                if isImageSource
+                    % show filtered result inside ROI, original outside
+                    mask3d = repmat(roiMask, [1, 1, size(img, 3)]);
+                    imgMasked = imgPreFilter;
+                    imgMasked(mask3d) = img(mask3d);
+                    img = imgMasked;
+                else
+                    % zero out filtered result outside ROI
+                    img(~roiMask) = 0;
+                end
+            end
 
             if strcmp(obj.BatchOpt.FilterGroup{1}, 'Image Binarization')
                 SourceLayer = 'selection';
