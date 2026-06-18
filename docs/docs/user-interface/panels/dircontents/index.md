@@ -68,7 +68,7 @@ selected datasets
 - **Combine as color channels**: combine selected datasets into a single 2D slice, each assigned to 
 a color channel.
 - **Add as a new color channel**: add images as a new color channel to the existing dataset. 
-Select channels in the [View Settings panel](../viewsettings/index.md).
+Select channels in the [View Settings panel](../selection_imview/viewsettings.md).
 - **Add each N-th dataset as a new color channel**: add images with an N-step as a new color channel to the existing dataset.
 - **Rename selected file**: rename the selected file.
 - **Delete selected files**: permanently delete selected files from the disk.

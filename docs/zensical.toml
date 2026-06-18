@@ -147,10 +147,8 @@ nav = [
       { "Selection and View settings" = [
         "user-interface/panels/selection_imview/index.md",
         { "Selection" = "user-interface/panels/selection_imview/selection.md" },
-        { "View settings" = [
-          "user-interface/panels/selection_imview/viewsettings.md",
-          { "Image adjustment" = "user-interface/panels/selection_imview/viewsettings-adjustments.md" },
-        ]},
+        { "View settings" = "user-interface/panels/selection_imview/viewsettings.md" },
+        { "Image adjustment" = "user-interface/panels/selection_imview/viewsettings-adjustments.md" },
       ]},
       { "ROIs" = ["user-interface/panels/roi/index.md"] },
       { "Fiji connect" = ["user-interface/panels/fijiconnect/index.md"] },

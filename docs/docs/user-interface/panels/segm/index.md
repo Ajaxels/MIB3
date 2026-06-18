@@ -50,9 +50,8 @@ If you need to work with materials exceeding 255, see this video:
 
 - [:fontawesome-brands-youtube:{.red-color} MIB 2.1: Compatible with models with more than 255 materials](https://youtu.be/r3lpmWyvrJU)
 
-For more information about different types of models their pros and cons, visit 
+For more information about different types of models visit 
 
-* [Panels → Datasets → Dataset type](../datasets/index.md#dataset-types)
 * [Ribbon → Model → Convert type](../../ribbon/model/index.md#convert-type)
 
 <div class="clear-float"></div>

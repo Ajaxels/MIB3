@@ -19,7 +19,7 @@ Adds a circular spot with a mouse click.
 - <span class="widget widget-edit">Radius, px</span>: specify the spot radius.
 - <span class="widget widget-edit">Eraser, x</span>: set the eraser size multiplier.
 
-Works in 3D (enable <span class="widget widget-checkbox">3D</span> in the [Selection panel](../selection/index.md))
+Works in 3D (enable <span class="widget widget-checkbox">3D</span> in the [Selection and View settings panel](../selection_imview/index.md))
 
 !!! info "Selection modifiers"  
     - **None** or <span class="widget widget-button">Shift</span> + <mouse class="left"></mouse>: add a new spot to existing ones.

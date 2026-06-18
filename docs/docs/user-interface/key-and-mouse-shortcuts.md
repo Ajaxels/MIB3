@@ -33,7 +33,7 @@ These shortcuts assume default settings:
 - :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**: changes slices or zooms (depening on settings in [Preferences](ribbon/home/home-preferences.md)).
 - ++shift++ + :material-mouse-scroll-wheel:{.orange-color}:  **mouse wheel**: jumps 10 slices up/down (adjustable via <mouse class="right"></mouse> on the 
 slice slider in the [Image View Panel](image-document/index.md#slider-step-size)).
-- ++alt++ + :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**:
+- ++alt++ + :material-mouse-scroll-wheel:{.orange-color} **mouse wheel**: :material-information-outline:{.red-color title="May not work due to limitation of AppContainers framework" }
      - scrolls time points for 5D datasets (if set in [Preferences -> User Interface -> Hold Alt with Scroll Wheel: Scroll time points](ribbon/home/home-preferences.md#user-interface)).
      - returns to the original slice (if set to *Return to the slice* in [Preferences](ribbon/home/home-preferences.md#user-interface)).
 - ++alt++ + ++shift++ + :material-mouse-scroll-wheel:{.orange-color}:  **mouse wheel**: jumps 10 time points (adjustable via <mouse class="right"></mouse> on the slice 
@@ -52,17 +52,8 @@ adjust brush/selection tool size.
 
 ## Interaction with ROIs
 
-![Edit ROI context menu](images/shortcuts-roi-dropdown.png){align=left }
-
 To edit ROIs (e.g., size or position), use <mouse class="right"></mouse> on the ROI name in the [ROI Panel](panels/roi/index.md) list, 
-then select **Edit**. 
-
-<div class="h4-like">In Edit mode:</div>
-
-- hold and drug <mouse class="left"></mouse> to move the ROI
-- <mouse class="right"></mouse> on a vertex to delete it
-- ++s++ + <mouse class="left"></mouse> on an edge to add a vertex
-- double :material-cursor-default-click:{.orange-color} <mouse class="left"></mouse> to accept changes
+then press <span class="widget widget-button">Modify</span>. 
 
 <div class="clear-float"></div>
 ---

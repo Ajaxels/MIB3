@@ -667,7 +667,7 @@ mouse {
   vertical-align: middle;
 }
 
-mouse.left::before, mouse.right::before {
+mouse.left::before, mouse.double::before, mouse.right::before {
   content: '';
   display: inline-block;
   width: 1.1em;
@@ -686,6 +686,11 @@ mouse.left::before {
   mask-image: var(--mouse-left-svg);
 }
 
+mouse.double::before {
+  -webkit-mask-image: var(--mouse-left-svg);
+  mask-image: var(--mouse-left-svg);
+}
+
 mouse.right::before {
   -webkit-mask-image: var(--mouse-right-svg);
   mask-image: var(--mouse-right-svg);
@@ -693,6 +698,12 @@ mouse.right::before {
 
 mouse.left::after {
   content: "LMB";
+  font-family: monospace;
+  font-size: 1em;
+}
+
+mouse.double::after {
+  content: "LMBx2";
   font-family: monospace;
   font-size: 1em;
 }

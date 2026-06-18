@@ -15,7 +15,7 @@ Learn more about these layers in [Data Layers of MIB](../../image-layers.md).
 
 ---
 
-## The <span class="widget widget-button">A</span> button
+## The <span class="widget widget-button">(A)dd</span> button
 
 Adds the Selection layer to the chosen Model or Mask layer, as selected in the 
 `Add to` column in the [Segmentation table](../segm/index.md#segmentation-table) of the Segmentation Panel.
@@ -31,7 +31,7 @@ Adds the Selection layer to the chosen Model or Mask layer, as selected in the
 
 ---
 
-## The <span class="widget widget-button">S</span> button
+## The <span class="widget widget-button">(S)ubtract</span> button
 
 Subtracts the Selection layer from the chosen Model or Mask layer,
 as selected in the `Add to` column in the [Segmentation table](../segm/index.md#segmentation-table) of the Segmentation Panel.
@@ -57,7 +57,7 @@ as selected in the `Add to` column in the [Segmentation table](../segm/index.md#
 
 ---
 
-## The <span class="widget widget-button">R</span> button
+## The <span class="widget widget-button">(R)eplace</span> button
 
 Replaces the material or mask
 selected in the `Add to` column in the [Segmentation table](../segm/index.md#segmentation-table) of the Segmentation Panel.
@@ -76,7 +76,7 @@ checkbox in the [Segmentation panel](../segm/index.md).
 
 ---
 
-## The <span class="widget widget-button">C</span> button
+## The <span class="widget widget-button">(C)lear</span> button
 
 Clears the Selection layer.
 
@@ -91,10 +91,10 @@ Clears the Selection layer.
 
 ---
 
-## The <span class="widget widget-button">F</span> button
+## The <span class="widget widget-button">(F)ill</span> button
 
 Fills holes in the Selection layer.<br> 
-This can happen automatically if <span class="widget widget-checkbox">Auto fill</span> is checked.
+This can happen automatically if <span class="widget widget-checkbox">Auto fill selection</span> is checked.
 
 ![Fill Operation](images/SelectionPanelOperationsFill.png){align=left}
 
@@ -158,14 +158,11 @@ by the <span class="widget widget-edit">Adapt.</span> edit box (mean ± standard
 
 ## Additional controls
 
-- **Color channel combo box**: selects the color channel used for segmentation tools in 
+- <span class="widget widget-dropdown">Color channel</span>: selects the color channel used for segmentation tools in 
 the [Segmentation Panel](../segm/index.md).
-- <span class="widget widget-checkbox">3D</span>: enables 3D manipulations for image and Mask/Model layers.
-- <span class="widget widget-checkbox">Auto fill</span>: automatically fills shapes drawn with 
+- <span class="widget widget-checkbox">Auto fill selection</span>: automatically fills shapes drawn with 
 the brush tool (and eraser) after releasing the left mouse button.
-- <span class="widget widget-checkbox">Adapt</span>: enables adaptive dilation or supervoxel 
-selection with the [Brush tool](../segm/segm-brush.md), limiting expansion 
-based on mean ± standard deviation × <span class="widget widget-edit">Adapt.</span> coefficient.
+- <span class="widget widget-checkbox">Apply in 3D</span>: enables 3D manipulations for image and Mask/Model layers.
 - <span class="widget widget-checkbox">Difference</span>: shows the difference between original and 
 eroded/dilated Selection layers.
 - <span class="widget widget-edit">Strel</span> edit box: sets the structural element size for 
@@ -174,13 +171,16 @@ numbers (e.g., `3;5` for 3x5 pixels in 2D, or 3x3x5 in 3D).
 
 ---
 
-## Right mouse click menu
+## Tool preset buttons
 
-![Dropdown Menu](images/PanelsSelection-rmb-dropdown.png){align=left}
+Three preset buttons (<span class="widget widget-button">1</span>, <span class="widget widget-button">2</span>, <span class="widget widget-button">3</span>) let you store and recall settings for the currently active segmentation tool.
 
-Right-clicking an empty area opens a dropdown to hide/show panels, increasing the Image View Panel's space.
+- <mouse class="left"></mouse> on a preset button - restores the stored preset for the active tool.
+- ++shift++ + <mouse class="left"></mouse> on a preset button - stores the current tool settings into that slot.
 
-<div class="clear-float"></div>
+???+ info "Keyboard shortcuts"
+    - ++1++, ++2++, ++3++: restore preset 1, 2, or 3.
+    - ++shift+1++, ++shift+2++, ++shift+3++: store current settings into preset 1, 2, or 3.
 
 ---
 

@@ -4,38 +4,40 @@
 
 ## Overview
 
-![Fiji Connect Panel](images/PanelsFiji.png){align=left}
-
 The **Fiji Connect Panel** enables communication with [Fiji](http://fiji.sc/Fiji), 
 an image processing software, using the [MIJ](http://bigwww.epfl.ch/sage/soft/mij/) 
 Java package for bidirectional data exchange between MATLAB and ImageJ/Fiji. 
-MIJ is developed by Daniel Sage, Dimiter Prodanov, Jean-Yves Tinevez, and Johannes Schindelin.
-Ensure Fiji is installed and MIJ is integrated (see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji)).
+
+![Fiji Connect Panel](images/PanelsFiji.png){align=left}
 
 <div class="clear-float"></div>
+
+MIJ is developed by Daniel Sage, Dimiter Prodanov, Jean-Yves Tinevez, and Johannes Schindelin.
+Ensure Fiji is installed and MIJ is integrated (see [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#fiji)).
 
 [:fontawesome-brands-youtube:{.red-color} Visualization of datasets and models using Fiji](https://youtu.be/DZ1Tj3Fh2HM?list=PLGkFvW985wz8cj8CWmXOFkXpvoX_HwXzj)
 
 ---
 
-## <span class="widget widget-button">Start Fiji</span> and <span class="widget widget-button">Stop Fiji</span> buttons
+## How to start and stop Fiji from MIB
 
-![Fiji Connect Panel](images/PanelsFiji-startFiji-buttons.png){align=left}
+![Fiji Connect Panel](images/PanelsFiji-startFiji-buttons.png){align=right}
 
 <span class="widget widget-button">Start Fiji</span>: launches Fiji from MATLAB, 
 required for communication. 
-??? warning 
-    Press this button first before any actions!
 
-<div class="clear-float"></div>
+!!! warning 
+    Press this button first before any actions!
 
 <span class="widget widget-button">Stop Fiji</span> closes Fiji when it is not needed anymore.
 
+<div class="clear-float"></div>
+
 ---
 
-## Image Type and Import/Export buttons
+## Image Type and data transfer to Fiji
 
-![Fiji Connect Panel](images/PanelsFiji-image-type.png){align=left}
+![Fiji Connect Panel](images/PanelsFiji-image-type.png){align=right}
 
 <span class="widget widget-dropdown">Image Type</span> dropdown
 
@@ -44,18 +46,19 @@ Specifies the layer (e.g., Image, Model, Mask, Selection) to exchange with Fiji.
 
     For example, selecting **Image** and pressing 
     <span class="widget widget-button">Export</span> sends the current image to Fiji. 
+
     See *Finding Edges using Fiji* below for details.
 
 <span class="widget widget-button">Export</span>: sends the current dataset 
 (based on <span class="widget widget-dropdown">Image Type</span>) to Fiji for processing 
 or analysis.
 
-<span class="widget widget-button">Import</span>: iImports datasets from Fiji into 
+<span class="widget widget-button">Import</span>: imports datasets from Fiji into 
 MIB’s Image, Model, Mask, or Selection layers, as set by 
 <span class="widget widget-dropdown">Image Type</span>.<br>
-Ensure Model, Mask, and Selection sizes match the Image layer in MIB.
 
----
+!!! warning
+    Ensure Model, Mask, and Selection sizes match the Image layer in MIB.
 
 ---
 
@@ -80,12 +83,6 @@ See [Miji](http://fiji.sc/Miji) for syntax.
 <span class="widget widget-button">Run</span> button: executes the macro in 
 <span class="widget widget-edit">Run macro</span>. 
 If a file path is provided, it runs all macros in that script.
-
----
-
-## Help button
-
-<span class="widget widget-button">?</span>: opens the help documentation for detailed instructions.
 
 ---
 

@@ -20,7 +20,7 @@ Use the brush to make selections, with size regulated by the <span class="widget
     - <span class="widget widget-button">Ctrl</span> + **Mouse wheel**: change brush size.
     - **None** or <span class="widget widget-button">Shift</span> + <mouse class="left"></mouse>: paint with brush.
     - <span class="widget widget-button">Ctrl</span> + <mouse class="left"></mouse>: start eraser (radius amplified by <span class="widget widget-dropdown">Eraser, x</span>).
-    - <span class="widget widget-checkbox">Auto fill</span> in the [Selection panel](../selection/index.md): autofill areas after brushing.
+    - <span class="widget widget-checkbox">Auto fill</span> in the [Selection and View settings panel](../selection_imview/index.md): autofill areas after brushing.
 
 !!! tip
     Connect objects across slices using *Interpolation* (<span class="widget widget-button">i</span> shortcut or 

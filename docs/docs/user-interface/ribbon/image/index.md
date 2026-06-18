@@ -29,7 +29,7 @@ Change the mode or color depth of the dataset.
 
 <div class="h4-like">Bit depth</div>
 
-- **8 bit**: convert to 8-bit; intensities are scaled to preserve adjustments from the [Display dialog](../../panels/selection_imview/viewsettings.md#contrast-panel).
+- **8 bit**: convert to 8-bit; intensities are scaled to preserve adjustments from the [Display dialog](../../panels/selection_imview/viewsettings-adjustments.md).
 - **16 bit**: convert to 16-bit; intensities are scaled to preserve original contrast.
 - **32 bit**: convert to 32-bit; intensities are scaled to preserve original contrast.
 

@@ -2,6 +2,8 @@
 
 The **Status Bar** runs along the bottom of the MIB window and provides quick access to the working directory, live pixel information, operation progress, and zoom control.
 
+![Statusbar](images/statusbar.png){.on-glb align=left}
+
 It replaces the **Path panel** from MIB2, consolidating those controls into a compact always-visible strip.
 
 ---
@@ -26,7 +28,7 @@ The working directory group sets the folder whose contents are listed in the
 
 ### Select directory button
 
-:octicons-file-directory-16:{.orange-color} Opens the system directory picker dialog.
+![Select directory](images/select_dir.png){.off-glb } Opens the system directory picker dialog.
 After confirmation the path field and file list update automatically.
 
 ### Path field
@@ -39,11 +41,11 @@ Displays the active working directory. You can also type or paste a path directl
 
 ### Copy path button
 
-:octicons-copy-16:{.orange-color} Copies the current working directory path to the system clipboard.
+![Copy path to clipboard](images/copy_path.png){.off-glb } Copies the current working directory path to the system clipboard.
 
 ### Open in file browser button
 
-:octicons-browser-16:{.orange-color} Opens the current working directory in the native OS file browser:
+![Open in explorer](images/open_in_explorer.png){.off-glb } Opens the current working directory in the native OS file browser:
 
 - **Windows** — Windows Explorer
 - **macOS** — Finder
@@ -62,15 +64,12 @@ Pixel: X:Y (R:G:B) / [material index]
 - Updates in real time.
 - Shows the material index at the cursor position when a model is loaded.
 
-!!! info
-    Equivalent to the **Pixel Info field** from the MIB2 Path panel.
-
 ---
 
 ## Progress
 
-A progress bar that fills during long-running operations (file loading, batch processing, filtering, etc.).
-It resets to zero automatically when the operation completes.
+A progress bar appears during long-running operations (filtering, processing, export).
+It is shown on the right side of the status bar while the operation runs and disappears when it completes.
 
 ---
 
@@ -79,20 +78,15 @@ It resets to zero automatically when the operation completes.
 <span class="widget widget-edit">100 %</span>
 Shows the current image magnification. Type a percentage value and press ++enter++ to apply it.
 
-The zoom field is also available as a **Batch Processing** action
-(*Quick access bar → Change magnification*) with the following modes:
+The zoom buttons are also available in the [Quick access bar](../quick-access-bar/index.md#zoom-controls) 
+with the following modes:
 
 | Mode | Effect |
 |------|--------|
-| Set magnification | Applies the typed percentage value |
 | Fit to screen | Scales the image to fill the Image View panel |
 | 100% | Resets magnification to 1:1 |
 | Zoom in | Doubles the current magnification |
 | Zoom out | Halves the current magnification |
-
-!!! tip
-    The same zoom controls are also available via the [Quick Access Bar](../quick-access-bar/index.md)
-    buttons and keyboard shortcuts ++q++ (zoom out) and ++w++ (zoom in).
 
 ---
 

@@ -27,7 +27,7 @@ Selection with *lasso, rectangle, ellipse, or polyline* tools.<br>
 
 !!! info
     Works in 3D<br>
-    Requires checked <span class="widget widget-checkbox">3D</span> in the [Selection panel](../selection/index.md)
+    Requires checked <span class="widget widget-checkbox">3D</span> in the [Selection and View settings panel](../selection_imview/index.md)
 
 ---
 

@@ -3,6 +3,10 @@
 The **Selection and View Settings panel** combines tools for manipulating the Selection layer with
 controls for visualizing the dataset — color channels, layer visibility, transparency, and contrast.
 
+![Image title](images/PanelSelectionViewSettings.png){.on-glb align=left}
+
+<div class="clear-float"></div>
+
 ---
 
 ## Overview
@@ -14,15 +18,6 @@ The panel is divided into two functional areas:
   (3D, Auto fill, Adapt, Difference).
 - **[View Settings](viewsettings.md)** — color-channel table, layer visibility toggles (Show Model,
   Show Mask, Hide Image, Annotations), contrast controls, and per-layer transparency sliders.
-
-!!! info "MIB2 reference"
-    In MIB2 these functions were split across three panels:
-
-    | MIB3 | MIB2 |
-    |------|------|
-    | Selection (top half) | Selection Panel |
-    | View Settings (bottom half) | View Settings Panel |
-    | *(image display context menu)* | [Image Document](../../image-document/index.md) |
 
 ---
 
