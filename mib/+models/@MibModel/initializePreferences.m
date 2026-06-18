@@ -104,15 +104,56 @@ if ~isempty(obj.cpuParallelLimitMaxCached)
 end
 
 % ------------ restore user statistics ------------
-% Load user tier statistics from separate file
-userStatsFn = fullfile(prefdir, 'mib_user.mat');
+% Use the path stored in preferences (initialised in generatePreferences from
+% the OS roaming directory; user can override via the milestone dialog).
+% Migration chain runs on first upgrade when the file is not found at the
+% stored path, moving it forward from older locations.
+userStatsFn = obj.preferences.System.UserStatsProfile;
+
+% --- migration step 1 (Windows only): AppData\Roaming\MIB -> new path ---
+if ~isfile(userStatsFn) && ispc
+    appDataPath = getenv('APPDATA');
+    if ~isempty(appDataPath)
+        oldRoamingFn = fullfile(appDataPath, 'MIB', 'mib_user.mat');
+        if isfile(oldRoamingFn)
+            try
+                destDir = fileparts(userStatsFn);
+                if ~exist(destDir, 'dir'); mkdir(destDir); end
+                movefile(oldRoamingFn, userStatsFn);
+                fprintf('MIB user statistics migrated from old roaming path: %s\n', userStatsFn);
+            catch migErr
+                warning('MIB:userStatsMigration', 'Could not migrate from old roaming path: %s', migErr.message);
+                userStatsFn = oldRoamingFn;
+            end
+        end
+    end
+end
+
+% --- migration step 2: legacy ~/Matlab/mib_user.mat -> new path ---
+if ~isfile(userStatsFn)
+    legacyUserStatsFn = fullfile(prefdir, 'mib_user.mat');
+    if isfile(legacyUserStatsFn) && ~strcmp(userStatsFn, legacyUserStatsFn)
+        try
+            destDir = fileparts(userStatsFn);
+            if ~exist(destDir, 'dir'); mkdir(destDir); end
+            movefile(legacyUserStatsFn, userStatsFn);
+            fprintf('MIB user statistics migrated to roaming profile: %s\n', userStatsFn);
+        catch migErr
+            warning('MIB:userStatsMigration', 'Could not migrate mib_user.mat to roaming profile: %s', migErr.message);
+            userStatsFn = legacyUserStatsFn;
+        end
+    end
+end
 
 if isfile(userStatsFn)
     load(userStatsFn, 'Tiers');  % load Tiers variable
+    fprintf('MIB user statistics file: %s\n', userStatsFn);
     if exist('Tiers', 'var')
         % Merge saved tier data with defaults
         obj.preferences.Users.Tiers = utils.concatenateStructures(obj.preferences.Users.Tiers, Tiers);
     end
+    % Keep preference in sync with the actual location used (may differ after migration)
+    obj.preferences.System.UserStatsProfile = userStatsFn;
 end
 
 % ------------ validate last used path ------------

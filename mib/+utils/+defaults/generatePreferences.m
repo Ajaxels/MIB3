@@ -73,6 +73,16 @@ Prefs.System.RenderingEngine = 'Viewer3d, R2022b';   % default rendering engine 
 % Developer mode
 Prefs.System.DeveloperMode = true;   % logical switch to turn on the developer mode, in this mode, the tooltip starts with the handle of the widget
 
+% Path to the user statistics file (mib_user.mat).
+% Stored in the OS roaming profile directory so it syncs across workstations.
+% Users can change this path via Help > Your personal stats > Set stats file...
+userStatsDirDefault = utils.getUserStatsDir();
+if isempty(userStatsDirDefault)
+    userStatsDirDefault = utils.getPrefDir();
+end
+Prefs.System.UserStatsProfile = fullfile(userStatsDirDefault, 'mib_user.mat');
+clear userStatsDirDefault;
+
 %% ----------- COLORS PANEL -----------
 
 % default colors for the materials of models

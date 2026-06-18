@@ -49,5 +49,6 @@ For the downloads visit [MIB website](https://mib.helsinki.fi/downloads.html) fo
     - \[2.9109\] added generation of centered grid for Stereology
     - \[2.9110\] changed image resize from width in pixels to downsampling factor in Automatic feature-based v2 alignment
     - \[2.9111\] update BioFormats to 8.3.0, bug fixes
+    - \[2.9112\] user statistics (`mib_user.mat`) are now stored in `AppData\Roaming\MathWorks\MIB\` on Windows (inside the existing MathWorks roaming folder, ensuring reliable sync across domain workstations); existing files from older locations are migrated automatically on first launch
 
 *Back to [MIB](../../index.md) | [Getting started](../index.md)*

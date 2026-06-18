@@ -1,4 +1,4 @@
-function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
+function [newStatsPath, updatedTiers] = showMilestoneDialog(ParentFigure, userPrefs, mode, options)
 % SHOWMILESTONEDIALOG - Show a gamification milestone / current-stats dialog with a celebration.
 %
 % Syntax:
@@ -28,7 +28,12 @@ function showMilestoneDialog(ParentFigure, userPrefs, mode, options)
 %     - ``.ParentFigure`` — [handle] uifigure / AppContainer handle for centering
 %
 % Output Arguments:
-%   (none)  - dialog blocks until dismissed
+%   - **newStatsPath** — [char] new ``mib_user.mat`` path chosen by the user,
+%     or ``''`` if the path was not changed
+%   - **updatedTiers** — struct with potentially updated ``Tiers`` data
+%     (may differ from the input when a richer stats file was loaded)
+%
+% (none when called without output arguments — dialog blocks until dismissed)
 %
 % **Example 1** — Show a milestone congratulations dialog
 %
@@ -58,6 +63,11 @@ persistent parentFigureHandle   % cached handle to the main GUI window
 persistent cachedFigure         % reusable hidden uifigure shell
 
 if ~isfield(options, 'mibPath'); options.mibPath = ''; end
+if ~isfield(options, 'userStatsPath'); options.userStatsPath = ''; end
+
+% Output variables — shared with nested callbacks via closure
+newStatsPath = '';
+updatedTiers = struct();
 
 % ParentFigure param takes priority; update cache
 if ~isempty(ParentFigure) && isvalid(ParentFigure)
@@ -93,6 +103,7 @@ end
 if ~isempty(fieldnames(userPrefs)) && isfield(userPrefs, 'Tiers')
     T    = userPrefs.Tiers;
     U    = userPrefs;
+    updatedTiers = T;   % initialise output; may be overwritten by onSetStatsFile
     elapsedTime = datetime('now') - T.logStartDate;
 
     statsBlock = sprintf(['Stats:\n' ...
@@ -312,16 +323,25 @@ statsArea = uitextarea(contentGrid, ...
 statsArea.Layout.Row    = 2;
 statsArea.Layout.Column = 1;
 
-% Row 3: button row  [spacer | OK]
-btnGrid = uigridlayout(contentGrid, [1, 2], ...
-    'ColumnWidth', {'1x', 80}, ...
+% Row 3: button row  [Set stats file... | spacer | OK]
+btnGrid = uigridlayout(contentGrid, [1, 3], ...
+    'ColumnWidth', {160, '1x', 80}, ...
     'ColumnSpacing', 8, 'Padding', [0 0 0 0]);
 btnGrid.Layout.Row    = 3;
 btnGrid.Layout.Column = 1;
 
+% "Set stats file..." button — only shown in currentStats mode
+if strcmp(mode, 'currentStats')
+    statsFileBtn = uibutton(btnGrid, ...
+        'Text',    'Set stats file...', ...
+        'Tooltip', sprintf('Choose a custom location for mib_user.mat\n(e.g. a synced network folder)\nThe current:\n%s', options.userStatsPath), ...
+        'ButtonPushedFcn', @(~,~) onSetStatsFile());
+    statsFileBtn.Layout.Column = 1;
+end
+
 % OK button
 okBtn = uibutton(btnGrid, 'Text', okLabel, 'ButtonPushedFcn', @(~,~) onOK());
-okBtn.Layout.Column = 2;
+okBtn.Layout.Column = 3;
 
 %% ---- Load left-panel media (video for milestone, image for currentStats) ----
 videoTimer = [];
@@ -430,6 +450,61 @@ uiwait(fig);
         fig.WindowStyle = 'normal';   % release modal grab before hiding
         fig.Visible = 'off';
         uiresume(fig);
+    end
+
+    function onSetStatsFile()
+        % Determine starting directory for the browser
+        startPath = options.userStatsPath;
+        if isempty(startPath)
+            startDir = utils.getUserStatsDir();
+            if isempty(startDir); startDir = utils.getPrefDir(); end
+            startPath = fullfile(startDir, 'mib_user.mat');
+        end
+
+        pathname = uigetdir(fileparts(startPath), 'Specify location for mib_user.mat');
+        if isequal(pathname, 0); return; end   % cancelled
+
+        selectedPath = fullfile(pathname, 'mib_user.mat');
+
+        % Compare collected points when an existing stats file was selected
+        if isfile(selectedPath)
+            try
+                loadedVars = load(selectedPath, 'Tiers');
+                if isfield(loadedVars, 'Tiers') && isfield(loadedVars.Tiers, 'collectedPoints')
+                    currentPoints = 0;
+                    if isfield(updatedTiers, 'collectedPoints')
+                        currentPoints = updatedTiers.collectedPoints;
+                    end
+                    if loadedVars.Tiers.collectedPoints > currentPoints
+                        updatedTiers = loadedVars.Tiers;
+                        greetLbl.Text = sprintf( ...
+                            'Richer stats loaded from:\n%s', selectedPath);
+                    else
+                        greetLbl.Text = sprintf( ...
+                            'Stats file location set (current stats kept):\n%s', selectedPath);
+                    end
+                else
+                    greetLbl.Text = sprintf('Stats file location set:\n%s', selectedPath);
+                end
+            catch
+                greetLbl.Text = sprintf('Stats file location set:\n%s', selectedPath);
+            end
+        else
+            % New location — save current stats there immediately so it exists on next load
+            Tiers = updatedTiers;
+            try
+                destDir = fileparts(selectedPath);
+                if ~exist(destDir, 'dir'); mkdir(destDir); end
+                save(selectedPath, 'Tiers');
+                greetLbl.Text = sprintf('Stats saved to new location:\n%s', selectedPath);
+            catch saveErr
+                greetLbl.Text = sprintf('Could not save to:\n%s\n%s', selectedPath, saveErr.message);
+                return;
+            end
+        end
+
+        newStatsPath = selectedPath;
+        options.userStatsPath = selectedPath;   % prevent double-trigger
     end
 
 end

@@ -69,9 +69,15 @@ prefdir = utils.getPrefDir();
 try
     mib_pars.preferences.Users = rmfield(mib_pars.preferences.Users, 'Tiers'); % remove user's stats from the output preferences structure
     save(fullfile(prefdir, 'mib3.mat'), 'mib_pars');
-    % additionally save preferences.Users.Tiers to mib_user.mat
+    % Save user Tiers stats to the path stored in preferences (roaming by default;
+    % user can override via the milestone dialog).
     Tiers = obj.mibModel.preferences.Users.Tiers;
-    save(fullfile(prefdir, 'mib_user.mat'), 'Tiers');
+    userStatsFn = obj.mibModel.preferences.System.UserStatsProfile;
+    userStatsDir = fileparts(userStatsFn);
+    if ~exist(userStatsDir, 'dir')
+        mkdir(userStatsDir);
+    end
+    save(userStatsFn, 'Tiers');
 catch err
     errorOpts.mibPath = obj.mibModel.mibPath;
     utils.dlgs.showErrorDialog(obj.view.gui, err, 'Save preferences error ', ...
