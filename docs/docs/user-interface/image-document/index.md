@@ -53,7 +53,7 @@ The image axes display multiple layers simultaneously:
 
 - **Image** — the raw grayscale or multichannel data.
 - **Labels** (model) — segmented materials or a difference map for correlation analysis.
-  See [Image Layers](../image-layers.md) for details.
+  See [Image Layers](../../getting-started/image-layers.md) for details.
 - **Mask** — a binary support layer that extends operations on the Labels layer: it can be combined with materials via union, intersection, 
 and subtraction, and it can be used to limit segmentation tools to the masked area only. 
 The Mask is also used as a seed region for local thresholding with the [BW Thresholding tool](../panels/segm/segm-bwthres.md).

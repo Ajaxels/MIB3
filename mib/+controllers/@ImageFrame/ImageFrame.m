@@ -236,7 +236,14 @@ classdef ImageFrame < handle
         % -----------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'user-interface', 'menu', 'image', 'image-tools-selectframe.html'), '-browser');
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-selectframe.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/image/image-tools-selectframe.html', '-browser');
+            end
+
         end
 
         % -----------------------------------------------------------

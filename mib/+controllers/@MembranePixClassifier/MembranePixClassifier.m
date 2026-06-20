@@ -18,8 +18,6 @@ classdef MembranePixClassifier < handle
     %   - **extraController** — *(optional)* handle to a parent controller
     %   - **BatchOpt** — *(optional)* struct with batch options, or ``NaN`` to return defaults
     %
-    % Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-    % License: GNU General Public License v3
 
     properties
         mibModel

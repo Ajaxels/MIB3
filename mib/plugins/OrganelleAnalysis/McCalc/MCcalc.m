@@ -175,7 +175,12 @@ classdef MCcalc < handle
         end
 
         function helpBtn_Callback(obj)
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/plugins/organelle-analysis/mccalc.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'organelle-analysis', 'mccalc.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/mccalc.html', '-browser');
+            end
         end
 
         function saveResultsCheck_Callback(obj)

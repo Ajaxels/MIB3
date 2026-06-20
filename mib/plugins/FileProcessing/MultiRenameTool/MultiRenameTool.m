@@ -505,7 +505,13 @@ classdef MultiRenameTool < handle
         end
 
         function helpButton_Callback(obj)
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/plugins/file-processing/multi-rename-tool.html'), '-browser');
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'file-processing', 'multi-rename-tool.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/file-processing/multi-rename-tool.html', '-browser');
+            end
         end
 
         function FileListTableContextMenu(obj, operation)

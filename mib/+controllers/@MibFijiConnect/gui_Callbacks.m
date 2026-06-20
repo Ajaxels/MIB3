@@ -59,7 +59,12 @@ switch mode
         obj.runMacro();
         
     case 'helpButton' %
-        web(fullfile(obj.mibModel.mibPath, 'techdoc','html','user-interface','panels','fijiconnect','index.html'), '-browser');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'panels', 'fijiconnect', 'index.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/user-interface/panels/fijiconnect/index.html', '-browser');
+        end
 
 end
 

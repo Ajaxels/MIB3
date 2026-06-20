@@ -156,7 +156,13 @@ classdef Stereology < handle
             %       obj.helpBtn_Callback()
             %
 
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/tools/tools-stereology.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-stereology.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-stereology.html', '-browser');
+            end
+
         end
 
         function generateGrid_Callback(obj)

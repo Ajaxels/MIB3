@@ -6,6 +6,8 @@
 
 ## Overview
 
+![Alignment](images/menuDatasetAlignment.png){.on-glb align=left width="300"}
+
 The Alignment and Drift Correction tool aligns the slices of the currently opened dataset.
 
 <div class="h3-like">Demos and tutorials</div>
@@ -17,6 +19,8 @@ The Alignment and Drift Correction tool aligns the slices of the currently opene
 - [:fontawesome-brands-youtube:{.red-color} HDD mode](https://youtu.be/FtvWjDUMZ1I) (Drift correction and Automatic feature-based only)
 
 ---
+
+<div class="clear-float"></div>
 
 ## Current dataset panel
 

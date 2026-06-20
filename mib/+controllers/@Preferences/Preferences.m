@@ -380,19 +380,31 @@ classdef Preferences < handle
         end
         
         function helpBtnCallback(obj)
-            switch obj.view.handles.CategoriesTree.SelectedNodes.Text
-                case 'User interface'
-                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#user-interface'), '-browser');
-                case 'Colors and styles'
-                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#colors-and-styles'), '-browser');
-                case 'Backup and undo'
-                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#backup-and-undo'), '-browser');
-                case 'External directories'
-                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#external-directories'), '-browser');
-                case 'Keyboard shortcuts'
-                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#keyboard-shortcuts'), '-browser');
-                case 'Segmentation tools'
-                    web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#segmentation-tools'), '-browser');
+            if isempty(obj.view.handles.CategoriesTree.SelectedNodes)
+
+            else
+                helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-preferences.html');
+                if isfile(helpFilPath)
+                    web(helpFilPath, '-browser');
+                else
+                    web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-preferences.html', '-browser');
+                end
+
+
+                % switch obj.view.handles.CategoriesTree.SelectedNodes.Text
+                %     case 'User interface'
+                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#user-interface'), '-browser');
+                %     case 'Colors and styles'
+                %         web(helpFilPath, '-browser');
+                %     case 'Backup and undo'
+                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#backup-and-undo'), '-browser');
+                %     case 'External directories'
+                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#external-directories'), '-browser');
+                %     case 'Keyboard shortcuts'
+                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#keyboard-shortcuts'), '-browser');
+                %     case 'Segmentation tools'
+                %         web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/file/file-preferences.html#segmentation-tools'), '-browser');
+                % end
             end
         end
 

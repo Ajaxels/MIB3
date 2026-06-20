@@ -231,9 +231,9 @@ these colors are used.
 
 <div class="clear-float"></div>
 
-<span class="widget widget-button">Selection</span>: a button to specify color to be used for rendering of the [Selection](../../image-layers.md) layer
+<span class="widget widget-button">Selection</span>: a button to specify color to be used for rendering of the [Selection](../../../getting-started/image-layers.md) layer
 <br>
-<span class="widget widget-button">Mask</span>: a button to specify color to be used for rendering of the [Mask](../../image-layers.md) layer
+<span class="widget widget-button">Mask</span>: a button to specify color to be used for rendering of the [Mask](../../../getting-started/image-layers.md) layer
 <br>
 <span class="widget widget-button">Annotations</span> a button to specify color to be used for rendering of [annotations](../../panels/segm/segm-annotations.md)
 

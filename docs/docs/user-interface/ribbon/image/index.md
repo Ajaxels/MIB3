@@ -89,71 +89,19 @@ The **Contrast** dropdown contains:
 
 Normalizes image intensities slice-by-slice across Z or time to reduce illumination variation.
 
-<div class="h4-like">Demonstration</div>
-
-- [:fontawesome-brands-youtube:{.red-color} Image normalization tutorial](https://youtu.be/MmBmdGtuUdM)
-
+See more on [Normalize layers](normalize.md)
 
 <div class="clear-float"></div>
-
-<span class="widget widget-dropdown">Target</span>: what to normalize:
-
-- **Z stack**: normalize each Z-slice to a common mean and standard deviation.
-- **Time series**: normalize each time frame; controlled by <span class="widget widget-dropdown">Time series normalization</span> — either *Based on current 2D slice* or *Based on complete 3D stack*.
-- **Masked area**: compute normalization coefficients only from the masked region (see <span class="widget widget-dropdown">Mask layer</span>).
-- **Background**: shift each slice so that the mean intensity of the masked background area matches the dataset mean.
-
-<span class="widget widget-dropdown">Mode</span>:
-
-- **Automatic**: coefficients (mean and std) are computed from the data.
-- **Manual**: use the fixed target <span class="widget widget-edit">Mean</span> and <span class="widget widget-edit">Std</span> values.
-- **BasedOnSlice**: use the slice specified by <span class="widget widget-edit">Reference slice No</span> as the normalization reference.
-
-<span class="widget widget-dropdown">Color channel</span>: channels to normalize (`All channels`, `Shown channels`, or a specific channel).
-
-<span class="widget widget-dropdown">Exclude</span>: pixels to exclude from mean/std calculations — `Whole range`, `Exclude blacks`, or `Exclude whites`.
-
-<span class="widget widget-dropdown">Mask layer</span> *(Masked area / Background only)*: `selection` or `mask` layer used to define the region.
-
-??? info "Normalization algorithm"
-
-    1. Calculate mean intensity and standard deviation (std) for the whole dataset.
-    2. Calculate mean and std for each slice.
-    3. Shift each slice by the difference between its mean and the dataset mean; stretch by the ratio of dataset std to slice std.
-
-    For 4D datasets, normalization can be done across time.<br>
-    For Z-stacks, black or white pixels can be excluded from the statistics.
-
----
 
 #### Contrast-limited adaptive histogram equalization
 
 ![CLAHE dialog](images/menuImage-contrast-clahe.png){.on-glb align=left width="320"}
 
-CLAHE enhances contrast locally in small rectangular tiles rather than globally. 
-Each tile's histogram is redistributed to match the chosen *Distribution*, then neighboring tiles are 
-blended with bilinear interpolation to avoid sharp boundaries. 
-A clip limit caps contrast amplification in uniform areas to suppress noise. 
+CLAHE enhances contrast locally in small rectangular tiles rather than globally, then blends the tiles with bilinear interpolation to avoid sharp boundaries. A clip limit suppresses noise amplification in uniform areas.
 
-See MATLAB's [adapthisteq](https://se.mathworks.com/help/images/ref/adapthisteq.html) for details.
+See more on [CLAHE](clahe.md)
 
 <div class="clear-float"></div>
-
-<span class="widget widget-dropdown">Dataset type</span>: scope of the operation — `Shown slice (2D)`, `Current stack (3D)`, or `Complete volume (4D)`.
-
-<span class="widget widget-dropdown">Color channel</span>: `All`, `Displayed`, or a specific channel.
-
-<span class="widget widget-edit">Number of tiles Y</span> / <span class="widget widget-edit">Number of tiles X</span>: tile grid size (1–256 in each direction); more tiles = finer local adaptation.
-
-<span class="widget widget-edit">Clip limit</span>: contrast enhancement limit (0–1); higher values give stronger contrast but more noise amplification.
-
-<span class="widget widget-edit">Number of bins</span>: histogram bins used for the contrast transform (2–65536); more bins = greater dynamic range.
-
-<span class="widget widget-dropdown">Distribution</span>: target histogram shape — `uniform`, `rayleigh`, or `exponential`.
-
-<span class="widget widget-edit">Alpha</span>: distribution shape parameter for `rayleigh` and `exponential` (disabled for `uniform`).
-
-Use <span class="widget widget-button">Preview</span> to check the result on the current slice before applying to the full dataset.
 
 ---
 

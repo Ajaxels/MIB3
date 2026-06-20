@@ -186,7 +186,7 @@ classdef WoundHealing < handle
             obj.view.handles.OutputButton.ButtonPushedFcn        = @(~,~) obj.selectOutputDirectoryButton_Callback();
             obj.view.handles.Stitch.ButtonPushedFcn              = @(~,~) obj.stitchButton_Callback();
             obj.view.handles.WoundHealing.ButtonPushedFcn        = @(~,~) obj.woundHealingButton_Callback();
-            obj.view.handles.Help.ValueChangedFcn                = @(h,e) obj.helpButton_Callback(h);
+            obj.view.handles.Help.ButtonPushedFcn                = @(~,~) obj.helpButton_Callback();
             obj.view.handles.Close.ButtonPushedFcn               = @(~,~) obj.closeWindow();
         end
 
@@ -225,10 +225,15 @@ classdef WoundHealing < handle
         end
 
         % -----------------------------------------------------------
-        function helpButton_Callback(obj, buttonHandle)
+        function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open plugin documentation in browser.
-            buttonHandle.Value = false;   % reset the toggle state
-            web(fullfile(obj.mibModel.mibPath, 'Plugins', 'WoundHealingAssay', 'Help', 'index.html'), '-browser');
+            
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-wound.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-wound.html', '-browser');
+            end
         end
 
         % -----------------------------------------------------------

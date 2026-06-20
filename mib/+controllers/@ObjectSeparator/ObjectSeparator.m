@@ -585,7 +585,14 @@ classdef ObjectSeparator < handle
         % -----------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open the object separation documentation page.
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/ug_gui_menu_tools_objseparation.html'), '-helpbrowser');
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-objectsep.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-objectsep.html', '-browser');
+            end
+
         end
 
         % Main processing is in a separate file

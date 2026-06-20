@@ -21,7 +21,12 @@ switch source.Tag
     case 'closeBtn'
         obj.closeWindow();
     case 'helpBtn'
-        web('http://mib.helsinki.fi/help/main2/ug_gui_menu_dataset_align.html', '-browser');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-alignment.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-alignment.html', '-browser');
+        end
 
     case 'Algorithm'
         obj.algorithm_Callback();

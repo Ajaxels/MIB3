@@ -12,5 +12,11 @@ function helpBtn_Callback(obj)
 %     obj.helpBtn_Callback();
 %
 
-web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-batchprocessing.html'), '-browser');
+helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-batchprocessing.html');
+if isfile(helpFilPath)
+    web(helpFilPath, '-browser');
+else
+    web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-batchprocessing.html', '-browser');
+end
+
 end

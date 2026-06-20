@@ -563,7 +563,12 @@ classdef ImageFilters < handle
         % ---------------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/image/image-filters.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-filters.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/image/image-filters.html', '-browser');
+            end
         end
 
         % ---------------------------------------------------------------

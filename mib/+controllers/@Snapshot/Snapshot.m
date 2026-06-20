@@ -675,7 +675,12 @@ classdef Snapshot < handle
 
         function help(obj)
             % show help
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-makesnapshot.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-makesnapshot.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-makesnapshot.html', '-browser');
+            end
         end
 
         function snapshotBtn_Callback(obj, useBatchMode)

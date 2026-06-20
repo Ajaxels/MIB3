@@ -8,7 +8,7 @@
 
 Actions that can be applied to the *Labels* layer. The *Labels layer* is one of three main segmentation layers
 (*Labels*, *Selection*, *Mask*) which can be used in combination with other layers.
-See more about segmentation layers in the [Data layers section](../../image-layers.md).
+See more about segmentation layers in the [Data layers section](../../../getting-started/image-layers.md).
 
 ![Model Ribbon Tab](images/menuModel.png){.on-glb align=left}
 

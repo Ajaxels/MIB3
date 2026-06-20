@@ -46,21 +46,30 @@ nav = [
   { "Microscopy Image Browser" = "index.md" },
   { "Getting Started" = [
     "getting-started/index.md",
-    { "Installation" = ["getting-started/installation/index.md"] },
+    { "Installation" = "getting-started/installation/index.md" },
+    { "Starting MIB" = "getting-started/starting-mib/index.md" },
+    { "First dataset" = "getting-started/first-dataset/index.md" },
+    { "Basic concepts" = "getting-started/basic-concepts/index.md" },
+    { "Image layers" = "getting-started/image-layers.md" },
+    { "Configuration files" = "getting-started/configuration/index.md" },
+  ]},
+  { "Resources" = [
     { "Features" = "https://mib.helsinki.fi/features_all.html" },
-    { "Tutorials" = ["getting-started/tutorials/index.md"] },
+    { "Tutorials" = "getting-started/tutorials/index.md" },
+  ]},
+  { "Release notes" = [
+    "getting-started/releasenotes/index.md",
+    { "History" = "getting-started/releasenotes/release-notes-history.md" },
+  ]},
+  { "Licenses" = [
+    "getting-started/licenses/index.md",
+    { "MIB for MATLAB" = "getting-started/licenses/license-mib-matlab.md" },
+    { "MIB standalone" = "getting-started/licenses/license-mib-standalone.md" },
+    { "External licenses" = "getting-started/licenses/licenses-ext.md" },
+  ]},
+  { "About" = [
     { "Acknowledgements" = "getting-started/acknowledgements.md" },
-    { "Licenses" = [
-      "getting-started/licenses/index.md",
-      { "MIB for MATLAB" = "getting-started/licenses/license-mib-matlab.md" },
-      { "MIB standalone" = "getting-started/licenses/license-mib-standalone.md" },
-      { "External licenses" = "getting-started/licenses/licenses-ext.md" },
-    ]},
     { "Contact and Support" = "getting-started/support.md" },
-    { "Release notes" = [
-      "getting-started/releasenotes/index.md",
-      { "History" = "getting-started/releasenotes/release-notes-history.md" },
-    ]},
   ]},
   { "User interface" = [
     "user-interface/index.md",
@@ -87,6 +96,10 @@ nav = [
       ]},
       { "Image" = [
         "user-interface/ribbon/image/index.md",
+        { "Contrast" = [
+          { "Normalize layers" = "user-interface/ribbon/image/normalize.md" },
+          { "CLAHE" = "user-interface/ribbon/image/clahe.md" },
+        ]},
         { "Image filters" = "user-interface/ribbon/image/image-filters.md" },
         { "-> content aware fill" = "user-interface/ribbon/image/image-tools-awarefill.md" },
         { "-> debris removal" = "user-interface/ribbon/image/image-tools-debris.md" },
@@ -180,8 +193,8 @@ nav = [
       { "Tutorials" = [
         "user-interface/plugins/tutorials/index.md",
         { "GUI Tutorial" = "user-interface/plugins/tutorials/gui-tutorial.md" },
-        { "MIB App Design plugin" = "user-interface/plugins/tutorials/mib-app-design-plugin.md" },
-        { "MIB Plugin" = "user-interface/plugins/tutorials/mib-plugin.md" },
+        { "GUI Tutorial (Batch)" = "user-interface/plugins/tutorials/gui-tutorial-batch.md" },
+        { "Demo Plugin" = "user-interface/plugins/tutorials/mib-app-design-plugin.md" },
         { "MIB Plugin without GUI" = "user-interface/plugins/tutorials/mib-plugin-without-gui.md" },
       ]},
     ]},
@@ -194,9 +207,9 @@ nav = [
       { "Options" = "user-interface/deepmib/deepmib-options.md" },
     ]},
     { "Key and mouse shortcuts" = "user-interface/key-and-mouse-shortcuts.md" },
-    { "Image layers" = "user-interface/image-layers.md" },
   ]},
   { "Dev corner" = [
+    { "API" = "api.md" },
     { "Markdown" = "markdown.md" },
     { "Markdown examples" = "Markdown_examples.md" },
   ]},
@@ -363,8 +376,10 @@ features = [
 
     # When sections are enabled, top-level sections are rendered as groups in
     # the sidebar for viewports above 1220px, but remain as-is on mobile.
+    # Disabled: keep top-level sections (Getting Started, User interface)
+    # collapsible so their child pages stay hidden until the user expands them.
     # https://zensical.org/docs/setup/navigation/#navigation-sections
-    "navigation.sections",
+    #"navigation.sections",
 
     # When tabs are enabled, top-level sections are rendered in a menu layer
     # below the header for viewports above 1220px, but remain as-is on mobile.

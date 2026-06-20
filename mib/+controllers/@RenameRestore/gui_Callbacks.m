@@ -19,7 +19,12 @@ switch source.Tag
         obj.closeWindow();
 
     case 'helpBtn'
-        web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-renameandshuffle.html'), '-browser');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-renameandshuffle.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-renameandshuffle.html', '-browser');
+        end
 
     case 'selectSettingsFileBtn'
         obj.selectSettingsFileBtn_Callback();

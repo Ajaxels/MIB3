@@ -330,8 +330,14 @@ classdef ThreshAnalysisForObjects < handle
 
         % -----------------------------------------------------------------
         function helpBtn_Callback(obj)
-        % helpBtn_Callback  Open plugin documentation in the browser.
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/plugins/organelle-analysis/thres-analysis-for-objects.html'), '-browser');
+            % helpBtn_Callback  Open plugin documentation in the browser.
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'organelle-analysis', 'thres-analysis-for-objects.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/thres-analysis-for-objects.html', '-browser');
+            end
+
         end
 
         % -----------------------------------------------------------------

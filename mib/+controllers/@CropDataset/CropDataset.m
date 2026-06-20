@@ -911,7 +911,13 @@ classdef CropDataset < handle
             %       obj.helpButton_Callback()
             %
 
-            web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/dataset/dataset-crop.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-crop.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-crop.html', '-browser');
+            end
+
         end
 
     end

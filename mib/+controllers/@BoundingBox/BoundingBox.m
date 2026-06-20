@@ -576,7 +576,13 @@ classdef BoundingBox < handle
             %   (none)
             %
 
-            web(fullfile(fileparts(obj.mibModel.mibPath), 'docs/html/user-interface/menu/dataset/dataset-bb.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-bb.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-bb.html', '-browser');
+            end
+
         end
 
         function closeButton_Callback(obj)

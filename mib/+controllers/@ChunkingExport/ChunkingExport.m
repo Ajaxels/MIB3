@@ -150,7 +150,7 @@ classdef ChunkingExport < handle
             obj.view.handles.CloseButton.ButtonPushedFcn     = @(~,~) obj.closeWindow();
             obj.view.handles.SelectDirButton.ButtonPushedFcn = @(~,~) obj.selectDirBtn_Callback();
             obj.view.handles.ChunkButton.ButtonPushedFcn    = @(~,~) obj.chunkBtn_Callback();
-            obj.view.handles.HelpButton.ButtonPushedFcn      = @(~,~) web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-choppedimages.html'));
+            obj.view.handles.HelpButton.ButtonPushedFcn      = @(~,~) obj.helpBtn_Callback();
 
             obj.view.handles.OutputDirectory.ValueChangedFcn  = @(hObject,~) obj.dirEdit_Callback(hObject);
             obj.view.handles.TilesX.ValueChangedFcn  = @(h,~) obj.updateBatchOptFromGUI(h);
@@ -187,6 +187,19 @@ classdef ChunkingExport < handle
 
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
         end
+
+        function helpBtn_Callback(obj)
+            % HELPBTN_CALLBACK - show documentation
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-choppedimages.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-choppedimages.html', '-browser');
+            end
+
+        end
+
 
         % ---------------------------------------------------------------
         function selectDirBtn_Callback(obj)

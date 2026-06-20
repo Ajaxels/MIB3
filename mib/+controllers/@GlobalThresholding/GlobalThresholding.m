@@ -527,8 +527,14 @@ classdef GlobalThresholding < handle
         % -----------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'user-interface', ...
-                'tools', 'global-thresholding.html'), '-browser');
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-globalthres.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-globalthres.html', '-browser');
+            end
+
         end
 
     end

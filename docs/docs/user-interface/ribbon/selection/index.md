@@ -6,7 +6,7 @@
 
 Actions that can be applied to the *Selection* layer. The *Selection* is one of three main segmentation layers 
 (*Model*, *Selection*, *Mask*) which can be used in combination with other layers. 
-See more about segmentation layers in the [Data layers section](../../image-layers.md).
+See more about segmentation layers in the [Data layers section](../../../getting-started/image-layers.md).
 
 ![Selection Ribbon Tab](images/menuSelection.png)
 

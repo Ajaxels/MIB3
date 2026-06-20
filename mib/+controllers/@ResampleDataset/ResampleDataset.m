@@ -346,7 +346,7 @@ classdef ResampleDataset < handle
         end
 
         % ---------------------------------------------------------------
-        function helpBtn_Callback(~)
+        function helpBtn_Callback(obj)
             % HELPBTN_CALLBACK - open online help.
             %
             % Syntax:
@@ -354,7 +354,13 @@ classdef ResampleDataset < handle
             %
             %       obj.helpBtn_Callback()
             %
-            web('https://mib.helsinki.fi/help/user-interface/menu/dataset/index.html#resample', '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'dataset', 'dataset-resample.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/dataset/dataset-resample.html', '-browser');
+            end
+
         end
 
         % ---------------------------------------------------------------

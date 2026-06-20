@@ -16,7 +16,13 @@ Microscopy Image Browser team would like to acknowledge [the User Community of M
 
 ## Code Sources
 
-Microscopy Image Browser adapts partially or completely codes from the following sources:
+!!! note
+    Throughout the historical development of MIB a variety of external code has been used —
+    including functions that were only used in earlier releases (noted in the list below). See
+    [Licenses → External licenses](licenses/licenses-ext.md) to check the exact versions.
+
+Microscopy Image Browser adapts partially or completely codes from the following sources
+(listed alphabetically):
 
 - Inspired by [**IMAGEVIEWER**](http://www.mathworks.com/matlabcentral/fileexchange/13000-imageviewer) by Jiro Doke, MathWorks, 2010
 - API documentation of classes was done using [**MTOC++ - Doxygen filter for MATLAB and tools**](http://www.mathworks.com/matlabcentral/fileexchange/33826-mtoc++-doxygen-filter-for-matlab-and-tools) written by Martin Drohmann (Universität Münster) and Daniel Wirtz (Universität Stuttgart), 2011-2013
@@ -27,13 +33,16 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**BWDISTSC**](https://se.mathworks.com/matlabcentral/fileexchange/15455-3d-euclidean-distance-transform-for-variable-data-aspect-ratio) for 3D Euclidean distance transform for variable data aspect ratio written by Yuriy Mishchenko (Toros University, 2007-2013) is used for separation of anisotropic objects in 3D and calculation of distance maps
 - [**Custom GINPUT**](https://se.mathworks.com/matlabcentral/fileexchange/38703-custom-ginput) written by Jiro Doke (MathWorks, 2016) to get coordinates of a clicked point
 - [**Cell migration in scratch wound assays**](https://se.mathworks.com/matlabcentral/fileexchange/67932-cell-migration-in-scratch-wound-assays) by Constantino Carlos Reyes-Aldasoro, City, University of London, was used for the wound healing assay tool
+- [**DIPLIB**](http://www.diplib.org/) is a platform-independent scientific image processing library written in C, developed by Quantitative Imaging Group at the Faculty of Applied Sciences, Delft University of Technology. When installed, Microscopy Image Browser can use several additional methods for anisotropic diffusion filtering available from DipLib (used in MIB 0.x and 1.x)
 - [**DnD_uifigure: drag & drop functionality for AppDesigner components**](https://se.mathworks.com/matlabcentral/fileexchange/80656-uifilednd) written by Xiangrui Li (The Ohio State University), 2020-2023
 - [**Drag & Drop functionality for JAVA GUI components**](https://se.mathworks.com/matlabcentral/fileexchange/53511-drag-drop-functionality-for-java-gui-components) written by Maarten van der Seijs, Delft University of Technology, the Netherlands, 2015
 - [**DRAWREGIONBOUNDARIES**](http://www.peterkovesi.com/projects/segmentation/) a function to draw boundaries of labeled regions in an image when working with brush, written by Peter Kovesi (Centre for Exploration Targeting, School of Earth and Environment, The University of Western Australia, 2013)
 - [**DRIFTY_SHIFTY_DELUXE**](https://se.mathworks.com/matlabcentral/fileexchange/45453-drifty-shifty-deluxe-m) written by Joshua D. Sugar (Sandia National Laboratories, Livermore, CA, 2014); part of code from this function was adopted in `mibCalcShifts.m`
 - **Elastic Distortion filter** is based on [**Elastic Distortion Transformation on an image**](https://se.mathworks.com/matlabcentral/fileexchange/66663-elastic-distortion-transformation-on-an-image) by David Franco (Catholic University of Parana)
 - [**EXPORT_FIG**](http://www.mathworks.com/matlabcentral/fileexchange/23629-export-fig) function to add measurements to snapshots is written by Oliver Woodford and Yair Altman
+- [**EXTREMA**](http://www.mathworks.com/matlabcentral/fileexchange/12275-extrema-m-extrema2-m) functions by Carlos Adrian Vargas Aguilera, Universidad de Guadalajara, 2006-2007 (used in MIB 0.x and 1.x)
 - [**Fast 3D/2D Region Growing (MEX)**](http://www.mathworks.com/matlabcentral/fileexchange/41666-fast-3d-2d-region-growing--mex-) by Christian Wuerslin (Stanford University, 2013-2015) is used for the region growing tool
+- [**Fast/Robust Template Matching**](http://www.mathworks.com/matlabcentral/fileexchange/24925-fastrobust-template-matching) (2009-2011) by Dirk-Jan Kroon, University of Twente, was used for alignment of datasets in MIB version 1.22 and earlier
 - **Fiji Connect** is using [**MIJ**](http://bigwww.epfl.ch/sage/soft/mij/), a Java package for bi-directional communication and data exchange from MATLAB to ImageJ/Fiji, developed by Daniel Sage, Dimiter Prodanov, Jean-Yves Tinevez, and Johannes Schindelin, 2012
 - [**FINDJOBJ**](http://www.mathworks.com/matlabcentral/fileexchange/14317-findjobj-find-java-handles-of-matlab-graphic-objects) - find java handles of MATLAB graphic objects by Yair Altman, 2007-2013
 - [**FRANGI filter**](http://www.mathworks.com/matlabcentral/fileexchange/24409-hessian-based-frangi-vesselness-filter) by Marc Schrijver and Dirk-Jan Kroon (University of Twente, 2001-2009)
@@ -44,6 +53,7 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**IMCLIPBOARD**](http://www.mathworks.com/matlabcentral/fileexchange/28708-imclipboard) function by Jiro Doke, MathWorks, 2010, is used in the snapshot tool and import from system clipboard
 - [**IceImarisConnector**](http://www.scs2.net/next/index.php?id=110) written by Aaron C. Ponti (ETH Zurich) is used for connection to Imaris
 - [**IMGAUSSIAN**](http://www.mathworks.com/matlabcentral/fileexchange/25397-imgaussian) by Dirk-Jan Kroon (University of Twente), implementation 2009, is used in the 3D Gaussian filter
+- [**Local normalization**](http://www.mathworks.com/matlabcentral/fileexchange/8303-local-normalization) by Guanglei Xiong (xgl99@mails.tsinghua.edu.cn) at Tsinghua University, Beijing, China, 2005 (used in MIB 0.x and 1.x)
 - [**MATGEOM**](https://github.com/mattools/matGeom/), a MATLAB geometry toolbox for 2D/3D geometric computing, is written by David Legland (INRA, France, 2013) is used in some functions
 - [**MATTOMO**](http://bio3d.colorado.edu/PEET/index.html) is a part of PEET (Particle Estimation for Electron Tomography) package, developed at Boulder Laboratory for 3-D Electron Microscopy of Cells, is used for export of models to IMOD format
 - [**MAXFLOW/MINCUT algorithm, v2.22**](http://pub.ist.ac.at/~vnk/software.html) written by Yuri Boykov (University of Western Ontario) and Vladimir Kolmogorov (Microsoft Research, Cambridge) is used in the Graphcut tool
@@ -55,6 +65,7 @@ Microscopy Image Browser adapts partially or completely codes from the following
 - [**P_JSON**](http://www.mathworks.com/matlabcentral/fileexchange/25713-highly-portable-json-input-parser), highly portable JSON parser function, is written by Nedialko, 2009, is used for work with HDF5 files
 - [**PATCHNORMALS**](https://se.mathworks.com/matlabcentral/fileexchange/24330-patch-normals), by Dirk-Jan Kroon (University of Twente), implementation 2009, is used for calculation of normals during export of surfaces to Imaris
 - [**POOLWAITBAR**](https://se.mathworks.com/matlabcentral/answers/465911-parfor-waitbar-how-to-do-this-more-cleanly) class is based on the code submitted by Edric Ellis
+- [**Prettify MATLAB html**](https://se.mathworks.com/matlabcentral/fileexchange/78059-prettify-matlab-html) by Harry Dymond, University of Bristol, is used to prettify MIB documentation until MIB 2.91
 - Random Forest Classifier is based on [**Verena Kaynig implementation**](http://www.kaynig.de/demos.html) with utilization of [randomforest-matlab](https://code.google.com/p/randomforest-matlab/) by Abhishek Jaiantilal
 - [**Region Adjacency Graph (RAG)**](http://www.mathworks.com/matlabcentral/fileexchange/16938-region-adjacency-graph--rag-) function is written by David Legland (INRA, France, 2013) is used in the Graphcut tool
 - [**REGIONPROPS3**](http://www.mathworks.com/matlabcentral/fileexchange/47578-regionprops3) function is written by Chaoyuan Yeh (University of Southern California, 2014) is used for quantifying some object properties in 3D
@@ -85,14 +96,6 @@ Color palettes are generated with help of:
 
 - Some icons used in MIB were provided by [Icons8.com](https://icons8.com), [license information](https://icons8.com/license)
 - Some images were generated using [stable-diffusion image generative AI](https://stability.ai/blog/stable-diffusion-public-release)
-
-## Functions Used in Previous Releases of MIB
-
-- [**DIPLIB**](http://www.diplib.org/) is a platform-independent scientific image processing library written in C, developed by Quantitative Imaging Group at the Faculty of Applied Sciences, Delft University of Technology. When installed, Microscopy Image Browser can use several additional methods for anisotropic diffusion filtering available from DipLib (used in MIB 0.x and 1.x)
-- [**EXTREMA**](http://www.mathworks.com/matlabcentral/fileexchange/12275-extrema-m-extrema2-m) functions by Carlos Adrian Vargas Aguilera, Universidad de Guadalajara, 2006-2007 (used in MIB 0.x and 1.x)
-- [**Fast/Robust Template Matching**](http://www.mathworks.com/matlabcentral/fileexchange/24925-fastrobust-template-matching) (2009-2011) by Dirk-Jan Kroon, University of Twente, was used for alignment of datasets in MIB version 1.22 and earlier
-- [**Local normalization**](http://www.mathworks.com/matlabcentral/fileexchange/8303-local-normalization) by Guanglei Xiong (xgl99@mails.tsinghua.edu.cn) at Tsinghua University, Beijing, China, 2005 (used in MIB 0.x and 1.x)
-- [**Prettify MATLAB html**](https://se.mathworks.com/matlabcentral/fileexchange/78059-prettify-matlab-html) by Harry Dymond, University of Bristol, is used to prettify MIB documentation until MIB 2.91
 
 ---
 

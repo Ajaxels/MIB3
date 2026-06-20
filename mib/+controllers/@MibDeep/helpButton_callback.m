@@ -5,16 +5,23 @@ function helpButton_callback(obj)
 %   .. code-block:: matlab
 %
 %       obj.helpButton_callback()
-%
+
+    helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'deepmib');
     switch obj.view.handles.Mode.SelectedTab.Title
         case 'Directories and Preprocessing'
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_tools_deeplearning_dirs.html'), '-helpbrowser');
+            targetFilename = 'deepmib-dirs.html';
         case 'Train'
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_tools_deeplearning_train.html'), '-helpbrowser');
+            targetFilename = 'deepmib-train.html';
         case 'Predict'
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_tools_deeplearning_predict.html'), '-helpbrowser');
+            targetFilename = 'deepmib-predict.html';
         case 'Options'
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_tools_deeplearning_options.html'), '-helpbrowser');
+            targetFilename = 'deepmib-options.html';
+    end
+
+    if isfile(fullfile(helpFilPath, targetFilename))
+        web(fullfile(helpFilPath, targetFilename), '-browser');
+    else
+        web(sprintf('http://mib.helsinki.fi/help/main3/user-interface/deepmib/%s', targetFilename), '-browser');
     end
 end
 

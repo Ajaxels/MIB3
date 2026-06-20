@@ -1244,9 +1244,13 @@ classdef DisplayAdjust < handle
             %   (none)
             %
 
-            web(fullfile(fileparts(obj.mibModel.mibPath), ...
-                'docs/html/user-interface/panels/viewsettings/viewsettings-adjustments.html'), ...
-                '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'panels', 'selection_imview', 'viewsettings-adjustments.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/panels/selection_imview/viewsettings-adjustments.html', '-browser');
+            end
+
         end
 
         % -----------------------------------------------------------------

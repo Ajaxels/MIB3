@@ -190,7 +190,14 @@ classdef DebrisRemoval < handle
         % -----------------------------------------------------------
         function helpButton_Callback(obj)
             % HELPBUTTON_CALLBACK - Open documentation in browser.
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_image.html'), '-browser');
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'image', 'image-tools-debris.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/image/image-tools-debris.html', '-browser');
+            end
+
         end
 
         % -----------------------------------------------------------

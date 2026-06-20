@@ -2290,8 +2290,14 @@ classdef VolRenApp < handle
             %
             %      obj.showHelp()
 
-            global mibPath;
-            web(fullfile(mibPath, 'techdoc/html/user-interface/menu/file/file-mib3Dviewer.html'), '-browser');
+            
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-mib3Dviewer.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-mib3Dviewer.html', '-browser');
+            end
+            
         end
 
     end

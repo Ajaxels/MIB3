@@ -9,7 +9,7 @@
 The **Selection Panel** provides tools to manipulate the Selection layer, 
 one of three key segmentation layers in MIB (Model, Selection, Mask).
 This layer works in combination with others for tasks like adding, subtracting, or refining segmentations. 
-Learn more about these layers in [Data Layers of MIB](../../image-layers.md).
+Learn more about these layers in [Data Layers of MIB](../../../getting-started/image-layers.md).
 
 <div class="clear-float"></div>
 

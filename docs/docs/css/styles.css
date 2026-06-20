@@ -40,6 +40,11 @@ extra_css:    # location for additional css styles
 /* Extra spacing below each expanded collapsible section (only when open) */
 .md-nav__item--nested > input:checked ~ .md-nav { margin-bottom: 0.5rem !important; }
 
+/* Gap after the "About" section (6th top-level item: Home, Getting Started,
+   Resources, Release notes, Licenses, About) to separate the Getting-Started
+   cluster from the User interface section below it. */
+.md-nav--primary > .md-nav__list > .md-nav__item:nth-child(6) { margin-bottom: 0.8rem !important; }
+
 /* Section titles in the sidebar */
 .md-nav__title                       { padding-top: 0.3rem  !important; padding-bottom: 0.3rem !important; }
 

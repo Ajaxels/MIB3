@@ -15,7 +15,7 @@ h.saveClassifierBtn.ButtonPushedFcn       = @(~,~) obj.saveClassifierBtn_Callbac
 h.wipeTempDirBtn.ButtonPushedFcn          = @(~,~) obj.wipeTempDirBtn_Callback();
 h.tempDirSelectBtn.ButtonPushedFcn        = @(~,~) obj.tempDirSelectBtn_Callback();
 h.classifierFilenameBtn.ButtonPushedFcn   = @(~,~) obj.classifierFilenameBtn_Callback();
-h.helpBtn.ButtonPushedFcn                 = @(~,~) web(fullfile(obj.mibModel.mibPath, 'techdoc/html/ug_gui_menu_tools_random_forest.html'), '-browser');
+h.helpBtn.ButtonPushedFcn                 = @(~,~) obj.helpBtn_Callback();
 h.closeButton.ButtonPushedFcn             = @(~,~) obj.closeWindow();
 
 h.TempDir.ValueChangedFcn                 = @(~,~) obj.tempDirEdit_Callback();

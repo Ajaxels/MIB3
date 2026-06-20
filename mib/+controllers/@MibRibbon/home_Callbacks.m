@@ -156,9 +156,21 @@ switch mode
         obj.mibModel.preferences.Colors.ModelMaterialColors = obj.mibModel.I{id}.labels.materialColors;
         obj.mibController.startController('controllers.Preferences', obj.mibController);  % a new appdesigner version
     case 'Help'                         % obj.handles.ribbonHome.help
-        web(fullfile(obj.mibModel.mibPath, 'docs/site/index.html'), '-browser');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'index.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/index.html', '-browser');
+        end
+
     case 'Open MIB help'                % obj.handles.ribbonHome.helpMenu
-        web(fullfile(obj.mibModel.mibPath, 'docs/site/index.html'), '-browser');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'index.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/index.html', '-browser');
+        end
+
     case 'Tip of the day'               % obj.handles.ribbonHome.tipOfDay
         obj.mibModel.preferences.Tips.ShowTips = true;
         obj.mibController.startController('controllers.WelcomeTips');

@@ -36,6 +36,10 @@ Each component is designed to work together seamlessly, providing a flexible env
 
 ## Getting started
 
+!!! tip "New to MIB?"
+    See [Getting Started → First dataset](../getting-started/first-dataset/index.md) for a full
+    walkthrough from launching MIB to your first segmentation.
+
 To begin, 
 
 - select a working directory with images

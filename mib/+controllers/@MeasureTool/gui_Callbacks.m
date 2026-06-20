@@ -88,7 +88,12 @@ switch source.Tag
         obj.updateTable();
 
     case 'helpBtn'
-        web('https://mib.helsinki.fi/help/user-guide/tools/measure-tool.html', '-browser');
+        helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'tools', 'tools-measuretool.html');
+        if isfile(helpFilPath)
+            web(helpFilPath, '-browser');
+        else
+            web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/tools/tools-measuretool.html', '-browser');
+        end
 
     case 'updateVoxelsButton'
         pixSize = obj.mibModel.I{datasetId}.image.pixSize;

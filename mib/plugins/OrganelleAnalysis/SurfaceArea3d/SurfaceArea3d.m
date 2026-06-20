@@ -364,8 +364,12 @@ classdef SurfaceArea3d < handle
         % Constructs the path relative to ``mibModel.mibPath`` and calls
         % MATLAB's ``web`` function with the ``-browser`` flag.
 
-            mibPath = obj.mibModel.mibPath;
-            web(fullfile(mibPath, 'techdoc/html/user-interface/plugins/organelle-analysis/surface-area-3d.html'), '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'organelle-analysis', 'surface-area-3d.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/organelle-analysis/surface-area-3d.html', '-browser');
+            end
         end
 
         % -----------------------------------------------------------------

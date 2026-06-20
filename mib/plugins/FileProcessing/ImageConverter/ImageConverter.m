@@ -549,7 +549,14 @@ classdef ImageConverter < handle
         % ------------------------------------------------------------------
         % % Additional functions and callbacks
         function helpButton_Callback(obj)
-            web(fullfile(obj.mibModel.mibPath, '../docs/html/user-interface/plugins/file-processing/image-converter.html'), '-browser');
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'file-processing', 'image-converter.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/file-processing/image-converter.html', '-browser');
+            end
+
         end
         
         function Convert(obj)

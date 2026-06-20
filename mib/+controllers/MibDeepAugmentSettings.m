@@ -527,7 +527,13 @@ classdef MibDeepAugmentSettings < handle
             %   function help(obj)
             %
             
-            web(fullfile(obj.mibModel.mibPath, 'techdoc', 'html', 'ug_gui_menu_tools_deeplearning_train.html'), '-helpbrowser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'deepmib', 'deepmib-train.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/deepmib/deepmib-train.html', '-browser');
+            end
+
         end
 
         function restorePreviousSeed(obj)

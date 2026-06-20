@@ -169,7 +169,7 @@ classdef ChunkingImport < handle
             obj.view.handles.CloseButton.ButtonPushedFcn    = @(~,~) obj.closeWindow();
             obj.view.handles.SelectFilesButton.ButtonPushedFcn = @(~,~) obj.selectFilesBtn_Callback();
             obj.view.handles.CombineButton.ButtonPushedFcn  = @(~,~) obj.combineBtn_Callback();
-            obj.view.handles.HelpButton.ButtonPushedFcn     = @(~,~) web(fullfile(obj.mibModel.mibPath, 'techdoc/html/user-interface/menu/file/file-choppedimages.html'));
+            obj.view.handles.HelpButton.ButtonPushedFcn     = @(~,~) obj.helpBtn_Callback();
 
             obj.view.handles.CombineImages.ValueChangedFcn  = @(h,~) obj.updateBatchOptFromGUI(h);
             obj.view.handles.CombineModels.ValueChangedFcn  = @(h,~) obj.updateBatchOptFromGUI(h);
@@ -231,6 +231,18 @@ classdef ChunkingImport < handle
         function updateBatchOptFromGUI(obj, hObject)
             % UPDATEBATCHOPTFROMGUI - Sync a single widget change back to BatchOpt.
             obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
+        end
+
+        function helpBtn_Callback(obj)
+            % HELPBTN_CALLBACK - show documentation
+
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'ribbon', 'home', 'home-choppedimages.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/ribbon/home/home-choppedimages.html', '-browser');
+            end
+
         end
 
         % ---------------------------------------------------------------

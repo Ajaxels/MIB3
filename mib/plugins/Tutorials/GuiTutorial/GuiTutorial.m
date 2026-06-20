@@ -216,9 +216,14 @@ classdef GuiTutorial < handle
         end
 
         % =====================================================================
-        function helpBtn_Callback(~)
+        function helpBtn_Callback(obj)
         % helpBtn_Callback  Open the MIB tutorials page in the browser.
-            web('https://mib.helsinki.fi/tutorials.html', '-browser');
+            helpFilPath = fullfile(fileparts(obj.mibModel.mibPath), 'docs', 'site', 'user-interface', 'plugins', 'tutorials', 'gui-tutorial.html');
+            if isfile(helpFilPath)
+                web(helpFilPath, '-browser');
+            else
+                web('http://mib.helsinki.fi/help/main3/user-interface/plugins/tutorials/gui-tutorial.html', '-browser');
+            end
         end
 
         % =====================================================================
