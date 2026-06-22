@@ -203,6 +203,8 @@ if numel(BatchOpt.Filenames) < 1
     return; 
 end
 
+tic
+
 %% Define additional options
 options.UseBioFormats = BatchOpt.UseBioFormats;
 options.waitbar = BatchOpt.showWaitbar;
@@ -599,4 +601,5 @@ switch BatchOpt.Mode{1}
         notify(obj, 'NewDataset');
 end
 
+toc
 end
