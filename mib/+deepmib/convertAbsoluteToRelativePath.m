@@ -31,7 +31,7 @@ function result = convertAbsoluteToRelativePath(absolutePath, relativePath, temp
 %      absolutePath = 'c:\myfiles\dir1\subdir1';
 %      relativePath = 'c:\myfiles\dir2\subdir2';
 %      templateText = '[RELATIVE]';
-%      result = convertAbsoluteToRelativePath(absolutePath, relativePath, templateText);
+%      result = deepmib.convertAbsoluteToRelativePath(absolutePath, relativePath, templateText);
 %      % result = '[RELATIVE]\..\..\dir1\subdir1'
 %
 
@@ -55,7 +55,7 @@ if contains(absolutePath, relativePath, 'IgnoreCase', true)
 else
     clippedPath = fileparts(relativePath);
     templateText = fullfile(templateText, '..');
-    result = convertAbsoluteToRelativePath(absolutePath, clippedPath, templateText);
+    result = deepmib.convertAbsoluteToRelativePath(absolutePath, clippedPath, templateText);
 
     if ispc
         % check for the root directory
