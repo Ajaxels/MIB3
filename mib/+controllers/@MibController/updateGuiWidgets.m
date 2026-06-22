@@ -396,14 +396,26 @@ if isempty(updatePanels) || ismember('dirContentsDataset', updatePanels)
     % get alias
     dirContents = obj.view.handles.panels.dirContents;
     
-    reader = 'Default';
-    if obj.mibModel.useBioFormats; reader = 'BioFormats'; end
-    
-    % get list of extensions
-    extentions = ['all known', obj.mibModel.extensionRegistryLoad.getAllowedExtensions(dataset.datasetType, reader)];
+    reader = obj.mibModel.selectedReader;
+    if isempty(reader); reader = 'Default'; end
+    % reflect the selected reader in the dropdown (guard for the items it offers)
+    if isprop(dirContents.handles, 'reader') || isfield(dirContents.handles, 'reader')
+        if ismember(reader, dirContents.handles.reader.Items)
+            dirContents.handles.reader.Value = reader;
+        end
+    end
+
+    % get list of extensions (force a cellstr ROW so .Items is always valid even
+    % for a single-element / empty extension set)
+    allowed = obj.mibModel.extensionRegistryLoad.getAllowedExtensions(dataset.datasetType, reader);
+    extentions = [{'all known'}, reshape(cellstr(allowed), 1, [])];
     dirContents.handles.fileFilters.Items = extentions;
-    dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1};
-    obj.mibModel.selectedFileFilter{obj.mibModel.useBioFormats+1} = dirContents.handles.fileFilters.Value;
+    rIdx = models.MibModel.readerToIndex(reader);
+    if ~ismember(obj.mibModel.selectedFileFilter{rIdx}, extentions)
+        obj.mibModel.selectedFileFilter{rIdx} = 'all known';
+    end
+    dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{rIdx};
+    obj.mibModel.selectedFileFilter{rIdx} = dirContents.handles.fileFilters.Value;
 
     if strcmp(newFileDir, obj.mibModel.currentDirectory)
         % Same directory — just highlight the matching file in the existing list

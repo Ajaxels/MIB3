@@ -365,6 +365,16 @@ classdef Preferences < handle
                 if obj.renderedPanels(7) == 1; return; end  % already rendered
                 handles.ZarrLibrary.Value = obj.preferences.IO.Zarr.Library;
                 handles.ZarrLibraryLabel.Text = obj.zarrLibraryDescription(obj.preferences.IO.Zarr.Library);
+                % BioFormats / WSI reader backend dropdown (guarded for older .mlapp).
+                % The dropdown shows 'MIB'/'MATLAB'; preferences store the canonical
+                % lowercase 'mib'/'matlab' (normalized both ways).
+                if isfield(handles, 'BioFormatsLibrary') && isfield(obj.preferences.IO, 'BioFormats')
+                    canon = io.BioFormats.Config.normalizeName(obj.preferences.IO.BioFormats.Library);
+                    handles.BioFormatsLibrary.Value = obj.bioFormatsLibraryItem(handles.BioFormatsLibrary.Items, canon);
+                    if isfield(handles, 'BioFormatsLabel')
+                        handles.BioFormatsLabel.Text = obj.bioFormatsLibraryDescription(canon);
+                    end
+                end
                 obj.renderedPanels(7) = 1;
             end
         end
@@ -377,6 +387,26 @@ classdef Preferences < handle
                 otherwise   % 'python'
                     txt = 'zarr-python (v2 and v3) via the Python interpreter set in External dirs; requires the zarr and numpy packages';
             end
+        end
+
+        function txt = bioFormatsLibraryDescription(~, value)
+            % BIOFORMATSLIBRARYDESCRIPTION - one-line description of a BioFormats reader backend.
+            switch char(value)
+                case 'matlab'
+                    txt = 'MATLAB built-in bioformatsread / openslideread (lazy blockedImage; requires the Medical Imaging WSI support package)';
+                otherwise   % 'mib'
+                    txt = 'MIB bundled OME Bio-Formats Java reader (broadest format coverage, recommended)';
+            end
+        end
+
+        function item = bioFormatsLibraryItem(~, items, canon)
+            % BIOFORMATSLIBRARYITEM - pick the dropdown item matching a canonical
+            % backend name ('mib'|'matlab'), case-insensitively (the dropdown shows
+            % 'MIB'/'MATLAB'). Falls back to the first item if no match.
+            idx = find(strcmpi(items, canon), 1);
+            if isempty(idx); idx = find(contains(lower(items), char(canon)), 1); end
+            if isempty(idx); idx = 1; end
+            item = items{idx};
         end
         
         function helpBtnCallback(obj)
@@ -482,6 +512,11 @@ classdef Preferences < handle
             io.zarr.Config.setLibrary(obj.mibModel.preferences.IO.Zarr.Library);
             io.zarr.Config.setSmoothing(obj.mibModel.preferences.IO.Zarr.Smoothing);
             io.zarr.Config.setPythonPath(obj.mibModel.preferences.ExternalDirs.PythonInstallationPath);
+
+            % activate the selected BioFormats / WSI reader backend (io.BioFormats.Reader)
+            if isfield(obj.mibModel.preferences.IO, 'BioFormats')
+                io.BioFormats.Config.setLibrary(obj.mibModel.preferences.IO.BioFormats.Library);
+            end
 
             activeDataset.labels.materialColors = colorPrefs.ModelMaterialColors;
             activeDataset.labels.lutColors = colorPrefs.LUTColors;
@@ -736,6 +771,17 @@ classdef Preferences < handle
                 case 'ZarrSmoothing'
                     % optional widget (boolean) — smooth coarse->fine label propagation
                     obj.preferences.IO.Zarr.Smoothing = logical(obj.view.handles.ZarrSmoothing.Value);
+                    % committed in ApplyButtonPushedCallback.
+                case 'BioFormatsLibrary'
+                    % BioFormats / WSI reader backend; dropdown shows 'MIB'/'MATLAB',
+                    % stored canonical lowercase ('mib'|'matlab').
+                    if ~isfield(obj.preferences.IO, 'BioFormats'); obj.preferences.IO.BioFormats = struct(); end
+                    obj.preferences.IO.BioFormats.Library = ...
+                        io.BioFormats.Config.normalizeName(obj.view.handles.BioFormatsLibrary.Value);
+                    if isfield(obj.view.handles, 'BioFormatsLabel')
+                        obj.view.handles.BioFormatsLabel.Text = ...
+                            obj.bioFormatsLibraryDescription(obj.preferences.IO.BioFormats.Library);
+                    end
                     % committed in ApplyButtonPushedCallback.
             end
 

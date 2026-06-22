@@ -106,17 +106,18 @@ physXlim = [max(physXlim(1), 1), min(physXlim(2), lvl(2))];
 physZlim = [max(physZlim(1), 1), min(physZlim(2), lvl(3))];
 Tidx = [max(options.t(1), 1), min(options.t(2), obj.time)];
 
-% --- lazy-create / retrieve cached Zarr3VirtualLoader --------------------
-if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
-        ~isa(obj.loaders{1}, 'io.loaders.Zarr3VirtualLoader')
-    axOrder = 'tczyx';
-    if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
-        axOrder = obj.pyramid.axisOrder;
-    end
-    obj.loaders{1} = io.loaders.Zarr3VirtualLoader(obj.filePaths{1}, axOrder);
+% --- pyramid source backend (default zarr3 for existing datasets) ---------
+% A pyramidal image can be backed by an OME-Zarr v3 store ('zarr3', via
+% io.loaders.Zarr3VirtualLoader) or a BioFormats/WSI file ('bioformats', via
+% io.BioFormats.Reader). Both expose the same region-read contract and return a
+% MIB3-order [y, x, z, c, t] block for the requested level + physical sub-region,
+% so the coordinate/orient/resize math below is identical for both.
+sourceType = 'zarr3';
+if isfield(obj.pyramid, 'sourceType') && ~isempty(obj.pyramid.sourceType)
+    sourceType = obj.pyramid.sourceType;
 end
 
-% --- colour selection (1-based inclusive for Zarr3VirtualLoader) ----------
+% --- colour selection (1-based inclusive) ---------------------------------
 if strcmp(type, 'image')
     if isempty(colChannel)
         Clim = [1, obj.colors];
@@ -125,13 +126,40 @@ if strcmp(type, 'image')
     end
 end
 
-% --- zarr path for this level --------------------------------------------
-levelPath = obj.pyramid.levelNames{levelIdx};
+switch sourceType
+    case 'bioformats'
+        % lazy-create / retrieve cached io.BioFormats.Reader
+        if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
+                ~isa(obj.loaders{1}, 'io.BioFormats.Reader')
+            seriesIndex = 0;
+            if isfield(obj.pyramid, 'sourceSeries') && ~isempty(obj.pyramid.sourceSeries)
+                seriesIndex = obj.pyramid.sourceSeries;
+            end
+            readerOpts = struct();
+            if isfield(obj.pyramid, 'sourceReaderLibrary') && ~isempty(obj.pyramid.sourceReaderLibrary)
+                readerOpts.library = obj.pyramid.sourceReaderLibrary;   % 'mib'|'matlab'|'openslide'
+            end
+            obj.loaders{1} = io.BioFormats.Reader(obj.filePaths{1}, seriesIndex, readerOpts);
+        end
+        % readRegion takes a 1-based level + level-local ranges; returns [y x z c t]
+        block = obj.loaders{1}.readRegion(levelIdx, physYlim, physXlim, physZlim, ...
+            Clim, Tidx, obj.dataClass);
 
-% --- read subvolume via Zarr3VirtualLoader --------------------------------
-% block arrives as MIB3 [y, x, z, c, t]
-block = obj.loaders{1}.readRegion(levelPath, physYlim, physXlim, physZlim, ...
-    Clim, Tidx, obj.dataClass);
+    otherwise   % 'zarr3'
+        % lazy-create / retrieve cached Zarr3VirtualLoader
+        if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
+                ~isa(obj.loaders{1}, 'io.loaders.Zarr3VirtualLoader')
+            axOrder = 'tczyx';
+            if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
+                axOrder = obj.pyramid.axisOrder;
+            end
+            obj.loaders{1} = io.loaders.Zarr3VirtualLoader(obj.filePaths{1}, axOrder);
+        end
+        levelPath = obj.pyramid.levelNames{levelIdx};
+        % block arrives as MIB3 [y, x, z, c, t]
+        block = obj.loaders{1}.readRegion(levelPath, physYlim, physXlim, physZlim, ...
+            Clim, Tidx, obj.dataClass);
+end
 
 % --- permute [y,x,z,c,t] to the requested screen orientation -------------
 switch orient

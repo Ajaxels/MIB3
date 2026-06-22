@@ -183,6 +183,12 @@ end
 Prefs.IO.Zarr.Library   = 'native';
 Prefs.IO.Zarr.Smoothing = true;
 
+% Settings for BioFormats / WSI image reading used by the io.bioformats facade.
+%   Library - reader engine for microscopy / whole-slide files:
+%       'mib'    - bundled OME Bio-Formats Java reader (default)
+%       'matlab' - MATLAB built-in bioformatsread / openslideread (lazy blockedImage)
+Prefs.IO.BioFormats.Library = 'mib';
+
 %% ----------- KEY SHORTCUTS PANEL -----------
 Prefs.KeyShortcuts = utils.defaults.generateKeyShortcuts();
 

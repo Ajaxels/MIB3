@@ -29,8 +29,8 @@ arguments (Input)
 end
 
 % get the reader for files
-reader = 'Default';
-if obj.mibModel.useBioFormats; reader = 'BioFormats'; end
+reader = obj.mibModel.selectedReader;
+if isempty(reader); reader = 'Default'; end
 % get dataset type: Standard, Virtual, BigData
 datasetType = obj.mibModel.I{obj.mibModel.id}.datasetType;
 
@@ -92,5 +92,5 @@ switch menuEntry.Tag
 end
 
 % Refresh the file filters widget with updated extensions
-obj.bioFormats_Callback();
+obj.reader_Callback();
 end

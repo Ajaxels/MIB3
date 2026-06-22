@@ -67,7 +67,7 @@ BatchOpt.Mode{2} = {'Combine datasets', 'Load each N-th dataset', ...
         'Add each N-th dataset as new color channel', 'Series-by-series'};
 BatchOpt.DirectoryName = {'Current MIB path'};   % specify the target directory
 BatchOpt.DirectoryName{2} = {'Current MIB path', 'Selected files in Directory Contents', 'Inherit from Directory/File loop', obj.currentDirectory};  % this option forces the directories to be provided from the Dir/File loops
-filter = obj.selectedFileFilter{obj.useBioFormats+1}; % get the selected file filter
+filter = obj.selectedFileFilter{models.MibModel.readerToIndex(obj.selectedReader)}; % get the selected file filter
 if strcmp(filter, 'all known')
     BatchOpt.FilenameFilter = '*.*';
 else
@@ -75,6 +75,7 @@ else
 end
 % BatchOpt.Filenames -> this is optional parameter, when it is provided the loaded files are taken only from this list box
 BatchOpt.UseBioFormats = obj.useBioFormats;
+BatchOpt.Reader = obj.selectedReader;   % 'Default'|'BioFormats'|'OpenSlide' (supersedes UseBioFormats)
 BatchOpt.BioFormatsIndices = '';
 BatchOpt.EachNthStep = '2'; 
 BatchOpt.BackgroundColorIntensity = '65535'; 
@@ -89,7 +90,8 @@ BatchOpt.mibBatchActionName = 'Load and combine images';
 BatchOpt.mibBatchTooltip.Mode = sprintf('Desired mode to combine the images, use "Series-by-series" to process each dataset in a file-container individually (bio-formats only)');
 BatchOpt.mibBatchTooltip.DirectoryName = sprintf('Directory name, where the files are located, use the right mouse click over the Parameters table to modify the directory');
 BatchOpt.mibBatchTooltip.FilenameFilter = sprintf('Filter for filenames: *.* - process all files in the directory; *.tif - process only the TIF files; could also be a filename');
-BatchOpt.mibBatchTooltip.UseBioFormats = sprintf('When checked the Bio-Formats reader will be used');
+BatchOpt.mibBatchTooltip.UseBioFormats = sprintf('When checked the Bio-Formats reader will be used (legacy; superseded by Reader)');
+BatchOpt.mibBatchTooltip.Reader = sprintf('File reader family: Default | BioFormats | OpenSlide');
 BatchOpt.mibBatchTooltip.BioFormatsIndices = sprintf('[BioFormats only] indices of images to be opened for file containers, when empty load all');
 BatchOpt.mibBatchTooltip.EachNthStep = sprintf('Define step to be used for combining images using each N-th option');
 BatchOpt.mibBatchTooltip.BackgroundColorIntensity = sprintf('Intensity of the background color for cases, when width/height of combined images mismatch');
@@ -228,8 +230,22 @@ options.ParentFigure = obj.mibGUI; % handle to mibGUI window to be a parent for 
 %extReg = io.ExtensionRegistryLoad();
 %ext = extReg.getAllowedExtensions('Standard', 'BioFormats', true);
 
-reader = 'Default';
-if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
+% reader family: prefer the explicit BatchOpt.Reader; fall back to the legacy
+% UseBioFormats boolean for back-compatible batch protocols.
+if isfield(BatchOpt, 'Reader') && ~isempty(BatchOpt.Reader)
+    reader = BatchOpt.Reader;
+    if iscell(reader); reader = reader{1}; end
+else
+    reader = 'Default';
+    if BatchOpt.UseBioFormats; reader = 'BioFormats'; end
+end
+
+if obj.preferences.System.DeveloperMode
+    % report dataset type, reader and the first file being loaded
+    fprintf('models.MibModel.loadImages: [%s/%s] -> %s\n', ...
+        obj.I{obj.id}.datasetType, reader, BatchOpt.Filenames{1});
+end
+
 % find a loader that should be used for this specific dataset mode, selected reader and filename extension
 loaderInfo = obj.extensionRegistryLoad.resolveLoader(BatchOpt.Filenames{1}, obj.I{obj.id}.datasetType, reader);
 if ischar(loaderInfo)

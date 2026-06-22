@@ -119,7 +119,12 @@ if ~isKey(meta, 'lutColors')
 end
 obj.lutColors = meta{'lutColors'};
 
-if isempty(meta{'viewPort'})
+% Regenerate the viewPort when it is empty OR its per-channel length does not
+% match the colour count. initializeImgInfo seeds a 1-element default viewPort, so
+% for a multichannel virtual/BigData dataset the stale 1-element struct would
+% otherwise survive and crash getImAdjustStretchCoef (viewPort.min(channels)).
+vpMeta = meta{'viewPort'};
+if isempty(vpMeta) || ~isstruct(vpMeta) || ~isfield(vpMeta, 'min') || numel(vpMeta.min) ~= obj.colors
     meta{'viewPort'} = obj.getDefaultViewPort();
 end
 obj.viewPort = meta{'viewPort'};

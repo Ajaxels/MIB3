@@ -17,7 +17,7 @@ classdef MibDirContents
         listenerUpdateFileList(obj, src, evtData)        % Update list of files in "obj.view.handles.panels.dirContents.handles.fileList" executed upon catch of MibModel->"UpdateFilelist" event
         listener_updatePanelPosition(obj, src, evtData)        % Listener callback: adapt the Directory contents panel grid layout when the panel is docked to a new region of the AppContainer (bottom, left, or right)
         % ------------------ declaration of other methods and callbacks
-        bioFormats_Callback(obj)        % callback for selection of the bio-formats reader by press on obj.view.handles.panels.dirContents.handles.bioFormats, updates the contents of obj.view.handles.panels.dirContents.handles.fileFilters and refresh the list of files in obj.view.handles.panels.dirContents.handles.fileList
+        reader_Callback(obj)        % callback for the file-reader dropdown (obj.view.handles.panels.dirContents.handles.reader: 'Default'|'BioFormats'|'OpenSlide'); updates fileFilters and refreshes the file list
         fileFilters_Callback(obj, hWidget, hData)        % callback for selection of a file filter in the Directory contents panel, the parent widget is obj.handles.panels.dirContents.handles.fileFilters
         fileFilters_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file filters widget (obj.handles.panels.activeDataset.handles.fileFilters)
         fileList_ContextMenu(obj, menuEntry, selectedData)        % callbacks for the context menu of the file list widget (obj.handles.panels.activeDataset.handles.fileList)
@@ -57,7 +57,7 @@ classdef MibDirContents
             %   10. Adds listeners for ``UpdateFileList`` events and panel region changes
             %
             % See also:
-            %   ``fileList_Callback``, ``fileFilters_Callback``, ``bioFormats_Callback``, ``fileList_ContextMenu``, ``listenerUpdateFileList``
+            %   ``fileList_Callback``, ``fileFilters_Callback``, ``reader_Callback``, ``fileList_ContextMenu``, ``listenerUpdateFileList``
             %
             obj.mibController = mainCtrl;       % handle to the main MIB controller
             obj.view = view;                    % handle to the main MIB view
@@ -97,7 +97,7 @@ classdef MibDirContents
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.ClickedFcn = @obj.fileList_Callback;
             obj.handles.fileFilters.ValueChangedFcn = @obj.fileFilters_Callback;
-            obj.handles.bioFormats.ValueChangedFcn = @(~,~)obj.bioFormats_Callback;
+            obj.handles.reader.ValueChangedFcn = @(~,~)obj.reader_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.fileList.DoubleClickedFcn = @obj.fileList_Callback;
             obj.handles.updateFileList.ButtonPushedFcn = @(~,~)obj.updateFileList_Callback;

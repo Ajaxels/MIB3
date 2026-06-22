@@ -163,8 +163,19 @@ classdef ExtensionRegistryLoad < handle
             %
             
             if nargin < 4; withDot = true; end
-            ext = obj.extensionSets{obj.generateKey(mode, reader)};
-            if withDot; ext = strcat('.', ext); end
+            key = obj.generateKey(mode, reader);
+            if ~isKey(obj.extensionSets, key)
+                ext = {};   % unknown mode/reader combination → no extensions
+                return;
+            end
+            ext = obj.extensionSets{key};
+            % Always return a cellstr ROW with empty placeholders removed. A
+            % single-element set stored as {''} would otherwise be unwrapped by the
+            % dictionary {}-indexing to a bare char '' and then collapse downstream
+            % (e.g. ['all known', char] -> a char), crashing dropdown .Items.
+            ext = reshape(cellstr(ext), 1, []);
+            ext = ext(~cellfun(@isempty, ext));
+            if withDot && ~isempty(ext); ext = strcat('.', ext); end
         end
 
         function setAllowedExtensions(obj, mode, reader, extensionList)
@@ -254,7 +265,23 @@ classdef ExtensionRegistryLoad < handle
             
             obj.extensionSets("Standard.BioFormats") = {sort(bioFormats)};
             obj.extensionSets("Virtual.BioFormats") = {sort([{'am'}, bioFormats])};
-            obj.extensionSets("BigData.BioFormats") = {''};
+            % BigData direct-read via BioFormats (WSI pyramids + any BioFormats file,
+            % read on-demand per pyramid level — see development/plan_wsi_readers.md).
+            obj.extensionSets("BigData.BioFormats") = {sort(bioFormats)};
+
+            % OpenSlide reader — classic whole-slide formats. Until the native
+            % MATLAB openslideread engine is wired (Phase D), an OpenSlide selection
+            % opens through the BioFormats loaders (defaultLoaderId routes it like
+            % BioFormats). The extension list is what populates the file-filter
+            % dropdown when OpenSlide is selected.
+            % OpenSlide-supported virtual-slide formats (per the OpenSlide vendor list):
+            % Aperio svs, ARGOS avs, DICOM dcm, Hamamatsu vms/vmu/ndpi, Huron/Trestle/
+            % Ventana/Generic tif, Leica scn, MIRAX mrxs, Philips tiff, Sakura svslide,
+            % Ventana bif, Zeiss czi.
+            openSlideFormats = {'svs','avs','dcm','vms','vmu','ndpi','tif','tiff','scn','mrxs','svslide','bif','czi'};
+            obj.extensionSets("Standard.OpenSlide") = {sort(openSlideFormats)};
+            obj.extensionSets("Virtual.OpenSlide")  = {sort(openSlideFormats)};
+            obj.extensionSets("BigData.OpenSlide")  = {sort(openSlideFormats)};
 
             % Model file extensions (used by MibModel.loadModel)
             % Include imread-compatible formats so *.*  browsing works for
@@ -364,8 +391,10 @@ classdef ExtensionRegistryLoad < handle
                 return;
             end
 
-            % check
-            if reader == "BioFormats"
+            % BioFormats and OpenSlide both route to the BioFormats loader family for
+            % now (the native OpenSlide engine is wired in a later phase; the engine
+            % is resolved inside the loader, not here).
+            if reader == "BioFormats" || reader == "OpenSlide"
                 if mode == "Virtual" || mode == "BigData"
                     id = "BioFormatsVirtual";
                 else

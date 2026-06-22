@@ -89,6 +89,12 @@ methods
         %     - ``.color``        — [numeric] number of colour channels
         %
 
+        if obj.isBigDataMode(options)
+            % BigData: build a pyramid-aware setup (direct WSI reading via the
+            % io.BioFormats.Reader seam) instead of the flat virtual-stack setup.
+            [imginfo, files] = obj.loadMetadataBigData(filenames, options);
+            return;
+        end
         [imginfo, files] = obj.innerLoader.loadMetadata(filenames, options);
     end
 
@@ -120,6 +126,13 @@ methods
         %     - ``.filenames``     — [cell] original file paths (before multi-series rename)
         %     - ``.readerId``      — [totalZ x 1 numeric] maps each slice index to its source file index
         %
+
+        % BigData pyramid setup: loadMetadataBigData already filled imginfo
+        % (dims + Pyramid). Just hand back the file path(s) as obj.data.
+        if obj.isBigDataMode(options) && isKey(imginfo, 'Pyramid')
+            img = {files(1).origFilename};
+            return;
+        end
 
         nFiles = numel(files);
         img = cell([nFiles 1]);
@@ -155,6 +168,160 @@ methods
         imginfo{"Time"}   = max([files.time]);
 
         imginfo{"Virtual"} = Virtual;
+    end
+end
+
+methods (Access = private)
+    function tf = isBigDataMode(obj, options)
+        % ISBIGDATAMODE - true when the dataset mode is BigData (from the per-call
+        % options or, more reliably, the constructor options injected by LoaderFactory).
+        tf = (isfield(options, 'datasetMode') && strcmp(options.datasetMode, 'BigData')) || ...
+             (isfield(obj.Options, 'datasetMode') && strcmp(obj.Options.datasetMode, 'BigData'));
+    end
+
+    function [imginfo, files] = loadMetadataBigData(obj, filenames, options)
+        % LOADMETADATABIGDATA - pyramid-aware BigData setup for a WSI/BioFormats file.
+        %
+        % Enumerates the pyramid *scenes* (un-flattened series), picks one
+        % (single scene → auto; several → selection dialog, or options.BioFormatsIndices
+        % when provided), builds the MIB pyramid via io.BioFormats.Reader.pyramidStruct,
+        % and fills imginfo so MibBigDataImage/MibVirtualImage read on demand through the
+        % getDataZarr → io.BioFormats.Reader seam (sourceType='bioformats').
+        filename = filenames{1};
+        utils.ensureJavaLibraries({'bioformats'});
+        loci.common.DebugTools.setRootLevel('ERROR');
+
+        % --- enumerate pyramid scenes (un-flattened series) -------------------
+        [sceneIdx, sceneName, sceneLevel0] = obj.enumeratePyramidScenes(filename);
+        if isempty(sceneIdx)
+            error('io:BioFormatsVirtualSetupLoader:noPyramidScene', ...
+                'No readable image series found in:\n%s', filename);
+        end
+
+        % --- choose the scene -------------------------------------------------
+        chosen = 1;   % index into sceneIdx
+        if isfield(options, 'BioFormatsIndices') && ~isempty(options.BioFormatsIndices)
+            req = options.BioFormatsIndices;
+            if ischar(req); req = str2num(req); end %#ok<ST2NM>
+            hit = find(sceneIdx == (req(1) - 1), 1);   % BioFormatsIndices is 1-based series
+            if ~isempty(hit); chosen = hit; end
+        elseif numel(sceneIdx) > 1
+            silent = isfield(options, 'silentMode') && options.silentMode;
+            if ~silent
+                items = arrayfun(@(k) sprintf('%s  [%d x %d]', sceneName{k}, ...
+                    sceneLevel0(k, 2), sceneLevel0(k, 1)), 1:numel(sceneIdx), 'UniformOutput', false);
+                % default to the largest scene
+                [~, defIdx] = max(prod(sceneLevel0, 2));
+                dlgOpts.mibPath = obj.mibPath;
+                dlgOpts.WindowStyle = 'modal';
+                dlgOpts.HeaderLines = 2;
+                answer = utils.dlgs.inputUniversalDlg(obj.ParentFigure, ...
+                    'This file contains several image scenes - choose one to open as BigData:', ...
+                    {'Scene:'}, {[items, {defIdx}]}, 'Select scene', dlgOpts);
+                if isempty(answer); imginfo = dictionary(); files = struct([]); return; end
+                chosen = find(strcmp(items, answer{1}), 1);
+                if isempty(chosen); chosen = defIdx; end
+            else
+                [~, chosen] = max(prod(sceneLevel0, 2));
+            end
+        end
+        seriesIndex0 = sceneIdx(chosen);   % 0-based series index of the chosen scene
+
+        % --- voxel size from OME (best-effort) --------------------------------
+        voxel = obj.readVoxelSize(filename, seriesIndex0);   % [y x z] um
+
+        % --- reader backend: OpenSlide family → openslideread engine; otherwise
+        %     the BioFormats engine from the preference (io.BioFormats.Config) ----
+        family = '';
+        if isfield(options, 'readerFamily') && ~isempty(options.readerFamily)
+            family = options.readerFamily;
+        elseif isfield(obj.Options, 'readerFamily') && ~isempty(obj.Options.readerFamily)
+            family = obj.Options.readerFamily;
+        end
+        if strcmpi(family, 'OpenSlide')
+            backend = 'openslide';
+        else
+            backend = io.BioFormats.Config.library();   % 'mib' | 'matlab'
+        end
+
+        % --- pyramid + dimensions via io.BioFormats.Reader (chosen backend) ---
+        rdr = io.BioFormats.Reader(filename, seriesIndex0, struct('library', backend));
+        s   = rdr.info();
+        py  = rdr.pyramidStruct(voxel);   % records sourceReaderLibrary = backend
+        py.sourceSeries = seriesIndex0;
+        rdr.close();
+
+        % --- assemble imginfo -------------------------------------------------
+        imginfo = core.MibImage.initializeImgInfo();
+        imginfo{'Height'}    = s.height;
+        imginfo{'Width'}     = s.width;
+        imginfo{'Depth'}     = s.depth;
+        imginfo{'Colors'}    = s.colors;
+        imginfo{'Time'}      = s.time;
+        imginfo{'imgClass'}  = s.imgClass;
+        imginfo{'Filename'}  = filename;
+        if s.colors > 1; imginfo{'ColorType'} = 'multichannel'; else; imginfo{'ColorType'} = 'grayscale'; end
+        pixSize = imginfo{'pixSize'};
+        pixSize.x = voxel(2); pixSize.y = voxel(1); pixSize.z = voxel(3);
+        imginfo{'pixSize'} = pixSize;
+        imginfo{'Pyramid'} = py;
+
+        % --- minimal files struct --------------------------------------------
+        files = struct();
+        files(1).origFilename = filename;
+        files(1).filename     = filename;
+        files(1).seriesName   = seriesIndex0 + 1;   % 1-based
+        files(1).noLayers     = s.depth;
+        files(1).color        = s.colors;
+        files(1).height       = s.height;
+        files(1).width        = s.width;
+        files(1).time         = s.time;
+        files(1).imgClass     = s.imgClass;
+    end
+
+    function [sceneIdx, sceneName, sceneLevel0] = enumeratePyramidScenes(~, filename)
+        % ENUMERATEPYRAMIDSCENES - list pyramid scenes (un-flattened series),
+        % excluding associated images (macro/label/overview/thumbnail).
+        % Returns 0-based series indices, names, and per-scene level-0 [Y X].
+        br = bfGetReader();
+        br.setFlattenedResolutions(false);
+        br.setId(filename);
+        nS = double(br.getSeriesCount());
+        sceneIdx = []; sceneName = {}; sceneLevel0 = [];
+        for s = 0:nS-1
+            br.setSeries(s);
+            nR  = double(br.getResolutionCount());
+            nm  = char(br.getMetadataStore().getImageName(s));
+            isAssoc = ~isempty(regexpi(nm, 'label|macro|overview|thumbnail', 'once'));
+            % a true scene: a pyramid (resolutions>1) OR a non-associated single image
+            if nR > 1 || ~isAssoc
+                br.setResolution(0);
+                sceneIdx(end+1)      = s; %#ok<AGROW>
+                sceneName{end+1}     = nm; %#ok<AGROW>
+                sceneLevel0(end+1,:) = [double(br.getSizeY()), double(br.getSizeX())]; %#ok<AGROW>
+            end
+        end
+        br.close();
+    end
+
+    function voxel = readVoxelSize(~, filename, seriesIndex0)
+        % READVOXELSIZE - OME physical voxel size [y x z] (um); defaults to 1.
+        voxel = [1 1 1];
+        try
+            br = bfGetReader();
+            br.setFlattenedResolutions(false);
+            br.setId(filename);
+            omeMeta = br.getMetadataStore();
+            vx = omeMeta.getPixelsPhysicalSizeX(seriesIndex0);
+            vy = omeMeta.getPixelsPhysicalSizeY(seriesIndex0);
+            vz = omeMeta.getPixelsPhysicalSizeZ(seriesIndex0);
+            if ~isempty(vx); voxel(2) = double(vx.value(ome.units.UNITS.MICROMETER)); end
+            if ~isempty(vy); voxel(1) = double(vy.value(ome.units.UNITS.MICROMETER)); end
+            if ~isempty(vz); voxel(3) = double(vz.value(ome.units.UNITS.MICROMETER)); end
+            br.close();
+        catch
+        end
+        if any(~isfinite(voxel)) || any(voxel <= 0); voxel = [1 1 1]; end
     end
 end
 end

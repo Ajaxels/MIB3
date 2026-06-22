@@ -127,6 +127,11 @@ Spot / Magic Wand fixes are footprint-bounded and fine.
   readable directly in BigData mode (they work in Standard/Virtual). Path to use them: the **ingest
   converter** (read via BioFormats/OpenSlide → write a `.zarr3` pyramid → open as BigData). Broaden
   `BigData.*` registry entries once a streaming reader or the converter exists.
+  - **→ Planned (2026-06-17): direct WSI image reading for BigData** — instead of (only) converting,
+    let the BigData **image layer** read WSI formats on demand through the same `readRegion` seam the
+    zarr3 reader uses (models stay zarr3). Includes a `preferences.IO.BioFormats.Library`
+    (`'mib'` Java vs `'matlab'` `bioformatsread`/`openslideread`). Benchmark: the two engines are a
+    tie (~2.5 s, pixel-identical on a 50-series CZI). Full draft: **`development/plan_wsi_readers.md`**.
 - **Remote OME-Zarr over HTTP/URL — possible future development.** Investigated 2026-06-17 with two
   real URLs. Findings:
   - **`Import → URL` cannot open zarr** — `controllers.MibRibbon.homeImport_Callback` (`'URL'` case)

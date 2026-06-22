@@ -185,6 +185,15 @@ io.zarr.Config.setLibrary(obj.preferences.IO.Zarr.Library);
 io.zarr.Config.setSmoothing(obj.preferences.IO.Zarr.Smoothing);
 io.zarr.Config.setPythonPath(obj.preferences.ExternalDirs.PythonInstallationPath);
 
+% ------------ BioFormats / WSI reader backend ------------
+% Push the configured BioFormats reader engine into the process-wide
+% io.bioformats.Config used by io.bioformats.Reader. Guard for older saved prefs.
+if ~isfield(obj.preferences.IO, 'BioFormats'); obj.preferences.IO.BioFormats = struct(); end
+if ~isfield(obj.preferences.IO.BioFormats, 'Library')
+    obj.preferences.IO.BioFormats.Library = 'mib';
+end
+io.BioFormats.Config.setLibrary(obj.preferences.IO.BioFormats.Library);
+
 % preload an image used for filter previews
 % move preloading to the first call of the image filters dialog
 obj.sessionSettings.ImageFilters.TestImg = []; %imread(fullfile(obj.mibPath, 'assets', 'images', 'test_img_for_previews.png'));

@@ -77,8 +77,14 @@ classdef LoaderFactory
                     loader = io.loaders.BioFormatsStdLoader(options);
 
                 case "BioFormatsVirtual"
-                    % BioFormats reader for virtual stacking mode
-                    loader = io.loaders.BioFormatsVirtualSetupLoader(options);
+                    % BioFormats reader for virtual stacking / BigData mode.
+                    % Pass the dataset mode so the setup loader can decide between a
+                    % flat virtual stack (Virtual) and a pyramid-aware direct-read
+                    % setup (BigData) — mirrors the OmeZarr case.
+                    opts = options;
+                    opts.datasetMode  = char(loaderInfo.mode);
+                    opts.readerFamily = char(loaderInfo.reader);   % 'BioFormats' | 'OpenSlide'
+                    loader = io.loaders.BioFormatsVirtualSetupLoader(opts);
 
                 case "OmeZarr"
                     % OME-Zarr v3 format — setup loader for all dataset modes.

@@ -44,10 +44,16 @@ classdef MibModel < handle
         % index of the previously selected dataset, to be toggled using Ctrl+E shortcut
         pythonEnv
         % python environment started from MIB
-        selectedFileFilter = {'all known', 'all known'};
-        % file filter selected in the Directory contents panel, cell, where
-        % selectedFileFilter{1} - extension for the standard reader
-        % selectedFileFilter{2} - extension for the bio-formats reader
+        selectedReader = 'Default';
+        % file reader family selected in the Directory Contents panel:
+        % 'Default' (MIB-native), 'BioFormats', or 'OpenSlide'. The BioFormats
+        % engine (MIB-Java vs MATLAB) is the separate preference IO.BioFormats.Library.
+        selectedFileFilter = {'all known', 'all known', 'all known'};
+        % file filter selected in the Directory contents panel, cell, one per reader
+        % family (see MibModel.readerToIndex):
+        % selectedFileFilter{1} - Default reader
+        % selectedFileFilter{2} - BioFormats reader
+        % selectedFileFilter{3} - OpenSlide reader
         selectedFiles
         % cell array with the selected files in the Directory Contents panel
         Sets
@@ -245,6 +251,18 @@ classdef MibModel < handle
             obj.mibPath = mibPath;
             obj.mibVersion = mibVersion;
             obj.initialize();
+        end
+    end
+
+    methods (Static)
+        function idx = readerToIndex(reader)
+            % READERTOINDEX - map a reader family name to its selectedFileFilter slot.
+            %   'Default' -> 1, 'BioFormats' -> 2, 'OpenSlide' -> 3 (default 1).
+            switch char(reader)
+                case 'BioFormats'; idx = 2;
+                case 'OpenSlide';  idx = 3;
+                otherwise;         idx = 1;   % 'Default'
+            end
         end
     end
 end
