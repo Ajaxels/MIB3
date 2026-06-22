@@ -32,8 +32,10 @@ function loadModel(obj, model, BatchOptIn)
 %     returns default options via the "SyncBatch" event
 %
 %     - ``.DirectoryName`` — [cell, ``{'Inherit from dataset filename'}``] target dir
-%     - ``.FilenameFilter`` — [char, ``{'Labels_[F].model'}``] filename filter;
-%       ``[F]`` is expanded to the base name of the currently open image
+%     - ``.FilenameFilter`` — [char, ``{'Labels_[F].model'}``] filename or wildcard filter;
+%       ``[F]`` is replaced with the image base name (no extension).
+%       Relative paths resolve against ``DirectoryName``; absolute paths bypass it.
+%       Wildcards (``*``) are expanded via ``dir()``.
 %     - ``.showWaitbar`` — [logical, ``{true}``] show progress dialog
 %     - ``.id`` — [numeric, ``{obj.id}``] dataset index 1..9
 %
@@ -91,7 +93,10 @@ BatchOpt.id              = id;
 BatchOpt.mibBatchSectionName = 'Ribbon -> Model';
 BatchOpt.mibBatchActionName  = 'Load model';
 BatchOpt.mibBatchTooltip.DirectoryName  = sprintf('Directory where the model file is located; "Inherit from dataset filename" uses the directory of the open image');
-BatchOpt.mibBatchTooltip.FilenameFilter = sprintf('Filename or filter for the model file; [F] is replaced with the base name of the open image');
+BatchOpt.mibBatchTooltip.FilenameFilter = sprintf(['Filename or wildcard filter for the model file; ' ...
+    '[F] is replaced with the image base name (no extension). ' ...
+    'Relative paths resolve against DirectoryName (e.g. "labels\\Labels_[F].model" or "..\\Labels_[F].model"); ' ...
+    'absolute paths bypass DirectoryName']);
 BatchOpt.mibBatchTooltip.showWaitbar    = sprintf('Show or not the progress bar during loading');
 
 batchModeSwitch = 0;
@@ -102,7 +107,7 @@ ErrorDlgOpt = struct('optionalPrefix', 'Error in MibModel.loadModel', 'WindowHei
 if nargin == 3 && ~isempty(BatchOptIn)
     if isstruct(BatchOptIn) == 0
         if isnan(BatchOptIn)
-            BatchOpt2 = rmfield(BatchOpt, 'id');
+            BatchOpt2 = rmfield(BatchOpt, {'id', 'Filenames'});
             eventdata = core.ToggleEventData(BatchOpt2);
             notify(obj, 'SyncBatch', eventdata);
         else
@@ -307,7 +312,9 @@ if ~isempty(model)
     notify(obj, 'ShowImage');
 
     if batchModeSwitch
-        BatchOpt.Filenames = BatchOpt.Filenames(1);   % BatchProcessing expects single-value entries
+        if ~isempty(BatchOpt.Filenames)
+            BatchOpt.Filenames = BatchOpt.Filenames(1);
+        end
         eventdata = core.ToggleEventData(BatchOpt);
         notify(obj, 'SyncBatch', eventdata);
     end
@@ -348,7 +355,7 @@ elseif batchModeSwitch
             notify(obj, 'StopProtocol');
             return;
         end
-        filenames = arrayfun(@(x) fullfile(BatchOpt.DirectoryName{1}, x.name), d, ...
+        filenames = arrayfun(@(x) fullfile(x.folder, x.name), d, ...
             'UniformOutput', false);
     end
 else
@@ -414,7 +421,7 @@ notify(obj, 'UpdateGuiWidgets');
 notify(obj, 'ShowImage');
 
 if batchModeSwitch
-    BatchOpt.Filenames = BatchOpt.Filenames(1);   % BatchProcessing expects single-value entries
+    BatchOpt.Filenames = filenames(1);   % report the resolved file back to BatchProcessing
     eventdata = core.ToggleEventData(BatchOpt);
     notify(obj, 'SyncBatch', eventdata);
 end

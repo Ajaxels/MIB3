@@ -632,9 +632,9 @@ classdef ImageFilters < handle
                     img = cell2mat(obj.mibModel.getData2D('labels', [], [], str2double(obj.BatchOpt.MaterialIndex), getDataOptions));
                 case 'image'
                     switch obj.BatchOpt.ColorChannel{1}
-                        case 'All';      ColCh = 0;
+                        case 'All';       ColCh = 0;
                         case 'Displayed'; ColCh = [];
-                        otherwise;       ColCh = str2double(obj.BatchOpt.ColorChannel{1});
+                        otherwise;        ColCh = str2double(obj.BatchOpt.ColorChannel{1});
                     end
                     img = cell2mat(obj.mibModel.getData2D('image', [], [], ColCh, getDataOptions));
                 otherwise
@@ -649,6 +649,7 @@ classdef ImageFilters < handle
             imgPreFilter = img;  % keep original block for ROI-masked preview
             img = obj.Filter(img);
             if isempty(img); return; end
+            img = squeeze(img);  % doImageFiltering adds Z=1: [H,W,C]→[H,W,1,C]; remove it
 
             % Restrict preview to the ROI area when ROI is shown
             if dataset.roiShow
@@ -727,8 +728,10 @@ classdef ImageFilters < handle
                                     img = imadjust(img, [viewPort.min(colCh)/maxInt viewPort.max(colCh)/maxInt], [0 1], viewPort.gamma(colCh));
                                 end
                             else
-                                if max(viewPort.min) > 0 || min(viewPort.max) ~= maxInt || sum(viewPort.gamma) ~= 3
-                                    for colCh = 1:3
+                                numColCh = size(img, 3);
+                                if max(viewPort.min(1:numColCh)) > 0 || min(viewPort.max(1:numColCh)) ~= maxInt || ...
+                                        sum(viewPort.gamma(1:numColCh)) ~= numColCh
+                                    for colCh = 1:numColCh
                                         img(:,:,colCh) = imadjust(img(:,:,colCh), ...
                                             [viewPort.min(colCh)/maxInt viewPort.max(colCh)/maxInt], [0 1], viewPort.gamma(colCh));
                                     end

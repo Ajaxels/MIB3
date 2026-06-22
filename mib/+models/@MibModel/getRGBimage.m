@@ -56,6 +56,8 @@ function [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)
 
 if nargin < 4; sImgIn = []; end
 if nargin < 3; datasetId = []; end
+customImgProvided = false;
+customImgClass    = '';
 
 if isempty(datasetId); datasetId = obj.id; end
 dataset = obj.I{datasetId};
@@ -131,6 +133,8 @@ else
     currViewPort.gamma = zeros([size(sImgIn, 3), 1]) + 1;
     showModelSwitch = 0;
     showMaskSwitch = 0;
+    customImgProvided = true;
+    customImgClass    = class(sImgIn);
 end
 
 %% Resize image to display resolution
@@ -173,6 +177,12 @@ if any(dataset.datasetType(1) == ['V' 'B']); imgRAW = sImg; end
 if obj.hideImage; sImg(:) = 0; end
 
 max_int = double(dataset.image.maxInt);
+% When a custom image was supplied it may have a different bit depth than the
+% dataset (e.g. uint8 preview of a uint16 dataset).  Override max_int so that
+% the viewport fractions (currViewPort.max / max_int) stay in [0, 1].
+if customImgProvided && ~ismember(customImgClass, {'double', 'single'})
+    max_int = double(intmax(customImgClass));
+end
 
 % Apply live stretch if enabled
 if obj.onFlyImageStretch
@@ -268,7 +278,13 @@ end
 
 %% Generate RGB channels from image data
 colorScale = max_int;
-selectedColorsLUT = dataset.image.lutColors(slices{4}, :);
+% For a custom-provided image the channel count in sImg may differ from the
+% number of channels the dataset currently displays (slices{4}).  Reset to
+% sequential indices so the LUT loop never reads beyond sImg's channels.
+if customImgProvided
+    slices{4} = 1:size(sImg, 3);
+end
+selectedColorsLUT = dataset.image.lutColors(min(slices{4}, size(dataset.image.lutColors, 1)), :);
 
 switch colortype
     case 'grayscale'

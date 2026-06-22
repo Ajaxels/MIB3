@@ -36,7 +36,11 @@ function updateSelectedActionTable(obj, BatchOpt)
 % update sections list
 obj.selectedSection = find(ismember({obj.Sections.Name}, BatchOpt.mibBatchSectionName) == 1);
 % update actions list
-obj.selectedAction = find(ismember({obj.Sections(obj.selectedSection).Actions.Name}, BatchOpt.mibBatchActionName));
+if ~isempty(obj.selectedSection)
+    obj.selectedAction = find(ismember({obj.Sections(obj.selectedSection).Actions.Name}, BatchOpt.mibBatchActionName));
+else
+    obj.selectedAction = [];
+end
 
 % Sync section + action dropdowns without triggering selectProtocolSection_Callback.
 % Disconnecting ValueChangedFcn prevents re-entrant eval calls.
@@ -48,11 +52,18 @@ h.selectProtocolAction.ValueChangedFcn  = [];
 
 sectionItems = {obj.Sections.Name}';
 h.selectProtocolSection.Items = sectionItems;
-h.selectProtocolSection.Value = sectionItems{obj.selectedSection};
+if ~isempty(obj.selectedSection)
+    h.selectProtocolSection.Value = sectionItems{obj.selectedSection};
+end
 
-actionItems = {obj.Sections(obj.selectedSection).Actions.Name}';
-h.selectProtocolAction.Items = actionItems;
-h.selectProtocolAction.Value = actionItems{obj.selectedAction};
+actionItems = {};
+if ~isempty(obj.selectedSection)
+    actionItems = {obj.Sections(obj.selectedSection).Actions.Name}';
+    h.selectProtocolAction.Items = actionItems;
+end
+if ~isempty(obj.selectedAction)
+    h.selectProtocolAction.Value = actionItems{obj.selectedAction};
+end
 
 h.selectProtocolSection.ValueChangedFcn = cbSection;
 h.selectProtocolAction.ValueChangedFcn  = cbAction;
