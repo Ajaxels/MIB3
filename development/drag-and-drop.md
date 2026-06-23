@@ -11,6 +11,14 @@ the helper works for anyone who needs to modify it.
 
 Reference call site: `mib/+views/@MibView/doPostInitializationTasks.m`.
 
+> **⚠️ Status on MATLAB R2026a (preview): this helper intermittently crashes
+> MATLAB.** Dropping a file onto the image-document figure canvas can corrupt
+> the process heap (`STATUS_HEAP_CORRUPTION`, `ntdll.dll`) inside CEF's native
+> drag handler — before any code here runs, so it cannot be caught or worked
+> around in MATLAB. See [R2026a native drop crash](#r2026a-native-drop-crash-status_heap_corruption--unresolved)
+> below. A `uihtml`-based drop zone is the intended replacement (not yet
+> implemented). Repro + bug report: `development/dnd_bug_repro/`.
+
 ---
 
 ## Quick start
@@ -225,6 +233,86 @@ based routing + a confirmation dialog is the robust fallback.
 
 ---
 
+## R2026a native drop crash (STATUS_HEAP_CORRUPTION) — UNRESOLVED
+
+On MATLAB R2026a (preview, `26.1.0.x`), the native drag-and-drop path this
+helper relies on (`webwindow.enableDragAndDropAll` + `FileDragDropCallback`)
+**intermittently crashes MATLAB** when a file is dropped onto a docked
+figure-document **canvas** (the image document):
+
+```
+Exception code : 0xc0000374   (STATUS_HEAP_CORRUPTION)
+Faulting module: ntdll.dll
+```
+
+### Characteristics
+
+- **Intermittent and cumulative** — often crashes on a later drop, sometimes
+  after earlier drops succeeded; a whole run may not crash at all. This is the
+  signature of heap corruption: the damage is *planted* during the drop but the
+  visible crash lags until some later allocation hits the poisoned region.
+- **Real HDF5 files (MATLAB v7.3 / MIB `*.model`) trigger it more readily** than
+  freshly-saved samples or text-ish files — suspected (not confirmed) to involve
+  Chromium content-sniffing the `\x89HDF…` signature, which is near-identical to
+  PNG's `\x89PNG…`, and invoking a buggy native image decoder. Not deterministic.
+- **The crash precedes `FileDragDropCallback`.** With crash-survivable logging
+  (open→write→close at each stage), a crashing drop logs *nothing at all* — not
+  even the first line of the callback. The corruption is entirely inside CEF's
+  native handler, so it cannot be caught, deferred, or guarded from MATLAB.
+
+### What does NOT fix it (all confirmed ineffective)
+
+These were all tried and have no effect on canvas drops, because they run
+*after* the crash point:
+
+- `allowNavigation(false)` (permanent or bracketed per-drag) and `stopDownload()`
+- leaving `FileDragDropCallback` unset (the corruption is upstream of it)
+- deferring the load off the drop event with a timer
+- capture-phase DOM `addEventListener` listeners
+
+### Why the canvas can't be selectively excluded
+
+- `enableDragAndDropAll` is **required** for *any* drop to reach the web layer.
+  With it off — or with plain `enableDragAndDrop` — the DOM receives zero drag
+  events and the cursor shows the no-drop sign over the entire window.
+- With it on, CEF routes drops over the figure canvas to a **native surface that
+  bypasses the DOM**. A live probe confirmed capture-phase `document` listeners
+  receive **no** drag events over the canvas (only over the surrounding HTML
+  panels), so the canvas drop cannot be intercepted in JS either.
+
+### Workaround direction (uihtml — not yet implemented)
+
+A `uihtml` component with custom HTML5 drag-and-drop is **crash-free**: it does
+not use `enableDragAndDropAll` and never touches the native canvas surface
+(verified — dropping the same `.model`/`.am` files onto a `uihtml` zone does not
+crash). The catch: **MATLAB's CEF does not expose `File.path`** on dropped files
+— only `name`, `size`, and the file **bytes** (via `FileReader`) are available.
+MathWorks' own R2026a file-drop example (`dragdrop.html`) likewise works from
+content, not a path.
+
+So a `uihtml` drop zone must: read bytes via `FileReader` → send to MATLAB
+(`sendEventToMATLAB` / `HTMLEventReceivedFcn`) → write a temp file → call
+`loadImages` / `loadModel` on it, with a **size guard** that redirects very
+large datasets to File ▸ Open (byte transfer through the data channel is
+base64-encoded and impractical for multi-GB files). This is the planned MIB
+replacement for `attachFileDnD`.
+
+### Reproduction, report, and MathWorks contact
+
+Self-contained material lives in **`development/dnd_bug_repro/`**:
+
+| File | Purpose |
+|------|---------|
+| `dndCrashRepro.m` | Minimal AppContainer + figure-canvas repro; generates v7 and v7.3 (`.model`) samples to drop |
+| `BUG_REPORT.md` | Full write-up: environment, repro steps, crash signature, findings, and **deterministic** reproduction under a heap verifier (`gflags /p /enable MATLAB.exe /full` or Application Verifier) |
+| `email_to_ken.txt` | Summary sent to the MathWorks contact (crash + the `File.path` gap) |
+
+Because the crash is intermittent, reproduce it **deterministically** under page
+heap / Application Verifier — that faults at the corrupting drop instead of a
+later random allocation.
+
+---
+
 ## Gotchas
 
 | Symptom | Cause | Fix |
@@ -232,7 +320,7 @@ based routing + a confirmation dialog is the robust fallback.
 | File opens while still dragging, before mouse release | You wired `webwindow.FileDragDropCallback` directly instead of using the helper | Use `utils.attachFileDnD` |
 | Dropped text file replaces the whole app UI | DOM defaults not cancelled | Use `utils.attachFileDnD` |
 | Save-As dialog appears after a binary drop | Chromium's default for binaries | Use `utils.attachFileDnD` |
-| **MATLAB hard-crashes (ntdll.dll `STATUS_HEAP_CORRUPTION`) when dropping JPEG (or PNG/GIF) files** | CEF's native JPEG decoder runs even when JS `preventDefault()` is set — the decoder has a heap-corruption bug in some MATLAB/CEF versions when it runs concurrently with `imread` | Fixed in `utils.attachFileDnD`: `webwin.allowNavigation(false)` is called on drag-enter to block the CEF-level navigation before the decoder starts; `allowNavigation(true)` is restored after the drop callback returns |
+| **MATLAB hard-crashes (ntdll.dll `STATUS_HEAP_CORRUPTION`) when dropping files** | CEF's native drag handler corrupts the process heap; originally seen with JPEG/PNG (image decoder), and on **R2026a** also with HDF5 `*.model`/v7.3 files dropped on the figure canvas | **Partially mitigated, NOT fully fixed.** `allowNavigation(false)` reduced the image-decoder case, but on R2026a the corruption happens *before* any MATLAB callback and cannot be guarded — see [R2026a native drop crash](#r2026a-native-drop-crash-status_heap_corruption--unresolved). The intended fix is a `uihtml` drop zone. |
 | Red no-parking 🚫 cursor while dragging | `dropEffect` not set (you modified the helper's JS and removed `dropEffect = 'copy'`) | Set it on **both** `ondragenter` and `ondragover` |
 | Drop does nothing, no error | JS can't find the bridge button | Button must be a child of a `uifigure` rendered in the **same** Chromium document as the webwindow. Open DevTools (`webwin.openDevTools()`) and run the `querySelectorAll` line by hand to confirm. |
 | Works in development, not deployed | `enableDragAndDropAll` called before webwindow is visible | Move the `attachFileDnD` call into a post-init hook, after `drawnow; pause(...)` |
