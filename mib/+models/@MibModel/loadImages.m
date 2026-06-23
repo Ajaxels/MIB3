@@ -75,7 +75,8 @@ else
 end
 % BatchOpt.Filenames -> this is optional parameter, when it is provided the loaded files are taken only from this list box
 BatchOpt.UseBioFormats = obj.useBioFormats;
-BatchOpt.Reader = obj.selectedReader;   % 'Default'|'BioFormats'|'OpenSlide' (supersedes UseBioFormats)
+BatchOpt.Reader = {obj.selectedReader};   % selected reader family (supersedes UseBioFormats)
+BatchOpt.Reader{2} = {'Default', 'BioFormats', 'OpenSlide'};
 BatchOpt.BioFormatsIndices = '';
 BatchOpt.EachNthStep = '2'; 
 BatchOpt.BackgroundColorIntensity = '65535'; 
@@ -243,9 +244,14 @@ else
 end
 
 if obj.preferences.System.DeveloperMode
-    % report dataset type, reader and the first file being loaded
+    % report dataset type, reader (+ BioFormats engine) and the first file loaded
+    switch reader
+        case 'BioFormats'; readerStr = sprintf('BioFormats-%s', io.BioFormats.Config.library());  % mib | matlab
+        case 'OpenSlide';  readerStr = 'OpenSlide';
+        otherwise;         readerStr = reader;   % 'Default'
+    end
     fprintf('models.MibModel.loadImages: [%s/%s] -> %s\n', ...
-        obj.I{obj.id}.datasetType, reader, BatchOpt.Filenames{1});
+        obj.I{obj.id}.datasetType, readerStr, BatchOpt.Filenames{1});
 end
 
 % find a loader that should be used for this specific dataset mode, selected reader and filename extension

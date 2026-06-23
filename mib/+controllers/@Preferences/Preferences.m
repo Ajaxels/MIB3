@@ -365,16 +365,14 @@ classdef Preferences < handle
                 if obj.renderedPanels(7) == 1; return; end  % already rendered
                 handles.ZarrLibrary.Value = obj.preferences.IO.Zarr.Library;
                 handles.ZarrLibraryLabel.Text = obj.zarrLibraryDescription(obj.preferences.IO.Zarr.Library);
+                handles.ZarrSmoothing.Value = obj.preferences.IO.Zarr.Smoothing;
                 % BioFormats / WSI reader backend dropdown (guarded for older .mlapp).
                 % The dropdown shows 'MIB'/'MATLAB'; preferences store the canonical
                 % lowercase 'mib'/'matlab' (normalized both ways).
-                if isfield(handles, 'BioFormatsLibrary') && isfield(obj.preferences.IO, 'BioFormats')
-                    canon = io.BioFormats.Config.normalizeName(obj.preferences.IO.BioFormats.Library);
-                    handles.BioFormatsLibrary.Value = obj.bioFormatsLibraryItem(handles.BioFormatsLibrary.Items, canon);
-                    if isfield(handles, 'BioFormatsLabel')
-                        handles.BioFormatsLabel.Text = obj.bioFormatsLibraryDescription(canon);
-                    end
-                end
+                canon = io.BioFormats.Config.normalizeName(obj.preferences.IO.BioFormats.Library);
+                handles.BioFormatsLibrary.Value = obj.bioFormatsLibraryItem(handles.BioFormatsLibrary.Items, canon);
+                handles.BioFormatsLabel.Text = obj.bioFormatsLibraryDescription(canon);
+                
                 obj.renderedPanels(7) = 1;
             end
         end

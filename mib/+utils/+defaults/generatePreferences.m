@@ -181,7 +181,7 @@ end
 %       when a coarse (zoomed-out) edit is propagated up into finer levels,
 %       instead of a blocky nearest-neighbour upsample.
 Prefs.IO.Zarr.Library   = 'native';
-Prefs.IO.Zarr.Smoothing = true;
+Prefs.IO.Zarr.Smoothing = false;
 
 % Settings for BioFormats / WSI image reading used by the io.bioformats facade.
 %   Library - reader engine for microscopy / whole-slide files:

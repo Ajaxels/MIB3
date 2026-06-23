@@ -417,16 +417,39 @@ classdef MibBigDataLabels < core.MibLabels63
             % so coarse edits don't look blocky at full resolution.
             smoothOn = io.zarr.Config.smoothing();
             srcSize  = size(packed, 1:3);
+            % Memory guards: an edit made zoomed-out can span (nearly) the whole slide,
+            % so a finer target level can be GIGABYTES (e.g. full-res 38144x51200 ~ 2 GB).
+            % Never materialise that in one array: boundary-smoothing is only worth its
+            % cost (and ~6x memory) on SMALL targets; larger upsamples use a tiled,
+            % index-based nearest copy whose peak memory is one strip (~tileBudget bytes).
+            smoothBudget = 4e6;     % max target pixels for resizeBlockSmooth
+            tileBudget   = 8e6;     % max pixels materialised per nearest write (strip)
             for L2 = 1:size(obj.modelLevelSizes, 1)
                 if L2 == sourceLevelIdx; continue; end
                 [A2, B2, C2] = obj.regionForLevel(L2, fullY, fullX, fullZ);
                 targetSize = [A2(2)-A2(1)+1, B2(2)-B2(1)+1, C2(2)-C2(1)+1];
-                if smoothOn && (targetSize(1) > srcSize(1) || targetSize(2) > srcSize(2))
+                isUpsample = targetSize(1) > srcSize(1) || targetSize(2) > srcSize(2);
+                if smoothOn && isUpsample && prod(targetSize) <= smoothBudget
                     block2 = core.MibBigDataLabels.resizeBlockSmooth(packed, targetSize);
+                    obj.writePackedLevel(L2, block2, A2, B2, C2);
                 else
-                    block2 = core.MibBigDataLabels.resizeBlockNearest(packed, targetSize);
+                    % Tiled, index-based nearest resize written in Y-strips so peak
+                    % memory stays ~tileBudget pixels — never materialise a multi-GB
+                    % full-resolution array (inlined, no separate method, so this body
+                    % hot-reloads onto a live model instance without a MIB restart).
+                    pk = uint8(packed);
+                    sy = size(pk, 1); sx = size(pk, 2); sz = size(pk, 3);
+                    ty = targetSize(1); tx = targetSize(2); tz = targetSize(3);
+                    xMap = min(sx, max(1, floor((0:tx-1) * sx / tx) + 1));
+                    zMap = min(sz, max(1, floor((0:tz-1) * sz / tz) + 1));
+                    yMap = min(sy, max(1, floor((0:ty-1) * sy / ty) + 1));
+                    rowsPerStrip = max(1, floor(tileBudget / (max(1, tx) * max(1, tz))));
+                    for r0 = 1:rowsPerStrip:ty
+                        r1 = min(ty, r0 + rowsPerStrip - 1);
+                        sub = pk(yMap(r0:r1), xMap, zMap);   % [(r1-r0+1) x tx x tz]
+                        obj.writePackedLevel(L2, sub, [A2(1)+r0-1, A2(1)+r1-1], B2, C2);
+                    end
                 end
-                obj.writePackedLevel(L2, block2, A2, B2, C2);
             end
         end
 

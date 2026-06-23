@@ -245,8 +245,27 @@ methods (Access = private)
         end
 
         % --- pyramid + dimensions via io.BioFormats.Reader (chosen backend) ---
+        % OpenSlide's bundled libopenslide may not support every format on the vendor
+        % list in a given MATLAB build (e.g. CZI/DICOM need a newer libopenslide). If
+        % the OpenSlide engine can't open this file, fall back to the BioFormats engine.
         rdr = io.BioFormats.Reader(filename, seriesIndex0, struct('library', backend));
-        s   = rdr.info();
+        try
+            s = rdr.info();
+        catch openErr
+            if strcmp(backend, 'openslide')
+                try
+                    rdr.close();
+                catch  %#ok<CTCH>
+                end
+                backend = io.BioFormats.Config.library();   % 'mib' | 'matlab'
+                fprintf(['io.loaders.BioFormatsVirtualSetupLoader: OpenSlide could not open\n  %s\n' ...
+                    '  (%s)\n  Falling back to the BioFormats engine ("%s").\n'], filename, openErr.message, backend);
+                rdr = io.BioFormats.Reader(filename, seriesIndex0, struct('library', backend));
+                s = rdr.info();
+            else
+                rethrow(openErr);
+            end
+        end
         py  = rdr.pyramidStruct(voxel);   % records sourceReaderLibrary = backend
         py.sourceSeries = seriesIndex0;
         rdr.close();
@@ -265,6 +284,10 @@ methods (Access = private)
         pixSize.x = voxel(2); pixSize.y = voxel(1); pixSize.z = voxel(3);
         imginfo{'pixSize'} = pixSize;
         imginfo{'Pyramid'} = py;
+
+        % channel LUT colours from OME metadata (as the Virtual/Standard path does)
+        lut = obj.readLutColors(filename, seriesIndex0, s.colors);
+        if ~isempty(lut); imginfo{'lutColors'} = lut; end
 
         % --- minimal files struct --------------------------------------------
         files = struct();
@@ -322,6 +345,48 @@ methods (Access = private)
         catch
         end
         if any(~isfinite(voxel)) || any(voxel <= 0); voxel = [1 1 1]; end
+    end
+
+    function lut = readLutColors(~, filename, seriesIndex0, colors)
+        % READLUTCOLORS - per-channel LUT colours [colors x 3] in 0..1 from OME
+        % metadata (channel colour, or emission wavelength → RGB). Returns [] when
+        % unavailable, so the caller keeps the default LUT. Mirrors the logic in
+        % io.loaders.BioFormatsStdLoader.loadMetadata.
+        lut = [];
+        try
+            utils.ensureJavaLibraries({'bioformats'});
+            loci.common.DebugTools.setRootLevel('ERROR');
+            br = bfGetReader();
+            br.setFlattenedResolutions(false);
+            br.setId(filename);
+            br.setSeries(seriesIndex0);
+            omeMeta = br.getMetadataStore();
+            if ~isempty(omeMeta.getChannelColor(seriesIndex0, 0))
+                rgb = zeros(colors, 3);
+                for colCh = 1:colors
+                    col = omeMeta.getChannelColor(seriesIndex0, colCh - 1);
+                    if isempty(col); continue; end
+                    rgb(colCh, 1) = col.getRed();
+                    rgb(colCh, 2) = col.getGreen();
+                    rgb(colCh, 3) = col.getBlue();
+                end
+                lut = rgb / 255;
+            elseif ~isempty(omeMeta.getChannelEmissionWavelength(seriesIndex0, 0))
+                rgb = zeros(colors, 3);
+                for colCh = 1:colors
+                    wl = omeMeta.getChannelEmissionWavelength(seriesIndex0, colCh - 1);
+                    if isempty(wl); continue; end
+                    rgb(colCh, :) = io.BioFormats.wavelength2rgb(double(wl.value()));
+                end
+                lut = rgb / 255;
+            end
+            br.close();
+        catch
+            lut = [];
+        end
+        if ~isempty(lut)
+            lut = max(0, min(1, lut));   % clamp to [0,1]
+        end
     end
 end
 end

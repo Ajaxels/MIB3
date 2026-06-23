@@ -33,11 +33,18 @@ with on-demand pyramidal image reads; models/mask/selection stay on the disk-bac
 
 **Drive-by fixes** (surfaced during testing): `getAllowedExtensions` cellstr/missing-key crash on the
 reader dropdown (R7); pre-existing multichannel-`viewPort` crash in `MibVirtualImage.initialize`
-(regenerate when length ≠ colors).
+(regenerate when length ≠ colors); blockedImage backend made **dimension-aware** (Z/C/T from Java
+metadata) so non-WSI volumes (Z-stack, multichannel) read correctly; BigData setup loader now extracts
+**channel LUT colours** from OME metadata (`readLutColors`) — previously only the Virtual/Standard path
+did, so BigData opened with default LUTs; **OpenSlide→BioFormats fallback** — if the bundled
+libopenslide can't open a listed format (e.g. CZI/DICOM in older builds), the setup loader retries with
+the BioFormats engine (records the working engine in `sourceReaderLibrary`).
 
 **Pending / for the user:** restart MIB so the running session loads the new registry extensions +
 reader-dropdown keys; live File→Open test of a WSI as BigData (single-scene auto-load; Zeiss multi-scene
 prompts); confirm model-create + segmentation on a WSI BigData set; optional Phase E.
+→ **Guided GUI checklist: `development/wsi_livetest_checklist.md`** (setup, reader×type matrix, the
+specific test files, the recent fixes to confirm, and model/segmentation steps).
 
 ## Goal & key decision
 

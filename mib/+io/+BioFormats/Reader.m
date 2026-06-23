@@ -322,6 +322,13 @@ classdef Reader < handle
         function openBlocked(obj)
             % OPENBLOCKED - lazily open the blockedImage for the matlab/openslide backend.
             if ~isempty(obj.bim); return; end
+            % MATLAB's bioformatsread/openslideread call javaaddpath, which warns
+            % "Objects of loci/formats/Memoizer class exist - not clearing java"
+            % (MATLAB:Java:DuplicateClass) when MIB's bundled Bio-Formats Java reader
+            % already has live objects. The two Bio-Formats stacks coexist fine on the
+            % path; the warning is benign, so silence it for these calls.
+            prevWarn = warning('off', 'MATLAB:Java:DuplicateClass');
+            cleanupWarn = onCleanup(@() warning(prevWarn));
             switch obj.library
                 case 'openslide'
                     if exist('openslideread', 'file') ~= 2

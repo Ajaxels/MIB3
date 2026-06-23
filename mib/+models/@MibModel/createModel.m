@@ -161,9 +161,15 @@ end
 
 %%
 if BatchOpt.showWaitbar
+    wbMessage = 'Creating model, please wait...';
+    if isBigData
+        wbMessage = sprintf('Creating the on-disk OME-Zarr v3 model store\n(%d pyramid level(s)), please wait...', ...
+            max(1, numel(obj.I{BatchOpt.id}.image.pyramid.levelNames)));
+    end
     wb = uiprogressdlg(obj.getProgressBarParent(), 'Value', 0, ...
-        'Message', 'Creating model, please wait...', ...
+        'Message', wbMessage, ...
         'Title', 'Create model', 'Indeterminate', 'on');
+    drawnow;   % force the dialog to render before the synchronous store creation
 end
 
 if isBigData
