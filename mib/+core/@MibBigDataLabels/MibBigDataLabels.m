@@ -52,9 +52,15 @@ classdef MibBigDataLabels < core.MibLabels63
         % debounce timer (coalesced on idle). When false, every level is written
         % synchronously inside ``setData63`` (legacy behaviour).
         propagationDelay (1,1) double = 0.3
-        % [double] idle seconds before the deferred propagation flush fires.
+        % [double] idle seconds before the background propagation drain starts.
+        drainJobsPerTick (1,1) double = 2
+        % [double] number of bounded finer-level jobs executed per background tick
+        % (kept small so each tick is short and the UI stays responsive during idle).
+        drainTickDelay (1,1) double = 0.05
+        % [double] seconds between background drain ticks (lets the UI breathe).
         propagationQueue = {}
-        % {1 x N} FIFO of pending propagation entries (struct: packed, fullY/X/Z, levelIdx).
+        % {1 x N} FIFO of pending finer-level propagation JOBS (see buildFinerJobs:
+        % struct packed/T/tA/tB/tC/r0/r1/smooth). Coarser levels are written eagerly.
         dirtyLevels = false(1, 0)
         % [1 x nLevels logical] true where a level is stale on disk pending propagation.
         propagationTimer = []
@@ -313,49 +319,96 @@ classdef MibBigDataLabels < core.MibLabels63
         end
 
         function enqueuePropagation(obj, packed, fullY, fullX, fullZ, levelIdx)
-            % ENQUEUEPROPAGATION - defer propagating a merged working-level block
-            % to the other pyramid levels. Records the block + its full-resolution
-            % region, marks every level that does not yet hold this edit as dirty,
-            % and (re)arms the debounce timer so the flush fires on idle.
-            entry = struct('packed', {uint8(packed)}, ...
-                'fullY', {fullY}, 'fullX', {fullX}, 'fullZ', {fullZ}, ...
-                'levelIdx', {levelIdx});
-            obj.propagationQueue{end+1} = entry;
+            % ENQUEUEPROPAGATION - queue the FINER-level propagation of a merged
+            % working-level block as bounded JOBS (coarser levels are written eagerly by
+            % setData63). Each job is a small Y-strip of one finer target level, so the
+            % background drain (onPropagationTimer) persists the finer pyramid levels in
+            % bounded chunks per tick — never a single multi-second / multi-GB write.
+            % This keeps the model "saved live" to disk (finer levels converge within a
+            % few seconds of idle) while brushing stays interactive: a stroke only writes
+            % the working+coarser levels synchronously and queues the rest.
+            newJobs = obj.buildFinerJobs(uint8(packed), fullY, fullX, fullZ, levelIdx);
+            obj.propagationQueue = [obj.propagationQueue, newJobs];
+            obj.refreshDirtyLevels();
+            obj.schedulePropagationFlush();   % drains cooperatively in the background
+        end
 
-            % A level is clean only if EVERY queued edit was written to it; the only
-            % level guaranteed written per edit is its own working level. So a level
-            % is clean now iff all queued edits share that working level.
-            nLevels = size(obj.modelLevelSizes, 1);
-            workingLevels = cellfun(@(e) e.levelIdx, obj.propagationQueue);
-            dirty = true(1, nLevels);
-            uniqueWorking = unique(workingLevels);
-            if isscalar(uniqueWorking); dirty(uniqueWorking) = false; end
-            obj.dirtyLevels = dirty;
-
-            obj.schedulePropagationFlush();
+        function jobs = buildFinerJobs(obj, packed, fullY, fullX, fullZ, srcLevel)
+            % BUILDFINERJOBS - expand a finer-level propagation into bounded strip jobs.
+            % Each job writes a Y-strip of one target level (finer than srcLevel) by
+            % resizing the source `packed` block; peak memory per job ~ tileBudget.
+            smoothOn     = io.zarr.Config.smoothing();
+            smoothBudget = 4e6;
+            tileBudget   = 8e6;
+            sNy = size(packed, 1); sNx = size(packed, 2);
+            jobs = {};
+            for T = 1:(srcLevel - 1)   % finer levels = smaller index
+                [tA, tB, tC] = obj.regionForLevel(T, fullY, fullX, fullZ);
+                ty = tA(2)-tA(1)+1; tx = tB(2)-tB(1)+1; tz = tC(2)-tC(1)+1;
+                isUpsample = ty > sNy || tx > sNx;
+                if smoothOn && isUpsample && ty*tx*tz <= smoothBudget
+                    jobs{end+1} = struct('packed',{packed},'T',{T}, ...
+                        'tA',{tA},'tB',{tB},'tC',{tC},'r0',{1},'r1',{ty},'smooth',{true}); %#ok<AGROW>
+                else
+                    rowsPerStrip = max(1, floor(tileBudget / (max(1,tx)*max(1,tz))));
+                    for r0 = 1:rowsPerStrip:ty
+                        r1 = min(ty, r0 + rowsPerStrip - 1);
+                        jobs{end+1} = struct('packed',{packed},'T',{T}, ...
+                            'tA',{tA},'tB',{tB},'tC',{tC},'r0',{r0},'r1',{r1},'smooth',{false}); %#ok<AGROW>
+                    end
+                end
+            end
         end
 
         function flushPropagation(obj)
-            % FLUSHPROPAGATION - propagate every queued edit to all other levels now.
-            % Safe to call at any time (no-op when the queue is empty or the store
-            % is closed). Used by the debounce timer, by getData63 before reading a
-            % stale level, and by closeStore before dropping the handles.
-            if isempty(obj.propagationQueue)
-                obj.dirtyLevels = false(1, size(obj.modelLevelSizes, 1));
-                return;
-            end
+            % FLUSHPROPAGATION - drain ALL pending finer-level jobs now (synchronous).
+            % Used by getData63 before reading a stale finer level (zoom-in) and by
+            % closeStore before dropping the handles, so disk is fully consistent.
+            obj.drainPropagation(inf);
+        end
+
+        function drainPropagation(obj, maxJobs)
+            % DRAINPROPAGATION - execute up to maxJobs queued finer-level jobs (FIFO).
+            % Each job is a bounded strip write, so a tick stays short; pass Inf for a
+            % full synchronous flush. Refreshes dirtyLevels from the remaining jobs.
+            if nargin < 2; maxJobs = inf; end
+            if isempty(obj.propagationQueue); obj.dirtyLevels = false(1, size(obj.modelLevelSizes, 1)); return; end
             if ~obj.exists || isempty(obj.modelArrays)
-                obj.propagationQueue = {};
-                obj.dirtyLevels = false(1, size(obj.modelLevelSizes, 1));
-                return;
+                obj.propagationQueue = {}; obj.dirtyLevels = false(1, size(obj.modelLevelSizes, 1)); return;
             end
-            queue = obj.propagationQueue;
-            obj.propagationQueue = {};   % take ownership before writing
-            for k = 1:numel(queue)
-                e = queue{k};
-                obj.propagateRegion(e.packed, e.fullY, e.fullX, e.fullZ, e.levelIdx);
+            n = min(maxJobs, numel(obj.propagationQueue));
+            for k = 1:n
+                obj.executeJob(obj.propagationQueue{k});
             end
-            obj.dirtyLevels = false(1, size(obj.modelLevelSizes, 1));
+            obj.propagationQueue(1:n) = [];   % drop the processed jobs
+            obj.refreshDirtyLevels();
+        end
+
+        function executeJob(obj, job)
+            % EXECUTEJOB - write one finer-level strip from a job (see buildFinerJobs).
+            P = job.packed; sy = size(P,1); sx = size(P,2); sz = size(P,3);
+            ty = job.tA(2)-job.tA(1)+1; tx = job.tB(2)-job.tB(1)+1; tz = job.tC(2)-job.tC(1)+1;
+            if job.smooth
+                block2 = core.MibBigDataLabels.resizeBlockSmooth(P, [ty tx tz]);
+                obj.writePackedLevel(job.T, block2, job.tA, job.tB, job.tC);
+            else
+                xMap = min(sx, max(1, floor((0:tx-1)*sx/tx) + 1));
+                zMap = min(sz, max(1, floor((0:tz-1)*sz/tz) + 1));
+                yMap = min(sy, max(1, floor((0:ty-1)*sy/ty) + 1));
+                rows = job.r0:job.r1;
+                sub  = P(yMap(rows), xMap, zMap);
+                obj.writePackedLevel(job.T, sub, [job.tA(1)+job.r0-1, job.tA(1)+job.r1-1], job.tB, job.tC);
+            end
+        end
+
+        function refreshDirtyLevels(obj)
+            % REFRESHDIRTYLEVELS - a level is dirty iff a pending job targets it.
+            nLevels = size(obj.modelLevelSizes, 1);
+            dirty = false(1, nLevels);
+            for k = 1:numel(obj.propagationQueue)
+                dirty(obj.propagationQueue{k}.T) = true;
+            end
+            obj.dirtyLevels = dirty;
         end
     end
 
@@ -408,13 +461,21 @@ classdef MibBigDataLabels < core.MibLabels63
             Zl = core.MibBigDataLabels.clampRange([ceil(fullZ(1)/sf(3)), ceil(fullZ(2)/sf(3))], lv(3));
         end
 
-        function propagateRegion(obj, packed, fullY, fullX, fullZ, sourceLevelIdx)
-            % PROPAGATEREGION - write a merged working-level block into every other
-            % pyramid level. Downsampling (source finer than target) uses a
-            % nearest-neighbour resize. Up-sampling (source coarser than target,
-            % i.e. an edit made zoomed-out pushed into a higher-magnification level)
-            % uses a smooth, label-aware resize when io.zarr.Config.smoothing is on,
-            % so coarse edits don't look blocky at full resolution.
+        function propagateRegion(obj, packed, fullY, fullX, fullZ, sourceLevelIdx, direction)
+            % PROPAGATEREGION - write a merged working-level block into other pyramid
+            % levels. Downsampling (source finer than target) uses a nearest-neighbour
+            % resize. Up-sampling (source coarser than target, i.e. an edit made
+            % zoomed-out pushed into a higher-magnification level) uses a smooth,
+            % label-aware resize when io.zarr.Config.smoothing is on.
+            %
+            % ``direction`` (optional) selects which levels to write — finer levels are
+            % numerically SMALLER indices (level 1 = full resolution):
+            %   - ``'all'``     — every other level (default)
+            %   - ``'coarser'`` — only levels coarser than the source (index > source);
+            %                     a cheap downsample, done eagerly per edit
+            %   - ``'finer'``   — only levels finer than the source (index < source);
+            %                     the expensive upsample toward full res, deferred/lazy
+            if nargin < 7 || isempty(direction); direction = 'all'; end
             smoothOn = io.zarr.Config.smoothing();
             srcSize  = size(packed, 1:3);
             % Memory guards: an edit made zoomed-out can span (nearly) the whole slide,
@@ -426,6 +487,8 @@ classdef MibBigDataLabels < core.MibLabels63
             tileBudget   = 8e6;     % max pixels materialised per nearest write (strip)
             for L2 = 1:size(obj.modelLevelSizes, 1)
                 if L2 == sourceLevelIdx; continue; end
+                if strcmp(direction, 'coarser') && L2 < sourceLevelIdx; continue; end
+                if strcmp(direction, 'finer')   && L2 > sourceLevelIdx; continue; end
                 [A2, B2, C2] = obj.regionForLevel(L2, fullY, fullX, fullZ);
                 targetSize = [A2(2)-A2(1)+1, B2(2)-B2(1)+1, C2(2)-C2(1)+1];
                 isUpsample = targetSize(1) > srcSize(1) || targetSize(2) > srcSize(2);
@@ -471,13 +534,26 @@ classdef MibBigDataLabels < core.MibLabels63
         end
 
         function onPropagationTimer(obj)
-            % ONPROPAGATIONTIMER - timer callback: flush the queue, guarded against
-            % the object being torn down between arming and firing.
+            % ONPROPAGATIONTIMER - cooperative background drain: execute a BOUNDED batch
+            % of finer-level jobs, then re-arm (short delay) if any remain. This persists
+            % the finer pyramid levels to disk gradually during idle — keeping the model
+            % "saved live" — without ever blocking the UI for a long single flush.
             if ~isvalid(obj); return; end
             try
-                obj.flushPropagation();
+                obj.drainPropagation(obj.drainJobsPerTick);
+                if ~isempty(obj.propagationQueue)
+                    % more pending → re-arm with a short inter-tick delay so the UI breathes
+                    if isempty(obj.propagationTimer) || ~isvalid(obj.propagationTimer)
+                        obj.propagationTimer = timer('Name','MibBigDataLabelsPropagation', ...
+                            'ExecutionMode','singleShot','ObjectVisibility','off', ...
+                            'TimerFcn',@(~,~) obj.onPropagationTimer());
+                    end
+                    stop(obj.propagationTimer);
+                    obj.propagationTimer.StartDelay = obj.drainTickDelay;
+                    start(obj.propagationTimer);
+                end
             catch
-                % never let a deferred flush escape onto the timer thread
+                % never let a deferred drain escape onto the timer thread
             end
         end
 
@@ -508,6 +584,33 @@ classdef MibBigDataLabels < core.MibLabels63
     end
 
     methods (Static)
+        function out = reconstructFinerFill(packed, coarse)
+            % RECONSTRUCTFINERFILL - fill empty voxels of a finer-level read `packed`
+            % [y x z] from the coarsest level `coarse` [cy cx cz], WITHOUT dilating the
+            % finer level's own edits. Coarse cells that overlap any fine data are
+            % suppressed before upsampling (so a fine edit's coarse echo never bleeds
+            % back into its empty surroundings); only coarse-cells with no fine data
+            % fill the corresponding empty finer voxels. See getData63 / the brush
+            % performance plan.
+            out = packed;
+            nz  = size(packed, 3);
+            cyx = [size(coarse, 1), size(coarse, 2)];
+            for z = 1:nz
+                pc = out(:, :, z);
+                if all(pc(:)); continue; end          % nothing empty to fill
+                cz = min(z, size(coarse, 3));          % z aligns (zScale=1 for WSI); clamp
+                cc = coarse(:, :, cz);
+                if ~any(cc(:)); continue; end
+                % coarse cells covered by ANY fine data → don't refill them
+                occ = imresize(double(pc > 0), cyx, 'box') > 0;
+                cc(occ) = 0;
+                ccUp = imresize(cc, [size(pc,1), size(pc,2)], 'nearest');   % uint8 preserved
+                e = pc == 0;
+                pc(e) = ccUp(e);
+                out(:, :, z) = pc;
+            end
+        end
+
         function out = resizeBlockNearest(block, targetSize)
             % RESIZEBLOCKNEAREST - nearest-neighbour resize of a packed [y x z] uint8
             % block to targetSize=[ty tx tz], preserving exact packed bytes.

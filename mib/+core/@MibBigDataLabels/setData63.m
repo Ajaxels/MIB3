@@ -40,12 +40,9 @@ levelIdx = obj.pickLevel(options);
 [Yl, Xl, Zl] = obj.orientPhysRanges(levelIdx, orient, options);
 wSize = [Yl(2)-Yl(1)+1, Xl(2)-Xl(1)+1, Zl(2)-Zl(1)+1];
 
-% full-resolution physical ranges for cross-level propagation: scale the
-% working-level region back up by this level's per-axis factor.
+% per-level scale factor [yScale xScale zScale]; used below to map the changed
+% working-level sub-region back to full-resolution coords for propagation.
 sf = obj.modelScaleFactors(levelIdx, :);
-fullY = [(Yl(1)-1)*sf(1)+1, min(Yl(2)*sf(1), obj.height)];
-fullX = [(Xl(1)-1)*sf(2)+1, min(Xl(2)*sf(2), obj.width)];
-fullZ = [(Zl(1)-1)*sf(3)+1, min(Zl(2)*sf(3), obj.depth)];
 
 % resize the displayed-resolution data down/up to the working level region.
 % When zoomed out the brush arrives at a COARSER display resolution than the
@@ -61,22 +58,46 @@ else
     dataLevel = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
 end
 
-% --- read / merge / write the working level ------------------------------
-packed = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);
-packed = mergePacked(packed, dataLevel, type, materialIndex);
-obj.writePackedLevel(levelIdx, packed, Yl, Xl, Zl);
+% --- read / merge the working level --------------------------------------
+before = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);
+packed = mergePacked(before, dataLevel, type, materialIndex);
 
-% --- propagate the merged region to every other level --------------------
-% The working level is now authoritative on disk; the other levels are kept
-% in sync. By default this is DEFERRED: the edit is queued and a debounce
-% timer flushes it on idle (so rapid brush strokes don't pay N level-writes
-% per stroke). Correctness is preserved because getData63 flushes before
-% reading a stale level and closeStore flushes before releasing the store.
-if obj.deferPropagation
-    obj.enqueuePropagation(packed, fullY, fullX, fullZ, levelIdx);
-else
-    obj.propagateRegion(packed, fullY, fullX, fullZ, levelIdx);
-end
+% --- restrict everything to the CHANGED sub-region ------------------------
+% Only the voxels the edit actually altered need to be written and propagated.
+% A small brush stroke at low magnification changes a tiny footprint even though
+% the visible block (Yl/Xl/Zl) is large — writing/propagating just the changed
+% bounding box makes per-stroke cost scale with the edit, not the view, and the
+% full-resolution propagation shrinks proportionally (see
+% development/bigdata_brush_performance.md, Phase 1).
+diff = packed ~= before;
+if ~any(diff(:)); result = true; return; end   % nothing changed → no disk I/O
+
+anyY = find(any(any(diff, 2), 3));   y0 = anyY(1); y1 = anyY(end);
+anyX = find(any(any(diff, 1), 3));   x0 = anyX(1); x1 = anyX(end);
+anyZ = find(any(any(diff, 1), 2));   z0 = anyZ(1); z1 = anyZ(end);
+
+subPacked = packed(y0:y1, x0:x1, z0:z1);
+% working-level absolute index ranges of the changed sub-region
+wY = [Yl(1)+y0-1, Yl(1)+y1-1];
+wX = [Xl(1)+x0-1, Xl(1)+x1-1];
+wZ = [Zl(1)+z0-1, Zl(1)+z1-1];
+obj.writePackedLevel(levelIdx, subPacked, wY, wX, wZ);
+
+% full-resolution region of the changed sub-region (for cross-level propagation)
+pfY = [(wY(1)-1)*sf(1)+1, min(wY(2)*sf(1), obj.height)];
+pfX = [(wX(1)-1)*sf(2)+1, min(wX(2)*sf(2), obj.width)];
+pfZ = [(wZ(1)-1)*sf(3)+1, min(wZ(2)*sf(3), obj.depth)];
+
+% --- propagate the changed region to COARSER levels only -----------------
+% Each edit is stored at the resolution it was drawn (the working level) plus all
+% COARSER levels (a cheap downsample of the small changed region). FINER levels are
+% NEVER written — they hold no information beyond the working level, so they are
+% reconstructed on demand by getData63 (upsampling the coarsest level for the
+% viewport). This makes a stroke cost ~ one bounded write regardless of zoom or
+% slide size: a 500 px brush at 2% no longer triggers a ~600 MB full-res write.
+% Durability is unaffected — every edit is persisted at its drawn resolution and
+% coarser, and the coarsest level holds every edit.
+obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser');
 
 result = true;
 end

@@ -1,4 +1,4 @@
-function clearLayer(obj, layerName, y, x, z, t)
+function clearLayer(obj, layerName, y, x, z, t, magFactor)
 % CLEARLAYER - Clear the layer using numeric coordinate ranges.
 %
 % Syntax:
@@ -50,6 +50,7 @@ function clearLayer(obj, layerName, y, x, z, t)
 % Updates
 % 
 
+if nargin < 7; magFactor = []; end
 if nargin < 6; t = []; end
 if nargin < 5; z = []; end
 if nargin < 4; x = []; end
@@ -112,7 +113,17 @@ if ~isa(obj, 'core.MibLabels63')
                     getDataOptions.t(1):getDataOptions.t(2)) = 0;
     end
 else
-    img = zeros([dy, dx, dz, numel(c), dt], obj.dataClass);
+    % For a disk-backed BigData model, clear at the displayed pyramid level: pass
+    % magFactor so setData63 writes to the SAME level shown (not full resolution),
+    % and size the zero block at the display resolution so we never allocate a
+    % full-res block. Standard (in-memory) MibLabels63 ignores magFactor and uses
+    % the full-resolution block as before.
+    if isa(obj, 'core.MibBigDataLabels') && ~isempty(magFactor) && magFactor ~= 1
+        getDataOptions.magFactor = magFactor;
+        img = zeros([max(1, round(dy/magFactor)), max(1, round(dx/magFactor)), dz, numel(c), dt], obj.dataClass);
+    else
+        img = zeros([dy, dx, dz, numel(c), dt], obj.dataClass);
+    end
     obj.setData(img, layerName, [], [], getDataOptions);
 end
 

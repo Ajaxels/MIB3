@@ -194,6 +194,19 @@ if isfield(options, 'blockModeSwitch') && options.blockModeSwitch
     options.y = ceil(axesY);
 end
 
+% Pass the current magnification so pyramid-based datasets (BigData/zarr3) write to
+% the SAME pyramid level the data was read/displayed at. Without this the level
+% defaults to full resolution (magFactor=1), so a stroke made zoomed-out would be
+% up-sampled to the whole slide and written at full res (very slow). Mirrors
+% MibDataset.getData2D. resizeToMagnification=false => pixel-for-pixel (magFactor=1).
+if ~isfield(options, 'magFactor')
+    if isfield(options, 'resizeToMagnification') && ~options.resizeToMagnification
+        options.magFactor = 1;
+    else
+        options.magFactor = obj.magFactor;
+    end
+end
+
 if options.roiId >= 0
     % get indices of ROI
     if options.roiId == 0

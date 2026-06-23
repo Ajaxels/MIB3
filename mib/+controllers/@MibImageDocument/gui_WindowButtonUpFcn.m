@@ -33,6 +33,10 @@ showCongratulations = false; % switch to show the milestone congratulations
 if nargin < 2; brush_switch = ''; end
 
 % ---- 1. Commit brush stroke (if brush tool was active) ----
+% DeveloperMode timing: prints a per-stage breakdown of the brush commit so a slow
+% stroke can be localised (read / imresize / restrict / write / redraw).
+devTiming = obj.mibModel.preferences.System.DeveloperMode;
+tWBU = tic;
 if iscell(obj.brushSelection) % return after movement of the brush tool
 
     % If a secondary brush slice exists (eraser tweak), swap in the
@@ -44,7 +48,9 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
     % Read the current selection from the model (block-mode aware)
     getDataOptions.blockModeSwitch = 1;
     getDataOptions.roiId = -1;
+    tStage = tic;
     currSelection = cell2mat(obj.mibModel.getData2D('selection', [], [], NaN, getDataOptions));
+    if devTiming; fprintf('  [brush] read selection: %.3f s\n', toc(tStage)); end
 
     % With no committed selection layer (e.g. a BigData set opened browse-only,
     % no model created yet) getData2D returns empty — skip the commit instead of
@@ -58,7 +64,9 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
 
     % Resize brush mask to match the on-disk selection size
     % (may differ when block mode is active or image is zoomed)
+    tStage = tic;
     obj.brushSelection{1}.selection = imresize(obj.brushSelection{1}.selection, size(currSelection), 'method', 'nearest');
+    if devTiming; fprintf('  [brush] imresize mask: %.3f s\n', toc(tStage)); end
 
     % % smooth brush, quite slow
     % filterOptions.fitType = 'Gaussian';
@@ -74,27 +82,31 @@ if iscell(obj.brushSelection) % return after movement of the brush tool
 
     % Restrict brush stroke to the currently selected material if enabled
     if dataset.restrictSelectionToMaterial
+        tStage = tic;
         currModel = cell2mat(obj.mibModel.getData2D('labels', [], [], NaN, getDataOptions));
         obj.brushSelection{1}.selection(currModel ~= selcontour) = 0;
+        if devTiming; fprintf('  [brush] restrict-to-material read: %.3f s\n', toc(tStage)); end
     end
 
     % Restrict brush stroke to the mask layer if enabled
     if dataset.restrictSelectionToMask
+        tStage = tic;
         mask = cell2mat(obj.mibModel.getData2D('mask', [], [], NaN, getDataOptions));
         obj.brushSelection{1}.selection(mask ~= 1) = 0;
+        if devTiming; fprintf('  [brush] restrict-to-mask read: %.3f s\n', toc(tStage)); end
     end
 
     % Write the final selection back to the model
+    tStage = tic;
     if strcmp(brush_switch, 'subtract')
         % Eraser mode: remove brush pixels from the existing selection
         currSelection(obj.brushSelection{1}.selection == 1) = 0;
         obj.mibModel.setData2D(currSelection, 'selection', [], [], NaN, getDataOptions);
     else
         % Add mode: OR the brush stroke into the existing selection
-        tic
         obj.mibModel.setData2D(uint8(currSelection | obj.brushSelection{1}.selection), 'selection', [], [], NaN, getDataOptions);
-        toc
     end
+    if devTiming; fprintf('  [brush] write selection: %.3f s\n', toc(tStage)); end
 
     % Add travelled brush distance to the gamification counter
     travelInMeters = obj.brushSelection{1}.travelPathInPixels * obj.mibModel.sessionSettings.metersPerPixel;
@@ -162,7 +174,12 @@ end
 
 % Refresh the full image display, explicitly specifying this document's set
 % so the correct panel is rendered regardless of mibModel.Sets.selectedSet state.
+tStage = tic;
 obj.mibController.showImage(true, obj.setOfDatasetsIndex);
+if devTiming
+    fprintf('  [brush] showImage redraw: %.3f s\n', toc(tStage));
+    fprintf('  [brush] TOTAL gui_WindowButtonUpFcn: %.3f s\n', toc(tWBU));
+end
 
 % Update the dashed brush cursor outline for the next stroke
 % Pass [] so the position is read from CurrentPoint (not treated as xy)

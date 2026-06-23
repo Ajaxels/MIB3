@@ -108,7 +108,9 @@ if ~isempty(charMode)
 end
 
 if isa(obj.labels, 'core.MibLabels63') && ~strcmp(layer, 'image')
-    obj.labels.clearLayer(layer, y, x, z, t);
+    % pass the current magnification so a disk-backed BigData model clears at the
+    % displayed pyramid level (not full resolution); ignored by in-memory models.
+    obj.labels.clearLayer(layer, y, x, z, t, obj.magFactor);
 else
     obj.(layer).clearLayer([], y, x, z, t);
 end
