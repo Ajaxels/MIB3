@@ -16,6 +16,7 @@ Dataset and image layers
    MibDataset
    MibImage
    MibVirtualImage
+   MibBigDataImage
 
 Label layers
 ------------
@@ -25,6 +26,7 @@ Label layers
 
    MibLabels
    MibLabels63
+   MibBigDataLabels
 
 Overlays and annotations
 ------------------------

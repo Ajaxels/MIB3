@@ -167,38 +167,6 @@ nav = [
       { "Fiji connect" = ["user-interface/panels/fijiconnect/index.md"] },
     ]},
     { "Status Bar" = ["user-interface/statusbar/index.md"] },
-    { "Plugins" = [
-      "plugins/index.md",
-      { "File processing" = [
-        "plugins/file-processing/index.md",
-        { "Image converter" = "plugins/file-processing/image-converter.md" },
-        { "Multi rename tool" = "plugins/file-processing/multi-rename-tool.md" },
-      ]},
-      { "Intensity analysis" = [
-        "plugins/intensity-analysis/index.md",
-        { "Triple area intensity" = "plugins/intensity-analysis/triple-area-intensity.md" },
-      ]},
-      { "Organelle analysis" = [
-        "plugins/organelle-analysis/index.md",
-        { "Golgi orientation" = "plugins/organelle-analysis/golgi-orientation.md" },
-        { "Granularity" = "plugins/organelle-analysis/granularity.md" },
-        { "MCcalc" = "plugins/organelle-analysis/mccalc.md" },
-        { "Surface area 3d" = "plugins/organelle-analysis/surface-area-3d.md" },
-        { "Thres analysis for objects" = "plugins/organelle-analysis/thres-analysis-for-objects.md" },
-      ]},
-      { "Plasmodesmata" = [
-        "plugins/plasmodesmata/index.md",
-        { "Cell wall thickness" = "plugins/plasmodesmata/cellwall-thickness.md" },
-        { "Spacial control points" = "plugins/plasmodesmata/spacial-control-points.md" },
-      ]},
-      { "Tutorials" = [
-        "plugins/tutorials/index.md",
-        { "GUI Tutorial" = "plugins/tutorials/gui-tutorial.md" },
-        { "GUI Tutorial (Batch)" = "plugins/tutorials/gui-tutorial-batch.md" },
-        { "Demo Plugin" = "plugins/tutorials/mib-app-design-plugin.md" },
-        { "MIB Plugin without GUI" = "plugins/tutorials/mib-plugin-without-gui.md" },
-      ]},
-    ]},
     { "DeepMIB" = [
       "user-interface/deepmib/index.md",
       { "Networks" = "user-interface/deepmib/deepmib-networks.md" },
@@ -208,6 +176,38 @@ nav = [
       { "Options" = "user-interface/deepmib/deepmib-options.md" },
     ]},
     { "Key and mouse shortcuts" = "user-interface/key-and-mouse-shortcuts.md" },
+  ]},
+  { "Plugins" = [
+    "plugins/index.md",
+    { "File processing" = [
+      "plugins/file-processing/index.md",
+      { "Image converter" = "plugins/file-processing/image-converter.md" },
+      { "Multi rename tool" = "plugins/file-processing/multi-rename-tool.md" },
+    ]},
+    { "Intensity analysis" = [
+      "plugins/intensity-analysis/index.md",
+      { "Triple area intensity" = "plugins/intensity-analysis/triple-area-intensity.md" },
+    ]},
+    { "Organelle analysis" = [
+      "plugins/organelle-analysis/index.md",
+      { "Golgi orientation" = "plugins/organelle-analysis/golgi-orientation.md" },
+      { "Granularity" = "plugins/organelle-analysis/granularity.md" },
+      { "MCcalc" = "plugins/organelle-analysis/mccalc.md" },
+      { "Surface area 3d" = "plugins/organelle-analysis/surface-area-3d.md" },
+      { "Thres analysis for objects" = "plugins/organelle-analysis/thres-analysis-for-objects.md" },
+    ]},
+    { "Plasmodesmata" = [
+      "plugins/plasmodesmata/index.md",
+      { "Cell wall thickness" = "plugins/plasmodesmata/cellwall-thickness.md" },
+      { "Spacial control points" = "plugins/plasmodesmata/spacial-control-points.md" },
+    ]},
+    { "Tutorials" = [
+      "plugins/tutorials/index.md",
+      { "GUI Tutorial" = "plugins/tutorials/gui-tutorial.md" },
+      { "GUI Tutorial (Batch)" = "plugins/tutorials/gui-tutorial-batch.md" },
+      { "Demo Plugin" = "plugins/tutorials/mib-app-design-plugin.md" },
+      { "MIB Plugin without GUI" = "plugins/tutorials/mib-plugin-without-gui.md" },
+    ]},
   ]},
   { "Dev corner" = [
     { "API" = "api.md" },
