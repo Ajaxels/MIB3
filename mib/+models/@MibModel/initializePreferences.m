@@ -193,6 +193,12 @@ if ~isfield(obj.preferences.IO.BioFormats, 'Library')
     obj.preferences.IO.BioFormats.Library = 'mib';
 end
 io.BioFormats.Config.setLibrary(obj.preferences.IO.BioFormats.Library);
+% Memoizer (.bfmemo) cache directory for the 'mib' backend.
+if isfield(obj.preferences, 'ExternalDirs') && ...
+        isfield(obj.preferences.ExternalDirs, 'BioFormatsMemoizerMemoDir') && ...
+        ~isempty(obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir)
+    io.BioFormats.Config.setMemoDir(obj.preferences.ExternalDirs.BioFormatsMemoizerMemoDir);
+end
 
 % preload an image used for filter previews
 % move preloading to the first call of the image filters dialog

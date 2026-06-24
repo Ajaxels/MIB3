@@ -99,6 +99,10 @@ pfZ = [(wZ(1)-1)*sf(3)+1, min(wZ(2)*sf(3), obj.depth)];
 % coarser, and the coarsest level holds every edit.
 obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser');
 
+% record the working level as authoritative for the touched tiles; finer levels
+% are now implicitly dirty and recomputed lazily on read (getData63) / at Save.
+obj.markTiles(pfY, pfX, pfZ, levelIdx);
+
 result = true;
 end
 

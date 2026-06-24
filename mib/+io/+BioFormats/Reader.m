@@ -80,7 +80,7 @@ classdef Reader < handle
             if isfield(options, 'memoDir') && ~isempty(options.memoDir)
                 obj.memoDir = char(options.memoDir);
             else
-                obj.memoDir = fullfile(tempdir, 'mibVirtual');
+                obj.memoDir = io.BioFormats.Config.memoDir();   % from preferences.ExternalDirs.BioFormatsMemoizerMemoDir
             end
             if ~isfolder(obj.memoDir)
                 try

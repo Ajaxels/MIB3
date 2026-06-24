@@ -515,6 +515,11 @@ classdef Preferences < handle
             if isfield(obj.mibModel.preferences.IO, 'BioFormats')
                 io.BioFormats.Config.setLibrary(obj.mibModel.preferences.IO.BioFormats.Library);
             end
+            % activate the BioFormats Memoizer (.bfmemo) cache directory without restart
+            if isfield(obj.mibModel.preferences.ExternalDirs, 'BioFormatsMemoizerMemoDir') && ...
+                    ~isempty(obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir)
+                io.BioFormats.Config.setMemoDir(obj.mibModel.preferences.ExternalDirs.BioFormatsMemoizerMemoDir);
+            end
 
             activeDataset.labels.materialColors = colorPrefs.ModelMaterialColors;
             activeDataset.labels.lutColors = colorPrefs.LUTColors;

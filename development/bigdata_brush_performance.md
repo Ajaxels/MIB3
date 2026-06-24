@@ -4,6 +4,15 @@ Make the brush and other segmentation tools responsive on disk-backed BigData mo
 (`core.MibBigDataLabels`), at any zoom and slide size. Companion to `plan_wsi_readers.md` /
 `wsi_livetest_checklist.md`. **Status: RESOLVED 2026-06-17.**
 
+> **Superseded (2026-06-24) by the level-map manager** — see `bigdata_levelmap_spec.md` /
+> `bigdata_levelmap_plan.md`. The `reconstructFinerFill` on-read reconstruction below produced a
+> coarse-block **halo** around strokes at non-coarsest zooms (measured ~1.8 k spurious px) and broke
+> the a/s/r/c/f operations. It was replaced by a per-tile **`matLevel`** map: edits write
+> working+coarser and mark the tile; reads recompute finer-than-materialized tiles **from their own
+> source level** (no echo halo), cache them, and a **Save** step materializes every level. The
+> magFactor fix below (the original 11 s → ms win) is unchanged and still in force. The dead
+> deferred-queue machinery and `reconstructFinerFill` have now been **removed**.
+
 ## Root cause (the real fix)
 
 A brush stroke at low magnification took ~11 s. DeveloperMode per-stage timing of the brush commit

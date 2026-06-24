@@ -55,6 +55,25 @@ classdef Config < handle
             tf = strcmp(io.BioFormats.Config.library(), 'matlab');
         end
 
+        function out = memoDir(dirPath)
+            % MEMODIR - get (no args) or set (with a path) the Bio-Formats Memoizer
+            % directory used by the ``'mib'`` backend (where ``.bfmemo`` reader caches
+            % are written). Default ``fullfile(tempdir, 'mibVirtual')``;
+            % ``models.MibModel.initializePreferences`` overrides it from
+            % ``preferences.ExternalDirs.BioFormatsMemoizerMemoDir`` at start-up.
+            persistent memoDirectory
+            if isempty(memoDirectory); memoDirectory = fullfile(tempdir, 'mibVirtual'); end
+            if nargin >= 1 && ~isempty(dirPath)
+                memoDirectory = char(dirPath);
+            end
+            out = memoDirectory;
+        end
+
+        function setMemoDir(dirPath)
+            % SETMEMODIR - set the Bio-Formats Memoizer directory (mib backend).
+            io.BioFormats.Config.memoDir(dirPath);
+        end
+
         function c = normalizeName(name)
             % NORMALIZENAME - map a string to a canonical backend name WITHOUT
             % changing the process-wide setting (unlike ``library(name)``).

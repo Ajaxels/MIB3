@@ -383,15 +383,15 @@ Prefs.SegmTools.Presets.ObjectPicker.Set3.lassoMode = 'Add';
 
 Prefs.SegmTools.Presets.SAM.Set1.Method = 'Interactive';
 Prefs.SegmTools.Presets.SAM.Set1.Dataset = '2D, Slice'; % '2D, Slice', '3D, Stack', 4D, Dataset'
-Prefs.SegmTools.Presets.SAM.Set1.Destination = 'selection'; % 'selection', 'mask', 'model'
+Prefs.SegmTools.Presets.SAM.Set1.Destination = 'selection'; % 'selection', 'mask', 'labels'
 Prefs.SegmTools.Presets.SAM.Set1.Mode = 'replace'; % 'replace', 'add', 'subtract', 'add, +next material'
 Prefs.SegmTools.Presets.SAM.Set2.Method = 'Interactive';
 Prefs.SegmTools.Presets.SAM.Set2.Dataset = '3D, Stack'; % '2D, Slice', '3D, Stack', 4D, Dataset'
-Prefs.SegmTools.Presets.SAM.Set2.Destination = 'model'; % 'selection', 'mask', 'model'
+Prefs.SegmTools.Presets.SAM.Set2.Destination = 'labels'; % 'selection', 'mask', 'labels'
 Prefs.SegmTools.Presets.SAM.Set2.Mode = 'add'; % 'replace', 'add', 'subtract', 'add, +next material'
 Prefs.SegmTools.Presets.SAM.Set3.Method = 'Landmarks';
 Prefs.SegmTools.Presets.SAM.Set3.Dataset = '3D, Stack'; % '2D, Slice', '3D, Stack', 4D, Dataset'
-Prefs.SegmTools.Presets.SAM.Set3.Destination = 'selection'; % 'selection', 'mask', 'model'
+Prefs.SegmTools.Presets.SAM.Set3.Destination = 'selection'; % 'selection', 'mask', 'labels'
 Prefs.SegmTools.Presets.SAM.Set3.Mode = 'replace'; % 'replace', 'add', 'subtract', 'add, +next material'
 
 % two favorite tools available via Ctrl+D and Shift+D key shortcuts

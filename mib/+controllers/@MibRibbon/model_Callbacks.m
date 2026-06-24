@@ -87,6 +87,12 @@ switch mode
         end
     case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filename
         activeId = obj.mibModel.getActiveId();
+        if strcmp(obj.mibModel.I{activeId}.datasetType, 'BigData')
+            % BigData model lives on disk as a pyramid; "Save" finalizes every
+            % level from the level map (the full volume is never gathered to RAM).
+            obj.mibModel.saveBigDataModel(activeId);
+            return;
+        end
         if isempty(obj.mibModel.I{activeId}.labels.filename)
             obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
         else

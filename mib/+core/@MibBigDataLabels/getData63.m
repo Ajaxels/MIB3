@@ -33,28 +33,14 @@ levelIdx = obj.pickLevel(options);
 [physYlim, physXlim, physZlim] = obj.orientPhysRanges(levelIdx, orient, options);
 sf = obj.modelScaleFactors(levelIdx, :);   % [yScale, xScale, zScale]
 
-% --- read the physical [y x z] packed region ------------------------------
+% --- ensure this level is materialized over the read window, then read -----
+% Each edit is stored only at the level it was drawn (+ coarser). Tiles whose
+% authoritative data lives at a coarser level (matLevel > this level) are dirty:
+% materializeForRead recomputes them by upsampling from their source level, writes
+% them to this level, and marks them clean (cached). Clean tiles are untouched —
+% so the editing zoom reads its own data directly (no echo halo).
+obj.materializeForRead(levelIdx, physYlim, physXlim, physZlim);
 packed = obj.readPackedLevel(levelIdx, physYlim, physXlim, physZlim);   % [ny nx nz]
-
-% --- reconstruct coarse-drawn edits missing from this (finer) level -------
-% setData63 stores each edit only at its drawn (working) level and COARSER; finer
-% levels are never written. So when reading a level finer than the coarsest, fill
-% any empty voxels from the coarsest level (which holds every edit), upsampled to
-% this level's resolution — bounded to the read window. Voxels this level DOES hold
-% (an edit drawn at this level or finer) keep their full detail. Finer levels are
-% therefore on-demand views of the coarse data, so strokes never pay a full-res
-% write (see development/bigdata_brush_performance.md).
-nLevels = size(obj.modelLevelSizes, 1);
-if levelIdx < nLevels && ~isempty(packed)
-    fullY = [(physYlim(1)-1)*sf(1)+1, min(physYlim(2)*sf(1), obj.height)];
-    fullX = [(physXlim(1)-1)*sf(2)+1, min(physXlim(2)*sf(2), obj.width)];
-    fullZ = [(physZlim(1)-1)*sf(3)+1, min(physZlim(2)*sf(3), obj.depth)];
-    [cY, cX, cZ] = obj.regionForLevel(nLevels, fullY, fullX, fullZ);
-    coarse = obj.readPackedLevel(nLevels, cY, cX, cZ);
-    if any(coarse(:))
-        packed = core.MibBigDataLabels.reconstructFinerFill(packed, coarse);
-    end
-end
 
 packed = reshape(packed, size(packed, 1), size(packed, 2), size(packed, 3), 1, 1);
 
