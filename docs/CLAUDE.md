@@ -125,7 +125,7 @@ Example: `### My Section` → `#my-section`.
 |--------|-------------------|
 | New ribbon button / menu item | `docs/user-interface/ribbon/<tab>/` |
 | New panel or panel feature | `docs/user-interface/panels/<panel>/` |
-| New plugin | `docs/user-interface/plugins/<category>/` + nav in `zensical.toml` |
+| New plugin | `docs/plugins/<category>/` + nav in `zensical.toml` |
 | New keyboard / mouse shortcut | `docs/user-interface/key-and-mouse-shortcuts.md` |
 | New preference | `docs/user-interface/ribbon/home/home-preferences.md` |
 | New release | `docs/getting-started/releasenotes/index.md` (current) + `release-notes-history.md` (older) |

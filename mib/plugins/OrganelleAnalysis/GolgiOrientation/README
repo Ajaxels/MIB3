@@ -1,0 +1,15 @@
+Test set for the cropped cells: D:\EM3D\MIB_Golgi_plugin_test_80nm_cells
+Folders with cells: BStem01, BStem02, BStem03
+Each folder has a downsampled to 80x80x80nm:
+- dataset in AM format
+- model with the segmented: cell outline, nucleus, golgi
+
+Test set for the complete model: D:\EM3D\MIB_Golgi_plugin_test_80nm_crypt
+Contains a downsampled to 80x80x80nm:
+- dataset in AM format
+- model with cell outlines: Labels_*_CellOutlines_as_objects.model
+- model with Golgi: Labels_*_Golgi_as_objects.model
+- model with nuclei: Labels_*_Nuclei_as_objects.model
+
+All those directories or files specified in the plugin settings
+

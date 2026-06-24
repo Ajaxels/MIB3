@@ -130,19 +130,23 @@ if strcmp(obj.datasetType, 'Standard') && ~strcmp(type, 'everything')
         skipPacked63  = (obj.labels.maxMaterials == 63) && ~strcmp(type, 'image');
 
         if blockIsOff && noROI && ~skipLabelsIdx && ~skipPacked63
+            % Use fastCh (local) so col_channel is not mutated here.
+            % If the fast path falls through (size mismatch), the caller's
+            % col_channel must reach the slow path unchanged so the NaN→[]
+            % conversion below works and MibImage.setData does a full replace.
             if strcmp(type, 'image')
-                if isempty(col_channel); col_channel = obj.slices{4};
-                elseif isscalar(col_channel) && isnan(col_channel); col_channel = 1:obj.image.colors; end
-                channelsNo = numel(col_channel);
+                fastCh = col_channel;
+                if isempty(fastCh); fastCh = obj.slices{4};
+                elseif isscalar(fastCh) && isnan(fastCh); fastCh = 1:obj.image.colors; end
             else
-                col_channel = 1;
-                channelsNo = 1;
+                fastCh = 1;
             end
+            channelsNo = numel(fastCh);
             if iscell(dataset); dataset = dataset{1}; end
             layerData = obj.(type).data;
             expectedNumel = size(layerData,1)*size(layerData,2)*size(layerData,3)*channelsNo*size(layerData,5);
             if numel(dataset) == expectedNumel
-                obj.(type).setDataFast(dataset, [], col_channel, []);   % [] z & [] t ⇒ full-extent write
+                obj.(type).setDataFast(dataset, [], fastCh, []);   % [] z & [] t ⇒ full-extent write
                 if ismember(type, {'labels', 'everything'}); obj.modelExist = true;
                 elseif strcmp(type, 'mask'); obj.maskExist = true; end
                 if (~isfield(options, 'suppressNotify') || ~options.suppressNotify) && event.hasListener(obj, 'SetData')
