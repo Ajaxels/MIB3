@@ -38,6 +38,9 @@ function [selection, dontShowAgain] = inputQuestDlg(ParentFigure, question, vara
 %     - ``.ButtonFontSize`` — [numeric] button font size (default: 12)
 %     - ``.DoNotShowAgain`` — [logical] show a "Do not show again" checkbox (default: ``false``)
 %     - ``.DoNotShowAgainText`` — [char] checkbox label (default: ``'Do not show again'``)
+%     - ``.HelpUrl`` — [char] URL/.html (opened in the browser) or a base-workspace command;
+%           when provided a Help button is shown at the bottom-left (default: ``[]``)
+%     - ``.HelpBtnText`` — [char] Help button label (default: ``'Help'``)
 %
 % Output Arguments:
 %   - **selection** — [char] label of the pressed button; ``''`` when the dialog is
@@ -81,6 +84,8 @@ if ~isfield(options, 'FontSize'); options.FontSize = 14; end
 if ~isfield(options, 'ButtonFontSize'); options.ButtonFontSize = 12; end
 if ~isfield(options, 'DoNotShowAgain'); options.DoNotShowAgain = false; end
 if ~isfield(options, 'DoNotShowAgainText'); options.DoNotShowAgainText = 'Do not show again'; end
+if ~isfield(options, 'HelpUrl'); options.HelpUrl = []; end             % when set, a Help button is shown (bottom-left)
+if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end % Help button label
 
 % ---------- Resolve mibDir and the parent window (shared helper caches) ----------
 mibDir = dlgResolveMibDir(options.mibPath);
@@ -188,11 +193,17 @@ for iBtn = 1:nBtn
 end
 btnsTotalW = sum(btnWidths) + (nBtn - 1) * btnGap;
 
+% optional Help button (bottom-left); width 0 when not requested
+helpBtnW = 0;
+if ~isempty(options.HelpUrl)
+    helpBtnW = max(80, ceil(numel(char(options.HelpBtnText)) * charWidthEst + btnPaddingPx));
+end
+
 iconW = options.IconWidth;
 
 % Grow the dialog width when buttons would otherwise crowd the question
 % text. Required width = buttons + icon column + outer/inner paddings.
-neededWidth = btnsTotalW + iconW + 40;
+neededWidth = btnsTotalW + helpBtnW + iconW + 48;
 if options.WindowWidth < neededWidth
     options.WindowWidth = neededWidth;
 end
@@ -247,30 +258,40 @@ txtLabel.WordWrap          = 'on';
 txtLabel.FontSize          = options.FontSize;
 txtLabel.VerticalAlignment = 'top';
 
-% ---- Bottom area: single row with checkbox (left) + buttons (right) ----
-bottomGrid = uigridlayout(outerGrid, [1, 2]);
+% ---- Bottom area: Help button (left) + checkbox (flex) + action buttons (right) ----
+bottomGrid = uigridlayout(outerGrid, [1, 3]);
 bottomGrid.RowHeight    = {btnH};
 bottomGrid.Layout.Row    = 2;
 bottomGrid.Layout.Column = 1;
-bottomGrid.ColumnWidth   = {'1x', btnsTotalW};
+bottomGrid.ColumnWidth   = {helpBtnW, '1x', btnsTotalW};
 bottomGrid.Padding       = [0, 0, 0, 0];
 bottomGrid.ColumnSpacing = 8;
 
-% "Do not show again" checkbox (row 1, col 1)
+% Help button (row 1, col 1) — shown only when options.HelpUrl is set
+if ~isempty(options.HelpUrl)
+    helpBtn = uibutton(bottomGrid, 'push');
+    helpBtn.Layout.Row      = 1;
+    helpBtn.Layout.Column   = 1;
+    helpBtn.Text            = options.HelpBtnText;
+    helpBtn.FontSize        = options.ButtonFontSize;
+    helpBtn.ButtonPushedFcn = @(~,~) onHelp();
+end
+
+% "Do not show again" checkbox (row 1, col 2)
 chk = [];
 if options.DoNotShowAgain
     chk = uicheckbox(bottomGrid);
     chk.Layout.Row    = 1;
-    chk.Layout.Column = 1;
+    chk.Layout.Column = 2;
     chk.Text          = options.DoNotShowAgainText;
     chk.Value         = false;
     chk.FontSize      = 10;
 end
 
-% Buttons sub-grid (row 1, col 2)
+% Buttons sub-grid (row 1, col 3)
 btnGrid = uigridlayout(bottomGrid, [1, nBtn]);
 btnGrid.Layout.Row    = 1;
-btnGrid.Layout.Column = 2;
+btnGrid.Layout.Column = 3;
 btnGrid.ColumnWidth   = num2cell(btnWidths);
 btnGrid.RowHeight     = {btnH};
 btnGrid.Padding       = [0, 0, 0, 0];
@@ -325,6 +346,24 @@ uiwait(fig);
         selection = src.Text;
         storeDontShow();
         closeDialog();
+    end
+
+    function onHelp()
+        % open options.HelpUrl: a web URL/.html in the browser, otherwise run it
+        % as a base-workspace command (mirrors utils.dlgs.inputUniversalDlg).
+        H = options.HelpUrl;
+        if ischar(H) || isstring(H)
+            H = char(H);
+            if strncmpi(H, 'http', 4) || contains(H, '.html')
+                web(H, '-browser');
+            else
+                try
+                    evalin('base', H);
+                catch err
+                    utils.dlgs.showErrorDialog(options.ParentFigure, err);
+                end
+            end
+        end
     end
 
     function doCancel()

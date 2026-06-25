@@ -72,7 +72,9 @@ switch mode
         [zFile, zDir] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
             'Export model to Zarr3', fullfile(imgPath, ['Labels_' imgStem '.zarr3']));
         if isequal(zFile, 0); return; end
-        zOpt = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, true);
+        datasetInfo = struct('Y', ds.image.height, 'X', ds.image.width, 'Z', ds.image.depth, ...
+            'pixSize', ds.image.pixSize);
+        zOpt = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, true, datasetInfo);
         if isempty(zOpt); return; end   % cancelled the settings dialog
         wb = uiprogressdlg(parentFig, 'Title', 'Export model to Zarr3', ...
             'Message', 'Writing OME-Zarr v3 pyramid, please wait...', 'Indeterminate', 'on');
@@ -88,9 +90,35 @@ switch mode
     case sprintf('Save\nmodel')                                  % obj.handles.ribbonModel.save — save using existing filename
         activeId = obj.mibModel.getActiveId();
         if strcmp(obj.mibModel.I{activeId}.datasetType, 'BigData')
-            % BigData model lives on disk as a pyramid; "Save" finalizes every
-            % level from the level map (the full volume is never gathered to RAM).
-            obj.mibModel.saveBigDataModel(activeId);
+            % BigData model lives on disk as a pyramid; pixel edits are written live.
+            % Offer two ways to persist, since full finalization can be lengthy:
+            %   Finalize & save — materialize every resolution level (consistent at all
+            %                     zooms; needed for export / external readers). Slow on
+            %                     a large slide.
+            %   Save sidecar    — write only the small level-map side-file (fast). A
+            %                     crash-safety checkpoint: the level map is the only
+            %                     volatile state, so persisting it lets a reopen rebuild
+            %                     the deferred finer levels correctly.
+            questOpt = struct('WindowStyle', 'modal', 'mibPath', obj.mibModel.mibPath, ...
+                'WindowHeight', 250, ...
+                'HelpUrl', 'https://mib.helsinki.fi/help/main3/getting-started/dataset-types/index.html');
+            answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
+                sprintf(['How would you like to save the BigData model?\n\n' ...
+                '• Finalize & save — materialize every resolution level so the model is ' ...
+                'consistent at all zooms (needed for export and external readers). On a ' ...
+                'large slide this can take a while.\n\n' ...
+                '• Save sidecar — quickly write only the level-map file. Edits are already ' ...
+                'on disk; this is a fast crash-safety checkpoint so a reopen restores the ' ...
+                'model precisely without re-materializing.']), ...
+                'Save model', 'Finalize & save', 'Save sidecar', 'Cancel', 'Save sidecar', questOpt);
+            switch answer
+                case 'Finalize & save'
+                    obj.mibModel.saveBigDataModel(activeId, 'full');
+                case 'Save sidecar'
+                    obj.mibModel.saveBigDataModel(activeId, 'sidecar');
+                otherwise   % 'Cancel' or dialog closed
+                    return;
+            end
             return;
         end
         if isempty(obj.mibModel.I{activeId}.labels.filename)

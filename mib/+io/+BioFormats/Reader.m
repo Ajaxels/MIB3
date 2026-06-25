@@ -20,7 +20,7 @@ classdef Reader < handle
 % only full resolution (``level == 1``); nothing in the app calls this class yet
 % (no behaviour change). True pyramid-level reads (``setResolution``) and the
 % ``'matlab'`` backend land in later phases (see
-% ``development/plan_wsi_readers.md``).
+% ``development/bigdata/bigdata_implementation_plan.md``).
 %
 % **Examples**
 %

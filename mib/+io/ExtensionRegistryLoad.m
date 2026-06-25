@@ -266,7 +266,7 @@ classdef ExtensionRegistryLoad < handle
             obj.extensionSets("Standard.BioFormats") = {sort(bioFormats)};
             obj.extensionSets("Virtual.BioFormats") = {sort([{'am'}, bioFormats])};
             % BigData direct-read via BioFormats (WSI pyramids + any BioFormats file,
-            % read on-demand per pyramid level — see development/plan_wsi_readers.md).
+            % read on-demand per pyramid level — see development/bigdata/bigdata_implementation_plan.md).
             obj.extensionSets("BigData.BioFormats") = {sort(bioFormats)};
 
             % OpenSlide reader — classic whole-slide formats. Until the native

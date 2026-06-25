@@ -206,6 +206,7 @@ classdef MibSegmentation
             obj.handles.viewSettings.ButtonPushedFcn = @obj.gui_Callbacks;
             obj.handles.help.ButtonPushedFcn = @(src, event)obj.mibController.helpButtons_Callback(src, event);
 
+            obj.handles.brushFixToScreen.ValueChangedFcn = @obj.brushPanel_Callback;
             obj.handles.restrictMaterial.ValueChangedFcn = @(~,~)obj.restrictMaterial_Callback;
             obj.handles.restrictMask.ValueChangedFcn = @(~,~)obj.restrictMask_Callback;
             obj.handles.favoriteTool.ValueChangedFcn = @obj.favTool_Callback;

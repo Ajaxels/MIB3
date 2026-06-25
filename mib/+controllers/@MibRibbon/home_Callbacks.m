@@ -46,7 +46,9 @@ switch mode
             'Export image to Zarr3', fullfile(imgPath, [imgStem '.zarr3']));
         if isequal(zFile, 0); return; end
         outPath = fullfile(zDir, zFile);
-        zOpt = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, false);
+        datasetInfo = struct('Y', ds.image.height, 'X', ds.image.width, 'Z', ds.image.depth, ...
+            'pixSize', ds.image.pixSize);
+        zOpt = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, false, datasetInfo);
         if isempty(zOpt); return; end   % cancelled the settings dialog
         wb = uiprogressdlg(parentFig, 'Title', 'Export to Zarr3', ...
             'Message', 'Writing OME-Zarr v3 pyramid, please wait...', 'Indeterminate', 'on');

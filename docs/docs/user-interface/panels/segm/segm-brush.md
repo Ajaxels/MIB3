@@ -31,6 +31,7 @@ Use the brush to make selections, with size regulated by the <span class="widget
 
 - **Radius**: define brush radius in pixels.
 - **Eraser, x**: define eraser size multiplier.
+- <span class="widget widget-checkbox">Fix to screen</span>: when checked, the brush radius is measured in **screen pixels** rather than image pixels. The cursor circle stays the same size on screen regardless of zoom — zooming in paints fewer image pixels (fine detail), zooming out paints more.
 - ![Interpolation Settings](images/PanelsSegmentationToolsBrushInterpolation.png){.on-glb align=left width="320"}
   **Interpolation settings**: modify settings via dialog (also adjustable in<br>
   [Ribbon → Home -> Preferences -> Segmentation tools](../../ribbon/home/home-preferences.md)<br> 
@@ -82,6 +83,8 @@ Use the following key shortcuts to define and restore presets
 
 - ++shift+1++, ++shift+2++, ++shift+3++ - store preset 1, 2, or 3 correspondingly
 - ++1++, ++2++, ++3++ - restore preset 1, 2, or 3 correspondingly
+
+Each preset stores the **Radius**, **Eraser, x**, <span class="widget widget-checkbox">Fix to screen</span> state, and clustering mode.
 
 ---
 

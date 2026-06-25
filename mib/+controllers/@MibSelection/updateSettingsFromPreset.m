@@ -59,6 +59,12 @@ switch handles.segmTool.Value
         eraser = Brush.(setName).Eraser;
         if ischar(eraser); eraser = str2double(eraser); end
         handles.eraserFactor.Value = eraser;
+        % restore fix-to-screen flag (absent in legacy presets)
+        if isfield(Brush.(setName), 'FixBrushToScreen')
+            handles.brushFixToScreen.Value = logical(Brush.(setName).FixBrushToScreen);
+        else
+            handles.brushFixToScreen.Value = false;
+        end
         % restore clustering mode from Watershed/SLIC boolean flags
         if Brush.(setName).Watershed
             targetCluster = 'Watershed';

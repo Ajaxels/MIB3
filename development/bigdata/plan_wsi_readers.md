@@ -1,5 +1,8 @@
 # Plan: direct WSI image reading for BigData (BioFormats / OpenSlide), zarr3-like
 
+> **Superseded 2026-06-25** — consolidated into `bigdata_logic.md` (how it works) +
+> `bigdata_implementation_plan.md` (status & remaining work). Kept as the dated detail log.
+
 Status: **Phases A–D DONE; Phase E (WSIToZarr3) deferred** (2026-06-17). Sub-initiative of the
 BigData work — see `plan_bigdata.md`.
 

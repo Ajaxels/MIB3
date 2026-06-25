@@ -34,7 +34,8 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             bm = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
                 'Depth', 1, 'Time', 1, 'Colors', 1);
             sp = [tempname '_levelmap.zarr3'];
-            if isfile([sp '.levelmap.mat']); delete([sp '.levelmap.mat']); end
+            lmp = core.MibBigDataLabels.levelMapPathFor(sp);
+            if isfile(lmp); delete(lmp); end
             lb = core.MibBigDataLabels([], bm);
             lb.createStore([256 256 1], sp, pyramid);
             testCase.Lb = lb;
@@ -49,7 +50,8 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             end
             if ~isempty(testCase.StorePath)
                 if isfolder(testCase.StorePath); rmdir(testCase.StorePath, 's'); end
-                if isfile([testCase.StorePath '.levelmap.mat']); delete([testCase.StorePath '.levelmap.mat']); end
+                lmp = core.MibBigDataLabels.levelMapPathFor(testCase.StorePath);
+                if isfile(lmp); delete(lmp); end
             end
         end
     end
@@ -104,7 +106,7 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             lb.setData63(testCase.disk(2, 30), 'selection', 3, [], testCase.opts(2));
             mapBefore = lb.matLevel;
             lb.closeStore();
-            testCase.verifyTrue(isfile([testCase.StorePath '.levelmap.mat']), ...
+            testCase.verifyTrue(isfile(core.MibBigDataLabels.levelMapPathFor(testCase.StorePath)), ...
                 'closeStore must write the side-file');
             bm = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
                 'Depth', 1, 'Time', 1, 'Colors', 1);
@@ -114,16 +116,25 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
         end
 
         function testFallbackWhenSideFileMissing(testCase)
+            % An imported / externally-created model has precise data at EVERY level but
+            % no sidecar. Opening it must assume "fully precise" (matLevel = 1) and must
+            % NOT degrade the finer levels by upsampling the coarsest.
             lb = testCase.Lb;
-            lb.setData63(testCase.disk(8, 8), 'selection', 3, [], testCase.opts(8));
+            % write at the FINEST level so all levels get proper precise data (emulates
+            % an external import where the whole pyramid is consistent)
+            lb.setData63(testCase.disk(1, 60), 'selection', 3, [], testCase.opts(1));
+            finestBefore = squeeze(lb.getData63('selection', 3, [], testCase.opts(1)));
             lb.closeStore();
-            delete([testCase.StorePath '.levelmap.mat']);  % simulate an old store
+            delete(core.MibBigDataLabels.levelMapPathFor(testCase.StorePath));  % external import: no sidecar
             bm = core.MibImage.initializeImgInfo('Height', 256, 'Width', 256, ...
                 'Depth', 1, 'Time', 1, 'Colors', 1);
             lb2 = core.MibBigDataLabels([], bm); lb2.openStore(testCase.StorePath);  % must not error
             testCase.Lb = lb2;
-            testCase.verifyGreaterThan(nnz(lb2.matLevel > 0), 0, ...
-                'fallback must mark coarse-data tiles so finer levels recompute');
+            testCase.verifyTrue(all(lb2.matLevel(:) == 1), ...
+                'fallback must assume fully materialized (precise) levels');
+            finestAfter = squeeze(lb2.getData63('selection', 3, [], testCase.opts(1)));
+            testCase.verifyEqual(finestAfter, finestBefore, ...
+                'imported finest level must NOT be degraded on load (no coarsest upsample)');
         end
 
         function testClearSelectionAtLowMag(testCase)
@@ -147,6 +158,34 @@ classdef MibBigDataLevelMapTest < matlab.unittest.TestCase
             lb.setData63(sel, 'selection', 3, [], o);
             after = nnz(squeeze(lb.getData63('labels', 3, [], o)) == 1);
             testCase.verifyEqual(after, before, 'painting selection must not remove material');
+        end
+
+        function testSelectionBBoxTracking(testCase)
+            % the selection footprint box grows on a selection write and resets when
+            % the selection is cleared over a covering region (used to scope a/s/r/c).
+            lb = testCase.Lb;
+            o = testCase.opts(2);
+            testCase.verifyEmpty(lb.selectionBBoxFull, 'box starts empty');
+
+            d = testCase.disk(2, 30);
+            lb.setData63(d, 'selection', 3, [], o);
+            bb = lb.selectionBBoxFull;
+            testCase.verifyNotEmpty(bb, 'box must be set after a selection write');
+            testCase.verifyNumElements(bb, 6);
+            testCase.verifyGreaterThanOrEqual(bb(1), 1);
+            testCase.verifyLessThanOrEqual(bb(2), testCase.H);
+            testCase.verifyLessThanOrEqual(bb(4), testCase.W);
+            testCase.verifyLessThanOrEqual(bb(1), bb(2));   % non-degenerate
+            testCase.verifyLessThanOrEqual(bb(3), bb(4));
+
+            % a material-only write must NOT touch the selection box
+            box = zeros(128, 128, 'uint8'); box(40:90, 40:90) = 1;
+            lb.setData63(box, 'labels', 3, 1, o);
+            testCase.verifyEqual(lb.selectionBBoxFull, bb, 'material write must not change selection box');
+
+            % clearing the selection over a covering region resets the box
+            lb.setData63(zeros(size(d), 'uint8'), 'selection', 3, [], o);
+            testCase.verifyEmpty(lb.selectionBBoxFull, 'box must reset when selection cleared');
         end
 
     end

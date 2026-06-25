@@ -157,15 +157,41 @@ if nargin < 3; switch3d = 1; end
 if ~isfield(getDataOptions, 'id'); getDataOptions.id = obj.getActiveId(); end
 id = getDataOptions.id;
 
-% Pyramidal (BigData/Virtual) datasets: capture the snapshot at FULL resolution.
-% Otherwise getData2D returns the displayed (downsampled) level — at e.g. 50% zoom
-% the stored slice is half-size and store() records its coordinates in displayed
-% pixels, so undo (setData writes the finest level) paints that small snapshot into
-% a wrong, smaller region. magFactor=1 makes the capture, the stored coordinates and
-% the restore all full-resolution — matching the editing tools' full-res writes. The
-% value is stored in the undo entry so the redo re-capture and restore stay full-res.
-if any(obj.I{id}.datasetType(1) == ['V' 'B']) && ~isfield(getDataOptions, 'magFactor')
-    getDataOptions.magFactor = 1;
+% Pyramidal datasets: choose the capture level so undo restores at the same
+% resolution the edit was written.
+%
+% Virtual ('V'): the model is full-resolution in memory and the editing tools write
+% full-res, so capture at magFactor=1. Otherwise getData2D would return the displayed
+% (downsampled) level — at e.g. 50% zoom the stored slice is half-size and store()
+% records its coordinates in displayed pixels, so undo (setData writes the finest
+% level) paints that small snapshot into a wrong, smaller region.
+%
+% BigData ('B', disk-backed level map): the edit is committed to the WORKING pyramid
+% level (setData63 writes that level + coarser, never full-res), so the snapshot must
+% match. Forcing magFactor=1 here would read the entire gigapixel level-1 slice (~8 s
+% on CMU-1) AND trigger materializeForRead at level 1 — prematurely upsampling and
+% writing L1 chunks, defeating the lazy level map. Instead snapshot at the working
+% level's NATIVE scale: lossless (resizeFactor==1, no display resize), small, and fast.
+% The magFactor is stored in the undo entry, so restore/redo write back to that exact
+% level via setData63 (+ coarser propagation + markTiles).
+if ~isfield(getDataOptions, 'magFactor')
+    if obj.I{id}.datasetType(1) == 'B' && isa(obj.I{id}.labels, 'core.MibBigDataLabels')
+        levelIdx = obj.I{id}.labels.pickLevel(struct('magFactor', obj.I{id}.magFactor));
+        getDataOptions.magFactor = obj.I{id}.labels.modelScaleFactors(levelIdx, 1);
+        % store() fills any absent x/y from the captured data SIZE, which at a coarse
+        % level is in LEVEL pixels — but getData63/setData63 (orientPhysRanges) read
+        % options.x/y as FULL-RESOLUTION coordinates. Pin them to the full-res extent
+        % so capture and restore agree; otherwise undo writes the snapshot into the
+        % wrong (shrunken) region and appears to restore nothing. Block/ROI modes set
+        % their own full-res x/y further below and take precedence over these.
+        blockOn = isfield(getDataOptions, 'blockModeSwitch') && getDataOptions.blockModeSwitch;
+        if ~blockOn
+            if ~isfield(getDataOptions, 'x'); getDataOptions.x = [1, obj.I{id}.image.width]; end
+            if ~isfield(getDataOptions, 'y'); getDataOptions.y = [1, obj.I{id}.image.height]; end
+        end
+    elseif obj.I{id}.datasetType(1) == 'V'
+        getDataOptions.magFactor = 1;
+    end
 end
 
 if isfield(getDataOptions, 'blockModeSwitch') && getDataOptions.blockModeSwitch == true

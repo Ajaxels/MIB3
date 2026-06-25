@@ -51,6 +51,7 @@ nav = [
     { "First dataset" = "getting-started/first-dataset/index.md" },
     { "Basic concepts" = "getting-started/basic-concepts/index.md" },
     { "Image layers" = "getting-started/image-layers.md" },
+    { "Dataset types" = "getting-started/dataset-types/index.md" },
     { "Configuration files" = "getting-started/configuration/index.md" },
   ]},
   { "Resources" = [

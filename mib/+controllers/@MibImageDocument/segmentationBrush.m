@@ -104,8 +104,13 @@ end
 % ---- generate the structural element for the brush ----
 radius = radius - 1;
 if radius < 1; radius = 0.5; end
-magFactor = obj.mibModel.getMagFactor();
-se_size = round(radius / magFactor);
+fixToScreen = obj.view.handles.panels.segmentation.handles.brushFixToScreen.Value;
+if fixToScreen
+    se_size = round(radius);
+else
+    magFactor = obj.mibModel.getMagFactor();
+    se_size = round(radius / magFactor);
+end
 
 structElement = zeros(se_size*2+1, se_size*2+1);
 [xx, yy] = meshgrid(-se_size:se_size, -se_size:se_size);

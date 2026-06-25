@@ -246,6 +246,44 @@ Export the current dataset to external applications:
 - **Imaris**: Export to Imaris (requires Imaris installation) :material-information-outline:{.red-color title="Converted from MIB2, but not tested" }
 - **Zarr3**: Export the dataset as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) — readable by MIB as a [BigData](../../panels/datasets/index.md) dataset and by external OME-Zarr–compatible tools
 
+    ??? info "Export to Zarr3 — dialog settings"
+
+        A settings dialog appears after choosing the output path.
+        Defaults are automatically adapted to the open dataset type (WSI vs. 3-D volumetric);
+        see the **Smart defaults** table at the bottom.
+
+        | Setting | Description |
+        |---------|-------------|
+        | **Pyramid levels** (0 = auto) | `0` = auto: starts at full resolution, adds a level while min(Y, X) / 2 ≥ 256 px, up to 8 levels. Enter 1–12 to force a fixed count. |
+        | **Chunk size [Y, X, Z]** | Zarr chunk dimensions in pixels. Smaller chunks give finer random-access granularity; larger chunks improve sequential read throughput. |
+        | **Shard X-factors [Y, X, Z]** | Integer multipliers specifying how many chunks to bundle per axis into one shard file (zarr v3 sharding codec). For example, `4, 4, 1` packs 4 × 4 × 1 = 16 chunks per file, significantly reducing file count for large pyramids. Set any axis to `0` to disable sharding entirely. |
+        | **Compression** | `zstd` (fast, excellent ratio — default), `gzip` (broader tool compatibility), `none` (fastest write, largest files). |
+        | **Downsampling method** | Kernel for building coarser pyramid levels: `bilinear` (fast, smooth — default), `nearest` (fast, exact integer values), `bicubic` (slow, sharper edges), `median` (slow, noise-robust — good for images with outlier pixels, better edge preservation than bilinear), `mode` (slow, precise — dominant value per block; for categorical label data exported as images). |
+        | **Downsampling strategy** | How the Z axis is treated when building coarser levels — see below. |
+
+        ---
+
+        **Downsampling strategy**
+
+        - **XY only** — every pyramid level halves X and Y; Z stays constant.
+          Voxels become progressively more anisotropic at coarser levels.
+          Default for WSI and near-isotropic 3-D data.
+
+        - **Anisotropy-preserving** — halves XY until the effective XY voxel size would exceed the
+          Z voxel size; from that point onward, both XY and Z are halved together, keeping the voxel
+          aspect ratio close to 1 : 1 at every pyramid level. Recommended for 3-D datasets where the
+          Z step is coarser than the XY pixel size (e.g. confocal, SBEM stacks with vxZ >> vxXY).
+
+        ---
+
+        **Smart defaults (computed from the open dataset)**
+
+        | Dataset type | Chunk [Y, X, Z] | Shard X-factors | Strategy |
+        |---|---|---|---|
+        | WSI (Z ≤ 2 slices **or** max(Y, X) ≥ 8 000 px) | 512 × 512 × 1 | 4 × 4 × 1 | XY only |
+        | 3-D, near-isotropic (vxZ < 2 × vxXY) | 128 × 128 × 64 | 4 × 4 × 1 | XY only |
+        | 3-D, anisotropic (vxZ ≥ 2 × vxXY) | 256 × 256 × 16 | 4 × 4 × 1 | Anisotropy-preserving |
+
 ### Make Snapshot
 
 ![Make snapshot dialog](images/menuFileSnapshot.png){.on-glb align=left width="350"}

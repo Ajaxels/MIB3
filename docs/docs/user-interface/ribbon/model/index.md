@@ -152,7 +152,35 @@ Exports the model to an external destination. The **Export** dropdown contains:
 - **Export model to MATLAB**: Exports to the main MATLAB workspace as a structure (see [Import model from MATLAB](#import-model-from-matlab) for structure fields). Can be re-imported using *Import model from MATLAB*.
 - **Export model to another MIB dataset**: Copies the model into another currently open MIB dataset.
 - **Export model to Imaris as volume**: Exports to Imaris if available. See [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#imaris) for details.
-- **Export model to Zarr3**: Export the model as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) — material names and colours are preserved, labels are downsampled with nearest-neighbour interpolation; reopenable in MIB as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr–compatible tools
+- **Export model to Zarr3**: Export the model as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) — material names and colours are preserved; reopenable in MIB as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr–compatible tools
+
+    ??? info "Export to Zarr3 — dialog settings (model)"
+
+        A settings dialog appears after choosing the output path. Defaults are adapted to the
+        open dataset dimensions (WSI vs. 3-D volumetric).
+
+        | Setting | Description |
+        |---------|-------------|
+        | **Pyramid levels** (0 = auto) | `0` = auto: starts at full resolution, adds levels while min(Y, X) / 2 ≥ 256 px, up to 8 levels. Enter 1–12 to force a fixed count. |
+        | **Chunk size [Y, X, Z]** | Zarr chunk dimensions in pixels. |
+        | **Shard X-factors [Y, X, Z]** | Chunks to bundle per axis into one shard file (0 on any axis = no sharding). |
+        | **Compression** | `zstd` (default), `gzip`, `none`. |
+        | **Downsampling method** | See table below. The downsampling **strategy** is always *XY only* for models — Z is never averaged, since that would mix material indices across boundaries. |
+
+        **Downsampling method**
+
+        | Method | Speed | When to use |
+        |--------|-------|-------------|
+        | **nearest** *(default)* | fast | Most models — picks the nearest source pixel; exact label integers are preserved. |
+        | **mode** | slow | Fine structures, thin boundaries — picks the **dominant label** in each output block (majority vote). More semantically accurate; ~4–8× slower than nearest. |
+
+        **Smart defaults (computed from the open dataset)**
+
+        | Dataset type | Chunk [Y, X, Z] | Shard X-factors |
+        |---|---|---|
+        | WSI (Z ≤ 2 slices **or** max(Y, X) ≥ 8 000 px) | 512 × 512 × 1 | 4 × 4 × 1 |
+        | 3-D, near-isotropic (vxZ < 2 × vxXY) | 128 × 128 × 64 | 4 × 4 × 1 |
+        | 3-D, anisotropic (vxZ ≥ 2 × vxXY) | 256 × 256 × 16 | 4 × 4 × 1 |
 
 ---
 
@@ -184,7 +212,7 @@ Prompts for a filename and format to save the model.
 - [x] **MOD (IMOD format)**: Contours for IMOD.
 - [x] **MRC (IMOD format)**: Volume for IMOD.
 - [x] **NRRD (Nearly Raw Raster Data)**: Compatible with [3D Slicer](https://www.slicer.org).
-- [x] **OME-Zarr v3 (*.zarr3)**: Chunked, pyramidal OME-Zarr v3 store. Labels are downsampled with nearest-neighbour and material names/colours are preserved; reopenable as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr tools. Choosing this format opens an export-settings dialog (pyramid levels, chunk size, sharding, compression).
+- [x] **OME-Zarr v3 (*.zarr3)**: Chunked, pyramidal OME-Zarr v3 store. Material names and colours are preserved; labels are downsampled with **nearest** (fast) or **mode** (majority-vote, more accurate for fine structures); reopenable as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr tools. Choosing this format opens an export-settings dialog — see [Export model to Zarr3](#export-model-to-zarr3) for all options.
 - [x] **PNG**: 2D slices in Portable Network Graphic format.
 - [x] **STL (STL format)**: Triangulated mesh for visualization programs like Blender.
 - [x] **TIF (TIF format)**: 2D slices or 3D volumes.

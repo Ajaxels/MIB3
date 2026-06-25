@@ -263,6 +263,27 @@ else
     BatchOptLocal.t = [obj.I{BatchOptLocal.id}.slices{5}(1) obj.I{BatchOptLocal.id}.slices{5}(1)];
 end
 
+% BigData fast-scope: for a selection→material/mask move on a disk-backed model,
+% read/back-up/write only the selection's tracked footprint (selectionBBoxFull,
+% maintained by setData63) instead of scanning the whole gigapixel slice. Setting
+% x/y here scopes the backup, every getData2D/getData4D read and every setData2D/4D
+% write below. Skipped under ROI/block mode (those already restrict the region) and
+% when no selection exists (box empty → the move is a no-op anyway). Only the in-plane
+% extent is pinned; z/t keep the requested 2D-slice / 3D-stack scope.
+bigDataScoped = false;
+if strcmp(BatchOptLocal.SourceLayer{1}, 'selection') && ...
+        isa(obj.I{BatchOptLocal.id}.labels, 'core.MibBigDataLabels') && ...
+        BatchOptLocal.blockModeSwitch == 0 && BatchOptLocal.roiId(1) < 0 && ...
+        ~isfield(BatchOptLocal, 'x') && ~isfield(BatchOptLocal, 'y') && ...
+        obj.I{BatchOptLocal.id}.orientation == 3
+    selBB = obj.I{BatchOptLocal.id}.labels.selectionBBoxFull;
+    if ~isempty(selBB)
+        BatchOptLocal.y = [selBB(1), selBB(2)];
+        BatchOptLocal.x = [selBB(3), selBB(4)];
+        bigDataScoped = true;
+    end
+end
+
 % do backup, not for 4D data
 if ~strcmp(BatchOptLocal.DatasetType{1},'4D, Dataset')
     if isa(obj.I{BatchOptLocal.id}.labels, 'core.MibLabels63')
@@ -349,7 +370,16 @@ else
                 obj.I{BatchOptLocal.id}.clearLayer('selection', '3D');
             else
                 img = obj.I{BatchOptLocal.id}.getData2D('selection', [], [], NaN, BatchOptLocal);
-                obj.I{BatchOptLocal.id}.clearLayer('selection', '2D');
+                if bigDataScoped
+                    % clear only the scoped footprint (not the whole slice): write zeros
+                    % over the same x/y region. setData63 then resets selectionBBoxFull
+                    % since the cleared region covers the previous box.
+                    zeroSel = img;
+                    for i = 1:numel(zeroSel); zeroSel{i}(:) = 0; end
+                    obj.I{BatchOptLocal.id}.setData2D(zeroSel, 'selection', [], [], NaN, BatchOptLocal);
+                else
+                    obj.I{BatchOptLocal.id}.clearLayer('selection', '2D');
+                end
             end
     end
 

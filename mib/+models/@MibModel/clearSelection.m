@@ -98,11 +98,33 @@ id = BatchOpt.id;
 %% Perform the clear
 switch BatchOpt.DatasetType{1}
     case '2D, Slice'
-        % backup current slice
         backupOptions.id = id;
-        obj.backup('selection', 0, backupOptions);
-        % clear only the current slice using block mode (visible portion)
-        obj.I{id}.clearLayer('selection', '2D');
+        if isa(obj.I{id}.labels, 'core.MibBigDataLabels')
+            orient   = obj.I{id}.orientation;
+            selBB    = obj.I{id}.labels.selectionBBoxFull;
+            curSlice = obj.I{id}.slices{orient}(1);
+            curTime  = obj.I{id}.slices{5}(1);
+            if orient == 3 && ~isempty(selBB)
+                % XY view with known selection footprint: scope backup and clear to
+                % the footprint only — avoids allocating the full gigapixel slice.
+                % setData63 resets selectionBBoxFull once the region contains no
+                % more selection bits.
+                backupOptions.y = [selBB(1), selBB(2)];
+                backupOptions.x = [selBB(3), selBB(4)];
+                obj.backup('selection', 0, backupOptions);
+                obj.I{id}.clearLayer('selection', ...
+                    [selBB(1), selBB(2)], [selBB(3), selBB(4)], ...
+                    [curSlice, curSlice], [curTime, curTime], false);
+            else
+                % Non-XY view or unknown footprint: scope to visible window only.
+                backupOptions.blockModeSwitch = true;
+                obj.backup('selection', 0, backupOptions);
+                obj.I{id}.clearLayer('selection', '2D', [], [], [], true);
+            end
+        else
+            obj.backup('selection', 0, backupOptions);
+            obj.I{id}.clearLayer('selection', '2D');
+        end
 
     case '3D, Stack'
         % backup the full z-stack

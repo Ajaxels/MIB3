@@ -50,6 +50,7 @@ switch handles.segmTool.Value
         obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).Eraser = handles.eraserFactor.Value;
         obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).Watershed = strcmp(handles.brushUseClustering.SelectedObject.Text, 'Watershed');
         obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).SLIC = strcmp(handles.brushUseClustering.SelectedObject.Text, 'SLIC');
+        obj.mibModel.preferences.SegmTools.Presets.Brush.(setName).FixBrushToScreen = logical(handles.brushFixToScreen.Value);
     case 'BW thresholding'
         obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).Adaptive = logical(handles.thresholdAdaptive.Value);
         obj.mibModel.preferences.SegmTools.Presets.BWThresholding.(setName).BlackOnWhite = handles.thresholdType.Value;

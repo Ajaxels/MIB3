@@ -60,13 +60,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
 %                   'ChunkSize',   [512 512 8]);      % [y x z] zarr chunk
 %      io.savers.Zarr3Saver().save(vol, meta, 'C:\data\vol.zarr3', opt);
 %
-% **Example 5** — uncompressed store, nearest-neighbour downsampling:
+% **Example 5** — mode downsampling for label/model pyramids (majority-vote per output pixel):
 %
 %   .. code-block:: matlab
 %
-%      opt = struct('Compressors', 'none', ...        % e.g. for fastest write
-%                   'DownsampleMethod', 'nearest');   % e.g. label-like data
-%      io.savers.Zarr3Saver().save(vol, meta, 'C:\data\vol.zarr3', opt);
+%      opt = struct('DownsampleMethod', 'mode');      % dominant label in each source block
+%      io.savers.Zarr3Saver().save(labelVol, meta, 'C:\data\labels.zarr3', opt);
 %
 % **Example 6** — multichannel image (axes become ``yxzc``, colours preserved):
 %
@@ -123,10 +122,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             %     - ``.MinLevelSize`` — stop auto-pyramid when min(Y,X) < this (default 256)
             %     - ``.MaxLevels`` — cap on auto levels (default 8)
             %     - ``.ChunkSize`` — [y x z] chunk shape (default [256 256 16], clamped)
-            %     - ``.ShardSize`` — [y x z] shard shape; ``[]`` = no sharding. Each axis is
-            %       rounded up to a whole multiple of the chunk (zarr v3 sharding codec)
+            %     - ``.ShardSize`` — [y x z] chunk multipliers; ``[]`` = no sharding. Each
+            %       value says how many chunks to bundle per axis (e.g. [4 4 1])
             %     - ``.Compressors`` — codec spec for ZarrArray.create (default 'zstd')
-            %     - ``.DownsampleMethod`` — imresize method for levels (default 'bilinear')
+            %     - ``.DownsampleMethod`` — 'bilinear', 'nearest', 'bicubic', 'median', or 'mode' (default 'bilinear').
+            %       ``'median'`` picks the median value per block (noise-robust, image data).
+            %       ``'mode'`` picks the dominant value per block (categorical label data).
             %
             % Output Arguments:
             %   - **fnOut** — [char] the written group path.
@@ -139,19 +140,22 @@ classdef Zarr3Saver < io.savers.BaseSaver
             [options, cancelled] = obj.resolveExportOptions(options, metadata);
             if cancelled; fnOut = []; return; end
 
-            if ~isfield(options, 'Levels');          options.Levels = []; end
-            if ~isfield(options, 'MinLevelSize');    options.MinLevelSize = 256; end
-            if ~isfield(options, 'MaxLevels');       options.MaxLevels = 8; end
-            if ~isfield(options, 'ChunkSize');       options.ChunkSize = [256 256 16]; end
-            if ~isfield(options, 'ShardSize');       options.ShardSize = []; end
-            if ~isfield(options, 'Compressors');     options.Compressors = 'zstd'; end
-            if ~isfield(options, 'DownsampleMethod'); options.DownsampleMethod = 'bilinear'; end
+            if ~isfield(options, 'Levels');             options.Levels = []; end
+            if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
+            if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
+            if ~isfield(options, 'ChunkSize');          options.ChunkSize = [256 256 16]; end
+            if ~isfield(options, 'ShardSize');          options.ShardSize = []; end
+            if ~isfield(options, 'Compressors');        options.Compressors = 'zstd'; end
+            if ~isfield(options, 'DownsampleMethod');   options.DownsampleMethod = 'bilinear'; end
+            if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
 
-            % Label layers are categorical → must downsample nearest-neighbour, never
-            % interpolate. Detected from the injected layerType or material metadata.
+            % Label layers are categorical — prevent interpolating methods; allow 'mode'
+            % (majority vote) as the accurate alternative to 'nearest'.
             isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
                 (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
-            if isLabelLayer; options.DownsampleMethod = 'nearest'; end
+            if isLabelLayer && ~ismember(options.DownsampleMethod, {'nearest', 'mode'})
+                options.DownsampleMethod = 'nearest';
+            end
 
             % physical voxel size (default 1)
             pixSize = struct('x', 1, 'y', 1, 'z', 1);
@@ -173,17 +177,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if T > 1; axesNames{end+1} = 't'; axesTypes{end+1} = 'time'; end
             nKeep = numel(axesNames);
 
-            % number of pyramid levels
-            if ~isempty(options.Levels)
-                nLevels = max(1, options.Levels);
-            else
-                nLevels = 1;
-                m = min(Y, X);
-                while floor(m/2) >= options.MinLevelSize && nLevels < options.MaxLevels
-                    m = floor(m/2);
-                    nLevels = nLevels + 1;
-                end
-            end
+            % build per-level size/scale plan (honours DownsampleStrategy)
+            plan    = io.savers.Zarr3Saver.computeLevelPlan(Y, X, Z, pixSize, options);
+            nLevels = numel(plan);
 
             % fresh group
             filename = char(filename);
@@ -192,25 +188,50 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
             datasets = cell(1, nLevels);
             for L = 1:nLevels
-                factor = 2^(L-1);
-                Yl = max(1, round(Y / factor));
-                Xl = max(1, round(X / factor));
+                Yl = plan(L).Yl;
+                Xl = plan(L).Xl;
+                Zl = plan(L).Zl;
 
                 if L == 1
                     lvl = data;
                 else
-                    lvl = zeros(Yl, Xl, Z, C, T, imgClass);
+                    lvl = zeros(Yl, Xl, Zl, C, T, imgClass);
                     for t = 1:T
                         for c = 1:C
-                            for z = 1:Z
-                                lvl(:, :, z, c, t) = imresize(data(:, :, z, c, t), [Yl Xl], options.DownsampleMethod);
+                            blockMethods = {'mode', 'median'};
+                            if Zl == Z
+                                % XY-only: slice-by-slice resize
+                                if ismember(options.DownsampleMethod, blockMethods)
+                                    reduceFcn = str2func(options.DownsampleMethod);
+                                    for z = 1:Z
+                                        lvl(:,:,z,c,t) = io.savers.Zarr3Saver.blockReduce2D( ...
+                                            data(:,:,z,c,t), Yl, Xl, reduceFcn);
+                                    end
+                                else
+                                    for z = 1:Z
+                                        lvl(:,:,z,c,t) = imresize(data(:,:,z,c,t), [Yl Xl], ...
+                                            options.DownsampleMethod);
+                                    end
+                                end
+                            else
+                                % XY + Z: volumetric resize
+                                if ismember(options.DownsampleMethod, blockMethods)
+                                    reduceFcn = str2func(options.DownsampleMethod);
+                                    lvl(:,:,:,c,t) = io.savers.Zarr3Saver.blockReduce3D( ...
+                                        data(:,:,:,c,t), Yl, Xl, Zl, reduceFcn);
+                                else
+                                    method3d = options.DownsampleMethod;
+                                    if strcmp(method3d, 'bilinear'); method3d = 'linear'; end
+                                    if strcmp(method3d, 'bicubic');  method3d = 'cubic';  end
+                                    lvl(:,:,:,c,t) = cast(imresize3(data(:,:,:,c,t), [Yl Xl Zl], method3d), imgClass);
+                                end
                             end
                         end
                     end
                 end
 
                 % drop trailing singleton c/t to match the declared axes
-                keepShape = [Yl, Xl, Z];
+                keepShape = [Yl, Xl, Zl];
                 if C > 1; keepShape(end+1) = C; end %#ok<AGROW>
                 if T > 1; keepShape(end+1) = T; end %#ok<AGROW>
                 lvl = reshape(lvl, keepShape);
@@ -228,8 +249,8 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
                 arr.write(lvl);
 
-                % per-level scale in axes order (XY doubles per level; Z constant)
-                scaleVec = [pixSize.y * factor, pixSize.x * factor, pixSize.z];
+                % per-level physical scale (actual values from the plan, not 2^(L-1))
+                scaleVec = [plan(L).physScaleY, plan(L).physScaleX, plan(L).physScaleZ];
                 if C > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
                 if T > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
                 datasets{L} = struct('path', name, ...
@@ -284,17 +305,20 @@ classdef Zarr3Saver < io.savers.BaseSaver
             [options, cancelled] = obj.resolveExportOptions(options, metadata);
             if cancelled; fnOut = []; return; end
 
-            if ~isfield(options, 'Levels');           options.Levels = []; end
-            if ~isfield(options, 'MinLevelSize');     options.MinLevelSize = 256; end
-            if ~isfield(options, 'MaxLevels');        options.MaxLevels = 8; end
-            if ~isfield(options, 'ChunkSize');        options.ChunkSize = [256 256 16]; end
-            if ~isfield(options, 'ShardSize');        options.ShardSize = []; end
-            if ~isfield(options, 'Compressors');      options.Compressors = 'zstd'; end
-            if ~isfield(options, 'DownsampleMethod'); options.DownsampleMethod = 'bilinear'; end
+            if ~isfield(options, 'Levels');             options.Levels = []; end
+            if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
+            if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
+            if ~isfield(options, 'ChunkSize');          options.ChunkSize = [256 256 16]; end
+            if ~isfield(options, 'ShardSize');          options.ShardSize = []; end
+            if ~isfield(options, 'Compressors');        options.Compressors = 'zstd'; end
+            if ~isfield(options, 'DownsampleMethod');   options.DownsampleMethod = 'bilinear'; end
+            if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
 
             isLabelLayer = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
                 (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
-            if isLabelLayer; options.DownsampleMethod = 'nearest'; end
+            if isLabelLayer && ~ismember(options.DownsampleMethod, {'nearest', 'mode'})
+                options.DownsampleMethod = 'nearest';
+            end
 
             pixSize = struct('x', 1, 'y', 1, 'z', 1);
             if isstruct(metadata) && isfield(metadata, 'pixSize') && ~isempty(metadata.pixSize)
@@ -313,72 +337,99 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if T > 1; axesNames{end+1} = 't'; axesTypes{end+1} = 'time'; end
             nKeep = numel(axesNames);
 
-            if ~isempty(options.Levels)
-                nLevels = max(1, options.Levels);
-            else
-                nLevels = 1; m = min(Y, X);
-                while floor(m/2) >= options.MinLevelSize && nLevels < options.MaxLevels
-                    m = floor(m/2); nLevels = nLevels + 1;
-                end
-            end
+            % build per-level size/scale plan (honours DownsampleStrategy)
+            plan    = io.savers.Zarr3Saver.computeLevelPlan(Y, X, Z, pixSize, options);
+            nLevels = numel(plan);
 
             filename = char(filename);
             if isfolder(filename); rmdir(filename, 's'); end
             grp = io.zarr.Group.create(filename);
 
             % --- create every level array up front ---
-            levelInfo = repmat(struct('factor',1,'Yl',Y,'Xl',X,'arr',[],'name',''), 1, nLevels);
+            levelInfo = repmat(struct('Yl', Y, 'Xl', X, 'Zl', Z, 'arr', [], 'name', ''), 1, nLevels);
             datasets  = cell(1, nLevels);
             for L = 1:nLevels
-                factor = 2^(L-1);
-                Yl = max(1, round(Y / factor));
-                Xl = max(1, round(X / factor));
-                keepShape = [Yl, Xl, Z];
+                Yl = plan(L).Yl; Xl = plan(L).Xl; Zl = plan(L).Zl;
+                keepShape = [Yl, Xl, Zl];
                 if C > 1; keepShape(end+1) = C; end %#ok<AGROW>
                 if T > 1; keepShape(end+1) = T; end %#ok<AGROW>
                 chunk = min(options.ChunkSize(1:3), keepShape(1:3));
                 chunk = max(chunk, [1 1 1]);
                 if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
                 name = num2str(L - 1);
-                levelInfo(L).factor = factor;
-                levelInfo(L).Yl = Yl; levelInfo(L).Xl = Xl; levelInfo(L).name = name;
+                levelInfo(L).Yl = Yl; levelInfo(L).Xl = Xl; levelInfo(L).Zl = Zl; levelInfo(L).name = name;
                 createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
                 if ~isempty(options.ShardSize)
                     createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
                 end
                 levelInfo(L).arr = grp.createArray(name, keepShape, imgClass, createArgs{:});
-                scaleVec = [pixSize.y * factor, pixSize.x * factor, pixSize.z];
+                scaleVec = [plan(L).physScaleY, plan(L).physScaleX, plan(L).physScaleZ];
                 if C > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
                 if T > 1; scaleVec(end+1) = 1; end %#ok<AGROW>
                 datasets{L} = struct('path', name, ...
-                    'coordinateTransformations', {{struct('type','scale','scale',scaleVec)}});
+                    'coordinateTransformations', {{struct('type', 'scale', 'scale', scaleVec)}});
             end
 
             % --- stream slices: write each (z,t) to every level ---
+            % Levels with cumZFactor > 1 require Z accumulation: buffer groupSize
+            % source slices, average them, then write one output Z-slice.
+            zGroupSizes = arrayfun(@(p) p.cumZFactor, plan);
+            zBuffers    = cell(1, nLevels);   % {Yl×Xl×C} slices per level
+            zOutPos     = ones(1, nLevels);   % next output Z index per level
+
             wb = obj.createProgressDialog('Saving Zarr3...', sprintf('Writing %s', filename), true);
             total = Z * T; done = 0;
             for t = 1:T
+                for L = 1:nLevels; zBuffers{L} = {}; end
+                zOutPos(:) = 1;
+
                 for z = 1:Z
                     if ~isempty(wb) && wb.CancelRequested; delete(wb); fnOut = []; return; end
                     slice = provider.getSlice(z, t);   % [Y X C]
+
                     for L = 1:nLevels
                         Yl = levelInfo(L).Yl; Xl = levelInfo(L).Xl;
+                        groupSize = zGroupSizes(L);
+
                         if L == 1
-                            ls = slice;
+                            xySlice = slice;
+                        elseif ismember(options.DownsampleMethod, {'mode', 'median'})
+                            xySlice = io.savers.Zarr3Saver.blockReduce2D( ...
+                                slice, Yl, Xl, str2func(options.DownsampleMethod));
                         else
-                            ls = imresize(slice, [Yl Xl], options.DownsampleMethod);
+                            xySlice = imresize(slice, [Yl Xl], options.DownsampleMethod);
                         end
-                        % per-slice data shaped to the level's declared axes (z,t singleton)
-                        sliceData = reshape(ls, Yl, Xl, 1, C);   % [Yl Xl 1 C]
-                        if C == 1; sliceData = reshape(sliceData, Yl, Xl, 1); end
-                        if T > 1;  sliceData = reshape(sliceData, [size(sliceData,1:max(3,ndims(sliceData))), 1]); end
-                        bbox = [1 Yl+1; 1 Xl+1; z z+1];
-                        if C > 1; bbox = [bbox; 1 C+1]; end %#ok<AGROW>
-                        if T > 1; bbox = [bbox; t t+1]; end %#ok<AGROW>
-                        levelInfo(L).arr.write(cast(sliceData, imgClass), bbox);
+
+                        if groupSize == 1
+                            io.savers.Zarr3Saver.writeStreamSlice( ...
+                                levelInfo(L).arr, xySlice, z, t, C, T, Yl, Xl, imgClass);
+                        else
+                            zBuffers{L}{end+1} = xySlice;
+                            if numel(zBuffers{L}) == groupSize
+                                avgSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
+                                    zBuffers{L}, options.DownsampleMethod, imgClass, Yl, Xl, C);
+                                io.savers.Zarr3Saver.writeStreamSlice( ...
+                                    levelInfo(L).arr, avgSlice, zOutPos(L), t, C, T, Yl, Xl, imgClass);
+                                zOutPos(L) = zOutPos(L) + 1;
+                                zBuffers{L} = {};
+                            end
+                        end
                     end
+
                     done = done + 1;
                     if ~isempty(wb); wb.Value = done/total; end
+                end
+
+                % flush any remaining partial Z group (edge case: Z not divisible by groupSize)
+                for L = 1:nLevels
+                    if ~isempty(zBuffers{L})
+                        avgSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
+                            zBuffers{L}, options.DownsampleMethod, imgClass, ...
+                            levelInfo(L).Yl, levelInfo(L).Xl, C);
+                        io.savers.Zarr3Saver.writeStreamSlice( ...
+                            levelInfo(L).arr, avgSlice, zOutPos(L), t, C, T, ...
+                            levelInfo(L).Yl, levelInfo(L).Xl, imgClass);
+                    end
                 end
             end
             if ~isempty(wb); delete(wb); end
@@ -482,7 +533,9 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
             data = ds.getData4D('labels', 3, NaN);   % material indices, [y x z 1 t]; returns a cell
             if iscell(data); data = data{1}; end
-            options.DownsampleMethod = 'nearest';     % labels must use nearest
+            if ~isfield(options, 'DownsampleMethod') || ~ismember(options.DownsampleMethod, {'nearest', 'mode'})
+                options.DownsampleMethod = 'nearest';   % default for categorical data
+            end
             meta = struct('pixSize', ds.image.pixSize);
             fnOut = io.savers.Zarr3Saver().save(data, meta, filename, options);
 
@@ -500,56 +553,123 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
         end
 
-        function options = optionsDialog(parentFig, mibPath, isModel)
+        function options = optionsDialog(parentFig, mibPath, isModel, datasetInfo)
             % OPTIONSDIALOG - collect zarr3 export settings; returns [] if cancelled.
             %
             % Shared by the image/model export menus and the "Convert to BigData"
-            % dropdown. ``isModel`` hides the downsample-method choice (models are
-            % always written nearest-neighbour).
+            % dropdown. When ``isModel`` is true, the strategy choice is hidden
+            % (always XY only) and the method is restricted to 'nearest' or 'mode'.
+            %
+            % **datasetInfo** (optional struct, fields ``Y``, ``X``, ``Z``, ``pixSize``)
+            % drives smart defaults for chunk size, sharding, and downsampling strategy:
+            %   - WSI  (Z <= 2 or max(Y,X) >= 8000): chunk 512×512×1, shard factors 4×4×1
+            %   - 3-D anisotropic (vxZ >= 2× vxXY):  chunk 256×256×16, strategy 'Anisotropy-preserving'
+            %   - 3-D isotropic   (vxZ <  2× vxXY):  chunk 128×128×64, strategy 'XY only'
+            %
+            % **Downsampling strategy:**
+            %   - ``XY only`` — halves X & Y at every level, Z stays constant.
+            %   - ``Anisotropy-preserving`` — halves XY until voxels are near-isotropic,
+            %     then also halves Z to keep the aspect ratio ~1 at coarser levels.
+            %     Recommended for 3-D datasets where vxZ >> vxXY.
             %
             % **Pyramid levels — auto rule (when "Pyramid levels" = 0):** level 0 is
-            % full resolution; each further level halves X and Y (Z is kept — XY-only
-            % downsampling). Levels are added while the *next* halving would keep
-            % ``min(Y, X) >= MinLevelSize`` (default 256 px), capped at ``MaxLevels``
-            % (default 8). So a 4000×3000 image → levels 4000², 2000², 1000², 500²
-            % (stops: 250 < 256) = 4 levels. A fixed count (1..12) overrides the rule.
+            % full resolution; levels are added while the next halving keeps
+            % ``min(Y, X) >= 256 px``, capped at 8 levels. A fixed count (1..12) overrides.
             %
             % **Sharding:** a shard is a single file holding a grid of chunks (zarr v3
-            % sharding codec). "Shard size [Y, X, Z]" = 0 (any axis) disables sharding;
-            % otherwise each shard dimension is rounded up to a whole multiple of the
-            % chunk size, so one ``.zarr3`` file then bundles, e.g., a 4×4×1 block of
-            % chunks — far fewer files on disk for large pyramids.
+            % sharding codec). Shard size 0 = no sharding; otherwise each axis is rounded
+            % up to a whole multiple of the chunk size.
             %
             % Output Arguments:
-            %   - **options** — struct with optional fields ``Levels`` (omitted when
-            %     auto), ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (omitted when no
-            %     sharding), ``Compressors``, ``DownsampleMethod``; ``[]`` when cancelled.
+            %   - **options** — struct with fields ``Levels`` (omitted when auto),
+            %     ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (omitted when no sharding),
+            %     ``Compressors``, ``DownsampleMethod``, ``DownsampleStrategy``;
+            %     ``[]`` when cancelled.
+            if nargin < 4; datasetInfo = []; end
             if nargin < 3; isModel = false; end
             if nargin < 2; mibPath = ''; end
 
-            % Multi-line explanatory header. inputUniversalDlg clips the header to
-            % options.HeaderLines rows, so HeaderLines must match the line count below.
-            headerLines = { ...
-                'Pyramid levels = 0 (auto): level 0 = full resolution; each'; ...
-                'further level halves X & Y (Z is kept), adding a level while'; ...
-                'the next halving keeps min(Y,X) >= 256 px, up to 8 levels;'; ...
-                'a fixed count (1-12) overrides the auto rule.'; ...
-                ''; ...
-                'Sharding bundles a grid of chunks into one file (zarr v3'; ...
-                'sharding codec) -> far fewer files on disk for big pyramids.'; ...
-                'Shard size 0 = no sharding; else each axis is rounded up to'; ...
-                'a whole multiple of the chunk size.'};
+            % --- smart defaults from dataset info ---
+            if ~isempty(datasetInfo) && isstruct(datasetInfo) && ...
+                    isfield(datasetInfo, 'Y') && isfield(datasetInfo, 'Z') && isfield(datasetInfo, 'pixSize')
+                isWSI = datasetInfo.Z <= 2 || max(datasetInfo.Y, datasetInfo.X) >= 8000;
+                ps = datasetInfo.pixSize;
+                vxXY = max(ps.x, ps.y);
+                if vxXY <= 0; vxXY = 1; end
+                vxRatio = ps.z / vxXY;
+            else
+                isWSI = false;
+                vxRatio = 1;
+            end
+
+            if isWSI
+                defaultChunk    = '512, 512, 1';
+                defaultShard    = '4, 4, 1';
+                defaultStrategy = 'XY only';
+            elseif vxRatio < 2
+                defaultChunk    = '128, 128, 64';
+                defaultShard    = '4, 4, 1';
+                defaultStrategy = 'XY only';
+            else
+                defaultChunk    = '256, 256, 16';
+                defaultShard    = '4, 4, 1';
+                if vxRatio >= 1.5
+                    defaultStrategy = 'Anisotropy-preserving';
+                else
+                    defaultStrategy = 'XY only';
+                end
+            end
+
+            % Conditional header + method items depending on whether this is a model export
+            if isModel
+                headerLines = { ...
+                    'Pyramid levels = 0 (auto): adds levels while min(Y,X)/2 >= 256 px'; ...
+                    '(up to 8); a fixed count (1-12) overrides.'; ...
+                    ''; ...
+                    '"nearest" (fast): picks the nearest source pixel — preserves exact'; ...
+                    'label integers, recommended for most models.'; ...
+                    '"mode" (slow, precise): dominant label value per block (majority vote)'; ...
+                    '— best semantic accuracy for fine structures or thin boundaries.'; ...
+                    ''; ...
+                    'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
+                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'};
+                methodItems = {'nearest (fast)', 'mode (precise, very slow)'};
+            else
+                headerLines = { ...
+                    'Pyramid levels = 0 (auto): adds levels while min(Y,X)/2 >= 256 px'; ...
+                    '(up to 8); a fixed count (1-12) overrides.'; ...
+                    ''; ...
+                    '"median": median value per block — noise-robust, preserves edges'; ...
+                    'better than bilinear; does not produce new pixel values.'; ...
+                    '"mode": dominant value per block (majority vote) — for categorical'; ...
+                    'labels exported as images; slower than "nearest".'; ...
+                    ''; ...
+                    'Strategy "XY only": halves X & Y at every level, Z constant.'; ...
+                    '"Anisotropy-preserving": halves XY until voxels near-isotropic,'; ...
+                    'then also halves Z — keeps aspect ratio ~1 at coarser levels.'; ...
+                    ''; ...
+                    'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
+                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'};
+                methodItems = {'bilinear (fast, smooth)', 'nearest (fast)', ...
+                               'bicubic (slower, sharp)', 'median (very slow, noise-robust)', ...
+                               'mode (precise, very slow)'};
+            end
             header = strjoin(headerLines, newline);
 
             prompts = {'Pyramid levels (0 = auto):'; 'Chunk size [Y, X, Z]:'; ...
-                       'Shard size [Y, X, Z] (0 = none):'; 'Compression:'};
+                       'Shard X-factors [Y, X, Z] (0 = off):'; 'Compression:'; ...
+                       'Downsampling method:'};
             defAns  = {struct('Spinner', true, 'Value', 0, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
-                       '256, 256, 16'; ...
-                       '0, 0, 0'; ...
-                       {'zstd', 'gzip', 'none', 1}};
+                       defaultChunk; ...
+                       defaultShard; ...
+                       {'zstd', 'gzip', 'none', 1}; ...
+                       [methodItems, {1}]};
             if ~isModel
-                prompts{end+1} = 'Downsampling method:';
-                defAns{end+1}  = {'bilinear', 'nearest', 'bicubic', 1};
+                prompts{end+1} = 'Downsampling strategy:';
+                strategyItems  = {'XY only', 'Anisotropy-preserving'};
+                defaultStrategyIdx = find(strcmp(strategyItems, defaultStrategy), 1);
+                if isempty(defaultStrategyIdx); defaultStrategyIdx = 1; end
+                defAns{end+1}  = [strategyItems, {defaultStrategyIdx}];
             end
 
             dlgOpts = struct('LabelPosition', 'left', 'WindowWidth', 560, ...
@@ -566,26 +686,197 @@ classdef Zarr3Saver < io.savers.BaseSaver
             shard = str2num(answer{3}); %#ok<ST2NM>
             if numel(shard) == 3 && all(shard > 0); options.ShardSize = shard; end   % 0 = no sharding
             options.Compressors = answer{4};
+            % strip the parenthetical note from method items (e.g. 'nearest (fast)' → 'nearest')
+            options.DownsampleMethod = strtok(answer{5}, ' ');
             if ~isModel
-                options.DownsampleMethod = answer{5};
+                options.DownsampleStrategy = answer{6};
             else
-                options.DownsampleMethod = 'nearest';
+                options.DownsampleStrategy = 'XY only';
             end
         end
 
-        function shard = computeShard(chunk, shardReq)
-            % COMPUTESHARD - per-level shard shape aligned to the chunk shape.
+        function shard = computeShard(chunk, shardMultiplier)
+            % COMPUTESHARD - compute per-axis shard shape from chunk multipliers.
             %
-            % zarr v3 sharding requires each shard dimension to be a whole multiple of
-            % the chunk dimension. Each requested spatial size (``shardReq``, [y x z]) is
-            % rounded UP to the nearest chunk multiple (>= one chunk); colour/time axes
-            % keep the chunk extent. ``shard`` has the same length as ``chunk``.
+            % ``shardMultiplier`` is a [y x z] integer vector where each value says how
+            % many chunks to bundle per axis (e.g. [4 4 1] → 4 chunks in Y, 4 in X,
+            % 1 in Z per shard file). Colour/time axes keep the chunk extent.
+            % ``shard`` has the same length as ``chunk``.
             shard = chunk;
-            n = min(3, numel(shardReq));
+            n = min(3, numel(shardMultiplier));
             for i = 1:n
-                if shardReq(i) > 0
-                    shard(i) = chunk(i) * max(1, ceil(shardReq(i) / chunk(i)));
+                if shardMultiplier(i) > 0
+                    shard(i) = chunk(i) * max(1, round(shardMultiplier(i)));
                 end
+            end
+        end
+
+        function plan = computeLevelPlan(Y, X, Z, pixSize, options)
+            % COMPUTELEVELPLAN - build per-level size/scale table for the pyramid.
+            %
+            % Returns a struct array ``plan`` with one entry per pyramid level.
+            % Each entry has fields:
+            %   - ``Yl``, ``Xl``, ``Zl``       — pixel dimensions at this level
+            %   - ``cumXYFactor``, ``cumZFactor`` — cumulative scale vs level 0
+            %   - ``physScaleY``, ``physScaleX``, ``physScaleZ`` — physical voxel size
+            %
+            % Options fields consumed:
+            %   - ``DownsampleStrategy`` — 'XY only' (default) | 'Anisotropy-preserving'
+            %   - ``Levels``             — explicit level count (overrides auto when > 0)
+            %   - ``MinLevelSize``       — auto stop when min(Y,X) would drop below this (default 256)
+            %   - ``MaxLevels``          — hard cap on level count (default 8)
+            if ~isfield(options, 'DownsampleStrategy'); options.DownsampleStrategy = 'XY only'; end
+            if ~isfield(options, 'MinLevelSize');       options.MinLevelSize = 256; end
+            if ~isfield(options, 'MaxLevels');          options.MaxLevels = 8; end
+
+            vxXY = max(pixSize.x, pixSize.y);
+            if vxXY <= 0; vxXY = 1; end
+            vxZ  = pixSize.z;
+            if vxZ  <= 0; vxZ  = 1; end
+
+            curY  = Y;    curX  = X;    curZ  = Z;
+            curVxXY = vxXY;  curVxZ = vxZ;
+            cumXYFactor = 1;  cumZFactor = 1;
+
+            plan = struct('Yl', Y, 'Xl', X, 'Zl', Z, ...
+                'cumXYFactor', 1, 'cumZFactor', 1, ...
+                'physScaleY', pixSize.y, 'physScaleX', pixSize.x, 'physScaleZ', pixSize.z);
+
+            useExplicit = isfield(options, 'Levels') && ~isempty(options.Levels) && options.Levels > 0;
+
+            while true
+                % stop conditions
+                if useExplicit
+                    if numel(plan) >= options.Levels; break; end
+                else
+                    if min(floor(curY/2), floor(curX/2)) < options.MinLevelSize; break; end
+                    if numel(plan) >= options.MaxLevels; break; end
+                end
+
+                nextVxXY = curVxXY * 2;
+                doZ = strcmp(options.DownsampleStrategy, 'Anisotropy-preserving') && ...
+                    curZ > 1 && nextVxXY > curVxZ;
+
+                cumXYFactor = cumXYFactor * 2;
+                curY = max(1, round(curY / 2));
+                curX = max(1, round(curX / 2));
+                curVxXY = nextVxXY;
+
+                if doZ
+                    cumZFactor = cumZFactor * 2;
+                    curZ = max(1, floor(curZ / 2));
+                    curVxZ = curVxZ * 2;
+                end
+
+                plan(end+1) = struct('Yl', curY, 'Xl', curX, 'Zl', curZ, ...  %#ok<AGROW>
+                    'cumXYFactor', cumXYFactor, 'cumZFactor', cumZFactor, ...
+                    'physScaleY', pixSize.y * cumXYFactor, ...
+                    'physScaleX', pixSize.x * cumXYFactor, ...
+                    'physScaleZ', pixSize.z * cumZFactor);
+            end
+        end
+    end
+
+    methods (Static, Access = private)
+        function writeStreamSlice(arr, sliceData, zPos, tPos, C, T, Yl, Xl, imgClass)
+            % WRITESTREAMSLICE - write one XY slice to a zarr array at (zPos, tPos).
+            sliceData = reshape(cast(sliceData, imgClass), Yl, Xl, 1, C);
+            if C == 1; sliceData = reshape(sliceData, Yl, Xl, 1); end
+            if T > 1
+                sliceData = reshape(sliceData, [size(sliceData, 1:max(3, ndims(sliceData))), 1]);
+            end
+            bbox = [1 Yl+1; 1 Xl+1; zPos zPos+1];
+            if C > 1; bbox = [bbox; 1 C+1]; end
+            if T > 1; bbox = [bbox; tPos tPos+1]; end
+            arr.write(sliceData, bbox);
+        end
+
+        function out = blockReduce2D(inputSlice, Yl, Xl, reduceFcn)
+            % BLOCKREDDUCE2D - downsample a 2-D (or [H W C]) slice using a per-block reduction.
+            %
+            % ``reduceFcn`` is a function handle compatible with ``f(matrix, dim)``,
+            % e.g. ``@mode`` (majority vote, for labels) or ``@median`` (noise-robust, for images).
+            % Fast vectorised reshape for integer scale factors; block-boundary loop otherwise.
+            [H, W, C] = size(inputSlice, 1, 2, 3);
+            fy = H / Yl;  fx = W / Xl;
+            out = zeros(Yl, Xl, C, class(inputSlice));
+            if abs(fy - round(fy)) < 1e-9 && abs(fx - round(fx)) < 1e-9
+                % Integer factors: fast vectorised path
+                fy = round(fy);  fx = round(fx);
+                for c = 1:C
+                    blk = reshape(inputSlice(:,:,c), fy, Yl, fx, Xl);
+                    blk = permute(blk, [1 3 2 4]);          % [fy fx Yl Xl]
+                    blk = reshape(blk, fy*fx, Yl*Xl);
+                    out(:,:,c) = reshape(reduceFcn(blk, 1), Yl, Xl);
+                end
+            else
+                % Non-integer factors: block-boundary loop
+                yBounds = round(linspace(0, H, Yl+1));
+                xBounds = round(linspace(0, W, Xl+1));
+                for c = 1:C
+                    plane = inputSlice(:,:,c);
+                    for yi = 1:Yl
+                        rows = yBounds(yi)+1 : yBounds(yi+1);
+                        for xi = 1:Xl
+                            cols = xBounds(xi)+1 : xBounds(xi+1);
+                            block = plane(rows, cols);
+                            out(yi, xi, c) = reduceFcn(block(:));
+                        end
+                    end
+                end
+            end
+            if C == 1; out = reshape(out, Yl, Xl); end
+        end
+
+        function out = blockReduce3D(inputVol, Yl, Xl, Zl, reduceFcn)
+            % BLOCKREDUCE3D - downsample a [H W D] volume by a 3-D per-block reduction.
+            %
+            % Used for the anisotropy-preserving path where Z is also halved.
+            % Fast vectorised reshape for integer scale factors; loop fallback otherwise.
+            [H, W, D] = size(inputVol);
+            fy = H / Yl;  fx = W / Xl;  fz = D / Zl;
+            if abs(fy-round(fy))<1e-9 && abs(fx-round(fx))<1e-9 && abs(fz-round(fz))<1e-9
+                fy = round(fy);  fx = round(fx);  fz = round(fz);
+                vol = reshape(inputVol, fy, Yl, fx, Xl, fz, Zl);
+                vol = permute(vol, [1 3 5 2 4 6]);          % [fy fx fz Yl Xl Zl]
+                vol = reshape(vol, fy*fx*fz, Yl*Xl*Zl);
+                out = cast(reshape(reduceFcn(vol, 1), Yl, Xl, Zl), class(inputVol));
+            else
+                yBounds = round(linspace(0, H, Yl+1));
+                xBounds = round(linspace(0, W, Xl+1));
+                zBounds = round(linspace(0, D, Zl+1));
+                out = zeros(Yl, Xl, Zl, class(inputVol));
+                for zi = 1:Zl
+                    zIdx = zBounds(zi)+1 : zBounds(zi+1);
+                    for yi = 1:Yl
+                        rows = yBounds(yi)+1 : yBounds(yi+1);
+                        for xi = 1:Xl
+                            cols = xBounds(xi)+1 : xBounds(xi+1);
+                            block = inputVol(rows, cols, zIdx);
+                            out(yi, xi, zi) = reduceFcn(block(:));
+                        end
+                    end
+                end
+            end
+        end
+
+        function result = reduceZBuffer(bufferCell, method, imgClass, Yl, Xl, C)
+            % REDUCEZBUFFER - collapse a cell array of Z-slices into one output slice.
+            %
+            % 'mode'   — majority vote per spatial position (for categorical labels).
+            % 'median' — median per spatial position (noise-robust, for images).
+            % All other methods — arithmetic mean cast to imgClass.
+            if ismember(method, {'mode', 'median'})
+                stacked   = cat(4, bufferCell{:});          % [Yl Xl C nAccum]
+                flat      = reshape(stacked, [], numel(bufferCell));
+                reduceFcn = str2func(method);
+                result    = cast(reshape(reduceFcn(flat, 2), Yl, Xl, C), imgClass);
+            else
+                accumulated = double(bufferCell{1});
+                for k = 2:numel(bufferCell)
+                    accumulated = accumulated + double(bufferCell{k});
+                end
+                result = cast(accumulated / numel(bufferCell), imgClass);
             end
         end
     end

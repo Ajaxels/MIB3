@@ -1,5 +1,8 @@
 # Plan: BigData image type for MIB3 (hybrid blockedImage + Zarr3)
 
+> **Superseded 2026-06-25** — consolidated into `bigdata_logic.md` (how it works) +
+> `bigdata_implementation_plan.md` (status & remaining work). Kept as the dated detail log.
+
 ## ✅ Decided (2026-06-16): WSI-safe editing convention
 
 Resolved with the user. Convention = **footprint-bounded full-res reads** (cost ∝ edit size, not slide

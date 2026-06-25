@@ -1,5 +1,8 @@
 # BigData level-map manager — Implementation Plan
 
+> **Superseded 2026-06-25** — consolidated into `bigdata_logic.md` (how it works) +
+> `bigdata_implementation_plan.md` (status & remaining work). Kept as the dated detail log.
+
 > **For agentic workers:** implement task-by-task. Steps use `- [ ]` checkboxes. **No git commits**
 > (project rule: edit local files only). Each task ends with `check_matlab_code` (must be clean) + an
 > MCP verification snippet (must pass) as its checkpoint. Spec: `development/bigdata_levelmap_spec.md`.

@@ -1,5 +1,8 @@
 # BigData segmentation performance — interactive brush at any zoom
 
+> **Superseded 2026-06-25** — consolidated into `bigdata_logic.md` (how it works) +
+> `bigdata_implementation_plan.md` (status & remaining work). Kept as the dated detail log.
+
 Make the brush and other segmentation tools responsive on disk-backed BigData models
 (`core.MibBigDataLabels`), at any zoom and slide size. Companion to `plan_wsi_readers.md` /
 `wsi_livetest_checklist.md`. **Status: RESOLVED 2026-06-17.**

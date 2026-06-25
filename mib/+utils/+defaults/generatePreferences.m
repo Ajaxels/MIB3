@@ -304,14 +304,17 @@ Prefs.SegmTools.Presets.Brush.Set1.Radius = 2;
 Prefs.SegmTools.Presets.Brush.Set1.Watershed = false;
 Prefs.SegmTools.Presets.Brush.Set1.SLIC = false;
 Prefs.SegmTools.Presets.Brush.Set1.Eraser = 1.5;
+Prefs.SegmTools.Presets.Brush.Set1.FixBrushToScreen = false;
 Prefs.SegmTools.Presets.Brush.Set2.Radius = 8;
 Prefs.SegmTools.Presets.Brush.Set2.Watershed = false;
 Prefs.SegmTools.Presets.Brush.Set2.SLIC = false;
 Prefs.SegmTools.Presets.Brush.Set2.Eraser = 1.5;
+Prefs.SegmTools.Presets.Brush.Set2.FixBrushToScreen = false;
 Prefs.SegmTools.Presets.Brush.Set3.Radius = 50;
 Prefs.SegmTools.Presets.Brush.Set3.Watershed = false;
 Prefs.SegmTools.Presets.Brush.Set3.SLIC = false;
 Prefs.SegmTools.Presets.Brush.Set3.Eraser = 1.5;
+Prefs.SegmTools.Presets.Brush.Set3.FixBrushToScreen = false;
 
 Prefs.SegmTools.Presets.BWThresholding.Set1.Adaptive = false;
 Prefs.SegmTools.Presets.BWThresholding.Set1.BlackOnWhite = 'black-on-white';

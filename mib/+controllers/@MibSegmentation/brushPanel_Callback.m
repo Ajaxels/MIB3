@@ -13,6 +13,7 @@ function brushPanel_Callback(obj, hWidget, hData, mode)
 %   - **hWidget** — [matlab.ui.control.Button | matlab.ui.control.CheckBox | matlab.ui.control.Spinner | matlab.ui.control.DropDown] pressed widget; operation identified via ``hWidget.Tag`` (when provided):
 %
 %     - ``'brushRadius'`` — adjust brush size/radius
+%     - ``'brushFixToScreen'`` — toggle fixed screen-pixel brush size
 %     - ``'eraserFactor'`` — set eraser magnification factor
 %     - ``'interpolationSettings'`` — open interpolation settings dialog
 %     - ``'brushUseClustering'`` — enable/select clustering mode
@@ -39,6 +40,10 @@ end
 
 switch mode
     case 'brushRadius' % change of the brush size
+        selectedSet = obj.mibModel.Sets.selectedSet;
+        obj.mibController.cImageDoc{selectedSet}.updateBrushCursorOffset();
+        obj.mibController.cImageDoc{selectedSet}.updateBrushCursor();
+    case 'brushFixToScreen' % toggle fixed screen-pixel brush size
         selectedSet = obj.mibModel.Sets.selectedSet;
         obj.mibController.cImageDoc{selectedSet}.updateBrushCursorOffset();
         obj.mibController.cImageDoc{selectedSet}.updateBrushCursor();

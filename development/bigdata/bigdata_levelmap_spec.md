@@ -1,5 +1,8 @@
 # Spec: BigData model "level map" manager (interactive, multi-resolution-correct segmentation)
 
+> **Superseded 2026-06-25** — consolidated into `bigdata_logic.md` (how it works) +
+> `bigdata_implementation_plan.md` (status & remaining work). Kept as the dated detail log.
+
 Date: 2026-06-24. Supersedes the reconstruct-on-read approach in `bigdata_brush_performance.md`.
 Companion: `plan_wsi_readers.md`, `wsi_livetest_checklist.md`. Plan: `bigdata_levelmap_plan.md`.
 
@@ -145,3 +148,149 @@ Opus only for #4 (the read/recompute coordinate math — the one subtle, correct
 ## Out of scope (now)
 255/65535/4294967295 model types; `getData3D`/`setData3D` lazy levels; per-layer (vs per-tile) source
 tracking; chunk-grid-aligned (vs coarsest-pixel) tiles.
+
+## Follow-up fix (2026-06-25): undo backup must not force full resolution
+
+**Symptom:** assigning selection to material (a/s/r keys) or any 2D layer move on a BigData
+model took 3–4 s even though the edit itself writes only the working pyramid level.
+
+**Root cause:** `MibModel.backup` forced `getDataOptions.magFactor = 1` for all pyramidal
+datasets (`datasetType(1) ∈ {'V','B'}`). For a disk-backed BigData level map this read the
+**entire full-resolution slice** (CMU-1: 38144×51200 ≈ 1.95 GP, ~8.4 s) and, worse, triggered
+`materializeForRead` at level 1 — prematurely upsampling+writing L1 chunks, defeating the lazy
+level map. `getData2D`/`setData2D` in `moveLayers` already auto-pick the display level (≈0.48 s),
+so backup was the *only* full-res operation in the path.
+
+**Fix (`+models/@MibModel/backup.m`):** split the pyramidal branch by backend.
+- **Virtual ('V')** — unchanged: in-memory full-res model, capture at `magFactor=1`.
+- **BigData ('B', `core.MibBigDataLabels`)** — capture at the **working level's native scale**:
+  `magFactor = modelScaleFactors(pickLevel(magFactor), 1)`. This reads the raw working level with
+  no display resize (lossless), is small and fast (8.4 s → 0.48 s, ~17×), and never touches L1.
+  The `magFactor` is stored in the undo entry, so `undo`/redo restore via `setData63` at the same
+  level (+ coarser propagation + `markTiles`).
+
+**Verified (live MCP, CMU-1 @ level 2):** full-res read 8.435 s vs working-level 0.484 s;
+backup now 0.484 s; capture→restore→reread byte-identical at the working level; `matLevel` stays
+at the working level (no premature L1 materialization).
+
+**Sidecar file:** the level map persists next to the store as
+`<storePath>.levelmap.mat` (e.g. `Labels_CMU-1.zarr3.levelmap.mat`) — a `-v7` MAT file holding
+`matLevel`/`mapVersion`/`coarsestSize`; written by `closeStore`/`saveLevelMap` and on model Save.
+
+### Coordinate-unit follow-up (same day): undo restored nothing
+
+After the backup-level change above, **undo of a BigData `s`/move op restored nothing**.
+Cause: `MibBackup.store` fills any absent `options.x/y` from the captured data **size**. With the
+snapshot now taken at a coarse level, that size is in LEVEL pixels — but
+`orientPhysRanges` (shared by `getData63`/`setData63`) interprets `options.x/y` as
+**full-resolution** coordinates. So undo passed level-pixel coords as full-res and wrote the
+snapshot into a shrunken top-left region → no visible restore. (The earlier direct
+capture→restore test passed only because it bypassed `store()`, leaving x/y absent so
+`orientPhysRanges` defaulted to the full extent.)
+
+**Fix (`backup.m`, BigData branch):** pin `getDataOptions.x = [1 width]`, `y = [1 height]`
+(full-res extent) when block/ROI mode is off, so `store()` records full-res coordinates and
+capture/restore use the same units. Block/ROI modes already set full-res x/y and take precedence.
+
+**Verified (live, real `moveLayers('selection','labels','2D,Slice','remove')` + `undo`):**
+labels nnz 340015 → 297611 (subtract) → 340015 (undo) — **byte-identical restore**.
+
+## Performance + naming follow-ups (2026-06-25, part 2)
+
+### a/s/r still slow (3–4 s) after the backup fix — two more causes
+
+Profiling the live `a` (add-to-model) path on CMU-1 @ level 2 found:
+
+1. **`setData63` smoothed the whole slice.** `resizeLayerSmooth` (signed-distance, label-aware)
+   ran over the entire 122 MP working slice (3.34 s) before the changed-bbox write. Fix: read
+   `before`, locate the change with the cheap nearest pass (0.045 s), then smooth **only the
+   changed footprint** (display crop → working window at the same global scale, +4 px margin so
+   edges stay clean and grid-aligned). Cost now scales with the edit.
+
+2. **No persistent edit box → whole-slice scans.** `moveLayers`/`clearLayer` ran with block mode
+   off, so every step (backup + ~3 getData2D + setData2D) read the entire 122 MP slice (~5×0.48 s).
+   `setData63` only ever computed a *transient* per-write bbox; nothing was retained.
+
+   **Fix: persistent selection footprint box.** New `MibBigDataLabels.selectionBBoxFull`
+   ([y0 y1 x0 x1 z0 z1] full-res), maintained by `setData63` from the **exact written selection
+   bits** (reliable for a 1-px stroke): REPLACE when the processed region covers the previous box
+   (so clear/consume shrinks/empties it), else UNION. `moveLayers` (selection source, 2D, no
+   ROI/block, orientation 3) sets `BatchOptLocal.x/y` to this box so the backup, all reads and all
+   writes scope to the footprint; the post-read selection clear writes zeros over the same scoped
+   region (which resets the box). Falls back to the old whole-slice path when the box is unknown
+   (e.g. a freshly loaded model before any edit) — correct, just slow that once.
+
+   Measured: forcing the equivalent scope (block mode ON) ran the same `a` in **0.188 s** vs
+   **4.85 s** — the visible/footprint region is ~1.6 MP vs 122 MP. Semantics preserved: the box
+   finds the selection wherever it was drawn, on-screen or off.
+
+Unit coverage: `tests/core/MibBigDataLevelMapTest.m` → `testSelectionBBoxTracking` (set on write,
+untouched by a material write, reset on clear). Full suite 9/9.
+
+### Sidecar naming
+
+Renamed from `<store>.zarr3.levelmap.mat` to **`<store-without-ext>.levelmap`** via the new static
+`core.MibBigDataLabels.levelMapPathFor` (e.g. `Labels_CMU-1.levelmap`). The file is MAT-format,
+saved/loaded with the `'-mat'` key (no `.mat` extension). NOTE: it is written only by `closeStore`
+/ Save — it does **not** exist mid-session until you save or close the model.
+
+## Correctness fix (2026-06-25, part 3): imported models must load precise
+
+User concern: "a loaded model should always be precise — e.g. when you import an existing model."
+Correct, and the old no-sidecar fallback violated it.
+
+**The pyramid's finer levels are precise in two cases** — an imported/externally-written model (all
+levels properly downsampled) and any model MIB saved fully. They are *deferred/virtual* only during a
+live interactive session, and that state is always captured in the sidecar (written on closeStore).
+
+**Bug:** `initLevelMapFallback` (run when no sidecar) set `matLevel = N` (coarsest) for data tiles —
+declaring every finer level virtual. For an imported model the first zoom-in past the coarsest then
+triggered `materializeForRead`, which upsamples the coarsest and **overwrites the precise finer
+levels** → silent degradation.
+
+**Fix:** `initLevelMapFallback` now sets `matLevel = 1` everywhere (assume fully precise). Reads go
+straight to the requested level; editing still degrades only the touched tiles (markTiles), rebuilt
+lazily on read or on Save. A missing sidecar legitimately means "nothing deferred" because MIB always
+writes the sidecar on close. Test `testFallbackWhenSideFileMissing` rewritten to write at the finest
+level (emulating an import), drop the sidecar, reopen, and assert the finest level is byte-identical
+(no coarsest upsample) and `matLevel` is all 1. Suite 9/9.
+
+## Save confirmation dialog
+
+Pressing Save model on a BigData dataset (`MibRibbon/model_Callbacks`, `Save\nmodel` case) now asks
+first via `utils.dlgs.inputQuestDlg` ("Finalize the model now?" — explains it materializes every level
+and can take a while; default Cancel). Only "Finalize & save" runs `saveBigDataModel`.
+
+## Sidecar lifetime (answer): keep it, never delete after Save
+
+After `materializeAll`, `matLevel` is all 1 and `saveLevelMap` persists exactly that ("all levels
+valid"). Deleting the sidecar would force `initLevelMapFallback` on reopen — which (now) assumes
+precise, so it would be harmless for a fully-saved model, but the sidecar is the only durable record
+that distinguishes a fully-materialized model from one closed mid-edit with deferred finer levels.
+It is tiny (one uint8 per coarsest tile) and should always be kept.
+
+## Crash-safety + UX + docs (2026-06-25, part 4)
+
+**Sidecar-only save (crash safety).** Pixel edits are written to the zarr live; only the in-memory
+level map is volatile. `saveBigDataModel(obj, id, mode)` gained a `mode`:
+- `'full'` (default) — `materializeAll` + `saveLevelMap` (consistent at all levels; can be slow).
+- `'sidecar'` — `saveLevelMap` only (fast). A crash checkpoint: a reopen then reconstructs deferred
+  finer levels correctly instead of showing stale data.
+
+`MibRibbon/model_Callbacks` (`Save\nmodel`, BigData branch) now offers a 3-way choice via
+`inputQuestDlg`: **Finalize & save** / **Save sidecar** (default) / **Cancel**.
+
+**Help button on dialogs.** `utils.dlgs.inputQuestDlg` gained `options.HelpUrl` (+ `HelpBtnText`):
+when set, a Help button appears bottom-left and opens the URL/.html in the browser (mirrors
+`inputUniversalDlg.onHelp`). The Save-model dialog wires it to
+`https://mib.helsinki.fi/help/main3/getting-started/dataset-types/index.html` (page to be published).
+
+**Docs.** Moved the "Dataset types" section out of
+`docs/docs/user-interface/panels/datasets/index.md` (left a short summary + link) into a new
+`docs/docs/getting-started/dataset-types/index.md`, expanded with a "How BigData works" section
+(image/model pyramids, live writes + coarser propagation, lazy finer reconstruction + cache, the level
+map & `.levelmap` sidecar, selection-footprint scoping, and the two Save options incl. crash recovery).
+Registered in `docs/zensical.toml` under Getting Started. Build clean (the relative-`.md` "page does
+not exist" warnings are the repo's pre-existing build characteristic, shared by all existing pages).
+
+Tests: MibBigDataLevelMapTest 9/9.

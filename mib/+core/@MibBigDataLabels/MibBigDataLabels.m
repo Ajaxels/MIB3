@@ -25,7 +25,7 @@ classdef MibBigDataLabels < core.MibLabels63
 % its ``matLevel`` source (no coarse-echo halo), writes it into the level
 % (materialize) and caches it. ``saveLevelMap``/``loadLevelMap`` persist the map
 % in a side-file; ``materializeAll`` (Save) finalizes every level. See
-% development/bigdata_levelmap_spec.md.
+% development/bigdata/bigdata_logic.md.
 %
 % **Axis order.** Levels are created with ``ZarrArray`` (transpose codec) → they
 % round-trip in native MATLAB ``[y, x, z]`` order, no permutation. ``obj.data``
@@ -54,7 +54,15 @@ classdef MibBigDataLabels < core.MibLabels63
         % working level + coarser and sets matLevel = working level; finer levels are
         % implicitly dirty and recomputed on read (getData63) or at Save (materializeAll).
         levelMapPath = ''
-        % [char] side-file path ('<storePath>.levelmap.mat') persisting matLevel.
+        % [char] side-file path ('<storePath>.levelmap') persisting matLevel.
+        selectionBBoxFull = []
+        % [1x6 double] full-resolution bounding box [y0 y1 x0 x1 z0 z1] of where the
+        % SELECTION layer currently has data, or [] when there is no selection. Grown
+        % by setData63 on every selection write (exact written bits → reliable even for
+        % a 1-pixel stroke), reset/shrunk when the selection is cleared or consumed.
+        % Lets selection→material/mask moves (a/s/r) and clear (c) read/write only the
+        % selection's footprint instead of the whole gigapixel slice. Transient: not
+        % persisted; recomputed lazily as edits happen this session.
     end
 
     methods
@@ -144,7 +152,7 @@ classdef MibBigDataLabels < core.MibLabels63
             obj.exists    = true;
 
             % fresh store → empty level map + side-file path
-            obj.levelMapPath = [storePath '.levelmap.mat'];
+            obj.levelMapPath = core.MibBigDataLabels.levelMapPathFor(storePath);
             obj.initLevelMapEmpty();
         end
 
@@ -233,7 +241,7 @@ classdef MibBigDataLabels < core.MibLabels63
             obj.exists    = true;
 
             % restore the level map from the side-file (or fall back for old stores)
-            obj.levelMapPath = [storePath '.levelmap.mat'];
+            obj.levelMapPath = core.MibBigDataLabels.levelMapPathFor(storePath);
             if ~obj.loadLevelMap(); obj.initLevelMapFallback(); end
 
             % restore material names/colours if previously saved (see writeMaterialMetadata)
@@ -331,13 +339,64 @@ classdef MibBigDataLabels < core.MibLabels63
             obj.matLevel(ty(1):ty(2), tx(1):tx(2), tz(1):tz(2)) = uint8(levelIdx);
         end
 
+        function updateSelectionBBoxFromWrite(obj, fullBlock, Yl, Xl, Zl, levelIdx)
+            % UPDATESELECTIONBBOXFROMWRITE - keep selectionBBoxFull in sync after a
+            % setData63 write that may have changed selection bits (type
+            % 'selection'/'everything').
+            %
+            % fullBlock : the WHOLE processed working block (the nearest-merged result
+            %             over the incoming region [Yl Xl Zl]); its selection bit (bit 8)
+            %             is authoritative for the resulting selection over that region.
+            % Yl/Xl/Zl  : working-level absolute index ranges of fullBlock.
+            % levelIdx  : working level fullBlock lives at.
+            %
+            % The processed region [Yl Xl Zl] is the area we have authoritative info
+            % over. When it fully covers the previous bbox we REPLACE (so a clear or a
+            % selection→material consume shrinks/empties the box); otherwise we only
+            % have partial info → never shrink, only UNION the new footprint in. Using
+            % the exact selection bits (not the display block) catches a 1-pixel stroke.
+            sf = obj.modelScaleFactors(levelIdx, :);
+            writtenFull = [(Yl(1)-1)*sf(1)+1, min(Yl(2)*sf(1), obj.height), ...
+                           (Xl(1)-1)*sf(2)+1, min(Xl(2)*sf(2), obj.width), ...
+                           (Zl(1)-1)*sf(3)+1, min(Zl(2)*sf(3), obj.depth)];
+            selOn = bitand(fullBlock, 128) > 0;
+            if any(selOn(:))
+                iy = find(any(any(selOn, 2), 3));   jx = find(any(any(selOn, 1), 3));   kz = find(any(any(selOn, 1), 2));
+                ay = [Yl(1)+iy(1)-1, Yl(1)+iy(end)-1];
+                ax = [Xl(1)+jx(1)-1, Xl(1)+jx(end)-1];
+                az = [Zl(1)+kz(1)-1, Zl(1)+kz(end)-1];
+                selFull = [(ay(1)-1)*sf(1)+1, min(ay(2)*sf(1), obj.height), ...
+                           (ax(1)-1)*sf(2)+1, min(ax(2)*sf(2), obj.width), ...
+                           (az(1)-1)*sf(3)+1, min(az(2)*sf(3), obj.depth)];
+            else
+                selFull = [];
+            end
+            prev = obj.selectionBBoxFull;
+            writtenContainsPrev = isempty(prev) || ( ...
+                writtenFull(1) <= prev(1) && writtenFull(2) >= prev(2) && ...
+                writtenFull(3) <= prev(3) && writtenFull(4) >= prev(4) && ...
+                writtenFull(5) <= prev(5) && writtenFull(6) >= prev(6));
+            if writtenContainsPrev
+                obj.selectionBBoxFull = selFull;            % authoritative → may reset to []
+            elseif ~isempty(selFull)
+                obj.selectionBBoxFull = core.MibBigDataLabels.bboxUnion(prev, selFull);
+            end
+        end
+
         function materializeForRead(obj, L, Yl, Xl, Zl)
             % MATERIALIZEFORREAD - ensure level L holds materialized data over the
             % level-L index window [Yl Xl Zl] for every non-empty tile. Tiles whose
             % matLevel is FINER-than-materialized for L (matLevel > L) are recomputed by
             % upsampling from their matLevel source, written to L, and marked matLevel=L.
             % Bounded to this window. Clean tiles (matLevel <= L) are left untouched.
+            %
+            % Upsampling uses label-aware signed-distance smoothing (resizeBlockSmooth)
+            % when the smoothing preference is on, so coarse-level block patterns do not
+            % appear when zooming into a region drawn at a coarser zoom. Falls back to
+            % nearest-neighbour when smoothing is off or when the target is not finer
+            % (resizeBlockSmooth already handles this internally).
             if isempty(obj.matLevel); return; end
+            smoothOn = io.zarr.Config.smoothing();
             sf = obj.modelScaleFactors(L, :);
             fullY = [(Yl(1)-1)*sf(1)+1, min(Yl(2)*sf(1), obj.height)];
             fullX = [(Xl(1)-1)*sf(2)+1, min(Xl(2)*sf(2), obj.width)];
@@ -359,7 +418,11 @@ classdef MibBigDataLabels < core.MibLabels63
                 src = obj.readPackedLevel(A, aY, aX, aZ);
                 [lY, lX, lZ] = obj.regionForLevel(L, fY, fX, fZ);
                 tgtSize = [lY(2)-lY(1)+1, lX(2)-lX(1)+1, lZ(2)-lZ(1)+1];
-                block = core.MibBigDataLabels.resizeBlockNearest(src, tgtSize);
+                if smoothOn
+                    block = core.MibBigDataLabels.resizeBlockSmooth(src, tgtSize);
+                else
+                    block = core.MibBigDataLabels.resizeBlockNearest(src, tgtSize);
+                end
                 obj.writePackedLevel(L, block, lY, lX, lZ);
                 obj.matLevel(tY(1):tY(2), tX(1):tX(2), tZ(1):tZ(2)) = ...
                     min(obj.matLevel(tY(1):tY(2), tX(1):tX(2), tZ(1):tZ(2)), uint8(L));
@@ -386,32 +449,42 @@ classdef MibBigDataLabels < core.MibLabels63
         end
 
         function saveLevelMap(obj)
-            % SAVELEVELMAP - persist matLevel to the side-file (<storePath>.levelmap.mat).
+            % SAVELEVELMAP - persist matLevel to the side-file (<storePath>.levelmap).
+            % The file has no '.mat' extension, so '-mat' forces MAT format on save.
             if isempty(obj.levelMapPath) || isempty(obj.matLevel); return; end
             S = struct('matLevel', obj.matLevel, 'mapVersion', 1, ...
                 'coarsestSize', obj.modelLevelSizes(end, :));
-            save(obj.levelMapPath, '-struct', 'S', '-v7');
+            save(obj.levelMapPath, '-struct', 'S', '-v7', '-mat');
         end
 
         function tf = loadLevelMap(obj)
             % LOADLEVELMAP - restore matLevel from the side-file; false if missing/mismatched.
+            % '-mat' forces MAT parsing since the file has no '.mat' extension.
             tf = false;
             if isempty(obj.levelMapPath) || ~isfile(obj.levelMapPath); return; end
-            S = load(obj.levelMapPath);
+            S = load(obj.levelMapPath, '-mat');
             if isfield(S, 'matLevel') && isequal(size(S.matLevel, 1:2), obj.modelLevelSizes(end, 1:2))
                 obj.matLevel = uint8(S.matLevel); tf = true;
             end
         end
 
         function initLevelMapFallback(obj)
-            % INITLEVELMAPFALLBACK - no side-file (old store): assume only the coarsest
-            % level is materialized; mark tiles that have any data there (finer levels
-            % recompute lazily on read).
+            % INITLEVELMAPFALLBACK - no side-file: assume the on-disk pyramid is already
+            % PRECISE at every level (matLevel = 1, i.e. fully materialized).
+            %
+            % This is the correct assumption for an imported / externally-created model
+            % (all levels were properly downsampled when written) and for any model MIB
+            % saved fully — MIB always persists the sidecar on closeStore, so a MISSING
+            % sidecar means "not a deferred interactive session", i.e. nothing virtual.
+            %
+            % It must NOT assume coarsest-only: doing so would make the first zoom-in
+            % past the coarsest level trigger materializeForRead, which upsamples the
+            % coarsest data and OVERWRITES the precise finer levels — silently degrading
+            % an imported model. With matLevel = 1, reads go straight to the requested
+            % level; later edits degrade only the touched tiles (markTiles), which are
+            % then recomputed lazily on read or rewritten on Save.
             obj.initLevelMapEmpty();
-            cs = obj.modelLevelSizes(end, :);
-            coarse = obj.modelArrays{end}.read([1 cs(1)+1; 1 cs(2)+1; 1 max(1, cs(3))+1]);
-            coarse = reshape(coarse, cs(1), cs(2), max(1, cs(3)));
-            obj.matLevel(coarse ~= 0) = uint8(size(obj.modelLevelSizes, 1));
+            obj.matLevel(:) = 1;
         end
     end
 
@@ -537,6 +610,25 @@ classdef MibBigDataLabels < core.MibLabels63
     end
 
     methods (Static)
+        function p = levelMapPathFor(storePath)
+            % LEVELMAPPATHFOR - side-file path for the level map of a model store.
+            % Replaces the store's extension (e.g. '.zarr3') with '.levelmap' so the
+            % sidecar sits next to the store as '<name>.levelmap' (a MAT-format file
+            % saved/loaded with the '-mat' key; NOT '<name>.zarr3.levelmap.mat').
+            storePath = char(storePath);
+            [folder, name] = fileparts(storePath);
+            p = fullfile(folder, [name '.levelmap']);
+        end
+
+        function bb = bboxUnion(a, b)
+            % BBOXUNION - union of two [y0 y1 x0 x1 z0 z1] boxes ([] acts as empty).
+            if isempty(a); bb = b; return; end
+            if isempty(b); bb = a; return; end
+            bb = [min(a(1), b(1)), max(a(2), b(2)), ...
+                  min(a(3), b(3)), max(a(4), b(4)), ...
+                  min(a(5), b(5)), max(a(6), b(6))];
+        end
+
         function out = resizeBlockNearest(block, targetSize)
             % RESIZEBLOCKNEAREST - nearest-neighbour resize of a packed [y x z] uint8
             % block to targetSize=[ty tx tz], preserving exact packed bytes.

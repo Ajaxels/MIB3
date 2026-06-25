@@ -36,10 +36,15 @@ localId = obj.mibModel.Sets.selectedDataset(obj.setOfDatasetsIndex) + ...
 magFactor = obj.mibModel.getMagFactor(localId);
 
 % Calculate scaled size (in CData pixels)
-if radius == 0
-    se_size = round(1/magFactor/2);
+fixToScreen = obj.view.handles.panels.segmentation.handles.brushFixToScreen.Value;
+if fixToScreen
+    se_size = max(1, radius);
 else
-    se_size = round(radius/magFactor);
+    if radius == 0
+        se_size = round(1/magFactor/2);
+    else
+        se_size = round(radius/magFactor);
+    end
 end
 
 % Derive coef_z from imageHandle XData so the cursor is stretched to match

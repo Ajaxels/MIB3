@@ -44,31 +44,24 @@ wSize = [Yl(2)-Yl(1)+1, Xl(2)-Xl(1)+1, Zl(2)-Zl(1)+1];
 % working-level sub-region back to full-resolution coords for propagation.
 sf = obj.modelScaleFactors(levelIdx, :);
 
-% resize the displayed-resolution data down/up to the working level region.
-% When zoomed out the brush arrives at a COARSER display resolution than the
-% working level, so this is an UP-sample — use the smooth (signed-distance)
-% reconstruction when enabled so the stored boundary isn't blocky at the
-% working-level grid (the propagation below then carries it to other levels).
-% 'everything' (undo/restore of packed bytes) is never smoothed; it must be exact.
-smoothOn = io.zarr.Config.smoothing();
-if smoothOn && ~strcmp(type, 'everything')
-    isLabelMap = strcmp(type, 'labels') && isempty(materialIndex);
-    dataLevel = core.MibBigDataLabels.resizeLayerSmooth(dataset, wSize, isLabelMap);
-else
-    dataLevel = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
-end
-
-% --- read / merge the working level --------------------------------------
+% --- read the working level ----------------------------------------------
 before = obj.readPackedLevel(levelIdx, Yl, Xl, Zl);
-packed = mergePacked(before, dataLevel, type, materialIndex);
 
-% --- restrict everything to the CHANGED sub-region ------------------------
+% --- locate the CHANGED sub-region with a CHEAP nearest pass ---------------
 % Only the voxels the edit actually altered need to be written and propagated.
-% A small brush stroke at low magnification changes a tiny footprint even though
-% the visible block (Yl/Xl/Zl) is large — writing/propagating just the changed
-% bounding box makes per-stroke cost scale with the edit, not the view, and the
-% full-resolution propagation shrinks proportionally (see
-% development/bigdata_brush_performance.md, Phase 1).
+% A small brush stroke (or selection→material move) at low magnification changes
+% a tiny footprint even though the visible block (Yl/Xl/Zl) is the whole slice.
+% Finding the changed bounding box with a nearest resize (cheap) first means the
+% expensive smoothing below runs on the edit footprint only — per-stroke cost then
+% scales with the edit, not the view (see development/bigdata/bigdata_logic.md).
+% The smooth (signed-distance) reconstruction makes
+% the stored boundary non-blocky when up-sampling display→working; 'everything'
+% (undo/restore of packed bytes) is never smoothed — it must be exact.
+smoothOn = io.zarr.Config.smoothing();
+useSmooth = smoothOn && ~strcmp(type, 'everything');
+
+dataNear = core.MibBigDataLabels.resizeBlockNearest(dataset, wSize);
+packed = mergePacked(before, dataNear, type, materialIndex);
 diff = packed ~= before;
 if ~any(diff(:)); result = true; return; end   % nothing changed → no disk I/O
 
@@ -76,11 +69,38 @@ anyY = find(any(any(diff, 2), 3));   y0 = anyY(1); y1 = anyY(end);
 anyX = find(any(any(diff, 1), 3));   x0 = anyX(1); x1 = anyX(end);
 anyZ = find(any(any(diff, 1), 2));   z0 = anyZ(1); z1 = anyZ(end);
 
+% By default write the nearest result over the tight changed bbox.
 subPacked = packed(y0:y1, x0:x1, z0:z1);
-% working-level absolute index ranges of the changed sub-region
 wY = [Yl(1)+y0-1, Yl(1)+y1-1];
 wX = [Xl(1)+x0-1, Xl(1)+x1-1];
 wZ = [Zl(1)+z0-1, Zl(1)+z1-1];
+
+% --- upgrade the footprint to the SMOOTH reconstruction (footprint only) ---
+% Re-run the smoothing on just the display crop that maps to the changed working
+% window (plus a margin for boundary context). The display→working crop is mapped
+% at the SAME global scale (wSize/displaySize) so the smoothed block stays aligned
+% to the working grid; the margin region carries the data=0 background, so the
+% window edges introduce no spurious changes.
+dY = size(dataset, 1); dX = size(dataset, 2);
+fy = wSize(1) / dY; fx = wSize(2) / dX;
+if useSmooth && (fy > 1 || fx > 1)
+    isLabelMap = strcmp(type, 'labels') && isempty(materialIndex);
+    marg = 4;   % display-pixel margin around the footprint for smoothing context
+    dy0 = max(1, floor((y0 - 1) / fy) + 1 - marg);   dy1 = min(dY, ceil(y1 / fy) + marg);
+    dx0 = max(1, floor((x0 - 1) / fx) + 1 - marg);   dx1 = min(dX, ceil(x1 / fx) + marg);
+    dispCrop = dataset(dy0:dy1, dx0:dx1, :);
+    % working window covered by the display crop (same global scale), clamped
+    wcY0 = max(1, round((dy0 - 1) * fy) + 1);   wcY1 = min(wSize(1), round(dy1 * fy));
+    wcX0 = max(1, round((dx0 - 1) * fx) + 1);   wcX1 = min(wSize(2), round(dx1 * fx));
+    subSize = [wcY1 - wcY0 + 1, wcX1 - wcX0 + 1, wSize(3)];
+    smoothCrop = core.MibBigDataLabels.resizeLayerSmooth(dispCrop, subSize, isLabelMap);
+    beforeWin = before(wcY0:wcY1, wcX0:wcX1, :);
+    subPacked = mergePacked(beforeWin, smoothCrop, type, materialIndex);
+    wY = [Yl(1) + wcY0 - 1, Yl(1) + wcY1 - 1];
+    wX = [Xl(1) + wcX0 - 1, Xl(1) + wcX1 - 1];
+    wZ = [Zl(1), Zl(2)];
+end
+
 obj.writePackedLevel(levelIdx, subPacked, wY, wX, wZ);
 
 % full-resolution region of the changed sub-region (for cross-level propagation)
@@ -102,6 +122,13 @@ obj.propagateRegion(subPacked, pfY, pfX, pfZ, levelIdx, 'coarser');
 % record the working level as authoritative for the touched tiles; finer levels
 % are now implicitly dirty and recomputed lazily on read (getData63) / at Save.
 obj.markTiles(pfY, pfX, pfZ, levelIdx);
+
+% keep the selection footprint box in sync so selection→material/mask moves and
+% clear can scope to it instead of scanning the whole slice. 'packed' is the full
+% processed region [Yl Xl Zl]; its selection bit is authoritative there.
+if strcmp(type, 'selection') || strcmp(type, 'everything')
+    obj.updateSelectionBBoxFromWrite(packed, Yl, Xl, Zl, levelIdx);
+end
 
 result = true;
 end

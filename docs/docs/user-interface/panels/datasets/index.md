@@ -136,15 +136,15 @@ Shortcut to add a new set, equivalent to *Sets context menu → Add set*.
 ![Dataset types](images/datasets_type.png){align=left}
 
 <span class="widget widget-dropdown">Standard</span>
-Sets the memory/access mode for the dataset in the active buffer.
+Sets the memory/access mode for the dataset in the active buffer: **Standard** (whole dataset in RAM),
+**Virtual** (read on demand, browse-only), or **BigData** (read on demand, pyramidal, with a disk-backed
+editable model).
 
 When a real dataset is open, switching the type shows a confirmation first (the current dataset is closed
-or converted); switching the type of an empty/placeholder buffer happens silently. 
+or converted); switching the type of an empty/placeholder buffer happens silently. Choosing **BigData**
+while a dataset is open offers **Convert current** or **New**.
 
 <div class="clear-float"></div>
-
-Choosing **BigData** while a dataset is open offers **Convert current** (write the open image to an OME-Zarr v3 pyramid on disk
-and reopen it in BigData mode) or **New** (start an empty BigData placeholder).
 
 | Type | In memory? | Editable model? | Typical use |
 |------|:----------:|:---------------:|-------------|
@@ -152,78 +152,10 @@ and reopen it in BigData mode) or **New** (start an empty BigData placeholder).
 | **Virtual** | read on demand | ❌ browse-only | quickly browse datasets too large for RAM |
 | **BigData** | read on demand, pyramidal | ✅ disk-backed model | segment datasets far larger than RAM |
 
-### Standard
-
-The entire dataset is loaded into RAM. This is the default and the most capable mode.
-
-<div class="h4-like">Benefits</div>
-
-- Best performance — all pixels are immediately in memory.
-- **All** tools, filters, processing and export formats are available.
-- Full multi-step Undo/Redo.
-
-<div class="h4-like">Limitations</div>
-
-- The dataset (and its model/mask/selection layers) must fit in RAM, with headroom for processing.
-- Not suitable for datasets larger than available memory — use **Virtual** (to browse) or **BigData**
-  (to browse *and* segment) instead.
-
-### Virtual
-
-Pixels are read from disk **on demand** (e.g. an OME-Zarr v3 pyramid, HDF5, or a BioFormats-backed file),
-so only the currently viewed region is held in memory.
-
-<div class="h4-like">Benefits</div>
-
-- Open and **browse** datasets far larger than RAM with a small memory footprint.
-- Supports more on-disk formats than BigData (anything the virtual readers can stream).
-
-<div class="h4-like">Limitations</div>
-
-- **Browse-only** — segmentation layers (Selection, Mask, Model) and most pixel-editing/processing
-  tools are disabled; Undo is not kept for these layers.
-- Slower per access than Standard (each view reads from disk).
-- To segment a large dataset instead of just viewing it, use **BigData**.
-
-### BigData
-
-For datasets **too large to fit in RAM that you also want to segment**. The image is a pyramidal,
-chunked **OME-Zarr v3** store read on demand (zoom selects the matching resolution level; pan reads only
-the visible region), and the segmentation **model is a disk-backed, pyramidal 63-class store** that mirrors
-the image pyramid. Edits are written straight to disk and propagated across levels, so a model can be far
-larger than memory and survives across sessions.
-
-<div class="h4-like">Benefits</div>
-
-- **Segment** datasets much larger than RAM — only the visible region/level is ever in memory.
-- The model is **saved live to disk** (an OME-Zarr v3 group next to the image) and reloads across sessions;
-  material names and colours are preserved.
-- Smooth zoom/pan and **orientation switching** (XY / ZX / ZY) by reading the appropriate pyramid level.
-- Export any pyramid level to standard formats, streamed slice-by-slice for the memory-optimized formats
-  (see [Save Image As](../../ribbon/home/index.md#save-image-as) and
-  [Save model as...](../../ribbon/model/index.md#save-model-as)).
-- Selectable Zarr backend (native `zarrMex` or `zarr-python`); define in [Preferences->Input / Output](../../ribbon/home/home-preferences.md#input-output)
-
-<div class="h4-like">Limitations</div>
-
-- Reads **OME-Zarr v3 only**. Other formats (TIFF, HDF5, BioFormats/WSI, …) must first be **converted** —
-  switch the type dropdown to *BigData → Convert current*, or use *Ribbon → Home → Export → Export to Zarr3*, or use
-  [Image converter plugin](../../../plugins/file-processing/image-converter.md)
-- **Browse-only until a model exists** — create a model (Segmentation panel → *Create*, or *Ribbon → Model →
-  New model*, or load one to enable segmentation.
-- Up to **63 materials** (packed model), and **a single time point** (time-series is not yet supported).
-- The **source image is read-only** — you edit the model, not the image pixels. To change image pixels,
-  convert the (cropped) region to Standard.
-- Edits drawn while **zoomed out** are captured at the displayed (coarser) level and then propagated, so
-  fine detail is limited by the zoom at which you paint. An optional smoothing reduces blockiness of
-  upsampled edits (*Preferences → Input/Output → Zarr → Smoothing*).
-- A few tools are **not available**: [Object Picker](../segm/segm-objpick.md),
-  [Black-and-White Thresholding](../segm/segm-bwthres.md), and SAM's *Automatic everything*. Each
-  [segmentation tool page](../segm/index.md) states its BigData support.
-
-!!! tip "Getting into BigData mode"
-    Open a `.zarr3` dataset directly (it opens as BigData), or switch an open Standard/Virtual dataset with
-    the **Dataset type → BigData** dropdown and choose *Convert current*.
+!!! info "Full details"
+    See **[Getting Started → Dataset types](../../../getting-started/dataset-types/index.md)** for each
+    type's benefits and limitations, and for how BigData is implemented (pyramids, live writes, the level
+    map and sidecar file, and the **Save model** options) to stay efficient on multi-gigapixel data.
 
 ---
 
