@@ -1348,6 +1348,51 @@ classdef DatasetInfo < handle
                 end
             end
 
+            % ---- Image pyramid ----
+            pyramid = obj.mibModel.I{datasetId}.image.pyramid;
+            if ~isempty(pyramid.levelNames)
+                nLevels = size(pyramid.levelScaleFactors, 1);
+                scaleCoarsest = pyramid.levelScaleFactors(end, 1);
+                list{end+1} = struct('text', ...
+                    sprintf('Image pyramid: %d levels  (%c1 … %c%g)', ...
+                        nLevels, char(215), char(215), scaleCoarsest), ...
+                    'sectionKey', '', 'sectionPopulationType', ''); %#ok<AGROW>
+                for levelIdx = 1:nLevels
+                    scale = pyramid.levelScaleFactors(levelIdx, 1);
+                    dims  = pyramid.levelImageSizes(levelIdx, 1:2);
+                    levelText = sprintf('Level %d (%c%g): %d %c %d px', ...
+                        levelIdx, char(215), scale, dims(2), char(215), dims(1));
+                    if iscell(pyramid.chunkSizes) && levelIdx <= numel(pyramid.chunkSizes) ...
+                            && ~isempty(pyramid.chunkSizes{levelIdx})
+                        chunkShape = pyramid.chunkSizes{levelIdx};
+                        if numel(chunkShape) >= 2
+                            chunkYX = chunkShape(end-1:end);
+                            levelText = [levelText, sprintf('  chunk %d%c%d', ...
+                                chunkYX(1), char(215), chunkYX(2))];
+                        end
+                    end
+                    if iscell(pyramid.shardSizes) && levelIdx <= numel(pyramid.shardSizes) ...
+                            && ~isempty(pyramid.shardSizes{levelIdx})
+                        shardShape = pyramid.shardSizes{levelIdx};
+                        if numel(shardShape) >= 2
+                            shardYX = shardShape(end-1:end);
+                            levelText = [levelText, sprintf('  shard %d%c%d', ...
+                                shardYX(1), char(215), shardYX(2))];
+                        end
+                    end
+                    if ~isempty(pyramid.levelVoxelSizes)
+                        if size(pyramid.levelVoxelSizes, 1) >= levelIdx
+                            voxelX = pyramid.levelVoxelSizes(levelIdx, 2);
+                        else
+                            voxelX = pyramid.levelVoxelSizes(1, 2) * scale;
+                        end
+                        levelText = [levelText, sprintf('  %.4g %sm/px', voxelX, char(956))];
+                    end
+                    list{end+1} = struct('text', levelText, ...
+                        'sectionKey', '__pyramid__', 'sectionPopulationType', 'pyramid_levels'); %#ok<AGROW>
+                end
+            end
+
             % ---- Extras ----
             processedKeyNames = ["Filename", "Height", "Width", "Depth", "Time", ...
                 "Colors", "ColorType", "imgClass", "MaxInt", "ImageDescription", ...

@@ -403,10 +403,10 @@ methods (Access = private)
                 levelScaleFactors(iLevel, :) = [sfY, sfX, sfZ];
             end
 
-            % absolute voxel sizes in physical units (always from level 0)
-            vY = obj.safeGetScale(level0Scales, yIdx, 1);
-            vX = obj.safeGetScale(level0Scales, xIdx, 1);
-            vZ = obj.safeGetScale(level0Scales, zIdx, 1);
+            % effective voxel size at this pyramid level
+            vY = obj.safeGetScale(levelScales, yIdx, 1);
+            vX = obj.safeGetScale(levelScales, xIdx, 1);
+            vZ = obj.safeGetScale(levelScales, zIdx, 1);
             levelVoxelSizes(iLevel, :) = [vY, vX, vZ];
 
             % chunk / shard sizes (in C-order, as stored)

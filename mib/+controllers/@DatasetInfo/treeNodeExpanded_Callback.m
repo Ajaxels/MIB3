@@ -59,6 +59,52 @@ switch nodeData.populationType
         customMetaValue = meta{'customMeta'};
         addStructToTree(node, customMetaValue);
 
+    case 'pyramid_levels'
+        pyramid = obj.mibModel.I{datasetId}.image.pyramid;
+        nLevels = size(pyramid.levelScaleFactors, 1);
+        for levelIdx = 1:nLevels
+            scale  = pyramid.levelScaleFactors(levelIdx, 1);
+            dims   = pyramid.levelImageSizes(levelIdx, 1:2);     % [Y X] pixels
+
+            levelText = sprintf('Level %d (%c%g): %d %c %d px', ...
+                levelIdx, char(215), scale, dims(2), char(215), dims(1));
+
+            % chunk dimensions (last 2 elements of TCZYX shape = Y, X)
+            if iscell(pyramid.chunkSizes) && levelIdx <= numel(pyramid.chunkSizes) ...
+                    && ~isempty(pyramid.chunkSizes{levelIdx})
+                chunkShape = pyramid.chunkSizes{levelIdx};
+                if numel(chunkShape) >= 2
+                    chunkYX = chunkShape(end-1:end);
+                    levelText = [levelText, sprintf('  chunk %d%c%d', ...
+                        chunkYX(1), char(215), chunkYX(2))]; %#ok<AGROW>
+                end
+            end
+
+            % shard dimensions (same TCZYX convention)
+            if iscell(pyramid.shardSizes) && levelIdx <= numel(pyramid.shardSizes) ...
+                    && ~isempty(pyramid.shardSizes{levelIdx})
+                shardShape = pyramid.shardSizes{levelIdx};
+                if numel(shardShape) >= 2
+                    shardYX = shardShape(end-1:end);
+                    levelText = [levelText, sprintf('  shard %d%c%d', ...
+                        shardYX(1), char(215), shardYX(2))]; %#ok<AGROW>
+                end
+            end
+
+            % effective voxel size: per-level row if Zarr, else scale the full-res row
+            if ~isempty(pyramid.levelVoxelSizes)
+                if size(pyramid.levelVoxelSizes, 1) >= levelIdx
+                    voxelX = pyramid.levelVoxelSizes(levelIdx, 2);
+                else
+                    voxelX = pyramid.levelVoxelSizes(1, 2) * scale;
+                end
+                levelText = [levelText, sprintf('  %.4g %sm/px', voxelX, char(956))]; %#ok<AGROW>
+            end
+
+            uitreenode(node, 'Text', levelText, ...
+                'NodeData', struct('key', '__pyramid__', 'subIndex', levelIdx, 'populationType', ''));
+        end
+
     case 'extras'
         scalarKeyNames = ["Filename", "Height", "Width", "Depth", "Time", ...
             "Colors", "ColorType", "imgClass", "MaxInt", "ImageDescription"];

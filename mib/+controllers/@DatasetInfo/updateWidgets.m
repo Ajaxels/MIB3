@@ -139,6 +139,18 @@ if ~isempty(extraKeyNames)
     addLoadingPlaceholder(extrasNode);
 end
 
+% ---- Image pyramid (BigData / pyramidal Virtual datasets) — deferred ----
+pyramid = obj.mibModel.I{datasetId}.image.pyramid;
+if ~isempty(pyramid.levelNames)
+    nLevels = size(pyramid.levelScaleFactors, 1);
+    scaleCoarsest = pyramid.levelScaleFactors(end, 1);
+    pyramidNode = uitreenode(rootNode, ...
+        'Text', sprintf('Image pyramid: %d levels  (%c1 … %c%g)', ...
+            nLevels, char(215), char(215), scaleCoarsest), ...
+        'NodeData', struct('key', '__pyramid__', 'subIndex', [], 'populationType', 'pyramid_levels'));
+    addLoadingPlaceholder(pyramidNode);
+end
+
 % Restore rendering and expand root to show first level.
 tree.Visible = 'on';
 expand(rootNode);

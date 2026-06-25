@@ -502,6 +502,7 @@ end
 % ------------------------------------------------------------
 if isempty(updatePanels) || ismember('statusBar', updatePanels)
     obj.cStatus.handles.currentDirectory.Value = newFileDir;
+    obj.cStatus.updatePyramidInfoLabel();
 end
 
 %% update mouse and key callbacks for MibImageDocuments --------------------------------------------

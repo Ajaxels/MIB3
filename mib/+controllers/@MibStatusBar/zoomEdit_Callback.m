@@ -139,6 +139,7 @@ switch BatchOpt.Mode{1}
         eventdata = core.ToggleEventData(Options);
         notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
         notify(obj.mibModel, 'ShowImage');
+        obj.updatePyramidInfoLabel();
         return;
     case '100%'
         BatchOpt.MagnificationValue = '100';
@@ -162,5 +163,6 @@ Options.newMagFactor = newMagFactor;
 eventdata = core.ToggleEventData(Options);
 notify(obj.mibModel, 'UpdateDatasetAxes', eventdata);
 notify(obj.mibModel, 'ShowImage');
+obj.updatePyramidInfoLabel();
 
 end

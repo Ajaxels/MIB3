@@ -54,23 +54,34 @@ statusBarGroupPixels.add(statusHandles.pixelLabel);
 % add group a to the statusbar
 statusHandles.bar.add(statusBarGroupPixels);
 
-%% Add progress status bar widget
-statusBarGroupProgress = matlab.ui.internal.statusbar.StatusGroup();
+% %% Add progress status bar widget
+% statusBarGroupProgress = matlab.ui.internal.statusbar.StatusGroup();
+% 
+% statusHandles.progressLabel = matlab.ui.internal.statusbar.StatusLabel();
+% statusHandles.progressLabel.Text = "Progress:";
+% statusBarGroupProgress.add(statusHandles.progressLabel);
+% statusHandles.progressBar = matlab.ui.internal.statusbar.StatusProgressBar();
+% statusHandles.progressBar.Description = 'obj.view.handles.status.progressBar';
+% statusHandles.progressBar.Value = 0;
+% statusHandles.progressBar.Indeterminate = false; % continious change
+% statusHandles.progressBar.Width = 60;
+% % add the progress bar to the group
+% statusBarGroupProgress.Region = 'right';
+% statusBarGroupProgress.add(statusHandles.progressBar)
+% 
+% % add the group to the status bar
+% statusHandles.bar.add(statusBarGroupProgress);
 
-statusHandles.progressLabel = matlab.ui.internal.statusbar.StatusLabel();
-statusHandles.progressLabel.Text = "Progress:";
-statusBarGroupProgress.add(statusHandles.progressLabel);
-statusHandles.progressBar = matlab.ui.internal.statusbar.StatusProgressBar();
-statusHandles.progressBar.Description = 'obj.view.handles.status.progressBar';
-statusHandles.progressBar.Value = 0;
-statusHandles.progressBar.Indeterminate = false; % continious change
-statusHandles.progressBar.Width = 60;
-% add the progress bar to the group
-statusBarGroupProgress.Region = 'right';
-statusBarGroupProgress.add(statusHandles.progressBar)
+%% Add info status bar widget
+statusBarGroupInfo = matlab.ui.internal.statusbar.StatusGroup();
 
+statusHandles.infoLabel = matlab.ui.internal.statusbar.StatusLabel();
+statusHandles.infoLabel.Text = "Info:";
+statusBarGroupInfo.add(statusHandles.infoLabel);
+statusHandles.infoLabel.Width=100;
+statusBarGroupInfo.Region = 'right';
 % add the group to the status bar
-statusHandles.bar.add(statusBarGroupProgress);
+statusHandles.bar.add(statusBarGroupInfo);
 
 %% Create group for the info/log/zoom values
 statusBarGroupInfo = matlab.ui.internal.statusbar.StatusGroup();
