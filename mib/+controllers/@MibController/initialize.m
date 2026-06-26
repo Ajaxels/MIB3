@@ -35,8 +35,11 @@ end
 
 % Initialize the cheap non-Java libraries and configure the lazy Java library
 % gateway (utils.ensureJavaLibraries caches mibPath/ExternalDirs); Java
-% libraries (Bio-Formats, Fiji, Imaris, ...) are linked on their first use
-obj.initializeLibraries({'bm3d'});
+% libraries (Bio-Formats, Fiji, Imaris, ...) are linked on their first use.
+% imageselection is included here because javaaddpath silently fails once
+% loci.formats.Memoizer objects exist (BioFormats use), so it must be loaded
+% before the first Bio-Formats call.
+obj.initializeLibraries({'bm3d', 'imageselection'});
 
 % get the current version of Matlab
 obj.matlabVersion = obj.mibModel.matlabVersion;

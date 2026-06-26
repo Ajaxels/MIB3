@@ -65,8 +65,9 @@ measurements and **removed again after verification** — only the original
     fixing a path in Preferences allows a retry; Preferences apply refreshes
     the cached `externalDirs`.
 - `initializeLibraries.m` is now a thin delegator (empty `initList` still means
-  "everything" for back-compat); startup calls `obj.initializeLibraries({'bm3d'})`
-  (bm3d/bm4d addpath + HistThresh addpath only — nothing JVM-heavy).
+  "everything" for back-compat); startup calls `obj.initializeLibraries({'bm3d', 'imageselection'})`
+  (`imageselection` must be eager because `javaaddpath` silently fails once `loci.formats.Memoizer`
+  objects exist after BioFormats use — clipboard copy would break after opening any Bio-Formats file).
 - First-use ensure calls:
   - `bioformats`: `BioFormatsStdLoader` ctor (covers `BioFormatsVirtualSetupLoader`
     via inner loader), `BioFormatsVirtualLoader.openReader`, `bfopen3.m`,

@@ -153,6 +153,7 @@ classdef Snapshot < handle
             end
 
             % GUI mode
+            utils.ensureJavaLibraries({'imageselection'});  % no-op if already loaded at startup; fallback if not
             obj.view = core.ChildView(obj, 'views.SnapshotGUI');
             obj.addCallbacks();
             obj.updateWidgets();
@@ -684,7 +685,57 @@ classdef Snapshot < handle
         end
 
         function snapshotBtn_Callback(obj, useBatchMode)
-            % SNAPSHOTBTN_CALLBACK - Generate and save/copy the snapshot image.
+            % SNAPSHOTBTN_CALLBACK - Generate and save (or copy to clipboard) the snapshot image.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.snapshotBtn_Callback()
+            %      obj.snapshotBtn_Callback(useBatchMode)
+            %
+            % Builds an RGB image from the current dataset slice using the settings
+            % in ``obj.BatchOpt`` (crop mode, output dimensions, scale bar, LUT, …)
+            % and either saves it to disk or copies it to the system clipboard.
+            %
+            % **BigData pyramid-level selection** — for BigData datasets (OME-Zarr / WSI),
+            % the function selects the *finest* pyramid level whose native resolution still
+            % covers the requested output size, avoiding loading the full-resolution image
+            % into memory before resize:
+            %
+            %   - ``'ShownArea'`` — fetches at ``dataset.magFactor`` (current viewport resolution).
+            %   - ``'FullImage'`` — selects the coarsest level ``L`` where
+            %     ``levelScaleFactors(L) ≤ min(fullW/newW, fullH/newH)``.
+            %   - ``'ROI'``       — same formula using ``obj.origWidth``/``obj.origHeight``
+            %     (ROI extent in full-res pixels set by ``crop_Callback``); the ROI bounding
+            %     box is divided by ``levelScaleFactors(L)`` before ``imcrop``.
+            %
+            % **Scale bar correction** — ``utils.addScaleBar`` expects
+            % ``scale = newWidth / fullResWidth``.  For a downsampled pyramid level the
+            % raw ``newWidth / size(img,2)`` ratio is too large, so the correct value is
+            % computed from ``pyramid.levelImageSizes(1,2)`` (FullImage), ``scale / magFactor``
+            % (ShownArea), or ``newWidth / obj.origWidth`` (ROI).  ZX / ZY orientations are
+            % unaffected because the Z dimension is never pyramided.
+            %
+            % Input Arguments:
+            %   - **useBatchMode** *(optional)* — [logical] ``1`` = run silently (no GUI
+            %     button flash), used when called from batch processing. Default: ``0``.
+            %
+            % **Example 1** — interactive snapshot triggered by the Snapshot button:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.snapshotBtn_Callback();
+            %
+            % **Example 2** — batch-mode: save a 2048 × 2048 PNG of the full image:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.BatchOpt.Crop{1}       = 'FullImage';
+            %      obj.BatchOpt.Width{1}      = 2048;
+            %      obj.BatchOpt.Height{1}     = 2048;
+            %      obj.BatchOpt.FileFormat{1} = 'PNG';
+            %      obj.BatchOpt.Destination{1} = 'File';
+            %      obj.snapshotBtn_Callback(1);
 
             if nargin < 2; useBatchMode = 0; end
             activeId = obj.mibModel.getActiveId();
@@ -730,6 +781,44 @@ classdef Snapshot < handle
             newWidth = obj.view.handles.Width.Value;
             newHeight = obj.view.handles.Height.Value;
             colorChannels = slices{4};    % store selected color channels
+
+            % BigData: pick the finest pyramid level that still covers the output size.
+            % Without this, getData2D defaults to magFactor=1 (full-res) and the entire
+            % WSI level-0 image would be loaded before resizing to newWidth × newHeight.
+            if strcmp(dataset.image.type, 'bigdata') && ~isempty(dataset.image.pyramid.levelNames)
+                switch obj.BatchOpt.Crop{1}
+                    case 'ShownArea'
+                        % Fetch at the current display magnification — matches what the user sees
+                        options.magFactor = dataset.magFactor;
+
+                    case 'FullImage'
+                        fullH = dataset.image.pyramid.levelImageSizes(1, 1);
+                        fullW = dataset.image.pyramid.levelImageSizes(1, 2);
+                        targetMagFactor = min(fullW / newWidth, fullH / newHeight);
+                        scales = dataset.image.pyramid.levelScaleFactors(:, 1);
+                        validIdx = find(scales <= targetMagFactor);
+                        if isempty(validIdx)
+                            options.pyramidLevel = 1;             % output larger than level 0 — use full-res
+                        else
+                            options.pyramidLevel = validIdx(end); % coarsest level that still covers output
+                        end
+
+                    case 'ROI'
+                        % obj.origWidth / origHeight hold the ROI extent in full-res pixels (set in crop_Callback)
+                        if obj.origWidth > 0 && obj.origHeight > 0
+                            targetMagFactor = min(obj.origWidth / newWidth, obj.origHeight / newHeight);
+                            scales = dataset.image.pyramid.levelScaleFactors(:, 1);
+                            validIdx = find(scales <= targetMagFactor);
+                            if isempty(validIdx)
+                                options.pyramidLevel = 1;
+                            else
+                                options.pyramidLevel = validIdx(end);
+                            end
+                        end
+                        % Need the full image (not just the visible window) so we can crop to ROI afterwards
+                        options.blockModeSwitch = 0;
+                end
+            end
 
             progressBar = core.PoolWaitbar(maxImageIndex, 'Generating images, please wait...', ...
                 obj.view.gui, 'Making snapshot', true);
@@ -779,7 +868,13 @@ classdef Snapshot < handle
                     if strcmp(obj.BatchOpt.Crop{1}, 'ROI')
                         roiImg = dataset.hROI.returnMask(str2double(obj.BatchOpt.RoiIndex{1}));
                         STATS = regionprops(roiImg, 'BoundingBox');
-                        img = imcrop(img, STATS.BoundingBox);
+                        if isfield(options, 'pyramidLevel')
+                            % BoundingBox is in full-res pixel space; scale to the fetched pyramid level
+                            scaleFactor = dataset.image.pyramid.levelScaleFactors(options.pyramidLevel, 1);
+                            img = imcrop(img, STATS.BoundingBox / scaleFactor);
+                        else
+                            img = imcrop(img, STATS.BoundingBox);
+                        end
                     end
 
                     scale = newWidth / size(img, 2);
@@ -791,7 +886,28 @@ classdef Snapshot < handle
                     if obj.BatchOpt.Scalebar
                         scalebarOptions.orientation = dataset.orientation;
                         scalebarOptions.bgColor = bgColor;
-                        img = utils.addScaleBar(img, dataset.image.pixSize, scale, scalebarOptions);
+
+                        % For BigData XY the fetched image is from a downsampled pyramid level
+                        % or display-resolution viewport, so scale = newWidth/size(img,2) does
+                        % not equal newWidth/fullResWidth — which is what addScaleBar requires
+                        % (it computes pixelSize = pixSize.x / scale).
+                        % ZX/ZY orientations are unaffected because Z is never pyramided.
+                        scaleForBar = scale;
+                        if strcmp(dataset.image.type, 'bigdata') && ...
+                                ~isempty(dataset.image.pyramid.levelNames) && dataset.orientation == 3
+                            switch obj.BatchOpt.Crop{1}
+                                case 'FullImage'
+                                    scaleForBar = newWidth / dataset.image.pyramid.levelImageSizes(1, 2);
+                                case 'ShownArea'
+                                    scaleForBar = scale / dataset.magFactor;
+                                case 'ROI'
+                                    if obj.origWidth > 0
+                                        scaleForBar = newWidth / obj.origWidth;
+                                    end
+                            end
+                        end
+
+                        img = utils.addScaleBar(img, dataset.image.pixSize, scaleForBar, scalebarOptions);
                     end
 
                     if maxImageIndex == 1
@@ -875,7 +991,6 @@ classdef Snapshot < handle
                 utils.mibImWrite(imgOut, dataset.snapshotFilename, parameters);
             elseif obj.view.handles.Clipboard.Value  % copy to Clipboard
                 progressBar.updateText('Exporting to clipboard, please wait...');
-                utils.ensureJavaLibraries({'imageselection'});  % link ImageSelection.java on the first use
                 imclipboard('copy', imgOut);
             end
             progressBar.deletePoolWaitbar();

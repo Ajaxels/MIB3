@@ -159,7 +159,38 @@ Report per failure: file, dataset type, reader, BioFormats library, the Develope
 
 ---
 
-## 6. Verification approach (for any change here)
+## 6. Documentation — RST docblocks for BigData functions
+
+> **Rule:** whenever a BigData function is added or significantly changed, add or update its
+> RST/Sphinx docblock following `development/docs_api_sphinx.md`.
+
+### Done (session 2026-06-26)
+
+- `+controllers/@Snapshot/snapshotBtn_Callback` — full RST docblock covering BigData pyramid-level
+  selection (ShownArea / FullImage / ROI), ROI bounding-box scaling, and scale-bar correction logic.
+- `+controllers/@MakeMovie/continueBtn_Callback` — same; also documents ``bigDataRoiBB`` pattern
+  and the cached scale-bar strip optimisation.
+- `+controllers/@MibController/initialize.m` — added comment explaining why `imageselection` is
+  in the eager library list (``javaaddpath`` silently blocked after BioFormats Memoizer creation).
+
+### Pending — core BigData pipeline
+
+These functions implement the core read / write / display path and currently have no (or
+minimal Doxygen) docblocks.  Document them in priority order:
+
+1. `+core/@MibBigDataImage/MibBigDataImage.m` — constructor + key properties
+   (`pyramid`, `levelScaleFactors`, `levelImageSizes`).
+2. `+core/@MibBigDataImage/getDataZarr.m` — `options.pyramidLevel` vs `options.magFactor`
+   precedence; level-selection formula; `options.blockModeSwitch`.
+3. `+core/@MibBigDataImage/getData2D.m` — `resizeToMagnification=false` auto-injection of
+   `magFactor=1`; `panModeException` for pyramidal datasets.
+4. `+core/@MibBigDataLabels/MibBigDataLabels.m` — constructor, `createStore`, packed-63 layout.
+5. `+core/@MibBigDataLabels/getData63.m` / `setData63.m` — chunk coords, bit-packing contract.
+6. `+models/@MibModel/getRGBimage.m` — `panModeException=1` branch for pyramidal datasets.
+
+---
+
+## 7. Verification approach (for any change here)
 
 - **MCP** `evaluate_matlab_code` / `run_matlab_file` on the real model (CMU-1.ndpi as BigData), native
   zarr backend: per-level read == reference; level-selected export dims == `pyramid.levelImageSizes(L)`

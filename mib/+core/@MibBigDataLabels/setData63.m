@@ -1,13 +1,78 @@
 function result = setData63(obj, dataset, type, orient, materialIndex, options)
-% SETDATA63 - write a packed layer block to the disk-backed BigData model pyramid.
+% SETDATA63 - Write a label/mask/selection layer to the disk-backed BigData pyramid.
 %
-% Override of ``core.MibLabels63.setData63``. The incoming data is at the
-% displayed resolution; it is resized to the working level (the level matching
-% ``options.magFactor``), merged into that level with the parent's bit logic,
-% written, and then **propagated** to every other pyramid level (nearest-
-% neighbour resize of the merged packed bytes) so all levels stay consistent.
+% Syntax:
+%   .. code-block:: matlab
 %
-% Input/Output: see core.MibLabels63.setData63.
+%      result = obj.setData63(dataset, type, orient, materialIndex, options)
+%
+% Override of ``core.MibLabels63.setData63``.  The incoming data is at display
+% resolution and screen orientation; it is:
+%
+%   1. Converted back to native ``[y, x, z]`` physical order.
+%   2. Resized to the **working level** (level matching ``options.magFactor``)
+%      using nearest-neighbour; optionally upgraded to a **smooth, label-aware
+%      signed-distance upsample** (``resizeLayerSmooth``) when the display is
+%      zoomed out and ``io.zarr.Config.smoothing()`` is on.
+%   3. Merged into the working level using the packed bit scheme (same logic as
+%      the parent ``MibLabels63``).
+%   4. Propagated **downward to all coarser levels** (cheap nearest-neighbour
+%      downsample of the changed bounding box only).  Finer levels are marked
+%      dirty in the level map (``matLevel``) and recomputed lazily on the next
+%      ``getData63`` call, so a brush stroke at 2% zoom does not trigger a
+%      full-resolution write.
+%
+% **Bit packing** — same scheme as ``getData63``:
+% bits 1–6 = material, bit 7 = mask, bit 8 = selection.
+%
+% Input Arguments:
+%   - **dataset** — [uint8] layer data at display resolution, in screen orientation.
+%     Shape ``[ny, nx, nz]`` matching what ``getData63`` would return for the same
+%     ``orient``/``options``.
+%   - **type** *(optional)* — [char] layer to write:
+%
+%     - ``'labels'``    — write material index; ``materialIndex`` controls single-material
+%       vs full-map mode (see below)
+%     - ``'mask'``      — write binary mask (bit 7)
+%     - ``'selection'`` — write binary selection (bit 8)
+%     - ``'everything'``— overwrite raw packed uint8 (undo / restore; no smoothing)
+%
+%     Default: ``'labels'``.
+%
+%   - **orient** *(optional)* — [numeric] screen orientation (``1``/``2``/``3``; see
+%     ``getData63``). Default: ``3``.
+%
+%   - **materialIndex** *(optional)* — [numeric scalar | empty]  when non-empty and
+%     ``type='labels'``, treats ``dataset`` as a binary indicator and writes only
+%     the voxels where ``dataset == 1`` to material ``materialIndex`` (other materials
+%     unchanged).  Pass ``[]`` to replace the full material map.
+%
+%   - **options** *(optional)* — [struct] with the same fields as ``getData63``:
+%     ``.magFactor``, ``.pyramidLevel``, ``.x``, ``.y``, ``.z``.
+%
+% Output Arguments:
+%   - **result** — [logical] ``true`` when at least one voxel changed and was
+%     written to disk; ``false`` if the store is closed, the input is empty, or
+%     the merge produced no change (early-exit, no disk I/O).
+%
+% **Example 1** — paint a brush mask onto the selection layer:
+%
+%   .. code-block:: matlab
+%
+%      opts.magFactor = dataset.magFactor;
+%      opts.x = dataset.slices{2};
+%      opts.y = dataset.slices{1};
+%      opts.z = dataset.slices{3};
+%      brushMask = uint8(createBrushMask(...));   % [ny nx 1] binary
+%      obj.mibModel.I{1}.labels.setData63(brushMask, 'selection', 3, [], opts);
+%
+% **Example 2** — accept selection into material 2 (programmatic undo step):
+%
+%   .. code-block:: matlab
+%
+%      packed = obj.mibModel.I{1}.labels.getData63('everything', 3, [], opts);
+%      packed = bitset(packed, 8, 0);   % clear selection bit
+%      obj.mibModel.I{1}.labels.setData63(packed, 'everything', 3, [], opts);
 
 result = false;
 

@@ -236,8 +236,9 @@ classdef VolRenApp < handle
             if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
                 header = 'The 3D volume rendering is not available in the virtual or BigData mode!';
-                dlgOpt.HeaderLines = 1;
-                utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Switch to the memory-resident mode and try again'}, 'Not implemented', dlgOpt);
+                dlgOpt.HeaderLines = 2;
+                % obj.view is not yet created here — use mibGUI as parent
+                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {'Switch to the memory-resident mode and try again'}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end

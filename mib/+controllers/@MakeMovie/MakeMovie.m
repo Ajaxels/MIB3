@@ -1,19 +1,3 @@
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <https://www.gnu.org/licenses/>
-
-% Author: Ilya Belevich, University of Helsinki (ilya.belevich @ helsinki.fi)
-% part of Microscopy Image Browser, http:\\mib.helsinki.fi
-% Date: 25.04.2023
-
 classdef MakeMovie < handle
     % MAKEMOVIE - Controller for the Make Movie dialog.
     %
@@ -530,7 +514,44 @@ classdef MakeMovie < handle
         end
 
         function continueBtn_Callback(obj)
-            % CONTINUEBTN_CALLBACK - Render and save the movie file.
+            % CONTINUEBTN_CALLBACK - Render and save a movie from the current dataset.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.continueBtn_Callback()
+            %
+            % Iterates over the selected frame range (Z-stack or time series), fetches
+            % each RGB frame via ``obj.mibModel.getRGBimage``, optionally crops to an
+            % ROI, resizes, optionally overlays a scale bar, and writes all frames
+            % into the movie file configured in ``obj.view.handles``.
+            %
+            % **BigData pyramid-level selection** — for BigData datasets (OME-Zarr / WSI),
+            % the function selects the *finest* pyramid level whose native resolution still
+            % covers the requested frame dimensions, avoiding full-res loads for every frame:
+            %
+            %   - Shown-area mode — fetches at ``dataset.magFactor`` (current viewport resolution).
+            %   - Full-image mode — selects the coarsest level ``L`` where
+            %     ``levelScaleFactors(L) ≤ min(fullW/newW, fullH/newH)``.
+            %   - ROI mode       — same formula using ``obj.origWidth``/``obj.origHeight``
+            %     (ROI extent in full-res pixels); the bounding box is stored as
+            %     ``bigDataRoiBB`` and divided by ``levelScaleFactors(L)`` per frame
+            %     via ``imcrop`` (rather than passing ``options.x``/``options.y`` which
+            %     are full-res coords incompatible with a downsampled pyramid level).
+            %
+            % **Scale bar correction** — computed once on the first frame and reused as a
+            % cached strip for all subsequent frames.  Uses ``levelImageSizes(1,2)``
+            % (FullImage), ``scale / magFactor`` (ShownArea), or ``newWidth / obj.origWidth``
+            % (ROI) so that ``utils.addScaleBar`` receives ``scale = newWidth / fullResWidth``
+            % instead of a pyramid-level-relative ratio.  ZX / ZY orientations are unaffected
+            % because the Z dimension is never pyramided.
+            %
+            % **Example** — triggered by pressing the Continue / Render button in the
+            % MakeMovie dialog:
+            %
+            %   .. code-block:: matlab
+            %
+            %      obj.continueBtn_Callback();   % all parameters read from obj.view.handles
 
             activeId = obj.mibModel.getActiveId();
             dataset  = obj.mibModel.I{activeId};
@@ -553,6 +574,40 @@ classdef MakeMovie < handle
             options.blockModeSwitch       = h.shownAreaRadio.Value;
 
             bgColor = double(h.whiteBgCheck.Value);   % 1 = white, 0 = black
+
+            % BigData: pick the finest pyramid level that still covers the output size.
+            % Without this, getData2D defaults to magFactor=1 (full-res) and the entire
+            % WSI level-0 image would be loaded for every frame.
+            isBigData    = strcmp(dataset.image.type, 'bigdata') && ~isempty(dataset.image.pyramid.levelNames);
+            bigDataRoiBB = [];   % full-res ROI bounding box; filled below for BigData ROI mode
+
+            if isBigData
+                if h.shownAreaRadio.Value
+                    options.magFactor = dataset.magFactor;
+                elseif h.fullImageRadio.Value
+                    fullH = dataset.image.pyramid.levelImageSizes(1, 1);
+                    fullW = dataset.image.pyramid.levelImageSizes(1, 2);
+                    targetMagFactor = min(fullW / newWidth, fullH / newHeight);
+                    scales = dataset.image.pyramid.levelScaleFactors(:, 1);
+                    validIdx = find(scales <= targetMagFactor);
+                    if isempty(validIdx)
+                        options.pyramidLevel = 1;
+                    else
+                        options.pyramidLevel = validIdx(end);
+                    end
+                else  % ROI
+                    if obj.origWidth > 0 && obj.origHeight > 0
+                        targetMagFactor = min(obj.origWidth / newWidth, obj.origHeight / newHeight);
+                        scales = dataset.image.pyramid.levelScaleFactors(:, 1);
+                        validIdx = find(scales <= targetMagFactor);
+                        if isempty(validIdx)
+                            options.pyramidLevel = 1;
+                        else
+                            options.pyramidLevel = validIdx(end);
+                        end
+                    end
+                end
+            end
 
             movieFilename = dataset.movieFilename;
             if exist(movieFilename, 'file')
@@ -637,8 +692,13 @@ classdef MakeMovie < handle
                 if h.roiRadio.Value
                     roiImg = dataset.hROI.returnMask(h.roiPopup.Value);
                     STATS  = regionprops(roiImg, 'BoundingBox');
-                    options.x = [floor(STATS.BoundingBox(1)), floor(STATS.BoundingBox(1)) + STATS.BoundingBox(3) - 1];
-                    options.y = [floor(STATS.BoundingBox(2)), floor(STATS.BoundingBox(2)) + STATS.BoundingBox(4) - 1];
+                    if isBigData && isfield(options, 'pyramidLevel')
+                        % BigData: fetch full image at pyramid level, then imcrop per frame
+                        bigDataRoiBB = STATS.BoundingBox;
+                    else
+                        options.x = [floor(STATS.BoundingBox(1)), floor(STATS.BoundingBox(1)) + STATS.BoundingBox(3) - 1];
+                        options.y = [floor(STATS.BoundingBox(2)), floor(STATS.BoundingBox(2)) + STATS.BoundingBox(4) - 1];
+                    end
                 end
 
                 framePnts = startFrame:lastFrame;
@@ -679,6 +739,11 @@ classdef MakeMovie < handle
                         end
                         img = obj.mibModel.getRGBimage(options);
 
+                        if ~isempty(bigDataRoiBB)
+                            scaleFactor = dataset.image.pyramid.levelScaleFactors(options.pyramidLevel, 1);
+                            img = imcrop(img, bigDataRoiBB / scaleFactor);
+                        end
+
                         % resize
                         scale = newWidth / size(img, 2);
                         if newWidth ~= size(img, 2) || newHeight ~= size(img, 1)
@@ -695,8 +760,23 @@ classdef MakeMovie < handle
                         if h.scalebarCheck.Value
                             scalebarOptions.orientation = dataset.orientation;
                             scalebarOptions.bgColor     = bgColor;
+
+                            % For BigData XY the fetched image is from a downsampled pyramid
+                            % level or display-resolution viewport, so scale = newWidth/size(img,2)
+                            % does not equal newWidth/fullResWidth — which is what addScaleBar requires.
+                            scaleForBar = scale;
+                            if isBigData && dataset.orientation == 3
+                                if h.fullImageRadio.Value
+                                    scaleForBar = newWidth / dataset.image.pyramid.levelImageSizes(1, 2);
+                                elseif h.shownAreaRadio.Value
+                                    scaleForBar = scale / dataset.magFactor;
+                                elseif h.roiRadio.Value && obj.origWidth > 0
+                                    scaleForBar = newWidth / obj.origWidth;
+                                end
+                            end
+
                             if frameIdx == 1 && imageId == 1
-                                imgWithBar = utils.addScaleBar(img, dataset.image.pixSize, scale, scalebarOptions);
+                                imgWithBar = utils.addScaleBar(img, dataset.image.pixSize, scaleForBar, scalebarOptions);
                                 scaleBar   = imgWithBar(size(img,1)+1:end, :, :);
                                 img        = imgWithBar;
                             else

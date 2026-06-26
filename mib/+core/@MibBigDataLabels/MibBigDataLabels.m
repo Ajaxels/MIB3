@@ -71,8 +71,32 @@ classdef MibBigDataLabels < core.MibLabels63
         result  = setData63(obj, dataset, type, orient, materialIndex, options)
 
         function obj = MibBigDataLabels(img, meta)
-            % MIBBIGDATALABELS - construct an (empty) disk-backed label container.
-            % The store is created later by createStore(). Pass [] for img.
+            % MIBBIGDATALABELS - Construct an empty disk-backed label container.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj = core.MibBigDataLabels([], meta)
+            %
+            % Creates the in-memory object with no pyramid store attached.  The on-disk
+            % store is allocated separately by ``createStore`` (new dataset) or
+            % ``openStore`` (existing model).  Until one of those is called,
+            % ``obj.exists == false`` and all reads/writes are no-ops.
+            %
+            % Input Arguments:
+            %   - **img** *(optional)* — [empty] pass ``[]``; pixel data is never stored
+            %     in memory for BigData labels.
+            %   - **meta** *(optional)* — [dictionary] metadata dictionary used by the
+            %     parent ``core.MibLabels63`` constructor to set dimensions.  Default:
+            %     empty ``MibImage`` info.
+            %
+            % **Example** — create a fresh labels object and attach a pyramid store:
+            %
+            %   .. code-block:: matlab
+            %
+            %      meta = core.MibImage.initializeImgInfo();
+            %      lb   = core.MibBigDataLabels([], meta);
+            %      lb.createStore([4096 4096 100], 'C:\data\model.zarr3', pyramid);
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; img = []; end
             obj = obj@core.MibLabels63(img, meta);
@@ -80,14 +104,45 @@ classdef MibBigDataLabels < core.MibLabels63
         end
 
         function createStore(obj, dims, storePath, pyramid)
-            % CREATESTORE - allocate a zero-filled packed model pyramid on disk.
+            % CREATESTORE - Allocate a zero-filled packed label pyramid on disk.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.createStore(dims)
+            %      obj.createStore(dims, storePath)
+            %      obj.createStore(dims, storePath, pyramid)
+            %
+            % Creates a new zarr3 group at ``storePath`` with one ``uint8`` array per
+            % pyramid level (bits 1–6 = material 0–63, bit 7 = mask, bit 8 = selection).
+            % The level count, sizes, scale factors, and chunk shapes are copied from
+            % ``pyramid`` so the model mirrors the image pyramid exactly.  An empty level
+            % map (``matLevel``) is initialised and persisted as a side-file.
             %
             % Input Arguments:
-            %   - **dims** — [1x3] ``[height, width, depth]`` (level-0 / fallback size)
-            %   - **storePath** — *(optional)* [char] zarr group root; default temp scratch
-            %   - **pyramid** — *(optional)* image pyramid struct (``levelImageSizes``,
-            %     ``levelScaleFactors``, ``chunkSizes``). When given, the model mirrors it;
-            %     otherwise a single full-resolution level is created.
+            %   - **dims** — [1x3 numeric] ``[height, width, depth]`` in pixels; used as the
+            %     fallback level-0 size when ``pyramid`` is empty.
+            %   - **storePath** *(optional)* — [char|string] zarr group root directory.
+            %     Default: a temporary path (``[tempname '_bigdata_model.zarr3']``).
+            %   - **pyramid** *(optional)* — [struct] image pyramid struct with fields:
+            %
+            %     - ``.levelImageSizes`` — [nLevels x 3] ``[height, width, depth]`` per level
+            %     - ``.levelScaleFactors`` — [nLevels x 3] ``[yScale, xScale, zScale]``
+            %     - ``.chunkSizes`` — {1 x nLevels} per-level chunk vectors in axis order
+            %     - ``.axisOrder`` — [char] axis order string (default ``'tczyx'``)
+            %
+            %   When ``pyramid`` is empty, a single full-resolution level is created.
+            %
+            % **Example** — create a 3-level model matching a loaded BigData image:
+            %
+            %   .. code-block:: matlab
+            %
+            %      img = mib.mibModel.I{1};   % core.MibDataset handle
+            %      lb  = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
+            %      storePath = fullfile(fileparts(img.image.Virtual.filenames{1}), ...
+            %                           'Labels.zarr3');
+            %      lb.createStore([img.image.height, img.image.width, img.image.depth], ...
+            %                     storePath, img.image.pyramid);
             if nargin < 4; pyramid = []; end
             if nargin < 3 || isempty(storePath); storePath = [tempname '_bigdata_model.zarr3']; end
             storePath = char(storePath);
@@ -291,8 +346,28 @@ classdef MibBigDataLabels < core.MibLabels63
         end
 
         function levelIdx = pickLevel(obj, options)
-            % PICKLEVEL - choose the pyramid level for the given options
-            % (explicit options.pyramidLevel, else closest scale to options.magFactor).
+            % PICKLEVEL - Choose the pyramid level index for the given read/write options.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      levelIdx = obj.pickLevel(options)
+            %
+            % Returns ``options.pyramidLevel`` when it is present and non-empty (explicit
+            % override), otherwise finds the level whose ``modelScaleFactors(:,1)`` is
+            % closest to ``options.magFactor`` (nearest-neighbour on the scale axis).
+            % The result is clamped to ``[1, nLevels]``.
+            %
+            % Input Arguments:
+            %   - **options** — [struct] with fields:
+            %
+            %     - ``.pyramidLevel`` *(optional)* — [numeric] explicit level (1 = finest).
+            %     - ``.magFactor``    *(optional)* — [numeric] current display magnification
+            %       factor (``dataset.magFactor``).  Default: ``1`` (full resolution).
+            %
+            % Output Arguments:
+            %   - **levelIdx** — [numeric scalar] 1-based pyramid level index (1 = finest /
+            %     full-resolution; ``nLevels`` = coarsest).
             if isfield(options, 'pyramidLevel') && ~isempty(options.pyramidLevel)
                 levelIdx = options.pyramidLevel;
             else

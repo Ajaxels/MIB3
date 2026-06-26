@@ -1,20 +1,83 @@
 function dataset = getData63(obj, type, orient, materialIndex, options)
-% GETDATA63 - read a packed layer block from the disk-backed BigData model pyramid.
+% GETDATA63 - Read a label/mask/selection layer from the disk-backed BigData pyramid.
 %
-% Override of ``core.MibLabels63.getData63``. Selects the pyramid level that
-% matches ``options.magFactor`` (or ``options.pyramidLevel``), reads the
-% requested region from that level, and resizes it to the displayed resolution
-% **exactly like the image reader** (``MibVirtualImage.getDataZarr``) so the
-% model overlay lines up with the image in every orientation (YX, XZ, YZ).
+% Syntax:
+%   .. code-block:: matlab
 %
-% The coordinate math mirrors ``getDataZarr`` precisely: each screen axis maps to
-% a data dimension (``outDim*ind``), each axis is scaled by its OWN pyramid scale
-% factor (so Z — which the pyramid does not downsample — is handled correctly),
-% the screen ranges are remapped to physical Y/X/Z, and the block is permuted to
-% the requested screen orientation before a single-factor display resize. Bit
-% semantics and the return shape match the parent.
+%      dataset = obj.getData63(type, orient, materialIndex, options)
 %
-% Input/Output: see core.MibLabels63.getData63.
+% Override of ``core.MibLabels63.getData63``.  Selects the pyramid level that
+% matches ``options.magFactor`` (or ``options.pyramidLevel``), materializes any
+% dirty finer-level tiles on demand (``materializeForRead``), reads the requested
+% region from that level, permutes it to the screen orientation, and resizes it
+% to the display resolution **exactly like the image reader**
+% (``MibVirtualImage.getDataZarr``) so the model overlay lines up pixel-for-pixel
+% with the image in every orientation.
+%
+% **Bit packing** (packed uint8, same as ``core.MibLabels63``):
+%
+%   - bits 1–6 — material index 0–63 (``type='labels'``)
+%   - bit 7     — mask flag (``type='mask'``)
+%   - bit 8     — selection flag (``type='selection'``)
+%   - all bits  — returned as-is (``type='everything'``)
+%
+% Input Arguments:
+%   - **type** *(optional)* — [char] layer to unpack:
+%
+%     - ``'labels'``    — material indices 0–63 (or a binary map when ``materialIndex`` set)
+%     - ``'mask'``      — binary mask (bit 7)
+%     - ``'selection'`` — binary selection (bit 8)
+%     - ``'everything'``— raw packed uint8 (all 3 layers)
+%
+%     Default: ``'labels'``.
+%
+%   - **orient** *(optional)* — [numeric] viewing orientation:
+%
+%     - ``1`` — XZ (vertical = X, horizontal = Z, slice = Y)
+%     - ``2`` — YZ (vertical = Y, horizontal = Z, slice = X)
+%     - ``3`` — YX (standard XY; vertical = Y, horizontal = X, slice = Z)
+%
+%     Default: ``3``.
+%
+%   - **materialIndex** *(optional)* — [numeric scalar | empty] when non-empty and
+%     ``type='labels'``, returns a binary ``uint8`` mask that is 1 where the label equals
+%     ``materialIndex``.  Pass ``[]`` to return all material indices (0–63).
+%
+%   - **options** *(optional)* — [struct] with fields:
+%
+%     - ``.magFactor``    — [numeric] current display magnification factor
+%       (``dataset.magFactor``); the nearest pyramid level is chosen.  Default: ``1``.
+%     - ``.pyramidLevel`` — [numeric] explicit 1-based level index (1 = finest).
+%       Overrides ``magFactor`` entirely when set.
+%     - ``.x``            — [1x2 numeric] horizontal screen coordinate range ``[x1 x2]``.
+%       Default: full width of the selected level.
+%     - ``.y``            — [1x2 numeric] vertical screen coordinate range ``[y1 y2]``.
+%       Default: full height of the selected level.
+%     - ``.z``            — [1x2 numeric] depth (slice) range ``[z1 z2]`` in the selected
+%       level. Default: full depth of the selected level.
+%
+% Output Arguments:
+%   - **dataset** — [uint8] unpacked layer at display resolution.  Shape is
+%     ``[ny, nx, nz]`` for orientation 3 (YX), with ``ny/nx/nz`` determined by the
+%     ``options.y/x/z`` ranges after level-scale division and display resize.  Returns
+%     ``[]`` when the store is closed (``obj.exists == false``).
+%
+% **Example 1** — read the label map for the current view at the display zoom level:
+%
+%   .. code-block:: matlab
+%
+%      opts.magFactor = dataset.magFactor;   % e.g. 4 at 25% zoom
+%      opts.x = dataset.slices{2};
+%      opts.y = dataset.slices{1};
+%      opts.z = dataset.slices{3};
+%      labels = obj.mibModel.I{1}.labels.getData63('labels', 3, [], opts);
+%
+% **Example 2** — read the selection at a specific pyramid level:
+%
+%   .. code-block:: matlab
+%
+%      opts.pyramidLevel = 2;   % second finest level
+%      sel = obj.mibModel.I{1}.labels.getData63('selection', 3, [], opts);
 
 if nargin < 5; options = struct(); end
 if nargin < 4; materialIndex = []; end

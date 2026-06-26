@@ -21,21 +21,39 @@ classdef MibBigDataImage < core.MibVirtualImage
 
     methods
         function obj = MibBigDataImage(data, meta)
-            % MIBBIGDATAIMAGE - obj = MibBigDataImage(data, meta).
+            % MIBBIGDATAIMAGE - Construct a BigData image reader from a metadata dictionary.
             %
             % Syntax:
             %   .. code-block:: matlab
             %
-            %       obj = MibBigDataImage(data, meta)
+            %      obj = core.MibBigDataImage(data, meta)
+            %      obj = core.MibBigDataImage([], meta)
             %
-            % Constructor — delegates to MibVirtualImage (which performs the
-            % virtual initialise and populates pyramid / Virtual structs from
-            % meta) then marks the image as a BigData reader.
+            % Delegates to ``core.MibVirtualImage``, which opens the zarr store,
+            % populates ``obj.pyramid`` (``levelNames``, ``levelImageSizes``,
+            % ``levelScaleFactors``, ``chunkSizes``, ``axisOrder``) from the OME-NGFF
+            % ``multiscales`` metadata, and sets up the reader handle.  This constructor
+            % then overrides ``obj.type`` to ``'bigdata'`` so ``MibDataset`` routes label
+            % and export paths correctly.
             %
             % Input Arguments:
-            %   - **data** — ignored for pixel storage; pass [] for a blank
-            %     placeholder, or a cell array of path string(s) to a dataset
-            %   - **meta** — metadata dictionary, passed to the parent constructor
+            %   - **data** *(optional)* — [cell | empty] cell array of file path string(s)
+            %     to the zarr3 dataset, or ``[]`` for a placeholder object with no open store.
+            %   - **meta** *(optional)* — [dictionary] metadata dictionary produced by a
+            %     setup loader (e.g. ``io.loaders.BioFormatsVirtualSetupLoader`` or
+            %     ``io.loaders.Zarr3VirtualSetupLoader``).  Default: empty ``MibImage`` info.
+            %
+            % **Example** — open a previously converted OME-Zarr pyramid as BigData:
+            %
+            %   .. code-block:: matlab
+            %
+            %      opts = struct('datasetMode', 'BigData', 'silentMode', true, ...
+            %                    'mibPath', 'C:\MIB3\mib', 'ParentFigure', []);
+            %      loader = io.loaders.Zarr3VirtualSetupLoader(opts);
+            %      [meta, filelist] = loader.loadMetadata({'C:\data\slide.zarr3'}, opts);
+            %      [imgInfo, meta]  = loader.loadImages(filelist, meta, opts);
+            %      obj = core.MibBigDataImage(imgInfo, meta);
+            %      % obj.type == 'bigdata';  obj.pyramid.levelNames has N level paths
 
             if nargin < 2; meta = core.MibImage.initializeImgInfo(); end
             if nargin < 1; data = []; end
