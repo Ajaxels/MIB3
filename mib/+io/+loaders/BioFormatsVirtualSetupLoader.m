@@ -278,6 +278,15 @@ methods (Access = private)
         imginfo{'Colors'}    = s.colors;
         imginfo{'Time'}      = s.time;
         imginfo{'imgClass'}  = s.imgClass;
+        % Sync MaxInt and viewPort to actual bit depth (mirrors Zarr3VirtualSetupLoader pattern).
+        % initializeImgInfo() defaults both to 255; the BigData path never calls finalizeImgInfo().
+        if any(strcmp(s.imgClass, {'uint8','uint16','uint32','uint64','int8','int16','int32','int64'}))
+            maxInt = double(intmax(s.imgClass));
+        else
+            maxInt = 1;   % float data (rare for WSI)
+        end
+        imginfo{'MaxInt'}   = maxInt;
+        imginfo{'viewPort'} = struct('min', zeros(1, s.colors), 'max', maxInt*ones(1, s.colors), 'gamma', ones(1, s.colors));
         imginfo{'Filename'}  = filename;
         if s.colors > 1; imginfo{'ColorType'} = 'multichannel'; else; imginfo{'ColorType'} = 'grayscale'; end
         pixSize = imginfo{'pixSize'};
