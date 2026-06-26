@@ -157,13 +157,14 @@ else
     if isfield(BatchOptIn, 'mibBatchTooltip'); batchModeSwitch = 1; end
 end
 
-%% Guard: virtual stacking mode
-if strcmp(obj.I{BatchOpt.id}.datasetType, 'Virtual')
+%% Guard: virtual stacking and BigData mode
+if any(obj.I{BatchOpt.id}.datasetType(1) == ['V' 'B'])
     if ~batchModeSwitch
         warnOpt.MsgBoxOnly  = true;
         warnOpt.Icon        = 'puffin_warning';
+        warnOpt.WindowHeight = 160;
         utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), [], {}, ...
-            {sprintf('The transform tools are not available in the virtual stacking mode.\nPlease switch to the memory-resident mode and try again')}, 'Not implemented', warnOpt);
+            {sprintf('The transform tools are not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again')}, 'Not implemented', warnOpt);
     end
     notify(obj, 'StopProtocol');
     return;

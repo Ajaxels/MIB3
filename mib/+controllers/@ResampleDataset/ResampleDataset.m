@@ -119,6 +119,20 @@ classdef ResampleDataset < handle
             obj.BatchOpt.mibBatchTooltip.FixAspectRatio = 'Lock XY aspect ratio when one dimension is changed';
             obj.BatchOpt.mibBatchTooltip.showWaitbar    = 'Show progress bar during execution';
 
+            % ---- Guard: not available in Virtual or BigData mode
+            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+                if nargin ~= 3
+                    warnOpt.MsgBoxOnly = true;
+                    warnOpt.Icon       = 'puffin_warning';
+                    warnOpt.WindowHeight = 160;
+                    utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, [], {}, ...
+                        {sprintf('Resample is not available in virtual or BigData mode.\nPlease switch to the memory-resident mode and try again.')}, ...
+                        'Not implemented', warnOpt);
+                end
+                notify(obj.mibModel, 'StopProtocol');
+                return;
+            end
+
             % ---- Batch-mode path
             if nargin == 3
                 BatchOptInput = varargin{2};
@@ -594,14 +608,6 @@ classdef ResampleDataset < handle
 
             % write image back — replace the data container directly (setData4D
             % writes into the existing fixed-size array and would error on a size change)
-            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
-                newMode = obj.mibModel.I{id}.switchDatasetMode(0);
-                if isempty(newMode)
-                    if ~isempty(wb); delete(wb); end
-                    notify(obj.mibModel, 'StopProtocol');
-                    return;
-                end
-            end
             img5D = obj.mibModel.I{id}.image;
             oldBB = img5D.boundingBox;          % save physical extent before any changes
             img5D.data   = imgOut;

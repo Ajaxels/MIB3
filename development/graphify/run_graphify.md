@@ -6,7 +6,7 @@ Complete graphify update for MIB3 codebase in one command.
 
 ```bash
 cd C:\Matlab\MIB3
-python development/graphify/run_all.py
+d:\Python\Miniforge\envs\Zensical\python.exe development/graphify/run_all.py
 ```
 
 That's it. Everything else is automated.
@@ -183,15 +183,14 @@ graphify-out/                            ← output directory (auto-created)
 
 ### Python not found
 ```bash
-# Set Python explicitly
-set PYTHON=d:\Python\Mambaforge\envs\mkdocs\python.exe
-%PYTHON% development/graphify/run_all.py
+# Use the project Python directly
+d:\Python\Miniforge\envs\Zensical\python.exe development/graphify/run_all.py
 ```
 
 ### graphify module not found
 ```bash
-# Install graphify in the current environment
-pip install graphifyy
+# Install graphify in the Zensical environment
+d:\Python\Miniforge\envs\Zensical\python.exe -m pip install graphifyy
 ```
 
 ### Port multiprocessing errors (Windows)
@@ -255,7 +254,7 @@ Raw networkx JSON format. Use for:
 
 ## Environment
 
-- **Python:** Any version that graphify supports (3.9+)
+- **Python:** `d:\Python\Miniforge\envs\Zensical\python.exe`
 - **Required packages:** graphify, networkx
 - **Time for full run:** ~50 seconds
 - **Token cost:** 0 (AST-only + structural analysis)

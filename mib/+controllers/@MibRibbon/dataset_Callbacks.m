@@ -36,7 +36,7 @@ switch mode
             'Flip vertically', 'Flip Z', 'Flip T', 'Rotate 90 degrees', 'Rotate -90 degrees', ...
             'Transpose YX -> YZ', 'Transpose YX -> XZ', 'Transpose YX -> XY', ...
             'Transpose Z <-> T', 'Transpose Z <-> C'}
-        
+
         % Normalize ' <-> ' → '<->' for BatchOpt compatibility
         mode = strrep(mode, ' <-> ', '<->');
         BatchOpt.Transform = {mode};
