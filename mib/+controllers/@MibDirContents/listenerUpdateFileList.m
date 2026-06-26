@@ -35,8 +35,23 @@ function listenerUpdateFileList(obj, src, evtData)
 
 % update the missing fields
 if ~isprop(evtData, 'Parameters')
-    [~, fname, ext] = fileparts(obj.mibModel.I{obj.mibModel.id}.image.filename);
-    selectedFilename = [fname, ext];
+    filename = obj.mibModel.I{obj.mibModel.id}.image.filename;
+    [parentDir, fname, ext] = fileparts(filename);
+
+    % Navigate to the file's parent directory when it differs from the current one
+    if ~isempty(parentDir) && isfolder(parentDir) && ...
+            ~strcmp(filename, 'none.tif') && ...
+            ~strcmp(obj.mibModel.currentDirectory, parentDir)
+        obj.mibModel.currentDirectory = parentDir;
+    end
+
+    % Folder-based formats (zarr3, zarr, HDF5 group, …) are listed with
+    % square brackets in the directory panel — match that convention.
+    if isfolder(filename)
+        selectedFilename = ['[' fname ext ']'];
+    else
+        selectedFilename = [fname ext];
+    end
 else
     selectedFilename = evtData.Parameters.filename;
 end

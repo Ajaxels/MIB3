@@ -68,7 +68,13 @@ if ~options.blockModeSwitch     % get the full size dataset
     if strcmp(type, 'image')
         [height, width, depth, colors, time] = obj.image.getDatasetDimensions(orient);
     elseif isa(obj.labels, 'core.MibLabels63')
-        [height, width, depth, colors, time] = obj.labels.getDatasetDimensions(orient);
+        if isempty(obj.labels.height)
+            % Uninitialized placeholder (e.g. BigData before model creation) —
+            % labels always share the image volume, so image dims are authoritative.
+            [height, width, depth, colors, time] = obj.image.getDatasetDimensions(orient);
+        else
+            [height, width, depth, colors, time] = obj.labels.getDatasetDimensions(orient);
+        end
     else
         [height, width, depth, colors, time] = obj.(type).getDatasetDimensions(orient);
     end

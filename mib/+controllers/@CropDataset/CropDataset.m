@@ -124,7 +124,7 @@ classdef CropDataset < handle
             obj.BatchOpt.Time   = sprintf('%d:%d', 1, time);
 
             % crop mode: radio button group stored as a cell {selected, {options}}
-            obj.BatchOpt.cropMode    = {'Manual'};
+            obj.BatchOpt.cropMode    = {'Interactive'};
             obj.BatchOpt.cropMode{2} = {'Interactive', 'Manual', 'ROI'};
 
             obj.BatchOpt.Destination    = {'Current'};
@@ -132,6 +132,9 @@ classdef CropDataset < handle
 
             obj.BatchOpt.ZarrPyramidLevel{2} = arrayfun(@(x) sprintf('s%d', x), 0:9, 'UniformOutput', false);
             obj.BatchOpt.ZarrPyramidLevel(1) = obj.BatchOpt.ZarrPyramidLevel{2}(1);
+
+            obj.BatchOpt.OutputType    = {'Standard'};
+            obj.BatchOpt.OutputType{2} = {'Standard', 'BigData'};
 
             obj.BatchOpt.SelectROI    = {'All'};
             obj.BatchOpt.SelectROI{2} = ROIlist;
@@ -151,6 +154,7 @@ classdef CropDataset < handle
             obj.BatchOpt.mibBatchTooltip.ZarrPyramidLevel = sprintf('[Zarr only] Level of the Zarr dataset to generate the crop operation');
             obj.BatchOpt.mibBatchTooltip.SelectROI        = sprintf('[ROI mode only]\nSelected ROI for the cropping');
             obj.BatchOpt.mibBatchTooltip.showWaitbar      = sprintf('Show or not the progress bar during execution');
+            obj.BatchOpt.mibBatchTooltip.OutputType       = sprintf('[BigData source only]\n"Standard" = load cropped region into memory\n"BigData" = write cropped pyramid to a new Zarr folder on disk');
 
             % ---- parse varargin ----
             % Canonical: varargin{1} = controllers.MibController
@@ -298,6 +302,7 @@ classdef CropDataset < handle
             % dropdowns
             h.SelectROI.ValueChangedFcn        = @(~,~) obj.SelectROI_Callback();
             h.ZarrPyramidLevel.ValueChangedFcn = @(src,~) obj.ZarrPyramidLevel_Callback(src);
+            h.OutputType.ValueChangedFcn       = @(src,~) obj.OutputType_Callback(src);
 
             % buttons
             h.resetBtn.ButtonPushedFcn  = @(~,~) obj.resetBtn_Callback();
@@ -394,12 +399,19 @@ classdef CropDataset < handle
                 obj.view.handles.SelectROI.Value = list{1};
             end
 
-            % update Zarr pyramid dropdown
-            if isempty(dataset.image.pyramid.levelNames)   % standard dataset
+            % update OutputType and Zarr pyramid dropdowns
+            isBigData = ~isempty(dataset.image.pyramid.levelNames) && strcmp(dataset.datasetType, 'BigData');
+            obj.view.handles.OutputType.Enable = matlab.lang.OnOffSwitchState(isBigData);
+            if ~isBigData
+                obj.BatchOpt.OutputType{1} = 'Standard';
+                obj.view.handles.OutputType.Value = 'Standard';
+            end
+            outputIsStandard = strcmp(obj.BatchOpt.OutputType{1}, 'Standard');
+            if isempty(dataset.image.pyramid.levelNames)
                 obj.BatchOpt.ZarrPyramidLevel(1) = obj.BatchOpt.ZarrPyramidLevel{2}(1);
                 obj.view.handles.ZarrPyramidLevel.Enable = 'off';
-            else                                       % Zarr/pyramid dataset
-                obj.view.handles.ZarrPyramidLevel.Enable = 'on';
+            else
+                obj.view.handles.ZarrPyramidLevel.Enable = matlab.lang.OnOffSwitchState(outputIsStandard);
             end
             obj.view.handles.ZarrPyramidLevel.Items = obj.BatchOpt.ZarrPyramidLevel{2};
             obj.view.handles.ZarrPyramidLevel.Value = obj.BatchOpt.ZarrPyramidLevel{1};
@@ -596,6 +608,26 @@ classdef CropDataset < handle
 
             obj.selectZarrLevel();
             obj.updateBatchOptFromGUI(hObject);
+        end
+
+        function OutputType_Callback(obj, hObject)
+            % OUTPUTTYPE_CALLBACK - callback for the OutputType dropdown.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %       obj.OutputType_Callback(hObject)
+            %
+            % Toggles ZarrPyramidLevel enable based on the selected output type.
+            % ZarrPyramidLevel is only applicable for BigData → Standard export.
+
+            obj.updateBatchOptFromGUI(hObject);
+            id = obj.mibModel.getActiveId();
+            dataset = obj.mibModel.I{id};
+            outputIsStandard = strcmp(obj.BatchOpt.OutputType{1}, 'Standard');
+            if ~isempty(dataset.image.pyramid.levelNames)
+                obj.view.handles.ZarrPyramidLevel.Enable = matlab.lang.OnOffSwitchState(outputIsStandard);
+            end
         end
 
         function cropToBtn_Callback(obj)
@@ -816,17 +848,21 @@ classdef CropDataset < handle
             end
 
             % determine destination buffer
+            bigDataOutput = isfield(BatchOptLoc, 'OutputType') && strcmp(BatchOptLoc.OutputType{1}, 'BigData');
             if ~strcmp(BatchOptLoc.Destination{1}, sprintf('Container %d', id)) && ...
                     ~strcmp(BatchOptLoc.Destination{1}, 'Current')
                 bufferId = str2double(BatchOptLoc.Destination{1}(end));
                 % deep-copy dataset to destination buffer before cropping
-                copyOpts.showWaitbar = BatchOptLoc.showWaitbar;
-                if ~isempty(obj.view) && isvalid(obj.view.gui)
-                    copyOpts.UIFigure = obj.view.gui;
-                else
-                    copyOpts.UIFigure = [];
+                % (skipped for BigData output — cropToBigData creates the destination fresh)
+                if ~bigDataOutput
+                    copyOpts.showWaitbar = BatchOptLoc.showWaitbar;
+                    if ~isempty(obj.view) && isvalid(obj.view.gui)
+                        copyOpts.UIFigure = obj.view.gui;
+                    else
+                        copyOpts.UIFigure = [];
+                    end
+                    obj.mibModel.deepCopyDataset(id, bufferId, copyOpts);
                 end
-                obj.mibModel.deepCopyDataset(id, bufferId, copyOpts);
             else
                 bufferId = id;
                 if ~obj.batchProcessingSwitch
@@ -848,44 +884,144 @@ classdef CropDataset < handle
                 if isempty(BatchOptLoc.pyramidLevel); BatchOptLoc.pyramidLevel = 1; end
             end
 
-            result = obj.mibModel.I{bufferId}.cropDataset(crop_factor, BatchOptLoc);
-            if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
+            bigDataOutputDone = false;
+            if bigDataOutput
+                % --- BigData → BigData output path ---
+                % Warn: a new Zarr3 pyramid will be written to disk. When the
+                % destination buffer is the current one the dataset will be
+                % replaced; the original file on disk is not deleted.
+                parentFigForDlg = [];
+                if ~isempty(obj.view) && isvalid(obj.view.gui); parentFigForDlg = obj.view.gui; end
+                warnSel = utils.dlgs.inputQuestDlg(parentFigForDlg, ...
+                    sprintf(['The crop operation will write a new OME-Zarr v3 pyramid to disk.\n\n' ...
+                    'The current dataset in the destination buffer will be replaced with the cropped BigData.\n' ...
+                    'The source file on disk is not modified.']), ...
+                    'Crop to BigData', 'Continue', 'Cancel', 'Continue', ...
+                    struct('Icon', 'puffin_warning', 'mibPath', obj.mibModel.mibPath));
+                if ~strcmp(warnSel, 'Continue'); return; end
 
-            obj.mibModel.I{bufferId}.hROI.crop(crop_factor);
-            obj.mibModel.I{bufferId}.annotations.crop(crop_factor);
-            obj.mibModel.I{bufferId}.measure.crop(crop_factor);
-            log_text = ['ImCrop: [x1 y1 dx dy z1 dz t1 dt]: [' num2str(crop_factor) ']'];
-            obj.mibModel.I{bufferId}.image.updateActionLog(log_text);
+                [srcDir, srcStem] = fileparts(obj.mibModel.I{id}.image.filename);
+                [outputFilename, outputFolder] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
+                    'Save cropped BigData as...', ...
+                    fullfile(srcDir, [srcStem '_crop.zarr3']));
+                if isequal(outputFilename, 0); return; end
+                outputPath = fullfile(outputFolder, outputFilename);
 
-            % Clamp stale slice positions that were deep-copied from the source buffer.
-            % When crop reduces the Z-depth or T-frames, slices{} may exceed the new
-            % dimensions, causing widget Value-out-of-range errors on first display.
-            newDims = obj.mibModel.I{bufferId}.dim_yxzct;   % [height, width, depth, colors, time]
-            maxZ = newDims(3);
-            maxT = newDims(5);
-            for dimIdx = 1:3   % all three Z-related orientations
-                obj.mibModel.I{bufferId}.slices{dimIdx} = min(obj.mibModel.I{bufferId}.slices{dimIdx}, [maxZ maxZ]);
-            end
-            obj.mibModel.I{bufferId}.slices{5} = min(obj.mibModel.I{bufferId}.slices{5}, [maxT maxT]);
+                cropOpts.showWaitbar = BatchOptLoc.showWaitbar;
+                cropOpts.UIFigure    = [];
+                if ~isempty(obj.view) && isvalid(obj.view.gui)
+                    cropOpts.UIFigure = obj.view.gui;
+                end
+                cropOpts.outputPath = outputPath;
 
-            % notify about the new dataset
-            obj.listener{1}.Enabled = 0;    % suppress updateWidgets during event
-            if bufferId == id
-                notify(obj.mibModel, 'NewDataset');
+                result = obj.mibModel.I{id}.cropToBigData(crop_factor, cropOpts);
+                if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
+
+                % Capture model metadata from the source BEFORE initialize wipes I{bufferId}
+                % (when bufferId == id, initialize replaces the source dataset in-place)
+                srcHasModel       = isa(obj.mibModel.I{id}.labels, 'core.MibBigDataLabels') && obj.mibModel.I{id}.labels.exists;
+                srcMaterialNames  = {};
+                srcMaterialColors = [];
+                srcMaterialsCount = 0;
+                if srcHasModel
+                    srcMaterialNames  = obj.mibModel.I{id}.labels.materialNames;
+                    srcMaterialColors = obj.mibModel.I{id}.labels.materialColors;
+                    srcMaterialsCount = obj.mibModel.I{id}.labels.materialsCount;
+                end
+
+                % Load new zarr into destination buffer
+                lo = struct('datasetMode', 'BigData');
+                zarr3Loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+                [imgInfo, files] = zarr3Loader.loadMetadata({outputPath}, lo);
+                [img, imgInfo]   = zarr3Loader.loadImages(files, imgInfo, lo);
+                obj.mibModel.I{bufferId}.initialize(img, imgInfo, 'BigData');
+                obj.mibModel.I{bufferId}.enableSelection = obj.mibModel.preferences.System.EnableSelection;
+
+                % Reattach the model zarr if cropToBigData created one:
+                % model is saved as Labels_<stem><ext> alongside the image zarr
+                [bdParentDir, bdStem, bdExt] = fileparts(outputPath);
+                modelStorePath = fullfile(bdParentDir, ['Labels_' bdStem bdExt]);
+                if isfolder(modelStorePath)
+                    newLabels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
+                    newLabels.openStore(modelStorePath);
+                    newLabels.filename       = modelStorePath;
+                    newLabels.materialNames  = srcMaterialNames;
+                    newLabels.materialColors = srcMaterialColors;
+                    newLabels.materialsCount = srcMaterialsCount;
+                    obj.mibModel.I{bufferId}.labels     = newLabels;
+                    obj.mibModel.I{bufferId}.modelExist = true;
+                    obj.mibModel.I{bufferId}.enableSelection = true;
+                end
+
+                % Sync Sets.datasetTypes for the BigData output buffer
+                targetSet     = floor((bufferId - 1) / obj.mibModel.Sets.datasetsInSet) + 1;
+                targetLocalId = mod(bufferId - 1, obj.mibModel.Sets.datasetsInSet) + 1;
+                obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = obj.mibModel.I{bufferId}.datasetType;
+
+                obj.listener{1}.Enabled = 0;
+                if bufferId == id
+                    notify(obj.mibModel, 'NewDataset');
+                else
+                    eventdata = core.ToggleEventData(struct('index', bufferId));
+                    notify(obj.mibModel, 'NewDataset', eventdata);
+                end
+                obj.listener{1}.Enabled = 1;
+                notify(obj.mibModel, 'UpdateFileList');  % highlight output zarr3 in Directory Contents
+                bigDataOutputDone = true;
             else
-                eventdata = core.ToggleEventData(struct('index', bufferId));
-                notify(obj.mibModel, 'NewDataset', eventdata);
-            end
-            obj.listener{1}.Enabled = 1;
-
-            if strcmp(BatchOptLoc.Destination{1}, sprintf('Container %d', id)) || ...
-                    strcmp(BatchOptLoc.Destination{1}, 'Current')
-                notify(obj.mibModel, 'ShowImage');
+                % --- Standard output path (existing) ---
+                % Map ZarrPyramidLevel string ('s0','s1',...) to 1-indexed pyramidLevel
+                zarrStr = BatchOptLoc.ZarrPyramidLevel{1};
+                BatchOptLoc.pyramidLevel = str2double(zarrStr(2:end)) + 1;
+                result = obj.mibModel.I{bufferId}.cropDataset(crop_factor, BatchOptLoc);
+                if result == 0; notify(obj.mibModel, 'StopProtocol'); return; end
             end
 
-            % refresh widgets (GUI mode only, current buffer only)
-            if ~isempty(obj.view) && bufferId == id
-                obj.updateWidgets();
+            if ~bigDataOutputDone
+                obj.mibModel.I{bufferId}.hROI.crop(crop_factor);
+                obj.mibModel.I{bufferId}.annotations.crop(crop_factor);
+                obj.mibModel.I{bufferId}.measure.crop(crop_factor);
+                log_text = ['ImCrop: [x1 y1 dx dy z1 dz t1 dt]: [' num2str(crop_factor) ']'];
+                obj.mibModel.I{bufferId}.image.updateActionLog(log_text);
+
+                % Clamp stale slice positions that were deep-copied from the source buffer.
+                % When crop reduces the Z-depth or T-frames, slices{} may exceed the new
+                % dimensions, causing widget Value-out-of-range errors on first display.
+                newDims = obj.mibModel.I{bufferId}.dim_yxzct;   % [height, width, depth, colors, time]
+                maxZ = newDims(3);
+                maxT = newDims(5);
+                for dimIdx = 1:3   % all three Z-related orientations
+                    obj.mibModel.I{bufferId}.slices{dimIdx} = min(obj.mibModel.I{bufferId}.slices{dimIdx}, [maxZ maxZ]);
+                end
+                obj.mibModel.I{bufferId}.slices{5} = min(obj.mibModel.I{bufferId}.slices{5}, [maxT maxT]);
+
+                % Sync Sets.datasetTypes so the Datasets panel shows the correct type
+                % (e.g. after BigData→Standard conversion via cropDataset)
+                targetSet     = floor((bufferId - 1) / obj.mibModel.Sets.datasetsInSet) + 1;
+                targetLocalId = mod(bufferId - 1, obj.mibModel.Sets.datasetsInSet) + 1;
+                obj.mibModel.Sets.datasetTypes{targetSet, targetLocalId} = obj.mibModel.I{bufferId}.datasetType;
+
+                % notify about the new dataset
+                obj.listener{1}.Enabled = 0;    % suppress updateWidgets during event
+                if bufferId == id
+                    notify(obj.mibModel, 'NewDataset');
+                else
+                    eventdata = core.ToggleEventData(struct('index', bufferId));
+                    notify(obj.mibModel, 'NewDataset', eventdata);
+                end
+                obj.listener{1}.Enabled = 1;
+                notify(obj.mibModel, 'DatasetsPanelUpdate'); % sync datasetType widget in Datasets panel
+                notify(obj.mibModel, 'UpdateGuiWidgets');   % refresh other panel widgets
+
+                if strcmp(BatchOptLoc.Destination{1}, sprintf('Container %d', id)) || ...
+                        strcmp(BatchOptLoc.Destination{1}, 'Current')
+                    notify(obj.mibModel, 'ShowImage');
+                end
+
+                % refresh widgets (GUI mode only, current buffer only)
+                if ~isempty(obj.view) && bufferId == id
+                    obj.updateWidgets();
+                end
             end
 
             % normalise BatchOptLoc for macro recording

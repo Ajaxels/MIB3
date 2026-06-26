@@ -11,9 +11,9 @@ function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithI
 % Input Arguments:
 %   - **newMode** — *(optional)* target dataset mode:
 %
-%     - ``0`` — memory-resident mode (Standard), images loaded to memory
-%     - ``1`` — HDD-resident mode (Virtual), images kept on hard drive
-%     - ``2`` — BigData mode, images loaded on demand
+%     - ``1`` — memory-resident mode (Standard), images loaded to memory
+%     - ``2`` — HDD-resident mode (Virtual), images kept on hard drive
+%     - ``3`` — BigData mode, images loaded on demand
 %
 %   - **enableSelection** — *(optional)* logical switch to enable/disable the selection layer;
 %     set based on ``mibModel.preferences.System.EnableSelection``
@@ -26,9 +26,9 @@ function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithI
 %   - **newModeOut** — result of the function:
 %
 %     - ``[]`` — nothing was changed
-%     - ``0`` — switched to the memory-resident (Standard) mode
-%     - ``1`` — switched to the virtual stacking mode
-%     - ``2`` — switched to the BigData mode
+%     - ``1`` — switched to the memory-resident (Standard) mode
+%     - ``2`` — switched to the virtual stacking mode
+%     - ``3`` — switched to the BigData mode
 %
 % Usage:
 %   **Example 1**
@@ -44,7 +44,7 @@ function newModeOut = switchDatasetMode(obj, newMode, enableSelection, initWithI
 
 newModeOut = [];
 
-if nargin < 3; initWithImage = []; end
+if nargin < 4; initWithImage = []; end
 if nargin < 3; enableSelection = []; end
 
 if isempty(newMode); return; end

@@ -83,4 +83,11 @@ end
 notify(obj.mibModel, 'UpdateGuiWidgets');
 notify(obj.mibModel, 'ShowImage');
 
+% Highlight the new buffer's file in the Directory Contents panel.
+% Skip placeholder buffers ('none.tif') — nothing meaningful to navigate to.
+newFilename = obj.mibModel.I{obj.mibModel.id}.image.filename;
+if ~strcmp(newFilename, 'none.tif') && ~isempty(newFilename)
+    notify(obj.mibModel, 'UpdateFileList');
+end
+
 end

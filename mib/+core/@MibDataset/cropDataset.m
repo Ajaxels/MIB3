@@ -72,10 +72,12 @@ if options.showWaitbar && ~isempty(options.UIFigure)
         'Value', 0.05, 'Message', 'Please wait...', 'Title', 'Cropping...');
 end
 
+bbUpdated = false;   % set true inside Virtual/BigData path once BB is handled there
+
 % =========================================================================
 %  Standard (memory-resident) path
 % =========================================================================
-if ~strcmp(obj.datasetType(1), 'V')
+if strcmp(obj.datasetType(1), 'S')
 
     % --- image layer -----------------------------------------------------
     obj.image.crop(cropF);
@@ -115,8 +117,45 @@ else
     % handles both BioFormats-style virtual stacks and OME-Zarr pyramids)
     img = obj.image.getData('image', 3, [], loadOpts);
 
+    % Save image metadata before switchDatasetMode/initialize resets them to defaults.
+    % xyzShiftBB uses s0 voxel size because x1/y1/z1 are always in s0 pixel coords.
+    srcFilename    = obj.image.filename;
+    srcPixSize     = obj.image.pixSize;
+    srcBoundingBox = obj.image.boundingBox;
+    xyzShiftBB     = [(x1-1)*srcPixSize.x, (y1-1)*srcPixSize.y, (z1-1)*srcPixSize.z];
+
+    % Scale voxel size to the selected pyramid level (e.g. s1 doubles x/y voxel size).
+    % Level index 1 = finest (s0, scale [1 1 1]), level 2 = s1, etc.
+    scaledPixSize = srcPixSize;
+    sfMatrix = obj.image.pyramid.levelScaleFactors;
+    if ~isempty(sfMatrix) && options.pyramidLevel >= 1 && options.pyramidLevel <= size(sfMatrix, 1)
+        sf = sfMatrix(options.pyramidLevel, :);   % [sfY sfX sfZ]
+        scaledPixSize.x = srcPixSize.x * sf(2);
+        scaledPixSize.y = srcPixSize.y * sf(1);
+        scaledPixSize.z = srcPixSize.z * sf(3);
+    end
+
+    % Read packed model from BigData BEFORE switchDatasetMode replaces MibBigDataLabels
+    packedBigDataModel = [];
+    savedMaterialNames  = {};
+    savedMaterialsCount = 0;
+    savedLabelsFilename = '';
+    savedMaterialColors = [];
+    if isa(obj.labels, 'core.MibBigDataLabels') && obj.labels.exists
+        modelReadOpts.x            = loadOpts.x;
+        modelReadOpts.y            = loadOpts.y;
+        modelReadOpts.z            = loadOpts.z;
+        modelReadOpts.pyramidLevel = options.pyramidLevel;
+        packedBigDataModel   = obj.labels.getData63('everything', 3, [], modelReadOpts);
+        savedMaterialNames   = obj.labels.materialNames;
+        savedMaterialsCount  = obj.labels.materialsCount;
+        savedLabelsFilename  = obj.labels.filename;
+        savedMaterialColors  = obj.labels.materialColors;
+    end
+
     % Switch from virtual to memory-resident mode; returns [] on cancel
-    newMode = obj.switchDatasetMode(0);
+    % switchDatasetMode uses 1=Standard, 2=Virtual, 3=BigData
+    newMode = obj.switchDatasetMode(1, true);
     if isempty(newMode)
         if ~isempty(wb); delete(wb); end
         return;
@@ -125,16 +164,32 @@ else
     % Store the loaded subvolume in the now-Standard image layer
     obj.image.setData(img, 'image', 3, []);
 
-    % Allocate empty service layers sized to the loaded subvolume
+    % Restore scaled pixSize, source bounding box, and filename (all reset by initialize)
+    obj.image.filename    = srcFilename;
+    obj.image.pixSize     = scaledPixSize;
+    obj.image.boundingBox = srcBoundingBox;
+
+    % Allocate service layers sized to the loaded subvolume
     emptyDims = [size(img,1), size(img,2), size(img,3), 1, size(img,5)];
     if obj.enableSelection
         if isa(obj.labels, 'core.MibLabels63')
-            % Single packed array: zeros = no model/mask/selection
-            obj.labels.data  = zeros(emptyDims, 'uint8');
-            obj.labels.height   = emptyDims(1);
-            obj.labels.width    = emptyDims(2);
-            obj.labels.depth    = emptyDims(3);
-            obj.labels.time     = emptyDims(5);
+            % Populate with cropped BigData model if available; else blank
+            if ~isempty(packedBigDataModel)
+                obj.labels.data = packedBigDataModel;
+                obj.modelExist  = true;
+                obj.labels.materialNames  = savedMaterialNames;
+                obj.labels.materialsCount = savedMaterialsCount;
+                obj.labels.filename       = savedLabelsFilename;
+                if ~isempty(savedMaterialColors)
+                    obj.labels.materialColors = savedMaterialColors;
+                end
+            else
+                obj.labels.data = zeros(emptyDims, 'uint8');
+            end
+            obj.labels.height    = emptyDims(1);
+            obj.labels.width     = emptyDims(2);
+            obj.labels.depth     = emptyDims(3);
+            obj.labels.time      = emptyDims(5);
             obj.labels.dim_yxzct = emptyDims;
         else
             obj.labels.data    = NaN;
@@ -146,6 +201,10 @@ else
         obj.mask.data      = NaN;
         obj.selection.data = NaN;
     end
+    % Apply bounding box here (uses s0 xyzShift with scaled pixSize for correct extent)
+    obj.updateBoundingBox([], xyzShiftBB);
+    bbUpdated = true;
+
     if ~isempty(wb); wb.Value = 0.7; end
 end
 
@@ -174,11 +233,14 @@ obj.slices{5} = repmat(min([obj.slices{5}, obj.image.time]), 1, 2);
 obj.slices{obj.orientation} = repmat( ...
     min(obj.dim_yxzct(obj.orientation), current_layer), 1, 2);
 
-% Shift the physical bounding box by the crop offset (in physical units)
-xyzShift = [(x1-1)*obj.image.pixSize.x, ...
-            (y1-1)*obj.image.pixSize.y, ...
-            (z1-1)*obj.image.pixSize.z];
-obj.updateBoundingBox([], xyzShift);    % propagates pixSize to all layers
+% Shift the physical bounding box by the crop offset — Standard path only;
+% Virtual/BigData path handled the BB earlier (with correctly scaled pixSize).
+if ~bbUpdated
+    xyzShift = [(x1-1)*obj.image.pixSize.x, ...
+                (y1-1)*obj.image.pixSize.y, ...
+                (z1-1)*obj.image.pixSize.z];
+    obj.updateBoundingBox([], xyzShift);    % propagates pixSize to all layers
+end
 
 if ~isempty(wb); wb.Value = 1; delete(wb); end
 result = 1;

@@ -112,6 +112,51 @@ if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') &&
     return;
 end
 
+% Special path: BigData → Standard conversion with choice of how to handle the data
+if strcmp(hWidget.Value, 'Standard') && strcmp(convDs.datasetType, 'BigData') && isRealImage
+    questOpt = struct('Icon', 'puffin_question', 'WindowWidth', 560, 'WindowHeight', 250);
+    if ~isempty(obj.mibModel.mibPath); questOpt.mibPath = obj.mibModel.mibPath; end
+    sel = utils.dlgs.inputQuestDlg(obj.view.gui, ...
+        sprintf(['A BigData dataset is currently open. Switch to Standard by:\n\n' ...
+        ' \x2022 "New (default)": discard and start an empty Standard dataset\n' ...
+        ' \x2022 "Load into memory": read a selected pyramid level into memory\n\n' ...
+        'The BigData file on disk is not modified.']), 'Switch to Standard', ...
+        'New (default)', 'Load into memory', 'Cancel', 'New (default)', questOpt);
+    switch sel
+        case {'Cancel', ''}
+            hWidget.Value = hData.PreviousValue;
+            return;
+        case 'New (default)'
+            % fall through to the generic switch below (loads default.png placeholder)
+        case 'Load into memory'
+            zarrPath = convDs.image.filename;
+            lo = struct('datasetMode', 'Standard', 'ParentFigure', obj.view.gui, ...
+                'showWaitbar', true, 'mibPath', obj.mibModel.mibPath);
+            loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+            try
+                [imginfo, files] = loader.loadMetadata({zarrPath}, lo);
+                [img, imginfo]   = loader.loadImages(files, imginfo, lo);
+            catch ME
+                utils.dlgs.showErrorDialog(obj.view.gui, ME.message, 'Load into memory failed');
+                hWidget.Value = hData.PreviousValue;
+                return;
+            end
+            if isempty(img)
+                hWidget.Value = hData.PreviousValue;
+                return;
+            end
+            obj.mibModel.I{convId}.initialize(img, imginfo, 'Standard', [], true);
+            obj.mibModel.Sets.datasetTypes{obj.mibModel.Sets.selectedSet, ...
+                obj.mibModel.Sets.selectedDataset(obj.mibModel.Sets.selectedSet)} = 'Standard';
+            notify(obj.mibModel, 'NewDataset');
+            obj.mibController.cDirContents.updateFileList_Callback();
+            return;
+        otherwise
+            hWidget.Value = hData.PreviousValue;
+            return;
+    end
+end
+
 % confirm the operation — only when a real dataset is loaded. Switching the type
 % of an empty placeholder / dummy buffer closes nothing, so no warning is needed.
 if isRealImage

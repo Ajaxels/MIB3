@@ -44,7 +44,7 @@ function initialize(obj, img, meta, datasetType, modelType, enableSelection)
     %   - **enableSelection** — a logical (true/false) switch to enable/disable selection layer
     %
     
-    if nargin < 6; enableSelection = true; end
+    if nargin < 6 || isempty(enableSelection); enableSelection = true; end
     if nargin < 5; modelType = []; end
     if nargin < 4; datasetType = obj.datasetType; end
     if nargin < 3; meta = []; end
