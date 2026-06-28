@@ -81,6 +81,11 @@ larger than memory and survives across sessions.
   [Save model as...](../../user-interface/ribbon/model/index.md#save-model-as)).
 - Selectable Zarr backend (native `zarrMex` or `zarr-python`); define in
   [Preferences->Input / Output](../../user-interface/ribbon/home/home-preferences.md#input-output)
+- **3D volume rendering** — the <span class="widget widget-button">Render</span> →
+  <span class="widget widget-dropdown">MIB Rendering</span> button on the Home ribbon now supports
+  BigData: pick a pyramid level to render in 3D (a memory estimate is shown for each level), and
+  optionally enable the live-update checkbox so the overlay refreshes automatically as you segment
+  in the main window.
 
 <div class="h4-like">Limitations</div>
 

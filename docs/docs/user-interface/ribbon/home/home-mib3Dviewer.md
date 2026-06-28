@@ -78,6 +78,7 @@ The Viewer tab allows control over the following widgets and parameters:
 - <span class="widget widget-edit">Rotation</span>: define rotation center:
       - <span class="widget widget-edit">cursor</span> rotate the scene around the current position of the mouse cursor.
       - <span class="widget widget-edit">orbit</span> rotate the scene around the central point of the dataset.
+- <label class="widget widget-checkbox">Live update</label>: when enabled, the model overlay in the 3D viewer is refreshed automatically as you segment in the main MIB window, so edits appear in 3D without pressing <span class="widget widget-button">Refresh view</span>. Updates are debounced and triggered by data changes only (drawing, add/subtract to model, etc.) — not by panning, zooming, or slice navigation — and work for the model, mask, and selection overlays. For BigData datasets the overlay is re-fetched at the currently rendered pyramid level.
 
 <div class="clear-float"></div>
 
@@ -142,6 +143,7 @@ List of widgets for tweaking visualization settings:
 - <span class="widget widget-button">Update overlay</span>: grab the layer specified in <span class="widget widget-dropdown">Overlay source</span> and visualize it in the 3D Viewer.
 - <span class="widget widget-dropdown">Overlay source</span>: specify the layer type for visualization as a model.
 - <label class="widget widget-checkbox">Hide all</label>: toggle show/hide all selected materials in the table.
+- <span class="widget widget-button">Refresh view</span>: pull the latest segmentation into the overlay on demand. The first use initialises the overlay (same as <span class="widget widget-button">Update overlay</span>); afterwards it performs a lightweight refresh that updates only the overlay data while preserving per-material visibility and display settings. This is also the action invoked automatically by <label class="widget widget-checkbox">Live update</label>.
 
 <div class="clear-float"></div>
 

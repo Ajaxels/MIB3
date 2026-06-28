@@ -29,6 +29,7 @@ Every change ends with `check_matlab_code` clean + an MCP verification snippet o
 | WSI direct read (BioFormats/OpenSlide) as BigData — Phases A–D | ✅ DONE (headless) |
 | Zarr3 ingest writer + streaming + generic Save dialog registration | ✅ DONE |
 | Streaming export of a chosen pyramid level → standard formats — Phases 1–4 | ✅ DONE |
+| **3D volume rendering (VolRenApp)** of BigData via pyramid level + live overlay updates | ✅ DONE (code + headless); App Designer widgets + live-GUI pending (see §8) |
 | **Live in-GUI validation** of WSI open + segmentation + export | ⏳ PENDING (see §4) |
 | Streaming export plan — remaining per-format deep streaming + mask path | ⏳ OPEN (see §3) |
 | Backlog (T>1, removeMaterial renumber, remote zarr, etc.) | ⏳ DEFERRED (see §5) |
@@ -215,3 +216,88 @@ minimal Doxygen) docblocks.  Document them in priority order:
 > lb=core.MibBigDataLabels([],bm); lb.createStore([io_.height,io_.width,io_.depth],sp,io_.pyramid);
 > H=lb.height; W=lb.width; N=size(lb.modelScaleFactors,1);
 > ```
+
+---
+
+## 8. 3D volume rendering (VolRenApp) for BigData
+
+Render a BigData dataset in the 3D viewer (`mib/+controllers/@VolRenApp/`, MATLAB
+`viewer3d`/`volshow`) by loading a chosen **pyramid level** (never the full-res gigapixel
+volume), and update the model overlay **live** as the user segments in the main MIB window.
+Previously the controller hard-blocked Virtual **and** BigData.
+
+**Decisions:** BigData only (Virtual stays blocked); explicit **pyramid-level dropdown** for
+resolution; live overlay update = **auto (debounced) + manual** refresh.
+
+### Done (code + headless; static-clean)
+
+- **Gate** (`VolRenApp.m` constructor) — rejects only Virtual (`'V'`); BigData (`'B'`) passes.
+- **`grabVolume`** — for BigData shows a **pyramid-level dropdown** built from
+  `image.pyramid.levelImageSizes` with a per-level memory estimate (default = finest level under
+  a 512 MB budget); stores the choice in new property `obj.pyramidLevel`. Reads via
+  `getData3D(..., options)` with `options.pyramidLevel` + `options.blockModeSwitch = 0`; forces
+  `obj.volumeScaleFactor = 1` (the pyramid already downsamples — no `resizeImage3d`). **Voxel
+  size** comes from `image.pyramid.levelVoxelSizes` (`[y x z]`) — per-level row if present, else
+  base row × `levelScaleFactors(L,:)` — because **BioFormats-backed BigData leaves
+  `image.pixSize` empty** (voxel sizes live only in the pyramid). Standard datasets keep the
+  original downsample-factor dialog unchanged.
+- **`modelUpdateOverlay`** — reads the overlay at `obj.pyramidLevel` (same options), with a
+  nearest-neighbour `imresize3` fallback if overlay dims differ from the image volume.
+- **Live update engine** — new props `overlayMaterialId`, `liveUpdateListener` (cell),
+  `liveUpdateTimer`, `liveUpdatePending`; methods `refreshOverlay`, `toggleLiveUpdate`,
+  `enable/disableLiveUpdate`, `liveUpdateRequest`, `liveUpdateFire`, `stopLiveUpdateTimer`,
+  `refreshOverlayData`.
+  - **Event hookup — `SetData`, not `ShowImage`.** `ShowImage` fires on every pan/zoom/slice
+    change → needless refetches, so it is **not** used. Two `SetData` listeners cover all edits:
+    `SetData` on **`mibModel`** (fired by `MibModel.moveLayers` — add/subtract to model) and
+    `SetData` on the **active dataset** `mibModel.I{id}` (fired by the core
+    `MibDataset.setData2D/3D/4D`, gated by `event.hasListener` so it costs nothing when nobody
+    listens). The dataset-level listener is what catches a **brush selection** commit: the
+    `MibModel.setData2D` wrapper's notify is commented out, and the brush paints `CData` directly
+    with no `ShowImage`, so the core dataset `SetData` is the only reliable signal.
+  - **Debounced** via a one-shot 0.2 s timer (a burst of strokes collapses into one refetch).
+  - `refreshOverlayData` is the **lightweight** path (updates only `OverlayData`, preserving
+    per-material visibility/colormap/table); `refreshOverlay` (manual button) does a full
+    `modelUpdateOverlay` on first use, then lightweight refreshes.
+  - **Lifecycle hardening:** the listeners live on the persistent `mibModel`, so they can outlive
+    a closed VolRenApp window. Guards use `~isvalid(obj.view)` (note: a *deleted* handle is **not**
+    empty, so `isempty(obj.view)` is insufficient) and self-call `disableLiveUpdate()` when the
+    view is gone; a `delete(obj)` destructor also releases listeners/timer. `closeWindow` calls
+    `disableLiveUpdate`.
+- **Docs** — user page `docs/docs/user-interface/ribbon/home/home-mib3Dviewer.md` (Live update +
+  Refresh view widgets); RST docblocks on `grabVolume`, `modelUpdateOverlay`, and the new methods.
+- **Headless test** — `tests/core/MibBigDataVolRenReadTest.m` (3/3 pass): image/labels reads at a
+  level match `levelImageSizes(L)`; voxel-size scaling increases with level. `MibBigDataLevelMapTest`
+  stays 9/9.
+
+### Pending / to verify in live GUI
+
+- **App Designer widgets** (binary `.mlapp`, added by the user in App Designer to
+  `mib/+views/VolRenAppGUI.mlapp`): `liveUpdateCheckBox` (CheckBox → `toggleLiveUpdate()`, Viewer
+  tab) and `refreshViewButton`/`refreshOverlayButton` (Button → `refreshOverlay()`, Model tab).
+  Restart MIB so new widgets + the relaxed gate load.
+- **Live test:** open CMU-1.ndpi as BigData → Render → pick a level → renders in µm; create a
+  model, brush with Live update on → 3D overlay refreshes within ~0.25 s (incl. **selection**
+  overlay); Refresh view forces a pull; Standard datasets unchanged.
+- **Close-path wiring:** confirm `VolRenAppGUI.mlapp`'s `CloseRequestFcn` actually calls the
+  controller's `closeWindow` — the orphaned-listener symptom suggests it may not, which would also
+  leak `listener{1..3}`, the child 3D-viewer window, and the preferences save. The defensive
+  guards above make the live-update feature safe regardless, but wiring `closeWindow` fixes the
+  broader leak.
+
+### Deferred — adaptive (view-dependent) detail
+
+Optional follow-up: load finer detail when the camera settles. `volshow` renders one resident
+array (no native streaming/LOD), so this must be a **debounced "load on camera-settle"** via the
+existing `CameraMoving` listener — not continuous tracking. Heuristic: pick level from
+`viewer.CameraZoom`/distance, load a **memory-budgeted** sub-volume centred on
+`viewer.CameraTarget` via region reads (`pyramidLevel` + `x/y/z`), rebuild `volume.Data`, and
+update the `affinetform3d` **translation** so the crop sits at its correct world position;
+co-fetch the overlay at the same level/region. Needs an `adaptiveDetailCheckBox` widget. A
+frustum-accurate bbox mapping is a later refinement over the centred-budget heuristic.
+
+### Files
+
+`+controllers/@VolRenApp/VolRenApp.m` (gate, `grabVolume`, `modelUpdateOverlay`, live-update
+engine, `closeWindow`, `delete`); `+views/VolRenAppGUI.mlapp` (widgets — user/App Designer);
+`docs/docs/user-interface/ribbon/home/home-mib3Dviewer.md`; `tests/core/MibBigDataVolRenReadTest.m`.

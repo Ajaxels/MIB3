@@ -121,6 +121,17 @@ classdef VolRenApp < handle
         % vector with the colormap
         volumeScaleFactor
         % scale factor to downsample the datasets, below 1
+        pyramidLevel
+        % for BigData datasets: 1-based pyramid level currently loaded into the viewer (1 = full resolution)
+        overlayMaterialId
+        % material index last loaded into the overlay (``NaN`` = all materials); used by the live overlay refresh
+        liveUpdateListener
+        % cell array of listeners that drive live overlay updates during segmentation (empty/{} when off):
+        % ``SetData`` on the model (moveLayers) and ``SetData`` on the active dataset (core setData2D/3D/4D)
+        liveUpdateTimer
+        % one-shot ``timer`` debouncing live overlay refreshes so a burst of edits collapses into one refetch
+        liveUpdatePending
+        % logical flag set when a live overlay refresh is queued and waiting for the debounce timer
     end
 
     events
@@ -221,6 +232,7 @@ classdef VolRenApp < handle
             % obj.Settings = mibConcatenateStructures(obj.Settings, options);
             obj.volume = [];
             obj.volumeScaleFactor = 1;
+            obj.pyramidLevel = 1;
             obj.keyFrameTableIndex = [];
             obj.modelTableIndex = [];
             obj.surfaceTableIndex = [];
@@ -233,12 +245,14 @@ classdef VolRenApp < handle
             obj.surfListAlpha = []; % array of alpha values for the generated surfaces
 
             % check for the virtual stacking mode and close the controller
-            if any(obj.mibModel.I{id}.datasetType(1) == ['V' 'B'])
+            % BigData ('B') is supported via pyramid-level reads (see grabVolume);
+            % only the browse-only Virtual ('V') mode is rejected here
+            if obj.mibModel.I{id}.datasetType(1) == 'V'
                 dlgOpt.MsgBoxOnly = true; dlgOpt.Icon = 'puffin_warning';
-                header = 'The 3D volume rendering is not available in the virtual or BigData mode!';
+                header = 'The 3D volume rendering is not available in the virtual mode!';
                 dlgOpt.HeaderLines = 2;
                 % obj.view is not yet created here — use mibGUI as parent
-                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {'Switch to the memory-resident mode and try again'}, 'Not implemented', dlgOpt);
+                utils.dlgs.inputUniversalDlg(obj.mibModel.mibGUI, header, {}, {'Switch to the memory-resident or BigData mode and try again'}, 'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
             end
@@ -653,6 +667,9 @@ classdef VolRenApp < handle
                 delete(obj.listener{i});
             end
 
+            % tear down the live overlay update listener + debounce timer
+            obj.disableLiveUpdate();
+
             % close child controllers
             for i=numel(obj.childControllers):-1:1
                 if isvalid(obj.childControllers{i})
@@ -662,6 +679,15 @@ classdef VolRenApp < handle
             obj.mibModel.preferences.VolRen = obj.Settings;
 
             notify(obj, 'CloseEvent');      % notify mibController that this child window is closed
+        end
+
+        function delete(obj)
+            % DELETE - Destructor: release live-update listeners/timer.
+            %
+            % Safety net for the case where the controller is destroyed without
+            % ``closeWindow`` running — the live-update listeners live on the
+            % persistent ``mibModel`` and would otherwise keep firing on a stale handle.
+            obj.disableLiveUpdate();
         end
 
         function updateWidgets(obj)
@@ -1497,6 +1523,21 @@ classdef VolRenApp < handle
             %      status = obj.grabVolume()
             %      status = obj.grabVolume(volumeType, colorChannel)
             %
+            % For **BigData** datasets a pyramid-level picker dialog is shown rather than the
+            % downsample-factor dialog.  Each entry lists the spatial dimensions of that level
+            % and an estimated in-memory footprint (budget cap: 512 MB).  The selected level is
+            % stored in ``obj.pyramidLevel``; data is fetched with ``options.pyramidLevel`` and
+            % ``options.blockModeSwitch=0`` to retrieve the full pyramid level rather than just
+            % the current viewport block.  ``obj.volumeScaleFactor`` is set to ``1`` because the
+            % pyramid already provides the downsampling.  The voxel size at the chosen level is
+            % taken from ``image.pyramid.levelVoxelSizes`` (``[y x z]``) — directly when that
+            % array holds a per-level row, otherwise the full-resolution base row scaled by
+            % ``image.pyramid.levelScaleFactors(obj.pyramidLevel, :)`` — to preserve physical
+            % (µm) units in the 3D viewer.  Note BioFormats-backed BigData leaves
+            % ``image.pixSize`` empty, so the voxel size is always sourced from the pyramid.
+            %
+            % For **Standard** datasets the original user-entered downsample-factor dialog is used.
+            %
             % Input Arguments:
             %   - **volumeType** *(optional)* — [char] volume layer to load (default: ``'image'``):
             %
@@ -1520,6 +1561,8 @@ classdef VolRenApp < handle
             % MIB3 axis order: [y(height), x(width), z(depth), colors, time]
             [height, width, depth] = obj.mibModel.I{id}.getDatasetDimensions('image', 3);
 
+            isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
+
             if strcmp(volumeType, 'image')
                 colorChannelList = arrayfun(@(x) sprintf('ColCh %d', x), 1:obj.mibModel.I{id}.image.colors, 'UniformOutput', false);
                 colorChannelList = [{'Selected'}, {'All'}, colorChannelList];
@@ -1530,41 +1573,101 @@ classdef VolRenApp < handle
                 colorChannel = 0;
             end
 
-            prompts = {sprintf('Would you like to downsample the volume?\nVolume dimensions: %d x %d x %d\n\nDownsample factor (times):', width, height, depth); sprintf('or\nnew width in pixels:'); 'Select color channel:'};
-            defAns = {num2str(obj.volumeScaleFactor); num2str(width); [colorChannelList, colorChannel+1]};
-            dlgTitle = 'Color channel and downsample';
             dlgOptions.HeaderLines = 2;
             dlgOptions.WindowWidth = 540;
             dlgOptions.Columns = 1;
             dlgOptions.Focus = 1;
             dlgOptions.WindowHeight = 310;
             dlgOptions.OkBtnText = 'Continue';
-            header = 'Select color channel (or material) to render and possibly downsample the dataset to improve performance';
-            [answer, selIndices] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, dlgOptions);
-            if isempty(answer); obj.closeWindow(); return; end
 
-            if strcmp(volumeType, 'image')
-                colorChannel = selIndices(3) - 2; % Selected, All, ColCh1, ColCh2...
-                if colorChannel == -1  % take selected color channel
-                    colorChannel = [];
-                elseif colorChannel == 0
-                    colorChannel = NaN; %take all color channel
+            if isBigData
+                % BigData: select a pre-built pyramid level instead of downsampling
+                % (the full-resolution volume would not fit in memory)
+                levelSizes = obj.mibModel.I{id}.image.pyramid.levelImageSizes;   % [N x 3], [Y X Z]
+                noLevels = size(levelSizes, 1);
+                dataClass = obj.mibModel.I{id}.image.dataClass;
+                bytesPerVoxel = max(1, numel(typecast(cast(0, dataClass), 'uint8')));
+                if strcmp(volumeType, 'image')
+                    memChannels = obj.mibModel.I{id}.image.colors;
+                else
+                    memChannels = 1;
+                end
+
+                % build the level dropdown items and pick a memory-budgeted default level
+                memBudgetMB = 512;
+                levelList = cell([1, noLevels]);
+                defLevel = noLevels;
+                defLevelFound = false;
+                for levId = 1:noLevels
+                    yL = levelSizes(levId, 1); xL = levelSizes(levId, 2); zL = levelSizes(levId, 3);
+                    memMB = prod([yL, xL, zL]) * bytesPerVoxel * memChannels / 1024 / 1024;
+                    levelList{levId} = sprintf('Level %d: %d x %d x %d  (~%.0f MB)', levId, xL, yL, zL, memMB);
+                    if ~defLevelFound && memMB <= memBudgetMB    % finest level under the budget
+                        defLevel = levId;
+                        defLevelFound = true;
+                    end
+                end
+                % keep the previously selected level when still valid
+                if ~isempty(obj.pyramidLevel) && obj.pyramidLevel >= 1 && obj.pyramidLevel <= noLevels
+                    defLevel = obj.pyramidLevel;
+                end
+
+                prompts = {'Select pyramid level to render:'; 'Select color channel:'};
+                defAns = {[levelList, defLevel]; [colorChannelList, colorChannel+1]};
+                dlgTitle = 'Pyramid level and color channel';
+                header = 'Select a pyramid level (resolution) and a color channel (or material) to render in 3D';
+                [answer, selIndices] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, dlgOptions);
+                if isempty(answer); obj.closeWindow(); return; end
+
+                obj.pyramidLevel = selIndices(1);
+                obj.volumeScaleFactor = 1;   % the pyramid already provides the downsampling
+
+                if strcmp(volumeType, 'image')
+                    colorChannel = selIndices(2) - 2; % Selected, All, ColCh1, ColCh2...
+                    if colorChannel == -1       % take selected color channel
+                        colorChannel = [];
+                    elseif colorChannel == 0    % take all color channels
+                        colorChannel = NaN;
+                    end
+                else
+                    colorChannel = selIndices(2) - 1; % All materials, mat1, mat2...
                 end
             else
-                colorChannel = selIndices(3) - 1; % All materials, mat1, mat2...
-            end
+                prompts = {sprintf('Would you like to downsample the volume?\nVolume dimensions: %d x %d x %d\n\nDownsample factor (times):', width, height, depth); sprintf('or\nnew width in pixels:'); 'Select color channel:'};
+                defAns = {num2str(obj.volumeScaleFactor); num2str(width); [colorChannelList, colorChannel+1]};
+                dlgTitle = 'Color channel and downsample';
+                header = 'Select color channel (or material) to render and possibly downsample the dataset to improve performance';
+                [answer, selIndices] = utils.dlgs.inputUniversalDlg(obj.view.gui, header, prompts, defAns, dlgTitle, dlgOptions);
+                if isempty(answer); obj.closeWindow(); return; end
 
-            if str2double(answer{1}) == 1
-                obj.volumeScaleFactor = round(str2double(answer{2})/width, 3);
-            else
-                obj.volumeScaleFactor = round(1/str2double(answer{1}), 3);
+                if strcmp(volumeType, 'image')
+                    colorChannel = selIndices(3) - 2; % Selected, All, ColCh1, ColCh2...
+                    if colorChannel == -1  % take selected color channel
+                        colorChannel = [];
+                    elseif colorChannel == 0
+                        colorChannel = NaN; %take all color channel
+                    end
+                else
+                    colorChannel = selIndices(3) - 1; % All materials, mat1, mat2...
+                end
+
+                if str2double(answer{1}) == 1
+                    obj.volumeScaleFactor = round(str2double(answer{2})/width, 3);
+                else
+                    obj.volumeScaleFactor = round(1/str2double(answer{1}), 3);
+                end
             end
 
             pwb = core.PoolWaitbar(5, 'Fetching volume data...', obj.view.gui, 'Import volume', true);
             timePnt = obj.mibModel.I{id}.getCurrentTimePoint();
             pixSize = obj.mibModel.I{id}.image.pixSize;
 
-            img = obj.mibModel.getData3D(volumeType, timePnt, 3, colorChannel);
+            getOptions = struct();
+            if isBigData
+                getOptions.pyramidLevel = obj.pyramidLevel;
+                getOptions.blockModeSwitch = 0;   % render the whole level, not the shown block
+            end
+            img = obj.mibModel.getData3D(volumeType, timePnt, 3, colorChannel, getOptions);
 
             if numel(img) > 1
                 pwb.deletePoolWaitbar();
@@ -1580,7 +1683,29 @@ classdef VolRenApp < handle
             % end
 
             % resize the volume
-            if obj.volumeScaleFactor ~= 1
+            if isBigData
+                % the pyramid level already provides the downsampling; derive the
+                % voxel size at the chosen level so the rendered volume keeps
+                % physical (um) units. BioFormats-backed BigData leaves
+                % image.pixSize empty and stores voxel sizes in
+                % pyramid.levelVoxelSizes ([y x z]); that array is either per-level
+                % ([N x 3]) or just the full-resolution base ([1 x 3]).
+                pyr = obj.mibModel.I{id}.image.pyramid;
+                if isfield(pyr, 'levelVoxelSizes') && ~isempty(pyr.levelVoxelSizes)
+                    if size(pyr.levelVoxelSizes, 1) >= obj.pyramidLevel
+                        vox = pyr.levelVoxelSizes(obj.pyramidLevel, :);     % already per-level [y x z]
+                    else
+                        vox = pyr.levelVoxelSizes(1, :) .* pyr.levelScaleFactors(obj.pyramidLevel, :);  % base x per-axis scale
+                    end
+                else
+                    vox = [1 1 1];
+                end
+                if isempty(pixSize) || ~isstruct(pixSize); pixSize = struct(); end
+                pixSize.y = vox(1);
+                pixSize.x = vox(2);
+                pixSize.z = vox(3);
+                if ~isfield(pixSize, 'units'); pixSize.units = 'um'; end
+            elseif obj.volumeScaleFactor ~= 1
                 pwb.updateText('Resizing volume...');
                 img = utils.resizeImage3d(img,  obj.volumeScaleFactor);
 
@@ -1924,6 +2049,14 @@ classdef VolRenApp < handle
             %      obj.modelUpdateOverlay()
             %      obj.modelUpdateOverlay(overlayType, materialId)
             %
+            % For **BigData** datasets the overlay is read at ``obj.pyramidLevel`` by passing
+            % ``options.pyramidLevel`` and ``options.blockModeSwitch=0`` to ``getData3D`` so the
+            % full pyramid level is returned rather than only the viewport block.  If the returned
+            % overlay dimensions differ from the in-memory image volume (``obj.volume.Data``), a
+            % nearest-neighbour ``imresize3`` is applied so the overlay aligns pixel-for-pixel with
+            % the rendered volume.  For **Standard** datasets the same downsample path as
+            % ``grabVolume`` is used (``obj.volumeScaleFactor`` resize via ``imresize3``).
+            %
             % Input Arguments:
             %   - **overlayType** *(optional)* — [char] overlay layer type:
             %
@@ -1935,7 +2068,9 @@ classdef VolRenApp < handle
 
             if nargin < 3; materialId = NaN; end    % get all materials
             if nargin < 2; overlayType = obj.view.handles.overlaySourceDropDown.Value; end    % get all materials
+            obj.overlayMaterialId = materialId;     % remember for the live overlay refresh
             id = obj.mibModel.getActiveId();
+            isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
             dataset = obj.mibModel.I{id};
             existStatus = dataset.enableSelection;
             obj.noOverlayMaterials = 1;
@@ -1960,12 +2095,24 @@ classdef VolRenApp < handle
                 return;
             end
 
-            overlay = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialId));
+            getOptions = struct();
+            if isBigData
+                getOptions.pyramidLevel = obj.pyramidLevel;
+                getOptions.blockModeSwitch = 0;
+            end
+            overlay = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialId, getOptions));
             % resize the volume
-            if obj.volumeScaleFactor ~= 1
+            if ~isBigData && obj.volumeScaleFactor ~= 1
                 rescaleOpt.imgType = '3D';
                 rescaleOpt.method = 'nearest';
                 overlay = utils.resizeImage3d(overlay,  obj.volumeScaleFactor, rescaleOpt);
+            elseif isBigData && ~isempty(obj.volume) && isvalid(obj.volume)
+                % BigData: pyramid already downsampled; match overlay dims to image volume if needed
+                [volH, volW, volD] = size(obj.volume.Data);
+                [overlayH, overlayW, overlayD] = size(overlay);
+                if overlayH ~= volH || overlayW ~= volW || overlayD ~= volD
+                    overlay = imresize3(overlay, [volH, volW, volD], 'nearest');
+                end
             end
             [imgH, imgW, imgD] = size(overlay);
             % add one extra slice for single images
@@ -1994,6 +2141,216 @@ classdef VolRenApp < handle
             obj.volume.OverlayRenderingStyle = obj.view.handles.overlayRenderingStyle.Value; % LabelOverlay, VolumeOverlay, GradientOverlay
             obj.overlayShownMaterials = logical(ones([obj.noOverlayMaterials, 1]));
             obj.updateModelTable(); % update table with materials
+        end
+
+        function refreshOverlay(obj)
+            % REFRESHOVERLAY - Pull the latest segmentation into the overlay (manual Refresh button).
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.refreshOverlay()
+            %
+            % Callback target for ``refreshOverlayButton`` (``ButtonPushedFcn``).
+            % On the first call (no overlay yet) it does a full
+            % :func:`modelUpdateOverlay` so the colormap, alphamap and material table
+            % are initialised; afterwards it does the lightweight
+            % :func:`refreshOverlayData` that preserves per-material visibility.
+
+            if isempty(obj.noOverlayMaterials) || obj.noOverlayMaterials < 1
+                obj.modelUpdateOverlay();
+            else
+                obj.refreshOverlayData();
+            end
+        end
+
+        function toggleLiveUpdate(obj)
+            % TOGGLELIVEUPDATE - Enable or disable live overlay updates from the GUI checkbox.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.toggleLiveUpdate()
+            %
+            % Callback target for ``liveUpdateCheckBox`` (``ValueChangedFcn``).
+            % When checked, debounced ``SetData`` listeners re-fetch the model overlay
+            % as the user segments in the main MIB window; when unchecked the listeners
+            % and the debounce timer are removed.
+
+            if obj.view.handles.liveUpdateCheckBox.Value
+                obj.enableLiveUpdate();
+            else
+                obj.disableLiveUpdate();
+            end
+        end
+
+        function enableLiveUpdate(obj)
+            % ENABLELIVEUPDATE - Register the debounced listeners that drive live overlay updates.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.enableLiveUpdate()
+            %
+            % Registers ``SetData`` listeners that funnel into the debounced
+            % :func:`liveUpdateRequest`. ``SetData`` (not ``ShowImage``) is used because it
+            % fires only when the data actually changes, whereas ``ShowImage`` also fires on
+            % every pan / zoom / slice change and would trigger needless refetches:
+            %
+            % - ``SetData`` on ``mibModel`` — fired by :func:`models.MibModel.moveLayers`
+            %   (e.g. add/subtract to model).
+            % - ``SetData`` on the **active dataset** (``mibModel.I{id}``) — fired by the core
+            %   ``setData2D/3D/4D`` whenever a listener exists (``event.hasListener`` guard),
+            %   which is how a **brush selection** commit is caught (it goes through
+            %   ``setData2D`` and emits no ``mibModel`` notification).
+
+            obj.disableLiveUpdate();   % clear any previous registration first
+            obj.liveUpdateListener = {};
+            obj.liveUpdateListener{end+1} = addlistener(obj.mibModel, 'SetData', @(src,evnt) obj.liveUpdateRequest());
+            id = obj.mibModel.getActiveId();
+            obj.liveUpdateListener{end+1} = addlistener(obj.mibModel.I{id}, 'SetData', @(src,evnt) obj.liveUpdateRequest());
+        end
+
+        function disableLiveUpdate(obj)
+            % DISABLELIVEUPDATE - Remove the live-update listeners and stop the debounce timer.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.disableLiveUpdate()
+
+            if ~isempty(obj.liveUpdateListener) && iscell(obj.liveUpdateListener)
+                for i = 1:numel(obj.liveUpdateListener)
+                    if ~isempty(obj.liveUpdateListener{i}) && isvalid(obj.liveUpdateListener{i})
+                        delete(obj.liveUpdateListener{i});
+                    end
+                end
+            end
+            obj.liveUpdateListener = {};
+            obj.stopLiveUpdateTimer();
+            obj.liveUpdatePending = false;
+        end
+
+        function liveUpdateRequest(obj)
+            % LIVEUPDATEREQUEST - Queue a debounced overlay refresh in response to a SetData event.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.liveUpdateRequest()
+            %
+            % Called on every ``SetData`` notification while live update is on. Restarts a
+            % one-shot timer so a burst of segmentation strokes collapses into a single
+            % overlay refetch after the user pauses (~0.2 s).
+
+            % the listeners live on the persistent mibModel, so they can outlive a
+            % closed VolRenApp window; if the view is gone, self-remove and bail out
+            if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view) || ~isvalid(obj.view.gui)
+                if isvalid(obj); obj.disableLiveUpdate(); end
+                return;
+            end
+            obj.liveUpdatePending = true;
+
+            if isempty(obj.liveUpdateTimer) || ~isvalid(obj.liveUpdateTimer)
+                obj.liveUpdateTimer = timer('ExecutionMode', 'singleShot', 'StartDelay', 0.2, ...
+                    'TimerFcn', @(~,~) obj.liveUpdateFire());
+                start(obj.liveUpdateTimer);
+            else
+                stop(obj.liveUpdateTimer);    % restart → debounce to the last event
+                start(obj.liveUpdateTimer);
+            end
+        end
+
+        function liveUpdateFire(obj)
+            % LIVEUPDATEFIRE - Debounce-timer callback that performs the queued overlay refresh.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.liveUpdateFire()
+
+            if ~isvalid(obj); return; end
+            if ~obj.liveUpdatePending; return; end
+            obj.liveUpdatePending = false;
+            if isempty(obj.view) || ~isvalid(obj.view) || ~isvalid(obj.view.gui)
+                obj.disableLiveUpdate(); return;
+            end
+            if isempty(obj.volume) || ~isvalid(obj.volume); return; end
+            % only refresh once an overlay has been initialised at least once
+            if isempty(obj.noOverlayMaterials) || obj.noOverlayMaterials < 1; return; end
+            try
+                obj.refreshOverlayData();
+            catch err
+                % never let a transient read error crash the viewer
+                fprintf('VolRenApp live overlay update skipped: %s\n', err.message);
+            end
+        end
+
+        function stopLiveUpdateTimer(obj)
+            % STOPLIVEUPDATETIMER - Stop and delete the live-update debounce timer if present.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.stopLiveUpdateTimer()
+
+            if ~isempty(obj.liveUpdateTimer) && isvalid(obj.liveUpdateTimer)
+                stop(obj.liveUpdateTimer);
+                delete(obj.liveUpdateTimer);
+            end
+            obj.liveUpdateTimer = [];
+        end
+
+        function refreshOverlayData(obj)
+            % REFRESHOVERLAYDATA - Lightweight overlay re-fetch for live updates.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      obj.refreshOverlayData()
+            %
+            % Re-reads the active overlay layer at the current pyramid level and
+            % updates only ``obj.volume.OverlayData`` — material visibility, colormap,
+            % alphamap and the material table are left untouched (unlike
+            % ``modelUpdateOverlay`` which re-initialises them). Used as the manual
+            % "Refresh overlay" action and the debounced live-update refetch.
+
+            if isempty(obj.volume) || ~isvalid(obj.volume); return; end
+            id = obj.mibModel.getActiveId();
+            overlayType = obj.view.handles.overlaySourceDropDown.Value;
+
+            % verify the requested layer still exists before reading
+            switch overlayType
+                case 'labels';    if ~obj.mibModel.I{id}.modelExist; return; end
+                case 'mask';      if ~obj.mibModel.I{id}.maskExist; return; end
+                case 'selection'; if obj.mibModel.I{id}.enableSelection == 0; return; end
+            end
+
+            isBigData = obj.mibModel.I{id}.datasetType(1) == 'B';
+            materialId = obj.overlayMaterialId;
+            if isempty(materialId); materialId = NaN; end
+
+            getOptions = struct();
+            if isBigData
+                getOptions.pyramidLevel = obj.pyramidLevel;
+                getOptions.blockModeSwitch = 0;
+            end
+            overlay = cell2mat(obj.mibModel.getData3D(overlayType, [], 3, materialId, getOptions));
+
+            if ~isBigData && obj.volumeScaleFactor ~= 1
+                rescaleOpt.imgType = '3D';
+                rescaleOpt.method = 'nearest';
+                overlay = utils.resizeImage3d(overlay, obj.volumeScaleFactor, rescaleOpt);
+            end
+
+            % match the overlay dimensions to the loaded image volume
+            [volH, volW, volD] = size(obj.volume.Data);
+            [overlayH, overlayW, overlayD] = size(overlay);
+            if overlayH ~= volH || overlayW ~= volW || overlayD ~= volD
+                overlay = imresize3(overlay, [volH, volW, volD], 'nearest');
+            end
+
+            obj.volume.OverlayData = overlay;
         end
 
         function updateOverlayRenderingStyle(obj)
