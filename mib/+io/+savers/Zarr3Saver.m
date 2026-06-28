@@ -775,6 +775,126 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     'physScaleZ', pixSize.z * cumZFactor);
             end
         end
+
+        function patchMetadata(zarrPath, pixSize, boundingBox)
+            % PATCHMETADATA - Update bounding box and pixel sizes in a zarr3 file on disk.
+            %
+            % Syntax:
+            %   .. code-block:: matlab
+            %
+            %      io.savers.Zarr3Saver.patchMetadata(zarrPath, pixSize, boundingBox)
+            %
+            % Writes to the zarr.json attributes:
+            %   - ``mibBoundingBox`` [xmin xmax ymin ymax zmin zmax] (MIB-specific round-trip)
+            %   - ``translation`` coordinateTransformation per pyramid level (OME-NGFF 0.5)
+            %   - Updated ``scale`` per pyramid level from new ``pixSize``
+            %
+            % Input Arguments:
+            %   - **zarrPath** — [char] local path to the zarr3 root folder
+            %   - **pixSize** — [struct] with fields ``.x``, ``.y``, ``.z``
+            %   - **boundingBox** — [1x6 double] ``[xmin xmax ymin ymax zmin zmax]``
+            %
+            % Output Arguments:
+            %   (none)
+            %
+
+            if isempty(zarrPath) || ~isfolder(zarrPath); return; end
+            if startsWith(zarrPath, 'http://') || startsWith(zarrPath, 'https://'); return; end
+            jsonPath = fullfile(zarrPath, 'zarr.json');
+            if ~isfile(jsonPath); return; end
+
+            try
+                rawMeta = jsondecode(fileread(jsonPath));
+                if isfield(rawMeta, 'attributes') && isstruct(rawMeta.attributes)
+                    attrs = rawMeta.attributes;
+                else
+                    attrs = struct();
+                end
+
+                % ---- locate multiscales -----------------------------------------
+                ms = [];
+                msLocation = '';  % 'direct' or 'ome'
+                if isfield(attrs, 'multiscales') && ~isempty(attrs.multiscales)
+                    ms = attrs.multiscales(1);
+                    msLocation = 'direct';
+                elseif isfield(attrs, 'ome') && isstruct(attrs.ome) && ...
+                        isfield(attrs.ome, 'multiscales') && ~isempty(attrs.ome.multiscales)
+                    ms = attrs.ome.multiscales(1);
+                    msLocation = 'ome';
+                end
+
+                if isempty(ms) || ~isfield(ms, 'datasets')
+                    warning('io:Zarr3Saver:patchMetadata:noMultiscales', ...
+                        'patchMetadata: no multiscales in %s — skipped.', zarrPath);
+                    return;
+                end
+
+                % ---- parse axis order ------------------------------------------
+                axisLabels = {};
+                if isfield(ms, 'axes') && ~isempty(ms.axes)
+                    axesDef = ms.axes;
+                    if isstruct(axesDef)
+                        names = {axesDef.name};
+                    else
+                        names = cellfun(@(a) a.name, axesDef, 'UniformOutput', false);
+                    end
+                    axisLabels = num2cell(lower(char(strjoin(names, ''))));
+                end
+                if isempty(axisLabels)
+                    axisLabels = {'y', 'x', 'z'};
+                end
+                nAxes = numel(axisLabels);
+                yIdx = find(strcmp(axisLabels, 'y'), 1);
+                xIdx = find(strcmp(axisLabels, 'x'), 1);
+                zIdx = find(strcmp(axisLabels, 'z'), 1);
+
+                % ---- translation vector (same for all levels) ------------------
+                translationVec = zeros(1, nAxes);
+                if ~isempty(yIdx); translationVec(yIdx) = boundingBox(3); end
+                if ~isempty(xIdx); translationVec(xIdx) = boundingBox(1); end
+                if ~isempty(zIdx); translationVec(zIdx) = boundingBox(5); end
+
+                % ---- read level-0 scale (used to compute per-level ratios) -----
+                nLevels = numel(ms.datasets);
+                ct0 = ms.datasets(1).coordinateTransformations;
+                level0Scales = io.savers.Zarr3Saver.extractScaleVec(ct0, nAxes);
+
+                % ---- update each level -----------------------------------------
+                for levelIdx = 1:nLevels
+                    ct = ms.datasets(levelIdx).coordinateTransformations;
+                    oldScale = io.savers.Zarr3Saver.extractScaleVec(ct, nAxes);
+
+                    % scale ratio relative to level 0 (preserves pyramid structure)
+                    scaleRatio = max(oldScale ./ max(level0Scales, eps(1)), eps(1));
+
+                    newScaleVec = ones(1, nAxes);
+                    if ~isempty(yIdx); newScaleVec(yIdx) = pixSize.y * scaleRatio(yIdx); end
+                    if ~isempty(xIdx); newScaleVec(xIdx) = pixSize.x * scaleRatio(xIdx); end
+                    if ~isempty(zIdx); newScaleVec(zIdx) = pixSize.z * scaleRatio(zIdx); end
+
+                    scaleSt       = struct('type', 'scale',       'scale',       newScaleVec);
+                    translationSt = struct('type', 'translation', 'translation', translationVec);
+                    % use cell array so jsonencode produces [{...},{...}] without
+                    % null fields from mixed-field struct arrays
+                    ms.datasets(levelIdx).coordinateTransformations = {scaleSt, translationSt};
+                end
+
+                % ---- write back ------------------------------------------------
+                if strcmp(msLocation, 'direct')
+                    attrs.multiscales(1) = ms;
+                else
+                    attrs.ome.multiscales(1) = ms;
+                end
+                attrs.mibBoundingBox = reshape(double(boundingBox), 1, 6);
+
+                grp = ZarrGroup(zarrPath);
+                grp.setAttributes(attrs);
+
+            catch ME
+                warning('io:Zarr3Saver:patchMetadata:failed', ...
+                    'patchMetadata failed for %s: %s', zarrPath, ME.message);
+            end
+        end
     end
 
     methods (Static, Access = private)
@@ -877,6 +997,43 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     accumulated = accumulated + double(bufferCell{k});
                 end
                 result = cast(accumulated / numel(bufferCell), imgClass);
+            end
+        end
+
+        function sc = extractScaleVec(ct, nAxes)
+            % EXTRACTSCALEVEC - Extract scale vector from a coordinateTransformations value.
+            % ct may be a struct, struct array, or cell array.
+            % Returns a right-aligned [1 x nAxes] row vector; defaults to ones.
+            sc = [];
+            try
+                if isstruct(ct) && ~isempty(ct)
+                    for k = 1:numel(ct)
+                        if isfield(ct(k), 'scale') && strcmp(ct(k).type, 'scale')
+                            sc = ct(k).scale; break;
+                        end
+                    end
+                elseif iscell(ct)
+                    for k = 1:numel(ct)
+                        entry = ct{k};
+                        if isfield(entry, 'type') && strcmp(entry.type, 'scale')
+                            sc = entry.scale; break;
+                        end
+                    end
+                end
+                if isempty(sc); sc = ones(1, nAxes); return; end
+                if iscell(sc); sc = cell2mat(sc(:)'); else; sc = double(sc(:)'); end
+                nSc = numel(sc);
+                if nSc == nAxes
+                    % already aligned
+                elseif nSc < nAxes
+                    padded = ones(1, nAxes);
+                    padded(end - nSc + 1 : end) = sc;
+                    sc = padded;
+                else
+                    sc = sc(end - nAxes + 1 : end);
+                end
+            catch
+                sc = ones(1, nAxes);
             end
         end
     end

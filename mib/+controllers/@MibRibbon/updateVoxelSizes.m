@@ -116,12 +116,33 @@ if isfield(pixSize, 'z');      newPixSize.z      = pixSize.z;      end
 if isfield(pixSize, 't');      newPixSize.t      = pixSize.t;      end
 if isfield(pixSize, 'units');  newPixSize.units  = pixSize.units;  end
 if isfield(pixSize, 'tunits'); newPixSize.tunits = pixSize.tunits; end
+oldPixSize = ds.image.pixSize;   % capture before overwrite (for zarr3 confirmation summary)
 ds.setPixSize(newPixSize);
 
 % Recalculate bounding box extents from updated voxel sizes (origin unchanged)
 ds.image.boundingBox(2) = ds.image.boundingBox(1) + (ds.image.width  - 1) * ds.image.pixSize.x;
 ds.image.boundingBox(4) = ds.image.boundingBox(3) + (ds.image.height - 1) * ds.image.pixSize.y;
 ds.image.boundingBox(6) = ds.image.boundingBox(5) + (ds.image.depth  - 1) * ds.image.pixSize.z;
+
+% Persist voxel sizes and bounding box to zarr3 file for BigData datasets (after user confirmation)
+if strcmp(ds.image.type, 'bigdata') && endsWith(lower(ds.image.filename), '.zarr3')
+    newUnits = ds.image.pixSize.units;
+    question = { ...
+        'The voxel sizes will be written to the zarr3 file on disk:'; ...
+        ''; ...
+        sprintf('Voxel X:  %.4g  ->  %.4g %s', oldPixSize.x, ds.image.pixSize.x, newUnits); ...
+        sprintf('Voxel Y:  %.4g  ->  %.4g %s', oldPixSize.y, ds.image.pixSize.y, newUnits); ...
+        sprintf('Voxel Z:  %.4g  ->  %.4g %s', oldPixSize.z, ds.image.pixSize.z, newUnits); ...
+        ''; ...
+        'Update the file now?'};
+    questOpts = struct('WindowHeight', 250, 'WindowWidth', 460);
+    answer = utils.dlgs.inputQuestDlg(obj.view.gui, question, ...
+        'Update zarr3 file?', 'Update', 'Cancel', 'Update', questOpts);
+    if strcmp(answer, 'Update')
+        io.savers.Zarr3Saver.patchMetadata( ...
+            ds.image.filename, ds.image.pixSize, ds.image.boundingBox);
+    end
+end
 
 %% Refresh view: update axes limits then redraw image
 Options.mode  = 'resize';

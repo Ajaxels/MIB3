@@ -111,6 +111,11 @@ if isempty(obj.boundingBox) && isKey(meta, 'pixSize') && ~isempty(meta{'pixSize'
                        0, (max([obj.depth,  2]) - 1) * bbPixSize.z];
 end
 
+% Use stored bounding box (e.g. from zarr3 mibBoundingBox attribute) if available
+if isKey(meta, 'BoundingBox') && ~isempty(meta{'BoundingBox'})
+    obj.boundingBox = reshape(double(meta{'BoundingBox'}), 1, 6);
+end
+
 if isempty(meta{'Filename'}); meta{'Filename'} = 'none.tif'; end
 obj.filename = meta{'Filename'};
 

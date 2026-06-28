@@ -215,6 +215,11 @@ methods
                 [files, imginfo] = obj.parseSingleArray(rootPath, imginfo);
             end
         end
+
+        % ---- restore MIB bounding box if previously saved -------------------
+        if isfield(attrs, 'mibBoundingBox') && numel(attrs.mibBoundingBox) == 6
+            imginfo{"BoundingBox"} = reshape(double(attrs.mibBoundingBox), 1, 6);
+        end
     end
 
     function [img, imginfo] = loadImages(obj, files, imginfo, options)
