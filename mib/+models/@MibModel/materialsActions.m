@@ -7,9 +7,9 @@ function status = materialsActions(obj, action, BatchOptIn)
 %       status = obj.materialsActions(action, BatchOptIn)
 %
 % Dispatches to the appropriate low-level method on MibDataset or MibLabels
-% depending on the requested action: rename, add, insert, swap, reorder,
-% or remove.  Each action supports both interactive mode (with dialogs) and
-% batch mode (via BatchOptIn).
+% depending on the requested action: rename, add, import, insert, swap,
+% reorder, or remove.  Each action supports both interactive mode (with
+% dialogs) and batch mode (via BatchOptIn).
 %
 % Input Arguments:
 %   - **action** — char, desired action.  Provide only this parameter for
@@ -19,6 +19,9 @@ function status = materialsActions(obj, action, BatchOptIn)
 %       from a comma-separated list)
 %     - ``'Add material'`` — append a new material at the end of the list;
 %       delegates to obj.addMaterial
+%     - ``'Import material'`` — import selected materials (names, colors, and
+%       voxels) from a saved model file into the current model; delegates to
+%       obj.importMaterial (Standard/Virtual datasets; BigData requires Phase 3)
 %     - ``'Insert material'`` — insert a new material at an arbitrary position,
 %       shifting existing materials downward
 %     - ``'Swap materials'`` — exchange two materials (pixel data + metadata)
@@ -35,9 +38,9 @@ function status = materialsActions(obj, action, BatchOptIn)
 %     NaN, returns a structure with default options via "SyncBatch" event
 %
 %     - ``.Action`` — cell string with these options:
-%       ``'Rename material'``, ``'Add material'``, ``'Insert material'``,
-%       ``'Swap materials'``, ``'Reorder materials'``, ``'Export material'``,
-%       ``'Save material to file'``, ``'Remove material'``
+%       ``'Rename material'``, ``'Add material'``, ``'Import material'``,
+%       ``'Insert material'``, ``'Swap materials'``, ``'Reorder materials'``,
+%       ``'Export material'``, ``'Save material to file'``, ``'Remove material'``
 %     - ``.MaterialIndex1`` — char, primary index(indices) of materials to
 %       perform required action; [*default]* index of the currently selected
 %       material in the segmentation table
@@ -82,7 +85,7 @@ if ~isempty(action)
 else
     BatchOpt.Action = {'Rename material'};
 end
-BatchOpt.Action{2} = {'Rename material', 'Add material', 'Insert material', ...
+BatchOpt.Action{2} = {'Rename material', 'Add material', 'Import material', 'Insert material', ...
     'Swap materials', 'Reorder materials', 'Export material', ...
     'Save material to file', 'Remove material'};
 BatchOpt.MaterialName = '';
@@ -192,6 +195,16 @@ switch BatchOpt.Action{1}
         end
         status = true;
         return;  % addMaterial handles its own events and SyncBatch
+
+    case 'Import material'
+        % Delegate to the dedicated importMaterial wrapper
+        if nargin < 3
+            obj.importMaterial();
+        else
+            obj.importMaterial(BatchOptIn);
+        end
+        status = true;
+        return;  % importMaterial handles its own events and SyncBatch
 
     case 'Insert material'
         if ~isfield(BatchOptIn, 'MaterialName') || ~isfield(BatchOptIn, 'MaterialIndex1')

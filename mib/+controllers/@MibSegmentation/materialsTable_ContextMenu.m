@@ -60,6 +60,8 @@ switch menuEntry.Tag
         obj.mibModel.materialsActions('Add material');
     case 'materialsTableContextMatInsert'
         obj.mibModel.materialsActions('Insert material');
+    case 'materialsTableContextMatImport'
+        obj.mibModel.materialsActions('Import material');
     case 'materialsTableContextMatSwap'
         obj.mibModel.materialsActions('Swap materials');
     case 'materialsTableContextMatReorder'

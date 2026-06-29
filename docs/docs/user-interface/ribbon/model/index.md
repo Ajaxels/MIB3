@@ -254,6 +254,7 @@ The **Materials** dropdown contains:
 - **Insert material**: Insert a material at a specified position, shifting others down.
 - **Swap materials**: Swap positions of two materials.
 - **Reorder materials**: Reorder materials with a new sequence.
+- **Import material**: Import selected materials (names, colours, and voxels) from a saved model file into the current model. You choose which materials to import; they are appended as new materials and their voxels overwrite the current ones where they overlap. For disk-backed [BigData](../../panels/datasets/index.md) models the source is matched to the closest pyramid level and resized to fit.
 - **Export material**: Export the selected material to MATLAB or Imaris.
 - **Save material to file**: Save the selected material to a file.
 - **Remove materials**: Remove selected material(s) from the model.

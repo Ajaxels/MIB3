@@ -69,6 +69,7 @@ classdef MibBigDataLabels < core.MibLabels63
         % declared external methods (override MibLabels63)
         dataset = getData63(obj, type, orient, materialIndex, options)
         result  = setData63(obj, dataset, type, orient, materialIndex, options)
+        [levelIdx, levelSize] = findClosestLevelForImport(obj, sourceDims)
 
         function obj = MibBigDataLabels(img, meta)
             % MIBBIGDATALABELS - Construct an empty disk-backed label container.

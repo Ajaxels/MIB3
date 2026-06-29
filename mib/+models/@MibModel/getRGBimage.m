@@ -1,4 +1,4 @@
-function [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)
+function [imgRGB, imgRAW, modelRAW] = getRGBimage(obj, options, datasetId, sImgIn)
 % GETRGBIMAGE - Generate RGB image from all layers for display.
 %
 % Syntax:
@@ -28,6 +28,9 @@ function [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)
 % Output Arguments:
 %   - **imgRGB** — RGB image combining all visible layers [height × width × 3]
 %   - **imgRAW** — raw image data (used for virtual stacking mode)
+%   - **modelRAW** — model material-index raster aligned with imgRAW (Virtual/
+%     BigData modes); empty when no model overlay is rendered. Used by the
+%     cursor material readout in gui_WinMouseMotionFcn
 %
 % Usage:
 %   **Example 1** — get full slice RGB with all layers
@@ -171,6 +174,9 @@ clear sImgIn;
 % cursor pixel-value readout (gui_WinMouseMotionFcn reads mibModel.Iraw)
 imgRAW = [];
 if any(dataset.datasetType(1) == ['V' 'B']); imgRAW = sImg; end
+% Model material-index raster for the cursor readout (set below, after the
+% model overlay has been resized to match the displayed image)
+modelRAW = [];
 
 %% Apply display adjustments to image
 % Hide image if requested
@@ -274,6 +280,11 @@ if any(dataset.datasetType(1) == ['V' 'B'])
     if ~isnan(selectionLayer(1)) && ~isequal([size(selectionLayer, 1), size(selectionLayer, 2)], targetSize)
         selectionLayer = imresize(selectionLayer, targetSize, 'nearest');
     end
+
+    % Cache the model material-index raster (now aligned to the displayed
+    % image, i.e. same grid as imgRAW) for the cursor readout. NaN means no
+    % model overlay was rendered.
+    if ~isnan(sOver1(1)); modelRAW = sOver1; end
 end
 
 %% Generate RGB channels from image data

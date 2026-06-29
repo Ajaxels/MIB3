@@ -198,6 +198,7 @@ See [Ribbon → Model → Model/Mask quantify](../../ribbon/mask/mask-stats.md).
      - **Insert material** insert a material at a specified position, shifting others.
      - **Swap materials** swap positions of two materials.
      - **Reorder materials** reorder materials with a new order.
+     - **Import material** import selected materials (names, colours, and voxels) from a saved model file; appended as new materials and matched to the closest pyramid level for [BigData](../datasets/index.md) models.
      - **Export material** export to MATLAB workspace or Imaris.
      - **Save material to file** save the selected material to a file.
      - **Remove material** remove selected material(s).

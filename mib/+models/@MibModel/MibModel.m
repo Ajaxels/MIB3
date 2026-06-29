@@ -7,6 +7,9 @@ classdef MibModel < handle
         % variable for keeping instances of MibDataset
         Iraw
         % raw image source for Ishown
+        IrawModel
+        % raw model (material indices) raster for on-demand (Virtual/BigData)
+        % modes, aligned with Iraw; used by the cursor material readout
         Ishown
         % currently rendered images for visualization
         applySegmentationIn3D = false
@@ -175,9 +178,10 @@ classdef MibModel < handle
         propertyValue = getImageProperty(obj, propertyName, id)        % get a property of the currently shown or specified MibDataset
         partnerId = getLinkedDataset(obj, id)        % return the global dataset ID of the linked partner, or [] if id is not part of any linked pair
         magFactor = getMagFactor(obj, id)        % get magnification factor for the currently shown or specified dataset
-        [imgRGB, imgRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
+        [imgRGB, imgRAW, modelRAW] = getRGBimage(obj, options, datasetId, sImgIn)        % generate RGB image from all layers that have to be shown on the screen.
         importDataset(obj, layerType, BatchOptIn)        % Import the image, mask, or model layer from the MATLAB main workspace.
         importDatasetFromMib(obj, layerType, BatchOptIn)        % Import the mask or model layer from another MIB container.
+        importMaterial(obj, BatchOptIn)        % import selected materials (names, colors, voxels) from a saved model file into the current model; wrapper around the loader factory and getData3D/setData3D
         initialize(obj)        % initialize the MibModel class
         initializePreferences(obj)        % initialize and update MIB preferences from a file
         intensityProjection(obj, BatchOptIn)        % Calculate intensity projection (Max, Min, Mean, Median, Sum) along a chosen dimension

@@ -151,6 +151,7 @@ classdef MibSegmentation
             obj.handles.materialsTableContextMatRename.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             obj.handles.materialsTableContextMatAdd.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             obj.handles.materialsTableContextMatInsert.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
+            obj.handles.materialsTableContextMatImport.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             obj.handles.materialsTableContextMatSwap.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             obj.handles.materialsTableContextMatReorder.MenuSelectedFcn = @obj.materialsTable_ContextMenu;
             obj.handles.materialsTableContextMatExport.MenuSelectedFcn = @obj.materialsTable_ContextMenu;

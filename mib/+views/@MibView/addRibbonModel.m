@@ -201,6 +201,9 @@ popupList.add(widgetHandles.matReorder);
 separator = PopupListSeparator();
 popupList.add(separator);
 
+% % Import material
+widgetHandles.matImport =  ListItem('Import material', Icon(fullfile(iconPath, 'model_materials_import_24px.png')));
+popupList.add(widgetHandles.matImport);
 % % Export material
 widgetHandles.matExport =  ListItem('Export material', Icon(fullfile(iconPath, 'model_materials_export_24px.png')));
 popupList.add(widgetHandles.matExport);

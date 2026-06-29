@@ -153,6 +153,8 @@ switch mode
         obj.mibModel.materialsActions('Swap materials');
     case 'Reorder materials'      % obj.handles.ribbonModel.matReorder
         obj.mibModel.materialsActions('Reorder materials');
+    case 'Import material'    % obj.handles.ribbonModel.matExport
+        obj.mibModel.materialsActions('Import material');
     case 'Export material'    % obj.handles.ribbonModel.matExport
         obj.mibModel.materialsActions('Export material');
     case 'Save material to file'      % obj.handles.ribbonModel.matSave

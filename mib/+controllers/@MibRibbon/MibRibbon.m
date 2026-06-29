@@ -278,6 +278,7 @@ classdef MibRibbon
             obj.handles.ribbonModel.matInsert.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.matSwap.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.matReorder.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.matImport.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.matExport.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.matSave.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.matRemove.ItemPushedFcn = @obj.model_Callbacks;

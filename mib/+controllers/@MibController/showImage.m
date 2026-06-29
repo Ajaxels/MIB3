@@ -77,7 +77,7 @@ rgbOptions.resizeToMagnification = resizeToMagnification;
 
 if isempty(sImgIn)
     % Generate RGB from dataset
-    [obj.mibModel.Ishown, obj.mibModel.Iraw] = obj.mibModel.getRGBimage(rgbOptions, datasetId);
+    [obj.mibModel.Ishown, obj.mibModel.Iraw, obj.mibModel.IrawModel] = obj.mibModel.getRGBimage(rgbOptions, datasetId);
 else
     % Use provided custom image
     obj.mibModel.Ishown = obj.mibModel.getRGBimage(rgbOptions, datasetId, sImgIn);

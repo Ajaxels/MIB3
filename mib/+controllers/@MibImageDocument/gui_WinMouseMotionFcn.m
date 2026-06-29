@@ -237,13 +237,22 @@ try
                     if dataset.modelExist
                         modelValues = dataset.labels.data(yImage, xImage, sliceNo, tImage);
                     end
-                else  % Virtual stacking mode
+                else  % Virtual / BigData stacking mode
                     colorValues = 0;
                     if ~isempty(obj.mibModel.Iraw)
                         % Iraw is [viewportH, viewportW, allChannels].
                         % Index only the selected channels and squeeze to a
                         % column vector so the downstream concatenation works.
                         colorValues = squeeze(obj.mibModel.Iraw(yImage, xImage, cImage));
+                    end
+                    % IrawModel is the rendered model material-index raster,
+                    % aligned with Iraw (same viewport grid). The model store is
+                    % read on demand so we reuse the already-rendered overlay
+                    % rather than hitting the disk on every mouse move.
+                    if dataset.modelExist && ~isempty(obj.mibModel.IrawModel)
+                        mYImage = max(1, min(yImage, size(obj.mibModel.IrawModel, 1)));
+                        mXImage = max(1, min(xImage, size(obj.mibModel.IrawModel, 2)));
+                        modelValues = obj.mibModel.IrawModel(mYImage, mXImage);
                     end
                 end
             elseif orientation == 1 && ~any(dataset.datasetType(1) == ['V' 'B'])  % ZX orientation
