@@ -174,6 +174,16 @@ classdef GolgiOrientation < handle
             obj.view = core.ChildView(obj, 'GolgiOrientationGUI');
             obj.addCallbacks();
 
+            % window icon
+            pluginDir = fileparts(mfilename('fullpath'));
+            localIcon = fullfile(pluginDir, 'icon_16px.png');
+            fallbackIcon = fullfile(obj.mibModel.mibPath, 'assets', 'icons', 'mib_icon_16px.png');
+            if isfile(localIcon)
+                obj.view.gui.Icon = localIcon;
+            elseif isfile(fallbackIcon)
+                obj.view.gui.Icon = fallbackIcon;
+            end
+
             obj.view.gui = utils.moveWindowOutside(obj.view.gui, obj.mibModel.mibGUI, 'left');
 
             Font = obj.mibModel.preferences.System.Font;
@@ -288,8 +298,8 @@ classdef GolgiOrientation < handle
                         '<li>Make sure that the voxels are isotropic!</li>' ...
                         '<li>Specify output filename and file formats</li>' ...
                         '<li>Select the image and model files in the Complete model files tab</li>' ...
-                        '<li>In the Settings tab update object size thresholds and distances from nuclei</li>' ...
-                        '<li>Hit the Calculate button and voila...</li>' ...
+                        '<li>In the Settings tab select the method and update object size thresholds and distances from nuclei</li>' ...
+                        '<li>Hit the Calculate button</li>' ...
                         '</ul>' ...
                         '</p>'];
                 case 'Cropped cells'
@@ -303,7 +313,7 @@ classdef GolgiOrientation < handle
                         '<li>Select directories in the Cropped cells dirs tab</li>' ...
                         '<li>Specify output filename and file formats</li>' ...
                         '<li>In the Settings tab update indices of segmented materials</li>' ...
-                        '<li>Hit the Calculate button and voila...</li>' ...
+                        '<li>Hit the Calculate button</li>' ...
                         '</ul>' ...
                         '</p>'];
             end
@@ -363,17 +373,17 @@ classdef GolgiOrientation < handle
             selpath(~isfolder(selpath)) = [];
             if isempty(selpath); return; end
 
-            if strcmp(obj.BatchOpt.InputDirectories{1}, 'Start by selecting directories')
-                selpath = sort(selpath);
-                obj.BatchOpt.InputDirectories = selpath(1);
-                obj.BatchOpt.InputDirectories{2} = selpath;
-            else
-                duplicateIds = ismember(lower(selpath), lower(obj.BatchOpt.InputDirectories{2}));
-                selpath(duplicateIds) = [];
-                obj.BatchOpt.InputDirectories{2} = [obj.BatchOpt.InputDirectories{2}; selpath];
-                obj.BatchOpt.InputDirectories{2} = sort(obj.BatchOpt.InputDirectories{2});
-            end
+            
+            % remove 'Start by selecting directories'
+            obj.BatchOpt.InputDirectories{2}(ismember(obj.BatchOpt.InputDirectories{2}, 'Start by selecting directories')) = [];
+
+            duplicateIds = ismember(lower(selpath), lower(obj.BatchOpt.InputDirectories{2}));
+            selpath(duplicateIds) = [];
+            obj.BatchOpt.InputDirectories{2} = [obj.BatchOpt.InputDirectories{2}; selpath];
+            obj.BatchOpt.InputDirectories{2} = sort(obj.BatchOpt.InputDirectories{2});
             obj.BatchOpt.InputDirectories{1} = obj.BatchOpt.InputDirectories{2}{1};
+
+            % update GUI
             obj.view.handles.InputDirectories.Items = obj.BatchOpt.InputDirectories{2};
             obj.view.handles.InputDirectories.Value = obj.BatchOpt.InputDirectories{1};
 
@@ -752,8 +762,7 @@ classdef GolgiOrientation < handle
         function calculateCroppedMode(obj)
         % calculateCroppedMode  Run Golgi orientation from per-cell cropped directories.
             if obj.BatchOpt.showWaitbar
-                progressBar = core.PoolWaitbar(1, 'Starting calculations', ...
-                    obj.mibModel.mibGUI, 'Golgi Orientation Calculations', true);
+                progressBar = core.PoolWaitbar(1, 'Starting calculations', obj.view.gui, 'Golgi Orientation Calculations', true);
             end
 
             warning('off', 'MATLAB:table:RowsAddedExistingVars');
@@ -782,6 +791,9 @@ classdef GolgiOrientation < handle
                 if progressBar.getCancelState(); delete(progressBar); return; end
                 progressBar.updateMaxNumberOfIterations(numel(obj.BatchOpt.InputDirectories{2}));
             end
+
+            % switch to skip warning message when no cell boundary exists
+            skipRelativeToBoundaryWarning = false;
 
             for inputDirId = 1:numel(obj.BatchOpt.InputDirectories{2})
                 selectedDir = obj.BatchOpt.InputDirectories{2}{inputDirId};
@@ -828,6 +840,7 @@ classdef GolgiOrientation < handle
                 noGolgiStacks = CC.NumObjects;
                 if noGolgiStacks == 0; continue; end
 
+                % calculate volumes in units
                 for golgiId = 1:noGolgiStacks
                     outTable.('Volume, units')(tableIndex + golgiId) = numel(CC.PixelIdxList{golgiId}) * pixSize.x*pixSize.y*pixSize.z;
                 end
@@ -835,10 +848,10 @@ classdef GolgiOrientation < handle
                 % distance map from nucleus
                 if strcmp(obj.BatchOpt.Method{1}, 'Relative to nucleus') || strcmp(obj.BatchOpt.Method{1}, 'Both')
                     distMapNucleus = uint8(mModel == obj.BatchOpt.MaterialNucleus{1});
-                    [distMapNucleus, ~] = utils.doImageFiltering(distMapNucleus, distFilterOpt, ...
-                        obj.mibModel.preferences.System.cpuParallelLimit);
+                    [distMapNucleus, ~] = utils.doImageFiltering(distMapNucleus, distFilterOpt, obj.mibModel.preferences.System.cpuParallelLimit);
                     distMapNucleus = squeeze(distMapNucleus);
                     STATS = regionprops(CC, distMapNucleus, 'PixelValues');
+                    % convert to double
                     intensityValsVsNucleus = arrayfun(@(x) double(x.PixelValues), STATS, 'UniformOutput', false);
                 else
                     intensityValsVsNucleus = repmat({NaN}, [noGolgiStacks, 1]);
@@ -846,14 +859,32 @@ classdef GolgiOrientation < handle
 
                 % distance map from cell boundary
                 if strcmp(obj.BatchOpt.Method{1}, 'Relative to cell boundary') || strcmp(obj.BatchOpt.Method{1}, 'Both')
-                    distMapCell = mModel > 0;
-                    distMapCell = uint8(~distMapCell);
-                    [distMapCell, ~] = utils.doImageFiltering(distMapCell, distFilterOpt, ...
-                        obj.mibModel.preferences.System.cpuParallelLimit);
-                    distMapCell = squeeze(distMapCell);
-                    STATS = regionprops(CC, distMapCell, 'PixelValues');
-                    intensityValsVsCell = arrayfun(@(x) double(x.PixelValues), STATS, 'UniformOutput', false);
-                    noGolgiStacks = numel(intensityValsVsCell);
+                    % check for presence of the cell boundary material
+                    if isempty(find(mModel==obj.BatchOpt.MaterialCell{1}, 1, 'first'))
+                        % skipping
+                        intensityValsVsCell = repmat({NaN}, [noGolgiStacks, 1]);
+                        
+                        if ~skipRelativeToBoundaryWarning
+                            errOpts.MsgBoxOnly = true; 
+                            errOpts.Icon = 'puffin_warning';
+                            errOpts.headerLines = 1;
+                            header = 'No cell boundary found!';
+                            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {'Skipping the relative to the cell boundary analysis part!'}, 'Missing cell boundary', errOpts);
+                            skipRelativeToBoundaryWarning = true;
+                        end
+
+                    else
+                        % combine all materials as shape
+                        distMapCell = mModel > 0;
+                        % invert the model
+                        distMapCell = uint8(~distMapCell);
+                        [distMapCell, ~] = utils.doImageFiltering(distMapCell, distFilterOpt, obj.mibModel.preferences.System.cpuParallelLimit);
+                        distMapCell = squeeze(distMapCell);
+                        STATS = regionprops(CC, distMapCell, 'PixelValues');
+                        % convert to double
+                        intensityValsVsCell = arrayfun(@(x) double(x.PixelValues), STATS, 'UniformOutput', false);
+                        noGolgiStacks = numel(intensityValsVsCell);
+                    end
                 else
                     intensityValsVsCell = repmat({NaN}, [noGolgiStacks, 1]);
                 end
