@@ -4,6 +4,8 @@
 
 ## Overview
 
+![Golgi orientation plugin](images/Golgi1.png){.on-glb align=right width="300"}
+
 The **Golgi Orientation** plugin in **Microscopy Image Browser (MIB)** calculates the relative
 orientation of Golgi apparatus with respect to the nucleus surface or cell boundary in segmented
 3-D microscopy models.
@@ -15,6 +17,8 @@ uniform distance from the reference structure (well-oriented), while a high stan
 indicates a more dispersed arrangement.
 
 Results are saved as a MATLAB `.mat` file and, optionally, as a `.csv` or `.xls` spreadsheet.
+
+A step-by-step video tutorial is available on YouTube :fontawesome-brands-youtube:{.orange-color}: [Golgi Orientation plugin tutorial](https://youtu.be/yJGyDAt-IK8)
 
 Two analysis modes are available:
 
@@ -35,6 +39,8 @@ Two analysis modes are available:
 
 ### Mode and Information Panel
 
+![Mode and Information Panel](images/Golgi_mode.png){.on-glb align=right width="360"}
+
 <span class="widget widget-dropdown">Mode</span> selects the analysis mode:
 
 - **Complete model** — loads separate model files for the entire volume; switches to the
@@ -48,6 +54,8 @@ instructions for the selected mode.
 ---
 
 ### Complete model files Tab
+
+![Complete model files Tab](images/Golgi_complete_models.png){.on-glb align=right width="360"}
 
 Visible when <span class="widget widget-dropdown">Mode</span> is set to **Complete model**.
 
@@ -73,6 +81,8 @@ Click <span class="widget widget-button">...</span> to browse.
 
 ### Cropped cells dirs Tab
 
+![Cropped cells dirs Tab](images/Golgi_cropped_cells.png){.on-glb align=right width="360"}
+
 Visible when <span class="widget widget-dropdown">Mode</span> is set to **Cropped cells**.
 
 <span class="widget widget-dropdown">Input directories</span> — list of directories to process.
@@ -96,6 +106,8 @@ directory from the list.
 ### Settings Tab
 
 #### Method
+
+![Settings Tab](images/Golgi_settings.png){.on-glb align=right width="360"}
 
 <span class="widget widget-dropdown">Method</span> — orientation reference:
 
@@ -134,6 +146,8 @@ appears that Golgi voxels lie outside the cropped region.
 
 ### Filename Extensions and Output
 
+![Filename Extensions and Output](images/Golgi_output_filename.png){.on-glb align=right width="360"}
+
 <span class="widget widget-dropdown">Images</span> — extension of image files to look up in each
 input directory when using *Cropped cells* mode (e.g. `AM`, `TIF`, `H5`).
 
@@ -146,6 +160,8 @@ file; if the extension is `.csv` or `.xls` a spreadsheet is written as well.
 ---
 
 ### Action Buttons
+
+![Action Buttons](images/Golgi_buttons.png){.on-glb align=right width="360"}
 
 <span class="widget widget-button">Calculate</span> — run the analysis with the current settings.
 
@@ -212,6 +228,11 @@ settings to the MIB session so they are restored next time the plugin is launche
 
 8. Click <span class="widget widget-button">Calculate</span>.
 
+!!! tip 
+
+	See below the download links for example datasets
+
+
 ### Cropped cells mode
 
 1. **Segment** each cell individually in MIB.  In each cell's model file assign:
@@ -241,7 +262,7 @@ settings to the MIB session so they are restored next time the plugin is launche
 
 Example datasets are available from Zenodo:
 
-> **[ZENODO LINK PLACEHOLDER]**
+[https://doi.org/10.5281/zenodo.21068509](https://doi.org/10.5281/zenodo.21068509)
 
 The archive contains two test sets:
 
@@ -258,6 +279,8 @@ nucleus (material 2), and Golgi (material 3).
 
 ### Running the cropped-cells example
 
+A step-by-step video tutorial is available on YouTube [:fontawesome-brands-youtube:{.orange-color}](https://youtu.be/yJGyDAt-IK8)
+
 1. Launch the plugin and set <span class="widget widget-dropdown">Mode</span> to **Cropped cells**.
 2. Click <span class="widget widget-button">Add...</span> and select the three `BStem0*` directories.
 3. On the **Settings** tab keep the default material indices (Cell shape = 1, Nucleus = 2, Golgi = 3)
@@ -266,6 +289,8 @@ nucleus (material 2), and Golgi (material 3).
 5. Click <span class="widget widget-button">Calculate</span>.
 
 ### Running the complete-model example
+
+A step-by-step video tutorial is available on YouTube [:fontawesome-brands-youtube:{.orange-color}](https://youtu.be/yJGyDAt-IK8)
 
 1. Set <span class="widget widget-dropdown">Mode</span> to **Complete model**.
 2. Browse to the image and the three model files.
@@ -276,9 +301,17 @@ nucleus (material 2), and Golgi (material 3).
 
 ## Citation
 
-If you use this plugin in your research, please cite:
+!!! info "If you use this plugin in your research, please cite"
 
-> **[ARTICLE REFERENCE PLACEHOLDER]**
+	**Golgi organization regulates stem cell function in the small intestine**
+	
+	Ilya Belevich, Lucas Porcile, Agustin Sola-Carvajal, David Grommisch, Karl 
+	Annusvar, Paul Heinz, Srustidhar Das, Anna T. Webb, Simon Andersson, Nalle 
+	Pentinmikko, Eduardo J. Villablanca, James R. Goldenring, Maria Kasper, Eija Jokitalo, 
+	Robert J. Coffey, Pekka Katajisto, Sandra Scharaw
+	
+	*Nature Communications, 2026, accepted*
+	
 
 ---
 
