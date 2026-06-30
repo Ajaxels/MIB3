@@ -38,6 +38,7 @@ classdef MibSegmentation
         samPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->SAM tool
         segmentationTool_Callback(obj, segmToolIndex)        % callbacks for press of obj.handles.panels.segmentation.handles.segmTool dropdown in obj.handles.panels.segmentation panel
         thresholdingPanel_Callback(obj, hWidget, hData)        % callbacks for widgets in the Segmentation panel->Black and white thresholding tool
+        refreshThresholdSliderUpdateMode(obj)        % switch threshold sliders between interactive (2D) and on-release (3D/4D) updates
         thresholdSlider_ContextMenu(obj, menuEntry, selectedData)        % context menu callbacks for threshold sliders (Default, Set step...)
         update_fromModel(obj)            % update widgets of the Segmentation panel from obj.mibModel
         updateCheckboxes(obj, BatchOptIn)       % batch function to tweak the state of checkboxes in the Segmentation panel

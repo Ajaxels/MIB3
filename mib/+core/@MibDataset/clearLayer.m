@@ -79,30 +79,41 @@ end
 if ~isempty(charMode)
     switch charMode
         case '2D'
-            % current slice only — map slice index to the correct axis
+            % current slice only — pin the slice to the correct data axis for
+            % the shown orientation and leave the two in-plane axes at full
+            % range (unless block mode constrains them to the visible window).
             tCur = obj.slices{5}(1);
             t = [tCur, tCur];
             sliceCur = obj.slices{obj.orientation}(1);
             switch obj.orientation
-                case 3  % XY: slice index is Z
+                case 3  % XY: slice index is Z; in-plane axes are Y and X
                     z = [sliceCur, sliceCur];
-                case 1  % ZX: slice index is Y
+                    if ~blockModeSwitch; y = []; x = []; end
+                case 1  % ZX: slice index is Y; in-plane axes are X and Z
                     y = [sliceCur, sliceCur];
-                case 2  % ZY: slice index is X
+                    z = [];
+                    if ~blockModeSwitch; x = []; end
+                case 2  % ZY: slice index is X; in-plane axes are Y and Z
                     x = [sliceCur, sliceCur];
+                    z = [];
+                    if ~blockModeSwitch; y = []; end
             end
         case '3D'
             % full z-stack at the current time point
             tCur = obj.slices{5}(1);
             t = [tCur, tCur];
             z = [];     % full z range
+            if ~blockModeSwitch
+                y = [];     % full y range
+                x = [];     % full x range
+            end
         case '4D'
             z = [];     % full z and t range
             t = [];
-    end
-    if ~blockModeSwitch
-        y = [];     % full y range
-        x = [];     % full x range
+            if ~blockModeSwitch
+                y = [];     % full y range
+                x = [];     % full x range
+            end
     end
     % if blockModeSwitch, x/y already set to visible axes limits above
 end

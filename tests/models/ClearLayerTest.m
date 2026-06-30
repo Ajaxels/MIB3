@@ -151,5 +151,50 @@ classdef ClearLayerTest < matlab.unittest.TestCase
             end
         end
 
+        % -----------------------------------------------------------------
+        % 2D mode in non-XY orientations — only the current shown slice
+        % must be cleared (regression: ZX/ZY '2D' clear used to wipe the
+        % whole stack because MibDataset.clearLayer reset y/x to full range
+        % after pinning the slice axis).
+        % -----------------------------------------------------------------
+
+        function clearSelection2D_orientationZX_onlyCurrentSliceZeroed(testCase)
+            % orientation 1 (ZX): the shown slice runs along the data Y axis.
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 8]);
+            height = size(gt.selection, 1);
+
+            midSlice = ceil(height / 2);
+            mibModel.I{1}.orientation = 1;
+            mibModel.I{1}.slices{1} = [midSlice midSlice];
+            testCase.assumeGreaterThan(sum(double(gt.selection(midSlice, :, :)), 'all'), 0);
+
+            mibModel.I{1}.clearLayer('selection', '2D');
+
+            result = squeeze(mibModel.I{1}.selection.data);   % [h w z]
+            expected = gt.selection;
+            expected(midSlice, :, :) = 0;
+            testCase.verifyEqual(result, expected);
+        end
+
+        function clearSelection2D_orientationZY_onlyCurrentSliceZeroed(testCase)
+            % orientation 2 (ZY): the shown slice runs along the data X axis.
+            [mibModel, gt] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [16 16 8]);
+            width = size(gt.selection, 2);
+
+            midSlice = ceil(width / 2);
+            mibModel.I{1}.orientation = 2;
+            mibModel.I{1}.slices{2} = [midSlice midSlice];
+            testCase.assumeGreaterThan(sum(double(gt.selection(:, midSlice, :)), 'all'), 0);
+
+            mibModel.I{1}.clearLayer('selection', '2D');
+
+            result = squeeze(mibModel.I{1}.selection.data);   % [h w z]
+            expected = gt.selection;
+            expected(:, midSlice, :) = 0;
+            testCase.verifyEqual(result, expected);
+        end
+
     end
 end

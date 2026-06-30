@@ -286,10 +286,10 @@ else
 
     datasetImage = cell2mat(obj.mibModel.getData3D('image', [], 3, col_channel, options));
 
-    val = datasetImage(h, w, 1, z);
+    val = datasetImage(h, w, z);
     upper = val + threshold2;
     lower = val - threshold1;
-    selarea = zeros([size(datasetImage, 1) size(datasetImage, 2) size(datasetImage, 4)], 'uint8');
+    selarea = zeros([size(datasetImage, 1) size(datasetImage, 2) size(datasetImage, 3)], 'uint8');
     if BatchOpt.showWaitbar; wb.Value = 0.3; end
     selarea(datasetImage >= lower & datasetImage <= upper) = 1;
 

@@ -157,6 +157,24 @@ elseif strcmp(mode, 'zoom')
     dyHalf = diff(axesY)/2;
     xCenter = axesX(1) + dxHalf;
     yCenter = axesY(1) + dyHalf;
+    % Limit the maximum zoom-in. Without a cap, holding the "Zoom in"
+    % button/key doubles the magnification on every key-repeat event; the
+    % displayed field-of-view collapses to a sub-pixel span and rendering
+    % that degenerate view hangs MIB and MATLAB. Reject any zoom-in step
+    % that would leave fewer than minVisiblePixels image pixels visible in
+    % the tighter axis dimension. The zoom display box is rewritten from the
+    % actual magFactor in showImage, so the value self-stabilises and a held
+    % button simply stops at the maximum zoom instead of running away.
+    minVisiblePixels = 3;
+    zoomScale = newMagFactor/magFactor;
+    if zoomScale < 1   % zooming in (newMagFactor smaller than current)
+        newFovWidth  = diff(axesX)*zoomScale;
+        newFovHeight = diff(axesY)*zoomScale;
+        if min(newFovWidth, newFovHeight) < minVisiblePixels
+            % already at the maximum zoom-in: keep the current view unchanged
+            return;
+        end
+    end
     xLim(1) = xCenter - dxHalf*newMagFactor/magFactor;
     xLim(2) = xCenter + dxHalf*newMagFactor/magFactor;
     yLim(1) = yCenter - dyHalf*newMagFactor/magFactor;

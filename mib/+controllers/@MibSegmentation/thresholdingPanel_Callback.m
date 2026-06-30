@@ -57,8 +57,10 @@ switch mode
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
     case 'threshold3D' % apply threhsolding in 3D
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        obj.refreshThresholdSliderUpdateMode();
     case 'threshold4D' % apply threhsolding in 4D
         %fprintf('Clicked on a widget of the segmentation panel->Thresolding tool (obj.handles.panels.segmentation): %s -> %d\n', mode, hWidget.Value);
+        obj.refreshThresholdSliderUpdateMode();
 
     case 'thresholdLow' % define the low threshold value using the slider
         % use hData.Value instead of obj.view.handles.panels.segmentation.handles.thresholdLowValue.Value

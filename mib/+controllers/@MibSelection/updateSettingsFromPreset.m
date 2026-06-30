@@ -112,6 +112,8 @@ switch handles.segmTool.Value
         handles.thresholdHigh.Value = paramHi;
         % restore slider step
         cSeg.thresholdSliderStep = BWThresholding.(setName).SliderStep;
+        % sync slider update mode (interactive 2D vs on-release 3D/4D) to the restored 3D state
+        cSeg.refreshThresholdSliderUpdateMode();
     case 'Drag&Drop materials'
         DragNDrop = obj.mibModel.preferences.SegmTools.Presets.DragNDrop;
         handles.dragLayer.Value = DragNDrop.(setName).Layer;

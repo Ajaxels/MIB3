@@ -462,6 +462,8 @@ if isempty(updatePanels) || ismember('panelThresholding', updatePanels)
     elseif dataset.image.time==1 && (segmHandles.threshold4D.Enable || segmHandles.threshold4D.Value)
         segmHandles.threshold4D.Enable = false;
         segmHandles.threshold4D.Value = false;
+        % 4D was just unchecked programmatically: sync slider update mode (interactive 2D vs on-release 3D/4D)
+        obj.cSegmentation.refreshThresholdSliderUpdateMode();
     end
 end
 

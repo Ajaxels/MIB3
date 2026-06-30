@@ -203,16 +203,24 @@ if isempty(obj.mibModel.pythonEnv)
     end
     checkpoint = fullfile(obj.mibModel.preferences.ExternalDirs.DeepMIBDir, checkpointFilename);
 
+    % Use InProcess: OutOfProcess fails with "CreateProcessW: Wrong Parameter
+    % [system:87]" while launching MATLABPyHost.exe on some Windows systems
+    % (confirmed R2025b). The failure is silent and deferred to the first
+    % pyrun() call below, surfacing only as an "Error while evaluating Figure
+    % WindowButtonDownFcn" with no stack trace. Tradeoff: InProcess runs Python
+    % in the MATLAB process, so a hard torch/CUDA crash now also crashes MATLAB
+    % (OutOfProcess used to isolate that). Switch back to OutOfProcess here if
+    % crash isolation is needed and the host launcher works on the target system.
     try
         obj.mibModel.pythonEnv = pyenv( ...
             'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-            'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
+            'ExecutionMode', 'InProcess');     % InProcess or OutOfProcess
     catch err
         if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
             terminate(pyenv);
             obj.mibModel.pythonEnv = pyenv( ...
                 'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-                'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
+                'ExecutionMode', 'InProcess');     % InProcess or OutOfProcess
         end
     end
 

@@ -91,7 +91,7 @@ classdef ResampleDataset < handle
             obj.BatchOpt.ResamplingFunction    = {'imresize'};
             obj.BatchOpt.ResamplingFunction{2} = {'interpn', 'imresize', 'tformarray'};
             obj.BatchOpt.ResamplingMethod    = {'cubic'};
-            obj.BatchOpt.ResamplingMethod{2} = {'nearest','linear','spline','cubic','box','triangle','lanczos2','osc'};
+            obj.BatchOpt.ResamplingMethod{2} = {'nearest','linear','spline','cubic','box','triangle','lanczos2','lanczos3','osc'};
             obj.BatchOpt.LabelsresampleDropDown    = {'nearest'};
             obj.BatchOpt.LabelsresampleDropDown{2} = {'nearest','linear','spline','cubic'};
             obj.BatchOpt.DimensionX   = num2str(obj.width);
