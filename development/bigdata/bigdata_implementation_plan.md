@@ -30,7 +30,7 @@ Every change ends with `check_matlab_code` clean + an MCP verification snippet o
 | Zarr3 ingest writer + streaming + generic Save dialog registration | ✅ DONE |
 | Streaming export of a chosen pyramid level → standard formats — Phases 1–4 | ✅ DONE |
 | **3D volume rendering (VolRenApp)** of BigData via pyramid level + live overlay updates | ✅ DONE (code + headless); App Designer widgets + live-GUI pending (see §8) |
-| **Live in-GUI validation** of WSI open + segmentation + export | ⏳ PENDING (see §4) |
+| **Live in-GUI validation** of WSI open + segmentation + export | ✅ DONE (2026-06-30, see §4) |
 | Streaming export plan — remaining per-format deep streaming + mask path | ⏳ OPEN (see §3) |
 | Backlog (T>1, removeMaterial renumber, remote zarr, etc.) | ⏳ DEFERRED (see §5) |
 
@@ -54,14 +54,34 @@ primitive; `save(data,…)` is a wrapper over `InMemorySliceProvider` so unmigra
 maps level-slice `k` → full-res `z=(k-1)*zScale+1`.
 
 **Done:** Phases 1–4 — providers + streaming contract; level dropdown UI + `BatchOpt.PyramidLevel`
-(image + model); truly streaming **TIFF, PNG, JPG, HDF5, `.model`**; zarr3 registered in the generic
-Save dialog with true streaming ingest + settings dialog (auto-levels description, sharding).
+(image + model); truly streaming **TIFF, PNG, JPG, HDF5, `.model`, OME-TIFF**; zarr3 registered in the
+generic Save dialog with true streaming ingest + settings dialog (auto-levels description, sharding).
+
+**Done (2026-06-30) — OME-TIFF streaming + units fix + BigData mask:**
+- **Units normalization** — new `utils.normalizeUnits` maps long OME spellings (`'micrometers'`,
+  `'nanometers'`, …) to MIB's short codes; wired into `utils.calculateResolution` **and**
+  `io.BioFormats.mibImage2ometiff` (whose two `switch` blocks had **no `otherwise`** → a zarr/BigData
+  dataset with `units='micrometers'` *errored* on an undefined `scaleFactor`, not merely fell back to
+  72 dpi). This unblocks correct OME-TIFF / TIFF-resolution export of every zarr/BigData dataset.
+  Tests: `tests/utils/PureUtilsTest` (units cases).
+- **`OmeTiffSaver.saveStream`** — true streaming override. **5D**: builds OME-XML from provider
+  dimensions (`MetadataTools.populateMetadata`, no full array) and writes planes in XYCZT order via the
+  Bio-Formats Java writer (`OMETiffWriter.saveBytes`), one `[H W C]` slice pulled per `(z,t)`. **2D
+  sequence**: one `.ome.tiff` per Z×T slice. Peak memory ≈ one XY plane. Tests:
+  `tests/io/OmeTiffStreamTest` (5D round-trip, stream==gather, multichannel Z/C order, 2D sequence).
+- **BigData mask export** — `MibDataset.saveImage` `'mask'` branch streams a pyramidal (`MibBigDataLabels`)
+  mask through `MibImageSliceProvider(obj.labels,'mask',level,…)` at a chosen `PyramidLevel` (pixSize
+  scaled per level), instead of `getData3D('mask')`. Standard datasets keep the gather path. Tests:
+  `tests/core/BigDataMaskStreamTest`; `SaveLoadMaskTest` (Standard, no regression).
+
+> **Memory-axis caveat:** SliceProvider streaming bounds memory along **Z** — a real win for tall 3-D
+> stacks. A single gigapixel WSI plane (Z=1, huge XY) is still held whole; tiled-BigTIFF output for that
+> case is deferred (see below).
 
 **Still open (lower priority):**
-1. **Deep per-slice streaming for the remaining savers** — OME-TIFF, Amira, NRRD, MRC, IMOD `.mod`,
-   STL, and the non-`.model` Matlab formats currently use the bounded gather-fallback (they delegate to
-   shared low-level writers that consume the full array). Per-format notes:
-   - OME-TIFF: incremental plane writes via `bfsave` per-plane or raw `Tiff` + hand-written OME-XML.
+1. **Deep per-slice streaming for the remaining savers** — Amira, NRRD, MRC, IMOD `.mod`, STL, and the
+   non-`.model` Matlab formats still use the bounded gather-fallback (they delegate to shared low-level
+   writers that consume the full array). Per-format notes:
    - NRRD: text header then append raw body per slice (`gzip` via Java `GZIPOutputStream` or two-pass).
    - MRC: 1024-byte header, append slices, patch min/max/mean at close.
    - Amira: ASCII/binary header then append per slice (RLE variant compresses per slice).
@@ -69,11 +89,8 @@ Save dialog with true streaming ingest + settings dialog (auto-levels descriptio
      categorical partial-write for `.mibCat`).
    - IMOD `.mod`: accumulate **contours only** per slice, write at close.
    - STL: 2-slice sliding-window marching cubes (inherently needs neighbours; labels-only, small).
-2. **Mask export of BigData** — `MibDataset.saveImage` `'mask'` branch still does `getData3D('mask')`
-   (full level-0 load); give it the provider too. Low priority (mask lives in packed bit 7).
-3. **`'micrometers'` units alias** in `utils.calculateResolution` (zarr datasets carry
-   `pixSize.units='micrometers'`, unmapped → TIFF Resolution tag falls back to 72 dpi; voxel size still
-   round-trips via the BoundingBox tag). One-line shared fix, helps all zarr saves.
+2. **Tiled BigTIFF for gigapixel single planes** — XY-tile-by-tile OME-TIFF write so a full-res WSI
+   plane (Z=1) also exports memory-bounded. Breaks the SliceProvider Z-only contract → separate feature.
 
 **Exit gate per format:** export a BigData level streams with peak memory ≈ one slice (array-size
 instrumented) and the output round-trips vs a direct level read.
@@ -108,30 +125,26 @@ that hard-codes `'zarr3'`/`Zarr3*` when generalising.
 
 ---
 
-## 4. Pending live (in-GUI) validation
+## 4. Live (in-GUI) validation — ✅ DONE (2026-06-30)
 
-Headless MCP paths pass; these confirm the real File→Open / display / segmentation / export flow.
-Full matrix in the (now-superseded) `wsi_livetest_checklist.md`. **Restart MIB first** — registry
-extension sets, the reader dropdown keys and the 3-slot file filter load at start-up.
+Confirmed working in the real MIB GUI by the user (File→Open / display / segmentation / save / export).
+Full matrix in the (now-superseded) `wsi_livetest_checklist.md`.
 
-- [ ] Reader dropdown `Default | BioFormats | OpenSlide` repopulates the file filter per type, no
+- [x] Reader dropdown `Default | BioFormats | OpenSlide` repopulates the file filter per type, no
       crash (incl. the former BigData+BioFormats `.Items` crash); each reader remembers its filter.
-- [ ] **Standard** baseline unchanged (CZI channel colours correct; plain TIFF opens).
-- [ ] **BigData / BioFormats engine = MIB**: CMU-1.ndpi auto-loads; pan/zoom switches levels;
+- [x] **Standard** baseline unchanged (CZI channel colours correct; plain TIFF opens).
+- [x] **BigData / BioFormats engine = MIB**: CMU-1.ndpi auto-loads; pan/zoom switches levels;
       orientation XY/ZX/ZY renders; Zeiss-5-JXR.czi shows the scene dialog; Clim_10BDE_5.czi (Z=111,
       C=4) scrolls Z with correct colours; DMSO LUT colours correct.
-- [ ] **BigData / BioFormats engine = MATLAB**: CMU-1.ndpi identical; Clim Z-scroll + 4 channels OK.
-- [ ] **BigData / OpenSlide**: CMU-1.ndpi opens (9 levels); CZI falls back to BioFormats; a real `.svs`.
-- [ ] **Model + segmentation on a WSI BigData set** (key unproven area): Create Model → disk-backed
+- [x] **BigData / BioFormats engine = MATLAB**: CMU-1.ndpi identical; Clim Z-scroll + 4 channels OK.
+- [x] **BigData / OpenSlide**: CMU-1.ndpi opens (9 levels); CZI falls back to BioFormats; a real `.svs`.
+- [x] **Model + segmentation on a WSI BigData set**: Create Model → disk-backed
       store beside the slide; brush at high zoom → Ctrl+Z restores exactly; brush zoomed-out → edit
       lands in the right place; Magic Wand/Region Growing radius stays bounded; save model + reopen →
       labels intact.
-- [ ] **Save model dialog** (3-way Finalize/Sidecar/Cancel) + Help button on a real CMU-1 model; verify
+- [x] **Save model dialog** (3-way Finalize/Sidecar/Cancel) + Help button on a real CMU-1 model;
       sidecar-only save writes `Labels_CMU-1.levelmap` and a reopen restores precisely.
-- [ ] **Export** a BigData WSI level → TIFF/HDF5 → reopen → dims match the chosen level; voxel scaled.
-
-Report per failure: file, dataset type, reader, BioFormats library, the DeveloperMode
-`[type/reader/engine]` console line, and the full error stack.
+- [x] **Export** a BigData WSI level → TIFF/HDF5 → reopen → dims match the chosen level; voxel scaled.
 
 ---
 
@@ -143,10 +156,15 @@ Report per failure: file, dataset type, reader, BioFormats library, the Develope
    squeezes singleton dims (grayscale T>1 would misread time as colours).
 3. **Whole-volume backup/clear** still materialises a full-res block (fine per-slice/interactive; heavy
    for 3D/4D ops).
-4. **Migrate ImageConverter's writer onto `io.zarr`** — `ImageConverter.generateZarr` is still its own
-   Python pipeline (Zarr v2/v3, sharding, out-of-core z-chunk streaming). Blockers: the native `io.zarr`
-   writer needs out-of-core streaming + Zarr v2 + sharding before switching. Until then ImageConverter
-   (batch file→zarr) and Zarr3Saver (in-app dataset→BigData) coexist by scope.
+4. **Migrate ImageConverter's writer onto `io.zarr`** — **Zarr v3 done (2026-06-30):** when
+   `io.zarr.Config` = native and output = Zarr v3, `ImageConverter.generateZarr` routes through
+   `ImageConverter.convertToZarr3Native` → new `io.savers.ImageDatastoreSliceProvider` (one file per
+   Z-slice) → `Zarr3Saver.saveStream` (shared level/chunk/shard logic, out-of-core) →
+   `Zarr3Saver.patchMetadata` (bounding box + voxel size). No Python on that path (the `pyenv` init in
+   `Convert` is skipped). Test: `tests/io/ImageConverterNativeZarrTest` (pixels + dims + voxel +
+   mibBoundingBox round-trip), `tests/io/ImageDatastoreSliceProviderTest`. **Still open:** **Zarr v2**
+   output and the **python backend** keep the legacy Python pipeline (the native `io.zarr` writer is
+   v3-only) — migrating v2 needs a native Zarr-v2 writer first.
 5. **Remote OME-Zarr over HTTP/URL** — metadata + native reads work in principle, but: `Import→URL`
    uses `imread` (never routes to the zarr loader); no GUI entry feeds a URL to the Virtual/BigData open
    path; `zarrMex` HTTP Range reads fail on servers without Range support; v3-only engine can't read

@@ -248,18 +248,11 @@ switch lower(layerType)
             options.Format = io.SaverFactory.getDefaultFormat('mask', filename);
         end
 
-        % Get full 5-D mask data [H, W, D, C, T] → use getData3D for all T
-        % Note: mask is always single-channel (C=1)
-        maskData = obj.getData3D('mask', NaN, 3, NaN);   % returns {[H, W, D]}
-        maskData = maskData{1};                          % unpack cell → [H, W, D]
-        maskData = reshape(maskData, [size(maskData,1), size(maskData,2), ...
-            size(maskData,3), 1, 1]);                    % → [H, W, D, 1, 1]
-
-        % Build mask metadata
+        % Build mask metadata (mask is always single-channel uint8, C=1)
         metadata.filename       = obj.image.filename;
         metadata.colorType      = 'grayscale';
         metadata.lutColors      = [1 0 1];
-        metadata.dataClass      = class(maskData);
+        metadata.dataClass      = 'uint8';
         metadata.maxInt         = 1;
         metadata.pixSize        = options.pixSize;
         metadata.boundingBox    = options.boundingBox;
@@ -275,9 +268,44 @@ switch lower(layerType)
         metadata.imageDescription = core.MibImage.buildImageDescription( ...
             obj.image.boundingBox, obj.image.actionLog);
 
-        % Dispatch
         saver = io.SaverFactory.create(options.Format, options);
-        fnOut = saver.save(maskData, metadata, filename, options);
+
+        % BigData (pyramidal) mask: stream the chosen pyramid level slice-by-slice
+        % so the full-resolution mask is never gathered into memory. The mask lives
+        % in packed bit 7 of the disk-backed model, read at a level through the same
+        % MibImageSliceProvider as the image path. Standard datasets keep the
+        % in-memory gather path below.
+        isPyramidalMask = isa(obj.labels, 'core.MibBigDataLabels') && ...
+            ~isempty(obj.labels.modelLevelSizes);
+        if isPyramidalMask
+            nLevels = size(obj.labels.modelLevelSizes, 1);
+            exportLevel = 1;
+            if isfield(options, 'PyramidLevel') && ~isempty(options.PyramidLevel)
+                exportLevel = max(1, min(round(options.PyramidLevel), nLevels));
+            end
+            % the exported level's voxel size is the full-res pixSize scaled by the
+            % level's XY/Z scale factor (the bounding box is identical across levels)
+            levelScale = obj.labels.modelScaleFactors(exportLevel, :);   % [yScale xScale zScale]
+            metadata.pixSize.y = metadata.pixSize.y * levelScale(1);
+            metadata.pixSize.x = metadata.pixSize.x * levelScale(2);
+            metadata.pixSize.z = metadata.pixSize.z * levelScale(3);
+            resolution = utils.calculateResolution(metadata.pixSize);
+            metadata.xResolution = resolution(1);
+            metadata.yResolution = resolution(2);
+
+            numSlices = obj.labels.modelLevelSizes(exportLevel, 3);
+            zScale    = obj.labels.modelScaleFactors(exportLevel, 3);
+            provider  = io.savers.MibImageSliceProvider(obj.labels, 'mask', exportLevel, ...
+                [], numSlices, 1, zScale);
+            fnOut = saver.saveStream(provider, metadata, filename, options);
+        else
+            % Get full 5-D mask data [H, W, D, C, T] → use getData3D for all T
+            maskData = obj.getData3D('mask', NaN, 3, NaN);   % returns {[H, W, D]}
+            maskData = maskData{1};                          % unpack cell → [H, W, D]
+            maskData = reshape(maskData, [size(maskData,1), size(maskData,2), ...
+                size(maskData,3), 1, 1]);                    % → [H, W, D, 1, 1]
+            fnOut = saver.save(maskData, metadata, filename, options);
+        end
 
         % Store new mask filename in dataset
         if ~isempty(fnOut)

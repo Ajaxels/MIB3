@@ -311,6 +311,12 @@ classdef ImreadLoader < io.loaders.BaseImageLoader
                         %     end
                         % end
                         brakePnt = regexp(imginfo{"ImageDescription"}, '[\|\t\n]', 'once');
+                        % When the BoundingBox is the whole ImageDescription (no action
+                        % log → no |/tab/newline separator, e.g. a BigData export), the
+                        % six coordinates run to the end of the string.
+                        if isempty(brakePnt)
+                            brakePnt = strlength(imginfo{"ImageDescription"}) + 1;
+                        end
 
                         if ~isempty(brakePnt)
                             % brakePnt = brakePnt(1);

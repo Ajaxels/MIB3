@@ -30,7 +30,7 @@ function resolution = calculateResolution(pixSize)
 % Updates
 % 
 
-switch pixSize.units
+switch utils.normalizeUnits(pixSize.units)
     case 'm'
         resolution(1) = 1/pixSize.x*1*0.0254;
         resolution(2) = 1/pixSize.y*1*0.0254;

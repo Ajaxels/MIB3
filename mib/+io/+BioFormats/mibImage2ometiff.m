@@ -120,13 +120,15 @@ if ~isfield(options, 'silent');      options.silent       = false; end   % suppr
 if ~isfield(options, 'sequentialFn'); options.sequentialFn = NaN;  end   % NaN=ask, true=sequential, false=original
 
 % define time units for the output
-switch options.pixSize.tunits
-    case {'sec', 's'}
+switch lower(strtrim(char(options.pixSize.tunits)))
+    case {'sec', 's', 'second', 'seconds'}
         tunits = ome.units.UNITS.SECOND;
-    case {'min', 'm'}
+    case {'min', 'm', 'minute', 'minutes'}
         tunits = ome.units.UNITS.MINUTE;
-    case {'hour', 'h'}
+    case {'hour', 'h', 'hours'}
         tunits = ome.units.UNITS.HOUR;
+    otherwise
+        tunits = ome.units.UNITS.SECOND;
 end
 
 if options.overwrite == 0
@@ -151,8 +153,8 @@ if options.showWaitbar
     end
 end
 
-% scale pixel size to um
-switch options.pixSize.units
+% scale pixel size to um (normalize long spellings, e.g. zarr 'micrometers')
+switch utils.normalizeUnits(options.pixSize.units)
     case 'm'
         scaleFactor = 1e6;
     case 'cm'
@@ -163,6 +165,8 @@ switch options.pixSize.units
         scaleFactor = 1;
     case 'nm'
         scaleFactor = .001;
+    otherwise   % 'pixels' or unrecognised → treat as already in um (no scaling)
+        scaleFactor = 1;
 end
 options.pixSize.x = options.pixSize.x * scaleFactor;
 options.pixSize.y = options.pixSize.y * scaleFactor;

@@ -248,8 +248,19 @@ metadata.yResolution = resolution(2);
 % Reconstruct the full ImageDescription tag (BoundingBox + action log)
 % and expose the bounding box as a separate numeric field so that savers
 % that need it (AmiraMesh, HDF5, NRRD, …) do not have to re-parse the string.
-metadata.imageDescription = core.MibImage.buildImageDescription(obj.boundingBox, obj.actionLog);
-metadata.boundingBox      = obj.boundingBox;
+exportBoundingBox = obj.boundingBox;
+% BioFormats-backed BigData carries an EMPTY boundingBox (its voxel size lives only
+% in the pyramid), so buildImageDescription would omit the BoundingBox and the
+% reloaded dataset would default to voxel 1. Synthesize the physical box from the
+% level-scaled pixSize + exported level dimensions so the voxel size round-trips.
+if isPyramidal && (isempty(exportBoundingBox) || numel(exportBoundingBox) ~= 6)
+    lvlSize = obj.pyramid.levelImageSizes(exportLevel, :);   % [Y X Z]
+    exportBoundingBox = [0, max(lvlSize(2) - 1, 0) * options.pixSize.x, ...
+                         0, max(lvlSize(1) - 1, 0) * options.pixSize.y, ...
+                         0, max(lvlSize(3) - 1, 0) * options.pixSize.z];
+end
+metadata.imageDescription = core.MibImage.buildImageDescription(exportBoundingBox, obj.actionLog);
+metadata.boundingBox      = exportBoundingBox;
 
 % colormap for indexed images
 if isfield(obj,'colormap') && ~isempty(obj.colormap)

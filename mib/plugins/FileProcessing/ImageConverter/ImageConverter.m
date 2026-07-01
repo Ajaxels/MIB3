@@ -204,6 +204,108 @@ classdef ImageConverter < handle
             end
         end
 
+        function fnOut = convertToZarr3Native(imgDS, BatchOpt, options)
+            % CONVERTTOZARR3NATIVE - Convert a folder of image files to a native OME-Zarr v3 pyramid.
+            %
+            % Streams the image stack in ``imgDS`` (one file per Z-slice) to an OME-Zarr v3
+            % pyramid through ``io.savers.Zarr3Saver.saveStream`` — the same native (zarrMex)
+            % writer, level/chunk/shard logic and bounding-box handling used by MIB's in-app
+            % "Convert to BigData" and Export. No Python. After streaming, the voxel size and
+            % bounding box are written with ``io.savers.Zarr3Saver.patchMetadata``.
+            %
+            % Input Arguments:
+            %   - **imgDS** — a ``matlab.io.datastore.ImageDatastore`` of ordered Z-slices.
+            %   - **BatchOpt** — the ImageConverter batch struct; reads the ``Zarr*`` fields
+            %     (``ZarrImageType``, ``ZarrChunkSizes``, ``ZarrUseSharding``,
+            %     ``ZarrShardXFactorsXYZ``, ``ZarrCompression``, ``ZarrVoxelSizeXYZ``,
+            %     ``ZarrUnits``, ``ZarrBBShiftsXYZ``, ``ZarrDownsampleLimitXYZ``) and
+            %     ``OutputDirectory``.
+            %   - **options** — *(optional)* struct with ``.ParentFigure`` (progress parent)
+            %     and ``.mibPath``.
+            %
+            % Output Arguments:
+            %   - **fnOut** — [char] the written ``.zarr3`` group path, or ``[]`` if cancelled.
+            if nargin < 3; options = struct(); end
+            parentFig = []; mibPath = '';
+            if isfield(options, 'ParentFigure'); parentFig = options.ParentFigure; end
+            if isfield(options, 'mibPath');      mibPath   = options.mibPath;      end
+
+            zarrPath = BatchOpt.OutputDirectory;
+            dataType = BatchOpt.ZarrImageType{1};   % 'image' | 'labels'
+
+            % chunk [y x z] from the (x,y,z,c,t) UI vector
+            chunks = str2num(BatchOpt.ZarrChunkSizes); %#ok<ST2NM>
+            if numel(chunks) >= 3
+                chunkYXZ = [chunks(2) chunks(1) chunks(3)];
+            else
+                chunkYXZ = [256 256 16];
+            end
+
+            % voxel size (x,y,z) + units -> pixSize
+            voxel = str2num(BatchOpt.ZarrVoxelSizeXYZ); %#ok<ST2NM>
+            if numel(voxel) ~= 3; voxel = [1 1 1]; end
+            pixSize = struct('x', voxel(1), 'y', voxel(2), 'z', voxel(3), ...
+                'units', BatchOpt.ZarrUnits{1}, 't', 1, 'tunits', 's');
+
+            % bounding-box origin shift (x,y,z)
+            bbShift = str2num(BatchOpt.ZarrBBShiftsXYZ); %#ok<ST2NM>
+            if numel(bbShift) ~= 3; bbShift = [0 0 0]; end
+
+            % auto-pyramid stop (x,y,z) -> MinLevelSize over XY
+            dsLimit = str2num(BatchOpt.ZarrDownsampleLimitXYZ); %#ok<ST2NM>
+            if numel(dsLimit) >= 2; minLevelSize = min(dsLimit(1), dsLimit(2)); else; minLevelSize = 256; end
+
+            % compression: blosc -> zstd (native), gzip -> gzip, none -> none
+            switch lower(BatchOpt.ZarrCompression{1})
+                case 'blosc'; compressors = 'zstd';
+                case 'gzip';  compressors = 'gzip';
+                otherwise;    compressors = 'none';
+            end
+
+            % --- provider over the file stack (one file per Z-slice) ---
+            provider = io.savers.ImageDatastoreSliceProvider(imgDS);
+            sz = provider.OutputSize;   % [H W D C T]
+            H = sz(1); W = sz(2); D = sz(3);
+
+            % --- Zarr3Saver options (silent: ImageConverter already collected settings) ---
+            saverOpts = struct();
+            saverOpts.silent       = true;
+            saverOpts.ChunkSize    = chunkYXZ;
+            saverOpts.Compressors  = compressors;
+            saverOpts.MinLevelSize = minLevelSize;
+            if pixSize.z >= 1.5 * max(pixSize.x, pixSize.y)
+                saverOpts.DownsampleStrategy = 'Anisotropy-preserving';
+            else
+                saverOpts.DownsampleStrategy = 'XY only';
+            end
+            if strcmp(dataType, 'labels')
+                saverOpts.DownsampleMethod = 'nearest';
+                saverOpts.layerType        = 'labels';
+            else
+                saverOpts.DownsampleMethod = 'bilinear';
+            end
+            if BatchOpt.ZarrUseSharding
+                shard = str2num(BatchOpt.ZarrShardXFactorsXYZ); %#ok<ST2NM>
+                if numel(shard) >= 3
+                    saverOpts.ShardSize = [shard(2) shard(1) shard(3)];
+                end
+            end
+
+            % --- stream to disk ---
+            saver = io.savers.Zarr3Saver(struct('ParentFigure', parentFig, 'mibPath', mibPath));
+            metadata = struct('pixSize', pixSize);
+            fnOut = saver.saveStream(provider, metadata, zarrPath, saverOpts);
+            if isempty(fnOut); return; end   % cancelled
+
+            % --- write bounding box + per-level voxel translation ---
+            % MIB boundingBox [xmin xmax ymin ymax zmin zmax]; physical extent =
+            % (dim-1)*voxel, origin shifted by bbShift.
+            boundingBox = [bbShift(1), bbShift(1) + (W-1)*voxel(1), ...
+                           bbShift(2), bbShift(2) + (H-1)*voxel(2), ...
+                           bbShift(3), bbShift(3) + (D-1)*voxel(3)];
+            io.savers.Zarr3Saver.patchMetadata(fnOut, pixSize, boundingBox);
+        end
+
     end
 
     methods
@@ -598,8 +700,11 @@ classdef ImageConverter < handle
                 end
             end
 
-            % init python environment
-            if isempty(obj.mibModel.pythonEnv)
+            % init python environment (legacy Python zarr pipeline / xml extraction).
+            % The native zarrMex backend writing Zarr v3 needs no Python — skip it there.
+            isNativeZarrV3 = strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') && ...
+                ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3;
+            if ~isNativeZarrV3 && isempty(obj.mibModel.pythonEnv)
                 try
                     obj.mibModel.pythonEnv = pyenv( ...
                         'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
@@ -750,10 +855,42 @@ classdef ImageConverter < handle
             obj.returnBatchOpt();
         end
         
+        function generateZarrNative(obj, imgDS, wb)
+            % function generateZarrNative(obj, imgDS, wb)
+            % Native (zarrMex) Zarr v3 generation via io.savers.Zarr3Saver — the same
+            % in-app pyramid/bounding-box/voxel logic, streaming one source file at a
+            % time (no Python). Used when io.zarr.Config = native and output = Zarr v3.
+            parentFig = [];
+            if ~isempty(obj.view) && isvalid(obj.view.gui); parentFig = obj.view.gui; end
+
+            % Zarr3Saver shows its own progress dialog — release the plugin's first
+            if ~isempty(wb); delete(wb); end
+
+            t2 = tic;
+            fnOut = ImageConverter.convertToZarr3Native(imgDS, obj.BatchOpt, ...
+                struct('ParentFigure', parentFig, 'mibPath', obj.mibModel.mibPath));
+            t2 = toc(t2);
+            if isempty(fnOut); return; end   % cancelled
+
+            fprintf('Native Zarr v3 written to: %s\nElapsed time is %f seconds\n', fnOut, t2);
+            if ~isempty(parentFig)
+                uialert(parentFig, sprintf('Native Zarr v3 written to:\n%s\n\nElapsed time is %.1f seconds', ...
+                    fnOut, t2), 'Zarr conversion done!', 'Icon', 'success');
+            end
+        end
+
         function generateZarr(obj, imgDS, wb)
             % function generateZarr(obj, imgDS, wb);
             % convert image stack in imgDS to Zarr format
-            
+
+            % Native (zarrMex) backend writes Zarr v3 directly via io.savers.Zarr3Saver
+            % (shared pyramid + bounding box + voxel logic). Zarr v2 and the python
+            % backend fall through to the legacy Python pipeline below.
+            if ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3
+                obj.generateZarrNative(imgDS, wb);
+                return;
+            end
+
             % define usage of parallel computing
             if obj.BatchOpt.ParallelProcessing
                 parforArg = obj.BatchOpt.ParallelWorkersNumber{1};    % Maximum number of workers running in parallel

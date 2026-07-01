@@ -163,6 +163,48 @@ classdef PureUtilsTest < matlab.unittest.TestCase
         end
 
         % -----------------------------------------------------------------
+        % utils.normalizeUnits
+        % -----------------------------------------------------------------
+
+        function normalizeUnits_longFormsMapToShort(testCase)
+            % Long unit spellings (as carried by zarr/BigData pixSize) map to
+            % MIB's canonical short codes.
+            testCase.verifyEqual(utils.normalizeUnits('micrometers'), 'um');
+            testCase.verifyEqual(utils.normalizeUnits('microns'),     'um');
+            testCase.verifyEqual(utils.normalizeUnits('nanometers'),  'nm');
+            testCase.verifyEqual(utils.normalizeUnits('millimeters'), 'mm');
+            testCase.verifyEqual(utils.normalizeUnits('meters'),      'm');
+            testCase.verifyEqual(utils.normalizeUnits('centimeters'), 'cm');
+        end
+
+        function normalizeUnits_shortFormsIdempotent(testCase)
+            % Already-canonical codes are returned unchanged.
+            testCase.verifyEqual(utils.normalizeUnits('um'), 'um');
+            testCase.verifyEqual(utils.normalizeUnits('nm'), 'nm');
+            testCase.verifyEqual(utils.normalizeUnits('mm'), 'mm');
+        end
+
+        function normalizeUnits_pixelsAndUnknownPreserved(testCase)
+            % 'pixels' (no physical size) and unrecognised strings are kept as-is
+            % (lower-cased) so downstream callers fall back to their defaults.
+            testCase.verifyEqual(utils.normalizeUnits('pixels'),  'pixels');
+            testCase.verifyEqual(utils.normalizeUnits('furlong'), 'furlong');
+        end
+
+        function calculateResolution_micrometersAliasMatchesUm(testCase)
+            % A zarr dataset carries units='micrometers'; resolution must match
+            % the equivalent 'um' result instead of falling back to 72 dpi.
+            psLong.x  = 0.5; psLong.y  = 0.5; psLong.units = 'micrometers';
+            psShort.x = 0.5; psShort.y = 0.5; psShort.units = 'um';
+
+            resLong  = utils.calculateResolution(psLong);
+            resShort = utils.calculateResolution(psShort);
+
+            testCase.verifyEqual(resLong, resShort, 'AbsTol', 1e-9);
+            testCase.verifyGreaterThan(resLong(1), 72);   % not the fallback
+        end
+
+        % -----------------------------------------------------------------
         % calculatePixSizes / calculateResolution round-trip
         % -----------------------------------------------------------------
 
