@@ -82,7 +82,12 @@ if strcmp(hWidget.Value, 'BigData') && ~strcmp(convDs.datasetType, 'BigData') &&
         'Save BigData (zarr3) as', fullfile(imgPath, [imgStem '.zarr3']));
     if isequal(zFile, 0); hWidget.Value = hData.PreviousValue; return; end
     outPath = fullfile(zDir, zFile);
-    zOpt = io.savers.Zarr3Saver.optionsDialog(obj.view.gui, obj.mibModel.mibPath, false);
+    % datasetInfo drives the smart chunk/shard/strategy defaults (WSI vs. isotropic vs.
+    % anisotropic 3-D) — without it optionsDialog silently falls back to the isotropic
+    % preset regardless of the dataset's actual voxel size, same as the Export dialogs.
+    datasetInfo = struct('Y', convDs.image.height, 'X', convDs.image.width, ...
+        'Z', convDs.image.depth, 'pixSize', convDs.image.pixSize);
+    zOpt = io.savers.Zarr3Saver.optionsDialog(obj.view.gui, obj.mibModel.mibPath, false, datasetInfo);
     if isempty(zOpt); hWidget.Value = hData.PreviousValue; return; end   % cancelled settings
 
     wb = uiprogressdlg(obj.view.gui, 'Title', 'Convert to BigData', ...

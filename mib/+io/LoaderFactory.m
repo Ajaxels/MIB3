@@ -94,6 +94,15 @@ classdef LoaderFactory
                     opts.datasetMode = char(loaderInfo.mode);
                     loader = io.loaders.Zarr3VirtualSetupLoader(opts);
 
+                case "OmeZarrV2"
+                    % OME-Zarr v2 format — python-backed setup loader for all dataset
+                    % modes (Standard/Virtual/BigData) plus Model (segmentation labels).
+                    % Pass the dataset mode so Zarr2VirtualSetupLoader can decide whether
+                    % to load pixels (Standard/Model) or return path only (Virtual/BigData).
+                    opts = options;
+                    opts.datasetMode = char(loaderInfo.mode);
+                    loader = io.loaders.Zarr2VirtualSetupLoader(opts);
+
                 case "AmiraMesh"
                     % Amira Mesh format (.am)
                     loader = io.loaders.AmiraMeshLoader(options);
@@ -200,6 +209,11 @@ classdef LoaderFactory
             loaderList(idx).loaderId = 'OmeZarr';
             loaderList(idx).description = 'OME-Zarr v3 format';
             loaderList(idx).extensions = {'zarr', 'zarr3'};
+            idx = idx + 1;
+
+            loaderList(idx).loaderId = 'OmeZarrV2';
+            loaderList(idx).description = 'OME-Zarr v2 format (python-backed)';
+            loaderList(idx).extensions = {'zarr2'};
             idx = idx + 1;
 
             loaderList(idx).loaderId = 'AmiraMesh';

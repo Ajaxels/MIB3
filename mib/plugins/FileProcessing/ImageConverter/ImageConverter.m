@@ -167,12 +167,397 @@ classdef ImageConverter < handle
             for lvl = 1:numel(levelNames)
                 if lvl > 1
                     rel = scaleZYX(lvl,:) ./ scaleZYX(lvl-1,:);
-                    subvol = downsampleBlock(subvol, rel, imageSwitch);
+                    subvol = ImageConverter.downsampleBlock(subvol, rel, imageSwitch);
                 end
 
                 % Z offset
                 zOutStart = floor((zStart-1)/scaleZYX(lvl,1)) + 1;
-                writeSubvolumeToLevel(subvol, zarrPath, levelNames{lvl}, 1, zOutStart, imageSwitch);
+                ImageConverter.writeSubvolumeToLevel(subvol, zarrPath, levelNames{lvl}, 1, zOutStart, imageSwitch);
+            end
+        end
+
+        function out = downsampleBlock(chunkData, relFactors, imageSwitch)
+            % DOWNSAMPLEBLOCK - downsample a 5D block ([T C Z Y X]) by relative factors.
+            %
+            % Input Arguments:
+            %   - **chunkData** — numeric array ``[T C Z Y X]``, input block to downsample
+            %   - **relFactors** — ``1x3`` numeric array, relative downsampling factors ``[Z_factor Y_factor X_factor]``
+            %   - **imageSwitch** — logical; ``true`` for image ``[t,c,z,y,x]``, ``false`` for labels ``[t,z,y,x]``
+            %
+            % Output Arguments:
+            %   - **out** — numeric array ``[T C newZ newY newX]``, downsampled block, same class as input
+            arguments
+                chunkData {mustBeNumeric}
+                relFactors (1,3) {mustBePositive, mustBeFinite}
+                imageSwitch logical = true
+            end
+
+            chunkSize = size(chunkData);
+            Z = chunkSize(end-2);
+            Y = chunkSize(end-1);
+            X = chunkSize(end);
+            T = chunkSize(1);
+
+            newZ = max(floor(Z / relFactors(1)), 1);
+            newY = max(floor(Y / relFactors(2)), 1);
+            newX = max(floor(X / relFactors(3)), 1);
+
+            % Choose interpolation method
+            interpMethod = 'cubic';
+            if ~imageSwitch % labels
+                interpMethod = 'nearest';
+            end
+
+            if imageSwitch  % images
+                C = chunkSize(2);
+                out = zeros([T, C, newZ, newY, newX], class(chunkData));
+                % Downsample each time point and channel separately
+                if newZ > 1 % 3D chunkData
+                    for t = 1:T
+                        for c = 1:C
+                            out(t,c,:,:,:) = imresize3(squeeze(chunkData(t,c,:,:,:)), [newZ, newY, newX], interpMethod);
+                        end
+                    end
+                else % 2D block
+                    for t = 1:T
+                        for c = 1:C
+                            out(t,c,:,:,:) = imresize(squeeze(chunkData(t,c,1,:,:)), [newY, newX], interpMethod);
+                        end
+                    end
+                end
+            else        % labels
+                out = zeros([T, newZ, newY, newX], class(chunkData));
+                % Downsample each time point and channel separately
+                if newZ > 1 % 3D chunkData
+                    for t = 1:T
+                        out(t,:,:,:) = imresize3(squeeze(chunkData(t,:,:,:)), [newZ, newY, newX], interpMethod);
+                    end
+                else
+                    for t = 1:T
+                        out(t,:,:,:) = imresize(squeeze(chunkData(t,1,:,:)), [newY, newX], interpMethod);
+                    end
+                end
+            end
+        end
+
+        function writeSubvolumeToLevel(block_tczyx, zarrPath, levelName, tIndex, zStart, imageSwitch)
+            % WRITESUBVOLUMETOLEVEL - write a 5D subvolume to a specified Zarr multiscale level.
+            %
+            % Input Arguments:
+            %   - **block_tczyx** — numeric array ``[T C Z Y X]``, the subvolume to write
+            %   - **zarrPath** — [char] path to the root Zarr store
+            %   - **levelName** — [char] name of the multiscale level (e.g., ``'s0'``, ``'s1'``)
+            %   - **tIndex** — time index (1-based) in the Zarr dataset
+            %   - **zStart** — starting Z index (1-based) in the Zarr dataset
+            %   - **imageSwitch** — logical; ``true`` for image ``[t,c,z,y,x]``, ``false`` for labels ``[t,z,y,x]``
+            arguments
+                block_tczyx {mustBeNumeric}
+                zarrPath (1,:) char
+                levelName (1,:) char
+                tIndex (1,1) {mustBeInteger, mustBePositive}
+                zStart (1,1) {mustBeInteger, mustBeNonnegative}
+                imageSwitch logical = true
+            end
+
+            storePath = fullfile(zarrPath, levelName);
+
+            if imageSwitch  % images
+                [T, C, Z, Y, X] = size(block_tczyx);
+                pyrun(...
+                    "arr=zarr.open(storePath, mode='r+');"+...
+                    "arr[t0:t0+1, 0:C, z0:z0+Z, 0:Y, 0:X] = block", ...
+                    storePath=storePath, block=block_tczyx, ...
+                    t0=int32(tIndex-1), C=int32(C), Z=int32(Z), Y=int32(Y), X=int32(X), z0=int32(zStart-1));
+            else            % labels
+                [T, Z, Y, X] = size(block_tczyx);
+                pyrun(...
+                    "arr=zarr.open(storePath, mode='r+');"+...
+                    "arr[t0:t0+1, z0:z0+Z, 0:Y, 0:X] = block", ...
+                    storePath=storePath, block=block_tczyx, ...
+                    t0=int32(tIndex-1), Z=int32(Z), Y=int32(Y), X=int32(X), z0=int32(zStart-1));
+            end
+        end
+
+        function [levelNames, scaleFactors, levelImageTranslations, levelImageSizes] = calculateMultiscaleLevels(imageSize, voxelSize, minImageSize)
+            % CALCULATEMULTISCALELEVELS - calculate multiscale levels and cumulative downsampling factors.
+            %
+            % First step: downsample high-resolution axes to make voxels isotropic.
+            % Subsequent steps: uniform 2x downsampling until any dimension reaches ``minImageSize``.
+            %
+            % Input Arguments:
+            %   - **imageSize** — ``[z y x]`` numeric array
+            %   - **voxelSize** — ``[z y x]`` numeric array
+            %   - **minImageSize** — ``[z y x]`` numeric array
+            %
+            % Output Arguments:
+            %   - **levelNames** — ``{'s0','s1',...}``
+            %   - **scaleFactors** — ``nLevels x 3`` cumulative per-axis downsampling factors
+            %   - **levelImageTranslations** — ``nLevels x 3`` physical translation offsets relative to s0
+            %   - **levelImageSizes** — ``nLevels x 3`` image sizes at each level
+            arguments
+                imageSize (1,3) {mustBeInteger, mustBePositive}
+                voxelSize (1,3) {mustBePositive}
+                minImageSize (1,3) {mustBeInteger, mustBePositive}
+            end
+
+            levelNames   = {'s0'};
+            scaleFactors = ones(1,3);      % cumulative downsampling relative to original
+            levelImageSizes   = imageSize;      % size at each level
+            levelImageTranslations = zeros(1,3);     % physical offsets relative to s0
+
+            currentSize    = imageSize;
+            currentVoxel   = voxelSize;
+            cumulativeFactor = ones(1,3);
+            currentTranslation = zeros(1,3);
+
+            % --- Step 1: isotropic voxel adjustment ---
+            factor   = ones(1,3);
+            maxVoxel = max(currentVoxel);
+            for dim = 1:3
+                if currentVoxel(dim) < maxVoxel
+                    factor(dim) = 2;
+                end
+            end
+
+            % compute translation offset from rounding
+            offsetVoxels = (mod(currentSize, factor) ~= 0) .* 0.5 .* voxelSize .* cumulativeFactor;
+            currentTranslation = currentTranslation + offsetVoxels;
+
+            currentSize    = ceil(currentSize ./ factor);
+            currentVoxel   = currentVoxel .* factor; %#ok<NASGU>
+            cumulativeFactor = cumulativeFactor .* factor;
+
+            levelNames{end+1}      = 's1';
+            scaleFactors(end+1,:)  = cumulativeFactor;
+            levelImageSizes(end+1,:)    = currentSize;
+            levelImageTranslations(end+1,:)  = currentTranslation;
+
+            % --- Step 2: uniform downsampling ---
+            lvl = 2;
+            while all(currentSize > minImageSize)
+                factor = ones(1,3);
+                for dim = 1:3
+                    if currentSize(dim) > minImageSize(dim)
+                        factor(dim) = 2;
+                    end
+                end
+
+                % Stop if any dimension would go below minImageSize
+                if any(currentSize ./ factor < minImageSize)
+                    break;
+                end
+
+                % compute translation offset from rounding
+                offsetVoxels = (mod(currentSize, factor) ~= 0) .* 0.5 .* voxelSize .* cumulativeFactor;
+                currentTranslation = currentTranslation + offsetVoxels;
+
+                currentSize    = ceil(currentSize ./ factor);
+                currentVoxel   = currentVoxel .* factor; %#ok<NASGU>
+                cumulativeFactor = cumulativeFactor .* factor;
+
+                levelNames{end+1}      = sprintf('s%d', lvl);
+                scaleFactors(end+1,:)  = cumulativeFactor;
+                levelImageTranslations(end+1,:)  = currentTranslation;
+                levelImageSizes(end+1,:)    = currentSize;
+
+                lvl = lvl + 1;
+            end
+        end
+
+        function createMultiscaleDataset(zarrPath, imageSize, imageType, levelNames, scaleXYZ, Options)
+            % CREATEMULTISCALEDATASET - creates a multiscale OME-Zarr dataset including arrays and metadata.
+            %
+            % Input Arguments:
+            %   - **zarrPath** — [char] path to the top-level Zarr folder
+            %   - **imageSize** — integer ``[T, C, Z, Y, X]`` size of the original image
+            %   - **imageType** — [char] data type of the image (e.g., ``'uint8'``, ``'float32'``)
+            %   - **levelNames** — cell array of strings, names of the multiscale levels, e.g. ``{'s0','s1','s2'}``
+            %   - **scaleXYZ** — ``[nLevels x 3]`` array of scale factors ``[Z Y X]``
+            %   - **Options** — struct with additional options:
+            %
+            %     - ``.chunks`` — chunk size for each dimension as ``[T, C, Z, Y, X]``
+            %     - ``.compressionType`` — [char] ``'blosc'``, ``'gzip'``, ``'none'``
+            %     - ``.compressionLevel`` — numeric compression level (0=none, 9=best, -1=default)
+            %     - ``.zarrFormat`` — int, 2 or 3 (default: 2)
+            %     - ``.dataType`` — [char] ``'image'`` (``[T,C,Z,Y,X]``) or ``'labels'`` (``[T,Z,Y,X]``)
+            %     - ``.shards`` — ``[t c z y x]`` sharding sizes (default: ``[]``), Zarr v3 only
+            %     - ``.voxelSize`` — ``[1x3]`` physical voxel size along ``[Z Y X]`` (default: ``[1 1 1]``)
+            %     - ``.voxelUnits`` — [char] units of voxel size (``'nanometers'``, ``'micrometers'``, ``'pixels'``, ...)
+            %     - ``.levelTranslations`` — ``[nLevels x 3]`` physical translations per level (default: zeros)
+            %     - ``.customAttributes`` — struct of extra attributes to add to root.attrs (default: empty)
+            arguments
+                zarrPath (1,:) char
+                imageSize (1,:) double {mustBePositive}
+                imageType (1,:) char
+                levelNames cell
+                scaleXYZ (:,3) double {mustBePositive}
+                Options struct = struct()
+            end
+
+            % ------------------
+            % Defaults
+            % ------------------
+            if ~isfield(Options,'chunks'), Options.chunks = [1 1 128 128 128]; end
+            if ~isfield(Options,'shards'), Options.shards = []; end
+            if ~isfield(Options,'zarrFormat'), Options.zarrFormat = 2; end
+            if ~isfield(Options,'compressionType'), Options.compressionType = 'gzip'; end
+            if ~isfield(Options,'compressionLevel'), Options.compressionLevel = 1; end
+            if ~isfield(Options,'dataType'), Options.dataType ='image'; end
+            if ~isfield(Options,'voxelSize'), Options.voxelSize = [1 1 1]; end
+            if ~isfield(Options,'voxelUnits'), Options.voxelUnits = 'micrometers'; end
+            if ~isfield(Options,'levelTranslations'), Options.levelTranslations = zeros(size(scaleXYZ)); end
+            if ~isfield(Options,'customAttributes'), Options.customAttributes = struct(); end
+
+            % replace slashes
+            zarrPath = strrep(zarrPath,'\','/');
+            % make new folder for the zarr output
+            if ~isfolder(zarrPath), mkdir(zarrPath); end
+
+            % ------------------
+            % Compressor setup
+            % ------------------
+            pyrun("compressors = None");
+            if ~strcmpi(Options.compressionType,'none')
+                if Options.zarrFormat == 2
+                    pyrun("import numcodecs");
+                    switch lower(Options.compressionType)
+                        case 'gzip'
+                            pyrun("compressors = numcodecs.GZip(level=Options_clevel)", ...
+                                Options_clevel=int32(Options.compressionLevel));
+                        case 'blosc'
+                            pyrun("compressors = numcodecs.Blosc(cname='zstd', clevel=Options_clevel, shuffle=numcodecs.Blosc.BITSHUFFLE)", ...
+                                Options_clevel=int32(Options.compressionLevel));
+                        otherwise
+                            error('Unsupported compression type: %s', Options.compressionType);
+                    end
+                elseif Options.zarrFormat == 3
+                    switch lower(Options.compressionType)
+                        case 'gzip'
+                            pyrun("from numcodecs import GZip");
+                            pyrun("compressors = GZip(level=Options_clevel)", ...
+                                Options_clevel=int32(Options.compressionLevel));
+                        case 'blosc'
+                            pyrun("from zarr.codecs import BloscCodec");
+                            pyrun("compressors = BloscCodec(cname='zstd', clevel=Options_clevel, shuffle='bitshuffle')", ...
+                                Options_clevel=int32(Options.compressionLevel));
+                        otherwise
+                            error('Unsupported compression type: %s', Options.compressionType);
+                    end
+                end
+            end
+
+            % ------------------
+            % Create arrays + dataset metadata
+            % ------------------
+            datasets = [];
+            for lvl = 1:numel(levelNames)
+                % Compute level shape
+                szLvl = max(ceil(imageSize(end-2:end) ./ scaleXYZ(lvl,:)),1);
+                if strcmp(Options.dataType,'image')
+                    imageShape = [imageSize(1), imageSize(2), szLvl];
+                else
+                    imageShape = [imageSize(1), szLvl];
+                end
+
+                storePath = fullfile(zarrPath, levelNames{lvl});
+
+                if Options.zarrFormat == 2
+                    % use open_array function as create_array is not comatible with
+                    % dimension_separator parameter
+                    % shape/chunks must be plain tuples: zarr-python's array
+                    % creation does a bare "if chunks:" truthiness check, which
+                    % raises "truth value of an array... is ambiguous" if a
+                    % multi-element numpy array (what int32(...) becomes on the
+                    % Python side) is passed instead.
+                    pyrun("zarr.open_array(store=store, shape=tuple(imageShape), chunks=tuple(imageChunks), dtype=dtype, compressor=compressors, zarr_format=2, dimension_separator='/', mode='w')", ...
+                        store=storePath, imageShape=int32(imageShape), imageChunks=int32(Options.chunks), dtype=imageType);
+                    versionText = '0.4';
+                elseif Options.zarrFormat == 3
+                    if ~isempty(Options.shards)
+                        pyrun("zarr.create_array(store=store, shape=tuple(imageShape), chunks=tuple(imageChunks), dtype=dtype, compressors=compressors, zarr_format=zarrFormat, shards=tuple(shards))", ...
+                            store=storePath, imageShape=int32(imageShape), imageChunks=int32(Options.chunks), dtype=imageType, ...
+                            zarrFormat=int32(Options.zarrFormat), shards=int32(Options.shards));
+                    else
+                        pyrun("zarr.create_array(store=store, shape=tuple(imageShape), chunks=tuple(imageChunks), dtype=dtype, compressors=compressors, zarr_format=zarrFormat)", ...
+                            store=storePath, imageShape=int32(imageShape), imageChunks=int32(Options.chunks), dtype=imageType, ...
+                            zarrFormat=int32(Options.zarrFormat));
+                    end
+                    versionText = '0.5';
+                else
+                    error('Unsupported zarr format type: %d', Options.zarrFormat);
+                end
+
+                % Metadata entry for this level
+                scale       = Options.voxelSize .* scaleXYZ(lvl,:);   % physical voxel size
+                translation = Options.levelTranslations(lvl,:);       % physical shift
+                datasets = [datasets, struct( ...
+                    'path', levelNames{lvl}, ...
+                    'coordinateTransformations', { { ...
+                        struct('type','scale','scale',scale), ...
+                        struct('type','translation','translation',translation) ...
+                    } } ...
+                )]; %#ok<AGROW>
+            end
+
+            % ------------------
+            % Root attributes
+            % ------------------
+
+            % Axes: include T,C if present
+            if strcmp(Options.dataType,'image')
+                axesList = { ...
+                    struct('type','time','name','t','unit','seconds'), ...
+                    struct('type','channel','name','c','unit',''), ...
+                    struct('type','space','name','z','unit',Options.voxelUnits), ...
+                    struct('type','space','name','y','unit',Options.voxelUnits), ...
+                    struct('type','space','name','x','unit',Options.voxelUnits) ...
+                };
+            else
+                axesList = { ...
+                    struct('type','time','name','t','unit','seconds'), ...
+                    struct('type','space','name','z','unit',Options.voxelUnits), ...
+                    struct('type','space','name','y','unit',Options.voxelUnits), ...
+                    struct('type','space','name','x','unit',Options.voxelUnits) ...
+                };
+            end
+
+            zattrs_struct = struct( ...
+                'multiscales', { { ...
+                    struct( ...
+                        'name', '', ...
+                        'type', Options.dataType, ...
+                        'version', versionText , ...
+                        'axes', {axesList}, ...
+                        'datasets', {datasets}, ...
+                        'coordinateTransformations', {{} } ...
+                    ) } } ...
+            );
+
+            % Merge custom attributes
+            customFields = fieldnames(Options.customAttributes);
+            for k = 1:numel(customFields)
+                fn = customFields{k};
+                zattrs_struct.(fn) = Options.customAttributes.(fn);
+            end
+
+            % Encode as JSON for Python
+            zattrs_json = jsonencode(zattrs_struct);
+
+            % Write to root.attrs using zarr API with explicit zarr_format
+            if Options.zarrFormat == 2
+                pyrun([ ...
+                    "root = zarr.open_group(storePath, mode='a', zarr_format=2)" ...
+                    "root.attrs.update(json.loads(attrs_json))" ...
+                    ], ...
+                    storePath=zarrPath, ...
+                    attrs_json=zattrs_json);
+            else
+                pyrun([ ...
+                    "root = zarr.open_group(storePath, mode='a', zarr_format=3)" ...
+                    "root.attrs.update(json.loads(attrs_json))" ...
+                    ], ...
+                    storePath=zarrPath, ...
+                    attrs_json=zattrs_json);
             end
         end
 
@@ -267,6 +652,25 @@ classdef ImageConverter < handle
             sz = provider.OutputSize;   % [H W D C T]
             H = sz(1); W = sz(2); D = sz(3);
 
+            % --- labels: derive material names from the values actually present ---
+            % ImageConverter has no external material-name source (a folder of raw
+            % label slices, no accompanying .model) — MIB's Materials table only
+            % ever shows dataset.labels.materialNames, so leaving it empty means
+            % the panel shows no materials at all even though the data has labels.
+            % Generate "Material 1".."Material N" from the highest label value
+            % found, matching the numbering convention used elsewhere (e.g.
+            % io.savers.StlSaver).
+            materialNames = {};
+            if strcmp(dataType, 'labels')
+                maxLabel = 0;
+                for i = 1:numel(imgDS.Files)
+                    maxLabel = max(maxLabel, double(max(imgDS.readimage(i), [], 'all')));
+                end
+                if maxLabel > 0
+                    materialNames = arrayfun(@(k) sprintf('Material %d', k), 1:maxLabel, 'UniformOutput', false)';
+                end
+            end
+
             % --- Zarr3Saver options (silent: ImageConverter already collected settings) ---
             saverOpts = struct();
             saverOpts.silent       = true;
@@ -294,6 +698,9 @@ classdef ImageConverter < handle
             % --- stream to disk ---
             saver = io.savers.Zarr3Saver(struct('ParentFigure', parentFig, 'mibPath', mibPath));
             metadata = struct('pixSize', pixSize);
+            if ~isempty(materialNames)
+                metadata.materialNames = materialNames;
+            end
             fnOut = saver.saveStream(provider, metadata, zarrPath, saverOpts);
             if isempty(fnOut); return; end   % cancelled
 
@@ -1011,7 +1418,7 @@ classdef ImageConverter < handle
             % - first to isotropic
             % - downsample until reaching downsampleImageLimit
             % note: levelImageTranslations is introduced due to rounding during unevendownsampling steps
-            [levelNames, scaleZYX, levelImageTranslations, levelImageSizes] = calculateMultiscaleLevels(imageSize(end-2:end), voxelSize, downsampleImageLimit);
+            [levelNames, scaleZYX, levelImageTranslations, levelImageSizes] = ImageConverter.calculateMultiscaleLevels(imageSize(end-2:end), voxelSize, downsampleImageLimit);
 
             % bring the bounding box shifts
             levelImageTranslations = levelImageTranslations+boundingBoxShiftsZYX;
@@ -1039,7 +1446,7 @@ classdef ImageConverter < handle
             Options.voxelUnits = voxelUnits;
             Options.levelImageTranslations = levelImageTranslations;
             Options.customAttributes = struct();
-            createMultiscaleDataset(zarrPath, imageSize, imageType, levelNames, scaleZYX, Options);
+            ImageConverter.createMultiscaleDataset(zarrPath, imageSize, imageType, levelNames, scaleZYX, Options);
 
             maxZ = imageSize(end-2);
             maxT = imageSize(1);
@@ -1123,7 +1530,14 @@ classdef ImageConverter < handle
                             imageSize, imageType, imgDS, ...
                             levelNames, scaleZYX, zarrPath);
                         if ~isempty(wb)
-                            wb.increment(); 
+                            wb.increment();
+                            % PoolWaitbar.increment() only updates the dialog's Value
+                            % property via a DataQueue callback; without an explicit
+                            % drawnow the App Designer uiprogressdlg never gets a
+                            % chance to actually repaint during this tight, single-
+                            % threaded loop, so the bar visibly never moves on a job
+                            % that finishes in a second or two.
+                            drawnow limitrate;
                             if wb.getCancelState()
                                 break;
                             end
@@ -1138,7 +1552,7 @@ classdef ImageConverter < handle
                             imageSize, imageType, imgDS, ...
                             levelNames, scaleZYX, zarrPath);
                     end
-                    
+
                     for idx = 1:numel(futures)
                         try
                             fetchNext(futures);   % wait for next job to complete
@@ -1147,6 +1561,7 @@ classdef ImageConverter < handle
                         end
                         if ~isempty(wb)
                             wb.increment();        % update progress bar safely here
+                            drawnow limitrate;
                             if wb.getCancelState()
                                 cancel(futures);   % cancel remaining futures
                                 break;

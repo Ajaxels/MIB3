@@ -11,6 +11,7 @@ function loader = getOrCreateLoader(obj, fileIdx)
 % 'matlab.hdf5' / 'hdf5_image' io.loaders.HDF5VirtualLoader
 % 'bioformats' io.loaders.BioFormatsVirtualLoader
 % 'zarr3' io.loaders.Zarr3VirtualLoader
+% 'zarr2' io.loaders.Zarr2VirtualLoader
 %
 % Input Arguments:
 %   - **fileIdx** — [numeric] 1-based index into obj.filePaths{} / obj.Virtual arrays
@@ -56,6 +57,15 @@ switch objectType
             axOrder = obj.pyramid.axisOrder;
         end
         loader = io.loaders.Zarr3VirtualLoader(obj.filePaths{1}, axOrder);
+
+    case 'zarr2'
+        % Zarr v2 OME-Zarr — python-backed; root path is in obj.filePaths{1},
+        % axis order from pyramid
+        axOrder = 'tczyx';
+        if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
+            axOrder = obj.pyramid.axisOrder;
+        end
+        loader = io.loaders.Zarr2VirtualLoader(obj.filePaths{1}, axOrder);
 
     otherwise
         error('core:MibVirtualImage:unknownObjectType', ...

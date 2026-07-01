@@ -96,6 +96,12 @@ Alternatively, use the <span class="widget widget-button">Load</span> button in 
 !!! note
     Models can also be opened by drag-and-dropping model files into the [Image Document](../../image-document/index.md).
 
+!!! note
+    When a loaded model carries no material names of its own (format-dependent — some formats, like
+    Zarr, may or may not embed names), materials are auto-named `mat1`, `mat2`, … For models with more
+    than 255 materials, plain numeric names are used instead, since the number *is* the material index
+    — see the note on working with such models in [Convert type](#convert-type) above.
+
 ---
 
 ### Import
@@ -134,6 +140,36 @@ Provide a variable name with a matrix matching the dataset dimensions `[height, 
 Copies the model from another currently open MIB dataset into the active dataset.
 
 <div class="clear-float"></div>
+
+---
+
+#### Import model from Zarr2/3
+
+Imports a segmentation model from an OME-Zarr v2 or v3 store. A Zarr store is a **folder**
+(not a single file), so this option opens a folder browser instead of the file dialog used
+by [Load model](#load-model) and the other [Import](#import) options above.
+
+- **Zarr v3** (`.zarr3`): read using the native `Zarr3Matlab` library.
+- **Zarr v2** (`.zarr2`): read using a python-backed reader (`zarr`/`numpy`), since Zarr v2
+  has no native MATLAB engine. Requires
+  [Preferences → External directories → Python installation path](../home/home-preferences.md#external-directories)
+  to point at a python environment with the `zarr` package installed.
+
+<div class="h4-like">Material names and colours</div>
+
+Material names/colours are resolved from the store's metadata, in this order:
+
+1. MIB's own `mibMaterials` attribute (the same one written by [Export model to Zarr3](#export-model-to-zarr3)).
+2. The OME-NGFF `image-label` convention (`colors` / `properties`).
+3. If neither is present, materials are auto-named `mat1`, `mat2`, … with random colours.
+
+!!! note
+    For a **BigData** dataset, importing a Zarr model attaches the store **by reference** instead
+    of loading it into memory (see [BigData datasets](../../panels/datasets/index.md)). A
+    **Zarr v3** store becomes a fully editable, disk-backed model, same as models created directly
+    in BigData mode. A **Zarr v2** store is attached **read-only** — an existing segmentation can be
+    viewed and browsed at any zoom level, but voxels cannot be edited, since there is no editable
+    on-disk pyramid format for Zarr v2.
 
 ---
 

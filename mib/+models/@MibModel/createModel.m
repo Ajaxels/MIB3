@@ -191,6 +191,10 @@ if isBigData
     ds.labels.materialColors  = obj.preferences.Colors.ModelMaterialColors;
     ds.labels.labelsVariable  = 'mibModel';
     ds.labels.filename        = '';
+    % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' — re-derive
+    % it from the dataset's real image filename, same as core.MibDataset.loadModel.m
+    % does for Standard datasets, so "Save mask" defaults to the dataset's own name.
+    ds.labels.maskFilename    = ds.image.maskFilename;
     bigNames = BatchOpt.ModelMaterialNames;
     if ~isempty(bigNames)
         splitCells = regexp(bigNames, '([^ ;,]*)', 'tokens');

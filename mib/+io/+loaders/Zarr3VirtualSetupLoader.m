@@ -170,7 +170,7 @@ methods
         % 1. attrs.multiscales (OME-NGFF v0.4)
         % 2. attrs.ome.multiscales (OME-NGFF v0.5)
         % 3. rawMeta.multiscales (non-standard: top-level in zarr.json)
-        ms = obj.extractMultiscales(attrs);
+        ms = io.loaders.OmeZarrMetadataUtils.extractMultiscales(attrs);
         if isempty(ms) && isfield(rawMeta, 'multiscales') && ~isempty(rawMeta.multiscales)
             ms = rawMeta.multiscales;
         end
@@ -197,7 +197,7 @@ methods
                     if isfield(subRaw, 'attributes') && isstruct(subRaw.attributes)
                         subAttrs = subRaw.attributes;
                     end
-                    subMs = obj.extractMultiscales(subAttrs);
+                    subMs = io.loaders.OmeZarrMetadataUtils.extractMultiscales(subAttrs);
                     if isempty(subMs) && isfield(subRaw, 'multiscales')
                         subMs = subRaw.multiscales;
                     end
@@ -220,6 +220,11 @@ methods
         if isfield(attrs, 'mibBoundingBox') && numel(attrs.mibBoundingBox) == 6
             imginfo{"BoundingBox"} = reshape(double(attrs.mibBoundingBox), 1, 6);
         end
+
+        % Every loader sets numEntries in loadMetadata (not loadImages) — it's
+        % checked by core.MibDataset.loadModel right after loadMetadata returns,
+        % before loadImages is ever called.
+        imginfo{"numEntries"} = 1;
     end
 
     function [img, imginfo] = loadImages(obj, files, imginfo, options)
@@ -260,11 +265,14 @@ methods
 
         mode = obj.Options.datasetMode;
 
-        if strcmpi(mode, 'Standard')
-            [img, imginfo] = obj.loadImagesStandard(files, imginfo, options);
-        else
-            % Virtual or BigData
-            [img, imginfo] = obj.loadImagesVirtual(files, imginfo);
+        switch lower(mode)
+            case 'standard'
+                [img, imginfo] = obj.loadImagesStandard(files, imginfo, options);
+            case 'model'
+                [img, imginfo] = obj.loadImagesModel(files, imginfo, options);
+            otherwise
+                % Virtual or BigData
+                [img, imginfo] = obj.loadImagesVirtual(files, imginfo);
         end
     end
 end
@@ -293,10 +301,10 @@ methods (Access = private)
         ms = multiscales(1); % use first multiscales entry
 
         % ---- axis order ---------------------------------------------
-        axisOrder = obj.extractAxisOrder(ms);
+        axisOrder = io.loaders.OmeZarrMetadataUtils.extractAxisOrder(ms);
 
         % ---- find y/x/z/c/t positions in the C-order axis list ------
-        axisLabels = obj.axisOrderToLabels(axisOrder); % cell array of chars
+        axisLabels = io.loaders.OmeZarrMetadataUtils.axisOrderToLabels(axisOrder); % cell array of chars
         yIdx = find(strcmp(axisLabels, 'y'), 1);
         xIdx = find(strcmp(axisLabels, 'x'), 1);
         zIdx = find(strcmp(axisLabels, 'z'), 1);
@@ -343,7 +351,7 @@ methods (Access = private)
         % global scale from top-level coordinateTransformations (OME-Zarr v0.5)
         globalScales = ones(1, numel(axisLabels));
         if isfield(ms, 'coordinateTransformations')
-            globalScales = obj.extractScaleFromCT(ms.coordinateTransformations, ...
+            globalScales = io.loaders.OmeZarrMetadataUtils.extractScaleFromCT(ms.coordinateTransformations, ...
                 numel(axisLabels));
         end
 
@@ -373,11 +381,11 @@ methods (Access = private)
             % shape is declared in C-order (Python): index matches axisLabels
             shape = arrInfo.shape; % [nT, nC, nZ, nY, nX] for 'tczyx'
 
-            nY = obj.safeGetDim(shape, yIdx, 1);
-            nX = obj.safeGetDim(shape, xIdx, 1);
-            nZ = obj.safeGetDim(shape, zIdx, 1);
-            nC = obj.safeGetDim(shape, cIdx, 1);
-            nT = obj.safeGetDim(shape, tIdx, 1);
+            nY = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, yIdx, 1);
+            nX = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, xIdx, 1);
+            nZ = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, zIdx, 1);
+            nC = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, cIdx, 1);
+            nT = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, tIdx, 1);
 
             levelImageSizes(iLevel, :) = [nY, nX, nZ];
 
@@ -389,7 +397,7 @@ methods (Access = private)
             % by globalScales to get the absolute physical size.
             levelScales = globalScales;
             if isfield(ds, 'coordinateTransformations')
-                levelScales = obj.extractScaleFromCT(ds.coordinateTransformations, ...
+                levelScales = io.loaders.OmeZarrMetadataUtils.extractScaleFromCT(ds.coordinateTransformations, ...
                     numel(axisLabels));
                 % combine per-level relative scale with global base scale
                 levelScales = levelScales .* globalScales;
@@ -402,16 +410,16 @@ methods (Access = private)
                 % levelScaleFactors = ratio of this level's voxel size to
                 % level 0 (full resolution). E.g. level 1 with 2x downsampling
                 % in Y and X gives sfY=2, sfX=2, sfZ=1.
-                sfY = obj.safeRatio(levelScales, yIdx, level0Scales);
-                sfX = obj.safeRatio(levelScales, xIdx, level0Scales);
-                sfZ = obj.safeRatio(levelScales, zIdx, level0Scales);
+                sfY = io.loaders.OmeZarrMetadataUtils.safeRatio(levelScales, yIdx, level0Scales);
+                sfX = io.loaders.OmeZarrMetadataUtils.safeRatio(levelScales, xIdx, level0Scales);
+                sfZ = io.loaders.OmeZarrMetadataUtils.safeRatio(levelScales, zIdx, level0Scales);
                 levelScaleFactors(iLevel, :) = [sfY, sfX, sfZ];
             end
 
             % effective voxel size at this pyramid level
-            vY = obj.safeGetScale(levelScales, yIdx, 1);
-            vX = obj.safeGetScale(levelScales, xIdx, 1);
-            vZ = obj.safeGetScale(levelScales, zIdx, 1);
+            vY = io.loaders.OmeZarrMetadataUtils.safeGetScale(levelScales, yIdx, 1);
+            vX = io.loaders.OmeZarrMetadataUtils.safeGetScale(levelScales, xIdx, 1);
+            vZ = io.loaders.OmeZarrMetadataUtils.safeGetScale(levelScales, zIdx, 1);
             levelVoxelSizes(iLevel, :) = [vY, vX, vZ];
 
             % chunk / shard sizes (in C-order, as stored)
@@ -421,10 +429,10 @@ methods (Access = private)
 
         % ---- pixel size from level 0 physical scale -----------------
         pixSize         = utils.defaults.initializePixSize();
-        pixSize.y       = obj.safeGetScale(level0Scales, yIdx, 1);
-        pixSize.x       = obj.safeGetScale(level0Scales, xIdx, 1);
-        pixSize.z       = obj.safeGetScale(level0Scales, zIdx, 1);
-        pixSize.units   = obj.extractAxisUnit(ms, yIdx);
+        pixSize.y       = io.loaders.OmeZarrMetadataUtils.safeGetScale(level0Scales, yIdx, 1);
+        pixSize.x       = io.loaders.OmeZarrMetadataUtils.safeGetScale(level0Scales, xIdx, 1);
+        pixSize.z       = io.loaders.OmeZarrMetadataUtils.safeGetScale(level0Scales, zIdx, 1);
+        pixSize.units   = io.loaders.OmeZarrMetadataUtils.extractAxisUnit(ms, yIdx);
 
         % ---- populate imginfo from level 0 --------------------------
         imginfo{"Height"}    = levelImageSizes(1, 1);
@@ -433,11 +441,11 @@ methods (Access = private)
         imginfo{"Colors"}    = nC;
         imginfo{"Time"}      = nT;
         imginfo{"imgClass"}  = obj.zarrTypeToMatlabClass(arrInfo.dataType);
-        imginfo{"MaxInt"}    = obj.classMaxInt(imginfo{"imgClass"});
-        imginfo{"ColorType"} = obj.colorType(nC);
+        imginfo{"MaxInt"}    = io.loaders.OmeZarrMetadataUtils.classMaxInt(imginfo{"imgClass"});
+        imginfo{"ColorType"} = io.loaders.OmeZarrMetadataUtils.colorType(nC);
         imginfo{"Filename"}  = rootPath;
         imginfo{"pixSize"}   = pixSize;
-        imginfo{"viewPort"}  = obj.buildViewPort(nC, imginfo{"MaxInt"});
+        imginfo{"viewPort"}  = io.loaders.OmeZarrMetadataUtils.buildViewPort(nC, imginfo{"MaxInt"});
 
         % ---- build files struct -------------------------------------
         files.filename              = rootPath;
@@ -457,29 +465,6 @@ methods (Access = private)
         files.chunkSizes            = chunkSizes;
         files.shardSizes            = shardSizes;
         files.pixSize               = pixSize;
-    end
-
-    function ms = extractMultiscales(~, attrs)
-        % EXTRACTMULTISCALES - Extract the multiscales array from zarr attributes.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      ms = obj.extractMultiscales(attrs)
-        %
-        % Handles two OME-NGFF versions:
-        % v0.4: attrs.multiscales (top-level)
-        % v0.5: attrs.ome.multiscales (nested under "ome" namespace)
-        %
-        % Returns the multiscales struct array, or ``[]`` if not found.
-
-        ms = [];
-        if isfield(attrs, 'multiscales') && ~isempty(attrs.multiscales)
-            ms = attrs.multiscales;
-        elseif isfield(attrs, 'ome') && isstruct(attrs.ome) && ...
-                isfield(attrs.ome, 'multiscales') && ~isempty(attrs.ome.multiscales)
-            ms = attrs.ome.multiscales;
-        end
     end
 
     function subPath = findMultiscalesSubPath(~, rootPath, attrs, grp)
@@ -596,11 +581,11 @@ methods (Access = private)
         cIdx = find(strcmp(axisLabels, 'c'), 1);
         tIdx = find(strcmp(axisLabels, 't'), 1);
 
-        nY = obj.safeGetDim(shape, yIdx, 1);
-        nX = obj.safeGetDim(shape, xIdx, 1);
-        nZ = obj.safeGetDim(shape, zIdx, 1);
-        nC = obj.safeGetDim(shape, cIdx, 1);
-        nT = obj.safeGetDim(shape, tIdx, 1);
+        nY = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, yIdx, 1);
+        nX = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, xIdx, 1);
+        nZ = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, zIdx, 1);
+        nC = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, cIdx, 1);
+        nT = io.loaders.OmeZarrMetadataUtils.safeGetDim(shape, tIdx, 1);
 
         imgClass = obj.zarrTypeToMatlabClass(arrInfo.dataType);
         pixSize  = utils.defaults.initializePixSize();
@@ -611,11 +596,11 @@ methods (Access = private)
         imginfo{"Colors"}    = nC;
         imginfo{"Time"}      = nT;
         imginfo{"imgClass"}  = imgClass;
-        imginfo{"MaxInt"}    = obj.classMaxInt(imgClass);
-        imginfo{"ColorType"} = obj.colorType(nC);
+        imginfo{"MaxInt"}    = io.loaders.OmeZarrMetadataUtils.classMaxInt(imgClass);
+        imginfo{"ColorType"} = io.loaders.OmeZarrMetadataUtils.colorType(nC);
         imginfo{"Filename"}  = rootPath;
         imginfo{"pixSize"}   = pixSize;
-        imginfo{"viewPort"}  = obj.buildViewPort(nC, imginfo{"MaxInt"});
+        imginfo{"viewPort"}  = io.loaders.OmeZarrMetadataUtils.buildViewPort(nC, imginfo{"MaxInt"});
 
         files.filename               = rootPath;
         files.height                 = nY;
@@ -696,9 +681,8 @@ methods (Access = private)
         raw = arr.read(); % read full array
 
         % permute from native MATLAB order to MIB3 [y,x,z,c,t]
-        tempLoader = io.loaders.Zarr3VirtualLoader('', files.axisOrder);
-        perm       = tempLoader.computePermutation(files.axisOrder);
-        data       = permute(raw, perm);
+        perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
+        data = permute(raw, perm);
 
         % MibImage only supports integer data types (intmax fails for
         % non-integer classes like single, double, logical).
@@ -742,9 +726,51 @@ methods (Access = private)
         imginfo{"Height"}   = sz(1);
         imginfo{"Width"}    = sz(2);
         imginfo{"Depth"}    = sz(3);
-        imginfo{"viewPort"} = obj.buildViewPort(files.color, imginfo{"MaxInt"});
+        imginfo{"viewPort"} = io.loaders.OmeZarrMetadataUtils.buildViewPort(files.color, imginfo{"MaxInt"});
 
         img = data; % bare numeric array; MibImage.initialize wraps it as obj.data
+    end
+
+    function [img, imginfo] = loadImagesModel(obj, files, imginfo, options) %#ok<INUSD>
+        % LOADIMAGESMODEL - Model-mode loadImages: load the full labels array + material metadata.
+        %
+        % Syntax:
+        %   .. code-block:: matlab
+        %
+        %      [img, imginfo] = obj.loadImagesModel(files, imginfo, options)
+        %
+        % Always reads level 0 (the finest/only level) fully into memory —
+        % models are always loaded whole, regardless of dataset mode, mirroring
+        % every other core.MibDataset.loadModel loader (and
+        % io.loaders.Zarr2VirtualSetupLoader's own Model mode). Material
+        % names/colors are resolved from the store's metadata: MIB's own
+        % ``mibMaterials`` attribute first (the same one Zarr3Saver.exportModel /
+        % MibBigDataLabels.writeMaterialMetadata write), then the OME-NGFF
+        % ``image-label`` convention, else left empty so
+        % core.MibDataset.loadModel auto-generates numbered names / a palette.
+
+        rootPath  = files.filename;
+        levelPath = files.levelNames{1};
+
+        if isempty(levelPath)
+            fullPath = rootPath;
+        else
+            if startsWith(rootPath, 'http://') || startsWith(rootPath, 'https://')
+                fullPath = [strtrim(rootPath), '/', levelPath];
+            else
+                fullPath = fullfile(rootPath, levelPath);
+            end
+        end
+
+        arr = ZarrArray(fullPath);
+        raw = arr.read(); % read full array
+
+        perm = io.loaders.OmeZarrMetadataUtils.computePermutation(files.axisOrder);
+        img  = permute(raw, perm);
+
+        [names, colors] = obj.readMaterialMetadataV3(rootPath, levelPath);
+        if ~isempty(names);  imginfo{"modelMaterialNames"}  = names;  end
+        if ~isempty(colors); imginfo{"modelMaterialColors"} = colors; end
     end
 
     function [img, imginfo] = loadImagesVirtual(~, files, imginfo)
@@ -783,221 +809,61 @@ methods (Access = private)
         imginfo{"Virtual"} = Virtual;
     end
 
-    % ---- Metadata parsing helpers ------------------------------------
+    % ---- Model-mode metadata helpers ---------------------------------
 
-    function axisOrder = extractAxisOrder(~, ms)
-        % EXTRACTAXISORDER - Extract axis order string (e.g. ``'tczyx'``) from multiscales entry.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      axisOrder = obj.extractAxisOrder(ms)
-        %
-
-        axisOrder = 'tczyx'; % OME-Zarr default if not specified
-        if ~isfield(ms, 'axes') || isempty(ms.axes)
-            return;
-        end
+    function attrs = readZarrJsonAttrsV3(~, groupPath, isHttp)
+        % READZARRJSONATTRSV3 - Read the custom "attributes" of a v3 zarr.json (local or HTTP).
+        attrs = struct();
         try
-            axes = ms.axes;
-            if isstruct(axes)
-                names = {axes.name};
-            elseif iscell(axes)
-                names = cellfun(@(a) a.name, axes, 'UniformOutput', false);
+            if isHttp
+                rawMeta = webread([strtrim(groupPath), '/zarr.json'], weboptions('ContentType', 'json', 'Timeout', 30));
             else
-                return;
+                zarrJsonFile = fullfile(groupPath, 'zarr.json');
+                if ~isfile(zarrJsonFile); return; end
+                rawMeta = jsondecode(fileread(zarrJsonFile));
             end
-            axisOrder = lower(strjoin(names, ''));
-        catch
-            % leave default
-        end
-    end
-
-    function labels = axisOrderToLabels(~, axisOrder)
-        % AXISORDERTOLABELS - Convert axis order string to cell array of single-char labels.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      labels = obj.axisOrderToLabels(axisOrder)
-        %
-
-        labels = num2cell(lower(char(axisOrder)));
-    end
-
-    function scales = extractScaleFromCT(~, ct, nAxes)
-        % EXTRACTSCALEFROMCT - Extract physical scale vector from an OME-Zarr coordinateTransformations.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      scales = obj.extractScaleFromCT(ct, nAxes)
-        %
-        % The returned vector has length nAxes and is aligned to the axis
-        % order declared in multiscales.axes (C-order, e.g. [t,c,z,y,x]).
-        % Missing leading axes (t, c) default to 1.0.
-        %
-        % Input Arguments:
-        %   - **ct** — coordinateTransformations value from zarr.json;
-        %     may be a struct array or cell array of transform objects
-        %   - **nAxes** — [numeric] number of axes declared in multiscales.axes
-        %     (equals the length of the desired output vector)
-        %
-        % Output Arguments:
-        %   - **scales** — [1 x nAxes numeric] vector in axisLabels order;
-        %     for ``'tczyx'`` (nAxes=5): index 1=t, 2=c, 3=z, 4=y, 5=x
-        %
-        % Alignment rule when CT provides fewer values than nAxes:
-        % In OME-Zarr, non-spatial axes (t, c) come BEFORE spatial axes
-        % (z, y, x) and typically have scale=1. So a 3-element CT scale
-        % [0.03, 0.13, 0.13] for a 'tczyx' dataset means [z, y, x] — the
-        % values belong at the END of the output vector:
-        %   scales = [1, 1, 0.03, 0.13, 0.13]
-        % This is why values are right-aligned, not left-aligned.
-        %
-
-        scales = ones(1, nAxes);
-        try
-            % Normalise ct to a flat row vector sc
-            sc = [];
-            if isstruct(ct) && ~isempty(ct)
-                for k = 1:numel(ct)
-                    if strcmp(ct(k).type, 'scale')
-                        sc = ct(k).scale;
-                        break;
-                    end
-                end
-            elseif iscell(ct)
-                for k = 1:numel(ct)
-                    entry = ct{k};
-                    if isfield(entry, 'type') && strcmp(entry.type, 'scale')
-                        sc = entry.scale;
-                        break;
-                    end
-                end
-            end
-
-            if isempty(sc); return; end
-
-            % Flatten to row vector
-            if iscell(sc)
-                sc = cell2mat(sc(:)');
-            else
-                sc = sc(:)';
-            end
-
-            nSc = numel(sc);
-            if nSc == nAxes
-                % Exact match: values are already in axisLabels order
-                scales = sc;
-            elseif nSc < nAxes
-                % Fewer CT values than axes — right-align so spatial axes
-                % (z, y, x at the end) receive the physical scale values.
-                % Non-spatial leading axes (t, c) remain 1.0.
-                scales(end - nSc + 1 : end) = sc;
-            else
-                % More CT values than declared axes (non-standard).
-                % Take the last nAxes values (spatial axes are at the end).
-                scales = sc(end - nAxes + 1 : end);
+            if isfield(rawMeta, 'attributes') && isstruct(rawMeta.attributes)
+                attrs = rawMeta.attributes;
             end
         catch
-            % Return default ones on any parsing failure
+            % missing/unreadable zarr.json -> treat as no attributes
         end
     end
 
-    function unit = extractAxisUnit(~, ms, yIdx)
-        % EXTRACTAXISUNIT - Extract physical unit string from the Y axis definition.
+    function [names, colors] = readMaterialMetadataV3(obj, rootPath, levelPath)
+        % READMATERIALMETADATAV3 - Resolve model material names/colors from store metadata.
         %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      unit = obj.extractAxisUnit(ms, yIdx)
-        %
+        % Fetches zarr.json's custom "attributes" (root group and, if present,
+        % the array level — level-array attributes take precedence on key
+        % collisions) and delegates the actual name/color extraction to the
+        % version-agnostic io.loaders.OmeZarrMetadataUtils.resolveMaterialMetadata
+        % (shared with Zarr2VirtualSetupLoader and core.MibBigDataLabelsZarr2).
+        % Returns empty when neither convention is present; the caller
+        % (core.MibDataset.loadModel) already auto-generates numbered names /
+        % a color palette in that case.
+        isHttp = startsWith(rootPath, 'http://') || startsWith(rootPath, 'https://');
+        attrs  = obj.readZarrJsonAttrsV3(rootPath, isHttp);
 
-        unit = 'um'; % default
-        if ~isfield(ms, 'axes') || isempty(ms.axes) || isempty(yIdx)
-            return;
-        end
-        try
-            axes = ms.axes;
-            if isstruct(axes)
-                ax = axes(yIdx);
-            elseif iscell(axes)
-                ax = axes{yIdx};
+        if ~isempty(levelPath)
+            if isHttp
+                levelRoot = [strtrim(rootPath), '/', levelPath];
             else
-                return;
+                levelRoot = fullfile(rootPath, levelPath);
             end
-            if isfield(ax, 'unit') && ~isempty(ax.unit)
-                rawUnit = lower(ax.unit);
-                % normalise common spellings to MIB3 conventions
-                switch rawUnit
-                    case {'micrometer', 'micron', 'um', 'µm'}
-                        unit = 'um';
-                    case {'nanometer', 'nm'}
-                        unit = 'nm';
-                    case {'millimeter', 'mm'}
-                        unit = 'mm';
-                    otherwise
-                        unit = rawUnit;
-                end
+            levelAttrs = obj.readZarrJsonAttrsV3(levelRoot, isHttp);
+            fn = fieldnames(levelAttrs);
+            for k = 1:numel(fn)
+                attrs.(fn{k}) = levelAttrs.(fn{k});
             end
-        catch
-            % leave default
         end
+
+        [names, colors] = io.loaders.OmeZarrMetadataUtils.resolveMaterialMetadata(attrs);
     end
+
 end
 
 %% Static utility helpers (also used by parseSingleArray which has no obj)
 methods (Static, Access = private)
-
-    function v = safeGetDim(shape, idx, default)
-        % SAFEGETDIM - Return shape(idx) or default if idx is empty or out of range.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      v = obj.safeGetDim(shape, idx, default)
-        %
-
-        if isempty(idx) || idx > numel(shape)
-            v = default;
-        else
-            v = shape(idx);
-        end
-    end
-
-    function v = safeGetScale(scales, idx, default)
-        % SAFEGETSCALE - Return scales(idx) or default if idx is empty or out of range.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      v = obj.safeGetScale(scales, idx, default)
-        %
-
-        if isempty(idx) || isempty(scales) || idx > numel(scales)
-            v = default;
-        else
-            v = scales(idx);
-        end
-    end
-
-    function r = safeRatio(levelScales, idx, level0Scales)
-        % SAFERATIO - Compute levelScales(idx) / level0Scales(idx), returning 1 on failure.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      r = obj.safeRatio(levelScales, idx, level0Scales)
-        %
-
-        if isempty(idx) || isempty(level0Scales) || idx > numel(level0Scales) ...
-                || level0Scales(idx) == 0
-            r = 1;
-        else
-            r = levelScales(idx) / level0Scales(idx);
-        end
-    end
 
     function matlabClass = zarrTypeToMatlabClass(zarrType)
         % ZARRTYPETOMATLABCLASS - Convert zarr v3 data type string to MATLAB class string.
@@ -1019,39 +885,6 @@ methods (Static, Access = private)
                 % uint8, uint16, uint32, uint64, int8, int16, int32, int64
                 matlabClass = lower(char(zarrType));
         end
-    end
-
-    function mx = classMaxInt(imgClass)
-        % CLASSMAXINT - Maximum intensity value for the given MATLAB class.
-        %
-        % Syntax:
-        %   .. code-block:: matlab
-        %
-        %      mx = obj.classMaxInt(imgClass)
-        %
-
-        switch imgClass
-            case {'uint8','uint16','uint32','uint64','int8','int16','int32','int64'}
-                mx = double(intmax(imgClass));
-            case {'single','double'}
-                mx = 1;
-            otherwise
-                mx = 255;
-        end
-    end
-
-    function ct = colorType(nColors)
-        if nColors == 1
-            ct = 'grayscale';
-        else
-            ct = 'multichannel';
-        end
-    end
-
-    function vp = buildViewPort(nColors, maxInt)
-        vp.min   = zeros(1, nColors);
-        vp.max   = repmat(maxInt, 1, nColors);
-        vp.gamma = ones(1, nColors);
     end
 
 end

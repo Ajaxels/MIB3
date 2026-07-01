@@ -149,5 +149,82 @@ classdef MibDatasetTest < matlab.unittest.TestCase
             end
         end
 
+        % -----------------------------------------------------------------
+        % applySizeMismatch
+        % -----------------------------------------------------------------
+
+        function cropBothAxesBiggerExtractsOffsetWindow(testCase)
+            % source 10x10, target 6x6, offset (2,3) -> rows 3:8, cols 4:9
+            source = reshape(uint8(1:100), 10, 10);
+            expected = source(3:8, 4:9);
+
+            result = core.MibDataset.applySizeMismatch(source, 6, 6, 'Crop', 2, 3);
+
+            testCase.verifyEqual(size(result), [6 6]);
+            testCase.verifyEqual(result, expected);
+        end
+
+        function cropBothAxesSmallerPlacesAtOffsetAndZeroPads(testCase)
+            % source 4x4, target 8x8, offset (2,3) -> placed at rows 3:6, cols 4:7
+            source = reshape(uint8(1:16), 4, 4);
+
+            result = core.MibDataset.applySizeMismatch(source, 8, 8, 'Crop', 2, 3);
+
+            testCase.verifyEqual(size(result), [8 8]);
+            testCase.verifyEqual(result(3:6, 4:7), source);
+            result(3:6, 4:7) = 0;
+            testCase.verifyEqual(sum(result(:)), 0);
+        end
+
+        function cropMixedAxesResolvesEachAxisIndependently(testCase)
+            % H bigger (crop, offset 1), W smaller (pad, offset 2)
+            source = reshape(uint8(1:40), 8, 5);   % [H=8 W=5]
+            imgH = 6; imgW = 9;
+            offsetY = 1; offsetX = 2;
+
+            result = core.MibDataset.applySizeMismatch(source, imgH, imgW, 'Crop', offsetY, offsetX);
+
+            testCase.verifyEqual(size(result), [imgH imgW]);
+            expectedBlock = source(offsetY + (1:imgH), :);
+            testCase.verifyEqual(result(:, offsetX + (1:5)), expectedBlock);
+        end
+
+        function cropOffsetZeroMatchesTopLeftLegacyBehavior(testCase)
+            source = reshape(uint8(1:100), 10, 10);
+            result = core.MibDataset.applySizeMismatch(source, 6, 6, 'Crop', 0, 0);
+            testCase.verifyEqual(result, source(1:6, 1:6));
+        end
+
+        function cropMaxOffsetReachesOppositeCorner(testCase)
+            source = reshape(uint8(1:100), 10, 10);
+            maxOffset = 10 - 6;   % = 4
+            result = core.MibDataset.applySizeMismatch(source, 6, 6, 'Crop', maxOffset, maxOffset);
+            testCase.verifyEqual(result, source(5:10, 5:10));
+        end
+
+        function cropPreservesTrailingDimensions(testCase)
+            source = reshape(uint8(1:(4*4*3)), 4, 4, 3);   % [H=4 W=4 D=3]
+            result = core.MibDataset.applySizeMismatch(source, 8, 8, 'Crop', 0, 0);
+            testCase.verifyEqual(size(result), [8 8 3]);
+            testCase.verifyEqual(result(1:4, 1:4, :), source);
+        end
+
+        function resizePreservesClassAndIntroducesNoNewValues(testCase)
+            source = uint8([1 1 2 2; 1 1 2 2; 3 3 4 4; 3 3 4 4]);   % 4x4, values {1,2,3,4}
+
+            result = core.MibDataset.applySizeMismatch(source, 8, 8, 'Resize', 0, 0);
+
+            testCase.verifyClass(result, 'uint8');
+            testCase.verifyEqual(size(result), [8 8]);
+            testCase.verifyTrue(all(ismember(unique(result(:)), unique(source(:)))), ...
+                'nearest-neighbor resize must not introduce new label values');
+        end
+
+        function resizeOnBinaryMaskStaysBinary(testCase)
+            source = logical([1 0; 0 1]);
+            result = core.MibDataset.applySizeMismatch(source, 6, 6, 'Resize', 0, 0);
+            testCase.verifyTrue(all(ismember(unique(result(:)), [0 1])));
+        end
+
     end
 end

@@ -167,20 +167,16 @@ if numel(sz) >= 3; maskD = sz(3); end
 % H×W mismatch
 if maskH ~= imgH || maskW ~= imgW
     if ~options.batchModeSwitch && isfield(options, 'ParentFigure') && ~isempty(options.ParentFigure)
-        dlgOpt.MsgBoxOnly   = true;
-        dlgOpt.Icon         = 'puffin_warning';
-        dlgOpt.WindowHeight = 180;
-        dlgOpt.HeaderLines  = 1;
-        if isfield(options, 'mibPath'); dlgOpt.mibPath = options.mibPath; end
-        msg = sprintf('Mask size [%dx%d] does not match image [%dx%d].\nThe mask will be cropped or padded to fit.', ...
-            maskH, maskW, imgH, imgW);
-        utils.dlgs.inputUniversalDlg(options.ParentFigure, 'Dimension mismatch', {}, {msg}, 'Size mismatch', dlgOpt);
+        choice = obj.promptSizeMismatch('Mask', maskH, maskW, imgH, imgW, [], options);
+        if choice.cancelled; return; end
+        if strcmp(choice.action, 'Resize'); action = 'Resize'; else; action = 'Crop'; end
+    else
+        % unattended (batch / no parent figure): keep the previous silent
+        % top-left crop/pad fallback
+        action = 'Crop';
+        choice = struct('offsetY', 0, 'offsetX', 0);
     end
-    newMask = zeros(imgH, imgW, maskD, 'uint8');
-    copyH = min(maskH, imgH);
-    copyW = min(maskW, imgW);
-    newMask(1:copyH, 1:copyW, :) = maskArray(1:copyH, 1:copyW, :);
-    maskArray = newMask;
+    maskArray = core.MibDataset.applySizeMismatch(maskArray, imgH, imgW, action, choice.offsetY, choice.offsetX);
     maskH = imgH;  %#ok<NASGU>
     maskW = imgW;  %#ok<NASGU>
 end

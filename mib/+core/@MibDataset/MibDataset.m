@@ -275,4 +275,12 @@ classdef MibDataset < matlab.mixin.Copyable
 
         end
     end
+
+    methods (Static)
+        outArray = applySizeMismatch(rawArray, imgH, imgW, action, offsetY, offsetX)   % crop/place or resize rawArray (Model/Mask) to [imgH, imgW]; pure data transform used by loadModel/loadMask after a size-mismatch dialog
+    end
+
+    methods (Static, Access = private)
+        choice = promptSizeMismatch(itemLabel, curH, curW, imgH, imgW, boundingBox, options)   % ask the user how to resolve a Model/Mask size mismatch (crop/place, resize, or use bounding box); returns struct('action','offsetY','offsetX','cancelled')
+    end
 end

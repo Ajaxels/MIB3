@@ -103,7 +103,7 @@ methods
             axisOrder = 'tczyx';
         end
         obj.axisOrder  = lower(char(axisOrder));
-        obj.toMIB3perm = obj.computePermutation(obj.axisOrder);
+        obj.toMIB3perm = io.loaders.OmeZarrMetadataUtils.computePermutation(obj.axisOrder);
     end
 
     function block = readRegion(obj, levelPath, physYlim, physXlim, physZlim, Clim, Tlim, dataClass)
@@ -203,12 +203,10 @@ methods (Access = public)
         %
         %      perm = obj.computePermutation(axisOrder)
         %
-        % zarrMex returns data in zarr's declared C-order axis layout.
-        % For OME-Zarr with axisOrder ``'czyx'`` (shape [nC,nZ,nY,nX]),
-        % the returned MATLAB array has size [nC, nZ, nY, nX] where
-        % dim 1 = C, dim 2 = Z, dim 3 = Y, dim 4 = X.
-        % This function computes the permutation that maps that to
-        % MIB3's required [y, x, z, c, t] order.
+        % Thin wrapper kept for backward compatibility (e.g.
+        % ``Zarr3VirtualSetupLoader`` previously created a throwaway loader
+        % instance just to call this) — delegates to the version-agnostic
+        % ``io.loaders.OmeZarrMetadataUtils.computePermutation``.
         %
         % Input Arguments:
         %   - **axisOrder** — [char] zarr C-order axis declaration,
@@ -227,22 +225,7 @@ methods (Access = public)
         %      perm = loader.computePermutation('zyx');    % returns [2,3,1,4,5]
         %
 
-        mib3Axes     = 'yxzct';     % MIB3 dimension order (dims 1-5)
-        nDims        = numel(axisOrder);
-        perm         = zeros(1, 5);
-        nextSingleton = nDims + 1;
-
-        for k = 1:5
-            ax  = mib3Axes(k);
-            pos = strfind(axisOrder, ax);   % find in C-order declaration
-            if ~isempty(pos)
-                perm(k) = pos(1);
-            else
-                % axis absent in this dataset -> trailing singleton slot
-                perm(k)       = nextSingleton;
-                nextSingleton = nextSingleton + 1;
-            end
-        end
+        perm = io.loaders.OmeZarrMetadataUtils.computePermutation(axisOrder);
     end
 end
 end

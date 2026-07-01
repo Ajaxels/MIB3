@@ -108,10 +108,11 @@ Tidx = [max(options.t(1), 1), min(options.t(2), obj.time)];
 
 % --- pyramid source backend (default zarr3 for existing datasets) ---------
 % A pyramidal image can be backed by an OME-Zarr v3 store ('zarr3', via
-% io.loaders.Zarr3VirtualLoader) or a BioFormats/WSI file ('bioformats', via
-% io.BioFormats.Reader). Both expose the same region-read contract and return a
+% io.loaders.Zarr3VirtualLoader), an OME-Zarr v2 store ('zarr2', python-backed,
+% via io.loaders.Zarr2VirtualLoader), or a BioFormats/WSI file ('bioformats', via
+% io.BioFormats.Reader). All expose the same region-read contract and return a
 % MIB3-order [y, x, z, c, t] block for the requested level + physical sub-region,
-% so the coordinate/orient/resize math below is identical for both.
+% so the coordinate/orient/resize math below is identical for all three.
 sourceType = 'zarr3';
 if isfield(obj.pyramid, 'sourceType') && ~isempty(obj.pyramid.sourceType)
     sourceType = obj.pyramid.sourceType;
@@ -143,6 +144,22 @@ switch sourceType
         end
         % readRegion takes a 1-based level + level-local ranges; returns [y x z c t]
         block = obj.loaders{1}.readRegion(levelIdx, physYlim, physXlim, physZlim, ...
+            Clim, Tidx, obj.dataClass);
+
+    case 'zarr2'
+        % lazy-create / retrieve cached Zarr2VirtualLoader (python-backed —
+        % zarr v2 has no native zarrMex engine)
+        if isempty(obj.loaders) || numel(obj.loaders) < 1 || isempty(obj.loaders{1}) || ...
+                ~isa(obj.loaders{1}, 'io.loaders.Zarr2VirtualLoader')
+            axOrder = 'tczyx';
+            if isfield(obj.pyramid, 'axisOrder') && ~isempty(obj.pyramid.axisOrder)
+                axOrder = obj.pyramid.axisOrder;
+            end
+            obj.loaders{1} = io.loaders.Zarr2VirtualLoader(obj.filePaths{1}, axOrder);
+        end
+        levelPath = obj.pyramid.levelNames{levelIdx};
+        % block arrives as MIB3 [y, x, z, c, t]
+        block = obj.loaders{1}.readRegion(levelPath, physYlim, physXlim, physZlim, ...
             Clim, Tidx, obj.dataClass);
 
     otherwise   % 'zarr3'

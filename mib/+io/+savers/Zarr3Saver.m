@@ -137,7 +137,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
             % Interactive GUI save → collect pyramid/chunk/compression settings (same
             % dialog as the "Export to Zarr3" ribbon action); cancel aborts the save.
-            [options, cancelled] = obj.resolveExportOptions(options, metadata);
+            [options, cancelled] = obj.resolveExportOptions(options, metadata, size(data, 1:3));
             if cancelled; fnOut = []; return; end
 
             if ~isfield(options, 'Levels');             options.Levels = []; end
@@ -302,7 +302,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             if nargin < 4 || isempty(filename); error('io:Zarr3Saver:noFilename', 'Output filename is required'); end
 
             % Interactive GUI save → show the export-settings dialog (cancel aborts).
-            [options, cancelled] = obj.resolveExportOptions(options, metadata);
+            [options, cancelled] = obj.resolveExportOptions(options, metadata, provider.OutputSize(1:3));
             if cancelled; fnOut = []; return; end
 
             if ~isfield(options, 'Levels');             options.Levels = []; end
@@ -346,7 +346,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             grp = io.zarr.Group.create(filename);
 
             % --- create every level array up front ---
-            levelInfo = repmat(struct('Yl', Y, 'Xl', X, 'Zl', Z, 'arr', [], 'name', ''), 1, nLevels);
+            levelInfo = repmat(struct('Yl', Y, 'Xl', X, 'Zl', Z, 'arr', [], 'name', '', 'chunkZ', 1), 1, nLevels);
             datasets  = cell(1, nLevels);
             for L = 1:nLevels
                 Yl = plan(L).Yl; Xl = plan(L).Xl; Zl = plan(L).Zl;
@@ -358,6 +358,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
                 if numel(keepShape) > 3; chunk = [chunk, keepShape(4:end)]; end %#ok<AGROW>
                 name = num2str(L - 1);
                 levelInfo(L).Yl = Yl; levelInfo(L).Xl = Xl; levelInfo(L).Zl = Zl; levelInfo(L).name = name;
+                levelInfo(L).chunkZ = chunk(3);
                 createArgs = {'chunkShape', chunk, 'compressors', options.Compressors};
                 if ~isempty(options.ShardSize)
                     createArgs = [createArgs, {'shardShape', io.savers.Zarr3Saver.computeShard(chunk, options.ShardSize)}]; %#ok<AGROW>
@@ -372,16 +373,26 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
             % --- stream slices: write each (z,t) to every level ---
             % Levels with cumZFactor > 1 require Z accumulation: buffer groupSize
-            % source slices, average them, then write one output Z-slice.
+            % source slices, average them, to produce one output Z-slice.
+            %
+            % Output slices are NOT written to disk one at a time: a zarr chunk is
+            % compressed as a unit, so a 1-slice-thick region write forces a full
+            % decompress + splice + recompress of the ENTIRE chunk it lands in —
+            % repeated once per Z-slice inside that chunk (chunkZ-fold redundant
+            % work). Instead, output slices are buffered per level up to that
+            % level's chunk Z-thickness (``levelInfo(L).chunkZ``) and flushed as one
+            % region write per full chunk, mirroring how the legacy Python pipeline
+            % (ImageConverter.processZChunk) always writes whole Z-chunks.
             zGroupSizes = arrayfun(@(p) p.cumZFactor, plan);
-            zBuffers    = cell(1, nLevels);   % {Yl×Xl×C} slices per level
-            zOutPos     = ones(1, nLevels);   % next output Z index per level
+            zBuffers    = cell(1, nLevels);   % {Yl×Xl×C} source slices pending Z-downsampling, per level
+            writeBatch  = cell(1, nLevels);   % {Yl×Xl×C} output slices pending a chunk-aligned write, per level
+            writeStart  = ones(1, nLevels);   % 1-based Z index where the pending writeBatch{L} begins
 
             wb = obj.createProgressDialog('Saving Zarr3...', sprintf('Writing %s', filename), true);
             total = Z * T; done = 0;
             for t = 1:T
-                for L = 1:nLevels; zBuffers{L} = {}; end
-                zOutPos(:) = 1;
+                for L = 1:nLevels; zBuffers{L} = {}; writeBatch{L} = {}; end
+                writeStart(:) = 1;
 
                 for z = 1:Z
                     if ~isempty(wb) && wb.CancelRequested; delete(wb); fnOut = []; return; end
@@ -401,17 +412,25 @@ classdef Zarr3Saver < io.savers.BaseSaver
                         end
 
                         if groupSize == 1
-                            io.savers.Zarr3Saver.writeStreamSlice( ...
-                                levelInfo(L).arr, xySlice, z, t, C, T, Yl, Xl, imgClass);
+                            outputSlice = xySlice;
+                            haveOutputSlice = true;
                         else
                             zBuffers{L}{end+1} = xySlice;
-                            if numel(zBuffers{L}) == groupSize
-                                avgSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
+                            haveOutputSlice = numel(zBuffers{L}) == groupSize;
+                            if haveOutputSlice
+                                outputSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
                                     zBuffers{L}, options.DownsampleMethod, imgClass, Yl, Xl, C);
-                                io.savers.Zarr3Saver.writeStreamSlice( ...
-                                    levelInfo(L).arr, avgSlice, zOutPos(L), t, C, T, Yl, Xl, imgClass);
-                                zOutPos(L) = zOutPos(L) + 1;
                                 zBuffers{L} = {};
+                            end
+                        end
+
+                        if haveOutputSlice
+                            writeBatch{L}{end+1} = outputSlice;
+                            if numel(writeBatch{L}) == levelInfo(L).chunkZ
+                                io.savers.Zarr3Saver.writeStreamBatch( ...
+                                    levelInfo(L).arr, writeBatch{L}, writeStart(L), t, C, T, Yl, Xl, imgClass);
+                                writeStart(L) = writeStart(L) + numel(writeBatch{L});
+                                writeBatch{L} = {};
                             end
                         end
                     end
@@ -420,14 +439,19 @@ classdef Zarr3Saver < io.savers.BaseSaver
                     if ~isempty(wb); wb.Value = done/total; end
                 end
 
-                % flush any remaining partial Z group (edge case: Z not divisible by groupSize)
+                % fold in the trailing partial Z-downsampling group (edge case: Z not
+                % divisible by groupSize), then flush any remaining partial write batch
+                % (edge case: number of output slices not divisible by chunkZ).
                 for L = 1:nLevels
                     if ~isempty(zBuffers{L})
-                        avgSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
+                        outputSlice = io.savers.Zarr3Saver.reduceZBuffer( ...
                             zBuffers{L}, options.DownsampleMethod, imgClass, ...
                             levelInfo(L).Yl, levelInfo(L).Xl, C);
-                        io.savers.Zarr3Saver.writeStreamSlice( ...
-                            levelInfo(L).arr, avgSlice, zOutPos(L), t, C, T, ...
+                        writeBatch{L}{end+1} = outputSlice;
+                    end
+                    if ~isempty(writeBatch{L})
+                        io.savers.Zarr3Saver.writeStreamBatch( ...
+                            levelInfo(L).arr, writeBatch{L}, writeStart(L), t, C, T, ...
                             levelInfo(L).Yl, levelInfo(L).Xl, imgClass);
                     end
                 end
@@ -454,7 +478,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
     end
 
     methods (Access = private)
-        function [options, cancelled] = resolveExportOptions(obj, options, metadata)
+        function [options, cancelled] = resolveExportOptions(obj, options, metadata, sizeYXZ)
             % RESOLVEEXPORTOPTIONS - show the zarr3 export-settings dialog when interactive.
             %
             % Brings the generic "Save image/model as… → OME-Zarr v3" path in line with
@@ -464,6 +488,13 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % and merges the result into ``options``. Returns ``cancelled = true`` if the
             % user cancels. Headless/scripted use (no ``ParentFigure``), batch/``silent``
             % calls, and pre-configured option structs all skip the dialog.
+            %
+            % ``sizeYXZ`` — [Y X Z] of the data being saved; forwarded (with
+            % ``metadata.pixSize``) as ``optionsDialog``'s ``datasetInfo`` so the smart
+            % chunk/shard/strategy defaults (WSI / isotropic / anisotropic 3-D) match
+            % what the ribbon "Export to Zarr3" / "Export model to Zarr3" actions show
+            % for the same dataset — omitting it silently falls back to the isotropic
+            % preset regardless of the data's actual shape or voxel size.
             cancelled = false;
             if isfield(options,'silent') && options.silent; return; end
             if isempty(obj.ParentFigure); return; end   % headless/scripted → use defaults
@@ -473,7 +504,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
             isModel = (isfield(options,'layerType') && strcmp(options.layerType,'labels')) || ...
                 (isstruct(metadata) && isfield(metadata,'materialNames') && ~isempty(metadata.materialNames));
-            dlgOptions = io.savers.Zarr3Saver.optionsDialog(obj.ParentFigure, obj.mibPath, isModel);
+            datasetInfo = [];
+            if nargin >= 4 && numel(sizeYXZ) == 3 && isstruct(metadata) && isfield(metadata,'pixSize')
+                datasetInfo = struct('Y', sizeYXZ(1), 'X', sizeYXZ(2), 'Z', sizeYXZ(3), ...
+                    'pixSize', metadata.pixSize);
+            end
+            dlgOptions = io.savers.Zarr3Saver.optionsDialog(obj.ParentFigure, obj.mibPath, isModel, datasetInfo);
             if isempty(dlgOptions); cancelled = true; return; end
             fn = fieldnames(dlgOptions);
             for k = 1:numel(fn); options.(fn{k}) = dlgOptions.(fn{k}); end
@@ -557,8 +593,14 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % OPTIONSDIALOG - collect zarr3 export settings; returns [] if cancelled.
             %
             % Shared by the image/model export menus and the "Convert to BigData"
-            % dropdown. When ``isModel`` is true, the strategy choice is hidden
-            % (always XY only) and the method is restricted to 'nearest' or 'mode'.
+            % dropdown. When ``isModel`` is true, the method is restricted to
+            % 'nearest' or 'mode' (labels are categorical). The downsampling
+            % *strategy* (XY only vs. Anisotropy-preserving) is offered for both —
+            % model reads use their own per-axis ``modelScaleFactors`` (see
+            % ``MibBigDataLabels.getData63``), so a model pyramid can shrink Z the
+            % same way an image pyramid does. Pick the same strategy as the paired
+            % image export (default filename ``Labels_<image>.zarr3``) so the two
+            % pyramids' level shapes line up.
             %
             % **datasetInfo** (optional struct, fields ``Y``, ``X``, ``Z``, ``pixSize``)
             % drives smart defaults for chunk size, sharding, and downsampling strategy:
@@ -621,56 +663,52 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
 
             % Conditional header + method items depending on whether this is a model export
+            % (the downsampling *strategy* explanation/prompt is shared by both — see
+            % the function header comment on why models are not restricted to XY-only)
             if isModel
-                headerLines = { ...
-                    'Pyramid levels = 0 (auto): adds levels while min(Y,X)/2 >= 256 px'; ...
-                    '(up to 8); a fixed count (1-12) overrides.'; ...
-                    ''; ...
+                methodLines = { ...
                     '"nearest" (fast): picks the nearest source pixel — preserves exact'; ...
                     'label integers, recommended for most models.'; ...
                     '"mode" (slow, precise): dominant label value per block (majority vote)'; ...
-                    '— best semantic accuracy for fine structures or thin boundaries.'; ...
-                    ''; ...
-                    'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
-                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'};
+                    '— best semantic accuracy for fine structures or thin boundaries.'};
                 methodItems = {'nearest (fast)', 'mode (precise, very slow)'};
             else
-                headerLines = { ...
-                    'Pyramid levels = 0 (auto): adds levels while min(Y,X)/2 >= 256 px'; ...
-                    '(up to 8); a fixed count (1-12) overrides.'; ...
-                    ''; ...
+                methodLines = { ...
                     '"median": median value per block — noise-robust, preserves edges'; ...
                     'better than bilinear; does not produce new pixel values.'; ...
                     '"mode": dominant value per block (majority vote) — for categorical'; ...
-                    'labels exported as images; slower than "nearest".'; ...
-                    ''; ...
-                    'Strategy "XY only": halves X & Y at every level, Z constant.'; ...
-                    '"Anisotropy-preserving": halves XY until voxels near-isotropic,'; ...
-                    'then also halves Z — keeps aspect ratio ~1 at coarser levels.'; ...
-                    ''; ...
-                    'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
-                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'};
+                    'labels exported as images; slower than "nearest".'};
                 methodItems = {'bilinear (fast, smooth)', 'nearest (fast)', ...
                                'bicubic (slower, sharp)', 'median (very slow, noise-robust)', ...
                                'mode (precise, very slow)'};
             end
+            headerLines = [{ ...
+                    'Pyramid levels = 0 (auto): adds levels while min(Y,X)/2 >= 256 px'; ...
+                    '(up to 8); a fixed count (1-12) overrides.'; ...
+                    ''}; ...
+                    methodLines; ...
+                    { ''; ...
+                    'Strategy "XY only": halves X & Y at every level, Z constant.'; ...
+                    '"Anisotropy-preserving": halves XY until voxels near-isotropic,'; ...
+                    'then also halves Z — keeps aspect ratio ~1 at coarser levels. Use the'; ...
+                    'same strategy as the paired image export so the level shapes match.'; ...
+                    ''; ...
+                    'Shard X-factors [Y,X,Z]: how many chunks to bundle per axis into'; ...
+                    'one shard file (e.g. 4,4,1 = 16 chunks/file in XY). 0 = off.'}];
             header = strjoin(headerLines, newline);
 
             prompts = {'Pyramid levels (0 = auto):'; 'Chunk size [Y, X, Z]:'; ...
                        'Shard X-factors [Y, X, Z] (0 = off):'; 'Compression:'; ...
-                       'Downsampling method:'};
+                       'Downsampling method:'; 'Downsampling strategy:'};
+            strategyItems  = {'XY only', 'Anisotropy-preserving'};
+            defaultStrategyIdx = find(strcmp(strategyItems, defaultStrategy), 1);
+            if isempty(defaultStrategyIdx); defaultStrategyIdx = 1; end
             defAns  = {struct('Spinner', true, 'Value', 0, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
                        defaultChunk; ...
                        defaultShard; ...
                        {'zstd', 'gzip', 'none', 1}; ...
-                       [methodItems, {1}]};
-            if ~isModel
-                prompts{end+1} = 'Downsampling strategy:';
-                strategyItems  = {'XY only', 'Anisotropy-preserving'};
-                defaultStrategyIdx = find(strcmp(strategyItems, defaultStrategy), 1);
-                if isempty(defaultStrategyIdx); defaultStrategyIdx = 1; end
-                defAns{end+1}  = [strategyItems, {defaultStrategyIdx}];
-            end
+                       [methodItems, {1}]; ...
+                       [strategyItems, {defaultStrategyIdx}]};
 
             dlgOpts = struct('LabelPosition', 'left', 'WindowWidth', 560, ...
                 'HeaderLines', numel(headerLines));
@@ -688,11 +726,7 @@ classdef Zarr3Saver < io.savers.BaseSaver
             options.Compressors = answer{4};
             % strip the parenthetical note from method items (e.g. 'nearest (fast)' → 'nearest')
             options.DownsampleMethod = strtok(answer{5}, ' ');
-            if ~isModel
-                options.DownsampleStrategy = answer{6};
-            else
-                options.DownsampleStrategy = 'XY only';
-            end
+            options.DownsampleStrategy = answer{6};
         end
 
         function shard = computeShard(chunk, shardMultiplier)
@@ -764,7 +798,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
 
                 if doZ
                     cumZFactor = cumZFactor * 2;
-                    curZ = max(1, floor(curZ / 2));
+                    % ceil, not floor: saveStream buffers cumZFactor source slices per
+                    % output slice and always flushes a trailing partial group, so the
+                    % level's Zl must match that count exactly (floor would allocate one
+                    % slice short of what the streamed flush writes, an out-of-bounds
+                    % write when Z is not a multiple of cumZFactor).
+                    curZ = max(1, ceil(Z / cumZFactor));
                     curVxZ = curVxZ * 2;
                 end
 
@@ -898,17 +937,26 @@ classdef Zarr3Saver < io.savers.BaseSaver
     end
 
     methods (Static, Access = private)
-        function writeStreamSlice(arr, sliceData, zPos, tPos, C, T, Yl, Xl, imgClass)
-            % WRITESTREAMSLICE - write one XY slice to a zarr array at (zPos, tPos).
-            sliceData = reshape(cast(sliceData, imgClass), Yl, Xl, 1, C);
-            if C == 1; sliceData = reshape(sliceData, Yl, Xl, 1); end
-            if T > 1
-                sliceData = reshape(sliceData, [size(sliceData, 1:max(3, ndims(sliceData))), 1]);
+        function writeStreamBatch(arr, batchCell, zStart, tPos, C, T, Yl, Xl, imgClass)
+            % WRITESTREAMBATCH - write a run of consecutive Z-slices to a zarr array in one region write.
+            %
+            % ``batchCell`` holds 1..chunkZ XY slices (each ``[Yl Xl]`` or ``[Yl Xl C]``),
+            % starting at 1-based Z index ``zStart``. Writing them together (rather than
+            % one ``arr.write`` call per slice) keeps each touched chunk to a single
+            % decompress/recompress cycle instead of one per Z-slice it contains.
+            nZ = numel(batchCell);
+            batchData = zeros(Yl, Xl, nZ, C, imgClass);
+            for i = 1:nZ
+                batchData(:,:,i,:) = reshape(cast(batchCell{i}, imgClass), Yl, Xl, 1, C);
             end
-            bbox = [1 Yl+1; 1 Xl+1; zPos zPos+1];
+            if C == 1; batchData = reshape(batchData, Yl, Xl, nZ); end
+            if T > 1
+                batchData = reshape(batchData, [size(batchData, 1:max(3, ndims(batchData))), 1]);
+            end
+            bbox = [1 Yl+1; 1 Xl+1; zStart zStart+nZ];
             if C > 1; bbox = [bbox; 1 C+1]; end
             if T > 1; bbox = [bbox; tPos tPos+1]; end
-            arr.write(sliceData, bbox);
+            arr.write(batchData, bbox);
         end
 
         function out = blockReduce2D(inputSlice, Yl, Xl, reduceFcn)

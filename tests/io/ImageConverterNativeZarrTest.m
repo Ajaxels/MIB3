@@ -81,5 +81,90 @@ classdef ImageConverterNativeZarrTest < matlab.unittest.TestCase
                 'mibBoundingBox must encode the shift + physical extent');
         end
 
+        function nativeZarr3_oddSliceCount_anisotropicStream_doesNotCrash(testCase)
+            % Regression: an odd number of source slices combined with an
+            % anisotropic voxel size (forcing a Z-downsampled pyramid level)
+            % previously crashed with a zarrMex out-of-bounds write, because
+            % computeLevelPlan floor-divided a Z-downsampled level's size while
+            % saveStream's flush always writes the trailing partial group
+            % (ceil-division worth of output slices). See Zarr3SaverTest for
+            % the isolated level-plan math.
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+
+            D = 9;   % odd depth
+            vol = reshape(uint8(mod(0:16*12*D-1, 251) + 1), [16 12 D]);
+            for z = 1:D
+                imwrite(vol(:, :, z), fullfile(inDir.Folder, sprintf('s_%02d.tif', z)));
+            end
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            zarrPath = fullfile(outDir.Folder, 'out.zarr3');
+            BatchOpt = struct();
+            BatchOpt.OutputDirectory        = zarrPath;
+            BatchOpt.ZarrImageType          = {'image'};
+            BatchOpt.ZarrChunkSizes         = '4, 4, 2, 1, 1';   % x,y,z,c,t
+            BatchOpt.ZarrUseSharding        = false;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.013, 0.013, 0.030';   % x,y,z anisotropic
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+            BatchOpt.ZarrDownsampleLimitXYZ = '4, 4, 4';   % forces multiple pyramid levels
+
+            fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+
+            testCase.verifyTrue(isfolder(fnOut), 'a zarr3 group must be written despite the odd slice count');
+
+            grp  = io.zarr.Group(fnOut);
+            arr0 = grp.openArray('0');
+            testCase.verifyEqual(size(arr0.read(), 1:3), [16 12 D], 'level-0 dims must match the odd-depth stack');
+        end
+
+        function nativeZarr3_labels_materialNamesPopulatedFromData(testCase)
+            % Regression: converting a folder of label slices wrote no
+            % ``mibMaterials`` attribute at all (ImageConverter has no external
+            % material-name source), so MIB's Materials table came up empty on
+            % reopen even though the label data had real values. convertToZarr3Native
+            % must derive "Material 1".."Material N" from the highest label value
+            % actually present and write it via metadata.materialNames.
+            inDir  = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+
+            D = 5;
+            vol = zeros(10, 12, D, 'uint8');
+            for z = 1:D
+                vol(:, :, z) = uint8(mod(z - 1, 4));   % label values 0..3 -> 3 materials
+                imwrite(vol(:, :, z), fullfile(inDir.Folder, sprintf('s_%02d.tif', z)));
+            end
+            ds = imageDatastore(inDir.Folder, 'FileExtensions', '.tif');
+
+            zarrPath = fullfile(outDir.Folder, 'out.zarr3');
+            BatchOpt = struct();
+            BatchOpt.OutputDirectory        = zarrPath;
+            BatchOpt.ZarrImageType          = {'labels'};
+            BatchOpt.ZarrChunkSizes         = '8, 8, 4, 1';
+            BatchOpt.ZarrUseSharding        = false;
+            BatchOpt.ZarrShardXFactorsXYZ   = '2, 2, 1, 1, 1';
+            BatchOpt.ZarrCompression        = {'blosc'};
+            BatchOpt.ZarrVoxelSizeXYZ       = '0.01, 0.01, 0.03';
+            BatchOpt.ZarrUnits              = {'micrometers'};
+            BatchOpt.ZarrBBShiftsXYZ        = '0, 0, 0';
+            BatchOpt.ZarrDownsampleLimitXYZ = '4, 4, 4';
+
+            fnOut = ImageConverter.convertToZarr3Native(ds, BatchOpt, struct());
+
+            grp   = io.zarr.Group(fnOut);
+            attrs = grp.getAttributes();
+            testCase.verifyTrue(isfield(attrs, 'mibMaterials'), 'mibMaterials attribute must be written for labels');
+            testCase.verifyEqual(attrs.mibMaterials.materialNames, {'Material 1'; 'Material 2'; 'Material 3'});
+
+            % and it must actually round-trip through MIB's own BigData labels loader
+            labels = core.MibBigDataLabels([], struct());
+            labels.openStore(fnOut);
+            testCase.verifyEqual(labels.materialsCount, 3);
+            testCase.verifyEqual(labels.materialNames, {'Material 1'; 'Material 2'; 'Material 3'});
+        end
+
     end
 end

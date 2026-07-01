@@ -50,7 +50,29 @@ switch mode
         obj.mibModel.importDataset('model');
     case 'Import model from another MIB dataset'    % obj.handles.ribbonModel.importFromMIB
         obj.mibModel.importDatasetFromMib('model');
-    
+    case 'Import model from Zarr2/3'    % obj.handles.ribbonModel.importFromZarr
+        % Zarr v2/v3 model stores are FOLDERS, not files — loadModel's GUI file
+        % browser (mibUiGetFile) can't select those, so browse for a folder here
+        % and hand it to loadModel via BatchOpt.Filenames (bypasses the browser).
+        id = obj.mibModel.getActiveId();
+        ds = obj.mibModel.I{id};
+        [imgPath, ~] = fileparts(ds.image.filename);
+        if isempty(imgPath); imgPath = obj.mibModel.currentDirectory; end
+        selDir = uigetdir(imgPath, 'Select the Zarr v2/v3 model store (folder)');
+        if isequal(selDir, 0); return; end   % user cancelled
+
+        isZarrStore = isfile(fullfile(selDir, 'zarr.json')) || ...
+            isfile(fullfile(selDir, '.zattrs')) || isfile(fullfile(selDir, '.zgroup'));
+        if ~isZarrStore
+            utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), ...
+                sprintf('"%s" does not look like a Zarr v2/v3 store\n(no zarr.json, .zattrs, or .zgroup found).', selDir), ...
+                'Not a Zarr store');
+            return;
+        end
+        BatchOpt = struct();
+        BatchOpt.Filenames = {selDir};
+        obj.mibModel.loadModel([], BatchOpt);
+
     %% -------------- Model export section --------------
     case {'Export', 'Export model to MATLAB'}    % obj.handles.ribbonModel.export or obj.handles.ribbonModel.exportToMatlab
         obj.mibModel.exportDataset('model');

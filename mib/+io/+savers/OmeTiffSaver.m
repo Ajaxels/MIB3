@@ -467,12 +467,16 @@ classdef OmeTiffSaver < io.savers.BaseSaver
         function fnOut = writeOmeTiffStream2D(obj, provider, metadata, pixSize, pathStr, baseName, options)
             % WRITEOMETIFFSTREAM2D - Stream a 2-D OME-TIFF sequence (one file per Z×T slice).
             %
-            % Pulls each slice from the provider and writes it with ``imwrite`` (matching
-            % the 2-D branch of ``io.BioFormats.mibImage2ometiff``), so the full stack is
-            % never resident. Honours the ``FilenameGenerator`` policy via
-            % ``BaseSaver.buildSliceNames``.
+            % Non-indexed slices are written through the Bio-Formats Java writer with
+            % real per-file OME-XML metadata (SizeC, pixel size, per-channel Color) —
+            % mirroring ``writeOmeTiffStream5D`` — so LUT colours survive the round-trip.
+            % Plain ``imwrite`` has no OME concept and would silently drop them (only a
+            % 'Description' string, no Channel/Color metadata). Indexed (palette) slices
+            % keep using ``imwrite`` since the colormap is embedded directly in the TIFF.
+            % Honours the ``FilenameGenerator`` policy via ``BaseSaver.buildSliceNames``.
             sz = provider.OutputSize;
-            D = sz(3); T = sz(5);
+            D = sz(3); C = sz(4); T = sz(5);
+            imgClass = provider.DataClass;
 
             resolution = utils.calculateResolution(pixSize);
 
@@ -486,6 +490,18 @@ classdef OmeTiffSaver < io.savers.BaseSaver
             if isfield(metadata, 'colorType') && strcmp(metadata.colorType, 'indexed') && ...
                     isfield(metadata, 'lutColors') && size(metadata.lutColors, 1) > 1
                 cmap = metadata.lutColors;
+            end
+
+            if isnan(cmap)
+                utils.ensureJavaLibraries({'bioformats'});
+                loci.common.DebugTools.enableLogging('ERROR');
+                scaleFactor = io.savers.OmeTiffSaver.umScaleFactor(pixSize.units);
+                pxX = pixSize.x * scaleFactor;
+                pxY = pixSize.y * scaleFactor;
+                pxZ = pixSize.z * scaleFactor;
+                tIncr = 1; if isfield(pixSize, 't') && ~isempty(pixSize.t); tIncr = pixSize.t; end
+                tunits = io.savers.OmeTiffSaver.omeTimeUnit(pixSize);
+                [pixelType, getBytes] = io.savers.OmeTiffSaver.pixelTypeAndConverter(imgClass);
             end
 
             baseNames = obj.buildSliceNames(baseName, pathStr, D, '.ome.tiff', options, metadata);
@@ -507,13 +523,47 @@ classdef OmeTiffSaver < io.savers.BaseSaver
                     else
                         outFn = fullfile(pathStr, [sn se]);
                     end
-                    slice = squeeze(provider.getSlice(z, t));   % [H W] or [H W C]
-                    descArgs = {};
-                    if ~isempty(descBase); descArgs = {'Description', descBase}; end
+                    slice = provider.getSlice(z, t);   % [H W C]
                     if isnan(cmap)
-                        imwrite(slice, outFn, 'tif', 'Compression', 'none', descArgs{:}, 'Resolution', resolution);
+                        H = size(slice, 1); W = size(slice, 2);
+                        meta = loci.formats.MetadataTools.createOMEXMLMetadata();
+                        loci.formats.MetadataTools.populateMetadata(meta, 0, [], true, ...
+                            'XYCZT', pixelType, W, H, 1, C, 1, 1);
+                        meta.setPixelsPhysicalSizeX(ome.units.quantity.Length(java.lang.Double(pxX), ome.units.UNITS.MICROMETER), 0);
+                        meta.setPixelsPhysicalSizeY(ome.units.quantity.Length(java.lang.Double(pxY), ome.units.UNITS.MICROMETER), 0);
+                        meta.setPixelsPhysicalSizeZ(ome.units.quantity.Length(java.lang.Double(pxZ), ome.units.UNITS.MICROMETER), 0);
+                        meta.setPixelsTimeIncrement(ome.units.quantity.Time(java.lang.Double(tIncr), tunits), 0);
+                        if ~isempty(descBase); meta.setImageDescription(descBase, 0); end
+                        if isfield(metadata, 'lutColors') && ~isempty(metadata.lutColors)
+                            nCh = min(C, size(metadata.lutColors, 1));
+                            for iCh = 1:nCh
+                                r = int32(round(metadata.lutColors(iCh, 1) * 255));
+                                g = int32(round(metadata.lutColors(iCh, 2) * 255));
+                                b = int32(round(metadata.lutColors(iCh, 3) * 255));
+                                meta.setChannelColor(ome.xml.model.primitives.Color(r, g, b, int32(255)), 0, iCh-1);
+                            end
+                        end
+
+                        if exist(outFn, 'file') == 2; delete(outFn); end
+                        imageWriter = javaObject('loci.formats.ImageWriter');
+                        writer = imageWriter.getWriter(outFn);
+                        writer.setWriteSequentially(true);
+                        writer.setMetadataRetrieve(meta);
+                        writer.setId(outFn);
+                        try
+                            for c = 1:C
+                                plane = slice(:, :, c).';   % transpose → X-fastest byte order (mirror bfsave)
+                                writer.saveBytes(c-1, getBytes(plane));
+                            end
+                            writer.close();
+                        catch ME
+                            try; writer.close(); catch; end %#ok<NOSEMI,CTCH>
+                            rethrow(ME);
+                        end
                     else
-                        imwrite(slice, cmap, outFn, 'tif', 'Compression', 'none', descArgs{:}, 'Resolution', resolution);
+                        descArgs = {};
+                        if ~isempty(descBase); descArgs = {'Description', descBase}; end
+                        imwrite(squeeze(slice), cmap, outFn, 'tif', 'Compression', 'none', descArgs{:}, 'Resolution', resolution);
                     end
                     allFn{end+1} = outFn; %#ok<AGROW>
                     done = done + 1;

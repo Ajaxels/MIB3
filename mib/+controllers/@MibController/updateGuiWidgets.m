@@ -407,6 +407,7 @@ if isempty(updatePanels) || ismember('dirContentsDataset', updatePanels)
 
     % get list of extensions (force a cellstr ROW so .Items is always valid even
     % for a single-element / empty extension set)
+    previousExtentions = dirContents.handles.fileFilters.Items;
     allowed = obj.mibModel.extensionRegistryLoad.getAllowedExtensions(dataset.datasetType, reader);
     extentions = [{'all known'}, reshape(cellstr(allowed), 1, [])];
     dirContents.handles.fileFilters.Items = extentions;
@@ -417,15 +418,21 @@ if isempty(updatePanels) || ismember('dirContentsDataset', updatePanels)
     dirContents.handles.fileFilters.Value = obj.mibModel.selectedFileFilter{rIdx};
     obj.mibModel.selectedFileFilter{rIdx} = dirContents.handles.fileFilters.Value;
 
-    if strcmp(newFileDir, obj.mibModel.currentDirectory)
-        % Same directory — just highlight the matching file in the existing list
+    % the allowed extensions depend on dataset.datasetType (Standard/Virtual/BigData),
+    % so switching to a buffer of a different type changes what the file list should
+    % show even when the directory itself did not change (e.g. an empty placeholder
+    % buffer keeps obj.mibModel.currentDirectory) — such a change must force a rebuild
+    extentionsChanged = ~isequal(previousExtentions, extentions);
+
+    if strcmp(newFileDir, obj.mibModel.currentDirectory) && ~extentionsChanged
+        % Same directory and same filters — just highlight the matching file in the existing list
         fileListBox = dirContents.handles.fileList;
         if ~isempty(newFileBasename) && ismember(newFileBasename, fileListBox.Items)
             fileListBox.Value = newFileBasename;
             scroll(fileListBox, newFileBasename);
         end
     else
-        % Directory changed — update currentDirectory and rebuild the file list
+        % Directory or allowed extensions changed — update currentDirectory and rebuild the file list
         obj.mibModel.currentDirectory = newFileDir;
         obj.cDirContents.updateFileList_Callback(newFileBasename);
     end

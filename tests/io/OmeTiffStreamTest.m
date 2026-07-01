@@ -44,6 +44,14 @@ classdef OmeTiffStreamTest < matlab.unittest.TestCase
                 vol(:, :, k) = imread(file, k);
             end
         end
+
+        function rgba = readChannelColor(file, channelIdx)
+            % Read the OME-XML Channel Color for channelIdx (0-based) as [R G B A].
+            r = bfGetReader(file);
+            col = r.getMetadataStore().getChannelColor(0, channelIdx);
+            rgba = [col.getRed(), col.getGreen(), col.getBlue(), col.getAlpha()];
+            r.close();
+        end
     end
 
     methods (Test, TestTags = {'Integration'})
@@ -137,6 +145,76 @@ classdef OmeTiffStreamTest < matlab.unittest.TestCase
                 testCase.verifyEqual(plane, squeeze(data(:,:,z)), ...
                     sprintf('slice %d must be pixel-exact', z));
             end
+        end
+
+        function save_2dSequence_channelColorRoundtrip(testCase)
+            % Regression test for the bug where OmeTiffSaver.save() (the
+            % non-streaming path the GUI uses for Standard datasets) wrote 2D
+            % sequence slices with plain imwrite, silently dropping the OME
+            % Channel Color. Uses a non-white LUT colour (green) since white
+            % is indistinguishable from Bio-Formats' fallback/default colour.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outFile = fullfile(tmpDir.Folder, 'seq.ome.tiff');
+            [data, meta] = OmeTiffStreamTest.makeData();   % [8 6 5 1 1]
+            meta.lutColors = [0 1 0];   % green
+
+            saver = io.savers.OmeTiffSaver(struct());
+            opts = struct('Format','OME-TIFF 2D sequence (*.ome.tiff)', ...
+                'silent',true, 'showWaitbar',false, 'overwrite',true, 'layerType','image', ...
+                'FilenameGenerator','Use sequential filename');
+
+            saver.save(data, meta, outFile, opts);   % save() returns the un-suffixed base path for 2D mode, not per-slice names
+
+            firstFile = fullfile(tmpDir.Folder, utils.generateSequentialFilename('seq', 1, 5, '.ome.tiff'));
+            testCase.verifyTrue(isfile(firstFile), 'first slice file must exist');
+            rgba = OmeTiffStreamTest.readChannelColor(firstFile, 0);
+            testCase.verifyEqual(rgba, [0 255 0 255], ...
+                'green LUT colour must round-trip through the OME-XML Channel Color');
+        end
+
+        function save_5d_channelColorRoundtrip(testCase)
+            % Non-streaming save() 5D path, multichannel — companion coverage
+            % for save_2dSequence_channelColorRoundtrip.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outFile = fullfile(tmpDir.Folder, 'mc.ome.tiff');
+            H = 8; W = 6; D = 3; C = 2;
+            data = reshape(uint16(1:H*W*D*C), [H W D C 1]);
+            meta = struct('filename','mc.tif','colorType','multichannel', ...
+                'dataClass','uint16','maxInt',65535, 'lutColors',[1 0 0; 0 1 0], ...
+                'imageDescription','', 'pixSize', ...
+                struct('x',0.5,'y',0.5,'z',0.7,'units','micrometers','t',1,'tunits','s'));
+
+            saver = io.savers.OmeTiffSaver(struct());
+            opts = struct('Format','OME-TIFF 5D (*.ome.tiff)', ...
+                'silent',true, 'showWaitbar',false, 'overwrite',true, 'layerType','image');
+            fnOut = saver.save(data, meta, outFile, opts);
+
+            testCase.verifyEqual(OmeTiffStreamTest.readChannelColor(fnOut, 0), [255 0 0 255], ...
+                'channel 0 (red) colour must round-trip');
+            testCase.verifyEqual(OmeTiffStreamTest.readChannelColor(fnOut, 1), [0 255 0 255], ...
+                'channel 1 (green) colour must round-trip');
+        end
+
+        function saveStream_2dSequence_channelColorRoundtrip(testCase)
+            % Regression test for the identical bug in the BigData streaming
+            % 2D-sequence writer (writeOmeTiffStream2D), which shared the same
+            % plain-imwrite root cause as save_2dSequence_channelColorRoundtrip.
+            tmpDir = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+            outFile = fullfile(tmpDir.Folder, 'seq.ome.tiff');
+            [data, meta] = OmeTiffStreamTest.makeData();
+            meta.lutColors = [0 1 0];   % green
+
+            provider = io.savers.InMemorySliceProvider(data);
+            saver    = io.savers.OmeTiffSaver(struct());
+            opts = struct('Format','OME-TIFF 2D sequence (*.ome.tiff)', ...
+                'silent',true, 'showWaitbar',false, 'overwrite',true, 'layerType','image', ...
+                'FilenameGenerator','Use sequential filename');
+
+            fnOut = saver.saveStream(provider, meta, outFile, opts);
+
+            rgba = OmeTiffStreamTest.readChannelColor(fnOut{1}, 0);
+            testCase.verifyEqual(rgba, [0 255 0 255], ...
+                'green LUT colour must round-trip through the streamed OME-XML Channel Color');
         end
 
     end

@@ -142,7 +142,9 @@ else
 
     % Check success
     if ~isKey(imginfo, 'numEntries') || imginfo{"numEntries"} == 0
-        utils.dlgs.showErrorDialog([], sprintf('Loader returned no entries for: %s', filenames{1}), 'MibDataset:loadModel');
+        parentFig = [];
+        if isfield(loaderOpts, 'ParentFigure'); parentFig = loaderOpts.ParentFigure; end
+        utils.dlgs.showErrorDialog(parentFig, sprintf('Loader returned no entries for: %s', filenames{1}), 'MibDataset:loadModel');
         return;
     end
 
@@ -254,23 +256,31 @@ if numel(sz) >= 5; modelT = sz(5); end
 % Check H/W mismatch
 if modelH ~= imgH || modelW ~= imgW
     if ~options.batchModeSwitch && ~isempty(options.ParentFigure)
-        header = 'Dimension mismatch';
-        dlgOpt.HeaderLines = 1;
-        dlgOpt.Icon = 'puffin_warning';
-        dlgOpt.MsgBoxOnly = true;
-        dlgOpt.WindowHeight = 180;
-        if isfield(options, 'mibPath'); dlgOpt.mibPath = options.mibPath; end
-        msg = sprintf('<html><p style="font-size:10pt">Model size [%dx%d] does not match image [%dx%d].<br>The model will be padded or cropped to fit.</p></html>', ...
-            modelH, modelW, imgH, imgW);
-        utils.dlgs.inputUniversalDlg(options.ParentFigure, header, {msg}, {''}, ...
-            'Size mismatch', dlgOpt);
+        choice = obj.promptSizeMismatch('Model', modelH, modelW, imgH, imgW, boundingBox, options);
+        if choice.cancelled; return; end
+        switch choice.action
+            case 'Use bounding box'
+                % offset comes from the model's own BoundingBox rather than user
+                % entry — both bounding boxes are normalized to micrometres by
+                % MibImage.updateBoundingBox, which is how the current image's
+                % own boundingBox was set in the first place
+                shiftY = (boundingBox(3) - obj.image.boundingBox(3)) / obj.image.pixSize.y;
+                shiftX = (boundingBox(1) - obj.image.boundingBox(1)) / obj.image.pixSize.x;
+                choice.offsetY = min(round(abs(shiftY)), abs(imgH - modelH));
+                choice.offsetX = min(round(abs(shiftX)), abs(imgW - modelW));
+                action = 'Crop';
+            case 'Crop / Place'
+                action = 'Crop';
+            otherwise
+                action = 'Resize';
+        end
+    else
+        % unattended (batch / no parent figure): keep the previous silent
+        % top-left crop/pad fallback
+        action = 'Crop';
+        choice = struct('offsetY', 0, 'offsetX', 0);
     end
-    % Crop or pad to image H×W
-    newModel = zeros(imgH, imgW, modelD, 1, modelT, class(rawModel));
-    copyH = min(modelH, imgH);
-    copyW = min(modelW, imgW);
-    newModel(1:copyH, 1:copyW, :, :, :) = rawModel(1:copyH, 1:copyW, :, :, :);
-    rawModel = newModel;
+    rawModel = core.MibDataset.applySizeMismatch(rawModel, imgH, imgW, action, choice.offsetY, choice.offsetX);
     modelH = imgH;
     modelW = imgW;
 end
@@ -343,7 +353,8 @@ end
 if isempty(materialColors)
     if modelType <= 255 && isfield(options, 'preferences') && ...
             isfield(options.preferences, 'Colors') && ...
-            isfield(options.preferences.Colors, 'ModelMaterialColors')
+            isfield(options.preferences.Colors, 'ModelMaterialColors') && ...
+            ~isempty(options.preferences.Colors.ModelMaterialColors)
         palette = options.preferences.Colors.ModelMaterialColors;
         nMat    = numel(materialNames);
         if nMat == 0
@@ -354,7 +365,7 @@ if isempty(materialColors)
             materialColors = palette(mod((0:nMat-1), nPalette) + 1, :);
         end
     else
-        % Large model or no preferences: random colors
+        % Large model, no preferences, or an empty preference palette: random colors
         nMat = numel(materialNames);
         if nMat == 0; nMat = max(0, double(max(rawModel(:)))); end
         if nMat > 0
@@ -363,11 +374,18 @@ if isempty(materialColors)
     end
 end
 
-% Auto-generate numeric material names if none provided
+% Auto-generate material names if none provided
 if isempty(materialNames)
     nMat = size(materialColors, 1);
     if nMat == 0; nMat = max(0, double(max(rawModel(:)))); end
-    materialNames = arrayfun(@(x) num2str(x), 1:nMat, 'UniformOutput', false);
+    if modelType <= 255
+        materialNames = arrayfun(@(x) sprintf('mat%d', x), 1:nMat, 'UniformOutput', false);
+    else
+        % >255-material models: plain numeric names carry the material index
+        % itself (see "How to work with models having more than 255 materials"
+        % in docs/user-interface/ribbon/model/index.md), so keep them numeric.
+        materialNames = arrayfun(@(x) num2str(x), 1:nMat, 'UniformOutput', false);
+    end
 end
 
 obj.labels.materialNames  = materialNames;

@@ -116,8 +116,12 @@ header1 = PopupListHeader('Import model');
 popupList.add(header1);
 widgetHandles.importFromMatlab =  ListItem( 'Import model from MATLAB',  Icon.MATLAB_24); 
 popupList.add(widgetHandles.importFromMatlab);
-widgetHandles.importFromMIB =  ListItem( 'Import model from another MIB dataset',  Icon(fullfile(iconPath, 'mib_icon_24px.png'))); 
+widgetHandles.importFromMIB =  ListItem( 'Import model from another MIB dataset',  Icon(fullfile(iconPath, 'mib_icon_24px.png')));
 popupList.add(widgetHandles.importFromMIB);
+% import a Zarr v2 (python-backed, read-only) or v3 model store (folder)
+widgetHandles.importFromZarr = ListItem('Import model from Zarr2/3', Icon(fullfile(iconPath, 'zarr3_24px.png')));
+widgetHandles.importFromZarr.Description = 'Import a segmentation model from an OME-Zarr v2 or v3 store (folder)';
+popupList.add(widgetHandles.importFromZarr);
 widgetHandles.import.Popup = popupList;
 column.add(widgetHandles.import);
 

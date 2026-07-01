@@ -263,6 +263,7 @@ classdef MibRibbon
             obj.handles.ribbonModel.import.ButtonPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.importFromMatlab.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.importFromMIB.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.importFromZarr.ItemPushedFcn = @obj.model_Callbacks;
             %% Add Callbacks for the MODEL ribbon -> Export section
             obj.handles.ribbonModel.export.ButtonPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.exportToMatlab.ItemPushedFcn = @obj.model_Callbacks;

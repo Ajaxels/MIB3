@@ -186,38 +186,9 @@ end
 if strcmp(options.Saving3d, '5D')
     % permute image from y,x,c,z,t to y,x,z,c,t
     % imageS = permute(imageS, [1 2 4 3 5]);
-    
-    metadata = createMinimalOMEXMLMetadata(imageS, options.DimensionOrder);
-    pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.x), ome.units.UNITS.MICROMETER);
-    metadata.setPixelsPhysicalSizeX(pixelSize, 0);
-    pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.y), ome.units.UNITS.MICROMETER);
-    metadata.setPixelsPhysicalSizeY(pixelSize, 0);
-    pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.z), ome.units.UNITS.MICROMETER);
-    metadata.setPixelsPhysicalSizeZ(pixelSize, 0);
-    pixelSize = ome.units.quantity.Time(java.lang.Double(options.pixSize.t), tunits);
-    metadata.setPixelsTimeIncrement(pixelSize, 0);
 
-    % ImageDescription — carries the MIB BoundingBox string so that the
-    % dataset's physical extent is preserved when reloading in MIB
-    if isfield(options, 'ImageDescription') && ~isempty(options.ImageDescription)
-        desc5d = options.ImageDescription{1};
-        if ~isempty(desc5d)
-            metadata.setImageDescription(desc5d, 0);
-        end
-    end
+    metadata = local_buildOmeMetadata(imageS, options, tunits, options.ImageDescription{1});
 
-    % Channel LUT colours — written so that MIB (and Fiji/OMERO) can
-    % restore per-channel colours when reloading the file
-    if isfield(options, 'lutColors') && ~isempty(options.lutColors)
-        nCh = size(options.lutColors, 1);
-        for iCh = 1:nCh
-            r = int32(round(options.lutColors(iCh, 1) * 255));
-            g = int32(round(options.lutColors(iCh, 2) * 255));
-            b = int32(round(options.lutColors(iCh, 3) * 255));
-            metadata.setChannelColor(ome.xml.model.primitives.Color(r, g, b, int32(255)), 0, iCh-1);
-        end
-    end
-    
     % delete old file
     if exist(filename, 'file') == 2; delete(filename); end
 
@@ -291,13 +262,28 @@ elseif strcmp(options.Saving3d, '2D')
     end
     
     
+    loci.common.DebugTools.enableLogging('ERROR');  % suppress BioFormats tile/strip DEBUG messages
     for num = 1:files_no
         descIdx = min(num, numel(options.ImageDescription));
         desc = cell2mat(options.ImageDescription(descIdx));
         if isnan(options.cmap)  % grayscale or rgb image
-            imwrite(imageS(:,:,:,num),options.SliceName{num},'tif','Compression',options.Compression,'Description',desc,'Resolution',options.Resolution);
-        else            % indexed image
-            imwrite(imageS(:,:,:,num),options.cmap,options.SliceName{num},'tif','Compression',options.Compression,'Description',desc,'Resolution',options.Resolution);
+            % write via bfsave (real OME-XML per file) so per-channel LUT
+            % colours survive the round-trip; imwrite has no OME concept and
+            % silently drops them (only a plain 'Description' string, no
+            % Channel/Color metadata)
+            imgSlice = imageS(:,:,:,num,:);   % keep [H,W,C,1,T] shape
+            sliceMetadata = local_buildOmeMetadata(imgSlice, options, tunits, desc);
+            if exist(options.SliceName{num}, 'file') == 2; delete(options.SliceName{num}); end
+            if strcmp(options.Compression, 'none')
+                bfsave(imgSlice, options.SliceName{num}, 'metadata', sliceMetadata);
+            else
+                bfsave(imgSlice, options.SliceName{num}, 'metadata', sliceMetadata, 'Compression', options.Compression);
+            end
+        else            % indexed image — palette is embedded directly by imwrite
+            % imwrite errors on an empty 'Description' value, so only pass it when non-empty
+            descArgs = {};
+            if ~isempty(desc); descArgs = {'Description', desc}; end
+            imwrite(imageS(:,:,:,num),options.cmap,options.SliceName{num},'tif','Compression',options.Compression,descArgs{:},'Resolution',options.Resolution);
         end
         if ~isempty(wb); if isa(wb,'matlab.ui.dialog.ProgressDialog'); wb.Value=num/files_no; else; waitbar(num/files_no,wb); end; end
     end
@@ -312,5 +298,43 @@ if ~isempty(wb)
     delete(wb);
 end
 result = 1;
+end
+
+function metadata = local_buildOmeMetadata(imgSlice, options, tunits, imageDescription)
+% LOCAL_BUILDOMEMETADATA - OME-XML metadata (pixel size, description, channel
+% colours) for a 5D array, shared by the '5D' and '2D' saving branches so
+% both carry the same physical-size and Channel/Color information.
+metadata = createMinimalOMEXMLMetadata(imgSlice, options.DimensionOrder);
+pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.x), ome.units.UNITS.MICROMETER);
+metadata.setPixelsPhysicalSizeX(pixelSize, 0);
+pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.y), ome.units.UNITS.MICROMETER);
+metadata.setPixelsPhysicalSizeY(pixelSize, 0);
+pixelSize = ome.units.quantity.Length(java.lang.Double(options.pixSize.z), ome.units.UNITS.MICROMETER);
+metadata.setPixelsPhysicalSizeZ(pixelSize, 0);
+pixelSize = ome.units.quantity.Time(java.lang.Double(options.pixSize.t), tunits);
+metadata.setPixelsTimeIncrement(pixelSize, 0);
+
+% ImageDescription — carries the MIB BoundingBox string so that the
+% dataset's physical extent is preserved when reloading in MIB
+if ~isempty(imageDescription)
+    metadata.setImageDescription(imageDescription, 0);
+end
+
+% Channel LUT colours — written so that MIB (and Fiji/OMERO) can restore
+% per-channel colours when reloading the file.
+% Cap the loop at the metadata's SizeC: calling setChannelColor beyond the
+% declared channel count creates a phantom Channel node with no ID, which
+% makes the Bio-Formats writer throw "Channel ID #N in Image #0 is null"
+% (e.g. a grayscale image whose lutColors still carries several RGB rows).
+if isfield(options, 'lutColors') && ~isempty(options.lutColors)
+    sizeC = metadata.getPixelsSizeC(0).getValue();
+    nCh = min(size(options.lutColors, 1), sizeC);
+    for iCh = 1:nCh
+        r = int32(round(options.lutColors(iCh, 1) * 255));
+        g = int32(round(options.lutColors(iCh, 2) * 255));
+        b = int32(round(options.lutColors(iCh, 3) * 255));
+        metadata.setChannelColor(ome.xml.model.primitives.Color(r, g, b, int32(255)), 0, iCh-1);
+    end
+end
 end
 

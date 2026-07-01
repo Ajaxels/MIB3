@@ -146,7 +146,7 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
             storePath = fullfile(BatchOpt.DirectoryName{1}, storePath);
         end
     else
-        selDir = uigetdir(defaultDir, 'Select the BigData model store (.zarr3 folder)');
+        selDir = uigetdir(defaultDir, 'Select the BigData model store (.zarr3 or read-only .zarr2 folder)');
         if isequal(selDir, 0); return; end   % cancelled
         storePath = selDir;
     end
@@ -163,7 +163,18 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
     bigMeta = core.MibImage.initializeImgInfo('pixSize', ds.image.pixSize, ...
         'Height', ds.image.height, 'Width', ds.image.width, ...
         'Depth', ds.image.depth, 'Time', ds.image.time, 'Colors', 1);
-    newLabels = core.MibBigDataLabels([], bigMeta);
+    % zarr v2 stores (.zattrs/.zgroup, no zarr.json) get a READ-ONLY overlay
+    % (core.MibBigDataLabelsZarr2, python-backed) — MIB's editable disk-backed
+    % pyramid (core.MibBigDataLabels) is native-zarr3-only. Both classes share
+    % the same public surface, so everything after this branch is unchanged.
+    % (storePath is already validated as an existing folder above)
+    isZarrV2Store = ~isfile(fullfile(storePath, 'zarr.json')) && ...
+        (isfile(fullfile(storePath, '.zattrs')) || isfile(fullfile(storePath, '.zgroup')));
+    if isZarrV2Store
+        newLabels = core.MibBigDataLabelsZarr2([], bigMeta);
+    else
+        newLabels = core.MibBigDataLabels([], bigMeta);
+    end
     try
         newLabels.openStore(storePath);
     catch ME
@@ -189,12 +200,40 @@ if strcmp(obj.I{id}.datasetType, 'BigData') && isempty(model)
 
     ds.labels = newLabels;
     % openStore restores material names/colours from the store when present;
-    % fall back to the default palette only when none were saved.
+    % fall back to the default palette (cycled to cover all 63 packed material
+    % slots) when none were saved, and to random colors when the preference
+    % palette itself is empty — an empty Colormap crashes labeloverlay in
+    % getRGBimage as soon as the model is displayed, so this must never stay empty.
     if isempty(ds.labels.materialColors)
-        ds.labels.materialColors = obj.preferences.Colors.ModelMaterialColors;
+        palette = obj.preferences.Colors.ModelMaterialColors;
+        nMat    = ds.labels.maxMaterials; % 63 for the packed BigData model scheme
+        if isempty(palette)
+            ds.labels.materialColors = rand(nMat, 3);
+        else
+            nPalette = size(palette, 1);
+            ds.labels.materialColors = palette(mod(0:nMat-1, nPalette) + 1, :);
+        end
     end
+    % Same idea for names: an externally-created store may carry no material
+    % metadata at all (checked by openStore: mibMaterials attr, else OME-NGFF
+    % image-label). Scanning the whole disk-backed volume to find which of the
+    % up-to-63 packed indices actually occur is too expensive here, so — same
+    % as the colors fallback above — populate all 63 numbered slots; this
+    % mirrors core.MibDataset.loadModel.m's Standard-mode auto-naming and lets
+    % the Segmentation panel show/select any material index present in the data.
+    % BigData models are always the 63-material packed scheme, so unlike the
+    % >255-material case elsewhere, plain numeric names carry no special
+    % meaning here — use "matN" throughout.
+    if isempty(ds.labels.materialNames)
+        ds.labels.materialNames = arrayfun(@(x) sprintf('mat%d', x), (1:ds.labels.maxMaterials)', 'UniformOutput', false);
+    end
+    ds.labels.materialsCount = numel(ds.labels.materialNames);
     ds.labels.labelsVariable  = 'mibModel';
     ds.labels.filename        = storePath;
+    % MibLabels63's constructor hardcodes maskFilename to 'Mask_none.mask' — re-derive
+    % it from the dataset's real image filename, same as core.MibDataset.loadModel.m
+    % does for Standard datasets, so "Save mask" defaults to the dataset's own name.
+    ds.labels.maskFilename    = ds.image.maskFilename;
     ds.modelExist             = true;
     ds.enableSelection        = true;   % browse-only BigData becomes segmentable
     ds.selectedMaterial       = 2;
