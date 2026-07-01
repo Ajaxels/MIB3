@@ -191,8 +191,19 @@ methods (Access = private)
         utils.ensureJavaLibraries({'bioformats'});
         loci.common.DebugTools.setRootLevel('ERROR');
 
+        % Open ONE Memoizer-cached reader for every setup-phase metadata query
+        % (scenes, voxel size, LUT). This replaces the three separate raw setId
+        % calls the setup path used before with a single parse and — because the
+        % Memoizer persists that parse to a .bfmemo in the shared 'bfFacade' dir
+        % (the same one io.BioFormats.Reader reads at pixel-read time) — makes
+        % subsequent opens of the same file skip the multi-minute CZI subblock-
+        % directory scan, even in a fresh MATLAB session with a cold OS cache.
+        % onCleanup releases the handle on every exit path (incl. dialog cancel).
+        sharedReader  = obj.openSharedReader(filename);
+        cleanupReader = onCleanup(@() obj.safeCloseReader(sharedReader));
+
         % --- enumerate pyramid scenes (un-flattened series) -------------------
-        [sceneIdx, sceneName, sceneLevel0] = obj.enumeratePyramidScenes(filename);
+        [sceneIdx, sceneName, sceneLevel0] = obj.enumeratePyramidScenes(sharedReader);
         if isempty(sceneIdx)
             error('io:BioFormatsVirtualSetupLoader:noPyramidScene', ...
                 'No readable image series found in:\n%s', filename);
@@ -228,7 +239,7 @@ methods (Access = private)
         seriesIndex0 = sceneIdx(chosen);   % 0-based series index of the chosen scene
 
         % --- voxel size from OME (best-effort) --------------------------------
-        voxel = obj.readVoxelSize(filename, seriesIndex0);   % [y x z] um
+        voxel = obj.readVoxelSize(sharedReader, seriesIndex0);   % [y x z] um
 
         % --- reader backend: OpenSlide family → openslideread engine; otherwise
         %     the BioFormats engine from the preference (io.BioFormats.Config) ----
@@ -295,7 +306,7 @@ methods (Access = private)
         imginfo{'Pyramid'} = py;
 
         % channel LUT colours from OME metadata (as the Virtual/Standard path does)
-        lut = obj.readLutColors(filename, seriesIndex0, s.colors);
+        lut = obj.readLutColors(sharedReader, seriesIndex0, s.colors);
         if ~isempty(lut); imginfo{'lutColors'} = lut; end
 
         % --- minimal files struct --------------------------------------------
@@ -311,13 +322,46 @@ methods (Access = private)
         files(1).imgClass     = s.imgClass;
     end
 
-    function [sceneIdx, sceneName, sceneLevel0] = enumeratePyramidScenes(~, filename)
+    function reader = openSharedReader(~, filename)
+        % OPENSHAREDREADER - open ONE Memoizer-cached, un-flattened Bio-Formats
+        % reader used for all setup-phase metadata queries (scenes/voxel/LUT).
+        %
+        % The reader is configured identically to io.BioFormats.Reader's Java
+        % backend (``bfGetReader`` + ``setFlattenedResolutions(false)`` wrapped in a
+        % ``loci.formats.Memoizer`` pointed at the shared ``bfFacade`` memo dir), so
+        % the ``.bfmemo`` written here is reused by the pixel-read path and, on any
+        % later open of the same file, lets ``setId`` load the cached parse (~0.2 s)
+        % instead of re-scanning the CZI subblock directory (minutes over a network
+        % share). Caller owns the returned handle (close via safeCloseReader).
+        utils.ensureJavaLibraries({'bioformats'});
+        loci.common.DebugTools.setRootLevel('ERROR');
+        baseReader = bfGetReader();
+        baseReader.setFlattenedResolutions(false);
+        facadeMemo = fullfile(io.BioFormats.Config.memoDir(), 'bfFacade');
+        if ~isfolder(facadeMemo)
+            try
+                mkdir(facadeMemo);
+            catch  %#ok<CTCH>
+            end
+        end
+        reader = loci.formats.Memoizer(baseReader, 0, java.io.File(facadeMemo));
+        reader.setId(filename);
+    end
+
+    function safeCloseReader(~, reader)
+        % SAFECLOSEREADER - close a shared Bio-Formats reader, ignoring errors.
+        if isempty(reader); return; end
+        try
+            reader.close();
+        catch  %#ok<CTCH>
+        end
+    end
+
+    function [sceneIdx, sceneName, sceneLevel0] = enumeratePyramidScenes(~, br)
         % ENUMERATEPYRAMIDSCENES - list pyramid scenes (un-flattened series),
         % excluding associated images (macro/label/overview/thumbnail).
         % Returns 0-based series indices, names, and per-scene level-0 [Y X].
-        br = bfGetReader();
-        br.setFlattenedResolutions(false);
-        br.setId(filename);
+        % Operates on an already-open, un-flattened reader (caller owns lifetime).
         nS = double(br.getSeriesCount());
         sceneIdx = []; sceneName = {}; sceneLevel0 = [];
         for s = 0:nS-1
@@ -333,16 +377,13 @@ methods (Access = private)
                 sceneLevel0(end+1,:) = [double(br.getSizeY()), double(br.getSizeX())]; %#ok<AGROW>
             end
         end
-        br.close();
     end
 
-    function voxel = readVoxelSize(~, filename, seriesIndex0)
+    function voxel = readVoxelSize(~, br, seriesIndex0)
         % READVOXELSIZE - OME physical voxel size [y x z] (um); defaults to 1.
+        % Reads from the already-open reader's metadata store (caller owns lifetime).
         voxel = [1 1 1];
         try
-            br = bfGetReader();
-            br.setFlattenedResolutions(false);
-            br.setId(filename);
             omeMeta = br.getMetadataStore();
             vx = omeMeta.getPixelsPhysicalSizeX(seriesIndex0);
             vy = omeMeta.getPixelsPhysicalSizeY(seriesIndex0);
@@ -350,25 +391,19 @@ methods (Access = private)
             if ~isempty(vx); voxel(2) = double(vx.value(ome.units.UNITS.MICROMETER)); end
             if ~isempty(vy); voxel(1) = double(vy.value(ome.units.UNITS.MICROMETER)); end
             if ~isempty(vz); voxel(3) = double(vz.value(ome.units.UNITS.MICROMETER)); end
-            br.close();
         catch
         end
         if any(~isfinite(voxel)) || any(voxel <= 0); voxel = [1 1 1]; end
     end
 
-    function lut = readLutColors(~, filename, seriesIndex0, colors)
+    function lut = readLutColors(~, br, seriesIndex0, colors)
         % READLUTCOLORS - per-channel LUT colours [colors x 3] in 0..1 from OME
         % metadata (channel colour, or emission wavelength → RGB). Returns [] when
         % unavailable, so the caller keeps the default LUT. Mirrors the logic in
-        % io.loaders.BioFormatsStdLoader.loadMetadata.
+        % io.loaders.BioFormatsStdLoader.loadMetadata. Reads from the already-open
+        % reader's metadata store (caller owns lifetime).
         lut = [];
         try
-            utils.ensureJavaLibraries({'bioformats'});
-            loci.common.DebugTools.setRootLevel('ERROR');
-            br = bfGetReader();
-            br.setFlattenedResolutions(false);
-            br.setId(filename);
-            br.setSeries(seriesIndex0);
             omeMeta = br.getMetadataStore();
             if ~isempty(omeMeta.getChannelColor(seriesIndex0, 0))
                 rgb = zeros(colors, 3);
@@ -389,7 +424,6 @@ methods (Access = private)
                 end
                 lut = rgb / 255;
             end
-            br.close();
         catch
             lut = [];
         end

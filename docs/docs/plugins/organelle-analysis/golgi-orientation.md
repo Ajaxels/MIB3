@@ -262,7 +262,7 @@ settings to the MIB session so they are restored next time the plugin is launche
 
 Example datasets are available from Zenodo:
 
-[https://doi.org/10.5281/zenodo.21068509](https://doi.org/10.5281/zenodo.21068509)
+[https://doi.org/10.5281/zenodo.21068508](https://doi.org/10.5281/zenodo.21068508)
 
 The archive contains two test sets:
 

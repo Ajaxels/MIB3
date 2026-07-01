@@ -23,6 +23,23 @@ an empty BigData placeholder).
 | **Virtual** | read on demand | ❌ browse-only | quickly browse datasets too large for RAM |
 | **BigData** | read on demand, pyramidal | ✅ disk-backed model | segment datasets far larger than RAM |
 
+!!! note "Cold vs. warm start — Bio-Formats / WSI files (CZI, NDPI, …)"
+    **Virtual** and **BigData** datasets that stream from a Bio-Formats / whole-slide file pay a
+    one-time **cold-start** cost the *first* time a given file is opened: Bio-Formats must scan the
+    file's internal tile/metadata directory before any pixels can be shown. This ranges from a second
+    or two for a small file to **several minutes** for a very large multi-gigabyte image, and is far
+    slower when the file lives on a **network drive** rather than a local disk. (By contrast, the pixel
+    reads *after* opening are cheap — a zoomed-out view reads only a small pyramid level.)
+
+    MIB caches this parse in a small Bio-Formats *Memoizer* index (a `.bfmemo` file kept in MIB's
+    temporary directory), so **every later open of the same file is near-instant — even after
+    restarting MIB**. Renaming/moving the file, or replacing it with a newer copy, invalidates the
+    cache and triggers one more cold start.
+
+    Datasets already stored as an **OME-Zarr v3** pyramid have **no** cold-start cost (a chunked store
+    needs no directory scan). For the fastest *first* open of a Bio-Formats / WSI file, keep it on a
+    **local disk** rather than a network share; opening it once also warms the cache for later sessions.
+
 ---
 
 ## Standard
