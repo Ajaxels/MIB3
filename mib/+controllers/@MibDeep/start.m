@@ -10,14 +10,6 @@ function start(obj, event)
 
     global mibDeepStopTraining     % variable to define stop of training (when true)
 
-    if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
-        mgsOpt.MsgBoxOnly = true;
-        mgsOpt.Icon = 'puffin_info';
-        utils.dlgs.inputUniversalDlg(obj.view.gui, 'Coming soon...', {}, {}, 'In progress', mgsOpt);
-        return;
-    end
-
-
     switch event.Source.Tag
         case 'PreprocessButton'
             obj.startPreprocessing();
@@ -71,6 +63,16 @@ function start(obj, event)
                 obj.startTraining(); % do semantic segmentation
             end
         case 'PredictButton'
+            if strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
+                % instance segmentation prediction has its own dedicated path,
+                % independent of the Blocked-image / Legacy prediction engines
+                try
+                    obj.startPredictionInstances();
+                catch err
+                    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
+                end
+                return;
+            end
             if strcmp(obj.BatchOpt.P_PredictionMode{1}, 'Blocked-image')
                 try
                     obj.startPredictionBlockedImage(); % new version for R2021a and MIB 2.83

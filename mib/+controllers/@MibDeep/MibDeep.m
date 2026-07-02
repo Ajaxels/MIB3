@@ -270,6 +270,7 @@ classdef MibDeep < handle
         singleModelTrainingFileValueChanged(obj, event)        % callback for press of SingleModelTrainingFile
         start(obj, event)        % start calcualtions, depending on the selected tab preprocessing, training, or prediction is initialized
         startPrediction2D(obj)        % predict datasets for 2D taken to a separate function for better performance
+        startPredictionInstances(obj)        % predict 2D instance segmentation (SOLOv2) datasets
         startPrediction3D(obj)        % predict datasets for 3D networks taken to a separate to improve performance
         startPredictionBlockedImage(obj)        % predict 2D/3D datasets using the blockedImage class requires R2021a or newer
         startPreprocessing(obj)        % preprocess imaging for training and prediction

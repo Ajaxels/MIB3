@@ -29,6 +29,41 @@ function checkNetwork(obj, fn)
         obj.wb = uiprogressdlg(obj.view.gui, 'Message', sprintf('%s\nPlease wait...', fn), ...
             'Title', 'Loading network', 'Cancelable','on');
     end
+    if isempty(fn) && strcmp(obj.BatchOpt.Workflow{1}, '2D Instance')
+        % SOLOv2 networks are built directly (not via createNetwork); preview them here
+        inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
+        inputPatchSize = [inputPatchSize([1 2]) 3];
+        switch obj.BatchOpt.T_EncoderNetwork{1}
+            case 'Resnet50'
+                detectorName = 'resnet50-coco';
+            otherwise
+                detectorName = 'light-resnet18-coco';
+        end
+        % constructing the detector also validates that the SOLOv2 support package is installed
+        try
+            solov2Net = solov2(detectorName, {'object'}, "InputSize", inputPatchSize);
+        catch err
+            utils.dlgs.showErrorDialog(obj.view.gui, err, 'Network initialization problem');
+            delete(obj.wb);
+            return;
+        end
+        obj.wb.Value = 0.9;
+        % analyzeNetwork / layer-graph preview is not available for the solov2 detector
+        % object (it exposes no underlying dlnetwork), so show a configuration summary
+        mgsOpt.MsgBoxOnly = true;
+        mgsOpt.Icon = 'puffin_info';
+        mgsOpt.HeaderLines = 6;
+        header = sprintf(['SOLOv2 instance segmentation network\n\n' ...
+            'Backbone: %s\nInput size: %d x %d x %d\nClass: %s\n\n' ...
+            'A detailed layer-graph preview is not available for the solov2 detector object.'], ...
+            detectorName, inputPatchSize(1), inputPatchSize(2), inputPatchSize(3), ...
+            strjoin(string(solov2Net.ClassNames), ', '));
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Instance network', mgsOpt);
+        obj.wb.Value = 1;
+        delete(obj.wb);
+        return;
+    end
+
     if isempty(fn)
         previewSwitch = 1;  % indicate that the network is only for preview, the weights of classes won't be calculated
         [lgraph, outputPatchSize] = obj.createNetwork(previewSwitch);

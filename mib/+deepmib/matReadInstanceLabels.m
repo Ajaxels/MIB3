@@ -39,7 +39,9 @@ if parentDir(1) == 'T'  % image coming for training
 else                    % image coming for validation
     imageFilename = fullfile(projectDir, 'ValidationImages', data.imageFilename);
 end
-out{1} = deepmib.storeLoadImages(imageFilename, getImageOptions);
+% storeLoadImages returns a 5D array [height width depth colors time];
+% for a 2D instance image squeeze away the singleton depth/time dimensions
+out{1} = squeeze(deepmib.storeLoadImages(imageFilename, getImageOptions));
 if ndims(out{1}) > 3
     errordlg(sprintf(['!!! Error !!!\n\n' ...
                     'The instance segmentation requires 2D images:\n' ...

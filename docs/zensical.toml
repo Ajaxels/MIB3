@@ -175,6 +175,7 @@ nav = [
       { "Train" = "user-interface/deepmib/deepmib-train.md" },
       { "Predict" = "user-interface/deepmib/deepmib-predict.md" },
       { "Options" = "user-interface/deepmib/deepmib-options.md" },
+      { "2D Instance (SOLOv2)" = "user-interface/deepmib/deepmib-instance.md" },
     ]},
     { "Key and mouse shortcuts" = "user-interface/key-and-mouse-shortcuts.md" },
   ]},

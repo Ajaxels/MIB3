@@ -1,2 +1,8 @@
-# example of a command to run
+# example of a command to run, the script resolves mib root:
 d:\Python\Miniforge\envs\Zensical\python.exe run_all.py
+d:\Python\Miniforge3\envs\Zensical\python.exe run_all.py
+
+alternative:
+
+cd C:\MATLAB\MIB3
+d:\Python\Miniforge3\envs\Zensical\python.exe development\graphify\run_all.py

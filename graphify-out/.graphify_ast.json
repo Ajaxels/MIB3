@@ -6326,6 +6326,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_startpredictioninstances_m",
+      "label": "startPredictionInstances.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_startpreprocessing_m",
       "label": "startPreprocessing.m",
       "file_type": "code",
@@ -7936,6 +7947,17 @@
       "label": "membranePanel_Callback.m",
       "file_type": "code",
       "source_file": "+controllers\\@MibSegmentation\\membranePanel_Callback.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_mibsegmentation_refreshthresholdsliderupdatemode_m",
+      "label": "refreshThresholdSliderUpdateMode.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibSegmentation\\refreshThresholdSliderUpdateMode.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -10902,6 +10924,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_volrenapp_volrenapp_delete",
+      "label": "delete",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_volrenapp_volrenapp_updatewidgets",
       "label": "updateWidgets",
       "file_type": "code",
@@ -11212,6 +11245,94 @@
     {
       "id": "controllers_volrenapp_volrenapp_modelupdateoverlay",
       "label": "modelUpdateOverlay",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_refreshoverlay",
+      "label": "refreshOverlay",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_toggleliveupdate",
+      "label": "toggleLiveUpdate",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_enableliveupdate",
+      "label": "enableLiveUpdate",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_disableliveupdate",
+      "label": "disableLiveUpdate",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_liveupdaterequest",
+      "label": "liveUpdateRequest",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_liveupdatefire",
+      "label": "liveUpdateFire",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_stopliveupdatetimer",
+      "label": "stopLiveUpdateTimer",
+      "file_type": "code",
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_volrenapp_volrenapp_refreshoverlaydata",
+      "label": "refreshOverlayData",
       "file_type": "code",
       "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
       "source_location": null,
@@ -12607,6 +12728,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabels_findclosestlevelforimport_m",
+      "label": "findClosestLevelForImport.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabels\\findClosestLevelForImport.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibbigdatalabels_getdata63_m",
       "label": "getData63.m",
       "file_type": "code",
@@ -12970,6 +13102,94 @@
       "contributor": null
     },
     {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "label": "MibBigDataLabelsZarr2.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_mibbigdatalabelszarr2",
+      "label": "MibBigDataLabelsZarr2",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_openstore",
+      "label": "openStore",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readpackedlevel",
+      "label": "readPackedLevel",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_writepackedlevel",
+      "label": "writePackedLevel",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_setdata63",
+      "label": "setData63",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readzattrsv2",
+      "label": "readZattrsV2",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readmaterialmetadatav2",
+      "label": "readMaterialMetadataV2",
+      "file_type": "code",
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibdataset_mibdataset_m",
       "label": "MibDataset.m",
       "file_type": "code",
@@ -13018,6 +13238,17 @@
       "label": "allocateMask.m",
       "file_type": "code",
       "source_file": "+core\\@MibDataset\\allocateMask.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibdataset_applysizemismatch_m",
+      "label": "applySizeMismatch.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\applySizeMismatch.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -13414,6 +13645,17 @@
       "label": "moveView.m",
       "file_type": "code",
       "source_file": "+core\\@MibDataset\\moveView.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "core_mibdataset_promptsizemismatch_m",
+      "label": "promptSizeMismatch.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\promptSizeMismatch.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -15163,6 +15405,17 @@
       "label": "importDatasetFromMib.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\importDatasetFromMib.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "models_mibmodel_importmaterial_m",
+      "label": "importMaterial.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\importMaterial.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -18349,6 +18602,28 @@
       "contributor": null
     },
     {
+      "id": "io_loaders_bioformatsvirtualsetuploader_opensharedreader",
+      "label": "openSharedReader",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\BioFormatsVirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_bioformatsvirtualsetuploader_safeclosereader",
+      "label": "safeCloseReader",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\BioFormatsVirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_loaders_bioformatsvirtualsetuploader_enumeratepyramidscenes",
       "label": "enumeratePyramidScenes",
       "file_type": "code",
@@ -18811,6 +19086,160 @@
       "contributor": null
     },
     {
+      "id": "io_loaders_omezarrmetadatautils_m",
+      "label": "OmeZarrMetadataUtils.m",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_extractmultiscales",
+      "label": "extractMultiscales",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_extractaxisorder",
+      "label": "extractAxisOrder",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_axisordertolabels",
+      "label": "axisOrderToLabels",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_extractscalefromct",
+      "label": "extractScaleFromCT",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_extractaxisunit",
+      "label": "extractAxisUnit",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_safegetdim",
+      "label": "safeGetDim",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_safegetscale",
+      "label": "safeGetScale",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_saferatio",
+      "label": "safeRatio",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_classmaxint",
+      "label": "classMaxInt",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_colortype",
+      "label": "colorType",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_buildviewport",
+      "label": "buildViewPort",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_resolvematerialmetadata",
+      "label": "resolveMaterialMetadata",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_omezarrmetadatautils_computepermutation",
+      "label": "computePermutation",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_loaders_videoreaderloader_m",
       "label": "VideoReaderLoader.m",
       "file_type": "code",
@@ -18848,6 +19277,215 @@
       "label": "loadImages",
       "file_type": "code",
       "source_file": "+io\\+loaders\\VideoReaderLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualloader_m",
+      "label": "Zarr2VirtualLoader.m",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualloader_zarr2virtualloader",
+      "label": "Zarr2VirtualLoader",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualloader_readregion",
+      "label": "readRegion",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_m",
+      "label": "Zarr2VirtualSetupLoader.m",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_zarr2virtualsetuploader",
+      "label": "Zarr2VirtualSetupLoader",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_loadmetadata",
+      "label": "loadMetadata",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_loadimages",
+      "label": "loadImages",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_parsemultiscalesv2",
+      "label": "parseMultiscalesV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_parsesinglearrayv2",
+      "label": "parseSingleArrayV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_loadimagesstandardv2",
+      "label": "loadImagesStandardV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_loadimagesmodelv2",
+      "label": "loadImagesModelV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_loadimagesvirtualv2",
+      "label": "loadImagesVirtualV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_buildlevelpath",
+      "label": "buildLevelPath",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_tryhttpexists",
+      "label": "tryHttpExists",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_readzattrsv2",
+      "label": "readZattrsV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_readzarrayv2",
+      "label": "readZarrayV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_findmultiscalessubpathv2",
+      "label": "findMultiscalesSubPathV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_readmaterialmetadatav2",
+      "label": "readMaterialMetadataV2",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_loaders_zarr2virtualsetuploader_zarrv2typetomatlabclass",
+      "label": "zarrV2TypeToMatlabClass",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -18954,17 +19592,6 @@
       "contributor": null
     },
     {
-      "id": "io_loaders_zarr3virtualsetuploader_extractmultiscales",
-      "label": "extractMultiscales",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
       "id": "io_loaders_zarr3virtualsetuploader_findmultiscalessubpath",
       "label": "findMultiscalesSubPath",
       "file_type": "code",
@@ -18998,6 +19625,17 @@
       "contributor": null
     },
     {
+      "id": "io_loaders_zarr3virtualsetuploader_loadimagesmodel",
+      "label": "loadImagesModel",
+      "file_type": "code",
+      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_loaders_zarr3virtualsetuploader_loadimagesvirtual",
       "label": "loadImagesVirtual",
       "file_type": "code",
@@ -19009,8 +19647,8 @@
       "contributor": null
     },
     {
-      "id": "io_loaders_zarr3virtualsetuploader_extractaxisorder",
-      "label": "extractAxisOrder",
+      "id": "io_loaders_zarr3virtualsetuploader_readzarrjsonattrsv3",
+      "label": "readZarrJsonAttrsV3",
       "file_type": "code",
       "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
       "source_location": null,
@@ -19020,63 +19658,8 @@
       "contributor": null
     },
     {
-      "id": "io_loaders_zarr3virtualsetuploader_axisordertolabels",
-      "label": "axisOrderToLabels",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_extractscalefromct",
-      "label": "extractScaleFromCT",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_extractaxisunit",
-      "label": "extractAxisUnit",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_safegetdim",
-      "label": "safeGetDim",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_safegetscale",
-      "label": "safeGetScale",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_saferatio",
-      "label": "safeRatio",
+      "id": "io_loaders_zarr3virtualsetuploader_readmaterialmetadatav3",
+      "label": "readMaterialMetadataV3",
       "file_type": "code",
       "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
       "source_location": null,
@@ -19088,39 +19671,6 @@
     {
       "id": "io_loaders_zarr3virtualsetuploader_zarrtypetomatlabclass",
       "label": "zarrTypeToMatlabClass",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_classmaxint",
-      "label": "classMaxInt",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_colortype",
-      "label": "colorType",
-      "file_type": "code",
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null
-    },
-    {
-      "id": "io_loaders_zarr3virtualsetuploader_buildviewport",
-      "label": "buildViewPort",
       "file_type": "code",
       "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
       "source_location": null,
@@ -19244,6 +19794,50 @@
       "label": "buildCommonHDFOptions",
       "file_type": "code",
       "source_file": "+io\\+savers\\HDF5Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_imagedatastoresliceprovider_m",
+      "label": "ImageDatastoreSliceProvider.m",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_imagedatastoresliceprovider_imagedatastoresliceprovider",
+      "label": "ImageDatastoreSliceProvider",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_imagedatastoresliceprovider_getslice",
+      "label": "getSlice",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_imagedatastoresliceprovider_readfile",
+      "label": "readFile",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -19735,6 +20329,72 @@
       "contributor": null
     },
     {
+      "id": "io_savers_ometiffsaver_savestream",
+      "label": "saveStream",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_ometiffsaver_writeometiffstream5d",
+      "label": "writeOmeTiffStream5D",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_ometiffsaver_writeometiffstream2d",
+      "label": "writeOmeTiffStream2D",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_ometiffsaver_pixeltypeandconverter",
+      "label": "pixelTypeAndConverter",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_ometiffsaver_umscalefactor",
+      "label": "umScaleFactor",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_ometiffsaver_ometimeunit",
+      "label": "omeTimeUnit",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "io_savers_pngsaver_m",
       "label": "PngSaver.m",
       "file_type": "code",
@@ -20032,8 +20692,19 @@
       "contributor": null
     },
     {
-      "id": "io_savers_zarr3saver_writestreamslice",
-      "label": "writeStreamSlice",
+      "id": "io_savers_zarr3saver_patchmetadata",
+      "label": "patchMetadata",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_writestreambatch",
+      "label": "writeStreamBatch",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -20067,6 +20738,17 @@
     {
       "id": "io_savers_zarr3saver_reducezbuffer",
       "label": "reduceZBuffer",
+      "file_type": "code",
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "io_savers_zarr3saver_extractscalevec",
+      "label": "extractScaleVec",
       "file_type": "code",
       "source_file": "+io\\+savers\\Zarr3Saver.m",
       "source_location": null,
@@ -22738,6 +23420,50 @@
       "contributor": null
     },
     {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_downsampleblock",
+      "label": "downsampleBlock",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_writesubvolumetolevel",
+      "label": "writeSubvolumeToLevel",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_calculatemultiscalelevels",
+      "label": "calculateMultiscaleLevels",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_createmultiscaledataset",
+      "label": "createMultiscaleDataset",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_fileprocessing_imageconverter_imageconverter_readwithloader",
       "label": "readWithLoader",
       "file_type": "code",
@@ -22751,6 +23477,17 @@
     {
       "id": "plugins_fileprocessing_imageconverter_imageconverter_writeimagewithprogress",
       "label": "writeImageWithProgress",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_converttozarr3native",
+      "label": "convertToZarr3Native",
       "file_type": "code",
       "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
       "source_location": null,
@@ -22894,6 +23631,17 @@
     {
       "id": "plugins_fileprocessing_imageconverter_imageconverter_convert",
       "label": "Convert",
+      "file_type": "code",
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_fileprocessing_imageconverter_imageconverter_generatezarrnative",
+      "label": "generateZarrNative",
       "file_type": "code",
       "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
       "source_location": null,
@@ -23654,7 +24402,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_m",
       "label": "MCcalc.m",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23665,7 +24413,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_viewlistner_callback2",
       "label": "ViewListner_Callback2",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23676,7 +24424,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_mccalc",
       "label": "MCcalc",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23687,7 +24435,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_closewindow",
       "label": "closeWindow",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23698,7 +24446,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_addcallbacks",
       "label": "addCallbacks",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23709,7 +24457,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_updatewidgets",
       "label": "updateWidgets",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23720,7 +24468,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_calcpixelscheck_callback",
       "label": "calcPixelsCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23731,7 +24479,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_exportmatlabcheck_callback",
       "label": "exportMatlabCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23742,7 +24490,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_helpbtn_callback",
       "label": "helpBtn_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23753,7 +24501,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_saveresultscheck_callback",
       "label": "saveResultsCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23764,7 +24512,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_exportresultsfilename_callback",
       "label": "exportResultsFilename_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23775,7 +24523,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_resultsimagescheck_callback",
       "label": "resultsImagesCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23786,7 +24534,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_resultimagesdirbtn_callback",
       "label": "resultImagesDirBtn_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23797,7 +24545,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_detectcontactscheck_callback",
       "label": "detectContactsCheck_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23808,7 +24556,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_extendrays_callback",
       "label": "extendRays_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23819,7 +24567,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_continuebtn_callback",
       "label": "continueBtn_Callback",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23830,7 +24578,7 @@
       "id": "plugins_organelleanalysis_mccalc_mccalc_savetoexcel",
       "label": "saveToExcel",
       "file_type": "code",
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -30290,6 +31038,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_startpredictioninstances_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_startpreprocessing_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -31681,6 +32439,16 @@
     {
       "source": "controllers_mibsegmentation_mibsegmentation_m",
       "target": "controllers_mibsegmentation_membranepanel_callback_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\MibSegmentation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_mibsegmentation_m",
+      "target": "controllers_mibsegmentation_refreshthresholdsliderupdatemode_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -34230,6 +34998,16 @@
     },
     {
       "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_delete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_updatewidgets",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -34511,6 +35289,86 @@
     {
       "source": "controllers_volrenapp_volrenapp_m",
       "target": "controllers_volrenapp_volrenapp_modelupdateoverlay",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_refreshoverlay",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_toggleliveupdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_enableliveupdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_disableliveupdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_liveupdaterequest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_liveupdatefire",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_stopliveupdatetimer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@VolRenApp\\VolRenApp.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_volrenapp_volrenapp_m",
+      "target": "controllers_volrenapp_volrenapp_refreshoverlaydata",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -35670,6 +36528,16 @@
     },
     {
       "source": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "target": "core_mibbigdatalabels_findclosestlevelforimport_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabels\\MibBigDataLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabels_mibbigdatalabels_m",
       "target": "core_mibbigdatalabels_getdata63_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -35999,6 +36867,76 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_mibbigdatalabelszarr2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_openstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readpackedlevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_writepackedlevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_setdata63",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readzattrsv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_readmaterialmetadatav2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_addframe_m",
       "relation": "contains",
@@ -36031,6 +36969,16 @@
     {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_allocatemask_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_applysizemismatch_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -36391,6 +37339,16 @@
     {
       "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_moveview_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_promptsizemismatch_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -37891,6 +38849,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_importdatasetfrommib_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_importmaterial_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -40620,6 +41588,26 @@
     },
     {
       "source": "io_loaders_bioformatsvirtualsetuploader_m",
+      "target": "io_loaders_bioformatsvirtualsetuploader_opensharedreader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\BioFormatsVirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_bioformatsvirtualsetuploader_m",
+      "target": "io_loaders_bioformatsvirtualsetuploader_safeclosereader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\BioFormatsVirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_bioformatsvirtualsetuploader_m",
       "target": "io_loaders_bioformatsvirtualsetuploader_enumeratepyramidscenes",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -40949,6 +41937,136 @@
       "weight": 1.0
     },
     {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_extractmultiscales",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_extractaxisorder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_axisordertolabels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_extractscalefromct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_extractaxisunit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_safegetdim",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_safegetscale",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_saferatio",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_classmaxint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_colortype",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_buildviewport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_resolvematerialmetadata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_omezarrmetadatautils_m",
+      "target": "io_loaders_omezarrmetadatautils_computepermutation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\OmeZarrMetadataUtils.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_loaders_videoreaderloader_m",
       "target": "io_loaders_videoreaderloader_videoreaderloader",
       "relation": "contains",
@@ -40975,6 +42093,176 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+io\\+loaders\\VideoReaderLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualloader_m",
+      "target": "io_loaders_zarr2virtualloader_zarr2virtualloader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualloader_m",
+      "target": "io_loaders_zarr2virtualloader_readregion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_zarr2virtualsetuploader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_loadmetadata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_loadimages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_parsemultiscalesv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_parsesinglearrayv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_loadimagesstandardv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_loadimagesmodelv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_loadimagesvirtualv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_buildlevelpath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_tryhttpexists",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_readzattrsv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_readzarrayv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_findmultiscalessubpathv2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_readmaterialmetadatav2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "io_loaders_zarr2virtualsetuploader_zarrv2typetomatlabclass",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -41050,16 +42338,6 @@
     },
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_extractmultiscales",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
       "target": "io_loaders_zarr3virtualsetuploader_findmultiscalessubpath",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -41090,6 +42368,16 @@
     },
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
+      "target": "io_loaders_zarr3virtualsetuploader_loadimagesmodel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr3virtualsetuploader_m",
       "target": "io_loaders_zarr3virtualsetuploader_loadimagesvirtual",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -41100,7 +42388,7 @@
     },
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_extractaxisorder",
+      "target": "io_loaders_zarr3virtualsetuploader_readzarrjsonattrsv3",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41110,57 +42398,7 @@
     },
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_axisordertolabels",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_extractscalefromct",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_extractaxisunit",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_safegetdim",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_safegetscale",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_saferatio",
+      "target": "io_loaders_zarr3virtualsetuploader_readmaterialmetadatav3",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41171,36 +42409,6 @@
     {
       "source": "io_loaders_zarr3virtualsetuploader_m",
       "target": "io_loaders_zarr3virtualsetuploader_zarrtypetomatlabclass",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_classmaxint",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_colortype",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualsetuploader_buildviewport",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41295,6 +42503,36 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+io\\+savers\\HDF5Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_imagedatastoresliceprovider_m",
+      "target": "io_savers_imagedatastoresliceprovider_imagedatastoresliceprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_imagedatastoresliceprovider_m",
+      "target": "io_savers_imagedatastoresliceprovider_getslice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_imagedatastoresliceprovider_m",
+      "target": "io_savers_imagedatastoresliceprovider_readfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\ImageDatastoreSliceProvider.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -41659,6 +42897,66 @@
       "weight": 1.0
     },
     {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "io_savers_ometiffsaver_savestream",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "io_savers_ometiffsaver_writeometiffstream5d",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "io_savers_ometiffsaver_writeometiffstream2d",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "io_savers_ometiffsaver_pixeltypeandconverter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "io_savers_ometiffsaver_umscalefactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "io_savers_ometiffsaver_ometimeunit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_savers_pngsaver_m",
       "target": "io_savers_pngsaver_pngsaver",
       "relation": "contains",
@@ -41890,7 +43188,17 @@
     },
     {
       "source": "io_savers_zarr3saver_m",
-      "target": "io_savers_zarr3saver_writestreamslice",
+      "target": "io_savers_zarr3saver_patchmetadata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_writestreambatch",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -41921,6 +43229,16 @@
     {
       "source": "io_savers_zarr3saver_m",
       "target": "io_savers_zarr3saver_reducezbuffer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "io_savers_zarr3saver_extractscalevec",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -44160,6 +45478,46 @@
     },
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_downsampleblock",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_writesubvolumetolevel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_calculatemultiscalelevels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_createmultiscaledataset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "plugins_fileprocessing_imageconverter_imageconverter_readwithloader",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -44171,6 +45529,16 @@
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "plugins_fileprocessing_imageconverter_imageconverter_writeimagewithprogress",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_converttozarr3native",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -44301,6 +45669,16 @@
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "plugins_fileprocessing_imageconverter_imageconverter_convert",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "plugins_fileprocessing_imageconverter_imageconverter_generatezarrnative",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -44954,7 +46332,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -44964,7 +46342,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -44974,7 +46352,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -44984,7 +46362,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -44994,7 +46372,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45004,7 +46382,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45014,7 +46392,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45024,7 +46402,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45034,7 +46412,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45044,7 +46422,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45054,7 +46432,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45064,7 +46442,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45074,7 +46452,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45084,7 +46462,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45094,7 +46472,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -45104,7 +46482,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -49460,6 +50838,16 @@
     },
     {
       "source": "controllers_mibdeep_start_m",
+      "target": "controllers_mibdeep_startpredictioninstances_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibDeep\\start.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_start_m",
       "target": "controllers_mibdeep_startpredictionblockedimage_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -49525,6 +50913,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibDeep\\startPredictionBlockedImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -49630,7 +51028,7 @@
     },
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
-      "target": "controllers_mibdeep_createnetwork_m",
+      "target": "controllers_mibdeep_setaugfunchandles_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -49641,16 +51039,6 @@
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
       "target": "controllers_mibdeep_prepraretrainingoptionsinstances_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibdeep_starttraininginstances_m",
-      "target": "controllers_mibdeep_updatesegmentationlayer_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -50945,6 +52333,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+controllers\\@MibSegmentation\\samPanel_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_thresholdingpanel_callback_m",
+      "target": "controllers_mibsegmentation_refreshthresholdsliderupdatemode_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+controllers\\@MibSegmentation\\thresholdingPanel_Callback.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52279,6 +53677,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibbigdatalabels_findclosestlevelforimport_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_picklevel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibBigDataLabels\\findClosestLevelForImport.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibbigdatalabels_getdata63_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_picklevel",
       "relation": "calls",
@@ -52405,6 +53813,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+core\\@MibBigDataLabels\\setData63.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "core_mibbigdatalabels_mibbigdatalabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -52700,6 +54118,16 @@
     },
     {
       "source": "core_mibdataset_loadmask_m",
+      "target": "core_mibdataset_promptsizemismatch_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\loadMask.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_loadmask_m",
       "target": "core_mibdataset_setdata3d_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -52724,6 +54152,16 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
+      "source_file": "+core\\@MibDataset\\loadModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_loadmodel_m",
+      "target": "core_mibdataset_promptsizemismatch_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
       "source_file": "+core\\@MibDataset\\loadModel.m",
       "source_location": null,
       "weight": 1.0
@@ -52905,6 +54343,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+core\\@MibDataset\\rotateDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_saveimage_m",
+      "target": "io_savers_mibimagesliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibDataset\\saveImage.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -53280,6 +54728,16 @@
     },
     {
       "source": "core_mibvirtualimage_getdatazarr_m",
+      "target": "io_loaders_zarr2virtualloader_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibVirtualImage\\getDataZarr.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibvirtualimage_getdatazarr_m",
       "target": "io_loaders_zarr3virtualloader_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -53311,6 +54769,16 @@
     {
       "source": "core_mibvirtualimage_getorcreateloader_m",
       "target": "io_loaders_zarr3virtualloader_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibVirtualImage\\getOrCreateLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibvirtualimage_getorcreateloader_m",
+      "target": "io_loaders_zarr2virtualloader_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -54379,6 +55847,66 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "models_mibmodel_getdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "models_mibmodel_setdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_initialize_m",
       "target": "core_mibbackup_mibbackup_m",
       "relation": "calls",
@@ -54770,6 +56298,16 @@
     },
     {
       "source": "models_mibmodel_loadmodel_m",
+      "target": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\loadModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_loadmodel_m",
       "target": "core_mibbigdatalabels_mibbigdatalabels_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -54841,6 +56379,16 @@
     {
       "source": "models_mibmodel_materialsactions_m",
       "target": "models_mibmodel_addmaterial_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\materialsActions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_materialsactions_m",
+      "target": "models_mibmodel_importmaterial_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -55480,6 +57028,16 @@
     },
     {
       "source": "io_loaderfactory_m",
+      "target": "io_loaders_zarr2virtualsetuploader_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+io\\LoaderFactory.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaderfactory_m",
       "target": "io_loaders_amirameshloader_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -55809,16 +57367,6 @@
       "weight": 1.0
     },
     {
-      "source": "io_loaders_zarr3virtualsetuploader_m",
-      "target": "io_loaders_zarr3virtualloader_m",
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "+io\\+loaders\\Zarr3VirtualSetupLoader.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
       "source": "io_savers_jpgsaver_m",
       "target": "io_zarr_group_m",
       "relation": "calls",
@@ -55851,6 +57399,16 @@
     {
       "source": "io_savers_zarr3saver_m",
       "target": "io_zarr_group_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+io\\+savers\\Zarr3Saver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_zarr3saver_m",
+      "target": "external_zarr3matlab_zarrgroup_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
@@ -55915,6 +57473,26 @@
       "confidence": "INFERRED",
       "confidence_score": 0.7,
       "source_file": "external\\Zarr3Matlab\\tests\\ZarrGroupTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "io_savers_imagedatastoresliceprovider_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "io_savers_zarr3saver_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -56054,7 +57632,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -56064,7 +57642,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -57151,6 +58729,16 @@
     {
       "source": "controllers_boundingbox_boundingbox_m",
       "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@BoundingBox\\BoundingBox.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_boundingbox_boundingbox_m",
+      "target": "utils_dlgs_inputquestdlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -59919,6 +61507,36 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_storeloadimages_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_segmentblockedimageinstances_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibdeep_startpreprocessing_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -60010,7 +61628,17 @@
     },
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
-      "target": "deepmib_storeloadimages_m",
+      "target": "deepmib_readinstancepatch_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_starttraininginstances_m",
+      "target": "deepmib_stoptrainingcallback_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -60030,17 +61658,7 @@
     },
     {
       "source": "controllers_mibdeep_starttraininginstances_m",
-      "target": "deepmib_matreadinstancelabels_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+controllers\\@MibDeep\\startTrainingInstances.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
-      "source": "controllers_mibdeep_starttraininginstances_m",
-      "target": "deepmib_stoptrainingcallback_m",
+      "target": "deepmib_augmentinstancedata2d_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -60889,6 +62507,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibribbon_updatevoxelsizes_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibRibbon\\updateVoxelSizes.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibroi_addroi_m",
       "target": "utils_dlgs_inputsingledlg_m",
       "relation": "calls",
@@ -61441,6 +63069,16 @@
     {
       "source": "controllers_preferences_preferences_m",
       "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Preferences\\Preferences.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_preferences_preferences_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -62589,6 +64227,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibbigdatalabelszarr2_mibbigdatalabelszarr2_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibBigDataLabelsZarr2\\MibBigDataLabelsZarr2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_addframetoimage_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -62669,16 +64317,6 @@
       "weight": 1.0
     },
     {
-      "source": "core_mibdataset_loadmask_m",
-      "target": "utils_dlgs_inputuniversaldlg_m",
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "+core\\@MibDataset\\loadMask.m",
-      "source_location": null,
-      "weight": 1.0
-    },
-    {
       "source": "core_mibdataset_loadmodel_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -62695,6 +64333,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@MibDataset\\loadModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_promptsizemismatch_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\promptSizeMismatch.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_saveimage_m",
+      "target": "utils_calculateresolution_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\saveImage.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -63109,6 +64767,36 @@
       "weight": 1.0
     },
     {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "utils_defaults_initializepixsize_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_loaders_zarr2virtualsetuploader_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+loaders\\Zarr2VirtualSetupLoader.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "io_loaders_zarr3virtualsetuploader_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -63301,6 +64989,36 @@
     {
       "source": "io_savers_ometiffsaver_m",
       "target": "io_bioformats_mibimage2ometiff_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "utils_ensurejavalibraries_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "utils_calculateresolution_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+io\\+savers\\OmeTiffSaver.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "io_savers_ometiffsaver_m",
+      "target": "utils_normalizeunits_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -63835,6 +65553,66 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+models\\@MibModel\\importDatasetFromMib.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "utils_dlgs_mibuigetfile_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "utils_dlgs_showerrordialog_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "utils_dlgs_inputsingledlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_importmaterial_m",
+      "target": "utils_warnlargefullresread_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\importMaterial.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -64919,6 +66697,16 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_organelleanalysis_golgiorientation_golgiorientation_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\OrganelleAnalysis\\GolgiOrientation\\GolgiOrientation.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_organelleanalysis_granularity_granularity_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
@@ -64974,7 +66762,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -64984,7 +66772,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -64994,7 +66782,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -65004,7 +66792,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -65014,7 +66802,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -65024,7 +66812,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "plugins\\OrganelleAnalysis\\MCcalc\\MCcalc.m",
+      "source_file": "plugins\\OrganelleAnalysis\\McCalc\\MCcalc.m",
       "source_location": null,
       "weight": 1.0
     },

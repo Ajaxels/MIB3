@@ -33,12 +33,29 @@ if strcmp(preprocessFor, 'training')
 elseif strcmp(preprocessFor, 'prediction')
     imageDirIn = obj.BatchOpt.OriginalPredictionImagesDir;
     imageFilenameExtension = obj.BatchOpt.ImageFilenameExtension{1};
-    trainingSwitch = 0;
+    trainingSwitch = 0; %#ok<NASGU>
 
+    % instance segmentation prediction reads the raw images directly with
+    % segmentObjects (see startPredictionInstances), so no label preprocessing
+    % is required. Just verify that the images are in place and inform the user.
+    predictionImagesDir = fullfile(imageDirIn, 'Images');
+    if ~isfolder(predictionImagesDir)
+        predictionImagesDir = imageDirIn;   % fall back to a flat folder of images
+    end
+    imgFilelist = dir(fullfile(predictionImagesDir, ['*.' lower(imageFilenameExtension)]));
     mgsOpt.MsgBoxOnly = true;
-    header = sprintf('processImagesForInstanceSegmentation: not yet implemented!');
-    utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Preprocessing error', mgsOpt);
-    return; 
+    if isempty(imgFilelist)
+        mgsOpt.Icon = 'puffin_error';
+        header = sprintf('No prediction images (*.%s) were found in\n\n%s', lower(imageFilenameExtension), predictionImagesDir);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing prediction images', mgsOpt);
+    else
+        mgsOpt.Icon = 'puffin_info';
+        header = sprintf(['Preprocessing is not required for instance segmentation prediction.\n\n' ...
+            '%d image(s) were found in\n%s\n\nSwitch to the Predict tab and press Predict.'], ...
+            numel(imgFilelist), predictionImagesDir);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Prediction preprocessing', mgsOpt);
+    end
+    return;
 else
     mgsOpt.MsgBoxOnly = true;
     header = sprintf('processImagesForInstanceSegmentation: the second parameter is wrong!');
@@ -188,30 +205,24 @@ parfor (imgId=1:numImgFiles, parforArg)
         if strcmp(mode2D3DParFor, '2D')
             if singleModelTrainingFileParFor
                 labelMap = labelsDS.(labelsDS.modelVariable)(:,:,imgId);    % get 2D slice from the model
-                [~, fnModOut] = fileparts(imgFilelist.Files{imgId});    % get filename for the model
+                [~, fnModOut] = fileparts(imgFilelist(imgId).name);    % get filename for the model
                 fnModOut = sprintf('Labels_%s', fnModOut);  % generate name for the output model file
             else
                 labelMap = readimage(labelsDS, imgId);      % read corresponding model
                 [~, fnModOut] = fileparts(labelsDS.Files{imgId});    % get filename for the model
             end
 
-            % get label size
-            [height, width] = size(labelMap);
-            % detect bounding boxes
-            stats = regionprops(labelMap, {'BoundingBox', 'PixelIdxList'});
-            instanceBoxes = ceil(reshape([stats.BoundingBox], [4, 8])');
-            % get number of objects
-            numObjects = numel(stats);
-            % allocate labels
-            instanceNames = categorical(repmat({'object'}, [numObjects, 1]));
-            instanceMasks = zeros([height, width, numObjects], 'logical');
-            for objId = 1:numObjects
-                PixelIdxListShift = height*width*(objId-1);     % calculate shift of pixel Ids
-                instanceMasks(stats(objId).PixelIdxList + PixelIdxListShift) = true;
+            % store the 2D instance label map (each object = unique index, background 0);
+            % native-resolution patches are cropped from it on-the-fly during training
+            % (see deepmib.readInstancePatch), which avoids building memory-heavy full-image
+            % mask stacks for large / whole-slide images
+            if ~any(labelMap(:))
+                % no labelled objects on this image, skip generating an annotation file
+                fprintf('processImagesForInstanceSegmentation: no objects in "%s", skipped\n', imgFilelist(imgId).name);
+            else
+                instanceLabelMap = uint16(labelMap);
+                deepmib.saveInstanceLabelsParFor(fullfile(outputDir, [fnModOut '.mat']), imgFilelist(imgId).name, instanceLabelMap, compressModels)
             end
-
-            % save mat-file
-            deepmib.saveInstanceLabelsParFor(fullfile(outputDir, [fnModOut '.mat']), imgFilelist(imgId).name, instanceBoxes, instanceNames, instanceMasks, compressModels)
         else   % 3D case
             
         end

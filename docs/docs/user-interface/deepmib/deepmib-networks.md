@@ -21,6 +21,7 @@ Start a new project by selecting a workflow:
 - **2.5D Semantic**: uses 2D network architectures to process small subvolumes (3-9 stacks), segmenting only the central slice
 - **3D Semantic**: clusters 3D image voxels of the same material together
 - **2D Patch-wise**: predicts 2D images in blocks (patches), producing a downsampled image indicating object positions
+- **2D Instance**: detects each object individually (each object gets a distinct label), using the SOLOv2 network. See [2D Instance Segmentation (SOLOv2)](deepmib-instance.md)
 
 ---
 

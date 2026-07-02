@@ -145,40 +145,39 @@ try
             'Title', 'Preparing training', 'Cancelable', 'on');
     end
 
-    % the other options are not available, require to process images
-    fnExtension = lower(['.' obj.BatchOpt.ImageFilenameExtensionTraining{1}]);
-    try
-        % prepare options for loading of images
-        mibDeepStoreLoadImagesOpt.UseBioFormats = obj.BatchOpt.BioformatsTraining;
-        mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsTrainingIndex{1};
-        mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
+    % Build patch-based training datastores. In the 2D Instance workflow the network is
+    % trained on native-resolution patches cropped on-the-fly from the label maps
+    % (memory-friendly for large / whole-slide images). Each image contributes
+    % "Patches per image" random patches per epoch (object-seeded + uniform mix).
+    trainLabelsDir = fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels');
+    trainImagesDir = fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages');
 
-        % imgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), ...
-        %     'FileExtensions', fnExtension, ...
-        %     'IncludeSubfolders', false, ...
-        %     'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+    % options for loading of images
+    mibDeepStoreLoadImagesOpt.mibBioformatsCheck = obj.BatchOpt.BioformatsTraining;
+    mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsTrainingIndex{1};
+    mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
 
-        imgDS = fileDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), ...
-            'FileExtensions', fnExtension, ...
-            'IncludeSubfolders', false, ...
-            'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
-
-        noFiles = numel(imgDS.Files);
-    catch err
-        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
+    modelFileList = dir(fullfile(trainLabelsDir, '*.mat'));
+    if isempty(modelFileList)
+        mgsOpt.MsgBoxOnly = true;
+        header = sprintf(['Preprocessed label files (*.mat) are missing in\n\n%s\n\n' ...
+            'Preprocess the labels and split the data for training/validation first!'], trainLabelsDir);
+        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Missing files', mgsOpt);
         if showWaitbarLocal; delete(obj.wb); end
         return;
     end
+    numImages = numel(modelFileList);
+    patchesPerImage = obj.BatchOpt.T_PatchesPerImage{1};
+    totalObservations = numImages * patchesPerImage;
 
-    % check that number of files larger than minibatch size
-    if noFiles*obj.BatchOpt.T_PatchesPerImage{1} < obj.BatchOpt.T_MiniBatchSize{1}
+    % check that the number of observations is larger than the mini-batch size
+    if totalObservations < obj.BatchOpt.T_MiniBatchSize{1}
         mgsOpt.MsgBoxOnly = true;
-        header = sprintf(['The Mini-batch size (%d) should be smaller than result of\n' ...
-        'Patches_per_image (%d) x Number_of_images (%d) = %d\n\n' ...
+        header = sprintf(['The Mini-batch size (%d) should be smaller than\n' ...
+            'Patches_per_image (%d) x Number_of_images (%d) = %d\n\n' ...
             'Solve by (one of the options):\n-Decrease mini-batch size\n' ...
-            '-Increase patches per image\n' ...
-            '-Increase number of files used for training'], ...
-            obj.BatchOpt.T_MiniBatchSize{1}, obj.BatchOpt.T_PatchesPerImage{1}, noFiles, noFiles*obj.BatchOpt.T_PatchesPerImage{1});
+            '-Increase patches per image\n-Increase number of training images'], ...
+            obj.BatchOpt.T_MiniBatchSize{1}, patchesPerImage, numImages, totalObservations);
         utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Wrong configuration', mgsOpt);
         if showWaitbarLocal; delete(obj.wb); end
         return;
@@ -191,22 +190,20 @@ try
         rng(obj.BatchOpt.T_RandomGeneratorSeed{1}, 'twister');
     end
 
-    % labelsDS = imageDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'), ...
-    %     'FileExtensions', '.mat', 'IncludeSubfolders', false, ...
-    %     'ReadFcn', @deepmib.matReadInstanceLabels);
+    % options for cropping patches from the label maps
+    patchOpt.imageDir = trainImagesDir;
+    patchOpt.patchSize = inputPatchSize(1:2);   % [height width]
+    patchOpt.objectFraction = 0.9;      % ~90% object-seeded, ~10% uniform-random patches
+    patchOpt.minObjectArea = 4;         % drop tiny remnants left after cropping
+    patchOpt.getImageOptions = mibDeepStoreLoadImagesOpt;
 
-    labelsDS = fileDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'), ...
-        'FileExtensions', '.mat', 'IncludeSubfolders', false, ...
-        'ReadFcn', @(fn)deepmib.matReadInstanceLabels(fn, mibDeepStoreLoadImagesOpt));
+    % replicate the file list so each image yields "Patches per image" patches per epoch
+    trainModelFiles = arrayfun(@(f) fullfile(f.folder, f.name), modelFileList, 'UniformOutput', false);
+    trainModelFiles = repmat(trainModelFiles(:), [patchesPerImage, 1]);
+    labelsDS = fileDatastore(trainModelFiles, ...
+        'ReadFcn', @(fn)deepmib.readInstancePatch(fn, patchOpt));
 
-    if numel(labelsDS.Files) ~= noFiles
-        mgsOpt.MsgBoxOnly = true;
-        header = sprintf('Number of model files should match number of image files!\n\nCheck that number of files match in\n\n%s\n\n%s', ...
-            fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'TrainLabels'));
-        utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
-        if showWaitbarLocal; delete(obj.wb); end
-        return;
-    end
+    noFiles = totalObservations;    % used below for the iteration-count estimate
 
     %% Create Datastore for Validation
     if showWaitbarLocal
@@ -215,27 +212,14 @@ try
         obj.wb.Message = 'Create a datastore for validation...';
     end
 
-    fileList = dir(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages', ['*' fnExtension]));
-    if ~isempty(fileList)
-        valImgDS = imageDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), ...
-            'FileExtensions', fnExtension, ...
-            'IncludeSubfolders', false, ...
-            'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
-
-        valLabelsDS = fileDatastore(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'), ...
-            'FileExtensions', '.mat', 'IncludeSubfolders', false, ...
-            'ReadFcn', @(fn)deepmib.matReadInstanceLabels(fn, mibDeepStoreLoadImagesOpt));
-
-        if numel(valLabelsDS.Files) ~= numel(valImgDS.Files)
-            mgsOpt.MsgBoxOnly = true;
-            header = sprintf('Number of MAT-files should match number of image files!\n\nCheck that number of files match in\n\n%s\n\n%s', ...
-                fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages'), fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels'));
-            utils.dlgs.inputUniversalDlg(obj.view.gui, header, {}, {}, 'Error', mgsOpt);
-            if showWaitbarLocal; delete(obj.wb); end
-            return;
-        end
+    valModelList = dir(fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationLabels', '*.mat'));
+    if ~isempty(valModelList)
+        valPatchOpt = patchOpt;
+        valPatchOpt.imageDir = fullfile(obj.BatchOpt.OriginalTrainingImagesDir, 'ValidationImages');
+        valModelFiles = arrayfun(@(f) fullfile(f.folder, f.name), valModelList, 'UniformOutput', false);
+        valLabelsDS = fileDatastore(valModelFiles(:), ...
+            'ReadFcn', @(fn)deepmib.readInstancePatch(fn, valPatchOpt));
     else    % do not use validation
-        valImgDS = [];
         valLabelsDS = [];
     end
     
@@ -282,9 +266,17 @@ try
     previewSwitch = 0; % 1 - the generated network is only for preview, i.e. weights of classes won't be calculated
     
     % get input patch size
-    inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize);
+    % note: instance images are always converted to RGB (see matReadInstanceLabels),
+    % so the SOLOv2 network input always has 3 colour channels
+    inputPatchSize = str2num(obj.BatchOpt.T_InputPatchSize); %#ok<ST2NM>
     inputPatchSize = [inputPatchSize([1 2]) 3];
     outputPatchSize = inputPatchSize;
+
+    % single-class instance segmentation: all objects share the "object" class.
+    % Use a cellstr so it matches solov2 ClassNames (cell) and the categorical
+    % categories produced during preprocessing (see matReadInstanceLabels)
+    classNames = {'object'};
+    classColors = obj.modelMaterialColors(1, :);
 
     try
         if isempty(checkPointRestoreFile)
@@ -298,25 +290,39 @@ try
                     end
             end
             lgraph = solov2(detectorName, ...
-                "object", ...
+                classNames, ...
                 "InputSize", inputPatchSize);
         else
-            error('Instance segmentation: load checkpoint - not implemented')
+            % resume training from an existing network / checkpoint file;
+            % SOLOv2 saves the trained detector object in the 'net' variable
             res = load(checkPointRestoreFile, '-mat');
-            if isfield(res, 'outputPatchSize')
-                outputPatchSize = res.outputPatchSize;
-            else
-                [lgraph, outputPatchSize] = obj.createNetwork(previewSwitch);
-                if isempty(lgraph)
-                    if showWaitbarLocal; delete(obj.wb); end
-                    return;
-                end
+            if ~isfield(res, 'net')
+                error('The selected checkpoint file does not contain a "net" variable');
             end
+            lgraph = res.net;   % solov2 detector object
+            if isfield(res, 'outputPatchSize'); outputPatchSize = res.outputPatchSize; end
+            if isfield(res, 'inputPatchSize'); inputPatchSize = res.inputPatchSize; end
         end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Network initialization problem');
         if showWaitbarLocal; delete(obj.wb); end
         return;
+    end
+
+    %% Augment the training data using a datastore transform
+    % Geometric augmentations are applied to image + instance masks together and the
+    % bounding boxes are recomputed from the warped masks; intensity/colour jitter is
+    % applied to the image only. Validation data is never augmented.
+    if obj.BatchOpt.T_augmentation
+        status = obj.setAugFuncHandles('2D');   % populate obj.Aug2DFuncNames / obj.Aug2DFuncProbability
+        if status == 0
+            if showWaitbarLocal; delete(obj.wb); end
+            return;
+        end
+        mibDeepInstanceAugOpt.AugOpt2D = obj.AugOpt2D;
+        mibDeepInstanceAugOpt.Aug2DFuncNames = obj.Aug2DFuncNames;
+        mibDeepInstanceAugOpt.Aug2DFuncProbability = obj.Aug2DFuncProbability;
+        labelsDS = transform(labelsDS, @(dataIn)deepmib.augmentInstanceData2D(dataIn, mibDeepInstanceAugOpt));
     end
 
     % %% Augment the training and validation data by using the transform function with custom preprocessing
@@ -459,20 +465,10 @@ try
 
     % generate training options structure
     
-    if ~isempty(valLabelsDS) && numel(valLabelsDS.Files) > 0
-        msg = sprintf(['!!! Warning !!!\n\n' ...
-            'Due to MATLAB limitations training of SOLOv2 network is implemeted only without validation set!']);
-
-        selection = uiconfirm(obj.view.gui, ...
-            msg, 'Validation is not available',...
-            'Options',{'Continue', 'Cancel'},...
-            'DefaultOption',1,'CancelOption',2,...
-            'Icon', 'warning');
-        if strcmp(selection, 'Cancel')
-            if showWaitbarLocal; delete(obj.wb); end
-            return;
-        end
-        valLabelsDS = []; % there is a bug
+    % validation is attempted when a validation set is available; if trainSOLOV2
+    % rejects it at runtime we retry once without validation (see below)
+    if isempty(valLabelsDS) || numel(valLabelsDS.Files) == 0
+        valLabelsDS = [];
     end
     TrainingOptions = obj.preprareTrainingOptionsInstances(valLabelsDS);
 
@@ -486,46 +482,8 @@ try
     end
     modelDateTime = datestr(now, 'dd-mmm-yyyy-HH-MM-SS');
 
-    % load the checkpoint to resume training
-    if ~isempty(checkPointRestoreFile)
-        if showWaitbarLocal
-            if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
-            obj.wb.Message = 'Loading checkpoint...';
-        end
-        load(checkPointRestoreFile, 'net', '-mat');
-        if isa(net, 'nnet.cnn.LayerGraph')     % from transfer learninig
-            lgraph = net;
-        else
-            lgraph = layerGraph(net);   % DAG object after normal training
-        end
-
-        % find index of the output layer
-        outPutLayerName = lgraph.OutputNames;
-        notFound = 1;
-        layerId = numel(lgraph.Layers) + 1;
-        while notFound
-            layerId = layerId - 1;
-            if strcmp(lgraph.Layers(layerId).Name, outPutLayerName) || layerId == 0
-                notFound = 0;
-            end
-        end
-        outLayer = lgraph.Layers(layerId);
-        if sum(ismember(cellstr(outLayer.Classes), classNames)) ~= numel(classNames)
-            selection = uiconfirm(obj.view.gui, ...
-                sprintf(['!!! Warning !!!\n\n' ...
-                'The class names of the loaded network do not match class names of the training model\n\n' ...
-                'Model classes:%s\nNetwork classes: %s\n\n' ...
-                'Press "Update network" to modify the network with new model class names'], ...
-                strjoin(string(classNames), ', '), strjoin(cellstr(outLayer.Classes), ', ')),...
-                'Class names mismatch', 'Options', {'Update network', 'Cancel'}, 'Icon', 'warning');
-            if strcmp(selection, 'Cancel')
-                if showWaitbarLocal; delete(obj.wb); end
-                return;
-            end
-            % redefine the segmentation layer to update the names of classes
-            lgraph = obj.updateSegmentationLayer(lgraph, classNames);
-        end
-    end
+    % the network (new or restored from checkpoint) was already prepared above
+    % during network creation; no additional layer surgery is needed for SOLOv2
 
     if showWaitbarLocal
         if obj.wb.CancelRequested; deepmib.stopTrainingCallback(obj.wb); return; end
@@ -572,8 +530,22 @@ try
         'FreezeSubNetwork', 'backbone');
     %'ExperimentMonitor', 'none');
 catch err
-    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Train instance network error');
-    return;
+    % SOLOv2 validation support can be version-dependent; when a validation set was
+    % provided, retry once without validation before reporting the error to the user
+    if ~isempty(valLabelsDS)
+        warning('DeepMIB:instanceValidation', ...
+            'trainSOLOV2 failed with validation data (%s); retrying without validation', err.message);
+        try
+            TrainingOptions = obj.preprareTrainingOptionsInstances([]);
+            [net, info] = trainSOLOV2(labelsDS, lgraph, TrainingOptions, 'FreezeSubNetwork', 'backbone');
+        catch err2
+            utils.dlgs.showErrorDialog(obj.view.gui, err2, 'Train instance network error');
+            return;
+        end
+    else
+        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Train instance network error');
+        return;
+    end
 end
 
 if showWaitbarLocal
@@ -658,6 +630,9 @@ if obj.SendReports.T_SendReports && numel(info.TrainingLoss) >= mibDeepTrainingP
         obj.SendReports.sendWhenFinished && ...
         mibDeepTrainingProgressStruct.sendNextReportAtEpoch ~= -1
     [~, fn] = fileparts(obj.BatchOpt.NetworkFilename);
+    % SOLOv2 info has fewer fields than semantic training (no accuracy/validation
+    % metrics); fetch each metric defensively so the report never errors
+    infoVal = @(fieldName) iInfoLastValue(info, fieldName);
     if mibDeepTrainingProgressStruct.useCustomProgressPlot
         mgsText = sprintf(['DeepMIB training of "%s" network\n' ...
             '%s\n' ...
@@ -673,10 +648,10 @@ if obj.SendReports.T_SendReports && numel(info.TrainingLoss) >= mibDeepTrainingP
             fn, ...
             mibDeepTrainingProgressStruct.Epoch.Text, mibDeepTrainingProgressStruct.IterationNumberValue.Text, ...
             mibDeepTrainingProgressStruct.StartTime.Text, mibDeepTrainingProgressStruct.ElapsedTime.Text, mibDeepTrainingProgressStruct.TimeToGo.Text, ...
-            info.TrainingLoss(end), info.TrainingAccuracy(end), ...
-            info.ValidationLoss(end), info.ValidationAccuracy(end), ...
-            info.FinalValidationLoss, info.FinalValidationAccuracy, ...
-            info.OutputNetworkIteration);
+            infoVal('TrainingLoss'), infoVal('TrainingAccuracy'), ...
+            infoVal('ValidationLoss'), infoVal('ValidationAccuracy'), ...
+            infoVal('FinalValidationLoss'), infoVal('FinalValidationAccuracy'), ...
+            infoVal('OutputNetworkIteration'));
     else
         mgsText = sprintf(['DeepMIB training of "%s" network\n' ...
             'Training Loss: %f\n' ...
@@ -686,10 +661,10 @@ if obj.SendReports.T_SendReports && numel(info.TrainingLoss) >= mibDeepTrainingP
             'Final Validation Loss: %f\n' ...
             'Final Validation Accuracy: %f\n' ...
             'Output Network Iteration: %d\n'], ...
-            fn, info.TrainingLoss(end), info.TrainingAccuracy(end), ...
-            info.ValidationLoss(end), info.ValidationAccuracy(end), ...
-            info.FinalValidationLoss, info.FinalValidationAccuracy, ...
-            info.OutputNetworkIteration);
+            fn, infoVal('TrainingLoss'), infoVal('TrainingAccuracy'), ...
+            infoVal('ValidationLoss'), infoVal('ValidationAccuracy'), ...
+            infoVal('FinalValidationLoss'), infoVal('FinalValidationAccuracy'), ...
+            infoVal('OutputNetworkIteration'));
     end
     sendmail(obj.SendReports.TO_email, sprintf('DeepMIB: training of %s is over!', fn), mgsText);
 end
@@ -704,5 +679,15 @@ obj.view.handles.TrainButton.Text = 'Train';
 obj.view.handles.TrainButton.BackgroundColor = [0.7686    0.9020    0.9882];
 
 fprintf('Training is finished, elapsed time: %f\n', toc(trainTimer));
+end
+
+function value = iInfoLastValue(info, fieldName)
+% return the last element of an info field, or NaN when the field is absent
+% (SOLOv2 training info does not include accuracy/validation metrics)
+if isfield(info, fieldName) && ~isempty(info.(fieldName))
+    value = info.(fieldName)(end);
+else
+    value = NaN;
+end
 end
 

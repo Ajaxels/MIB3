@@ -1,0 +1,205 @@
+function startPredictionInstances(obj)
+% STARTPREDICTIONINSTANCES - predict 2D instance segmentation (SOLOv2) datasets.
+%
+% Syntax:
+%   .. code-block:: matlab
+%
+%       obj.startPredictionInstances()
+%
+% Runs the trained SOLOv2 network over the prediction images using the blockedImage
+% overlap-tile strategy (so large / whole-slide images are processed at native resolution
+% instead of being downscaled to the network input). For each image, every detected object
+% instance is saved as a unique integer index in a MIB model (background 0).
+%
+% Cross-tile stitching uses the "centroid-in-core" rule (see
+% deepmib.segmentBlockedImageInstances): objects are emitted by the tile that owns their
+% centroid, requiring the overlap (P_OverlappingTilesPercentage) to be >= the largest object.
+% Instance prediction does not require preprocessing: images are read directly.
+
+global mibInstanceIdCounter
+
+msg = sprintf(['!!! Warning !!!\nYou are going to start instance segmentation prediction.\n' ...
+    'Confirm that your images are located under\n\n%s\n\n- Images\n'], ...
+    obj.BatchOpt.OriginalPredictionImagesDir);
+selection = uiconfirm(obj.view.gui, ...
+    msg, 'Instance prediction', ...
+    'Options', {'Confirm', 'Cancel'}, ...
+    'DefaultOption', 1, 'CancelOption', 2, ...
+    'Icon', 'warning');
+if strcmp(selection, 'Cancel'); return; end
+
+% check that the network file is present
+if exist(obj.BatchOpt.NetworkFilename, 'file') ~= 2
+    utils.dlgs.showErrorDialog(obj.view.gui, ...
+        sprintf('The network file was not found:\n\n%s', obj.BatchOpt.NetworkFilename), ...
+        'Missing network');
+    return;
+end
+
+if obj.BatchOpt.showWaitbar
+    pwb = uiprogressdlg(obj.view.gui, ...
+        'Title', 'Predicting instances', ...
+        'Message', 'Creating image store for prediction...', ...
+        'Cancelable', true, 'Value', 0);
+end
+
+% prepare output directories
+warning('off', 'MATLAB:MKDIR:DirectoryExists');
+outputModelsDir = fullfile(obj.BatchOpt.ResultingImagesDir, 'PredictionImages', 'ResultsModels');
+if isfolder(outputModelsDir)
+    outputList = dir(fullfile(outputModelsDir, '*.model'));
+    if ~isempty(outputList)
+        selection = uiconfirm(obj.view.gui, ...
+            sprintf('!!! Warning !!!\n\nThe destination folder\n- PredictionImages/ResultsModels\n\nis not empty!\n\nEmpty it and start prediction?'), ...
+            'Destination folder is not empty', ...
+            'Options', {'Empty and continue', 'Cancel'}, 'DefaultOption', 2, 'CancelOption', 2, 'Icon', 'warning');
+        if strcmp(selection, 'Cancel'); if obj.BatchOpt.showWaitbar; close(pwb); end; return; end
+        delete(fullfile(outputModelsDir, '*'));
+    end
+end
+mkdir(outputModelsDir);
+
+% prepare options for loading of images
+mibDeepStoreLoadImagesOpt.mibBioformatsCheck = obj.BatchOpt.Bioformats;
+mibDeepStoreLoadImagesOpt.BioFormatsIndices = obj.BatchOpt.BioformatsIndex{1};
+mibDeepStoreLoadImagesOpt.Workflow = obj.BatchOpt.Workflow{1};
+
+% make a datastore for the prediction images (read raw images directly)
+try
+    predictionImagesDir = fullfile(obj.BatchOpt.OriginalPredictionImagesDir, 'Images');
+    if ~isfolder(predictionImagesDir)
+        predictionImagesDir = obj.BatchOpt.OriginalPredictionImagesDir;
+    end
+    fnExtension = lower(['.' obj.BatchOpt.ImageFilenameExtension{1}]);
+    imgDS = imageDatastore(predictionImagesDir, ...
+        'FileExtensions', fnExtension, ...
+        'IncludeSubfolders', false, ...
+        'ReadFcn', @(fn)deepmib.storeLoadImages(fn, mibDeepStoreLoadImagesOpt));
+catch err
+    utils.dlgs.showErrorDialog(obj.view.gui, err, 'Missing files');
+    if obj.BatchOpt.showWaitbar; close(pwb); end
+    return;
+end
+
+if obj.BatchOpt.showWaitbar
+    if pwb.CancelRequested; close(pwb); return; end
+    pwb.Message = 'Loading network...';
+end
+% loads 'net', 'classNames', 'classColors', 'inputPatchSize', 'BatchOpt', ...
+res = load(obj.BatchOpt.NetworkFilename, '-mat');
+net = res.net;
+inputPatchSize = res.inputPatchSize;
+
+% select gpu or cpu for prediction and define executionEnvironment
+selectedIndex = find(ismember(obj.view.Figure.GPUDropDown.Items, obj.view.Figure.GPUDropDown.Value));
+switch obj.view.Figure.GPUDropDown.Value
+    case 'CPU only'
+        if numel(obj.view.Figure.GPUDropDown.Items) > 2     % i.e. GPU is present
+            gpuDevice([]);  % CPU only mode
+        end
+        executionEnvironment = 'cpu';
+    case {'Multi-GPU', 'Parallel'}
+        executionEnvironment = 'auto';
+    otherwise
+        gpuDevice(selectedIndex);   % choose selected GPU device
+        executionEnvironment = 'gpu';
+end
+
+% define the tile (block) size and overlap for the blockedImage strategy
+blockSize = [inputPatchSize(1), inputPatchSize(2)];
+if obj.BatchOpt.P_OverlappingTiles
+    padShift = ceil(blockSize * obj.BatchOpt.P_OverlappingTilesPercentage{1} / 100);
+    blockSize = blockSize - padShift*2;     % core size (apply adds the border back)
+else
+    padShift = [0, 0];
+end
+predictionThreshold = 0.5;
+
+t1 = tic;
+noFiles = numel(imgDS.Files);
+id = 1;
+while hasdata(imgDS)
+    if obj.BatchOpt.showWaitbar && pwb.CancelRequested; close(pwb); return; end
+    vol = squeeze(read(imgDS));     % [height, width, color]
+    if size(vol, 3) == 1            % dynamically convert grayscale to RGB
+        vol = repmat(vol, [1, 1, 3]);
+    end
+    [imgHeight, imgWidth, ~] = size(vol);
+    [~, fn] = fileparts(imgDS.Files{id});
+
+    % tile the image and segment each tile, keeping centroid-in-core instances
+    mibInstanceIdCounter = 0;   % reset the global unique-instance-ID counter for this image
+    try
+        bim = blockedImage(vol, 'Adapter', images.blocked.InMemory);
+        labelBim = apply(bim, ...
+            @(block, blockInfo) deepmib.segmentBlockedImageInstances(block, net, predictionThreshold, executionEnvironment), ...
+            'Adapter', images.blocked.InMemory, ...
+            'Level', 1, ...
+            'PadPartialBlocks', true, ...
+            'BlockSize', blockSize, ...
+            'BorderSize', padShift, ...
+            'PadMethod', 'symmetric', ...
+            'UseParallel', false, ...
+            'DisplayWaitbar', false);
+        outputLabels = gather(labelBim, 'Level', 1);
+    catch err
+        utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
+        if obj.BatchOpt.showWaitbar; close(pwb); end
+        return;
+    end
+
+    % crop away the padding added for partial blocks
+    outputLabels = outputLabels(1:imgHeight, 1:imgWidth);
+
+    % relabel to a contiguous 1..N index range
+    uniqueIds = unique(outputLabels(outputLabels > 0));
+    numInstances = numel(uniqueIds);
+    if numInstances > 0
+        remap = zeros(double(max(uniqueIds))+1, 1, 'uint32');
+        remap(uniqueIds+1) = uint32(1:numInstances);
+        outputLabels = remap(uint32(outputLabels)+1);
+    end
+
+    % Instance models always use a large model type (>= 65535). Never type 63/255: the
+    % packed small-material schemes (MibLabels63) cap materials/colours, which makes the
+    % display colormap smaller than the label values and crashes labeloverlay in getRGBimage.
+    if numInstances <= 65535
+        modelType = 65535;
+        outputLabels = uint16(outputLabels);
+    else
+        modelType = 4294967295;
+        outputLabels = uint32(outputLabels);
+    end
+    % >255-material MIB models use numeric material names carrying the index itself.
+    % Always provide at least 2 materials: MIB's materials table (updateMaterialsTable)
+    % renders two representative rows for >255 models and indexes materialNames{1:2},
+    % so an empty or single-object prediction must still carry >= 2 entries.
+    numMaterials = max(2, numInstances);
+    modelMaterialNames = arrayfun(@(x) num2str(x), (1:numMaterials)', 'UniformOutput', false);
+    % one colour per material (cycled palette) so the colormap always covers all labels
+    modelMaterialColors = obj.colormap255(mod((0:numMaterials-1), size(obj.colormap255, 1))+1, :);
+    modelVariable = 'outputLabels';
+    filename = fullfile(outputModelsDir, ['Labels_' fn '.model']);
+    save(filename, 'outputLabels', 'modelMaterialNames', 'modelMaterialColors', ...
+        'modelVariable', 'modelType', '-mat', '-v7.3');
+
+    if obj.BatchOpt.showWaitbar
+        if pwb.CancelRequested; close(pwb); return; end
+        elapsedTime = toc(t1);
+        timerValue = elapsedTime/id*(noFiles-id);
+        pwb.Message = sprintf('%s (%d objects)\nHold on ~%.0f:%.2d mins left...', ...
+            fn, numInstances, floor(timerValue/60), mod(round(timerValue), 60));
+        pwb.Value = min(1, id/noFiles);
+    end
+    id = id + 1;
+end
+fprintf('Instance prediction finished: ');
+toc(t1)
+
+% count user's points
+obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks = obj.mibModel.preferences.Users.Tiers.numberOfInferencedDeepNetworks + 1;
+eventdata = core.ToggleEventData(4);
+notify(obj.mibModel, 'UpdateUserScore', eventdata);
+
+if obj.BatchOpt.showWaitbar; close(pwb); end
+end

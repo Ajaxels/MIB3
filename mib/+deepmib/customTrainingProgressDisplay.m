@@ -52,10 +52,22 @@ global mibDeepTrainingProgressStruct
 
 stopState =  false;
 
+% Some trainers provide a reduced progress struct: trainSOLOV2 (2D Instance)
+% reports only Epoch, Iteration, TimeElapsed, LearnRate and TrainingLoss.
+% Add the remaining fields used below with neutral defaults so the shared
+% progress display works for both semantic and instance segmentation.
+if ~isfield(progressStruct, 'TrainingAccuracy');   progressStruct.TrainingAccuracy = NaN; end
+if ~isfield(progressStruct, 'ValidationLoss');     progressStruct.ValidationLoss = []; end
+if ~isfield(progressStruct, 'ValidationAccuracy'); progressStruct.ValidationAccuracy = NaN; end
+
 % get max number of points in the progress plot to show
 maxPoints = trainingProgressOptions.O_NumberOfPoints;
 
-if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0) 
+% trainNetwork/trainnet fire the first OutputFcn call at Iteration 0, but trainSOLOV2
+% fires it at Iteration 1 — so also initialise when the progress struct has not been
+% set up yet (startTrainingInstances/startTraining reset it before each run)
+if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0 || ...
+        ~isfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch'))
     mibDeepTrainingProgressStruct.TrainXvec = zeros([maxPoints, 1]);  % vector of iteration numbers for training
     mibDeepTrainingProgressStruct.TrainLoss = zeros([maxPoints, 1]);  % training loss vector
     mibDeepTrainingProgressStruct.TrainAccuracy = zeros([maxPoints, 1]);  % training accuracy vector

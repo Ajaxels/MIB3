@@ -21,6 +21,10 @@ It supports a typical semantic segmentation workflow consisting of two phases:
 
 ![Deep learning workflow schematic](images/DeepLearning_scheme.jpg){.on-glb}
 
+In addition to semantic segmentation, Deep MIB also offers a **2D instance segmentation**
+workflow (SOLOv2), which detects each object individually. See
+[2D Instance Segmentation (SOLOv2)](deepmib-instance.md) for the full procedure.
+
 ## Getting started
 
 For detailed tutorials, refer to:

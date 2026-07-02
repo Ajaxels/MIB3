@@ -1,0 +1,192 @@
+# Deep MIB - 2D Instance Segmentation (SOLOv2)
+
+Training and application of the SOLOv2 network for 2D instance segmentation in Microscopy Image Browser.
+
+---
+
+## Overview
+
+Unlike the semantic workflows, which assign every pixel to a *class* (all objects of the same
+type share one label), **instance segmentation** detects each object *individually*: every
+object receives its own distinct label, so touching or overlapping objects of the same type are
+separated. Deep MIB implements 2D instance segmentation using the MATLAB **SOLOv2** network.
+
+The typical procedure follows the same three phases as the other workflows — with one important
+difference: instance segmentation **requires a preprocessing step** before training (see
+[Preprocessing](#preprocessing-required-for-training)).
+
+1. **Preprocess** the ground-truth models into the SOLOv2 annotation format (*Directories and Preprocessing tab*).
+2. **Train** the SOLOv2 network (*Train tab*).
+3. **Predict** new datasets and export the detected objects as MIB models (*Predict tab*).
+
+!!! warning "Support package required"
+
+    `solov2` requires the *Computer Vision Toolbox Model for SOLO V2 Instance Segmentation*
+    support package. To install this support package, use the **Add-On Explorer**.
+
+---
+
+## Compatible source datasets
+
+- **Images**: 2D images with **1 (grayscale) or 3 (RGB)** colour channels. Grayscale images are
+  automatically converted to RGB, because the SOLOv2 backbone expects 3-channel input.
+- **Ground-truth labels**: a MIB `.model` file per image (or a single `.model` file for all
+  images when <label class="widget widget-checkbox">Single MIB model file</label> is checked),
+  in which **each individual object is painted with its own unique index** (`1, 2, 3, …`) and the
+  background is `0`. Touching objects must use different indices to be separated. `uint8` models
+  allow up to 255 objects per image; `uint16` models allow many more.
+- **Classes**: the current implementation is **single-class** — every detected object belongs to
+  one class named `object`. The <span class="widget widget-edit">Number of classes</span> field
+  is not used for this workflow.
+
+!!! tip "Preparing instance labels"
+
+    Paint each object as a separate material index in the MIB model (for example, using the
+    watershed / object-separation tools), so that `regionprops` can extract one bounding box and
+    one mask per object during preprocessing.
+
+---
+
+## Network panel
+
+In the [Network panel](deepmib-networks.md) select:
+
+- <span class="widget widget-dropdown">Workflow</span>: **2D Instance**
+- <span class="widget widget-dropdown">Architecture</span>: **SOLOv2**
+- <span class="widget widget-dropdown">Encoder</span>: **Resnet18** (lighter, faster) or
+  **Resnet50** (heavier, potentially more accurate). These map to the pretrained
+  `light-resnet18-coco` and `resnet50-coco` backbones.
+
+The <span class="widget widget-edit">Input patch size</span> is given as
+`height width depth colors`, for example `800 800 1 3`. The width and height should be
+**multiples of 32**, the depth is always `1`, and the colour value is `3`. This size defines the
+**patch** cropped during training and the **tile** used during prediction — images are processed
+at native resolution in patches/tiles of this size, not downscaled as a whole.
+
+!!! note
+
+    Use a **square** input patch size if you intend to enable the 90° rotation augmentations
+    (see the [Train tab](deepmib-train.md)); non-square patches are not compatible with those
+    augmentations.
+
+---
+
+## Preprocessing (required for training)
+
+Instance segmentation does not train directly on MIB `.model` files: preprocessing first
+converts each model into a lightweight MAT-file that stores the 2-D instance label map.
+Training then crops native-resolution patches from these maps on-the-fly.
+
+**To preprocess for training:**
+
+1. Arrange the training data under the *training* directory (named `1_Training` in the
+   [directory schemes](deepmib-dirs.md#organization-of-directories)):
+    - `Images/` — the training images
+    - `Labels/` — the corresponding `.model` files (one per image, or a single model file)
+2. Set <span class="widget widget-dropdown">Preprocess for</span> to **Training**.
+3. Press <span class="widget widget-button">Preprocess</span>. Deep MIB converts the models into
+   `LabelsInstances/*.mat` and then offers to **split the files into training and validation
+   sets**. Choosing *Split labels* creates the `TrainImages`, `TrainLabels`, `ValidationImages`
+   and `ValidationLabels` subfolders used during training.
+
+Preprocessing writes **one `.mat` per input image** (so the file count matches the number of
+input models), splitting them into the `TrainLabels`/`ValidationLabels` folders.
+
+??? abstract "Preprocessed label file format (`LabelsInstances/*.mat`)"
+
+    Each MAT-file is lightweight and contains only two variables:
+
+    | Variable | Type | Description |
+    |----------|------|-------------|
+    | `imageFilename` | `char` | name of the source image (e.g. `00001.png`), used to locate the image in `TrainImages` / `ValidationImages` |
+    | `instanceLabelMap` | `H×W uint16` | 2-D label map — each object a unique index, background `0` |
+
+    Storing a compact 2-D label map (instead of a full `H×W×N` binary mask stack) keeps memory
+    usage low for large / whole-slide images. Native-resolution training patches are cropped from
+    this map on-the-fly, and the per-patch object masks and bounding boxes are rebuilt only for the
+    small cropped patch.
+
+!!! info "Prediction needs no preprocessing"
+
+    Only *training* requires preprocessing. For **prediction**, SOLOv2 reads the raw images
+    directly, so no label preprocessing is performed — place the images to segment in the
+    prediction directory (`2_Prediction/Images`) and run the [Predict tab](deepmib-predict.md).
+
+---
+
+## Training
+
+Training is configured and started from the [Train tab](deepmib-train.md).
+
+- **Native-resolution patches**: the network trains on patches cropped **on-the-fly from the
+  label maps at native resolution** (the network input size, e.g. `800×800`), *not* on downscaled
+  whole images. This is essential for large / whole-slide microscopy images, where resizing the
+  whole image to the network input would destroy resolution and hide small objects. Images
+  smaller than the patch are symmetrically padded.
+- **Patch sampling**: each image contributes <span class="widget widget-edit">Patches per image</span>
+  patches per epoch. ~90 % are object-seeded (a random object is picked and the patch placed with a
+  random offset so the object appears anywhere in the patch, never forced to the centre) and ~10 %
+  are uniform-random (may be pure background).
+- **Augmentation** (<label class="widget widget-checkbox">Augmentation</label>): supported for
+  instance segmentation. Geometric augmentations (reflections, 90°/arbitrary rotation, scale,
+  shear) are applied to the image and every object mask together, and the bounding boxes are
+  recomputed from the transformed masks so that boxes, masks and labels stay in sync.
+  Intensity/colour augmentations (noise, blur, brightness/contrast/hue/saturation jitter) are
+  applied to the image only. Augmentation settings are shared with the 2D semantic workflow.
+- **Validation**: a validation set (created during the split step) is used when available; if the
+  installed MATLAB version does not support validation for SOLOv2, training automatically retries
+  without validation.
+- **Progress**: the SOLOv2 trainer reports the **training loss** (there is no per-class accuracy
+  metric for this workflow), which is shown in the training progress window.
+
+??? abstract "Training parameters for the 2D Instance workflow"
+
+    | Parameter | Where | Notes / recommendation |
+    |-----------|-------|------------------------|
+    | Input patch size | Train tab | `height width 1 3`; width/height multiples of 32; use a **square** size to allow 90° rotation augmentations. Patches are cropped at this size from the images at native resolution. |
+    | Encoder | Network panel | `Resnet18` (lighter, faster) or `Resnet50` (heavier, potentially more accurate). |
+    | Patches per image | Train tab | number of native-resolution patches sampled from each image per epoch; increase for large images that hold many objects. |
+    | Mini-batch size | Train tab | patches processed per iteration; bounded by GPU memory. Must be ≤ *Patches per image* × *number of training images*. |
+    | Augmentation | Train tab | enable to apply the shared 2D augmentations (geometric to image + masks, intensity to image only). |
+    | Number of epochs | Train settings | more epochs = more augmented exposure (each epoch re-crops and re-augments every image). |
+    | Solver / Initial learn rate / schedule | Train settings | e.g. `sgdm`, initial learn rate `5e-4`, piecewise schedule (as in the MathWorks SOLOv2 example); `adam`/`rmsprop` also supported. |
+    | Fraction of images for validation | Directories and Preprocessing tab | fraction moved to the validation set during the split; `0` disables validation. |
+    | Random generator seed | Directories and Preprocessing / Train tab | fix for reproducible splits and training; `0` = new random seed each run. |
+
+    Only *training* uses patch cropping; **Patches per image** has no effect on prediction (which
+    tiles whole images — see below).
+
+The trained network is saved to the `*.mibDeep` file specified by
+<span class="widget widget-button">Network filename</span>, together with its configuration
+(`*.mibCfg`).
+
+---
+
+## Prediction
+
+Prediction is started from the [Predict tab](deepmib-predict.md):
+
+1. Set <span class="widget widget-button">Network filename</span> to the trained `*.mibDeep` file.
+2. Place the images to segment in the prediction directory (`2_Prediction/Images`).
+3. Press <span class="widget widget-button">Predict</span>.
+
+Large images are **tiled** at native resolution using the blocked-image overlap strategy
+(controlled by <label class="widget widget-checkbox">Overlapping tiles</label> and
+<span class="widget widget-edit">Overlap, %</span> in the Predict tab): each tile is segmented with
+`segmentObjects` with a surrounding border of context, and objects are stitched across tiles using
+a **centroid-in-core** rule — each object is emitted by the tile that owns its centroid, so there
+are no duplicates and no seam-splitting. The result is written as a MIB `.model` file under
+`3_Results/PredictionImages/ResultsModels`, in which **every object instance is a unique index**
+(background `0`), matching the input labelling convention.
+
+!!! warning "Overlap must cover the largest object"
+
+    The centroid-in-core stitching requires the **tile overlap to be at least as large as the
+    biggest object** — otherwise an object that never fits fully inside a single tile's field of
+    view will be truncated. Increase <span class="widget widget-edit">Overlap, %</span> for large
+    objects. A future IoU-based stitching mode is planned to lift this restriction (and to serve as
+    a building block for a later 3D instance-merging workflow).
+
+---
+
+*Back to [MIB](../../index.md) | [User interface](../index.md) | [DeepMIB](index.md)*
