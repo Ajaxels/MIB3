@@ -180,8 +180,10 @@ slice. Per-tool status:
   bbox-sized canvas with offset coords, write only the bbox (YX; ZX/ZY keep whole-slice + warn).
 - **Bounded to a window:** Drag&Drop — **single object only** on BigData (all-objects drag blocked);
   read/write the visible∪shifted window; live preview in shown coords (not fast-pan).
-- **Work at displayed level + propagation:** Brush, Membrane ClickTracker, SAM/SAM2 interactive
-  (effectively the reference tools the model was designed around).
+- **Work at displayed level + propagation:** Brush, Membrane ClickTracker, SAM2 interactive /
+  Interactive-3D / Landmarks (effectively the reference tools the model was designed around). **SAM v1
+  is intentionally BigData-blocked for performance** (`segmentationSAM.m` gates `['V' 'B']`) — SAM2
+  covers the same interactive/landmark modes faster, so use SAM2 on BigData.
 - **Guarded (warn, never block):** Magic Wand / Region Growing **radius=0** flood — the only remaining
   whole-slice read; `utils.warnLargeFullResRead(h, w[, budgetMP])` (default 256 MP, throttled once).
 - **Blocked on BigData:** Object Picker, Black-and-White Thresholding, SAM *Automatic everything*

@@ -226,8 +226,8 @@ Exports the model to an external destination. The **Export** dropdown contains:
         | Setting | Description |
         |---------|-------------|
         | **Pyramid levels** (0 = auto) | `0` = auto: starts at full resolution, adds levels while min(Y, X) / 2 ≥ 256 px, up to 8 levels. Enter 1-12 to force a fixed count. |
-        | **Chunk size [Y, X, Z]** | Zarr chunk dimensions in pixels. |
-        | **Shard X-factors [Y, X, Z]** | Chunks to bundle per axis into one shard file (0 on any axis = no sharding). |
+        | **Chunk size \[Y, X, Z\]** | Zarr chunk dimensions in pixels. |
+        | **Shard X-factors \[Y, X, Z\]** | Chunks to bundle per axis into one shard file (0 on any axis = no sharding). |
         | **Compression** | `zstd` (default), `gzip`, `none`. |
         | **Downsampling method** | See table below. The downsampling **strategy** is always *XY only* for models - Z is never averaged, since that would mix material indices across boundaries. |
 
@@ -240,7 +240,7 @@ Exports the model to an external destination. The **Export** dropdown contains:
 
         **Smart defaults (computed from the open dataset)**
 
-        | Dataset type | Chunk [Y, X, Z] | Shard X-factors |
+        | Dataset type | Chunk \[Y, X, Z\] | Shard X-factors |
         |---|---|---|
         | WSI (Z ≤ 2 slices **or** max(Y, X) ≥ 8 000 px) | 512 × 512 × 1 | 4 × 4 × 1 |
         | 3-D, near-isotropic (vxZ < 2 × vxXY) | 128 × 128 × 64 | 4 × 4 × 1 |

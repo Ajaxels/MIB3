@@ -319,3 +319,87 @@ frustum-accurate bbox mapping is a later refinement over the centred-budget heur
 `+controllers/@VolRenApp/VolRenApp.m` (gate, `grabVolume`, `modelUpdateOverlay`, live-update
 engine, `closeWindow`, `delete`); `+views/VolRenAppGUI.mlapp` (widgets — user/App Designer);
 `docs/docs/user-interface/ribbon/home/home-mib3Dviewer.md`; `tests/core/MibBigDataVolRenReadTest.m`.
+
+---
+
+## 9. Audit findings (2026-07-03) — assumptions, performance, tool coverage
+
+Design review of the plan vs. the implementation. The architecture is sound; these are the gaps and
+headroom items, ranked by impact on **efficient BigData segmentation with as many tools as possible**.
+Nothing here is committed yet — this is the backlog for the next pass.
+
+### 9.1 Correctness / fragile assumptions
+
+1. **`getData63` is read-*write* (single-threaded by construction) — promote to a first-class invariant.**
+   `getData63.m:105` → `materializeForRead` (`MibBigDataLabels.m:462-506`) writes upsampled tiles to
+   disk **and** mutates the shared `matLevel` array during a *read*. Implications the docs never state:
+   - The read path **cannot be `parfor`-parallelised** as-is (races on the zarr store + `matLevel`).
+     Any future speed-up of export / DeepMIB prediction / 3D-render fetches must account for this.
+   - A plain **zoom-in on an imported model grows the store** (browsing materialises finer tiles).
+   - **Export before "Finalize & save" mutates the store it reads** (`MibImageSliceProvider` →
+     `getData63`). Works, but the coupling is undocumented — finalise first for a pure read.
+   → Add this to `bigdata_logic.md` §5/§12 as an explicit invariant.
+
+2. **"Latest-edit-wins per tile" can clobber neighbouring fine detail.** `markTiles` rounds the changed
+   bbox **up to whole coarsest tiles** (`tilesForFullRegion`, `ceil`, tile = `sfN` full-res px, e.g.
+   256). A thin stroke drawn zoomed-out marks entire 256-px tiles authoritative-at-coarse; the next
+   zoom-in upsamples coarse data over those tiles and **overwrites pre-existing fine detail in the
+   up-to-256-px margin around the stroke the user never touched.** Framed as intended in the docs, but
+   the data-loss risk on mixed-zoom workflows is not warned about. Options: document the warning, or use
+   a finer `matLevel` grid than the coarsest level.
+
+3. **`removeMaterial` on-disk renumbering (backlog §5.1) is a *correctness* bug, not a nicety.** Deleting
+   a material persists only the name list; on-disk packed indices are not renumbered, so remaining
+   materials visibly remap on reload. Promote above the cosmetic backlog items.
+
+4. **SAM v1 BigData block is intentional (performance), not a gap** — SAM2 covers the same interactive/
+   landmark modes faster. Doc wording in `bigdata_logic.md` §6 tightened (2026-07-03) so it is not
+   mis-filed as missing coverage. No code change needed.
+
+### 9.2 Performance headroom
+
+5. **`setData63` footprint-bounding kicks in *after* a full-viewport pass.** It resizes the whole
+   incoming display block (`resizeBlockNearest(dataset, wSize)`, `setData63.m:128`), merges, and diffs
+   over the entire viewport (`:129-135`) **before** locating the tiny changed bbox. Per-stroke cost is
+   **O(viewport), not O(footprint)** — a 4k×4k window does ~16M-element `imresize`+`merge`+`diff` on
+   every stroke regardless of stroke size. Likely the top interactive hot-spot on large windows.
+   **Next step:** bound the nearest/diff pass to the display-space bbox of the incoming change; profile
+   on CMU-1 via MCP before/after.
+
+6. **No viewport/chunk read cache.** Every `setData63` re-reads `before` from disk
+   (`readPackedLevel`, `setData63.m:113`); every `ShowImage` re-reads the overlay via `getData63`.
+   `io.zarr.Array` caches only the python handle, not tiles (`Array.m:41-43`). A small LRU of the
+   current working-level viewport would cut round-trips during stroke bursts and pans — minor on
+   NVMe+zstd, significant on network/rotational storage.
+
+7. **`getDataZarr` image resize is a serial per-Z `imresize('nearest')` triple loop**
+   (`getDataZarr.m:202-208`). Usually skipped (level ≈ display mag → `resizeFactor≈1`); low priority.
+
+### 9.3 Tool coverage — the biggest wins toward the goal
+
+Current: Brush / Spot / Lasso / Rect / Ellipse / Wand / RegionGrow / Drag&Drop / ClickTracker and
+**SAM2** (interactive / 3D / landmarks) are ✅ footprint-bounded. Blocked: Graphcut/SLIC
+(`Graphcut.m:122`), SAM v1 (intentional, §9.1.4), Object Picker / BW-Threshold / SAM-auto (63-material
+or whole-slice limits), Alignment (planned — `alignment_plan.md`).
+
+8. **DeepMIB → BigData model write-back — the highest-value gap.** DeepMIB
+   (`@MibDeep/processBlocksBlockedImage.m`, `startPredictionBlockedImage.m`) already predicts
+   memory-bounded via `blockedImage`, but has **no path to write predictions into the disk-backed
+   `MibBigDataLabels` model** — it targets files, not the live BigData model. The compute half is solved;
+   what's missing is a sink that streams per-block output into the model via
+   `setData63('everything', …, pyramidLevel=1, x/y/z=block)` + `materializeAll` — the exact pattern
+   `MibDataset.cropToBigData` already uses. This would let a user train on a WSI region and predict the
+   whole slide straight into the live model. **Rank above alignment** for the segmentation goal.
+
+9. **Graphcut/SLIC on BigData** — never designed for tiled/pyramidal data; would need a bounded-region
+   (ROI/viewport) variant. Lower priority than DeepMIB.
+
+### 9.4 Alignment plan (`alignment_plan.md`) — one soft spot before Phase 1
+
+10. **The "full-resolution stack never resident in RAM" claim is Z-bounded only.**
+    `AlignedImageSliceProvider.getSlice` reads a full level-0 slice and `imwarp`s it **whole** (Phase 1,
+    §4). Bounded along Z, but **each slice is the entire XY plane** — for serial sections at, e.g.,
+    20k×20k×RGB that is ~1.2 GB/slice + the output canvas. This is the same memory-axis caveat the
+    streaming-export plan already documents (§2 "Memory-axis caveat"), but the alignment plan repeats
+    "never resident." **Before implementing Phase 1:** inherit that caveat explicitly, cap per-slice
+    size, and note tiled warp as the escape hatch for very large sections.

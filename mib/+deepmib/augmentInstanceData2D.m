@@ -172,5 +172,11 @@ function [image, masks] = i_warpImageAndMasks(image, masks, tform, fillValue)
 % apply the same affine transform to the image (cubic) and every mask slice (nearest)
 outputView = affineOutputView([size(image, 1), size(image, 2)], tform);
 image = imwarp(image, tform, 'cubic', 'OutputView', outputView, 'FillValues', fillValue);
-masks = imwarp(masks, tform, 'nearest', 'OutputView', outputView, 'FillValues', 0);
+if size(masks, 3) > 0
+    masks = imwarp(masks, tform, 'nearest', 'OutputView', outputView, 'FillValues', 0);
+else
+    % background-only patch (no instances): imwarp rejects an empty array, so skip the
+    % mask warp and just keep an empty stack sized to match the warped image
+    masks = false([size(image, 1), size(image, 2), 0]);
+end
 end

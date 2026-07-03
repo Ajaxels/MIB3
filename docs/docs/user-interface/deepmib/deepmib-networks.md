@@ -144,6 +144,16 @@ In the 2D Patch-wise workflow, training uses image patches representing specific
 
 ---
 
+## 2D Instance workflow
+
+Unlike the semantic workflows, which assign every pixel to a *class* (all objects of the same type share one label), the **2D Instance** workflow detects each object *individually* — every object receives its own distinct label, so touching or overlapping objects of the same type are separated. Deep MIB implements this using the MATLAB **SOLOv2** network (Resnet18 or Resnet50 backbone).
+
+This workflow requires a dedicated preprocessing step that converts the ground-truth models into the SOLOv2 annotation format before training, and it needs the *Computer Vision Toolbox Model for SOLO V2 Instance Segmentation* support package.
+
+For full details on source data requirements, preprocessing, training and prediction, see [2D Instance Segmentation (SOLOv2)](deepmib-instance.md).
+
+---
+
 ## Network filename
 
 The <span class="widget widget-button">Network filename</span> button selects a file for saving or loading a network:

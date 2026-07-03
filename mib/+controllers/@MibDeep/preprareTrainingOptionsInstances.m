@@ -166,6 +166,16 @@ try
             "'ValidationFrequency', ValidationFrequencyInIterations,"
             "'ValidationPatience', obj.TrainingOpt.ValidationPatience," ...
             ], ' ');
+
+        % trainSOLOV2 never computes a training-time accuracy metric (only Loss/ClsLoss/
+        % MaskLoss), but it accepts mAPInstanceSegmentationMetric as a ValidationOnly metric
+        % (see trainSOLOV2.m); this feeds the "ValidationmAP" field into the custom progress
+        % display (deepmib.customTrainingProgressDisplay), which maps it onto the Validation
+        % accuracy gauge as a percentage. Only add it when validation data is present -
+        % ValidationOnly metrics error out otherwise.
+        evalTrainingOptions = join([evalTrainingOptions
+            "'Metrics', {mAPInstanceSegmentationMetric()},"
+            ], ' ');
     end
 
     % add output network selection method

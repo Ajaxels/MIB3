@@ -12,9 +12,24 @@ global mibDeepStopTraining
 global mibDeepTrainingProgressStruct
 
 counter = 1;
+
+% mibDeepTrainingProgressStruct is a global that is only cleared on a successful finish
+% (see end of this file). A previous or crashed run can therefore leave it populated with
+% dead figure/hPlot handles and a 'sendNextReportAtEpoch' field. Because trainSOLOV2 fires
+% its first OutputFcn call at iteration 1 (not 0), deepmib.customTrainingProgressDisplay
+% relies on that field being absent to decide it must (re)initialise the window - so a
+% stale field makes it skip init and update deleted graphics. Reset that state here so the
+% progress window is rebuilt fresh for every instance-training run.
+if isfield(mibDeepTrainingProgressStruct, 'UIFigure') && ~isempty(mibDeepTrainingProgressStruct.UIFigure) && isvalid(mibDeepTrainingProgressStruct.UIFigure)
+    delete(mibDeepTrainingProgressStruct.UIFigure);
+end
+if isfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch')
+    mibDeepTrainingProgressStruct = rmfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch');
+end
+
 mibDeepTrainingProgressStruct.emergencyBrake = false;   % emergency brake without finishing the weights
 
-msg = sprintf('!!! Warning !!!\nYou are going to start training of an instance segmentation network!\n\nConfirm that your images located under\n\n%s\n\n%s\n%s\n%s\n%s\n\nPlease also make sure that number of files with labels match number of files with images!', ...
+msg = sprintf('You are going to start training of an instance segmentation network!\n\nConfirm that your images located under\n\n%s\n\n%s\n%s\n%s\n%s\n\nPlease also make sure that number of files with labels match number of files with images!', ...
     obj.BatchOpt.OriginalTrainingImagesDir, ...
     '- TrainImages', '- TrainLabels', ...
     '- ValidationImages', '- ValidationLabels');
@@ -534,6 +549,23 @@ catch err
     if ~isempty(valLabelsDS)
         warning('DeepMIB:instanceValidation', ...
             'trainSOLOV2 failed with validation data (%s); retrying without validation', err.message);
+
+        % The failed attempt has already run up to the first validation event (~1 epoch)
+        % and drawn that part of the training curve in the custom progress window. The
+        % retry restarts trainSOLOV2 from iteration 1, so unless we reset the progress
+        % display it would append the new curve on top of the old one (the curve
+        % "jumping back to the beginning"). Close the old window and drop the
+        % sendNextReportAtEpoch field so the OutputFcn re-initialises a fresh plot on the
+        % retry's first call (see deepmib.customTrainingProgressDisplay).
+        if isfield(mibDeepTrainingProgressStruct, 'useCustomProgressPlot') && mibDeepTrainingProgressStruct.useCustomProgressPlot
+            if isfield(mibDeepTrainingProgressStruct, 'UIFigure') && ~isempty(mibDeepTrainingProgressStruct.UIFigure) && isvalid(mibDeepTrainingProgressStruct.UIFigure)
+                delete(mibDeepTrainingProgressStruct.UIFigure);
+            end
+            if isfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch')
+                mibDeepTrainingProgressStruct = rmfield(mibDeepTrainingProgressStruct, 'sendNextReportAtEpoch');
+            end
+        end
+
         try
             TrainingOptions = obj.preprareTrainingOptionsInstances([]);
             [net, info] = trainSOLOV2(labelsDS, lgraph, TrainingOptions, 'FreezeSubNetwork', 'backbone');
@@ -547,19 +579,51 @@ catch err
     end
 end
 
+% trainSOLOV2 (dltrain-based) returns info as a STRUCT ARRAY with one row per logged
+% iteration, and OutputNetworkIteration as a per-row logical flag marking the row whose
+% network was selected as output (see images.dltrain.internal.dltrain.m: "info(end
+% /BestNetworkIteration-matching row).OutputNetworkIteration = true"). This differs from
+% trainNetwork/trainnet, which return a SCALAR struct with vector-valued fields and a
+% scalar OutputNetworkIteration iteration number - the shape the finalisation/reporting
+% code below (shared with the semantic workflow, see controllers.MibDeep/startTraining)
+% expects. Dot-indexing a field on a multi-row struct array (e.g. info.TrainingLoss)
+% expands into a comma-separated list, which crashes any function called on it directly
+% (e.g. isempty(info.OutputNetworkIteration) errors "Too many input arguments" once there
+% is more than one row). Normalise here, once, right after info is produced, so every
+% downstream use of "info" below - and the fieldnames(info) CSV export loop further down -
+% sees the familiar scalar-struct/vector-field shape.
+if isstruct(info) && isfield(info, 'OutputNetworkIteration')
+    infoRows = info;
+    outputRow = find([infoRows.OutputNetworkIteration], 1);
+    info = struct();
+    infoFieldNames = setdiff(fieldnames(infoRows), 'OutputNetworkIteration', 'stable');
+    for infoFieldIdx = 1:numel(infoFieldNames)
+        info.(infoFieldNames{infoFieldIdx}) = [infoRows.(infoFieldNames{infoFieldIdx})];
+    end
+    if isempty(outputRow)
+        info.OutputNetworkIteration = [];
+    else
+        info.OutputNetworkIteration = infoRows(outputRow).Iteration;
+    end
+end
+
 if showWaitbarLocal
     obj.wb = uiprogressdlg(obj.view.gui, 'Message', 'Finalizing training...', ...
         'Title', 'Finalize training', 'Cancelable', 'on');
 end
 
-if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(info, 'OutputNetworkIteration')
-    % add line at the selected iteration indicating the picked network
+if mibDeepTrainingProgressStruct.useCustomProgressPlot && isfield(mibDeepTrainingProgressStruct, 'UILossAxes') && isvalid(mibDeepTrainingProgressStruct.UILossAxes)
     hold(mibDeepTrainingProgressStruct.UILossAxes, 'on');
-    mibDeepTrainingProgressStruct.hPlot(3) = plot(mibDeepTrainingProgressStruct.UILossAxes, [info.OutputNetworkIteration, info.OutputNetworkIteration], mibDeepTrainingProgressStruct.UILossAxes.YLim, '-');
-    mibDeepTrainingProgressStruct.hPlot(3).Color = [0 .7 0];
-    mibDeepTrainingProgressStruct.UILossAxes.Legend.String = {'Training'  'Validation'  sprintf('Picked iteration: %d', info.OutputNetworkIteration)};
+    % add a vertical line at the selected iteration indicating the picked network.
+    % OutputNetworkIteration can be empty (e.g. when training was retried without
+    % validation) - skip the marker line in that case to avoid a plot size mismatch
+    if isfield(info, 'OutputNetworkIteration') && ~isempty(info.OutputNetworkIteration)
+        mibDeepTrainingProgressStruct.hPlot(3) = plot(mibDeepTrainingProgressStruct.UILossAxes, [info.OutputNetworkIteration, info.OutputNetworkIteration], mibDeepTrainingProgressStruct.UILossAxes.YLim, '-');
+        mibDeepTrainingProgressStruct.hPlot(3).Color = [0 .7 0];
+        mibDeepTrainingProgressStruct.UILossAxes.Legend.String = {'Training'  'Validation'  sprintf('Picked iteration: %d', info.OutputNetworkIteration)};
+    end
     % add last point to the plot
-    if mibDeepTrainingProgressStruct.hPlot(1).XData(end) < numel(info.TrainingLoss)
+    if ~isempty(mibDeepTrainingProgressStruct.hPlot(1).XData) && mibDeepTrainingProgressStruct.hPlot(1).XData(end) < numel(info.TrainingLoss)
         warning('off','MATLAB:gui:array:InvalidArrayShape');
         mibDeepTrainingProgressStruct.hPlot(1).XData = [mibDeepTrainingProgressStruct.hPlot(1).XData, numel(info.TrainingLoss)];
         mibDeepTrainingProgressStruct.hPlot(1).YData = [mibDeepTrainingProgressStruct.hPlot(1).YData, info.TrainingLoss(end)];

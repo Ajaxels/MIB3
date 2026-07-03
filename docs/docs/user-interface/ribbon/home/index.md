@@ -255,8 +255,8 @@ Export the current dataset to external applications:
         | Setting | Description |
         |---------|-------------|
         | **Pyramid levels** (0 = auto) | `0` = auto: starts at full resolution, adds a level while min(Y, X) / 2 ≥ 256 px, up to 8 levels. Enter 1–12 to force a fixed count. |
-        | **Chunk size [Y, X, Z]** | Zarr chunk dimensions in pixels. Smaller chunks give finer random-access granularity; larger chunks improve sequential read throughput. |
-        | **Shard X-factors [Y, X, Z]** | Integer multipliers specifying how many chunks to bundle per axis into one shard file (zarr v3 sharding codec). For example, `4, 4, 1` packs 4 × 4 × 1 = 16 chunks per file, significantly reducing file count for large pyramids. Set any axis to `0` to disable sharding entirely. |
+        | **Chunk size \[Y, X, Z\]** | Zarr chunk dimensions in pixels. Smaller chunks give finer random-access granularity; larger chunks improve sequential read throughput. |
+        | **Shard X-factors \[Y, X, Z\]** | Integer multipliers specifying how many chunks to bundle per axis into one shard file (zarr v3 sharding codec). For example, `4, 4, 1` packs 4 × 4 × 1 = 16 chunks per file, significantly reducing file count for large pyramids. Set any axis to `0` to disable sharding entirely. |
         | **Compression** | `zstd` (fast, excellent ratio — default), `gzip` (broader tool compatibility), `none` (fastest write, largest files). |
         | **Downsampling method** | Kernel for building coarser pyramid levels: `bilinear` (fast, smooth — default), `nearest` (fast, exact integer values), `bicubic` (slow, sharper edges), `median` (slow, noise-robust — good for images with outlier pixels, better edge preservation than bilinear), `mode` (slow, precise — dominant value per block; for categorical label data exported as images). |
         | **Downsampling strategy** | How the Z axis is treated when building coarser levels — see below. |
@@ -278,7 +278,7 @@ Export the current dataset to external applications:
 
         **Smart defaults (computed from the open dataset)**
 
-        | Dataset type | Chunk [Y, X, Z] | Shard X-factors | Strategy |
+        | Dataset type | Chunk \[Y, X, Z\] | Shard X-factors | Strategy |
         |---|---|---|---|
         | WSI (Z ≤ 2 slices **or** max(Y, X) ≥ 8 000 px) | 512 × 512 × 1 | 4 × 4 × 1 | XY only |
         | 3-D, near-isotropic (vxZ < 2 × vxXY) | 128 × 128 × 64 | 4 × 4 × 1 | XY only |

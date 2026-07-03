@@ -60,6 +60,27 @@ if ~isfield(progressStruct, 'TrainingAccuracy');   progressStruct.TrainingAccura
 if ~isfield(progressStruct, 'ValidationLoss');     progressStruct.ValidationLoss = []; end
 if ~isfield(progressStruct, 'ValidationAccuracy'); progressStruct.ValidationAccuracy = NaN; end
 
+% trainSOLOV2's per-iteration struct (images.dltrain.internal.MetricLogger) pre-fills every
+% metric column with NaN when the log entry is created, and only overwrites the
+% "Validation*" columns with a real value on iterations where IsValidationIteration is
+% true (MetricLogger.m, evaluateMetrics/evaluateValidationMetrics). So, unlike
+% trainNetwork/trainnet - which leave ValidationLoss as [] on non-validation iterations -
+% trainSOLOV2 reports a scalar NaN instead. isempty(NaN) is false, so without this
+% normalisation every non-validation iteration was being logged into the validation curve
+% as a NaN point, breaking the line into isolated dots around the few real values.
+if isscalar(progressStruct.ValidationLoss) && isnan(progressStruct.ValidationLoss)
+    progressStruct.ValidationLoss = [];
+end
+
+% trainSOLOV2 has no training-time accuracy-like metric, but when
+% mAPInstanceSegmentationMetric is enabled as a validation metric (see
+% preprareTrainingOptionsInstances) it reports "ValidationmAP" (a 0..1 fraction) instead of
+% ValidationAccuracy. Map it onto ValidationAccuracy, as a percentage, so the existing
+% Validation gauge/text code below needs no separate path for it.
+if isfield(progressStruct, 'ValidationmAP') && ~isempty(progressStruct.ValidationmAP) && ~isnan(progressStruct.ValidationmAP)
+    progressStruct.ValidationAccuracy = progressStruct.ValidationmAP * 100;
+end
+
 % get max number of points in the progress plot to show
 maxPoints = trainingProgressOptions.O_NumberOfPoints;
 
@@ -141,6 +162,16 @@ if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0 || ...
     mibDeepTrainingProgressStruct.AccValidationValue = uilabel(mibDeepTrainingProgressStruct.AccuracyPanel);
     mibDeepTrainingProgressStruct.AccValidationValue.Position = [55 3 48 22];
     mibDeepTrainingProgressStruct.AccValidationValue.Text = '0';
+
+    if strcmp(trainingProgressOptions.Workflow, '2D Instance')
+        % trainSOLOV2 never computes a training-time accuracy-like metric (only Loss); grey
+        % out the Training gauge/value so it does not show a misleading NaN%. The
+        % Validation gauge is left enabled: when mAPInstanceSegmentationMetric is used (see
+        % preprareTrainingOptionsInstances), it is fed a real value via ValidationmAP above.
+        mibDeepTrainingProgressStruct.AccTrainGauge.Enable = 'off';
+        mibDeepTrainingProgressStruct.AccTrainingValue.Enable = 'off';
+        mibDeepTrainingProgressStruct.AccTrainingValue.Text = 'N/A';
+    end
 
     mibDeepTrainingProgressStruct.TrainingProgress = uilabel(mibDeepTrainingProgressStruct.InformationPanel);
     mibDeepTrainingProgressStruct.TrainingProgress.Position = [7 218 220 22];
@@ -314,6 +345,17 @@ else
         return;
     end
 
+    % the progress window / plot handles may be invalid: the user closed the window
+    % mid-training, or a previous run left dead handles in the global struct. There is
+    % nothing to update in that case, so request a clean stop instead of erroring on a
+    % deleted graphics object.
+    if ~isfield(mibDeepTrainingProgressStruct, 'UIFigure') || ~isvalid(mibDeepTrainingProgressStruct.UIFigure) || ...
+            ~isfield(mibDeepTrainingProgressStruct, 'hPlot') || ~all(isvalid(mibDeepTrainingProgressStruct.hPlot))
+        stopState = true;
+        mibDeepStopTraining = true;
+        return;
+    end
+
     if progressStruct.Epoch == mibDeepTrainingProgressStruct.sendNextReportAtEpoch
         %trainingProgressOptions.sendNextReportAtEpoch = trainingProgressOptions.sendNextReportAtEpoch + trainingProgressOptions.TrainingOpt.CheckpointFrequency;
         mibDeepTrainingProgressStruct.sendNextReportAtEpoch = mibDeepTrainingProgressStruct.sendNextReportAtEpoch + trainingProgressOptions.TrainingOpt.CheckpointFrequency;
@@ -350,8 +392,10 @@ else
     mibDeepTrainingProgressStruct.hPlot(1).YData = mibDeepTrainingProgressStruct.TrainLoss(1:mibDeepTrainingProgressStruct.TrainXvecIndex-1);
     if ~isnan(progressStruct.TrainingAccuracy)
         mibDeepTrainingProgressStruct.AccTrainGauge.Value = progressStruct.TrainingAccuracy;
+        % leave the 'N/A' text (set for '2D Instance' at window creation) in place when
+        % there is no training accuracy metric at all - only overwrite it with a real value
+        mibDeepTrainingProgressStruct.AccTrainingValue.Text = sprintf('%.2f%%', progressStruct.TrainingAccuracy);
     end
-    mibDeepTrainingProgressStruct.AccTrainingValue.Text = sprintf('%.2f%%', progressStruct.TrainingAccuracy);
 
     if isfield(progressStruct, 'TimeSinceStart') % when trainNetwork is used
         mibDeepTrainingProgressStruct.ElapsedTime.Text = ...
@@ -381,8 +425,8 @@ else
         mibDeepTrainingProgressStruct.hPlot(2).YData = mibDeepTrainingProgressStruct.ValidationLoss(1:mibDeepTrainingProgressStruct.ValidationXvecIndex-1);
         if ~isnan(progressStruct.ValidationAccuracy)
             mibDeepTrainingProgressStruct.AccValGauge.Value = progressStruct.ValidationAccuracy;
+            mibDeepTrainingProgressStruct.AccValidationValue.Text = sprintf('%.2f%%', progressStruct.ValidationAccuracy);
         end
-        mibDeepTrainingProgressStruct.AccValidationValue.Text = sprintf('%.2f%%', progressStruct.ValidationAccuracy);
 
     end
     %drawnow;
