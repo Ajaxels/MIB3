@@ -89,8 +89,7 @@ switch fileFilters{selectedIndx, 2}
         prompts = {sprintf('Confirm output patch size\n(height width depth number_of_classes):')};
         defAns = {num2str(outputPatchSize)};
         dlgTitle = 'Import network';
-        inputDlgOpt.PromptLines = 2;
-        [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle, inputDlgOpt);
+        answer = utils.dlgs.inputUniversalDlg(obj.view.gui, '', prompts, defAns, dlgTitle);
         if isempty(answer); delete(wb); return; end
         outputPatchSize = str2num(answer{1});
 

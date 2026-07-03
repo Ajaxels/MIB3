@@ -129,6 +129,9 @@ try
     if isfield(res, 'ScoreExportOpt')   % new in MIB 2.9113
         obj.ScoreExportOpt = utils.concatenateStructures(obj.ScoreExportOpt, res.ScoreExportOpt);
     end
+    if isfield(res, 'OverlapInstancesOpt')   % new in MIB3, 2D Instance workflow
+        obj.OverlapInstancesOpt = utils.concatenateStructures(obj.OverlapInstancesOpt, res.OverlapInstancesOpt);
+    end
 catch err
     % when the training was stopped before finish,
     % those structures are not stored

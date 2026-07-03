@@ -148,10 +148,13 @@ else
                 BatchOpt.Filename = ['Mask_' inputFilenameName '.mask'];
             end
         case 'labels'
+            % Always suggest the internal *.model format for the Save-as
+            % dialog, regardless of the format used by a previous Save-as
+            % (the stored labels.filename may carry another extension).
             label_fn = obj.I{BatchOpt.id}.labels.filename;
             if ~isempty(label_fn)
-                [~, label_name, label_ext] = fileparts(label_fn);
-                BatchOpt.Filename = [label_name label_ext];
+                [~, label_name] = fileparts(label_fn);
+                BatchOpt.Filename = [label_name '.model'];
             else
                 BatchOpt.Filename = ['Labels_' inputFilenameName '.model'];
             end
@@ -258,8 +261,16 @@ else
         extTokens = strrep(strrep(extTokens, '(', ''), ')', '');  % '*.tif', '*.am', ...
         filterSpec = [extTokens, formats];  % Nx2 cell for uiputfile
         
-        [imgDir, ~, ~]  = fileparts(obj.I{BatchOpt.id}.image.filename);
-        defaultFilename = fullfile(imgDir, BatchOpt.Filename);
+        % Default directory: for labels prefer the folder of the last-saved
+        % model so that once "Save as..." wrote a model to a chosen folder,
+        % subsequent Save/Save-as stay there. Fall back to the source image
+        % folder before any model has been saved.
+        [defaultDir, ~, ~]  = fileparts(obj.I{BatchOpt.id}.image.filename);
+        if strcmpi(layerType, 'labels')
+            labelsDir = fileparts(obj.I{BatchOpt.id}.labels.filename);
+            if ~isempty(labelsDir); defaultDir = labelsDir; end
+        end
+        defaultFilename = fullfile(defaultDir, BatchOpt.Filename);
         [~, ~, defaultExt] = fileparts(defaultFilename);
         
         % resort formats to have the current one selected

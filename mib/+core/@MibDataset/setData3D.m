@@ -114,6 +114,8 @@ if nargin < 5; orient = []; end
 if nargin < 4; time = []; end
 if nargin < 3; type = 'image'; end
 
+result = false;
+
 % === FAST PATH ===
 % Standard in-memory, YX orient (3), no ROI, no blockMode, no x/y/z subregion.
 % Directly writes data{1} and skips ROI/Virtual/blockMode machinery.

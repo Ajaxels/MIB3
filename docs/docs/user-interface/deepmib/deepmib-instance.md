@@ -173,19 +173,36 @@ Prediction is started from the [Predict tab](deepmib-predict.md):
 Large images are **tiled** at native resolution using the blocked-image overlap strategy
 (controlled by <label class="widget widget-checkbox">Overlapping tiles</label> and
 <span class="widget widget-edit">Overlap, %</span> in the Predict tab): each tile is segmented with
-`segmentObjects` with a surrounding border of context, and objects are stitched across tiles using
-a **centroid-in-core** rule — each object is emitted by the tile that owns its centroid, so there
-are no duplicates and no seam-splitting. The result is written as a MIB `.model` file under
+`segmentObjects` with a surrounding border of context, and objects are stitched across tiles. The
+stitching rule is selected with the <span class="widget widget-dropdown">Overlap mode</span>
+dropdown of the *Instance segmentation* subpanel in the Predict tab:
+
+* **Centroid in core** — each object is emitted by the tile that owns its centroid, so there are
+  no duplicates and no seam-splitting. Requires the tile overlap to be at least as large as the
+  biggest object.
+* **IoU merge** — all detections of every tile are kept, and detections from neighbouring tiles
+  are merged into one instance when their masks agree inside the shared overlap band
+  (intersection-over-union test). Objects larger than the overlap are detected piecewise and
+  merged, so only the band width matters — use this mode when objects may exceed the overlap.
+
+The detection confidence threshold and the merge IoU/IoA thresholds are configured with the
+subpanel's *Settings* button — see the
+[Predict tab](deepmib-predict.md#instance-segmentation-subpanel) for details.
+
+The result is written as a MIB `.model` file under
 `3_Results/PredictionImages/ResultsModels`, in which **every object instance is a unique index**
 (background `0`), matching the input labelling convention.
 
-!!! warning "Overlap must cover the largest object"
+!!! warning "Overlap size vs stitching mode"
 
-    The centroid-in-core stitching requires the **tile overlap to be at least as large as the
-    biggest object** — otherwise an object that never fits fully inside a single tile's field of
-    view will be truncated. Increase <span class="widget widget-edit">Overlap, %</span> for large
-    objects. A future IoU-based stitching mode is planned to lift this restriction (and to serve as
-    a building block for a later 3D instance-merging workflow).
+    With **Centroid in core**, the **tile overlap must be at least as large as the biggest
+    object** — otherwise an object that never fits fully inside a single tile's field of view
+    will be truncated. Increase <span class="widget widget-edit">Overlap, %</span> for large
+    objects, or switch to **IoU merge**, which lifts this restriction (the overlap band only
+    needs to be wide enough — a few tens of pixels — for neighbouring tiles to produce
+    consistent masks in it). If **IoU merge** is selected while
+    <label class="widget widget-checkbox">Overlapping tiles</label> is unchecked, a default 5%
+    overlap is applied automatically.
 
 ---
 

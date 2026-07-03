@@ -15,7 +15,9 @@ function fnOut = saveLabels(obj, filename, BatchOptIn)
 %   obj        — MibModel instance
 %   filename   — *(optional)* (char) full output path. When empty ([])
 %   a uiputfile dialog is shown. When omitted, the existing
-%   labels filename is used.
+%   labels filename is reused with its extension forced to ``.model``
+%   (the Save button always writes the internal Matlab format; a prior
+%   "Save as..." to another format only defines the base filename).
 %   BatchOptIn — *(optional)* (struct | NaN) batch processing options.
 %   When NaN, fires SyncBatch event and returns without saving.
 %   See models.MibModel.saveImage for the full field list.
@@ -61,8 +63,15 @@ function fnOut = saveLabels(obj, filename, BatchOptIn)
 % Updates
 
 if nargin < 2
-    % No filename given: use existing labels filename and save without dialog
-    filename = obj.I{obj.id}.labels.filename;
+    % No filename given ("Save" semantics): reuse the existing labels
+    % filename but always write the internal *.model format. A previous
+    % "Save as..." to another format only defines the base filename and
+    % directory; it must not switch the format used by the Save button.
+    filename = obj.I{obj.getActiveId()}.labels.filename;
+    if ~isempty(filename)
+        [labelsPath, labelsName] = fileparts(filename);
+        filename = fullfile(labelsPath, [labelsName '.model']);
+    end
 end
 if nargin < 3
     fnOut = obj.saveImage('labels', filename);

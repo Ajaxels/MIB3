@@ -18,8 +18,9 @@ function coreLabel = segmentBlockedImageInstances(block, net, threshold, executi
 % ``UseParallel=false``). The final label map is relabelled to a contiguous range by the caller.
 %
 % Limitation: an object larger than the overlap band is truncated (never fully contained in
-% one tile's field of view). Set the overlap ≥ the largest expected object. A future
-% IoU-merge stitching mode is planned to lift this restriction (see the DeepMIB instance plan).
+% one tile's field of view). Set the overlap ≥ the largest expected object, or switch the
+% stitching mode (BatchOpt.P_OverlapInstancesMode) to 'IoU merge'
+% (deepmib.segmentImageInstancesIoUMerge), which lifts this restriction.
 %
 % Input Arguments:
 %   - **block** — struct from ``blockedImage/apply`` with ``.Data`` (bordered tile),

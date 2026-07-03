@@ -85,8 +85,20 @@ popupList2.add(widgetHandles.indexed3dconn4);
 % % Indexed objects -> 3D objects conn8
 widgetHandles.indexed3dconn8 =  ListItem('3D objects conn8');
 popupList2.add(widgetHandles.indexed3dconn8);
+% separator before the cross-slice stitching entry (different input: a model
+% that is ALREADY per-slice 2D instances, not a semantic model)
+separator2 = PopupListSeparator();
+popupList2.add(separator2);
 widgetHandles.indexed.Popup = popupList2;
 popupList.add(widgetHandles.indexed);
+
+% separator
+separator = PopupListSeparator();
+popupList.add(separator);
+% % Indexed objects -> stitch per-slice 2D instances into 3D
+widgetHandles.stitchInstances2Dto3D = ListItem('Stitch 2D instances to 3D');
+%widgetHandles.stitchInstances2Dto3D.Description = 'Link per-slice 2D instance labels across slices into consistent 3D objects (input model must already be per-slice 2D instances)';
+popupList.add(widgetHandles.stitchInstances2Dto3D);
 
 % add the popup list to the Mode button
 widgetHandles.convert.Popup = popupList;

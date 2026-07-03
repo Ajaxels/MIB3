@@ -123,8 +123,43 @@ Calibration (verified by screenshot):
    (was force-overridden to 96); celebrate/call4help render at 220 px (was
    shrunk to 48); window icon (mib logo) now set.
 3. Unknown icon ids default to a 96 px column (was 48 then overridden anyway).
-4. In horizontal layout with `PromptLines > 1`, single-line widgets stretch to
-   the row height (they already did inside the old wrappers).
+4. ~~In horizontal layout with `PromptLines > 1`, single-line widgets stretch to
+   the row height (they already did inside the old wrappers).~~ Superseded by the
+   July 2026 follow-up below: widgets now stay one line high.
+
+## Follow-up: `PromptLines` removed (July 2026)
+
+`options.PromptLines` was redundant and is now **accepted but ignored**
+(dropped from the docblock and `knownOptionFields`); all in-repo callers cleaned:
+
+- Label height never needed it: `'fit'` grid rows already size to wrapped and
+  `\n` multi-line prompt labels in both layouts.
+- Its only real effects were (a) selecting `uitextarea` and its height and
+  (b) feeding the window-height estimate. Both now derive automatically:
+  a char/string default containing newlines becomes a `uitextarea` sized to
+  its line count (`widgetTextLines` via `splitlines`); the height estimate
+  computes label lines from prompt text (explicit newlines + ~7 px/char wrap
+  estimate on the label column width — halved for `LabelPosition='left'`).
+- Caller survey: every call site passed all-ones except
+  `MibDeep/importNetwork` (`PromptLines=2` for a 2-line label, which
+  unintentionally turned its patch-size editfield into a textarea — a bug,
+  now a proper editfield) and two `inputSingleDlg` callers where the option
+  was silently ignored anyway (`renameMaterial`, `saveCheckpointNetworkCheck`).
+
+**Left-layout widget height fix** (user-reported): widgets no longer stretch
+to match multi-line labels. Rows are always `'fit'`; each widget is parented
+into a per-row 1×1 wrapper `uigridlayout` with fixed `RowHeight`
+(`rowHeight * widgetTextLines(i)`), so it keeps one text line, top-aligned,
+even when the label wraps. This deliberately reintroduces the wrapper grid
+**for the left layout only** (the top layout stays wrapper-free) — fixed-height
+cells are the only way to stop a component filling a taller grid cell.
+
+Verified live (warm shell, timer-driven): wrapped 3-line label → editfield
+22 px top-aligned; `\n` 2-line label → dropdown 22 px; `sprintf` 3-line text
+default → 66 px textarea; all answers round-trip. `check_matlab_code` clean
+on all changed files. Note: one-shot inspection timers still race cold
+uifigure creation (fires inside the pre-`uiwait` `drawnow`) — use the polling
+harness pattern for testing.
 
 ## Open items
 

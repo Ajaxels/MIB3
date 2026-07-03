@@ -43,8 +43,9 @@ for i=numel(obj.childControllers):-1:1
     end
 end
 
-% terminate python session to release GPU memory
-if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+% terminate python session to release GPU memory; InProcess interpreters
+% (used by SAM/SAM2) cannot be terminated and end together with MATLAB
+if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
 
 % unload OMERO
 if ~isdeployed

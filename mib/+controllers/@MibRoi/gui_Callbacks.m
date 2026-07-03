@@ -78,6 +78,13 @@ switch mode
         obj.mibController.showImage();
     case 'roiShowROI' % show ROI in the Image View panel
         % see also obj.mibController.cQuickAccessBar.gui_Callbacks
+        if hWidget.Value && obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0) == 0
+            % no ROIs present - keep the ROI mode off
+            hWidget.Value = false;
+            obj.mibModel.I{obj.mibModel.id}.roiShow = false;
+            obj.mibController.cQuickAccessBar.handles.roiMode.Value = false;
+            return;
+        end
         obj.mibModel.I{obj.mibModel.id}.roiShow = hWidget.Value;
         obj.mibController.cQuickAccessBar.handles.roiMode.Value = logical(hWidget.Value);
         obj.mibController.showImage();

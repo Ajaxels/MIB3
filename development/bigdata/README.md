@@ -10,6 +10,7 @@ image + segmentation model) lives here.
 | [`bigdata_logic.md`](bigdata_logic.md) | **How it works.** Class architecture, image/model pyramids, the level map (`matLevel`) + `.levelmap` sidecar, getData/setData & coordinate conventions, WSI-safe editing, Save modes, invariants/gotchas, file map. Read this first whenever you touch BigData. |
 | [`bigdata_implementation_plan.md`](bigdata_implementation_plan.md) | **Status & remaining work.** Streaming export (Phases 1–4), WSI direct readers (A–D done, E deferred), pending live-GUI validation checklist, deferred backlog, MCP verification helper. |
 | [`user_checklist.md`](user_checklist.md) | **Live-GUI test checklist** for the export + ImageConverter features: units fix, OME-TIFF streaming, BigData mask export, native zarr3 convert, BioFormats→MATLAB warning, voxel round-trip. Automated baseline commands + click-through steps with pass criteria. |
+| [`alignment_plan.md`](alignment_plan.md) | **Plan (not started): alignment for BigData.** Two-pass streaming design — shifts/tforms at a user-selectable pyramid level, aligned image + packed-63 labels written to a new zarr3 store, buffer switch-over. Phased (drift → feature-based v2 → landmarks) with per-phase model recommendations. |
 
 ## Superseded detail log (history only)
 

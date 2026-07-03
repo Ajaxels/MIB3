@@ -219,22 +219,44 @@ for training and prediction.
   expose/validate the overlap setting accordingly.
 - **Two distinct objects sharing a centroid tile-core edge case:** extremely close centroids near a
   core boundary could, in rare cases, be mis-assigned; negligible when overlap is adequate.
-- **Future improvement — IoU-merge stitching:** instead of centroid-in-core, detect in all tiles
-  (with overlap) and merge border detections whose cross-seam mask **IoU** exceeds a threshold into
-  one instance. More robust for large objects, but heavier and needs a merge threshold. This is the
-  planned upgrade once centroid-in-core is validated.
+- **IoU-merge stitching — IMPLEMENTED:** `deepmib.segmentImageInstancesIoUMerge` keeps all
+  per-tile detections (stored memory-light as bbox + cropped mask) and links detections of
+  neighbouring tiles whose masks agree **inside the shared overlap band** (in-band IoU ≥ 0.5 or
+  IoA ≥ 0.8, min 5 px intersection), resolved globally via union-find; merged groups are painted
+  low-score-first so stronger groups win pixel conflicts. Selected at prediction time via the new
+  `BatchOpt.P_OverlapInstancesMode` dropdown (`'Centroid in core'` (default) / `'IoU merge'`);
+  when IoU merge is chosen with `P_OverlappingTiles` off, a 5% overlap is forced with a warning.
+  Validated with a synthetic fake-`segmentFcn` test (injectable `options.segmentFcn` hook): exact
+  6/6 GT partition reconstruction incl. an object far larger than the overlap band, plus
+  zero-border and empty-image edge cases. Old configs load fine (missing field falls back to the
+  default via `updateBatchOptCombineFields_Shared`). GUI: "Instance segmentation" subpanel on the
+  Predict tab with the "Overlap mode" dropdown (Tag `P_OverlapInstancesMode`) and a Settings
+  button (Tag `P_OverlapInstancesSettings` → `updateOverlapInstancesSettings`); both enabled only
+  for the `2D Instance` workflow (`selectArchitecture.m`). Tunable settings live in
+  `obj.OverlapInstancesOpt` (`.DetectionThreshold` — `segmentObjects` confidence, both modes;
+  `.MergeIoU` / `.MergeIoA` — in-band merge thresholds, IoU-merge mode), persisted via
+  `preferences.Deep.OverlapInstancesOpt` (`generatePreferences`/`closeWindow`), the `.mibCfg`
+  (`saveConfig`/`loadConfig`) and the trained `.mibDeep` (`startTrainingInstances`).
 - **Future improvement — object-density-aware sampling:** adapt the 90/10 object/uniform ratio to
   local object density so sparse regions still get background exposure.
 
 ## Future roadmap — 3D instance segmentation (to be planned)
 
+> **Step 2 prototype done:** the cross-slice merging algorithm is implemented and validated as a
+> standalone utility — `mib/+utils/stitchInstances2Dto3D.m`. See
+> [`stitchInstances2Dto3D.md`](stitchInstances2Dto3D.md) for the algorithm, a critique of the
+> empanada/MitoNet source spec, validation on the easy/hard test sets (perfect 33/33 reconstruction
+> on the easy 3D ground truth), and the MIB/DeepMIB integration path. It is **not yet wired into
+> DeepMIB** (pure `[H×W×Z]` label volume in/out).
+
 The **ultimate goal** is to extend 2D instance results to **3D objects**. Planned approach:
 
 1. Run 2D instance segmentation slice-by-slice over the volume (reusing the patch/tiled 2D pipeline
    above), producing a per-slice instance label map.
-2. Run a dedicated **3D merging algorithm** (to be designed) that links 2D instances across
-   adjacent slices into consistent 3D object IDs — **likely via IoU** of masks between slice `z`
-   and `z+1` (assign the same 3D ID when overlap exceeds a threshold).
+2. Run a dedicated **3D merging algorithm** (implemented — see `stitchInstances2Dto3D.md`) that
+   links 2D instances across adjacent slices into consistent 3D object IDs via IoU/IoA of masks
+   between slice `z` and `z+1` (assign the same 3D ID when overlap exceeds a threshold), resolved
+   globally through an undirected overlap graph + union-find.
 3. The merging must handle real-world topology: objects appearing/disappearing across slices,
    one-to-many **splits** and many-to-one **merges** between consecutive slices, and an IoU/overlap
    threshold (plus optional size/centroid constraints) to avoid over- or under-merging.

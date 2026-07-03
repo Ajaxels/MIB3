@@ -84,6 +84,7 @@ if manual && ~strcmp(roiType, 'Polyline') && ~strcmp(roiType, 'Lasso')
     % ensure the "Show ROI" checkbox is on
     obj.handles.roiShowROI.Value = true;
     obj.mibController.cQuickAccessBar.handles.roiMode.Value = true;
+    dataset.roiShow = true;
     notify(obj.mibModel, 'ShowImage');
     return;
 end
@@ -291,6 +292,7 @@ dataset.selectedROI = 0;
 % ensure the "Show ROI" checkbox is on
 obj.handles.roiShowROI.Value = true;
 obj.mibController.cQuickAccessBar.handles.roiMode.Value = true;
+dataset.roiShow = true;
 
 notify(obj.mibModel, 'ShowImage');
 end

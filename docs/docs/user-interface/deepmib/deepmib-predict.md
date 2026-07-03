@@ -84,6 +84,22 @@ minimize edge artefacts and improve segmentation. Define overlap percentage in <
       - **Use Matlab non-compressed format (range 0-1)** `.mibImg` with 0-1 range, MATLAB-only (`model = load('filename.mat');`)  
 - <label class="widget widget-checkbox">upsample predictions</label>: (*2D patch-wise only*) upsamples downsampled patch-wise predictions to match original image size
 
+### Instance segmentation subpanel
+
+Settings of the *Instance segmentation* subpanel are only available for the
+[*2D Instance* workflow](deepmib-instance.md#prediction).
+
+<span class="widget widget-dropdown">Overlap mode</span>: selects how object instances are stitched across tiles during prediction:
+
+* **Centroid in core** — each object is emitted by the tile owning its centroid; the tile overlap must exceed the largest object  
+* **IoU merge** — detections of neighbouring tiles are merged when their masks agree in the overlap band; works for objects larger than the overlap  
+
+The ![Settings button](images/DeepLearningTrainSettingsBtn.png){.inline-image} button configures the stitching parameters:
+
+* <span class="widget widget-edit">Detection confidence threshold (0-1)</span> — minimal confidence score for a detected instance to be kept (both overlap modes); decrease to detect more (weaker) objects, increase to keep only confident detections (default: `0.5`)  
+* <span class="widget widget-edit">Merge IoU threshold (0-1)</span> — (*IoU merge* only) merge detections of neighbouring tiles when the intersection-over-union of their masks within the shared overlap band exceeds this value; decrease when objects get split at tile seams, increase when distinct touching objects get merged (default: `0.5`)  
+* <span class="widget widget-edit">Merge IoA threshold (0-1)</span> — (*IoU merge* only) additionally merge when the intersection over the smaller in-band mask area exceeds this value, catching a truncated fragment fully contained in the neighbouring tile's complete mask (default: `0.8`)  
+
 
 ---
 

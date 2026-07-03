@@ -86,7 +86,7 @@ if strcmp(SAM.samVersion, 'SAM1')
         elseif strcmp(answer2, 'Reset')
             % restore default values
             if ~strcmp(SAM1.backbone, 'vit_b (0.4Gb)')
-                if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+                if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
                 obj.mibModel.pythonEnv = [];
             end
             SAM1.backbone = 'vit_b (0.4Gb)';
@@ -121,11 +121,11 @@ if strcmp(SAM.samVersion, 'SAM1')
     end
 
     if ~strcmp(SAM1.backbone, answer{1})
-        if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+        if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
         obj.mibModel.pythonEnv = [];
     end
     if ~strcmp(answer{2}, SAM1.environment)
-        if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+        if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
         obj.mibModel.pythonEnv = [];
     end
 
@@ -222,7 +222,7 @@ else
             return
         elseif strcmp(answer2, 'Reset')
             if ~strcmp(obj.mibModel.preferences.SegmTools.SAM2.backbone, 'sam2_hiera_t (0.15Gb)')
-                if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+                if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
                 obj.mibModel.pythonEnv = [];
             end
             SAM2.backbone = 'sam2_hiera_t (0.15Gb)';
@@ -257,11 +257,11 @@ else
     end
 
     if ~strcmp(SAM2.backbone, answer{1})
-        if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+        if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
         obj.mibModel.pythonEnv = [];
     end
     if ~strcmp(answer{2}, SAM2.environment)
-        if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+        if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
         obj.mibModel.pythonEnv = [];
     end
 

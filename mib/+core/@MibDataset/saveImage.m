@@ -225,10 +225,18 @@ switch lower(layerType)
         % Delegate to MibLabels.save()
         fnOut = obj.labels.save(filename, options);
 
-        % Store saved path so subsequent "Save" (no dialog) reuses it
+        % Store saved path so subsequent "Save" (no dialog) reuses it, but
+        % ONLY for the native *.model format. Exports to other formats
+        % (*.am, *.tif, *.nrrd, ...) must not change the model's canonical
+        % filename nor the default destination directory used by later
+        % Save / Save-as operations.
         if ~isempty(fnOut)
-            if iscell(fnOut); obj.labels.filename = fnOut{1};
-            else;             obj.labels.filename = fnOut;
+            if iscell(fnOut); savedLabelsPath = fnOut{1};
+            else;             savedLabelsPath = fnOut;
+            end
+            [~, ~, savedLabelsExt] = fileparts(savedLabelsPath);
+            if strcmpi(savedLabelsExt, '.model')
+                obj.labels.filename = savedLabelsPath;
             end
         end
 

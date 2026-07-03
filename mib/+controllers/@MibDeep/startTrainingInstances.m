@@ -99,7 +99,6 @@ if numel(checkPointFiles) > 1
     prompts = {'Select the check point:'};
     defAns = {checkPointFiles, 1};
     dlgTitle = 'Select checkpoint';
-    options.PromptLines = 1;
     options.Header = sprintf(['Files with training checkpoints were detected.\n' ...
         'Please select the checkpoint to continue, if you choose "Start new training" the checkpoint directory ' ...
         'will be cleared from the older checkpoints and the new training session initiated:']);
@@ -591,8 +590,9 @@ if mibDeepTrainingProgressStruct.emergencyBrake && (obj.BatchOpt.Workflow{1}(1) 
     end
 end
 
+OverlapInstancesOpt = obj.OverlapInstancesOpt;
 save(obj.BatchOpt.NetworkFilename, 'net', 'TrainingOptStruct', 'AugOpt2DStruct', 'AugOpt3DStruct', 'InputLayerOpt', ...
-    'ActivationLayerOpt', 'SegmentationLayerOpt', 'DynamicMaskOpt', ...
+    'ActivationLayerOpt', 'SegmentationLayerOpt', 'DynamicMaskOpt', 'OverlapInstancesOpt', ...
     'classNames', 'classColors', 'inputPatchSize', 'outputPatchSize', 'BatchOpt', '-mat', '-v7.3');
 
 if showWaitbarLocal

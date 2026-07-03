@@ -53,7 +53,7 @@ switch mode
         % the parameters for each specific version are in  preferences.SegmTools.SAM(N)., e.g. preferences.SegmTools.SAM2
         obj.mibModel.preferences.SegmTools.SAM.samVersion = hWidget.Value;
         % force to reset python during next usage, to minimize GPU memory consumption
-        if ~isempty(obj.mibModel.pythonEnv); terminate(pyenv); end
+        if ~isempty(obj.mibModel.pythonEnv); utils.terminatePythonEnv(); end
         obj.mibModel.pythonEnv = [];
     case 'samDataset' % select type of dataset to apply SAM
         % no action needed

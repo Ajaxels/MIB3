@@ -18,7 +18,6 @@ function exportNetwork(obj)
     prompts = {'Output format'; 'Alter the final segmentation layer as'; 'Version of ONNX operator set'};
     defAns = {{'ONNX', 'TensorFlow', 1};{'Keep as it is', 'Remove the layer', 'pixelClassificationLayer', 'dicePixelClassificationLayer', 1};  {'6', '7', '8', '9','10','11','12','13', 4}; };
     dlgTitle = 'Export network';
-    options.PromptLines = [1, 1, 1];
     header = sprintf('Convert and export the network to ONNX or TensorFlow format');
     options.HeaderLines = 1;
     options.WindowWidth = 540;

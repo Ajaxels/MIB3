@@ -137,14 +137,12 @@ if nargin < 2
     if modelType > 255
         prompts = {sprintf('New material name\n(only numbers!):')};
         defAns = {BatchOpt.MaterialIndex};
-        dlgOpt.PromptLines = 2;
     else
         prompts = {sprintf('New material name\n(no spaces / no letters as the 1st character)\nCurrent index: %d, name: %s', ...
             materialIndex, obj.I{id}.labels.materialNames{materialIndex})};
         defAns = {obj.I{id}.labels.materialNames{materialIndex}};
-        dlgOpt.PromptLines = 3;
     end
-    answer = utils.dlgs.inputSingleDlg(obj.getProgressBarParent(), prompts, defAns, 'Rename material', dlgOpt);
+    answer = utils.dlgs.inputSingleDlg(obj.getProgressBarParent(), prompts, defAns, 'Rename material');
     if isempty(answer); return; end
     BatchOpt.MaterialName = answer;
 end

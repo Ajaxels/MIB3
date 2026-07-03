@@ -499,6 +499,11 @@ Prefs.Deep.DynamicMaskOpt.Method = 'Keep above threshold';  % 'Keep above thresh
 Prefs.Deep.DynamicMaskOpt.ThresholdValue = 0;
 Prefs.Deep.DynamicMaskOpt.InclusionThreshold = 0;     % Inclusion threshold for mask blocks
 
+% settings for stitching of instances across tiles during 2D Instance prediction
+Prefs.Deep.OverlapInstancesOpt.DetectionThreshold = 0.5;    % confidence threshold of segmentObjects [both overlap modes]
+Prefs.Deep.OverlapInstancesOpt.MergeIoU = 0.5;      % in-band intersection-over-union to merge detections ['IoU merge' mode]
+Prefs.Deep.OverlapInstancesOpt.MergeIoA = 0.8;      % in-band intersection-over-smaller-area to merge detections ['IoU merge' mode]
+
 Prefs.Deep.Metrics.Accuracy = true;  % parameters for metrics evaluation
 Prefs.Deep.Metrics.BFscore = false;
 Prefs.Deep.Metrics.GlobalAccuracy = true;

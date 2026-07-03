@@ -74,8 +74,7 @@ switch menuEntry.Tag
         prompts = {sprintf('Index of the first material [1-%d]:', matCount); ...
                    sprintf('Index of the second material [1-%d]:', matCount)};
         defAns = {num2str(mat1def); num2str(mat2def)};
-        dlgOpt.PromptLines = [1, 1];
-        answer = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', prompts, defAns, 'Swap material colors', dlgOpt);
+        answer = utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), '', prompts, defAns, 'Swap material colors');
         if isempty(answer); return; end
         mat1 = str2double(answer{1});
         mat2 = str2double(answer{2});

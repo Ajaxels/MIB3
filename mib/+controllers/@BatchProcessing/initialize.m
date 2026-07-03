@@ -179,6 +179,8 @@ obj.Sections(secIndex).Actions(actionId).Name = 'Interpolate material';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.interpolateImage(''labels'', [], Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Smooth labels';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.smoothImage(''labels'', Batch);'; actionId = actionId + 1;
+obj.Sections(secIndex).Actions(actionId).Name = 'Stitch 2D instances to 3D';
+obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibModel.stitchModelInstances(Batch);'; actionId = actionId + 1;
 obj.Sections(secIndex).Actions(actionId).Name = 'Quantification';
 obj.Sections(secIndex).Actions(actionId).Command = 'obj.mibController.startController(''controllers.Quantification'', [], Batch);'; actionId = actionId + 1;
 

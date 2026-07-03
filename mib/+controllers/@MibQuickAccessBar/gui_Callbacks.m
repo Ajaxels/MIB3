@@ -41,6 +41,13 @@ switch mode
          obj.mibModel.I{obj.mibModel.id}.blockModeSwitch = hWidget.Selected;
     case 'Enable the ROI mode'
         % see also obj.mibController.cRoi.gui_Callbacks
+        if hWidget.Selected && obj.mibModel.I{obj.mibModel.id}.hROI.getNumberOfROI(0) == 0
+            % no ROIs present - keep the ROI mode off
+            hWidget.Selected = false;
+            obj.mibModel.I{obj.mibModel.id}.roiShow = false;
+            obj.mibController.cRoi.handles.roiShowROI.Value = false;
+            return;
+        end
         obj.mibModel.I{obj.mibModel.id}.roiShow = hWidget.Selected;
         obj.mibController.cRoi.handles.roiShowROI.Value = hWidget.Selected;
         obj.mibController.showImage();

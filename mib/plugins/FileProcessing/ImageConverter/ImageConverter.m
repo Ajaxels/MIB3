@@ -1112,17 +1112,11 @@ classdef ImageConverter < handle
             isNativeZarrV3 = strcmp(obj.BatchOpt.OutputImageFormatExtension{1}, 'zarr') && ...
                 ~io.zarr.Config.isPython() && str2double(obj.BatchOpt.ZarrVersion{1}(end)) == 3;
             if ~isNativeZarrV3 && isempty(obj.mibModel.pythonEnv)
-                try
-                    obj.mibModel.pythonEnv = pyenv( ...
-                        'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-                        'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
-                catch err
-                    if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
-                        terminate(pyenv);
-                        obj.mibModel.pythonEnv = pyenv( ...
-                            'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-                            'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
-                    end
+                [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
+                    obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, 'OutOfProcess');     % InProcess or OutOfProcess
+                if ~isempty(pythonErrorMessage)
+                    utils.dlgs.showErrorDialog(obj.view.gui, pythonErrorMessage, 'Image converter');
+                    return;
                 end
             end
 
@@ -1424,17 +1418,11 @@ classdef ImageConverter < handle
             levelImageTranslations = levelImageTranslations+boundingBoxShiftsZYX;
 
             %% Init python
-            try
-                obj.mibModel.pythonEnv = pyenv( ...
-                    'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-                    'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
-            catch err
-                if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
-                    terminate(pyenv);
-                    obj.mibModel.pythonEnv = pyenv( ...
-                        'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-                        'ExecutionMode', 'OutOfProcess');     % InProcess or OutOfProcess
-                end
+            [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
+                obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, 'OutOfProcess');     % InProcess or OutOfProcess
+            if ~isempty(pythonErrorMessage)
+                utils.dlgs.showErrorDialog(obj.view.gui, pythonErrorMessage, 'Image converter');
+                return;
             end
             % import zarr and numpy
             pyrun(["import zarr", ...

@@ -257,6 +257,7 @@ classdef MibRibbon
             obj.handles.ribbonModel.indexed2dconn8.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.indexed3dconn4.ItemPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.indexed3dconn8.ItemPushedFcn = @obj.model_Callbacks;
+            obj.handles.ribbonModel.stitchInstances2Dto3D.ItemPushedFcn = @obj.model_Callbacks;
             %% Add Callbacks for the MODEL ribbon -> Import section
             obj.handles.ribbonModel.new.ButtonPushedFcn = @obj.model_Callbacks;
             obj.handles.ribbonModel.load.ButtonPushedFcn = @obj.model_Callbacks;

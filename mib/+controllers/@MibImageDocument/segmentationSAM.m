@@ -169,17 +169,12 @@ if isempty(obj.mibModel.pythonEnv)
     % in the MATLAB process, so a hard torch/CUDA crash now also crashes MATLAB
     % (OutOfProcess used to isolate that). Switch back to OutOfProcess here if
     % crash isolation is needed and the host launcher works on the target system.
-    try
-        obj.mibModel.pythonEnv = pyenv( ...
-            'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-            'ExecutionMode', 'InProcess');     % InProcess or OutOfProcess
-    catch err
-        if strcmp(err.identifier, 'MATLAB:Pyenv:PythonLoaded')
-            terminate(pyenv);
-            obj.mibModel.pythonEnv = pyenv( ...
-                'Version', obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, ...
-                'ExecutionMode', 'InProcess');     % InProcess or OutOfProcess
-        end
+    [obj.mibModel.pythonEnv, pythonErrorMessage] = utils.initPythonEnv( ...
+        obj.mibModel.preferences.ExternalDirs.PythonInstallationPath, 'InProcess');     % InProcess or OutOfProcess
+    if ~isempty(pythonErrorMessage)
+        if BatchOpt.showWaitbar; delete(wb); end
+        utils.dlgs.showErrorDialog(obj.mibModel.getProgressBarParent(), pythonErrorMessage, 'SAM segmentation');
+        return;
     end
 
     if BatchOpt.showWaitbar; wb.Value = 0.1; end

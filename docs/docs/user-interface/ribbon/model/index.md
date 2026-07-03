@@ -57,6 +57,34 @@ Detects objects in all materials and generates a new model where each object has
     - Right-clicking the segmentation table and choosing *Rename...* or by pressing ++f2++
     - Hovering over an object in the Image View panel and pressing ++ctrl+f++.
 
+<div class="h4-like">Stitch 2D instances to 3D</div>
+
+Links a stack of **independently segmented 2D instances** into consistent 3D objects. Unlike the
+*Indexed objects* options above - which turn a *semantic* model into indexed objects by
+connected-component analysis - this expects a model whose slices are **already** per-slice 2D
+instances, typically the raw output of a 2D instance-segmentation prediction where the *same* object
+carries a *different* index on each slice.
+
+Objects that overlap between neighbouring slices are merged into a single 3D instance with one index
+through the whole stack. The current model is backed up first, so the operation can be undone with
+++ctrl+z++. The result is stored as a 65535- (or 4294967295-) material indexed model, one index per
+3D object.
+
+A settings dialog collects the linking parameters:
+
+| Setting | Description |
+|---------|-------------|
+| **Method** | `graph` (*default*) links every overlapping pair of objects on neighbouring slices and groups them by connected components - handling objects that **split** into pieces or **merge** together between slices; `hungarian` performs strict one-to-one matching per slice pair (empanada / MitoNet style) plus a containment merge for the leftovers. |
+| **IoU threshold** (0-1) | Join two objects when *(overlap area) / (their union area)* exceeds this. Higher = stricter, giving more but smaller 3D objects. |
+| **Merge split objects (IoA)** | Checkbox. When enabled (*default*), objects are also joined when a smaller object is mostly contained in a neighbour — i.e. *(overlap area) / (area of the smaller object)* is high — reconnecting a 3D object that briefly breaks into small pieces on one slice. Uncheck to link by IoU only. |
+| **Min overlap** (pixels) | Require at least this many overlapping pixels before two objects may be linked, to block tiny spurious touches from fusing unrelated objects. |
+| **Z lookback** (slices) | How many slices apart to compare. `1` = adjacent slices only; higher values also compare a slice with one further away, bridging an object that briefly disappears. |
+| **Min object size** (voxels) | After stitching, delete any 3D object smaller than this many voxels. `0` = keep all; raise it to remove single-slice noise fragments. |
+
+!!! note
+    This entry is intended as the 3D post-processing step for the **2D Instance** DeepMIB workflow:
+    run 2D instance prediction slice-by-slice, then stitch the per-slice result into 3D objects here.
+
 <div class="clear-float"></div>
 
 ---
@@ -97,10 +125,10 @@ Alternatively, use the <span class="widget widget-button">Load</span> button in 
     Models can also be opened by drag-and-dropping model files into the [Image Document](../../image-document/index.md).
 
 !!! note
-    When a loaded model carries no material names of its own (format-dependent — some formats, like
+    When a loaded model carries no material names of its own (format-dependent - some formats, like
     Zarr, may or may not embed names), materials are auto-named `mat1`, `mat2`, … For models with more
     than 255 materials, plain numeric names are used instead, since the number *is* the material index
-    — see the note on working with such models in [Convert type](#convert-type) above.
+    - see the note on working with such models in [Convert type](#convert-type) above.
 
 ---
 
@@ -127,7 +155,7 @@ Provide a variable name with a matrix matching the dataset dimensions `[height, 
 
 - **.model**: Matrix `[height, width, depth, time]` of `uint8` class.
 - **.modelMaterialNames** *(optional)*: Cell array with material names.
-- **.modelMaterialColors** *(optional)*: Matrix with colors (0–1) `[materialIndex, R G B]`.
+- **.modelMaterialColors** *(optional)*: Matrix with colors (0-1) `[materialIndex, R G B]`.
 - **.labelText** *(optional)*: Cell array with annotation labels.
 - **.labelPosition** *(optional)*: Matrix with annotation positions `[annotationIndex, x y z]`.
 
@@ -159,7 +187,7 @@ by [Load model](#load-model) and the other [Import](#import) options above.
 
 Material names/colours are resolved from the store's metadata, in this order:
 
-1. MIB's own `mibMaterials` attribute (the same one written by [Export model to Zarr3](#export-model-to-zarr3)).
+1. MIB's own `mibMaterials` attribute (the same one written by [Export model to Zarr3](#export)).
 2. The OME-NGFF `image-label` convention (`colors` / `properties`).
 3. If neither is present, materials are auto-named `mat1`, `mat2`, … with random colours.
 
@@ -167,7 +195,7 @@ Material names/colours are resolved from the store's metadata, in this order:
     For a **BigData** dataset, importing a Zarr model attaches the store **by reference** instead
     of loading it into memory (see [BigData datasets](../../panels/datasets/index.md)). A
     **Zarr v3** store becomes a fully editable, disk-backed model, same as models created directly
-    in BigData mode. A **Zarr v2** store is attached **read-only** — an existing segmentation can be
+    in BigData mode. A **Zarr v2** store is attached **read-only** - an existing segmentation can be
     viewed and browsed at any zoom level, but voxels cannot be edited, since there is no editable
     on-disk pyramid format for Zarr v2.
 
@@ -188,27 +216,27 @@ Exports the model to an external destination. The **Export** dropdown contains:
 - **Export model to MATLAB**: Exports to the main MATLAB workspace as a structure (see [Import model from MATLAB](#import-model-from-matlab) for structure fields). Can be re-imported using *Import model from MATLAB*.
 - **Export model to another MIB dataset**: Copies the model into another currently open MIB dataset.
 - **Export model to Imaris as volume**: Exports to Imaris if available. See [System Requirements](https://mib.helsinki.fi/downloads_systemreq.html#imaris) for details.
-- **Export model to Zarr3**: Export the model as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) — material names and colours are preserved; reopenable in MIB as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr–compatible tools
+- **Export model to Zarr3**: Export the model as a chunked, pyramidal OME-Zarr v3 store (`.zarr3`) - material names and colours are preserved; reopenable in MIB as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr-compatible tools
 
-    ??? info "Export to Zarr3 — dialog settings (model)"
+    ??? info "Export to Zarr3 - dialog settings (model)"
 
         A settings dialog appears after choosing the output path. Defaults are adapted to the
         open dataset dimensions (WSI vs. 3-D volumetric).
 
         | Setting | Description |
         |---------|-------------|
-        | **Pyramid levels** (0 = auto) | `0` = auto: starts at full resolution, adds levels while min(Y, X) / 2 ≥ 256 px, up to 8 levels. Enter 1–12 to force a fixed count. |
+        | **Pyramid levels** (0 = auto) | `0` = auto: starts at full resolution, adds levels while min(Y, X) / 2 ≥ 256 px, up to 8 levels. Enter 1-12 to force a fixed count. |
         | **Chunk size [Y, X, Z]** | Zarr chunk dimensions in pixels. |
         | **Shard X-factors [Y, X, Z]** | Chunks to bundle per axis into one shard file (0 on any axis = no sharding). |
         | **Compression** | `zstd` (default), `gzip`, `none`. |
-        | **Downsampling method** | See table below. The downsampling **strategy** is always *XY only* for models — Z is never averaged, since that would mix material indices across boundaries. |
+        | **Downsampling method** | See table below. The downsampling **strategy** is always *XY only* for models - Z is never averaged, since that would mix material indices across boundaries. |
 
         **Downsampling method**
 
         | Method | Speed | When to use |
         |--------|-------|-------------|
-        | **nearest** *(default)* | fast | Most models — picks the nearest source pixel; exact label integers are preserved. |
-        | **mode** | slow | Fine structures, thin boundaries — picks the **dominant label** in each output block (majority vote). More semantically accurate; ~4–8× slower than nearest. |
+        | **nearest** *(default)* | fast | Most models - picks the nearest source pixel; exact label integers are preserved. |
+        | **mode** | slow | Fine structures, thin boundaries - picks the **dominant label** in each output block (majority vote). More semantically accurate; ~4-8× slower than nearest. |
 
         **Smart defaults (computed from the open dataset)**
 
@@ -248,7 +276,7 @@ Prompts for a filename and format to save the model.
 - [x] **MOD (IMOD format)**: Contours for IMOD.
 - [x] **MRC (IMOD format)**: Volume for IMOD.
 - [x] **NRRD (Nearly Raw Raster Data)**: Compatible with [3D Slicer](https://www.slicer.org).
-- [x] **OME-Zarr v3 (*.zarr3)**: Chunked, pyramidal OME-Zarr v3 store. Material names and colours are preserved; labels are downsampled with **nearest** (fast) or **mode** (majority-vote, more accurate for fine structures); reopenable as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr tools. Choosing this format opens an export-settings dialog — see [Export model to Zarr3](#export-model-to-zarr3) for all options.
+- [x] **OME-Zarr v3 (*.zarr3)**: Chunked, pyramidal OME-Zarr v3 store. Material names and colours are preserved; labels are downsampled with **nearest** (fast) or **mode** (majority-vote, more accurate for fine structures); reopenable as a [BigData](../../panels/datasets/index.md) model and by external OME-Zarr tools. Choosing this format opens an export-settings dialog - see [Export model to Zarr3](#export) for all options.
 - [x] **PNG**: 2D slices in Portable Network Graphic format.
 - [x] **STL (STL format)**: Triangulated mesh for visualization programs like Blender.
 - [x] **TIF (TIF format)**: 2D slices or 3D volumes.
@@ -257,19 +285,19 @@ Prompts for a filename and format to save the model.
 
     For a disk-backed **BigData** model, the *Save model as...* dialog adds a <span class="widget widget-dropdown">Pyramid level</span> selector (`s0` = full resolution … `sN` = coarsest). The chosen level is **streamed to disk one slice at a time**, so the full model is never loaded into memory. Per-slice streaming is available for **TIFF**, the native **MODEL** (`*.model`), **HDF5** and **OME-Zarr v3**; other formats write the selected level as a whole.
 
-??? info "BigData models — format compatibility & memory use"
+??? info "BigData models - format compatibility & memory use"
 
     **All** formats above can save a **BigData** model at the chosen pyramid level. They differ only in how much memory the write needs:
 
     | Format | BigData | Memory-optimized (streamed slice-by-slice) |
     |--------|:-------:|:------------------------------------------:|
-    | MODEL (`*.model`) — *native* | ✅ | ✅ disk-backed matfile |
+    | MODEL (`*.model`) - *native* | ✅ | ✅ disk-backed matfile |
     | TIF | ✅ | ✅ |
     | HDF5 (`*.h5`) | ✅ | ✅ |
     | OME-Zarr v3 (`*.zarr3`) | ✅ | ✅ |
     | AM, MAT, MOD, MRC, NRRD, PNG, STL, mibCat | ✅ | ❌ selected level is gathered whole before writing |
 
-    Use the <span class="widget widget-dropdown">Pyramid level</span> dropdown to bound memory — a coarse level is small. The **memory-optimized** formats never hold even one full level in memory, so prefer them when exporting the full-resolution level (`s0`) of a large model.
+    Use the <span class="widget widget-dropdown">Pyramid level</span> dropdown to bound memory - a coarse level is small. The **memory-optimized** formats never hold even one full level in memory, so prefer them when exporting the full-resolution level (`s0`) of a large model.
 
 ---
 

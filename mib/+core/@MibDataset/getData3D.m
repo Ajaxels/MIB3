@@ -192,7 +192,7 @@ if options.roiId >= 0
         [~, options.roiId] = obj.hROI.getNumberOfROI(orient);  % get number of ROI for the selected orientation
     end
     roiId2 = 1;
-    dataset{roiId2} = cell(numel(options.roiId), 1);
+    dataset = cell(numel(options.roiId), 1);   % also stays empty when no ROIs match
     for roiId = options.roiId
         mask = obj.hROI.returnMask(roiId);
         bb = obj.hROI.getBoundingBox(roiId);

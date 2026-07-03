@@ -199,6 +199,7 @@ if options.roiId >= 0
         [~, options.roiId] = obj.hROI.getNumberOfROI(orient);  % get number of ROI for the selected orientation
     end
     
+    dataset = {};   % stays empty when no ROIs match, e.g. stale ROI mode without ROIs
     roiId2 = 1;
     for roiId = options.roiId
         mask = obj.hROI.returnMask(roiId);

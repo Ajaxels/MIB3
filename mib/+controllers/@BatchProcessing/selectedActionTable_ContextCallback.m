@@ -44,7 +44,6 @@ switch parameter
         defAns = {{'numeric', 'logical', 1}; {'z', 'x', 'y', 't', 'c', 'id', 'custom name', 1}; ''; '1'};
         dlgTitle = 'Specify parameter to add';
         options.WindowStyle = 'normal';
-        options.PromptLines = [1, 1, 1, 1];
         options.WindowHeight = 260;
         [answer, selIndex] = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Add parameter', prompts, defAns, dlgTitle, options);
         if isempty(answer); return; end

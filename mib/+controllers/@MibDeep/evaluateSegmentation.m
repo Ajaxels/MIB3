@@ -60,7 +60,6 @@ defAns = {obj.mibModel.preferences.Deep.Metrics.Accuracy; ...
 dlgTitle = 'Evaluation settings';
 options.Header = sprintf('Please select the metrics from the options below\nKeep in mind that the evaluation processs in rather slow\nRatio of execution times for each metric: 0.10 x 0.78 x 0.04 x 0.03 x 0.05');
 options.WindowStyle = 'normal';
-options.PromptLines = [1, 1, 1, 1, 1];
 options.WindowWidth = 550;
 options.WindowHeight = 400;
 options.HeaderLines = 3;

@@ -122,6 +122,7 @@ classdef MibDataset < matlab.mixin.Copyable
         [x, y, z] = convertUnitsToPixels(obj, x, y, z)        % Convert physical imaging units to pixel coordinates using pixSize and boundingBox
         PixelIdxList = convertPixelIdxListCrop2Full(obj, PixelIdxListCrop, options) % Convert PixelIdxList of a cropped sub-volume to the full dataset
         convertModel(obj, newType, wb)        % convert the segmentation model to a different storage type (63/255/65535/4294967295 or indexed objects)
+        stats = stitchModelInstances(obj, options, wb)        % stitch per-slice 2D instance labels into a consistent 3D instance model
         result = copySlice(obj, sliceFrom, sliceTo, orient)      % Copy a slice from one position to another across all layers
         createModel(obj, modelType, modelMaterialNames)        % allocate memory for a new model layer; handles conversion between packed (type-63) and separate-layer models
         result = cropDataset(obj, cropF, options)        % Crop all layers of the dataset (image, labels, mask, selection); handles Virtual → Standard conversion

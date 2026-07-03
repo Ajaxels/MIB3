@@ -11,12 +11,23 @@ function startPredictionInstances(obj)
 % instead of being downscaled to the network input). For each image, every detected object
 % instance is saved as a unique integer index in a MIB model (background 0).
 %
-% Cross-tile stitching uses the "centroid-in-core" rule (see
-% deepmib.segmentBlockedImageInstances): objects are emitted by the tile that owns their
-% centroid, requiring the overlap (P_OverlappingTilesPercentage) to be >= the largest object.
+% Cross-tile stitching mode is selected with BatchOpt.P_OverlapInstancesMode:
+%   - 'Centroid in core' (see deepmib.segmentBlockedImageInstances) — objects are emitted
+%     by the tile that owns their centroid, requiring the overlap
+%     (P_OverlappingTilesPercentage) to be >= the largest object;
+%   - 'IoU merge' (see deepmib.segmentImageInstancesIoUMerge) — all per-tile detections are
+%     kept and merged across seams when their masks agree inside the shared overlap band;
+%     works for objects larger than the overlap.
+% The detection confidence threshold and the merge IoU/IoA thresholds are taken from
+% obj.OverlapInstancesOpt (updateOverlapInstancesSettings).
 % Instance prediction does not require preprocessing: images are read directly.
 
 global mibInstanceIdCounter
+
+% lazy init to cover instances created before this property was introduced
+if isempty(obj.OverlapInstancesOpt)
+    obj.OverlapInstancesOpt = struct('DetectionThreshold', 0.5, 'MergeIoU', 0.5, 'MergeIoA', 0.8);
+end
 
 msg = sprintf(['!!! Warning !!!\nYou are going to start instance segmentation prediction.\n' ...
     'Confirm that your images are located under\n\n%s\n\n- Images\n'], ...
@@ -106,14 +117,31 @@ switch obj.view.Figure.GPUDropDown.Value
 end
 
 % define the tile (block) size and overlap for the blockedImage strategy
-blockSize = [inputPatchSize(1), inputPatchSize(2)];
-if obj.BatchOpt.P_OverlappingTiles
-    padShift = ceil(blockSize * obj.BatchOpt.P_OverlappingTilesPercentage{1} / 100);
-    blockSize = blockSize - padShift*2;     % core size (apply adds the border back)
-else
-    padShift = [0, 0];
+stitchingMode = obj.BatchOpt.P_OverlapInstancesMode{1};     % 'Centroid in core' or 'IoU merge'
+overlapPercentage = obj.BatchOpt.P_OverlappingTilesPercentage{1};
+if ~obj.BatchOpt.P_OverlappingTiles
+    if strcmp(stitchingMode, 'IoU merge')
+        % IoU merge needs an overlap band to compare detections across seams
+        overlapPercentage = 5;
+        warning('MibDeep:startPredictionInstances:noOverlap', ...
+            'The "IoU merge" stitching requires overlapping tiles; a default %d%% overlap will be used', overlapPercentage);
+    else
+        overlapPercentage = 0;
+    end
 end
-predictionThreshold = 0.5;
+blockSize = [inputPatchSize(1), inputPatchSize(2)];
+padShift = ceil(blockSize * overlapPercentage / 100);
+blockSize = blockSize - padShift*2;     % core size (apply adds the border back)
+if any(blockSize < 16)
+    utils.dlgs.showErrorDialog(obj.view.gui, ...
+        sprintf(['The selected overlap percentage (%d%%) leaves a tile core of only [%d x %d] pixels\n' ...
+        'for the input patch size [%d x %d].\n\nPlease decrease the overlap percentage!'], ...
+        overlapPercentage, blockSize(1), blockSize(2), inputPatchSize(1), inputPatchSize(2)), ...
+        'Overlap too large');
+    if obj.BatchOpt.showWaitbar; close(pwb); end
+    return;
+end
+predictionThreshold = obj.OverlapInstancesOpt.DetectionThreshold;
 
 t1 = tic;
 noFiles = numel(imgDS.Files);
@@ -127,29 +155,40 @@ while hasdata(imgDS)
     [imgHeight, imgWidth, ~] = size(vol);
     [~, fn] = fileparts(imgDS.Files{id});
 
-    % tile the image and segment each tile, keeping centroid-in-core instances
-    mibInstanceIdCounter = 0;   % reset the global unique-instance-ID counter for this image
+    % tile the image and segment each tile, stitching instances across the seams
     try
-        bim = blockedImage(vol, 'Adapter', images.blocked.InMemory);
-        labelBim = apply(bim, ...
-            @(block, blockInfo) deepmib.segmentBlockedImageInstances(block, net, predictionThreshold, executionEnvironment), ...
-            'Adapter', images.blocked.InMemory, ...
-            'Level', 1, ...
-            'PadPartialBlocks', true, ...
-            'BlockSize', blockSize, ...
-            'BorderSize', padShift, ...
-            'PadMethod', 'symmetric', ...
-            'UseParallel', false, ...
-            'DisplayWaitbar', false);
-        outputLabels = gather(labelBim, 'Level', 1);
+        switch stitchingMode
+            case 'IoU merge'
+                % keep all per-tile detections and merge those agreeing in the overlap band
+                mergeOptions.coreSize = blockSize;
+                mergeOptions.borderSize = padShift;
+                mergeOptions.threshold = predictionThreshold;
+                mergeOptions.executionEnvironment = executionEnvironment;
+                mergeOptions.iouThreshold = obj.OverlapInstancesOpt.MergeIoU;
+                mergeOptions.ioaThreshold = obj.OverlapInstancesOpt.MergeIoA;
+                outputLabels = deepmib.segmentImageInstancesIoUMerge(vol, net, mergeOptions);
+            otherwise   % 'Centroid in core'
+                mibInstanceIdCounter = 0;   % reset the global unique-instance-ID counter for this image
+                bim = blockedImage(vol, 'Adapter', images.blocked.InMemory);
+                labelBim = apply(bim, ...
+                    @(block, blockInfo) deepmib.segmentBlockedImageInstances(block, net, predictionThreshold, executionEnvironment), ...
+                    'Adapter', images.blocked.InMemory, ...
+                    'Level', 1, ...
+                    'PadPartialBlocks', true, ...
+                    'BlockSize', blockSize, ...
+                    'BorderSize', padShift, ...
+                    'PadMethod', 'symmetric', ...
+                    'UseParallel', false, ...
+                    'DisplayWaitbar', false);
+                outputLabels = gather(labelBim, 'Level', 1);
+                % crop away the padding added for partial blocks
+                outputLabels = outputLabels(1:imgHeight, 1:imgWidth);
+        end
     catch err
         utils.dlgs.showErrorDialog(obj.view.gui, err, 'Instance prediction error');
         if obj.BatchOpt.showWaitbar; close(pwb); end
         return;
     end
-
-    % crop away the padding added for partial blocks
-    outputLabels = outputLabels(1:imgHeight, 1:imgWidth);
 
     % relabel to a contiguous 1..N index range
     uniqueIds = unique(outputLabels(outputLabels > 0));

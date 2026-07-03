@@ -109,6 +109,12 @@ classdef MibDeep < handle
         % .Method = 'Keep above threshold';  % 'Keep above threshold' or 'Keep below threshold'
         % .ThresholdValue = 60;
         % .InclusionThreshold = 0.1;     % Inclusion threshold for mask blocks
+        OverlapInstancesOpt
+        % options for stitching of instances across tiles during 2D Instance prediction
+        % (the stitching mode itself is in BatchOpt.P_OverlapInstancesMode)
+        % .DetectionThreshold = 0.5;  % confidence threshold of segmentObjects [both overlap modes]
+        % .MergeIoU = 0.5;   % in-band intersection-over-union to merge detections ['IoU merge' mode]
+        % .MergeIoA = 0.8;   % in-band intersection-over-smaller-area to merge detections ['IoU merge' mode]
         SegmentationLayerOpt
         % options for the segmentation layer
         InputLayerOpt
@@ -282,6 +288,7 @@ classdef MibDeep < handle
         updateBatchOptFromGUI(obj, event)       % update obj.BatchOpt from widgets of GUI
         lgraph = updateConvolutionLayers(obj, lgraph)        % update the convolution layers by providing new set of weight initializers
         updateDynamicMaskSettings(obj)        % update settings for calculation of dynamic masks during prediction using blockedimage mode the settings are stored in obj.DynamicMaskOpt
+        updateOverlapInstancesSettings(obj)        % update settings for stitching of instances across tiles during 2D Instance prediction, the settings are stored in obj.OverlapInstancesOpt
         updateImageDirectoryPath(obj, event)        % update directories with images for training, prediction and results
         lgraph = updateMaxPoolAndTransConvLayers(obj, lgraph, poolSize)        % update maxPool and TransposedConvolution layers depending on network downsampling factor only for U-net and SegNet
         lgraph = updateNetworkInputLayer(obj, lgraph, inputPatchSize)        % update the input layer settings for lgraph parameters are taken from obj.InputLayerOpt
@@ -436,6 +443,8 @@ classdef MibDeep < handle
             obj.BatchOpt.P_MiniBatchSize{3} = true;
             obj.BatchOpt.P_PatchWiseUpsample = false;
             obj.BatchOpt.P_DynamicMasking = false;
+            obj.BatchOpt.P_OverlapInstancesMode = {'Centroid in core'};   % cross-tile stitching mode for 2D Instance prediction
+            obj.BatchOpt.P_OverlapInstancesMode{2} = {'Centroid in core', 'IoU merge'};
 
             obj.BatchOpt.O_CustomTrainingProgressWindow = true;
             obj.BatchOpt.O_RefreshRateIter{1} = 5;
@@ -505,6 +514,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.P_ScoreFiles = 'tweak generation of score files showing probability of each class';
             obj.BatchOpt.mibBatchTooltip.P_ModelFiles = 'define output type for generated model files during prediction';
             obj.BatchOpt.mibBatchTooltip.P_PatchWiseUpsample = 'upsample generated patch predictions to match resolution of underlying images for direct comparison';
+            obj.BatchOpt.mibBatchTooltip.P_OverlapInstancesMode = 'stitching of instances across tiles during 2D Instance prediction: "Centroid in core" - each object is emitted by the tile owning its centroid (overlap must exceed the largest object); "IoU merge" - detections of neighboring tiles are merged when their masks agree in the overlap band (works for objects larger than the overlap)';
             obj.BatchOpt.mibBatchTooltip.O_CustomTrainingProgressWindow = 'When checked the custom progress plot is displayed during training, instead of Matlab default plot';
             obj.BatchOpt.mibBatchTooltip.O_RefreshRateIter = 'Refresh rate of the training progress window in iterations. Decrease for more frequent refresh, increase to speed up training performance';
             obj.BatchOpt.mibBatchTooltip.O_NumberOfPoints = 'Number of points in the training plot. Decrease to improve training performance, increase to see more detailed plot';
@@ -541,6 +551,15 @@ classdef MibDeep < handle
             % dynamic masking and score export properties
             obj.DynamicMaskOpt = obj.mibModel.preferences.Deep.DynamicMaskOpt;
             obj.ScoreExportOpt = obj.mibModel.preferences.Deep.ScoreExportOpt;
+
+            % instance stitching properties
+            if isfield(obj.mibModel.preferences.Deep, 'OverlapInstancesOpt')
+                obj.OverlapInstancesOpt = obj.mibModel.preferences.Deep.OverlapInstancesOpt;
+            else
+                obj.OverlapInstancesOpt.DetectionThreshold = 0.5;
+                obj.OverlapInstancesOpt.MergeIoU = 0.5;
+                obj.OverlapInstancesOpt.MergeIoA = 0.8;
+            end
 
             if isfield(obj.mibModel.preferences.Deep, 'ActivationLayerOpt')
                 obj.ActivationLayerOpt = obj.mibModel.preferences.Deep.ActivationLayerOpt;

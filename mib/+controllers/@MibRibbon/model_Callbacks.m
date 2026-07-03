@@ -40,6 +40,8 @@ switch mode
     case '3D objects conn8'
         BatchOpt.ModelType = {'indexed objects 3D/26'};
         obj.mibModel.convertModel([], BatchOpt);
+    case 'Stitch 2D instances to 3D'    % obj.handles.ribbonModel.stitchInstances2Dto3D
+        obj.mibModel.stitchModelInstances();
 
     %% -------------- Model import section --------------
     case sprintf('New\nmodel')      % obj.handles.ribbonModel.new
@@ -146,11 +148,13 @@ switch mode
         if isempty(obj.mibModel.I{activeId}.labels.filename)
             obj.mibModel.saveLabels([]);   % no filename yet — show Save As dialog
         else
-            % confirm before overwriting the existing model file
-            [~, modelName, modelExt] = fileparts(obj.mibModel.I{activeId}.labels.filename);
+            % confirm before overwriting the existing model file;
+            % Save always writes the internal *.model format, so show the
+            % .model name even when the last "Save as..." used another format
+            [~, modelName] = fileparts(obj.mibModel.I{activeId}.labels.filename);
             questOpt = struct('WindowStyle', 'modal', 'mibPath', obj.mibModel.mibPath);
             answer = utils.dlgs.inputQuestDlg(obj.mibModel.getProgressBarParent(), ...
-                sprintf('Overwrite the existing model file?\n\n%s%s', modelName, modelExt), ...
+                sprintf('Overwrite the existing model file?\n\n%s.model', modelName), ...
                 'Save model', 'Overwrite', 'Save as...', 'Cancel', 'Overwrite', questOpt);
             switch answer
                 case 'Overwrite'

@@ -6469,6 +6469,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_mibdeep_updateoverlapinstancessettings_m",
+      "label": "updateOverlapInstancesSettings.m",
+      "file_type": "code",
+      "source_file": "+controllers\\@MibDeep\\updateOverlapInstancesSettings.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_mibdeep_updatepreprocessingmode_m",
       "label": "updatePreprocessingMode.m",
       "file_type": "code",
@@ -13784,6 +13795,17 @@
       "contributor": null
     },
     {
+      "id": "core_mibdataset_stitchmodelinstances_m",
+      "label": "stitchModelInstances.m",
+      "file_type": "code",
+      "source_file": "+core\\@MibDataset\\stitchModelInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "core_mibdataset_swapmaterials_m",
       "label": "swapMaterials.m",
       "file_type": "code",
@@ -15713,6 +15735,17 @@
       "label": "smoothImage.m",
       "file_type": "code",
       "source_file": "+models\\@MibModel\\smoothImage.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "models_mibmodel_stitchmodelinstances_m",
+      "label": "stitchModelInstances.m",
+      "file_type": "code",
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -31168,6 +31201,16 @@
     },
     {
       "source": "controllers_mibdeep_mibdeep_m",
+      "target": "controllers_mibdeep_updateoverlapinstancessettings_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\MibDeep.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_mibdeep_m",
       "target": "controllers_mibdeep_updatepreprocessingmode_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -37468,6 +37511,16 @@
     },
     {
       "source": "core_mibdataset_mibdataset_m",
+      "target": "core_mibdataset_stitchmodelinstances_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\MibDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_mibdataset_m",
       "target": "core_mibdataset_swapmaterials_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -39129,6 +39182,16 @@
     {
       "source": "models_mibmodel_mibmodel_m",
       "target": "models_mibmodel_smoothimage_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\MibModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_mibmodel_m",
+      "target": "models_mibmodel_stitchmodelinstances_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -54447,6 +54510,26 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_stitchmodelinstances_m",
+      "target": "core_miblabels_miblabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+core\\@MibDataset\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_stitchmodelinstances_m",
+      "target": "core_mibdataset_getdata3d_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_swapmaterials_m",
       "target": "core_mibdataset_getdata3d_m",
       "relation": "calls",
@@ -56668,6 +56751,16 @@
     },
     {
       "source": "models_mibmodel_savelabels_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\saveLabels.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_savelabels_m",
       "target": "models_mibmodel_saveimage_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -56783,6 +56876,56 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "+models\\@MibModel\\smoothImage.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "core_toggleeventdata_toggleeventdata_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "controllers_preferences_preferences_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "models_mibmodel_getactiveid_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "models_mibmodel_getprogressbarparent_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "models_mibmodel_backup_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -60498,6 +60641,16 @@
     },
     {
       "source": "controllers_mibcontroller_exitprogram_m",
+      "target": "utils_terminatepythonenv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibController\\exitProgram.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibcontroller_exitprogram_m",
       "target": "utils_getprefdir_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -61528,6 +61681,16 @@
     },
     {
       "source": "controllers_mibdeep_startpredictioninstances_m",
+      "target": "deepmib_segmentimageinstancesioumerge_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\startPredictionInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_startpredictioninstances_m",
       "target": "deepmib_segmentblockedimageinstances_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -61703,6 +61866,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+controllers\\@MibDeep\\updateNetworkInputLayer.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibdeep_updateoverlapinstancessettings_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibDeep\\updateOverlapInstancesSettings.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -62177,6 +62350,16 @@
       "weight": 1.0
     },
     {
+      "source": "controllers_mibimagedocument_segmentationsam_m",
+      "target": "utils_initpythonenv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationSAM.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "controllers_mibimagedocument_segmentationsam2_m",
       "target": "utils_dlgs_showerrordialog_m",
       "relation": "calls",
@@ -62199,6 +62382,16 @@
     {
       "source": "controllers_mibimagedocument_segmentationsam2_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibImageDocument\\segmentationSAM2.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibimagedocument_segmentationsam2_m",
+      "target": "utils_initpythonenv_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -62668,6 +62861,16 @@
     },
     {
       "source": "controllers_mibsegmentation_sampanel_callback_m",
+      "target": "utils_terminatepythonenv_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\samPanel_Callback.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_sampanel_callback_m",
       "target": "utils_dlgs_inputuniversaldlg_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
@@ -62729,6 +62932,16 @@
     {
       "source": "controllers_mibsegmentation_updatesamsettings_m",
       "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@MibSegmentation\\updateSamSettings.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_mibsegmentation_updatesamsettings_m",
+      "target": "utils_terminatepythonenv_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -64383,6 +64596,16 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "+core\\@MibDataset\\setData4D.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_stitchmodelinstances_m",
+      "target": "utils_stitchinstances2dto3d_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\stitchModelInstances.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -66187,6 +66410,26 @@
       "weight": 1.0
     },
     {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "utils_updatebatchoptcombinefields_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_mibmodel_stitchmodelinstances_m",
+      "target": "utils_dlgs_inputuniversaldlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+models\\@MibModel\\stitchModelInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "models_mibmodel_transformdataset_m",
       "target": "utils_updatebatchoptcombinefields_shared_m",
       "relation": "calls",
@@ -66489,6 +66732,16 @@
     {
       "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
       "target": "utils_updatebatchoptfromgui_shared_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\FileProcessing\\ImageConverter\\ImageConverter.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_fileprocessing_imageconverter_imageconverter_m",
+      "target": "utils_initpythonenv_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,

@@ -23,7 +23,9 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %   - **prompts** — ``{n x 1}`` cell array of prompt strings, one per widget row.
 %   - **defAns** — ``{n x 1}`` cell array of default values; supported types per element:
 %
-%     - ``''``, ``'text'``, or string scalar → text edit (``uieditfield``)
+%     - ``''``, ``'text'``, or string scalar → text edit (``uieditfield``);
+%       when the text contains newline characters → multi-line text area
+%       (``uitextarea``) sized to one row per line
 %     - numeric scalar or ``[]`` → numeric edit field (``uieditfield``)
 %     - ``struct('Spinner',true,'Value',v,'Limits',[lo hi],'Step',s,'Round',tf)``
 %       → spinner (``uispinner``)
@@ -58,7 +60,6 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %     - ``.MsgBoxOnly`` — [logical] show as a message-box with a single OK button and one HTML content widget (default: ``false``)
 %     - ``.OkBtnText`` — [char] OK button label (default: ``'OK'``)
 %     - ``.ParentFigure`` — [handle] parent figure for centering (default: ``[]``)
-%     - ``.PromptLines`` — scalar or array of integers specifying wrapped prompt label line heights (one value per prompt)
 %     - ``.SectionsColumnWidths`` — cell array of label/widget column proportions for
 %       each main column when ``LabelPosition='left'``;
 %       e.g. ``{'1x','2x','1x','2x'}`` gives ``label:widget = 1x:2x`` for both columns
@@ -90,7 +91,6 @@ function [answer, selectedIndices, dontShowAgain] = inputUniversalDlg(ParentFigu
 %               3.14; ...                                    % numeric edit field
 %               struct('Spinner',true,'Value',5,'Limits',[1 100],'Step',1, ...
 %                      'Round',true,'ValueDisplayFormat','%d units')};
-%    options.PromptLines  = [1 1 1 1 2 3 1 1];
 %    options.WindowStyle  = 'normal';
 %    options.HeaderLines  = 2;
 %    options.WindowWidth  = 672;
@@ -182,7 +182,7 @@ end
 % and renames it to the canonical form before the defaults section runs.
 knownOptionFields = {'Icon','IconWidth','WindowStyle','Columns','MainColumnWidths', ...
     'LabelPosition','SectionsColumnWidths','Focus','LastItemColumns', ...
-    'OkBtnText','HelpBtnText','HelpUrl','MsgBoxOnly','PromptLines', ...
+    'OkBtnText','HelpBtnText','HelpUrl','MsgBoxOnly', ...
     'HeaderLines','Header','WindowWidth','WindowHeight','DoNotShowAgain', ...
     'DoNotShowAgainText','ParentFigure','DefaultKey','mibPath'};
 for suppliedFieldCell = fieldnames(options)'
@@ -219,7 +219,6 @@ if ~isfield(options, 'LastItemColumns'); options.LastItemColumns = 0; end
 if ~isfield(options, 'OkBtnText'); options.OkBtnText = 'OK'; end
 if ~isfield(options, 'HelpBtnText'); options.HelpBtnText = 'Help'; end
 if ~isfield(options, 'HelpUrl'); options.HelpUrl = []; end
-if ~isfield(options, 'PromptLines'); options.PromptLines = ones(numel(prompts),1); end
 if ~isfield(options, 'HeaderLines')
     options.HeaderLines = 1;
     if options.MsgBoxOnly; options.HeaderLines = 3; end
@@ -241,11 +240,15 @@ if options.MsgBoxOnly && isscalar(defAns) && (ischar(defAns{1}) || isstring(defA
     defAns{1} = sprintf('<html><p style="font-size:10pt">%s</p></html>', strrep(defAns{1}, newline, '<br>'));
 end
 
-% Normalize PromptLines
-if isscalar(options.PromptLines)
-    PromptLines = repmat(options.PromptLines, numel(prompts), 1);
-else
-    PromptLines = options.PromptLines(:);
+% Number of text lines in each default answer: a multi-line char/string
+% default is rendered as a uitextarea sized to its line count
+% (options.PromptLines is obsolete and ignored: 'fit' grid rows already
+% account for wrapped and multi-line prompt labels)
+widgetTextLines = ones(numel(prompts), 1);
+for itemIdx = 1:min(numel(prompts), numel(defAns))
+    if ischar(defAns{itemIdx}) || (isstring(defAns{itemIdx}) && isscalar(defAns{itemIdx}))
+        widgetTextLines(itemIdx) = max(1, numel(splitlines(char(defAns{itemIdx}))));
+    end
 end
 
 % Normalize MainColumnWidths
@@ -298,6 +301,21 @@ if isempty(options.WindowHeight)
         estimatedHeight = (options.HeaderLines + bodyLines) * rowHeight + 110;
         windowHeight = max(150, min(800, estimatedHeight));
     else
+        % Estimate rendered lines per prompt label: explicit newlines plus a
+        % rough word-wrap estimate from the text length at ~7 px/char
+        iconWidthPx = options.IconWidth;
+        if isempty(iconWidthPx); iconWidthPx = 96; end   % [] = natural width, assume a puffin
+        labelWidthPx = (options.WindowWidth - 24 - iconWidthPx - 12 * options.Columns) / options.Columns;
+        if strcmpi(options.LabelPosition, 'left')
+            labelWidthPx = labelWidthPx / 2;   % the label shares its row with the widget
+        end
+        charsPerLine = max(10, floor(labelWidthPx / 7));
+        promptLineEstimates = ones(numel(prompts), 1);
+        for itemIdx = 1:numel(prompts)
+            promptParts = splitlines(char(prompts{itemIdx}));
+            promptLineEstimates(itemIdx) = sum(max(1, ceil(cellfun(@numel, promptParts) / charsPerLine)));
+        end
+
         % Per-item heights, distributed into columns the same way the widget builder does
         numRegular = numel(prompts) - (options.LastItemColumns == 1);
         itemsPerCol = max(1, ceil(numRegular / options.Columns));
@@ -306,11 +324,12 @@ if isempty(options.WindowHeight)
             colIdx = min(options.Columns, ceil(itemIdx / itemsPerCol));
             if options.LastItemColumns == 1 && itemIdx == numel(prompts); colIdx = 1; end
             if strcmpi(options.LabelPosition, 'top')
-                % label row (its 'fit' height plus the 2px row spacings comes
-                % out at roughly one rowHeight) + widget row
-                itemHeight = rowHeight * (1 + PromptLines(itemIdx));
+                % label rows (their 'fit' height plus the 2px row spacings comes
+                % out at roughly one rowHeight per line) + widget row
+                itemHeight = rowHeight * (promptLineEstimates(itemIdx) + widgetTextLines(itemIdx));
             else
-                itemHeight = rowHeight * PromptLines(itemIdx) + 6;   % shared row + 6px spacing
+                % label and widget share one 'fit' row + 6px spacing
+                itemHeight = rowHeight * max(promptLineEstimates(itemIdx), widgetTextLines(itemIdx)) + 6;
             end
             columnHeights(colIdx) = columnHeights(colIdx) + itemHeight;
         end
@@ -513,12 +532,9 @@ else
 
         isCheckbox(i) = islogical(defAns{i}) && isscalar(defAns{i});
 
-        % Height of the widget row: PromptLines(i) text lines for multi-line widgets
-        if PromptLines(i) > 1 && ~isCheckbox(i)
-            widgetHeight = rowHeight * PromptLines(i);
-        else
-            widgetHeight = rowHeight;
-        end
+        % Height of the widget: one text line, or the line count of a
+        % multi-line text default (rendered as uitextarea)
+        widgetHeight = rowHeight * widgetTextLines(i);
 
         if strcmpi(options.LabelPosition, 'top')
             % === VERTICAL LAYOUT: label row ('fit') above a fixed-height widget row ===
@@ -538,20 +554,17 @@ else
                 par.RowHeight{currentRow} = widgetHeight;
             end
             colRowCounters(colIdx) = currentRow + 1;
-            widgetColumn = 1;
+            widgetParent = par;
+            widgetRow = currentRow;
         else
-            % === HORIZONTAL LAYOUT: label left of widget, sharing one row ===
-            % Single-line rows stay 'fit' (they grow when the label wraps);
-            % multi-line rows are fixed to PromptLines(i) text lines
-            if PromptLines(i) > 1
-                rowSpec = widgetHeight;
-            else
-                rowSpec = 'fit';
-            end
+            % === HORIZONTAL LAYOUT: label left of widget, sharing one 'fit' row ===
+            % The row grows when the label wraps or contains newlines; the
+            % widget sits in a fixed-height wrapper grid so it keeps its own
+            % height instead of stretching to fill a tall label row
             if currentRow > numel(par.RowHeight)
-                par.RowHeight{end+1} = rowSpec;
+                par.RowHeight{end+1} = 'fit';
             else
-                par.RowHeight{currentRow} = rowSpec;
+                par.RowHeight{currentRow} = 'fit';
             end
             colRowCounters(colIdx) = colRowCounters(colIdx) + 1;
 
@@ -559,13 +572,19 @@ else
                 'VerticalAlignment', 'top', 'WordWrap', 'on');
             lab.Layout.Row = currentRow;
             lab.Layout.Column = 1;
-            widgetColumn = 2;
+
+            widgetWrapper = uigridlayout(par, [1 1], 'RowHeight', {widgetHeight}, ...
+                'ColumnWidth', {'1x'}, 'Padding', [0 0 0 0]);
+            widgetWrapper.Layout.Row = currentRow;
+            widgetWrapper.Layout.Column = 2;
+            widgetParent = widgetWrapper;
+            widgetRow = 1;
         end
 
         % Determine control type and create the widget (common for both layouts)
         val = defAns{i};
         if isCheckbox(i)
-            ctrl = uicheckbox(par, 'Text', '', 'Value', defAns{i});
+            ctrl = uicheckbox(widgetParent, 'Text', '', 'Value', defAns{i});
 
         elseif iscell(val)
             % Dropdown
@@ -576,7 +595,7 @@ else
                 selIdx = max(1, min(numel(val)-1, val{end}));
                 entries = val(1:end-1);
             end
-            ctrl = uidropdown(par, 'Items', entries, 'Value', entries{selIdx});
+            ctrl = uidropdown(widgetParent, 'Items', entries, 'Value', entries{selIdx});
 
         elseif isstruct(val) && isfield(val,'Spinner') && val.Spinner
             % Spinner
@@ -586,7 +605,7 @@ else
             if isfield(val,'Limits'); lo = val.Limits(1); hi = val.Limits(2); end
             if isfield(val,'Step'); step = val.Step; end
 
-            ctrl = uispinner(par, 'Limits', [lo hi], 'Value', v, 'Step', step);
+            ctrl = uispinner(widgetParent, 'Limits', [lo hi], 'Value', v, 'Step', step);
 
             % Handle optional Round and ValueDisplayFormat
             if isfield(val,'Round') && val.Round
@@ -598,20 +617,21 @@ else
 
         elseif isnumeric(val) && isscalar(val) && ~isempty(val)
             isNumericEdit(i) = true;
-            ctrl = uieditfield(par, 'numeric', 'Value', double(val), 'ValueDisplayFormat','%.3g');
+            ctrl = uieditfield(widgetParent, 'numeric', 'Value', double(val), 'ValueDisplayFormat','%.3g');
 
         else
-            % Everything else is text input: textarea for multi-line, uieditfield for single-line
+            % Everything else is text input: textarea for multi-line defaults,
+            % uieditfield for single-line
             if isempty(val); val = ''; end
-            if PromptLines(i) > 1
-                ctrl = uitextarea(par, 'Value', char(val));
+            if widgetTextLines(i) > 1
+                ctrl = uitextarea(widgetParent, 'Value', char(val));
             else
-                ctrl = uieditfield(par, 'text', 'Value', char(val));
+                ctrl = uieditfield(widgetParent, 'text', 'Value', char(val));
             end
         end
 
-        ctrl.Layout.Row = currentRow;
-        ctrl.Layout.Column = widgetColumn;
+        ctrl.Layout.Row = widgetRow;
+        ctrl.Layout.Column = 1;
         widgets(i) = ctrl;
     end
 end

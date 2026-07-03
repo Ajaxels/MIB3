@@ -54,9 +54,13 @@ end
 
 obj.refreshROIList('All');
 
-% hide ROI overlay if no ROIs remain
+% hide ROI overlay if no ROIs remain; setting the widget Value does not fire
+% its callback, so the model flag and the QuickAccessBar toggle must be
+% synchronized here as well
 if hROI.getNumberOfROI(0) == 0
     obj.handles.roiShowROI.Value = false;
+    dataset.roiShow = false;
+    obj.mibController.cQuickAccessBar.handles.roiMode.Value = false;
 end
 
 notify(obj.mibModel, 'ShowImage');
