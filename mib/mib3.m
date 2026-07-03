@@ -55,7 +55,7 @@ tic
 % ATTENTION! it is important to have the version number between "ver." and "/" 
 % Release syntax example: "ver. 2025.11 / 04.11.2025"
 % Beta syntax example: "ver. 2025.11 (beta 4) / 04.11.2025"
-mibVersion = 'ver. 2026.0629 / 29.06.2025 (preview)';  
+mibVersion = 'ver. 2026.0307 / 03.07.2025 (preview)';  
 
 % MAKE SURE THAT cpuParallelLimitMax DOES NOT EXCEED NUMBER OF CPUs
 % WHEN COMPILING
@@ -101,6 +101,7 @@ else
     addpath(fullfile(func_dir, 'legacy'));    
     addpath(fullfile(func_dir, 'assets'));    
     addpath(fullfile(func_dir, 'assets', 'icons'));
+    addpath(fullfile(func_dir, 'assets', 'images'));
 end
 
 if false
