@@ -198,6 +198,25 @@ Register individual color channels using Annotations (*Segmentation panel → An
 
 ---
 
+## BigData datasets
+
+When the current dataset is a **BigData** store (a disk-backed pyramidal OME-Zarr v3, opened for whole-slide / gigapixel data), alignment works differently because the source pyramid is read-only and its canvas is fixed:
+
+- Alignment **writes a new aligned `.zarr3` store** to disk (plus a sibling `Labels_<name>.zarr3` when a model exists) and switches the current buffer to it. **The original store is left untouched and acts as the backup** — there is no in-place undo for BigData alignment.
+- A dedicated **BigData panel** replaces the *HDD Mode* panel:
+    - <span class="widget widget-dropdown">Analysis level</span>: the pyramid level used to *compute* the shifts/transforms. Coarser levels are much faster but quantise the result; `<auto>` picks the level nearest ~3000 px wide. Choose level 1 for the most precise shifts.
+    - <span class="widget widget-edit">Output store</span>: path of the new aligned `.zarr3` (prefilled as `<name>_aligned.zarr3`); use <span class="widget widget-button">...</span> to change it.
+- Transforms are computed at the chosen level and scaled to full resolution; the aligned image is then streamed slice-by-slice, so memory use stays low even for very large slides.
+- The **image, model, mask, selection and annotations are all aligned together** and stay registered at every zoom level.
+
+!!! note "Supported in BigData"
+    Drift correction, Template matching, Automatic feature-based **version 2**, and the landmark modes (Single / Three / Landmarks, multi points). For landmark modes the corresponding points are taken from the **Annotation** layer. Automatic feature-based *version 1*, *AMST*, and *Color channels, multi points* are not available for BigData; the *Subarea → Selection / Mask* options are not used (choose *Full image* or *Manually specified*).
+
+!!! tip "Precision vs. speed"
+    Analysis at a coarse level quantises shifts to roughly that level's pixel size. If sub-pixel accuracy matters, pick a finer *Analysis level* (at the cost of speed).
+
+---
+
 ## References and Acknowledgements
 
 The alignment algorithm is based on:

@@ -31,10 +31,11 @@ Every change ends with `check_matlab_code` clean + an MCP verification snippet o
 | Streaming export of a chosen pyramid level → standard formats — Phases 1–4 | ✅ DONE |
 | **3D volume rendering (VolRenApp)** of BigData via pyramid level + live overlay updates | ✅ DONE (code + headless); App Designer widgets + live-GUI pending (see §8) |
 | **Live in-GUI validation** of WSI open + segmentation + export | ✅ DONE (2026-06-30, see §4) |
+| **Alignment for BigData** (new-store output + buffer swap): drift, feature-v2 affine, landmarks (annotation-driven), packed-63 warp | ✅ DONE (headless + e2e; plan `alignment_plan.md`, logic `bigdata_logic.md §13`); AppDesigner panel + live-GUI acceptance pending |
 | Streaming export plan — remaining per-format deep streaming + mask path | ⏳ OPEN (see §3) |
 | Backlog (T>1, removeMaterial renumber, remote zarr, etc.) | ⏳ DEFERRED (see §5) |
 
-Tests: `tests/core/MibBigDataLevelMapTest.m` — 9/9 pass.
+Tests: `tests/core/MibBigDataLevelMapTest.m` — 9/9 pass; `tests/controllers/AlignmentBigDataTest.m` — 9/9 pass.
 
 ---
 

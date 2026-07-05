@@ -85,42 +85,95 @@ parameters.maxX = obj.BatchOpt.maxX{1};
 parameters.minY = obj.BatchOpt.minY{1};
 parameters.maxY = obj.BatchOpt.maxY{1};
 
+% --- BigData mode: alignment writes a NEW aligned zarr3 store (never in-place)
+parameters.isBigData = ~isempty(obj.isBigData) && obj.isBigData;
+if parameters.isBigData
+    % Analysis pyramid level: parse the leading index from the dropdown item
+    % (e.g. '2: 12000 x 9000'); '<auto>' -> level nearest ~3000 px wide.
+    levelStr = obj.BatchOpt.BigData_PyramidLevel{1};
+    levelTok = regexp(levelStr, '^\s*(\d+)\s*:', 'tokens', 'once');
+    if isempty(levelTok)
+        levelSizes = obj.mibModel.I{id}.image.pyramid.levelImageSizes;
+        [~, parameters.pyramidLevel] = min(abs(levelSizes(:, 2) - 3000));
+    else
+        parameters.pyramidLevel = str2double(levelTok{1});
+    end
+    parameters.outputPath = obj.BatchOpt.BigData_OutputPath;
+
+    if isempty(parameters.outputPath)
+        utils.dlgs.showErrorDialog(parentFig, ...
+            'BigData alignment requires an output store path (BigData_OutputPath).', 'Alignment');
+        return;
+    end
+end
+
 % --- Dispatch on algorithm
 switch obj.BatchOpt.Algorithm{1}
     case {'Drift correction', 'Template matching'}
-        if obj.BatchOpt.HDD_Mode
+        if parameters.isBigData
+            obj.DriftCorrectionBigData_Alignment(parameters);
+        elseif obj.BatchOpt.HDD_Mode
             obj.alignDriftCorrectionHDD_Alignment(parameters);
         else
             obj.DriftCorrection_Alignment(parameters);
         end
 
     case 'Single landmark point'
-        obj.SingleLandmark_Alignment(parameters);
+        if parameters.isBigData
+            obj.LandmarksBigData_Alignment(parameters);
+        else
+            obj.SingleLandmark_Alignment(parameters);
+        end
 
     case 'Three landmark points'
-        obj.ThreeLandmarks_Alignment(parameters);
+        if parameters.isBigData
+            obj.LandmarksBigData_Alignment(parameters);
+        else
+            obj.ThreeLandmarks_Alignment(parameters);
+        end
 
     case 'Landmarks, multi points'
-        obj.LandmarkMultiPoint_Alignment(parameters);
+        if parameters.isBigData
+            obj.LandmarksBigData_Alignment(parameters);
+        else
+            obj.LandmarkMultiPoint_Alignment(parameters);
+        end
 
     case 'Color channels, multi points'
+        if parameters.isBigData
+            utils.dlgs.showErrorDialog(parentFig, ...
+                'The "Color channels, multi points" mode is not supported in BigData mode.', 'Alignment');
+            return;
+        end
         obj.LandmarkMultiPointColor_Alignment(parameters);
 
     case 'Automatic feature-based'
-        if obj.BatchOpt.HDD_Mode
+        if parameters.isBigData
+            utils.dlgs.showErrorDialog(parentFig, ...
+                ['"Automatic feature-based" (v1) is not supported in BigData mode. ' ...
+                 'Use "Automatic feature-based v2" instead.'], 'Alignment');
+            return;
+        elseif obj.BatchOpt.HDD_Mode
             obj.AutomaticFeatureBasedHDD_Alignment(parameters);
         else
             obj.AutomaticFeatureBased_Alignment(parameters);
         end
 
     case 'Automatic feature-based v2'
-        if obj.BatchOpt.HDD_Mode
+        if parameters.isBigData
+            obj.AutomaticFeatureBasedV2BigData_Alignment(parameters);
+        elseif obj.BatchOpt.HDD_Mode
             obj.AutomaticFeatureBasedHDDV2_Alignment(parameters);
         else
             obj.AutomaticFeatureBasedV2_Alignment(parameters);
         end
 
     case 'AMST: median-smoothed template'
+        if parameters.isBigData
+            utils.dlgs.showErrorDialog(parentFig, ...
+                'AMST (median-smoothed template) is not supported in BigData mode.', 'Alignment');
+            return;
+        end
         obj.AlignMedianSmoothTemplate_Alignment(parameters);
 
     otherwise

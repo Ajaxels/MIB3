@@ -1,6 +1,93 @@
 # Alignment for BigData mode — implementation plan
 
-Status: **planned, not started** (2026-07-03). Decisions confirmed with IB; codebase facts verified against source (file:line cited throughout).
+Status: **All phases (0–4) done** (2026-07-05). Decisions confirmed with IB; codebase facts verified against source (file:line cited throughout). Remaining: the AppDesigner `.mlapp` BigData panel is a manual edit (done by IB), and the final live-GUI acceptance run on real data (checklist §8).
+
+**Phase 4 completed** — headless-batch hardening + formal tests + docs. Fixed a real headless bug:
+the labels-warp `uiprogressdlg` crashed when `mibGUI` is empty (bare-model batch runs) — now guarded.
+Added `tests/controllers/AlignmentBigDataTest.m` (9 Integration tests, all pass in ~2 s against a bare
+`models.MibModel(1, mibFolder)`, no live session): drift extended/cropped canvas, feature-v2 rotation
+correction, packed-63 bit preservation across levels, bbox/pixSize propagation, no-model path, single &
+multi landmark, and the empty-output-path abort guard. Batch round-trip is exercised by every test
+(`controllers.Alignment(model, [], BatchOpt)`). Docs: alignment section added to `bigdata_logic.md`
+(§13) + File map; BigData section added to the user docs alignment page
+(`docs/.../dataset-alignment.md`); status updated in `bigdata_implementation_plan.md`.
+
+**Phase 3 completed** — landmark modes (single / three / multi) for BigData, **annotation-driven**
+(the practical source for gigapixel slides; selection-layer extraction bounded by `selectionBBoxFull`
+is a later add). `LandmarksBigData_Alignment.m` branches on `parameters.method`: single → per-slice
+cumulative **translation** (`mode='translation'`); three → first slice pair with 3+ matching-labelled
+annotations → one **affine** broadcast to the tail; multi → per-slice cumulative **affine**
+(`fitgeotrans`, matched by label). Points are level-0 → no scaling. Canvas via corner projection
+(`transformPointsForward`, transform-type-agnostic); a **world-limited `imref2d` OutputView** is used
+so raw (unbaked) `affine2d`/`projective2d` tforms place correctly. To support this the provider now
+accepts an `imref2d` OutputView, and `applyAlignmentBigData` builds ONE `ref0` (default for
+translation/affine-baked callers, world-limited for landmarks) used for **both** image and labels.
+Annotations warped via `transformPointsForward` + `worldToIntrinsic(outputView)`. End-to-end test
+(`scratchpad/test_phase3_e2e.m`, all three modes on spare buffers): single → aligned model-blob
+centroid spread 0.00 px; multi → landmark spread 0.00 px + image residual **0.003°** (injected 12°);
+three → tail residual **0.173°** (was 8°). Phase 2 e2e re-run green after the provider refactor.
+(Note: `imrotate(+a)` moves an (x,y) feature by `R(-a)` — image Y points down — a test-setup detail.)
+
+**Phase 2 completed** — feature-based v2 affine for BigData. Extracted the 4 shared v2 helpers to
+`utils.align.*` (`fitPerSliceV2`, `smoothCumulativeV2`, `interactiveSmoothingV2`, `plotCumulativeV2`)
+so the in-memory and BigData paths share one source; `fitPerSliceV2` now takes a caller-supplied
+`readSliceFcn` (in-memory → `getData2D`; BigData → `ds.image.getData(...,'pyramidLevel',L,'z',[n n])`,
+reading the FULL level-L slice — `getData2D` returns only the visible viewport for a pyramid, so it
+must be bypassed). `AutomaticFeatureBasedV2BigData_Alignment.m`: fit at level L (force analysis
+factor = 1 when L>1 to avoid double-downsampling), compose cumulative, smooth, **conjugate L→0**
+(`T0.A(1:2,3) *= scale`), corner-projection canvas at level-0, bake origin offset into the tforms
+(so the provider uses a unit-pixel default OutputView), `applyAlignmentBigData` with `mode='affine'`.
+`applyAlignmentBigData` gained a `result` flag + a warped-annotation writeback (positions `[z x y t]`,
+warped via the baked level-0 tforms → `replaceLabels` on the swapped dataset). The v2 caller captures
+source annotations (`getLabels`), warps them, and passes them through `tformInfo.annotations`.
+End-to-end test (`scratchpad/test_phase2_e2e.m`, synthetic per-slice rotation + model + annotations,
+spare buffer): canvas extends, buffer swaps, model reattaches + follows, display renders, an injected
+**8° rotation is corrected to 0.08° residual**, and the 3 annotations are preserved (count + values)
+with positions warped in-bounds and canvas-consistent. All files pass `check_matlab_code`.
+**In-memory v2 regression PASSED** (`scratchpad/regress_v2_tif.m`): a real multipage TIF loaded via
+`MibModel.loadImages` (genuine Standard `MibImage`), in-memory v2 rigid corrected an injected 10°
+rotation to **0.04° residual** with the canvas extending 320→372 — confirming the `utils.align`
+extraction + `readSliceFcn` refactor did not regress the resident path. (Note: v2 needs
+feature-rich slices; smooth-blob synthetics yield `ok=0` from `fitPerSliceV2` — a detector/data
+limit, not a code bug.) Live-GUI acceptance on a real rotated `.zarr3` still recommended.
+
+**Phase 1 completed** — implemented `DriftCorrectionBigData_Alignment.m` (pass-1 shifts at analysis
+level, scale to level 0, resolve background), `applyAlignmentBigData.m` (canvas math, shared
+`computeLevelPlan`, streamed image store via `saveStream`, packed-63 nearest-warp labels store +
+`materializeAll`/`closeStore`, `patchMetadata` bbox, buffer swap-over per CropDataset), and
+`io.savers.AlignedImageSliceProvider` (level-0 read → imwarp into OutputView; `nearest` for integer
+translation, parametrised interp for affine). All pass `check_matlab_code`. Headless synthetic test
+(`scratchpad/test_phase1_bigdata_align.m`) proves: aligned canvas == predicted; **provider output
+pixel-identical to `crossShiftStack`**; packed-63 material/mask/selection bits preserved across all
+pyramid levels. Translation is `affinetform2d`; drift uses `nearest` (exact integer placement).
+**Phase 1 end-to-end verified** — `scratchpad/test_phase1_e2e.m` runs the FULL controller in batch
+mode on a spare live-session buffer (synthetic multi-slice BigData + attached model): dispatch →
+`DriftCorrectionBigData` → `applyAlignmentBigData` → `saveStream` → labels warp → `patchMetadata` →
+reopen → **buffer swap** → model reattach. Asserts pass: buffer becomes BigData, canvas grows
+(extended), model reattached as `MibBigDataLabels` with names preserved, material/mask/selection
+follow, and `getRGBimage` renders the swapped buffer (529×531×3) with no manual fixup.
+
+**Swap bug found + fixed:** `MibDataset.initialize` leaves `slices` at `[1 1]` and (for an off-screen
+buffer) `axesX/axesY` at `NaN`; the display read then crashed in `getDataZarr:104`. `applyAlignmentBigData`
+now resets `slices` to the new full extent (mirrors `cropDataset`) and defensively seeds `axesX/axesY`
+when uninitialised. In the GUI the active buffer already has a valid pan window (listener_newDataset
+zoom-to-fit), so the seed is a no-op there; the `slices` reset is required in all cases.
+
+**Phase 1 limitations:** (a) Subarea by Mask/Selection rejected for BigData drift (Full image /
+Manually specified only); (b) XY orientation (3) only. **Final live-GUI acceptance** (open Alignment
+on a real displayed multi-slice `.zarr3`, click Apply, watch the swap) still recommended.
+
+**Phase 0 completed** — gate relaxed (BigData no longer rejected in the constructor; virtual still is),
+`isBigData`/`bigDataPyramid` props added, BigData BatchOpt fields (`BigData_PyramidLevel`,
+`BigData_OutputPath`) with dynamic level dropdown + `<auto>` (~3000 px) default, tooltips,
+`addCallbacks`/`gui_Callbacks` browse wiring (all `isfield`-guarded), `continueBtn_Callback`
+BigData dispatch sub-branches + friendly rejection for feature-v1 / AMST / color-channels-multi,
+and 6 stub files (3 algorithm entries, `applyAlignmentBigData`, 2 slice providers). All files pass
+`check_matlab_code`; class + provider classes resolve in the live session.
+**Still pending for Phase 0:** the `+views/AlignmentGUI.mlapp` "BigData" panel is a manual
+AppDesigner edit (dropdown `BigData_PyramidLevel`, edit `BigData_OutputPath`, button
+`BigData_SelectOutputBtn`, container `BigDataPanel`); until added, the controller degrades
+gracefully but the panel is invisible. The live-GUI acceptance check awaits that edit.
 
 ## 1. Context
 
@@ -362,3 +449,29 @@ BigData buffer; final live-GUI checklist (below).
 - `mib/+core/@MibVirtualImage/getDataZarr.m` (`:58-68` level selection)
 - `mib/+utils/+align/` — `calcShifts.m`, `crossShiftStack.m`, `detectFeatures.m`, `subtractRunningAverage.m`
 - In-memory algorithm references: `DriftCorrection_Alignment.m`, `AutomaticFeatureBasedV2_Alignment.m`, HDD variants
+
+## 8. Phase 1 live-GUI acceptance checklist (drift correction)
+
+Run in the real GUI on a **displayed, multi-slice** pyramidal `.zarr3` (BigData) — depth ≥ 2. The
+headless + end-to-end tests already pass; this confirms the interactive path on real data.
+
+- [ ] Open a multi-slice `.zarr3` BigData dataset (ideally with a painted model + mask + selection).
+- [ ] Open **Ribbon → Dataset → Alignment**. The **BigData panel** is visible (replaces the HDD panel);
+      pyramid-level dropdown lists all levels with the `<auto>` (~3000 px) default; output path is
+      prefilled `<name>_aligned.zarr3`.
+- [ ] Choose **Drift correction**, **TransformationMode = extended**, background = White. Click **Apply**.
+- [ ] Preview plot of detected shifts appears → **Apply current values** (or **Fix drifts** to smooth).
+- [ ] Progress bar runs (streaming image, then labels). On completion the **active buffer swaps** to the
+      aligned store; the image renders immediately (no manual zoom needed).
+- [ ] Image + model + mask + selection are all shifted identically at multiple zoom levels (overlay
+      stays registered when zooming, exercising the shared pyramid).
+- [ ] **Directory Contents** highlights the new `<name>_aligned.zarr3`; a sibling `Labels_<name>_aligned.zarr3`
+      exists on disk; the **source store is untouched** (acts as the backup).
+- [ ] Bounding box / pixel size sensible (check the Dataset info panel).
+- [ ] Re-open Alignment → **cropped** mode → canvas dimensions unchanged.
+- [ ] **Cancel** mid-write (progress dialog) → partial `.zarr3` stores deleted, source dataset still
+      active and intact, no buffer swap.
+- [ ] On a BigData dataset, **AMST** and **Automatic feature-based (v1)** → friendly
+      "not supported in BigData" dialog; **Color channels, multi points** likewise rejected.
+- [ ] Subarea = **Mask**/**Selection** on BigData drift → friendly "use Full image / Manually specified"
+      dialog (Phase 1 limitation).

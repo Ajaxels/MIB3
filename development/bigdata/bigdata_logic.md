@@ -268,10 +268,68 @@ drawn at — for crisp boundaries, draw at higher zoom.
 
 ---
 
-## 13. File map
+## 13. Alignment — new-store output + buffer swap
+
+BigData alignment (`+controllers/@Alignment`) cannot edit in place: the source pyramid is read-only
+and the canvas is fixed at store-creation time. So every alignment **writes a NEW aligned OME-Zarr v3
+store** (image + a sibling `Labels_<stem>.zarr3` when a model exists) and swaps the active buffer to
+it. **The untouched source store is the backup** — no `mibModel.backup()` is taken in BigData paths.
+
+**Two-pass streaming** (memory ≈ one slice; the full-resolution stack is never resident):
+
+1. **Pass 1 — analysis at a coarse level.** Shifts/transforms are computed on slices read at a
+   user-selectable pyramid level *L* (dialog default: the level nearest ~3000 px wide). The existing
+   math helpers are reused unchanged because they operate on the small level-L arrays/vectors:
+   drift → `utils.align.calcShifts`; feature-based v2 → `utils.align.fitPerSliceV2` (+ smoothing
+   helpers, all in `+utils/+align`); landmarks → `fitgeotrans` on annotation points.
+2. **Transform scaling L → 0.** Translation: `shift0 = round(shiftL · s)` (integer → resample-free
+   placement). Affine: conjugate with `S = diag([s s 1])` — `T0 = S·TL·inv(S)` — i.e. the linear
+   block is unchanged and the translation column is multiplied by the level scale `s`
+   (`s = levelScaleFactors(L,1) ≈ 2^(L-1)`). Landmark points come from the Annotation layer and are
+   already level-0, so **no scaling**.
+3. **Pass 2 — stream at level 0.** `io.savers.AlignedImageSliceProvider` reads each level-0 slice via
+   `getData('image',3,colCh,struct('pyramidLevel',1,'z',[z z]))`, `imwarp`s it into the output canvas,
+   and hands it to `Zarr3Saver.saveStream` (which builds the whole output pyramid). `nearest` for
+   integer translation (exact), `cubic` for affine.
+
+**One shared level plan.** `Zarr3Saver.computeLevelPlan` is called ONCE and used for both the image
+store (built internally by `saveStream`) and the labels store (built by `MibBigDataLabels.createStore`)
+so the two pyramids have identical level sizes / scale factors / chunks and overlays stay registered
+at every zoom.
+
+**Packed-63 labels warp.** Labels/mask/selection are warped **together** as the packed `'everything'`
+bytes with **nearest-neighbour** interpolation (`FillValues = 0`): nearest copies whole bytes, so bits
+1–6 (material), 7 (mask), 8 (selection) transport with no averaging. Written per slice via
+`setData63('everything', … , 'pyramidLevel', 1)` then `materializeAll()` + `closeStore()` (persists the
+level map) — deliberately NOT through `saveStream`, so the materialize/level-map path keeps bit
+semantics and coarse levels correct.
+
+**Canvas & OutputView.** Extended-canvas size is known before writing: translation → min/max growth
+(`crossShiftStack` formula); affine/landmark → four-corner projection through every cumulative tform.
+Translation/affine callers **bake the origin offset into the tforms** and use a unit-pixel default
+`imref2d`; landmark callers (raw `affine2d`/`projective2d`) instead pass a **world-limited `imref2d`
+OutputView** — `applyAlignmentBigData` builds ONE `ref0` used for both image and labels.
+
+**Metadata & switch-over.** `saveStream` writes only per-level scale; the bounding box + per-level
+translation are added by `Zarr3Saver.patchMetadata`. The buffer swap mirrors `CropDataset`: capture
+source material names/colors/count → `Zarr3VirtualSetupLoader` → `I{id}.initialize(img, imgInfo,
+'BigData')` → **reset `slices` to the new full extent + seed `axesX/axesY` if NaN** (initialize leaves
+them at `[1 1]`/`NaN`; the display crashes otherwise) → reattach labels via `openStore` + restore
+material metadata → sync `Sets.datasetTypes` → notify `NewDataset`/`ShowImage`/`UpdateFileList`.
+Annotations (feature-v2 / landmark) are warped into the new frame and re-added after the swap.
+
+**Scope.** Drift correction / template matching, feature-based **v2**, and landmark modes
+(single / three / multi, **annotation-driven**). Feature-based v1 and AMST stay blocked in BigData;
+XY orientation only; `time == 1`. Headless/batch-safe (progress dialogs are guarded when `mibGUI`
+is empty). Tests: `tests/controllers/AlignmentBigDataTest.m`.
+
+---
+
+## 14. File map
 
 | Concern | File(s) |
 |---------|---------|
+| BigData alignment | `+controllers/@Alignment/{Alignment,continueBtn_Callback,DriftCorrectionBigData_Alignment,AutomaticFeatureBasedV2BigData_Alignment,LandmarksBigData_Alignment,applyAlignmentBigData}.m`; `+io/+savers/AlignedImageSliceProvider.m`; shared v2 helpers `+utils/+align/{fitPerSliceV2,smoothCumulativeV2,interactiveSmoothingV2,plotCumulativeV2}.m` |
 | BigData image (read) | `+core/@MibBigDataImage/` (thin subclass of `@MibVirtualImage`) |
 | Image read seam | `+core/@MibVirtualImage/getDataZarr.m`, `getData.m`, `getOrCreateLoader.m` |
 | Disk-backed model | `+core/@MibBigDataLabels/` — `MibBigDataLabels.m` (class + `createStore`/`openStore`/`closeStore`/`readPackedLevel`/`writePackedLevel`/`propagateRegion`/`materializeForRead`/`materializeAll`/`markTiles`/`tilesForFullRegion`/`saveLevelMap`/`loadLevelMap`/`initLevelMapFallback`/`orientPhysRanges`/`levelMapPathFor`/`bboxUnion`/`updateSelectionBBoxFromWrite`/`resizeLayerSmooth`/`resizeBlockNearest`), `getData63.m`, `setData63.m` |

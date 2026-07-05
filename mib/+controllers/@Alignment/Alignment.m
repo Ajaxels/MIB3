@@ -27,6 +27,8 @@ classdef Alignment < handle
         meta            % meta dictionary from getImageMetadata (HDD mode)
         pathstr         % current dataset path
         pixSize         % pixSize struct from getImageMetadata (HDD mode)
+        isBigData       % logical, true when the active dataset is a BigData (disk-backed pyramidal) store
+        bigDataPyramid  % cached pyramid struct of the active BigData image (levelImageSizes/levelScaleFactors/...)
     end
 
     events
@@ -45,7 +47,13 @@ classdef Alignment < handle
             % Routes the model events ``UpdateGuiWidgets`` and ``NewDataset`` to
             % :meth:`updateWidgets`. Deletes stale listeners if the controller or
             % its view has been destroyed.
-            if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
+            if ~isvalid(obj)
+                % Controller already deleted — obj.listener is unreachable, so the
+                % stale listener can only no-op until the model releases it. Do NOT
+                % touch obj.* here or this callback throws "Invalid or deleted object".
+                return;
+            end
+            if isempty(obj.view) || ~isvalid(obj.view.gui)
                 for i = 1:numel(obj.listener); delete(obj.listener{i}); end
                 return;
             end
@@ -107,6 +115,10 @@ classdef Alignment < handle
         alignDriftCorrectionHDD_Alignment(obj, parameters)
         AutomaticFeatureBasedHDD_Alignment(obj, parameters)
         AutomaticFeatureBasedHDDV2_Alignment(obj, parameters)
+        DriftCorrectionBigData_Alignment(obj, parameters)
+        AutomaticFeatureBasedV2BigData_Alignment(obj, parameters)
+        LandmarksBigData_Alignment(obj, parameters)
+        result = applyAlignmentBigData(obj, parameters, tformInfo)
         status = updateAutomaticOptions(obj)
         previewFeaturesBtn_Callback(obj)
 
@@ -130,17 +142,24 @@ classdef Alignment < handle
             id = obj.mibModel.getActiveId();
             dataset = obj.mibModel.I{id};
 
-            % Reject virtual-stacking mode early
-            if any(dataset.datasetType(1) == ['V' 'B'])
+            % Virtual-stacking mode has no supported alignment path — reject early.
+            % BigData is allowed: alignment writes a NEW aligned zarr3 store (image +
+            % labels) and swaps the active buffer to it. Per-algorithm BigData
+            % restrictions (feature-v1, AMST) are enforced later in continueBtn_Callback.
+            obj.isBigData = strcmp(dataset.datasetType, 'BigData');
+            if dataset.datasetType(1) == 'V'
                 dlgOpt.MsgBoxOnly = true;
                 dlgOpt.Icon = 'puffin_warning';
                 dlgOpt.HeaderLines = 1;
                 utils.dlgs.inputUniversalDlg(obj.mibModel.getProgressBarParent(), ...
-                    'Alignment is not available in virtual or BigData mode', {''}, ...
-                    {'Switch to memory-resident mode and try again.'}, ...
+                    'Alignment is not available in virtual mode', {''}, ...
+                    {'Switch to memory-resident or BigData mode and try again.'}, ...
                     'Not implemented', dlgOpt);
                 notify(obj.mibModel, 'StopProtocol');
                 return;
+            end
+            if obj.isBigData
+                obj.bigDataPyramid = dataset.image.pyramid;
             end
 
             getDataOpt.blockModeSwitch = 0;
@@ -224,6 +243,15 @@ classdef Alignment < handle
             BatchOpt.HDD_BioformatsIndex   = {1, [1 Inf], true};
             BatchOpt.HDD_OutputFileExtension    = {'TIF'};
             BatchOpt.HDD_OutputFileExtension{2} = {'AM', 'JPG', 'MRC', 'NRRD', 'PNG', 'TIF'};
+
+            % BigData-mode parameters — output is a NEW aligned OME-Zarr v3 store.
+            % The analysis pyramid level (item list) is populated dynamically in
+            % updateWidgets from dataset.image.pyramid; '<auto>' picks the level
+            % nearest ~3000 px wide.
+            [bigDataPath, bigDataName] = fileparts(dataset.image.filename);
+            BatchOpt.BigData_PyramidLevel    = {'<auto>'};
+            BatchOpt.BigData_PyramidLevel{2} = {'<auto>'};
+            BatchOpt.BigData_OutputPath      = fullfile(bigDataPath, [bigDataName '_aligned.zarr3']);
 
             % Batch metadata
             BatchOpt.mibBatchSectionName = 'Ribbon -> Dataset';
@@ -367,6 +395,31 @@ classdef Alignment < handle
             obj.BatchOpt.minY = {floor(height/2)-floor(height/4),[1 height], true};
             obj.BatchOpt.maxY = {floor(height/2)+floor(height/4),[1 height], true};
 
+            % --- BigData-mode widgets: pyramid-level dropdown + output path
+            obj.isBigData = strcmp(obj.mibModel.I{id}.datasetType, 'BigData');
+            if obj.isBigData
+                obj.bigDataPyramid = obj.mibModel.I{id}.image.pyramid;
+                levelSizes = obj.bigDataPyramid.levelImageSizes;   % [nLevels x 3] as [Y X Z]
+                nLevels    = size(levelSizes, 1);
+                levelItems = cell(1, nLevels);
+                for levelIdx = 1:nLevels
+                    levelItems{levelIdx} = sprintf('%d: %d x %d', levelIdx, ...
+                        levelSizes(levelIdx, 2), levelSizes(levelIdx, 1));  % X x Y
+                end
+                % default analysis level: nearest ~3000 px wide (X dimension)
+                [~, defaultLevel] = min(abs(levelSizes(:, 2) - 3000));
+                obj.BatchOpt.BigData_PyramidLevel{2} = levelItems;
+                obj.BatchOpt.BigData_PyramidLevel{1} = levelItems{defaultLevel};
+                % refresh the default output store path for this dataset
+                obj.BatchOpt.BigData_OutputPath = fullfile(obj.pathstr, [name '_aligned.zarr3']);
+            end
+            % Swap the BigData panel over the HDD panel (they share grid cell Row 5).
+            % In BigData mode: show BigDataPanel, hide HDD_Panel + its HDD_Mode
+            % toggle. Otherwise: restore the HDD widgets, hide BigDataPanel.
+            h.BigDataPanel.Visible = obj.isBigData;
+            h.HDD_Panel.Visible = ~obj.isBigData;
+            h.HDD_Mode.Visible = ~obj.isBigData;
+
             utils.updateGUIFromBatchOpt_Shared(obj.view, obj.BatchOpt);
         end
 
@@ -387,8 +440,20 @@ classdef Alignment < handle
             h  = obj.view.handles;
             cb = @(src,evt) obj.gui_Callbacks(src, evt);
 
+            % Safety net: if the BigData panel was dropped onto the figure in
+            % AppDesigner (instead of into optionsGridLayout), reparent it into
+            % the grid so Layout.Row/Column take effect. No-op once the .mlapp
+            % parents it correctly.
+            if isfield(h, 'BigDataPanel') && isfield(h, 'optionsGridLayout') ...
+                    && ~isequal(h.BigDataPanel.Parent, h.optionsGridLayout)
+                h.BigDataPanel.Parent = h.optionsGridLayout;
+                h.BigDataPanel.Layout.Row    = 5;
+                h.BigDataPanel.Layout.Column = [1 6];
+            end
+
             buttonTags = {'continueBtn','closeBtn','helpBtn', ...
-                          'getSearchWindow','previewFeaturesBtn','HDD_SelectDirBtn'};
+                          'getSearchWindow','previewFeaturesBtn','HDD_SelectDirBtn', ...
+                          'BigData_SelectOutputBtn'};
             for k = 1:numel(buttonTags)
                 if isfield(h, buttonTags{k})
                     h.(buttonTags{k}).ButtonPushedFcn = cb;
@@ -411,6 +476,7 @@ classdef Alignment < handle
                 'HDD_Mode','HDD_InputDir','HDD_InputFilenameExtension', ...
                 'HDD_BioformatsReader','HDD_BioformatsIndex', ...
                 'HDD_OutputSubfolderName','HDD_OutputFileExtension', ...
+                'BigData_PyramidLevel','BigData_OutputPath', ...
                 'showWaitbar'};
             for k = 1:numel(valueTags)
                 if isfield(h, valueTags{k})
@@ -487,6 +553,8 @@ classdef Alignment < handle
             tooltips.HDD_BioformatsReader = 'Use the Bio-Formats reader';
             tooltips.HDD_BioformatsIndex  = 'Index of the series for the Bio-Formats reader';
             tooltips.HDD_OutputFileExtension = 'Extension for output files';
+            tooltips.BigData_PyramidLevel = '[BigData]: pyramid level used to compute shifts/transforms; coarser levels are faster but quantize shifts. "<auto>" picks the level nearest ~3000 px wide';
+            tooltips.BigData_OutputPath   = '[BigData]: path of the new aligned OME-Zarr v3 store; the source store is left intact and acts as the backup';
             tooltips.showWaitbar         = 'Show the progress bar during execution';
         end
     end

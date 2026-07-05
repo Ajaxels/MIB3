@@ -109,6 +109,17 @@ switch source.Tag
         obj.view.handles.HDD_InputDir.Value = newDir;
         obj.updateBatchOptFromGUI(obj.view.handles.HDD_InputDir);
 
+    case 'BigData_SelectOutputBtn'
+        startingPath = obj.BatchOpt.BigData_OutputPath;
+        [outputFilename, outputFolder] = uiputfile({'*.zarr3', 'OME-Zarr v3 (*.zarr3)'}, ...
+            'Select the output aligned store...', startingPath);
+        if isequal(outputFilename, 0); return; end
+        obj.BatchOpt.BigData_OutputPath = fullfile(outputFolder, outputFilename);
+        if isfield(obj.view.handles, 'BigData_OutputPath')
+            obj.view.handles.BigData_OutputPath.Value = obj.BatchOpt.BigData_OutputPath;
+            obj.view.handles.BigData_OutputPath.Tooltip = obj.BatchOpt.BigData_OutputPath;
+        end
+
     otherwise
         obj.updateBatchOptFromGUI(source);
 end
