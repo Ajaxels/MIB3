@@ -93,6 +93,7 @@ try
                 trainingProgressOptions.gpuDevice = obj.view.Figure.GPUDropDown.Value;
                 trainingProgressOptions.iterPerEpoch = mibDeepTrainingProgressStruct.iterPerEpoch;
                 trainingProgressOptions.TrainingOpt = obj.TrainingOpt;
+                trainingProgressOptions.calculateAccuracy = obj.BatchOpt.O_CalculateAccuracyInstances;   % whether the validation mAP metric is computed
                 trainingProgressOptions.sendNextReportAtEpoch = -1;   % next epoch value to send training report
                 if obj.SendReports.T_SendReports && obj.SendReports.sendDuringRun
                     trainingProgressOptions.sendNextReportAtEpoch = obj.TrainingOpt.CheckpointFrequency+1; % the value is taken from the checkpoint frequency
@@ -115,6 +116,7 @@ try
                 trainingProgressOptions.gpuDevice = obj.view.Figure.GPUDropDown.Value;
                 trainingProgressOptions.iterPerEpoch = mibDeepTrainingProgressStruct.iterPerEpoch;
                 trainingProgressOptions.TrainingOpt = obj.TrainingOpt;
+                trainingProgressOptions.calculateAccuracy = obj.BatchOpt.O_CalculateAccuracyInstances;   % whether the validation mAP metric is computed
                 trainingProgressOptions.sendNextReportAtEpoch = -1;   % next epoch value to send training report
                 if obj.SendReports.T_SendReports && obj.SendReports.sendDuringRun
                     trainingProgressOptions.sendNextReportAtEpoch = obj.TrainingOpt.CheckpointFrequency+1; % the value is taken from the checkpoint frequency
@@ -173,9 +175,16 @@ try
         % display (deepmib.customTrainingProgressDisplay), which maps it onto the Validation
         % accuracy gauge as a percentage. Only add it when validation data is present -
         % ValidationOnly metrics error out otherwise.
-        evalTrainingOptions = join([evalTrainingOptions
-            "'Metrics', {mAPInstanceSegmentationMetric()},"
-            ], ' ');
+        % Computing mAP additionally runs the detector in inference mode over the whole
+        % validation set every validation interval (plus IoU matching / mAP integration) - a
+        % notable extra cost. Skip the metric entirely when the user disables accuracy
+        % calculation via the "Calculate accuracy" checkbox (BatchOpt.O_CalculateAccuracyInstances);
+        % validation loss is still computed and plotted.
+        if obj.BatchOpt.O_CalculateAccuracyInstances
+            evalTrainingOptions = join([evalTrainingOptions
+                "'Metrics', {mAPInstanceSegmentationMetric()},"
+                ], ' ');
+        end
     end
 
     % add output network selection method

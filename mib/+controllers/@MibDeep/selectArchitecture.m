@@ -26,6 +26,7 @@ obj.view.handles.P_OverlappingTilesPercentage.Enable = 'on';
 obj.view.handles.P_PatchWiseUpsample.Enable = 'off';
 obj.view.handles.P_OverlapInstancesMode.Enable = 'off';
 obj.view.handles.P_OverlapInstancesSettings.Enable = 'off';
+obj.view.handles.O_CalculateAccuracyInstances.Enable = 'off';
 obj.view.handles.P_ExtraPaddingPercentage.Enable = 'on';
 obj.view.handles.T_EncoderNetwork.Enable = 'off';
 obj.view.handles.T_NumAnisotropicBlocks.Enable = 'off';
@@ -114,6 +115,8 @@ switch obj.BatchOpt.Workflow{1}
         obj.view.handles.P_ExtraPaddingPercentage.Enable = 'off';
     case '2D Instance'
         obj.view.handles.T_EncoderNetwork.Enable = 'on';
+        % Options tab settings
+        obj.view.handles.O_CalculateAccuracyInstances.Enable = 'on';
         % Prediction tab settings
         obj.view.handles.P_OverlapInstancesMode.Enable = 'on';
         obj.view.handles.P_OverlapInstancesSettings.Enable = 'on';

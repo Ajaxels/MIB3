@@ -171,6 +171,15 @@ if (isempty(progressStruct.Iteration) || progressStruct.Iteration == 0 || ...
         mibDeepTrainingProgressStruct.AccTrainGauge.Enable = 'off';
         mibDeepTrainingProgressStruct.AccTrainingValue.Enable = 'off';
         mibDeepTrainingProgressStruct.AccTrainingValue.Text = 'N/A';
+
+        % when the user disabled accuracy calculation (BatchOpt.O_CalculateAccuracyInstances),
+        % the validation mAP metric is not added, so no ValidationmAP is ever reported - grey
+        % out the Validation gauge/value too, so it does not sit at a misleading 0%
+        if isfield(trainingProgressOptions, 'calculateAccuracy') && ~trainingProgressOptions.calculateAccuracy
+            mibDeepTrainingProgressStruct.AccValGauge.Enable = 'off';
+            mibDeepTrainingProgressStruct.AccValidationValue.Enable = 'off';
+            mibDeepTrainingProgressStruct.AccValidationValue.Text = 'N/A';
+        end
     end
 
     mibDeepTrainingProgressStruct.TrainingProgress = uilabel(mibDeepTrainingProgressStruct.InformationPanel);

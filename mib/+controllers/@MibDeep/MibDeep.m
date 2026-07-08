@@ -456,6 +456,7 @@ classdef MibDeep < handle
             obj.BatchOpt.O_PreviewImagePatches = true;
             obj.BatchOpt.O_FractionOfPreviewPatches{1} = .02;
             obj.BatchOpt.O_FractionOfPreviewPatches{2} = [0 1];
+            obj.BatchOpt.O_CalculateAccuracyInstances = true;
 
             obj.BatchOpt.showWaitbar = true;
 
@@ -520,6 +521,7 @@ classdef MibDeep < handle
             obj.BatchOpt.mibBatchTooltip.O_NumberOfPoints = 'Number of points in the training plot. Decrease to improve training performance, increase to see more detailed plot';
             obj.BatchOpt.mibBatchTooltip.O_PreviewImagePatches = 'Preview image patches that network is seeing with the cost of decreased training performance';
             obj.BatchOpt.mibBatchTooltip.O_FractionOfPreviewPatches = 'Fraction of image patches that has to be visualized. Decrease to improve performance, increase to see patches more frequently';
+            obj.BatchOpt.mibBatchTooltip.O_CalculateAccuracyInstances = '[2D Instance only] Calculate the validation accuracy (mAP) metric during training; disable to speed up training by skipping the extra inference over the validation set (validation loss is still computed)';
 
             obj.BatchOpt.mibBatchTooltip.showWaitbar = sprintf('Show or not waitbar');
 
