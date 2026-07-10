@@ -589,11 +589,12 @@ classdef Zarr3Saver < io.savers.BaseSaver
             end
         end
 
-        function options = optionsDialog(parentFig, mibPath, isModel, datasetInfo)
+        function options = optionsDialog(parentFig, mibPath, isModel, datasetInfo, presetDefaults)
             % OPTIONSDIALOG - collect zarr3 export settings; returns [] if cancelled.
             %
-            % Shared by the image/model export menus and the "Convert to BigData"
-            % dropdown. When ``isModel`` is true, the method is restricted to
+            % Shared by the image/model export menus, the "Convert to BigData"
+            % dropdown, and BigData alignment. When ``isModel`` is true, the method
+            % is restricted to
             % 'nearest' or 'mode' (labels are categorical). The downsampling
             % *strategy* (XY only vs. Anisotropy-preserving) is offered for both —
             % model reads use their own per-axis ``modelScaleFactors`` (see
@@ -622,11 +623,19 @@ classdef Zarr3Saver < io.savers.BaseSaver
             % sharding codec). Shard size 0 = no sharding; otherwise each axis is rounded
             % up to a whole multiple of the chunk size.
             %
+            % **presetDefaults** (optional struct) pre-fills the dialog fields with an
+            % existing dataset's actual settings (used by BigData alignment to seed the
+            % dialog from the open dataset instead of the dimension heuristics). Any of
+            % ``Levels``, ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (empty/absent = off),
+            % ``Compressors``, ``DownsampleMethod``, ``DownsampleStrategy`` overrides the
+            % corresponding heuristic default.
+            %
             % Output Arguments:
             %   - **options** — struct with fields ``Levels`` (omitted when auto),
             %     ``ChunkSize`` [y x z], ``ShardSize`` [y x z] (omitted when no sharding),
             %     ``Compressors``, ``DownsampleMethod``, ``DownsampleStrategy``;
             %     ``[]`` when cancelled.
+            if nargin < 5; presetDefaults = []; end
             if nargin < 4; datasetInfo = []; end
             if nargin < 3; isModel = false; end
             if nargin < 2; mibPath = ''; end
@@ -700,14 +709,49 @@ classdef Zarr3Saver < io.savers.BaseSaver
             prompts = {'Pyramid levels (0 = auto):'; 'Chunk size [Y, X, Z]:'; ...
                        'Shard X-factors [Y, X, Z] (0 = off):'; 'Compression:'; ...
                        'Downsampling method:'; 'Downsampling strategy:'};
-            strategyItems  = {'XY only', 'Anisotropy-preserving'};
+            strategyItems   = {'XY only', 'Anisotropy-preserving'};
+            compressorItems = {'zstd', 'gzip', 'none'};
+
+            % --- override the heuristic defaults with an existing dataset's settings ---
+            levelDefault      = 0;   % 0 = auto
+            compressorDefault = 1;
+            methodDefault     = 1;
+            if ~isempty(presetDefaults) && isstruct(presetDefaults)
+                if isfield(presetDefaults, 'Levels') && ~isempty(presetDefaults.Levels)
+                    levelDefault = presetDefaults.Levels;
+                end
+                if isfield(presetDefaults, 'ChunkSize') && numel(presetDefaults.ChunkSize) == 3
+                    defaultChunk = sprintf('%d, %d, %d', round(presetDefaults.ChunkSize));
+                end
+                if isfield(presetDefaults, 'DownsampleStrategy') && ~isempty(presetDefaults.DownsampleStrategy)
+                    defaultStrategy = presetDefaults.DownsampleStrategy;
+                end
+                if isfield(presetDefaults, 'DownsampleMethod') && ~isempty(presetDefaults.DownsampleMethod)
+                    mi = find(startsWith(methodItems, presetDefaults.DownsampleMethod), 1);
+                    if ~isempty(mi); methodDefault = mi; end
+                end
+                if isfield(presetDefaults, 'Compressors') && ~isempty(presetDefaults.Compressors)
+                    ci = find(strcmp(compressorItems, presetDefaults.Compressors), 1);
+                    if ~isempty(ci); compressorDefault = ci; end
+                end
+                % shard is entered as per-axis chunk multipliers; convert from absolute
+                if isfield(presetDefaults, 'ShardSize')
+                    if numel(presetDefaults.ShardSize) == 3 && numel(presetDefaults.ChunkSize) == 3
+                        mult = max(1, round(presetDefaults.ShardSize(:)' ./ max(1, presetDefaults.ChunkSize(:)')));
+                        defaultShard = sprintf('%d, %d, %d', mult);
+                    else
+                        defaultShard = '0, 0, 0';   % explicitly no sharding
+                    end
+                end
+            end
+
             defaultStrategyIdx = find(strcmp(strategyItems, defaultStrategy), 1);
             if isempty(defaultStrategyIdx); defaultStrategyIdx = 1; end
-            defAns  = {struct('Spinner', true, 'Value', 0, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
+            defAns  = {struct('Spinner', true, 'Value', levelDefault, 'Limits', [0 12], 'Step', 1, 'Round', true); ...
                        defaultChunk; ...
                        defaultShard; ...
-                       {'zstd', 'gzip', 'none', 1}; ...
-                       [methodItems, {1}]; ...
+                       [compressorItems, {compressorDefault}]; ...
+                       [methodItems, {methodDefault}]; ...
                        [strategyItems, {defaultStrategyIdx}]};
 
             dlgOpts = struct('LabelPosition', 'left', 'WindowWidth', 560, ...

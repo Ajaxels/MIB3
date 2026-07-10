@@ -24,6 +24,13 @@ function AutomaticFeatureBasedV2BigData_Alignment(obj, parameters)
 %     streams a NEW aligned OME-Zarr v3 image (+ ``Labels_<stem>.zarr3``) and
 %     swaps the active buffer. The source store is never modified.
 %
+% **Save / replay** — when ``SaveShiftsToFile`` is set the level-0 alignment
+% struct (cumulative + pairwise tforms + decomposed parameters) is written to a
+% ``.coefXY`` file; when ``loadShiftsCheck`` pre-loads such a struct into
+% ``obj.shiftsX`` the detection/fit/smoothing pass is skipped and the loaded
+% level-0 cumulative transforms are replayed directly (align another dataset).
+% The saved transforms are level-0, so replay is pyramid-level-independent.
+%
 % Input Arguments:
 %   - **parameters** — struct built by :meth:`continueBtn_Callback`; BigData
 %     fields ``isBigData`` (true), ``pyramidLevel``, ``outputPath``, plus
@@ -84,111 +91,131 @@ else   % 'black'
     bgImage = 0;
 end
 
-% --- Analysis downsampling. The pyramid level already downsamples XY, so force
-% the v2 analysis factor to 1 when a coarse level is chosen (avoid double
-% downsampling). At level 1 the user's factor still applies.
-if L > 1
-    ratio = 1;
-    parameters.imgDownsamplingFactor = 1;
-else
-    parameters.imgDownsamplingFactor = obj.automaticOptions.imgDownsamplingFactorForAnalysis;
-    ratio = 1 / parameters.imgDownsamplingFactor;
-end
+% =====================================================================
+% Pass 1 — per-slice fit at level L, or REPLAY loaded level-0 transforms
+% =====================================================================
+% loadShiftsCheck stores the loaded v2 struct in obj.shiftsX; its cumulativeTforms
+% are already level-0, so replay skips detection/fit/smoothing/conjugation.
+shiftsLoaded = ~isempty(obj.shiftsX) && isstruct(obj.shiftsX) && isfield(obj.shiftsX, 'cumulativeTforms');
+pwb = [];
 
-% --- Feature-detector settings dialog (GUI only)
-if ~parameters.useBatchMode
-    status = obj.updateAutomaticOptions();
-    if status == 0; return; end
-    if L == 1
+if shiftsLoaded
+    cumulativeTforms0 = obj.shiftsX.cumulativeTforms(:);
+    if numel(cumulativeTforms0) ~= Depth
+        utils.dlgs.showErrorDialog(parentFig, ...
+            sprintf(['The loaded alignment describes %d slices but this dataset ' ...
+                     'has %d. Load a matching .coefXY file.'], ...
+                     numel(cumulativeTforms0), Depth), 'Alignment');
+        return;
+    end
+else
+    % --- Analysis downsampling. The pyramid level already downsamples XY, so force
+    % the v2 analysis factor to 1 when a coarse level is chosen (avoid double
+    % downsampling). At level 1 the user's factor still applies.
+    if L > 1
+        ratio = 1;
+        parameters.imgDownsamplingFactor = 1;
+    else
         parameters.imgDownsamplingFactor = obj.automaticOptions.imgDownsamplingFactorForAnalysis;
         ratio = 1 / parameters.imgDownsamplingFactor;
     end
-end
 
-% --- Cancelable progress
-pwb = [];
-if obj.BatchOpt.showWaitbar
-    pwb = core.PoolWaitbar(Depth, sprintf('V2 BigData: detecting & matching at level %d...', L), ...
-        parentFig, 'BigData alignment', true);
-end
-cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
-
-% =====================================================================
-% Pass 1 — per-slice pairwise fit at level L (shared helper)
-% =====================================================================
-% Read the FULL level-L slice directly (bypass getData2D, which returns only
-% the visible viewport for a pyramidal image).
-readSliceFcn = @(sliceIndex) squeeze(ds.image.getData('image', 3, parameters.colorCh, ...
-    struct('pyramidLevel', L, 'z', [sliceIndex, sliceIndex])));
-pairwiseTforms   = cell(Depth, 1);
-translations     = zeros(Depth, 2);
-rotations        = zeros(Depth, 1);
-scales           = ones(Depth, 1);
-affine_params    = zeros(Depth, 4);
-affine_params(:, [1 4]) = 1;
-
-[pairwiseTforms, translations, rotations, scales, affine_params, ok] = ...
-    utils.align.fitPerSliceV2(obj, Depth, parameters, ratio, readSliceFcn, ...
-    pairwiseTforms, translations, rotations, scales, affine_params, pwb, parentFig);
-if ~ok; return; end
-
-% --- Compose cumulative parameters (level-L)
-cumulativeTranslations = cumsum(translations, 1);
-cumulativeRotations    = cumsum(rotations,    1);
-cumulativeScales       = cumprod(scales,      1);
-
-% --- Smoothing (interactive in GUI, BatchOpt-driven in batch)
-useSmoothed = false;
-if ~parameters.useBatchMode
-    [cumulativeTranslations, cumulativeRotations, cumulativeScales, useSmoothed, userCancelled] = ...
-        utils.align.interactiveSmoothingV2(cumulativeTranslations, cumulativeRotations, ...
-            cumulativeScales, affine_params, Depth, parameters.TransformationType, parentFig);
-    if userCancelled; return; end
-elseif obj.BatchOpt.SubtractRunningAverage
-    [cumulativeTranslations, cumulativeRotations, cumulativeScales] = ...
-        utils.align.smoothCumulativeV2(cumulativeTranslations, cumulativeRotations, ...
-            cumulativeScales, Depth, parameters.TransformationType, obj.BatchOpt);
-    useSmoothed = true;
-end
-
-% --- Rebuild cumulative tforms at level L (mirrors in-memory v2)
-cumulativeTformsL = cell(Depth, 1);
-cumulativeTformsL{1} = affinetform2d(eye(3));
-for layer = 2:Depth
-    if useSmoothed
-        T = pairwiseTforms{layer}.A;
-        T(1, 3) = cumulativeTranslations(layer, 1);
-        T(2, 3) = cumulativeTranslations(layer, 2);
-        switch parameters.TransformationType
-            case 'rigid'
-                theta = cumulativeRotations(layer);
-                R = [cos(theta), -sin(theta); sin(theta), cos(theta)];
-                T(1:2, 1:2) = R;
-            case {'similarity', 'affine'}
-                theta = cumulativeRotations(layer);
-                sVal = cumulativeScales(layer);
-                R = [cos(theta), -sin(theta); sin(theta), cos(theta)];
-                T(1:2, 1:2) = sVal * R;
+    % --- Feature-detector settings dialog (GUI only)
+    if ~parameters.useBatchMode
+        status = obj.updateAutomaticOptions();
+        if status == 0; return; end
+        if L == 1
+            parameters.imgDownsamplingFactor = obj.automaticOptions.imgDownsamplingFactorForAnalysis;
+            ratio = 1 / parameters.imgDownsamplingFactor;
         end
-    else
-        T = pairwiseTforms{layer}.A * cumulativeTformsL{layer - 1}.A;
     end
-    cumulativeTformsL{layer} = affinetform2d(T);
-    if strcmp(parameters.TransformationType, 'translation')
-        cumulativeTformsL{layer}.A(1, 3) = round(cumulativeTformsL{layer}.A(1, 3));
-        cumulativeTformsL{layer}.A(2, 3) = round(cumulativeTformsL{layer}.A(2, 3));
-    end
-end
 
-% =====================================================================
-% Conjugate cumulative tforms L -> 0 (translation column x scale)
-% =====================================================================
-cumulativeTforms0 = cell(Depth, 1);
-for layer = 1:Depth
-    A = cumulativeTformsL{layer}.A;
-    A(1, 3) = A(1, 3) * scaleX;
-    A(2, 3) = A(2, 3) * scaleY;
-    cumulativeTforms0{layer} = affinetform2d(A);
+    % --- Cancelable progress
+    if obj.BatchOpt.showWaitbar
+        pwb = core.PoolWaitbar(Depth, sprintf('V2 BigData: detecting & matching at level %d...', L), ...
+            parentFig, 'BigData alignment', true);
+    end
+    cleanupWb = onCleanup(@() safeDeleteWaitbar(pwb));
+
+    % --- Per-slice pairwise fit at level L (shared helper). Read the FULL level-L
+    % slice directly (bypass getData2D, which returns only the visible viewport for
+    % a pyramidal image).
+    readSliceFcn = @(sliceIndex) squeeze(ds.image.getData('image', 3, parameters.colorCh, ...
+        struct('pyramidLevel', L, 'z', [sliceIndex, sliceIndex])));
+    pairwiseTforms   = cell(Depth, 1);
+    translations     = zeros(Depth, 2);
+    rotations        = zeros(Depth, 1);
+    scales           = ones(Depth, 1);
+    affine_params    = zeros(Depth, 4);
+    affine_params(:, [1 4]) = 1;
+
+    [pairwiseTforms, translations, rotations, scales, affine_params, ok] = ...
+        utils.align.fitPerSliceV2(obj, Depth, parameters, ratio, readSliceFcn, ...
+        pairwiseTforms, translations, rotations, scales, affine_params, pwb, parentFig);
+    if ~ok; return; end
+
+    % --- Compose cumulative parameters (level-L)
+    cumulativeTranslations = cumsum(translations, 1);
+    cumulativeRotations    = cumsum(rotations,    1);
+    cumulativeScales       = cumprod(scales,      1);
+
+    % --- Smoothing (interactive in GUI, BatchOpt-driven in batch)
+    useSmoothed = false;
+    if ~parameters.useBatchMode
+        [cumulativeTranslations, cumulativeRotations, cumulativeScales, useSmoothed, userCancelled] = ...
+            utils.align.interactiveSmoothingV2(cumulativeTranslations, cumulativeRotations, ...
+                cumulativeScales, affine_params, Depth, parameters.TransformationType, parentFig);
+        if userCancelled; return; end
+    elseif obj.BatchOpt.SubtractRunningAverage
+        [cumulativeTranslations, cumulativeRotations, cumulativeScales] = ...
+            utils.align.smoothCumulativeV2(cumulativeTranslations, cumulativeRotations, ...
+                cumulativeScales, Depth, parameters.TransformationType, obj.BatchOpt);
+        useSmoothed = true;
+    end
+
+    % --- Rebuild cumulative tforms at level L (mirrors in-memory v2)
+    cumulativeTformsL = cell(Depth, 1);
+    cumulativeTformsL{1} = affinetform2d(eye(3));
+    for layer = 2:Depth
+        if useSmoothed
+            T = pairwiseTforms{layer}.A;
+            T(1, 3) = cumulativeTranslations(layer, 1);
+            T(2, 3) = cumulativeTranslations(layer, 2);
+            switch parameters.TransformationType
+                case 'rigid'
+                    theta = cumulativeRotations(layer);
+                    R = [cos(theta), -sin(theta); sin(theta), cos(theta)];
+                    T(1:2, 1:2) = R;
+                case {'similarity', 'affine'}
+                    theta = cumulativeRotations(layer);
+                    sVal = cumulativeScales(layer);
+                    R = [cos(theta), -sin(theta); sin(theta), cos(theta)];
+                    T(1:2, 1:2) = sVal * R;
+            end
+        else
+            T = pairwiseTforms{layer}.A * cumulativeTformsL{layer - 1}.A;
+        end
+        cumulativeTformsL{layer} = affinetform2d(T);
+        if strcmp(parameters.TransformationType, 'translation')
+            cumulativeTformsL{layer}.A(1, 3) = round(cumulativeTformsL{layer}.A(1, 3));
+            cumulativeTformsL{layer}.A(2, 3) = round(cumulativeTformsL{layer}.A(2, 3));
+        end
+    end
+
+    % --- Conjugate cumulative tforms L -> 0 (translation column x scale)
+    cumulativeTforms0 = cell(Depth, 1);
+    for layer = 1:Depth
+        A = cumulativeTformsL{layer}.A;
+        A(1, 3) = A(1, 3) * scaleX;
+        A(2, 3) = A(2, 3) * scaleY;
+        cumulativeTforms0{layer} = affinetform2d(A);
+    end
+
+    % --- Persist level-0 alignment state for optional save / replay
+    obj.shiftsX = struct('cumulativeTforms', {cumulativeTforms0}, ...
+        'pairwiseTforms', {pairwiseTforms}, 'translations', translations, ...
+        'rotations', rotations, 'scales', scales, 'affine_params', affine_params);
+    obj.shiftsY = [];
 end
 
 % =====================================================================
@@ -254,15 +281,38 @@ if ds.annotations.getLabelsNumber() > 0
         'labelPositions', warpedPos, 'labelValues', aVal);
 end
 
-% Persist level-0 alignment state for optional save/replay
-alignStruct = struct('cumulativeTforms', {cumulativeTforms0}, ...
-    'pairwiseTforms', {pairwiseTforms}, 'translations', translations, ...
-    'rotations', rotations, 'scales', scales, 'affine_params', affine_params);
-obj.shiftsX = alignStruct;
-obj.shiftsY = [];
+% --- Save the level-0 alignment struct to file if requested (replay via
+% loadShiftsCheck aligns another dataset with the same transforms).
+if obj.BatchOpt.SaveShiftsToFile
+    saveV2ToFile(obj, id, parameters.useBatchMode, parentFig, obj.shiftsX);
+end
 
 obj.applyAlignmentBigData(parameters, tformInfo);
 
+end
+
+% =============================================================================
+function saveV2ToFile(obj, id, useBatchMode, parentFig, alignStruct)
+% Save the v2 alignment struct (pairwise + cumulative level-0 tforms + decomposed
+% parameters) to a ``.coefXY`` file via ``save(..., '-struct', ...)`` so it can be
+% replayed via loadShiftsCheck (mirrors AutomaticFeatureBasedV2_Alignment).
+if useBatchMode
+    fn = obj.mibModel.I{id}.image.filename;
+    [pathstr, name, ~] = fileparts(fn);
+    fullPath = fullfile(pathstr, [name '_align.coefXY']);
+elseif ~isempty(obj.view) && isvalid(obj.view) && isfield(obj.view.handles, 'saveShiftsXYpath')
+    fullPath = obj.view.handles.saveShiftsXYpath.Value;
+else
+    return;
+end
+fprintf('Saving v2 alignment struct to file: %s ... ', fullPath);
+try
+    save(fullPath, '-struct', 'alignStruct');
+    fprintf('done!\n');
+catch ME
+    fprintf('failed.\n');
+    utils.dlgs.showErrorDialog(parentFig, ME, 'Save shifts');
+end
 end
 
 % =============================================================================

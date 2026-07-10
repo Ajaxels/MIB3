@@ -107,6 +107,17 @@ if parameters.isBigData
     end
 end
 
+% --- Pre-loaded coefficients (loadShiftsCheck): preview + confirm before running,
+% warning if their type does not match the selected algorithm. GUI only — the
+% batch path has no load hook, so obj.shiftsX is never pre-loaded there.
+if ~useBatchMode && ~isempty(obj.shiftsX) ...
+        && ~isempty(obj.view) && isvalid(obj.view) && isfield(obj.view.handles, 'loadShiftsCheck') ...
+        && obj.view.handles.loadShiftsCheck.Value
+    if ~previewConfirmLoadedShifts(obj, parameters, parentFig)
+        return;   % user cancelled or coefficient/algorithm mismatch
+    end
+end
+
 % --- Dispatch on algorithm
 switch obj.BatchOpt.Algorithm{1}
     case {'Drift correction', 'Template matching'}

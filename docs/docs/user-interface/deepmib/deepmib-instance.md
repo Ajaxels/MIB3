@@ -136,8 +136,25 @@ Training is configured and started from the [Train tab](deepmib-train.md).
 - **Validation**: a validation set (created during the split step) is used when available; if the
   installed MATLAB version does not support validation for SOLOv2, training automatically retries
   without validation.
-- **Progress**: the SOLOv2 trainer reports the **training loss** (there is no per-class accuracy
-  metric for this workflow), which is shown in the training progress window.
+- **Progress**: the SOLOv2 trainer reports the **training loss**, shown in the training progress
+  window. There is no *training* accuracy metric for this workflow (the Training accuracy gauge
+  reads `N/A`), but an optional **validation** accuracy can be enabled — see
+  [Validation accuracy (mAP)](#validation-accuracy-map) below.
+
+### Validation accuracy (mAP)
+
+By default the trainer computes only the validation **loss**. To also track a validation
+accuracy, enable <label class="widget widget-checkbox">Calculate accuracy for instance 2D</label>
+on the [Options tab](deepmib-options.md#custom-training-plot-section). When checked, Deep MIB
+attaches the mean Average Precision (mAP) metric to the SOLOv2 training: at each validation
+interval the trained detector is run over the whole validation set and the resulting mAP is
+displayed on the **Validation accuracy** gauge of the custom training progress window.
+
+- Requires a validation set (*Directories and Preprocessing → Fraction of images for validation* > 0);
+  with no validation images the metric cannot be computed and the gauge stays `N/A`.
+- It adds a noticeable cost — full inference plus IoU matching over the validation set on every
+  validation pass — so leave it **unchecked** to speed up training when only the validation loss
+  is needed.
 
 ??? abstract "Training parameters for the 2D Instance workflow"
 

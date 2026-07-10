@@ -107,10 +107,19 @@ if isempty(obj.shiftsX)
     [shiftXL, shiftYL] = utils.align.calcShifts(I, calcOpts);
     if isempty(shiftXL); return; end   % cancelled
 
-    % --- Preview / running-average (GUI only); operates on small level-L vectors
+    % Scale level-L shifts to level 0 immediately, so obj.shiftsX/Y — the vectors
+    % previewed, running-averaged, applied AND written to file — always hold
+    % LEVEL-0 shifts. This keeps save/load symmetric and analysis-level-independent
+    % (a file saved from one dataset replays correctly on another regardless of the
+    % pyramid level chosen), mirroring the in-memory path where obj.shiftsX already
+    % is the applied shift.
+    shiftX = shiftXL(:) * scaleX;
+    shiftY = shiftYL(:) * scaleY;
+
+    % --- Preview / running-average (GUI only); operates on the level-0 vectors
     if ~parameters.useBatchMode
         obj.BatchOpt.SubtractRunningAverage = false;
-        previewShiftsBigData(shiftXL, shiftYL, L);
+        previewShiftsBigData(shiftX, shiftY);
         questOpt.Icon = 'puffin_question';
         questOpt.WindowStyle = 'normal';
         questOpt.WindowWidth = 520;
@@ -122,9 +131,9 @@ if isempty(obj.shiftsX)
             'Apply current values', questOpt);
         if isempty(choice) || strcmp(choice, 'Quit alignment')
             if ~isdeployed
-                assignin('base', 'shiftX', shiftXL);
-                assignin('base', 'shiftY', shiftYL);
-                fprintf('Level-%d shifts exported to workspace (shiftX, shiftY).\n', L);
+                assignin('base', 'shiftX', shiftX);
+                assignin('base', 'shiftY', shiftY);
+                fprintf('Level-0 shifts exported to workspace (shiftX, shiftY).\n');
             end
             return;
         end
@@ -136,9 +145,9 @@ if isempty(obj.shiftsX)
     if applyRunningAverage || obj.BatchOpt.SubtractRunningAverage
         halfwidth    = obj.BatchOpt.SubtractRunningAverageStep{1};
         excludePeaks = obj.BatchOpt.SubtractRunningAverageExcludePeaks{1};
-        [shiftXL, shiftYL, halfwidth, excludePeaks] = utils.align.subtractRunningAverage( ...
-            parentFig, shiftXL, shiftYL, halfwidth, excludePeaks, parameters.useBatchMode);
-        if isempty(shiftXL); return; end
+        [shiftX, shiftY, halfwidth, excludePeaks] = utils.align.subtractRunningAverage( ...
+            parentFig, shiftX, shiftY, halfwidth, excludePeaks, parameters.useBatchMode);
+        if isempty(shiftX); return; end
         if halfwidth > 0
             obj.BatchOpt.SubtractRunningAverage             = true;
             obj.BatchOpt.SubtractRunningAverageStep{1}      = halfwidth;
@@ -146,15 +155,26 @@ if isempty(obj.shiftsX)
         end
     end
 
-    obj.shiftsX = shiftXL;
-    obj.shiftsY = shiftYL;
+    obj.shiftsX = shiftX;
+    obj.shiftsY = shiftY;
 end
 
 % =====================================================================
-% Scale level-L shifts to level 0 (integer → resample-free placement)
+% obj.shiftsX/Y hold LEVEL-0 shifts (freshly computed above OR pre-loaded from a
+% .coefXY file via loadShiftsCheck). Round for resample-free integer placement.
 % =====================================================================
-shiftX0 = round(obj.shiftsX(:) * scaleX);
-shiftY0 = round(obj.shiftsY(:) * scaleY);
+shiftX0 = round(obj.shiftsX(:));
+shiftY0 = round(obj.shiftsY(:));
+
+% When shifts are pre-loaded (align another dataset via loadShiftsCheck) their
+% count must match this dataset's depth, or the per-slice placement below indexes
+% out of bounds.
+if numel(shiftX0) ~= depth || numel(shiftY0) ~= depth
+    utils.dlgs.showErrorDialog(parentFig, ...
+        sprintf(['The loaded shifts describe %d slices but this dataset has %d. ' ...
+                 'Load a matching .coefXY file.'], numel(shiftX0), depth), 'Alignment');
+    return;
+end
 
 % --- Resolve the image background fill value (numeric) for the whole-canvas warp
 if isnumeric(parameters.backgroundColor)
@@ -185,11 +205,11 @@ obj.applyAlignmentBigData(parameters, tformInfo);
 end
 
 % =============================================================================
-function previewShiftsBigData(shiftX, shiftY, level)
+function previewShiftsBigData(shiftX, shiftY)
 figure(155); clf;
 plot(1:numel(shiftX), shiftX, '.-', 1:numel(shiftY), shiftY, '.-');
 legend('Shift X', 'Shift Y', 'Location', 'best'); grid on;
-xlabel('Frame number'); ylabel(sprintf('Displacement (level %d pixels)', level));
+xlabel('Frame number'); ylabel('Displacement (full-resolution pixels)');
 title('Detected shifts (before alignment)');
 end
 

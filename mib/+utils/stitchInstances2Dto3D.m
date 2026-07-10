@@ -39,6 +39,29 @@ function [labelVol, stats] = stitchInstances2Dto3D(inputVol, options)
 %       bridge single-slice dropouts (default: ``1`` = adjacent only)
 %     - ``.minObjectVoxels`` — remove 3D objects smaller than this after
 %       stitching (default: ``0`` = keep all)
+%     - ``.anisotropyZ`` — voxel aspect ratio ``pixSize.z / pixSize.x`` (>= 1).
+%       For anisotropic stacks (thick sections) a true continuation is displaced
+%       more between slices, so its IoU legitimately drops; the effective IoU
+%       threshold is lowered to ``max(iouThreshold / anisotropyZ, iouFloor)``.
+%       IoA (containment) is left unchanged — it is scale-robust — and the
+%       ``maxCentroidShift`` gate below guards against the relaxed IoU fusing
+%       distant objects (default: ``1`` = isotropic, no relaxation)
+%     - ``.iouFloor`` — lower clamp for the anisotropy-relaxed IoU threshold, so
+%       it never falls below a meaningful value (default: ``0.05``)
+%     - ``.maxCentroidShift`` — reject a link when the two objects' centroids are
+%       more than this many pixels apart (scaled by the slice gap for
+%       ``zLookback`` > 1). Lets IoU be relaxed for anisotropy without letting
+%       far-apart objects merge (default: ``Inf`` = gate disabled)
+%     - ``.centroidLinkRadius`` — enable centroid-nearest-neighbour gap bridging
+%       (``'graph'`` only). For objects that have **no** overlap partner on a
+%       slice pair, add a link to the mutually-nearest such orphan on the other
+%       slice when their centroids are within this many pixels (scaled by the
+%       slice gap). Reconnects a continuation that is laterally displaced or
+%       briefly absent - the residual split the overlap graph cannot see
+%       (default: ``0`` = disabled)
+%     - ``.centroidSizeRatio`` — a centroid-NN link additionally requires
+%       ``min(areaA,areaB)/max(areaA,areaB)`` to be at least this, so only
+%       comparably-sized objects are bridged (default: ``0.5``)
 %     - ``.bidirectional`` — for ``'hungarian'``, also run a reverse pass and
 %       reconcile (default: ``true``; ignored by ``'graph'``)
 %     - ``.showWaitbar`` — logical, show progress (default: ``false``)
@@ -132,6 +155,11 @@ if ~isfield(options, 'ioaThreshold');     options.ioaThreshold = 0.50; end
 if ~isfield(options, 'minOverlapPixels'); options.minOverlapPixels = 5; end
 if ~isfield(options, 'zLookback');        options.zLookback = 1; end
 if ~isfield(options, 'minObjectVoxels');  options.minObjectVoxels = 0; end
+if ~isfield(options, 'anisotropyZ');      options.anisotropyZ = 1; end
+if ~isfield(options, 'iouFloor');         options.iouFloor = 0.05; end
+if ~isfield(options, 'maxCentroidShift'); options.maxCentroidShift = inf; end
+if ~isfield(options, 'centroidLinkRadius'); options.centroidLinkRadius = 0; end
+if ~isfield(options, 'centroidSizeRatio');  options.centroidSizeRatio = 0.5; end
 if ~isfield(options, 'bidirectional');    options.bidirectional = true; end
 if ~isfield(options, 'showWaitbar');      options.showWaitbar = false; end
 if ~isfield(options, 'verbose');          options.verbose = false; end
@@ -171,7 +199,7 @@ switch lower(options.method)
             for g = 1:min(options.zLookback, z-1)
                 parent = localLinkPair(parent, ...
                     compactSlices{z-g}, offset(z-g), countPerSlice(z-g), ...
-                    compactSlices{z},   offset(z),   countPerSlice(z), options, false);
+                    compactSlices{z},   offset(z),   countPerSlice(z), options, false, g);
             end
             if ~isempty(pwb); pwb.increment(); end
         end
@@ -180,7 +208,7 @@ switch lower(options.method)
         for z = 2:depth
             parent = localLinkPair(parent, ...
                 compactSlices{z-1}, offset(z-1), countPerSlice(z-1), ...
-                compactSlices{z},   offset(z),   countPerSlice(z), options, true);
+                compactSlices{z},   offset(z),   countPerSlice(z), options, true, 1);
             if ~isempty(pwb); pwb.increment(); end
         end
         % reverse pass (reconciled via the shared union-find)
@@ -188,7 +216,7 @@ switch lower(options.method)
             for z = depth:-1:2
                 parent = localLinkPair(parent, ...
                     compactSlices{z},   offset(z),   countPerSlice(z), ...
-                    compactSlices{z-1}, offset(z-1), countPerSlice(z-1), options, true);
+                    compactSlices{z-1}, offset(z-1), countPerSlice(z-1), options, true, 1);
             end
         end
     otherwise
@@ -200,7 +228,7 @@ if ~isempty(pwb); delete(pwb); end
 
 % -- Flatten union-find to root ids, then compact roots to 1..K
 root = localFindAll(parent);
-[uRoots, ~, rootCompact] = unique(root);   %#ok<ASGLU> % rootCompact maps node->1..K
+[uRoots, ~, rootCompact] = unique(root);   % rootCompact maps node->1..K
 numObjects = numel(uRoots);
 
 % node -> final id lookup
@@ -266,35 +294,103 @@ compact(pos) = int32(lut(vals + 1));
 end
 
 % =====================================================================
-function parent = localLinkPair(parent, csA, offA, nA, csB, offB, nB, options, useHungarian)
+function parent = localLinkPair(parent, csA, offA, nA, csB, offB, nB, options, useHungarian, gap)
 % Score overlaps between two compacted slices and union linked object pairs.
 if nA == 0 || nB == 0; return; end
+if nargin < 10 || isempty(gap); gap = 1; end
+
+useCentroidLink = options.centroidLinkRadius > 0;
+
+% Overlap of the two slices. With centroid-NN linking on we must not bail out
+% when there is no overlap - that pure-gap case is exactly what NN bridges.
 mask = csA > 0 & csB > 0;
-if ~any(mask(:)); return; end
-la = double(csA(mask));
-lb = double(csB(mask));
-% co-occurrence counts per (a,b) pair
-key = la + (lb - 1) * nA;
-[uk, ~, ic] = unique(key);
-inter = accumarray(ic, 1);
-ia = mod(uk - 1, nA) + 1;
-ib = floor((uk - 1) / nA) + 1;
-% full areas (over the whole slice, not just the overlap region)
+hasOverlap = any(mask(:));
+if ~hasOverlap && ~useCentroidLink; return; end
+
+% Full areas (over the whole slice, not just the overlap region).
 areaA = accumarray(double(csA(csA > 0)), 1, [nA 1]);
 areaB = accumarray(double(csB(csB > 0)), 1, [nB 1]);
-au = areaA(ia);
-bu = areaB(ib);
-iou = inter ./ (au + bu - inter);
-ioa = inter ./ min(au, bu);
+
+% Object centroids, needed by the centroid-shift gate and/or centroid-NN links.
+needCentroids = isfinite(options.maxCentroidShift) || useCentroidLink;
+if needCentroids
+    [ryA, rxA] = find(csA > 0);  labA = double(csA(csA > 0));
+    cxA = accumarray(labA, rxA, [nA 1]) ./ areaA;
+    cyA = accumarray(labA, ryA, [nA 1]) ./ areaA;
+    [ryB, rxB] = find(csB > 0);  labB = double(csB(csB > 0));
+    cxB = accumarray(labB, rxB, [nB 1]) ./ areaB;
+    cyB = accumarray(labB, ryB, [nB 1]) ./ areaB;
+end
+
+% Overlap-based candidate pairs (empty when the slices share no pixels).
+if hasOverlap
+    la = double(csA(mask));
+    lb = double(csB(mask));
+    key = la + (lb - 1) * nA;
+    [uk, ~, ic] = unique(key);
+    inter = accumarray(ic, 1);
+    ia = mod(uk - 1, nA) + 1;
+    ib = floor((uk - 1) / nA) + 1;
+    au = areaA(ia);
+    bu = areaB(ib);
+    iou = inter ./ (au + bu - inter);
+    ioa = inter ./ min(au, bu);
+else
+    inter = zeros(0, 1); ia = zeros(0, 1); ib = zeros(0, 1);
+    iou = zeros(0, 1); ioa = zeros(0, 1);
+end
+
+% Anisotropy: relax the effective IoU threshold when sections are thick
+% (true continuations are more displaced, so their IoU drops). IoA is left
+% unchanged - containment is scale-robust.
+effIouThreshold = options.iouThreshold;
+if options.anisotropyZ > 1
+    effIouThreshold = max(options.iouThreshold / options.anisotropyZ, options.iouFloor);
+end
+
+% Centroid-shift gate: an overlap pair whose object centroids are farther apart
+% than maxCentroidShift (scaled by the slice gap) is rejected, so the relaxed
+% IoU cannot fuse distant objects.
+centroidOK = true(size(ia));
+if isfinite(options.maxCentroidShift) && ~isempty(ia)
+    centroidDist = hypot(cxA(ia) - cxB(ib), cyA(ia) - cyB(ib));
+    centroidOK = centroidDist <= options.maxCentroidShift * gap;
+end
 
 if ~useHungarian
     % graph: link on IoU OR IoA above threshold
-    sel = inter >= options.minOverlapPixels & ...
-        (iou >= options.iouThreshold | ioa >= options.ioaThreshold);
+    sel = inter >= options.minOverlapPixels & centroidOK & ...
+        (iou >= effIouThreshold | ioa >= options.ioaThreshold);
     ea = ia(sel); eb = ib(sel);
+
+    % Centroid-NN gap bridging: for objects left with no overlap link on this
+    % slice pair (orphans), add a link to the mutually-nearest orphan on the
+    % other slice when within centroidLinkRadius (scaled by gap) and of
+    % comparable size. Reconnects a continuation that is displaced or briefly
+    % absent - the residual failure the overlap graph cannot see.
+    if useCentroidLink
+        hasLinkA = false(nA, 1); hasLinkA(ea) = true;
+        hasLinkB = false(nB, 1); hasLinkB(eb) = true;
+        orphA = find(~hasLinkA);
+        orphB = find(~hasLinkB);
+        if ~isempty(orphA) && ~isempty(orphB)
+            dist = hypot(cxA(orphA) - cxB(orphB)', cyA(orphA) - cyB(orphB)');
+            sizeRatio = min(areaA(orphA), areaB(orphB)') ./ max(areaA(orphA), areaB(orphB)');
+            dist(dist > options.centroidLinkRadius * gap | ...
+                 sizeRatio < options.centroidSizeRatio) = inf;
+            [nearestDist, nnB] = min(dist, [], 2);   % nearest orphB for each orphA
+            [~, nnA] = min(dist, [], 1);             % nearest orphA for each orphB
+            for ii = 1:numel(orphA)
+                jj = nnB(ii);
+                if isfinite(nearestDist(ii)) && nnA(jj) == ii   % mutual NN
+                    ea(end+1, 1) = orphA(ii); eb(end+1, 1) = orphB(jj); %#ok<AGROW>
+                end
+            end
+        end
+    end
 else
     % hungarian: 1-to-1 max-IoU assignment, then IoA merge for the rest
-    valid = inter >= options.minOverlapPixels;
+    valid = inter >= options.minOverlapPixels & centroidOK;
     ivA = ia(valid); ivB = ib(valid); ivIoU = iou(valid);
     ea = []; eb = [];
     matchedB = false(nB, 1);
@@ -306,10 +402,10 @@ else
         C = zeros(numel(aList), numel(bList));
         C(sub2ind(size(C), ai, bi)) = ivIoU;
         % matchpairs minimises cost; use -IoU, reject below-threshold matches
-        M = matchpairs(-C, -options.iouThreshold);
+        M = matchpairs(-C, -effIouThreshold);
         for k = 1:size(M, 1)
             gA = aList(M(k, 1)); gB = bList(M(k, 2));
-            if C(M(k, 1), M(k, 2)) >= options.iouThreshold
+            if C(M(k, 1), M(k, 2)) >= effIouThreshold
                 ea(end+1, 1) = gA; eb(end+1, 1) = gB; %#ok<AGROW>
                 matchedB(gB) = true;
             end
@@ -318,7 +414,7 @@ else
     % IoA merge-in: any B object not matched but strongly contained in an A object
     ioaValid = ioa >= options.ioaThreshold & inter >= options.minOverlapPixels;
     ivmA = ia(ioaValid); ivmB = ib(ioaValid); ivmIoA = ioa(ioaValid);
-    [ivmB, order] = sort(ivmB); ivmA = ivmA(order); ivmIoA = ivmIoA(order); %#ok<ASGLU>
+    [ivmB, order] = sort(ivmB); ivmA = ivmA(order); ivmIoA = ivmIoA(order);
     prevB = -1; bestIoA = -1; bestA = -1;
     for k = 1:numel(ivmB)
         if ivmB(k) ~= prevB

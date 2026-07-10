@@ -76,11 +76,19 @@ switch methodSelected
     case 'Single landmark point'
         helpText = sprintf(['Use the Brush or Annotation tool to mark two corresponding spots on ' ...
             'consecutive slices.\nThe dataset is translated to align the marked spots.']);
+        % BigData honours extended/cropped; the in-memory path always extends, so
+        % only expose the choice for BigData. Default to extended either way.
+        if obj.isBigData; enableWidgets(h, {'TransformationMode'}); end
+        h.TransformationMode.Value = 'extended';
+        obj.BatchOpt.TransformationMode{1} = 'extended';
 
     case 'Three landmark points'
         helpText = sprintf(['Use the Brush tool to mark three corresponding spots on consecutive ' ...
             'slices. The dataset is transformed to align the marked spots. ' ...
             '\n\nThe Landmark mode is recommended instead.']);
+        if obj.isBigData; enableWidgets(h, {'TransformationMode'}); end
+        h.TransformationMode.Value = 'extended';
+        obj.BatchOpt.TransformationMode{1} = 'extended';
 
     case 'Landmarks, multi points'
         helpText = sprintf(['Use annotation name to mark corresponding points or selection-with-brush to mark corresponding spots on ' ...

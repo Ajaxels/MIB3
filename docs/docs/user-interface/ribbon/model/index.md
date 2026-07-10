@@ -80,10 +80,20 @@ A settings dialog collects the linking parameters:
 | **Min overlap** (pixels) | Require at least this many overlapping pixels before two objects may be linked, to block tiny spurious touches from fusing unrelated objects. |
 | **Z lookback** (slices) | How many slices apart to compare. `1` = adjacent slices only; higher values also compare a slice with one further away, bridging an object that briefly disappears. |
 | **Min object size** (voxels) | After stitching, delete any 3D object smaller than this many voxels. `0` = keep all; raise it to remove single-slice noise fragments. |
+| **Anisotropic Z (use pixel size)** | Checkbox. For datasets with thick Z sections, a real continuation is displaced more between slices, so its IoU legitimately drops. When enabled, the IoU threshold is lowered by the voxel aspect ratio *(pixSize.z / pixSize.x)* read from the dataset, so a displaced continuation still links. Pair it with **Max centroid shift** to keep the relaxed threshold from fusing distant objects. |
+| **Max centroid shift** (pixels) | Reject a link when the two object centroids are farther apart than this (scaled by the slice gap when **Z lookback** > 1). `0` = disabled. Useful together with anisotropic-Z relaxation to prevent a lower IoU threshold from merging far-apart objects. |
+| **Centroid link radius** (pixels) | Advanced gap bridging for anisotropic or gappy data. For an object that has *no overlapping neighbour* on the next compared slice, link it to the mutually-nearest such object within this distance (scaled by the slice gap) if they are of comparable size — reconnecting a continuation that is laterally displaced or briefly missing. `0` = disabled. Leave off for near-isotropic data. |
 
 !!! note
     This entry is intended as the 3D post-processing step for the **2D Instance** DeepMIB workflow:
     run 2D instance prediction slice-by-slice, then stitch the per-slice result into 3D objects here.
+
+!!! tip
+    On noisy real data the most effective cleanup is **Min object size** — single-slice detection
+    fragments otherwise appear as spurious extra objects. On a dense benchmark (salivary-gland
+    mitochondria) a value of ~50-200 voxels removed the great majority of spurious fragments and
+    roughly doubled the number of correctly reconstructed 3D objects, without affecting the genuine
+    ones. Start there before adjusting the linking thresholds.
 
 <div class="clear-float"></div>
 

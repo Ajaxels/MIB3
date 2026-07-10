@@ -4,6 +4,31 @@
 
 ---
 
+## Algorithm compatibility
+
+The table below lists the available alignment algorithms and the dataset modes each supports:
+
+- **Standard** — the dataset is loaded into memory (the default mode); all algorithms are available.
+- **HDD** — image files are aligned directly on disk without loading into MIB (suitable for large image collections); enabled with the <label class="widget widget-checkbox">HDD mode</label> checkbox. See [Alignment details](#alignment-details).
+- **BigData** — disk-backed pyramidal OME-Zarr v3 (whole-slide / gigapixel) datasets; a new aligned store is written to disk. See [BigData datasets](#bigdata-datasets).
+
+| Algorithm | Standard | HDD | BigData |
+|-----------|:--------:|:---:|:-------:|
+| [Drift correction](#drift-correction) | ✔ | ✔ | ✔ |
+| [Template matching](#template-matching) | ✔ | ✘ | ✔ |
+| [Automatic feature-based, version 1](#automatic-feature-based-version-1-and-2) | ✔ | ✔ | ✘ |
+| [Automatic feature-based, version 2](#automatic-feature-based-version-1-and-2) | ✔ | ✔ | ✔ |
+| [Single landmark point](#single-landmark-point) | ✔ | ✘ | ✔ |
+| [Three landmark points](#three-landmark-points) | ✔ | ✘ | ✔ |
+| [Landmarks, multi points](#landmarks-multi-points) | ✔ | ✘ | ✔ |
+| [Color channels, multi points](#color-channels-multi-points) | ✔ | ✘ | ✘ |
+| [AMST: median-smoothed template](#amst-alignment-to-median-smoothed-template) | ✔ | ✘ | ✘ |
+
+!!! note "BigData landmark modes"
+    In **BigData** mode the landmark modes take their corresponding points from the **Annotation** layer, and the *Subarea → Selection / Mask* options are not used (choose *Full image* or *Manually specified*).
+
+---
+
 ## Overview
 
 ![Alignment](images/menuDatasetAlignment.png){.on-glb align=left width="300"}
@@ -203,14 +228,33 @@ Register individual color channels using Annotations (*Segmentation panel → An
 When the current dataset is a **BigData** store (a disk-backed pyramidal OME-Zarr v3, opened for whole-slide / gigapixel data), alignment works differently because the source pyramid is read-only and its canvas is fixed:
 
 - Alignment **writes a new aligned `.zarr3` store** to disk (plus a sibling `Labels_<name>.zarr3` when a model exists) and switches the current buffer to it. **The original store is left untouched and acts as the backup** — there is no in-place undo for BigData alignment.
-- A dedicated **BigData panel** replaces the *HDD Mode* panel:
-    - <span class="widget widget-dropdown">Analysis level</span>: the pyramid level used to *compute* the shifts/transforms. Coarser levels are much faster but quantise the result; `<auto>` picks the level nearest ~3000 px wide. Choose level 1 for the most precise shifts.
-    - <span class="widget widget-edit">Output store</span>: path of the new aligned `.zarr3` (prefilled as `<name>_aligned.zarr3`); use <span class="widget widget-button">...</span> to change it.
 - Transforms are computed at the chosen level and scaled to full resolution; the aligned image is then streamed slice-by-slice, so memory use stays low even for very large slides.
 - The **image, model, mask, selection and annotations are all aligned together** and stay registered at every zoom level.
 
+<div class="h3-like">BigData panel</div>
+
+![Image title](images/menuDatasetAlignTool_bigdataPanel.png){align=left}
+
+<div class="clear-float"></div>
+
+A dedicated **BigData panel** replaces the *HDD Mode* panel:
+
+- <span class="widget widget-dropdown">Analysis level</span>: the pyramid level used to *compute* the shifts/transforms. Coarser levels are much faster but quantise the result; `<auto>` picks the level nearest ~3000 px wide. Choose level 1 for the most precise shifts.
+- <span class="widget widget-edit">Output store</span>: path of the new aligned `.zarr3` (prefilled as `<name>_aligned.zarr3`); use <span class="widget widget-button">...</span> to change it.
+
 !!! note "Supported in BigData"
-    Drift correction, Template matching, Automatic feature-based **version 2**, and the landmark modes (Single / Three / Landmarks, multi points). For landmark modes the corresponding points are taken from the **Annotation** layer. Automatic feature-based *version 1*, *AMST*, and *Color channels, multi points* are not available for BigData; the *Subarea → Selection / Mask* options are not used (choose *Full image* or *Manually specified*).
+
+    - Drift correction
+    - Template matching
+    - Automatic feature-based **version 2**
+    - Landmark modes (Single / Three / Landmarks, multi points). For landmark modes the corresponding points are taken from the **Annotation** layer. 
+
+    **Not supported**:
+
+    - *Automatic feature-based *version 1*
+    - *AMST*
+    - *Color channels, multi points* 
+    - the *Subarea → Selection / Mask* options are not used (choose *Full image* or *Manually specified*).
 
 !!! tip "Precision vs. speed"
     Analysis at a coarse level quantises shifts to roughly that level's pixel size. If sub-pixel accuracy matters, pick a finer *Analysis level* (at the cost of speed).

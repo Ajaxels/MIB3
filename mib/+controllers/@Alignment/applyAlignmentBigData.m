@@ -115,15 +115,73 @@ switch tformInfo.mode
 end
 
 % =====================================================================
-% 2. One shared level plan / saver options (image + labels must match)
+% 2. Saver options + shared level plan — matched to the SOURCE pyramid so the
+%    aligned store keeps the same chunking / level count / downsampling strategy
+%    / sharding as the input (image and labels share ONE plan for co-registration).
 % =====================================================================
+srcPyr = ds.image.pyramid;
+axisOrder = 'yxz';
+if isfield(srcPyr, 'axisOrder') && ~isempty(srcPyr.axisOrder)
+    axisOrder = char(srcPyr.axisOrder);
+end
+
+% level-0 chunk shape as [y x z]
+chunkYXZ = [256 256 16];
+if isfield(srcPyr, 'chunkSizes') && ~isempty(srcPyr.chunkSizes) && ~isempty(srcPyr.chunkSizes{1})
+    chunkYXZ = mapAxisVec(double(srcPyr.chunkSizes{1}), axisOrder, chunkYXZ);
+end
+
+% same number of pyramid levels as the source (explicit → no auto MinLevelSize cut)
+srcLevels = 1;
+if isfield(srcPyr, 'levelImageSizes') && ~isempty(srcPyr.levelImageSizes)
+    srcLevels = size(srcPyr.levelImageSizes, 1);
+end
+
+% downsample strategy: 'Anisotropy-preserving' if the source pyramid ever halves Z
+downsampleStrategy = 'XY only';
+if isfield(srcPyr, 'levelScaleFactors') && size(srcPyr.levelScaleFactors, 1) >= 2 ...
+        && any(diff(srcPyr.levelScaleFactors(:, 3)) > 0)
+    downsampleStrategy = 'Anisotropy-preserving';
+end
+
 saverOpts = struct();
 saverOpts.silent             = true;             % skip the interactive export dialog
-saverOpts.ChunkSize          = [256 256 16];
-saverOpts.DownsampleStrategy = 'XY only';
+saverOpts.ChunkSize          = chunkYXZ;
+saverOpts.DownsampleStrategy = downsampleStrategy;
 saverOpts.DownsampleMethod   = 'bilinear';
-saverOpts.MinLevelSize       = 256;
-saverOpts.MaxLevels          = 8;
+saverOpts.Levels             = srcLevels;        % reproduce the source level count exactly
+
+% sharding: only when the source shard genuinely spans more than one chunk
+if isfield(srcPyr, 'shardSizes') && ~isempty(srcPyr.shardSizes) && ~isempty(srcPyr.shardSizes{1})
+    shardYXZ = mapAxisVec(double(srcPyr.shardSizes{1}), axisOrder, chunkYXZ);
+    if any(shardYXZ > chunkYXZ)
+        saverOpts.ShardSize = shardYXZ;
+    end
+end
+
+% GUI mode: offer the export-to-zarr3 options dialog, PRE-FILLED with the source
+% settings above (silent/batch runs keep the source-matched defaults directly).
+if ~parameters.useBatchMode
+    preset = struct('Levels', srcLevels, 'ChunkSize', chunkYXZ, ...
+        'DownsampleStrategy', downsampleStrategy, 'DownsampleMethod', 'bilinear');
+    if isfield(saverOpts, 'ShardSize'); preset.ShardSize = saverOpts.ShardSize; end
+    datasetInfo = struct('Y', newH0, 'X', newW0, 'Z', depth, 'pixSize', pixSize);
+    dlg = io.savers.Zarr3Saver.optionsDialog(parentFig, obj.mibModel.mibPath, false, datasetInfo, preset);
+    if isempty(dlg)                                   % cancelled → abort, nothing written
+        notify(obj.mibModel, 'StopProtocol');
+        return;
+    end
+    % Merge the user's choices over the source-matched base. The dialog omits
+    % Levels when 'auto' (0) and ShardSize when 'off', so drop those first to let
+    % auto / no-sharding take effect; silent + method stay ours where not set.
+    saverOpts = rmfield(saverOpts, intersect(fieldnames(saverOpts), {'Levels', 'ShardSize'}));
+    saverOpts.MinLevelSize = 256;   % auto fallbacks used only when Levels is absent
+    saverOpts.MaxLevels    = 8;
+    for f = reshape(fieldnames(dlg), 1, [])
+        saverOpts.(f{1}) = dlg.(f{1});
+    end
+    chunkYXZ = saverOpts.ChunkSize;   % labels follow the (possibly changed) chunk
+end
 
 plan    = io.savers.Zarr3Saver.computeLevelPlan(newH0, newW0, depth, pixSize, saverOpts);
 nLevels = numel(plan);
@@ -179,12 +237,35 @@ if hasModel
     newPyramid = struct();
     newPyramid.levelImageSizes   = newLevelSizes;
     newPyramid.levelScaleFactors = newScaleFactors;
-    if isfield(ds.image.pyramid, 'axisOrder') && ~isempty(ds.image.pyramid.axisOrder)
-        newPyramid.axisOrder = ds.image.pyramid.axisOrder;
-    end
+    newPyramid.axisOrder = axisOrder;
+    % Chunk the labels pyramid like the image (final chunkYXZ — source-matched or
+    % dialog-adjusted), laid out in axisOrder for every level. createStore clamps
+    % each level's chunk to that level's size.
+    chunkAxis = zeros(1, numel(axisOrder));
+    yIdx = strfind(axisOrder, 'y');  xIdx = strfind(axisOrder, 'x');  zIdx = strfind(axisOrder, 'z');
+    if ~isempty(yIdx); chunkAxis(yIdx) = chunkYXZ(1); end
+    if ~isempty(xIdx); chunkAxis(xIdx) = chunkYXZ(2); end
+    if ~isempty(zIdx); chunkAxis(zIdx) = chunkYXZ(3); end
+    newPyramid.chunkSizes = repmat({chunkAxis}, nLevels, 1);
 
     newLabels = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
     newLabels.createStore([newH0 newW0 depth], modelStorePath, newPyramid);
+
+    % Carry the source material names/colours onto the new store so they persist
+    % to disk (mibMaterials attribute, written below) — createStore starts with an
+    % empty material list, so without this the aligned model reopens unnamed/greyed.
+    newLabels.materialNames  = srcMaterialNames;
+    newLabels.materialColors = srcMaterialColors;
+    newLabels.materialsCount = srcMaterialsCount;
+
+    labelSizes = newLabels.modelLevelSizes;      % [y x z] per level
+    nLabelLev  = size(labelSizes, 1);
+    % Z chunk of the label store: createStore uses [256 256 16] by default (no
+    % per-level chunkSizes are passed in newPyramid). Batching the Z writes at the
+    % chunk depth turns each chunk's compress/decompress from up to 16 partial
+    % read-modify-writes into a single write — the labels store previously wrote
+    % one slice at a time (setData63) and was ~15x slower than the image stream.
+    chunkZ = 16;
 
     % Progress dialog only when a valid parent figure exists (headless/batch
     % runs pass an empty mibGUI — skip the dialog rather than crash).
@@ -193,22 +274,65 @@ if hasModel
         wbL = uiprogressdlg(parentFig, 'Title', 'BigData alignment', ...
             'Message', 'Warping labels / mask / selection...', 'Indeterminate', 'off', 'Cancelable', 'on');
     end
-    for z = 1:depth
-        if ~isempty(wbL) && wbL.CancelRequested
-            newLabels.closeStore(); delete(wbL);
-            if isfolder(outputImagePath); rmdir(outputImagePath, 's'); end
-            if isfolder(modelStorePath); rmdir(modelStorePath, 's'); end
-            notify(obj.mibModel, 'StopProtocol');
-            return;
+
+    % --- Pass A: warp each source slice into the finest level (1), written in
+    % Z-chunk strips. Memory stays ~one chunk (newH0 x newW0 x chunkZ). ---
+    labelsCancelled = false;
+    for z0 = 1:chunkZ:depth
+        if ~isempty(wbL) && wbL.CancelRequested; labelsCancelled = true; break; end
+        z1 = min(depth, z0 + chunkZ - 1);
+        strip = zeros(newH0, newW0, z1 - z0 + 1, 'uint8');
+        for z = z0:z1
+            packed = ds.labels.getData63('everything', 3, [], struct('pyramidLevel', 1, 'z', [z z]));
+            packed = reshape(packed, size(packed, 1), size(packed, 2));
+            strip(:, :, z - z0 + 1) = imwarp(packed, tforms{z}, 'nearest', ...
+                'OutputView', ref0, 'FillValues', 0);
         end
-        packed = ds.labels.getData63('everything', 3, [], struct('pyramidLevel', 1, 'z', [z z]));
-        packed = reshape(packed, size(packed, 1), size(packed, 2));
-        warped = imwarp(packed, tforms{z}, 'nearest', 'OutputView', ref0, 'FillValues', 0);
-        newLabels.setData63(warped, 'everything', 3, [], struct('pyramidLevel', 1, 'z', [z z]));
-        if ~isempty(wbL); wbL.Value = z / depth; end
+        newLabels.writePackedLevel(1, strip, [1 newH0], [1 newW0], [z0 z1]);
+        if ~isempty(wbL); wbL.Value = 0.5 * (z1 / depth); end
     end
-    newLabels.materializeAll();
-    newLabels.closeStore();     % persists the level map
+
+    % --- Pass B: build every coarser level from level 1 in one bulk nearest pass.
+    % Global index maps (identical to propagateRegion's inline formula) make the
+    % downsample strip-independent and an exact packed-byte copy — bits 1-6/7/8
+    % transport together with no averaging. This replaces the per-slice EAGER
+    % cross-level propagation that setData63('everything') did on every write. ---
+    if ~labelsCancelled
+        for L = 2:nLabelLev
+            ty = labelSizes(L, 1); tx = labelSizes(L, 2); tz = labelSizes(L, 3);
+            yMap = min(newH0, max(1, floor((0:ty-1) * newH0 / ty) + 1));
+            xMap = min(newW0, max(1, floor((0:tx-1) * newW0 / tx) + 1));
+            zMap = min(depth,  max(1, floor((0:tz-1) * depth  / tz) + 1));
+            for tz0 = 1:chunkZ:tz
+                if ~isempty(wbL) && wbL.CancelRequested; labelsCancelled = true; break; end
+                tz1  = min(tz, tz0 + chunkZ - 1);
+                zsrc = zMap(tz0:tz1);
+                strip = newLabels.readPackedLevel(1, [1 newH0], [1 newW0], [zsrc(1) zsrc(end)]);
+                block = strip(yMap, xMap, zsrc - zsrc(1) + 1);
+                newLabels.writePackedLevel(L, block, [1 ty], [1 tx], [tz0 tz1]);
+                if ~isempty(wbL)
+                    wbL.Value = 0.5 + 0.5 * ((L - 2) + tz1 / tz) / max(1, nLabelLev - 1);
+                end
+            end
+            if labelsCancelled; break; end
+        end
+    end
+
+    if labelsCancelled
+        newLabels.closeStore(); delete(wbL);
+        if isfolder(outputImagePath); rmdir(outputImagePath, 's'); end
+        if isfolder(modelStorePath); rmdir(modelStorePath, 's'); end
+        notify(obj.mibModel, 'StopProtocol');
+        return;
+    end
+
+    % Every level was written explicitly, so mark the whole volume authoritative
+    % at the finest level: getData63 then reads any level directly (materializeAll
+    % is unnecessary — all coarser levels already hold correct data). closeStore
+    % persists the level map.
+    newLabels.markTiles([1 newH0], [1 newW0], [1 depth], 1);
+    newLabels.writeMaterialMetadata();   % persist names/colours (mibMaterials attr)
+    newLabels.closeStore();
     if ~isempty(wbL); delete(wbL); end
 end
 
@@ -299,4 +423,17 @@ result = 1;
 notify(obj.mibModel, 'NewDataset');
 notify(obj.mibModel, 'ShowImage');
 notify(obj.mibModel, 'UpdateFileList');
+end
+
+% =============================================================================
+function outYXZ = mapAxisVec(vec, axisOrder, defaultYXZ)
+% Map a per-axis vector (in axisOrder, e.g. 'yxz' or 'tczyx') to [y x z],
+% falling back to defaultYXZ for any axis not present in the vector.
+outYXZ = defaultYXZ;
+yIdx = strfind(axisOrder, 'y');
+xIdx = strfind(axisOrder, 'x');
+zIdx = strfind(axisOrder, 'z');
+if ~isempty(yIdx) && yIdx <= numel(vec); outYXZ(1) = vec(yIdx); end
+if ~isempty(xIdx) && xIdx <= numel(vec); outYXZ(2) = vec(xIdx); end
+if ~isempty(zIdx) && zIdx <= numel(vec); outYXZ(3) = vec(zIdx); end
 end

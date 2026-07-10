@@ -25,6 +25,11 @@ Configures the custom training progress plot displaying the loss function during
 <label class="widget widget-checkbox">Preview image patches</label> displays input image and model patches in the custom plot, reducing performance. 
 Adjust visibility with <span class="widget widget-edit">Fraction of images for preview...</span>  
 <span class="widget widget-edit">Fraction of images for preview...</span> sets the fraction of patches shown (1 = all, 0.01 = 1%)
+<label class="widget widget-checkbox">Calculate accuracy for instance 2D</label> (*2D Instance workflow only*) adds the mean Average Precision (mAP) metric to validation. 
+When checked, Deep MIB attaches `mAPInstanceSegmentationMetric` to the SOLOv2 training so that, at each validation interval, the detector is run over the whole validation set and the resulting mAP is shown on the **Validation accuracy** gauge of the custom training progress plot. 
+Requires validation images (*Directories and Preprocessing → Fraction of images for validation* > 0). 
+Because it runs full inference plus IoU matching on every validation pass, it noticeably slows training; leave it unchecked to compute and plot validation **loss** only, in which case the Validation accuracy gauge shows `N/A`. 
+The Training accuracy gauge is always `N/A` for this workflow, since SOLOv2 reports only loss during training
 
 ---
 

@@ -87,6 +87,10 @@ switch parameters.method
     case 'Single landmark point'
         [shiftX0, shiftY0, ok] = singleLandmarkShifts(ds, id, depth, parentFig, obj);
         if ~ok; return; end
+        if ~parameters.useBatchMode && ~confirmDetectedTransforms(parentFig, 'shifts', ...
+                struct('shiftX', shiftX0, 'shiftY', shiftY0), 'Detected single-landmark shifts')
+            return;
+        end
         tformInfo = struct('mode', 'translation', 'shiftX0', shiftX0, ...
             'shiftY0', shiftY0, 'backgroundValue', bgImage);
         obj.applyAlignmentBigData(parameters, tformInfo);
@@ -95,6 +99,10 @@ switch parameters.method
     case 'Three landmark points'
         [cumTforms, ok] = threeLandmarkTforms(ds, id, depth, parentFig);
         if ~ok; return; end
+        if ~parameters.useBatchMode && ~confirmDetectedTransforms(parentFig, 'tforms', ...
+                struct('tforms', {cumTforms}), 'Detected three-landmark transforms')
+            return;
+        end
         tformInfo = buildAffineTformInfo(cumTforms, H0, W0, depth, ...
             parameters.TransformationMode, bgImage);
         tformInfo = attachWarpedAnnotations(tformInfo, ds, cumTforms, depth);
@@ -112,6 +120,10 @@ switch parameters.method
         [cumTforms, ok] = multiPointTforms(ds, id, depth, minLandmarks, ...
             parameters.TransformationType, parameters.transformationDegree, parentFig);
         if ~ok; return; end
+        if ~parameters.useBatchMode && ~confirmDetectedTransforms(parentFig, 'tforms', ...
+                struct('tforms', {cumTforms}), 'Detected multi-point landmark transforms')
+            return;
+        end
         tformInfo = buildAffineTformInfo(cumTforms, H0, W0, depth, ...
             parameters.TransformationMode, bgImage);
         tformInfo = attachWarpedAnnotations(tformInfo, ds, cumTforms, depth);

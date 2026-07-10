@@ -9,10 +9,18 @@ function loadShiftsCheck_Callback(obj)
 % When the ``loadShiftsCheck`` checkbox is enabled the user is prompted for a
 % ``.coefXY`` file. The file may contain ``shiftsX`` / ``shiftsY`` (drift
 % correction), ``tformMatrix`` / ``rbMatrix`` (legacy feature-based), or a
-% feature-based v2 parameter struct. Disabling the checkbox clears the path.
+% feature-based v2 parameter struct. The loaded coefficients are stored on the
+% controller and **previewed + confirmed when the Apply button is pressed**
+% (see :func:`previewConfirmLoadedShifts`), where the selected algorithm is known
+% so a mismatch can be flagged. Disabling the checkbox clears the loaded
+% coefficients and the path.
 
 h = obj.view.handles;
 if ~h.loadShiftsCheck.Value
+    % Unchecking discards any previously loaded coefficients so a subsequent
+    % Apply recomputes from scratch instead of silently reusing stale shifts.
+    obj.shiftsX = [];
+    obj.shiftsY = [];
     h.loadShiftsXYpath.Enable = 'off';
     return;
 end

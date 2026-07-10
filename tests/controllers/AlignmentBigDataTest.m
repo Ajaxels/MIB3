@@ -80,6 +80,59 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
                 testCase.verifyTrue(any(msk(:) == 1), sprintf('mask lost at level %d', L));
                 testCase.verifyTrue(any(sel(:) == 1), sprintf('selection lost at level %d', L));
             end
+
+            % Material names/colours must survive in-session AND on disk (the
+            % aligned store is a NEW zarr3 — the mibMaterials attribute must be
+            % written so reopening the file keeps names/colours, not just the
+            % swapped in-memory object).
+            testCase.verifyEqual(d.labels.materialNames(:), {'a';'b';'c';'d';'e'});
+            [pdir, stem, ext] = fileparts(outPath);
+            labStore = fullfile(pdir, ['Labels_' stem ext]);
+            reopened = core.MibBigDataLabels([], core.MibImage.initializeImgInfo());
+            reopened.openStore(labStore);
+            testCase.verifyEqual(reopened.materialNames(:), {'a';'b';'c';'d';'e'}, ...
+                'material names not persisted to the aligned labels store');
+            testCase.verifyEqual(reopened.materialColors, lines(5), 'AbsTol', 1e-6, ...
+                'material colours not persisted to the aligned labels store');
+            reopened.closeStore();
+        end
+
+        function pyramidSettingsMatchSource(testCase)
+            % The aligned store reproduces the SOURCE pyramid (level count + chunk
+            % shape), not a hardcoded default.
+            import matlab.unittest.fixtures.TemporaryFolderFixture
+            tf = testCase.applyFixture(TemporaryFolderFixture);
+            scratch = tf.Folder;
+            N = 320; Z = 4;
+            rng(9); base = uint8(255 * mat2gray(conv2(randn(N+40), ones(6), 'same')));
+            dx = [0 8 16 5]; dy = [0 -6 4 10];
+            vol = zeros(N, N, Z, 'uint8');
+            for z = 1:Z; vol(:,:,z) = imtranslate(base(21:20+N, 21:20+N), [dx(z) dy(z)]); end
+            srcImg = fullfile(scratch, 'src.zarr3');
+            meta = struct('pixSize', struct('x', 0.02, 'y', 0.02, 'z', 0.05, 'units', 'um'));
+            % distinctive pyramid: chunk [64 64 2], exactly 3 levels, XY-only
+            io.savers.Zarr3Saver(struct()).save(reshape(vol, N, N, Z, 1, 1), meta, srcImg, ...
+                struct('silent', true, 'showWaitbar', false, ...
+                       'ChunkSize', [64 64 2], 'Levels', 3, 'DownsampleStrategy', 'XY only'));
+
+            mibFolder = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'mib');
+            mibModel = models.MibModel(1, mibFolder);
+            lo = struct('datasetMode', 'BigData');
+            loader = io.loaders.Zarr3VirtualSetupLoader(lo);
+            [imgInfo, files] = loader.loadMetadata({srcImg}, lo);
+            [imgRaw, imgInfo] = loader.loadImages(files, imgInfo, lo);
+            mibModel.I{1}.initialize(imgRaw, imgInfo, 'BigData');
+            mibModel.I{1}.enableSelection = true;
+            srcLevels = size(mibModel.I{1}.image.pyramid.levelImageSizes, 1);
+            srcChunk  = mibModel.I{1}.image.pyramid.chunkSizes{1};
+
+            outPath = fullfile(scratch, 'aligned.zarr3');
+            testCase.runAlign(mibModel, testCase.batch('Drift correction', 'extended', outPath));
+            op = mibModel.I{1}.image.pyramid;
+            testCase.verifyEqual(size(op.levelImageSizes, 1), srcLevels, ...
+                'aligned store level count must match the source');
+            testCase.verifyEqual(op.chunkSizes{1}, srcChunk, ...
+                'aligned store chunk shape must match the source');
         end
 
         function boundingBoxAndPixSizePropagate(testCase)
@@ -119,6 +172,18 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
                 cents(z, :) = st(1).Centroid;
             end
             testCase.verifyLessThan(max(std(cents, 0, 1)), 2.0);
+            % extended mode grows the canvas to fit the shifted slices
+            testCase.verifyGreaterThan(d.image.width, N);
+        end
+
+        function landmarkSingleCroppedKeepsCanvas(testCase)
+            % Single-landmark honours TransformationMode: cropped keeps the original
+            % canvas (extended grows it — see landmarkSingleTranslation).
+            [mibModel, ~, N, outPath] = testCase.buildBigData('shift', 'annotateSingle', true);
+            testCase.runAlign(mibModel, testCase.batch('Single landmark point', 'cropped', outPath));
+            d = mibModel.I{1};
+            testCase.verifyEqual(d.datasetType, 'BigData');
+            testCase.verifyEqual([d.image.height, d.image.width], [N, N]);
         end
 
         function landmarkMultiAffine(testCase)
@@ -131,6 +196,50 @@ classdef AlignmentBigDataTest < matlab.unittest.TestCase
             testCase.verifyEqual(d.datasetType, 'BigData');
             residDeg = testCase.residualRotation(d, 1, d.image.depth);
             testCase.verifyLessThan(residDeg, 1.0);
+        end
+
+        function driftSaveShiftsWritesLevel0File(testCase)
+            % SaveShiftsToFile writes a .coefXY of LEVEL-0 shifts. The saved shifts
+            % must directly predict the (level-0) grown canvas — if they were the
+            % raw level-L analysis shifts, or double-scaled on the applied side, the
+            % predicted canvas would not match. This locks save/load as level-0 so a
+            % file saved here replays correctly on another dataset via loadShiftsCheck.
+            [mibModel, ~, N, outPath] = testCase.buildBigData('shift');
+            B = testCase.batch('Drift correction', 'extended', outPath);
+            B.SaveShiftsToFile = true;
+            testCase.runAlign(mibModel, B);
+            d = mibModel.I{1};
+
+            coefFile = fullfile(fileparts(outPath), 'src_align.coefXY');
+            testCase.verifyTrue(isfile(coefFile), 'SaveShiftsToFile did not write a .coefXY file');
+            S = load(coefFile, '-mat');
+            testCase.verifyTrue(isfield(S, 'shiftsX') && isfield(S, 'shiftsY'), ...
+                'saved file lacks shiftsX / shiftsY');
+            sx = round(S.shiftsX(:));   sy = round(S.shiftsY(:));
+            testCase.verifyEqual(numel(sx), d.image.depth, 'one shift per slice expected');
+            % extended canvas growth from the LEVEL-0 shift extremes
+            testCase.verifyEqual(d.image.width,  N + (abs(min(sx)) + max(sx)));
+            testCase.verifyEqual(d.image.height, N + (abs(min(sy)) + max(sy)));
+        end
+
+        function featureV2SaveShiftsWritesStruct(testCase)
+            % Feature-based v2 SaveShiftsToFile writes the level-0 alignment struct
+            % (cumulativeTforms + decomposed params) so it can be replayed via
+            % loadShiftsCheck. Previously the v2 BigData path never saved anything.
+            [mibModel, ~, ~, outPath] = testCase.buildBigData('rotate');
+            testCase.setSurfFriendlyOptions(mibModel);
+            B = testCase.batch('Automatic feature-based v2', 'extended', outPath);
+            B.TransformationType = {'rigid'};
+            B.FeatureDetectorType = {'Blobs: Speeded-Up Robust Features (SURF) algorithm'};
+            B.SaveShiftsToFile = true;
+            testCase.runAlign(mibModel, B);
+
+            coefFile = fullfile(fileparts(outPath), 'src_align.coefXY');
+            testCase.verifyTrue(isfile(coefFile), 'v2 SaveShiftsToFile did not write a file');
+            S = load(coefFile, '-mat');
+            testCase.verifyTrue(isfield(S, 'cumulativeTforms'), 'v2 saved file lacks cumulativeTforms');
+            testCase.verifyEqual(numel(S.cumulativeTforms), mibModel.I{1}.image.depth);
+            testCase.verifyClass(S.cumulativeTforms{1}, 'affinetform2d');
         end
 
         function missingOutputPathAborts(testCase)

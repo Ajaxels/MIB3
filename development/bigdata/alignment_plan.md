@@ -2,6 +2,104 @@
 
 Status: **All phases (0–4) done** (2026-07-05). Decisions confirmed with IB; codebase facts verified against source (file:line cited throughout). Remaining: the AppDesigner `.mlapp` BigData panel is a manual edit (done by IB), and the final live-GUI acceptance run on real data (checklist §8).
 
+**Perf fix (2026-07-09) — labels store write ~15× faster.** The labels branch of
+`applyAlignmentBigData` used a per-slice `setData63('everything', ..., z)` loop, which for every
+slice did a read-before + diff + **eager cross-level propagation to all coarser levels** + selection-
+bbox scan, and wrote one Z-slice at a time into a Z-chunk of 16 (so each zarr chunk was
+compress/decompress'd up to 16× — a partial-chunk read-modify-write). Measured on a 887×813×171,
+3-level model: **89 s** for the labels vs a fast image stream (the reported 5–10× gap). Replaced with
+a two-pass writer: **Pass A** warps each source slice into level 1, buffered and written in Z-chunk
+strips (one write per chunk); **Pass B** builds every coarser level from level 1 in a single bulk
+nearest pass using global index maps (strip-independent, exact packed-byte copy — same convention as
+`propagateRegion`'s inline formula), then `markTiles(...,1)` over the whole volume (all levels written
+explicitly, so `materializeAll` is skipped). Verified: level 1 **bit-identical** to the old output;
+coarser levels a clean deterministic nearest downsample; new time **~6 s (35× on the store-write
+portion)**; all 9 `AlignmentBigDataTest` tests green. Bounded memory (~one chunk) — scales to gigapixel
+slides.
+
+**Bug fix (2026-07-09) — SaveShiftsToFile / loadShiftsCheck broken in BigData.** Two defects:
+(1) **Drift/Template BigData** stored *level-L* shifts in `obj.shiftsX` on a fresh run but scaled by
+`scaleX` only when applying, while `saveShiftsBigData` wrote the *level-0* shifts. On reload
+(`loadShiftsCheck` → `obj.shiftsX` = level-0), the apply step re-multiplied by `scaleX` → **double-
+scaled** canvas whenever the analysis level > 1 ("align another dataset" gave wrong results). Fix:
+scale to level 0 immediately after `calcShifts`, so `obj.shiftsX/Y` (previewed, running-averaged,
+applied, saved) always hold **level-0** shifts; apply is now `round(obj.shiftsX)` with no re-scale
+(mirrors the in-memory path). Added a slice-count guard for mismatched loaded files.
+(2) **Feature-based v2 BigData** never saved at all (no `SaveShiftsToFile` block) and never replayed a
+loaded struct (no `shiftsLoaded` branch). Fix: added a local `saveV2ToFile` (writes the level-0
+`cumulativeTforms` struct, same format as the in-memory v2) and a replay branch that skips
+detection/fit/smoothing/conjugation and uses the loaded level-0 cumulative tforms directly.
+Verified live end-to-end on a **2-level** synthetic (scaleX=2): align at level 2 → save → reload into a
+fresh dataset at level 2 → canvas 676×666 == first run (old code would give ~712×692). Tests added:
+`driftSaveShiftsWritesLevel0File` (level-0 file predicts the grown canvas) and
+`featureV2SaveShiftsWritesStruct` (v2 writes a `cumulativeTforms` struct). All 11 tests green. (Note:
+the `.coefXY` reload path is GUI-only — `loadShiftsCheck_Callback` populates `obj.shiftsX`; batch mode
+has no load hook, unchanged.)
+(3) **Load preview/confirm at Apply** — `loadShiftsCheck_Callback` loads silently (and clears the
+stored coefficients when the box is unchecked); the preview + confirm happens on the **Apply button**
+(`continueBtn_Callback` → `private/previewConfirmLoadedShifts`), where the selected algorithm is known.
+It classifies the loaded coefficients (numeric → drift; struct w/ `cumulativeTforms` → feature-v2; cell
+→ legacy v1), plots them (drift → X/Y displacement; v2 → cumulative translation + rotation; legacy →
+translation), and asks "Align the dataset using these coefficients?". If the coefficient type does not
+match the selected algorithm it **aborts with a mismatch error** ("produced by X, but the selected
+algorithm is Y — select X or load matching coefficients") instead of silently recomputing or crashing.
+GUI only (batch has no load hook). Shared by in-memory and BigData.
+(4) **Detected-displacement preview for landmark modes** — landmark alignment previously applied
+without showing the user the detected displacements (only in-memory single-landmark and drift did).
+Added a shared `private/plotAlignmentTransforms` (plots shift vectors, or per-slice cumulative
+translation + rotation for a tform cell; handles `affinetform2d`/`affine2d`/3×3) and
+`private/confirmDetectedTransforms` (preview + "Apply current values / Quit alignment", batch-guarded by
+the caller). Wired into **BigData landmarks** (all 3 modes in `LandmarksBigData_Alignment`) and the
+**in-memory** `ThreeLandmarks`, `LandmarkMultiPoint`, `LandmarkMultiPointColor` (fresh compute only —
+`~shiftsLoaded`, since loaded coefficients are already previewed at Apply). `previewConfirmLoadedShifts`
+refactored onto the shared plotter. Also fixed the coefficient/algorithm compatibility sets there:
+numeric shifts are valid for drift/template **and** single-landmark; a tform cell is valid for
+feature-v1 **and** the multi-point/colour landmark modes (the earlier strict 1:1 map would have wrongly
+rejected those replay flows).
+
+**UX fix (2026-07-09) — single/three-landmark TransformationMode was stuck on cropped.**
+`algorithm_Callback` left the `TransformationMode` dropdown **disabled** for `Single landmark point` and
+`Three landmark points` (only the default disable-all loop ran), so its value was sticky from a prior
+algorithm (AMST / Color-channels force `cropped`) with no way to change it. The BigData apply path *does*
+honour the mode, so single-landmark silently produced a cropped canvas. Fix: for these two modes,
+default `TransformationMode` to `extended` and **enable the dropdown for BigData** (the in-memory
+single/three paths always extend via `crossShiftStack`, so the choice is only exposed where it is
+honoured). Verified the BigData single-landmark apply respects both modes (extended 268×258 vs cropped
+240×240 on a 240² synthetic). Tests: `landmarkSingleCroppedKeepsCanvas` + an extended-grows assertion in
+`landmarkSingleTranslation` (12/12 green).
+
+**Consistency fix (2026-07-09) — aligned store now mirrors the source pyramid.** `applyAlignmentBigData`
+previously wrote every aligned store with hardcoded saver options (`[256 256 16]` chunks, up to 8 levels,
+`XY only`, bilinear) regardless of the input. Now it derives the options from `ds.image.pyramid`:
+level-0 **ChunkSize** (mapped from `chunkSizes{1}` via `axisOrder`), the exact source **level count**
+(`saverOpts.Levels = size(levelImageSizes,1)`), the **DownsampleStrategy** (`Anisotropy-preserving` iff
+the source ever halves Z, else `XY only`), and **ShardSize** (only when the source shard spans more than
+one chunk). The labels store inherits the same via a `chunkSizes` built from the final chunk + the shared plan, so
+image and labels co-register with matching chunk/level structure. Verified live on a distinctive source
+(chunk `[64 64 2]`, 3 levels): the aligned image **and** labels reproduced 3 levels with the same chunk
+(canvas grown for `extended`). Test: `pyramidSettingsMatchSource` (13/13 green).
+
+**Silent vs GUI (2026-07-09).** Per IB: **silent/batch** runs use the source-matched settings directly
+(no dialog); **GUI** runs open the shared `Zarr3Saver.optionsDialog` **pre-filled from the open dataset**
+so the user can review/adjust before writing. `optionsDialog` gained an optional `presetDefaults`
+argument (backward-compatible, `nargin<5`) that overrides the dimension-heuristic defaults with the
+dataset's actual `Levels`/`ChunkSize`/`ShardSize`(→per-axis chunk multipliers)/`DownsampleStrategy`/
+`DownsampleMethod`/`Compressors`. `applyAlignmentBigData` builds the preset from the source pyramid,
+shows the dialog (`~parameters.useBatchMode`), merges the result over the source-matched base (auto
+level count / no-sharding honoured when the user picks 0), and cancel aborts before any write. No
+"keep existing" checkbox — the dialog simply opens on the current dataset's values.
+
+**Bug fix (2026-07-09) — aligned model lost material names/colours.** `applyAlignmentBigData` created
+the new labels store with `createStore` (which starts with an empty material list) but never persisted
+the source names/colours to it. In-session the swap restored them on the reopened object, but the
+on-disk `Labels_<stem>.zarr3` had no `mibMaterials` attribute, so reopening the aligned file later came
+back unnamed/greyed. Fix: copy `materialNames`/`materialColors`/`materialsCount` onto `newLabels` after
+`createStore` and call `newLabels.writeMaterialMetadata()` before `closeStore()` (same convention as
+`Zarr3Saver.exportModel`). The **bounding box is correct** — `patchMetadata` writes `mibBoundingBox` to
+the *image* store (the only store that carries one; `exportModel` doesn't bbox the model either), and
+the labels pyramid inherits the image frame on reopen. `packed63BitsPreservedAcrossLevels` now also
+asserts on-disk material persistence (fresh `openStore` of the aligned labels store).
+
 **Phase 4 completed** — headless-batch hardening + formal tests + docs. Fixed a real headless bug:
 the labels-warp `uiprogressdlg` crashed when `mibGUI` is empty (bare-model batch runs) — now guarded.
 Added `tests/controllers/AlignmentBigDataTest.m` (9 Integration tests, all pass in ~2 s against a bare

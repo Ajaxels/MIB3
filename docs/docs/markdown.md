@@ -9,6 +9,13 @@ For full documentation visit [zensical.org](https://zensical.org).
 * `zensical build` - Build the documentation site to `site/`
 * `zensical -h` - Print help message and exit
 
+??? example "Run example"
+    
+    - Run powershell
+    - Navigate to `docs` subfolder of MIB project
+    - Run `c:\Python\Miniforge\envs\mkdocs\Scripts\zensical serve` to start the server, replace the path with the actual path to the proper python environment
+    - Open `http://localhost:8000` in browser
+
 ## Links
 
 * [Zensical documentation](https://zensical.org/docs/)

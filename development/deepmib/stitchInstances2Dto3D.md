@@ -103,6 +103,12 @@ perfectly despite scrambled input IDs. `zLookback=2` on hard bridges dropouts (2
 
 - Greedy slice-pairwise vs. global tracking-by-assignment — `'graph'` union-find already gives a
   global connected-components solution rather than pure greedy chaining.
-- Anisotropic Z (large slice spacing) — may need IoU thresholds relaxed or `zLookback` tuned.
+- Anisotropic Z (large slice spacing) — **addressed** (see `instance_3d_plan.md` Phase B):
+  `options.anisotropyZ` lowers the effective IoU threshold to
+  `max(iouThreshold/anisotropyZ, iouFloor)`; `options.maxCentroidShift` gates far-apart links so
+  the relaxation cannot over-merge. For continuations that do not overlap at all (large drift /
+  brief dropout), `options.centroidLinkRadius` adds mutual-nearest-neighbour gap bridging between
+  orphan objects (off by default). All wired from the dataset pixel size via the ribbon dialog's
+  "Anisotropic Z" checkbox + "Max centroid shift" / "Centroid link radius" spinners.
 - Memory for whole-slide 3D volumes — current version materialises the output volume in RAM;
   blocked/streaming variant is future work (union-find core is already streaming-friendly).

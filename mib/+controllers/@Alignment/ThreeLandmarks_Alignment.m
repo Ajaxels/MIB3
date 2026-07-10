@@ -65,6 +65,17 @@ optionsGetData = struct('blockModeSwitch', 0);
 [tform, layerId, refSliceForBg] = findLandmarkPair(obj, depth, optionsGetData, pwb, parentFig);
 if isempty(tform); return; end
 
+% --- Preview the detected transform and confirm (interactive mode) ------------
+% The single affine is applied to the tail [layerId+1 : depth]; show it per-slice.
+if ~parameters.useBatchMode
+    previewTforms = repmat({affinetform2d(eye(3))}, depth, 1);
+    for z = layerId + 1 : depth; previewTforms{z} = tform; end
+    if ~confirmDetectedTransforms(parentFig, 'tforms', ...
+            struct('tforms', {previewTforms}), 'Detected three-landmark transform')
+        return;
+    end
+end
+
 % --- Resolve background fill value for the image warp
 if isnumeric(parameters.backgroundColor)
     bgImage = double(parameters.backgroundColor);

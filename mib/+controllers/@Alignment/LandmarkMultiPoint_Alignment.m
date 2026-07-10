@@ -147,6 +147,15 @@ if ~anyTform
     return;
 end
 
+% --- Preview the detected transforms and confirm (freshly computed, interactive;
+% loaded coefficients were already previewed at Apply by previewConfirmLoadedShifts)
+if ~shiftsLoaded && ~parameters.useBatchMode
+    if ~confirmDetectedTransforms(parentFig, 'tforms', ...
+            struct('tforms', {tformMatrix}), 'Detected multi-point landmark transforms')
+        return;
+    end
+end
+
 % --- Apply the transforms
 refImgSize = imref2d([height, width]);
 if strcmp(parameters.TransformationMode, 'cropped')

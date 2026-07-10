@@ -147,6 +147,15 @@ if ~anyTform
     return;
 end
 
+% --- Preview the detected transforms and confirm (freshly computed, interactive;
+% loaded coefficients were already previewed at Apply by previewConfirmLoadedShifts)
+if ~shiftsLoaded && ~parameters.useBatchMode
+    if ~confirmDetectedTransforms(parentFig, 'tforms', ...
+            struct('tforms', {tformMatrix}), 'Detected colour-channel landmark transforms')
+        return;
+    end
+end
+
 % --- Apply each slice transform to the selected colour channel (cropped only)
 if ~isempty(pwb); pwb.updateText('Step 2/2: warping colour channel...'); end
 refImgSize = imref2d([height, width]);

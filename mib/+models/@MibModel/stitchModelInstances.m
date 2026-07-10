@@ -52,6 +52,20 @@ function stitchModelInstances(obj, BatchOptIn)
 %     - ``.MinObjectVoxels`` — after stitching, delete any 3D object smaller than
 %       this many voxels (``0`` = keep all); useful for removing tiny single-slice
 %       noise fragments.
+%     - ``.UseAnisotropy`` — logical. When ``true``, the IoU link threshold is
+%       lowered by the dataset voxel aspect ratio ``pixSize.z / pixSize.x`` so a
+%       real but displaced continuation still links across thick Z sections. IoA
+%       (containment) is unaffected. Pair with ``MaxCentroidShift`` to stop the
+%       relaxed threshold from fusing distant objects [*default* ``false``].
+%     - ``.MaxCentroidShift`` — reject a link when the two object centroids are
+%       more than this many pixels apart (scaled by the slice gap when
+%       ``ZLookback`` > 1); ``0`` = disabled.
+%     - ``.CentroidLinkRadius`` — advanced centroid nearest-neighbour gap
+%       bridging: link an object that has no overlapping neighbour to the
+%       mutually-nearest such orphan on the next compared slice within this many
+%       pixels (scaled by the slice gap), when of comparable size. Reconnects a
+%       displaced or briefly-missing continuation on anisotropic/gappy data;
+%       ``0`` = disabled.
 %     - ``.showWaitbar`` — logical, show or not the waitbar [*default* ``true``]
 %     - ``.id`` — *(optional)* dataset index 1–9; default = active dataset
 %
@@ -81,6 +95,9 @@ BatchOpt.IoAThreshold = true;   % logical -> checkbox; enables IoA-based merging
 BatchOpt.MinOverlapPixels = {5, [0, 1e6], 'on'};
 BatchOpt.ZLookback = {1, [1, 100], 'on'};
 BatchOpt.MinObjectVoxels = {0, [0, 1e9], 'on'};
+BatchOpt.UseAnisotropy = false;   % lower the IoU threshold by pixSize.z/pixSize.x
+BatchOpt.MaxCentroidShift = {0, [0, 1e6], 'on'};   % 0 = gate disabled
+BatchOpt.CentroidLinkRadius = {0, [0, 1e6], 'on'};   % 0 = centroid-NN bridging off
 BatchOpt.showWaitbar = true;
 BatchOpt.id = obj.getActiveId();
 
@@ -93,6 +110,9 @@ BatchOpt.mibBatchTooltip.IoAThreshold     = 'Merge split objects using Intersect
 BatchOpt.mibBatchTooltip.MinOverlapPixels = 'Minimum number of overlapping pixels required before two objects on adjacent slices may be linked. Prevents a 1-2 pixel touch between unrelated objects from fusing them';
 BatchOpt.mibBatchTooltip.ZLookback        = 'How many slices apart to compare. 1 = only directly adjacent slices; 2 or more also compares a slice with the one further away, so an object that disappears for a slice or two can still be reconnected';
 BatchOpt.mibBatchTooltip.MinObjectVoxels  = 'After stitching, remove any 3D object smaller than this many voxels (0 = keep all). Useful for discarding tiny single-slice noise fragments';
+BatchOpt.mibBatchTooltip.UseAnisotropy    = 'For anisotropic stacks (thick Z sections), a real continuation is displaced more between slices, so its IoU legitimately drops. When enabled, the IoU threshold is lowered by the voxel aspect ratio (pixSize.z / pixSize.x) taken from the dataset. Pair with a Max centroid shift to stop the relaxed threshold from fusing distant objects';
+BatchOpt.mibBatchTooltip.MaxCentroidShift = 'Reject a link when the two object centroids are more than this many pixels apart (scaled by the slice gap when Z lookback > 1). 0 = disabled. Use together with anisotropic-Z relaxation so that a lower IoU threshold does not merge far-apart objects';
+BatchOpt.mibBatchTooltip.CentroidLinkRadius = 'Centroid nearest-neighbour gap bridging (advanced, for anisotropic / gappy data). For an object with NO overlapping neighbour on the next compared slice, link it to the mutually-nearest such orphan within this many pixels (scaled by the slice gap), if of comparable size. Reconnects a continuation that is laterally displaced or briefly missing. 0 = disabled';
 BatchOpt.mibBatchTooltip.showWaitbar      = 'Show or not the progress bar during execution';
 
 %% Batch mode check actions
@@ -164,7 +184,10 @@ if showDialog && ~batchModeSwitch
         sprintf('Merge split objects (IoA):\n  also join when a smaller object is mostly contained in a neighbour,\n  reconnecting an object that breaks into pieces on one slice'), ...
         sprintf('Min overlap (pixels):\n  require at least this many overlapping pixels before linking, to block tiny spurious touches'), ...
         sprintf('Z lookback (slices):\n  also compare slices this many planes apart;\n  1 = adjacent slices only, higher bridges an object that briefly vanishes'), ...
-        sprintf('Min object size (voxels):\n  after stitching, delete 3D objects smaller than this; 0 = keep all')};
+        sprintf('Min object size (voxels):\n  after stitching, delete 3D objects smaller than this; 0 = keep all'), ...
+        sprintf('Anisotropic Z (use pixel size):\n  lower the IoU threshold by pixSize.z/pixSize.x for thick sections,\n  so a real but displaced continuation still links'), ...
+        sprintf('Max centroid shift (pixels):\n  reject a link when object centroids are farther apart than this;\n  0 = off. Pair with anisotropic Z to avoid fusing distant objects'), ...
+        sprintf('Centroid link radius (pixels):\n  advanced gap bridging - link an object with no overlapping neighbour\n  to the mutually-nearest one within this distance; 0 = off')};
 
     methodChoices = [BatchOpt.Method{2}, find(strcmp(BatchOpt.Method{2}, BatchOpt.Method{1}))];
     defAns = {methodChoices, ...
@@ -172,11 +195,14 @@ if showDialog && ~batchModeSwitch
               logical(BatchOpt.IoAThreshold), ...
               struct('Spinner', true, 'Value', BatchOpt.MinOverlapPixels{1}, 'Limits', BatchOpt.MinOverlapPixels{2}, 'Step', 1,    'Round', true), ...
               struct('Spinner', true, 'Value', BatchOpt.ZLookback{1},        'Limits', BatchOpt.ZLookback{2},        'Step', 1,    'Round', true), ...
-              struct('Spinner', true, 'Value', BatchOpt.MinObjectVoxels{1},  'Limits', BatchOpt.MinObjectVoxels{2},  'Step', 1,    'Round', true)};
+              struct('Spinner', true, 'Value', BatchOpt.MinObjectVoxels{1},  'Limits', BatchOpt.MinObjectVoxels{2},  'Step', 1,    'Round', true), ...
+              logical(BatchOpt.UseAnisotropy), ...
+              struct('Spinner', true, 'Value', BatchOpt.MaxCentroidShift{1},   'Limits', BatchOpt.MaxCentroidShift{2},   'Step', 1, 'Round', true), ...
+              struct('Spinner', true, 'Value', BatchOpt.CentroidLinkRadius{1}, 'Limits', BatchOpt.CentroidLinkRadius{2}, 'Step', 1, 'Round', true)};
 
     dlgParams.mibPath = obj.mibPath;
     dlgParams.WindowWidth = 720;
-    dlgParams.WindowHeight = 400;
+    dlgParams.WindowHeight = 560;
     dlgParams.HeaderLines = 2;
     dlgParams.LabelPosition = 'left';
     answer = utils.dlgs.inputUniversalDlg(obj.getProgressBarParent(), note, prompt, defAns, ...
@@ -189,6 +215,9 @@ if showDialog && ~batchModeSwitch
     BatchOpt.MinOverlapPixels{1} = answer{4};
     BatchOpt.ZLookback{1}       = answer{5};
     BatchOpt.MinObjectVoxels{1} = answer{6};
+    BatchOpt.UseAnisotropy      = answer{7};   % logical (checkbox)
+    BatchOpt.MaxCentroidShift{1} = answer{8};
+    BatchOpt.CentroidLinkRadius{1} = answer{9};
 end
 
 %% Assemble the options for utils.stitchInstances2Dto3D
@@ -206,6 +235,24 @@ end
 options.minOverlapPixels = BatchOpt.MinOverlapPixels{1};
 options.zLookback = BatchOpt.ZLookback{1};
 options.minObjectVoxels = BatchOpt.MinObjectVoxels{1};
+
+% Anisotropic Z: derive the voxel aspect ratio from the dataset pixel size and
+% pass it through so the utility lowers the effective IoU threshold for thick
+% sections. Left at 1 (isotropic, no relaxation) when the option is off.
+if BatchOpt.UseAnisotropy
+    pixSize = obj.I{BatchOpt.id}.image.pixSize;
+    if isfield(pixSize, 'x') && pixSize.x > 0
+        options.anisotropyZ = max(1, pixSize.z / pixSize.x);
+    end
+end
+% Centroid-shift gate: 0 in the UI means disabled (Inf inside the utility).
+if BatchOpt.MaxCentroidShift{1} > 0
+    options.maxCentroidShift = BatchOpt.MaxCentroidShift{1};
+end
+% Centroid-NN gap bridging: 0 = disabled.
+if BatchOpt.CentroidLinkRadius{1} > 0
+    options.centroidLinkRadius = BatchOpt.CentroidLinkRadius{1};
+end
 
 %% Backup the current model for undo (skip in batch protocols)
 if ~batchModeSwitch
