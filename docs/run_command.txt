@@ -1,0 +1,1 @@
+c:\Python\Miniforge\envs\mkdocs\Scripts\zensical build
