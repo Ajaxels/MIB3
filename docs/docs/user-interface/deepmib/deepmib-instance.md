@@ -223,4 +223,42 @@ The result is written as a MIB `.model` file under
 
 ---
 
+## Merging 2D predictions into a 3D model
+
+When the prediction images are serial sections of a volume, the per-image 2D instance models can
+be merged into a single **3D instance model** with the
+<span class="widget widget-button">Merge 2D to 3D</span> button of the *Instance segmentation*
+subpanel in the [Predict tab](deepmib-predict.md#instance-segmentation-subpanel). The `*.model`
+files under `3_Results/PredictionImages/ResultsModels` are taken in **alphabetical order of
+their filenames** (make sure the prediction images are named in their correct Z-order) and
+objects overlapping between neighbouring slices are linked into 3D instances with one consistent
+index through the whole stack.
+
+The stitching settings dialog offers the same options as the
+*Ribbon → Model → Stitch 2D instances to 3D* tool:
+
+* <span class="widget widget-dropdown">Method</span> — *graph* (default) links every overlapping
+  pair of objects and groups them by connected components; *hungarian* uses strict one-to-one
+  matching per slice pair
+* **IoU threshold** — join two objects when their overlap-over-union exceeds this value; higher =
+  stricter (more, smaller 3D objects)
+* **Merge split objects (IoA)** — also join when a smaller object is mostly contained in a
+  neighbour, reconnecting an object that breaks into pieces on one slice
+* **Min overlap (pixels)** — minimal number of overlapping pixels before two objects may be linked
+* **Z lookback (slices)** — also compare slices further apart to bridge an object that briefly
+  vanishes
+* **Min object size (voxels)** — remove 3D objects smaller than this after stitching; values of
+  `50-200` are recommended to suppress single-slice noise fragments
+* **Z anisotropy ratio** — for thick sections, lower the IoU threshold by the voxel Z/XY aspect
+  ratio so a real but displaced continuation still links (`1` = isotropic, off)
+* **Max centroid shift** and **Centroid link radius** — advanced gates/bridging for anisotropic or
+  gappy data (`0` = off)
+
+After the settings, a file dialog asks for the destination directory, filename and file format.
+The merged model can be written as a **single 3D file** (e.g. *Matlab format (\*.model)*, TIF
+3D stack, Amira Mesh, HDF5, MRC, NRRD) or as a **sequence of 2D files** (e.g. *Matlab format 2D
+sequence (\*.model)*, TIF/PNG 2D sequence) — for TIF the policy is asked during saving.
+
+---
+
 *Back to [MIB](../../index.md) | [User interface](../index.md) | [DeepMIB](index.md)*

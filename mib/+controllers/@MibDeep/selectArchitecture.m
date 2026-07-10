@@ -26,6 +26,7 @@ obj.view.handles.P_OverlappingTilesPercentage.Enable = 'on';
 obj.view.handles.P_PatchWiseUpsample.Enable = 'off';
 obj.view.handles.P_OverlapInstancesMode.Enable = 'off';
 obj.view.handles.P_OverlapInstancesSettings.Enable = 'off';
+obj.view.handles.P_mergeInstancesTo3D.Enable = 'off';
 obj.view.handles.O_CalculateAccuracyInstances.Enable = 'off';
 obj.view.handles.P_ExtraPaddingPercentage.Enable = 'on';
 obj.view.handles.T_EncoderNetwork.Enable = 'off';
@@ -120,6 +121,7 @@ switch obj.BatchOpt.Workflow{1}
         % Prediction tab settings
         obj.view.handles.P_OverlapInstancesMode.Enable = 'on';
         obj.view.handles.P_OverlapInstancesSettings.Enable = 'on';
+        obj.view.handles.P_mergeInstancesTo3D.Enable = 'on';
 end
 
 if strcmp(obj.BatchOpt.T_ConvolutionPadding{1}, 'valid')

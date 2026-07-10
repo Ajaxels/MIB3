@@ -14,7 +14,16 @@ questions raised for the wider 3D phase and lays out an efficient, measurement-d
   (BatchOpt + dialog + undo backup + progress) → `MibDataset.stitchModelInstances` (per-timepoint
   read/write, `getData3D('labels', t, 3, …)`) → utility. Pixel size **is already at the call site**
   (`MibDataset.stitchModelInstances` holds `obj.image.pixSize`) — it is simply not forwarded.
-- **DeepMIB auto-feed** (2D prediction stack → stitcher) is the only integration still pending.
+- **DeepMIB auto-feed** (2D prediction stack → stitcher) — **done (2026-07):**
+  `MibDeep.mergeInstancesTo3D` (Predict tab → *Instance segmentation* → "Merge 2D to 3D" button,
+  `P_mergeInstancesTo3D` in `MibDeepGUI.mlapp`). Reads the per-slice `*.model` files from
+  `PredictionImages/ResultsModels` (alphabetical order = Z-order), shows the same stitch-settings
+  dialog as `MibModel.stitchModelInstances` (anisotropy as a direct spinner since raw prediction
+  images carry no pixSize), then saves via `io.SaverFactory` in a curated set of labels formats —
+  single 3D file or 2D sequence (the TIF/model savers ask their own 3D-stack/2D-sequence policy).
+  Core pipeline validated by `temp/testMergeInstances.m` (load → stitch → save round-trips for
+  .model single/sequence and TIF stack/sequence). Docs: `deepmib-instance.md` (new "Merging 2D
+  predictions into a 3D model" section) + `deepmib-predict.md` (subpanel button).
 - **No tests exist** for the utility, and **no false-merge / false-split metric** exists — only a
   one-off note in the markdown.
 

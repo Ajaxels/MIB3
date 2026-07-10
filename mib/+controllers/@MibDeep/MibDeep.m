@@ -248,6 +248,7 @@ classdef MibDeep < handle
         helpButton_callback(obj)        % show Help sections
         importNetwork(obj)        % import an externally trained or designed network to be used with DeepMIB
         loadConfig(obj, configName)        % load config file with Deep MIB settings
+        mergeInstancesTo3D(obj)        % merge predicted 2D instance models into a 3D instance model
         TrainingOptions = preprareTrainingOptions(obj, valDS)        % prepare trainig options for the network training
         TrainingOptions = preprareTrainingOptionsInstances(obj, valDS);     % prepare options for training of instance segmentation network
         previewDynamicMask(obj)        % preview results for the dynamic mode
