@@ -1,6 +1,7 @@
 # example of a command to run, the script resolves mib root:
 d:\Python\Miniforge\envs\Zensical\python.exe run_all.py
 d:\Python\Miniforge3\envs\Zensical\python.exe run_all.py
+C:\Python\Miniforge\envs\mkdocs\python.exe run_all.py
 
 alternative:
 

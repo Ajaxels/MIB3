@@ -108,6 +108,11 @@ if isempty(obj.cImageDoc{selectedSet}.imageHandle) || ...
     
     % Configure image object
     obj.cImageDoc{selectedSet}.imageHandle.HitTest = 'off';
+
+    % A newly created image lands on top of persistent overlay objects
+    % (brush cursor, central marker) that survive image-handle recreation;
+    % push it to the bottom so overlays stay visible
+    uistack(obj.cImageDoc{selectedSet}.imageHandle, 'bottom');
 else
     % Update existing image
     imgHeight = size(obj.mibModel.Ishown, 1);
@@ -251,8 +256,10 @@ if ~isempty(obj.mibModel.linkedPairs) && ~obj.propagatingLinkedView && isempty(s
         src = obj.mibModel.I{datasetId};
         dst = obj.mibModel.I{partnerGlobalId};
 
-        % copy slices (clamped to partner dimensions)
-        for iDim = 1:5
+        % copy slices (clamped to partner dimensions);
+        % skip slices{4} - it is a list of shown color channels, not a
+        % [min max] range, and channel selection is not part of the view position
+        for iDim = [1 2 3 5]
             maxVal = dst.dim_yxzct(iDim);
             dst.slices{iDim} = min(src.slices{iDim}, [maxVal maxVal]);
         end
@@ -269,8 +276,15 @@ if ~isempty(obj.mibModel.linkedPairs) && ~obj.propagatingLinkedView && isempty(s
         if activeInPartner == partnerGlobalId && ...
                 partnerSetIdx ~= selectedSet && ...
                 partnerSetIdx <= numel(obj.cImageDoc)
+            % ensure the guard is always released, otherwise a render error
+            % in the partner panel permanently disables propagation
             obj.propagatingLinkedView = true;
-            obj.showImage(resizeToMagnification, partnerSetIdx);
+            try
+                obj.showImage(resizeToMagnification, partnerSetIdx);
+            catch propagationError
+                obj.propagatingLinkedView = false;
+                rethrow(propagationError);
+            end
             obj.propagatingLinkedView = false;
         end
     end

@@ -71,7 +71,9 @@ partnerOfNew = obj.mibModel.getLinkedDataset(newDatasetId);
 if ~isempty(partnerOfNew) && partnerOfNew == prevDatasetIdLocal
     src = obj.mibModel.I{prevDatasetIdLocal};
     dst = obj.mibModel.I{newDatasetId};
-    for iDim = 1:5
+    % skip slices{4} - it is a list of shown color channels, not a
+    % [min max] range, and channel selection is not part of the view position
+    for iDim = [1 2 3 5]
         maxVal = dst.dim_yxzct(iDim);
         dst.slices{iDim} = min(src.slices{iDim}, [maxVal maxVal]);
     end

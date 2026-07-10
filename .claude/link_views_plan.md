@@ -37,6 +37,20 @@ When two datasets are linked, they always show the same position (slice, frame, 
 
 ---
 
+### DONE — White-panel / dead-propagation fix (2026-07-11)
+
+**Symptom**: after linking two sets in split view, moving one view stopped updating the other; the partner panel turned into an empty white background.
+
+**Root cause (two bugs in the propagation block of `showImage.m`)**:
+1. The slice-copy loop treated `slices{4}` as a `[min max]` range and clamped it with `min(src.slices{4}, [maxVal maxVal])`. `slices{4}` is a **list of shown color channels** — a scalar `1` (grayscale) became `[1 1]`, so `getRGBimage` rendered channel 1 twice and produced a 6-channel `Ishown`, which `image()` rejects ("Color data must be m-by-n or m-by-n-by-3").
+2. That error was thrown between `propagatingLinkedView = true` and `= false`, so the guard stuck at `true` and **permanently disabled all propagation** for the session. The failed render also left `imageHandle.CData = []` → the white panel.
+
+**Fix**: the slice-copy loop now iterates `[1 2 3 5]` only (channel selection is not view position), and the nested partner `showImage` call is wrapped in try/catch that releases the guard before rethrowing.
+
+The **same buggy slice-copy loop existed in `buffers_Callback.m` (~line 74)** — the buffer-switch sync path — corrupting `slices{4}` when switching TO a linked buffer (surfaced as the same CData error via `update_fromModel` → `buffers_Callback` → `ShowImage`). Fixed identically. If this pattern is ever copied again: **never clamp `slices{4}` with `min(..., [maxVal maxVal])`.**
+
+**Follow-on symptom — brush cursor hidden in split view**: when `showImage` *recreates* the image object (its CData was left empty by a failed render, dataset reload, etc.), the new `image()` is prepended to the axes children and covers the persistent `brushCursor` line, which is created once and survives re-renders. The cursor still tracked the mouse — it was just underneath the image. Fix: `uistack(imageHandle, 'bottom')` right after creation in `showImage.m`. Diagnosis note: java.awt.Robot mouse moves do NOT generate motion events in the CEF web figures — instrument the callback and let a human move the mouse instead.
+
 ## Remaining / Pending
 
 ### 1. Keyboard zoom cursor repositioning in split view
