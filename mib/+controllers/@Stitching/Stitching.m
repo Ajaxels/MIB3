@@ -103,6 +103,7 @@ classdef Stitching < handle
 
             obj.BatchOpt.OverlapX        = {10, [0 90], 'off'};
             obj.BatchOpt.OverlapY        = {10, [0 90], 'off'};
+            obj.BatchOpt.EstimateOverlap = true;
 
             obj.BatchOpt.TransformType   = {'Translation'};
             obj.BatchOpt.TransformType{2} = {'Translation'};
@@ -132,6 +133,7 @@ classdef Stitching < handle
             obj.BatchOpt.mibBatchTooltip.TileOrder       = 'Order tiles were acquired: Horizontal, Horizontal snake, Vertical, or Vertical snake';
             obj.BatchOpt.mibBatchTooltip.OverlapX        = 'Horizontal overlap between adjacent tiles in percent (0–90)';
             obj.BatchOpt.mibBatchTooltip.OverlapY        = 'Vertical overlap between adjacent tiles in percent (0–90)';
+            obj.BatchOpt.mibBatchTooltip.EstimateOverlap = 'Estimate the actual overlap from the images before measuring (grid layout); OverlapX/Y are then only a rough starting guess';
             obj.BatchOpt.mibBatchTooltip.TransformType   = 'Registration transform type (Translation only in Phase 1)';
             obj.BatchOpt.mibBatchTooltip.QualityThreshold = 'Minimum normalized peak height to accept a pairwise shift measurement (0–1)';
             obj.BatchOpt.mibBatchTooltip.NominalPositionWeight = 'How strongly tiles with weak or failed registration are pulled back toward their nominal grid positions (0–1)';
@@ -162,18 +164,8 @@ classdef Stitching < handle
             end
 
             % ---- GUI path
-            try
-                obj.view = core.ChildView(obj, 'views.StitchingGUI');
-            catch creationError
-                utils.dlgs.showErrorDialog(obj.mibModel.mibGUI, ...
-                    sprintf(['StitchingGUI.mlapp has not been created yet.\n', ...
-                        'Please build StitchingGUI.mlapp in App Designer using the widget\n', ...
-                        'specification in development/stitching/mlapp_widgets.md.\n\n', ...
-                        'Technical detail: %s'], creationError.message), ...
-                    'StitchingGUI not yet available');
-                return;
-            end
-
+            obj.view = core.ChildView(obj, 'views.StitchingGUI');
+            
             Font = obj.mibModel.preferences.System.Font;
             if obj.view.handles.closeButton.FontSize ~= Font.FontSize ...
                     || ~strcmp(obj.view.handles.closeButton.FontName, Font.FontName)
@@ -186,10 +178,8 @@ classdef Stitching < handle
 
             obj.view.gui.Visible = 'on';
 
-            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', ...
-                @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
-            obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', ...
-                @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
+            obj.listener{2} = addlistener(obj.mibModel, 'NewDataset', @(src, evnt) obj.ViewListner_Callback2(obj, src, evnt));
         end
 
     end % methods

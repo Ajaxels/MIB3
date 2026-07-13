@@ -89,6 +89,7 @@ nav = [
       { "Dataset" = [
         "user-interface/ribbon/dataset/index.md",
         { "Alignment tool" = "user-interface/ribbon/dataset/dataset-alignment.md" },
+        { "Stitching" = "user-interface/ribbon/dataset/dataset-stitch.md" },
         { "Crop" = "user-interface/ribbon/dataset/dataset-crop.md" },
         { "Resample" = "user-interface/ribbon/dataset/dataset-resample.md" },
         { "Transform" = "user-interface/ribbon/dataset/dataset-transform.md" },

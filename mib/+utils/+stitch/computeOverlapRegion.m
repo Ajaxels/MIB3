@@ -89,6 +89,12 @@ bboxA = [yLo - originA(1) + 1, yHi - originA(1) + 1; ...
 bboxB = [yLo - originB(1) + 1, yHi - originB(1) + 1; ...
          xLo - originB(2) + 1, xHi - originB(2) + 1];
 
+% Nominal origins may be fractional (percentage-derived grid steps, estimated
+% overlaps); pixel reads need integer bounds. Rounding here is safe because the
+% offset compensation in measureAllPairs uses the ACTUAL (rounded) crop starts.
+bboxA = round(bboxA);
+bboxB = round(bboxB);
+
 bboxA(1, :) = min(max(bboxA(1, :), 1), Ha);
 bboxA(2, :) = min(max(bboxA(2, :), 1), Wa);
 bboxB(1, :) = min(max(bboxB(1, :), 1), Hb);

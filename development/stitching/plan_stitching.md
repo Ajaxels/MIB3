@@ -100,8 +100,8 @@ Plus `mib\+io\+savers\StitchSliceProvider.m` (`< io.savers.SliceProvider`) — c
 Standard child-controller set (`Stitching.m`, `addCallbacks.m`, `updateWidgets.m`, `updateBatchOptFromGUI.m`, `returnBatchOpt.m`, `closeWindow.m`, `helpBtn_Callback.m`) plus workflow callbacks:
 - `selectInputBtn_Callback.m` — pick folder/subfolders/position file → build layout
 - `previewLayoutBtn_Callback.m` — draw nominal tile rectangles/thumbnails on preview axes
-- `measureBtn_Callback.m` — `measureAllPairs` with progress
-- `solveBtn_Callback.m` — global solve + `planCanvas`; show RMSE/residual stats
+- `measureOverlaps_Callback.m` — `measureAllPairs` with progress (button "Measure overlaps")
+- `optimizePositions_Callback.m` — global solve + `planCanvas`; show RMSE/residual stats (button "Optimize positions")
 - `stitchBtn_Callback.m` — fuse (in-memory → `core.MibDataset` | zarr → BigData reopen recipe); save sidecar; **single batch entry point**
 - `saveProjectBtn_Callback.m` / `loadProjectBtn_Callback.m`
 
@@ -129,6 +129,11 @@ All `utils.stitch` core (2D solve), `StitchSliceProvider`, controller + mlapp, r
 Existing files touched: `addRibbonDataset.m`, `dataset_Callbacks.m`, `MibRibbon.m`, new `stitch_24px.png` icon (reuse an existing icon until drawn).
 Milestone: headless test — chop a known image into jittered overlapping tiles, layout→measure→solve→fuse, origins within ±1 px, RMSE below threshold; zarr round-trip read-back matches in-memory fuse.
 
+**Phase 1.5 — robustness & input extensions** (partially done)
+- ~~Overlap auto-estimation~~ **DONE 2026-07-14**: `utils.stitch.estimateOverlap` (MIST-style median over grid pairs; unrestricted full-tile phase correlation + top-K NCC peak verification, BigStitcher-style) + `@Stitching\runOverlapEstimation.m`, `BatchOpt.EstimateOverlap` (default true), `EstimateOverlap` checkbox in Grid panel. See Status log for the two full-tile findings (NO Hann window; opposite sign composition vs crop path).
+- **Feature-based registration option** — Sonnet (reuse `utils.align.detectFeatures` + `estgeotform2d 'translation'`): new `RegistrationMethod` dropdown {Phase correlation, Feature-based} feeding an alternative `measureOne` path in `measureAllPairs`. For arbitrary/unknown offsets, rotated tiles, and as stepping stone to rigid/affine `TransformType`. Weakness to document: fails on feature-poor/repetitive content where phase correlation still works.
+- **4th layout source: Bio-Formats metadata** — Sonnet: `LayoutSource` += `'Bio-Formats metadata'`; new `utils.stitch.buildLayoutBioFormats` reading embedded stage coordinates (OME `Plane.PositionX/Y/Z` / series stage positions) via the BioFormats loader `loadMetadata`; each series/file = one tile, positions converted from stage units to px via pixSize; Z-layers auto-created per distinct Z (same rule as position file).
+
 **Phase 2 — 3D multi-layer global solve** — Opus 4.8
 Extend: position-file Z / subfolder tiles, `findNeighborPairs` z-edges, `pairwiseShift` cross-layer, joint x/y/z solve with springs, Z-aware canvas/fusers.
 Milestone: synthetic 2×2×3-layer chop with 3D jitter recovered by one global solve; corrupted edge pruned, spring holds tile near nominal.
@@ -154,3 +159,17 @@ Load sidecar, render seams, nudge per-tile transform, re-fuse. Likely sibling mo
 - **Multi-channel/time**: register on one channel (user-chosen or max-projection), apply transform to all C/T; default shared layout across T.
 - **Subpixel**: Phase 1 rounds to integer placement, keeps residual in sidecar; resampled placement later.
 - **Per-tile pixel-size mismatch**: assume uniform, warn otherwise; result pixSize from first tile.
+
+### 2026-07-14 — line-embedded smoke data + solver spring fix
+
+- `temp\stitch_smoke\generateSmokeTiles.m` (new, rerunnable) replaces the ad-hoc noise tiles: ground truth = 3-scale noise (25% unsmoothed pixel noise + fine + coarse) + 22 random-angle blended lines (opacity 0.45) + 4 circles. Lines make stitching errors visible at seams; random angles avoid periodic-pattern ambiguity.
+- Data-design lessons: saturated single lines in thin overlap strips make translation ambiguous ALONG the line (confident-wrong edges, error vector parallel to the line); unsmoothed pixel noise gives the true peak a needle-sharp component no line ridge can beat. With blended lines + pixel noise: 12/12 edges valid, q=1.00, edge error <= 0.01 px.
+- `solveGlobalLeastSquares` default `nominalSpringWeight` 0.01 -> 0.001: the always-on per-tile self-spring (rank guarantee) biased border-clamped tiles (42 px from nominal) by up to 1.6 px; with 0.001 the solve lands at max 0.16 px / mean 0.07 px. Keep this weight tiny — it is rank-only.
+
+### 2026-07-14 — overlap auto-estimation (Phase 1.5, first item)
+
+- `utils.stitch.estimateOverlap.m`: grid pairs from `.gridRC` (nominal-independent), full-tile phase correlation zero-padded to 2H×2W, top-5 peaks each verified by NCC of the implied overlap, per-direction median + MAD. Downsamples tiles > `maxDim` (1024). Robust to any claimed overlap: 5–40%% wrong guesses all converge to the same solution on the smoke set (final positions ≤ 0.04 px).
+- **Full-tile findings (both load-bearing):** (1) NO Hann window for full-tile correlation — with small overlaps the shared content sits at the tile edges where the window zeroes it; unwindowed+padded has a dominant peak (5–10× runners-up), windowed has NO peak at the true shift at all. (2) Sign composition is OPPOSITE to the crop path: for full tiles the raw peak of `Fa.*conj(Fb)` is `P_j - P_i` directly (crop path negates and adds crop-start offsets).
+- `computeOverlapRegion` now rounds crop bboxes (fractional nominal origins from percentage-derived steps crashed the reader; rounding is exact because the composition uses actual crop starts).
+- Controller: `runOverlapEstimation.m` (clamps estimate to spinner limits, rebuilds layout, refreshes GUI), invoked from `measureOverlaps_Callback` + `stitchBtn_Callback` when `BatchOpt.EstimateOverlap` (default true, Grid source only). GUI wiring guarded with `isfield` until the `EstimateOverlap` checkbox is added to the mlapp.
+- Test: `StitchCoreTest.estimateOverlap_recoversTrueOverlapFromWrongGuess` (claims 10%%, truth 22%%, expects ±3%% + full-chain ≤1.5 px). 20/20 + 23/23 pass.

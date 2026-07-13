@@ -42,6 +42,7 @@ what makes `utils.updateBatchOptFromGUI_Shared` work — it writes
 | `TileOrder` | `uidropdown` | Items: `{'Horizontal','Horizontal snake','Vertical','Vertical snake'}` Default: `'Horizontal'` | `updateBatchOptFromGUI` |
 | `OverlapX` | `uispinner` | Limits: `[0 90]` Step: 1 Default: `10` | `updateBatchOptFromGUI` |
 | `OverlapY` | `uispinner` | Limits: `[0 90]` Step: 1 Default: `10` | `updateBatchOptFromGUI` |
+| `EstimateOverlap` | `uicheckbox` | Text: `'Estimate overlap'` Default: `true` | `updateBatchOptFromGUI` |
 
 Labels for spinners (not interactive; `uilabel`):
 
@@ -109,8 +110,8 @@ Labels:
 | Handle | Class | Text | Callback method |
 |------|-------|------|-----------------|
 | `previewLayoutBtn` | `uibutton` | `'Preview layout'` | `previewLayoutBtn_Callback` |
-| `measureBtn` | `uibutton` | `'Measure'` | `measureBtn_Callback` |
-| `solveBtn` | `uibutton` | `'Solve'` | `solveBtn_Callback` |
+| `measureOverlaps` | `uibutton` | `'Measure overlaps'` | `measureOverlaps_Callback` |
+| `optimizePositions` | `uibutton` | `'Optimize positions'` | `optimizePositions_Callback` |
 | `stitchBtn` | `uibutton` | `'Stitch'` | `stitchBtn_Callback` |
 | `saveProjectBtn` | `uibutton` | `'Save project'` | `saveProjectBtn_Callback` |
 | `loadProjectBtn` | `uibutton` | `'Load project'` | `loadProjectBtn_Callback` |

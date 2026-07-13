@@ -29,7 +29,9 @@ function [positions, stats] = solveGlobalLeastSquares(layout, edges, options)
 %   - **options** *(optional)* — struct with fields:
 %
 %     - ``.springWeight`` — [double] weight of re-added pruned/bridge springs (default: ``0.10``)
-%     - ``.nominalSpringWeight`` — [double] weight of the per-tile self-spring (default: ``0.01``)
+%     - ``.nominalSpringWeight`` — [double] weight of the per-tile self-spring (default: ``0.001``).
+%       Keep tiny: it exists only for rank; any real weight biases tiles whose
+%       true positions deviate from nominal (e.g. border-clamped acquisitions).
 %
 % Output Arguments:
 %   - **positions** — [N x 3 double] solved ``[y x z]`` origins (fractional allowed);
@@ -53,7 +55,7 @@ function [positions, stats] = solveGlobalLeastSquares(layout, edges, options)
 
 if nargin < 3; options = struct(); end
 if ~isfield(options, 'springWeight');        options.springWeight = 0.10; end
-if ~isfield(options, 'nominalSpringWeight');  options.nominalSpringWeight = 0.01; end
+if ~isfield(options, 'nominalSpringWeight');  options.nominalSpringWeight = 0.001; end
 
 nTiles = numel(layout);
 nomOrigins = reshape([layout.nomOrigin], 3, nTiles)';   % N x 3 [y x z]

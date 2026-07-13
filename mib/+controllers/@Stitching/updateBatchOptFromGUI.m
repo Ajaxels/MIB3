@@ -12,14 +12,21 @@ function updateBatchOptFromGUI(obj, hObject)
 
 obj.BatchOpt = utils.updateBatchOptFromGUI_Shared(obj.BatchOpt, hObject);
 
-% When layout source changes, update grid-group enable states
-if isequal(hObject, obj.view.handles.LayoutSource)
+% When layout source or overlap-estimation mode changes, update grid-group
+% enable states (overlap spinners are read-only while estimation is enabled)
+isEstimateWidget = isfield(obj.view.handles, 'EstimateOverlap') && ...
+    isequal(hObject, obj.view.handles.EstimateOverlap);
+if isequal(hObject, obj.view.handles.LayoutSource) || isEstimateWidget
     isGrid = strcmp(obj.BatchOpt.LayoutSource{1}, 'Grid');
+    overlapEditable = isGrid && ~obj.BatchOpt.EstimateOverlap;
     obj.view.handles.GridRows.Enable   = isGrid;
     obj.view.handles.GridCols.Enable   = isGrid;
     obj.view.handles.TileOrder.Enable  = isGrid;
-    obj.view.handles.OverlapX.Enable   = isGrid;
-    obj.view.handles.OverlapY.Enable   = isGrid;
+    obj.view.handles.OverlapX.Enable   = overlapEditable;
+    obj.view.handles.OverlapY.Enable   = overlapEditable;
+    if isfield(obj.view.handles, 'EstimateOverlap')
+        obj.view.handles.EstimateOverlap.Enable = isGrid;
+    end
 end
 
 % Layout-parameter changes invalidate the current layout: rebuild it from the

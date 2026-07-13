@@ -32,6 +32,9 @@ try
     end
 
     if isempty(obj.edges)
+        if obj.BatchOpt.EstimateOverlap
+            obj.runOverlapEstimation();
+        end
         nominalPairs = utils.stitch.findNeighborPairs(obj.layout, struct('minOverlapPx', 16));
         measureOptions.qualityThreshold = obj.BatchOpt.QualityThreshold{1};
         measureOptions.subpixel         = obj.BatchOpt.SubpixelPlacement;

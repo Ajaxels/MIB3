@@ -26,12 +26,19 @@ handles.GridCols.Enable  = isGrid;
 handles.TileOrder.Items  = obj.BatchOpt.TileOrder{2};
 handles.TileOrder.Value  = obj.BatchOpt.TileOrder{1};
 handles.TileOrder.Enable = isGrid;
+% With overlap estimation enabled the spinners are read-only displays of the
+% estimated value — the estimator does not use the entered overlap at all.
+overlapEditable = isGrid && ~obj.BatchOpt.EstimateOverlap;
 handles.OverlapX.Value   = obj.BatchOpt.OverlapX{1};
 handles.OverlapX.Limits  = obj.BatchOpt.OverlapX{2};
-handles.OverlapX.Enable  = isGrid;
+handles.OverlapX.Enable  = overlapEditable;
 handles.OverlapY.Value   = obj.BatchOpt.OverlapY{1};
 handles.OverlapY.Limits  = obj.BatchOpt.OverlapY{2};
-handles.OverlapY.Enable  = isGrid;
+handles.OverlapY.Enable  = overlapEditable;
+if isfield(handles, 'EstimateOverlap')   % widget may not exist in the mlapp yet
+    handles.EstimateOverlap.Value  = obj.BatchOpt.EstimateOverlap;
+    handles.EstimateOverlap.Enable = isGrid;
+end
 
 % ---- Registration group ----
 handles.TransformType.Items     = obj.BatchOpt.TransformType{2};

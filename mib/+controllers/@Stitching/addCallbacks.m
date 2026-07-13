@@ -28,6 +28,9 @@ handles.GridCols.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src)
 handles.TileOrder.ValueChangedFcn     = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.OverlapX.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src);
 handles.OverlapY.ValueChangedFcn      = @(src, ~) obj.updateBatchOptFromGUI(src);
+if isfield(handles, 'EstimateOverlap')   % widget may not exist in the mlapp yet
+    handles.EstimateOverlap.ValueChangedFcn = @(src, ~) obj.updateBatchOptFromGUI(src);
+end
 
 % ---- Registration group ----
 handles.TransformType.ValueChangedFcn    = @(src, ~) obj.updateBatchOptFromGUI(src);
@@ -44,8 +47,8 @@ handles.SaveProject.ValueChangedFcn   = @(src, ~) obj.updateBatchOptFromGUI(src)
 
 % ---- Action buttons ----
 handles.previewLayoutBtn.ButtonPushedFcn   = @(~, ~) obj.previewLayoutBtn_Callback();
-handles.measureBtn.ButtonPushedFcn         = @(~, ~) obj.measureBtn_Callback();
-handles.solveBtn.ButtonPushedFcn           = @(~, ~) obj.solveBtn_Callback();
+handles.measureOverlaps.ButtonPushedFcn    = @(~, ~) obj.measureOverlaps_Callback();
+handles.optimizePositions.ButtonPushedFcn  = @(~, ~) obj.optimizePositions_Callback();
 handles.stitchBtn.ButtonPushedFcn          = @(~, ~) obj.stitchBtn_Callback(false);
 handles.saveProjectBtn.ButtonPushedFcn     = @(~, ~) obj.saveProjectBtn_Callback();
 handles.loadProjectBtn.ButtonPushedFcn     = @(~, ~) obj.loadProjectBtn_Callback();

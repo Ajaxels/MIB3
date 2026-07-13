@@ -232,6 +232,69 @@ classdef StitchCoreTest < matlab.unittest.TestCase
                 'full measure+solve chain did not recover jittered tile origins');
         end
 
+        function estimateOverlap_recoversTrueOverlapFromWrongGuess(testCase)
+            % The user-entered overlap is often a guess; estimateOverlap must
+            % recover the actual grid step from the images alone (full-tile
+            % phase correlation + top-K NCC verification, median over pairs),
+            % regardless of how wrong the claimed overlap is.
+            original = uint8(testCase.texturedImage(560, 560, 33));
+            trueOverlapPx = 48; tileH = 218; tileW = 218;
+            stepY = tileH - trueOverlapPx; stepX = tileW - trueOverlapPx;
+            trueOverlapPercent = trueOverlapPx / tileH * 100;   % 22.0%
+
+            tempDir = tempname; mkdir(tempDir);
+            testCase.addTeardown(@() rmdir(tempDir, 's'));
+
+            layout = testCase.emptyLayout(9);
+            trueOrigins = zeros(9, 3);
+            wrongStepY = round(tileH * 0.90);   % layout claims 10% overlap
+            wrongStepX = round(tileW * 0.90);
+            rng(11, 'twister');
+            k = 0;
+            for r = 1:3
+                for c = 1:3
+                    k = k + 1;
+                    oy = min(max(1 + (r - 1) * stepY + randi([-5 5]), 1), 560 - tileH + 1);
+                    ox = min(max(1 + (c - 1) * stepX + randi([-5 5]), 1), 560 - tileW + 1);
+                    trueOrigins(k, :) = [oy, ox, 1];
+                    tileFilename = fullfile(tempDir, sprintf('tile_%02d.tif', k));
+                    imwrite(original(oy:(oy + tileH - 1), ox:(ox + tileW - 1)), tileFilename);
+                    layout(k).index      = k;
+                    layout(k).filename   = tileFilename;
+                    layout(k).gridRC     = [r c];
+                    layout(k).nomOrigin  = [1 + (r - 1) * wrongStepY, 1 + (c - 1) * wrongStepX, 1];
+                    layout(k).tileSize   = [tileH, tileW, 1, 1];
+                    layout(k).dataClass  = 'uint8';
+                end
+            end
+
+            estimate = utils.stitch.estimateOverlap(layout);
+
+            testCase.verifyGreaterThan(estimate.numMeasuredX, 0);
+            testCase.verifyGreaterThan(estimate.numMeasuredY, 0);
+            testCase.verifyEqual(estimate.overlapX, trueOverlapPercent, 'AbsTol', 3.0, ...
+                'estimated X overlap too far from truth');
+            testCase.verifyEqual(estimate.overlapY, trueOverlapPercent, 'AbsTol', 3.0, ...
+                'estimated Y overlap too far from truth');
+
+            % Full chain with the ESTIMATED overlap must recover the positions
+            % even though the claimed overlap (10%) was badly wrong.
+            estStepY = tileH * (1 - estimate.overlapY / 100);
+            estStepX = tileW * (1 - estimate.overlapX / 100);
+            for k = 1:9
+                r = layout(k).gridRC(1); c = layout(k).gridRC(2);
+                layout(k).nomOrigin = [1 + (r - 1) * estStepY, 1 + (c - 1) * estStepX, 1];
+            end
+            pairs = utils.stitch.findNeighborPairs(layout);
+            edges = utils.stitch.measureAllPairs(layout, pairs, ...
+                struct('qualityThreshold', 0.3, 'subpixel', true));
+            positions = utils.stitch.solveGlobalLeastSquares(layout, edges);
+            residual = positions(:, 1:2) - trueOrigins(:, 1:2);
+            residual = residual - mean(residual, 1);
+            testCase.verifyLessThan(max(abs(residual(:))), 1.5, ...
+                'full chain with estimated overlap did not recover tile origins');
+        end
+
         function solver_prunesCorruptedEdgeAndSpringHolds(testCase)
             [layout, truthOrigins] = testCase.makeGrid(2, 2, [100 100 1 1], 80);
             trueOrigins = truthOrigins;   % no jitter -> nominal == truth

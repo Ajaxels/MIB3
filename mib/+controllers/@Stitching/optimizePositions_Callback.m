@@ -1,10 +1,10 @@
-function solveBtn_Callback(obj)
-% SOLVEBTN_CALLBACK - Run global least-squares solve and plan the output canvas.
+function optimizePositions_Callback(obj)
+% OPTIMIZEPOSITIONS_CALLBACK - Run global least-squares solve and plan the output canvas.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%      obj.solveBtn_Callback()
+%      obj.optimizePositions_Callback()
 %
 % Calls ``utils.stitch.solveGlobalLeastSquares`` to determine optimal tile
 % positions from the measured edge set, then calls ``utils.stitch.planCanvas``

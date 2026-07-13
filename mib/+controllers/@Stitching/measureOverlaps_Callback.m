@@ -1,10 +1,10 @@
-function measureBtn_Callback(obj)
-% MEASUREBTN_CALLBACK - Measure pairwise shifts for all neighbour tile pairs.
+function measureOverlaps_Callback(obj)
+% MEASUREOVERLAPS_CALLBACK - Measure pairwise shifts for all neighbour tile pairs.
 %
 % Syntax:
 %   .. code-block:: matlab
 %
-%      obj.measureBtn_Callback()
+%      obj.measureOverlaps_Callback()
 %
 % Calls ``utils.stitch.findNeighborPairs`` to identify all overlapping tile
 % pairs, then calls ``utils.stitch.measureAllPairs`` to compute phase-
@@ -20,6 +20,18 @@ if isempty(obj.layout)
         'No layout loaded. Please select input tiles first.', {}, {}, ...
         'No layout', warnOptions);
     return;
+end
+
+% Estimate the actual overlap from the images first (grid layouts): the
+% user-entered overlap is often only a guess, and a wrong nominal defeats the
+% restricted-search pairwise measurement.
+if obj.BatchOpt.EstimateOverlap
+    try
+        obj.runOverlapEstimation();
+    catch estimateError
+        utils.dlgs.showErrorDialog(obj.view.gui, estimateError.message, 'Overlap estimation failed');
+        return;
+    end
 end
 
 % Find neighbour pairs from nominal layout
