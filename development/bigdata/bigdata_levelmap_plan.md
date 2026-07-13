@@ -5,7 +5,7 @@
 
 > **For agentic workers:** implement task-by-task. Steps use `- [ ]` checkboxes. **No git commits**
 > (project rule: edit local files only). Each task ends with `check_matlab_code` (must be clean) + an
-> MCP verification snippet (must pass) as its checkpoint. Spec: `development/bigdata_levelmap_spec.md`.
+> MCP verification snippet (must pass) as its checkpoint. Spec: `development/bigdata/bigdata_levelmap_spec.md`.
 
 **Goal:** Make BigData (`core.MibBigDataLabels`) brush + selection ops (a/s/r/c/f) interactive and
 correct at every zoom, with a Save that finalizes the full-res model — by tracking, per coarsest-grid
@@ -385,7 +385,7 @@ assert(any(s1(:)),'level1 empty after save'); disp('Task6 OK'); lb.closeStore();
 
 ## Task 7 — End-to-end MCP verification (halo, ops, save/reopen, bounded)  ·  **Model: Opus**
 
-**Files:** Create `development/verify_levelmap.m` (an MCP-runnable script; not a unit test).
+**Files:** Create `development/bigdata/verify_levelmap.m` (an MCP-runnable script; not a unit test).
 
 **Interfaces:** Consumes the full stack.
 
@@ -423,8 +423,8 @@ assert(any(s1(:)),'level1 empty after save'); disp('Task6 OK'); lb.closeStore();
 ## Task 9 — Remove `reconstructFinerFill` remnants + docs  ·  **Model: Sonnet**
 
 **Files:** `+core/@MibBigDataLabels/getData63.m` (confirm no `reconstructFinerFill` ref),
-`+models/@MibModel/createModel.m` (explainer), `development/bigdata_brush_performance.md` +
-`development/bigdata_levelmap_spec.md` (status).
+`+models/@MibModel/createModel.m` (explainer), `development/bigdata/bigdata_brush_performance.md` +
+`development/bigdata/bigdata_levelmap_spec.md` (status).
 
 - [ ] **Step 1:** Grep the repo for `reconstructFinerFill` → no references remain (method already
   deleted in Task 4; confirm).

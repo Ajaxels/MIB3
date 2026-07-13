@@ -10,6 +10,17 @@ MIB3 (Microscopy Image Browser 3) is a MATLAB application for image processing, 
 - Version string format: `'ver. 2025.12 / 05.12.2025'`
 - Author: Ilya Belevich, University of Helsinki
 
+## Documentation Map
+
+This file holds the always-needed essentials. Everything deeper lives behind one contents page:
+
+- **[`development/INDEX.md`](development/INDEX.md)** — contents page for all development docs: how-to guides (AppDesigner porting, dialogs, PoolWaitbar, drag-and-drop, RST docblocks…), completed port logs, subsystem folders (`bigdata/`, `deepmib/`, `stitching/`, `graphify/`), notes. **Open it whenever this file is not enough.**
+- [`docs/CLAUDE.md`](docs/CLAUDE.md) — user docs (Zensical/MkDocs): nav editing, custom elements, build commands
+- [`docs_api/CLAUDE.md`](docs_api/CLAUDE.md) — API reference (Sphinx/RST): docblock format, build steps
+- [`mib/plugins/plugins_instructions.md`](mib/plugins/plugins_instructions.md) — standalone, self-contained guide for plugin development tasks
+
+**Rule:** whenever you add, rename, or significantly change a public method or UI feature, update the corresponding documentation (`docs/` and/or `docs_api/`).
+
 ### MIB2 → MIB3 Migration
 
 Active port of MIB2 to MIB3. MIB3 uses MATLAB's **AppContainer framework** (ribbon UI, `.mlapp` panel components, docked documents). MIB2 uses GUIDE-based `.fig`/`.m` with a flat `Classes/` structure.
@@ -30,7 +41,8 @@ Two MIB2 reference copies exist with different roles:
 **Porting workflow:**
 1. Copy the method from `MIB2_RENAMED_FOR_MIB3\Classes\` or `GuiTools\` as the starting point
 2. When behavior is unclear or needs verification, check the same method in `MIB2\` (runs correctly)
-3. Apply the full conversion cheat sheet regardless — `MIB2_RENAMED_FOR_MIB3` renaming is incomplete and inconsistent
+3. Apply the conversion rules below regardless — `MIB2_RENAMED_FOR_MIB3` renaming is incomplete and inconsistent
+4. For a full GUI controller port, read `development/guides/appdesigner_guide.md` first (file layout, checklist)
 
 ---
 
@@ -83,9 +95,7 @@ mib/
 
 `ExtensionRegistryLoad` → `LoaderFactory.create()` → loader (`loadMetadata` + `loadImages`). Loaders in `+loaders/`: AmiraMesh, BioFormats, HDF5, Imod, Imread, MibImg, Nrrd, VideoReader, MatModel.
 
----
-
-## Key Conventions
+### Key Conventions
 
 - Package namespace: `controllers.MibController`, `models.MibModel`, `core.MibImage`, `io.LoaderFactory`, `utils.dlgs.showErrorDialog`, etc.
 - Methods split into separate `.m` files in `@ClassName/`; constructor + signatures in main class file.
@@ -96,9 +106,14 @@ mib/
 
 ---
 
-## MIB2 → MIB3 Quick Reference
+## MIB2 → MIB3 Conversion Quick Reference
 
-Full tables in `.claude/conversion_reference.md` (data structures, backup, clearing, bit packing, PoolWaitbar) and `.claude/conversion_ui.md` (modifier keys, display coords, child dialog keyboard shortcuts, orientation switching).
+Full tables: `development/guides/conversion_reference.md` (data structures, backup, clearing, bit packing, PoolWaitbar) and `development/guides/conversion_ui.md` (modifier keys, display coords, child dialog keyboard shortcuts, orientation switching).
+
+### Naming
+- Classes: `mibXxxController` → `Xxx` (PascalCase, no `mib` prefix), in `+controllers/@Xxx/`
+- Views: `mibXxxGUI.fig` → `+views/XxxGUI.mlapp`; accessed as `obj.view` (lowercase)
+- Orientation XY: `4` → `3`; layer `'model'` → `'labels'`
 
 ### Dialogs
 
@@ -111,48 +126,29 @@ Full tables in `.claude/conversion_reference.md` (data structures, backup, clear
 | `waitbar` | `wb = uiprogressdlg(obj.mibGUI,'Value',v,'Message',msg,'Title',title)` |
 | `inputdlg` / `mibInputMultiDlg` | `utils.dlgs.inputUniversalDlg(obj.mibGUI, header, prompts, defAns, title, options)` |
 
-**`inputUniversalDlg` signature:** `(ParentFigure, header, prompts, defAns, dlgTitle, options)` — `header` is a bold label shown above the content; pass `''` when not needed.
+**`inputUniversalDlg` signature:** `(ParentFigure, header, prompts, defAns, dlgTitle, options)` — `header` is a bold label shown above the content; pass `''` when not needed. Icons: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`.
 
-**Dropdown `defAns`:** `{'item1', 'item2', 'item3', 2}` — string items followed by a **numeric default index** as last element. `answer{i}` returns the selected item string.
+- **Dropdown `defAns`:** `{'item1', 'item2', 'item3', 2}` — items followed by a **numeric default index** as last element. `answer{i}` returns the selected item string.
+- **Spinner (numeric) `defAns`:** pass `struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Step', 1, 'Round', true)`. `answer{i}` returns the numeric value directly — no `str2double`, assign as `BatchOpt.MyParam{1} = answer{i}`.
 
-**Spinner (numeric) `defAns`:** pass a struct instead of a plain value:
+**Numeric BatchOpt fields** — store as a 3-element cell: `BatchOpt.MyParam = {value, [minLim maxLim], 'on'}` (`{2}` = spinner limits, `{3}` `'on'` = integer rounding, `'off'`/omit = float). Read with `BatchOpt.MyParam{1}`, **not** `str2double`. After `utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn)`, refresh the limits from the actual dataset dims:
 ```matlab
-struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Step', 1, 'Round', true)
-```
-`answer{i}` returns the numeric value directly — no `str2double` needed.
-
-**Numeric BatchOpt fields** — when a BatchOpt parameter is a numeric value (not a dropdown), store it as a 3-element cell:
-```matlab
-BatchOpt.MyParam = {value, [minLim maxLim], 'on'};  % 'on' = integer rounding
-```
-- `{1}` — the scalar value
-- `{2}` — `[min max]` limits used to populate the spinner
-- `{3}` — `'on'` to round to integer; omit or use `'off'` for float
-
-When reading the value in processing code use `BatchOpt.MyParam{1}`, **not** `str2double`.
-
-When reading from dialog answers after a spinner prompt, assign directly:
-```matlab
-BatchOpt.MyParam{1} = answer{i};   % answer{i} is already numeric
-```
-
-The spinner limits must be updated after batch-merge to reflect the actual dataset dimensions:
-```matlab
-% after utils.updateBatchOptCombineFields_Shared(BatchOpt, BatchOptIn)
 maxSlice = obj.I{BatchOpt.id}.dim_yxzct(dimOrient);
-BatchOpt.MyParam{2} = [1, maxSlice];   % refresh limits
+BatchOpt.MyParam{2} = [1, maxSlice];
 ```
-
-`inputUniversalDlg` icons: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`
 
 ### Events & Notifications
 
 | MIB2 | MIB3 |
 |------|------|
-| `notify(obj, 'updateId')` | `notify(obj, 'UpdateGuiWidgets')` |
 | `notify(obj, 'plotImage')` | `notify(obj, 'ShowImage')` |
-| `notify(obj, 'showModel', evd)` | `obj.showModel = true` then `notify(obj, 'ShowImage')` |
-| `notify(obj, 'updateGuiWidgets')` | `notify(obj, 'UpdateGuiWidgets')` |
+| `notify(obj, 'updateGuiWidgets')` / `'updateId'` | `notify(obj, 'UpdateGuiWidgets')` |
+| `notify(obj, 'showModel', evd)` | `obj.showModel=true; notify(obj,'ShowImage')` |
+| `notify(obj, 'showMask')` | `obj.showMask=true; notify(obj,'ShowImage')` |
+| `notify(obj, 'updateLayerSlider', evd)` | update `slices{orient}` then `notify('SliceChanged')` |
+| `notify(obj, 'updateTimeSlider', evd)` | update `slices{5}` then `notify('FrameChanged')` |
+| `notify(obj, 'updatedAnnotations')` | `notify(obj, 'UpdateAnnotations')` |
+| `ToggleEventData(x)` | `core.ToggleEventData(x)` |
 
 ### MibModel Data Accessors
 
@@ -168,39 +164,113 @@ obj.mibModel.setData3D(dataset, type, time, orient, col_channel, options)
 obj.mibModel.setData4D(dataset, type, orient, col_channel, options)
 ```
 
-**Important:** MIB2 `setData` calls had `(type, dataset, ...)` — MIB3 swaps to `(dataset, type, ...)`. The `getData` order (`type` first) is unchanged.
-
-Use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
-
-**Orient values changed:** MIB2 used `4` for native YX; MIB3 uses `3`. All `getData`/`setData` orient arguments: `4` → `3`.
-
-**Data type renamed:** MIB2 `'model'` → MIB3 `'labels'` in `getData`/`setData` type argument.
+- **`setData` argument order swapped:** MIB2 `(type, dataset, ...)` → MIB3 `(dataset, type, ...)`. `getData` (type first) is unchanged.
+- Use `[]` (not `NaN`) for `slice_no` and `orient` to get current slice/orientation.
+- **Orient values:** MIB2 used `4` for native YX; MIB3 uses `3` — convert all orient arguments `4` → `3`.
+- **Type renamed:** MIB2 `'model'` → MIB3 `'labels'`.
 
 ### obj.id vs obj.getActiveId() — Split-Panel Safety
 
 **`obj.id` can be stale** between user clicks in split-panel mode.
 
 ```matlab
-BatchOpt.id = obj.id;           % WRONG — may point at wrong dataset
+BatchOpt.id = obj.id;             % WRONG — may point at wrong dataset
 BatchOpt.id = obj.getActiveId();  % CORRECT — always uses Sets.selectedSet
 ```
 
 **Rule:** Every MibModel method that initializes `BatchOpt.id` as a default must use `obj.getActiveId()`. Direct `obj.id` is fine after it was explicitly set by the caller.
 
-**`gui_WinMouseMotionFcn` must NEVER write to `mibModel.id` or `Sets.selectedSet`** — doing so breaks panning and keyboard shortcuts. See `.claude/port_splitpanel.md`.
+**`gui_WinMouseMotionFcn` must NEVER write to `mibModel.id` or `Sets.selectedSet`** — doing so breaks panning and keyboard shortcuts. See `development/ports/port_splitpanel.md`.
 
----
+### Modifier Keys (CRITICAL)
+`UIFigure.CurrentModifier` is **unreliable** — stale after `pyrun()`, wrong in sub-figures.
+```matlab
+modifier = obj.mibController.currentModifier;  % CORRECT
+modifier = hFig.CurrentModifier;               % WRONG
+```
 
-## Documentation
+### AppDesigner Widget Syntax
 
-Two separate documentation systems exist — see each directory's `CLAUDE.md` for full details:
+| GUIDE | AppDesigner |
+|-------|-------------|
+| `.String` (edit box) | `.Value` |
+| `.String` (label / button) | `.Text` |
+| `popup.String` (item list) | `popup.Items` |
+| `popup.String{popup.Value}` | `popup.Value` (string directly) |
+| set popup by index | `popup.Value = popup.Items{3}` |
+| `.TooltipString` | `.Tooltip` |
+| `.BackgroundColor = 'g'` | `.BackgroundColor = [0 1 0]` |
+| `.CData` (button icon) | `.Icon` |
+| `findjobj + jTable.changeSelection` | `scroll(uitableHandle,'row',r)` |
+| Button `Callback` | `ButtonPushedFcn` |
+| Edit `Callback` | `ValueChangedFcn` |
 
-| System | Location | Guide |
-|--------|----------|-------|
-| **User docs** (Zensical/MkDocs) | `docs/` | [`docs/CLAUDE.md`](docs/CLAUDE.md) — nav editing, custom elements, CSS tokens, build commands |
-| **API reference** (Sphinx/RST) | `docs_api/` | [`docs_api/CLAUDE.md`](docs_api/CLAUDE.md) — docblock format, when to add RST entries, build steps |
+### BatchOpt ↔ Widget Handle Naming (CRITICAL)
+Every `.mlapp` widget that maps to a BatchOpt parameter must be **named exactly as its BatchOpt field**, so the widget handle is `obj.view.handles.TileOrder`, `obj.view.handles.GridRows`, etc. (PascalCase; exception: `showWaitbar` stays lowercase). `core.ChildView` copies the component name into `Tag`, and `utils.updateBatchOptFromGUI_Shared` writes `BatchOpt.(hObject.Tag)` — a mismatched handle name silently dumps the value into a junk field and the tool runs with defaults. Non-BatchOpt widgets (buttons, axes, labels) use descriptive lowerCamel handles (`selectInputBtn`, `previewAxes`).
 
-**Rule:** whenever you add, rename, or significantly change a public method or UI feature, update the corresponding documentation in the relevant system.
+### Controller Constructor Pattern
+```matlab
+core.ChildView(obj, 'views.XxxGUI')    % creates view, sets obj.view
+utils.fontSizeUpdate(gui, Font)
+utils.moveWindowOutside(gui, mibGUI, 'left')
+obj.addCallbacks()                      % wire ALL callbacks here; set CloseRequestFcn first
+obj.listener{1} = addlistener(obj.mibModel, 'UpdateGuiWidgets', @(s,e) obj.ViewListner_Callback2(obj,s,e));
+obj.listener{2} = addlistener(obj.mibModel, 'NewDataset',       @(s,e) obj.ViewListner_Callback2(obj,s,e));
+```
+`ViewListner_Callback2` — always guard:
+```matlab
+methods (Static)
+    function ViewListner_Callback2(obj, src, evnt)
+        if ~isvalid(obj) || isempty(obj.view) || ~isvalid(obj.view.gui)
+            for i=1:numel(obj.listener); delete(obj.listener{i}); end; return;
+        end
+        switch evnt.EventName
+            case {'UpdateGuiWidgets','NewDataset'}; obj.updateWidgets();
+        end
+    end
+end
+```
+
+### Data Structures
+
+| MIB2 | MIB3 |
+|------|------|
+| `obj.model{1}` | `obj.labels.data{1}` |
+| `obj.modelMaterialNames` | `obj.labels.materialNames` |
+| `obj.modelFilename` | `obj.labels.filename` |
+| `obj.modelVariable` | `obj.labels.labelsVariable` |
+| `size(img,1/2/4/5)` → h/w/d/t | `obj.image.height/width/depth/time` |
+| `obj.mibModel.I{id}.pixSize` | `obj.mibModel.I{id}.image.pixSize` |
+| `getImageProperty('orientation')` | `obj.mibModel.I{id}.orientation` |
+| `global mibPath` | `obj.mibModel.mibPath` |
+| `global Font` | `obj.mibModel.preferences.System.Font` |
+| `containers.Map` | `dictionary(keys, values)` (R2022b+) |
+
+### Backup / Clearing
+```matlab
+obj.mibModel.backup('selection', 0, opts)   % switch3d=0: current slice, 1: full stack
+obj.mibModel.I{id}.clearLayer('selection', '2D'/'3D'/'4D')
+if obj.mibModel.I{id}.enableSelection == 0; return; end   % always check first
+```
+
+### Parallel Progress
+```matlab
+pwb = core.PoolWaitbar(n, 'Processing...', obj.mibGUI, 'Title');
+parfor (i=1:n, parforArg); pwb.increment(); end
+pwb.deletePoolWaitbar();
+% Sequential loops: use plain uiprogressdlg with wb.Value = k/n
+```
+
+### Misc Renames
+
+| MIB2 | MIB3 |
+|------|------|
+| `obj.View` | `obj.view` |
+| `okBtn_Callback` / `cancelBtn_Callback` | `applyButton_Callback` / `closeButton_Callback` |
+| `mibRescaleWidgets(gui)` | remove — AppDesigner handles scaling |
+| `mibUpdateFontSize(gui, Font)` | `utils.fontSizeUpdate(gui, Font)` |
+| `moveWindowOutside(h, 'left')` | `utils.moveWindowOutside(gui, mibGUI, 'left')` |
+| `BatchOpt.mibBatchSectionName = 'Menu -> …'` | `'Ribbon -> …'` |
 
 ---
 
@@ -211,7 +281,7 @@ Two separate documentation systems exist — see each directory's `CLAUDE.md` fo
 
 ### Copy-on-write in per-slice loops (performance critical)
 
-`MibImage.data` is a plain numeric array (not a cell — the former `data{1}` cell wrapper was removed). This means `getData2D`/`setData2D` fast paths can write in-place through the two-handle chain (`MibDataset → MibImage → data`). However, caching into a local variable before a tight loop is still the fastest pattern for heavy bulk operations — it eliminates repeated handle-chain traversal and ensures zero allocations per iteration.
+`MibImage.data` is a plain numeric array (not a cell — the former `data{1}` cell wrapper was removed). Caching it into a local variable before a tight loop eliminates repeated handle-chain traversal (`MibDataset → MibImage → data`) and per-iteration allocations.
 
 **Rule:** Any loop that writes pixel data directly (bypassing `getData2D`) must cache `data` in a local variable first, mutate locally, then write back once after the loop.
 
@@ -229,7 +299,7 @@ end
 obj.mibModel.I{id}.image.data = imageData;
 ```
 
-This applies to any code **outside** `MibImage` methods (controllers, model helpers).  Inside `MibImage` methods `obj.data` is only one hop and is already safe — still worth caching for large nested loops (e.g. `rotateColorChannel`).
+Applies to any code **outside** `MibImage` methods (controllers, model helpers). Inside `MibImage` methods `obj.data` is one hop and already safe — still worth caching for large nested loops. Full background: `development/guides/performance_for_loop_tweak.md`.
 
 ## graphify
 

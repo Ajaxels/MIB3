@@ -338,7 +338,28 @@ utils.dlgs.inputUniversalDlg(obj.view.gui, 'Header text', {}, {}, 'Title', dlgOp
 
 % Question dialog
 answer = utils.dlgs.inputQuestDlg(obj.view.gui, 'Proceed?', 'Confirm', 'Yes', 'No', 'Yes');
+
+% Input dialog — collect parameters from the user
+% Signature: (ParentFigure, header, prompts, defAns, dlgTitle, options)
+prompts = {'Smoothing radius:', 'Mode:'};
+defAns  = {struct('Spinner', true, 'Value', 5, 'Limits', [1 100], 'Round', true), ...  % numeric spinner
+           {'2D', '3D', 1}};                                                           % dropdown, default = item 1
+answer = utils.dlgs.inputUniversalDlg(obj.view.gui, 'Parameters', prompts, defAns, 'My Plugin');
+if isempty(answer); return; end   % user pressed Cancel
+radius = answer{1};               % spinner returns a double directly — no str2double
+mode   = answer{2};               % dropdown returns the selected item string
 ```
+
+`defAns` formats:
+
+| Widget wanted | `defAns{i}` | `answer{i}` returns |
+|---------------|-------------|---------------------|
+| Edit field | `'text'` | char |
+| Checkbox | `true` / `false` | logical |
+| Dropdown | `{'item1','item2','item3', 2}` — items + **numeric default index** last | selected item (char) |
+| Numeric spinner | `struct('Spinner',true,'Value',5,'Limits',[1 100],'Round',true)` | double |
+
+Icons for `dlgOpt.Icon`: `'puffin_question'` (default), `'puffin_warning'`, `'puffin_error'`, `'puffin_info'`.
 
 ### Progress dialogs
 
@@ -353,6 +374,35 @@ waitbarHandle.Value = 0.5;
 % Close
 close(waitbarHandle);
 ```
+
+For **`parfor` loops** or when a **Cancel button** is needed, use `core.PoolWaitbar`
+instead — never update `uiprogressdlg.Value` from inside a `parfor`:
+
+```matlab
+pwb = core.PoolWaitbar(n, 'Processing...', obj.view.gui, 'My Plugin', true);  % true = Cancelable
+for i = 1:n            % works the same with parfor
+    if pwb.getCancelState(); break; end
+    % ... process item i ...
+    pwb.increment();
+end
+pwb.deletePoolWaitbar();
+```
+
+### Undo support — back up data before modifying it
+
+Call `obj.mibModel.backup(type, switch3d, options)` **before** writing to a layer, so
+the user can press Ctrl+Z after the plugin runs:
+
+```matlab
+% type: 'image', 'selection', 'mask', 'labels', 'annotations', 'mibDataset', ...
+% switch3d: 0 = current 2D slice only, 1 = full 3D stack
+options.id = obj.mibModel.getActiveId();
+obj.mibModel.backup('image', 1, options);      % store the full image stack
+% ... modify the data via setData2D/3D/4D ...
+```
+
+Skip the backup (or ask the user first) for very large datasets — a 3D image backup
+doubles memory use.
 
 ### Events — notifying the main MIB window
 
@@ -373,6 +423,27 @@ notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
 | `uilabel` | `handles.myLabel.Text` | `handles.myLabel.Text = 'hello'` |
 | `uibutton` | — | `handles.myBtn.Enable = 'on'/'off'` |
 
+### Coding rules
+
+- **Key-value storage:** use `dictionary(keys, values)` (R2022b+), not `containers.Map`.
+  Lookups: `isKey(d, key)`, `d(key)`.
+- **Descriptive variable names:** write `viewPort`, `waitbarHandle`, `filename` in full —
+  avoid abbreviations like `vp`, `wb`, `fn`.
+- **Performance — per-slice loops writing pixel data directly.** If you bypass
+  `getData2D/setData2D` and index into `obj.mibModel.I{id}.image.data` inside a loop,
+  cache the array in a local variable first, mutate locally, and write back once —
+  otherwise MATLAB's copy-on-write through the handle chain makes the loop 15–200× slower:
+
+  ```matlab
+  imageData = obj.mibModel.I{id}.image.data;     % single read
+  for z = 1:depth
+      imageData(:,:,z,ch,t) = process(imageData(:,:,z,ch,t));
+  end
+  obj.mibModel.I{id}.image.data = imageData;     % single write
+  ```
+
+  When using the `getData`/`setData` API this is handled for you.
+
 ---
 
 ## Part 4 — Step-by-Step: Creating a New Plugin from Scratch
@@ -384,25 +455,25 @@ notify(obj.mibModel, 'UpdateGuiWidgets'); % refresh MIB toolbar/menus
    Place `icon_24px.png` (24×24 px) and `icon_16px.png` (16×16 px) in the folder.  
    If you skip this step, the default MIB icon is used as a fallback.
 
-2. **Create the view in AppDesigner**  
+3. **Create the view in AppDesigner**  
    - Add a `winController` property (public)  
    - Modify the constructor to accept `varargin` and call `runStartupFcn`  
    - Add `startupFcn(app, winController)` that stores `app.winController = winController`  
    - Wire all component callbacks to `app.winController.<method>()`
 
-3. **Create the controller**  
+4. **Create the controller**  
    Copy `GuiTutorial.m` as a template. Rename the class and update:  
    - Class name = folder name  
    - `guiName` string in the constructor  
    - Add your own action methods  
    - Adjust which MibModel events to listen to
 
-4. **Register the plugin (automatic)**  
+5. **Register the plugin (automatic)**  
    MIB3 scans `mib/plugins/` at startup via `addRibbonPlugins.m`.  
    No manual registration is needed as long as the controller file name
    matches the folder name.
 
-5. **Test**  
+6. **Test**  
    ```matlab
    cd C:\Matlab\MIB3\mib
    mib3

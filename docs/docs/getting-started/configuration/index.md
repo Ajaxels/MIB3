@@ -29,6 +29,41 @@ This page is reference material — you do not need it to start using MIB.
 
 ---
 
+## Overriding default settings
+
+Administrators can preconfigure MIB with custom default settings by placing an *override file* into the MIB program directory (the folder that contains `mib3.m`, or the installation folder of the standalone version). This is useful for deploying the same configuration to multiple workstations, for example in a core facility.
+
+Two kinds of override files are supported:
+
+| File | Scope |
+|------|-------|
+| `mib3_prefs_override.mat` | **Global** — applies to every workstation |
+| `mib3_prefs_override_COMPUTERNAME.mat` | **Workstation-specific** — applies only to the computer with the matching name |
+
+### Creating an override file
+
+1. Start MIB and configure all required settings
+2. *For a workstation-specific override:* open **Home → Help → About MIB** and note the **Computer name** shown at the bottom of the dialog
+3. Close MIB — this saves `mib3.mat` to the user directory (the location is reported in the MATLAB command window upon MIB startup)
+4. Copy `mib3.mat` to the MIB program directory
+5. Rename the copy to `mib3_prefs_override.mat` (global) or `mib3_prefs_override_COMPUTERNAME.mat` (workstation-specific), replacing `COMPUTERNAME` with the name from step 2
+
+### Load priority at startup
+
+When MIB starts, it looks for a configuration file in this order:
+
+1. `mib3.mat` in the user directory — **used immediately if found**
+2. `mib3_prefs_override_COMPUTERNAME.mat` — workstation-specific override
+3. `mib3_prefs_override.mat` — global override
+4. Built-in defaults — used if none of the above are found
+
+!!! note
+    If `mib3.mat` already exists in the user directory, override files are ignored entirely. To force reloading from an override file, delete `mib3.mat` first.
+
+User statistics (tier data stored in `mib_user.mat`) are never taken from an override file — each user keeps their own.
+
+---
+
 ## Previous versions
 
 This documentation describes **MIB3** - the current release. Previous releases are hosted on GitHub and include their own documentation and release notes:

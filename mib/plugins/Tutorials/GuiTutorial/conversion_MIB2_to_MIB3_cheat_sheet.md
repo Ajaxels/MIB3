@@ -174,7 +174,7 @@ replaces the cell contents with the new type without casting.
 | `obj.startController('MyChild')` (own wrapper method) | `utils.startController(obj, 'controllers.MyChild')` (shared utility) |
 | Custom `purgeControllers` method | `utils.purgeChildController(parentObj, src)` (wired automatically) |
 
-See `development/startController.md` in the repository root for the full
+See `development/guides/startController.md` in the repository root for the full
 lifecycle contract.
 
 ---

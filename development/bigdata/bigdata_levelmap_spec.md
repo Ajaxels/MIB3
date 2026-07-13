@@ -6,7 +6,7 @@
 Date: 2026-06-24. Supersedes the reconstruct-on-read approach in `bigdata_brush_performance.md`.
 Companion: `plan_wsi_readers.md`, `wsi_livetest_checklist.md`. Plan: `bigdata_levelmap_plan.md`.
 
-**Status: IMPLEMENTED 2026-06-24** (headless-verified via `development/verify_levelmap.m` +
+**Status: IMPLEMENTED 2026-06-24** (headless-verified via `development/bigdata/verify_levelmap.m` +
 `tests/core/MibBigDataLevelMapTest.m`, 8/8 Unit tests pass). Pending: live in-GUI re-test of
 brush + a/s/r/c/f at low mag, and the Save button on a real session.
 

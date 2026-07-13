@@ -7,7 +7,7 @@ For build instructions, prerequisites, required library patches, and project
 structure see [`README.md`](README.md) in this directory.
 
 For the complete RST docblock style guide see
-[`development/docs_api_sphinx.md`](../development/docs_api_sphinx.md).
+[`development/guides/docs_api_sphinx.md`](../development/guides/docs_api_sphinx.md).
 
 ---
 

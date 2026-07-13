@@ -4,17 +4,17 @@ MIB3 (Microscopy Image Browser 3) is a MATLAB AppContainer application for image
 
 **For full project context, coding conventions, and MIB2→MIB3 conversion rules read `CLAUDE.md` in the repository root.**
 
-For deeper reference on specific topics, attach the relevant file from `.claude/`:
+For deeper reference on specific topics, start from the contents page `development/INDEX.md`, or attach directly:
 
 | Topic | File to attach |
 |-------|----------------|
-| Port status (what's done / pending) | `.claude/CLAUDE.md` |
-| AppDesigner conversion patterns | `.claude/appdesigner_guide.md` |
-| Data structures, PoolWaitbar, backup, clearing | `.claude/conversion_reference.md` |
-| Modifier keys, display coords, orientation | `.claude/conversion_ui.md` |
-| Documentation block template | `.claude/doc_template.md` |
-| BatchProcessing port plan (NOT STARTED) | `.claude/port_batchprocessing.md` |
-| ROI class notes + remaining work | `.claude/port_roi.md` |
+| Contents page for all development docs | `development/INDEX.md` |
+| AppDesigner conversion patterns | `development/guides/appdesigner_guide.md` |
+| Data structures, PoolWaitbar, backup, clearing | `development/guides/conversion_reference.md` |
+| Modifier keys, display coords, orientation | `development/guides/conversion_ui.md` |
+| RST docblock style guide | `development/guides/docs_api_sphinx.md` |
+| ROI class notes + remaining work | `development/ports/port_roi.md` |
+| Plugin development (standalone guide) | `mib/plugins/plugins_instructions.md` |
 
 ---
 

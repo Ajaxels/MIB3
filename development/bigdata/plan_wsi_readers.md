@@ -46,7 +46,7 @@ the BioFormats engine (records the working engine in `sourceReaderLibrary`).
 **Pending / for the user:** restart MIB so the running session loads the new registry extensions +
 reader-dropdown keys; live File→Open test of a WSI as BigData (single-scene auto-load; Zeiss multi-scene
 prompts); confirm model-create + segmentation on a WSI BigData set; optional Phase E.
-→ **Guided GUI checklist: `development/wsi_livetest_checklist.md`** (setup, reader×type matrix, the
+→ **Guided GUI checklist: `development/bigdata/wsi_livetest_checklist.md`** (setup, reader×type matrix, the
 specific test files, the recent fixes to confirm, and model/segmentation steps).
 
 ## Goal & key decision

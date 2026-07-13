@@ -149,6 +149,7 @@ if false
     views.SelectModelTypeGUI;
     views.SnapshotGUI;
     views.StereologyGUI;
+    views.StitchingGUI;
     views.TipsAppGUI;
     views.VolRenAppGUI;
     views.VolRenAppViewerGUI;

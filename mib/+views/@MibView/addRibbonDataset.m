@@ -52,6 +52,12 @@ widgetHandles.alignment = Button('Alignment',  Icon(fullfile(iconPath, 'alignmen
 widgetHandles.alignment.Description = 'Start the alignment tool';
 column.add(widgetHandles.alignment);
 
+% --------- Stitch ---------
+column = section.addColumn();
+widgetHandles.stitch = Button('Stitch',  Icon(fullfile(iconPath, 'alignment_24px.png')));
+widgetHandles.stitch.Description = 'Start the image stitching tool (assemble mosaic from overlapping tiles)';
+column.add(widgetHandles.stitch);
+
 %% ============= Make "Dataset tools" section =============
 section = obj.handles.ribbon.dataset.addSection("Dataset tools");
 % -------- Crop --------

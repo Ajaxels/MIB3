@@ -182,7 +182,7 @@ Full matrix in the (now-superseded) `wsi_livetest_checklist.md`.
 ## 6. Documentation — RST docblocks for BigData functions
 
 > **Rule:** whenever a BigData function is added or significantly changed, add or update its
-> RST/Sphinx docblock following `development/docs_api_sphinx.md`.
+> RST/Sphinx docblock following `development/guides/docs_api_sphinx.md`.
 
 ### Done (session 2026-06-26)
 

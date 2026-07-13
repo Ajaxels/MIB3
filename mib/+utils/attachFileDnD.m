@@ -45,7 +45,7 @@ function bridgeButton = attachFileDnD(webwin, parentFigure, callback)
 %          obj.handles.panels.selectionPanel.Figure, ...
 %          @(params) obj.controller.dragNdrop_Callback(params));
 %
-%   See ``development/drag-and-drop.md`` for a full explanation of the pattern.
+%   See ``development/guides/drag-and-drop.md`` for a full explanation of the pattern.
 %
 
 arguments (Input)
